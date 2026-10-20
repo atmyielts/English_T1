@@ -98,13 +98,15 @@ Deno.test("the English root contains a user-recoverable crash boundary", async (
     new URL("../src/lib/clientRecovery.ts", import.meta.url),
   );
   assertStringIncludes(main, "<AppErrorBoundary>");
-  assertStringIncludes(boundary, "static getDerivedStateFromError");
+  const sharedBoundary = await Deno.readTextFile(new URL('../../../packages/ui-recovery/src/RecoveryBoundary.tsx', import.meta.url));
+  assertStringIncludes(boundary, "<RecoveryBoundary");
+  assertStringIncludes(sharedBoundary, "static getDerivedStateFromError");
   assertStringIncludes(boundary, "Reload English");
   assertStringIncludes(
-    boundary,
-    "Your account and previously saved learning data are safe.",
+    sharedBoundary,
+    "Changes that had not finished saving may need to be entered again.",
   );
-  assertStringIncludes(boundary, "reportEnglishRecovery(error)");
+  assertStringIncludes(boundary, "onError={reportEnglishRecovery}");
   assertStringIncludes(recovery, "window.sessionStorage.getItem(dedupeKey)");
   assertStringIncludes(recovery, "window.location.pathname");
   assertStringIncludes(recovery, "window.addEventListener('unhandledrejection'");

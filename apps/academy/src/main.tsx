@@ -1,3 +1,4 @@
+import { RecoveryBoundary, recoveryRootOptions } from '../../../packages/ui-recovery/src/RecoveryBoundary';
 import { lazy } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
@@ -18,15 +19,17 @@ const telegramRoute = /^\/(?:academy\/)?telegram(?:\/|$)/.test(window.location.p
 const root = document.getElementById('root');
 if (!root) throw new Error('Missing root element');
 
-createRoot(root).render(
-  <I18nProvider>
-    <BrowserRouter>
-      {!telegramRoute ? <LanguageSwitcher /> : null}
-      <LazyRouteBoundary fallback={<main className="ts-loading" aria-busy="true">{translate('Loading Academy')}</main>}>
-        {verificationRoute ? <AssessmentCertificatePage /> : telegramRoute ? <AcademyTelegramApp /> : <App />}
-      </LazyRouteBoundary>
-    </BrowserRouter>
-  </I18nProvider>,
+createRoot(root, recoveryRootOptions).render(
+  <RecoveryBoundary app="academy">
+    <I18nProvider>
+      <BrowserRouter>
+        {!telegramRoute ? <LanguageSwitcher /> : null}
+        <LazyRouteBoundary fallback={<main className="ts-loading" aria-busy="true">{translate('Loading Academy')}</main>}>
+          {verificationRoute ? <AssessmentCertificatePage /> : telegramRoute ? <AcademyTelegramApp /> : <App />}
+        </LazyRouteBoundary>
+      </BrowserRouter>
+    </I18nProvider>
+  </RecoveryBoundary>,
 );
 import { observeGuideArrival } from '../../../packages/journey-analytics/src/guide-arrival';
 

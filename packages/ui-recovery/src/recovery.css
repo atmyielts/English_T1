@@ -1,0 +1,51 @@
+.schood-recovery {
+  box-sizing: border-box;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #f6f7f9;
+  color: #172339;
+  font-family: inherit;
+  line-height: 1.6;
+}
+.schood-recovery.schood-recovery--compact { min-height: 0; padding: 16px; }
+.schood-recovery .schood-recovery__card {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 560px;
+  padding: clamp(20px, 5vw, 40px);
+  border: 1px solid #d5dce5;
+  border-radius: 16px;
+  background: #fff;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.schood-recovery .schood-recovery__brand { color: #365377; font-weight: 700; margin: 0 0 20px; }
+.schood-recovery h1 { color: #172339; font-size: clamp(24px, 5vw, 32px); line-height: 1.2; margin: 0 0 16px; }
+.schood-recovery p { font-size: 16px; margin: 0 0 16px; }
+.schood-recovery .schood-recovery__warning { color: #526079; }
+.schood-recovery .schood-recovery__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.schood-recovery .schood-recovery__actions button,
+.schood-recovery .schood-recovery__actions a {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 10px 16px;
+  border: 1px solid #b6c2d2;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.4;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  color: #172339;
+  background: #fff;
+}
+.schood-recovery .schood-recovery__actions button { background: #183c70; border-color: #183c70; color: #fff; }
+.schood-recovery :focus-visible { outline: 3px solid #1d65ad; outline-offset: 4px; }
+.schood-recovery .schood-recovery__reference { color: #526079; font-size: 12px; margin: 24px 0 0; }

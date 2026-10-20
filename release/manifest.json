@@ -1,42 +1,46 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-parent-writes-history-and-delivery",
+  "releaseId": "worktree-reconciliation-recovery-and-sat-foundations",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "academy"
+    "academy",
+    "academy-docs",
+    "english-hub",
+    "ielts-playbook",
+    "ielts-practice",
+    "ielts-simulator",
+    "itep-simulator",
+    "platform",
+    "sat-playbook",
+    "sat-practice",
+    "sat-simulator",
+    "toefl-ibt-simulator",
+    "toefl-playbook"
   ],
   "migrations": [
-    "20261020150000_academy_parent_write_commands.sql",
-    "20261020151000_academy_parent_history_paging.sql",
-    "20261020152000_academy_parent_delivery_claims.sql"
+    "20261020183010_sat_original_foundations.sql"
   ],
-  "edgeFunctions": [
-    "academy"
-  ],
+  "edgeFunctions": [],
   "sharedEdgeConsumers": [],
   "workers": [],
   "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "migration:20261020150000_academy_parent_write_commands.sql",
-    "migration:20261020151000_academy_parent_history_paging.sql",
-    "migration:20261020152000_academy_parent_delivery_claims.sql",
-    "function:academy"
+    "migration:20261020183010_sat_original_foundations.sql"
   ],
   "manualFollowUps": [
-    "After protected CI and tracked Pages deployment, apply only these three additive migrations through supabase db push --linked from a frozen SQL workdir matching the 210 installed migrations. Verify project bbjawctnqrufvnesdsel and pending filenames first.",
-    "Deploy supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel --use-api from a reviewed bundle over the freshly downloaded installed Academy source. Retain unrelated modules; do not deploy the entire repository gateway over installed source.",
-    "Preserve existing ACADEMY_TELEGRAM_BOT_TOKEN and Gmail SMTP configuration. Unconfigured or unverified channels are skipped. External delivery already in flight cannot be cancelled; unknown outcomes require review and are not automatically retried.",
-    "Legacy guardian messages already deferred in the central Telegram gateway require separate reconciliation before claiming universal dispatch-consent coverage. Real recipient/provider/payment qualification remains distinct from synthetic and rollback-only acceptance."
+    "Bounded reconciliation of this chat only. Preserve concurrent Academy closeout and Assessment/Proctor work, including dirty primary and the reassigned academy-frontdesk-expansion checkout. No new product scope, provider configuration, payment activation or Edge deployment.",
+    "After exact-head protected CI and tracked Pages deployment, apply only this SAT migration with supabase db push --linked --include-all from an isolated release folder whose history and dry run prove exactly one pending reviewed migration. Exclude all nine pending payment migrations and all concurrent-agent migrations. Recheck installed selector identity against the qualified source immediately before publication.",
+    "Keep payment recovery PR 215 in draft and the payment transaction layer inactive until valid signed Click callback, retained-source/legacy-client qualification and exact provider configuration are available. Local payment tests alone do not qualify a hosted financial release."
   ],
   "verification": [
-    "Run verify:prod, verify:release, complete Academy Edge/browser suites, lint/build/localization and the captured-schema command/lock-contention qualification.",
-    "After activation verify source hashes, migration count, rollback-only installed parent commands and owned signed-in API/browser flows. Verify customer records and real provider messages/payments remain untouched during fixture tests."
+    "Production/release checks; Academy lint, localization and build; Platform build; English contracts; sixteen controlled-failure browser scenarios across thirteen actual app entrypoints with external requests blocked; all required CI test and full app-build groups.",
+    "SAT: independently verify twelve math answers and all twenty-seven items; nine isolated native integration cases; rollback-only installed-schema scoring/replay and private-grant qualification; verify source/data rollback; after publication verify installed migration, exact frozen content/private keys/feedback, authorized bank response with keys hidden, and existing history retained.",
+    "Inspect tracked Pages jobs and public roots; do not trigger faults in customer sessions. Save provider evidence and explicitly distinguish deployed, superseded, evidence-only, withheld and other-agent work."
   ],
   "rollback": {
-    "pages": "Use prior reviewed Academy deployment at main 50e63540b6a4ec0318184c7262d538f2bd9083b4.",
-    "edge": "Forward-repair the freshly captured installed Academy bundle, preserving unrelated modules. Keep new parent commands unavailable rather than reverting deployed parent privacy guards.",
-    "migration": "Retain additive schema and receipts. Correct through a reviewed forward migration; never delete customer messages, request history or delivery evidence."
+    "pages": "Restore the preceding successful tracked Pages deployment if the healthy route checks regress. Keep existing authenticated state; the shared boundary only changes render-failure recovery.",
+    "migration": "Forward repair or retire only the new original-foundations experience. Preserve original rows, private keys, frozen attempts and customer history. Restore the exact captured selector only after reviewing any intervening changes; never blanket rollback the schema or reactivate known placeholder questions."
   }
 }

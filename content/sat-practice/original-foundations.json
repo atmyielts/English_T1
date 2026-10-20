@@ -1,0 +1,396 @@
+{
+  "schemaVersion": 1,
+  "status": "reviewed_for_publication",
+  "authorship": "Original Schood practice exercises; no official test questions reproduced.",
+  "difficultyBasis": "Editorial only; not empirically calibrated or endorsed by College Board.",
+  "publicationRequirements": [
+    "Independent content and key verification",
+    "Private feedback delivery after scoring",
+    "Retired content and historical receipt preservation",
+    "Native database and signed-in browser proof"
+  ],
+  "questions": [
+    {
+      "slug": "grammar-easy-subject-agreement",
+      "domain": "grammar",
+      "difficulty": "easy",
+      "prompt": "Which choice completes the sentence according to Standard English conventions? The boxes of donated books ____ beside the library entrance.",
+      "options": [
+        "is stacked",
+        "are stacked",
+        "has stacked",
+        "was stacked"
+      ],
+      "correctOption": "B",
+      "explanation": "The subject is the plural noun boxes, so the plural verb are agrees with it. The phrase of donated books does not change the subject."
+    },
+    {
+      "slug": "grammar-medium-independent-clauses",
+      "domain": "grammar",
+      "difficulty": "medium",
+      "prompt": "Which choice completes the text according to Standard English conventions? The first rehearsal ran late____ the director shortened the next one.",
+      "options": [
+        ",",
+        ";",
+        " and; ",
+        " and, "
+      ],
+      "correctOption": "B",
+      "explanation": "Both The first rehearsal ran late and the director shortened the next one are independent clauses. A semicolon joins them correctly. A comma alone creates a comma splice; the other choices introduce faulty punctuation or syntax."
+    },
+    {
+      "slug": "grammar-hard-modifier",
+      "domain": "grammar",
+      "difficulty": "hard",
+      "prompt": "Which choice completes the sentence according to Standard English conventions? After carefully comparing the two maps, ____",
+      "options": [
+        "the shorter route became obvious.",
+        "the distance between the towns was calculated.",
+        "a decision about the route was made.",
+        "the hikers chose the eastern trail."
+      ],
+      "correctOption": "D",
+      "explanation": "The introductory modifier describes people who compared maps. The hikers is the only subject that can perform that action. The other subjects leave the modifier dangling."
+    },
+    {
+      "slug": "transitions-easy-contrast",
+      "domain": "transitions",
+      "difficulty": "easy",
+      "prompt": "Which transition most logically completes the text? The morning train was nearly empty. ____, the evening train had standing passengers in every carriage.",
+      "options": [
+        "Similarly",
+        "For example",
+        "By contrast",
+        "Therefore"
+      ],
+      "correctOption": "C",
+      "explanation": "The second sentence contrasts a crowded train with an almost empty one. By contrast expresses that difference. It is neither a similar example nor a consequence of the morning train's occupancy."
+    },
+    {
+      "slug": "transitions-medium-consequence",
+      "domain": "transitions",
+      "difficulty": "medium",
+      "prompt": "Which transition most logically completes the text? The archive received twice as many donated photographs as its shelves could hold. ____, its staff rented an additional storage room.",
+      "options": [
+        "Consequently",
+        "Nevertheless",
+        "Likewise",
+        "In other words"
+      ],
+      "correctOption": "A",
+      "explanation": "Renting storage is a response to insufficient shelf space. Consequently signals this result. The second sentence does not oppose, parallel, or simply restate the first."
+    },
+    {
+      "slug": "transitions-hard-concession",
+      "domain": "transitions",
+      "difficulty": "hard",
+      "prompt": "Which transition most logically completes the text? A new catalog let visitors locate most of the museum's objects within seconds. ____, the catalog omitted several recent acquisitions, so it could not yet replace the complete paper register.",
+      "options": [
+        "Accordingly",
+        "For instance",
+        "Indeed",
+        "Even so"
+      ],
+      "correctOption": "D",
+      "explanation": "Even so introduces a limitation despite the catalog's benefit. The omission qualifies the positive first statement; it is not a result of fast searching or an example of that advantage."
+    },
+    {
+      "slug": "rhetoric-easy-explicit-goal",
+      "domain": "rhetoric",
+      "difficulty": "easy",
+      "prompt": "A student has these notes about a fictional community garden: It opened in 2022. Volunteers grow vegetables there. Its produce is donated to a neighborhood food pantry. The student wants to explain whom the garden serves. Which choice best uses the notes to meet that goal?",
+      "options": [
+        "The garden opened in 2022 and grows vegetables.",
+        "By donating vegetables to the neighborhood food pantry, the garden helps people who use the pantry.",
+        "Volunteers have grown vegetables since the garden opened.",
+        "The garden is one community project that began in 2022."
+      ],
+      "correctOption": "B",
+      "explanation": "Only B identifies the people served and connects them to the donated produce. The other choices describe the opening or volunteer activity without explaining the beneficiaries."
+    },
+    {
+      "slug": "rhetoric-medium-comparison",
+      "domain": "rhetoric",
+      "difficulty": "medium",
+      "prompt": "A student has these notes about two fictional bridge designs: Design P uses 18 support columns and costs 2.4 million dollars. Design Q uses 12 support columns and costs 2.4 million dollars. Both span the same river. The student wants to emphasize a difference while acknowledging the equal cost. Which choice best meets the goal?",
+      "options": [
+        "The two designs would span the same river.",
+        "Both designs cost 2.4 million dollars, and Design P uses support columns.",
+        "Although the designs have the same cost, Design Q uses six fewer support columns than Design P.",
+        "Design P costs more because it uses more support columns."
+      ],
+      "correctOption": "C",
+      "explanation": "C states the equal cost and quantifies the column difference: 18 minus 12 is six. A omits both relevant facts; B omits the difference; D contradicts the notes."
+    },
+    {
+      "slug": "rhetoric-hard-evidence-boundary",
+      "domain": "rhetoric",
+      "difficulty": "hard",
+      "prompt": "A student has these notes about a fictional library trial: For one month, 40 volunteers used the old search tool and 40 other volunteers used a new tool. Median search time was 90 seconds with the old tool and 60 seconds with the new tool. The volunteers were not randomly assigned. The student wants to summarize the observed benefit without claiming that the new tool caused it. Which choice best meets the goal?",
+      "options": [
+        "In this trial, volunteers using the new tool had a median search time 30 seconds shorter, although the nonrandom groups limit causal conclusions.",
+        "The new tool caused every volunteer to save exactly 30 seconds.",
+        "Random assignment proved that the old tool is slower for all readers.",
+        "The two tools produced identical median search times during the trial."
+      ],
+      "correctOption": "A",
+      "explanation": "A reports the observed median difference and the study's limitation. A median does not describe every person, and nonrandom assignment cannot establish the causal claims in B or C. D contradicts the data."
+    },
+    {
+      "slug": "vocabulary-easy-retained",
+      "domain": "vocabulary_in_context",
+      "difficulty": "easy",
+      "prompt": "As used in the text, what does retained most nearly mean? During the move, the theater discarded broken scenery but retained the painted backdrop for future productions.",
+      "options": [
+        "repaired",
+        "described",
+        "borrowed",
+        "kept"
+      ],
+      "correctOption": "D",
+      "explanation": "The theater kept the backdrop instead of discarding it. The context does not say that it repaired, described, or borrowed the backdrop."
+    },
+    {
+      "slug": "vocabulary-medium-qualified",
+      "domain": "vocabulary_in_context",
+      "difficulty": "medium",
+      "prompt": "As used in the text, what does qualified most nearly mean? The reviewer praised the novel's vivid settings but qualified her enthusiasm by noting that its ending was difficult to follow.",
+      "options": [
+        "certified",
+        "limited",
+        "concealed",
+        "repeated"
+      ],
+      "correctOption": "B",
+      "explanation": "The criticism limits the reviewer's otherwise positive reaction. Qualified here means made less absolute, rather than professionally certified, hidden, or repeated."
+    },
+    {
+      "slug": "vocabulary-hard-provisional",
+      "domain": "vocabulary_in_context",
+      "difficulty": "hard",
+      "prompt": "As used in the text, what does provisional most nearly mean? With only half the letters cataloged, the historian called her account provisional and expected to revise it after examining the remaining documents.",
+      "options": [
+        "unrelated to evidence",
+        "accepted without question",
+        "subject to later revision",
+        "written for a general audience"
+      ],
+      "correctOption": "C",
+      "explanation": "The historian explicitly expects to revise her account when more documents are available. Provisional describes this tentative status, not an absence of evidence or a particular audience."
+    },
+    {
+      "slug": "evidence-easy-direct-support",
+      "domain": "command_of_evidence",
+      "difficulty": "easy",
+      "prompt": "A fictional report claims that a town's bicycle racks are used more heavily on weekdays than on weekends. Which finding most directly supports the claim?",
+      "options": [
+        "Counts at the same racks averaged 64 parked bicycles on weekdays and 29 on weekends during the study month.",
+        "The town installed its first bicycle rack ten years ago.",
+        "The racks were painted blue before the study began.",
+        "Several residents said that they enjoy cycling on weekends."
+      ],
+      "correctOption": "A",
+      "explanation": "A directly compares rack use across the two periods and shows higher weekday use. Installation dates, paint color, and general preferences do not measure that comparison."
+    },
+    {
+      "slug": "evidence-medium-counterevidence",
+      "domain": "command_of_evidence",
+      "difficulty": "medium",
+      "prompt": "In a fictional experiment, a researcher predicts that adding compost will increase the average height of bean plants. Plants are randomly assigned to otherwise identical compost and no-compost groups. Which result would most directly weaken the prediction?",
+      "options": [
+        "Both groups are measured on the same day.",
+        "Several plants in each group develop flowers.",
+        "The compost is dark brown.",
+        "The compost group's mean height is 17 cm, compared with 23 cm for the no-compost group."
+      ],
+      "correctOption": "D",
+      "explanation": "The predicted increase is weakened by a lower average height in the compost group. The other findings do not compare the groups' heights. This question asks about the direction of evidence, not statistical significance."
+    },
+    {
+      "slug": "evidence-hard-proportional-inference",
+      "domain": "command_of_evidence",
+      "difficulty": "hard",
+      "prompt": "A fictional survey recorded 24 bus users among 40 respondents in District A and 45 bus users among 90 respondents in District B. An analyst claims that the share of surveyed residents using buses was greater in District A. Which statement best supports the claim?",
+      "options": [
+        "District B had 21 more bus users in the survey than District A.",
+        "Bus users represented 60% of District A's respondents and 50% of District B's respondents.",
+        "District A and District B had equal numbers of respondents.",
+        "All residents of District A used buses more frequently than all residents of District B."
+      ],
+      "correctOption": "B",
+      "explanation": "The relevant comparison is the proportion: 24/40 equals 60%, and 45/90 equals 50%. Raw counts do not establish the share, and the survey does not support a statement about every resident or frequency of use."
+    },
+    {
+      "slug": "algebra-easy-linear-equation",
+      "domain": "algebra",
+      "difficulty": "easy",
+      "prompt": "If 4x - 7 = 17, what is x?",
+      "options": [
+        "2.5",
+        "6",
+        "10",
+        "24"
+      ],
+      "correctOption": "B",
+      "explanation": "Add 7 to each side to get 4x = 24, then divide by 4: x = 6. Substitution gives 4(6) - 7 = 17."
+    },
+    {
+      "slug": "algebra-medium-system",
+      "domain": "algebra",
+      "difficulty": "medium",
+      "prompt": "The equations 3x + 2y = 21 and x - y = 2 are true. What is x + y?",
+      "options": [
+        "2",
+        "5",
+        "7",
+        "8"
+      ],
+      "correctOption": "D",
+      "explanation": "From x - y = 2, x = y + 2. Substitute to get 5y + 6 = 21, so y = 3 and x = 5. Their sum is 8."
+    },
+    {
+      "slug": "algebra-hard-dependent-system",
+      "domain": "algebra",
+      "difficulty": "hard",
+      "prompt": "The system 2x + 3y = 7 and kx + 6y = 14 has infinitely many solutions. What is k?",
+      "options": [
+        "4",
+        "6",
+        "7",
+        "12"
+      ],
+      "correctOption": "A",
+      "explanation": "For infinitely many solutions, the second equation must be a multiple of the first. Its y coefficient and constant are twice those in the first, so its x coefficient must be twice 2: k = 4."
+    },
+    {
+      "slug": "advanced-easy-quadratic-roots",
+      "domain": "advanced_math",
+      "difficulty": "easy",
+      "prompt": "What is the greater solution of x² - 5x + 6 = 0?",
+      "options": [
+        "-3",
+        "-2",
+        "3",
+        "6"
+      ],
+      "correctOption": "C",
+      "explanation": "Factor the expression as (x - 2)(x - 3). The roots are 2 and 3, and the greater root is 3."
+    },
+    {
+      "slug": "advanced-medium-exponential-growth",
+      "domain": "advanced_math",
+      "difficulty": "medium",
+      "prompt": "A model starts at 120 units and multiplies by 1.25 each hour. What value does the model predict after two hours?",
+      "options": [
+        "150",
+        "180",
+        "300",
+        "187.5"
+      ],
+      "correctOption": "D",
+      "explanation": "Two hours apply the factor twice: 120 × 1.25² = 120 × 1.5625 = 187.5. Adding the same amount each hour would model linear growth instead."
+    },
+    {
+      "slug": "advanced-hard-root-expression",
+      "domain": "advanced_math",
+      "difficulty": "hard",
+      "prompt": "The numbers r and s are the roots of x² - 6x + 4 = 0. What is r² + s²?",
+      "options": [
+        "20",
+        "28",
+        "32",
+        "36"
+      ],
+      "correctOption": "B",
+      "explanation": "The sum of the roots is 6 and their product is 4. Therefore r² + s² = (r + s)² - 2rs = 36 - 8 = 28."
+    },
+    {
+      "slug": "data-easy-proportion",
+      "domain": "problem_solving_data_analysis",
+      "difficulty": "easy",
+      "prompt": "A club has 80 members, and 35% of them volunteer at an event. How many members volunteer?",
+      "options": [
+        "28",
+        "35",
+        "45",
+        "52"
+      ],
+      "correctOption": "A",
+      "explanation": "35% of 80 is 0.35 × 80 = 28. A percentage must be applied to the total; it is not itself the number of members."
+    },
+    {
+      "slug": "data-medium-combined-mean",
+      "domain": "problem_solving_data_analysis",
+      "difficulty": "medium",
+      "prompt": "Four readings have a mean of 12. Six other readings have a mean of 17. What is the mean of all ten readings?",
+      "options": [
+        "14.5",
+        "15",
+        "15.5",
+        "29"
+      ],
+      "correctOption": "B",
+      "explanation": "The first group totals 4 × 12 = 48, and the second totals 6 × 17 = 102. Divide their combined total 150 by ten to get a weighted mean of 15."
+    },
+    {
+      "slug": "data-hard-conditional-probability",
+      "domain": "problem_solving_data_analysis",
+      "difficulty": "hard",
+      "prompt": "A survey recorded 18 morning-shift workers who cycle and 12 who do not, plus 8 evening-shift workers who cycle and 22 who do not. A surveyed cyclist is selected at random. What is the probability that the selected person works the morning shift?",
+      "options": [
+        "3/10",
+        "3/5",
+        "13/30",
+        "9/13"
+      ],
+      "correctOption": "D",
+      "explanation": "The selection is from the 26 cyclists, not all 60 respondents. Eighteen cyclists work mornings, so the conditional probability is 18/26 = 9/13."
+    },
+    {
+      "slug": "geometry-easy-triangle-area",
+      "domain": "geometry_trig",
+      "difficulty": "easy",
+      "prompt": "A triangle has a base of 12 cm and a perpendicular height of 7 cm. What is its area in square centimeters?",
+      "options": [
+        "19",
+        "38",
+        "42",
+        "84"
+      ],
+      "correctOption": "C",
+      "explanation": "Triangle area is half the product of base and perpendicular height: (1/2) × 12 × 7 = 42 square centimeters."
+    },
+    {
+      "slug": "geometry-medium-trigonometric-ratio",
+      "domain": "geometry_trig",
+      "difficulty": "medium",
+      "prompt": "In a right triangle, an acute angle θ has an opposite side of length 5, an adjacent side of length 12, and a hypotenuse of length 13. What is sin θ?",
+      "options": [
+        "5/13",
+        "5/12",
+        "12/13",
+        "13/5"
+      ],
+      "correctOption": "A",
+      "explanation": "Sine is opposite divided by hypotenuse: sin θ = 5/13. The ratio 5/12 is tangent, and 12/13 is cosine."
+    },
+    {
+      "slug": "geometry-hard-circle-tangent",
+      "domain": "geometry_trig",
+      "difficulty": "hard",
+      "prompt": "A circle has center O and radius 6. A point P lies outside the circle with OP = 10. The segment PT is tangent to the circle at T. What is the length of PT?",
+      "options": [
+        "4",
+        "8",
+        "10",
+        "16"
+      ],
+      "correctOption": "B",
+      "explanation": "The radius OT is perpendicular to tangent PT, making OPT a right triangle. Thus PT² = OP² - OT² = 100 - 36 = 64, so PT = 8."
+    }
+  ],
+  "reviewLimits": [
+    "Original foundation practice only, not a full or calibrated SAT mock.",
+    "Mathematics checked with independent arithmetic; Reading and Writing choices and explanations reviewed for one supported answer."
+  ]
+}
