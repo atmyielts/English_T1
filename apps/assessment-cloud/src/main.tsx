@@ -116,16 +116,23 @@ function App() {
   useEffect(() => {
     return observeAccount(setUser);
   }, []);
+  const workspaceUser = useRef("");
   useEffect(() => {
     let active = true;
-    setBusy(false);
-    setError("");
-    setNotice("");
-    setWorkspaces([]);
-    setWorkspaceOwner("");
-    setTenant("");
-    setPermissions(null);
-    setRows({});
+    // A refresh for the same account (after accepting an invitation) keeps the
+    // selected institution and its form state; only an account change resets.
+    const sameAccount = workspaceUser.current === user && !!user;
+    workspaceUser.current = user;
+    if (!sameAccount) {
+      setBusy(false);
+      setError("");
+      setNotice("");
+      setWorkspaces([]);
+      setWorkspaceOwner("");
+      setTenant("");
+      setPermissions(null);
+      setRows({});
+    }
     if (user)
       request<Row[]>(
         "workspaces",
@@ -139,7 +146,11 @@ function App() {
           if (active && liveUser.current === user) {
             setWorkspaces(data);
             setWorkspaceOwner(user);
-            setTenant(String(data[0]?.tenant_id ?? ""));
+            setTenant((current) =>
+              current && data.some((row) => String(row.tenant_id) === current)
+                ? current
+                : String(data[0]?.tenant_id ?? ""),
+            );
           }
         })
         .catch((cause) => {
