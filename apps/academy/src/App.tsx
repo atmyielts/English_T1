@@ -4530,8 +4530,7 @@ const App = () => {
                           >
                             {spotlightResource?.id === resource.id ? 'Watching' : 'View'}
                           </button>
-                          <a className="small-btn" href={resource.url} target="_blank" rel="noreferrer">
-                            {translate("Open")}{' '}</a>
+                          {resource.url?<a className="small-btn" href={resource.url} target="_blank" rel="noreferrer">{translate("Open")}</a>:<span>{translate("File unavailable. Ask your teacher to upload it again.")}</span>}
                         </div>
                         {roomViewer.type === 'student' ? (
                           <button

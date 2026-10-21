@@ -2986,5 +2986,8 @@
   "Review attendance and its retry key.": "Проверьте посещаемость и ключ повторного запроса.",
   "Assigned branches and classrooms": "Назначенные филиалы и классы",
   "Selected branch": "Выбранный филиал",
-  "Unable to load permitted branches. Refresh this workspace.": "Не удалось загрузить доступные филиалы. Обновите рабочую область."
+  "Unable to load permitted branches. Refresh this workspace.": "Не удалось загрузить доступные филиалы. Обновите рабочую область.",
+  "Retry saved response": "Повторить сохранённый ответ",
+  "File unavailable. Ask your teacher to upload it again.": "Файл недоступен. Попросите преподавателя загрузить его снова.",
+  "Retry the saved response before changing it. If the file was not saved, reselect the original file.": "Повторите сохранённый ответ перед изменением. Если файл не сохранён, выберите исходный файл снова."
 }

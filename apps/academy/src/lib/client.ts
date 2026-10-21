@@ -1,3 +1,4 @@
+import {writtenRequest} from './writtenRequest';
 import {captureWorkspaceBranch,getWorkspaceActor} from './branchScope';
 import {operationalRequest} from './operationalRequest';
 import {parentRequest} from './parentRequest';
@@ -1816,13 +1817,7 @@ export const teacherStudioSubmitStudentAssignment = async (
     notes?: string | null;
   },
 ): Promise<TeacherStudioSubmission> => {
-  const data = await callTeacherStudio<{ submission: TeacherStudioSubmission }>({
-    method: 'POST',
-    action: 'submit_assignment',
-    academyId,
-    body,
-  });
-  return data.submission;
+  return writtenRequest<TeacherStudioSubmission>(academyId,body.assignment_id,body);
 };
 
 export const teacherStudioSubmitStudentAssignmentFile = async (
@@ -1835,17 +1830,7 @@ export const teacherStudioSubmitStudentAssignmentFile = async (
     notes?: string | null;
   },
 ): Promise<TeacherStudioSubmission> => {
-  const form = new FormData();
-  form.append('action', 'submit_assignment');
-  form.append('academy_id', academyId);
-  form.append('assignment_id', body.assignment_id);
-  if (body.submission_content) form.append('submission_content', body.submission_content);
-  if (body.submission_url) form.append('submission_url', body.submission_url);
-  if (body.notes) form.append('notes', body.notes);
-  form.append('file', body.file);
-
-  const data = await invokeEdgeForm<{ submission: TeacherStudioSubmission }>('academy', form);
-  return data.submission;
+  return writtenRequest<TeacherStudioSubmission>(academyId,body.assignment_id,body,body.file);
 };
 
 export const teacherStudioClassroomChat = async (
