@@ -166,6 +166,7 @@ try {
       "20261021020000_assessment_accommodations.sql",
       "20261022110000_assessment_entitlements.sql",
       "20261022120000_assessment_webhooks.sql",
+      "20261022130000_assessment_api_clients.sql",
     ].map((name) => `supabase/migrations/${name}`),
   ])
     { checkRunning(); sql(await readFile(path.join(root, file), "utf8")); }

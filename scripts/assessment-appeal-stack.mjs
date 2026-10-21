@@ -206,6 +206,7 @@ export async function appealBrowserStack({ certificates = false,documents=false,
       "20261021020000_assessment_accommodations",
       "20261022110000_assessment_entitlements",
       "20261022120000_assessment_webhooks",
+      "20261022130000_assessment_api_clients",
     ];
     sql(
       await readFile(
