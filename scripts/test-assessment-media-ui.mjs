@@ -1,0 +1,21 @@
+import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { randomUUID } from 'node:crypto';
+import assert from 'node:assert/strict';
+import { mkdtemp, rm } from 'node:fs/promises';
+import os from 'node:os';
+const root=fileURLToPath(new URL('../',import.meta.url)),session=`academic-media-ui-${randomUUID().slice(0,8)}`;
+const qti=process.argv.includes('--qti'),candidate=process.argv.includes('--candidate'),app=candidate?'exam':'assessment-cloud',port=candidate?5192:5179,base=`http://localhost:${port}`;
+const npx=[process.env.npm_execpath?path.join(path.dirname(process.env.npm_execpath),'npx-cli.js'):'',path.join(path.dirname(process.execPath),'node_modules/npm/bin/npx-cli.js'),path.resolve(path.dirname(process.execPath),'../lib/node_modules/npm/bin/npx-cli.js')].find(value=>value&&existsSync(value));assert.ok(npx,'An installed npm/npx runtime is required.');
+const fixtureDirectory=await mkdtemp(path.join(os.tmpdir(),'schood-academic-ui-')),outDir=path.join(fixtureDirectory,'dist'),fixtureEnvironment={...process.env,VITE_SUPABASE_URL:'https://assessment-tests.invalid',VITE_SUPABASE_ANON_KEY:'local-test-anon-key',VITE_AUTH_SHARED_COOKIE:'false',VITE_AUTH_COOKIE_DOMAIN:'',VITE_ASSESSMENT_MEDIA_URL:'http://localhost:5919',VITE_ASSESSMENT_QTI_URL:qti?'https://qti-tests.invalid':'',VITE_ASSESSMENT_COORDINATOR_URL:'https://coordinator-tests.invalid'};
+async function removeFixture(){const resolved=path.resolve(fixtureDirectory);assert.equal(path.dirname(resolved),path.resolve(os.tmpdir()));assert.ok(path.basename(resolved).startsWith('schood-academic-ui-'));await rm(resolved,{recursive:true,force:true});}
+try{await new Promise((resolve,reject)=>{const builder=spawn(process.execPath,['node_modules/vite/bin/vite.js','build',`apps/${app}`,'--outDir',outDir],{cwd:root,env:fixtureEnvironment,stdio:['ignore','ignore','pipe']});let error='';builder.stderr.on('data',c=>error+=c);builder.on('error',reject);builder.on('close',code=>code===0?resolve():reject(new Error(error||'Immutable synthetic UI build failed.')));});}catch(cause){await removeFixture();throw cause;}
+const server=spawn(process.execPath,['node_modules/vite/bin/vite.js','preview',`apps/${app}`,'--outDir',outDir,'--host','localhost','--port',String(port),'--strictPort'],{cwd:root,env:fixtureEnvironment,stdio:['ignore','pipe','pipe']});
+let output='',error='';let readyResolve,readyReject;const ready=new Promise((resolve,reject)=>{readyResolve=resolve;readyReject=reject;});void ready.catch(()=>{});server.stdout.on('data',chunk=>{output+=chunk;if(output.includes(base+'/'))readyResolve();});server.stderr.on('data',chunk=>error+=chunk);server.on('error',readyReject);server.on('exit',code=>readyReject(new Error(error||`UI fixture server stopped (${code}).`)));
+async function cli(args){return new Promise((resolve,reject)=>{const child=spawn(process.execPath,[npx,'--yes','--package','@playwright/cli','playwright-cli',`-s=${session}`,...args],{cwd:root,stdio:['ignore','pipe','pipe']});let output='',error='';child.stdout.on('data',c=>output+=c);child.stderr.on('data',c=>error+=c);child.on('error',reject);child.on('close',code=>code===0?resolve(output):reject(new Error(error||output)));});}
+let timeout;
+try{await Promise.race([ready,new Promise((_,reject)=>{timeout=setTimeout(()=>reject(new Error('Synthetic UI fixture did not become ready.')),15000);})]);clearTimeout(timeout);await cli(['open',base,'--browser','chrome']);await cli(['snapshot']);for(const file of qti?['scripts/qti-browser-smoke.js']:candidate?['scripts/exam-browser-smoke.js','scripts/academic-answer-candidate-browser.js']:['scripts/authoring-browser-smoke.js','scripts/media-answer-marker-browser.js']){await cli(['snapshot']);const result=await cli(['run-code','--filename',file]),raw=/### Result\r?\n([^\r\n]+)/.exec(result)?.[1];assert.ok(raw,result);console.log(JSON.stringify({event:qti?'qti.ui.acceptance':'academic.media.ui.acceptance',script:path.basename(file),...JSON.parse(raw)}));}}
+catch(cause){try{console.error(await cli(['snapshot']));}catch{}throw cause;}
+finally{clearTimeout(timeout);try{await cli(['close']);}catch{}if(server.exitCode===null){server.kill();await new Promise(resolve=>server.once('close',resolve));}await removeFixture();}

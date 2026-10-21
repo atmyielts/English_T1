@@ -1,0 +1,561 @@
+name: Assessment Services CI
+on:
+  pull_request:
+    paths:
+      - 'apps/assessment-cloud/**'
+      - 'apps/exam/**'
+      - 'apps/proctor/**'
+      - 'packages/assessment-*/**'
+      - 'packages/proctor-web/**'
+      - 'packages/service-design/**'
+      - 'workers/assessment-coordinator/**'
+      - 'workers/assessment-grading/**'
+      - 'workers/assessment-roster/**'
+      - 'workers/assessment-media/**'
+      - 'workers/assessment-qti/**'
+      - 'workers/proctor-evidence/**'
+      - 'workers/proctor-live/**'
+      - 'services/assessment-scanner/**'
+      - 'services/assessment-interchange/**'
+      - 'services/assessment-mailer/**'
+      - 'services/assessment-documents/**'
+      - 'services/proctor-live-runtime/**'
+      - 'supabase/functions/assessment-*/**'
+      - 'supabase/functions/proctor/**'
+      - 'supabase/migrations/*assessment*'
+      - 'supabase/migrations/*proctor*'
+      - 'supabase/tests/assessment-*'
+      - 'supabase/tests/proctor*'
+      - 'scripts/test-assessment-db.mjs'
+      - 'scripts/test-assessment-blueprint-race.mjs'
+      - 'scripts/assessment-appeal-stack.mjs'
+      - 'scripts/assessment-capture-ports.mjs'
+      - 'scripts/assessment-staff-fixture.mjs'
+      - 'scripts/assessment-invitation-fixture.mjs'
+      - 'scripts/assessment-mail-fixture.mjs'
+      - 'scripts/assessment-document-fixture.mjs'
+      - 'scripts/assessment-blueprint-fixture.mjs'
+      - 'scripts/assessment-smtp-fixture.mjs'
+      - 'scripts/assessment-fixture-database.mjs'
+      - 'scripts/test-assessment-fixture-database.mjs'
+      - 'scripts/test-assessment-answer-device.mjs'
+      - 'scripts/answer-device-browser.js'
+      - 'scripts/scan-academic-native-samples.mjs'
+      - 'scripts/test-assessment-media-ui.mjs'
+      - 'scripts/test-assessment-media-startup-cleanup.mjs'
+      - 'scripts/media-answer-marker-browser.js'
+      - 'scripts/academic-answer-candidate-browser.js'
+      - 'scripts/test-assessment-appeals-browser.mjs'
+      - 'scripts/verify-assessment-boundaries.mjs'
+      - 'scripts/*-browser-smoke.js'
+      - 'scripts/connected-*-browser.js'
+      - 'scripts/native-live-peer-browser.js'
+      - 'scripts/proctor-live-ui-browser.js'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/assessment-services-ci.yml'
+  push:
+    branches: ['codex/assessment-*']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: assessment-services-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  constrained-blueprints:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: npm ci
+      - name: Exact constrained assembly, draft recovery and canonical API authority
+        run: deno test --no-lock packages/assessment-core/src/blueprint.test.ts packages/assessment-core/src/blueprint-draft.test.ts supabase/functions/assessment-cloud/blueprint-handler.test.ts
+      - name: Independent apps, Edge types and service boundaries
+        run: |
+          npm --workspace apps/assessment-cloud run build
+          npm --workspace apps/exam run build
+          deno check --no-lock supabase/functions/assessment-cloud/index.ts
+          node scripts/verify-assessment-boundaries.mjs
+      - name: Browser for actual center authoring, publication and candidate delivery
+        run: npx --yes --package @playwright/cli playwright-cli install-browser chrome --with-deps
+      - name: Connected approved classification, conflicting quotas, pinned publication and recovered candidate form
+        run: node scripts/test-assessment-appeals-browser.mjs --blueprints
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: assessment-constrained-blueprint-fixture-evidence
+          path: output/playwright/blueprints/*.png
+          if-no-files-found: ignore
+      # Disposable identity/PostgREST fixtures and real local PG/coordinator only.
+      # No production mutation, hosted acceptance or psychometric calibration claim.
+  certificate-documents:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            services/assessment-documents/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Application tools and independently locked document runtime
+        run: |
+          npm ci
+          npm ci --prefix services/assessment-documents --workspaces=false --ignore-scripts
+          npm audit --prefix services/assessment-documents --workspaces=false
+      - name: Install build-only font and PDF QA tools
+        run: |
+          python -m pip install -r services/assessment-documents/requirements-qa.txt
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends poppler-utils
+      - name: Reproduce licensed font instances without changing assets
+        run: python services/assessment-documents/prepare_fonts.py --check
+      - name: Native deterministic PDF, original credential, authenticated transport and resource bounds
+        run: npm --prefix services/assessment-documents test --workspaces=false
+      - name: Extended Cyrillic, Uzbek and long-field raster/QR QA
+        run: |
+          npm --prefix services/assessment-documents run samples --workspaces=false
+          npm --prefix services/assessment-documents run verify --workspaces=false
+      - name: Document authority, signed holder references and post-render access rechecks
+        run: deno test --no-lock supabase/functions/assessment-cloud/certificate-document-handler.test.ts supabase/functions/assessment-cloud/certificate-handler.test.ts
+      - name: Actual apps, Edge types and runtime isolation
+        run: |
+          npm --workspace apps/exam run build
+          npm --workspace apps/assessment-cloud run build
+          deno check --no-lock supabase/functions/assessment-cloud/index.ts
+          node scripts/verify-assessment-boundaries.mjs
+      - name: Install browser and run actual certificate delivery and QR verification
+        run: |
+          npx --yes --package @playwright/cli playwright-cli install-browser chrome --with-deps
+          node scripts/test-assessment-appeals-browser.mjs --certificate-documents
+      - name: Independently inspect downloaded PDFs, full text, embedded credential and raster QR
+        run: npm --prefix services/assessment-documents run verify --workspaces=false -- output/playwright/certificates/certificate-en.pdf output/playwright/certificates/certificate-uz.pdf output/playwright/certificates/certificate-ru.pdf
+      - name: Replacement history, retired public-only key recovery and program retirement
+        run: node scripts/test-assessment-appeals-browser.mjs --certificate-lifecycle
+      - name: Independently inspect original and replacement credential PDFs
+        run: npm --prefix services/assessment-documents run verify --workspaces=false -- output/playwright/certificate-lifecycle/certificate-en.pdf output/playwright/certificate-lifecycle/replacement-en.pdf
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: assessment-certificate-document-fixture-evidence
+          path: |
+            output/playwright/certificates/*.png
+            output/playwright/certificates/*.pdf
+            output/playwright/certificates/candidate-certificate.json
+            output/playwright/certificate-lifecycle/*.png
+            output/playwright/certificate-lifecycle/*.pdf
+            output/playwright/certificate-lifecycle/*-certificate.json
+            output/pdf/schood-certificate-*.pdf
+            output/pdf/schood-certificate-*.png
+          if-no-files-found: ignore
+      # All identities, awards and transport keys in this job are synthetic.
+      # No deployment, hosted key custody, PAdES or physical-camera claim.
+  proctor-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            services/proctor-live-runtime/package-lock.json
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: npm ci
+      - run: npm ci --prefix services/proctor-live-runtime --workspaces=false --ignore-scripts
+      - name: Isolated live runtime dependency audit
+        run: npm audit --prefix services/proctor-live-runtime --workspaces=false
+      - name: Provider custody, current authority and replay contracts
+        run: deno test --no-lock workers/proctor-live/src/engine.test.ts workers/proctor-live/src/provider.test.ts workers/proctor-live/src/turn.test.ts supabase/functions/proctor/live-handler.test.ts supabase/functions/proctor/live-launch.test.ts supabase/functions/proctor/workload-handler.test.ts supabase/functions/assessment-cloud/live-launch.test.ts packages/proctor-web/src/candidate-capture.test.ts
+      - name: Worker and native media SDK types
+        run: |
+          npx --no-install tsc --project workers/proctor-live/tsconfig.json
+          npx --no-install tsc --project packages/proctor-web/tsconfig.live.json
+          npx --no-install tsc --project services/proctor-live-runtime/tsconfig.ui.json
+      - name: Independent Proctor UI and service boundaries
+        run: |
+          npm --workspace apps/proctor run build
+          npm --workspace apps/exam run build
+          node scripts/verify-assessment-boundaries.mjs
+      - run: npm --prefix services/proctor-live-runtime run build --workspaces=false
+      - name: Actual workerd SQLite receipts, restart and withdrawal alarms
+        run: npm --prefix services/proctor-live-runtime test --workspaces=false
+      - name: Install native browser
+        run: npx --yes --package @playwright/cli playwright-cli install-browser chrome --with-deps
+      - name: Native RTP, decoded frames and recording independence
+        run: npm --prefix services/proctor-live-runtime run test:browser --workspaces=false
+      - name: Actual live controls, muted audio, revoked feeds and five screen widths
+        run: npm --prefix services/proctor-live-runtime run test:ui --workspaces=false
+      - name: Connected live exam preparation, assigned native feeds, loss pause and human resume
+        run: node scripts/test-assessment-appeals-browser.mjs --live
+      - name: Connected paged workload, reviewed assignment replay and atomic stale-batch denial
+        run: node scripts/test-assessment-appeals-browser.mjs --workload
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: proctor-live-local-browser-evidence
+          path: |
+            output/playwright/live-monitoring-*.png
+            output/playwright/capture/live-proctor-*.png
+            output/playwright/capture/workload-*.png
+          if-no-files-found: ignore
+      # Synthetic signaling/identity ports are explicit. This job has no secrets
+      # or deployment and does not certify hosted SFU/TURN or production readiness.
+  invitation-mail:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            services/assessment-mailer/package-lock.json
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: npm ci
+      - run: npm ci --prefix services/assessment-mailer --workspaces=false --ignore-scripts
+      - name: Isolated mailer production dependency audit
+        run: npm audit --prefix services/assessment-mailer --workspaces=false --omit=dev
+      - name: Real loopback SMTP, ambiguous handoff and receipt recovery
+        run: npm --prefix services/assessment-mailer test --workspaces=false
+      - name: Mail authority, canonical recipient and localized message contracts
+        run: deno test --no-lock supabase/functions/assessment-cloud/invitation-mail-handler.test.ts
+      - name: Install native browser
+        run: npx --yes --package @playwright/cli playwright-cli install-browser chrome --with-deps
+      - name: Actual institution mail controls, SMTP MIME, recipient acceptance and reminder cancellation
+        run: node scripts/test-assessment-appeals-browser.mjs --invitation-mail
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: assessment-invitation-mail-evidence
+          path: output/playwright/invitations/mail-*.png
+          if-no-files-found: ignore
+  interchange:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: services/assessment-interchange/package-lock.json
+      - name: Independently locked interchange dependencies, without lifecycle scripts
+        run: npm --prefix services/assessment-interchange ci --workspaces=false --ignore-scripts
+      - name: Interchange types and hostile package, scoring and deterministic round trips
+        run: |
+          npm --prefix services/assessment-interchange run check --workspaces=false
+          npm --prefix services/assessment-interchange test --workspaces=false
+          npm --prefix services/assessment-interchange run test:processing --workspaces=false
+          npm --prefix services/assessment-interchange run build:worker --workspaces=false
+      - name: Build separate pinned parser sandbox
+        run: npm --prefix services/assessment-interchange run build:sandbox --workspaces=false
+      - name: Actual networkless, unprivileged package round trip and lifecycle
+        run: npm --prefix services/assessment-interchange run test:sandbox --workspaces=false
+      - name: Real PostgreSQL, production QTI handlers and pinned parser review-to-draft adoption
+        run: npm --prefix services/assessment-interchange run test:control-plane --workspaces=false
+      - name: Build separate networkless QTI malware scanner
+        run: node services/assessment-scanner/run.mjs build
+      - uses: actions/cache@v4
+        with:
+          path: output/assessment-scanner/signatures
+          key: qti-clamav-official-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: qti-clamav-official-${{ runner.os }}-
+      - name: Verify and update official malware signatures
+        run: node services/assessment-scanner/run.mjs update
+      - name: Actual encrypted R2 bytes, scanner, isolated parser and reviewed draft creation
+        run: npm --prefix services/assessment-interchange run test:bytes --workspaces=false
+      - name: Hash-pinned official package corpus with explicit unsupported semantics
+        run: npm --prefix services/assessment-interchange run test:corpus --workspaces=false
+  qti-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            services/assessment-interchange/package-lock.json
+      - name: Application tools and separately locked interchange dependencies
+        run: |
+          npm ci
+          npm --prefix services/assessment-interchange ci --workspaces=false --ignore-scripts
+      - name: Build isolated source Worker, parser and scanner
+        run: |
+          npm --prefix services/assessment-interchange run build:worker --workspaces=false
+          npm --prefix services/assessment-interchange run build:sandbox --workspaces=false
+          node services/assessment-scanner/run.mjs build
+      - uses: actions/cache@v4
+        with:
+          path: output/assessment-scanner/signatures
+          key: qti-browser-clamav-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: qti-browser-clamav-${{ runner.os }}-
+      - name: Fresh verified official signatures and real browser
+        run: |
+          node services/assessment-scanner/run.mjs update
+          npx --yes --package @playwright/cli playwright-cli install-browser chrome --with-deps
+      - name: Actual center upload, encrypted R2, real AV/parser, human review and unapproved drafts
+        run: npm --prefix services/assessment-interchange run test:browser --workspaces=false
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qti-connected-browser-evidence
+          path: output/playwright/qti-connected/*.png
+          if-no-files-found: ignore
+  validate:
+    runs-on: ubuntu-latest
+    # Includes real scanner/decoder and several independent native browser journeys.
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: npm ci
+      - name: Service boundaries
+        run: node scripts/verify-assessment-boundaries.mjs
+      - name: Protocol, API, monitoring and coordinator failure tests
+        run: deno test --no-lock packages/assessment-core/src/core.test.ts packages/assessment-core/src/grading.test.ts packages/assessment-core/src/authoring.test.ts packages/assessment-core/src/design.test.ts packages/assessment-web/tests/runtime.test.ts packages/assessment-web/tests/grade-command.test.ts packages/assessment-web/tests/draft.test.ts packages/assessment-web/tests/artifact-upload.test.ts packages/assessment-web/tests/delivery.test.ts packages/assessment-web/tests/account-watch.test.ts packages/proctor-web/src/runtime.test.ts supabase/functions/assessment-cloud/handler.test.ts supabase/functions/assessment-cloud/grading-handler.test.ts supabase/functions/assessment-cloud/staff-handler.test.ts supabase/functions/proctor/handler.test.ts supabase/functions/assessment-runtime/handler.test.ts workers/assessment-coordinator/src/engine.test.ts workers/assessment-coordinator/src/recovery.test.ts workers/assessment-coordinator/src/http.test.ts workers/assessment-grading/src/jobs.test.ts packages/assessment-core/src/artifacts.test.ts supabase/functions/assessment-cloud/artifact-handler.test.ts workers/assessment-media/src/crypto.test.ts workers/assessment-media/src/media.test.ts workers/assessment-media/src/session-cookie.test.ts
+      - name: Edge type checks
+        run: deno check --no-lock supabase/functions/assessment-cloud/index.ts supabase/functions/proctor/index.ts supabase/functions/assessment-runtime/index.ts
+      - name: Capture continuity rejection and receipt authority
+        run: deno test --no-lock supabase/functions/assessment-runtime/repository.test.ts
+      - name: Image interaction geometry, authoring and private-target scoring
+        run: deno test --no-lock packages/assessment-core/src/image-response.test.ts
+      - name: Academic media answer binding, policy and API authority
+        run: deno test --no-lock packages/assessment-core/src/media-answer.test.ts packages/assessment-core/src/media-authoring.test.ts packages/assessment-web/tests/answer-transfers.test.ts supabase/functions/assessment-cloud/media-answer-handler.test.ts
+      - name: Academic answer encrypted device SDK type check
+        run: npx --no-install tsc --project packages/assessment-web/tsconfig.media-answers.json
+      - name: Candidate appeals protocol and production repository mappings
+        run: deno test --no-lock supabase/functions/assessment-cloud/appeal-handler.test.ts
+      - name: Signed certificate contracts, key rotation and authority mappings
+        run: deno test --no-lock supabase/functions/assessment-cloud/certificate-handler.test.ts
+      - name: Staff invitations, verified recipient authority and key rotation
+        run: deno test --no-lock supabase/functions/assessment-cloud/invitation-handler.test.ts
+      - name: Cohort command, reviewed roster and queue recovery contracts
+        run: deno test --no-lock supabase/functions/assessment-cloud/cohort-handler.test.ts workers/assessment-roster/src/jobs.test.ts
+      - name: Bank file validation, provenance, protected export and import authority
+        run: deno test --no-lock packages/assessment-core/src/bank-import.test.ts supabase/functions/assessment-cloud/import-handler.test.ts
+      - name: Private QTI source manifests, parser normalization and stage-separated processing authority
+        run: deno test --no-lock packages/assessment-core/src/qti.test.ts supabase/functions/assessment-cloud/qti-handler.test.ts workers/assessment-qti/src/storage.test.ts packages/assessment-web/src/qti-source.test.ts
+      - name: Released analytics, private report and candidate breakdown contracts
+        run: deno test --no-lock supabase/functions/assessment-cloud/analytics-handler.test.ts
+      - name: Institution feedback policy, independent approval and release disclosure contracts
+        run: deno test --no-lock supabase/functions/assessment-cloud/feedback-handler.test.ts
+      - name: Pre-clock capture launch, binding, default-off and canonical readiness contracts
+        run: deno test --no-lock supabase/functions/proctor/capture-handler.test.ts packages/proctor-web/src/candidate-capture.test.ts
+      - name: Isolated migration, authority and concurrent replay tests
+        run: node scripts/test-assessment-db.mjs
+      - name: Real PG fixture transport authority, rollback and concurrent framing
+        run: node scripts/test-assessment-fixture-database.mjs
+      - name: Separate app builds
+        run: |
+          npm --workspace apps/assessment-cloud run build
+          npm --workspace apps/exam run build
+          npm --workspace apps/proctor run build
+      - name: Coordinator build
+        run: npm --workspace workers/assessment-coordinator run build
+      - name: Separate grading Worker build
+        run: npm --workspace workers/assessment-grading run build
+      - name: Separate roster Worker build and isolated queue configuration
+        run: |
+          npm --workspace workers/assessment-roster run build
+          npm --workspace workers/assessment-roster run test:config
+      - name: Separate private media Worker build
+        run: npm --workspace workers/assessment-media run build
+      - name: Proctor recording protocol, authority and encryption
+        run: deno test --no-lock packages/assessment-core/src/recordings.test.ts packages/assessment-core/src/recording-citations.test.ts supabase/functions/proctor/recording-handler.test.ts workers/proctor-evidence/src/evidence.test.ts packages/proctor-web/src/capture-runtime.test.ts packages/proctor-web/src/recording-pages.test.ts
+      - name: Separate Proctor evidence Worker and capture SDK type checks
+        run: |
+          npm --workspace workers/proctor-evidence run build
+          npx --no-install tsc --project packages/proctor-web/tsconfig.capture.json
+      - name: Connected private Proctor evidence and canonical PostgreSQL
+        run: npm --workspace workers/proctor-evidence run test:local
+      - name: Isolated environment configuration
+        run: |
+          npm --workspace workers/assessment-coordinator run test:config
+          npm --workspace workers/assessment-grading run test:config
+          npm --workspace workers/assessment-media run test:config
+      - name: Actual local Durable Object runtime and persistence
+        run: npm --workspace workers/assessment-coordinator run test:local
+      - name: Connected Worker, runtime handler and canonical PostgreSQL
+        run: npm --workspace workers/assessment-coordinator run test:stack
+      - name: Connected private encrypted R2 and artifact lifecycle
+        run: npm --workspace workers/assessment-media run test:local
+      - name: Build separate artifact scanning sandbox
+        run: node services/assessment-scanner/run.mjs build
+      - name: Decoded timing, missing-header and resource-failure policy boundaries
+        run: node services/assessment-scanner/run.mjs decoder-test
+      - uses: actions/cache@v4
+        with:
+          path: output/assessment-scanner/signatures
+          key: clamav-official-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: clamav-official-${{ runner.os }}-
+      - name: Verify and update official signature snapshots
+        run: node services/assessment-scanner/run.mjs update
+      - name: Real networkless malware and format decoding tests
+        run: node services/assessment-scanner/run.mjs test
+      - name: Connected encrypted R2 lifecycle with real scanner verdict
+        env:
+          ASSESSMENT_SCANNER_DATABASE: ${{ github.workspace }}/output/assessment-scanner/signatures
+        run: npm --workspace workers/assessment-media run test:local
+      - name: Install native browser for connected acceptance
+        run: npx --yes --package @playwright/cli playwright-cli install-browser chrome --with-deps
+      - name: Actual institution QTI interface, encrypted request recovery and five-width review controls with explicit service fixtures
+        run: node scripts/test-assessment-media-ui.mjs --qti
+      - name: Assessment-only staff membership, scope-preserving suspension and encrypted receipt recovery
+        run: node scripts/test-assessment-appeals-browser.mjs --staff
+      - name: Actual staff invitation creation, recipient acceptance, revocation and uncertain receipt recovery
+        run: node scripts/test-assessment-appeals-browser.mjs --invitations
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: assessment-invitation-evidence
+          path: output/playwright/invitations/*.png
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: assessment-staff-access-evidence
+          path: output/playwright/staff/*.png
+          if-no-files-found: ignore
+      - name: Cancelled media-fixture startup releases only its own generated resources
+        run: node scripts/test-assessment-media-startup-cleanup.mjs
+      - name: Academic answer encrypted bytes, interrupted prefixes and generated native recording
+        run: node scripts/test-assessment-answer-device.mjs --scanner
+      - name: Structured academic submission rules and blind native marking UI
+        run: node scripts/test-assessment-media-ui.mjs
+      - name: Candidate academic selection, encrypted byte recovery and generated recording UI
+        run: node scripts/test-assessment-media-ui.mjs --candidate
+      - name: Connected candidate appeal, independent decision and regrading acceptance
+        run: node scripts/test-assessment-appeals-browser.mjs
+      - name: Connected certificate program, rotated issuance recovery and public verification
+        run: node scripts/test-assessment-appeals-browser.mjs --certificates
+      - name: Connected cohort, bounded roster Worker and explicit coordinator adoption
+        run: node scripts/test-assessment-appeals-browser.mjs --cohorts
+      - name: Connected bank import, lost-reply recovery, adoption and protected export
+        run: node scripts/test-assessment-appeals-browser.mjs --imports
+      - name: Connected released analytics, form comparison and private candidate breakdown
+        run: node scripts/test-assessment-appeals-browser.mjs --analytics
+      - name: Connected feedback approval, release embargo and candidate withholding
+        run: node scripts/test-assessment-appeals-browser.mjs --feedback
+      - name: Connected Exam permission, native recording, capture-loss pause and human resume
+        run: node scripts/test-assessment-appeals-browser.mjs --capture
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: assessment-capture-browser-evidence
+          path: output/playwright/capture/*.png
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: assessment-feedback-browser-evidence
+          path: output/playwright/feedback/*.png
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: assessment-analytics-browser-evidence
+          path: output/playwright/analytics/*.png
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: assessment-import-browser-evidence
+          path: output/playwright/imports/*.png
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: assessment-cohort-browser-evidence
+          path: output/playwright/cohorts/*.png
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: assessment-certificates-browser-evidence
+          path: output/playwright/certificates/*
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: assessment-appeals-browser-evidence
+          path: output/playwright/appeals/*.png
+          if-no-files-found: ignore
+      - name: Native capture, encrypted device recovery and playback
+        run: npm --workspace workers/proctor-evidence run test:capture
+      - name: Connected native Proctor capture and assigned-reviewer playback
+        run: npm --workspace workers/proctor-evidence run test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: proctor-recording-browser-evidence
+          path: output/playwright/proctor/connected-*.png
+          if-no-files-found: ignore
+      - name: Full connected institution-to-candidate media acceptance
+        env:
+          ASSESSMENT_SCANNER_DATABASE: ${{ github.workspace }}/output/assessment-scanner/signatures
+          ASSESSMENT_SCANNER_PYTHON: python3
+        run: npm --workspace workers/assessment-media run test:browser
+      - name: Connected image authoring, independent review, candidate controls and private-target grading
+        env:
+          ASSESSMENT_SCANNER_DATABASE: ${{ github.workspace }}/output/assessment-scanner/signatures
+          ASSESSMENT_SCANNER_PYTHON: python3
+        run: node workers/assessment-media/scripts/browser-acceptance.mjs --image-responses
+      - name: Academic submissions, real encrypted R2 scans, blind double marking and reviewed release
+        env:
+          ASSESSMENT_SCANNER_DATABASE: ${{ github.workspace }}/output/assessment-scanner/signatures
+          ASSESSMENT_SCANNER_PYTHON: python3
+        run: node workers/assessment-media/scripts/browser-acceptance.mjs --media-answers
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: assessment-academic-answer-browser-evidence
+          path: output/playwright/assessment-cloud/connected-answer-*.png
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: assessment-image-response-browser-evidence
+          path: output/playwright/assessment-cloud/connected-image-*.png
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: assessment-media-browser-evidence
+          path: output/playwright/assessment-cloud/connected-media-*.png
+          if-no-files-found: ignore
+      # No deployment steps. Release still requires exact-SHA CI, full client/provider acceptance, isolated staging,
+      # provider smoke, legal/security acceptance, recovery rehearsal and capacity certification.
