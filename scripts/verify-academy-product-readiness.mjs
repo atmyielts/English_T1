@@ -928,7 +928,7 @@ addCheck(
     academyGithubReadiness.includes('Academy Live Smoke') &&
     academyGithubReadiness.includes('deploy-pages.yml') &&
     academyGithubReadiness.includes('Latest Deploy Pages run succeeded') &&
-    academyGithubReadiness.includes('Latest Deploy Pages academy job succeeded') &&
+    academyGithubReadiness.includes('Latest published Academy job succeeded') &&
     academyGithubReadiness.includes('schood-academy'),
 );
 

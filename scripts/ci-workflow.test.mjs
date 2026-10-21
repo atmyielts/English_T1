@@ -5,6 +5,7 @@ import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { deploymentPlan, needsPagesDeployment } from './plan-pages-deployment.mjs';
 import { isFullAcademyRouteCommand } from './academy-route-command.mjs';
+import { academySmokeDeploymentDecision } from './academy-smoke-deployment-gate.mjs';
 
 const root = path.resolve(import.meta.dirname, '..');
 const source = fs.readFileSync(path.join(root, '.github/workflows/ci.yml'), 'utf8').replace(/\r\n/g, '\n');
@@ -52,6 +53,35 @@ test('manual, new branch and unreadable history publish; push compares the entir
   };
   assert.equal(deploymentPlan(env, read).deploy, false);
   assert.equal(deploymentPlan(env, () => 'apps/platform/deleted.tsx\0docs/moved.tsx\0').deploy, true);
+});
+
+test('smoke requires exact-head plan and successful real Academy deployment',()=>{
+ const head='b'.repeat(40),run={head_sha:head,status:'completed',conclusion:'success'},plan={schemaVersion:1,head,deploy:true};
+ const jobs=[{name:'plan',status:'completed',conclusion:'success'},{name:'deploy (academy, apps/academy, apps/academy/dist, schood-academy)',status:'completed',conclusion:'success'}];
+ assert.equal(academySmokeDeploymentDecision(plan,run,jobs).runSmoke,true);
+ for(const conclusion of ['failure','cancelled','skipped',null])assert.throws(()=>academySmokeDeploymentDecision(plan,run,[jobs[0],{...jobs[1],conclusion}]));
+ assert.throws(()=>academySmokeDeploymentDecision(plan,run,[jobs[0]]));
+ for(const bad of [null,{...plan,head:'a'.repeat(40)},{...plan,deploy:'false'},{...plan,schemaVersion:2}])assert.throws(()=>academySmokeDeploymentDecision(bad,run,jobs));
+ assert.throws(()=>academySmokeDeploymentDecision(plan,{...run,conclusion:'failure'},jobs));
+ assert.throws(()=>academySmokeDeploymentDecision(plan,run,[{...jobs[0],conclusion:'failure'},jobs[1]]));
+});
+
+test('docs-only smoke is skipped only when its exact plan and actual jobs agree',()=>{
+ const head='b'.repeat(40),run={head_sha:head,status:'completed',conclusion:'success'},plan={schemaVersion:1,head,deploy:false};
+ const jobs=[{name:'plan',status:'completed',conclusion:'success'},{name:'deploy',status:'completed',conclusion:'skipped'}];
+ assert.equal(academySmokeDeploymentDecision(plan,run,jobs).runSmoke,false);
+ assert.throws(()=>academySmokeDeploymentDecision(plan,run,[jobs[0]]));
+ assert.throws(()=>academySmokeDeploymentDecision(plan,run,[jobs[0],{...jobs[1],conclusion:'success'}]));
+ assert.throws(()=>academySmokeDeploymentDecision(plan,run,[...jobs,{name:'deploy (platform, apps/platform, apps/platform/dist, schood-platform)',status:'completed',conclusion:'success'}]));
+});
+
+test('deployment plan is carried between runs and manual live smoke remains executable',()=>{
+ const smoke=fs.readFileSync(path.join(root,'.github/workflows/academy-live-smoke.yml'),'utf8');
+ assert.match(pages,/PAGES_PLAN_FILE: \$\{\{ runner\.temp \}\}\/pages-deployment-plan\.json/);
+ assert.match(pages,/uses: actions\/upload-artifact@v4[\s\S]*name: pages-deployment-plan[\s\S]*if-no-files-found: error/);
+ assert.match(smoke,/uses: actions\/download-artifact@v4[\s\S]*run-id: \$\{\{ github\.event\.workflow_run\.id \}\}/);
+ assert.match(smoke,/academySmokeDeploymentDecision/);
+ assert.equal((smoke.match(/if: \$\{\{ github\.event_name == 'workflow_dispatch' \|\| steps\.deploygate\.outputs\.run == 'true' \}\}/g)??[]).length,5);
 });
 
 test('parallel CI builds each deployed frontend exactly once', () => {

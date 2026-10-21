@@ -1,4 +1,8 @@
 import { execFileSync } from 'node:child_process';
+import {mkdtempSync,readFileSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import path from 'node:path';
+import {academySmokeDeploymentDecision} from './academy-smoke-deployment-gate.mjs';
 
 const repo = process.env.GITHUB_REPOSITORY || 'atmyielts/English_T1';
 const requiredSecrets = [
@@ -65,21 +69,33 @@ addCheck('Deploy Pages workflow exists on GitHub', workflowList.includes('Deploy
 addCheck('Academy Live Smoke workflow exists on GitHub', workflowList.includes('Academy Live Smoke'));
 
 try {
-  const raw = gh(['run', 'list', '--repo', repo, '--workflow', 'deploy-pages.yml', '--limit', '1', '--json', 'databaseId,conclusion,headSha,displayTitle,createdAt']);
+  const raw = gh(['run', 'list', '--repo', repo, '--workflow', 'deploy-pages.yml', '--limit', '20', '--json', 'databaseId,status,conclusion,headSha,displayTitle,createdAt']);
   const runs = JSON.parse(raw);
   const latest = Array.isArray(runs) ? runs[0] : null;
   addCheck('Latest Deploy Pages run is visible', !!latest, latest ? `${latest.createdAt} ${latest.displayTitle ?? ''}` : '');
   if (latest) {
     addCheck('Latest Deploy Pages run succeeded', latest.conclusion === 'success', `conclusion ${latest.conclusion ?? 'unknown'}, sha ${latest.headSha ?? 'unknown'}`);
-    const jobsRaw = gh(['run', 'view', String(latest.databaseId), '--repo', repo, '--json', 'jobs']);
-    const jobsPayload = JSON.parse(jobsRaw);
-    const academyJob = (jobsPayload.jobs ?? []).find((job) =>
-      String(job.name ?? '').includes('deploy (academy, apps/academy, apps/academy/dist, schood-academy)')
-    );
-    addCheck('Latest Deploy Pages academy job is visible', !!academyJob, academyJob?.url ?? '');
-    if (academyJob) {
-      addCheck('Latest Deploy Pages academy job succeeded', academyJob.conclusion === 'success', `conclusion ${academyJob.conclusion ?? 'unknown'}`);
+    let publicationFound=false;
+    for(const run of runs){
+      const jobs=JSON.parse(gh(['run','view',String(run.databaseId),'--repo',repo,'--json','jobs'])).jobs??[];
+      const academyJob=jobs.find(job=>job.name==='deploy (academy, apps/academy, apps/academy/dist, schood-academy)');
+      if(academyJob){
+        publicationFound=true;
+        addCheck('Latest published Academy job succeeded',run.status==='completed'&&run.conclusion==='success'&&academyJob.conclusion==='success',`run ${run.databaseId}, sha ${run.headSha}, conclusion ${academyJob.conclusion??'unknown'}`);
+        break;
+      }
+      const prefix=path.join(tmpdir(),'schood-pages-plan-'),directory=mkdtempSync(prefix);
+      try{
+        gh(['run','download',String(run.databaseId),'--repo',repo,'--name','pages-deployment-plan','--dir',directory]);
+        const plan=JSON.parse(readFileSync(path.join(directory,'pages-deployment-plan.json'),'utf8'));
+        const decision=academySmokeDeploymentDecision(plan,{status:run.status,conclusion:run.conclusion,head_sha:run.headSha},jobs);
+        addCheck('Pages run explicitly skipped frontend publication',!decision.runSmoke,`run ${run.databaseId}, sha ${run.headSha}`);
+      }finally{
+        if(!path.resolve(directory).startsWith(path.resolve(prefix)))throw Error('Owned temporary plan path changed');
+        rmSync(directory,{recursive:true});
+      }
     }
+    addCheck('Recent tracked Academy publication is visible',publicationFound);
   }
 } catch (error) {
   addCheck('Latest Deploy Pages run can be inspected', false, error instanceof Error ? error.message : String(error));
