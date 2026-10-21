@@ -5850,7 +5850,7 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
   });
 
   test("Academy Telegram gives an assigned teacher the complete lesson flow", async ({ page }) => {
-    const telegramActions: string[] = [];
+    const telegramActions: string[] = [];const attendanceRequests:Record<string,unknown>[]=[];
     await page.setViewportSize({ width: 390, height: 820 });
     await page.addInitScript(() => {
       window.Telegram = {
@@ -5863,9 +5863,10 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
       };
     });
     await page.route("**/functions/v1/academy-telegram", async (route) => {
-      const body = route.request().postDataJSON() as { action?: string };
+      const body = route.request().postDataJSON() as Record<string,unknown> & { action?: string };
       if (body.action) telegramActions.push(body.action);
-      if (body.action !== "bootstrap") return route.fulfill(json({ ok: true }));
+      if(body.action==='teacher_lesson_attendance'){attendanceRequests.push(body);if(attendanceRequests.length===1)return route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Owned uncertain Telegram attendance',retryable:true})});}
+      if (body.action !== "bootstrap") return route.fulfill(json({ok:true,actor_id:'teacher-user',academy_id:academyId,request_key:body.idempotency_key,command:body.action,replayed:false}));
       return route.fulfill(json({
         linked: true,
         user: { id: "teacher-user", full_name: "Teacher Route", email: "teacher@example.test" },
@@ -5897,6 +5898,11 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await page.getByRole("button", { name: /Start lesson/ }).click();
     await expect(page.getByRole("heading", { name: "Teach, record, finish" })).toBeVisible();
     await page.getByRole("button", { name: "Save attendance" }).click();
+    await expect(page.getByText('A saved change still needs confirmation.',{exact:true})).toBeVisible();
+    await page.goto('/telegram?lang=en&initData='+encodeURIComponent('query_id=teacher-reloaded&user=%7B%22id%22%3A2002%7D&auth_date=1787155300&hash=new-teacher-signature'));
+    await expect(page.getByText('A saved change still needs confirmation.',{exact:true})).toBeVisible();await page.getByRole('button',{name:'Retry saving',exact:true}).click();await expect(page.getByText('A saved change still needs confirmation.',{exact:true})).toHaveCount(0);
+    expect(attendanceRequests).toHaveLength(2);expect(attendanceRequests[1].idempotency_key).toBe(attendanceRequests[0].idempotency_key);expect(attendanceRequests[1].records).toEqual(attendanceRequests[0].records);expect(attendanceRequests[1]._expected_actor).toBe('teacher-user');expect(attendanceRequests[1].initData).not.toBe(attendanceRequests[0].initData);
+    await page.getByRole('button',{name:/Start lesson/}).click();
     await page.getByLabel("Write a precise thesis").check();
     await page.getByRole("button", { name: "Finish lesson and assign" }).click();
     await expect(page.getByText("Lesson finished and homework assigned")).toBeVisible();

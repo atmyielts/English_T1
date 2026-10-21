@@ -23,6 +23,8 @@ const uiMetadataKeys = new Set([
   'subheadline',
 ]);
 const runtimeKeys = [
+  "Refresh the workspace before saving this lesson.",
+  "Review attendance and its retry key.",
   "Review the lesson and retry key.",
   "We could not confirm this booking. Retry the same lesson.",
   "Your current access does not cover this lesson booking.",

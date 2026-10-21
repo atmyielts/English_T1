@@ -2981,5 +2981,7 @@
   "Record collection": "Qabul qilingan to‘lovni qayd etish",
   "Cash": "Naqd pul",
   "Payment method": "To‘lov usuli",
-  "Unable to load financial records. Try again.": "Moliyaviy ma’lumotlarni yuklab bo‘lmadi. Qayta urinib ko‘ring."
+  "Unable to load financial records. Try again.": "Moliyaviy ma’lumotlarni yuklab bo‘lmadi. Qayta urinib ko‘ring.",
+  "Refresh the workspace before saving this lesson.": "Darsni saqlashdan oldin ish maydonini yangilang.",
+  "Review attendance and its retry key.": "Davomat va qayta urinish kalitini tekshiring."
 }

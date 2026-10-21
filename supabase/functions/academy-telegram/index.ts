@@ -1,3 +1,5 @@
+import {runTelegramTeacherCommand} from './teacher-command.ts';
+import {LegacyImportCommandError} from '../academy/legacy-import-command.ts';
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { isInternalRequest } from "../_shared/internal-auth.ts";
@@ -19,10 +21,7 @@ import {
   type MembershipRow,
 } from "../academy/access.ts";
 import {
-  finishAcademyTeacherLesson,
   loadAcademyTeacherDay,
-  recordAcademyTeacherAttendance,
-  startAcademyTeacherLesson,
 } from "../_shared/academy-teacher-flow.ts";
 
 const cors = {
@@ -127,7 +126,7 @@ const academyTenant = (tenant: Record<string, unknown> | null): boolean => {
 const loadUserByTelegram = async (sb: Db, telegramUserId: string): Promise<UserRow | null> => {
   const { data, error } = await sb.from("users")
     .select("id,email,full_name,telegram_chat_id")
-    .eq("telegram_chat_id", telegramUserId)
+    .eq("telegram_chat_id", telegramUserId).eq("is_active", true)
     .maybeSingle();
   if (error) throw new Error(`Failed to load linked Telegram user: ${error.message}`);
   return data?.id ? data as UserRow : null;
@@ -661,7 +660,7 @@ const authenticateWebUser = async (sb: Db, req: Request): Promise<UserRow> => {
   if (!token) throw new Error("Unauthorized");
   const { data, error } = await sb.auth.getUser(token);
   if (error || !data.user?.id) throw new Error("Unauthorized");
-  const { data: row, error: rowError } = await sb.from("users").select("id,email,full_name,telegram_chat_id").eq("id", data.user.id).maybeSingle();
+  const { data: row, error: rowError } = await sb.from("users").select("id,email,full_name,telegram_chat_id").eq("id", data.user.id).eq("is_active", true).maybeSingle();
   if (rowError || !row?.id) throw new Error("Unauthorized");
   return row as UserRow;
 };
@@ -749,14 +748,14 @@ serve(async (req) => {
     if (action === "publish_message") return json(200, await queueGroupMessage(sb, selected, user, body));
     if (action === "send_private_warning") return json(200, await sendPrivateWarning(sb, selected, user, body));
     if (action === "teacher_lesson_start") {
-      return json(200, await startAcademyTeacherLesson(sb, selected, user.id, body));
+      return json(200, await runTelegramTeacherCommand(sb, academyId, user.id, action, body));
     }
     if (action === "teacher_lesson_attendance") {
-      return json(200, await recordAcademyTeacherAttendance(sb, selected, user.id, body));
+      return json(200, await runTelegramTeacherCommand(sb, academyId, user.id, action, body));
     }
     if (action === "teacher_lesson_finish") {
-      const result = await finishAcademyTeacherLesson(sb, selected, user.id, body);
-      await callDelivery();
+      const result = await runTelegramTeacherCommand(sb, academyId, user.id, action, body);
+      if(result.replayed!==true)await callDelivery().catch(() => undefined);
       return json(200, result);
     }
 
@@ -796,21 +795,7 @@ serve(async (req) => {
     }
 
     if (action === "record_attendance") {
-      requirePermission(selected, "markAttendance");
-      const sessionId = clean(body.session_id, 64); const classroomId = clean(body.classroom_id, 64);
-      if (!sessionId || !classroomId || !(await canUseClassroom(sb, selected, academyId, classroomId))) return json(403, { error: "Forbidden" });
-      const { data: session } = await sb.from("academy_lesson_sessions").select("id,classroom_id").eq("academy_id", academyId).eq("id", sessionId).maybeSingle();
-      if (!session?.id || String(session.classroom_id) !== classroomId) return json(404, { error: "Lesson session not found" });
-      const records = Array.isArray(body.records) ? body.records.slice(0, 500) : [];
-      if (!records.length) return json(400, { error: "Attendance records are required" });
-      const idempotency = clean(body.idempotency_key, 160);
-      if (!idempotency) return json(400, { error: "idempotency_key is required" });
-      const { data, error } = await sb.rpc("academy_record_telegram_attendance_batch", {
-        p_academy_id: academyId, p_session_id: sessionId, p_classroom_id: classroomId,
-        p_actor_id: user.id, p_records: records, p_idempotency_key: idempotency,
-      });
-      if (error) throw new Error(`Failed to record attendance: ${error.message}`);
-      return json(200, data);
+      return json(200, await runTelegramTeacherCommand(sb, academyId, user.id, action, body));
     }
 
     if (action === "update_request") {
@@ -878,6 +863,7 @@ serve(async (req) => {
 
     return json(400, { error: "Unsupported Academy Telegram action" });
   } catch (error) {
+    if(error instanceof LegacyImportCommandError)return json(error.status,{error:error.message,retryable:error.retryable});
     const message = error instanceof Error ? error.message : "Academy Telegram request failed";
     const status = message === "Unauthorized" ? 401 : message === "Forbidden" ? 403 : 400;
     return json(status, { error: message });

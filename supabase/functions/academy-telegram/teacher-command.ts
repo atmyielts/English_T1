@@ -1,0 +1,11 @@
+import{runOperationalCommand}from'../academy/operational-command.ts';
+import{LegacyImportCommandError}from'../academy/legacy-import-command.ts';
+type Row=Record<string,unknown>;type Db=Parameters<typeof runOperationalCommand>[0];
+export async function runTelegramTeacherCommand(db:Db,academy:string,actor:string,action:string,input:Row):Promise<Row>{
+ if(input._expected_actor!=null&&input._expected_actor!==actor)throw new LegacyImportCommandError(409,'Your account changed. Reopen this page.');
+ if(['teacher_lesson_start','teacher_lesson_attendance','teacher_lesson_finish'].includes(action))return {...await runOperationalCommand(db,academy,actor,action,input),academy_id:academy};
+ if(action!=='record_attendance'||typeof input.idempotency_key!=='string'||!/^[A-Za-z0-9_.:-]{1,160}$/.test(input.idempotency_key)||!Array.isArray(input.records)||input.records.length<1||input.records.length>500||new TextEncoder().encode(JSON.stringify(input.records)).byteLength>60000)throw new LegacyImportCommandError(400,'Review attendance and its retry key.');
+ let response;try{response=await db.rpc('academy_telegram_attendance_command',{p_academy:academy,p_actor:actor,p_session:input.session_id,p_classroom:input.classroom_id,p_records:input.records,p_request_key:input.idempotency_key});}catch{throw new LegacyImportCommandError(503,'Unable to confirm this change. Retry the same change.',true);}
+ if(response.error){const code=response.error.code??'',invalid=code.startsWith('22')||['23502','23503','23514','P0001'].includes(code);throw new LegacyImportCommandError(code==='42501'?403:code==='23505'?409:invalid?400:503,code==='42501'?'Your current access does not cover this inquiry or assigned lesson.':code==='23505'?'This request belongs to a different change. Refresh and review it.':invalid?'Review the inquiry, current lesson and attendance values.':'Unable to confirm this change. Retry the same change.',code!=='42501'&&code!=='23505'&&!invalid);}
+ const row=response.data as Row|null;if(!row||row.actor_id!==actor||row.request_key!==input.idempotency_key||row.command!==action||typeof row.replayed!=='boolean')throw new LegacyImportCommandError(503,'Unable to confirm this change. Retry the same change.',true);return {...row,academy_id:academy};
+}

@@ -1,3 +1,4 @@
+import {isTelegramCommand,pendingTelegramCommand,telegramCommand} from '../../lib/telegramCommand';
 import {
   BellRing,
   BookOpenCheck,
@@ -19,7 +20,7 @@ import {
   UsersRound,
   X,
 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useI18n, translate } from '../../i18n';
 import { platformUrl, supabase } from '../../lib/supabase';
 import './academy-telegram.css';
@@ -228,6 +229,7 @@ const readInvokeError = async (response: unknown, invokeError: unknown): Promise
 
 export const AcademyTelegramApp = () => {
   const { locale, setLocale } = useI18n();
+  const commandActor=useRef('');
   const [tab, setTab] = useState<Tab>('today');
   const [initData, setInitData] = useState('');
   const [data, setData] = useState<Bootstrap | null>(null);
@@ -243,22 +245,21 @@ export const AcademyTelegramApp = () => {
   const [lesson, setLesson] = useState<LessonState | null>(null);
 
   const invoke = useCallback(async <T,>(action: string, payload: Json = {}): Promise<T> => {
-    const activeInitData = initData || getInitData();
-    const { data: response, error: invokeError } = await supabase.functions.invoke('academy-telegram', {
-      body: { action, initData: activeInitData, ...payload },
-    });
-    if (invokeError) {
-      const detail = await readInvokeError(response, invokeError);
-      throw new Error(detail || translate('Academy Telegram request failed'));
-    }
-    if (response?.error) throw new Error(String(response.error));
-    return response as T;
+    const send=async(nextAction:string,nextPayload:Json):Promise<T>=>{
+      const activeInitData=initData||getInitData();
+      const {data:response,error:invokeError}=await supabase.functions.invoke('academy-telegram',{body:{...nextPayload,action:nextAction,initData:activeInitData}});
+      if(invokeError){const context=(invokeError as {context?:unknown}).context,status=context instanceof Response?context.status:503;const detail=await readInvokeError(response,invokeError);throw Object.assign(new Error(detail||translate('Academy Telegram request failed')),{status,retryable:status>=500});}
+      if(response?.error)throw Object.assign(new Error(String(response.error)),{retryable:response.retryable===true});
+      return response as T;
+    };
+    return isTelegramCommand(action)?telegramCommand(commandActor.current,String(payload.academy_id??''),action,payload,send):send(action,payload);
   }, [initData]);
 
   const load = useCallback(async (nextAcademyId?: string) => {
     setLoading(true); setError('');
     try {
       const response = await invoke<Bootstrap>('bootstrap', nextAcademyId ? { academy_id: nextAcademyId } : {});
+      commandActor.current=response.user.id;
       setData(response);
       setAcademyId(response.selected_academy_id);
       const firstGroup = response.dashboard.groups.find((group) => group.status === 'active');
@@ -303,9 +304,11 @@ export const AcademyTelegramApp = () => {
   const activeGroups = dashboard?.groups.filter((group) => group.status === 'active') ?? [];
   const isPrivate = compose.messageType === 'personal_warning';
 
+  const pending=data?pendingTelegramCommand(data.user.id,academyId):null;
   const action = async (key: string, task: () => Promise<void>) => {
+    if(pending){setError(translate('Confirm the pending change before starting another.'));return;}
     setBusy(key); setError(''); setNotice('');
-    try { await task(); } catch (actionError) { setError(actionError instanceof Error ? actionError.message : translate('The action could not be completed')); }
+    try { await task(); } catch (actionError) { setError(actionError instanceof Error ? translate(actionError.message) : translate('The action could not be completed')); }
     finally { setBusy(''); }
   };
 
@@ -457,6 +460,7 @@ export const AcademyTelegramApp = () => {
         <span className="academy-tg-role">{translate(academy?.access.role.replaceAll('_', ' ') ?? 'Staff')}</span>
       </div>
 
+      {pending?<Card><strong>{translate('A saved change still needs confirmation.')}</strong><p>{translate(pending.action==='record_attendance'||pending.action==='teacher_lesson_attendance'?'Save attendance':pending.action==='teacher_lesson_start'?'Start lesson':'Finish lesson')}</p><BusyButton busy={Boolean(busy)} onClick={()=>{if(busy)return;setBusy('retry');setError('');void invoke(pending.action,pending.payload).then(async()=>{setAttendance(null);setLesson(null);await load(academyId);}).catch(reason=>setError(reason instanceof Error?translate(reason.message):translate('The action could not be completed'))).finally(()=>setBusy(''));}}>{translate('Retry saving')}</BusyButton></Card>:null}
       {error ? <div className="academy-tg-banner is-error" role="alert"><span>{error}</span><button type="button" onClick={() => setError('')} aria-label={translate('Dismiss')}><X size={17} /></button></div> : null}
       {notice ? <div className="academy-tg-banner is-success" role="status"><Check size={17} /><span>{notice}</span></div> : null}
       {!dashboard?.settings.enabled ? <div className="academy-tg-banner is-warning"><BellRing size={18} /><span>{translate('Telegram operations are paused for this Academy.')}</span>{canManage ? <BusyButton busy={busy === 'enable'} onClick={() => void action('enable', async () => { await invoke('update_settings', { academy_id: academyId, enabled: true, default_locale: locale, timezone: dashboard?.settings.timezone ?? 'Asia/Tashkent', digest_time: dashboard?.settings.digest_time ?? '08:00', emergency_override_enabled: true }); await load(academyId); })}>{translate('Enable')}</BusyButton> : null}</div> : null}

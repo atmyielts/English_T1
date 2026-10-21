@@ -48,7 +48,11 @@ Deno.test("Academy Telegram write actions are replay-safe and attendance is atom
   assertMatch(migration, /security definer set search_path = pg_catalog, public/g);
   assertMatch(migration, /revoke all on function public\.academy_record_telegram_attendance_batch[\s\S]*?from public,anon,authenticated/);
   assertMatch(migration, /revoke all on function public\.academy_update_telegram_service_request[\s\S]*?from public,anon,authenticated/);
-  assertMatch(edge, /academy_record_telegram_attendance_batch/);
+  const command = await read('supabase/functions/academy-telegram/teacher-command.ts');
+  assertMatch(command, /academy_telegram_attendance_command/);
+  assertMatch(command, /runOperationalCommand/);
+  assertEquals((edge.match(/runTelegramTeacherCommand\(sb, academyId, user.id, action, body\)/g)??[]).length,4);
+  assertEquals(edge.includes('await recordAcademyTeacherAttendance('),false);
   assertMatch(edge, /academy_update_telegram_service_request/);
   assert(edge.split('idempotency_key is required').length >= 4);
 });

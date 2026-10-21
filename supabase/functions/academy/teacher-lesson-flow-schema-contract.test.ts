@@ -46,11 +46,12 @@ Deno.test("Academy and Telegram use the same teacher lesson service", async () =
   const academy = await read("supabase/functions/academy/index.ts");
   const operational = await read("supabase/functions/academy/operational-command.ts");
   const telegram = await read("supabase/functions/academy-telegram/index.ts");
+  const telegramCommand = await read('supabase/functions/academy-telegram/teacher-command.ts');
   const miniApp = await read("apps/academy/src/components/telegram/AcademyTelegramApp.tsx");
   for (const operation of ["loadAcademyTeacherDay", "startAcademyTeacherLesson", "recordAcademyTeacherAttendance", "finishAcademyTeacherLesson"]) {
     assertMatch(shared, new RegExp(`export const ${operation}`));
     assert(academy.includes(operation)||academy.includes('runOperationalCommand')&&operational.includes(operation), `${operation} must be used by Academy`);
-    assert(telegram.includes(operation), `${operation} must be used by Telegram`);
+    assert(telegram.includes(operation)||telegram.includes('runTelegramTeacherCommand')&&telegramCommand.includes('runOperationalCommand')&&operational.includes(operation), `${operation} must be used by Telegram through the current shared command`);
   }
   for (const action of ["teacher_lesson_start", "teacher_lesson_attendance", "teacher_lesson_finish"]) {
     assert(telegram.includes(action));
