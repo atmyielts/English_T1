@@ -3,7 +3,7 @@ async(page)=>{
  page.on('request',request=>{if(request.url().includes('/attempts/')&&request.url().includes('/state?'))stateRequests++;});
  page.on('pageerror',error=>errors.push(error.message));
  page.on('response',async response=>{if(response.url().includes('/candidate/attempts/')&&response.ok()){const payload=await response.json();if(payload.data.manifest.sections.length!==1||JSON.stringify(payload.data.manifest).includes('correct'))errors.push('Candidate manifest leaked future content or keys');else sawPublicManifest=true;}});
- await page.setViewportSize({width:1440,height:1000});await page.goto(config.institution);await page.getByRole('button',{name:'Sign out',exact:true}).click();await page.goto(`${config.exam}/?tenant_id=${config.tenant}`);
+ await page.setViewportSize({width:1440,height:1000});await page.goto(config.institution);await page.getByRole('button',{name:'Sign out',exact:true}).click();await page.getByRole('textbox',{name:'Email',exact:true}).waitFor();await page.goto(`${config.exam}/?tenant_id=${config.tenant}`);
  async function login(target,name){await target.getByRole('textbox',{name:'Email',exact:true}).fill(name+'@example.test');await target.getByLabel('Password',{exact:true}).fill('synthetic-only');await target.getByRole('button',{name:'Sign in',exact:true}).click();}
  await login(page,'candidate');await page.getByRole('button',{name:'Start or resume',exact:true}).click();await page.getByRole('heading',{name:'Protected media',exact:true}).waitFor();
  async function ready(){
