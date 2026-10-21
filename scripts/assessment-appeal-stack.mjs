@@ -3,7 +3,7 @@ import { spawn, spawnSync } from "node:child_process";
 import { build } from "esbuild";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { randomUUID } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 import assert from "node:assert/strict";
@@ -14,10 +14,11 @@ import {seedAssessmentInvitations,assessmentInvitationProof} from './assessment-
 import {assessmentMailFixture} from './assessment-mail-fixture.mjs';
 import {assessmentDocumentFixture} from './assessment-document-fixture.mjs';
 import {seedAssessmentBlueprints,assessmentBlueprintProof} from './assessment-blueprint-fixture.mjs';
+import {seedAssessmentIntegrations,assessmentIntegrationProof} from './assessment-integrations-fixture.mjs';
 import {seedAssessmentAccommodations,bumpAccommodation,setAccommodatedAttemptState,assessmentAccommodationProof} from './assessment-accommodations-fixture.mjs';
 const root = fileURLToPath(new URL("../", import.meta.url)),
   tenant = "10000000-0000-4000-8000-000000000001";
-export async function appealBrowserStack({ certificates = false,documents=false,lifecycle=false,blueprints=false,accommodations=false,cohorts=false,imports=false,analytics=false,feedback=false,capture=false,live=false,workload=false,staff=false,invitations=false,mail=false } = {}) {
+export async function appealBrowserStack({ certificates = false,documents=false,lifecycle=false,blueprints=false,accommodations=false,integrations=false,cohorts=false,imports=false,analytics=false,feedback=false,capture=false,live=false,workload=false,staff=false,invitations=false,mail=false } = {}) {
   if(blueprints||accommodations)capture=true;
   if(lifecycle)documents=true;
   if(documents)certificates=true;
@@ -41,7 +42,7 @@ export async function appealBrowserStack({ certificates = false,documents=false,
     gradingHandler,
     certificateHandler,
     documentServices,
-    blueprintIds,accommodationIds,loseAccommodation=accommodations,loseBreakBegin=accommodations,loseBlueprintCreate=blueprints,loseBlueprintPublish=blueprints,loseBlueprintStart=blueprints,
+    blueprintIds,integrationIds,billingHandler,webhookHandler,apiHandler,accommodationIds,loseAccommodation=accommodations,loseBreakBegin=accommodations,loseBlueprintCreate=blueprints,loseBlueprintPublish=blueprints,loseBlueprintStart=blueprints,
     certificateOptions,
     rotateSigner,
     retireSigner,
@@ -97,7 +98,7 @@ export async function appealBrowserStack({ certificates = false,documents=false,
     rpc(name, args) {
       assert.match(
         name,
-        /^(assessment_(workspaces|invitation_(mail_(read|command|claim|begin|report)|read|command|preview|accept)|staff_(read|command)|command(_live_gate)?|runtime_(snapshot|command|expire|schedule_claim|schedule_reconcile)|appeal_(read|command)|grading_(read|command)|certificate_(read|command|seal|status|reference|document_report)|cohort_(read|command)|roster_(claim|step)|bank_(import_(read|command)|export)|analytics_(read|command)|feedback_(read|command)|artifact_read|released_breakdown|has_capability)|proctor_(command|can_access|workload_(read|staff|command)|capture_(read|command(_live_gate)?)|live_(read|command|context|report)|recording_(command|checkpoint|transport|catalog|read)))$/,
+        /^(assessment_(workspaces|billing_summary|usage_adjust|billing_configure|webhook_(?:command|read|claim|report)|api_(?:client_command|client_list|token_issue|read|command)|invitation_(mail_(read|command|claim|begin|report)|read|command|preview|accept)|staff_(read|command)|command(_live_gate)?|runtime_(snapshot|command|expire|schedule_claim|schedule_reconcile)|appeal_(read|command)|grading_(read|command)|certificate_(read|command|seal|status|reference|document_report)|cohort_(read|command)|roster_(claim|step)|bank_(import_(read|command)|export)|analytics_(read|command)|feedback_(read|command)|artifact_read|released_breakdown|has_capability)|proctor_(command|can_access|workload_(read|staff|command)|capture_(read|command(_live_gate)?)|live_(read|command|context|report)|recording_(command|checkpoint|transport|catalog|read)))$/,
       );
       const query=`select to_jsonb(public.${name}(${Object.entries(args).map(([key,value])=>{assert.match(key,/^p_[a-z][a-z0-9_]*$/);return `${key}=>${literal(value)}${key==='p_data'?'::jsonb':''}`;}).join(',')}));`;
       return bridge.query(query).then(async result=>{
@@ -256,6 +257,7 @@ export async function appealBrowserStack({ certificates = false,documents=false,
     if(workload){sql(await readFile(path.join(root,'supabase/tests/proctor-workload.fixture.sql'),'utf8'));sql("update users set full_name=case id when '00000000-0000-4000-8000-000000000071' then 'Board Observer' when '00000000-0000-4000-8000-000000000072' then 'Board Reviewer' else 'Board Candidate' end where id in('00000000-0000-4000-8000-000000000071','00000000-0000-4000-8000-000000000072','00000000-0000-4000-8000-000000000073');");}
     if(blueprints)blueprintIds=seedAssessmentBlueprints(sql,actors,tenant);
     if(accommodations)accommodationIds=seedAssessmentAccommodations(sql,actors,tenant);
+    if(integrations)integrationIds=seedAssessmentIntegrations(sql,actors,tenant);
     if(invitations)invitationIds=seedAssessmentInvitations(sql,actors,tenant);
     if(analytics){sql(runtime+'\n'+await readFile(path.join(root,'supabase/tests/assessment-analytics.fixture.sql'),'utf8'));analyticsIds=JSON.parse(sql('select to_jsonb(t) from assessment_analytics_fixture_ids t;'));scoreSnapshot=sql('select jsonb_agg(to_jsonb(s) order by id) from assessment_score_revisions s;');}
     if(feedback){sql(await readFile(path.join(root,'supabase/tests/assessment-feedback.fixture.sql'),'utf8'));feedbackIds=JSON.parse(sql('select to_jsonb(t) from assessment_feedback_fixture_ids t;'));scoreSnapshot=sql('select jsonb_agg(to_jsonb(s) order by id) from assessment_score_revisions s;');}
@@ -308,7 +310,7 @@ export async function appealBrowserStack({ certificates = false,documents=false,
         for await (const chunk of req) chunks.push(chunk);
         const body = Buffer.concat(chunks);
         if (url.pathname === "/test/info") {
-          reply(res, 200, { tenant, control,document_enabled:documents,lifecycle_enabled:lifecycle,blueprints_enabled:blueprints,blueprintIds,accommodations_enabled:accommodations,accommodationIds,live_enabled:live,mail_enabled:mail,seededCohort,rosterSitting,importBank,analyticsIds,feedbackIds,captureIds,invitationIds:invitationIds?{role:invitationIds.role,invited:invitationIds.invited}:undefined,staffIds:staffIds?{local:staffIds.local,legacy:staffIds.legacy}:undefined });
+          reply(res, 200, { tenant, control,document_enabled:documents,lifecycle_enabled:lifecycle,blueprints_enabled:blueprints,blueprintIds,accommodations_enabled:accommodations,accommodationIds,integrations_enabled:integrations,integrationIds,live_enabled:live,mail_enabled:mail,seededCohort,rosterSitting,importBank,analyticsIds,feedbackIds,captureIds,invitationIds:invitationIds?{role:invitationIds.role,invited:invitationIds.invited}:undefined,staffIds:staffIds?{local:staffIds.local,legacy:staffIds.legacy}:undefined });
           return;
         }
         if (url.pathname.startsWith("/test/")) {
@@ -365,6 +367,7 @@ export async function appealBrowserStack({ certificates = false,documents=false,
             reply(res, 200, {});
             return;
           }
+          if(integrations&&url.pathname==='/test/integration-proof'){reply(res,200,{...assessmentIntegrationProof(sql,tenant,integrationIds),scores_unchanged:scoreSnapshot===sql('select jsonb_agg(to_jsonb(s) order by id) from assessment_score_revisions s;')});return;}
           if(accommodations&&url.pathname==='/test/accommodation-bump'){reply(res,200,bumpAccommodation(sql,actors,tenant,accommodationIds));return;}
           if(accommodations&&(url.pathname==='/test/accommodation-pause'||url.pathname==='/test/accommodation-resume')){setAccommodatedAttemptState(sql,accommodationIds,url.pathname.endsWith('pause')?'paused':'active');reply(res,200,{});return;}
           if(accommodations&&url.pathname==='/test/accommodation-proof'){reply(res,200,{...assessmentAccommodationProof(sql,accommodationIds),approval_reply_lost:!loseAccommodation,break_reply_lost:!loseBreakBegin,scores_unchanged:scoreSnapshot===sql('select jsonb_agg(to_jsonb(s) order by id) from assessment_score_revisions s;')});return;}
@@ -415,6 +418,8 @@ export async function appealBrowserStack({ certificates = false,documents=false,
         if(accommodations&&loseBreakBegin&&req.method==='POST'&&url.pathname.startsWith('/coordinator/')&&body.length&&JSON.parse(body).action==='break.begin'){const response=await captureServices.coordinator(new Request(base+req.url,{method:req.method,headers:req.headers,body}));if(response.ok){loseBreakBegin=false;reply(res,503,{code:'fixture_reply_lost',error:'The break started but its reply was lost. Retry the saved request.'});return;}res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return;}
         if(capture&&(url.pathname.startsWith('/functions/v1/proctor/')||url.pathname.startsWith('/coordinator/')||url.pathname.startsWith('/v1/recordings/'))){const request=new Request(base+req.url,{method:req.method,headers:req.headers,...(body.length?{body}:{})}),response=await(url.pathname.startsWith('/functions/v1/proctor/')?captureServices.proctor(request):url.pathname.startsWith('/coordinator/')?captureServices.coordinator(request):captureServices.evidence(request));res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return;}
         if (url.pathname.startsWith("/functions/v1/assessment-cloud/")) {
+          if(integrations&&/\/assessment-cloud\/(?:billing\/|webhooks\/|oauth\/token$|v1\/|api-clients(?:\/|$))/.test(url.pathname)){const handler=url.pathname.includes('/billing/')?billingHandler:url.pathname.includes('/webhooks/')?webhookHandler:apiHandler,response=await handler(new Request(base+req.url,{method:req.method,headers:req.headers,...(body.length?{body}:{})}));res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return;}
+          if(integrations&&/\/(workspaces|exam-windows|registrations|commands|assessment-versions|item-banks|item-versions|rubrics|assessments)$/.test(url.pathname)){const response=await assessmentHandler(new Request(base+req.url,{method:req.method,headers:req.headers,...(body.length?{body}:{})}));res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return;}
           if(accommodations&&/\/(workspaces|item-banks|item-versions|rubrics|assessments|assessment-revisions|assessment-versions|exam-windows|registrations|commands)$/.test(url.pathname)){const response=await assessmentHandler(new Request(base+req.url,{method:req.method,headers:req.headers,...(body.length?{body}:{})})),action=body.length?JSON.parse(body).action:null;if(response.ok&&action==='registration.accommodate'&&loseAccommodation){loseAccommodation=false;reply(res,503,{code:'fixture_reply_lost',error:'The approval committed but its reply was lost. Retry the saved request.'});return;}res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return;}
           if(blueprints&&(/\/(workspaces|item-banks|item-versions|rubrics|assessments|assessment-revisions|assessment-versions|exam-windows|registrations|commands|blueprints\/preview)$/.test(url.pathname)||/\/item-versions\/[^/]+\/review$/.test(url.pathname))){const response=await assessmentHandler(new Request(base+req.url,{method:req.method,headers:req.headers,...(body.length?{body}:{})})),action=body.length?JSON.parse(body).action:null;if(response.ok&&((action==='assessment.create'&&loseBlueprintCreate)||(action==='assessment.publish'&&loseBlueprintPublish)||(action==='attempt.start'&&loseBlueprintStart))){if(action==='assessment.create')loseBlueprintCreate=false;else if(action==='assessment.publish')loseBlueprintPublish=false;else loseBlueprintStart=false;reply(res,503,{code:'fixture_reply_lost',error:'The blueprint command committed but its reply was lost. Retry the saved request.'});return;}res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return;}
           if(staff||invitations){
@@ -567,6 +572,16 @@ export async function appealBrowserStack({ certificates = false,documents=false,
     });
     const modules = await import(pathToFileURL(bundleFile).href);
     const analyticsBundle=path.join(directory,'analytics-edge.mjs');await build({stdin:{contents:"export {createAnalyticsHandler} from './supabase/functions/assessment-cloud/analytics-handler.ts';export {createAnalyticsRepository} from './supabase/functions/assessment-cloud/analytics-repository.ts';export {createArtifactHandler} from './supabase/functions/assessment-cloud/artifact-handler.ts';export {createArtifactRepository} from './supabase/functions/assessment-cloud/artifact-repository.ts';",resolveDir:root,loader:'ts'},bundle:true,platform:'node',format:'esm',outfile:analyticsBundle});const analyticsModules=await import(pathToFileURL(analyticsBundle).href);analyticsHandler=analyticsModules.createAnalyticsHandler(analyticsModules.createAnalyticsRepository(auth,database),[base]);artifactHandler=analyticsModules.createArtifactHandler(analyticsModules.createArtifactRepository(auth,database),[base],{transport:'',scanner:'',scannerId:''});
+    if(integrations){
+      const integrationBundle=path.join(directory,'integration-edge.mjs');
+      await build({stdin:{contents:"export {createBillingHandler} from './supabase/functions/assessment-cloud/billing-handler.ts';export {createBillingRepository} from './supabase/functions/assessment-cloud/billing-repository.ts';export {createWebhookHandler} from './supabase/functions/assessment-cloud/webhook-handler.ts';export {createWebhookRepository} from './supabase/functions/assessment-cloud/webhook-repository.ts';export {WebhookSecretBox} from './supabase/functions/assessment-cloud/webhook-secrets.ts';export {createApiHandler} from './supabase/functions/assessment-cloud/api-handler.ts';export {createApiRepository} from './supabase/functions/assessment-cloud/api-repository.ts';",resolveDir:root,loader:'ts'},bundle:true,platform:'node',format:'esm',outfile:integrationBundle});
+      const integrationModules=await import(pathToFileURL(integrationBundle).href);
+      // Disposable signing key for this run only.
+      const box=await integrationModules.WebhookSecretBox.create('fixture',{fixture:randomBytes(32).toString('base64')});
+      billingHandler=integrationModules.createBillingHandler(integrationModules.createBillingRepository(auth,database),[base]);
+      webhookHandler=integrationModules.createWebhookHandler(integrationModules.createWebhookRepository(auth,database),[base],{enabled:true,box,dispatchSecret:'fixture-dispatch-'+randomUUID()});
+      apiHandler=integrationModules.createApiHandler(integrationModules.createApiRepository(auth,database),[base],{enabled:true});
+    }
     const feedbackBundle=path.join(directory,'feedback-edge.mjs');await build({stdin:{contents:"export {createFeedbackHandler} from './supabase/functions/assessment-cloud/feedback-handler.ts';export {createFeedbackRepository} from './supabase/functions/assessment-cloud/feedback-repository.ts';",resolveDir:root,loader:'ts'},bundle:true,platform:'node',format:'esm',outfile:feedbackBundle});const feedbackModules=await import(pathToFileURL(feedbackBundle).href);feedbackHandler=feedbackModules.createFeedbackHandler(feedbackModules.createFeedbackRepository(auth,database),[base]);
     importHandler=modules.createImportHandler(modules.createImportRepository(auth,database),[base]);
     if(staff||invitations){const staffBundle=path.join(directory,'staff-edge.mjs');await build({stdin:{contents:"export {createStaffHandler} from './supabase/functions/assessment-cloud/staff-handler.ts';export {createStaffRepository} from './supabase/functions/assessment-cloud/staff-repository.ts';",resolveDir:root,loader:'ts'},bundle:true,platform:'node',format:'esm',outfile:staffBundle});const staffModules=await import(pathToFileURL(staffBundle).href);staffHandler=staffModules.createStaffHandler(staffModules.createStaffRepository(auth,database),[base]);}

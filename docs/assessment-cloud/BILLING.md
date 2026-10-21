@@ -50,5 +50,5 @@ API (Edge `assessment-cloud/billing/*`):
 
 - **BILL-01:** enforce the entitlement on the media, recording and coordinator data planes, not only at sitting and start admission. Add a Proctor product only when Proctor work resumes.
 - **BILL-03:** exercise Click test mode end to end. Live settlement is blocked on the static-IP egress requirement. Credits, refunds and invoices are still open.
-- **BILL-04:** institution billing screen and Schood support screen. The API exists; the UI is not built.
+- **BILL-04:** the institution **Plan & usage** screen is built and covered by `--integrations` (plan status, period meter, metered units with support adjustments). The Schood support adjustment screen is still open; support uses the API.
 - Approved plans and prices; hosted acceptance and reconciliation against real settlements.

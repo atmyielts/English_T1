@@ -11,6 +11,7 @@ on:
       - 'workers/assessment-coordinator/**'
       - 'workers/assessment-webhooks/**'
       - 'packages/service-i18n/**'
+      - 'scripts/assessment-integrations-fixture.mjs'
       - 'scripts/test-assessment-entitlements-race.mjs'
       - 'workers/assessment-grading/**'
       - 'workers/assessment-roster/**'
@@ -155,6 +156,16 @@ jobs:
           npm --workspace workers/assessment-webhooks run test:config
           deno check --no-lock supabase/functions/assessment-cloud/index.ts
           node scripts/verify-assessment-boundaries.mjs
+      - name: Browser for institution plan and integration screens
+        run: npx --yes --package @playwright/cli playwright-cli install-browser chrome --with-deps
+      - name: Connected plan usage, webhook and API client secrets, scoped v1 access and revocation
+        run: node scripts/test-assessment-appeals-browser.mjs --integrations
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: assessment-integrations-fixture-evidence
+          path: output/playwright/integrations/*.png
+          if-no-files-found: ignore
       # Database authority for billing and webhooks runs in validate's isolated
       # migration suite. No provider resource, deployment or outbound delivery.
   certificate-documents:

@@ -78,7 +78,7 @@ Every response carries `Schood-Api-Version: 2026-10-22`. Pages return `next_afte
 
 ## Remaining work
 
-- Staff screens for endpoints, deliveries and clients. The APIs exist; the UI is not built.
+- Staff **Integrations** screen is built: endpoints with one-time secrets, delivery history and replay, API clients with one-time secrets, rotation and revocation. `node scripts/test-assessment-appeals-browser.mjs --integrations` passes locally. The secret is never stored in plaintext; a token is issued and stops working immediately on revocation.
 - End-to-end delivery from the Worker to a real HTTPS consumer on a staging target.
 - SSO and institution identity providers (ENT-02).
 - OneRoster and full QTI conformance (ENT-03).

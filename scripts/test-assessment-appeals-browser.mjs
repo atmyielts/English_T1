@@ -45,6 +45,7 @@ let fixture;
 const lifecycleMode=process.argv.includes('--certificate-lifecycle');
 const blueprintMode=process.argv.includes('--blueprints');
 const accommodationMode=process.argv.includes('--accommodations');
+const integrationMode=process.argv.includes('--integrations');
 const documentMode=process.argv.includes('--certificate-documents')||lifecycleMode;
 const certificateMode = process.argv.includes("--certificates")||documentMode;
 const cohortMode=process.argv.includes('--cohorts');
@@ -67,6 +68,7 @@ try {
   await mkdir(path.join(root,"output/playwright/certificate-lifecycle"),{recursive:true});
   await mkdir(path.join(root,"output/playwright/blueprints"),{recursive:true});
   await mkdir(path.join(root,"output/playwright/accommodations"),{recursive:true});
+  await mkdir(path.join(root,"output/playwright/integrations"),{recursive:true});
   await mkdir(path.join(root,'output/playwright/cohorts'),{recursive:true});
   await mkdir(path.join(root,'output/playwright/imports'),{recursive:true});
   await mkdir(path.join(root,'output/playwright/analytics'),{recursive:true});
@@ -74,19 +76,20 @@ try {
   await mkdir(path.join(root,'output/playwright/capture'),{recursive:true});
   await mkdir(path.join(root,'output/playwright/staff'),{recursive:true});
   await mkdir(path.join(root,'output/playwright/invitations'),{recursive:true});
-  fixture = await appealBrowserStack({ certificates: certificateMode,documents:documentMode,lifecycle:lifecycleMode,blueprints:blueprintMode,accommodations:accommodationMode,cohorts:cohortMode,imports:importMode,analytics:analyticsMode,feedback:feedbackMode,capture:captureMode,live:liveMode,workload:workloadMode,staff:staffMode,invitations:invitationMode,mail:mailMode });
+  fixture = await appealBrowserStack({ certificates: certificateMode,documents:documentMode,lifecycle:lifecycleMode,blueprints:blueprintMode,accommodations:accommodationMode,integrations:integrationMode,cohorts:cohortMode,imports:importMode,analytics:analyticsMode,feedback:feedbackMode,capture:captureMode,live:liveMode,workload:workloadMode,staff:staffMode,invitations:invitationMode,mail:mailMode });
   await cli(["open", fixture.base + "/exam/", "--browser", "chrome"]);
   await cli(["snapshot"]);
   const result = await cli([
       "run-code",
       "--filename",
-      accommodationMode?'scripts/connected-accommodations-browser.js':blueprintMode?'scripts/connected-blueprints-browser.js':lifecycleMode?'scripts/connected-certificate-lifecycle-browser.js':workloadMode?'scripts/connected-workload-browser.js':liveMode?'scripts/connected-live-launch-browser.js':mailMode?'scripts/connected-invitation-mail-browser.js':invitationMode?'scripts/connected-invitations-browser.js':staffMode?'scripts/connected-staff-browser.js':captureMode?'scripts/connected-capture-browser.js':feedbackMode?'scripts/connected-feedback-browser.js':analyticsMode?'scripts/connected-analytics-browser.js':importMode?'scripts/connected-imports-browser.js':cohortMode?'scripts/connected-cohorts-browser.js':certificateMode
+      integrationMode?'scripts/connected-integrations-browser.js':accommodationMode?'scripts/connected-accommodations-browser.js':blueprintMode?'scripts/connected-blueprints-browser.js':lifecycleMode?'scripts/connected-certificate-lifecycle-browser.js':workloadMode?'scripts/connected-workload-browser.js':liveMode?'scripts/connected-live-launch-browser.js':mailMode?'scripts/connected-invitation-mail-browser.js':invitationMode?'scripts/connected-invitations-browser.js':staffMode?'scripts/connected-staff-browser.js':captureMode?'scripts/connected-capture-browser.js':feedbackMode?'scripts/connected-feedback-browser.js':analyticsMode?'scripts/connected-analytics-browser.js':importMode?'scripts/connected-imports-browser.js':cohortMode?'scripts/connected-cohorts-browser.js':certificateMode
         ? "scripts/connected-certificates-browser.js"
         : "scripts/connected-appeals-browser.js",
     ]),
     raw = /### Result\r?\n([^\r\n]+)/.exec(result)?.[1];
   assert.ok(raw, result);
   const proof = JSON.parse(raw);
+  if(integrationMode){for(const key of ['connected_integrations','plan_usage_shown','webhook_secret_once','client_secret_once','token_issued','api_registration_created','api_read_scoped','event_feed_reconciles','delivery_history_shown','revoked_token_refused','scores_unchanged'])assert.equal(proof[key],true,key);for(const[key,value]of Object.entries({endpoints:1,plaintext_secrets:0,registration_deliveries:1,api_registrations:1,integration_audits:1,clients_revoked:1,live_tokens:0}))assert.equal(proof[key],value,key);console.log(JSON.stringify({event:'assessment.connected.integrations.acceptance',...proof}));}else
   if(accommodationMode){for(const key of ['connected_accommodations','approval_receipt_recovered','stale_revision_refused','reason_private','questions_hidden_on_break','break_receipt_recovered','break_survived_reload','early_return_restored_questions','pause_closed_break','running_deadline_unchanged','scores_unchanged'])assert.equal(proof[key],true,key);for(const[key,value]of Object.entries({approval_audits:2,registration_revision:2,attempts:1,pinned_revision:2,pinned_extra_seconds:300,breaks:2,break_commands:3,running_breaks:1,reason_in_candidate_rows:0,attempt_state:'submitted'}))assert.deepEqual(proof[key],value,key);assert.deepEqual(proof.break_reasons,['candidate','proctor_pause']);assert.ok(proof.responses>=1);console.log(JSON.stringify({event:'assessment.connected.accommodations.acceptance',...proof}));}else
   if(blueprintMode){for(const key of ['connected_blueprints','center_classification_reviewed','impossible_preview_blocked','create_publish_recovered','start_recovered','canonical_manifest_verified','reload_preserved_form','unmonitored_no_devices','foreign_preview_denied','scores_unchanged'])assert.equal(proof[key],true,key);for(const[key,value]of Object.entries({definitions:1,versions:1,forms:1,attempts:1,classified_questions:5,classification_leaks:0}))assert.equal(proof[key],value,key);console.log(JSON.stringify({event:'assessment.connected.blueprints.acceptance',...proof}));}else
   if(lifecycleMode){for(const key of ['connected_lifecycle','replacement_prepare_recovered','replacement_seal_recovered_with_retired_key','retirement_receipt_recovered','original_signature_unchanged','replacement_signature_verified','original_not_revived','retired_program_hidden','foreign_history_denied','scores_unchanged'])assert.equal(proof[key],true,key);for(const[key,value]of Object.entries({certificates:2,retirements:1,replacement_intents:1,replaced_audits:1,replaced_events:1,issued_audits:2,retired_audits:1,revoked:1,documents:2,document_audits:2}))assert.equal(proof[key],value,key);console.log(JSON.stringify({event:'assessment.connected.certificate.lifecycle.acceptance',...proof}));}else

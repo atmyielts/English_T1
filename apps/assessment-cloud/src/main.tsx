@@ -43,9 +43,11 @@ const CohortsWorkspace = lazy(() => import("./cohorts/CohortsWorkspace").then(mo
 const BankImportWorkspace = lazy(() => import("./imports/BankImportWorkspace").then(module=>({default:module.BankImportWorkspace})));
 const AnalyticsWorkspace = lazy(() => import("./analytics/AnalyticsWorkspace").then(module=>({default:module.AnalyticsWorkspace})));
 const FeedbackWorkspace = lazy(() => import("./feedback/FeedbackWorkspace").then(module=>({default:module.FeedbackWorkspace})));
+const BillingWorkspace = lazy(() => import("./billing/BillingWorkspace").then(module=>({default:module.BillingWorkspace})));
+const IntegrationsWorkspace = lazy(() => import("./integrations/IntegrationsWorkspace").then(module=>({default:module.IntegrationsWorkspace})));
 import type { GradeAccess } from "../../../packages/assessment-web/src/grading";
 
-type Tab = "banks" | "items" | "media" | "assessments" | "windows" | "grading" | "staff" | "appeals" | "certificates" | "cohorts" | "imports" | "analytics" | "feedback";
+type Tab = "banks" | "items" | "media" | "assessments" | "windows" | "grading" | "staff" | "appeals" | "certificates" | "cohorts" | "imports" | "analytics" | "feedback" | "billing" | "integrations";
 const labels: Record<Tab, AppKey> = {
   banks: "nav.banks",
   imports: "nav.imports",
@@ -60,6 +62,8 @@ const labels: Record<Tab, AppKey> = {
   appeals: "nav.appeals",
   certificates: "nav.certificates",
   staff: "nav.staff",
+  billing: "nav.billing",
+  integrations: "nav.integrations",
 };
 function availableTabs(access: GradeAccess): Tab[] {
   return [
@@ -69,7 +73,7 @@ function availableTabs(access: GradeAccess): Tab[] {
     ...(access.can_manage_exams ? (["windows"] as Tab[]) : []),
     ...(access.can_read_banks && access.can_write_items ? (["imports"] as Tab[]) : []),
     ...(access.can_manage_exams ? (["cohorts"] as Tab[]) : []),
-    ...(access.can_manage_team ? (["staff"] as Tab[]) : []),
+    ...(access.can_manage_team ? (["staff", "billing", "integrations"] as Tab[]) : []),
     ...(access.can_mark || access.can_moderate || access.can_release
       ? (["grading"] as Tab[])
       : []),
@@ -421,6 +425,8 @@ function App() {
                 tab === "imports" ||
                 tab === "analytics" ||
                 tab === "feedback" ||
+                tab === "billing" ||
+                tab === "integrations" ||
                 tab === "assessments"
                   ? "grading-container"
                   : "split"
@@ -435,6 +441,8 @@ function App() {
                   refreshVersion={gradeRefresh}
                 />
               )}
+              {tab === "billing" && <BillingWorkspace key={scope} tenant={tenant} actor={user}/>}
+              {tab === "integrations" && <IntegrationsWorkspace key={scope} tenant={tenant} actor={user}/>}
               {tab === "staff" && (
                 <StaffWorkspace key={scope} tenant={tenant} actor={user} />
               )}
