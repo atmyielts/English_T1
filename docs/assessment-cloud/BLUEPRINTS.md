@@ -86,3 +86,32 @@ Identity/PostgREST, minimal historical schema and internal job/provider ports re
 Ship migration, authoring/delivery APIs and compatible institution/candidate clients as a coordinated unit. Never downgrade v2 definitions into v1 to force compatibility or disable canonical quota checks to allow a sitting to start. Existing published versions/forms must remain immutable and recoverable; rollback must preserve the new schema/receipts and disable new admissions safely rather than dropping data. No cloud/deployment/Academy mutation occurred in this work.
 
 Still required: calibrated difficulty/IRT/equating/DIF and uncertainty, exposure/security pools and item-family constraints, adaptive routing, richer blueprint dimensions/collaboration, full bank/history paging, scalable compiled-form jobs/operations, standards mappings/round-trip fidelity for classification/blueprints, full localization/manual accessibility, complete historical-schema/hosted identity, restore/security/legal/retention/capacity and exact-release CI acceptance. This closes a local center-owned workflow, not the full-service ledger row or the overall goal.
+
+
+## Blueprint v2: relations and exposure
+
+Added 2026-10-22 (FORM-01, migration 40 `20261022140000_assessment_blueprint_relations.sql`). `assessment.blueprint.v2` keeps every v1 field and adds:
+
+- `enemies`: pairs of question versions, stored sorted, that are never delivered in the same form.
+- `families`: groups of 2–50 questions, for example items sharing a reading passage, with a `maximum` per form.
+- `exposure.maximum_per_sitting`: how many forms in one sitting may include each question.
+
+Enemy and family questions must belong to their own section, and v2 requires at least one of the three fields.
+
+Assembly prunes on enemies and families during the bounded exact search. Before assembly, the Edge reads the questions already at their limit in the candidate's own sitting (`assessment_blueprint_saturated`) and excludes them. If what remains cannot satisfy the blueprint, the result is `blueprint_exposure_exhausted`; no rule is relaxed.
+
+The database re-checks enemies and families on every committed form. At `attempt.start` it enforces exposure under a per-sitting advisory lock, also behind the live gate's sitting row lock. A replay of an existing attempt is not re-counted.
+
+Evidence (local):
+- `supabase/tests/assessment-blueprint-relations.integration.sql` covers:
+  - questions outside the section, and zero exposure
+  - enemy and family witnesses refused
+  - enemy forms refused at start
+  - saturation reads scoped to the candidate's own sitting
+  - a second candidate refused on a saturated question, and admitted with a distinct form
+  - grants
+- `scripts/test-assessment-exposure-race.mjs`: four simultaneous starts under a one-form limit admit exactly one. With the lock removed, the race over-admits on both runs and the test fails.
+- `packages/assessment-core/src/blueprint-relations.test.ts`: parsing, 200-run assembly without enemies together or families over their maximum, and exhaustion.
+- The blueprint editor has a **Question relations** section (exposure limit, enemy pairs, families) in uz/ru/en. The `--blueprints` journey and the authoring smokes still pass.
+
+Not yet covered: a browser journey that authors v2 relations end to end, and calibrated exposure or security pools across sittings (FORM-04/05).

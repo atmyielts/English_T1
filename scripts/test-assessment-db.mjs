@@ -74,6 +74,7 @@ try {
   files.push('supabase/migrations/20261022110000_assessment_entitlements.sql','supabase/tests/assessment-entitlements.integration.sql');
   files.push('supabase/migrations/20261022120000_assessment_webhooks.sql','supabase/tests/assessment-webhooks.integration.sql');
   files.push('supabase/migrations/20261022130000_assessment_api_clients.sql','supabase/tests/assessment-api-clients.integration.sql');
+  files.push('supabase/migrations/20261022140000_assessment_blueprint_relations.sql','supabase/tests/assessment-blueprint-relations.integration.sql');
   const program=files.map(file=>{
     const protocol=file.endsWith('.integration.sql')?readFileSync('supabase/tests/assessment-runtime.fixture.sql','utf8')+'\n':'';
     const analyticsFixture=file.endsWith('assessment-analytics.integration.sql')?'begin;\n'+readFileSync('supabase/tests/assessment-analytics.fixture.sql','utf8')+'\n':'';
@@ -345,6 +346,9 @@ try {
   const {entitlementsRace}=await import('./test-assessment-entitlements-race.mjs');
   await entitlementsRace(query=>docker(['exec','-i',container,'psql','-At','-U','postgres','-v','ON_ERROR_STOP=1'],query),parallelSql);
   process.stdout.write('Passed four-process quota race: two of four simultaneous starts admitted on a two-attempt plan, two units charged, replays unchanged\n');
+  const {exposureRace}=await import('./test-assessment-exposure-race.mjs');
+  await exposureRace(query=>docker(['exec','-i',container,'psql','-At','-U','postgres','-v','ON_ERROR_STOP=1'],query),parallelSql);
+  process.stdout.write('Passed four-process exposure race: one form admitted under a one-form-per-sitting limit, three refused with blueprint_exposure_exhausted\n');
 } finally {
   spawnSync('docker',['stop',container],{encoding:'utf8',timeout:20000});
 }

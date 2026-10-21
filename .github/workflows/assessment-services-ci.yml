@@ -13,6 +13,7 @@ on:
       - 'packages/service-i18n/**'
       - 'scripts/assessment-integrations-fixture.mjs'
       - 'scripts/test-assessment-entitlements-race.mjs'
+      - 'scripts/test-assessment-exposure-race.mjs'
       - 'workers/assessment-grading/**'
       - 'workers/assessment-roster/**'
       - 'workers/assessment-media/**'
@@ -83,7 +84,7 @@ jobs:
           deno-version: v2.x
       - run: npm ci
       - name: Exact constrained assembly, draft recovery and canonical API authority
-        run: deno test --no-lock packages/assessment-core/src/blueprint.test.ts packages/assessment-core/src/blueprint-draft.test.ts supabase/functions/assessment-cloud/blueprint-handler.test.ts
+        run: deno test --no-lock packages/assessment-core/src/blueprint.test.ts packages/assessment-core/src/blueprint-draft.test.ts supabase/functions/assessment-cloud/blueprint-handler.test.ts packages/assessment-core/src/blueprint-relations.test.ts
       - name: Independent apps, Edge types and service boundaries
         run: |
           npm --workspace apps/assessment-cloud run build

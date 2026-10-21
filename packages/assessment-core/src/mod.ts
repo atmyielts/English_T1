@@ -157,7 +157,7 @@ export function validateDefinition(value: unknown): Definition {
     if (!Number.isInteger(draw)) fail("Draw count must be an integer");
     const sectionDuration = section.duration_seconds === undefined ? undefined : number(section.duration_seconds, "Section duration", 1, duration);
     if (sectionDuration !== undefined && !Number.isInteger(sectionDuration)) fail("Section duration must be an integer");
-    let constraints:Blueprint|undefined;if(section.blueprint!==undefined){try{constraints=blueprint(section.blueprint,draw,ITEM_TYPES);}catch(cause){throw new ContractError("invalid_blueprint",(cause as Error).message);}}
+    let constraints:Blueprint|undefined;if(section.blueprint!==undefined){try{constraints=blueprint(section.blueprint,draw,ITEM_TYPES,ids);}catch(cause){throw new ContractError("invalid_blueprint",(cause as Error).message);}}
     return { id: uuid(section.id), title: text(section.title, "Section title", 200), item_version_ids: ids, draw_count: draw, ...(sectionDuration === undefined ? {} : { duration_seconds: sectionDuration }),...(constraints?{blueprint:constraints}:{}) };
   });
   if (new Set(sections.map(s => s.id)).size !== sections.length) fail("Section IDs must be unique");
@@ -179,7 +179,7 @@ function shuffle<T>(values: T[], next = randomIndex): T[] {
   for (let i = result.length - 1; i > 0; i--) { const j = next(i + 1); if (!Number.isInteger(j) || j < 0 || j > i) throw new Error("Invalid random index"); [result[i], result[j]] = [result[j], result[i]]; }
   return result;
 }
-export function buildManifest(versionId: string, definition: Definition, approved: ApprovedItem[], next = randomIndex): Manifest {
+export function buildManifest(versionId: string, definition: Definition, approved: ApprovedItem[], next = randomIndex, unavailable: ReadonlySet<string> = new Set()): Manifest {
   const pool = new Map(approved.map(item => [item.id, item]));
   const budget={remaining:100000};
   const sections = definition.sections.map(section => {
@@ -192,7 +192,7 @@ export function buildManifest(versionId: string, definition: Definition, approve
     // order unless question-order shuffling is explicitly enabled.
     const sampled = !section.blueprint && section.draw_count! < candidates.length ? new Set(shuffle(candidates, next).slice(0, section.draw_count).map(item => item.id)) : null;
     let selected = sampled ? candidates.filter(item => sampled.has(item.id)) : candidates;
-    if(section.blueprint){try{selected=selectBlueprint(candidates,section.draw_count??candidates.length,section.blueprint,next,budget);}catch(cause){if(cause instanceof BlueprintError)throw new ContractError(cause.code,cause.message);throw cause;}}
+    if(section.blueprint){try{selected=selectBlueprint(candidates,section.draw_count??candidates.length,section.blueprint,next,budget,unavailable);}catch(cause){if(cause instanceof BlueprintError)throw new ContractError(cause.code,cause.message);throw cause;}}
     const ordered = definition.shuffle_items ? shuffle(selected, next) : selected;
     const items = ordered.map(candidate => {
       const item = validateItem(candidate.item);

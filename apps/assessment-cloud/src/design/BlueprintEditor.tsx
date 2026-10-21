@@ -10,6 +10,7 @@ import {
 } from "../../../../packages/assessment-core/src/blueprint.ts";
 import { ITEM_TYPES } from "../../../../packages/assessment-core/src/mod.ts";
 import { useAppT, useCodeText, useItemLabel } from "../i18n/index.ts";
+import { BlueprintRelations } from "./BlueprintRelations";
 import type { Row } from "../../../../packages/assessment-web/src/client";
 export function BlueprintEditor(
   { section, index, questions, change }: {
@@ -220,6 +221,7 @@ export function BlueprintEditor(
           </button>
         </fieldset>
       ))}
+      <BlueprintRelations value={value} items={section.items} questions={questions} index={index} change={(next) => change({ ...section, blueprint: next })} />
       <button
         type="button"
         className="quiet"

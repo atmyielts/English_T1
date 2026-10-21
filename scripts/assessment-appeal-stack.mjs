@@ -98,7 +98,7 @@ export async function appealBrowserStack({ certificates = false,documents=false,
     rpc(name, args) {
       assert.match(
         name,
-        /^(assessment_(workspaces|billing_summary|usage_adjust|billing_configure|webhook_(?:command|read|claim|report)|api_(?:client_command|client_list|token_issue|read|command)|invitation_(mail_(read|command|claim|begin|report)|read|command|preview|accept)|staff_(read|command)|command(_live_gate)?|runtime_(snapshot|command|expire|schedule_claim|schedule_reconcile)|appeal_(read|command)|grading_(read|command)|certificate_(read|command|seal|status|reference|document_report)|cohort_(read|command)|roster_(claim|step)|bank_(import_(read|command)|export)|analytics_(read|command)|feedback_(read|command)|artifact_read|released_breakdown|has_capability)|proctor_(command|can_access|workload_(read|staff|command)|capture_(read|command(_live_gate)?)|live_(read|command|context|report)|recording_(command|checkpoint|transport|catalog|read)))$/,
+        /^(assessment_(workspaces|blueprint_saturated|billing_summary|usage_adjust|billing_configure|webhook_(?:command|read|claim|report)|api_(?:client_command|client_list|token_issue|read|command)|invitation_(mail_(read|command|claim|begin|report)|read|command|preview|accept)|staff_(read|command)|command(_live_gate)?|runtime_(snapshot|command|expire|schedule_claim|schedule_reconcile)|appeal_(read|command)|grading_(read|command)|certificate_(read|command|seal|status|reference|document_report)|cohort_(read|command)|roster_(claim|step)|bank_(import_(read|command)|export)|analytics_(read|command)|feedback_(read|command)|artifact_read|released_breakdown|has_capability)|proctor_(command|can_access|workload_(read|staff|command)|capture_(read|command(_live_gate)?)|live_(read|command|context|report)|recording_(command|checkpoint|transport|catalog|read)))$/,
       );
       const query=`select to_jsonb(public.${name}(${Object.entries(args).map(([key,value])=>{assert.match(key,/^p_[a-z][a-z0-9_]*$/);return `${key}=>${literal(value)}${key==='p_data'?'::jsonb':''}`;}).join(',')}));`;
       return bridge.query(query).then(async result=>{
@@ -208,6 +208,7 @@ export async function appealBrowserStack({ certificates = false,documents=false,
       "20261022110000_assessment_entitlements",
       "20261022120000_assessment_webhooks",
       "20261022130000_assessment_api_clients",
+      "20261022140000_assessment_blueprint_relations",
     ];
     sql(
       await readFile(

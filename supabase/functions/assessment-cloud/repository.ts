@@ -98,6 +98,11 @@ export function createAssessmentRepository(
       }
       return result;
     },
+    async saturated(tenant, actor, registration) {
+      const { data, error } = await service.rpc("assessment_blueprint_saturated", { p_actor: actor, p_tenant: tenant, p_registration: registration });
+      if (error) dbError(error);
+      return Array.isArray(data) ? data.map(String) : [];
+    },
     async windowRequirements(tenant, ids) {
       const result: Row[] = [];
       for (let index = 0; index < ids.length; index += 100) {

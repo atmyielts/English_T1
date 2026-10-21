@@ -529,4 +529,5 @@ export const uz: Record<keyof typeof en, string> = {
   'mediaAnswer.removeExplain': 'Bu faqat mahalliy tiklash baytlarini o‘chiradi. Tanlangan javobni tozalamaydi va serverdagi topshiriqni o‘chirmaydi. Uzatish tasdiqlanmaguncha nusxani saqlab qoling.',
   'mediaAnswer.keep': 'Qurilma nusxasini qoldirish',
   'mediaAnswer.refresh': 'Akademik tekshiruv holatini yangilash',
+  'error.blueprint_exposure_exhausted': "Savollar foydalanish chegarasiga yetgani sababli bu sessiyada hozir yangi variant tuzib bo‘lmaydi. Muassasangizga murojaat qiling; hech qanday qoida yumshatilmadi.",
 };

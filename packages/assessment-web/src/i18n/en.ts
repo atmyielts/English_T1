@@ -576,4 +576,5 @@ export const en = {
   'mediaAnswer.removeExplain': 'This removes only local recovery bytes. It does not clear the selected answer or remove a server submission. Keep a copy until transport is confirmed.',
   'mediaAnswer.keep': 'Keep device copy',
   'mediaAnswer.refresh': 'Refresh academic scan status',
+  'error.blueprint_exposure_exhausted': "This sitting cannot assemble a new form right now because questions reached their use limit. Contact your institution; no rules were relaxed.",
 };

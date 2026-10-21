@@ -153,6 +153,7 @@ export function buildAssessment(draft: AssessmentDraft): Definition {
             s.selection === "pool"
               ? seconds(s.draw, "Questions drawn")
               : s.items.length,
+            s.items,
           ),
         }
         : {}),

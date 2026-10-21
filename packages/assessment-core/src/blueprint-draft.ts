@@ -2,6 +2,7 @@ import {
   type Blueprint,
   blueprint,
   BLUEPRINT_PROTOCOL,
+  BLUEPRINT_PROTOCOL_V2,
   type Difficulty,
 } from "./blueprint.ts";
 import { ITEM_TYPES, object, uuid } from "./mod.ts";
@@ -15,11 +16,27 @@ export interface BlueprintRuleDraft {
   minimum: string;
   maximum: string;
 }
+export interface BlueprintFamilyDraft {
+  id: string;
+  label: string;
+  ids: string[];
+  maximum: string;
+}
 export interface BlueprintDraft {
   rules: BlueprintRuleDraft[];
   minimumPoints: string;
   maximumPoints: string;
+  /** Optional v2 relations; absent in drafts saved before v2. */
+  enemies?: [string, string][];
+  families?: BlueprintFamilyDraft[];
+  exposure?: string;
 }
+export const blankBlueprintFamily = (): BlueprintFamilyDraft => ({
+  id: crypto.randomUUID(),
+  label: "",
+  ids: [],
+  maximum: "1",
+});
 export const blankBlueprint = (): BlueprintDraft => ({
   rules: [],
   minimumPoints: "",
@@ -53,9 +70,17 @@ export function editBlueprint(value: Blueprint): BlueprintDraft {
     maximumPoints: value.maximum_points === undefined
       ? ""
       : String(value.maximum_points),
+    enemies: (value.enemies ?? []).map(([a, b]) => [a, b] as [string, string]),
+    families: (value.families ?? []).map((family) => ({
+      id: family.id,
+      label: family.label,
+      ids: [...family.item_version_ids],
+      maximum: String(family.maximum),
+    })),
+    exposure: value.exposure ? String(value.exposure.maximum_per_sitting) : "",
   };
 }
-export function buildBlueprint(value: BlueprintDraft, draw: number) {
+export function buildBlueprint(value: BlueprintDraft, draw: number, pool?: readonly string[]) {
   const number = (value: string, label: string, integer = false) => {
     if (!(integer ? /^\d+$/ : /^\d+(?:\.\d{1,6})?$/).test(value)) {
       throw Error(
@@ -66,9 +91,23 @@ export function buildBlueprint(value: BlueprintDraft, draw: number) {
     }
     return Number(value);
   };
+  const enemies = value.enemies ?? [], families = value.families ?? [], exposure = (value.exposure ?? "").trim();
+  const related = enemies.length > 0 || families.length > 0 || exposure !== "";
   return blueprint(
     {
-      schema_version: BLUEPRINT_PROTOCOL,
+      schema_version: related ? BLUEPRINT_PROTOCOL_V2 : BLUEPRINT_PROTOCOL,
+      ...(enemies.length ? { enemies } : {}),
+      ...(families.length
+        ? {
+          families: families.map((family) => ({
+            id: family.id,
+            label: family.label,
+            item_version_ids: family.ids,
+            maximum: number(family.maximum, "Family maximum", true),
+          })),
+        }
+        : {}),
+      ...(exposure ? { exposure: { maximum_per_sitting: number(exposure, "Exposure limit", true) } } : {}),
       rules: value.rules.map((rule) => ({
         id: rule.id,
         label: rule.label,
@@ -90,6 +129,7 @@ export function buildBlueprint(value: BlueprintDraft, draw: number) {
     },
     draw,
     ITEM_TYPES,
+    pool,
   );
 }
 export function restoreBlueprintDraft(value: unknown): BlueprintDraft {
@@ -137,9 +177,21 @@ export function restoreBlueprintDraft(value: unknown): BlueprintDraft {
   if (new Set(rules.map((rule) => rule.id)).size !== rules.length) {
     throw Error("Saved blueprint rule IDs repeat.");
   }
+  const enemies = data.enemies === undefined ? [] : (Array.isArray(data.enemies) && data.enemies.length <= 100 ? data.enemies : (() => { throw Error("Saved enemy pairs are invalid."); })()).map((pair: unknown) => {
+    if (!Array.isArray(pair) || pair.length !== 2) throw Error("Saved enemy pairs are invalid.");
+    return [uuid(pair[0]), uuid(pair[1])] as [string, string];
+  });
+  const families = data.families === undefined ? [] : (Array.isArray(data.families) && data.families.length <= 20 ? data.families : (() => { throw Error("Saved question families are invalid."); })()).map((value: unknown) => {
+    const family = object(value);
+    if (!Array.isArray(family.ids) || family.ids.length > 50) throw Error("Saved question families are invalid.");
+    return { id: uuid(family.id), label: str(family.label, 200), ids: family.ids.map((entry: unknown) => uuid(entry)), maximum: str(family.maximum, 10) };
+  });
   return {
     rules,
     minimumPoints: str(data.minimumPoints, 20),
     maximumPoints: str(data.maximumPoints, 20),
+    ...(data.enemies === undefined ? {} : { enemies }),
+    ...(data.families === undefined ? {} : { families }),
+    ...(data.exposure === undefined ? {} : { exposure: str(data.exposure, 10) }),
   };
 }

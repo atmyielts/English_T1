@@ -14,6 +14,8 @@ export interface Repository {
   windowRequirements(tenant: string, ids: string[]): Promise<Record<string, unknown>[]>;
   key(tenant: string, itemVersion: string): Promise<Record<string, unknown> | null>;
   command(actor: string, tenant: string, key: string, action: string, data: Record<string, unknown>): Promise<unknown>;
+  /** Question IDs at their exposure limit in the candidate's own sitting. */
+  saturated?(tenant: string, actor: string, registration: string): Promise<string[]>;
 }
 import {captureBinding} from '../../../packages/assessment-core/src/capture-launch.ts';
 import {IMAGE_RESPONSE_PROTOCOL} from '../../../packages/assessment-core/src/image-response.ts';
@@ -184,7 +186,13 @@ export function createHandler({ repository, allowedOrigins, promptMediaEnabled=f
             const existing=await repository.list('assessment_attempts',tenant,{registration_id:String(prepared.registration.id),candidate_id:actor!});
             if(existing.length>1)error(503,'blueprint_attempt_conflict','The canonical attempt could not be uniquely confirmed.');
             if(existing.length){const form=await repository.get('assessment_forms',tenant,String(existing[0].form_id));if(!form)error(503,'blueprint_form_unavailable','The committed form is unavailable. Contact your institution; no new form was generated.');manifest=object(form!.manifest) as unknown as Manifest;}
-            else manifest=buildManifest(String(prepared.version.id),prepared.definition,prepared.items);
+            else{
+              // Questions already at their sitting exposure limit are not offered; the
+              // database re-checks under a per-sitting lock at admission.
+              const limited=prepared.definition.sections.some(section=>section.blueprint?.exposure);
+              const unavailable=limited&&repository.saturated?new Set((await repository.saturated(tenant,actor!,String(prepared.registration.id))).map(id=>id.toLowerCase())):new Set<string>();
+              manifest=buildManifest(String(prepared.version.id),prepared.definition,prepared.items,undefined,unavailable);
+            }
           }else manifest=buildManifest(String(prepared.version.id), prepared.definition, prepared.items);
           input = { registration_id: prepared.registration.id, manifest, manifest_hash: await hash(manifest) };
           if(data.capture_binding!==undefined){
