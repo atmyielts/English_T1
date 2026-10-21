@@ -1,6 +1,8 @@
 import { getLocaleTag, translate } from '../../i18n';
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {AssignmentAudioPanel} from '../audio/AssignmentAudioPanel';
+import {OperationalPendingNotice} from './OperationalPendingNotice';
+import {pendingOperational} from '../../lib/operationalRequest';
 import {
   teacherStudioAssignments,
   teacherStudioAttendance,
@@ -298,7 +300,9 @@ export const EducationOSView = ({
   const bulkInvites = useMemo(() => currentClassroomData?.invites ?? [], [currentClassroomData]);
   const classroomReady = Boolean(currentClassroomData);
   const localBusy = actionBusy || classroomLoading || !classroomReady;
-  const gradingBusy = localBusy || rubricLoading || !rubricsReady;
+  const [pendingChange,setPendingChange]=useState(()=>Boolean(pendingOperational(academyId,actorId)));
+  useEffect(()=>{const sync=()=>setPendingChange(Boolean(pendingOperational(academyId,actorId)));sync();window.addEventListener('schood-operational-pending',sync);return()=>window.removeEventListener('schood-operational-pending',sync);},[academyId,actorId]);
+  const gradingBusy = localBusy || pendingChange || rubricLoading || !rubricsReady;
   const [staff, setStaff] = useState<TeacherStudioStaff[]>([]);
   const [notifications, setNotifications] = useState<TeacherStudioNotification[]>([]);
   const [auditEvents, setAuditEvents] = useState<TeacherStudioAuditEvent[]>([]);
@@ -819,6 +823,7 @@ export const EducationOSView = ({
   }, [branding]);
 
   const runAction = async (success: string, action: () => Promise<void>) => {
+    if(pendingOperational(academyId,actorId)){setLocalError('Confirm the pending change before starting another.');return;}
     setLocalBusy(true);
     setLocalError('');
     setLocalNotice('');
@@ -956,9 +961,18 @@ export const EducationOSView = ({
       || !selectedMembers.some((member) => member.contact?.id === gradeForm.contact_id)
       || !requireRoutePermission('gradeSubmissions', 'Gradebook controls')) return;
     await runAction('Grade recorded.', async () => {
+      const assignment=assignments.find(row=>row.id===gradeForm.assignment_id);
+      const reviewed=gradebook?.rows.find(row=>row.contact_id===gradeForm.contact_id)?.submissions[gradeForm.assignment_id];
+      if(!assignment?.updated_at||(reviewed?.id&&!reviewed.updated_at))throw new Error('Refresh the gradebook and review the current submission attempt.');
       await teacherStudioSubmitAssignmentForContact(academyId, {
         assignment_id: gradeForm.assignment_id,
         contact_id: gradeForm.contact_id,
+        review_label:`${contactById.get(gradeForm.contact_id)?contactName(contactById.get(gradeForm.contact_id)!):''} · ${assignment.title}`,
+        submission_id: reviewed?.id,
+        expected_attempt_number:reviewed?.id?(reviewed.attempt_number??1):0,
+        expected_updated_at:reviewed?.updated_at??null,
+        expected_assignment_updated_at:assignment.updated_at,
+        expected_rubric_criteria:selectedGradeRubric?.criteria,
         score: Number(gradeForm.score),
         max_score: Number(gradeForm.max_score) > 0 ? Number(gradeForm.max_score) : null,
         notes: gradeForm.notes.trim() || null,
@@ -970,7 +984,7 @@ export const EducationOSView = ({
               ),
             }
           : undefined,
-      });
+      },actorId);
       setGradeForm((previous) => ({ ...previous, score: '', notes: '', rubric_scores: {} }));
     });
   };
@@ -1224,6 +1238,7 @@ export const EducationOSView = ({
 
   return (
     <section className="grid education-os">
+      <OperationalPendingNotice academyId={academyId} actorId={actorId} onRecovered={loadOsData} />
       <div className="panel">
         <div className="row between wrap">
           <div>
@@ -1258,7 +1273,7 @@ export const EducationOSView = ({
         </div>
       </div>
 
-      {localError ? <div className="error-banner">{translate(localError)}</div> : null}
+      {localError ? <div className="error-banner" role="alert">{translate(localError)}</div> : null}
       {localNotice ? <div className="info-banner">{translate(localNotice)}</div> : null}
       {lastShareUrl ? (
         <div className="info-banner">
@@ -1808,6 +1823,7 @@ export const EducationOSView = ({
                   <span className="ledger-count">{selectedGradeStudentIndex >= 0 ? selectedGradeStudentIndex + 1 : 0} {translate("of")}{' '}{gradeableContacts.length}</span>
                 </div>
                 <form className="workspace-form grading-form" onSubmit={submitGrade}>
+                  <fieldset className="grading-review-fields" disabled={gradingBusy}>
                   <label>{translate("Assignment")}<select className="input" value={gradeForm.assignment_id} onChange={(event) => {
                     const assignmentId = event.target.value;
                     const assignment = assignments.find((item) => item.id === assignmentId);
@@ -1854,6 +1870,7 @@ export const EducationOSView = ({
                     <button className="primary-btn" type="submit" disabled={gradingBusy || !gradeForm.assignment_id || !gradeForm.contact_id}>{translate("Save grade")}</button>
                     <button className="ghost-btn" type="button" onClick={() => selectAdjacentGradeStudent(1)} disabled={localBusy || selectedGradeStudentIndex < 0 || selectedGradeStudentIndex >= gradeableContacts.length - 1}>{translate("Next student")}</button>
                   </div>
+                  </fieldset>
                 </form>
               </div>
             ) : null}

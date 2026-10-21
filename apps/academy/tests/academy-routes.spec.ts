@@ -1835,11 +1835,11 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
       relationship_id?: string;
       idempotency_key?: string;
     } | null;
-    const body=postedBody&&['operational_command','finance_read_command','finance_command','staff_access_command','access_invitation_command','staff_guardian_command','legacy_import_command','invitation_link_command','guardian_portal_read_command','guardian_portal_write_command','guardian_link_command'].includes(postedBody.action??'')
+    const body=postedBody&&['grading_command','operational_command','finance_read_command','finance_command','staff_access_command','access_invitation_command','staff_guardian_command','legacy_import_command','invitation_link_command','guardian_portal_read_command','guardian_portal_write_command','guardian_link_command'].includes(postedBody.action??'')
       ? {...postedBody,action:postedBody.command}:postedBody;
     const action = body?.action ?? "";
     const portalResponse = (value:unknown) => {
-      if(postedBody?.action==='operational_command')return {...value as Record<string,unknown>,actor_id:actorId,request_key:postedBody.idempotency_key,command:postedBody.command,replayed:false};
+      if(['grading_command','operational_command'].includes(postedBody?.action??''))return {...value as Record<string,unknown>,actor_id:actorId,request_key:postedBody.idempotency_key,command:postedBody.command,replayed:false};
       if(postedBody?.action==='finance_read_command')return {schema_version:1,totals:{},has_more:{},...value as Record<string,unknown>,actor_id:actorId};
       if(postedBody?.action==='finance_command')return {...value as Record<string,unknown>,actor_id:actorId,request_key:postedBody.idempotency_key,replayed:false};
       if(postedBody?.action==='guardian_portal_write_command')return {...value as Record<string,unknown>,actor_id:actorId,relationship_id:postedBody.relationship_id??'00000000-0000-4000-8000-000000000004',replayed:false,
@@ -3858,6 +3858,19 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
       }),
     ).toBeVisible();
     await expect(page.getByText("16.67%")).toBeVisible();
+  });
+
+  for(const outcome of [503,409])test(`grading ${outcome===503?'recovers a frozen attempt after reload':'releases a rejected revision for review'}`,async({page})=>{
+    await seedSessionCookie(page,'teacher-user');
+    const currentAssignment={...assignment,rubric_id:null};
+    await mockAcademyEdge(page,'teacher',{actionOverrides:{assignments:{assignments:[currentAssignment]},gradebook:{classroom_id:classroomId,assignments:[currentAssignment],rows:[{contact_id:studentContactId,first_name:'Ali',last_name:'Karimov',submissions:{[assignment.id]:{id:'owned-reviewed-submission',attempt_number:2,updated_at:'2026-10-20T12:00:00Z',status:'submitted',score:null,max_score:100}},composite_score:null,submitted_count:1,total_assignments:1}]}}});
+    const captures:Record<string,unknown>[]=[];
+    await page.route('**/functions/v1/academy',async route=>{const body=route.request().postDataJSON() as Record<string,unknown>;if(body.action!=='grading_command')return route.fallback();captures.push(body);if(captures.length===1)return route.fulfill({status:outcome,contentType:'application/json',body:JSON.stringify({error:'Owned grading review',retryable:outcome===503})});return route.fulfill(json({actor_id:'teacher-user',command:body.command,request_key:body.idempotency_key,replayed:outcome===503,submission:{id:'owned-reviewed-submission',academy_id:academyId,assignment_id:assignment.id,contact_id:studentContactId}}));});
+    await page.goto(`/academy/teacher/os?academy_id=${academyId}`);await page.getByRole('button',{name:'Learning',exact:true}).click();const score=page.getByRole('spinbutton',{name:'Score',exact:true});await score.fill('88');await page.getByRole('button',{name:'Save grade',exact:true}).click();await expect(page.getByRole('alert')).toContainText('Owned grading review');
+    expect(captures[0]).toMatchObject({command:'submit_assignment',expected_attempt_number:2,expected_updated_at:'2026-10-20T12:00:00Z',expected_assignment_updated_at:assignment.updated_at,submission_id:'owned-reviewed-submission',score:88});
+    if(outcome===503){await expect(score).toBeDisabled();await page.reload();await expect(page.getByText('A saved change still needs confirmation.',{exact:true})).toBeVisible();await page.getByRole('button',{name:'Retry saving',exact:true}).click();await expect(page.getByText('A saved change still needs confirmation.',{exact:true})).toHaveCount(0);expect(captures[1]).toEqual(captures[0]);}
+    else{await expect(score).toBeEnabled();await expect(page.getByText('A saved change still needs confirmation.',{exact:true})).toHaveCount(0);await score.fill('92');await page.getByRole('button',{name:'Save grade',exact:true}).click();await expect(page.getByText('Grade recorded.',{exact:true})).toBeVisible();expect(captures[1].score).toBe(92);expect(captures[1].idempotency_key).not.toBe(captures[0].idempotency_key);}
+    expect(captures).toHaveLength(2);
   });
 
   test("classroom work loads without waiting for Academy reports", async ({ page }) => {

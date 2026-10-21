@@ -1,3 +1,4 @@
+import {gradingActions,runGradingCommand} from './grading-command.ts';
 import {operationalActions,runOperationalCommand} from './operational-command.ts';
 import {runOperationalRead} from './operational-read.ts';
 import {audioActions,audioBucket,readAudioUploadRequest,runAssignmentAudio} from './assignment-audio.ts';
@@ -3207,6 +3208,7 @@ const handleReadAction = async (
           attempt_number: sub.attempt_number ?? 1,
           submitted_at: sub.submitted_at ?? null,
           graded_at: sub.graded_at ?? null,
+          updated_at: sub.updated_at ?? null,
           notes: sub.notes ?? null,
           feedback: sub.feedback ?? {},
           submission_content: sub.submission_content ?? null,
@@ -6664,6 +6666,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     if(rawActionBody==='staff_access_command'&&!staffAccessActions.has(nestedCommand))throw new StaffAccessError(400,"Choose a valid staff command.");
     if(rawActionBody==='access_invitation_command'&&!["create_access_invitation","resend_access_invitation","revoke_access_invitation"].includes(nestedCommand))throw new StaffInvitationError(400,"Choose a valid invitation command.");
     if(rawActionBody==='finance_read_command'&&!['commercial_core','operations_finance'].includes(nestedCommand))throw new LegacyImportCommandError(400,'Choose a valid financial workspace.');
+    if(rawActionBody==='grading_command'&&!gradingActions.has(nestedCommand))throw new LegacyImportCommandError(400,'Choose a valid grading action.');
     if(rawActionBody==='operational_command'&&!operationalActions.has(nestedCommand))throw new LegacyImportCommandError(400,'Choose a valid inquiry or lesson action.');
     if(rawActionBody==='finance_command'&&!financeActions.has(nestedCommand))throw new LegacyImportCommandError(400,'Choose a valid financial action.');
     if(rawActionBody==='staff_guardian_command'&&!staffGuardianActions.has(nestedCommand))throw new LegacyImportCommandError(400,'Choose a valid parent action.');
@@ -6673,7 +6676,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     if(rawActionBody==='guardian_portal_read_command'&&!['guardian_dashboard','guardian_service_requests','guardian_history'].includes(nestedCommand))throw new GuardianPortalError(400,'Choose a valid parent portal page.');
     if(rawActionBody==='guardian_link_command'&&nestedCommand!=='guardian_claim_link')throw new GuardianPortalError(400,'Review and confirm the parent invitation.');
     if(rawActionBody==='guardian_portal_write_command'&&!guardianWriteActions.has(nestedCommand))throw new GuardianPortalError(400,'Choose a valid parent command.');
-    const actionBody = ['operational_command','finance_read_command','finance_command','guardian_portal_write_command','staff_access_command','access_invitation_command','staff_import_command','staff_guardian_command','legacy_import_command','invitation_link_command','guardian_portal_read_command','guardian_link_command'].includes(rawActionBody)?nestedCommand:rawActionBody;
+    const actionBody = ['grading_command','operational_command','finance_read_command','finance_command','guardian_portal_write_command','staff_access_command','access_invitation_command','staff_import_command','staff_guardian_command','legacy_import_command','invitation_link_command','guardian_portal_read_command','guardian_link_command'].includes(rawActionBody)?nestedCommand:rawActionBody;
     const requestedAction = actionBody || actionQuery;
     if(audioActions.has(requestedAction)){
       if(req.method!=='POST')return json(405,{error:'Method not allowed'});
@@ -7745,6 +7748,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
       }
 
       const academyId = resolveAcademyId(memberships, normalizeText(body?.academy_id, 64) || null);
+      if(gradingActions.has(actionBody))return json(200,await runGradingCommand(sb,academyId,userId,actionBody,body??{}));
       if(operationalActions.has(actionBody))return json(200,await runOperationalCommand(sb,academyId,userId,actionBody,body??{}));
       if(financeActions.has(actionBody))return json(200,await runFinanceCommand(sb,academyId,userId,actionBody,body??{}));
       const access = requireAcademyAccess(memberships, academyId);
@@ -10865,153 +10869,6 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
           metadata: { fields: Object.keys(patch) },
         });
         return json(200, { assignment: data });
-      }
-
-      if (actionBody === "submit_assignment") {
-        const assignmentId = normalizeText(body?.assignment_id, 64);
-        const contactId = normalizeText(body?.contact_id, 64);
-        if (!assignmentId) return json(400, { error: "assignment_id is required" });
-        if (!contactId) return json(400, { error: "contact_id is required" });
-        const score = typeof body?.score === "number" ? body.score : null;
-        const hasGradePatch = score !== null || typeof body?.max_score === "number";
-        requireAcademyPermission(access, hasGradePatch ? "gradeSubmissions" : "manageAssignments");
-
-        const { data: asgn } = await sb.from("academy_assignments").select("id, classroom_id, max_score, rubric_id").eq("id", assignmentId).eq("academy_id", academyId).maybeSingle();
-        if (!asgn?.id) return json(404, { error: "Assignment not found" });
-        if (!accessCanUseClassroom(access, asgn.classroom_id)) return json(403, { error: "Forbidden" });
-        await ensureContactInAccessScope(sb, academyId, access, contactId);
-
-        const { data: contact } = await sb.from("academy_contacts").select("id, user_id").eq("id", contactId).eq("academy_id", academyId).maybeSingle();
-        if (!contact?.id) return json(404, { error: "Contact not found" });
-
-        const maxScore = typeof body?.max_score === "number" ? body.max_score : (asgn.max_score ?? null);
-        const submissionStatus = score !== null ? "graded" : "submitted";
-        const feedback: Record<string, unknown> = isJsonObject(body?.feedback) ? body.feedback : {};
-        if (score !== null && asgn.rubric_id) {
-          if (String(feedback.rubric_id ?? "") !== String(asgn.rubric_id)) {
-            return json(400, { error: "Rubric scores are required for this assignment" });
-          }
-          const { data: rubric, error: rubricError } = await sb.from("academy_rubrics")
-            .select("id, criteria").eq("academy_id", academyId).eq("id", asgn.rubric_id).neq("status", "archived").maybeSingle();
-          if (rubricError) return json(500, { error: "Failed to load assignment rubric", detail: rubricError.message });
-          if (!rubric?.id || !Array.isArray(rubric.criteria)) return json(409, { error: "Assignment rubric is unavailable" });
-          const rubricGrade = gradeAcademyRubric(rubric.criteria, feedback.rubric_scores);
-          if (!rubricGrade.ok) return json(400, { error: rubricGrade.error });
-          if (Math.abs(score - rubricGrade.score) > 0.001 || maxScore === null || Math.abs(Number(maxScore) - rubricGrade.max_score) > 0.001) {
-            return json(400, { error: "Score and max_score must match the rubric totals" });
-          }
-          feedback.rubric_scores = rubricGrade.scores;
-        }
-
-        const payload = {
-          academy_id: academyId,
-          assignment_id: assignmentId,
-          classroom_id: asgn.classroom_id,
-          contact_id: contactId,
-          user_id: (contact.user_id as string | null) ?? null,
-          session_id: normalizeText(body?.session_id, 64) || null,
-          score,
-          max_score: maxScore,
-          status: submissionStatus,
-          submitted_at: new Date().toISOString(),
-          notes: normalizeText(body?.notes, 2000) || null,
-          feedback,
-          metadata: typeof body?.metadata === "object" && body.metadata !== null && !Array.isArray(body.metadata) ? body.metadata : {},
-        };
-
-        const { data, error } = await sb.from("academy_submissions").upsert(payload, { onConflict: "assignment_id,contact_id" })
-          .select("id, assignment_id, contact_id, score, max_score, status, attempt_number, submitted_at, graded_at, notes, feedback, created_at, updated_at")
-          .maybeSingle();
-        if (error) return json(500, { error: "Failed to submit assignment", detail: error.message });
-        await logAcademyAuditEvent(sb, {
-          academyId,
-          actorUserId: userId,
-          actorRole: access.role,
-          action: score !== null ? "submission.graded" : "submission.recorded",
-          targetType: "academy_submission",
-          targetId: data?.id ? String(data.id) : null,
-          contactId,
-          classroomId: String(asgn.classroom_id),
-          metadata: { assignment_id: assignmentId, score, max_score: maxScore },
-        });
-        return json(200, { submission: data });
-      }
-
-      if (actionBody === "grade_submission") {
-        const submissionId = normalizeText(body?.submission_id ?? body?.id, 64);
-        const assignmentId = normalizeText(body?.assignment_id, 64);
-        const contactId = normalizeText(body?.contact_id, 64);
-        const score = typeof body?.score === "number" ? body.score : null;
-
-        if (score === null) return json(400, { error: "score is required" });
-
-        let targetId: string | null = submissionId;
-        if (!targetId && assignmentId && contactId) {
-          const { data: sub } = await sb.from("academy_submissions").select("id").eq("assignment_id", assignmentId).eq("contact_id", contactId).eq("academy_id", academyId).maybeSingle();
-          targetId = sub?.id ? String(sub.id) : null;
-        }
-        if (!targetId) return json(404, { error: "Submission not found" });
-
-        const { data: existingSubmission, error: existingSubmissionError } = await sb.from("academy_submissions")
-          .select("id, assignment_id, classroom_id, contact_id, max_score")
-          .eq("id", targetId)
-          .eq("academy_id", academyId)
-          .maybeSingle();
-        if (existingSubmissionError) return json(500, { error: "Failed to load submission", detail: existingSubmissionError.message });
-        if (!existingSubmission?.id) return json(404, { error: "Submission not found" });
-        if (!accessCanUseClassroom(access, existingSubmission.classroom_id)) return json(403, { error: "Forbidden" });
-        await ensureContactInAccessScope(sb, academyId, access, existingSubmission.contact_id);
-
-        const feedback: Record<string, unknown> = isJsonObject(body?.feedback) ? body.feedback : {};
-        const { data: assignmentForGrade, error: assignmentForGradeError } = await sb.from("academy_assignments")
-          .select("id, rubric_id, max_score").eq("academy_id", academyId).eq("id", existingSubmission.assignment_id).maybeSingle();
-        if (assignmentForGradeError) return json(500, { error: "Failed to load submission assignment", detail: assignmentForGradeError.message });
-        if (assignmentForGrade?.rubric_id) {
-          if (String(feedback.rubric_id ?? "") !== String(assignmentForGrade.rubric_id)) {
-            return json(400, { error: "Rubric scores are required for this assignment" });
-          }
-          const { data: rubric, error: rubricError } = await sb.from("academy_rubrics")
-            .select("id, criteria").eq("academy_id", academyId).eq("id", assignmentForGrade.rubric_id).neq("status", "archived").maybeSingle();
-          if (rubricError) return json(500, { error: "Failed to load assignment rubric", detail: rubricError.message });
-          if (!rubric?.id || !Array.isArray(rubric.criteria)) return json(409, { error: "Assignment rubric is unavailable" });
-          const rubricGrade = gradeAcademyRubric(rubric.criteria, feedback.rubric_scores);
-          if (!rubricGrade.ok) return json(400, { error: rubricGrade.error });
-          const requestedMaxScore = typeof body?.max_score === "number"
-            ? body.max_score
-            : Number(existingSubmission.max_score ?? assignmentForGrade.max_score ?? 0);
-          if (Math.abs(score - rubricGrade.score) > 0.001 || Math.abs(requestedMaxScore - rubricGrade.max_score) > 0.001) {
-            return json(400, { error: "Score and max_score must match the rubric totals" });
-          }
-          feedback.rubric_scores = rubricGrade.scores;
-        }
-
-        const patch: Record<string, unknown> = {
-          score,
-          status: "graded",
-          graded_at: new Date().toISOString(),
-          graded_by: userId,
-        };
-        if (typeof body?.max_score === "number") patch.max_score = body.max_score;
-        if (typeof body?.notes === "string") patch.notes = normalizeText(body.notes, 2000) || null;
-        if (isJsonObject(body?.feedback)) patch.feedback = feedback;
-
-        const { data, error } = await sb.from("academy_submissions").update(patch).eq("id", targetId).eq("academy_id", academyId)
-          .select("id, assignment_id, contact_id, score, max_score, status, attempt_number, submitted_at, graded_at, graded_by, notes, feedback, updated_at")
-          .maybeSingle();
-        if (error) return json(500, { error: "Failed to grade submission", detail: error.message });
-        await logAcademyAuditEvent(sb, {
-          academyId,
-          actorUserId: userId,
-          actorRole: access.role,
-          action: "submission.graded",
-          targetType: "academy_submission",
-          targetId,
-          contactId: String(existingSubmission.contact_id ?? ""),
-          classroomId: String(existingSubmission.classroom_id ?? ""),
-          status: "ok",
-          metadata: { score, max_score: patch.max_score ?? null, assignment_id: data?.assignment_id ?? assignmentId ?? null },
-        });
-        return json(200, { submission: data });
       }
 
       if (actionBody === "mark_attendance") {

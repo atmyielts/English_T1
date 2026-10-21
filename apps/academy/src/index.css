@@ -5101,6 +5101,8 @@ dialog.quiz-attempt-panel h2 {
   gap: 8px;
 }
 
+.grading-review-fields { border:0; padding:0; margin:0; min-width:0; display:grid; gap:var(--space-3, 0.75rem); }
+
 .attendance-toolbar {
   display: grid;
   grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);

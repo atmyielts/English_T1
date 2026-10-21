@@ -2925,6 +2925,13 @@
   "Only part of this gradebook is loaded. Missing-work counts and averages may be incomplete.": "Baholar jurnalining faqat bir qismi yuklangan. Topshirilmagan ishlar soni va o‘rtacha baholar to‘liq bo‘lmasligi mumkin.",
   "Quiz attempts needing grading": "Baholash kerak bo‘lgan test urinishlari",
   "A saved change still needs confirmation.": "Saqlangan o‘zgarish hali tasdiqlanishi kerak.",
-  "Confirm the pending inquiry or lesson change before starting another.": "Yangi o‘zgarishdan oldin kutilayotgan murojaat yoki dars o‘zgarishini tasdiqlang.",
-  "Lead saved. Another inquiry in this branch uses this phone number; review both before merging.": "Murojaat saqlandi. Bu filialdagi boshqa murojaatda ham shu telefon raqami bor. Birlashtirishdan oldin ikkalasini tekshiring."
+  "Lead saved. Another inquiry in this branch uses this phone number; review both before merging.": "Murojaat saqlandi. Bu filialdagi boshqa murojaatda ham shu telefon raqami bor. Birlashtirishdan oldin ikkalasini tekshiring.",
+  "Refresh the gradebook and review the current submission attempt.": "Baholar jurnalini yangilab, ishning joriy urinishini tekshiring.",
+  "We could not confirm this grade. Retry the same grading change.": "Bu bahoni tasdiqlab bo‘lmadi. Shu baholash o‘zgarishini qayta yuboring.",
+  "Your current access does not cover this assignment and learner.": "Joriy ruxsatingiz bu topshiriq va o‘quvchini qamrab olmaydi.",
+  "The assignment or submission attempt changed. Refresh and review it.": "Topshiriq yoki ishni topshirish urinishi o‘zgardi. Yangilab, qayta tekshiring.",
+  "Review the current score, maximum and rubric criteria.": "Joriy baho, eng yuqori ball va baholash mezonlarini tekshiring.",
+  "Review a smaller grading change.": "Bir safar kamroq baholash ma’lumotlarini yuboring.",
+  "Choose a valid grading action.": "To‘g‘ri baholash amalini tanlang.",
+  "Confirm the pending change before starting another.": "Yangi o‘zgarishdan oldin kutilayotgan o‘zgarishni tasdiqlang."
 }

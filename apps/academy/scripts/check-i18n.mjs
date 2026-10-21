@@ -23,6 +23,13 @@ const uiMetadataKeys = new Set([
   'subheadline',
 ]);
 const runtimeKeys = [
+  "Refresh the gradebook and review the current submission attempt.",
+  "We could not confirm this grade. Retry the same grading change.",
+  "Your current access does not cover this assignment and learner.",
+  "The assignment or submission attempt changed. Refresh and review it.",
+  "Review the current score, maximum and rubric criteria.",
+  "Review a smaller grading change.",
+  "Choose a valid grading action.",
   "Your current access does not cover this operational workspace.",
   "Unable to load this operational workspace. Try again.",
   "Unable to confirm current operational access. Try again.",

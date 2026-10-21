@@ -1,6 +1,7 @@
 import {academyActorSession,StaffRequestError} from './staffRequest';
 type Pending={actor:string;academy:string;command:string;payload:Record<string,unknown>};
-const actions=new Set(['create_lead','teacher_lesson_start','teacher_lesson_attendance','teacher_lesson_finish']);
+const grades=new Set(['grade_submission','submit_assignment']);
+const actions=new Set(['create_lead','teacher_lesson_start','teacher_lesson_attendance','teacher_lesson_finish',...grades]);
 const slot=(academy:string,actor:string)=>'schood.operational.pending.v1:'+JSON.stringify([actor,academy]);
 export function pendingOperational(academy:string,actor:string):Pending|null{
  try{const raw=sessionStorage.getItem(slot(academy,actor));if(!raw||raw.length>65536)return null;const row=JSON.parse(raw) as Pending;
@@ -13,9 +14,9 @@ export async function operationalRequest<T>(academy:string,command:string,payloa
  const first=await academyActorSession(expectedActor),actor=first.user.id;
  if(!actions.has(command))throw new StaffRequestError('Choose a valid inquiry or lesson action.',400);
  const previous=pendingOperational(academy,actor);
- if(previous&&(previous.command!==command||JSON.stringify(canonical(previous.payload))!==JSON.stringify(canonical(payload))))throw new StaffRequestError('Confirm the pending inquiry or lesson change before starting another.',409);
+ if(previous&&(previous.command!==command||JSON.stringify(canonical(previous.payload))!==JSON.stringify(canonical(payload))))throw new StaffRequestError('Confirm the pending change before starting another.',409);
  const captured=previous??{actor,academy,command,payload:structuredClone({...payload,idempotency_key:payload.idempotency_key??crypto.randomUUID()})};
- const body=JSON.stringify({...captured.payload,action:'operational_command',command,academy_id:academy,_expected_actor:actor});
+ const body=JSON.stringify({...captured.payload,action:grades.has(command)?'grading_command':'operational_command',command,academy_id:academy,_expected_actor:actor});
  if(new TextEncoder().encode(body).byteLength>60000)throw new StaffRequestError('There is too much information to save at once.',413);
  try{sessionStorage.setItem(slot(academy,actor),JSON.stringify(captured));}catch{throw new StaffRequestError('Your browser could not preserve this change. Enable session storage and retry.',400);}
  notify();

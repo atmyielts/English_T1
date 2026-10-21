@@ -762,7 +762,7 @@ export type TeacherStudioGradebook = {
     email: string | null;
     status: string;
     role: string;
-    submissions: Record<string, { id?:string; attempt_number?:number; score: number | null; max_score?: number | null; status: string; submitted_at?: string | null; graded_at?: string | null; notes?: string | null; feedback?: Json; submission_content?: string | null; submission_url?: string | null; signed_url?: string | null; metadata?: Json }>;
+    submissions: Record<string, { id?:string; updated_at?:string|null; attempt_number?:number; score: number | null; max_score?: number | null; status: string; submitted_at?: string | null; graded_at?: string | null; notes?: string | null; feedback?: Json; submission_content?: string | null; submission_url?: string | null; signed_url?: string | null; metadata?: Json }>;
     composite_score: number | null;
     category_scores?: Record<string, number>;
     submitted_count: number;
@@ -2911,6 +2911,12 @@ export const teacherStudioSubmitAssignmentForContact = async (
   academyId: string,
   body: {
     assignment_id: string;
+    review_label?:string;
+    submission_id?:string;
+    expected_attempt_number:number;
+    expected_updated_at?:string|null;
+    expected_assignment_updated_at:string;
+    expected_rubric_criteria?:unknown[];
     contact_id: string;
     score?: number | null;
     max_score?: number | null;
@@ -2918,13 +2924,9 @@ export const teacherStudioSubmitAssignmentForContact = async (
     feedback?: Json;
     session_id?: string | null;
   },
+  expectedActor?:string,
 ): Promise<TeacherStudioSubmission> => {
-  const data = await callTeacherStudio<{ submission: TeacherStudioSubmission }>({
-    method: 'POST',
-    action: 'submit_assignment',
-    academyId,
-    body,
-  });
+  const data = await operationalRequest<{submission:TeacherStudioSubmission}>(academyId,'submit_assignment',body,expectedActor);
   return data.submission;
 };
 
@@ -2932,19 +2934,19 @@ export const teacherStudioGradeSubmission = async (
   academyId: string,
   body: {
     submission_id?: string;
+    expected_attempt_number:number;
+    expected_updated_at?:string|null;
+    expected_assignment_updated_at:string;
+    expected_rubric_criteria?:unknown[];
     assignment_id?: string;
     contact_id?: string;
     score: number;
     max_score?: number | null;
     notes?: string | null;
   },
+  expectedActor?:string,
 ): Promise<TeacherStudioSubmission> => {
-  const data = await callTeacherStudio<{ submission: TeacherStudioSubmission }>({
-    method: 'POST',
-    action: 'grade_submission',
-    academyId,
-    body,
-  });
+  const data = await operationalRequest<{submission:TeacherStudioSubmission}>(academyId,'grade_submission',body,expectedActor);
   return data.submission;
 };
 

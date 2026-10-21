@@ -2926,6 +2926,13 @@
   "Only part of this gradebook is loaded. Missing-work counts and averages may be incomplete.": "Only part of this gradebook is loaded. Missing-work counts and averages may be incomplete.",
   "Quiz attempts needing grading": "Quiz attempts needing grading",
   "A saved change still needs confirmation.": "A saved change still needs confirmation.",
-  "Confirm the pending inquiry or lesson change before starting another.": "Confirm the pending inquiry or lesson change before starting another.",
-  "Lead saved. Another inquiry in this branch uses this phone number; review both before merging.": "Lead saved. Another inquiry in this branch uses this phone number; review both before merging."
+  "Lead saved. Another inquiry in this branch uses this phone number; review both before merging.": "Lead saved. Another inquiry in this branch uses this phone number; review both before merging.",
+  "Refresh the gradebook and review the current submission attempt.": "Refresh the gradebook and review the current submission attempt.",
+  "We could not confirm this grade. Retry the same grading change.": "We could not confirm this grade. Retry the same grading change.",
+  "Your current access does not cover this assignment and learner.": "Your current access does not cover this assignment and learner.",
+  "The assignment or submission attempt changed. Refresh and review it.": "The assignment or submission attempt changed. Refresh and review it.",
+  "Review the current score, maximum and rubric criteria.": "Review the current score, maximum and rubric criteria.",
+  "Review a smaller grading change.": "Review a smaller grading change.",
+  "Choose a valid grading action.": "Choose a valid grading action.",
+  "Confirm the pending change before starting another.": "Confirm the pending change before starting another."
 }
