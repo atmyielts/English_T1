@@ -697,7 +697,7 @@ for (const action of auditActions) {
     && /insert into public\.academy_audit_events\([^;]+values\(p_academy_id,p_actor_id,audit_action,/.test(staffCommands);
   const assignmentCommands = read('supabase/migrations/20261020210000_academy_private_assignment_audio.sql');
   const atomicAssignmentAudit = action === 'assignment.submitted'
-    && academyEdge.includes('sb.rpc("academy_assignment_written_command",')
+    && (academyEdge.includes('sb.rpc("academy_assignment_written_command",')||(academyEdge.includes("sb.rpc(requestKey?'academy_written_submission_command':'academy_assignment_written_command'")&&read('supabase/migrations/20261021012000_academy_written_submission_receipts.sql').includes('result:=public.academy_assignment_written_command(p_academy,p_actor,p_assignment,p_payload);')))
     && /insert into public\.academy_audit_events[^;]+'assignment\.submitted'/.test(assignmentCommands);
   const gradingCommands=read('supabase/migrations/20261021003000_academy_current_attempt_grading.sql');
   const atomicGradingAudit=action==='submission.graded'&&academyEdge.includes('await runGradingCommand(sb,academyId,userId,actionBody,body')
