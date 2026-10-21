@@ -1,3 +1,4 @@
+import {runTeacherRetentionRead} from './teacher-retention.ts';
 import {gradingActions,runGradingCommand} from './grading-command.ts';
 import {operationalActions,runOperationalCommand} from './operational-command.ts';
 import {runOperationalRead} from './operational-read.ts';
@@ -7748,6 +7749,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
       }
 
       const academyId = resolveAcademyId(memberships, normalizeText(body?.academy_id, 64) || null);
+      if(actionBody==='teacher_retention')return json(200,await runTeacherRetentionRead(sb,academyId,userId,body??{}));
       if(gradingActions.has(actionBody))return json(200,await runGradingCommand(sb,academyId,userId,actionBody,body??{}));
       if(operationalActions.has(actionBody))return json(200,await runOperationalCommand(sb,academyId,userId,actionBody,body??{}));
       if(financeActions.has(actionBody))return json(200,await runFinanceCommand(sb,academyId,userId,actionBody,body??{}));

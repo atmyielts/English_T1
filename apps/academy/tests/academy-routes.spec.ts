@@ -2,6 +2,37 @@ import { expect, test, type Page, type Route } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 
+test('teacher retention separates cohort outcomes and keeps phone report within the page',async({page})=>{
+ const actions:string[]=[];
+ await seedSessionCookie(page,'owner-user');await mockAcademyEdge(page,'owner',{actionLog:actions,respond:async body=>body.action==='teacher_retention'?{
+  schema_version:1,actor_id:'owner-user',academy_id:academyId,from:body.from,to:body.to,branch_id:body.branch_id,covered_from:'2026-01-01T00:00:00Z',history_complete:true,has_more:false,branches:[],
+  rows:[{staff_id:'owned-teacher',display_name:'Owned cohort teacher',cohort_size:6,retained_students:2,paused_students:1,teacher_transfers:1,academy_departures:2,completed_students:1,retention_denominator:5,unresolved_changes:0,excluded_corrections:2,teacher_retention_percent:40,academy_retention_percent:60},
+   {staff_id:'empty-teacher',display_name:'Owned empty teacher',cohort_size:0,retained_students:0,paused_students:0,teacher_transfers:0,academy_departures:0,completed_students:0,retention_denominator:0,unresolved_changes:0,excluded_corrections:0,teacher_retention_percent:null,academy_retention_percent:null}]
+ }:undefined});
+ await page.goto('/academy/admin/retention?academy_id='+academyId);
+ await expect(page.getByRole('heading',{name:'Teacher retention',level:2,exact:true})).toBeVisible();
+ const row=page.getByRole('row').filter({has:page.getByRole('rowheader',{name:'Owned cohort teacher',exact:true})});
+ await expect(row.getByRole('cell',{name:'40%',exact:true})).toBeVisible();await expect(row.getByRole('cell',{name:'60%',exact:true})).toBeVisible();
+ await expect(page.getByRole('row').filter({has:page.getByRole('rowheader',{name:'Owned empty teacher',exact:true})}).getByRole('cell',{name:'Not available',exact:true})).toHaveCount(2);
+ for(const width of [390,1440]){await page.setViewportSize({width,height:1000});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:test.info().outputPath(`teacher-retention-${width}.png`),fullPage:true});}
+ expect(actions).not.toContain('business_intelligence');expect(actions.filter(action=>action==='teacher_retention')).toHaveLength(1);
+});
+
+test('retention history gap is explicit and recorded-period retry never fabricates historical rates',async({page})=>{
+ const requests:Record<string,unknown>[]=[],coverage=new Date(Date.now()-86400000).toISOString();
+ await seedSessionCookie(page,'owner-user');await mockAcademyEdge(page,'owner',{respond:async body=>{if(body.action!=='teacher_retention')return undefined;requests.push(body);return {schema_version:1,actor_id:'owner-user',academy_id:academyId,from:body.from,to:body.to,branch_id:null,covered_from:coverage,history_complete:requests.length>1,has_more:false,rows:[],branches:[]};}});
+ await page.goto('/academy/admin/retention?academy_id='+academyId);
+ await expect(page.getByText('This period begins before recorded teacher history. Historical retention cannot be reconstructed from current assignments.',{exact:true})).toBeVisible();
+ await expect(page.getByRole('table')).toHaveCount(0);await page.getByRole('button',{name:'Use recorded history',exact:true}).click();
+ await expect(page.getByText('No teacher cohort in this period.',{exact:true})).toBeVisible();expect(requests).toHaveLength(2);expect(Date.parse(String(requests[1].from))).toBeGreaterThanOrEqual(Date.parse(coverage));expect(requests[1]._expected_actor).toBe('owner-user');
+});
+
+test('teaching access cannot load staff retention and failed report can be retried',async({page})=>{
+ const actions:string[]=[];await seedSessionCookie(page,'teacher-user');await mockAcademyEdge(page,'teacher',{actionLog:actions});await page.goto('/academy/teacher/retention?academy_id='+academyId);await expect(page.getByRole('heading',{name:'Teacher retention',exact:true})).toHaveCount(0);expect(actions).not.toContain('teacher_retention');
+ await page.unrouteAll({behavior:'wait'});await seedSessionCookie(page,'owner-user');await mockAcademyEdge(page,'owner',{failActionAttempts:{teacher_retention:1},actionOverrides:{teacher_retention:{schema_version:1,actor_id:'owner-user',academy_id:academyId,from:'2026-10-01T00:00:00Z',to:new Date().toISOString(),branch_id:null,covered_from:null,history_complete:false,has_more:false,rows:[],branches:[]}}});await page.goto('/academy/admin/retention?academy_id='+academyId);
+ await expect(page.getByRole('alert')).toBeVisible();await expect(page.getByRole('table')).toHaveCount(0);await page.getByRole('button',{name:'Load report',exact:true}).click();await expect(page.getByText('This period begins before recorded teacher history. Historical retention cannot be reconstructed from current assignments.',{exact:true})).toBeVisible();
+});
+
 test('Academy imports use plain wording, hide internal IDs and keep phone actions onscreen',async({page})=>{
   const internalId='00000000-0000-4000-8000-000000000904';
   await seedSessionCookie(page,'owner-user');

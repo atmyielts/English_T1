@@ -341,6 +341,16 @@ try{
     const grader=await hold('select '+command('owned-concurrent-grade'),'qa_grading_first');const replay=sql("set application_name='qa_grading_retry_wait';select "+command('owned-concurrent-grade')+';','postgres');replay.catch(()=>{});await waitForLock('qa_grading_retry_wait');await grader.finish();assert.equal(JSON.parse(await replay).replayed,true);
     assert.equal(Number(await sql('select count(*) from public.academy_grading_events where academy_id='+q(ctx.academy)+'::uuid;','postgres')),Number(before)+1);
   });
+  if(migrations.includes('20261021005000_academy_teacher_retention_cohorts.sql'))await check('retention read refuses expired scope after waiting on actual private history',async()=>{
+    const fixture=commandFixtures.find(row=>row.file==='scripts/fixtures/academy-teacher-retention.sql');assert(fixture);
+    await sql(fixture.source.replace('rollback;','commit;'),'postgres');
+    const ctx=JSON.parse(await sql("select jsonb_build_object('academy',g.academy_id,'actor',g.user_id,'grant',g.id,'branch',g.scope_ids->>0,'from',c.covered_from+interval '1 microsecond') from public.academy_role_grants g join public.tenants t on t.id=g.academy_id join public.academy_retention_coverage c on c.academy_id=t.id where t.name='Owned retention Academy' and g.role='manager' and g.scope_type='branches' and g.status='active' limit 1;",'postgres'));
+    await sql("update public.academy_role_grants set expires_at=clock_timestamp()+interval '2 seconds' where id="+q(ctx.grant)+'::uuid;','postgres');
+    const barrier=await hold('lock table public.academy_retention_membership_events in access exclusive mode','qa_retention_expiry_barrier');
+    const call='public.academy_teacher_retention_read('+q(ctx.academy)+'::uuid,'+q(ctx.actor)+'::uuid,'+q(ctx.from)+'::timestamptz,clock_timestamp(),'+q(ctx.branch)+'::uuid)';
+    const refused=sql("set application_name='qa_retention_expiry_wait';do $$begin begin perform "+call+";raise exception 'Expired retention read returned data';exception when insufficient_privilege then null;end;end;$$;",'postgres');refused.catch(()=>{});
+    await waitForLock('qa_retention_expiry_wait');await sql('select pg_sleep(3);','postgres');await barrier.finish();await refused;
+  });
   passed=true;
 }finally{
   for(const handle of held)await handle.finish(false).catch(()=>{});
