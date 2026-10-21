@@ -45,7 +45,7 @@ async (page) => {
   await page.getByRole('textbox',{name:'Option 2',exact:true}).fill('5');
   await page.getByRole('radio',{name:'Correct option 2: 5',exact:true}).check();
   await page.getByRole('button',{name:'Save draft',exact:true}).click();
-  await page.getByRole('button',{name:'Submit for review',exact:true}).click();
+  await page.getByRole('button',{name:'Submit for review',exact:true}).click();await page.getByText('Question submitted for review.',{exact:true}).waitFor();
   await page.getByRole('button',{name:'Review question & key',exact:true}).click();
   await page.getByLabel('I reviewed the question, private key and any marking rubric.',{exact:true}).check();
   await page.getByRole('button',{name:'Approve reviewed question',exact:true}).click();

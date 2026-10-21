@@ -157,7 +157,7 @@ export async function appealBrowserStack({ certificates = false,documents=false,
     let ready = false;
     for (let index = 0; index < 40; index++) {
       if (
-        spawnSync("docker", ["exec", container, "pg_isready", "-U", "postgres"])
+        spawnSync("docker", ["exec", container, "pg_isready", "-h", "127.0.0.1", "-U", "postgres"])
           .status === 0
       ) {
         ready = true;

@@ -116,6 +116,8 @@ try {
   );
   for (let retry = 0; retry < 30; retry++) {
     try {
+      // TCP readiness only succeeds on the final server, not the image's socket-only init server.
+      docker(["exec", container, "pg_isready", "-h", "127.0.0.1", "-U", "postgres"]);
       sql("select 1");
       break;
     } catch {

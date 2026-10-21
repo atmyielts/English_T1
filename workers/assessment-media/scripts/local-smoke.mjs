@@ -131,7 +131,7 @@ try {
   let ready = false;
   for (let i = 0; i < 30; i++) {
     if (
-      spawnSync("docker", ["exec", container, "pg_isready", "-U", "postgres"])
+      spawnSync("docker", ["exec", container, "pg_isready", "-h", "127.0.0.1", "-U", "postgres"])
         .status === 0
     ) {
       ready = true;

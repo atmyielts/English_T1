@@ -42,7 +42,7 @@ async(page)=>{
    if(config.imageResponses&&await preview.locator('.image-private-targets').count())throw new Error('Candidate preview contains private targets');
   }
   await page.getByRole('button',{name:'Save draft',exact:true}).click();await page.getByText('Question draft or saved request recorded.',{exact:true}).waitFor();
-  const row=page.locator('.records > li').filter({has:page.getByText(prompt,{exact:true})});await row.getByRole('button',{name:'Submit for review',exact:true}).click();
+  const row=page.locator('.records > li').filter({has:page.getByText(prompt,{exact:true})});await row.getByRole('button',{name:'Submit for review',exact:true}).click();await page.getByText('Question submitted for review.',{exact:true}).waitFor();
  }
  await create(firstPrompt,true,config.imageResponses?'hotspot':'single_choice');await create(secondPrompt,config.imageResponses,config.imageResponses?'diagram_labeling':'single_choice');
  await page.getByRole('button',{name:'Sign out',exact:true}).click();await login('reviewer');await page.getByRole('button',{name:'Questions & review',exact:true}).click();
