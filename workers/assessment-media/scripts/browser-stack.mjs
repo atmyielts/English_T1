@@ -162,6 +162,7 @@ try {
       "20261021000000_assessment_certificate_lifecycle.sql",
       "20261021010000_assessment_blueprints.sql",
       "20261021020000_assessment_accommodations.sql",
+      "20261022100000_assessment_explicit_rls.sql",
     ].map((name) => `supabase/migrations/${name}`),
   ])
     { checkRunning(); sql(await readFile(path.join(root, file), "utf8")); }
