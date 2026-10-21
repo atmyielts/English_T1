@@ -58,3 +58,23 @@ test('the actual gate detects a legacy service role JWT and permits public anon 
   assert.equal(allowed.status, 0);
   assert.deepEqual(secretLabels('eyJmalformed.notJson.syntheticSignature'), []);
 });
+
+test('the actual gate accepts RLS enabled by a foreach loop only as its unconditional first statement on the loop variable', () => {
+  const table = name => `create table public.${name} (id uuid primary key);\n`;
+  const migration = sql => ({'supabase/migrations/20260101000000_rls.sql': table('loop_a') + table('loop_b') + sql});
+  const enabled = scan(migration(
+    "do $$ declare t text;begin foreach t in array array['loop_a', 'loop_b'] loop\n  execute format('alter table public.%I enable row level security',t);end loop;end;$$;",
+  ));
+  assert.ifError(enabled.error);
+  assert.equal(enabled.status, 0, enabled.stderr);
+  for (const sql of [
+    "do $$ declare t text;begin foreach t in array array['loop_a','loop_b'] loop if t<>'loop_b' then execute format('alter table public.%I enable row level security',t);end if;end loop;end;$$;",
+    "do $$ declare t text;u text:='loop_a';begin foreach t in array array['loop_a','loop_b'] loop execute format('alter table public.%I enable row level security',u);end loop;end;$$;",
+    "do $$ declare t text;begin foreach t in array array['loop_a','loop_b'] loop execute format('alter table public.%I disable row level security',t);end loop;end;$$;",
+  ]) {
+    const rejected = scan(migration(sql));
+    assert.ifError(rejected.error);
+    assert.equal(rejected.status, 1);
+    assert.match(rejected.stderr, /declared without enabling RLS: public\.loop_b/);
+  }
+});
