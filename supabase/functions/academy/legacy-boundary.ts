@@ -41,6 +41,25 @@ export class LegacyBoundaryError extends Error {
   constructor(readonly status: number, message = 'Your current access does not cover this workspace.') { super(message); }
 }
 
+// PostgREST returns database refusals as values. Preserve their meaning before
+// older handlers can turn a denied write/read into a retryable server error.
+function guardLegacyQuery<T>(builder:T):T {
+  if(!builder||typeof (builder as {then?:unknown}).then!=='function')return builder;
+  return new Proxy(builder as object,{
+    get(target,property){
+      if(property==='then')return(resolve:unknown,reject:unknown)=>Promise.resolve(target).then(value=>{
+        const result=value as {error?:{code?:string}};
+        if(result?.error?.code==='42501')throw new LegacyBoundaryError(403);
+        if(['22023','22P02'].includes(result?.error?.code??''))throw new LegacyBoundaryError(400,'Review the workspace values.');
+        if(['23505','23P01'].includes(result?.error?.code??''))throw new LegacyBoundaryError(409,'This record changed or conflicts with another record. Refresh and review it.');
+        return value;
+      }).then(resolve as (value:unknown)=>unknown,reject as (error:unknown)=>unknown);
+      const value=Reflect.get(target,property,target);
+      return typeof value==='function'?(...args:unknown[])=>guardLegacyQuery(Reflect.apply(value,target,args)):value;
+    },
+  }) as T;
+}
+
 export async function openLegacyBoundary<T extends Db>(
   factory: (headers: Record<string, string>) => T,
   input: {academy: string; actor: string; action: string; mode: 'read' | 'write'; branch?: unknown; classroom?: unknown},
@@ -76,11 +95,11 @@ export async function openLegacyBoundary<T extends Db>(
         const base = target.from(table), scoped = target.from(viewName(table));
         return new Proxy(base, {
           get(builder, method) {
-            if (method === 'select') return (columns = '*', options?: unknown) => scoped.select(scopeLegacySelection(columns,table,initial.relationships), options);
+            if (method === 'select') return (columns = '*', options?: unknown) => guardLegacyQuery(scoped.select(scopeLegacySelection(columns,table,initial.relationships), options));
             const value = Reflect.get(builder, method, builder);
             if (['insert','upsert','update','delete'].includes(String(method))) {
               if (input.mode === 'read' && !(input.action === 'education_os' && table === 'academy_action_items')) throw new LegacyBoundaryError(403);
-              return typeof value === 'function' ? value.bind(builder) : value;
+              return typeof value === 'function' ? (...args:unknown[])=>guardLegacyQuery(Reflect.apply(value,builder,args)) : value;
             }
             return typeof value === 'function' ? value.bind(builder) : value;
           },
@@ -88,8 +107,8 @@ export async function openLegacyBoundary<T extends Db>(
       };
       if (property === 'rpc') return (name: string, args?: Row) => {
         if (input.mode === 'read' && ['ensure_academy_crm_defaults','ensure_academy_operations_defaults'].includes(name)) return Promise.resolve({data:null,error:null});
-        if (name === 'academy_global_search_v2') return target.rpc('academy_legacy_global_search', args);
-        return target.rpc(name, args);
+        if (name === 'academy_global_search_v2') return guardLegacyQuery(target.rpc('academy_legacy_global_search', args));
+        return guardLegacyQuery(target.rpc(name, args));
       };
       const value = Reflect.get(target, property, target);
       return typeof value === 'function' ? value.bind(target) : value;
