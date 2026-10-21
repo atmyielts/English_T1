@@ -71,6 +71,7 @@ try {
   files.push('supabase/migrations/20261021000000_assessment_certificate_lifecycle.sql','supabase/tests/assessment-certificate-lifecycle.integration.sql');
   files.push('supabase/migrations/20261021010000_assessment_blueprints.sql','supabase/tests/assessment-blueprints.integration.sql');
   files.push('supabase/migrations/20261021020000_assessment_accommodations.sql','supabase/tests/assessment-accommodations.integration.sql');
+  files.push('supabase/migrations/20261022110000_assessment_entitlements.sql','supabase/tests/assessment-entitlements.integration.sql');
   const program=files.map(file=>{
     const protocol=file.endsWith('.integration.sql')?readFileSync('supabase/tests/assessment-runtime.fixture.sql','utf8')+'\n':'';
     const analyticsFixture=file.endsWith('assessment-analytics.integration.sql')?'begin;\n'+readFileSync('supabase/tests/assessment-analytics.fixture.sql','utf8')+'\n':'';
@@ -339,6 +340,9 @@ try {
   const {accommodationsRace}=await import('./test-assessment-accommodations-race.mjs');
   await accommodationsRace(query=>docker(['exec','-i',container,'psql','-At','-U','postgres','-v','ON_ERROR_STOP=1'],query),parallelSql);
   process.stdout.write('Passed four-process accommodation approval/start and break begin/end/pause/expiry races: one revision-fence winner, matching pinned snapshot, one break, single end without double credit, exact late end, unchanged scores\n');
+  const {entitlementsRace}=await import('./test-assessment-entitlements-race.mjs');
+  await entitlementsRace(query=>docker(['exec','-i',container,'psql','-At','-U','postgres','-v','ON_ERROR_STOP=1'],query),parallelSql);
+  process.stdout.write('Passed four-process quota race: two of four simultaneous starts admitted on a two-attempt plan, two units charged, replays unchanged\n');
 } finally {
   spawnSync('docker',['stop',container],{encoding:'utf8',timeout:20000});
 }

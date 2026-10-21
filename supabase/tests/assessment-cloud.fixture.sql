@@ -5,10 +5,12 @@ create role authenticated;
 create role service_role bypassrls;
 create schema auth;
 create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid; $$;
-create table public.users(id uuid primary key);
+create table public.users(id uuid primary key,role text);
 create table public.tenants(id uuid primary key);
 create table public.tenant_memberships(tenant_id uuid references tenants(id),user_id uuid references users(id),status text,role text);
 create table public.products(id uuid primary key default gen_random_uuid(),name text,type text,status text,metadata jsonb);
+-- Tenant-scoped product entitlements as written by the existing Click plan fulfilment.
+create table public.entitlements(id uuid primary key default gen_random_uuid(),user_id uuid not null references users(id),tenant_id uuid not null references tenants(id),resource_type text not null,resource_id uuid,is_active boolean not null default true,starts_at timestamptz default now(),ends_at timestamptz,source text not null default 'system',value jsonb default '{}'::jsonb,unique(tenant_id,resource_type,resource_id));
 create table public.experiences(id uuid primary key default gen_random_uuid(),product_id uuid references products(id),name text,is_active boolean,metadata jsonb);
 create table public.sections(id uuid primary key default gen_random_uuid(),experience_id uuid references experiences(id),name text,display_order integer,metadata jsonb);
 create table public.parts(id uuid primary key default gen_random_uuid(),section_id uuid references sections(id),name text,display_order integer);
