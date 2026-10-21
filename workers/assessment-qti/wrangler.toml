@@ -1,0 +1,32 @@
+name = "schood-assessment-qti-dev"
+main = "src/index.ts"
+compatibility_date = "2026-10-20"
+workers_dev = false
+[vars]
+QTI_ENABLED = "false"
+QTI_ACTIVE_KEY_ID = "dev-qti-k1"
+[[r2_buckets]]
+binding = "SOURCES"
+bucket_name = "schood-assessment-qti-sources-dev"
+[env.staging]
+name = "schood-assessment-qti-staging"
+workers_dev = false
+[env.staging.vars]
+QTI_ENABLED = "false"
+QTI_ACTIVE_KEY_ID = "staging-qti-k1"
+[[env.staging.r2_buckets]]
+binding = "SOURCES"
+bucket_name = "schood-assessment-qti-sources-staging"
+[env.production]
+name = "schood-assessment-qti"
+workers_dev = false
+[env.production.vars]
+QTI_ENABLED = "false"
+QTI_ACTIVE_KEY_ID = "production-qti-k1"
+[[env.production.r2_buckets]]
+binding = "SOURCES"
+bucket_name = "schood-assessment-qti-sources"
+# Configuration only. No route, bucket or deployment is created by this file.
+# Set exact ALLOWED_ORIGINS, HTTPS SUPABASE_URL, public anon key and distinct
+# server-only QTI_TRANSPORT_SECRET/QTI_SCANNER_SECRET/QTI_PARSER_SECRET.
+# QTI_KEYRING is purpose-specific, never the prompt/answer/evidence keyring.

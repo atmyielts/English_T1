@@ -1,0 +1,14 @@
+{
+  "name": "assessment-coordinator",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --local --port 5190",
+    "build": "tsc --noEmit && esbuild src/index.ts --bundle --format=esm --platform=browser --target=es2022 --external:cloudflare:workers --outfile=dist/index.js",
+    "test": "deno test --no-lock src/engine.test.ts",
+    "test:local": "node scripts/local-smoke.mjs",
+    "test:stack": "node scripts/stack-smoke.mjs",
+    "test:config": "node scripts/config-smoke.mjs"
+  },
+  "devDependencies": { "@cloudflare/workers-types": "5.20261013.1", "wrangler": "4.150.0", "miniflare": "4.20260730.0", "esbuild": "^0.25.12", "typescript": "~5.9.3" }
+}

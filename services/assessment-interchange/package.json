@@ -1,0 +1,29 @@
+{
+  "name": "schood-assessment-interchange",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24 <25" },
+  "scripts": {
+    "test": "node --experimental-transform-types --test src/*.test.ts",
+    "test:sandbox": "node --test sandbox.test.mjs",
+    "test:corpus": "node corpus.mjs",
+    "test:control-plane": "node --experimental-transform-types --test control-plane.test.mjs",
+    "test:bytes": "node --experimental-transform-types --test byte-plane.test.mjs",
+    "test:browser": "node --experimental-transform-types --test browser-plane.test.mjs",
+    "test:processing": "node --test process.test.mjs worker.test.mjs",
+    "worker": "node worker.mjs",
+    "build:worker": "tsc --project ../../workers/assessment-qti/tsconfig.json && node build-worker.mjs",
+    "build:sandbox": "node run.mjs build",
+    "check": "tsc --project tsconfig.json"
+  },
+  "dependencies": {
+    "@xmldom/xmldom": "0.9.12",
+    "fflate": "0.8.3"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "esbuild": "0.25.12",
+    "miniflare": "5.20261019.0-beta",
+    "typescript": "5.9.3"
+  }
+}
