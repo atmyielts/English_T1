@@ -1,5 +1,9 @@
 # Requested-work finish checklist
 
+Ten-field production import acceptance is complete ([proof](2026-10-21-ten-field-import-production.json)): the published browser imported a real 201-row CSV with all ten mapped fields, resumed after the real first batch committed but its reply was hidden, safely replayed the completed receipt, skipped all 201 duplicates on reimport, and corrected all 1,005 effects with 201 balance reversals and no deletion. All four owned QA accounts closed and the institution was archived; no customer records, collected payments or provider messages were involved. Parents remain unverified. The 4,520ms commit is one sample.
+
+Independent refund/discount candidate: the database selects refundFinance or discountFinance from the normalized adjustment subtype before all current-scope, receipt-replay and final checks. The UI limits choices using the financial snapshot permissions. Twenty-two complete captured-schema stages passed ([proof](2026-10-21-adjustment-subtypes-schema.json)); protected deployment and owned production acceptance remain pending.
+
 Current-attempt grading candidate: staff grading now binds the reviewed learner attempt, submission revision, assignment revision and rubric to current per-resource authority. Student resubmission and staff grading share a database lock; lost replies retain the captured grading intent across reload. Private immutable before/after snapshots, audit and receipts commit together. The captured production schema passed 21 stages with owned-container cleanup ([proof](2026-10-21-current-grading-schema.json)). Installation and published acceptance are pending the protected release workflow; this paragraph is not production proof.
 
 Fixed acceptance scope, 2026-10-14. This records the work already requested;

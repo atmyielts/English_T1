@@ -180,6 +180,9 @@ function CommercialCoreViewContent({academyId,actorId,formatDate,branchId,onBran
   const canManageFinance = data?.access?.permissions.manageFinance === true;
   const canCollectFinance = data?.access?.permissions.collectFinance === true;
   const canAdjustFinance = data?.access?.permissions.adjustFinance === true;
+  const canRefundFinance = data?.access?.permissions.refundFinance === true;
+  const canDiscountFinance = data?.access?.permissions.discountFinance === true;
+  const canPostAdjustment = canAdjustFinance && (adjustment.entry_type === 'refund' ? canRefundFinance : adjustment.entry_type === 'discount' ? canDiscountFinance : true);
   const canReconcileFinance = data?.access?.permissions.reconcileFinance === true;
   const availableTabs = useMemo<Array<[CommercialTab, string]>>(() => [["overview", "Accounts"], ...(canManageFinance ? [["plans", "Plans & agreements"] as [CommercialTab, string]] : []), ...(canManageFinance || canCollectFinance ? [["billing", "Charges & allocation"] as [CommercialTab, string]] : []), ...(canCollectFinance ? [["debt", "Debt"] as [CommercialTab, string]] : []), ...(canAdjustFinance || canReconcileFinance ? [["ledger", "Ledger & reconciliation"] as [CommercialTab, string]] : [])], [canAdjustFinance, canCollectFinance, canManageFinance, canReconcileFinance]);
   const activeTab = availableTabs.some(([key]) => key === tab) ? tab : "overview";
@@ -1111,6 +1114,7 @@ function CommercialCoreViewContent({academyId,actorId,formatDate,branchId,onBran
               className="panel compact-form"
               onSubmit={(event: FormEvent) => {
                 event.preventDefault();
+                if (!canPostAdjustment) return;
                 void run(
                   () =>
                     teacherStudioPostAccountAdjustment(academyId, {
@@ -1161,7 +1165,7 @@ function CommercialCoreViewContent({academyId,actorId,formatDate,branchId,onBran
                     }))
                   }
                 >
-                  {["account_credit", "discount", "write_off", "refund", "debit_adjustment", "credit_adjustment", "transferred_credit"].map((value) => (
+                  {["account_credit", "discount", "write_off", "refund", "debit_adjustment", "credit_adjustment", "transferred_credit"].filter(value => value === 'refund' ? canRefundFinance : value === 'discount' ? canDiscountFinance : true).map((value) => (
                     <option key={value} value={value}>
                       {label(value)}
                     </option>
@@ -1234,7 +1238,7 @@ function CommercialCoreViewContent({academyId,actorId,formatDate,branchId,onBran
                   required
                 />
               </label>
-              <button className="primary-btn" disabled={busy||pending}>
+              <button className="primary-btn" disabled={busy||pending||!canPostAdjustment}>
                 {translate("Post adjustment")}{' '}</button>
             </fieldset></form>
           ) : null}
