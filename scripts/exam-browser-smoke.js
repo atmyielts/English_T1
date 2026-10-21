@@ -80,12 +80,12 @@ async (page) => {
     if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw new Error('Exam overflow at '+width);
     await page.screenshot({path:'output/playwright/assessment-cloud/candidate-'+width+'.png',fullPage:true});
   }
-  await page.getByRole('button',{name:'Finish section & continue',exact:true}).click();await page.getByRole('heading',{name:'Science',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Finish section & continue',exact:true}).click();await page.getByRole('button',{name:'Continue to next section',exact:true}).click();await page.getByRole('heading',{name:'Science',exact:true}).waitFor();
   if(await page.getByRole('radio',{name:'5',exact:true}).isChecked())throw new Error('The old answer leaked into the new section');
   // Simulate the canonical server alarm advancing to the third section; the browser must fetch its manifest.
   sectionIndex=2;await page.getByRole('heading',{name:'English',exact:true}).waitFor();
   if(await page.getByRole('heading',{name:'Science',exact:true}).count())throw new Error('Automatic section transition retained an old manifest');
-  await page.getByRole('button',{name:'Submit assessment',exact:true}).click();
+  await page.getByRole('button',{name:'Submit assessment',exact:true}).click();await page.getByRole('button',{name:'Submit now',exact:true}).click();
   await page.getByRole('heading',{name:'Assessment submitted',exact:true}).waitFor();
   if(proctorCalls!==0)throw new Error('Unmonitored exam depends on Proctor availability');
   if(!runtimeCommands.includes('lease.acquire')||!runtimeCommands.includes('response.append')||!runtimeCommands.includes('section.advance')||!runtimeCommands.includes('attempt.submit'))throw new Error('Runtime gateway was not exercised');

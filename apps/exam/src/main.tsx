@@ -47,6 +47,7 @@ function App() {
   const tenant = new URLSearchParams(location.search).get('tenant_id') ?? '';
   const [user,setUser]=useState(''),[email,setEmail]=useState(''),[password,setPassword]=useState('');
   const [registrations,setRegistrations]=useState<Row[]>([]),[attempt,setAttempt]=useState<Attempt|null>(null),[answers,setAnswers]=useState<Record<string,unknown>>({});
+  const [confirming,setConfirming]=useState<'section'|'submit'|null>(null);
   const [error,setError]=useState(''),[busy,setBusy]=useState(false),[pending,setPending]=useState(0),[now,setNow]=useState(Date.now()),[offset,setOffset]=useState(0);
   const [preflight,setPreflight]=useState<{registrationId:string;policy:Extract<Preflight,{required:true}>}|null>(null),[acknowledged,setAcknowledged]=useState(false),[proctor,setProctor]=useState<CandidateProctorState|null>(null);
   const journal=useRef<ResponseJournal|null>(null), sequence=useRef(0), sending=useRef(false), actionKeys=useRef<Record<string,string>>({}), localWrite=useRef<Promise<void>>(Promise.resolve());
@@ -151,7 +152,15 @@ function App() {
     if((await journal.current!.pending()).length)throw new Error(t('exam.error.finishSync'));
     const active=connection.current;if(!active||active.id!==attempt!.id)throw new Error(t('exam.error.finishReconnect'));
     const action=sectionOnly?'section.advance':'attempt.submit',key=`${attempt!.id}:${attempt!.section_index}:${action}`;
-    actionKeys.current[key]??=crypto.randomUUID();await active.runtime.command(action,{},actionKeys.current[key]);delete actionKeys.current[key];
+    // The command key survives a reload of this tab, so a lost reply is retried
+    // with the same key and returns the same result instead of a second command.
+    const stored=`schood-exam-final:${tenant}:${user}:${key}`;
+    const savedKey=(()=>{try{return sessionStorage.getItem(stored);}catch{return null;}})();
+    const commandKey:string=actionKeys.current[key]??savedKey??crypto.randomUUID();actionKeys.current[key]=commandKey;
+    try{sessionStorage.setItem(stored,commandKey);}catch{/* storage unavailable */}
+    await active.runtime.command(action,{},commandKey);delete actionKeys.current[key];
+    try{sessionStorage.removeItem(stored);}catch{/* storage unavailable */}
+    setConfirming(null);
     if(sectionOnly)await loadSection(attempt!.id!);
   }
   // A break starts only after every saved answer is confirmed and no academic
@@ -218,7 +227,13 @@ function App() {
       <div className="questions">{section?.items.map((entry,index)=><section key={entry.item_version_id}><p className="eyebrow">{t('exam.question.position',{position:index+1,points:number(entry.item.max_score)})}</p><h2>{entry.item.prompt}</h2><QuestionMedia item={entry.item} tenant={tenant} actor={user} attempt={attempt.id} enabled={remaining>0&&leaseReady&&captureReady&&manifestIndex.current===Number(attempt.section_index)&&attempt.candidate_id===user}/><fieldset disabled={!(MEDIA_RESPONSE_TYPES as readonly string[]).includes(entry.item.type)&&(remaining===0||busy||!leaseReady||!captureReady||manifestIndex.current!==Number(attempt.section_index))}><Answer entry={entry} value={answers[entry.item_version_id]} mediaContext={{tenant,actor:user,attempt:attempt.id,enabled:remaining>0&&leaseReady&&captureReady&&manifestIndex.current===Number(attempt.section_index)&&attempt.candidate_id===user}} academicResponse={<CandidateMediaAnswer tenant={tenant} actor={user} attempt={attempt.id!} entry={entry} value={answers[entry.item_version_id]} confirmed={confirmedAnswers[entry.item_version_id]===JSON.stringify(answers[entry.item_version_id])} enabled={!busy&&remaining>0&&leaseReady&&captureReady&&manifestIndex.current===Number(attempt.section_index)&&attempt.candidate_id===user} runtime={()=>connection.current?.id===attempt.id?connection.current.runtime:null} select={value=>selectAcademic(entry,value)} onRecording={active=>{if(account.current===user)setAcademicCaptures(current=>{if(current.has(entry.item_version_id)===active)return current;const next=new Set(current);if(active)next.add(entry.item_version_id);else next.delete(entry.item_version_id);return next;});}}/>} onChange={value=>{setAnswers(current=>({...current,[entry.item_version_id]:value}));void save(entry,value);}}/></fieldset></section>)}</div>
       {!!academicCaptures.size&&<p role="status">{t('exam.recordings.open')}</p>}
       <BreakPanel state={breakState} serverNow={now+offset} monitored={captureRequired||monitoring.enabled} pending={breaks.pending} error={breaks.error} busy={busy||breaks.busy} blocked={academicCaptures.size?t('exam.break.blocked.recording'):!leaseReady?t('exam.break.blocked.reconnect'):!captureReady?t('exam.break.blocked.monitoring'):remaining===0?t('exam.break.blocked.clock'):''} begin={()=>void breaks.begin()} end={id=>void breaks.end(id)} retry={()=>void breaks.retry()}/>
-      <div className="exam-actions"><button className="quiet" disabled={busy} onClick={()=>void run(()=>flush(attempt.id!))}>{t('exam.sync.button')}</button>{Number(attempt.section_index)+1<attempt.manifest.section_count?<button disabled={busy||pending>0||academicCaptures.size>0||!leaseReady||!captureReady||remaining===0} onClick={()=>void run(()=>finish(true))}>{t('exam.section.finish')}</button>:<button disabled={busy||pending>0||academicCaptures.size>0||!leaseReady||!captureReady||remaining===0} onClick={()=>void run(()=>finish(false))}>{t('exam.submit')}</button>}</div>
+      <div className="exam-actions"><button className="quiet" disabled={busy} onClick={()=>void run(()=>flush(attempt.id!))}>{t('exam.sync.button')}</button>{Number(attempt.section_index)+1<attempt.manifest.section_count?<button disabled={busy||pending>0||academicCaptures.size>0||!leaseReady||!captureReady||remaining===0} onClick={()=>setConfirming('section')}>{t('exam.section.finish')}</button>:<button disabled={busy||pending>0||academicCaptures.size>0||!leaseReady||!captureReady||remaining===0} onClick={()=>setConfirming('submit')}>{t('exam.submit')}</button>}</div>
+      {confirming&&(()=>{const items=section?.items??[],answered=items.filter(entry=>{const value=answers[entry.item_version_id];return value!==undefined&&value!==null&&value!==''&&!(Array.isArray(value)&&!value.length)&&!(typeof value==='object'&&!Array.isArray(value)&&!Object.keys(value as object).length);}).length;return <section className="final-confirm" role="alertdialog" aria-labelledby="final-confirm-heading" aria-describedby="final-confirm-detail">
+        <h2 id="final-confirm-heading">{t(confirming==='submit'?'exam.confirm.submitHeading':'exam.confirm.sectionHeading')}</h2>
+        <p id="final-confirm-detail">{t('exam.confirm.answered',{answered,total:items.length})} {t(confirming==='submit'?'exam.confirm.submitDetail':'exam.confirm.sectionDetail')}</p>
+        {answered<items.length&&<p role="status">{t('exam.confirm.unanswered',{count:items.length-answered})}</p>}
+        <div className="exam-actions"><button className="quiet" disabled={busy} onClick={()=>setConfirming(null)}>{t('exam.confirm.keepWorking')}</button><button disabled={busy||pending>0||academicCaptures.size>0||!leaseReady||!captureReady||remaining===0} onClick={()=>void run(()=>finish(confirming==='section'))}>{t(confirming==='submit'?'exam.confirm.submitNow':'exam.confirm.continue')}</button></div>
+      </section>;})()}
     </>}</>}
     {!attempt&&tenant&&<AcademicDeviceRecovery key={`${tenant}:${user}`} tenant={tenant} actor={user}/>}
     {attempt&&<AcademicUploadRecovery key={`${tenant}:${user}:${attempt.id}`} tenant={tenant} actor={user} attempt={attempt.id} revision={`${attempt.state}:${attempt.section_index}`}/>}

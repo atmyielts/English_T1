@@ -15,10 +15,10 @@ async(page)=>{
  // Reload is a real encrypted-journal/lease recovery path; original form and
  // point survive without copying a target/score into the response envelope.
  await page.reload();await page.getByRole('button',{name:'Start or resume',exact:true}).click();await page.getByText('Selected point: 25% from the left, 50% from the top.',{exact:true}).waitFor();
- const source=await page.locator('.questions img').getAttribute('src');await page.getByRole('button',{name:'Finish section & continue',exact:true}).click();await page.getByRole('heading',{name:'Label the two pictured shapes.',exact:true}).waitFor();
+ const source=await page.locator('.questions img').getAttribute('src');await page.getByRole('button',{name:'Finish section & continue',exact:true}).click();await page.getByRole('button',{name:'Continue to next section',exact:true}).click();await page.getByRole('heading',{name:'Label the two pictured shapes.',exact:true}).waitFor();
  await page.getByRole('button',{name:'Focus answer Label 1',exact:true}).click();await page.getByRole('textbox',{name:'1. Label 1',exact:true}).fill('navy rectangle');await page.getByRole('button',{name:'Focus answer Label 2',exact:true}).click();await page.getByRole('textbox',{name:'2. Label 2',exact:true}).fill('blue circle');await page.getByRole('button',{name:'Sync saved responses',exact:true}).click();await page.getByText('All saved responses synced',{exact:true}).waitFor();
  await page.screenshot({path:'output/playwright/assessment-cloud/connected-image-diagram-320.png',fullPage:true});
- await page.getByRole('button',{name:'Submit assessment',exact:true}).click();await page.getByRole('heading',{name:'Assessment submitted',exact:true}).waitFor();
+ await page.getByRole('button',{name:'Submit assessment',exact:true}).click();await page.getByRole('button',{name:'Submit now',exact:true}).click();await page.getByRole('heading',{name:'Assessment submitted',exact:true}).waitFor();
  if((await page.request.get(source)).status()!==404)throw new Error('Submitted image remained authorized');
  for(const result of await Promise.all(manifests)){if(JSON.stringify(result.data.manifest).match(/"(correct|regions|hotspot|numeric)"\s*:/))throw new Error('Public manifest contains a private scoring field');}
  if(responses.some(response=>response.score!==undefined||response.regions!==undefined||response.response?.regions!==undefined))throw new Error('Client sent scoring authority');

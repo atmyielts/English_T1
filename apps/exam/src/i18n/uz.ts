@@ -286,4 +286,13 @@ export const uz: Record<keyof typeof en, string> = {
   'exam.verify.pdfMismatch': 'Bu fayl ma’lum PDF tasdiqnomalarining hech biriga mos kelmaydi. Uning ko‘rinadigan mazmuni tasdiqlanmagan; uni yuqoridagi imzolangan ma’lumotlar bilan solishtiring. Bu PDF raqamli imzosi emas.',
   'exam.verify.checked': 'Tekshirildi: {date}. Yuklab olingan nusxa kelgusidagi bekor qilish yangilanishlarini o‘z ichiga olmaydi.',
   'exam.verify.return': 'Schood Exam ga qaytish',
+  'exam.confirm.submitHeading': "Testni topshirasizmi?",
+  'exam.confirm.sectionHeading': "Bu bo‘limni yakunlaysizmi?",
+  'exam.confirm.answered': "Bu bo‘limdagi {total} ta savoldan {answered} tasiga javob berdingiz.",
+  'exam.confirm.submitDetail': "Topshirgandan keyin javoblarni o‘zgartira olmaysiz.",
+  'exam.confirm.sectionDetail': "Davom etgandan keyin bu bo‘limga qayta olmaysiz.",
+  'exam.confirm.unanswered': "{count|other:# ta savolga javob berilmagan.}",
+  'exam.confirm.keepWorking': "Ishlashda davom etish",
+  'exam.confirm.submitNow': "Hozir topshirish",
+  'exam.confirm.continue': "Keyingi bo‘limga o‘tish",
 };

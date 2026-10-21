@@ -66,7 +66,7 @@ async(page)=>{
  await page.getByRole('heading',{name:'Timing check',exact:true}).waitFor({timeout:20000});await card.getByText('0 of 2 breaks left',{exact:false}).waitFor();
  if(await card.getByRole('button',{name:'Take a break',exact:true}).isEnabled())throw Error('Exhausted allowance still offered a break');
  await wait(async()=>await page.getByRole('button',{name:'Submit assessment',exact:true}).isEnabled(),'Submit unavailable');
- await page.getByRole('button',{name:'Submit assessment',exact:true}).click();await page.getByRole('heading',{name:'Assessment submitted',exact:true}).waitFor();
+ await page.getByRole('button',{name:'Submit assessment',exact:true}).click();await page.getByRole('button',{name:'Submit now',exact:true}).click();await page.getByRole('heading',{name:'Assessment submitted',exact:true}).waitFor();
  // Running clock through the real apps: the clock keeps running and the deadline is unchanged.
  await page.reload();await page.getByRole('listitem').filter({has:page.getByText('Running-clock sitting',{exact:true})}).getByRole('button',{name:'Start or resume',exact:true}).click();
  await page.getByRole('heading',{name:'Timing check',exact:true}).waitFor();await card.getByText('1 of 1 breaks left',{exact:false}).waitFor();await card.getByText('The exam clock keeps running during a break.',{exact:false}).waitFor();
@@ -76,7 +76,7 @@ async(page)=>{
  await page.getByRole('button',{name:'Return to the exam',exact:true}).click();await page.getByRole('heading',{name:'Timing check',exact:true}).waitFor();
  await page.getByRole('textbox',{name:'Your numeric answer',exact:true}).fill('15');
  await wait(async()=>await page.getByRole('button',{name:'Submit assessment',exact:true}).isEnabled(),'Running-clock submit unavailable',300);
- await page.getByRole('button',{name:'Submit assessment',exact:true}).click();await page.getByRole('heading',{name:'Assessment submitted',exact:true}).waitFor();
+ await page.getByRole('button',{name:'Submit assessment',exact:true}).click();await page.getByRole('button',{name:'Submit now',exact:true}).click();await page.getByRole('heading',{name:'Assessment submitted',exact:true}).waitFor();
  const proof=await(await page.request.get(base+'/test/accommodation-proof',{headers:control})).json();
  if(errors.length)throw Error(errors.join('\n'));
  return {...proof,connected_accommodations:true,approval_receipt_recovered:proof.approval_reply_lost,stale_revision_refused:true,reason_private:reasonPrivate,questions_hidden_on_break:questionsHidden,break_receipt_recovered:proof.break_reply_lost&&proof.breaks===2,break_survived_reload:true,early_return_restored_questions:true,pause_closed_break:proof.break_reasons?.[1]==='proctor_pause'};

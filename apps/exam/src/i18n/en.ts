@@ -302,4 +302,13 @@ export const en = {
   'exam.verify.pdfMismatch': 'This file does not match a known rendered PDF receipt. Its visible contents have not been confirmed; compare them with the signed details above. This is not a PDF digital signature.',
   'exam.verify.checked': 'Checked {date}. A downloaded copy does not carry future revocation updates.',
   'exam.verify.return': 'Return to Schood Exam',
+  'exam.confirm.submitHeading': "Submit your assessment?",
+  'exam.confirm.sectionHeading': "Finish this section?",
+  'exam.confirm.answered': "You answered {answered} of {total} questions in this section.",
+  'exam.confirm.submitDetail': "After submitting you cannot change any answers.",
+  'exam.confirm.sectionDetail': "You cannot return to this section after continuing.",
+  'exam.confirm.unanswered': "{count|one:# question has no answer.|other:# questions have no answer.}",
+  'exam.confirm.keepWorking': "Keep working",
+  'exam.confirm.submitNow': "Submit now",
+  'exam.confirm.continue': "Continue to next section",
 };

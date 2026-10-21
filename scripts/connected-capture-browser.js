@@ -43,7 +43,7 @@ async(page)=>{
  const resumed=await page.request.post(base+'/functions/v1/proctor/commands?tenant_id='+info.tenant,{headers:{authorization:'Bearer '+auth.access_token,origin:base,'Idempotency-Key':'native-human-capture-resume'},data:{action:'session.resume',data:{session_id:current.session_id,reason:'Institution proctor confirms restored native recording'}}});
  if(!resumed.ok())throw new Error('Actual institution resume failed: '+await resumed.text());
  await page.locator('.questions').waitFor();await wait(async()=>!await page.locator('.questions fieldset').first().isDisabled(),'Human resume did not reopen answers');
- await page.getByRole('button',{name:'Submit assessment',exact:true}).click();await page.getByRole('heading',{name:'Assessment submitted',exact:true}).waitFor();
+ await page.getByRole('button',{name:'Submit assessment',exact:true}).click();await page.getByRole('button',{name:'Submit now',exact:true}).click();await page.getByRole('heading',{name:'Assessment submitted',exact:true}).waitFor();
  await wait(()=>page.evaluate(()=>window.__schoodSyntheticCapture.tracks.every(row=>row.track.readyState==='ended')),'Terminal state left physical capture running');
  // All remaining final chunks and closure receipts must reach the canonical
  // manifest, not only disappear from the UI. Completed recovery uses no devices.

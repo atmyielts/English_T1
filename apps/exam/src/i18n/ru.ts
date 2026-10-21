@@ -286,4 +286,13 @@ export const ru: Record<keyof typeof en, string> = {
   'exam.verify.pdfMismatch': 'Этот файл не соответствует ни одному известному подтверждению сформированного PDF. Его видимое содержимое не подтверждено; сравните его с подписанными сведениями выше. Это не цифровая подпись PDF.',
   'exam.verify.checked': 'Проверено {date}. Скачанная копия не получает последующих сведений об отзыве.',
   'exam.verify.return': 'Вернуться в Schood Exam',
+  'exam.confirm.submitHeading': "Отправить тест?",
+  'exam.confirm.sectionHeading': "Завершить этот раздел?",
+  'exam.confirm.answered': "В этом разделе вы ответили на {answered} из {total} вопросов.",
+  'exam.confirm.submitDetail': "После отправки изменить ответы будет нельзя.",
+  'exam.confirm.sectionDetail': "После перехода вернуться к этому разделу будет нельзя.",
+  'exam.confirm.unanswered': "{count|one:На # вопрос нет ответа.|few:На # вопроса нет ответа.|many:На # вопросов нет ответа.|other:На # вопроса нет ответа.}",
+  'exam.confirm.keepWorking': "Продолжить работу",
+  'exam.confirm.submitNow': "Отправить сейчас",
+  'exam.confirm.continue': "Перейти к следующему разделу",
 };
