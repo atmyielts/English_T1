@@ -1,3 +1,4 @@
+import {pendingWritten} from '../../lib/writtenRequest';
 import { getLocaleTag, translate } from '../../i18n';
 import { FormEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -347,9 +348,10 @@ export const StudentClassroomView = ({
   const openSubmission = (assignment: TeacherStudioStudentAssignment) => {
     setAudioTargetId('');
     setSubmitTarget(assignment);
-    setSubmissionContent(assignment.submission?.submission_content ?? '');
-    setSubmissionUrl(assignment.submission?.submission_url ?? '');
-    setSubmissionNotes(assignment.submission?.notes ?? '');
+    const pending=classroom?pendingWritten(classroom.academy_id,actorId,assignment.id):null;
+    setSubmissionContent(pending?pending.draft.submission_content??'':assignment.submission?.submission_content??'');
+    setSubmissionUrl(pending?pending.draft.submission_url??'':assignment.submission?.submission_url??'');
+    setSubmissionNotes(pending?pending.draft.notes??'':assignment.submission?.notes??'');
     setSubmissionFile(null);
     setNotice('');
     setError('');
@@ -711,7 +713,7 @@ export const StudentClassroomView = ({
                 </div>
                 {resource.description ? <p>{resource.description}</p> : null}
                 <div className="row wrap">
-                  <a className="small-btn" href={resource.url} target="_blank" rel="noreferrer">{translate("Open")}</a>
+                  {resource.url?<a className="small-btn" href={resource.url} target="_blank" rel="noreferrer">{translate("Open")}</a>:<span>{translate("File unavailable. Ask your teacher to upload it again.")}</span>}
                   <button className="small-btn" type="button" disabled={busy} onClick={() => void toggleResource(resource)}>
                     {done ? 'Mark open' : 'Mark done'}
                   </button>
@@ -747,7 +749,7 @@ export const StudentClassroomView = ({
                     {assignment.submission?.metadata&&!Array.isArray(assignment.submission.metadata)&&assignment.submission.metadata.response_kind==='audio'?<p>{translate('Latest response is a recording. Attached files are from an earlier attempt.')}</p>:null}
                     {assignment.submission?.signed_url ? <a className="small-btn" href={assignment.submission.signed_url} target="_blank" rel="noreferrer">{translate("Open file")}</a> : null}
                     <button className="small-btn" type="button" onClick={() => openSubmission(assignment)}>
-                      {assignment.submission ? 'Update submission' : 'Submit'}
+                      {pendingWritten(classroom.academy_id,actorId,assignment.id)?translate('Retry saved response'):assignment.submission?'Update submission':'Submit'}
                     </button>
                     <button className="small-btn" type="button" onClick={()=>{setSubmitTarget(null);setAudioTargetId(assignment.id);}}>{translate('Recordings and feedback')}</button>
                   </div>
@@ -766,6 +768,7 @@ export const StudentClassroomView = ({
             <h3>{submitTarget ? submitTarget.title : 'Submission'}</h3>
             {submitTarget ? (
               <form className="grid" onSubmit={submitAssignment}>
+                {pendingWritten(classroom.academy_id,actorId,submitTarget.id)?<p role="status">{translate("Retry the saved response before changing it. If the file was not saved, reselect the original file.")}</p>:null}
                 <textarea
                   className="input"
                   placeholder={translate("Response")}

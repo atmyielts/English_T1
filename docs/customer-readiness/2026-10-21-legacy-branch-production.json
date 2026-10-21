@@ -1,0 +1,353 @@
+{
+  "recordedAt": "2026-10-21T14:16:27.095Z",
+  "passed": true,
+  "prs": [
+    273,
+    274
+  ],
+  "currentMain": "3ce2279a67814a30b69fe3d68ee866e3b257b8eb",
+  "academyVersion": 99,
+  "installedMigrations": 240,
+  "activation": {
+    "main": "3ce2279a67814a30b69fe3d68ee866e3b257b8eb",
+    "reviewedCommit": "2bd0bf884104de150f37ff47f5480f0a028b80da",
+    "ci": 39608633437,
+    "postMergeCI": 39610103975,
+    "pages": 39610103921,
+    "pagesDecision": {
+      "runSmoke": true,
+      "reason": "Academy deploy job succeeded"
+    },
+    "previousEdgeVersion": 98,
+    "stage": "edge-deployed-readback-pending",
+    "edgeVersion": 99
+  },
+  "sources": {
+    "recordedAt": "2026-10-21T14:00:49.646Z",
+    "passed": true,
+    "academyVersion": 99,
+    "matchedModules": 41,
+    "retainedInstalledModules": 40,
+    "otherFunctionsUnchanged": true,
+    "secretsChanged": false,
+    "files": [
+      {
+        "file": "supabase/functions/academy/access.ts",
+        "sha256LF": "6316a77e2666c78637ff06a411a7b8d4489cb3a30105fb1bfc273db2e4df4d5e"
+      },
+      {
+        "file": "supabase/functions/academy/assessment-operations.ts",
+        "sha256LF": "f025e09b4444f83ff67fe2b6dc3c26fdfc1bfe4ef0e00320953b813797827065"
+      },
+      {
+        "file": "supabase/functions/academy/assessment-services.ts",
+        "sha256LF": "bf406335ff5550afe2ec4189cf915cdb76b1ff8659f0b39434fdf01793386de8"
+      },
+      {
+        "file": "supabase/functions/academy/assignment-audio.ts",
+        "sha256LF": "b31c15141b8a8fdfbe1b4693bc09299ed9b3a25b896d9b4d171ac60f0afca883"
+      },
+      {
+        "file": "supabase/functions/academy/audio-crypto.ts",
+        "sha256LF": "fef272bbd91e5ad6db40f79bc391e9e5d3c72652bb86cc07df063a6bf3cf94d1"
+      },
+      {
+        "file": "supabase/functions/academy/booking-command.ts",
+        "sha256LF": "8f1408b0f49b43856e20394f7363a846a3645f91924a4bbbb643b8ec0e2d100b"
+      },
+      {
+        "file": "supabase/functions/academy/capability-scope.ts",
+        "sha256LF": "72f37a901eddc4ec6de780f83d494918f44477413a0d39d0c5b001d13dde1491"
+      },
+      {
+        "file": "supabase/functions/academy/collection-command.ts",
+        "sha256LF": "420b12c5fb82d7672e002ba92d69b3d5dda7c6feab5cc91e53b584f4242ede85"
+      },
+      {
+        "file": "supabase/functions/academy/contact-save.ts",
+        "sha256LF": "a12528872422ec7393a3d0954884dea9295cea5ad06cae50ad5612db75332b5d"
+      },
+      {
+        "file": "supabase/functions/academy/finance-command.ts",
+        "sha256LF": "c102db0686897c4360d020e1895a911e32e082025743bff283125003b94a049f"
+      },
+      {
+        "file": "supabase/functions/academy/grading-command.ts",
+        "sha256LF": "eeb2a13bb6c4b782ab993da2899766a20df32de4c6d4f6de570a68497ee4e857"
+      },
+      {
+        "file": "supabase/functions/academy/guardian-delivery.ts",
+        "sha256LF": "f68262abe91504b93d54851b639060128c8905d871a7f5faea4765a93096aad5"
+      },
+      {
+        "file": "supabase/functions/academy/guardian-portal.ts",
+        "sha256LF": "ba4974e67d78f2f6088663b0ceecd0015ae20c0db85fe3d75458b27d20e937b0"
+      },
+      {
+        "file": "supabase/functions/academy/index.ts",
+        "sha256LF": "1f83ed1588846553e4d933f2c992c6b38c543194759513360c83bf4ac1164a79"
+      },
+      {
+        "file": "supabase/functions/academy/learner-invitations.ts",
+        "sha256LF": "001dc7a6e0c8b458a9ec23450ee9f3dd8ffde390e750f2d1dc6ce5c027eca9d4"
+      },
+      {
+        "file": "supabase/functions/academy/legacy-boundary-policy.ts",
+        "sha256LF": "293c2433698305681e516d359300eaa1be1a79628717316e376ceddd263ac88a"
+      },
+      {
+        "file": "supabase/functions/academy/legacy-boundary.ts",
+        "sha256LF": "672a020d7545d9bfe4b96f87c11feeee6b919f5bfb0070cba823de50b6a922ed"
+      },
+      {
+        "file": "supabase/functions/academy/legacy-import-command.ts",
+        "sha256LF": "9e23364558063f762b446432fd6126b8df9c3fb07419aae0df3d5c784dcf017e"
+      },
+      {
+        "file": "supabase/functions/academy/legacy-import-policy.ts",
+        "sha256LF": "6c71a53c737c8e9fe5d6b08e0b45e9dad287bb70e6a0c2f6b3ed2d9406d6d001"
+      },
+      {
+        "file": "supabase/functions/academy/legacy-scope-profile.ts",
+        "sha256LF": "d205d2df335f97e5c6701cf2aa9872f5f782b84677d8f8c82ae9ed3ce94efa99"
+      },
+      {
+        "file": "supabase/functions/academy/legacy-staff-import.ts",
+        "sha256LF": "fc97578ca686ed5a42fa3393b9e19d40d1cba1a41e5c10def649c54c7e414c94"
+      },
+      {
+        "file": "supabase/functions/academy/mutation-branches.ts",
+        "sha256LF": "030fca67ecac66bdcc832c5761c20b19f87f008d88e1056601c315555b9a77f4"
+      },
+      {
+        "file": "supabase/functions/academy/operational-command.ts",
+        "sha256LF": "74e969bcc836222a1ae9e690db838310f8afdf39efdf35fbc4887c28265cc4a2"
+      },
+      {
+        "file": "supabase/functions/academy/operational-read.ts",
+        "sha256LF": "2ebb6d958b987eb0546706ead9c5c02dda8464fb9bfa551f29e1f8b4da660bb6"
+      },
+      {
+        "file": "supabase/functions/academy/room-timetable.ts",
+        "sha256LF": "4e2c6a907f4282394972dd9e81e850a535702347ebedf6f255f2fe011830de43"
+      },
+      {
+        "file": "supabase/functions/academy/scoped-directory.ts",
+        "sha256LF": "b303a644d71f31f1b969356d461c893d2b88d9d96e3480366c36c91d0c274429"
+      },
+      {
+        "file": "supabase/functions/academy/staff-access.ts",
+        "sha256LF": "3d62ef469fe3a1164c5bc3006ae09cb4aeff593269ea686d795db3bc2c5f615e"
+      },
+      {
+        "file": "supabase/functions/academy/staff-guardian-command.ts",
+        "sha256LF": "1b833b7417c2c9830f0ce0654a7d41a09f521479d346f96b76cdb99e409a0d61"
+      },
+      {
+        "file": "supabase/functions/academy/staff-invitations.ts",
+        "sha256LF": "12d45b786d400c612f5b4c030092aa0351d5e811877b1a8b9112741549a9e03a"
+      },
+      {
+        "file": "supabase/functions/academy/student-import-input.ts",
+        "sha256LF": "c27e54d22389cc22e11f8de30d2bf5f96defc4fdac59e3edd5b64000ffb5ea0f"
+      },
+      {
+        "file": "supabase/functions/academy/student-import-service.ts",
+        "sha256LF": "b0bcae66b7c068183d0bd457d458e074f459eec7be9f5840550e9ebe173dc533"
+      },
+      {
+        "file": "supabase/functions/academy/teacher-retention.ts",
+        "sha256LF": "7fe2ea235adfd2b99085ea1bf1589618ae96f8da2be2c7007b6c910d165cb7ef"
+      },
+      {
+        "file": "supabase/functions/academy/timetable-generation.ts",
+        "sha256LF": "bcdb41c0a6f5a9789360da6f0401288fb480c2f689d332550ca9fc573c8a6fb8"
+      },
+      {
+        "file": "supabase/functions/_shared/academy-assessment-core.ts",
+        "sha256LF": "4b92b573ce9b84ce376fe8ee3ed19842dbbb950568758ed8441965b9753dee73"
+      },
+      {
+        "file": "supabase/functions/_shared/academy-curriculum.ts",
+        "sha256LF": "ea9c75927a312c508a954e097072ae440083807ed1e4e9df5f2b8862f28ba629"
+      },
+      {
+        "file": "supabase/functions/_shared/academy-diagnostic-starter.ts",
+        "sha256LF": "a2e880ef90880a308d151893a56d66ab8cb6810d457338da8edf657746156577"
+      },
+      {
+        "file": "supabase/functions/_shared/academy-scoring.ts",
+        "sha256LF": "c81fb4202591f5a20a0e9e89293cc48c395251bbd588664abb92e5577ef56bfe"
+      },
+      {
+        "file": "supabase/functions/_shared/academy-teacher-flow.ts",
+        "sha256LF": "282164c7dc88cd8c2326d601084b1a43f7c522d536174e09283f182ad2970ac1"
+      },
+      {
+        "file": "supabase/functions/_shared/ielts-ai.ts",
+        "sha256LF": "4103a6810d9e7840b11de72aeae9f2708035f185b10332178107cfc2d8c0c050"
+      },
+      {
+        "file": "supabase/functions/_shared/media-storage.ts",
+        "sha256LF": "fb51f8571bfb67aa5d751104debb63be3a48e6431851c50e557841f018273f1e"
+      },
+      {
+        "file": "supabase/functions/_shared/telegram-init-data.ts",
+        "sha256LF": "c494905d1797d744ab1a32bacc5787f705138e77b75ff847f674effe121f1769"
+      }
+    ]
+  },
+  "ownedAcceptance": {
+    "recordedAt": "2026-10-21T14:14:23.925Z",
+    "reviewedCommit": "30c1bd4f3ed298ce6ac7cae8753a2027d0619a2f",
+    "passed": true,
+    "checks": [
+      "create owned confirmed audio account",
+      "sign in owned audio account",
+      "create owned confirmed audio account",
+      "sign in owned audio account",
+      "create owned confirmed audio account",
+      "sign in owned audio account",
+      "create owned confirmed audio account",
+      "sign in owned audio account",
+      "create owned tenants",
+      "create owned tenant_memberships",
+      "create owned academy_branches",
+      "create owned academy_classrooms",
+      "create owned academy_classrooms",
+      "create owned academy_rooms",
+      "create owned academy_staff",
+      "create owned academy_contacts",
+      "owned financial setup create_pricing_plan",
+      "owned financial setup create_subscription",
+      "owned financial setup create_charge",
+      "owned financial setup create_cashbox",
+      "owned financial setup open_cashier_shift",
+      "create owned academy_role_grants",
+      "create owned academy_classroom_memberships",
+      "current scoped branch_contexts",
+      "mixed choices preserve A and B",
+      "cashier A profile cannot inherit B administrator controls",
+      "current scoped summary",
+      "selected summary retains cashier role and branch scope",
+      "current scoped contacts",
+      "owner-selected B contacts exclude A before limits",
+      "current scoped business_intelligence",
+      "mixed BI only includes the actual administrator branch",
+      "create owned academy_rooms",
+      "create owned current lesson",
+      "create owned current lesson",
+      "create owned current lesson",
+      "current scoped teacher_day",
+      "complementary teacher/operator day preserves assigned A and managed B",
+      "teacher cannot inherit an unassigned A lesson",
+      "owned financial setup create_cashbox",
+      "owned financial setup open_cashier_shift",
+      "owned financial setup create_cashbox",
+      "owned financial setup open_cashier_shift",
+      "owned financial setup collect_student_payment",
+      "owned financial setup collect_student_payment",
+      "owned financial setup collect_student_payment",
+      "current scoped owner_dashboard",
+      "dashboard keeps exact independent currencies",
+      "owned transfer retains the historical B payment",
+      "current scoped business_intelligence",
+      "branch B revenue uses recorded branch and its declared currency",
+      "current scoped business_intelligence",
+      "complementary BI preserves both operational branches",
+      "A administrator cannot promote financial reports into manager B",
+      "current scoped payments",
+      "legacy B payment reads cannot follow the mutable A home branch",
+      "stored A room refuses a B administrator capability",
+      "refused stored mutation leaves A unchanged",
+      "create owned academy_contacts",
+      "create owned academy_classroom_memberships",
+      "published branch switch and reload remain usable",
+      "published populated workspace has no overflow",
+      "published populated workspace has no page errors",
+      "keyboard focus remains on an interactive control",
+      "published cashier branch chooses its legitimate office route",
+      "published cashier branch does not advertise payroll",
+      "published branch switch and reload remain usable",
+      "published populated workspace has no overflow",
+      "published populated workspace has no page errors",
+      "keyboard focus remains on an interactive control",
+      "revoke only owned B admin while preserving A cashier",
+      "revoked legacy BI is refused despite retained cashier membership",
+      "retained current A cashier workspace remains usable",
+      "owned financial setup close_cashier_shift",
+      "owned financial setup close_cashier_shift",
+      "owned financial setup close_cashier_shift"
+    ],
+    "cleanupChecks": [
+      "verify exclusive QA institution before archive",
+      "QA institution contains no foreign members",
+      "archive owned academy_student_guardian_relationships",
+      "archive owned academy_guardians",
+      "archive owned academy_contacts",
+      "archive owned academy_lesson_sessions",
+      "archive owned academy_rooms",
+      "archive owned academy_classroom_memberships",
+      "archive owned academy_subscriptions",
+      "archive owned academy_pricing_plans",
+      "archive owned academy_cashboxes",
+      "archive owned academy_staff",
+      "archive owned academy_role_grants",
+      "verify exclusively owned archive targets academy_classrooms",
+      "archive owned unique academy_classrooms",
+      "archive owned unique academy_classrooms",
+      "archive owned unique academy_classrooms",
+      "verify exclusively owned archive targets academy_branches",
+      "archive owned unique academy_branches",
+      "archive owned unique academy_branches",
+      "remove QA institution login memberships",
+      "archive institution and remove ownership",
+      "verify owned account before closure",
+      "remaining owned tenants are personal",
+      "personal tenant is unshared",
+      "remove owned personal tenant",
+      "retention preflight permits QA account closure",
+      "close owned QA Auth account",
+      "QA account login and identity removed",
+      "verify owned account before closure",
+      "remaining owned tenants are personal",
+      "personal tenant is unshared",
+      "remove owned personal tenant",
+      "retention preflight permits QA account closure",
+      "close owned QA Auth account",
+      "QA account login and identity removed",
+      "verify owned account before closure",
+      "remaining owned tenants are personal",
+      "personal tenant is unshared",
+      "remove owned personal tenant",
+      "retention preflight permits QA account closure",
+      "close owned QA Auth account",
+      "QA account login and identity removed",
+      "verify owned account before closure",
+      "remaining owned tenants are personal",
+      "personal tenant is unshared",
+      "remove owned personal tenant",
+      "retention preflight permits QA account closure",
+      "close owned QA Auth account",
+      "QA account login and identity removed",
+      "read exclusively owned QA outbox",
+      "clear verified owned QA outbox batch",
+      "clear verified owned QA outbox batch",
+      "clear verified owned QA outbox batch",
+      "clear verified owned QA outbox batch",
+      "no configured external provider deliveries attempted",
+      "no active QA access: academy_role_grants",
+      "no active QA access: academy_staff",
+      "no active QA access: academy_contacts",
+      "no active QA access: academy_guardians",
+      "no active QA access: academy_student_guardian_relationships"
+    ],
+    "ownedStudentCount": 200,
+    "customerRecordsChanged": false,
+    "externalProviderDeliveriesAttempted": 0,
+    "immutableQaHistoryRetained": true,
+    "allInstitutionalRowsDeleted": false,
+    "cleanupVerified": true
+  },
+  "performanceInterpretation": "One observed cold signed-in contact workspace sample per viewport with 200 fixture contacts. These timings are measurements, not a performance SLA or load test. External providers and funds were not exercised."
+}

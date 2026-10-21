@@ -1,3 +1,4 @@
+import {validClassroomStorage,retainedStorage,verifyCurrentFile,type FileKind} from './resource-access.ts';
 import {openLegacyBoundary,legacyActionMode,LegacyBoundaryError} from './legacy-boundary.ts';
 import {currentAcademyAccessProfile,effectiveLegacyMembership} from './legacy-scope-profile.ts';
 import {runTeacherRetentionRead} from './teacher-retention.ts';
@@ -13,7 +14,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import * as nodemailer from "https://esm.sh/nodemailer@7.0.6?target=denonext";
 import { placementBand } from "../_shared/academy-scoring.ts";
 import { callOpenRouterJsonWithStatus, type AIStatus } from "../_shared/ielts-ai.ts";
-import { signStorageRef, uploadFileToS3 } from "../_shared/media-storage.ts";
+import { getS3Config, signStorageRef, uploadFileToS3 } from "../_shared/media-storage.ts";
 import {
   gradeAcademyRubric,
   gradeAcademyQuiz,
@@ -389,7 +390,7 @@ const formDataToStudioBody = (form: FormData): StudioBody => {
       continue;
     }
     const text = String(value);
-    if (["metadata", "records", "contacts"].includes(key)) {
+    if (["metadata", "records", "contacts", "file_intent"].includes(key)) {
       try {
         body[key] = JSON.parse(text);
       } catch {
@@ -397,7 +398,7 @@ const formDataToStudioBody = (form: FormData): StudioBody => {
       }
       continue;
     }
-    if (["is_published", "completed", "is_active", "shuffle_questions", "show_answers_after"].includes(key)) {
+    if (["is_published", "completed", "is_active", "shuffle_questions", "show_answers_after", "lookup_only"].includes(key)) {
       body[key] = text === "true";
       continue;
     }
@@ -461,15 +462,22 @@ const attachSignedStorageUrl = async (
   sb: SupabaseClientLike,
   row: Record<string, unknown>,
   actorUserId: string | null,
+  kind: FileKind = "resource",
 ): Promise<Record<string, unknown>> => {
   const metadata = toJsonObject(row.metadata);
   const storage = isJsonObject(metadata.storage) ? metadata.storage : null;
   if (!storage) return row;
+  if(!actorUserId || !validClassroomStorage(storage,row,kind,getS3Config()?.bucket??null)) {
+    const {storage:_storage,...safeMetadata}=metadata;
+    return {...row,url:null,signed_url:null,metadata:{...safeMetadata,storage_unavailable:true}};
+  }
+  await verifyCurrentFile(sb,actorUserId,row,kind,storage);
   const signedUrl = await signStorageRef(sb, storage, ACADEMY_SIGNED_URL_TTL_SECONDS, {
     route: "academy.storage.sign",
     userId: actorUserId,
   });
-  if (!signedUrl) return row;
+  await verifyCurrentFile(sb,actorUserId,row,kind,storage);
+  if (!signedUrl) return {...row,url:null,signed_url:null,metadata:{storage_unavailable:true}};
   return {
     ...row,
     url: signedUrl,
@@ -1823,65 +1831,17 @@ const resolveClassroomChatContext = async (
   if (classroomError) return json(500, { error: "Failed to load classroom", detail: classroomError.message });
   if (!classroomRow?.id) return json(404, { error: "Classroom not found" });
 
-  const academyAccess = resolveAcademyAccess(memberships, academyId);
-  const teacherMembership =
-    academyAccess && academyAccessHas(academyAccess, "viewClassrooms") && accessCanUseClassroom(academyAccess, classroomId)
-      ? academyAccess
-      : null;
-  let viewerType: ClassroomChatViewer["type"] = "teacher";
-  let viewerRole = String(teacherMembership?.role ?? "member");
-  let viewerContactId: string | null = null;
-  let viewerDisplayName = "";
-  let viewerCanManageResources = Boolean(teacherMembership && academyAccessHas(teacherMembership, "manageResources"));
-
-  if (!teacherMembership) {
-    let contacts: Array<Record<string, unknown>> = [];
-    try {
-      contacts = await loadStudentContacts(sb, userId, userEmail);
-    } catch (err) {
-      return json(500, { error: "Failed to load student contacts", detail: err instanceof Error ? err.message : String(err) });
-    }
-
-    const matchedContact = contacts.find((row) => String(row.academy_id ?? "") === academyId) ?? null;
-    if (!matchedContact) return json(403, { error: "Forbidden" });
-
-    const contactId = String(matchedContact.id ?? "");
-    if (!contactId) return json(403, { error: "Forbidden" });
-
-    const { data: classroomMembershipRow, error: classroomMembershipError } = await sb
-      .from("academy_classroom_memberships")
-      .select("id, role, status")
-      .eq("academy_id", academyId)
-      .eq("classroom_id", classroomId)
-      .eq("contact_id", contactId)
-      .maybeSingle();
-    if (classroomMembershipError) {
-      return json(500, { error: "Failed to verify classroom membership", detail: classroomMembershipError.message });
-    }
-    if (!classroomMembershipRow?.id || !["active", "completed"].includes(String(classroomMembershipRow.status ?? "active"))) return json(403, { error: "Forbidden" });
-
-    viewerType = "student";
-    viewerRole = String(classroomMembershipRow.role ?? "student");
-    viewerContactId = contactId;
-    viewerDisplayName = contactDisplayName(matchedContact) || fallbackDisplayName(userEmail, "Student");
-    viewerCanManageResources = false;
-  } else {
-    const { data: selfContactRow } = await sb
-      .from("academy_contacts")
-      .select("id, first_name, last_name, email")
-      .eq("academy_id", academyId)
-      .eq("user_id", userId)
-      .maybeSingle();
-    if (selfContactRow?.id) {
-      viewerContactId = String(selfContactRow.id);
-      viewerDisplayName = contactDisplayName(selfContactRow as Record<string, unknown>);
-    }
-    if (!viewerDisplayName) {
-      const fallbackRole = ["owner", "admin"].includes(viewerRole) ? "Instructor" : "Teacher";
-      viewerDisplayName = fallbackDisplayName(userEmail, fallbackRole);
-    }
-  }
-
+  const current=await sb.rpc('academy_classroom_access_context',{p_academy:academyId,p_actor:userId,p_classroom:classroomId});
+  if(current.error)return json(current.error.code==='42501'?403:503,{error:'Current classroom access is required'});
+  const verified=current.data as Record<string,unknown>;
+  if(verified?.actor_id!==userId||verified.academy_id!==academyId||verified.classroom_id!==classroomId)return json(503,{error:'Unable to verify classroom access'});
+  const viewerType=verified.viewer_type as ClassroomChatViewer['type'];
+  const viewerRole=String(verified.role??'student');
+  const viewerContactId=typeof verified.contact_id==='string'?verified.contact_id:null;
+  let viewerDisplayName=fallbackDisplayName(userEmail,viewerType==='student'?'Student':'Teacher');
+  const viewerCanManageResources=verified.can_manage_resources===true;
+  const teacherMembership=null;
+  if(viewerContactId){const {data:contact}=await sb.from('academy_contacts').select('first_name,last_name').eq('academy_id',academyId).eq('id',viewerContactId).maybeSingle();if(contact)viewerDisplayName=contactDisplayName(contact)||viewerDisplayName;}
   const { data: classroomMembershipRows, error: classroomMembersError } = await sb
     .from("academy_classroom_memberships")
     .select("id, academy_id, classroom_id, contact_id, role, status, joined_at, started_at, completed_at, paused_at, withdrawn_at, expires_at, metadata")
@@ -1893,7 +1853,7 @@ const resolveClassroomChatContext = async (
     return json(500, { error: "Failed to load classroom memberships", detail: classroomMembersError.message });
   }
 
-  const classroomMemberships = (classroomMembershipRows ?? []) as Array<Record<string, unknown>>;
+  const classroomMemberships = ((classroomMembershipRows ?? []) as Array<Record<string, unknown>>).filter(row=>['student','observer'].includes(String(row.role))&&['active','trial','completed'].includes(String(row.status))&&(!row.expires_at||Date.parse(String(row.expires_at))>Date.now()));
   const contactIds = Array.from(
     new Set(classroomMemberships.map((row) => String(row.contact_id ?? "")).filter((id) => id.length > 0)),
   );
@@ -1932,8 +1892,7 @@ const resolveClassroomChatContext = async (
 };
 
 const classroomContextCanManageResources = (context: ClassroomChatContext): boolean =>
-  context.viewer.type === "teacher" &&
-  Boolean(context.teacher_access && academyAccessHas(context.teacher_access, "manageResources"));
+  context.viewer.type === "teacher" && context.viewer.can_manage_resources;
 
 const loadClassroomChat = async (
   sb: SupabaseClientLike,
@@ -2159,6 +2118,8 @@ const sendClassroomChatMessage = async (
   if (contextResult instanceof Response) return contextResult;
   const context = contextResult;
 
+  const permission=await sb.rpc('academy_classroom_access_context',{p_academy:context.academy_id,p_actor:userId,p_classroom:context.classroom_id});
+  if(permission.error||!(permission.data as Record<string,unknown>)?.can_send_messages)return json(403,{error:'Current classroom message access is required'});
   const content = normalizeText(contentRaw, 6000);
   if (!content) return json(400, { error: "content is required" });
 
@@ -2169,7 +2130,7 @@ const sendClassroomChatMessage = async (
         .filter((contactId) => {
           if (!contactId) return false;
           const contact = context.contacts_by_id.get(contactId);
-          return String(contact?.status ?? "active").toLowerCase() !== "inactive";
+          return ["active","trial","paused"].includes(String(contact?.status??""));
         }),
     ),
   );
@@ -2235,7 +2196,7 @@ const sendClassroomChatMessage = async (
   }
 
   const { error: insertError } = await sb.from("academy_messages").insert(messageRows);
-  if (insertError) return json(500, { error: "Failed to send classroom message", detail: insertError.message });
+  if (insertError) return json(insertError.code==="42501"?403:500, { error: "Failed to send classroom message", detail: insertError.message });
 
   await sb
     .from("academy_conversations")
@@ -2293,6 +2254,12 @@ const upsertClassroomResource = async (
     });
   }
 
+  if(!fileRaw&&metadata.storage){
+    if(!resourceId||!isJsonObject(metadata.storage)||!validClassroomStorage(metadata.storage,{academy_id:context.academy_id,classroom_id:context.classroom_id},'resource',getS3Config()?.bucket??null))return json(400,{error:'Upload the file in this classroom'});
+    const {data:stored,error}=await sb.from('academy_classroom_resources').select('metadata').eq('academy_id',context.academy_id).eq('classroom_id',context.classroom_id).eq('id',resourceId).maybeSingle();
+    if(error||!stored||!retainedStorage(metadata.storage,toJsonObject(stored.metadata).storage))return json(409,{error:'Refresh the current resource before retaining its file'});
+    resourceUrl=storagePlaceholderUrl(metadata.storage);
+  }
   if (fileRaw) {
     try {
       const storage = await uploadAcademyFile("resource", context.academy_id, context.classroom_id, userId, fileRaw);
@@ -2442,7 +2409,7 @@ const setClassroomResourceProgress = async (
     .upsert(payload, { onConflict: "classroom_id,resource_id,contact_id" })
     .select("id, academy_id, classroom_id, resource_id, contact_id, user_id, completed, completed_at, updated_at")
     .maybeSingle();
-  if (error) return json(500, { error: "Failed to save classroom progress", detail: error.message });
+  if (error) return json(error.code==="42501"?403:500, { error: "Failed to save classroom progress", detail: error.message });
   if (!data?.id) return json(500, { error: "Failed to save classroom progress" });
   return json(200, { progress: data });
 };
@@ -3163,7 +3130,7 @@ const handleReadAction = async (
     const { data, error } = await query.limit(2000);
     if (error) return json(500, { error: "Failed to load submissions", detail: error.message });
     const submissions = await Promise.all(((data ?? []) as Array<Record<string, unknown>>).map((row) =>
-      attachSignedStorageUrl(sb, row, null)
+      attachSignedStorageUrl(sb, row, directoryContext?.actorId??null, "submission")
     ));
     return json(200, { submissions });
   }
@@ -3176,7 +3143,7 @@ const handleReadAction = async (
     const assignmentsResult={data:raw.assignments as Array<Record<string,unknown>>},submissionsResult={data:raw.submissions as Array<Record<string,unknown>>},membersResult={data:raw.members as Array<Record<string,unknown>>},categoriesResult={data:raw.categories as Array<Record<string,unknown>>};
     const submissionMap = new Map<string, Record<string, unknown>>();
     for (const s of (submissionsResult.data ?? []) as Array<Record<string, unknown>>) {
-      submissionMap.set(`${String(s.assignment_id)}__${String(s.contact_id)}`, await attachSignedStorageUrl(sb, s, null));
+      submissionMap.set(`${String(s.assignment_id)}__${String(s.contact_id)}`, await attachSignedStorageUrl(sb, s, directoryContext?.actorId??null, "submission"));
     }
 
     const students = ((membersResult.data ?? []) as Array<Record<string, unknown>>).map((m) => {
@@ -7274,6 +7241,20 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
       return json(200, { attempt: data });
     }
 
+    if(['classroom-chat','classroom-chat-send','classroom-resource-upsert','classroom-resource-delete','classroom-resource-progress-set'].includes(requestedAction)){
+      const academy=normalizeText(body?.academy_id??url.searchParams.get('academy_id'),64),classroom=normalizeText(body?.classroom_id??url.searchParams.get('classroom_id'),64);
+      const expected=normalizeText(body?._expected_actor??url.searchParams.get('_expected_actor'),64);if(expected&&expected!==userId)return json(403,{error:'Your account changed. Reopen this page.'});
+      const branch=body?._scope_branch_id??url.searchParams.get('_scope_branch_id');
+      const headers:Record<string,string>={'x-schood-classroom-academy':academy,'x-schood-classroom-actor':userId,'x-schood-classroom-id':classroom,'x-schood-classroom-action':requestedAction,...(branch?{'x-schood-classroom-branch':String(branch)}:{})};
+      const factory=(extra:Record<string,string>)=>createClient(supabaseUrl,serviceRole,{auth:{persistSession:false},global:{headers:{...headers,...extra}}});
+      sb=factory({});
+      const getContext=async()=>{const r=await sb.rpc('academy_classroom_access_context',{p_academy:academy,p_actor:userId,p_classroom:classroom});if(r.error)throw new LegacyBoundaryError(r.error.code==='42501'?403:503);return r.data;};
+      const initial=JSON.stringify(await getContext());setBoundaryCheck(async()=>{if(JSON.stringify(await getContext())!==initial)throw new LegacyBoundaryError(403);});
+      if(['classroom-resource-upsert','classroom-resource-delete'].includes(requestedAction)){
+        const boundary=await openLegacyBoundary(factory,{academy,actor:userId,action:requestedAction,mode:'write',branch,classroom});sb=boundary.db;setBoundaryCheck(boundary.verifyCurrent);
+      }
+    }
+
     if (requestedAction === "classroom-chat") {
       const academyId =
         req.method === "POST"
@@ -7377,7 +7358,7 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
       const enrolledClassrooms = new Set((membershipsRes.data ?? []).map((m: any) => String(m.classroom_id)));
       const subMap = new Map<string, Record<string, unknown>>();
       for (const s of (submissionsRes.data ?? []) as Array<Record<string, unknown>>) {
-        subMap.set(String(s.assignment_id), await attachSignedStorageUrl(sb, s, userId));
+        subMap.set(String(s.assignment_id), await attachSignedStorageUrl(sb, s, userId, "submission"));
       }
 
       const assignments = ((assignmentsRes.data ?? []) as Array<Record<string, unknown>>)
@@ -7427,6 +7408,8 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
       return json(200, { attendance: data ?? [], contact_id: contactId, academy_id: contactAcademyId });
     }
 
+    if(requestedAction==='written_submission_capabilities')return json(200,{actor_id:userId,written_receipts:1});
+
     // ── Student: submit an assignment ────────────────────────────────────────
     if (requestedAction === "submit_assignment" && req.method === "POST" && !normalizeText(body?.contact_id, 64)) {
       let contacts: Array<Record<string, unknown>> = [];
@@ -7440,7 +7423,7 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
         .select("id, academy_id, classroom_id, max_score, due_at, attempts_allowed, allow_late_submission, status")
         .eq("id", assignmentId).maybeSingle();
       if (!asgn?.id) return json(404, { error: "Assignment not found" });
-      if (asgn.status !== "active") return json(400, { error: "Assignment is not open for submission" });
+
 
       const contact = contacts.find((c) => String(c.academy_id) === String(asgn.academy_id));
       if (!contact) return json(403, { error: "Not enrolled in this academy" });
@@ -7453,6 +7436,13 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
 
       const { data: existingSubmission } = await sb.from("academy_submissions")
         .select("id, attempt_number, status, metadata").eq("assignment_id", assignmentId).eq("contact_id", contactId).maybeSingle();
+      const requestKey=normalizeText(body?.idempotency_key,160);
+      const expectedActor=normalizeText(body?._expected_actor,64);if(expectedActor&&expectedActor!==userId)return json(403,{error:'Your account changed. Reopen this response.'});
+      const submissionFile=body?.file instanceof File?body.file:null;
+      const intent={content:normalizeText(body?.content??body?.submission_content,10000)||null,url:normalizeText(body?.url??body?.submission_url,2000)||null,notes:normalizeText(body?.notes,500)||null,file:body?.file_intent??null};
+      if(submissionFile){const validation=validateAcademyUploadFile(submissionFile);if(validation)return json(400,{error:validation});const bytes=await submissionFile.arrayBuffer();const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');const actual={name:submissionFile.name,type:submissionFile.type,size:submissionFile.size,sha256:digest};if(!retainedStorage(actual,intent.file))return json(409,{error:'Reselect the original saved file'});}
+      if(requestKey){const lookup=await sb.rpc('academy_written_submission_command',{p_academy:String(asgn.academy_id),p_actor:userId,p_assignment:assignmentId,p_key:requestKey,p_intent:intent,p_payload:null});if(lookup.error)return json(lookup.error.code==='42501'?403:409,{error:'Unable to recover this response with current enrollment'});const saved=lookup.data as {found?:boolean;submission?:Record<string,unknown>};if(saved.found)return json(200,{submission:saved.submission,replayed:true,actor_id:userId,request_key:requestKey});if(body?.lookup_only===true)return json(409,{error:'This response is not saved yet. Reselect the original file to submit it.'});if(intent.file&&!submissionFile)return json(409,{error:'Reselect the original saved file'});}
+      if (asgn.status !== "active") return json(400, { error: "Assignment is not open for submission" });
       const nextAttempt = existingSubmission?.id ? Number(existingSubmission.attempt_number ?? 1) + 1 : 1;
       if (nextAttempt > Number(asgn.attempts_allowed ?? 1)) return json(409, { error: "No assignment attempts remaining" });
       const isLate = Boolean(asgn.due_at && new Date(String(asgn.due_at)).getTime() < Date.now());
@@ -7486,13 +7476,14 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
         ...(Object.keys(submissionMetadata).length > 0 ? { metadata: submissionMetadata } : {}),
       };
 
-      const { data, error } = await sb.rpc("academy_assignment_written_command", {
-        p_academy: String(asgn.academy_id), p_actor: userId, p_assignment: assignmentId,
-        p_payload: payload,
+      const written=await sb.rpc(requestKey?'academy_written_submission_command':'academy_assignment_written_command',{
+        p_academy:String(asgn.academy_id),p_actor:userId,p_assignment:assignmentId,p_payload:payload,
+        ...(requestKey?{p_key:requestKey,p_intent:intent}:{})
       });
+      const {error}=written;const data=requestKey?(written.data as {submission?:Record<string,unknown>})?.submission:written.data;
       if (error) return json(error.code === "42501" ? 403 : error.code === "23505" ? 409 : 503, { error: error.code === "42501" ? "Current enrollment does not cover this assignment" : error.code === "23505" ? "No assignment attempts remaining" : "The response could not be confirmed. Check its current status before retrying." });
-      const signedSubmission = data ? await attachSignedStorageUrl(sb, data as Record<string, unknown>, userId) : data;
-      return json(200, { submission: signedSubmission });
+      const signedSubmission = data ? await attachSignedStorageUrl(sb, data as Record<string, unknown>, userId, "submission") : data;
+      return json(200, { submission: signedSubmission,actor_id:userId,request_key:requestKey });
     }
 
     // ── Student: tuition / billing status ────────────────────────────────────
@@ -11378,10 +11369,10 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
 };
 
 export const handleAcademyRequest = async (req:Request):Promise<Response> => {
-  let verify:(()=>Promise<void>)|undefined;
+  const checks:Array<()=>Promise<void>>=[];
   try {
-    const response=await handleAcademyRequestCore(req,check=>{verify=check;});
-    if(response.ok && verify) await verify();
+    const response=await handleAcademyRequestCore(req,check=>{checks.push(check);});
+    if(response.ok)for(const check of checks)await check();
     return response;
   } catch(error) {
     if(error instanceof LegacyBoundaryError)return json(error.status,{error:error.message});

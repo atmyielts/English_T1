@@ -2984,5 +2984,8 @@
   "Payment method": "Payment method",
   "Unable to load financial records. Try again.": "Unable to load financial records. Try again.",
   "Refresh the workspace before saving this lesson.": "Refresh the workspace before saving this lesson.",
-  "Review attendance and its retry key.": "Review attendance and its retry key."
+  "Review attendance and its retry key.": "Review attendance and its retry key.",
+  "Retry saved response": "Retry saved response",
+  "File unavailable. Ask your teacher to upload it again.": "File unavailable. Ask your teacher to upload it again.",
+  "Retry the saved response before changing it. If the file was not saved, reselect the original file.": "Retry the saved response before changing it. If the file was not saved, reselect the original file."
 }

@@ -2986,5 +2986,8 @@
   "Review attendance and its retry key.": "Davomat va qayta urinish kalitini tekshiring.",
   "Assigned branches and classrooms": "Biriktirilgan filiallar va sinflar",
   "Selected branch": "Tanlangan filial",
-  "Unable to load permitted branches. Refresh this workspace.": "Ruxsat berilgan filiallarni yuklab bo‘lmadi. Ish maydonini yangilang."
+  "Unable to load permitted branches. Refresh this workspace.": "Ruxsat berilgan filiallarni yuklab bo‘lmadi. Ish maydonini yangilang.",
+  "Retry saved response": "Saqlangan javobni qayta yuborish",
+  "File unavailable. Ask your teacher to upload it again.": "Fayl mavjud emas. Ustozingizdan uni qayta yuklashni so‘rang.",
+  "Retry the saved response before changing it. If the file was not saved, reselect the original file.": "O‘zgartirishdan oldin saqlangan javobni qayta yuboring. Fayl saqlanmagan bo‘lsa, asl faylni qayta tanlang."
 }

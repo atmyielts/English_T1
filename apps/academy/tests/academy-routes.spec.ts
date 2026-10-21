@@ -6183,3 +6183,23 @@ test('global branch selection reloads the workspace and applies each branch role
   expect(requests.some(row=>row.branch===a)).toBe(true);await expect(page.locator('.error-banner')).toHaveCount(0);
   await page.setViewportSize({width:390,height:1000});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
+
+test('written response recovery keeps its original key across reload without changing the answer',async({page})=>{
+ await seedSessionCookie(page,'student-user');await mockAcademyEdge(page,'student');await page.goto('/academy/student?academy_id='+academyId);
+ const keys:string[]=[];let calls=0;
+ await page.route('**/functions/v1/academy*',async route=>{if(route.request().url().includes('written_submission_capabilities'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({actor_id:'student-user',written_receipts:1})});const raw=route.request().postData()??'';if(!raw.includes('name="idempotency_key"'))return route.fallback();const key=/name="idempotency_key"\r\n\r\n([^\r]+)/.exec(raw)?.[1]??'';keys.push(key);calls++;return route.fulfill({status:calls===1?503:200,contentType:'application/json',body:JSON.stringify(calls===1?{error:'Uncertain written reply'}:{actor_id:'student-user',request_key:key,submission:{id:'owned-written',attempt_number:1}})});});
+ const send=()=>page.evaluate(async academy=>{const path='/src/lib/writtenRequest.ts';const m=await import(path);try{return await m.writtenRequest(academy,'owned-written-assignment',{submission_content:'Original exact answer'});}catch(e){return {error:(e as Error).message};}},academyId);
+ expect(await send()).toEqual({error:'Uncertain written reply'});await page.reload();expect(await send()).toEqual({id:'owned-written',attempt_number:1});expect(keys).toHaveLength(2);expect(keys[0]).toBeTruthy();expect(keys[1]).toBe(keys[0]);
+});
+
+test('saved file response can recover a committed receipt after reload without uploading bytes again',async({page})=>{
+ await seedSessionCookie(page,'student-user');await mockAcademyEdge(page,'student');await page.goto('/academy/student?academy_id='+academyId);const bodies:string[]=[];
+ await page.route('**/functions/v1/academy*',async route=>{if(route.request().url().includes('written_submission_capabilities'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({actor_id:'student-user',written_receipts:1})});const raw=route.request().postData()??'';if(!raw.includes('name="idempotency_key"'))return route.fallback();bodies.push(raw);const key=/name="idempotency_key"\r\n\r\n([^\r]+)/.exec(raw)?.[1]??'';return route.fulfill({status:bodies.length===1?503:200,contentType:'application/json',body:JSON.stringify(bodies.length===1?{error:'Lost saved file reply'}:{actor_id:'student-user',request_key:key,submission:{id:'owned-file',attempt_number:1}})});});
+ await page.evaluate(async academy=>{const path='/src/lib/writtenRequest.ts';const m=await import(path);try{await m.writtenRequest(academy,'owned-file-assignment',{submission_content:'Original attached answer'},new File(['Owned private answer'],'owned.txt',{type:'text/plain'}));}catch{/* retained uncertain response */}},academyId);await page.reload();const result=await page.evaluate(async academy=>{const path='/src/lib/writtenRequest.ts';const m=await import(path);return m.writtenRequest(academy,'owned-file-assignment',{submission_content:'Original attached answer'});},academyId);expect(result.id).toBe('owned-file');expect(bodies).toHaveLength(2);expect(bodies[0]).toContain('filename="owned.txt"');expect(bodies[1]).not.toContain('filename=');expect(bodies[1]).toContain('name="lookup_only"');
+});
+
+test('written submissions wait for receipt support before sending any response bytes',async({page})=>{
+ await seedSessionCookie(page,'student-user');await mockAcademyEdge(page,'student');await page.goto('/academy/student?academy_id='+academyId);let posts=0;
+ await page.route('**/functions/v1/academy*',async route=>{if(route.request().url().includes('written_submission_capabilities'))return route.fulfill({status:404,json:{error:'Not found'}});if((route.request().postData()??'').includes('name="idempotency_key"'))posts++;return route.fallback();});
+ const error=await page.evaluate(async academy=>{const path='/src/lib/writtenRequest.ts';const m=await import(path);try{await m.writtenRequest(academy,'owned-rollout',{submission_content:'Never send to an old server'});return null;}catch(e){return(e as Error).message;}},academyId);expect(error).toBe('Written submissions are updating. Refresh shortly.');expect(posts).toBe(0);
+});

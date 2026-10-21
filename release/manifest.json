@@ -1,27 +1,46 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-legacy-database-refusal-status",
+  "releaseId": "academy-classroom-files-written-recovery",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [],
-  "migrations": [],
+  "frontends": [
+    "academy"
+  ],
+  "migrations": [
+    "20261021011000_academy_classroom_file_authority.sql",
+    "20261021012000_academy_written_submission_receipts.sql"
+  ],
   "edgeFunctions": [
     "academy"
   ],
   "workers": [],
   "sharedEdgeConsumers": [],
-  "requiredSecrets": [],
+  "requiredSecrets": [
+    "ACADEMY_AUDIO_ENCRYPTION_KEY",
+    "GMAIL_SMTP_APP_PASSWORD",
+    "GMAIL_SMTP_EMAIL",
+    "SITE_URL"
+  ],
   "rolloutOrder": [
+    "pages",
+    "migration:20261021011000_academy_classroom_file_authority.sql",
+    "migration:20261021012000_academy_written_submission_receipts.sql",
+    "secret:ACADEMY_AUDIO_ENCRYPTION_KEY",
+    "secret:GMAIL_SMTP_APP_PASSWORD",
+    "secret:GMAIL_SMTP_EMAIL",
+    "secret:SITE_URL",
     "function:academy"
   ],
   "manualFollowUps": [
-    "After exact-head/main CI and the tracked Pages decision, deploy only Academy using supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel from a fresh v98 source-preserving capture. Apply only the reviewed legacy-boundary.ts patch; retain the other 40 runtime modules, all 240 installed migrations, audio encryption and provider configuration. Read back every module and rerun the denied owned room command plus existing legitimate branch workflows."
+    "After exact-head/main CI and tracked Pages publication, apply only the two qualified additive migrations from an isolated copy of the 240 installed migrations, then deploy Academy from a fresh v99 source-preserving capture. Retain all unrelated runtime modules, audio encryption and provider configuration. Read back every module and private command body/ACL; run installed rollback-only fixtures and owned production classroom/file/submission recovery acceptance before closure.",
+    "Use supabase db push --linked only from the isolated qualified migration catalogue, then supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel from the prepared source-preserving bundle.",
+    "Retain installed values; supabase secrets set ACADEMY_AUDIO_ENCRYPTION_KEY=, supabase secrets set GMAIL_SMTP_APP_PASSWORD=, supabase secrets set GMAIL_SMTP_EMAIL= and supabase secrets set SITE_URL= are inventory command templates only, not instructions to replace values or set blanks. Missing Academy mail delivery configuration remains an external acceptance blocker."
   ],
   "verification": [
-    "Chained PostgREST read/write capability refusals must remain 403, invalid values 400 and uniqueness/booking conflicts 409. A database refusal must not become a retryable 500 or alter its stored target. Actual owned production acceptance is required after activation."
+    "Current classroom identity and independent capabilities, active recipient/roster guards, exact bucket/classroom/purpose file issuance, stored-reference replacement/revocation refusal, batched current authorization and replay-safe written/file receipts. Run full Edge tests, Academy build/lint/localization/browser checks, native installed-schema fixtures and production-owned acceptance/cleanup."
   ],
   "rollback": {
-    "edge": "Retain the installed v98 source capture. This is response-status normalization only; database capability checks and prior business rows remain intact.",
-    "migration": "No migration or secret change."
+    "edge": "Restore the captured v99 Academy bundle; the two additive migrations keep old clients compatible.",
+    "migration": "Retain private receipt history and new service-only guards. No columns are dropped and no customer references or secrets are rewritten."
   }
 }
