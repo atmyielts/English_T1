@@ -1,46 +1,36 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-current-attempt-grading",
+  "releaseId": "academy-grading-revisions-and-adjustment-authority",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
     "academy"
   ],
   "migrations": [
-    "20261021003000_academy_current_attempt_grading.sql"
+    "20261021003500_academy_gradebook_review_revisions.sql",
+    "20261021004000_academy_adjustment_subtype_authority.sql"
   ],
-  "edgeFunctions": [
-    "academy"
-  ],
+  "edgeFunctions": [],
   "sharedEdgeConsumers": [],
   "workers": [],
-  "requiredSecrets": [
-    "ACADEMY_AUDIO_ENCRYPTION_KEY",
-    "GMAIL_SMTP_APP_PASSWORD",
-    "GMAIL_SMTP_EMAIL",
-    "SITE_URL"
-  ],
+  "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "migration:20261021003000_academy_current_attempt_grading.sql",
-    "secret:ACADEMY_AUDIO_ENCRYPTION_KEY",
-    "secret:GMAIL_SMTP_APP_PASSWORD",
-    "secret:GMAIL_SMTP_EMAIL",
-    "secret:SITE_URL",
-    "function:academy"
+    "migration:20261021003500_academy_gradebook_review_revisions.sql",
+    "migration:20261021004000_academy_adjustment_subtype_authority.sql"
   ],
   "manualFollowUps": [
-    "After exact-head protected CI and tracked Pages pass, capture installed Academy v94 and the 232-entry migration catalogue. Use an isolated catalogue and require the linked dry run to name only 20261021003000_academy_current_attempt_grading.sql. Do not apply unrelated Assessment or Proctor migrations. Apply with supabase db push --linked --include-all from that isolated catalogue only.",
-    "Retain all 34 installed Academy modules and verify_jwt=false with verified Auth handler checks. Patch only reviewed index.ts hunks with exact reverse-patch baseline recovery, add grading-command.ts, and deploy the isolated source-preserving bundle to bbjawctnqrufvnesdsel. Retain 33 unchanged modules. No secret changes are needed. Use supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel from that bundle.",
-    "Read back all source hashes, verify the installed catalogue and rollback-only fixtures. Use owned accounts to prove current-attempt grading, private before/after history, student resubmission conflict, current grant refusal and lost-response/reload replay in the published UI. Close accounts and archive the owned institution, retaining immutable history. External provider delivery and Click settlement remain separate checks.",
-    "Existing dependency configuration syntax only; no secret write or rotation is required: supabase secrets set ACADEMY_AUDIO_ENCRYPTION_KEY=<retained-key>; supabase secrets set GMAIL_SMTP_EMAIL=<owned-email>; supabase secrets set GMAIL_SMTP_APP_PASSWORD=<operator-supplied-password>; supabase secrets set SITE_URL=<verified-site>. Never invent credentials or recipients."
+    "After exact-head protected CI, main CI and tracked Pages pass, apply only 20261021003500_academy_gradebook_review_revisions.sql and 20261021004000_academy_adjustment_subtype_authority.sql with supabase db push --linked --include-all from an isolated 233-entry baseline catalogue whose dry run lists exactly these two migrations. Do not apply unrelated Assessment or Proctor changes.",
+    "Capture the installed academy_finance_command body and compare it with the qualified wallet command. The migration retains the installed function definition and changes only subtype capability selection; it refuses unexpected command structure. Read back and prove the exact replacement. Preserve all other financial guards, receipts, cash custody and wallet policy. No Edge deployment or secret changes are required. Capture academy_operational_read and prove only assignment/submission updated_at fields are added; retain scope filtering and final authority recheck. The installed v95 serializer already returns submission updated_at. Repeat real published grading recovery and stale-review acceptance after this forward repair.",
+    "Run fourteen installed rollback-only fixture groups and owned live API/UI checks for center administrator refunds, accountant discounts, mixed branch grants and receipt replay after revocation. Only internal QA ledger entries are needed; no external payments or provider deliveries. Close owned accounts and archive the QA institution."
   ],
   "verification": [
-    "Twenty-one captured-schema stages passed with verified container cleanup, including an actual student resubmission winning against stale grading, blocked grading expiry rolling back history/audit/receipt, and concurrent identical grading retries. Five grading adapter tests passed. Complete Edge, browser, readiness, lint/build, localization, production and exact-head CI gates are required. Local qualification does not establish production installation."
+    "Twenty-two captured-schema stages passed with owned-container cleanup, including legitimate/denied independent adjustment subtypes, mixed scopes and replay after generic adjustment access remains. Focused browser checks, Academy build/lint, complete exact-head CI, verify:prod and release manifest are required. Installed and owned hosted checks remain separate gates.",
+    "A live owned test on v95 identified missing revision fields in the scoped SQL gradebook projection. A native scoped-read-to-grade roundtrip now verifies actual production read fields can construct the current-attempt grading command. Do not claim grading accepted until its published workflow passes."
   ],
   "rollback": {
-    "pages": "Prior tracked Pages on main bb0b95dfa7e41a3c6a26696cbb6bd5510da081e0.",
-    "edge": "Forward repair the newly captured source-preserving bundle; retain deployed operational, financial, wallet, parent and audio authority. Never replace installed modules with an old repository gateway.",
-    "migration": "Retain immutable grading snapshots, receipts and audit history. Forward repair definitions; do not delete customer work or financial records."
+    "pages": "Prior tracked Pages main 3df7e4557f1fd9b3b8d2d4adba763d4500a1e52e.",
+    "edge": "No Edge deployment is included. Preserve installed Academy v95 and its current modules.",
+    "migration": "Forward repair capability selection while retaining immutable financial receipts, ledger and audit history. Do not revert customer records."
   }
 }

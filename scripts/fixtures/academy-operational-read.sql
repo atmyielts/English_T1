@@ -36,6 +36,11 @@ begin
  if jsonb_array_length(result->'members')<>1 or result->'members'->0->>'contact_id'<>other_child::text or jsonb_array_length(result->'submissions')<>1 then raise exception 'Scoped admin lost its own grading workflow';end if;
  result:=public.academy_operational_read(academy,actor,'gradebook',jsonb_build_object('classroom_id',classroom));
  if jsonb_array_length(result->'members')<>2 or jsonb_array_length(result->'submissions')<>2 then raise exception 'Owner lost complete current class';end if;
+ if nullif(result->'assignments'->0->>'updated_at','')::timestamptz is distinct from(select updated_at from public.academy_assignments where id=assignment)
+  or exists(select 1 from jsonb_array_elements(result->'submissions') item join public.academy_submissions s on s.id=(item->>'id')::uuid where nullif(item->>'updated_at','')::timestamptz is distinct from s.updated_at) then raise exception 'Scoped gradebook omitted the current grading revisions';end if;
+ row_value:=result->'submissions'->0;
+ again:=public.academy_grading_command(academy,actor,'grade_submission',jsonb_build_object('submission_id',row_value->>'id','assignment_id',assignment,'contact_id',row_value->>'contact_id','expected_attempt_number',row_value->'attempt_number','expected_updated_at',row_value->>'updated_at','expected_assignment_updated_at',result->'assignments'->0->>'updated_at','score',80,'max_score',100),'owned-gradebook-review-roundtrip');
+ if again->'submission'->>'score'<>'80' then raise exception 'Current scoped gradebook cannot roundtrip into grading';end if;
  insert into public.academy_role_grants(academy_id,user_id,email,role,scope_type,scope_ids,status,granted_by)
  values(academy,peer,peer||'+student-a@example.invalid','teacher','students',jsonb_build_array(child),'active',actor) returning id into student_grant;
  result:=public.academy_operational_read(academy,peer,'gradebook',jsonb_build_object('classroom_id',classroom));stamp:=result->>'authority_hash';

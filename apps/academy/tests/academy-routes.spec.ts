@@ -6092,3 +6092,17 @@ test('wallet warnings and review settings stay bounded and usable on phone',asyn
 test('a limited gradebook warns before incomplete counts and separates quiz grading',async({page})=>{
  await seedSessionCookie(page,'teacher-user');await mockAcademyEdge(page,'teacher',{actionOverrides:{gradebook:{classroom_id:classroomId,assignments:[assignment],grade_categories:[gradeCategory],rows:[],has_more:{submissions:true}}}});await page.goto('/academy/teacher/os?academy_id='+academyId);await page.getByRole('button',{name:'Learning',exact:true}).click();await expect(page.getByText('Only part of this gradebook is loaded. Missing-work counts and averages may be incomplete.',{exact:true})).toBeVisible();await expect(page.getByText('Quiz attempts needing grading',{exact:true})).toBeVisible();await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
+
+for (const persona of ['center_admin','accountant'] as const) {
+ test(`adjustment choices follow the financial snapshot's independent subtype permissions for ${persona}`,async({page})=>{
+  await seedSessionCookie(page,'owner-user');
+  await mockAcademyEdge(page,'owner',{actionOverrides:{commercial_core:{...commercialCore,access:accessForPersona(persona)}}});
+  await page.goto('/academy/admin/commercial?academy_id='+academyId);
+  await page.getByRole('button',{name:'Ledger & reconciliation',exact:true}).click();
+  const form=page.locator('form').filter({has:page.getByRole('heading',{name:'Post adjustment',exact:true})});
+  const types=form.getByRole('combobox',{name:'Type',exact:true});
+  await expect(types.locator('option[value="refund"]')).toHaveCount(persona==='accountant'?1:0);
+  await expect(types.locator('option[value="discount"]')).toHaveCount(persona==='center_admin'?1:0);
+  await expect(types.locator('option[value="credit_adjustment"]')).toHaveCount(1);
+ });
+}
