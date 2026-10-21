@@ -27,6 +27,14 @@ async(page)=>{
  await panel.getByRole('alert').filter({hasText:'These accommodations changed since you opened them'}).waitFor();
  if(await panel.getByRole('button',{name:'Retry saved approval',exact:true}).count())throw Error('Refused stale approval stayed pending');
  await screenshots('approval-list',panel);
+ // A second sitting uses a running-clock policy: breaks grant no exam time.
+ await panel.getByRole('combobox',{name:'Sitting',exact:true}).selectOption({label:'Running-clock sitting'});
+ await row(panel).getByRole('button',{name:'Review accommodations',exact:true}).click();form=panel.getByRole('form',{name:'Approve accommodations',exact:true});
+ await form.getByLabel('Allow timed breaks',{exact:true}).check();await form.getByLabel('Keep the exam clock running',{exact:true}).check();
+ await form.getByLabel('Number of breaks',{exact:true}).fill('1');await form.getByLabel('Minutes per break',{exact:true}).fill('1');await form.getByLabel('Total break minutes',{exact:true}).fill('1');
+ await form.getByLabel('Approval basis (institution only)',{exact:true}).fill('Approved rest break, policy AA-2026-15');await form.getByRole('button',{name:'Approve accommodations',exact:true}).click();
+ await panel.getByText('Accommodations approved. They will be fixed when the candidate starts.',{exact:true}).waitFor();
+ await row(panel).getByText('Standard time · 1 break, up to 1 min each, 1 min total, clock running · approval revision 1',{exact:true}).waitFor();
  // The candidate projection never carries the institution-only approval basis.
  const token=(await(await page.request.post(base+'/auth/v1/token?grant_type=password',{data:{email:'candidate@example.test',password:'synthetic'}})).json()).access_token;
  const candidateRows=await(await page.request.get(base+'/functions/v1/assessment-cloud/candidate/registrations?tenant_id='+info.tenant,{headers:{authorization:'Bearer '+token}})).text();
@@ -58,6 +66,16 @@ async(page)=>{
  await page.getByRole('heading',{name:'Timing check',exact:true}).waitFor({timeout:20000});await card.getByText('0 of 2 breaks left',{exact:false}).waitFor();
  if(await card.getByRole('button',{name:'Take a break',exact:true}).isEnabled())throw Error('Exhausted allowance still offered a break');
  await wait(async()=>await page.getByRole('button',{name:'Submit assessment',exact:true}).isEnabled(),'Submit unavailable');
+ await page.getByRole('button',{name:'Submit assessment',exact:true}).click();await page.getByRole('heading',{name:'Assessment submitted',exact:true}).waitFor();
+ // Running clock through the real apps: the clock keeps running and the deadline is unchanged.
+ await page.reload();await page.getByRole('listitem').filter({has:page.getByText('Running-clock sitting',{exact:true})}).getByRole('button',{name:'Start or resume',exact:true}).click();
+ await page.getByRole('heading',{name:'Timing check',exact:true}).waitFor();await card.getByText('1 of 1 breaks left',{exact:false}).waitFor();await card.getByText('The exam clock keeps running during a break.',{exact:false}).waitFor();
+ await wait(async()=>await card.getByRole('button',{name:'Take a break',exact:true}).isEnabled(),'Running-clock break unavailable');
+ await card.getByRole('button',{name:'Take a break',exact:true}).click();await page.getByRole('heading',{name:'You are on a break',exact:true}).waitFor();
+ await page.getByText('Your exam clock keeps running during this break.',{exact:false}).waitFor();await screenshots('candidate-running-break',page.locator('section.break-active'));
+ await page.getByRole('button',{name:'Return to the exam',exact:true}).click();await page.getByRole('heading',{name:'Timing check',exact:true}).waitFor();
+ await page.getByRole('textbox',{name:'Your numeric answer',exact:true}).fill('15');
+ await wait(async()=>await page.getByRole('button',{name:'Submit assessment',exact:true}).isEnabled(),'Running-clock submit unavailable',300);
  await page.getByRole('button',{name:'Submit assessment',exact:true}).click();await page.getByRole('heading',{name:'Assessment submitted',exact:true}).waitFor();
  const proof=await(await page.request.get(base+'/test/accommodation-proof',{headers:control})).json();
  if(errors.length)throw Error(errors.join('\n'));

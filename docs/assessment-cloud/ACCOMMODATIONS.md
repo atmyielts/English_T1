@@ -1,6 +1,6 @@
 # Accommodations and controlled breaks
 
-Status as of 2026-10-22: **locally evidenced, incomplete.** The approval command, candidate break runtime and both app workflows pass local database, race, API and connected browser checks. Exact-release remote CI for this wave, the running-clock browser journey, academic-recording teardown in a browser, policy exemptions, alternate media, guardian consent and every hosted, device, legal and capacity gate are still open. See `ACC-01` to `ACC-07` in the [full-service backlog](FULL_SERVICE_BACKLOG.md#acc--accommodations-and-minors).
+Status as of 2026-10-22: **locally evidenced, incomplete.** The approval command, candidate break runtime and both app workflows pass local database, race, API and connected browser checks. Exact-release remote CI for this wave, academic-recording teardown in a browser, policy exemptions, alternate media, guardian consent and every hosted, device, legal and capacity gate are still open. See `ACC-01` to `ACC-07` in the [full-service backlog](FULL_SERVICE_BACKLOG.md#acc--accommodations-and-minors).
 
 Source revision: branch `codex/assessment-cloud-foundation` in worktree `.claude/worktrees/gracious-swartz-96bafd`, on top of `0aa2a71`. The environment is Windows 11, Docker 29.6.1 with `postgres:16-alpine`, Deno 2.5.6, Node 24.13 and the installed Google Chrome through `@playwright/cli`. Identity and PostgREST are local fixture adapters. The proctor pause in the browser journey is a direct attempt-state change, not the proctor command path.
 
@@ -95,19 +95,21 @@ The connected journey runs the real Assessment and Exam builds against the produ
 - A reload keeps the break view. Returning early restores the questions and the saved answer.
 - A second break is ended by a pause, and the candidate has no resume control.
 - After resume, the exhausted allowance offers no break, and the attempt is submitted.
+- A second sitting approved with a running-clock policy shows that the clock keeps running. The break ends, the answer syncs and the attempt is submitted, with the deadline unchanged.
 
 The proof has:
 - 2 approval audits, registration revision 2, pinned revision 2 and pinned extra time of 300 seconds
 - 1 attempt, `submitted`
 - 2 breaks ending as `candidate` and `proctor_pause`
 - 3 break commands and 1 response
+- 1 running-clock break with `running_deadline_unchanged: true`
 - scores unchanged
 
 Screenshots in `output/playwright/accommodations/` at 1,440, 1,024, 768, 390 and 320 px have no horizontal overflow. They were inspected visually.
 
 ## Remaining work
 
-- **ACC-03:** run the running-clock policy through the real apps (it is proven in SQL only). Show candidate names rather than account IDs in the approval list.
+- **Approval list:** show candidate names rather than account IDs (needs a directory read shared with cohorts).
 - **ACC-04:** a browser proof that an open academic answer recording blocks a break and is sealed first. Account-change and lease-change journeys during a pending break intent.
 - **ACC-05 to ACC-07:** policy exemptions, alternate media and access arrangements, guardian and age consent, a manual screen-reader review, physical devices and monitored hosted journeys.
 - **Localization:** this wave's strings are English. UX-01 extracts them into uz/ru/en.
