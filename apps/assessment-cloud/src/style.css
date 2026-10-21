@@ -1,1 +1,2 @@
 @import '../../../packages/service-design/src/platform.css';
+.accommodations{grid-column:1/-1;display:grid;gap:1rem}.accommodations form{display:grid;gap:1rem;max-width:640px}.accommodations .actions{display:flex;gap:.75rem;flex-wrap:wrap}

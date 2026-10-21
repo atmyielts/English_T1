@@ -6,7 +6,7 @@ Updated 2026-10-22 (Asia/Tashkent). The objective is the complete service, not a
 
 - [Implementation record](IMPLEMENTATION.md): what has been written, the evidence obtained, historical verification and the 26-subsystem completion ledger.
 - [Full-service backlog](FULL_SERVICE_BACKLOG.md): remaining implementation and verification tasks, stable IDs, dependencies and completion checks. This is the execution breakdown of the ledger, not a replacement or a smaller scope.
-- [Accommodations work in progress](ACCOMMODATIONS.md): exact unfinished code, intended contracts, last failed verification and missing institution/candidate workflows.
+- [Accommodations](ACCOMMODATIONS.md): approval and break workflows, contracts, local evidence and remaining work.
 - [Service boundaries](SERVICE_BOUNDARIES.md): product ownership, shared visual foundations and forbidden cross-application coupling.
 - [Release gates](RELEASE_GATES.md): CI-before-deployment, isolated targets, migration/restore/security/legal/provider/capacity acceptance.
 - [Local development](LOCAL_DEVELOPMENT.md): setup and reproducible verification. Historical passing checks are not proof of the current modified checkout.
@@ -16,7 +16,7 @@ Updated 2026-10-22 (Asia/Tashkent). The objective is the complete service, not a
 
 **Locally evidenced, incomplete:** named workflows have code and recorded local tests. This does not mean the whole subsystem is complete, hosted, enabled or production-ready.
 
-**Written, unverified:** source/tests exist but a current successful result has not been captured. Migration 36/accommodations is in this state; do not count it as working functionality.
+**Written, unverified:** source/tests exist but a current successful result has not been captured. (Accommodations left this state on 2026-10-22; it is now locally evidenced, incomplete.)
 
 **Pending:** required implementation or acceptance evidence is missing. Provider-authenticated, physical-device, production-shaped, external security/legal and target-capacity acceptance are distinct gates.
 

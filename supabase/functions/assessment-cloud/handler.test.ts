@@ -145,3 +145,14 @@ Deno.test("approval requires a review hash of the immutable item and key",async(
   equal((await handle(req("commands",{action:"item.approve",data:{id:actor,review_hash:"forged"}}))).status,409);
   equal((await handle(req("commands",{action:"item.approve",data:{id:actor,review_hash:await hash({item:payload,key})}}))).status,200);
 });
+Deno.test('accommodation approval requires exam management and forwards only the strict contract',async()=>{
+ const policy={schema_version:'assessment.break-policy.v1',clock:'stopped',max_breaks:2,max_seconds:60,total_seconds:120};
+ const data={registration_id:actor,revision:1,extra_seconds:300,break_policy:policy,reason:'Approved under access arrangements policy'};
+ let stored:Record<string,unknown>|null=null,capability='';
+ const handle=(allowed:boolean)=>createHandler({repository:{...repository,capability:(_t,_a,name)=>{capability=name;return Promise.resolve(allowed);},command:(_a,_t,_k,action,input)=>{equal(action,'registration.accommodate');stored=input as Record<string,unknown>;return Promise.resolve({id:actor,revision:2});}},allowedOrigins:[]});
+ equal((await handle(false)(req('commands',{action:'registration.accommodate',data}))).status,403);equal(capability,'exams.manage');equal(stored,null);
+ for(const bad of [{...data,break_policy:{...policy,max_seconds:59.5}},{...data,break_policy:{...policy,max_breaks:0}},{...data,extra_seconds:86401},{...data,reason:''},{...data,revision:-1}])equal((await handle(true)(req('commands',{action:'registration.accommodate',data:bad}))).status,422);
+ equal(stored,null);
+ equal((await handle(true)(req('commands',{action:'registration.accommodate',data:{...data,diagnosis:'never stored',candidate_id:tenant}}))).status,200);
+ equal(JSON.stringify(Object.keys(stored!).sort()),JSON.stringify(['break_policy','extra_seconds','reason','registration_id','revision']));
+});

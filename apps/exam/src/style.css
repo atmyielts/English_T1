@@ -10,3 +10,7 @@
 .score-breakdown{flex-basis:100%;min-width:0;width:100%}.score-breakdown section{min-width:0}.score-breakdown h4{overflow-wrap:anywhere}.score-breakdown summary{cursor:pointer;min-height:44px}.score-breakdown .records>li{display:block}
 .answer-order li{margin-bottom:1rem;overflow-wrap:anywhere}.answer-order li>div{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem}.answer-order button{min-height:44px}
 @media(max-width:650px){.exam-workspace main{padding:1rem}.clock{font-size:1.25rem}.exam-workspace .service-header [role=status]{max-width:170px}}
+.break-card,.break-active{margin:1.5rem 0;border:1px solid var(--line);border-radius:1.5rem;background:var(--paper);padding:1.5rem;display:grid;gap:.75rem}.break-card h2{font-size:1.1rem}.break-card p,.break-active p{overflow-wrap:anywhere;margin:0}.break-card button,.break-active button{justify-self:start;min-height:44px}
+.break-active{max-width:640px;margin:2rem auto;text-align:left}.break-countdown{font-family:Sora,Manrope,sans-serif;font-variant-numeric:tabular-nums;font-size:3rem;font-weight:700;line-height:1.1}
+.break-pending{display:grid;gap:.5rem;border-left:3px solid var(--navy);padding-left:1rem}
+@media(max-width:650px){.break-card,.break-active{padding:1rem;border-radius:1rem}.break-countdown{font-size:2.25rem}}

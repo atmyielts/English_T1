@@ -12,6 +12,7 @@ import { ServiceHeader } from "../../../packages/service-design/src/ServiceHeade
 import { type Definition } from "../../../packages/assessment-core/src/mod.ts";
 import {invitationFromFragment,type InvitationLink} from '../../../packages/assessment-web/src/invitations';
 import {AcceptInvitation} from './staff/AcceptInvitation';
+import {AccommodationsPanel} from './accommodations/AccommodationsPanel';
 import "./style.css";
 const AssessmentWorkspace = lazy(() =>
   import("./design/AssessmentWorkspace").then((module) => ({
@@ -613,6 +614,7 @@ function App() {
                       <button disabled={busy}>Schedule exam</button>
                     </form>
                   </section>
+                  <AccommodationsPanel key={scope} tenant={tenant} actor={user} windows={rows["exam-windows"] ?? []} registrations={rows.registrations ?? []} reload={load}/>
                 </>
               )}
             </div>

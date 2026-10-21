@@ -14,10 +14,11 @@ import {seedAssessmentInvitations,assessmentInvitationProof} from './assessment-
 import {assessmentMailFixture} from './assessment-mail-fixture.mjs';
 import {assessmentDocumentFixture} from './assessment-document-fixture.mjs';
 import {seedAssessmentBlueprints,assessmentBlueprintProof} from './assessment-blueprint-fixture.mjs';
+import {seedAssessmentAccommodations,bumpAccommodation,setAccommodatedAttemptState,assessmentAccommodationProof} from './assessment-accommodations-fixture.mjs';
 const root = fileURLToPath(new URL("../", import.meta.url)),
   tenant = "10000000-0000-4000-8000-000000000001";
-export async function appealBrowserStack({ certificates = false,documents=false,lifecycle=false,blueprints=false,cohorts=false,imports=false,analytics=false,feedback=false,capture=false,live=false,workload=false,staff=false,invitations=false,mail=false } = {}) {
-  if(blueprints)capture=true;
+export async function appealBrowserStack({ certificates = false,documents=false,lifecycle=false,blueprints=false,accommodations=false,cohorts=false,imports=false,analytics=false,feedback=false,capture=false,live=false,workload=false,staff=false,invitations=false,mail=false } = {}) {
+  if(blueprints||accommodations)capture=true;
   if(lifecycle)documents=true;
   if(documents)certificates=true;
   if(live)capture=true;
@@ -40,7 +41,7 @@ export async function appealBrowserStack({ certificates = false,documents=false,
     gradingHandler,
     certificateHandler,
     documentServices,
-    blueprintIds,loseBlueprintCreate=blueprints,loseBlueprintPublish=blueprints,loseBlueprintStart=blueprints,
+    blueprintIds,accommodationIds,loseAccommodation=accommodations,loseBreakBegin=accommodations,loseBlueprintCreate=blueprints,loseBlueprintPublish=blueprints,loseBlueprintStart=blueprints,
     certificateOptions,
     rotateSigner,
     retireSigner,
@@ -251,6 +252,7 @@ export async function appealBrowserStack({ certificates = false,documents=false,
     if(staff)staffIds=seedAssessmentStaff(sql,actors,tenant);
     if(workload){sql(await readFile(path.join(root,'supabase/tests/proctor-workload.fixture.sql'),'utf8'));sql("update users set full_name=case id when '00000000-0000-4000-8000-000000000071' then 'Board Observer' when '00000000-0000-4000-8000-000000000072' then 'Board Reviewer' else 'Board Candidate' end where id in('00000000-0000-4000-8000-000000000071','00000000-0000-4000-8000-000000000072','00000000-0000-4000-8000-000000000073');");}
     if(blueprints)blueprintIds=seedAssessmentBlueprints(sql,actors,tenant);
+    if(accommodations)accommodationIds=seedAssessmentAccommodations(sql,actors,tenant);
     if(invitations)invitationIds=seedAssessmentInvitations(sql,actors,tenant);
     if(analytics){sql(runtime+'\n'+await readFile(path.join(root,'supabase/tests/assessment-analytics.fixture.sql'),'utf8'));analyticsIds=JSON.parse(sql('select to_jsonb(t) from assessment_analytics_fixture_ids t;'));scoreSnapshot=sql('select jsonb_agg(to_jsonb(s) order by id) from assessment_score_revisions s;');}
     if(feedback){sql(await readFile(path.join(root,'supabase/tests/assessment-feedback.fixture.sql'),'utf8'));feedbackIds=JSON.parse(sql('select to_jsonb(t) from assessment_feedback_fixture_ids t;'));scoreSnapshot=sql('select jsonb_agg(to_jsonb(s) order by id) from assessment_score_revisions s;');}
@@ -303,7 +305,7 @@ export async function appealBrowserStack({ certificates = false,documents=false,
         for await (const chunk of req) chunks.push(chunk);
         const body = Buffer.concat(chunks);
         if (url.pathname === "/test/info") {
-          reply(res, 200, { tenant, control,document_enabled:documents,lifecycle_enabled:lifecycle,blueprints_enabled:blueprints,blueprintIds,live_enabled:live,mail_enabled:mail,seededCohort,rosterSitting,importBank,analyticsIds,feedbackIds,captureIds,invitationIds:invitationIds?{role:invitationIds.role,invited:invitationIds.invited}:undefined,staffIds:staffIds?{local:staffIds.local,legacy:staffIds.legacy}:undefined });
+          reply(res, 200, { tenant, control,document_enabled:documents,lifecycle_enabled:lifecycle,blueprints_enabled:blueprints,blueprintIds,accommodations_enabled:accommodations,accommodationIds,live_enabled:live,mail_enabled:mail,seededCohort,rosterSitting,importBank,analyticsIds,feedbackIds,captureIds,invitationIds:invitationIds?{role:invitationIds.role,invited:invitationIds.invited}:undefined,staffIds:staffIds?{local:staffIds.local,legacy:staffIds.legacy}:undefined });
           return;
         }
         if (url.pathname.startsWith("/test/")) {
@@ -360,6 +362,9 @@ export async function appealBrowserStack({ certificates = false,documents=false,
             reply(res, 200, {});
             return;
           }
+          if(accommodations&&url.pathname==='/test/accommodation-bump'){reply(res,200,bumpAccommodation(sql,actors,tenant,accommodationIds));return;}
+          if(accommodations&&(url.pathname==='/test/accommodation-pause'||url.pathname==='/test/accommodation-resume')){setAccommodatedAttemptState(sql,accommodationIds,url.pathname.endsWith('pause')?'paused':'active');reply(res,200,{});return;}
+          if(accommodations&&url.pathname==='/test/accommodation-proof'){reply(res,200,{...assessmentAccommodationProof(sql,accommodationIds),approval_reply_lost:!loseAccommodation,break_reply_lost:!loseBreakBegin,scores_unchanged:scoreSnapshot===sql('select jsonb_agg(to_jsonb(s) order by id) from assessment_score_revisions s;')});return;}
           if(blueprints&&url.pathname==='/test/blueprint-proof'){reply(res,200,{...assessmentBlueprintProof(sql),scores_unchanged:scoreSnapshot===sql('select jsonb_agg(to_jsonb(s) order by id) from assessment_score_revisions s;')});return;}
           if (url.pathname === "/test/certificate-proof") {
             if(lifecycle&&url.searchParams.get('lifecycle')==='1'){reply(res,200,{...JSON.parse(sql("select jsonb_build_object('certificates',(select count(*) from assessment_certificates),'retirements',(select count(*) from assessment_certificate_program_retirements),'replacement_intents',(select count(*) from assessment_certificate_replacement_preparations),'replaced_audits',(select count(*) from assessment_audit_events where action='certificates.replaced'),'replaced_events',(select count(*) from domain_event_outbox where event_type='assessment.certificate.replaced'),'issued_audits',(select count(*) from assessment_audit_events where action='certificates.issued'),'retired_audits',(select count(*) from assessment_audit_events where action='certificates.program.retire'),'revoked',(select count(*) from assessment_certificates where state='revoked'),'documents',(select count(*) from assessment_certificate_documents),'document_audits',(select count(*) from assessment_audit_events where action='certificates.document.rendered'));")),scores_unchanged:scoreSnapshot===sql("select jsonb_agg(to_jsonb(s) order by id) from assessment_score_revisions s;")});return;}
@@ -404,8 +409,10 @@ export async function appealBrowserStack({ certificates = false,documents=false,
           return;
         }
         if(live&&url.pathname.startsWith('/v1/connections/')){const response=await captureServices.live(new Request(base+req.url,{method:req.method,headers:req.headers,...(body.length?{body}:{})}));res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return;}
+        if(accommodations&&loseBreakBegin&&req.method==='POST'&&url.pathname.startsWith('/coordinator/')&&body.length&&JSON.parse(body).action==='break.begin'){const response=await captureServices.coordinator(new Request(base+req.url,{method:req.method,headers:req.headers,body}));if(response.ok){loseBreakBegin=false;reply(res,503,{code:'fixture_reply_lost',error:'The break started but its reply was lost. Retry the saved request.'});return;}res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return;}
         if(capture&&(url.pathname.startsWith('/functions/v1/proctor/')||url.pathname.startsWith('/coordinator/')||url.pathname.startsWith('/v1/recordings/'))){const request=new Request(base+req.url,{method:req.method,headers:req.headers,...(body.length?{body}:{})}),response=await(url.pathname.startsWith('/functions/v1/proctor/')?captureServices.proctor(request):url.pathname.startsWith('/coordinator/')?captureServices.coordinator(request):captureServices.evidence(request));res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return;}
         if (url.pathname.startsWith("/functions/v1/assessment-cloud/")) {
+          if(accommodations&&/\/(workspaces|item-banks|item-versions|rubrics|assessments|assessment-revisions|assessment-versions|exam-windows|registrations|commands)$/.test(url.pathname)){const response=await assessmentHandler(new Request(base+req.url,{method:req.method,headers:req.headers,...(body.length?{body}:{})})),action=body.length?JSON.parse(body).action:null;if(response.ok&&action==='registration.accommodate'&&loseAccommodation){loseAccommodation=false;reply(res,503,{code:'fixture_reply_lost',error:'The approval committed but its reply was lost. Retry the saved request.'});return;}res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return;}
           if(blueprints&&(/\/(workspaces|item-banks|item-versions|rubrics|assessments|assessment-revisions|assessment-versions|exam-windows|registrations|commands|blueprints\/preview)$/.test(url.pathname)||/\/item-versions\/[^/]+\/review$/.test(url.pathname))){const response=await assessmentHandler(new Request(base+req.url,{method:req.method,headers:req.headers,...(body.length?{body}:{})})),action=body.length?JSON.parse(body).action:null;if(response.ok&&((action==='assessment.create'&&loseBlueprintCreate)||(action==='assessment.publish'&&loseBlueprintPublish)||(action==='attempt.start'&&loseBlueprintStart))){if(action==='assessment.create')loseBlueprintCreate=false;else if(action==='assessment.publish')loseBlueprintPublish=false;else loseBlueprintStart=false;reply(res,503,{code:'fixture_reply_lost',error:'The blueprint command committed but its reply was lost. Retry the saved request.'});return;}res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return;}
           if(staff||invitations){
             const endpoint=url.pathname.includes('/invitations/mail/')?mailServices?.handler:url.pathname.includes('/invitations/')?invitationHandler:url.pathname.includes('/staff/')?staffHandler:url.pathname.includes('/grading/')?gradingHandler:assessmentHandler;

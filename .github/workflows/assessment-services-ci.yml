@@ -28,6 +28,8 @@ on:
       - 'supabase/tests/proctor*'
       - 'scripts/test-assessment-db.mjs'
       - 'scripts/test-assessment-blueprint-race.mjs'
+      - 'scripts/test-assessment-accommodations-race.mjs'
+      - 'scripts/assessment-accommodations-fixture.mjs'
       - 'scripts/assessment-appeal-stack.mjs'
       - 'scripts/assessment-capture-ports.mjs'
       - 'scripts/assessment-staff-fixture.mjs'
@@ -96,6 +98,39 @@ jobs:
           if-no-files-found: ignore
       # Disposable identity/PostgREST fixtures and real local PG/coordinator only.
       # No production mutation, hosted acceptance or psychometric calibration claim.
+  accommodations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: npm ci
+      - name: Break policy contract, candidate break intents and approval API authority
+        run: deno test --no-lock packages/assessment-core/src/accommodations.test.ts packages/assessment-web/tests/breaks.test.ts supabase/functions/assessment-cloud/handler.test.ts supabase/functions/assessment-runtime/handler.test.ts
+      - name: Independent apps, Edge types and service boundaries
+        run: |
+          npm --workspace apps/assessment-cloud run build
+          npm --workspace apps/exam run build
+          deno check --no-lock supabase/functions/assessment-cloud/index.ts supabase/functions/assessment-runtime/index.ts
+          node scripts/verify-assessment-boundaries.mjs
+      - name: Browser for institution approval and candidate breaks
+        run: npx --yes --package @playwright/cli playwright-cli install-browser chrome --with-deps
+      - name: Connected approval recovery, stale revision, private basis, candidate break recovery and pause fencing
+        run: node scripts/test-assessment-appeals-browser.mjs --accommodations
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: assessment-accommodations-fixture-evidence
+          path: output/playwright/accommodations/*.png
+          if-no-files-found: ignore
+      # Disposable identity/PostgREST fixtures, real local PG/coordinator. The
+      # proctor pause is a state-change fixture; no hosted or device acceptance.
   certificate-documents:
     runs-on: ubuntu-latest
     timeout-minutes: 20
