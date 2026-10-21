@@ -10,6 +10,8 @@ import { CandidateLive } from "../../packages/proctor-web/src/candidate-live";
 import { CaptureRecorder } from "../../packages/proctor-web/src/capture";
 import type { CaptureUploadState } from "../../packages/proctor-web/src/recording-types";
 import { createRoot } from "react-dom/client";
+import { I18nProvider } from "../../packages/service-i18n/src/i18n.tsx";
+import { catalogs as examCatalogs } from "../../apps/exam/src/i18n/index.ts";
 import { LivePanel, type LiveServices } from "../../apps/proctor/src/LivePanel";
 import { ServiceHeader } from "../../packages/service-design/src/ServiceHeader";
 import {
@@ -384,4 +386,5 @@ function Fixture() {
     </div>
   );
 }
-createRoot(document.getElementById("root")!).render(<Fixture />);
+// Exam components are localized; the fixture renders them in the same provider as the app.
+createRoot(document.getElementById("root")!).render(<I18nProvider catalogs={examCatalogs}><Fixture /></I18nProvider>);
