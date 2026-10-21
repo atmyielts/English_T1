@@ -1,46 +1,38 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-teacher-retention-cohorts",
+  "releaseId": "academy-booking-and-linked-collection",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
     "academy"
   ],
   "migrations": [
-    "20261021005000_academy_teacher_retention_cohorts.sql"
+    "20261021006000_academy_booking_command_authority.sql",
+    "20261021007000_academy_linked_student_collection.sql"
   ],
   "edgeFunctions": [
     "academy"
   ],
   "sharedEdgeConsumers": [],
   "workers": [],
-  "requiredSecrets": [
-    "ACADEMY_AUDIO_ENCRYPTION_KEY",
-    "GMAIL_SMTP_APP_PASSWORD",
-    "GMAIL_SMTP_EMAIL",
-    "SITE_URL"
-  ],
+  "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "migration:20261021005000_academy_teacher_retention_cohorts.sql",
-    "secret:ACADEMY_AUDIO_ENCRYPTION_KEY",
-    "secret:GMAIL_SMTP_APP_PASSWORD",
-    "secret:GMAIL_SMTP_EMAIL",
-    "secret:SITE_URL",
+    "migration:20261021006000_academy_booking_command_authority.sql",
+    "migration:20261021007000_academy_linked_student_collection.sql",
     "function:academy"
   ],
   "manualFollowUps": [
-    "After exact-head/main CI and tracked Pages, apply only the reviewed retention migration using supabase db push --linked from an isolated installed catalogue. Confirm the dry run contains exactly this migration. Capture aggregate baseline size and compare the installed import reference helper bodies before activation.",
-    "Use supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel from a source-preserving bundle made from installed v95, adding only the retention adapter and reviewed dispatcher changes. Retain unrelated modules and all existing secrets, including audio encryption. Read back every module hash and the installed migration.",
-    "Run installed rollback-only fixtures plus owned populated retention API/browser checks, branch scope, revocation, incomplete history and empty cohorts. Close owned accounts and archive the QA institution. No customer history, provider messages or payments are changed.",
-    "Existing dependency configuration syntax only; no secret write or rotation is required: supabase secrets set ACADEMY_AUDIO_ENCRYPTION_KEY=<retained-key>; supabase secrets set GMAIL_SMTP_EMAIL=<owned-email>; supabase secrets set GMAIL_SMTP_APP_PASSWORD=<operator-supplied-password>; supabase secrets set SITE_URL=<verified-site>. Never invent credentials or recipients."
+    "After protected exact-head/main CI and tracked Pages, use supabase db push --linked --include-all from an isolated 236-entry installed catalogue. Require a dry run listing only these two migrations. Do not install unrelated Assessment or Proctor work.",
+    "Use supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel from a source-preserving v96 capture, changing only the two reviewed command adapters and adding booking-command.ts and collection-command.ts. Preserve the other 34 installed modules and every existing secret; no configuration or rotation is required.",
+    "Read back all runtime and migration hashes, run installed rollback-only fixtures and actual owned published booking clash/lost-reply/reload and linked cashier collection checks. Preserve immutable internal ledger, allocation, shift and audit evidence; close owned accounts and archive the institution. Manual collection cannot forge Click or purchase entitlements."
   ],
   "verification": [
-    "Full captured production-schema qualification passed 24 stages, including grant expiry while a retention read is blocked, including imports, retained correction, current grading, financial authority and populated retention cohorts; owned database containers were removed. Run complete Edge tests, browser suite, build/lint, localization and production/release checks. Production readback and hosted acceptance are separate requirements."
+    "Full captured-schema qualification passed 26 stages with owned-container cleanup, including independent room/teacher/class clashes, exact linked payment/ledger/optional allocation/cash movement, over-allocation rollback, rejection of forged Click and payment overflow, duplicate booking serialization and grant expiry during blocked booking/collection receipts. Four adapter and four focused browser checks passed. Complete Edge/browser CI, build/lint, localization, product readiness, verify:prod and release checks remain required."
   ],
   "rollback": {
-    "pages": "Previous tracked main b79a3c0a87e62d15dc4c8c87676fd18217cc72ed; use Pages rollback if required.",
-    "edge": "Preserve captured installed v95 source for a rollback deployment without changing secrets.",
-    "migration": "Additive private observations only; retain immutable event history and forward-repair report logic. Never reconstruct historical teacher assignments from current staff rosters."
+    "pages": "Prior tracked main 2dcdc2b9600450e81dabeed2b62cb876d676eca8.",
+    "edge": "Retain the installed v96 runtime capture and secrets. Forward-repair the changed command adapters or deploy the captured baseline if needed.",
+    "migration": "Additive private commands; retain immutable bookings and financial evidence. Never reset customer records or reverse a real payment without an audited compensating operation."
   }
 }

@@ -1,6 +1,10 @@
 # Requested-work finish checklist
 
-Current accepted production state, 2026-10-21: main `b79a3c0a87e62d15dc4c8c87676fd18217cc72ed`, Academy v95, 235 installed migrations. PR [265](https://github.com/atmyielts/English_T1/pull/265) installed current-attempt grading; PR [266](https://github.com/atmyielts/English_T1/pull/266) supplied the scoped-read revision repair and independent refund/discount permissions. Exact-head/main CI, tracked Pages, 14 installed rollback-only fixture groups and post-activation smoke passed. All 35 runtime hashes matched; 33 installed modules were retained and no secrets changed.
+Current accepted production state, 2026-10-21: main `2dcdc2b9600450e81dabeed2b62cb876d676eca8`, Academy v96, 236 installed migrations. PR [269](https://github.com/atmyielts/English_T1/pull/269) adds current scoped teacher retention with separate transfers and academy departures. Exact-head/main CI, tracked Pages, automatic production smoke, all 36 runtime hashes, three exact database function hashes and 15 installed rollback-only fixture groups passed. Published phone/desktop acceptance passed **56 checks and 81 cleanup checks**; all four owned accounts are closed and the institution is archived. No customer records, provider deliveries, real money or secrets changed. [Retention production proof](2026-10-21-teacher-retention-production.json).
+
+Older periods before recorded teacher history remain explicitly incomplete. Populated cohorts proved pauses, transfers, departures, completions, corrections, exact rates, current class/branch permissions and revocation. Booking and linked collection are qualified candidates awaiting their own production release; other existing open items remain below.
+
+Grading/adjustment acceptance baseline, 2026-10-21: main `b79a3c0a87e62d15dc4c8c87676fd18217cc72ed`, Academy v95, 235 installed migrations. PR [265](https://github.com/atmyielts/English_T1/pull/265) installed current-attempt grading; PR [266](https://github.com/atmyielts/English_T1/pull/266) supplied the scoped-read revision repair and independent refund/discount permissions. Exact-head/main CI, tracked Pages, 14 installed rollback-only fixture groups and post-activation smoke passed. All 35 runtime hashes matched; 33 installed modules were retained and no secrets changed.
 
 Published grading acceptance passed **50 checks and 67 cleanup checks**: lost real reply/reload replays one captured grade, private before/after history remains singular, learner work is preserved, an actual new student response rejects stale grading, and current staff/explicit-learner revocation refuses saved receipt replay. Four QA accounts closed. [Grading production proof](2026-10-21-current-grading-production.json).
 
@@ -10,7 +14,7 @@ The real **201-row, ten-field CSV** acceptance is complete, including parent nam
 
 The settled **20-surface shared-auth/entry/reload matrix** passed with no JavaScript errors, observed backend 5xx or document overflow. Paid services correctly redirected an unentitled owned account to mother Schood pricing. The QA account closed. This covers entry/guard/reload, not all paid learning workflows or performance at load. [Cross-service production proof](2026-10-21-cross-service-auth-production.json).
 
-Remaining work includes atomic booking acceptance, provider/bot delivery and recording, funded Click renewal, linked cashier collection, remaining legacy branch authority, populated teacher retention and the remaining paid learner/performance/design flows. The operator selected **separate teacher-transfer and academy-departure measures**, excluding pauses and import corrections from dropout totals. This record does not mark the complete checklist finished.
+Remaining work includes atomic booking acceptance, provider/bot delivery and recording, funded Click renewal, linked cashier collection, remaining legacy branch authority and the remaining paid learner/performance/design flows. The operator selected **separate teacher-transfer and academy-departure measures**, excluding pauses and import corrections from dropout totals. This record does not mark the complete checklist finished.
 
 Fixed acceptance scope, 2026-10-14. This records the work already requested;
 it does not add features or replace the original all-service audit objective.
@@ -75,7 +79,7 @@ Rows 2 and 4 have accepted published software workflows. Other rows retain their
 | 9 | Teacher payroll | Per-lesson, collected-tuition percentage and base-plus-student rules; exact monthly report, valid inputs, approval/payout history and safe recalculation. | Software rules/report/history accepted; no bank settlement or historical roster reconstruction claimed. |
 | 10 | Cashier shifts and handover | Open/collect/close/reconcile across cash/Click/card; exact balances, concurrent/retry safety and preserved discrepancy/handover evidence. | Open: custody/handover accepted; linked manual student collection remains. |
 | 11 | Multi-branch selector | One-click permitted branch switch scopes every dependent view/action and compares revenue/headcount/performance without mixing tenants or privileges. | Open: scoped financial/room/grade families accepted; remaining legacy reads/writes and header scope remain. |
-| 12 | Teacher retention/churn | Correct cohort/period definitions distinguish dropout from pause/transfer/import recovery; populated fixture proves teacher comparisons and empty data stays honest. | Open: separate teacher transfers and academy departures; pauses/import corrections excluded. |
+| 12 | Teacher retention/churn | Correct cohort/period definitions distinguish dropout from pause/transfer/import recovery; populated fixture proves teacher comparisons and empty data stays honest. | Accepted: scoped populated production report, separate transfers/departures, exact rates and honest history gaps (PR269). |
 
 ## Cross-service and design acceptance
 

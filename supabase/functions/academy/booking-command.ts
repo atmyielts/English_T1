@@ -1,0 +1,11 @@
+import{LegacyImportCommandError}from'./legacy-import-command.ts';
+type Row=Record<string,unknown>;type Db={rpc:(name:string,args:Row)=>PromiseLike<{data:unknown;error:{code?:string}|null}>};
+export async function runBookingCommand(db:Db,academy:string,actor:string,input:Row){
+ if(input._expected_actor!=null&&input._expected_actor!==actor)throw new LegacyImportCommandError(409,'Your account changed. Reopen this page.');
+ const key=input.idempotency_key;if(typeof key!=='string'||!/^[A-Za-z0-9_.:-]{1,160}$/.test(key))throw new LegacyImportCommandError(400,'Review the lesson and retry key.');
+ const payload=Object.fromEntries(['branch_id','classroom_id','room_id','primary_staff_id','calendar_id','title','session_type','delivery_mode','starts_at','ends_at','timezone','status'].filter(field=>input[field]!==undefined).map(field=>[field,input[field]]));
+ if(new TextEncoder().encode(JSON.stringify(payload)).byteLength>12000)throw new LegacyImportCommandError(400,'Review the lesson and retry key.');
+ let response;try{response=await db.rpc('academy_booking_command',{p_academy:academy,p_actor:actor,p_payload:payload,p_request_key:key});}catch{throw new LegacyImportCommandError(503,'We could not confirm this booking. Retry the same lesson.',true);}
+ if(response.error){const code=response.error.code??'',conflict=['23P01','23505'].includes(code),invalid=code.startsWith('22')||['23502','23503','23514','P0001'].includes(code);throw new LegacyImportCommandError(code==='42501'?403:conflict?409:invalid?400:503,code==='42501'?'Your current access does not cover this lesson booking.':conflict?'The room, teacher or class is already booked, or the retry belongs to another change. Review the timetable.':invalid?'Review the lesson, branch, room, teacher and availability.':'We could not confirm this booking. Retry the same lesson.',code!=='42501'&&!conflict&&!invalid);}
+ const row=response.data as Row|null,session=row?.session as Row|null;if(!row||row.actor_id!==actor||row.request_key!==key||row.command!=='create_lesson_session'||typeof row.replayed!=='boolean'||typeof session?.id!=='string'||session.academy_id!==academy||session.classroom_id!==input.classroom_id)throw new LegacyImportCommandError(503,'We could not confirm this booking. Retry the same lesson.',true);return row;
+}

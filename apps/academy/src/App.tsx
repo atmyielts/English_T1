@@ -5466,7 +5466,7 @@ const App = () => {
           ) : null}
 
           {officeView === 'academic' && officeCanOpen('academic') ? (
-            <AcademicOperationsView key={academyId} academyId={academyId} formatDate={formatDate} />
+            <AcademicOperationsView key={`${academyId}:${me?.user.id??''}`} academyId={academyId} actorId={me?.user.id??''} formatDate={formatDate} />
           ) : null}
           {officeView === 'rooms' && officeCanOpen('rooms') ? (
             <RoomTimetableView key={academyId} academyId={academyId}

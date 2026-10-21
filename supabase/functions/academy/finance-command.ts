@@ -1,6 +1,7 @@
 import {LegacyImportCommandError} from './legacy-import-command.ts';
+import {runStudentCollection} from './collection-command.ts';
 type Db={rpc:(name:string,args:Record<string,unknown>)=>PromiseLike<{data:unknown;error:{code?:string}|null}>};
-export const financeActions=new Set(['set_wallet_policy','create_pricing_plan','create_subscription','manage_subscription','create_charge','allocate_payment','post_account_adjustment',
+export const financeActions=new Set(['collect_student_payment','set_wallet_policy','create_pricing_plan','create_subscription','manage_subscription','create_charge','allocate_payment','post_account_adjustment',
  'record_payment_reconciliation','record_payment_promise','create_cashbox','open_cashier_shift','accept_cashier_handover','record_cash_movement','close_cashier_shift',
  'record_expense','upsert_expense_category','upsert_budget','upsert_compensation_rule','record_lesson_delivery','create_payroll_period','calculate_payroll','post_payroll_adjustment','transition_payroll']);
 export async function runFinanceRead(db:Db,academyId:string,actorId:string,action:string,payload:Record<string,unknown>){
@@ -12,6 +13,7 @@ export async function runFinanceRead(db:Db,academyId:string,actorId:string,actio
  return result;
 }
 export async function runFinanceCommand(db:Db,academyId:string,actorId:string,command:string,input:Record<string,unknown>){
+ if(command==='collect_student_payment')return await runStudentCollection(db,academyId,actorId,input);
  const {action:_,command:__,academy_id:___,actor_id:____,_expected_actor:_____,idempotency_key:provided,...payload}=input;
  if(!financeActions.has(command)||new TextEncoder().encode(JSON.stringify(payload)).byteLength>60000)throw new LegacyImportCommandError(400,'Review the financial change.');
  // Older open pages did not send retry keys for master-record creation.
