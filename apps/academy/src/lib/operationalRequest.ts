@@ -1,7 +1,7 @@
 import {academyActorSession,StaffRequestError} from './staffRequest';
 type Pending={actor:string;academy:string;command:string;payload:Record<string,unknown>};
 const grades=new Set(['grade_submission','submit_assignment']);
-const actions=new Set(['create_lead','teacher_lesson_start','teacher_lesson_attendance','teacher_lesson_finish',...grades]);
+const actions=new Set(['create_lead','create_lesson_session','teacher_lesson_start','teacher_lesson_attendance','teacher_lesson_finish',...grades]);
 const slot=(academy:string,actor:string)=>'schood.operational.pending.v1:'+JSON.stringify([actor,academy]);
 export function pendingOperational(academy:string,actor:string):Pending|null{
  try{const raw=sessionStorage.getItem(slot(academy,actor));if(!raw||raw.length>65536)return null;const row=JSON.parse(raw) as Pending;

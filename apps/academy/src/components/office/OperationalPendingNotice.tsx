@@ -6,10 +6,10 @@ export function OperationalPendingNotice({academyId,actorId,onRecovered}:{academ
  const [pending,setPending]=useState(()=>pendingOperational(academyId,actorId));const [busy,setBusy]=useState(false),[error,setError]=useState('');
  useEffect(()=>{const sync=()=>setPending(pendingOperational(academyId,actorId));sync();window.addEventListener('schood-operational-pending',sync);return()=>window.removeEventListener('schood-operational-pending',sync);},[academyId,actorId]);
  if(!pending)return null;
- const payload=pending.payload,label=['grade_submission','submit_assignment'].includes(pending.command)?'Record grade':pending.command==='create_lead'?'Save lead':pending.command==='teacher_lesson_start'?'Start lesson':pending.command==='teacher_lesson_attendance'?'Save attendance':'Finish lesson';
+ const payload=pending.payload,label=['grade_submission','submit_assignment'].includes(pending.command)?'Record grade':pending.command==='create_lesson_session'?'Create session':pending.command==='create_lead'?'Save lead':pending.command==='teacher_lesson_start'?'Start lesson':pending.command==='teacher_lesson_attendance'?'Save attendance':'Finish lesson';
  const detail=['grade_submission','submit_assignment'].includes(pending.command)
   ? `${String(payload.review_label??'')} · ${String(payload.score??'')} / ${String(payload.max_score??'')} · ${translate('Attempt')} ${Math.max(1,Number(payload.expected_attempt_number??1))}`
-  : pending.command==='create_lead'?`${String(payload.full_name??'')} · ${String(payload.phone??'')} · ${String(payload.interested_course??'')}`
+  : pending.command==='create_lesson_session'?String(payload.title??''):pending.command==='create_lead'?`${String(payload.full_name??'')} · ${String(payload.phone??'')} · ${String(payload.interested_course??'')}`
   : pending.command==='teacher_lesson_attendance'?`${Array.isArray(payload.records)?payload.records.length:0} ${translate('Students')}`:'';
  return <section className="info-banner" role="status"><div><strong>{translate('A saved change still needs confirmation.')}</strong><p>{translate(label)}{detail?`: ${detail}`:''}</p>{error?<p role="alert">{translate(error)}</p>:null}<button type="button" className="small-btn" disabled={busy} onClick={()=>{if(busy)return;setBusy(true);setError('');void retryOperational(academyId,actorId).then(onRecovered).catch(reason=>setError(reason instanceof Error?reason.message:String(reason))).finally(()=>{setBusy(false);setPending(pendingOperational(academyId,actorId));});}}>{translate(busy?'Saving…':'Retry saving')}</button></div></section>;
 }

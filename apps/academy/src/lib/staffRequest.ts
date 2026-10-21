@@ -8,7 +8,7 @@ const pending=new Map<string,string>();
 const tokens=new Map<string,string>();
 const invitationActions=new Set(['create_access_invitation','resend_access_invitation','revoke_access_invitation']);
 const financeReads=new Set(['commercial_core','operations_finance']);
-const financeActions=new Set(['set_wallet_policy','create_pricing_plan','create_subscription','manage_subscription','create_charge','allocate_payment','post_account_adjustment','record_payment_reconciliation','record_payment_promise','create_cashbox','open_cashier_shift','accept_cashier_handover','record_cash_movement','close_cashier_shift','record_expense','upsert_expense_category','upsert_budget','upsert_compensation_rule','record_lesson_delivery','create_payroll_period','calculate_payroll','post_payroll_adjustment','transition_payroll']);
+const financeActions=new Set(['collect_student_payment','set_wallet_policy','create_pricing_plan','create_subscription','manage_subscription','create_charge','allocate_payment','post_account_adjustment','record_payment_reconciliation','record_payment_promise','create_cashbox','open_cashier_shift','accept_cashier_handover','record_cash_movement','close_cashier_shift','record_expense','upsert_expense_category','upsert_budget','upsert_compensation_rule','record_lesson_delivery','create_payroll_period','calculate_payroll','post_payroll_adjustment','transition_payroll']);
 type FinanceReplay={identity:string;action:string;payload:Record<string,unknown>;actor:string};
 const financeReplays=new Map<string,FinanceReplay>();
 const financeSlot=(academy:string,actor:string)=>JSON.stringify([actor,academy]);
@@ -27,7 +27,7 @@ function saveFinance(slot:string,value:FinanceReplay){
 }
 function clearFinance(slot:string){financeReplays.delete(slot);if(typeof sessionStorage!=='undefined')try{sessionStorage.removeItem(financeStorageKey(slot));}catch{/* A retained completed receipt can safely replay. */}}
 export const hasPendingFinance=(academy:string,actor:string)=>{restoreFinance(academy,actor);return financeReplays.has(financeSlot(academy,actor));};
-export function pendingFinanceReview(academy:string,actor:string){restoreFinance(academy,actor);const value=financeReplays.get(financeSlot(academy,actor));return value?{action:value.action.replaceAll('_',' '),amount:value.payload.amount??value.payload.opening_balance??value.payload.counted_closing_balance,currency:String(value.payload.currency??'UZS')}:null;}
+export function pendingFinanceReview(academy:string,actor:string){restoreFinance(academy,actor);const value=financeReplays.get(financeSlot(academy,actor));return value?{action:value.action==='collect_student_payment'?'Collect a student payment':value.action.replaceAll('_',' '),amount:value.payload.amount??value.payload.opening_balance??value.payload.counted_closing_balance,currency:String(value.payload.currency??'UZS')}:null;}
 export async function retryFinanceRequest(academy:string,actor:string){
  restoreFinance(academy,actor);
  const entry=financeReplays.get(financeSlot(academy,actor));

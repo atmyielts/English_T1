@@ -1,15 +1,17 @@
 import {finishAcademyTeacherLesson,recordAcademyTeacherAttendance,startAcademyTeacherLesson} from '../_shared/academy-teacher-flow.ts';
 import {LegacyImportCommandError} from './legacy-import-command.ts';
+import {runBookingCommand} from './booking-command.ts';
 
 type Row=Record<string,unknown>;
 type Db={rpc:(name:string,args:Row)=>PromiseLike<{data:unknown;error:{code?:string}|null}>;from:(name:string)=>any};
-export const operationalActions=new Set(['create_lead','teacher_lesson_start','teacher_lesson_attendance','teacher_lesson_finish']);
+export const operationalActions=new Set(['create_lead','create_lesson_session','teacher_lesson_start','teacher_lesson_attendance','teacher_lesson_finish']);
 const fail=(code='')=>new LegacyImportCommandError(code==='42501'?403:code==='23505'?409:code.startsWith('22')||['23502','23503','23514','P0001'].includes(code)?400:503,
  code==='42501'?'Your current access does not cover this inquiry or assigned lesson.':code==='23505'?'This request belongs to a different change. Refresh and review it.':code.startsWith('22')||['23502','23503','23514','P0001'].includes(code)?'Review the inquiry, current lesson and attendance values.':'We could not confirm this change. Retry the same change.',!['42501','23505','23502','23503','23514','P0001'].includes(code)&&!code.startsWith('22'));
 const text=(value:unknown,max:number)=>String(value??'').trim().slice(0,max)||null;
 const integer=(value:unknown)=>value==null||value===''?null:Number.isSafeInteger(Number(value))?Number(value):null;
 
 export async function runOperationalCommand(db:Db,academy:string,actor:string,command:string,input:Row){
+ if(command==='create_lesson_session')return await runBookingCommand(db,academy,actor,input);
  const key=input.idempotency_key;
  if(!operationalActions.has(command)||typeof key!=='string'||!/^[A-Za-z0-9_.:-]{1,160}$/.test(key)||new TextEncoder().encode(JSON.stringify(input)).byteLength>60000)throw new LegacyImportCommandError(400,'Review this change and its retry key.');
  if(input._expected_actor!=null&&input._expected_actor!==actor)throw new LegacyImportCommandError(409,'Your account changed. Reopen this page.');

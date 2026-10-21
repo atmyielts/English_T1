@@ -2358,7 +2358,7 @@ export const teacherStudioUpsertAcademicCalendar = (academyId:string,body:Record
 export const teacherStudioUpsertCalendarEvent = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{calendar_event:Record<string,unknown>}>(academyId,'upsert_calendar_event',body);
 export const teacherStudioUpsertStaffAvailability = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{availability:Record<string,unknown>}>(academyId,'upsert_staff_availability',body);
 export const teacherStudioUpsertRoomAvailability = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{availability:Record<string,unknown>}>(academyId,'upsert_room_availability',body);
-export const teacherStudioCreateLessonSession = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{session:AcademyLessonSession}>(academyId,'create_lesson_session',body);
+export const teacherStudioCreateLessonSession = (academyId:string,body:Record<string,unknown>,actorId?:string) => operationalRequest<{session:AcademyLessonSession}>(academyId,'create_lesson_session',body,actorId);
 export const teacherStudioUpsertSessionDelivery = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{delivery:Record<string,unknown>}>(academyId,'upsert_session_delivery',body);
 export const teacherStudioTransitionLessonSession = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<{session:AcademyLessonSession;replacement?:AcademyLessonSession}>(academyId,'transition_lesson_session',body);
 export const teacherStudioAssignSessionSubstitute = (academyId:string,body:Record<string,unknown>) => academyOperationsCommand<Record<string,unknown>>(academyId,'assign_session_substitute',body);
