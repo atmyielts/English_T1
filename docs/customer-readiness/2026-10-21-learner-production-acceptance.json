@@ -1,0 +1,1501 @@
+{
+  "recordedAt": "2026-10-21T09:46:09.021Z",
+  "passed": true,
+  "productionMain": "28fd90946021e6c6c61665ea955795452540a67a",
+  "entitledEntryReloadSurfaces": [
+    {
+      "entry": "https://sat.schood.online",
+      "viewport": 1440,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://sat.schood.online/dashboard?lang=en",
+        "observedMilliseconds": 15547,
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://sat.schood.online/dashboard?lang=en",
+        "observedMilliseconds": 5478,
+        "overflow": false
+      },
+      "errors": [],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/sessions",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/sessions",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/sessions",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/sessions",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/sessions",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/sessions",
+          "status": 200
+        }
+      ],
+      "passed": true
+    },
+    {
+      "entry": "https://practice.ielts.schood.online",
+      "viewport": 390,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://practice.ielts.schood.online/dashboard?lang=en",
+        "observedMilliseconds": 19495,
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://practice.ielts.schood.online/dashboard?lang=en",
+        "observedMilliseconds": 12355,
+        "overflow": false
+      },
+      "errors": [],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-practice/insights/mistake-causes",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-srs",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-practice/goals",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-practice/dashboard",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-practice/insights/score-impact",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-practice/insights/vocab-from-mistakes",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-srs",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-practice/insights/plan-narrative",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-practice/insights/plan-narrative",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-practice/insights/trajectory",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-practice/insights/coach-summary",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-practice/insights/coach-summary",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-practice/insights/plan-narrative",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-practice/dashboard",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-practice/insights/vocab-from-mistakes",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-practice/insights/score-impact",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-practice/insights/trajectory",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-practice/insights/plan-narrative",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-srs",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-srs",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-practice/insights/mistake-causes",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-practice/goals",
+          "status": 200
+        }
+      ],
+      "passed": true
+    },
+    {
+      "entry": "https://ielts.schood.online",
+      "viewport": 1440,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://ielts.schood.online/dashboard?lang=en",
+        "observedMilliseconds": 10744,
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://ielts.schood.online/dashboard?lang=en",
+        "observedMilliseconds": 7413,
+        "overflow": false
+      },
+      "errors": [],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/sessions",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-srs",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/sessions",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/sessions",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-playbook/dashboard",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-playbook/dashboard",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/sessions",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/sessions",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/sessions",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-srs",
+          "status": 200
+        }
+      ],
+      "passed": true
+    },
+    {
+      "entry": "https://practice.sat.schood.online",
+      "viewport": 390,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://practice.sat.schood.online/dashboard?lang=en",
+        "observedMilliseconds": 9773,
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://practice.sat.schood.online/dashboard?lang=en",
+        "observedMilliseconds": 8694,
+        "overflow": false
+      },
+      "errors": [],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/sat-practice/dashboard",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/sat-practice/dashboard",
+          "status": 200
+        }
+      ],
+      "passed": true
+    },
+    {
+      "entry": "https://toefl.schood.online",
+      "viewport": 1440,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://toefl.schood.online/dashboard?lang=en",
+        "observedMilliseconds": 8849,
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://toefl.schood.online/dashboard?lang=en",
+        "observedMilliseconds": 5085,
+        "overflow": false
+      },
+      "errors": [],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/sessions",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/sessions",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/sessions",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/sessions",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/sessions",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/sessions",
+          "status": 200
+        }
+      ],
+      "passed": true
+    },
+    {
+      "entry": "https://playbook.sat.schood.online",
+      "viewport": 390,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://playbook.sat.schood.online/dashboard?lang=en",
+        "observedMilliseconds": 13751,
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://playbook.sat.schood.online/dashboard?lang=en",
+        "observedMilliseconds": 10137,
+        "overflow": false
+      },
+      "errors": [],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/sat-playbook/dashboard",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/sat-playbook/dashboard",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        }
+      ],
+      "passed": true
+    },
+    {
+      "entry": "https://english.schood.online",
+      "viewport": 390,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/dashboard?lang=en",
+        "observedMilliseconds": 4955,
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/dashboard?lang=en",
+        "observedMilliseconds": 3390,
+        "overflow": false
+      },
+      "errors": [],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        }
+      ],
+      "passed": true
+    },
+    {
+      "entry": "https://playbook.toefl.schood.online",
+      "viewport": 1440,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://playbook.toefl.schood.online/dashboard?lang=en",
+        "observedMilliseconds": 11281,
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://playbook.toefl.schood.online/dashboard?lang=en",
+        "observedMilliseconds": 8096,
+        "overflow": false
+      },
+      "errors": [],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/toefl-playbook/dashboard",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/toefl-playbook/dashboard",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        }
+      ],
+      "passed": true
+    },
+    {
+      "entry": "https://playbook.ielts.schood.online",
+      "viewport": 390,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://playbook.ielts.schood.online/dashboard?lang=en",
+        "observedMilliseconds": 11024,
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://playbook.ielts.schood.online/dashboard?lang=en",
+        "observedMilliseconds": 7877,
+        "overflow": false
+      },
+      "errors": [],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-practice/insights/activity",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-practice/insights/trajectory",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-playbook/dashboard",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-playbook/dashboard",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-practice/insights/trajectory",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/ielts-practice/insights/activity",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        }
+      ],
+      "passed": true
+    },
+    {
+      "entry": "https://speaking.english.schood.online",
+      "viewport": 390,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/speaking/dashboard?lang=en",
+        "observedMilliseconds": 8655,
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/speaking/dashboard?lang=en",
+        "observedMilliseconds": 3876,
+        "overflow": false
+      },
+      "errors": [],
+      "responses": [
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        }
+      ],
+      "passed": true
+    },
+    {
+      "entry": "https://reading.english.schood.online",
+      "viewport": 1440,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/reading/dashboard?lang=en",
+        "observedMilliseconds": 10107,
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/reading/dashboard?lang=en",
+        "observedMilliseconds": 5340,
+        "overflow": false
+      },
+      "errors": [],
+      "responses": [
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/reading-articles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/reading-articles",
+          "status": 200
+        }
+      ],
+      "passed": true
+    },
+    {
+      "entry": "https://writing.english.schood.online",
+      "viewport": 390,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/writing/dashboard?lang=en",
+        "observedMilliseconds": 13806,
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/writing/dashboard?lang=en",
+        "observedMilliseconds": 7311,
+        "overflow": false
+      },
+      "errors": [],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        }
+      ],
+      "passed": true
+    },
+    {
+      "entry": "https://listening.english.schood.online",
+      "viewport": 1440,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/listening/dashboard?lang=en",
+        "observedMilliseconds": 13718,
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/listening/dashboard?lang=en",
+        "observedMilliseconds": 7787,
+        "overflow": false
+      },
+      "errors": [],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        }
+      ],
+      "passed": true
+    },
+    {
+      "entry": "https://vocabulary.english.schood.online",
+      "viewport": 390,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/vocabulary/dashboard?lang=en",
+        "observedMilliseconds": 7345,
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/vocabulary/dashboard?lang=en",
+        "observedMilliseconds": 5303,
+        "overflow": false
+      },
+      "errors": [],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        }
+      ],
+      "passed": true
+    },
+    {
+      "entry": "https://grammar.english.schood.online",
+      "viewport": 1440,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/grammar/dashboard?lang=en",
+        "observedMilliseconds": 8627,
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/grammar/dashboard?lang=en",
+        "observedMilliseconds": 5594,
+        "overflow": false
+      },
+      "errors": [],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/grammar-remediation/dashboard",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/grammar-remediation/dashboard",
+          "status": 200
+        }
+      ],
+      "passed": true
+    },
+    {
+      "entry": "https://immersion.english.schood.online",
+      "viewport": 1440,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/immersion/dashboard?lang=en",
+        "observedMilliseconds": 5409,
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/immersion/dashboard?lang=en",
+        "observedMilliseconds": 4172,
+        "overflow": false
+      },
+      "errors": [],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "progress": {
+    "acceptedRunChecks": [
+      "create and bind exclusively owned learner a874c574-a85e-43f1-9dac-ef51d019f153",
+      "create and bind exclusively owned learner 6535f3f9-dfe3-4406-a88c-4c87255fdeaa",
+      "install bounded owned QA access 0",
+      "install bounded owned QA access 1",
+      "published reading catalog uses learner authentication",
+      "start owned reading attempt from existing published article",
+      "persist reading progress through published submit handler",
+      "saved progress readback stays with original learner",
+      "other entitled learner cannot read foreign progress",
+      "other entitled learner cannot submit foreign progress",
+      "direct browser table write cannot forge peer progress",
+      "practice goals save and reload through production API",
+      "published phone reading report displays saved owned progress and reloads"
+    ],
+    "checkCount": 13,
+    "cleanupChecks": [
+      "verified owned Auth identity",
+      "revoked exclusively owned QA entitlements",
+      "approved retention-aware closure preflight",
+      "closed owned account and deidentified mirror",
+      "old owned token refused",
+      "verified owned Auth identity",
+      "revoked exclusively owned QA entitlements",
+      "approved retention-aware closure preflight",
+      "closed owned account and deidentified mirror",
+      "old owned token refused"
+    ],
+    "cleanupVerified": true,
+    "phoneReport": {
+      "viewport": 390,
+      "canonicalRedirect": "reading.english.schood.online/reports/:ownedAttempt -> english.schood.online/reading/reports/:ownedAttempt",
+      "visibleSavedReport": true,
+      "reloadPassed": true,
+      "keyboardFocusPassed": true,
+      "documentOverflow": false
+    }
+  },
+  "additionalEntryRun": {
+    "checks": [
+      "create and bind exclusively owned learner a9fc4b26-dc0b-49f7-9cea-1b6ca7ce250d",
+      "create and bind exclusively owned learner b739c012-f17b-4d02-9ed4-8710281ce8d9",
+      "install bounded owned QA access 0",
+      "install bounded owned QA access 1",
+      "published reading catalog uses learner authentication",
+      "start owned reading attempt from existing published article",
+      "persist reading progress through published submit handler",
+      "saved progress readback stays with original learner",
+      "other entitled learner cannot read foreign progress",
+      "other entitled learner cannot submit foreign progress",
+      "direct browser table write cannot forge peer progress",
+      "practice goals save and reload through production API"
+    ],
+    "cleanupChecks": [
+      "verified owned Auth identity",
+      "revoked exclusively owned QA entitlements",
+      "approved retention-aware closure preflight",
+      "closed owned account and deidentified mirror",
+      "old owned token refused",
+      "verified owned Auth identity",
+      "revoked exclusively owned QA entitlements",
+      "approved retention-aware closure preflight",
+      "closed owned account and deidentified mirror",
+      "old owned token refused"
+    ],
+    "cleanupVerified": true
+  },
+  "englishDashboardRun": {
+    "surfaceCount": 7,
+    "allSurfacesPassed": true,
+    "cleanupVerified": true,
+    "reportHarnessAssertionExcluded": true
+  },
+  "harnessCorrections": [
+    "The first two runs required an approved standalone plan before any internal QA access and stopped at the first product without one; both owned accounts in each run were closed.",
+    "English root pages are public entrances. Protected /dashboard routes were separately exercised for all seven services and followed their canonical English hub redirects.",
+    "The reading report displays feedback, not the article title, and redirects to /reading/reports/:id. Incorrect locator/path expectations were corrected before the accepted focused report run. Each prior run verified account closure."
+  ],
+  "catalog": {
+    "activeLearnerProducts": 15,
+    "activeStandalonePlansByProduct": {
+      "SAT Exam Simulator": 0,
+      "English Speaking": 0,
+      "IELTS Playbook": 0,
+      "IELTS Practice": 1,
+      "English Reading": 0,
+      "English Immersion": 0,
+      "English Listening": 0,
+      "English Writing": 0,
+      "English Grammar": 0,
+      "English Vocabulary": 0,
+      "TOEFL iBT Simulator": 0,
+      "IELTS Academic Simulator": 1,
+      "SAT Practice Lab": 2,
+      "SAT Playbook": 0,
+      "TOEFL Playbook": 1
+    },
+    "archivedProductPreserved": "iTEP Simulator",
+    "qualification": "Standalone plan inventory only; bundle purchase availability and real settlement were not established."
+  },
+  "access": {
+    "temporaryInternalQaGrants": true,
+    "expiringWithinOneHour": true,
+    "existingApprovedPlanReferencesWhereAvailable": true,
+    "noInventedPlanOrPrice": true,
+    "ownedGrantsRevoked": true
+  },
+  "customerRowsChanged": false,
+  "providerMessagesSent": false,
+  "paymentsAttempted": false,
+  "limits": [
+    "Entry/reload covers fifteen active learner products plus the English hub, using internal QA access rather than a purchase.",
+    "Actual write workflows exercised: published reading check-in/progress/report and IELTS practice goals. Other learning submissions, dedicated AI add-on quotas and paid renewal remain open.",
+    "Phone and desktop widths alternate across surfaces; this is not a complete viewport matrix for every workflow.",
+    "Single navigation samples include 900ms settling and are not LCP, load or populated operational performance benchmarks.",
+    "No explicit AI generation was requested by the harness; automatic backend provider activity was not separately traced."
+  ]
+}

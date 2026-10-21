@@ -1,0 +1,159 @@
+{
+  "recordedAt": "2026-10-21T09:46:09.017Z",
+  "passed": true,
+  "main": "28fd90946021e6c6c61665ea955795452540a67a",
+  "reviewedCommit": "b5c47506cff4b8e7b2bf7a55a44b66f37f257d9c",
+  "pr": 271,
+  "gatewayVersion": 13,
+  "academyVersion": 97,
+  "installedMigrations": 239,
+  "ci": {
+    "reviewedHead": 39576569630,
+    "main": 39577333158,
+    "pages": 39577332908,
+    "automaticProductionSmoke": 39578204832,
+    "postActivationProductionSmoke": 39579157992
+  },
+  "runtimeReadback": {
+    "matchedModules": 11,
+    "retainedInstalledModules": 6,
+    "dependenciesRetainedFromVerifiedAcademyV97": 3
+  },
+  "database": {
+    "matchedFunctionBodies": 5,
+    "retainedFunctionBodies": 4,
+    "installedRollbackOnlyGroups": [
+      {
+        "file": "scripts/verify-academy-student-import-schema.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      },
+      {
+        "file": "scripts/fixtures/academy-release-commands.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      },
+      {
+        "file": "scripts/fixtures/academy-legacy-import-commands.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      },
+      {
+        "file": "scripts/fixtures/academy-guardian-portal.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      },
+      {
+        "file": "scripts/fixtures/academy-operational-acceptance.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      },
+      {
+        "file": "scripts/fixtures/academy-financial-table-boundary.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      },
+      {
+        "file": "scripts/fixtures/academy-private-audio.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      },
+      {
+        "file": "scripts/fixtures/academy-cash-handover.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      },
+      {
+        "file": "scripts/fixtures/academy-audio-pending-recovery.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      },
+      {
+        "file": "scripts/fixtures/academy-wallet-policy.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      },
+      {
+        "file": "scripts/fixtures/academy-operational-read.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      },
+      {
+        "file": "scripts/fixtures/academy-operational-commands.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      },
+      {
+        "file": "scripts/fixtures/academy-current-grading.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      },
+      {
+        "file": "scripts/fixtures/academy-adjustment-subtypes.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      },
+      {
+        "file": "scripts/fixtures/academy-teacher-retention.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      },
+      {
+        "file": "scripts/fixtures/academy-booking-collection.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      },
+      {
+        "file": "scripts/fixtures/academy-telegram-current-commands.sql",
+        "passed": true,
+        "fixtureChangesRolledBack": true
+      }
+    ],
+    "fixtureRowsCommitted": false
+  },
+  "refusals": [
+    {
+      "action": "teacher_lesson_start",
+      "status": 400,
+      "passed": true
+    },
+    {
+      "action": "teacher_lesson_attendance",
+      "status": 400,
+      "passed": true
+    },
+    {
+      "action": "teacher_lesson_finish",
+      "status": 400,
+      "passed": true
+    },
+    {
+      "action": "record_attendance",
+      "status": 400,
+      "passed": true
+    },
+    {
+      "action": "create_staff_link",
+      "status": 401,
+      "passed": true
+    }
+  ],
+  "packaging": {
+    "firstServerBundleRejectedBeforeActivation": true,
+    "recoveredWithDockerBundler": true,
+    "reviewedModuleBytesUnchanged": true
+  },
+  "currentAuthority": [
+    "Four teacher/attendance actions validate the current actor, capability, class and assigned teacher; old attendance also checks the active roster.",
+    "Immutable actor/action/payload receipts preserve exact retries; revoked authority refuses saved receipt replay. Old unbound audit-only keys require review.",
+    "Browser pending work retains its original actor, academy, action, records and key across uncertain replies/reload, while fresh Telegram initData is obtained for transport. Provider authentication is not persisted."
+  ],
+  "customerRowsChanged": false,
+  "providerMessagesSent": false,
+  "secretsChanged": false,
+  "limits": [
+    "Actual signed Telegram teacher operation, dashboard reflection through an owned linked chat, provider receipt and bot voice recording remain unverified: no owned linked Telegram identity/initData is available.",
+    "Installed SQL, adapter/storage tests and mocked browser acceptance do not prove real provider delivery.",
+    "Other legacy Telegram/dashboard branch paths are not closed by these four command adapters."
+  ]
+}
