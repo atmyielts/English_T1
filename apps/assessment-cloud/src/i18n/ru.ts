@@ -1254,4 +1254,12 @@ export const ru: Record<keyof typeof en, string> = {
   'error.invalid_webhook_url': "Используйте публичный HTTPS-адрес с доменным именем; локальные, частные и IP-адреса не допускаются.",
   'error.webhook_endpoint_limit': "У учреждения может быть не более 10 активных адресов вебхуков.",
   'error.api_client_limit': "У учреждения может быть не более 20 активных API-клиентов.",
+  'diagnostics.interval': "95% доверительный интервал {lower}–{upper}",
+  'diagnostics.sem': "Стандартная ошибка измерения ≈ {value} процентного пункта (один вариант)",
+  'diagnostics.warn.small_sample': "Менее 30 результатов: считайте эти показатели приблизительными.",
+  'diagnostics.warn.too_few_items': "Для оценки надёжности нужно не менее двух вопросов.",
+  'diagnostics.warn.no_score_variance': "Все кандидаты набрали одинаковый балл, поэтому надёжность оценить нельзя.",
+  'diagnostics.warn.negative_reliability': "Надёжность ниже нуля.",
+  'diagnostics.warn.no_item_variance': "Все кандидаты ответили на это одинаково.",
+  'diagnostics.warn.undefined': "Недостаточно данных для оценки.",
 };

@@ -1254,4 +1254,12 @@ export const uz: Record<keyof typeof en, string> = {
   'error.invalid_webhook_url': "Domen nomli ommaviy HTTPS manzildan foydalaning; mahalliy, xususiy va IP manzillarga ruxsat berilmaydi.",
   'error.webhook_endpoint_limit': "Muassasada ko‘pi bilan 10 ta faol webhook manzili bo‘lishi mumkin.",
   'error.api_client_limit': "Muassasada ko‘pi bilan 20 ta faol API mijozi bo‘lishi mumkin.",
+  'diagnostics.interval': "95% ishonch oralig‘i {lower}–{upper}",
+  'diagnostics.sem': "O‘lchov standart xatosi ≈ {value} foiz punkti (bitta variant)",
+  'diagnostics.warn.small_sample': "30 tadan kam natija: bu ko‘rsatkichlarni taxminiy deb hisoblang.",
+  'diagnostics.warn.too_few_items': "Ishonchlilik uchun kamida ikkita savol kerak.",
+  'diagnostics.warn.no_score_variance': "Barcha nomzodlar bir xil ball olgan, shuning uchun ishonchlilikni baholab bo‘lmaydi.",
+  'diagnostics.warn.negative_reliability': "Ishonchlilik noldan past.",
+  'diagnostics.warn.no_item_variance': "Barcha nomzodlar bunga bir xil javob bergan.",
+  'diagnostics.warn.undefined': "Buni baholash uchun ma’lumot yetarli emas.",
 };

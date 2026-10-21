@@ -1254,4 +1254,12 @@ export const en = {
   'error.invalid_webhook_url': "Use a public HTTPS address with a domain name; local, private and IP addresses are not allowed.",
   'error.webhook_endpoint_limit': "An institution can have at most 10 active webhook endpoints.",
   'error.api_client_limit': "An institution can have at most 20 active API clients.",
+  'diagnostics.interval': "95% confidence interval {lower}–{upper}",
+  'diagnostics.sem': "Standard error of measurement ≈ {value} percentage points (single form)",
+  'diagnostics.warn.small_sample': "Fewer than 30 results: treat these figures as rough indications.",
+  'diagnostics.warn.too_few_items': "Reliability needs at least two questions.",
+  'diagnostics.warn.no_score_variance': "Every candidate scored the same, so reliability cannot be estimated.",
+  'diagnostics.warn.negative_reliability': "Reliability is below zero.",
+  'diagnostics.warn.no_item_variance': "Every candidate answered this the same way.",
+  'diagnostics.warn.undefined': "Not enough information to estimate this.",
 };

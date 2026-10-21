@@ -20,7 +20,7 @@ Tests: `psychometrics.test.ts` and `measurement.test.ts`, run in the `integratio
 
 ## Remaining work
 
-- **STAT-03:** show intervals and warnings in the analytics screens and report snapshots.
+- **STAT-03:** the analytics diagnostics screen now shows the Feldt interval for alpha, Wilson intervals for full credit, Fisher-z intervals for item–rest correlations and plain warnings (for example 5 results → alpha 0.360 with interval −5.147–0.933 and a small-sample warning). SEM is shown only for single-form reports. Still open: intervals in exported or snapshotted reports, and a background build for large cohorts (STAT-01).
 - **STAT-04:** calibration datasets and workflow, with model-fit review, versioned parameters and independent review.
 - **STAT-05:** subgroup definitions under an approved access policy, plus disclosure controls in the UI.
 - **FORM-05:** equating studies with documented equivalent-group evidence before any comparability claim.
