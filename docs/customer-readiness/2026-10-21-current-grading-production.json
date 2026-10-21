@@ -1,0 +1,262 @@
+{
+  "recordedAt": "2026-10-21T06:30:49.138Z",
+  "passed": true,
+  "main": "b79a3c0a87e62d15dc4c8c87676fd18217cc72ed",
+  "runtimeReviewedCommit": "8f7c7f34679c62592515f5a95eb9a6777f530f69",
+  "databaseReviewedCommit": "4beb4ce0b551a18c9642abaee3c7af403cd89216",
+  "edgeVersion": 95,
+  "installedMigrations": 235,
+  "runs": {
+    "runtimePR": 265,
+    "runtimeCI": 39551345599,
+    "runtimeMainCI": 39551920832,
+    "runtimePages": 39551920598,
+    "databaseAndFormPR": 266,
+    "ci": 39553779227,
+    "mainCI": 39554391588,
+    "pages": 39554391686,
+    "postActivationSmoke": 39555200523
+  },
+  "sourceReadback": {
+    "recordedAt": "2026-10-21T06:01:38.834Z",
+    "passed": true,
+    "edgeVersion": 95,
+    "matchedModules": 35,
+    "unchangedInstalledModules": 33,
+    "verifyJwt": false,
+    "reviewedCommit": "8f7c7f34679c62592515f5a95eb9a6777f530f69"
+  },
+  "installedRollbackChecks": {
+    "providerMessagesSent": false,
+    "installedMigrations": 235,
+    "customerRowsChanged": false,
+    "checks": [
+      {
+        "file": "scripts/verify-academy-student-import-schema.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-release-commands.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-legacy-import-commands.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-guardian-portal.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-operational-acceptance.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-financial-table-boundary.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-private-audio.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-cash-handover.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-audio-pending-recovery.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-wallet-policy.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-operational-read.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-operational-commands.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-current-grading.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-adjustment-subtypes.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      }
+    ],
+    "recordedAt": "2026-10-21T06:24:21.4405525Z",
+    "passed": true,
+    "fixtureRowsCommitted": false
+  },
+  "hostedAcceptance": {
+    "recordedAt": "2026-10-21T06:26:47.402Z",
+    "reviewedCommit": "8f7c7f34679c62592515f5a95eb9a6777f530f69",
+    "passed": true,
+    "checks": [
+      "create owned confirmed audio account",
+      "sign in owned audio account",
+      "create owned confirmed audio account",
+      "sign in owned audio account",
+      "create owned confirmed audio account",
+      "sign in owned audio account",
+      "create owned confirmed audio account",
+      "sign in owned audio account",
+      "create owned tenants",
+      "create owned tenant_memberships",
+      "create owned academy_branches",
+      "create owned academy_classrooms",
+      "create owned academy_contacts",
+      "create owned academy_classroom_memberships",
+      "create owned academy_staff",
+      "create owned academy_assignments",
+      "create owned academy_role_grants",
+      "create owned academy_contacts",
+      "create owned academy_classroom_memberships",
+      "create owned academy_submissions",
+      "create owned academy_submissions",
+      "create owned academy_submissions",
+      "read exclusively owned current submission",
+      "mixed admin B and cashier A cannot grade branch A work",
+      "missing observed attempt refuses a stale client before transport to SQL",
+      "browser cannot impersonate verified actor through private academy_grading_command",
+      "browser cannot impersonate verified actor through private academy_grading_context",
+      "browser cannot read private before-and-after history",
+      "published phone grading reaches a real commit and freezes captured review after lost reply",
+      "published reload retries the exact captured grade and request key",
+      "read exclusively owned current submission",
+      "recovered grade preserves original learner work, metadata and attempt",
+      "lost reply creates exactly one private immutable before/after event",
+      "real student gateway advances to a new ungraded written attempt",
+      "published stale review receives a decisive conflict and unlocks review",
+      "read exclusively owned current submission",
+      "stale teacher review cannot overwrite the new student response",
+      "conflicted review leaves no private grading history",
+      "read exclusively owned current submission",
+      "fresh published review grades only the current second attempt",
+      "published grading fits viewport 1440",
+      "published grading fits viewport 390",
+      "published grading has no JavaScript page errors",
+      "revoke exclusively owned teacher",
+      "current revocation refuses a previously successful grade replay",
+      "create owned academy_role_grants",
+      "explicit learner grant permits its current assignment grade",
+      "explicit learner scope cannot grade another learner",
+      "revoke owned learner grant",
+      "revoked explicit learner grant cannot replay its saved grade"
+    ],
+    "cleanupChecks": [
+      "verify exclusive QA institution before archive",
+      "QA institution contains no foreign members",
+      "archive owned academy_student_guardian_relationships",
+      "archive owned academy_guardians",
+      "archive owned academy_contacts",
+      "archive owned academy_lesson_sessions",
+      "archive owned academy_rooms",
+      "archive owned academy_classroom_memberships",
+      "archive owned academy_subscriptions",
+      "archive owned academy_pricing_plans",
+      "archive owned academy_cashboxes",
+      "archive owned academy_staff",
+      "archive owned academy_role_grants",
+      "verify exclusively owned archive targets academy_classrooms",
+      "archive owned unique academy_classrooms",
+      "archive owned unique academy_classrooms",
+      "verify exclusively owned archive targets academy_branches",
+      "archive owned unique academy_branches",
+      "archive owned unique academy_branches",
+      "remove QA institution login memberships",
+      "archive institution and remove ownership",
+      "verify owned account before closure",
+      "remaining owned tenants are personal",
+      "personal tenant is unshared",
+      "remove owned personal tenant",
+      "retention preflight permits QA account closure",
+      "close owned QA Auth account",
+      "QA account login and identity removed",
+      "verify owned account before closure",
+      "remaining owned tenants are personal",
+      "personal tenant is unshared",
+      "remove owned personal tenant",
+      "retention preflight permits QA account closure",
+      "close owned QA Auth account",
+      "QA account login and identity removed",
+      "verify owned account before closure",
+      "remaining owned tenants are personal",
+      "personal tenant is unshared",
+      "remove owned personal tenant",
+      "retention preflight permits QA account closure",
+      "close owned QA Auth account",
+      "QA account login and identity removed",
+      "verify owned account before closure",
+      "remaining owned tenants are personal",
+      "personal tenant is unshared",
+      "remove owned personal tenant",
+      "retention preflight permits QA account closure",
+      "close owned QA Auth account",
+      "QA account login and identity removed",
+      "read exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "no configured external provider deliveries attempted",
+      "no active QA access: academy_role_grants",
+      "no active QA access: academy_staff",
+      "no active QA access: academy_contacts",
+      "no active QA access: academy_guardians",
+      "no active QA access: academy_student_guardian_relationships"
+    ],
+    "ownedStudentCount": 3,
+    "customerRecordsChanged": false,
+    "externalProviderDeliveriesAttempted": 0,
+    "immutableQaHistoryRetained": true,
+    "allInstitutionalRowsDeleted": false,
+    "cleanupVerified": true
+  },
+  "screenshots": [
+    {
+      "file": "grade-pending-390.png",
+      "sha256": "e0b966b39d1e33d5c99db1a176f4a75460148c5096166364148e85b8108f1726"
+    },
+    {
+      "file": "grade-stale-390.png",
+      "sha256": "45cf91007a28e1d6bcf9ed5dae2b27b6db6d18556f0650739088b3c4806cd745"
+    },
+    {
+      "file": "grade-current-1440.png",
+      "sha256": "5ceab2981274073a8746710ee605aa414108c7cc7354867d112a74a88c7a5138"
+    }
+  ],
+  "secretsChanged": false,
+  "customerRowsChanged": false,
+  "providerDeliveriesAttempted": 0,
+  "limits": [
+    "Final successful hosted run only: 50 checks and 67 cleanup checks. Earlier failed selector/missing-projection runs remain archived separately and are not combined.",
+    "This closes staff grading of current written attempts and its request recovery; Telegram/bot recording and other legacy commands remain separate work."
+  ]
+}

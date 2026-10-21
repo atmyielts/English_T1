@@ -1,0 +1,1880 @@
+{
+  "recordedAt": "2026-10-21T06:21:55.911Z",
+  "passed": true,
+  "cleanupVerified": true,
+  "cleanupChecks": [
+    "verified exclusively owned Auth identity",
+    "removed exclusively owned unshared personal tenant",
+    "retention preflight permits closure",
+    "owned Auth account closed and mirror deidentified"
+  ],
+  "results": [
+    {
+      "entry": "https://practice.ielts.schood.online",
+      "viewport": 390,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://schood.online/pricing?returnTo=https%3A%2F%2Fpractice.ielts.schood.online%2Fdashboard%3Flang%3Den&product=ielts-practice",
+        "observedMilliseconds": 15445,
+        "title": "Schood Platform | IELTS, TOEFL, SAT, and English Learning",
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://schood.online/pricing?returnTo=https%3A%2F%2Fpractice.ielts.schood.online%2Fdashboard%3Flang%3Den&product=ielts-practice",
+        "observedMilliseconds": 5745,
+        "overflow": false
+      },
+      "errors": [],
+      "authenticatedRequests": [
+        "/functions/v1/me",
+        "/functions/v1/me",
+        "/functions/v1/access-effective",
+        "/functions/v1/access-effective",
+        "/auth/v1/user",
+        "/rest/v1/user_profiles",
+        "/rest/v1/user_profiles",
+        "/functions/v1/support-center",
+        "/functions/v1/platform-events",
+        "/functions/v1/me",
+        "/rest/v1/products",
+        "/functions/v1/billing/plans",
+        "/functions/v1/trial-claim",
+        "/auth/v1/user",
+        "/rest/v1/user_profiles",
+        "/rest/v1/user_profiles",
+        "/functions/v1/support-center",
+        "/functions/v1/me",
+        "/rest/v1/products",
+        "/functions/v1/billing/plans",
+        "/functions/v1/trial-claim"
+      ],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/auth/v1/user",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/support-center",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/products",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/platform-events",
+          "status": 202
+        },
+        {
+          "path": "/functions/v1/billing/plans",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/trial-claim",
+          "status": 200
+        },
+        {
+          "path": "/auth/v1/user",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/support-center",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/products",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/billing/plans",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/trial-claim",
+          "status": 200
+        }
+      ],
+      "settledAccessChecks": true,
+      "passed": true
+    },
+    {
+      "entry": "https://sat.schood.online",
+      "viewport": 1440,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://schood.online/pricing?returnTo=https%3A%2F%2Fsat.schood.online%2Fdashboard%3Flang%3Den&product=sat-exam-simulator",
+        "observedMilliseconds": 15921,
+        "title": "Schood Platform | IELTS, TOEFL, SAT, and English Learning",
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://schood.online/pricing?returnTo=https%3A%2F%2Fsat.schood.online%2Fdashboard%3Flang%3Den&product=sat-exam-simulator",
+        "observedMilliseconds": 5846,
+        "overflow": false
+      },
+      "errors": [],
+      "authenticatedRequests": [
+        "/functions/v1/me",
+        "/functions/v1/me",
+        "/functions/v1/access-effective",
+        "/auth/v1/user",
+        "/rest/v1/user_profiles",
+        "/rest/v1/user_profiles",
+        "/functions/v1/support-center",
+        "/functions/v1/platform-events",
+        "/functions/v1/me",
+        "/rest/v1/products",
+        "/functions/v1/billing/plans",
+        "/functions/v1/trial-claim",
+        "/auth/v1/user",
+        "/rest/v1/user_profiles",
+        "/rest/v1/user_profiles",
+        "/functions/v1/support-center",
+        "/functions/v1/me",
+        "/rest/v1/products",
+        "/functions/v1/billing/plans",
+        "/functions/v1/trial-claim"
+      ],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/auth/v1/user",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/products",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/support-center",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/platform-events",
+          "status": 202
+        },
+        {
+          "path": "/functions/v1/billing/plans",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/trial-claim",
+          "status": 200
+        },
+        {
+          "path": "/auth/v1/user",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/products",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/support-center",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/billing/plans",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/trial-claim",
+          "status": 200
+        }
+      ],
+      "settledAccessChecks": true,
+      "passed": true
+    },
+    {
+      "entry": "https://schood.online",
+      "viewport": 1440,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://schood.online/account?lang=en",
+        "observedMilliseconds": 4307,
+        "title": "Schood Platform | IELTS, TOEFL, SAT, and English Learning",
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://schood.online/account?lang=en",
+        "observedMilliseconds": 2663,
+        "overflow": false
+      },
+      "errors": [],
+      "authenticatedRequests": [
+        "/auth/v1/user",
+        "/rest/v1/user_profiles",
+        "/rest/v1/user_profiles",
+        "/functions/v1/support-center",
+        "/auth/v1/user",
+        "/functions/v1/me",
+        "/rest/v1/products",
+        "/rest/v1/user_profiles",
+        "/auth/v1/user",
+        "/rest/v1/user_profiles",
+        "/rest/v1/user_profiles",
+        "/functions/v1/support-center",
+        "/auth/v1/user",
+        "/functions/v1/me",
+        "/rest/v1/products",
+        "/rest/v1/user_profiles"
+      ],
+      "responses": [
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/auth/v1/user",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/support-center",
+          "status": 200
+        },
+        {
+          "path": "/auth/v1/user",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/products",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/auth/v1/user",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/auth/v1/user",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/products",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/support-center",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        }
+      ],
+      "settledAccessChecks": true,
+      "passed": true
+    },
+    {
+      "entry": "https://ielts.schood.online",
+      "viewport": 390,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://schood.online/pricing?returnTo=https%3A%2F%2Fielts.schood.online%2Fdashboard%3Flang%3Den&product=ielts-academic-simulator",
+        "observedMilliseconds": 9348,
+        "title": "Schood Platform | IELTS, TOEFL, SAT, and English Learning",
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://schood.online/pricing?returnTo=https%3A%2F%2Fielts.schood.online%2Fdashboard%3Flang%3Den&product=ielts-academic-simulator",
+        "observedMilliseconds": 5343,
+        "overflow": false
+      },
+      "errors": [],
+      "authenticatedRequests": [
+        "/functions/v1/me",
+        "/functions/v1/me",
+        "/functions/v1/access-effective",
+        "/auth/v1/user",
+        "/rest/v1/user_profiles",
+        "/rest/v1/user_profiles",
+        "/functions/v1/support-center",
+        "/functions/v1/platform-events",
+        "/functions/v1/me",
+        "/rest/v1/products",
+        "/functions/v1/billing/plans",
+        "/functions/v1/trial-claim",
+        "/auth/v1/user",
+        "/rest/v1/user_profiles",
+        "/rest/v1/user_profiles",
+        "/functions/v1/support-center",
+        "/functions/v1/me",
+        "/rest/v1/products",
+        "/functions/v1/billing/plans",
+        "/functions/v1/trial-claim"
+      ],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/auth/v1/user",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/support-center",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/products",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/platform-events",
+          "status": 202
+        },
+        {
+          "path": "/functions/v1/billing/plans",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/trial-claim",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/auth/v1/user",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/support-center",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/products",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/billing/plans",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/trial-claim",
+          "status": 200
+        }
+      ],
+      "settledAccessChecks": true,
+      "passed": true
+    },
+    {
+      "entry": "https://practice.sat.schood.online",
+      "viewport": 1440,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://schood.online/pricing?returnTo=https%3A%2F%2Fpractice.sat.schood.online%2Fdashboard%3Flang%3Den&product=sat-practice",
+        "observedMilliseconds": 5440,
+        "title": "Schood Platform | IELTS, TOEFL, SAT, and English Learning",
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://schood.online/pricing?returnTo=https%3A%2F%2Fpractice.sat.schood.online%2Fdashboard%3Flang%3Den&product=sat-practice",
+        "observedMilliseconds": 5701,
+        "overflow": false
+      },
+      "errors": [],
+      "authenticatedRequests": [
+        "/functions/v1/me",
+        "/functions/v1/access-effective",
+        "/auth/v1/user",
+        "/rest/v1/user_profiles",
+        "/rest/v1/user_profiles",
+        "/functions/v1/support-center",
+        "/auth/v1/user",
+        "/rest/v1/user_profiles",
+        "/rest/v1/user_profiles",
+        "/functions/v1/support-center",
+        "/functions/v1/platform-events",
+        "/functions/v1/me",
+        "/rest/v1/products",
+        "/functions/v1/billing/plans",
+        "/functions/v1/trial-claim"
+      ],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/auth/v1/user",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/support-center",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/products",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/platform-events",
+          "status": 202
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/billing/plans",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/trial-claim",
+          "status": 200
+        }
+      ],
+      "settledAccessChecks": true,
+      "passed": true
+    },
+    {
+      "entry": "https://toefl.schood.online",
+      "viewport": 390,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://schood.online/pricing?returnTo=https%3A%2F%2Ftoefl.schood.online%2Fdashboard%3Flang%3Den&product=toefl-ibt-simulator",
+        "observedMilliseconds": 9809,
+        "title": "Schood Platform | IELTS, TOEFL, SAT, and English Learning",
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://schood.online/pricing?returnTo=https%3A%2F%2Ftoefl.schood.online%2Fdashboard%3Flang%3Den&product=toefl-ibt-simulator",
+        "observedMilliseconds": 5070,
+        "overflow": false
+      },
+      "errors": [],
+      "authenticatedRequests": [
+        "/functions/v1/me",
+        "/functions/v1/me",
+        "/functions/v1/access-effective",
+        "/auth/v1/user",
+        "/rest/v1/user_profiles",
+        "/rest/v1/user_profiles",
+        "/functions/v1/support-center",
+        "/functions/v1/platform-events",
+        "/functions/v1/me",
+        "/rest/v1/products",
+        "/functions/v1/billing/plans",
+        "/functions/v1/trial-claim",
+        "/auth/v1/user",
+        "/rest/v1/user_profiles",
+        "/rest/v1/user_profiles",
+        "/functions/v1/support-center",
+        "/functions/v1/me",
+        "/rest/v1/products",
+        "/functions/v1/billing/plans",
+        "/functions/v1/trial-claim"
+      ],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/auth/v1/user",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/support-center",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/products",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/platform-events",
+          "status": 202
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/billing/plans",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/trial-claim",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/auth/v1/user",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/products",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/support-center",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/billing/plans",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/trial-claim",
+          "status": 200
+        }
+      ],
+      "settledAccessChecks": true,
+      "passed": true
+    },
+    {
+      "entry": "https://playbook.toefl.schood.online",
+      "viewport": 390,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://schood.online/pricing?returnTo=https%3A%2F%2Fplaybook.toefl.schood.online%2Fdashboard%3Flang%3Den&product=toefl-playbook",
+        "observedMilliseconds": 9283,
+        "title": "Schood Platform | IELTS, TOEFL, SAT, and English Learning",
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://schood.online/pricing?returnTo=https%3A%2F%2Fplaybook.toefl.schood.online%2Fdashboard%3Flang%3Den&product=toefl-playbook",
+        "observedMilliseconds": 4892,
+        "overflow": false
+      },
+      "errors": [],
+      "authenticatedRequests": [
+        "/functions/v1/me",
+        "/functions/v1/me",
+        "/functions/v1/access-effective",
+        "/functions/v1/access-effective",
+        "/auth/v1/user",
+        "/rest/v1/user_profiles",
+        "/rest/v1/user_profiles",
+        "/functions/v1/support-center",
+        "/functions/v1/platform-events",
+        "/functions/v1/me",
+        "/rest/v1/products",
+        "/functions/v1/billing/plans",
+        "/functions/v1/trial-claim",
+        "/auth/v1/user",
+        "/rest/v1/user_profiles",
+        "/rest/v1/user_profiles",
+        "/functions/v1/support-center",
+        "/functions/v1/me",
+        "/rest/v1/products",
+        "/functions/v1/billing/plans",
+        "/functions/v1/trial-claim"
+      ],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/auth/v1/user",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/support-center",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/products",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/platform-events",
+          "status": 202
+        },
+        {
+          "path": "/functions/v1/billing/plans",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/trial-claim",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/auth/v1/user",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/products",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/support-center",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/billing/plans",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/trial-claim",
+          "status": 200
+        }
+      ],
+      "settledAccessChecks": true,
+      "passed": true
+    },
+    {
+      "entry": "https://playbook.sat.schood.online",
+      "viewport": 1440,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://schood.online/pricing?returnTo=https%3A%2F%2Fplaybook.sat.schood.online%2Fdashboard%3Flang%3Den&product=sat-playbook",
+        "observedMilliseconds": 12252,
+        "title": "Schood Platform | IELTS, TOEFL, SAT, and English Learning",
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://schood.online/pricing?returnTo=https%3A%2F%2Fplaybook.sat.schood.online%2Fdashboard%3Flang%3Den&product=sat-playbook",
+        "observedMilliseconds": 5344,
+        "overflow": false
+      },
+      "errors": [],
+      "authenticatedRequests": [
+        "/functions/v1/me",
+        "/functions/v1/me",
+        "/functions/v1/access-effective",
+        "/functions/v1/access-effective",
+        "/auth/v1/user",
+        "/rest/v1/user_profiles",
+        "/rest/v1/user_profiles",
+        "/functions/v1/support-center",
+        "/functions/v1/platform-events",
+        "/functions/v1/me",
+        "/rest/v1/products",
+        "/functions/v1/billing/plans",
+        "/functions/v1/trial-claim",
+        "/auth/v1/user",
+        "/rest/v1/user_profiles",
+        "/rest/v1/user_profiles",
+        "/functions/v1/support-center",
+        "/functions/v1/me",
+        "/rest/v1/products",
+        "/functions/v1/billing/plans",
+        "/functions/v1/trial-claim"
+      ],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/auth/v1/user",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/support-center",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/products",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/platform-events",
+          "status": 202
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/billing/plans",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/trial-claim",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/auth/v1/user",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/support-center",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/products",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/billing/plans",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/trial-claim",
+          "status": 200
+        }
+      ],
+      "settledAccessChecks": true,
+      "passed": true
+    },
+    {
+      "entry": "https://academy.schood.online",
+      "viewport": 1440,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://academy.schood.online/academy?lang=en",
+        "observedMilliseconds": 9126,
+        "title": "Academy | Schood",
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://academy.schood.online/academy?lang=en",
+        "observedMilliseconds": 5927,
+        "overflow": false
+      },
+      "errors": [],
+      "authenticatedRequests": [
+        "/functions/v1/academy",
+        "/functions/v1/me",
+        "/functions/v1/academy",
+        "/functions/v1/academy",
+        "/functions/v1/academy",
+        "/functions/v1/me",
+        "/functions/v1/academy",
+        "/functions/v1/academy"
+      ],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/academy",
+          "status": 403
+        },
+        {
+          "path": "/functions/v1/academy",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/academy",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/academy",
+          "status": 403
+        },
+        {
+          "path": "/functions/v1/academy",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/academy",
+          "status": 200
+        }
+      ],
+      "settledAccessChecks": true,
+      "passed": true
+    },
+    {
+      "entry": "https://itep.schood.online",
+      "viewport": 390,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://schood.online/pricing?returnTo=https%3A%2F%2Fitep.schood.online%2Fdashboard%3Flang%3Den&product=itep-simulator",
+        "observedMilliseconds": 16627,
+        "title": "Schood Platform | IELTS, TOEFL, SAT, and English Learning",
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://schood.online/pricing?returnTo=https%3A%2F%2Fitep.schood.online%2Fdashboard%3Flang%3Den&product=itep-simulator",
+        "observedMilliseconds": 6417,
+        "overflow": false
+      },
+      "errors": [],
+      "authenticatedRequests": [
+        "/functions/v1/me",
+        "/functions/v1/me",
+        "/functions/v1/access-effective",
+        "/auth/v1/user",
+        "/rest/v1/user_profiles",
+        "/rest/v1/user_profiles",
+        "/functions/v1/support-center",
+        "/functions/v1/platform-events",
+        "/functions/v1/me",
+        "/rest/v1/products",
+        "/functions/v1/billing/plans",
+        "/functions/v1/trial-claim",
+        "/auth/v1/user",
+        "/rest/v1/user_profiles",
+        "/rest/v1/user_profiles",
+        "/functions/v1/support-center",
+        "/functions/v1/me",
+        "/rest/v1/products",
+        "/functions/v1/billing/plans",
+        "/functions/v1/trial-claim"
+      ],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/auth/v1/user",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/support-center",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/products",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/platform-events",
+          "status": 202
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/billing/plans",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/trial-claim",
+          "status": 200
+        },
+        {
+          "path": "/auth/v1/user",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/products",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/support-center",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/billing/plans",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/trial-claim",
+          "status": 200
+        }
+      ],
+      "settledAccessChecks": true,
+      "passed": true
+    },
+    {
+      "entry": "https://docs.academy.schood.online",
+      "viewport": 1440,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://docs.academy.schood.online/?lang=en",
+        "observedMilliseconds": 1962,
+        "title": "Schood Academy Operations Guide",
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://docs.academy.schood.online/?lang=en",
+        "observedMilliseconds": 1176,
+        "overflow": false
+      },
+      "errors": [],
+      "authenticatedRequests": [],
+      "responses": [],
+      "settledAccessChecks": true,
+      "passed": true
+    },
+    {
+      "entry": "https://english.schood.online",
+      "viewport": 390,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/dashboard?lang=en",
+        "observedMilliseconds": 6448,
+        "title": "Schood English | Unified Reading, Writing, Listening, Speaking",
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/dashboard?lang=en",
+        "observedMilliseconds": 4182,
+        "overflow": false
+      },
+      "errors": [],
+      "authenticatedRequests": [
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/me",
+        "/functions/v1/learning-profile-v3",
+        "/functions/v1/hub/plan",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/me",
+        "/functions/v1/learning-profile-v3",
+        "/functions/v1/hub/plan"
+      ],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        }
+      ],
+      "settledAccessChecks": true,
+      "passed": true
+    },
+    {
+      "entry": "https://speaking.english.schood.online",
+      "viewport": 390,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/speaking?lang=en",
+        "observedMilliseconds": 6032,
+        "title": "Schood English | Unified Reading, Writing, Listening, Speaking",
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/speaking?lang=en",
+        "observedMilliseconds": 17413,
+        "overflow": false
+      },
+      "errors": [],
+      "authenticatedRequests": [
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/me",
+        "/functions/v1/learning-profile-v3",
+        "/functions/v1/hub/plan",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/me",
+        "/functions/v1/learning-profile-v3",
+        "/functions/v1/hub/plan"
+      ],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        }
+      ],
+      "settledAccessChecks": true,
+      "passed": true
+    },
+    {
+      "entry": "https://reading.english.schood.online",
+      "viewport": 1440,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/reading?lang=en",
+        "observedMilliseconds": 5746,
+        "title": "Schood English | Unified Reading, Writing, Listening, Speaking",
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/reading?lang=en",
+        "observedMilliseconds": 18268,
+        "overflow": false
+      },
+      "errors": [],
+      "authenticatedRequests": [
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/me",
+        "/functions/v1/learning-profile-v3",
+        "/functions/v1/hub/plan",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/me",
+        "/functions/v1/learning-profile-v3",
+        "/functions/v1/hub/plan"
+      ],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        }
+      ],
+      "settledAccessChecks": true,
+      "passed": true
+    },
+    {
+      "entry": "https://writing.english.schood.online",
+      "viewport": 390,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/writing?lang=en",
+        "observedMilliseconds": 8715,
+        "title": "Schood English | Unified Reading, Writing, Listening, Speaking",
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/writing?lang=en",
+        "observedMilliseconds": 5313,
+        "overflow": false
+      },
+      "errors": [],
+      "authenticatedRequests": [
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/me",
+        "/functions/v1/learning-profile-v3",
+        "/functions/v1/hub/plan",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/me",
+        "/functions/v1/learning-profile-v3",
+        "/functions/v1/hub/plan"
+      ],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        }
+      ],
+      "settledAccessChecks": true,
+      "passed": true
+    },
+    {
+      "entry": "https://listening.english.schood.online",
+      "viewport": 1440,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/listening?lang=en",
+        "observedMilliseconds": 9039,
+        "title": "Schood English | Unified Reading, Writing, Listening, Speaking",
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/listening?lang=en",
+        "observedMilliseconds": 5077,
+        "overflow": false
+      },
+      "errors": [],
+      "authenticatedRequests": [
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/me",
+        "/functions/v1/learning-profile-v3",
+        "/functions/v1/hub/plan",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/me",
+        "/functions/v1/learning-profile-v3",
+        "/functions/v1/hub/plan"
+      ],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        }
+      ],
+      "settledAccessChecks": true,
+      "passed": true
+    },
+    {
+      "entry": "https://vocabulary.english.schood.online",
+      "viewport": 390,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/vocabulary?lang=en",
+        "observedMilliseconds": 6546,
+        "title": "Schood English | Unified Reading, Writing, Listening, Speaking",
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/vocabulary?lang=en",
+        "observedMilliseconds": 3615,
+        "overflow": false
+      },
+      "errors": [],
+      "authenticatedRequests": [
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/me",
+        "/functions/v1/learning-profile-v3",
+        "/functions/v1/hub/plan",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/me",
+        "/functions/v1/learning-profile-v3",
+        "/functions/v1/hub/plan"
+      ],
+      "responses": [
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        }
+      ],
+      "settledAccessChecks": true,
+      "passed": true
+    },
+    {
+      "entry": "https://grammar.english.schood.online",
+      "viewport": 1440,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/grammar?lang=en",
+        "observedMilliseconds": 6715,
+        "title": "Schood English | Unified Reading, Writing, Listening, Speaking",
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/grammar?lang=en",
+        "observedMilliseconds": 3503,
+        "overflow": false
+      },
+      "errors": [],
+      "authenticatedRequests": [
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/me",
+        "/functions/v1/learning-profile-v3",
+        "/functions/v1/hub/plan",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/me",
+        "/functions/v1/learning-profile-v3",
+        "/functions/v1/hub/plan"
+      ],
+      "responses": [
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        }
+      ],
+      "settledAccessChecks": true,
+      "passed": true
+    },
+    {
+      "entry": "https://immersion.english.schood.online",
+      "viewport": 1440,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/immersion?lang=en",
+        "observedMilliseconds": 6219,
+        "title": "Schood English | Unified Reading, Writing, Listening, Speaking",
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://english.schood.online/immersion?lang=en",
+        "observedMilliseconds": 3785,
+        "overflow": false
+      },
+      "errors": [],
+      "authenticatedRequests": [
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/me",
+        "/functions/v1/learning-profile-v3",
+        "/functions/v1/hub/plan",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/vocabulary-notebook",
+        "/functions/v1/me",
+        "/functions/v1/learning-profile-v3",
+        "/functions/v1/hub/plan"
+      ],
+      "responses": [
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/learning-profile-v3",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/vocabulary-notebook",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/hub/plan",
+          "status": 200
+        }
+      ],
+      "settledAccessChecks": true,
+      "passed": true
+    },
+    {
+      "entry": "https://playbook.ielts.schood.online",
+      "viewport": 390,
+      "initial": {
+        "status": 200,
+        "finalUrl": "https://schood.online/pricing?returnTo=https%3A%2F%2Fplaybook.ielts.schood.online%2Fdashboard%3Flang%3Den&product=ielts-playbook",
+        "observedMilliseconds": 13084,
+        "title": "Schood Platform | IELTS, TOEFL, SAT, and English Learning",
+        "overflow": false
+      },
+      "reload": {
+        "status": 200,
+        "finalUrl": "https://schood.online/pricing?returnTo=https%3A%2F%2Fplaybook.ielts.schood.online%2Fdashboard%3Flang%3Den&product=ielts-playbook",
+        "observedMilliseconds": 6747,
+        "overflow": false
+      },
+      "errors": [],
+      "authenticatedRequests": [
+        "/functions/v1/me",
+        "/functions/v1/me",
+        "/functions/v1/access-effective",
+        "/functions/v1/access-effective",
+        "/auth/v1/user",
+        "/rest/v1/user_profiles",
+        "/rest/v1/user_profiles",
+        "/functions/v1/support-center",
+        "/functions/v1/platform-events",
+        "/functions/v1/me",
+        "/rest/v1/products",
+        "/functions/v1/billing/plans",
+        "/functions/v1/trial-claim",
+        "/auth/v1/user",
+        "/rest/v1/user_profiles",
+        "/rest/v1/user_profiles",
+        "/functions/v1/support-center",
+        "/functions/v1/me",
+        "/rest/v1/products",
+        "/functions/v1/billing/plans",
+        "/functions/v1/trial-claim"
+      ],
+      "responses": [
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/access-effective",
+          "status": 200
+        },
+        {
+          "path": "/auth/v1/user",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/support-center",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/products",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/platform-events",
+          "status": 202
+        },
+        {
+          "path": "/functions/v1/billing/plans",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/trial-claim",
+          "status": 200
+        },
+        {
+          "path": "/auth/v1/user",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/user_profiles",
+          "status": 200
+        },
+        {
+          "path": "/rest/v1/products",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/support-center",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/me",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/billing/plans",
+          "status": 200
+        },
+        {
+          "path": "/functions/v1/trial-claim",
+          "status": 200
+        }
+      ],
+      "settledAccessChecks": true,
+      "passed": true
+    }
+  ],
+  "customerRowsChanged": false,
+  "providerMessagesSent": false,
+  "paymentsAttempted": false,
+  "limits": [
+    "Owned new account without paid entitlements; signed-in entry/guard/reload only. This does not prove paid learning, AI grading or external settlement.",
+    "One viewport per surface and single observed navigation timings; not an LCP or load benchmark.",
+    "The superseded preliminary matrix captured some intermediate access screens. Only the settled second run is recorded here.",
+    "Navigation timings include the 900ms settling condition and redirects. They are diagnostic samples, not performance targets."
+  ],
+  "observedMain": "b79a3c0a87e62d15dc4c8c87676fd18217cc72ed"
+}
