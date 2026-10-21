@@ -1,0 +1,19 @@
+import {ContractError,object,text,uuid} from './mod.ts';
+export const STAFF_CAPABILITIES=['banks.read','items.write','items.approve','assessments.publish','exams.manage','grades.mark','grades.moderate','results.read','results.release','audit.read','team.manage','certificates.manage'] as const;
+export type StaffCapability=typeof STAFF_CAPABILITIES[number];
+export const staffLabels:Record<StaffCapability,string>={'banks.read':'Read question banks','items.write':'Author questions and rubrics','items.approve':'Approve reviewed questions','assessments.publish':'Publish assessment versions','exams.manage':'Schedule exams and register candidates','grades.mark':'Mark assigned responses','grades.moderate':'Assign markers, moderate and approve grades','results.read':'Read institution results','results.release':'Release approved results','audit.read':'Read assessment audit history','team.manage':'Manage assessment staff permissions','certificates.manage':'Approve certificate programs, issue and revoke certificates'};
+export const staffPresets:Record<string,StaffCapability[]>={Author:['banks.read','items.write'],Reviewer:['banks.read','items.approve'],Publisher:['banks.read','assessments.publish'],'Exam coordinator':['banks.read','exams.manage'],Marker:['grades.mark'],Moderator:['grades.moderate'],'Results publisher':['results.read','results.release'],Auditor:['audit.read'],'Staff manager':['team.manage'],'Certificate manager':['certificates.manage']};
+const invalid=(message:string):never=>{throw new ContractError('invalid_staff_command',message);};
+const revision=(value:unknown)=>{if(typeof value!=='number'||!Number.isSafeInteger(value)||value<0)invalid('Use the current permission revision.');return value;};
+const capability=(value:unknown)=>{if(!STAFF_CAPABILITIES.includes(value as StaffCapability))invalid('Choose an Assessment Cloud permission, not a Proctor permission.');return value as StaffCapability;};
+const expiry=(value:unknown)=>{if(value===undefined||value===null||value==='')return null;const date=text(value,'Permission expiry',80);if(!/(Z|[+-]\d{2}:\d{2})$/.test(date)||!Number.isFinite(Date.parse(date)))invalid('Use an expiry timestamp with timezone.');return new Date(date).toISOString();};
+export function staffCommand(action:string,value:unknown){const data=object(value),reason=text(data.reason,'Reason',5000);let input:Record<string,unknown>;
+ switch(action){
+  case 'member.suspend':case 'member.resume':input={user_id:uuid(data.user_id),expected_revision:revision(data.expected_revision),reason};break;
+  case 'capability.grant':case 'capability.revoke':input={user_id:uuid(data.user_id),capability:capability(data.capability),expected_revision:revision(data.expected_revision),reason,...(action==='capability.grant'?{expires_at:expiry(data.expires_at)}:{})};break;
+  case 'role.create':case 'role.revise':{if(!Array.isArray(data.capabilities)||!data.capabilities.length||data.capabilities.length>STAFF_CAPABILITIES.length)invalid('Select at least one assessment permission.');const caps=(data.capabilities as unknown[]).map(capability);if(new Set(caps).size!==caps.length)invalid('Permissions must be unique.');input={title:text(data.title,'Role title',200),capabilities:caps.sort(),reason,...(action==='role.revise'?{role_id:uuid(data.role_id),expected_version:revision(data.expected_version)}:{})};break;}
+  case 'role.assign':input={user_id:uuid(data.user_id),role_version_id:uuid(data.role_version_id),expected_assignment_id:data.expected_assignment_id===undefined||data.expected_assignment_id===null?null:uuid(data.expected_assignment_id),expires_at:expiry(data.expires_at),reason};break;
+  case 'role.revoke':input={assignment_id:uuid(data.assignment_id),expected_revision:revision(data.expected_revision),reason};break;
+  default:return invalid('Unknown staff action.');
+ }return input;
+}

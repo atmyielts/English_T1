@@ -1,0 +1,8 @@
+{
+  "name": "@schood/assessment-web",
+  "private": true,
+  "type": "module",
+  "exports": { "./client": "./src/client.ts", "./journal": "./src/journal.ts", "./response": "./src/QuestionResponse.tsx", "./commands": "./src/commands.ts" },
+  "peerDependencies": { "react": "^19.2.0" },
+  "dependencies": { "@supabase/supabase-js": "^2.89.0" }
+}
