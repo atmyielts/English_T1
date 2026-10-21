@@ -1,4 +1,4 @@
-import { appendFileSync } from 'node:fs';
+import { appendFileSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 
@@ -33,5 +33,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const plan = deploymentPlan();
   if (!process.env.GITHUB_OUTPUT) throw new Error('GITHUB_OUTPUT is required');
   appendFileSync(process.env.GITHUB_OUTPUT, `deploy=${plan.deploy}\n`);
+  if(process.env.PAGES_PLAN_FILE){
+    if(!/^[a-f0-9]{40}$/.test(process.env.DEPLOY_HEAD??''))throw new Error('The published plan requires an exact commit identity');
+    writeFileSync(process.env.PAGES_PLAN_FILE,JSON.stringify({schemaVersion:1,head:process.env.DEPLOY_HEAD,...plan})+'\n');
+  }
   console.log(`Pages publication: ${plan.deploy ? 'required' : 'skipped'} (${plan.reason}).`);
 }

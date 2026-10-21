@@ -30,7 +30,14 @@ jobs:
           DEPLOY_EVENT: ${{ github.event_name }}
           DEPLOY_BEFORE: ${{ github.event.before }}
           DEPLOY_HEAD: ${{ github.sha }}
+          PAGES_PLAN_FILE: ${{ runner.temp }}/pages-deployment-plan.json
         run: node scripts/plan-pages-deployment.mjs
+      - name: Publish exact-commit deployment plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: pages-deployment-plan
+          path: ${{ runner.temp }}/pages-deployment-plan.json
+          if-no-files-found: error
 
   deploy:
     needs: plan
