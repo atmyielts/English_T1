@@ -1,0 +1,51 @@
+\set ON_ERROR_STOP on
+begin;
+insert into users values('00000000-0000-4000-8000-000000000021'),('00000000-0000-4000-8000-000000000022'),('00000000-0000-4000-8000-000000000023');
+insert into tenant_memberships values('10000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000022','active','member');
+do $$declare a uuid:='00000000-0000-4000-8000-000000000001';t uuid:='10000000-0000-4000-8000-000000000001';local_user uuid:='00000000-0000-4000-8000-000000000021';legacy_user uuid:='00000000-0000-4000-8000-000000000022';role_version uuid;result jsonb;data jsonb;before_org jsonb;person jsonb;bank_receipt jsonb;
+begin
+ select jsonb_agg(to_jsonb(m) order by tenant_id,user_id,status,role) into before_org from tenant_memberships m;
+ insert into assessment_memberships(tenant_id,user_id,status,created_by,updated_by) values(t,local_user,'active',a,a);
+ if assessment_has_capability(t,local_user,'banks.read') or assessment_has_capability(t,local_user,'team.manage') then raise exception 'Service membership implied permissions';end if;
+ result:=assessment_staff_command(a,t,'membership-author-role','role.create','{"title":"Local assessment author","capabilities":["banks.read","items.write"],"reason":"Separate service role"}');role_version:=(result->>'id')::uuid;
+ perform assessment_staff_command(a,t,'membership-author-assign','role.assign',jsonb_build_object('user_id',local_user,'role_version_id',role_version,'expected_assignment_id',null,'reason','Reviewed local staff assignment'));
+ if not assessment_has_capability(t,local_user,'items.write') or assessment_has_capability(t,local_user,'proctor.review') or assessment_has_capability(t,local_user,'items.approve') then raise exception 'Local capability isolation failed';end if;
+ bank_receipt:=public.assessment_command(local_user,t,'membership-bank-receipt','bank.create','{"title":"Local author receipt fence"}');
+ -- Even a privileged fixture-created Proctor grant cannot use local membership.
+ insert into assessment_capability_grants(tenant_id,user_id,capability,granted_by) values(t,local_user,'proctor.review',a),(t,legacy_user,'grades.mark',a),(t,legacy_user,'grades.manage',a),(t,legacy_user,'proctor.review',a);
+ if assessment_has_capability(t,local_user,'proctor.review') then raise exception 'Assessment membership became Proctor membership';end if;
+ if jsonb_array_length(assessment_workspaces(local_user))<>1 or assessment_workspaces(local_user)->0->>'role'<>'assessment_member' then raise exception 'Local staff workspace missing';end if;
+ select value into person from jsonb_array_elements(assessment_staff_read(a,t,'members')) where value->>'id'=local_user::text;
+ if person->>'membership_scope'<>'assessment' or person->'inherited'<>'false' then raise exception 'Local staff hidden or inherited owner rights';end if;
+ data:=jsonb_build_object('user_id',local_user,'expected_revision',1,'reason','Temporarily suspend Assessment only');
+ result:=assessment_staff_command(a,t,'membership-suspend','member.suspend',data);
+ if assessment_staff_command(a,t,'membership-suspend','member.suspend',data)<>result then raise exception 'Suspension receipt changed';end if;
+ if assessment_has_capability(t,local_user,'banks.read') or jsonb_array_length(assessment_workspaces(local_user))<>0 then raise exception 'Suspended local staff retained access';end if;
+ begin perform public.assessment_command(local_user,t,'membership-bank-receipt','bank.create','{"title":"Local author receipt fence"}');raise exception 'Suspended author used a cached command receipt';exception when insufficient_privilege then null;end;
+ if (select count(*) from assessment_audit_events where action='staff.member.suspend' and target_id=local_user)<>1 then raise exception 'Suspension replay duplicated audit';end if;
+ begin perform assessment_staff_command(a,t,'membership-stale-resume','member.resume',jsonb_build_object('user_id',local_user,'expected_revision',1,'reason','Stale'));raise exception 'Stale membership overwritten';exception when unique_violation then null;end;
+ perform assessment_staff_command(a,t,'membership-resume','member.resume',jsonb_build_object('user_id',local_user,'expected_revision',2,'reason','Reviewed retained roles before resuming'));
+ if not assessment_has_capability(t,local_user,'items.write') then raise exception 'Explicit resume lost retained role';end if;
+ if public.assessment_command(local_user,t,'membership-bank-receipt','bank.create','{"title":"Local author receipt fence"}')<>bank_receipt then raise exception 'Authorized resumed receipt changed';end if;
+ perform assessment_staff_command(a,t,'membership-global-suspend','member.suspend',jsonb_build_object('user_id',legacy_user,'expected_revision',0,'reason','Suspend Assessment, preserve Academy and Proctor'));
+ if assessment_has_capability(t,legacy_user,'grades.mark') or assessment_has_capability(t,legacy_user,'grades.manage') or not assessment_has_capability(t,legacy_user,'proctor.review') then raise exception 'Suspension changed another product or retained Assessment alias';end if;
+ if (select jsonb_agg(to_jsonb(m) order by tenant_id,user_id,status,role) from tenant_memberships m)<>before_org then raise exception 'Assessment changed organization/Academy membership';end if;
+ update tenant_memberships set status='inactive' where tenant_id=t and user_id=legacy_user;
+ begin perform assessment_staff_command(a,t,'membership-org-bypass','member.resume',jsonb_build_object('user_id',legacy_user,'expected_revision',1,'reason','Must not bypass organization removal'));raise exception 'Inactive organization membership bypassed';exception when check_violation then null;end;
+ update tenant_memberships set status='active' where tenant_id=t and user_id=legacy_user;
+ -- Local membership must not weaken the existing delegated-manager ceilings.
+ insert into assessment_memberships(tenant_id,user_id,status,created_by,updated_by) values(t,'00000000-0000-4000-8000-000000000023','active',a,a);
+ perform assessment_staff_command(a,t,'membership-local-manager','capability.grant',jsonb_build_object('user_id',local_user,'capability','team.manage','expected_revision',0,'expires_at',clock_timestamp()+interval '20 minutes','reason','Temporary local staff manager'));
+ begin perform assessment_staff_command(local_user,t,'membership-delegation-excess','capability.grant',jsonb_build_object('user_id','00000000-0000-4000-8000-000000000023','capability','items.approve','expected_revision',0,'reason','Excess authority'));raise exception 'Local manager delegated an unheld permission';exception when insufficient_privilege then null;end;
+ begin perform assessment_staff_command(local_user,t,'membership-delegation-management','capability.grant',jsonb_build_object('user_id','00000000-0000-4000-8000-000000000023','capability','team.manage','expected_revision',0,'reason','Management must not be inherited'));raise exception 'Local manager delegated management';exception when insufficient_privilege then null;end;
+ begin perform assessment_staff_command(local_user,t,'membership-delegation-expiry','capability.grant',jsonb_build_object('user_id','00000000-0000-4000-8000-000000000023','capability','banks.read','expected_revision',0,'expires_at',clock_timestamp()+interval '30 minutes','reason','Outlives manager'));raise exception 'Local delegation outlived manager';exception when check_violation then null;end;
+ data:=jsonb_build_object('user_id','00000000-0000-4000-8000-000000000023','capability','banks.read','expected_revision',0,'expires_at',clock_timestamp()+interval '10 minutes','reason','Bounded local delegation');
+ perform assessment_staff_command(local_user,t,'membership-delegation-allowed','capability.grant',data);
+ perform assessment_staff_command(a,t,'membership-local-manager-suspend','member.suspend',jsonb_build_object('user_id',local_user,'expected_revision',3,'reason','Withdraw local management access'));
+ begin perform assessment_staff_command(local_user,t,'membership-delegation-allowed','capability.grant',data);raise exception 'Suspended manager replayed a privileged receipt';exception when insufficient_privilege then null;end;
+ begin perform assessment_staff_command(a,t,'membership-self','member.suspend',jsonb_build_object('user_id',a,'expected_revision',0,'reason','Self removal'));raise exception 'Manager self-suspension allowed';exception when insufficient_privilege then null;end;
+ begin delete from assessment_memberships where tenant_id=t and user_id=local_user;raise exception 'Membership history deleted';exception when check_violation then null;end;
+ begin update assessment_memberships set created_by=local_user,revision=revision+1,status='suspended' where tenant_id=t and user_id=local_user;raise exception 'Membership ownership rewritten';exception when check_violation then null;end;
+ if has_table_privilege('authenticated','public.assessment_memberships','select') or has_table_privilege('authenticated','public.assessment_staff_directory','select') or has_function_privilege('authenticated','public.assessment_workspaces(uuid)','execute') or has_function_privilege('service_role','public.assessment_membership_change(uuid,uuid,uuid,text,bigint,text)','execute') then raise exception 'Private membership authority exposed';end if;
+end;$$;
+rollback;
