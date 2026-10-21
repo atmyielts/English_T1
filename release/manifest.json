@@ -1,36 +1,46 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-grading-revisions-and-adjustment-authority",
+  "releaseId": "academy-teacher-retention-cohorts",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
     "academy"
   ],
   "migrations": [
-    "20261021003500_academy_gradebook_review_revisions.sql",
-    "20261021004000_academy_adjustment_subtype_authority.sql"
+    "20261021005000_academy_teacher_retention_cohorts.sql"
   ],
-  "edgeFunctions": [],
+  "edgeFunctions": [
+    "academy"
+  ],
   "sharedEdgeConsumers": [],
   "workers": [],
-  "requiredSecrets": [],
+  "requiredSecrets": [
+    "ACADEMY_AUDIO_ENCRYPTION_KEY",
+    "GMAIL_SMTP_APP_PASSWORD",
+    "GMAIL_SMTP_EMAIL",
+    "SITE_URL"
+  ],
   "rolloutOrder": [
     "pages",
-    "migration:20261021003500_academy_gradebook_review_revisions.sql",
-    "migration:20261021004000_academy_adjustment_subtype_authority.sql"
+    "migration:20261021005000_academy_teacher_retention_cohorts.sql",
+    "secret:ACADEMY_AUDIO_ENCRYPTION_KEY",
+    "secret:GMAIL_SMTP_APP_PASSWORD",
+    "secret:GMAIL_SMTP_EMAIL",
+    "secret:SITE_URL",
+    "function:academy"
   ],
   "manualFollowUps": [
-    "After exact-head protected CI, main CI and tracked Pages pass, apply only 20261021003500_academy_gradebook_review_revisions.sql and 20261021004000_academy_adjustment_subtype_authority.sql with supabase db push --linked --include-all from an isolated 233-entry baseline catalogue whose dry run lists exactly these two migrations. Do not apply unrelated Assessment or Proctor changes.",
-    "Capture the installed academy_finance_command body and compare it with the qualified wallet command. The migration retains the installed function definition and changes only subtype capability selection; it refuses unexpected command structure. Read back and prove the exact replacement. Preserve all other financial guards, receipts, cash custody and wallet policy. No Edge deployment or secret changes are required. Capture academy_operational_read and prove only assignment/submission updated_at fields are added; retain scope filtering and final authority recheck. The installed v95 serializer already returns submission updated_at. Repeat real published grading recovery and stale-review acceptance after this forward repair.",
-    "Run fourteen installed rollback-only fixture groups and owned live API/UI checks for center administrator refunds, accountant discounts, mixed branch grants and receipt replay after revocation. Only internal QA ledger entries are needed; no external payments or provider deliveries. Close owned accounts and archive the QA institution."
+    "After exact-head/main CI and tracked Pages, apply only the reviewed retention migration using supabase db push --linked from an isolated installed catalogue. Confirm the dry run contains exactly this migration. Capture aggregate baseline size and compare the installed import reference helper bodies before activation.",
+    "Use supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel from a source-preserving bundle made from installed v95, adding only the retention adapter and reviewed dispatcher changes. Retain unrelated modules and all existing secrets, including audio encryption. Read back every module hash and the installed migration.",
+    "Run installed rollback-only fixtures plus owned populated retention API/browser checks, branch scope, revocation, incomplete history and empty cohorts. Close owned accounts and archive the QA institution. No customer history, provider messages or payments are changed.",
+    "Existing dependency configuration syntax only; no secret write or rotation is required: supabase secrets set ACADEMY_AUDIO_ENCRYPTION_KEY=<retained-key>; supabase secrets set GMAIL_SMTP_EMAIL=<owned-email>; supabase secrets set GMAIL_SMTP_APP_PASSWORD=<operator-supplied-password>; supabase secrets set SITE_URL=<verified-site>. Never invent credentials or recipients."
   ],
   "verification": [
-    "Twenty-two captured-schema stages passed with owned-container cleanup, including legitimate/denied independent adjustment subtypes, mixed scopes and replay after generic adjustment access remains. Focused browser checks, Academy build/lint, complete exact-head CI, verify:prod and release manifest are required. Installed and owned hosted checks remain separate gates.",
-    "A live owned test on v95 identified missing revision fields in the scoped SQL gradebook projection. A native scoped-read-to-grade roundtrip now verifies actual production read fields can construct the current-attempt grading command. Do not claim grading accepted until its published workflow passes."
+    "Full captured production-schema qualification passed 24 stages, including grant expiry while a retention read is blocked, including imports, retained correction, current grading, financial authority and populated retention cohorts; owned database containers were removed. Run complete Edge tests, browser suite, build/lint, localization and production/release checks. Production readback and hosted acceptance are separate requirements."
   ],
   "rollback": {
-    "pages": "Prior tracked Pages main 3df7e4557f1fd9b3b8d2d4adba763d4500a1e52e.",
-    "edge": "No Edge deployment is included. Preserve installed Academy v95 and its current modules.",
-    "migration": "Forward repair capability selection while retaining immutable financial receipts, ledger and audit history. Do not revert customer records."
+    "pages": "Previous tracked main b79a3c0a87e62d15dc4c8c87676fd18217cc72ed; use Pages rollback if required.",
+    "edge": "Preserve captured installed v95 source for a rollback deployment without changing secrets.",
+    "migration": "Additive private observations only; retain immutable event history and forward-repair report logic. Never reconstruct historical teacher assignments from current staff rosters."
   }
 }
