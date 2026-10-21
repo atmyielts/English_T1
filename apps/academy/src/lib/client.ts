@@ -1,3 +1,4 @@
+import {captureWorkspaceBranch,getWorkspaceActor} from './branchScope';
 import {operationalRequest} from './operationalRequest';
 import {parentRequest} from './parentRequest';
 import { supabase } from './supabase';
@@ -23,6 +24,7 @@ export type TeacherStudioAccessProfile = {
   scope: 'academy' | 'assigned_branches' | 'assigned_classrooms' | string;
   classroom_ids: string[];
   branch_ids: string[];
+  capability_scopes?:Record<string,{academy_wide:boolean;branch_ids:string[];classroom_ids:string[];student_ids:string[]}>;
   center_tenant_id?: string | null;
   permissions: {
     viewAcademy?: boolean;
@@ -877,6 +879,7 @@ export type TeacherStudioNotification = {
 };
 
 export type TeacherStudioOwnerDashboard = {
+  revenue_by_currency?:Array<{currency:string;collected_total:number;collected_this_month:number;outstanding:number;paid_count:number}>;
   revenue: {
     currency: string;
     collected_total: number;
@@ -1050,14 +1053,16 @@ const refreshOnce = async (): Promise<boolean> => {
   return refreshPromise;
 };
 
-const getAccessToken = async (): Promise<string> => {
+const getAccessToken = async (actor?:string): Promise<string> => {
   const { data: sessionData } = await supabase.auth.getSession();
+  if(actor && sessionData.session?.user.id!==actor)throw new Error('Your account changed. Reopen this page.');
   const direct = sessionData.session?.access_token;
   if (direct) return direct;
 
   const refreshed = await refreshOnce();
   if (!refreshed) throw new Error('Unauthorized');
   const { data: refreshedData } = await supabase.auth.getSession();
+  if(actor && refreshedData.session?.user.id!==actor)throw new Error('Your account changed. Reopen this page.');
   const token = refreshedData.session?.access_token;
   if (!token) throw new Error('Unauthorized');
   return token;
@@ -1086,24 +1091,27 @@ const invokeEdge = async <T>(
   const method = opts?.method ?? 'POST';
 
   const run = async (token: string): Promise<Response> => {
-    return fetch(`${edgeBase}/${fnName}`, {
+    const {_scope_branch_id:branch,...body}=opts?.body??{};
+    const scoped=['academy','teacher-studio'].includes(fnName);
+    const endpoint=`${edgeBase}/${fnName}${scoped&&branch?'?_scope_branch_id='+encodeURIComponent(String(branch)):''}`;
+    return fetch(endpoint, {
       method,
       headers: {
         apikey: supabaseAnonKey,
         Authorization: `Bearer ${token}`,
         ...(opts?.body ? { 'Content-Type': 'application/json' } : {}),
       },
-      body: opts?.body ? JSON.stringify(opts.body) : undefined,
+      body: opts?.body ? JSON.stringify(scoped?body:opts.body) : undefined,
     });
   };
 
-  let token = await getAccessToken();
+  let token = await getAccessToken(typeof opts?.body?._expected_actor==='string'?opts.body._expected_actor:undefined);
   let response = await run(token);
 
   if (response.status === 401) {
     const refreshed = await refreshOnce();
     if (refreshed) {
-      token = await getAccessToken();
+      token = await getAccessToken(typeof opts?.body?._expected_actor==='string'?opts.body._expected_actor:undefined);
       response = await run(token);
     }
   }
@@ -1119,8 +1127,11 @@ const invokeEdge = async <T>(
 };
 
 const invokeEdgeForm = async <T>(fnName: string, form: FormData): Promise<T> => {
+  const actor=getWorkspaceActor(),academy=String(form.get('academy_id')??'');
+  const branch=captureWorkspaceBranch({},academy)._scope_branch_id;
+  if(actor)form.set('_expected_actor',actor);
   const run = async (token: string): Promise<Response> => {
-    return fetch(`${edgeBase}/${fnName}`, {
+    return fetch(`${edgeBase}/${fnName}${branch?'?_scope_branch_id='+encodeURIComponent(String(branch)):''}`, {
       method: 'POST',
       headers: {
         apikey: supabaseAnonKey,
@@ -1130,13 +1141,13 @@ const invokeEdgeForm = async <T>(fnName: string, form: FormData): Promise<T> => 
     });
   };
 
-  let token = await getAccessToken();
+  let token = await getAccessToken(actor||undefined);
   let response = await run(token);
 
   if (response.status === 401) {
     const refreshed = await refreshOnce();
     if (refreshed) {
-      token = await getAccessToken();
+      token = await getAccessToken(actor||undefined);
       response = await run(token);
     }
   }
@@ -1171,7 +1182,8 @@ const callTeacherStudio = async <T>(opts: {
   const payload: Record<string, unknown> = {
     action: opts.action,
     academy_id: opts.academyId ?? undefined,
-    ...(opts.body ?? {}),
+    ...captureWorkspaceBranch(opts.body ?? {}, opts.academyId ?? ''),
+    ...(getWorkspaceActor() ? {_expected_actor:getWorkspaceActor()} : {}),
   };
 
   if (opts.params) {
@@ -1221,6 +1233,8 @@ export const getMe = async (options?: { force?: boolean }): Promise<MeResponse> 
     throw error;
   }
 };
+
+export const academyOfficeRequest = <T>(academyId:string,action:string,body:Record<string,unknown>={}) => callTeacherStudio<T>({academyId,action,body});
 
 export const academyAssessmentRequest = <T>(academyId: string, action: string, body: Record<string, unknown> = {}): Promise<T> =>
   callTeacherStudio<T>({ academyId, action, body });

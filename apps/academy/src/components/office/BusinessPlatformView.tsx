@@ -40,8 +40,9 @@ type Tab =
 const text = (value: unknown) => String(value ?? "");
 const number = (value: unknown) => Number(value ?? 0);
 const label = (value: unknown) => translate(text(value).replaceAll("_", " "));
+const metric = (value: unknown) => value==null?'—':number(value);
 const money = (value: unknown, currency = "UZS") =>
-  `${new Intl.NumberFormat(getLocaleTag()).format(number(value))} ${currency}`;
+  value==null ? "—" : `${new Intl.NumberFormat(getLocaleTag()).format(number(value))} ${currency}`;
 const jsonObject = (value: string, field: string): Record<string, unknown> => {
   const parsed = JSON.parse(value) as unknown;
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
@@ -293,15 +294,15 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
           >
             <article>
               <span>{translate("Students learning")}</span>
-              <strong>{number(dashboard.active_students)}</strong>
-              <small>{number(dashboard.new_students)} {translate("new this month")}</small>
+              <strong>{metric(dashboard.active_students)}</strong>
+              <small>{metric(dashboard.new_students)} {translate("new this month")}</small>
             </article>
             <article>
               <span>{translate("Admissions")}</span>
               <strong>
-                {number(dashboard.active_leads ?? dashboard.open_leads)}
+                {metric(dashboard.active_leads ?? dashboard.open_leads)}
               </strong>
-              <small>{number(dashboard.conversions)} {translate("converted")}</small>
+              <small>{metric(dashboard.conversions)} {translate("converted")}</small>
             </article>
             {canSeeEconomics ? (
               <article>
@@ -327,7 +328,7 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
             <article>
               <span>{translate("Needs a decision")}</span>
               <strong>
-                {number(dashboard.pending_actions ?? dashboard.open_actions)}
+                {metric(dashboard.pending_actions ?? dashboard.open_actions)}
               </strong>
               <small>
                 {number(
@@ -367,14 +368,14 @@ export function BusinessPlatformView({ academyId, formatDate }: Props) {
                       </td>
                       <td>{number(item.active_students)}</td>
                       <td>
-                        {money(item.collected_revenue ?? item.collected_amount)}
+                        {money(item.collected_revenue ?? item.collected_amount,text(item.currency)||"UZS")}
                       </td>
-                      <td>{money(item.outstanding_amount)}</td>
+                      <td>{money(item.outstanding_amount,text(item.currency)||"UZS")}</td>
                       <td>
                         {text(item.attendance_percent || "—")}
                         {item.attendance_percent ? "%" : ""}
                       </td>
-                      <td>{money(item.contribution)}</td>
+                      <td>{money(item.contribution,text(item.currency)||"UZS")}</td>
                       <td>{number(item.open_actions)}</td>
                     </tr>
                   ))}

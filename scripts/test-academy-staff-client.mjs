@@ -1,10 +1,12 @@
 import {readFileSync} from 'node:fs';
 import {runInNewContext} from 'node:vm';
 import {webcrypto} from 'node:crypto';
-import {transformSync} from 'esbuild';
+import {buildSync} from 'esbuild';
+import {fileURLToPath} from 'node:url';
+import {dirname} from 'node:path';
 import assert from 'node:assert/strict';
 const source=readFileSync(new URL('../apps/academy/src/lib/staffRequest.ts',import.meta.url),'utf8');
-const compiled=transformSync(source,{loader:'ts',format:'cjs',target:'es2022',define:{'import.meta.env.VITE_SUPABASE_URL':'"https://owned.invalid"','import.meta.env.VITE_SUPABASE_ANON_KEY':'"public-fixture"'}}).code;
+const compiled=buildSync({stdin:{contents:source,loader:'ts',resolveDir:dirname(fileURLToPath(new URL('../apps/academy/src/lib/staffRequest.ts',import.meta.url)))},bundle:true,write:false,external:['./supabase'],format:'cjs',target:'es2022',define:{'import.meta.env.VITE_SUPABASE_URL':'"https://owned.invalid"','import.meta.env.VITE_SUPABASE_ANON_KEY':'"public-fixture"'}}).outputFiles[0].text;
 const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
 const actor=id(1),other=id(2),academy=id(3);
 const session=who=>({user:{id:who},access_token:'owned.'+Buffer.from(JSON.stringify({sub:who})).toString('base64url')+'.fixture'});
@@ -126,3 +128,15 @@ console.log(JSON.stringify({suite:'staff-pinned-account-and-retry-client',checks
  await reloaded.retryFinanceRequest(academy,actor);assert.equal(reloaded.calls[0][1].body,frozen);assert.equal(storage.size,0);checks++;
 }
 console.log(JSON.stringify({suite:'finance-reload-recovery',checks}));
+
+{
+ const storage=new Map(),sessionStorage={getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)};
+ const branchSlot='schood.branch.v1:'+JSON.stringify([actor,academy]);storage.set(branchSlot,id(80));
+ const first=client(session(actor),undefined,()=>{throw Error('Owned lost branch reply');},sessionStorage);
+ await assert.rejects(()=>first.staffRequest(academy,'open_cashier_shift',{cashbox_id:id(70),opening_balance:100},actor));
+ assert(first.calls[0][0].includes(id(80)));const original=first.calls[0][1].body;assert(!original.includes('_scope_branch_id'));
+ storage.set(branchSlot,id(81));
+ const reloaded=client(session(actor),undefined,(_url,request)=>{const body=JSON.parse(request.body);return new Response(JSON.stringify({actor_id:actor,request_key:body.idempotency_key,replayed:true}));},sessionStorage);
+ await reloaded.retryFinanceRequest(academy,actor);assert(reloaded.calls[0][0].includes(id(80)));assert(!reloaded.calls[0][0].includes(id(81)));assert.equal(reloaded.calls[0][1].body,original);checks++;
+}
+console.log(JSON.stringify({suite:'finance-original-branch-retry',checks}));

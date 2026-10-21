@@ -1,3 +1,4 @@
+import {captureWorkspaceBranch} from './branchScope';
 import {academyActorSession,StaffRequestError} from './staffRequest';
 type Pending={actor:string;academy:string;command:string;payload:Record<string,unknown>};
 const grades=new Set(['grade_submission','submit_assignment']);
@@ -14,16 +15,17 @@ export async function operationalRequest<T>(academy:string,command:string,payloa
  const first=await academyActorSession(expectedActor),actor=first.user.id;
  if(!actions.has(command))throw new StaffRequestError('Choose a valid inquiry or lesson action.',400);
  const previous=pendingOperational(academy,actor);
+ payload=previous?(Object.hasOwn(previous.payload,'_scope_branch_id')?{...payload,_scope_branch_id:previous.payload._scope_branch_id}:payload):captureWorkspaceBranch(payload,academy,actor);
  if(previous&&(previous.command!==command||JSON.stringify(canonical(previous.payload))!==JSON.stringify(canonical(payload))))throw new StaffRequestError('Confirm the pending change before starting another.',409);
- const captured=previous??{actor,academy,command,payload:structuredClone({...payload,idempotency_key:payload.idempotency_key??crypto.randomUUID()})};
- const body=JSON.stringify({...captured.payload,action:grades.has(command)?'grading_command':'operational_command',command,academy_id:academy,_expected_actor:actor});
+ const captured:Pending=previous??{actor,academy,command,payload:structuredClone({...payload,idempotency_key:payload.idempotency_key??crypto.randomUUID()})};
+ const body=JSON.stringify({...Object.fromEntries(Object.entries(captured.payload).filter(([key])=>key!=='_scope_branch_id')),action:grades.has(command)?'grading_command':'operational_command',command,academy_id:academy,_expected_actor:actor});
  if(new TextEncoder().encode(body).byteLength>60000)throw new StaffRequestError('There is too much information to save at once.',413);
  try{sessionStorage.setItem(slot(academy,actor),JSON.stringify(captured));}catch{throw new StaffRequestError('Your browser could not preserve this change. Enable session storage and retry.',400);}
  notify();
  const timer=new AbortController(),timeout=setTimeout(()=>timer.abort(),30000);
  const url=String(import.meta.env.VITE_SUPABASE_URL??'').replace(/\/$/,''),anon=String(import.meta.env.VITE_SUPABASE_ANON_KEY??'');
  try{
-  const send=async(refresh=false)=>{const session=await academyActorSession(actor,refresh);return fetch(url+'/functions/v1/academy',{method:'POST',headers:{apikey:anon,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body,signal:timer.signal});};
+  const send=async(refresh=false)=>{const session=await academyActorSession(actor,refresh);return fetch(url+'/functions/v1/academy'+(captured.payload._scope_branch_id?'?_scope_branch_id='+encodeURIComponent(String(captured.payload._scope_branch_id)):''),{method:'POST',headers:{apikey:anon,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body,signal:timer.signal});};
   let response=await send();if(response.status===401)response=await send(true);
   const result=await response.json().catch(()=>null);
   if(!response.ok)throw new StaffRequestError(typeof result?.error==='string'?result.error:'Unable to confirm this change. Retry the same change.',response.status,result?.retryable===true||response.status>=500||response.status===404&&result?.error==='Not found');

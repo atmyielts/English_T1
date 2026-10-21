@@ -1,3 +1,5 @@
+import {openLegacyBoundary,legacyActionMode,LegacyBoundaryError} from './legacy-boundary.ts';
+import {currentAcademyAccessProfile,effectiveLegacyMembership} from './legacy-scope-profile.ts';
 import {runTeacherRetentionRead} from './teacher-retention.ts';
 import {gradingActions,runGradingCommand} from './grading-command.ts';
 import {operationalActions,runOperationalCommand} from './operational-command.ts';
@@ -544,10 +546,10 @@ const normalizeAcademyRole = academyAccessPolicy.normalizeAcademyRole;
 const academyRoleRank = academyAccessPolicy.academyRoleRank;
 const isAcademyManagerRole = academyAccessPolicy.isAcademyManagerRole;
 const academyAccessScope = academyAccessPolicy.academyAccessScope;
-const academyAccessClassroomIds = academyAccessPolicy.academyAccessClassroomIds;
-const academyAccessBranchIds = academyAccessPolicy.academyAccessBranchIds;
+const academyAccessClassroomIds = (access: MembershipRow) => (access as MembershipRow & {legacy_row_boundary?:boolean}).legacy_row_boundary ? null : academyAccessPolicy.academyAccessClassroomIds(access);
+const academyAccessBranchIds = (access: MembershipRow) => (access as MembershipRow & {legacy_row_boundary?:boolean}).legacy_row_boundary ? null : academyAccessPolicy.academyAccessBranchIds(access);
 export const buildAcademyPermissions = academyAccessPolicy.buildAcademyPermissions;
-const academyAccessProfile = academyAccessPolicy.academyAccessProfile;
+const academyAccessProfile = currentAcademyAccessProfile;
 const academyAccessHas = academyAccessPolicy.academyAccessHas;
 const academyRoleGrantToMembership = academyAccessPolicy.academyRoleGrantToMembership;
 const academyRoleGrantCanAccess = academyAccessPolicy.academyRoleGrantCanAccess;
@@ -2700,7 +2702,8 @@ const handleReadAction = async (
 
   if (action === "teacher_day") {
     const profile = academyAccessProfile(access);
-    const day = await loadAcademyTeacherDay(sb, { ...access, permissions: profile.permissions as Record<string, boolean> }, dateRaw);
+    const dayAccess=(access as MembershipRow & {legacy_row_boundary?:boolean}).legacy_row_boundary?{...access,classroom_ids:[],branch_ids:[],staff_id:null}:access;
+    const day = await loadAcademyTeacherDay(sb, { ...dayAccess, permissions: profile.permissions as Record<string, boolean> }, dateRaw);
     return json(200, day);
   }
 
@@ -3442,16 +3445,13 @@ const handleReadAction = async (
     const attendance = ((attRes.data ?? []) as Array<Record<string, unknown>>).filter((row) => classroomIdSet.has(String(row.classroom_id)));
     const assignments = ((asgnRes.data ?? []) as Array<Record<string, unknown>>).filter((row) => classroomIdSet.has(String(row.classroom_id)));
 
-    const revenue = canSeeFinance
-      ? (() => {
-        const paid = payments.filter((p) => String(p.status) === "paid");
-        const collectedTotal = paid.reduce((acc, p) => acc + Number(p.amount ?? 0), 0);
-        const collectedThisMonth = paid.filter((p) => String(p.created_at ?? "") >= monthStart).reduce((acc, p) => acc + Number(p.amount ?? 0), 0);
-        const outstanding = payments.filter((p) => String(p.status) === "pending").reduce((acc, p) => acc + Number(p.amount ?? 0), 0);
-        const currency = String(paid[0]?.currency ?? payments[0]?.currency ?? "UZS");
-        return { currency, collected_total: collectedTotal, collected_this_month: collectedThisMonth, outstanding, paid_count: paid.length };
-      })()
-      : null;
+    const failedDashboard=[contactsRes,classroomsRes,paymentsRes,membersRes,subsRes,attRes,asgnRes].find(result=>result.error);
+    if(failedDashboard)return json(503,{error:'Unable to load the scoped dashboard. Refresh this workspace.'});
+    const revenueByCurrency=canSeeFinance?[...new Set(payments.map(payment=>String(payment.currency)))].sort().map(currency=>{
+      const rows=payments.filter(payment=>payment.currency===currency),paid=rows.filter(payment=>payment.status==='paid');
+      return {currency,collected_total:paid.reduce((n,p)=>n+Number(p.amount??0),0),collected_this_month:paid.filter(p=>String(p.created_at??'')>=monthStart).reduce((n,p)=>n+Number(p.amount??0),0),outstanding:rows.filter(p=>p.status==='pending').reduce((n,p)=>n+Number(p.amount??0),0),paid_count:paid.length};
+    }):[];
+    const revenue=revenueByCurrency.length===1?revenueByCurrency[0]:null;
 
     // Enrollment funnel
     const funnel = { trial: 0, active: 0, paused: 0, inactive: 0 } as Record<string, number>;
@@ -3493,7 +3493,7 @@ const handleReadAction = async (
     const centerVoucherHeatmaps = await loadAcademyCenterVoucherHeatmaps(sb, academyId, centerTenantId, classroomIds);
 
     return json(200, {
-      revenue,
+      revenue,revenue_by_currency:revenueByCurrency,
       funnel,
       total_students: contacts.length,
       total_classrooms: classrooms.length,
@@ -4355,6 +4355,7 @@ const ensureDefaultAutomationRules = async (
   academyId: string,
   userId: string | null = null,
 ): Promise<void> => {
+  if((sb as SupabaseClientLike & {academyLegacyReadBoundary?:boolean}).academyLegacyReadBoundary)return;
   const rows = defaultAutomationRules.map((rule) => ({
     academy_id: academyId,
     rule_key: rule.rule_key,
@@ -4383,7 +4384,8 @@ const loadEducationAutomationRules = async (
     .eq("academy_id", academyId)
     .order("created_at", { ascending: true });
   if (error) throw new Error(`Failed to load automation rules: ${error.message}`);
-  return (data ?? []) as Array<Record<string, unknown>>;
+  const rules=(data??[]) as Array<Record<string,unknown>>;
+  return rules.length?rules:defaultAutomationRules.map(rule=>({...rule,academy_id:academyId,is_active:true,metadata:{system_default:true}}));
 };
 
 const ruleIsActive = (rules: Array<Record<string, unknown>>, key: string): boolean => {
@@ -6588,7 +6590,7 @@ export const __academyAccessTest = {
   academyAccessHas,
 };
 
-export const handleAcademyRequest = async (req: Request): Promise<Response> => {
+const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: () => Promise<void>) => void): Promise<Response> => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
@@ -6596,7 +6598,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
     const anonKey = getEnv("SUPABASE_ANON_KEY");
     const serviceRole = getEnv("SUPABASE_SERVICE_ROLE_KEY");
 
-    const sb = createClient(supabaseUrl, serviceRole, { auth: { persistSession: false } });
+    let sb = createClient(supabaseUrl, serviceRole, { auth: { persistSession: false } });
 
     // Public verification is token-addressed and opt-in. Never expose private report notes,
     // contacts, tokens for other certificates, or the reason for an investigation.
@@ -6874,7 +6876,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
       return json(200,await writeGuardianPortal(sb,userId,requestedAction,body as Record<string,unknown>,rawActionBody==='guardian_portal_write_command'));
     }
 
-    const memberships = await loadMemberships(sb, userId, userEmail);
+    let memberships = await loadMemberships(sb, userId, userEmail);
 
     if (studentImportActions.has(requestedAction)) {
       if (req.method !== "POST") return json(405,{error:"Use POST for student imports."});
@@ -7642,6 +7644,41 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
         return json(200, { ok: true, academy_id: contactAcademyId });
       }
       return json(404, { error: "Referral code not found in your academy" });
+    }
+
+    // These are the existing office handlers. Learner, parent, import and
+    // Assessment paths above retain their separate current-authority commands.
+    const officeAcademy = normalizeText(req.method === 'POST' ? body?.academy_id : url.searchParams.get('academy_id'),64);
+    const expectedActor = normalizeText(req.method === 'POST' ? body?._expected_actor : url.searchParams.get('_expected_actor'),64);
+    if(expectedActor && expectedActor !== userId) return json(403,{error:'Your account changed. Reopen this page.'});
+    const selectedBranch = (req.method === 'POST' ? body?._scope_branch_id : null) ?? url.searchParams.get('_scope_branch_id');
+    if(body)delete (body as Record<string,unknown>)._scope_branch_id;
+    const branchHeaders:Record<string,string> = selectedBranch ? {
+      'x-schood-scope-academy':officeAcademy,'x-schood-scope-actor':userId,
+      'x-schood-scope-branch':String(selectedBranch),'x-schood-scope-mode':req.method==='POST'?'write':'read',
+    } : {};
+    const makeOfficeClient = (headers:Record<string,string>) => createClient(supabaseUrl,serviceRole,{auth:{persistSession:false},global:{headers}});
+    if(requestedAction === 'branch_contexts') {
+      if(!officeAcademy) return json(400,{error:'academy_id is required'});
+      const access=requireAcademyAccess(memberships,officeAcademy);
+      const {data,error}=await sb.rpc('academy_branch_contexts',{p_academy:officeAcademy,p_actor:userId});
+      if(error) return json(error.code==='42501'?403:503,{error:'Unable to load permitted branches.'});
+      const result=data as {authorities:Record<string,unknown>[];branches:Array<Record<string,unknown>&{authorities:Record<string,unknown>[]}>};
+      const profile=(entries:Record<string,unknown>[])=>currentAcademyAccessProfile({...access,authority_entries:entries.map(entry=>({...entry,source:'grant',tenant_id:officeAcademy,status:'active'} as MembershipRow)),role:entries.slice().sort((a,b)=>academyRoleRank(String(b.role))-academyRoleRank(String(a.role)))[0]?.role as string ?? access.role});
+      return json(200,{actor_id:userId,academy_id:officeAcademy,access:profile(result.authorities),branches:result.branches.map(branch=>({id:branch.id,name:branch.name,currency:branch.currency,access:profile(branch.authorities)}))});
+    }
+    const privateOfficeAction = gradingActions.has(requestedAction)||operationalActions.has(requestedAction)||financeActions.has(requestedAction)||staffAccessActions.has(requestedAction)
+      ||staffGuardianActions.has(requestedAction)||['create_import_job','add_import_row','commit_import_job','rollback_import_job','teacher_retention','create_access_invitation','resend_access_invitation','revoke_access_invitation'].includes(requestedAction);
+    const legacyMode = legacyActionMode(requestedAction);
+    if(legacyMode && !privateOfficeAction) {
+      const academy=resolveAcademyId(memberships,officeAcademy||null);
+      const original=requireAcademyAccess(memberships,academy);
+      const boundary=await openLegacyBoundary(makeOfficeClient,{academy,actor:userId,action:requestedAction,mode:legacyMode,branch:selectedBranch,classroom:body?.classroom_id ?? url.searchParams.get('classroom_id')});
+      sb=boundary.db;
+      memberships=memberships.map(row=>row.tenant_id===academy?boundary.membership(original):row);
+      setBoundaryCheck(boundary.verifyCurrent);
+    } else if(selectedBranch && officeAcademy) {
+      sb=makeOfficeClient(branchHeaders);
     }
 
     // A signed-in user must be able to create their first academy before any
@@ -11318,6 +11355,7 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
 
     return json(404, { error: "Not found" });
   } catch (err) {
+    if(err instanceof LegacyBoundaryError)return json(err.status,{error:err.message});
     if(err instanceof GuardianPortalError)return json(err.status,{error:err.message,retryable:err.retryable});
     if(err instanceof LearnerInvitationError)return json(err.status,{error:err.message,retryable:err.retryable});
     if(err instanceof LegacyImportCommandError)return json(err.status,{error:err.message,retryable:err.retryable});
@@ -11339,6 +11377,17 @@ export const handleAcademyRequest = async (req: Request): Promise<Response> => {
 
 };
 
+export const handleAcademyRequest = async (req:Request):Promise<Response> => {
+  let verify:(()=>Promise<void>)|undefined;
+  try {
+    const response=await handleAcademyRequestCore(req,check=>{verify=check;});
+    if(response.ok && verify) await verify();
+    return response;
+  } catch(error) {
+    if(error instanceof LegacyBoundaryError)return json(error.status,{error:error.message});
+    throw error;
+  }
+};
 export const academyHandler = handleAcademyRequest;
 
 if (import.meta.main) {

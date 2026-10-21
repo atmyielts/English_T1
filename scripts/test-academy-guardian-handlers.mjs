@@ -15,7 +15,7 @@ const source=readFileSync(overrideIndex<0?'supabase/functions/academy/index.ts':
 const slice=(start,end)=>{const a=source.indexOf(start),b=source.indexOf(end,a);assert.ok(a>=0&&b>a);return source.slice(a,b);};
 const decoder=slice('    const rawActionBody =',source.includes('    if(audioActions.has')?'    if(audioActions.has':'    if (requestedAction === "invitation_status")');
 const reads=slice('    if (requestedAction === "guardian_claim_link"','    if (requestedAction === "guardian_update_preferences"');
-const writes=slice('    if (requestedAction === "guardian_update_preferences"','    const memberships = await loadMemberships');
+const writes=slice('    if (requestedAction === "guardian_update_preferences"',source.includes('    let memberships = await loadMemberships')?'    let memberships = await loadMemberships':'    const memberships = await loadMemberships');
 const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;const actor=id(1),academy=id(2),guardian=id(3),relationship=id(4);
 const code=transformSync('async function dispatch(sb,body){const userId="'+actor+'",req={method:"POST"},url=new URL("https://owned.invalid"),actionQuery="";'+decoder+reads+writes+'}',{loader:'ts',target:'es2022'}).code;
 const dispatch=runInNewContext(code+';dispatch',{...globals,...service,json:(status,body)=>({status,body}),normalizeText:(v,n=300)=>String(v??'').trim().slice(0,n),getOptionalEnv:()=> 'owned-parent-handler-bot'});
