@@ -233,6 +233,16 @@ verify_jwt = false
 [functions.academy]
 verify_jwt = false
 
+# Assessment Cloud validates ES256 user sessions inside its request handler.
+[functions.assessment-cloud]
+verify_jwt = false
+
+[functions.proctor]
+verify_jwt = false
+
+[functions.assessment-runtime]
+verify_jwt = false
+
 # CLICK Shop API callbacks do not carry Supabase JWTs. The click function
 # validates CLICK's service, signature, order, amount, and transaction state.
 [functions.click]
