@@ -94,9 +94,9 @@ Baseline: local released snapshots, cohort distributions and raw item diagnostic
 
 - [ ] `STAT-01` Add materialized/background reporting and protected report exports. Complete when report snapshots are reproducible, cancellable/recoverable and bounded for large cohorts.
 - [ ] `STAT-02` Add topic/longitudinal comparisons and historical attribution. Complete when revisions, mixed forms, repeated candidates and historical membership are handled without misleading merged cohorts.
-- [ ] `STAT-03` Implement CTT uncertainty and small-sample/assumption warnings. Complete when known datasets validate each metric and undefined/unreliable estimates are not presented as precise values.
-- [ ] `STAT-04` Implement calibrated IRT/equating/standard-setting datasets and workflows. Complete when model fit, versioning, uncertainty and comparable-score validation are documented and independently reviewed.
-- [ ] `STAT-05` Add DIF/fairness analysis and controlled disclosure. Complete when approved reference datasets validate subgroup diagnostics while privacy thresholds and access policy prevent identification or unsupported bias claims.
+- [ ] `STAT-03` Implement CTT uncertainty and small-sample/assumption warnings. Complete when known datasets validate each metric and undefined/unreliable estimates are not presented as precise values. *Progress 2026-10-22: tested uncertainty core (Feldt, SEM, Wilson, Fisher z) with explicit warnings. Open: report/UI wiring. See [MEASUREMENT.md](MEASUREMENT.md).*
+- [ ] `STAT-04` Implement calibrated IRT/equating/standard-setting datasets and workflows. Complete when model fit, versioning, uncertainty and comparable-score validation are documented and independently reviewed. *Progress 2026-10-22: Rasch JMLE calibration core with seeded recovery validation. Open: datasets, workflow, review.*
+- [ ] `STAT-05` Add DIF/fairness analysis and controlled disclosure. Complete when approved reference datasets validate subgroup diagnostics while privacy thresholds and access policy prevent identification or unsupported bias claims. *Progress 2026-10-22: Mantel–Haenszel DIF core with ETS classes and a privacy minimum. Open: approved subgroup policy and UI.*
 
 ## RESULT — Results, credentials and appeals
 
@@ -204,18 +204,18 @@ Baseline: decision bounds exist; integrity models and similarity analysis remain
 Baseline: base scoped commands/reads and partial QTI workflow exist. Dependencies: TEN-01, IMPORT, SEC, OPS, BILL. References: [API](API.md), [Proctor API](PROCTOR_API.md), [QTI control plane](QTI_CONTROL_PLANE.md).
 
 - [ ] `ENT-01` Complete resource APIs, stable paging, error contracts and versioned compatibility. Complete when SDK/contract tests cover scoped reads/writes, concurrency, limits and deprecation without direct-database bypass.
-- [ ] `ENT-02` Implement scoped OAuth/service accounts and institution SSO. Complete when provisioning, revocation, key rotation, account matching and tenant isolation pass real provider/institution flows.
+- [ ] `ENT-02` Implement scoped OAuth/service accounts and institution SSO. Complete when provisioning, revocation, key rotation, account matching and tenant isolation pass real provider/institution flows. *Progress 2026-10-22: scoped service accounts, hashed secrets/tokens, rotation, revocation, creator-authority binding and integration audit; v1 registrations/results/events. Open: SSO, staff UI, provider flows. See [INTEGRATIONS.md](INTEGRATIONS.md).*
 - [ ] `ENT-03` Implement OneRoster and complete QTI standards fidelity/conformance. Complete when real authorized institutions exchange datasets/packages and mapping/unsupported-field diagnostics preserve ownership and meaning.
-- [ ] `ENT-04` Implement signed webhooks, delivery history, retry/backoff and DLQ replay. Complete when consumers verify signatures/rotation, duplicate and out-of-order events reconcile, and secrets/foreign payloads never leak.
+- [ ] `ENT-04` Implement signed webhooks, delivery history, retry/backoff and DLQ replay. Complete when consumers verify signatures/rotation, duplicate and out-of-order events reconcile, and secrets/foreign payloads never leak. *Progress 2026-10-22: thin signed events, encrypted secrets, rotation overlap, leased delivery, backoff, dead letter and replay; delivery Worker. Open: staff UI and real consumer delivery on staging.*
 
 ## BILL — Product entitlements and billing
 
 Baseline: pending separate product grants, quotas and metering; the ledger identifies existing Click integration to reuse through an explicit boundary. Dependencies: TEN, OPS, SEC; do not move assessment behavior into the mother platform.
 
-- [ ] `BILL-01` Implement independently purchasable Assessment/Proctor plans and effective entitlement history. Complete when standalone/combined institution access is enforced on server admission and provider data planes, not only hidden buttons.
-- [ ] `BILL-02` Implement bounded quota reservation and immutable usage ledger/reconciliation. Complete when retries, simultaneous starts, failed technical preparation and uncertain provider outcomes cannot overcharge or exceed approved quota.
-- [ ] `BILL-03` Integrate approved Click settlement, credits/refunds and invoices. Complete when authenticated callbacks, exact monetary arithmetic, idempotent reconciliation and partial/unknown settlements pass without changing another product's billing.
-- [ ] `BILL-04` Add institution usage/billing views and support adjustments. Complete when explainable per-exam/recording usage matches receipts/invoices and every adjustment has explicit authority and an audit trail.
+- [ ] `BILL-01` Implement independently purchasable Assessment/Proctor plans and effective entitlement history. Complete when standalone/combined institution access is enforced on server admission and provider data planes, not only hidden buttons. *Progress 2026-10-22: tenant entitlement read from the existing Click plan fulfilment; sitting/start admission enforced when support enables it (default off). Open: media/recording/coordinator data planes. See [BILLING.md](BILLING.md).*
+- [x] `BILL-02` Implement bounded quota reservation and immutable usage ledger/reconciliation. Complete when retries, simultaneous starts, failed technical preparation and uncertain provider outcomes cannot overcharge or exceed approved quota. *Local evidence 2026-10-22: attempt-keyed ledger (reserve at start, consume at finish), quota under a per-tenant lock; SQL tests and a four-process quota race with a lock-removal mutation check. Hosted reconciliation remains under OPS/LOAD.*
+- [ ] `BILL-03` Integrate approved Click settlement, credits/refunds and invoices. Complete when authenticated callbacks, exact monetary arithmetic, idempotent reconciliation and partial/unknown settlements pass without changing another product's billing. *Progress 2026-10-22: Click checkout restricts institution-service products to tenant owners/admins (payments suite passes). Open: Click test-mode journey, credits/refunds/invoices; live settlement blocked on static-IP egress.*
+- [ ] `BILL-04` Add institution usage/billing views and support adjustments. Complete when explainable per-exam/recording usage matches receipts/invoices and every adjustment has explicit authority and an audit trail. *Progress 2026-10-22: summary/adjustment/enforcement APIs with audited support authority. Open: institution and support screens.*
 
 ## OPS — Environments, CI, deployment and recovery
 
@@ -242,7 +242,7 @@ Baseline: many local authority/encryption guards exist; full legal/external-secu
 
 Baseline: separate mother-design package, matching fonts/licenses and responsive/keyboard checks exist; full localization/manual accessibility is unfinished. Dependencies: every user-facing workstream.
 
-- [ ] `UX-01` Complete Uzbek/Russian/English across all roles, errors, mail, exports and operational states. Complete when locale/format/fallback reviews cover actual workflows, not only primary navigation or certificates.
+- [ ] `UX-01` Complete Uzbek/Russian/English across all roles, errors, mail, exports and operational states. Complete when locale/format/fallback reviews cover actual workflows, not only primary navigation or certificates. *Progress 2026-10-22: Assessment Cloud and Exam UI in uz/ru/en with typed catalogs and code-based error text. Open: native review, Proctor, mail/exports/core validation text, lazy loading. See [LOCALIZATION.md](LOCALIZATION.md).*
 - [ ] `UX-02` Complete institution branding within the shared mother design. Complete when authorized branding, readable contrast/font fallback and consistent controls work without importing mother routing/auth/business modules.
 - [ ] `UX-03` Complete manual WCAG 2.2 AA/screen-reader/keyboard review. Complete when every question/control/dialog/timer/recovery state is operable, with transcripts/captions/alternatives and approved accommodation behavior.
 - [ ] `UX-04` Complete desktop/tablet/mobile and shared-device failure UX. Complete when realistic content, narrow widths, loading/empty/error/permission changes and recovery explain the user's actual state without claiming unsynced work is safe remotely.

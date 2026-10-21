@@ -29,6 +29,10 @@ No full-service ledger row is closed. Nothing in these documents authorizes a de
 - Assessment outcomes: [analytics](ANALYTICS.md), [feedback](FEEDBACK.md), [appeals](APPEALS.md), [certificates](CERTIFICATES.md), [certificate documents](CERTIFICATE_DOCUMENTS.md), [credential lifecycle](CERTIFICATE_LIFECYCLE.md).
 - Proctoring: [capture launch](CAPTURE_LAUNCH.md), [recordings](RECORDINGS.md), [live monitoring](LIVE_MONITORING.md), [institution monitoring board](PROCTOR_WORKLOAD.md).
 - Institution access: [membership](MEMBERSHIP.md), [invitations](INVITATIONS.md), [invitation mail](INVITATION_MAIL.md).
+- Commercial and integration: [billing and usage](BILLING.md), [webhooks and API clients](INTEGRATIONS.md).
+- Cross-cutting: [accommodations](ACCOMMODATIONS.md), [localization](LOCALIZATION.md), [measurement cores](MEASUREMENT.md).
+
+Proctor product work is **paused by the owner (2026-10-22)**; its existing code is kept building and tested, but Proctor-only backlog rows are not being advanced.
 
 ## Updating these records
 
