@@ -1,3 +1,4 @@
+import {captureWorkspaceBranch} from './branchScope';
 import {supabase} from './supabase';
 
 export class StaffRequestError extends Error {
@@ -52,6 +53,8 @@ export async function staffRequest<T>(academyId:string,action:string,payload:Rec
  if(expectedActor==='')throw new StaffRequestError('Sign in again to continue.',401);
  const initial=await sessionFor(expectedActor),actor=initial.user.id;
  if(financeActions.has(action))restoreFinance(academyId,actor);
+ const previousScope=financeActions.has(action)?financeReplays.get(financeSlot(academyId,actor)):undefined;
+ payload=previousScope?(Object.hasOwn(previousScope.payload,'_scope_branch_id')?{...payload,_scope_branch_id:previousScope.payload._scope_branch_id}:payload):captureWorkspaceBranch(payload,academyId,actor);
  const identity=JSON.stringify([actor,academyId,action,payload]);
  const requestKey=typeof payload.idempotency_key==='string'?payload.idempotency_key:(financeActions.has(action)?financeReplays.get(financeSlot(academyId,actor))?.payload.idempotency_key as string|undefined:undefined)??pending.get(identity)??crypto.randomUUID();
  pending.set(identity,requestKey);
@@ -60,8 +63,8 @@ export async function staffRequest<T>(academyId:string,action:string,payload:Rec
   deliveryToken=tokens.get(identity)??[...crypto.getRandomValues(new Uint8Array(32))].map(byte=>byte.toString(16).padStart(2,'0')).join('');
   tokens.set(identity,deliveryToken);
  }
- const body=JSON.stringify(Object.fromEntries(Object.entries({...payload,action:financeReads.has(action)?'finance_read_command':financeActions.has(action)?'finance_command':guardianActions.has(action)?'staff_guardian_command':action==='guardian_claim_link'?'guardian_link_command':portalReadActions.has(action)?'guardian_portal_read_command':linkActions.has(action)?'invitation_link_command':importActions.has(action)?'legacy_import_command':invitationActions.has(action)?'access_invitation_command':'staff_access_command',command:action,
-  academy_id:academyId,idempotency_key:requestKey,...(deliveryToken?{_delivery_token:deliveryToken}:{})}).sort(([a],[b])=>a.localeCompare(b))));
+ const body=JSON.stringify(Object.fromEntries(Object.entries({...Object.fromEntries(Object.entries(payload).filter(([key])=>key!=='_scope_branch_id')),action:financeReads.has(action)?'finance_read_command':financeActions.has(action)?'finance_command':guardianActions.has(action)?'staff_guardian_command':action==='guardian_claim_link'?'guardian_link_command':portalReadActions.has(action)?'guardian_portal_read_command':linkActions.has(action)?'invitation_link_command':importActions.has(action)?'legacy_import_command':invitationActions.has(action)?'access_invitation_command':'staff_access_command',command:action,
+  academy_id:academyId,_expected_actor:actor,idempotency_key:requestKey,...(deliveryToken?{_delivery_token:deliveryToken}:{})}).sort(([a],[b])=>a.localeCompare(b))));
  const confirmationError=portalReadActions.has(action)?'We could not load your parent portal. Try again.':linkActions.has(action)?'We could not confirm your account link. Open the invitation again.':'We could not confirm this change. Try the same change again.';
  if(new TextEncoder().encode(body).byteLength>65536)throw new StaffRequestError('There is too much information to save at once. Save fewer changes.',413);
  const slot=financeSlot(academyId,actor);
@@ -75,7 +78,7 @@ export async function staffRequest<T>(academyId:string,action:string,payload:Rec
  try{
   const send=async(refresh=false)=>{
    const session=await sessionFor(actor,refresh);
-   return fetch(`${url}/functions/v1/academy`,{method:'POST',headers:{apikey:anon,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body,signal:controller.signal});
+   return fetch(`${url}/functions/v1/academy${payload._scope_branch_id?'?_scope_branch_id='+encodeURIComponent(String(payload._scope_branch_id)):''}`,{method:'POST',headers:{apikey:anon,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body,signal:controller.signal});
   };
   let response=await send();if(response.status===401)response=await send(true);
   const value=await response.json().catch(()=>null);

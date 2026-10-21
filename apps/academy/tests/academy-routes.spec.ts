@@ -6159,3 +6159,27 @@ for (const persona of ['center_admin','accountant'] as const) {
   await expect(types.locator('option[value="credit_adjustment"]')).toHaveCount(1);
  });
 }
+
+
+test('global branch selection reloads the workspace and applies each branch role to requests and the header',async({page})=>{
+  await seedSessionCookie(page,'owner-user');
+  const a='00000000-0000-4000-8000-000000000091',b='00000000-0000-4000-8000-000000000092';
+  const all=productionAccess('owner'),cashier=productionAccess('cashier');
+  const scopes=Object.fromEntries(Object.keys(all.permissions).map(key=>[key,{academy_wide:true,branch_ids:[],classroom_ids:[],student_ids:[]}]));
+  const full={...all,capability_scopes:scopes};
+  const narrow={...cashier,scope:'assigned_branches',branch_ids:[a],capability_scopes:Object.fromEntries(Object.keys(cashier.permissions).map(key=>[key,{academy_wide:false,branch_ids:[a],classroom_ids:[],student_ids:[]}]))};
+  const requests:Array<{action:unknown;branch:string|null}>=[];
+  await mockAcademyEdge(page,'owner',{respond:async body=>{
+    if(body.action==='academies')return {academies:[{...academy('owner'),access:full}]};
+    if(body.action==='summary')return {academy_id:academyId,access:requests.at(-1)?.branch===a?narrow:full,counts:{contacts:0,classrooms:0,offers:0,active_entitlements:0,open_alerts:0}};
+    if(body.action==='branch_contexts')return {actor_id:'owner-user',academy_id:academyId,access:full,branches:[{id:a,name:'Owned cashier A',access:narrow},{id:b,name:'Owned administrator B',access:full}]};
+  }});
+  await page.route('**/functions/v1/academy*',async route=>{const body=route.request().postDataJSON();requests.push({action:body?.action,branch:new URL(route.request().url()).searchParams.get('_scope_branch_id')});return route.fallback();});
+  await page.goto('/academy/admin?academy_id='+academyId);
+  const selector=page.getByRole('combobox',{name:'Branch',exact:true});await expect(selector).toBeVisible();
+  await Promise.all([page.waitForEvent('load'),selector.selectOption(a)]);
+  await expect(selector).toHaveValue(a);await expect(page.locator('.ts-topbar')).toContainText('Owned cashier A');
+  await expect(page.getByRole('button',{name:'Payroll',exact:true})).toHaveCount(0);
+  expect(requests.some(row=>row.branch===a)).toBe(true);await expect(page.locator('.error-banner')).toHaveCount(0);
+  await page.setViewportSize({width:390,height:1000});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});

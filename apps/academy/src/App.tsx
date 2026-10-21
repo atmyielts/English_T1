@@ -1,3 +1,5 @@
+import {academyOfficeRequest} from './lib/client';
+import {selectWorkspaceBranch,selectedWorkspaceBranch,setWorkspaceActor} from './lib/branchScope';
 import { formatLocaleDateTime, translate } from './i18n';
 import { FormEvent, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -524,7 +526,7 @@ const officeShellLabel = (
 
 const officeIntentForAccess = (access: TeacherStudioAccessProfile | null | undefined): OfficeRouteIntent => {
   if (isCenterAccess(access)) return 'center';
-  if (isAcademyAdminAccess(access) && hasAccessPermission(access, 'manageAcademy')) return 'admin';
+  if (isAcademyAdminAccess(access) && officeIntentCanEnter(access,'admin')) return 'admin';
   if (isAcademyOperationsAccess(access)) return 'office';
   if (isTeacherWorkspaceAccess(access) && (hasAccessPermission(access, 'viewClassrooms') || hasAccessPermission(access, 'viewEducationOS'))) return 'teacher';
   return 'office';
@@ -1355,12 +1357,25 @@ const App = () => {
     () => teacherDirectoryAcademies.find((academy) => academy.id === academyId) ?? null,
     [teacherDirectoryAcademies, academyId],
   );
+  const [branchContexts,setBranchContexts]=useState<{access:TeacherStudioAccessProfile;branches:Array<{id:string;name:string;access:TeacherStudioAccessProfile}>}|null>(null);
+  const selectedBranch=selectedWorkspaceBranch(academyId,me?.user.id??'');
+  useEffect(()=>{
+    let current=true;setBranchContexts(null);
+    if(!academyId||!me?.user.id||!selectedOfficeAcademy?.access?.capability_scopes)return;
+    void academyOfficeRequest<{actor_id:string;academy_id:string;access:TeacherStudioAccessProfile;branches:Array<{id:string;name:string;access:TeacherStudioAccessProfile}>}>(academyId,'branch_contexts',{})
+      .then(result=>{if(current&&result.actor_id===me.user.id&&result.academy_id===academyId)setBranchContexts(result);}).catch(()=>{if(current)setError('Unable to load permitted branches. Refresh this workspace.');});
+    return()=>{current=false;};
+  },[academyId,me?.user.id,selectedOfficeAcademy?.access?.capability_scopes]);
   const selectedAcademyAccess = useMemo<TeacherStudioAccessProfile | null>(() => {
+    if(branchContexts){
+      if(selectedBranch)return branchContexts.branches.find(branch=>branch.id===selectedBranch)?.access??{...branchContexts.access,permissions:{}};
+      return branchContexts.access;
+    }
     if (selectedOfficeAcademy?.access) return selectedOfficeAcademy.access;
     if (activeMembership) return buildFallbackAccess(activeMembership.role);
     if (summary?.access) return summary.access;
     return null;
-  }, [activeMembership, selectedOfficeAcademy, summary]);
+  }, [activeMembership, selectedOfficeAcademy, summary,branchContexts,selectedBranch]);
   const normalizedPath = useMemo(() => normalizePath(location.pathname), [location.pathname]);
   const officeRouteIntent = useMemo(() => officeRouteIntentFromPath(location.pathname) ?? 'office', [location.pathname]);
   const officeRouteRoot = useMemo(() => isOfficeRouteRoot(location.pathname), [location.pathname]);
@@ -1955,7 +1970,7 @@ const App = () => {
         setState('unauthenticated');
         return;
       }
-      authUserRef.current = sessionData.session.user.id;
+      authUserRef.current = sessionData.session.user.id; setWorkspaceActor(sessionData.session.user.id);
 
       // The service root only dispatches signed-in visitors. Resolve the
       // workspace directly instead of fetching /me on both sides of a redirect.
@@ -2142,7 +2157,7 @@ const App = () => {
       const nextActor = session?.user.id ?? '';
       clearOtherQuizDrafts(nextActor);
       const actorChanged = Boolean(authUserRef.current && nextActor !== authUserRef.current);
-      authUserRef.current = nextActor;
+      authUserRef.current = nextActor; setWorkspaceActor(nextActor);
       if (!session || actorChanged) {
         bootstrapRequestRef.current += 1;
         studentDataRequestRef.current += 1;
@@ -3301,7 +3316,7 @@ const App = () => {
     bootstrapRequestRef.current += 1;
     studentDataRequestRef.current += 1;
     academyDataRequestRef.current += 1;
-    authUserRef.current = '';
+    authUserRef.current = ''; setWorkspaceActor('');
     activateAcademy('');
     await supabase.auth.signOut();
     summaryCacheRef.current.clear();
@@ -5334,7 +5349,7 @@ const App = () => {
               {selectedOfficeAcademy?.name || academyId || '-'} | {translate(accessRoleLabel(selectedAcademyAccess))}
               {selectedAcademyAccess?.scope === 'assigned_classrooms'
                 ? ` | ${translate(selectedAcademyAccess.classroom_ids.length === 1 ? '{count} assigned classroom' : '{count} assigned classrooms', { count: selectedAcademyAccess.classroom_ids.length })}`
-                : ` | ${translate('Academy-wide')}`}
+                : ` | ${selectedBranch ? branchContexts?.branches.find(branch=>branch.id===selectedBranch)?.name ?? translate('Selected branch') : translate(selectedAcademyAccess?.scope === 'academy'?'Academy-wide':'Assigned branches and classrooms')}`}
             </p>
           </div>
           <div className="topbar-actions">
@@ -5353,6 +5368,18 @@ const App = () => {
                 </option>
               ))}
             </select>
+            {branchContexts ? <select className="input academy-select" aria-label={translate('Branch')} value={selectedBranch??''} disabled={busy} onChange={event=>{
+              const branch=event.target.value||null;
+              const access=branch?branchContexts.branches.find(item=>item.id===branch)?.access:branchContexts.access;
+              if(!access)return;
+              selectWorkspaceBranch(academyId,me?.user.id??'',branch);
+              const intent=officeIntentForAccess(access),views=officeViewsForIntent(access,intent);
+              const view=officeView&&views.includes(officeView)?officeView:defaultOfficeViewForIntent(views,intent);
+              window.location.assign(academyScopedPath(academyOfficePath(view,undefined,intent)));
+            }}>
+              <option value="">{translate('All permitted branches')}</option>
+              {branchContexts.branches.map(branch=><option key={branch.id} value={branch.id}>{branch.name}</option>)}
+            </select> : null}
             <LanguageSwitcher inline />
             <UpdatesButton variant="inline" />
             <button className="ghost-btn" type="button" title={translate("Refresh")} onClick={() => void refresh()} disabled={busy}>
@@ -5390,7 +5417,7 @@ const App = () => {
             role={translate(accessRoleLabel(selectedAcademyAccess))}
             scopeLabel={selectedAcademyAccess?.scope === 'assigned_classrooms'
               ? translate(selectedAcademyAccess.classroom_ids.length === 1 ? '{count} assigned classroom' : '{count} assigned classrooms', { count: selectedAcademyAccess.classroom_ids.length })
-              : translate('Academy-wide')}
+              : selectedBranch ? branchContexts?.branches.find(branch=>branch.id===selectedBranch)?.name??translate('Selected branch') : translate(selectedAcademyAccess?.scope==='academy'?'Academy-wide':'Assigned branches and classrooms')}
             summary={summary}
             educationOS={educationOS}
             quickTargets={academyQuickTargets}

@@ -2983,5 +2983,8 @@
   "Payment method": "Способ оплаты",
   "Unable to load financial records. Try again.": "Не удалось загрузить финансовые записи. Повторите попытку.",
   "Refresh the workspace before saving this lesson.": "Обновите рабочую область перед сохранением урока.",
-  "Review attendance and its retry key.": "Проверьте посещаемость и ключ повторного запроса."
+  "Review attendance and its retry key.": "Проверьте посещаемость и ключ повторного запроса.",
+  "Assigned branches and classrooms": "Назначенные филиалы и классы",
+  "Selected branch": "Выбранный филиал",
+  "Unable to load permitted branches. Refresh this workspace.": "Не удалось загрузить доступные филиалы. Обновите рабочую область."
 }

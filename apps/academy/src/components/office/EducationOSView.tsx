@@ -387,7 +387,7 @@ export const EducationOSView = ({
       .catch(error=>{if(current)setLocalError(error instanceof Error?error.message:String(error));});
     return ()=>{current=false;};
   },[academyId,permissions.manageStaff,staffForm.scope_type]);
-  const canUse = useCallback((permission: EducationOSPermission): boolean => permissions[permission] === true, [permissions]);
+  const canUse = useCallback((permission: EducationOSPermission): boolean => permissions[permission] === true && (permission!=='manageAutomation'||!access?.capability_scopes?.manageAutomation||access.capability_scopes.manageAutomation.academy_wide), [permissions,access?.capability_scopes]);
   const modeCanUse = useCallback(
     (permission: EducationOSPermission): boolean => permissionAllowedByMode(mode, permission) && canUse(permission),
     [canUse, mode],
@@ -1208,6 +1208,8 @@ export const EducationOSView = ({
   const canDispatchNotifications = modeCanUse('dispatchNotifications');
   const canResolveActionItems = modeCanUse('resolveActionItems');
   const financeDashboard = canManageFinance ? dashboard?.revenue ?? null : null;
+  const financeRows=canManageFinance?(dashboard?.revenue_by_currency??(financeDashboard?[financeDashboard]:[])):[];
+  const financeTotal=(key:'collected_total'|'collected_this_month'|'outstanding')=>financeRows.length?financeRows.map(row=>row[key].toLocaleString(getLocaleTag())+' '+row.currency).join(' · '):'—';
 
   const allTabs: Array<{ id: EducationOSTab; label: string; visible: boolean }> = [
     { id: 'today', label: 'Today', visible: tabAvailable('today') },
@@ -1522,15 +1524,15 @@ export const EducationOSView = ({
             <section className="stats-grid">
               <article className="stat-card">
                 <span>{translate("Collected total")}</span>
-                <strong>{financeDashboard ? `${financeDashboard.collected_total.toLocaleString(getLocaleTag())} ${financeDashboard.currency}` : '-'}</strong>
+                <strong>{financeTotal('collected_total')}</strong>
               </article>
               <article className="stat-card">
                 <span>{translate("This month")}</span>
-                <strong>{financeDashboard ? `${financeDashboard.collected_this_month.toLocaleString(getLocaleTag())} ${financeDashboard.currency}` : '-'}</strong>
+                <strong>{financeTotal('collected_this_month')}</strong>
               </article>
               <article className="stat-card">
                 <span>{translate("Outstanding")}</span>
-                <strong>{financeDashboard ? `${financeDashboard.outstanding.toLocaleString(getLocaleTag())} ${financeDashboard.currency}` : '-'}</strong>
+                <strong>{financeTotal('outstanding')}</strong>
               </article>
               <article className="stat-card">
                 <span>{translate("Students")}</span>
