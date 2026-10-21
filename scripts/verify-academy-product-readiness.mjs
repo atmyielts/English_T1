@@ -182,7 +182,7 @@ const hasReadAction = (action) => dispatchedReads.has(action);
 const hasStudentAction = (action) =>
   new RegExp(`requestedAction\\s*===\\s*"${action}"`).test(academyEdge);
 
-const dispatchedWrites=academyDispatchedWriteActions(academyEdge,{'./staff-guardian-command.ts':read('supabase/functions/academy/staff-guardian-command.ts'),'./operational-command.ts':read('supabase/functions/academy/operational-command.ts')});
+const dispatchedWrites=academyDispatchedWriteActions(academyEdge,{'./staff-guardian-command.ts':read('supabase/functions/academy/staff-guardian-command.ts'),'./operational-command.ts':read('supabase/functions/academy/operational-command.ts'),'./grading-command.ts':read('supabase/functions/academy/grading-command.ts')});
 const hasWriteAction = action=>dispatchedWrites.has(action);
 
 const hasClientAction = (action) =>
@@ -699,7 +699,11 @@ for (const action of auditActions) {
   const atomicAssignmentAudit = action === 'assignment.submitted'
     && academyEdge.includes('sb.rpc("academy_assignment_written_command",')
     && /insert into public\.academy_audit_events[^;]+'assignment\.submitted'/.test(assignmentCommands);
-  addCheck(`Academy Edge emits audit action: ${action}`, academyEdge.includes(action)||atomicStaffAudit||atomicAssignmentAudit);
+  const gradingCommands=read('supabase/migrations/20261021003000_academy_current_attempt_grading.sql');
+  const atomicGradingAudit=action==='submission.graded'&&academyEdge.includes('await runGradingCommand(sb,academyId,userId,actionBody,body')
+    &&read('supabase/functions/academy/grading-command.ts').includes("db.rpc('academy_grading_command'")
+    &&/insert into public\.academy_audit_events[^;]+'submission\.graded'/.test(gradingCommands);
+  addCheck(`Academy Edge emits audit action: ${action}`, academyEdge.includes(action)||atomicStaffAudit||atomicAssignmentAudit||atomicGradingAudit);
 }
 
 const runbookSections = [

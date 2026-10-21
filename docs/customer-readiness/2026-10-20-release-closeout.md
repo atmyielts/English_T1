@@ -1,5 +1,7 @@
 # Academy releases and remaining-work record
 
+Current-attempt grading candidate: staff grading now binds the reviewed learner attempt, submission revision, assignment revision and rubric to current per-resource authority. Student resubmission and staff grading share a database lock; lost replies retain the captured grading intent across reload. Private immutable before/after snapshots, audit and receipts commit together. The captured production schema passed 21 stages with owned-container cleanup ([proof](2026-10-21-current-grading-schema.json)). Installation and published acceptance are pending the protected release workflow; this paragraph is not production proof.
+
 The initial bounded release, PR [248](https://github.com/atmyielts/English_T1/pull/248) is deployed on main `50e63540b6a4ec0318184c7262d538f2bd9083b4`. Academy Edge is v84; all twelve reviewed migrations are installed (210 total). The primary checkout and the other agent's unpublished proctor work were not included. Fourteen unrelated installed backend modules were retained unchanged.
 
 ## Released
@@ -155,6 +157,8 @@ The user explicitly requested continuation through all remaining work. This is a
 intermediate release record, not a stop or a claim that the full audit is complete.
 ## Recording recovery deployed; wallet release in review
 
+**Current verified production (2026-10-21, Tashkent):** PR264, main `bb0b95dfa7e41a3c6a26696cbb6bd5510da081e0`, Academy v94 and 232 migrations. Remaining work is active; this is not an all-service completion claim.
+
 PR [261](https://github.com/atmyielts/English_T1/pull/261) is deployed on main
 `7a5f6d2823d46f08c6327bc81f602a0aa436d31f`, Academy v91, 229 migrations.
 Protected CI 39464053751, post-merge CI 39465308861 and tracked Pages 39465308874
@@ -214,3 +218,9 @@ and signed-in all-service/design/performance acceptance remain active work.
 Main `be183e69f2e6774947c03da877151a070dd57585`, Academy v93 and 231 installed migrations are verified. All 33 bundle modules match readback; 31 previous modules were retained unchanged. Protected CI, tracked Pages and both post-deploy live smoke runs passed. Eleven installed rollback-only command groups passed. The final owned published run passed 46 API/browser checks and 65 cleanup checks, including mixed admin-B/cashier-A refusals, populated legitimate B timetable refresh, teacher grading, student-specific row limits, revocation, and phone/desktop rendering. All four QA accounts are closed and the institution archived; no customer records or provider payments/messages changed. Earlier fixture/selector failures are retained separately and are not added to the successful totals.
 
 Evidence: `2026-10-20-operational-read-production.json`. Other legacy reads/writes, the misleading Academy-wide header, booking write acceptance, all-field large CSV acceptance and all-service signed-in acceptance remain open. Lead/teacher receipt code is being qualified in a separate feature branch; it is not yet installed.
+
+## Lead and web teacher command closeout — PR264
+
+Main `bb0b95dfa7e41a3c6a26696cbb6bd5510da081e0`, Academy v94 and 232 migrations are verified. Protected exact-head CI (same-head retry after a dependency aged past the 24-hour rule), main CI, tracked Pages and both live smokes passed. All 34 source hashes match; 32 installed modules were retained unchanged. Twelve installed rollback-only fixture groups passed. The final owned production run passed 63 checks and 68 cleanup checks. All four QA accounts are closed; the institution is archived and immutable history retained. No customer records, provider messages or real money changed.
+
+Row 4 now has deployed phone/desktop save, duplicate-phone review, actual lost-reply/reload and exact retry evidence. Web teacher attendance is current-assignment-bound, persists absences once, refreshes the dashboard and safely replays; lesson start/finish and homework receipts are atomic. Row 7 still requires the separate Telegram gateway/provider path. A non-main default branch no longer breaks CRM initialization. The next grading repair is a separate, unshipped candidate; other remaining rows and cross-service acceptance continue. Evidence: `2026-10-21-operational-command-production.json`.

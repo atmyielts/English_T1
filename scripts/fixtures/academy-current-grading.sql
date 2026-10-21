@@ -1,0 +1,46 @@
+begin;
+do $fixture$
+declare actor uuid:=gen_random_uuid();teacher uuid:=gen_random_uuid();peer uuid:=gen_random_uuid();academy uuid:=gen_random_uuid();branch uuid:=gen_random_uuid();other_branch uuid:=gen_random_uuid();classroom uuid:=gen_random_uuid();other_class uuid:=gen_random_uuid();child uuid:=gen_random_uuid();other_child uuid:=gen_random_uuid();assignment uuid:=gen_random_uuid();submission uuid:=gen_random_uuid();rubric uuid:=gen_random_uuid();grant_id uuid;payload jsonb;result jsonb;again jsonb;revision timestamptz;assignment_revision timestamptz;
+begin
+ insert into auth.users(id,email,aud,role,email_confirmed_at,raw_app_meta_data,raw_user_meta_data)
+ select id,id||'@example.invalid','authenticated','authenticated',now(),'{"provider":"email","providers":["email"]}','{"full_name":"Owned grading fixture"}' from unnest(array[actor,teacher,peer]) id;
+ insert into public.tenants(id,name,slug,type,created_by) values(academy,'Owned grading Academy',academy::text,'team',actor);
+ insert into public.tenant_memberships(tenant_id,user_id,role,status) values(academy,actor,'owner','active');
+ insert into public.academy_branches(id,academy_id,branch_key,name,timezone,is_default) values(branch,academy,'owned-grading-a','Owned grading A','Asia/Tashkent',true),(other_branch,academy,'owned-grading-b','Owned grading B','Asia/Tashkent',false);
+ insert into public.academy_classrooms(id,academy_id,branch_id,name,created_by) values(classroom,academy,branch,'Owned grading A class',actor),(other_class,academy,other_branch,'Owned grading B class',actor);
+ insert into public.academy_contacts(id,academy_id,primary_branch_id,first_name,status,created_by) values(child,academy,other_branch,'Owned dual-class learner','active',actor),(other_child,academy,branch,'Owned second learner','active',actor);
+ insert into public.academy_classroom_memberships(academy_id,classroom_id,contact_id,role,status) values(academy,classroom,child,'student','active'),(academy,other_class,child,'student','active'),(academy,classroom,other_child,'student','active');
+ insert into public.academy_staff(academy_id,user_id,email,display_name,role,classroom_ids,created_by) values(academy,teacher,teacher||'@example.invalid','Owned grading teacher','teacher',jsonb_build_array(classroom),actor);
+ insert into public.academy_role_grants(academy_id,user_id,email,role,scope_type,scope_ids,status,granted_by) values(academy,peer,peer||'+admin@example.invalid','admin','branches',jsonb_build_array(other_branch),'active',actor),(academy,peer,peer||'+cashier@example.invalid','cashier','branches',jsonb_build_array(branch),'active',actor);
+ insert into public.academy_assignments(id,academy_id,classroom_id,title,status,max_score,attempts_allowed,created_by) values(assignment,academy,classroom,'Owned graded assignment','active',100,3,actor) returning updated_at into assignment_revision;
+ insert into public.academy_submissions(id,academy_id,assignment_id,classroom_id,contact_id,status,attempt_number,submitted_at,submission_content,metadata) values(submission,academy,assignment,classroom,child,'submitted',2,now(),'Owned retained response','{"owned_retained":true}') returning updated_at into revision;
+ payload:=jsonb_build_object('submission_id',submission,'assignment_id',assignment,'contact_id',child,'score',75,'max_score',100,'notes','Owned first grade','expected_attempt_number',2,'expected_updated_at',revision,'expected_assignment_updated_at',assignment_revision);
+ begin perform public.academy_grading_command(academy,peer,'grade_submission',payload,'owned-denied-grade');raise exception 'Other-class membership promoted branch B grading into class A';exception when insufficient_privilege then null;end;
+ result:=public.academy_grading_command(academy,teacher,'grade_submission',payload,'owned-grade');again:=public.academy_grading_command(academy,teacher,'grade_submission',payload,'owned-grade');
+ if result->'submission'->>'score'<>'75' or result->'submission'->>'attempt_number'<>'2' or result->'submission'->>'submission_content'<>'Owned retained response' or again->>'replayed'<>'true' then raise exception 'Grading changed the student attempt or lost its receipt';end if;
+ if(select count(*) from public.academy_audit_events where academy_id=academy and action='submission.graded')<>1 then raise exception 'Grading retry duplicated audit';end if;
+ if(select count(*) from public.academy_grading_events where academy_id=academy)<>1 or not exists(select 1 from public.academy_grading_events where academy_id=academy and before_snapshot->>'submission_content'='Owned retained response' and before_snapshot->>'status'='submitted' and after_snapshot->>'score'='75') then raise exception 'Private grading history lost before/after state or duplicated replay';end if;
+ begin perform public.academy_grading_command(academy,teacher,'grade_submission',payload||'{"score":90}','owned-grade');raise exception 'Changed grade reused a successful request';exception when unique_violation then null;end;
+ update public.academy_submissions set attempt_number=3,status='resubmitted',score=null,graded_at=null,graded_by=null where id=submission;
+ begin perform public.academy_grading_command(academy,teacher,'grade_submission',payload,'owned-stale-attempt');raise exception 'An old screen graded the new attempt';exception when unique_violation then null;end;
+ if(select score is not null or attempt_number<>3 from public.academy_submissions where id=submission) then raise exception 'Rejected stale grade changed the latest work';end if;
+ payload:=jsonb_build_object('assignment_id',assignment,'contact_id',other_child,'score',80,'max_score',100,'expected_attempt_number',0,'expected_assignment_updated_at',assignment_revision);
+ result:=public.academy_grading_command(academy,teacher,'submit_assignment',payload,'owned-manual-grade');again:=public.academy_grading_command(academy,teacher,'submit_assignment',payload,'owned-manual-grade');
+ if result->'submission'->>'score'<>'80' or result->'submission'->>'attempt_number'<>'1' or again->>'replayed'<>'true' then raise exception 'Manual offline grade did not retain one attempt';end if;
+ insert into public.academy_rubrics(id,academy_id,title,criteria,status,created_by) values(rubric,academy,'Owned current rubric','[{"id":"clarity","label":"Clarity","max_points":100}]','active',actor);
+ update public.academy_assignments set rubric_id=rubric where id=assignment returning updated_at into assignment_revision;
+ select updated_at into revision from public.academy_submissions where id=submission;
+ payload:=jsonb_build_object('submission_id',submission,'assignment_id',assignment,'contact_id',child,'score',60,'max_score',100,'expected_attempt_number',3,'expected_updated_at',revision,'expected_assignment_updated_at',assignment_revision,'expected_rubric_criteria','[{"id":"clarity","label":"Clarity","max_points":100}]'::jsonb,'feedback',jsonb_build_object('rubric_id',rubric,'rubric_scores','{"clarity":60}'::jsonb));
+ result:=public.academy_grading_command(academy,teacher,'grade_submission',payload,'owned-rubric-grade');
+ if result->'submission'->'feedback'->'rubric_scores'->>'clarity'<>'60' then raise exception 'Current rubric totals were not applied';end if;
+ begin perform public.academy_grading_command(academy,teacher,'grade_submission',payload||'{"expected_rubric_criteria":[]}','owned-stale-rubric');raise exception 'Stale rubric criteria accepted';exception when unique_violation then null;end;
+ begin perform public.academy_grading_command(academy,teacher,'grade_submission',payload||'{"score":90}','owned-wrong-rubric-total');raise exception 'Invented rubric total accepted';exception when invalid_parameter_value then null;end;
+ insert into public.academy_role_grants(academy_id,user_id,email,role,scope_type,scope_ids,status,granted_by) values(academy,peer,peer||'+student@example.invalid','teacher','students',jsonb_build_array(child),'active',actor) returning id into grant_id;
+ select updated_at into revision from public.academy_submissions where id=submission;payload:=payload||jsonb_build_object('expected_updated_at',revision);
+ perform public.academy_grading_command(academy,peer,'grade_submission',payload,'owned-student-grade');
+ update public.academy_role_grants set status='revoked' where id=grant_id;
+ begin perform public.academy_grading_command(academy,peer,'grade_submission',payload,'owned-student-grade');raise exception 'Revoked student-specific grading receipt returned';exception when insufficient_privilege then null;end;
+ if has_function_privilege('authenticated','public.academy_grading_command(uuid,uuid,text,jsonb,text)','EXECUTE') or has_function_privilege('authenticated','public.academy_grading_context(uuid,uuid,uuid,uuid,uuid)','EXECUTE') or has_table_privilege('authenticated','public.academy_grading_events','SELECT') then raise exception 'Browser can impersonate a grader or read private snapshots';end if;
+end;$fixture$;
+rollback;
+select 'current-grading-captured-schema-ok';

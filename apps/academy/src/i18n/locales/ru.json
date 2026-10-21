@@ -2925,6 +2925,13 @@
   "Only part of this gradebook is loaded. Missing-work counts and averages may be incomplete.": "Загружена только часть журнала. Число несданных работ и средние оценки могут быть неполными.",
   "Quiz attempts needing grading": "Попытки тестов, ожидающие оценки",
   "A saved change still needs confirmation.": "Сохранённое изменение ещё требует подтверждения.",
-  "Confirm the pending inquiry or lesson change before starting another.": "Подтвердите ожидающее изменение заявки или урока, прежде чем начинать новое.",
-  "Lead saved. Another inquiry in this branch uses this phone number; review both before merging.": "Заявка сохранена. В этом филиале есть другая заявка с таким номером телефона. Проверьте обе перед объединением."
+  "Lead saved. Another inquiry in this branch uses this phone number; review both before merging.": "Заявка сохранена. В этом филиале есть другая заявка с таким номером телефона. Проверьте обе перед объединением.",
+  "Refresh the gradebook and review the current submission attempt.": "Обновите журнал оценок и проверьте текущую попытку сдачи работы.",
+  "We could not confirm this grade. Retry the same grading change.": "Не удалось подтвердить оценку. Повторите то же изменение оценки.",
+  "Your current access does not cover this assignment and learner.": "Ваш текущий доступ не распространяется на это задание и ученика.",
+  "The assignment or submission attempt changed. Refresh and review it.": "Задание или попытка сдачи изменились. Обновите данные и проверьте их.",
+  "Review the current score, maximum and rubric criteria.": "Проверьте текущую оценку, максимальный балл и критерии оценивания.",
+  "Review a smaller grading change.": "Отправьте меньше данных для изменения оценки за один раз.",
+  "Choose a valid grading action.": "Выберите допустимое действие с оценкой.",
+  "Confirm the pending change before starting another.": "Подтвердите ожидающее изменение, прежде чем начинать новое."
 }

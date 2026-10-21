@@ -37,7 +37,7 @@ export function QuickLeadDialog({ academyId, actorId, branches, preferredBranchI
   const capture = () => {
     if (disabled) return;
     const restored=pendingOperational(academyId,actorId);
-    if(restored&&restored.command!=='create_lead'){setError(translate('Confirm the pending inquiry or lesson change before starting another.'));setOpen(true);return;}
+    if(restored&&restored.command!=='create_lead'){setError(translate('Confirm the pending change before starting another.'));setOpen(true);return;}
     if(restored){
       const payload=restored.payload as Draft & {idempotency_key:string};
       pending.current=payload;setDraft(payload);setUncertain(true);
