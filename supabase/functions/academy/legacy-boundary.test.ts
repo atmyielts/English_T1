@@ -34,3 +34,12 @@ Deno.test('selected-branch summaries use the current cashier binding instead of 
  assert(profile.role==='cashier'&&profile.scope==='assigned_branches');
  assert((profile.permissions as Record<string,boolean>).manageAcademy===false);
 });
+
+Deno.test('actual database capability refusals remain 403 through chained reads and writes',async()=>{
+ const entry={role:'admin',source:'grant',scope_type:'branches',scope_ids:[academy]},context={academy_id:academy,actor_id:actor,action:'upsert_room',mode:'write',authorities:[entry],entries:[entry]};
+ const denied={then:(resolve:(value:unknown)=>unknown)=>Promise.resolve({data:null,error:{code:'42501'}}).then(resolve),eq(..._args:unknown[]){return this;},select(..._args:unknown[]){return this;}};
+ const boundary=await openLegacyBoundary(()=>({from:(..._args:unknown[])=>({select:(..._args:unknown[])=>denied,update:(..._args:unknown[])=>denied}),rpc:()=>Promise.resolve({data:context,error:null})}),{academy,actor,action:'upsert_room',mode:'write'});
+ for(const query of [()=>boundary.db.from('academy_rooms').update({name:'denied'}).eq('id',academy).select('id'),()=>boundary.db.from('academy_rooms').select('id').eq('id',academy)]){
+  let status=0;try{await query();}catch(error){status=(error as {status:number}).status;}assert(status===403);
+ }
+});

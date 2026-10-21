@@ -1,47 +1,27 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-legacy-branch-current-scope",
+  "releaseId": "academy-legacy-database-refusal-status",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [
-    "academy"
-  ],
-  "migrations": [
-    "20261021010000_academy_legacy_scope_boundary.sql"
-  ],
+  "frontends": [],
+  "migrations": [],
   "edgeFunctions": [
     "academy"
   ],
   "workers": [],
   "sharedEdgeConsumers": [],
-  "requiredSecrets": [
-    "ACADEMY_AUDIO_ENCRYPTION_KEY",
-    "GMAIL_SMTP_APP_PASSWORD",
-    "GMAIL_SMTP_EMAIL",
-    "SITE_URL"
-  ],
+  "requiredSecrets": [],
   "rolloutOrder": [
-    "pages",
-    "migration:20261021010000_academy_legacy_scope_boundary.sql",
-    "secret:ACADEMY_AUDIO_ENCRYPTION_KEY",
-    "secret:GMAIL_SMTP_APP_PASSWORD",
-    "secret:GMAIL_SMTP_EMAIL",
-    "secret:SITE_URL",
     "function:academy"
   ],
   "manualFollowUps": [
-    "After exact-head/main CI and tracked Pages, apply only 20261021010000 using supabase db push --linked --include-all from an isolated 239-entry installed catalogue. The dry run must list exactly this migration. Preserve unrelated Assessment and Proctor migrations and customer records.",
-    "Deploy Academy only with supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel from a fresh installed v97 capture. Apply the reviewed index.ts patch against main 8e5dbd7308cef5a2f5802859eecf1aaeb005f0e6, add the three new legacy runtime modules and preserve every unrelated installed module and source hunk. Retain the existing audio encryption key and all provider configuration. Do not redeploy Telegram or other services.",
-    "Before activation, qualify the exact installed function definitions and all private rollback-only fixtures. Read back every Academy module and the changed authority/directory/resource definitions after activation. Verify owned published branch switches, current mixed capabilities, retained payment branch/currency totals, private joins, revocation, and original pending-action replay; close owned QA accounts with retained audit history.",
-    "Retain existing configuration; no values are added or rotated by this release. Configuration syntax only: supabase secrets set ACADEMY_AUDIO_ENCRYPTION_KEY=<retained-key>; supabase secrets set GMAIL_SMTP_EMAIL=<owned-provider-configuration>; supabase secrets set GMAIL_SMTP_APP_PASSWORD=<owned-provider-configuration>; supabase secrets set SITE_URL=<retained-url>. Missing Academy mail transport remains an external delivery acceptance gate; never install dummy credentials."
+    "After exact-head/main CI and the tracked Pages decision, deploy only Academy using supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel from a fresh v98 source-preserving capture. Apply only the reviewed legacy-boundary.ts patch; retain the other 40 runtime modules, all 240 installed migrations, audio encryption and provider configuration. Read back every module and rerun the denied owned room command plus existing legitimate branch workflows."
   ],
   "verification": [
-    "Native captured-schema and actual isolated PostgREST qualification includes composite tenant joins, private service-role views and current branch selection; browser tokens cannot invoke the boundary. Final local checks and exact-head protected CI are required. No local fixture or mock authentication proves production acceptance.",
-    "Pages exposes the selector only after the backend advertises capability scopes. The selected branch stays out of business payloads and receipt identities, and pending financial/grading/lesson retries retain their original branch. Actual provider delivery/funding remains outside this software proof."
+    "Chained PostgREST read/write capability refusals must remain 403, invalid values 400 and uniqueness/booking conflicts 409. A database refusal must not become a retryable 500 or alter its stored target. Actual owned production acceptance is required after activation."
   ],
   "rollback": {
-    "pages": "Prior tracked Academy publication on main 28fd90946021e6c6c61665ea955795452540a67a.",
-    "edge": "Retain the complete installed Academy v97 capture and unchanged runtime modules. Prefer a reviewed forward repair; coordinate any runtime/Pages rollback so displayed branch selection matches backend enforcement.",
-    "migration": "Additive private views, service-only context and compatibility triggers; no customer backfill or deletion. No-header private commands retain their existing authority. Do not remove current capability checks or immutable payment evidence during recovery."
+    "edge": "Retain the installed v98 source capture. This is response-status normalization only; database capability checks and prior business rows remain intact.",
+    "migration": "No migration or secret change."
   }
 }
