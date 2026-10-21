@@ -1,12 +1,16 @@
 # Requested-work finish checklist
 
-Grading installation/acceptance distinction: PR #265 reached main `3df7e4557f1fd9b3b8d2d4adba763d4500a1e52e`, tracked Pages and main CI passed, and Academy v95 plus migration 20261021003000 were installed. All 35 runtime hashes matched (33 unchanged) and 13 installed rollback-only groups passed. Owned browser verification then exposed missing revision timestamps in the scoped gradebook projection, so the new form refused grading before writing. The failed owned runs closed all accounts and archived their institutions. PR #266 adds the exact scoped-read projection repair, retaining the existing authority/filtering. A new actual scoped-read-to-grade roundtrip passed within all 22 captured-schema stages; published acceptance remains pending. Do not describe the grading release as fully accepted yet.
+Current accepted production state, 2026-10-21: main `b79a3c0a87e62d15dc4c8c87676fd18217cc72ed`, Academy v95, 235 installed migrations. PR [265](https://github.com/atmyielts/English_T1/pull/265) installed current-attempt grading; PR [266](https://github.com/atmyielts/English_T1/pull/266) supplied the scoped-read revision repair and independent refund/discount permissions. Exact-head/main CI, tracked Pages, 14 installed rollback-only fixture groups and post-activation smoke passed. All 35 runtime hashes matched; 33 installed modules were retained and no secrets changed.
 
-Ten-field production import acceptance is complete ([proof](2026-10-21-ten-field-import-production.json)): the published browser imported a real 201-row CSV with all ten mapped fields, resumed after the real first batch committed but its reply was hidden, safely replayed the completed receipt, skipped all 201 duplicates on reimport, and corrected all 1,005 effects with 201 balance reversals and no deletion. All four owned QA accounts closed and the institution was archived; no customer records, collected payments or provider messages were involved. Parents remain unverified. The 4,520ms commit is one sample.
+Published grading acceptance passed **50 checks and 67 cleanup checks**: lost real reply/reload replays one captured grade, private before/after history remains singular, learner work is preserved, an actual new student response rejects stale grading, and current staff/explicit-learner revocation refuses saved receipt replay. Four QA accounts closed. [Grading production proof](2026-10-21-current-grading-production.json).
 
-Independent refund/discount candidate: the database selects refundFinance or discountFinance from the normalized adjustment subtype before all current-scope, receipt-replay and final checks. The UI limits choices using the financial snapshot permissions. Twenty-two complete captured-schema stages passed ([proof](2026-10-21-adjustment-subtypes-schema.json)); protected deployment and owned production acceptance remain pending.
+Published refund/discount acceptance passed **38 checks and 60 cleanup checks**: center administrators cannot refund with generic adjustment access, accountants cannot discount, legitimate forms and exact entries remain usable, mixed branch permissions stay separate, and revocation refuses a successful refund replay even while generic adjustment access remains. Four QA accounts closed. These were internal book entries with no external settlement. [Adjustment production proof](2026-10-21-adjustment-subtypes-production.json).
 
-Current-attempt grading candidate: staff grading now binds the reviewed learner attempt, submission revision, assignment revision and rubric to current per-resource authority. Student resubmission and staff grading share a database lock; lost replies retain the captured grading intent across reload. Private immutable before/after snapshots, audit and receipts commit together. The captured production schema passed 21 stages with owned-container cleanup ([proof](2026-10-21-current-grading-schema.json)). Installation and published acceptance are pending the protected release workflow; this paragraph is not production proof.
+The real **201-row, ten-field CSV** acceptance is complete, including parent names/phones, upload resumption after a hidden committed reply, duplicate skipping and retained correction with 201 balance reversals. No messages or payments were collected. [Import production proof](2026-10-21-ten-field-import-production.json).
+
+The settled **20-surface shared-auth/entry/reload matrix** passed with no JavaScript errors, observed backend 5xx or document overflow. Paid services correctly redirected an unentitled owned account to mother Schood pricing. The QA account closed. This covers entry/guard/reload, not all paid learning workflows or performance at load. [Cross-service production proof](2026-10-21-cross-service-auth-production.json).
+
+Remaining work includes atomic booking acceptance, provider/bot delivery and recording, funded Click renewal, linked cashier collection, remaining legacy branch authority, populated teacher retention and the remaining paid learner/performance/design flows. The operator selected **separate teacher-transfer and academy-departure measures**, excluding pauses and import corrections from dropout totals. This record does not mark the complete checklist finished.
 
 Fixed acceptance scope, 2026-10-14. This records the work already requested;
 it does not add features or replace the original all-service audit objective.
@@ -56,23 +60,22 @@ operational and browser acceptance continues; see the release closeout's current
 
 ## The 12 requested Academy additions
 
-Final deployed acceptance is still open for each row. Close each row with its
-own source/runtime evidence; do not infer twelve completions from one suite.
+Rows 2 and 4 have accepted published software workflows. Other rows retain their deployed evidence and remain open for the specific acceptance listed below. Do not infer twelve completions from one suite.
 
-| # | Requested capability | Required final acceptance |
-|---|---|---|
-| 1 | Visual physical-room timetable | Desktop/mobile occupancy grid; room/teacher/time clashes refused atomically; retry/reload preserves the accepted schedule. |
-| 2 | CSV/Excel bulk import | Real 200+ student file maps all requested fields, assigns memberships, handles duplicates, resumes/retries without duplication and offers retained correction. |
-| 3 | Student wallet and pauses | Exact prepaid/debt ledger, zero-balance alert/freeze policy, audited adjustments and vacation pause without losing paid value. |
-| 4 | Quick walk-in/phone lead | Name/phone/subject/shift entry reaches Lead in a short mobile/desktop flow; duplicate/failure/retry behavior is clear. |
-| 5 | Parent Telegram/SMS notices | Attendance, score and due-payment triggers honor verified recipient/consent/preferences, retain retry-safe delivery evidence and produce a valid payment link. Prove configured provider behavior with owned recipients only. |
-| 6 | Live parent portal | Child-bound attendance/homework/grades/notes and instant Click renewal; foreign child, expired/revoked link and stale payment denied. |
-| 7 | Telegram teacher attendance | Verified teacher selects active assigned class, records absences and submits once; dashboard reflects persisted results; unauthorized/replayed calls are refused or safely replayed. |
-| 8 | Voice/audio submission feedback | Browser/bot recording, cancel/upload/retry/playback, authorized private storage and accessible text context; no lost or cross-student feedback. |
-| 9 | Teacher payroll | Per-lesson, collected-tuition percentage and base-plus-student rules; exact monthly report, valid inputs, approval/payout history and safe recalculation. |
-| 10 | Cashier shifts and handover | Open/collect/close/reconcile across cash/Click/card; exact balances, concurrent/retry safety and preserved discrepancy/handover evidence. |
-| 11 | Multi-branch selector | One-click permitted branch switch scopes every dependent view/action and compares revenue/headcount/performance without mixing tenants or privileges. |
-| 12 | Teacher retention/churn | Correct cohort/period definitions distinguish dropout from pause/transfer/import recovery; populated fixture proves teacher comparisons and empty data stays honest. |
+| # | Requested capability | Required final acceptance | Current status |
+|---|---|---|---|
+| 1 | Visual physical-room timetable | Desktop/mobile occupancy grid; room/teacher/time clashes refused atomically; retry/reload preserves the accepted schedule. | Open: scoped grid accepted; booking clash/reload acceptance remains. |
+| 2 | CSV/Excel bulk import | Real 200+ student file maps all requested fields, assigns memberships, handles duplicates, resumes/retries without duplication and offers retained correction. | Accepted: actual ten-field 201-row file, resume, duplicate skip and correction; see production proof. |
+| 3 | Student wallet and pauses | Exact prepaid/debt ledger, zero-balance alert/freeze policy, audited adjustments and vacation pause without losing paid value. | Software accepted for wallet policy/ledger/vacation; provider funding is separate. |
+| 4 | Quick walk-in/phone lead | Name/phone/subject/shift entry reaches Lead in a short mobile/desktop flow; duplicate/failure/retry behavior is clear. | Accepted: published mobile/desktop quick lead, duplicate hint and lost-response reload/replay (PR264). |
+| 5 | Parent Telegram/SMS notices | Attendance, score and due-payment triggers honor verified recipient/consent/preferences, retain retry-safe delivery evidence and produce a valid payment link. Prove configured provider behavior with owned recipients only. | Open: real owned provider destinations/configuration and delivery. |
+| 6 | Live parent portal | Child-bound attendance/homework/grades/notes and instant Click renewal; foreign child, expired/revoked link and stale payment denied. | Open: portal privacy accepted; real funded Click renewal remains. |
+| 7 | Telegram teacher attendance | Verified teacher selects active assigned class, records absences and submits once; dashboard reflects persisted results; unauthorized/replayed calls are refused or safely replayed. | Open: web teacher commands accepted; separate Telegram gateway/provider remains. |
+| 8 | Voice/audio submission feedback | Browser/bot recording, cancel/upload/retry/playback, authorized private storage and accessible text context; no lost or cross-student feedback. | Open: browser recording/private playback accepted; bot/provider recording remains. |
+| 9 | Teacher payroll | Per-lesson, collected-tuition percentage and base-plus-student rules; exact monthly report, valid inputs, approval/payout history and safe recalculation. | Software rules/report/history accepted; no bank settlement or historical roster reconstruction claimed. |
+| 10 | Cashier shifts and handover | Open/collect/close/reconcile across cash/Click/card; exact balances, concurrent/retry safety and preserved discrepancy/handover evidence. | Open: custody/handover accepted; linked manual student collection remains. |
+| 11 | Multi-branch selector | One-click permitted branch switch scopes every dependent view/action and compares revenue/headcount/performance without mixing tenants or privileges. | Open: scoped financial/room/grade families accepted; remaining legacy reads/writes and header scope remain. |
+| 12 | Teacher retention/churn | Correct cohort/period definitions distinguish dropout from pause/transfer/import recovery; populated fixture proves teacher comparisons and empty data stays honest. | Open: separate teacher transfers and academy departures; pauses/import corrections excluded. |
 
 ## Cross-service and design acceptance
 

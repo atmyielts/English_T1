@@ -1,0 +1,247 @@
+{
+  "recordedAt": "2026-10-21T06:30:49.144Z",
+  "passed": true,
+  "main": "b79a3c0a87e62d15dc4c8c87676fd18217cc72ed",
+  "runtimeReviewedCommit": "8f7c7f34679c62592515f5a95eb9a6777f530f69",
+  "databaseReviewedCommit": "4beb4ce0b551a18c9642abaee3c7af403cd89216",
+  "edgeVersion": 95,
+  "installedMigrations": 235,
+  "runs": {
+    "runtimePR": 265,
+    "runtimeCI": 39551345599,
+    "runtimeMainCI": 39551920832,
+    "runtimePages": 39551920598,
+    "databaseAndFormPR": 266,
+    "ci": 39553779227,
+    "mainCI": 39554391588,
+    "pages": 39554391686,
+    "postActivationSmoke": 39555200523
+  },
+  "sourceReadback": {
+    "recordedAt": "2026-10-21T06:01:38.834Z",
+    "passed": true,
+    "edgeVersion": 95,
+    "matchedModules": 35,
+    "unchangedInstalledModules": 33,
+    "verifyJwt": false,
+    "reviewedCommit": "8f7c7f34679c62592515f5a95eb9a6777f530f69"
+  },
+  "installedRollbackChecks": {
+    "providerMessagesSent": false,
+    "installedMigrations": 235,
+    "customerRowsChanged": false,
+    "checks": [
+      {
+        "file": "scripts/verify-academy-student-import-schema.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-release-commands.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-legacy-import-commands.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-guardian-portal.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-operational-acceptance.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-financial-table-boundary.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-private-audio.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-cash-handover.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-audio-pending-recovery.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-wallet-policy.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-operational-read.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-operational-commands.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-current-grading.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      },
+      {
+        "file": "scripts/fixtures/academy-adjustment-subtypes.sql",
+        "fixtureChangesRolledBack": true,
+        "passed": true
+      }
+    ],
+    "recordedAt": "2026-10-21T06:24:21.4405525Z",
+    "passed": true,
+    "fixtureRowsCommitted": false
+  },
+  "hostedAcceptance": {
+    "recordedAt": "2026-10-21T06:26:42.678Z",
+    "reviewedCommit": "4beb4ce0b551a18c9642abaee3c7af403cd89216",
+    "passed": true,
+    "checks": [
+      "create owned confirmed audio account",
+      "sign in owned audio account",
+      "create owned confirmed audio account",
+      "sign in owned audio account",
+      "create owned confirmed audio account",
+      "sign in owned audio account",
+      "create owned confirmed audio account",
+      "sign in owned audio account",
+      "create owned tenants",
+      "create owned tenant_memberships",
+      "create owned academy_branches",
+      "create owned academy_classrooms",
+      "create owned academy_contacts",
+      "create owned academy_classroom_memberships",
+      "create owned academy_staff",
+      "create owned academy_assignments",
+      "create owned academy_role_grants",
+      "center administrator cannot refund through generic adjustment access",
+      "accountant cannot discount through generic adjustment access",
+      "current center administrator retains legitimate exact discount",
+      "authorized discount replay retains exactly one journal record",
+      "current accountant retains legitimate exact refund book entry",
+      "mixed branch grants do not promote refund permission into center-admin branch",
+      "mixed branch grants do not promote discount permission into accountant branch",
+      "mixed actor can refund its actual accountant branch",
+      "published center-admin choices retain only independently allowed subtype",
+      "published center-admin saves the permitted subtype",
+      "published center-admin form has no document overflow",
+      "published accountant choices retain only independently allowed subtype",
+      "published accountant saves the permitted subtype",
+      "published accountant form has no document overflow",
+      "published branch selector recalculates independent subtype permissions discount",
+      "published branch selector recalculates independent subtype permissions refund",
+      "published financial subtype workspaces have no JavaScript page errors",
+      "revoke owned accountant grant",
+      "create owned academy_role_grants",
+      "refund receipt replay refuses revoked refund permission even when generic adjustment access remains",
+      "owned ledger retains exactly the five successful internal entries"
+    ],
+    "cleanupChecks": [
+      "verify exclusive QA institution before archive",
+      "QA institution contains no foreign members",
+      "archive owned academy_student_guardian_relationships",
+      "archive owned academy_guardians",
+      "archive owned academy_contacts",
+      "archive owned academy_lesson_sessions",
+      "archive owned academy_rooms",
+      "archive owned academy_classroom_memberships",
+      "archive owned academy_subscriptions",
+      "archive owned academy_pricing_plans",
+      "archive owned academy_cashboxes",
+      "archive owned academy_staff",
+      "archive owned academy_role_grants",
+      "verify exclusively owned archive targets academy_classrooms",
+      "archive owned unique academy_classrooms",
+      "archive owned unique academy_classrooms",
+      "verify exclusively owned archive targets academy_branches",
+      "archive owned unique academy_branches",
+      "archive owned unique academy_branches",
+      "remove QA institution login memberships",
+      "archive institution and remove ownership",
+      "verify owned account before closure",
+      "remaining owned tenants are personal",
+      "personal tenant is unshared",
+      "remove owned personal tenant",
+      "retention preflight permits QA account closure",
+      "close owned QA Auth account",
+      "QA account login and identity removed",
+      "verify owned account before closure",
+      "remaining owned tenants are personal",
+      "personal tenant is unshared",
+      "remove owned personal tenant",
+      "retention preflight permits QA account closure",
+      "close owned QA Auth account",
+      "QA account login and identity removed",
+      "verify owned account before closure",
+      "remaining owned tenants are personal",
+      "personal tenant is unshared",
+      "remove owned personal tenant",
+      "retention preflight permits QA account closure",
+      "close owned QA Auth account",
+      "QA account login and identity removed",
+      "verify owned account before closure",
+      "remaining owned tenants are personal",
+      "personal tenant is unshared",
+      "remove owned personal tenant",
+      "retention preflight permits QA account closure",
+      "close owned QA Auth account",
+      "QA account login and identity removed",
+      "read exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "clear exclusively owned QA outbox",
+      "no configured external provider deliveries attempted",
+      "no active QA access: academy_role_grants",
+      "no active QA access: academy_staff",
+      "no active QA access: academy_contacts",
+      "no active QA access: academy_guardians",
+      "no active QA access: academy_student_guardian_relationships"
+    ],
+    "ownedStudentCount": 1,
+    "customerRecordsChanged": false,
+    "externalProviderDeliveriesAttempted": 0,
+    "immutableQaHistoryRetained": true,
+    "allInstitutionalRowsDeleted": false,
+    "cleanupVerified": true
+  },
+  "screenshots": [
+    {
+      "file": "center-admin-390.png",
+      "sha256": "9743881016d52a47cb10edc6205150d4f76c6c9cd069cb4c08fd0798227e57ab"
+    },
+    {
+      "file": "center-admin-1440.png",
+      "sha256": "c0a6557fb8e7675199f21c39c17c6c2bc3b67a820526a79b097cc75c5962ddce"
+    },
+    {
+      "file": "accountant-390.png",
+      "sha256": "9367cd3883971b4a49e6363140ce097b887b1f9bcc95fe0f039c7f5b35e253fc"
+    },
+    {
+      "file": "accountant-1440.png",
+      "sha256": "4e338f2bca6435cd08e49dd22c711f75967a2c6b5fddf0f7612291c1f50e7d88"
+    }
+  ],
+  "secretsChanged": false,
+  "customerRowsChanged": false,
+  "providerDeliveriesAttempted": 0,
+  "limits": [
+    "Only internal owned QA ledger entries were used. No external refund, cash collection, bank settlement or Click funding was performed.",
+    "Final successful hosted run: 38 checks and 60 cleanup checks. Mixed grants, branch form permissions and revoked refund receipt replay were tested."
+  ]
+}
