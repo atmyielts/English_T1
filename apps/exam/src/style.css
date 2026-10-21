@@ -1,0 +1,12 @@
+.exam-workspace .service-header{position:sticky;top:0;z-index:10}
+.exam-workspace main{max-width:1100px;margin:auto;padding:2rem 1.5rem}
+.clock{font-family:Sora,Manrope,sans-serif;font-variant-numeric:tabular-nums;font-size:1.5rem;font-weight:700}
+.exam-workspace .service-header [role=status]{font-size:.75rem;max-width:220px;color:var(--muted)}
+.questions{display:grid;gap:1.5rem}.questions section{display:grid;gap:1rem}
+.questions h2{font-size:1.1rem;line-height:1.7;white-space:pre-wrap}.questions fieldset{margin:0}
+.exam-actions{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin:2rem 0}
+.runtime-status{margin:1rem 0;border:1px solid var(--line);border-radius:1.5rem;background:var(--paper);padding:1.5rem}.runtime-status h2{font-size:1.1rem}.runtime-status p{overflow-wrap:anywhere}
+.results-panel{margin-top:1.5rem}.results-panel button{min-height:44px}
+.score-breakdown{flex-basis:100%;min-width:0;width:100%}.score-breakdown section{min-width:0}.score-breakdown h4{overflow-wrap:anywhere}.score-breakdown summary{cursor:pointer;min-height:44px}.score-breakdown .records>li{display:block}
+.answer-order li{margin-bottom:1rem;overflow-wrap:anywhere}.answer-order li>div{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem}.answer-order button{min-height:44px}
+@media(max-width:650px){.exam-workspace main{padding:1rem}.clock{font-size:1.25rem}.exam-workspace .service-header [role=status]{max-width:170px}}

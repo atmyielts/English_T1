@@ -1,0 +1,48 @@
+.bank-imports {
+  display: grid;
+  gap: 1.5rem;
+  min-width: 0;
+}
+.bank-imports section {
+  min-width: 0;
+}
+.bank-imports fieldset {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+.bank-imports .records > li {
+  display: block;
+}
+.bank-imports .records > li > strong,
+.bank-imports .records > li > span {
+  display: block;
+}
+.bank-imports .records > li > * {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.bank-imports .records > li > button {
+  margin-top: 0.75rem;
+}
+.import-prompt {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.bank-imports details {
+  margin: 0.75rem 0;
+}
+.bank-imports summary {
+  cursor: pointer;
+  min-height: 2.75rem;
+  display: list-item;
+}
+.bank-imports .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+}
+.bank-imports input[type="file"] {
+  max-width: 100%;
+}

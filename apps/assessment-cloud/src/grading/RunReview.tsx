@@ -1,0 +1,14 @@
+import {useEffect,useRef,useState,type FormEvent} from 'react';
+import type {GradeRun} from '../../../../packages/assessment-web/src/grading';
+import {FeedbackReleaseReview} from '../feedback/FeedbackReleaseReview';
+export function RunReview({tenant,actor,run,busy,locked,submit}:{tenant:string;actor:string;run:GradeRun;busy:boolean;locked:boolean;submit:(action:string,data:Record<string,unknown>)=>Promise<boolean>}){
+ const [reviewed,setReviewed]=useState(false),[reason,setReason]=useState('');const heading=useRef<HTMLHeadingElement>(null);
+ useEffect(()=>{heading.current?.focus();setReviewed(false);},[run.id,run.review_hash]);
+ const form=(work:()=>Promise<unknown>)=>(event:FormEvent)=>{event.preventDefault();void work();};
+ return <section className="grading-detail" aria-labelledby="grade-review-heading"><h2 id="grade-review-heading" ref={heading} tabIndex={-1}>Grade review</h2><p className="eyebrow">Generation {run.generation} · {run.status.replaceAll('_',' ')}</p><p className="grade-total">{run.total===null?'Marking is incomplete':`${run.total} / ${run.max_score} points`}</p><div className="grade-table-wrap"><table><caption>Reviewed item scores</caption><thead><tr><th scope="col">Item</th><th scope="col">Score</th><th scope="col">Status</th></tr></thead><tbody>{run.scores.map((row,index)=><tr key={row.item_version_id}><th scope="row">Item {index+1}</th><td>{row.score===null?'Pending':`${row.score} / ${row.max_score}`}</td><td>{row.status.replaceAll('_',' ')}</td></tr>)}</tbody></table></div>
+ {run.can_approve?<form onSubmit={form(()=>submit('grade.approve',{run_id:run.id,review_hash:run.review_hash}))}><label className="check"><input type="checkbox" checked={reviewed} onChange={event=>setReviewed(event.target.checked)} disabled={busy||locked}/>I have reviewed all item scores and moderation decisions.</label><button disabled={busy||locked||!reviewed}>Approve reviewed grade</button></form>:run.status==='ready'&&<p>An independent authorized reviewer must approve this grade.</p>}
+ {run.can_release&&<FeedbackReleaseReview tenant={tenant} actor={actor} runId={run.id} locked={busy||locked} submit={submit}/>}
+ {run.status==='released'&&<p>Results have been released or scheduled for their recorded release time. Later grading generations will not overwrite this history.</p>}
+ {run.can_regrade&&<form onSubmit={form(()=>submit('grade.regrade',{run_id:run.id,reason}))}><h3>Request a new grading generation</h3><label>Regrading reason<textarea required maxLength={5000} rows={3} value={reason} onChange={event=>setReason(event.target.value)} disabled={busy||locked}/></label><p className="hint">The existing approved or released generation remains unchanged. The new generation requires fresh marking and approval.</p><button className="quiet" disabled={busy||locked}>Request regrading</button></form>}
+ </section>;
+}

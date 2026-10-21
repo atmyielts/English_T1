@@ -1,0 +1,43 @@
+.media-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+.media-layout section {
+  min-width: 0;
+}
+.media-records {
+  margin-top: 1rem;
+}
+.media-state {
+  font-weight: 650;
+}
+.media-progress {
+  margin-top: 1rem;
+}
+.media-progress progress {
+  width: 100%;
+  accent-color: var(--ink);
+}
+.media-cancel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.media-cancel p {
+  flex-basis: 100%;
+}
+.media-layout input[type="file"] {
+  padding: 0.75rem;
+  max-width: 100%;
+}
+.media-layout .review-detail p {
+  margin: 0.5rem 0;
+}
+@media (max-width: 1023px) {
+  .media-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
