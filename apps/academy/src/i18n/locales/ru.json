@@ -2981,5 +2981,7 @@
   "Record collection": "Записать принятую оплату",
   "Cash": "Наличные",
   "Payment method": "Способ оплаты",
-  "Unable to load financial records. Try again.": "Не удалось загрузить финансовые записи. Повторите попытку."
+  "Unable to load financial records. Try again.": "Не удалось загрузить финансовые записи. Повторите попытку.",
+  "Refresh the workspace before saving this lesson.": "Обновите рабочую область перед сохранением урока.",
+  "Review attendance and its retry key.": "Проверьте посещаемость и ключ повторного запроса."
 }

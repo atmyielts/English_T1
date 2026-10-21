@@ -1,38 +1,50 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-booking-and-linked-collection",
+  "releaseId": "academy-telegram-current-teacher-commands",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
     "academy"
   ],
   "migrations": [
-    "20261021006000_academy_booking_command_authority.sql",
-    "20261021007000_academy_linked_student_collection.sql"
+    "20261021008000_academy_telegram_attendance_authority.sql"
   ],
   "edgeFunctions": [
-    "academy"
+    "academy-telegram"
   ],
-  "sharedEdgeConsumers": [],
   "workers": [],
-  "requiredSecrets": [],
+  "sharedEdgeConsumers": [],
+  "requiredSecrets": [
+    "ACADEMY_SITE_URL",
+    "ACADEMY_TELEGRAM_BOT_NAME",
+    "ACADEMY_TELEGRAM_BOT_TOKEN",
+    "ACADEMY_TELEGRAM_INTERNAL_SECRET",
+    "ACADEMY_TELEGRAM_WEBHOOK_SECRET",
+    "ACADEMY_TELEGRAM_WORKER_URL"
+  ],
   "rolloutOrder": [
     "pages",
-    "migration:20261021006000_academy_booking_command_authority.sql",
-    "migration:20261021007000_academy_linked_student_collection.sql",
-    "function:academy"
+    "migration:20261021008000_academy_telegram_attendance_authority.sql",
+    "secret:ACADEMY_SITE_URL",
+    "secret:ACADEMY_TELEGRAM_BOT_NAME",
+    "secret:ACADEMY_TELEGRAM_BOT_TOKEN",
+    "secret:ACADEMY_TELEGRAM_INTERNAL_SECRET",
+    "secret:ACADEMY_TELEGRAM_WEBHOOK_SECRET",
+    "secret:ACADEMY_TELEGRAM_WORKER_URL",
+    "function:academy-telegram"
   ],
   "manualFollowUps": [
-    "After protected exact-head/main CI and tracked Pages, use supabase db push --linked --include-all from an isolated 236-entry installed catalogue. Require a dry run listing only these two migrations. Do not install unrelated Assessment or Proctor work.",
-    "Use supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel from a source-preserving v96 capture, changing only the two reviewed command adapters and adding booking-command.ts and collection-command.ts. Preserve the other 34 installed modules and every existing secret; no configuration or rotation is required.",
-    "Read back all runtime and migration hashes, run installed rollback-only fixtures and actual owned published booking clash/lost-reply/reload and linked cashier collection checks. Preserve immutable internal ledger, allocation, shift and audit evidence; close owned accounts and archive the institution. Manual collection cannot forge Click or purchase entitlements."
+    "After exact-head/main CI and tracked Pages, apply only 20261021008000 using supabase db push --linked --include-all from an isolated 238-entry installed migration catalogue. The dry run must list exactly this migration; preserve unrelated Assessment and Proctor work.",
+    "Use supabase functions deploy academy-telegram --project-ref bbjawctnqrufvnesdsel from a fresh source-preserving capture of installed gateway v12. Patch only reviewed gateway hunks, add teacher-command.ts, and retain the verified operational-command.ts, booking-command.ts and legacy-import-command.ts dependencies from installed Academy v97. Existing shared teacher-flow bytes match both functions. Do not redeploy Academy, its grading/audio code or unrelated providers.",
+    "All provider configuration is retained without writes or rotations. Configuration syntax for existing bindings only: supabase secrets set ACADEMY_SITE_URL=<retained-configuration>; supabase secrets set ACADEMY_TELEGRAM_BOT_NAME=<retained-configuration>; supabase secrets set ACADEMY_TELEGRAM_BOT_TOKEN=<retained-configuration>; supabase secrets set ACADEMY_TELEGRAM_INTERNAL_SECRET=<retained-configuration>; supabase secrets set ACADEMY_TELEGRAM_WEBHOOK_SECRET=<retained-configuration>; supabase secrets set ACADEMY_TELEGRAM_WORKER_URL=<retained-configuration>. Never invent credentials or destinations.",
+    "Read back every gateway module and the exact database function body. Run installed rollback-only fixtures plus unauthorized/signed-session refusal checks. Actual Telegram delivery, signed owned Mini App operation and bot voice feedback require an owned linked provider destination; local mocks and shared SQL tests do not establish that external acceptance."
   ],
   "verification": [
-    "Full captured-schema qualification passed 26 stages with owned-container cleanup, including independent room/teacher/class clashes, exact linked payment/ledger/optional allocation/cash movement, over-allocation rollback, rejection of forged Click and payment overflow, duplicate booking serialization and grant expiry during blocked booking/collection receipts. Four adapter and four focused browser checks passed. Complete Edge/browser CI, build/lint, localization, product readiness, verify:prod and release checks remain required."
+    "Full captured-schema qualification passed 28 stages with verified owned-container cleanup, including current assigned teacher/admin attendance, mixed branch denial, revoked receipt refusal, active roster checks, rejection of unbound legacy audit-only receipts and blocked expiry rolling back marks, audit and receipts. Three adapter and three browser-storage tests passed. The mocked Mini App retained attendance/key across reload with fresh provider authentication; complete Edge/browser CI, build/lint, localization, readiness and release checks are required."
   ],
   "rollback": {
-    "pages": "Prior tracked main 2dcdc2b9600450e81dabeed2b62cb876d676eca8.",
-    "edge": "Retain the installed v96 runtime capture and secrets. Forward-repair the changed command adapters or deploy the captured baseline if needed.",
-    "migration": "Additive private commands; retain immutable bookings and financial evidence. Never reset customer records or reverse a real payment without an audited compensating operation."
+    "pages": "Prior tracked Pages main 90f6c804bcfe9ad02ef948e8be67d3dd91a3bbcc.",
+    "edge": "Retain installed gateway v12 capture and all existing bot/webhook bindings for recovery. Academy v97 remains unchanged.",
+    "migration": "Additive private attendance wrapper only. Retain immutable old audit entries and saved attendance. Forward-repair definitions instead of rewriting customer records."
   }
 }

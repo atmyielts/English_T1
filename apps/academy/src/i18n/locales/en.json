@@ -2982,5 +2982,7 @@
   "Record collection": "Record collection",
   "Cash": "Cash",
   "Payment method": "Payment method",
-  "Unable to load financial records. Try again.": "Unable to load financial records. Try again."
+  "Unable to load financial records. Try again.": "Unable to load financial records. Try again.",
+  "Refresh the workspace before saving this lesson.": "Refresh the workspace before saving this lesson.",
+  "Review attendance and its retry key.": "Review attendance and its retry key."
 }

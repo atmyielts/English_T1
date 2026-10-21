@@ -1,0 +1,247 @@
+{
+  "recordedAt": "2026-10-21T09:10:56.032Z",
+  "passed": true,
+  "main": "90f6c804bcfe9ad02ef948e8be67d3dd91a3bbcc",
+  "reviewedCommit": "2c97b04043b3b356cd30b999c7c5ccf43c0ee745",
+  "pr": 270,
+  "edgeVersion": 97,
+  "installedMigrations": 238,
+  "ci": {
+    "reviewedHead": 39568274786,
+    "main": 39569251128,
+    "pages": 39569251231,
+    "automaticProductionSmoke": 39570087256,
+    "postActivationProductionSmoke": 39575071855
+  },
+  "sourceReadback": {
+    "matchedModules": 38,
+    "retainedInstalledModules": 34,
+    "databaseFunctionsMatched": 7,
+    "retainedDatabaseFunctions": 5,
+    "secretsChanged": false
+  },
+  "installedFixtures": [
+    {
+      "file": "scripts/verify-academy-student-import-schema.sql",
+      "fixtureChangesRolledBack": true,
+      "passed": true
+    },
+    {
+      "file": "scripts/fixtures/academy-release-commands.sql",
+      "fixtureChangesRolledBack": true,
+      "passed": true
+    },
+    {
+      "file": "scripts/fixtures/academy-legacy-import-commands.sql",
+      "fixtureChangesRolledBack": true,
+      "passed": true
+    },
+    {
+      "file": "scripts/fixtures/academy-guardian-portal.sql",
+      "fixtureChangesRolledBack": true,
+      "passed": true
+    },
+    {
+      "file": "scripts/fixtures/academy-operational-acceptance.sql",
+      "fixtureChangesRolledBack": true,
+      "passed": true
+    },
+    {
+      "file": "scripts/fixtures/academy-financial-table-boundary.sql",
+      "fixtureChangesRolledBack": true,
+      "passed": true
+    },
+    {
+      "file": "scripts/fixtures/academy-private-audio.sql",
+      "fixtureChangesRolledBack": true,
+      "passed": true
+    },
+    {
+      "file": "scripts/fixtures/academy-cash-handover.sql",
+      "fixtureChangesRolledBack": true,
+      "passed": true
+    },
+    {
+      "file": "scripts/fixtures/academy-audio-pending-recovery.sql",
+      "fixtureChangesRolledBack": true,
+      "passed": true
+    },
+    {
+      "file": "scripts/fixtures/academy-wallet-policy.sql",
+      "fixtureChangesRolledBack": true,
+      "passed": true
+    },
+    {
+      "file": "scripts/fixtures/academy-operational-read.sql",
+      "fixtureChangesRolledBack": true,
+      "passed": true
+    },
+    {
+      "file": "scripts/fixtures/academy-operational-commands.sql",
+      "fixtureChangesRolledBack": true,
+      "passed": true
+    },
+    {
+      "file": "scripts/fixtures/academy-current-grading.sql",
+      "fixtureChangesRolledBack": true,
+      "passed": true
+    },
+    {
+      "file": "scripts/fixtures/academy-adjustment-subtypes.sql",
+      "fixtureChangesRolledBack": true,
+      "passed": true
+    },
+    {
+      "file": "scripts/fixtures/academy-teacher-retention.sql",
+      "fixtureChangesRolledBack": true,
+      "passed": true
+    },
+    {
+      "file": "scripts/fixtures/academy-booking-collection.sql",
+      "fixtureChangesRolledBack": true,
+      "passed": true
+    }
+  ],
+  "hosted": {
+    "checks": [
+      "create owned confirmed audio account",
+      "sign in owned audio account",
+      "create owned confirmed audio account",
+      "sign in owned audio account",
+      "create owned confirmed audio account",
+      "sign in owned audio account",
+      "create owned confirmed audio account",
+      "sign in owned audio account",
+      "create owned tenants",
+      "create owned tenant_memberships",
+      "create owned academy_branches",
+      "create owned academy_classrooms",
+      "create owned academy_classrooms",
+      "create owned academy_rooms",
+      "create owned academy_staff",
+      "create owned academy_contacts",
+      "owned financial setup create_pricing_plan",
+      "owned financial setup create_subscription",
+      "owned financial setup create_charge",
+      "owned financial setup create_cashbox",
+      "owned financial setup open_cashier_shift",
+      "published booking committed before an intentionally lost reply",
+      "published booking reload replays the exact actor body and key",
+      "lost booking reply leaves exactly one real session",
+      "one current-authority booking receipt survives reload",
+      "production atomically refuses room booking clash",
+      "production atomically refuses teacher booking clash",
+      "production atomically refuses class booking clash",
+      "published collection committed before an intentionally lost reply",
+      "published collection reload preserves original exact receipt request",
+      "published collection fits document width 390",
+      "published collection fits document width 1440",
+      "published operational workflows have no JavaScript page errors",
+      "lost collection reply creates exactly one owned paid payment",
+      "one exact linked collection evidence academy_account_ledger_entries",
+      "one exact linked collection evidence academy_payment_allocations",
+      "one exact linked collection evidence academy_cash_movements",
+      "manual card receipt creates internal payment and final charge allocation",
+      "manual collection cannot impersonate funded Click settlement",
+      "over-allocation is refused atomically",
+      "foreign student cannot use another branch collection shift",
+      "rejected collections leave no partial paid records",
+      "cash close counts cash receipts and excludes card from physical cash",
+      "closed shift retains the original captured collection receipt",
+      "create owned academy_role_grants",
+      "mixed manager B and cashier A cannot book branch A",
+      "owned financial setup create_cashbox",
+      "scoped cashier opens legitimate branch A custody",
+      "scoped cashier legitimately collects in its own branch",
+      "scoped cashier closes exact own custody",
+      "revoke exclusively owned cashier grant",
+      "remaining manager B grant cannot replay revoked branch A collection",
+      "browser cannot bypass verified actor through academy_booking_command",
+      "browser cannot bypass verified actor through academy_collect_student_payment"
+    ],
+    "cleanupChecks": [
+      "verify exclusive QA institution before archive",
+      "QA institution contains no foreign members",
+      "archive owned academy_student_guardian_relationships",
+      "archive owned academy_guardians",
+      "archive owned academy_contacts",
+      "archive owned academy_lesson_sessions",
+      "archive owned academy_rooms",
+      "archive owned academy_classroom_memberships",
+      "archive owned academy_subscriptions",
+      "archive owned academy_pricing_plans",
+      "archive owned academy_cashboxes",
+      "archive owned academy_staff",
+      "archive owned academy_role_grants",
+      "verify exclusively owned archive targets academy_classrooms",
+      "archive owned unique academy_classrooms",
+      "archive owned unique academy_classrooms",
+      "archive owned unique academy_classrooms",
+      "verify exclusively owned archive targets academy_branches",
+      "archive owned unique academy_branches",
+      "archive owned unique academy_branches",
+      "remove QA institution login memberships",
+      "archive institution and remove ownership",
+      "verify owned account before closure",
+      "remaining owned tenants are personal",
+      "personal tenant is unshared",
+      "remove owned personal tenant",
+      "retention preflight permits QA account closure",
+      "close owned QA Auth account",
+      "QA account login and identity removed",
+      "verify owned account before closure",
+      "remaining owned tenants are personal",
+      "personal tenant is unshared",
+      "remove owned personal tenant",
+      "retention preflight permits QA account closure",
+      "close owned QA Auth account",
+      "QA account login and identity removed",
+      "verify owned account before closure",
+      "remaining owned tenants are personal",
+      "personal tenant is unshared",
+      "remove owned personal tenant",
+      "retention preflight permits QA account closure",
+      "close owned QA Auth account",
+      "QA account login and identity removed",
+      "verify owned account before closure",
+      "remaining owned tenants are personal",
+      "personal tenant is unshared",
+      "remove owned personal tenant",
+      "retention preflight permits QA account closure",
+      "close owned QA Auth account",
+      "QA account login and identity removed",
+      "read exclusively owned QA outbox",
+      "no configured external provider deliveries attempted",
+      "no active QA access: academy_role_grants",
+      "no active QA access: academy_staff",
+      "no active QA access: academy_contacts",
+      "no active QA access: academy_guardians",
+      "no active QA access: academy_student_guardian_relationships"
+    ],
+    "closedAccounts": 4,
+    "ownedStudents": 2,
+    "internalManualPayments": 3,
+    "cleanupVerified": true,
+    "institutionArchived": true,
+    "immutableHistoryRetained": true,
+    "viewports": [
+      390,
+      1440
+    ],
+    "javascriptPageErrors": 0
+  },
+  "interruptedHarnessRun": {
+    "ownedAccountsClosed": true,
+    "exposedOwnedSessionRejectedWithStatus": 403,
+    "privateLogRedacted": true,
+    "customerAccountsInvolved": false
+  },
+  "customerRecordsChanged": false,
+  "externalProviderDeliveriesAttempted": 0,
+  "realMoneyMoved": false,
+  "limits": [
+    "Manual cash and card receipts are internal book entries; no external funds or Click settlement were exercised.",
+    "A manual receipt is bounded by the existing integer payment amount schema at 2147483647 whole currency units.",
+    "The interrupted earlier browser run is excluded from the successful check totals."
+  ]
+}
