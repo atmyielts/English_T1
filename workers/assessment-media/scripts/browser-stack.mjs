@@ -240,7 +240,7 @@ try {
   media = new Miniflare({
     modules: true,
     scriptPath: path.join(root, "workers/assessment-media/dist/index.js"),
-    compatibilityDate: "2026-10-14",
+    compatibilityDate: "2026-07-30",
     r2Buckets: ["ARTIFACTS"],
     r2Persist: path.join(directory, "r2"),
     bindings: {

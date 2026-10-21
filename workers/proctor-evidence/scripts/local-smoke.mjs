@@ -207,7 +207,7 @@ try {
   const options = {
     modules: true,
     scriptPath: fileURLToPath(new URL("../dist/index.js", import.meta.url)),
-    compatibilityDate: "2026-10-14",
+    compatibilityDate: "2026-07-30",
     r2Buckets: ["EVIDENCE"],
     r2Persist: directory,
     bindings: {

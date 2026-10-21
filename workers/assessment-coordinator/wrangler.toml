@@ -1,6 +1,6 @@
 name = "schood-assessment-coordinator-dev"
 main = "src/index.ts"
-compatibility_date = "2026-10-13"
+compatibility_date = "2026-07-30"
 workers_dev = false
 
 [[durable_objects.bindings]]

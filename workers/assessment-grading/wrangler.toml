@@ -1,6 +1,6 @@
 name = "schood-assessment-grading-dev"
 main = "src/index.ts"
-compatibility_date = "2026-10-13"
+compatibility_date = "2026-07-30"
 workers_dev = false
 [vars]
 GRADING_BATCH_LIMIT = "200"

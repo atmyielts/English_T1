@@ -18,7 +18,7 @@ export async function capturePorts({root,directory,base,auth,database,tables,liv
  let evidence,coordinator,liveService,loseOpen=true,loseReceipt=true,loseComplete=true,loseClose=true;
  async function dispose(){await Promise.all([evidence?.dispose(),coordinator?.dispose(),liveService?.dispose()]);}
  try{
-  evidence=new Miniflare({modules:true,modulesRoot:directory,scriptPath:evidenceFile,compatibilityDate:'2026-10-14',r2Buckets:['EVIDENCE'],r2Persist:path.join(directory,'capture-r2'),bindings:{SUPABASE_URL:'https://canonical-capture.invalid',SUPABASE_ANON_KEY:'synthetic-anon',PROCTOR_EVIDENCE_SECRET:secret,EVIDENCE_ACTIVE_KEY_ID:'fixture-k1',EVIDENCE_KEYRING:JSON.stringify({'fixture-k1':'c'.repeat(64)}),ALLOWED_ORIGINS:base},outboundService:async req=>{
+  evidence=new Miniflare({modules:true,modulesRoot:directory,scriptPath:evidenceFile,compatibilityDate:'2026-07-30',r2Buckets:['EVIDENCE'],r2Persist:path.join(directory,'capture-r2'),bindings:{SUPABASE_URL:'https://canonical-capture.invalid',SUPABASE_ANON_KEY:'synthetic-anon',PROCTOR_EVIDENCE_SECRET:secret,EVIDENCE_ACTIVE_KEY_ID:'fixture-k1',EVIDENCE_KEYRING:JSON.stringify({'fixture-k1':'c'.repeat(64)}),ALLOWED_ORIGINS:base},outboundService:async req=>{
    assert.equal(new URL(req.url).hostname,'canonical-capture.invalid');const body=await req.clone().json(),response=await recordings(req);
    if(response.ok&&((body.action==='part.receipt'&&loseReceipt)||(body.action==='segment.complete'&&loseComplete))){if(body.action==='part.receipt')loseReceipt=false;else loseComplete=false;return Response.json({code:'fixture_lost_reply',error:'Committed evidence reply lost'},{status:503});}return response;
   }});
