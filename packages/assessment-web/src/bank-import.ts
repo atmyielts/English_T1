@@ -2,6 +2,7 @@ import { request } from "./client";
 import { ResponseJournal } from "./journal";
 import { GradeCommands } from "./grade-command";
 import type { ImportRow } from "../../assessment-core/src/bank-import.ts";
+import {LocalizedError} from './i18n/translate.ts';
 export interface BankImport {
   id: string;
   bank_id: string;
@@ -17,9 +18,7 @@ export interface BankImport {
 }
 export async function openImportCommands(tenant: string, actor: string, kind: "imports" | "qti" = "imports") {
   if (!navigator.locks) {
-    throw new Error(
-      "Use a browser with secure workspace locking to import question banks.",
-    );
+    throw new LocalizedError("bankImport.locks");
   }
   const scope = `${kind === "qti" ? "qti-source" : "bank-import"}:${tenant}:${actor}`,
     journal = await ResponseJournal.create(scope);

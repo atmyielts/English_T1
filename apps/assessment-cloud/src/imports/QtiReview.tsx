@@ -1,19 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import type { QtiJob } from "../../../../packages/assessment-web/src/qti";
-import { itemLabels } from "../../../../packages/assessment-core/src/authoring.ts";
+import { useAppT, useCodeText, useItemLabel } from "../i18n/index.ts";
 import { ImportKey } from "./ImportKey";
 import { QtiScanResult } from "./QtiScanResult";
-export const qtiState: Record<string, string> = {
-  uploading: "Upload incomplete",
-  scan_queued: "Waiting for security scan",
-  scanning: "Security scan in progress",
-  parse_queued: "Waiting for question processing",
-  parsing: "Processing questions",
-  review_ready: "Ready for your review",
-  blocked: "Package needs attention",
-  adopted: "Sent to draft import review",
-  cancelled: "Cancelled",
-};
+/** Reader-language QTI job state (`qti.state.<code>`); unknown codes show as given. */
+export function useQtiState() {
+  const codeText = useCodeText();
+  return (state: string) => codeText("qti.state", state);
+}
 export function QtiReview({ job, disabled, send, more, openImport }: {
   job: QtiJob;
   disabled: boolean;
@@ -21,6 +15,7 @@ export function QtiReview({ job, disabled, send, more, openImport }: {
   more(): void;
   openImport(id: string): void;
 }) {
+  const t = useAppT(), itemLabel = useItemLabel(), qtiState = useQtiState();
   const [ack, setAck] = useState(false), [reason, setReason] = useState("");
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
@@ -31,27 +26,25 @@ export function QtiReview({ job, disabled, send, more, openImport }: {
   return (
     <section aria-labelledby="qti-review-heading">
       <h2 id="qti-review-heading" tabIndex={-1} ref={heading}>
-        Review QTI package
+        {t("qtiReview.title")}
       </h2>
       <h3>{job.filename}</h3>
-      <p role="status">{qtiState[job.state] ?? job.state}</p>
-      <p>Source: {job.filename} · {job.total ?? 0} proposed questions</p>
+      <p role="status">{qtiState(job.state)}</p>
+      <p>{t("qtiReview.source", { name: job.filename, count: String(job.total ?? 0) })}</p>
       <details>
-        <summary>Package identity</summary>
-        <p>Source SHA-256: {job.source_hash}</p>
-        <p>Reviewed result: {job.review_hash ?? "Not available yet"}</p>
+        <summary>{t("qtiReview.identity")}</summary>
+        <p>{t("importReview.sha", { hash: job.source_hash })}</p>
+        <p>{t("qtiReview.reviewed", { hash: job.review_hash ?? t("qtiReview.notYet") })}</p>
       </details>
       <QtiScanResult scan={job.scan} />
       {job.state === "blocked" && (
         <p role="alert">
-          This package cannot be adopted. Review its security result and content
-          diagnostics. If neither explains the problem, ask your administrator
-          to inspect processing.
+          {t("qtiReview.blocked")}
         </p>
       )}
       {!!job.blocked.length && (
         <div>
-          <h3>Content that could not be imported</h3>
+          <h3>{t("qtiReview.unimported")}</h3>
           <ul>
             {job.blocked.map((entry, index) => (
               <li key={index}>
@@ -67,31 +60,31 @@ export function QtiReview({ job, disabled, send, more, openImport }: {
         {job.rows.map((row) => (
           <li key={row.line}>
             <strong>
-              Entry {row.line} · {itemLabels[row.item.type]} · {row.item.locale}
+              {t("importReview.entry", { line: String(row.line), type: itemLabel(row.item.type) ?? "", locale: row.item.locale })}
             </strong>
             <p className="import-prompt">{row.item.prompt}</p>
             {row.item.options && (
               <ul>
                 {row.item.options.map((option) => (
-                  <li key={option.id}>{option.id}: {option.text}</li>
+                  <li key={option.id}>{t("importReview.option", { id: option.id, text: option.text })}</li>
                 ))}
               </ul>
             )}
-            <p>{row.item.max_score} points</p>
+            <p>{t("qtiReview.points", { score: String(row.item.max_score) })}</p>
             <details>
-              <summary>Answer key and source reference</summary>
+              <summary>{t("qtiReview.reference")}</summary>
               <ImportKey answer={row.key} />
               <p>{row.identifier} · {row.source_path}</p>
             </details>
             {row.warnings.map((warning, index) => (
-              <p key={index}>Review warning: {warning}</p>
+              <p key={index}>{t("importReview.warning", { warning })}</p>
             ))}
           </li>
         ))}
       </ol>
       {job.rows.length < job.total && (
         <button className="quiet" disabled={disabled} onClick={more}>
-          Load more QTI questions
+          {t("qtiReview.more")}
         </button>
       )}
       {job.adoption && (
@@ -99,13 +92,13 @@ export function QtiReview({ job, disabled, send, more, openImport }: {
           disabled={disabled}
           onClick={() => openImport(job.adoption!.import_id)}
         >
-          Continue draft import review
+          {t("qtiReview.continue")}
         </button>
       )}
       {!terminal && (
         <>
           <label>
-            Reason for package decision<textarea
+            {t("qtiReview.reason")}<textarea
               maxLength={2000}
               value={reason}
               onChange={(event) => setReason(event.target.value)}
@@ -114,17 +107,14 @@ export function QtiReview({ job, disabled, send, more, openImport }: {
           {job.state === "review_ready" && (
             <>
               <p>
-                Review every proposed question and answer key. Adoption only
-                stages a protected bank import; it does not approve questions or
-                publish an exam.
+                {t("qtiReview.adoptLead")}
               </p>
               <label className="check">
                 <input
                   type="checkbox"
                   checked={ack}
                   onChange={(event) => setAck(event.target.checked)}
-                />I reviewed all proposed questions, answer keys, warnings and
-                source/licensing rights for this destination bank.
+                />{t("qtiReview.ack")}
               </label>
               <button
                 disabled={disabled || !ack || !reason.trim() ||
@@ -139,7 +129,7 @@ export function QtiReview({ job, disabled, send, more, openImport }: {
                     reason,
                   })}
               >
-                Adopt package for draft import
+                {t("qtiReview.adopt")}
               </button>
             </>
           )}
@@ -149,7 +139,7 @@ export function QtiReview({ job, disabled, send, more, openImport }: {
               disabled={disabled || !reason.trim()}
               onClick={() => send("cancel", { ...base, reason })}
             >
-              Cancel QTI package
+              {t("qtiReview.cancel")}
             </button>
           </div>
         </>

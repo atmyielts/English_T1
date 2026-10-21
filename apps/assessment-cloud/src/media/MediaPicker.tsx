@@ -4,6 +4,7 @@ import {
   type ArtifactRow,
 } from "../../../../packages/assessment-web/src/artifacts";
 import type { Item } from "../../../../packages/assessment-core/src/mod.ts";
+import { useAppT, useCodeText, useErrorText } from "../i18n/index.ts";
 type Media = NonNullable<Item["media"]>;
 export function MediaPicker({
   tenant,
@@ -16,6 +17,7 @@ export function MediaPicker({
   value: Media;
   onChange: (value: Media) => void;
 }) {
+  const t = useAppT(), codeText = useCodeText(), problem = useErrorText();
   const [rows, setRows] = useState<ArtifactRow[]>([]),
     [cursor, setCursor] = useState<string | null>(null),
     [busy, setBusy] = useState(true),
@@ -47,7 +49,7 @@ export function MediaPicker({
         if (active) {
           setRows([]);
           setCursor(null);
-          setError(cause.message);
+          setError(problem(cause));
         }
       })
       .finally(() => {
@@ -72,23 +74,20 @@ export function MediaPicker({
   }
   return (
     <fieldset>
-      <legend>Prompt images, audio and video</legend>
+      <legend>{t("picker.media.legend")}</legend>
       <p className="hint">
-        Upload files in Media library first. Only ready, scanned assets can be
-        attached; question approval remains independent. Give images useful
-        alternative text, and audio/video an equivalent description or
-        transcript.
+        {t("picker.media.hint")}
       </p>
       {error && (
         <p role="alert" className="error">
           {error}
         </p>
       )}
-      {busy && <p role="status">Loading scanned media…</p>}
+      {busy && <p role="status">{t("picker.media.loading")}</p>}
       {value.map((media, index) => (
         <div className="author-row" key={`${media.artifact_id}:${index}`}>
           <label>
-            {media.kind} alternative or transcript {index + 1} (required)
+            {t("picker.media.alt", { kind: codeText("media.kind", media.kind), number: index + 1 })}
             <textarea
               required
               maxLength={1000}
@@ -106,32 +105,31 @@ export function MediaPicker({
           <button
             className="quiet"
             type="button"
-            aria-label={`Remove prompt media ${index + 1}`}
+            aria-label={t("picker.media.removeLabel", { number: index + 1 })}
             onClick={() => onChange(value.filter((_, i) => i !== index))}
           >
-            Remove
+            {t("picker.media.remove")}
           </button>
         </div>
       ))}
       <label>
-        Scanned institution media
+        {t("picker.media.select")}
         <select
           value={selected}
           onChange={(event) => setSelected(event.target.value)}
           disabled={busy || value.length >= 20}
         >
-          <option value="">Choose a ready file</option>
+          <option value="">{t("picker.media.choose")}</option>
           {ready.map((row) => (
             <option key={row.id} value={row.id}>
-              {row.filename} · {row.kind}
+              {t("picker.media.option", { name: row.filename, kind: codeText("media.kind", row.kind) })}
             </option>
           ))}
         </select>
       </label>
       {!busy && !ready.length && (
         <p className="hint">
-          No unused ready images, audio or video on the loaded pages. Scan
-          pending, rejected, cancelled and PDF files are not selectable.
+          {t("picker.media.none")}
         </p>
       )}
       <div className="author-actions">
@@ -141,7 +139,7 @@ export function MediaPicker({
           disabled={busy || !selected || value.length >= 20}
           onClick={add}
         >
-          Attach selected media
+          {t("picker.media.attach")}
         </button>
         <button
           className="quiet"
@@ -152,7 +150,7 @@ export function MediaPicker({
             setRefresh((old) => old + 1);
           }}
         >
-          Refresh ready media
+          {t("picker.media.refresh")}
         </button>
         {cursor && (
           <button
@@ -161,7 +159,7 @@ export function MediaPicker({
             disabled={busy}
             onClick={() => setAfter(cursor)}
           >
-            Load more ready media
+            {t("picker.media.more")}
           </button>
         )}
       </div>

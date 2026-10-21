@@ -2,6 +2,7 @@ import type { ArtifactMime } from "../../assessment-core/src/artifacts.ts";
 import { ARTIFACT_CHUNK_BYTES } from "../../assessment-core/src/artifacts.ts";
 import type { MediaAnswerPolicy } from "../../assessment-core/src/media-answer.ts";
 import { AnswerFileStore, type LocalAnswerFile } from "./answer-file-store";
+import {LocalizedError,english} from './i18n/translate.ts';
 export interface AcademicRecordingStatus {
   phase: "recording" | "stopping" | "interrupted" | "sealed";
   saved_bytes: number;
@@ -39,9 +40,7 @@ export class AcademicRecorder {
       if (!event.data.size || this.problem) return;
       this.pendingBytes += event.data.size;
       if (this.pendingBytes > 16 * 1048576) {
-        this.interrupt(
-          "Device storage could not keep up with recording. Saved bytes were preserved; recording has stopped.",
-        );
+        this.interrupt(english("recorder.storageBehind"));
         return;
       }
       this.chain = this.chain.then(async () => {
@@ -66,20 +65,17 @@ export class AcademicRecorder {
         this.interrupt(
           cause instanceof Error
             ? cause.message
-            : "Recording bytes could not be saved on this device.",
+            : english("recorder.bytesUnsaved"),
         )
       ).finally(() => {
         this.pendingBytes -= event.data.size;
       });
     };
     recorder.onerror = () =>
-      this.interrupt(
-        "The browser encoder failed. The saved prefix is retained but must not be treated as a complete answer.",
-      );
+      this.interrupt(english("recorder.encoderFailed"));
     recorder.onstop = () => {
       if (!this.requestedStop && !this.problem) {
-        this.problem =
-          "Recording stopped unexpectedly. Review the saved prefix before taking any further action.";
+        this.problem = english("recorder.stoppedUnexpectedly");
       }
       this.stopTracks();
       this.stopped();
@@ -106,26 +102,20 @@ export class AcademicRecorder {
         (mime.startsWith("video/") && !video.length) ||
         !/^(audio|video)\//.test(mime)
       ) {
-        throw new Error(
-          "Provide live academic recording sources matching the reviewed format.",
-        );
+        throw new LocalizedError("recorder.provideLiveAcademicRecording");
       }
       if (
         typeof MediaRecorder === "undefined" ||
         !MediaRecorder.isTypeSupported(mime)
       ) {
-        throw new Error(
-          "This browser cannot record a permitted answer format. Do not start this capture-only assessment with this browser.",
-        );
+        throw new LocalizedError("recorder.browserRecordPermittedAnswer");
       }
       const recorder = new MediaRecorder(stream, { mimeType: mime }),
         file = await store.begin(item, filename, mime, "capture", policy);
       if (
         !stream.active || tracks.some((track) => track.readyState !== "live")
       ) {
-        throw new Error(
-          "The recording source ended before local preparation finished.",
-        );
+        throw new LocalizedError("recorder.recordingSourceEndedLocal");
       }
       const result = new AcademicRecorder(
         store,
@@ -151,13 +141,11 @@ export class AcademicRecorder {
           const failed = () => {
             cleanup();
             reject(
-              new Error(
-                "The browser encoder did not start. The saved local preparation is not an answer.",
-              ),
+              new LocalizedError("recorder.browserEncoderStartSaved"),
             );
           };
           const timer = setTimeout(() => {
-            result.interrupt("The browser encoder startup timed out.");
+            result.interrupt(english("recorder.startTimeout"));
             failed();
           }, 10000);
           recorder.addEventListener("start", started, { once: true });

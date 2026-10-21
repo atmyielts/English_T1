@@ -4,6 +4,7 @@ import type {
   CertificateLocale,
   CertificateReference,
 } from "../../assessment-core/src/certificate-document";
+import {LocalizedError,english} from './i18n/translate.ts';
 export interface CertificateReferenceResult {
   status: string;
   replacement_id?: string;
@@ -18,7 +19,7 @@ export interface CertificateReferenceResult {
 }
 async function bounded(response: Response, max: number) {
   const reader = response.body?.getReader();
-  if (!reader) throw Error("No document response arrived.");
+  if (!reader) throw new LocalizedError("certificate.document.documentResponseArrived");
   const chunks: Uint8Array[] = [];
   let size = 0;
   try {
@@ -28,7 +29,7 @@ async function bounded(response: Response, max: number) {
       size += next.value.byteLength;
       if (size > max) {
         await reader.cancel();
-        throw Error("The document response exceeded its limit.");
+        throw new LocalizedError("certificate.document.documentResponseExceededLimit");
       }
       chunks.push(next.value);
     }
@@ -45,14 +46,14 @@ async function bounded(response: Response, max: number) {
 }
 function endpoint(path: string) {
   const base = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-  if (!base) throw Error("Certificate delivery is not configured.");
+  if (!base) throw new LocalizedError("certificate.document.certificateDeliveryConfigured");
   const url = new URL(
     `${base}/functions/v1/assessment-cloud/certificates/${path}`,
   );
   if (
     url.protocol !== "https:" &&
     !["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)
-  ) throw Error("Use a secure certificate endpoint.");
+  ) throw new LocalizedError("certificate.document.useSecureCertificateEndpoint");
   return url;
 }
 export async function downloadCertificatePdf(
@@ -63,7 +64,7 @@ export async function downloadCertificatePdf(
 ) {
   const current = await supabase!.auth.getSession();
   if (current.data.session?.user.id !== actor) {
-    throw Error("The signed-in account changed. Reopen your certificate list.");
+    throw new LocalizedError("certificate.document.signedAccountChangedReopen");
   }
   const url = endpoint(`${id}/pdf`);
   url.searchParams.set("tenant_id", tenant);
@@ -85,10 +86,10 @@ export async function downloadCertificatePdf(
       const value = JSON.parse(
         new TextDecoder().decode(await bounded(response, 8000)),
       );
-      throw Error(value.error ?? "Certificate PDF unavailable.");
+      throw value.error ? Error(value.error) : new LocalizedError("certificate.document.pdfUnavailable");
     }
     if (response.headers.get("content-type") !== "application/pdf") {
-      throw Error("The service did not return a certificate PDF.");
+      throw new LocalizedError("certificate.document.serviceReturnCertificatePdf");
     }
     const bytes = await bounded(response, 3000000),
       digest = [
@@ -99,7 +100,7 @@ export async function downloadCertificatePdf(
     if (
       digest !== response.headers.get("x-certificate-sha256") ||
       new TextDecoder().decode(bytes.subarray(0, 5)) !== "%PDF-"
-    ) throw Error("The downloaded PDF does not match its service receipt.");
+    ) throw new LocalizedError("certificate.document.downloadedPdfMatchService");
     return bytes;
   } finally {
     clearTimeout(timer);
@@ -128,7 +129,7 @@ export async function resolveCertificateReference(
       );
     if (!response.ok) {
       throw Error(
-        value.error ?? "This certificate reference could not be confirmed.",
+        value.error ?? english("certificate.document.referenceUnconfirmed"),
       );
     }
     return value.data;

@@ -3,6 +3,7 @@ import { artifactTransport } from "./artifacts";
 import type { AttemptRuntime } from "./runtime";
 import { AnswerFileStore } from "./answer-file-store";
 import { AnswerTransfers } from "./answer-transfers";
+import {LocalizedError} from './i18n/translate.ts';
 export interface CandidateAnswerAsset {
   id: string;
   content_hash: string;
@@ -40,9 +41,7 @@ export async function openAnswerFiles(
   let closed = false;
   const active = () => {
     if (closed) {
-      throw new Error(
-        "The academic answer workspace closed. Reopen this candidate and attempt to recover its saved bytes.",
-      );
+      throw new LocalizedError("transfer.academicAnswerWorkspaceClosed");
     }
   };
   const transfers = new AnswerTransfers(
@@ -63,9 +62,7 @@ export async function openAnswerFiles(
         active();
         const coordinator = runtime();
         if (!coordinator) {
-          throw new Error(
-            "Reconnect the active exam device before admitting a new answer.",
-          );
+          throw new LocalizedError("transfer.reconnectActiveExamDevice");
         }
         return coordinator.withAnswerLease(async (lease) => {
           active();

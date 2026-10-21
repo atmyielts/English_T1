@@ -1,6 +1,13 @@
 import { request } from "./client";
 import { ResponseJournal } from "./journal";
 import { GradeCommands } from "./grade-command";
+import {
+  english,
+  isWebKey,
+  LocalizedError,
+  messageText,
+  type Translate,
+} from "./i18n/translate.ts";
 export interface AppealRow {
   id: string;
   attempt_id: string;
@@ -33,22 +40,27 @@ export interface AppealDetail extends AppealRow {
     created_at: string;
   }[];
 }
-export const appealStatus: Record<string, string> = {
-  submitted: "Awaiting review",
-  withdrawn: "Withdrawn by candidate",
-  upheld: "Original result upheld",
-  regrade_requested: "Accepted for regrading",
-};
-export const appealCategory: Record<string, string> = {
-  scoring: "Scoring or marking",
-  procedure: "Exam procedure",
-  accessibility: "Access or accommodation",
-};
+const appealStatusCodes = ["submitted", "withdrawn", "upheld", "regrade_requested"];
+const appealCategoryCodes = ["scoring", "procedure", "accessibility"];
+/** Reader-language appeal status; unknown codes render as nothing, as before. */
+export function appealStatusText(code: string, t: Translate = english) {
+  const key = `appeal.status.${code}`;
+  return isWebKey(key) ? t(key) : "";
+}
+export function appealCategoryText(code: string, t: Translate = english) {
+  const key = `appeal.category.${code}`;
+  return isWebKey(key) ? t(key) : "";
+}
+/** English maps kept for existing callers; prefer the `*Text(code, t)` helpers. */
+export const appealStatus: Record<string, string> = Object.fromEntries(
+  appealStatusCodes.map((code) => [code, appealStatusText(code)]),
+);
+export const appealCategory: Record<string, string> = Object.fromEntries(
+  appealCategoryCodes.map((code) => [code, appealCategoryText(code)]),
+);
 export async function openAppealCommands(tenant: string, actor: string) {
   if (!navigator.locks) {
-    throw new Error(
-      "Use a browser with secure workspace locking to submit appeals.",
-    );
+    throw new LocalizedError("appeal.locks");
   }
   const scope = `appeals:${tenant}:${actor}`,
     journal = await ResponseJournal.create(scope);
@@ -87,31 +99,12 @@ export async function openAppealCommands(tenant: string, actor: string) {
   );
   return { commands, close: () => journal.close() };
 }
-const messages: Record<string, string> = {
-  forbidden: "Your institution has not granted permission to review appeals.",
-  candidate_appeal_only:
-    "Only the candidate who owns the released result can submit or withdraw its appeal.",
-  independent_appeal_reviewer_required:
-    "A moderator who did not mark, adjudicate, approve or release this result must decide its appeal.",
-  latest_released_result_required:
-    "This result changed or is not released yet. Refresh your results before appealing.",
-  appeal_already_exists:
-    "This result already has an appeal. Refresh your appeals to see its status.",
-  appeal_revision_conflict:
-    "Someone changed this appeal. Refresh and review its current state.",
-  appeal_closed:
-    "This appeal is already closed. Refresh to see the recorded decision.",
-  regrade_already_pending:
-    "A newer grading generation is already in progress. Review that generation before requesting another.",
-  appeal_not_found: "This appeal is not available in the current institution.",
-};
-export function appealProblem(cause: unknown) {
-  const code = (cause as { code?: string })?.code;
-  if (code && messages[code]) return messages[code];
+/** Known appeal refusals are translated under `appeal.code.<code>`. */
+export function appealProblem(cause: unknown, t: Translate = english) {
+  const code = (cause as { code?: string })?.code, key = `appeal.code.${code}`;
+  if (code && isWebKey(key)) return t(key);
   if (cause instanceof Error && cause.name === "AbortError") {
-    return "No receipt arrived in time. Retry the saved appeal request before making another change.";
+    return t("appeal.problem.timeout");
   }
-  return cause instanceof Error
-    ? cause.message
-    : "The appeals request could not be completed.";
+  return messageText(cause, t, "appeal.problem.failed");
 }

@@ -12,6 +12,7 @@ import type { Row } from "../../../../packages/assessment-web/src/client";
 import { SectionEditor } from "./SectionEditor";
 import { DefinitionSummary } from "./DefinitionSummary";
 import {BlueprintPreview} from "./BlueprintPreview";
+import { useAppT } from "../i18n/index.ts";
 export function AssessmentEditor({
   initial,
   tenant,
@@ -33,6 +34,7 @@ export function AssessmentEditor({
   save: (action: string, data: Record<string, unknown>) => Promise<boolean>;
   cancel: () => void;
 }) {
+  const t = useAppT();
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     heading.current?.focus();
@@ -72,10 +74,10 @@ export function AssessmentEditor({
           .some((id) => !questions.some((q) => q.id === id))
       )
         throw new Error(
-          "A selected question is no longer available as an approved institution version.",
+          t("design.unavailableQuestion"),
         );
       if (revision && !ready.value.reason.trim())
-        throw new Error("Explain why the working definition is changing.");
+        throw new Error(t("design.explainChange"));
       if (
         await save(revision ? "assessment.revise" : "assessment.create", {
           definition,
@@ -90,7 +92,7 @@ export function AssessmentEditor({
       setError(
         cause instanceof Error
           ? cause.message
-          : "The assessment could not be saved.",
+          : t("design.saveFailed"),
       );
     } finally {
       setSubmitting(false);
@@ -100,13 +102,11 @@ export function AssessmentEditor({
     <section className="editor assessment-editor">
       <h2 tabIndex={-1} ref={heading}>
         {revision
-          ? `Edit working revision ${revision.revision}`
-          : "Build an assessment"}
+          ? t("design.editTitle", { revision: String(revision.revision) })
+          : t("design.buildTitle")}
       </h2>
       <p>
-        Published versions, registered sittings and candidate forms remain
-        unchanged. Saving updates only the working definition; publishing is a
-        separate permission-controlled action.
+        {t("design.lead")}
       </p>
       <DraftStatus
         {...draft}
@@ -122,10 +122,10 @@ export function AssessmentEditor({
       )}
       <form onSubmit={submit}>
         <fieldset disabled={disabled || draft.blocked}>
-          <legend>Assessment settings</legend>
+          <legend>{t("design.settings")}</legend>
           <div className="design-fields">
             <label>
-              Assessment title
+              {t("design.title")}
               <input
                 required
                 maxLength={200}
@@ -136,7 +136,7 @@ export function AssessmentEditor({
               />
             </label>
             <label>
-              Assessment language
+              {t("design.language")}
               <select
                 value={draft.value.locale}
                 onChange={(e) =>
@@ -146,13 +146,13 @@ export function AssessmentEditor({
                   })
                 }
               >
-                <option value="en">English</option>
-                <option value="uz">Uzbek</option>
-                <option value="ru">Russian</option>
+                <option value="en">{t("fields.langEn")}</option>
+                <option value="uz">{t("fields.langUz")}</option>
+                <option value="ru">{t("fields.langRu")}</option>
               </select>
             </label>
             <label>
-              Overall time in seconds
+              {t("design.seconds")}
               <input
                 required
                 type="number"
@@ -173,7 +173,7 @@ export function AssessmentEditor({
                 change({ ...draft.value, shuffleItems: e.target.checked })
               }
             />
-            Randomize question order within each section
+            {t("design.shuffleItems")}
           </label>
           <label className="check">
             <input
@@ -183,7 +183,7 @@ export function AssessmentEditor({
                 change({ ...draft.value, shuffleOptions: e.target.checked })
               }
             />
-            Randomize answer options (not ordering tasks)
+            {t("design.shuffleOptions")}
           </label>
         </fieldset>
         {draft.value.sections.map((s, i) => (
@@ -236,11 +236,11 @@ export function AssessmentEditor({
             })
           }
         >
-          Add section
+          {t("design.addSection")}
         </button>
         {revision && (
           <label>
-            Revision reason
+            {t("design.reason")}
             <textarea
               required
               maxLength={2000}
@@ -255,7 +255,7 @@ export function AssessmentEditor({
         <BlueprintPreview definition={definition} tenant={tenant} actor={actor} disabled={disabled||draft.blocked}/>
         <div className="design-actions">
           <button disabled={disabled || draft.blocked}>
-            {revision ? "Save working revision" : "Save assessment draft"}
+            {revision ? t("design.saveRevision") : t("design.saveDraft")}
           </button>
           <button
             type="button"
@@ -273,7 +273,7 @@ export function AssessmentEditor({
               }
             }}
           >
-            Review structure
+            {t("design.review")}
           </button>
           <button
             type="button"
@@ -281,18 +281,16 @@ export function AssessmentEditor({
             disabled={disabled}
             onClick={cancel}
           >
-            Close assessment editor
+            {t("design.close")}
           </button>
         </div>
       </form>
       {preview && definition && (
         <>
-          <h3>Structure preview</h3>
+          <h3>{t("design.previewTitle")}</h3>
           <DefinitionSummary definition={definition} />
           <p>
-            Random pools are sampled once when a candidate starts. The saved
-            form fixes that selection for the entire attempt. This is not an
-            adaptive or difficulty-balanced blueprint.
+            {t("design.previewNote")}
           </p>
         </>
       )}

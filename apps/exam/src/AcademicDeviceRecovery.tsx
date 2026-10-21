@@ -1,11 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AnswerFileStore } from "../../../packages/assessment-web/src/answer-file-store";
 import { AcademicUploadRecovery } from "./AcademicUploadRecovery";
+import { useAppT } from "./i18n/index.ts";
+import { errorText } from "../../../packages/assessment-web/src/i18n/errors.ts";
 /** Recovery is independently reachable after reload/flag shutdown without
  * calling attempt.start. No academic selection or new admission exists here. */
 export function AcademicDeviceRecovery(
   { tenant, actor }: { tenant: string; actor: string },
 ) {
+  const t = useAppT();
   const [attempts, setAttempts] = useState<{ id: string; pending: number }[]>(
       [],
     ),
@@ -37,11 +40,7 @@ export function AcademicDeviceRecovery(
       if (generation.current === version) setAttempts(results);
     } catch (cause) {
       if (generation.current === version) {
-        setError(
-          cause instanceof Error
-            ? cause.message
-            : "Saved academic recovery workspaces could not be opened.",
-        );
+        setError(errorText(cause, t, "exam.deviceRecovery.failed"));
       }
     } finally {
       if (generation.current === version) setBusy(false);
@@ -62,28 +61,23 @@ export function AcademicDeviceRecovery(
       aria-labelledby="academic-device-recovery-heading"
     >
       <h2 id="academic-device-recovery-heading">
-        Saved academic uploads on this device
+        {t("exam.deviceRecovery.title")}
       </h2>
-      <p>
-        You can finish previously admitted uploads without starting or resuming
-        an exam. Recovery never changes a selected answer or extends time.
-      </p>
+      <p>{t("exam.deviceRecovery.intro")}</p>
       {error && <p role="alert" className="error">{error}</p>}
       <ul className="records">
         {attempts.map((attempt, index) => (
           <li key={attempt.id}>
-            <strong>Saved assessment {index + 1}</strong>
+            <strong>{t("exam.deviceRecovery.item", { position: index + 1 })}</strong>
             <span>
-              {attempt.pending} sealed device{" "}
-              {attempt.pending === 1 ? "copy needs" : "copies need"}{" "}
-              a transport receipt
+              {t("exam.deviceRecovery.pending", { count: attempt.pending })}
             </span>
             <button
               type="button"
               disabled={busy}
               onClick={() => setSelected(attempt.id)}
             >
-              Open saved academic recovery
+              {t("exam.deviceRecovery.open")}
             </button>
           </li>
         ))}
@@ -94,7 +88,7 @@ export function AcademicDeviceRecovery(
         disabled={busy}
         onClick={() => void refresh()}
       >
-        Refresh saved academic workspaces
+        {t("exam.deviceRecovery.refresh")}
       </button>
       {selected && (
         <AcademicUploadRecovery

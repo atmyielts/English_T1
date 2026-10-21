@@ -4,6 +4,7 @@ import {
   qtiSourceUpload,
 } from "../../assessment-core/src/qti.ts";
 import { ARTIFACT_CHUNK_BYTES } from "../../assessment-core/src/artifacts.ts";
+import {LocalizedError} from './i18n/translate.ts';
 export interface PreparedQtiSource {
   manifest: QtiSourceUpload;
   bytes: Uint8Array<ArrayBuffer>;
@@ -23,7 +24,7 @@ export async function prepareQtiSource(
     !file.name.toLowerCase().endsWith(".zip") || file.size < 22 ||
     file.size > QTI_SOURCE_MAX_BYTES
   ) {
-    throw new Error("Choose a QTI ZIP package between 22 bytes and 64 MiB.");
+    throw new LocalizedError("qti.chooseQtiZipPackage");
   }
   active();
   const bytes = new Uint8Array(await file.arrayBuffer());
@@ -67,13 +68,11 @@ export async function transferQtiSource(
     manifest.source_hash !== job.source_hash ||
     manifest.byte_length !== job.byte_length
   ) {
-    throw new Error(
-      "Select the identical package and destination bank to resume this upload.",
-    );
+    throw new LocalizedError("qti.selectIdenticalPackageDestination");
   }
   // Recheck memory before transport; a changed local buffer must not be sent under its old identity.
   if (await digest(bytes) !== manifest.source_hash) {
-    throw new Error("The selected package changed. Select it again.");
+    throw new LocalizedError("qti.selectedPackageChangedSelect");
   }
   for (let index = 0; index < manifest.parts.length; index++) {
     ports.active();

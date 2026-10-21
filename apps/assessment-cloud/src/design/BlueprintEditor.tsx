@@ -9,7 +9,7 @@ import {
   DIFFICULTIES,
 } from "../../../../packages/assessment-core/src/blueprint.ts";
 import { ITEM_TYPES } from "../../../../packages/assessment-core/src/mod.ts";
-import { itemLabels } from "../../../../packages/assessment-core/src/authoring.ts";
+import { useAppT, useCodeText, useItemLabel } from "../i18n/index.ts";
 import type { Row } from "../../../../packages/assessment-web/src/client";
 export function BlueprintEditor(
   { section, index, questions, change }: {
@@ -19,6 +19,7 @@ export function BlueprintEditor(
     change: (section: SectionDraft) => void;
   },
 ) {
+  const t = useAppT(), codeText = useCodeText(), itemLabel = useItemLabel();
   const value = section.blueprint,
     toggle = (list: string[], value: string) =>
       list.includes(value)
@@ -31,7 +32,7 @@ export function BlueprintEditor(
         className="quiet"
         onClick={() => change({ ...section, blueprint: blankBlueprint() })}
       >
-        Add blueprint requirements to section {index + 1}
+        {t("blueprint.add", { section: index + 1 })}
       </button>
     );
   }
@@ -57,15 +58,13 @@ export function BlueprintEditor(
     });
   return (
     <fieldset>
-      <legend>Blueprint requirements for section {index + 1}</legend>
+      <legend>{t("blueprint.legend", { section: index + 1 })}</legend>
       <p>
-        Every form must meet all requirements together. One question may count
-        toward several rules. Difficulty labels are author estimates; equal
-        counts or points do not prove equivalent test difficulty.
+        {t("blueprint.lead")}
       </p>
       <div className="design-fields">
         <label>
-          Minimum section points {index + 1}
+          {t("blueprint.minPoints", { section: index + 1 })}
           <input
             type="number"
             min={0}
@@ -80,7 +79,7 @@ export function BlueprintEditor(
           />
         </label>
         <label>
-          Maximum section points {index + 1}
+          {t("blueprint.maxPoints", { section: index + 1 })}
           <input
             type="number"
             min={0}
@@ -97,9 +96,9 @@ export function BlueprintEditor(
       </div>
       {value.rules.map((rule, n) => (
         <fieldset key={rule.id}>
-          <legend>Rule {n + 1} for section {index + 1}</legend>
+          <legend>{t("blueprint.rule", { rule: n + 1, section: index + 1 })}</legend>
           <label>
-            Requirement name {n + 1} for section {index + 1}
+            {t("blueprint.ruleName", { rule: n + 1, section: index + 1 })}
             <input
               required
               maxLength={200}
@@ -109,7 +108,7 @@ export function BlueprintEditor(
             />
           </label>
           <fieldset>
-            <legend>Topics for rule {n + 1} in section {index + 1}</legend>
+            <legend>{t("blueprint.topics", { rule: n + 1, section: index + 1 })}</legend>
             {topics.map((topic) => (
               <label className="check" key={topic}>
                 <input
@@ -123,9 +122,7 @@ export function BlueprintEditor(
             ))}
             {!topics.length && (
               <p>
-                No classified topics in this selected pool. Add classification
-                to a new question version and independently approve it, or use
-                difficulty/type filters.
+                {t("blueprint.noTopics")}
               </p>
             )}
             <label className="check">
@@ -134,12 +131,12 @@ export function BlueprintEditor(
                 checked={rule.allTopics}
                 onChange={(event) =>
                   updateRule(rule.id, { allTopics: event.target.checked })}
-              />Require all selected topics on a matching question
+              />{t("blueprint.allTopics")}
             </label>
           </fieldset>
           <fieldset>
             <legend>
-              Estimated difficulty for rule {n + 1} in section {index + 1}
+              {t("blueprint.difficulty", { rule: n + 1, section: index + 1 })}
             </legend>
             {DIFFICULTIES.map((difficulty) => (
               <label className="check" key={difficulty}>
@@ -154,12 +151,12 @@ export function BlueprintEditor(
                       ) as BlueprintRuleDraft["difficulties"],
                     })}
                 />
-                {difficulty[0].toUpperCase() + difficulty.slice(1)} (estimated)
+                {codeText("blueprint.difficulty", difficulty, `${difficulty[0].toUpperCase() + difficulty.slice(1)} (estimated)`)}
               </label>
             ))}
           </fieldset>
           <label>
-            Question types for rule {n + 1} in section {index + 1}
+            {t("blueprint.types", { rule: n + 1, section: index + 1 })}
             <select
               multiple
               size={4}
@@ -172,17 +169,16 @@ export function BlueprintEditor(
                 })}
             >
               {ITEM_TYPES.map((type) => (
-                <option key={type} value={type}>{itemLabels[type]}</option>
+                <option key={type} value={type}>{itemLabel(type)}</option>
               ))}
             </select>
           </label>
           <p>
-            Empty topic, difficulty or type filters match any value for that
-            dimension. Select at least one filter across the rule.
+            {t("blueprint.filtersHint")}
           </p>
           <div className="design-fields">
             <label>
-              Minimum questions for rule {n + 1} in section {index + 1}
+              {t("blueprint.minQuestions", { rule: n + 1, section: index + 1 })}
               <input
                 required
                 type="number"
@@ -195,13 +191,13 @@ export function BlueprintEditor(
               />
             </label>
             <label>
-              Maximum questions for rule {n + 1} in section {index + 1}
+              {t("blueprint.maxQuestions", { rule: n + 1, section: index + 1 })}
               <input
                 type="number"
                 min={0}
                 max={section.items.length}
                 step={1}
-                placeholder="Section draw count"
+                placeholder={t("blueprint.drawCount")}
                 value={rule.maximum}
                 onChange={(event) =>
                   updateRule(rule.id, { maximum: event.target.value })}
@@ -220,7 +216,7 @@ export function BlueprintEditor(
                 },
               })}
           >
-            Remove rule {n + 1} from section {index + 1}
+            {t("blueprint.removeRule", { rule: n + 1, section: index + 1 })}
           </button>
         </fieldset>
       ))}
@@ -237,7 +233,7 @@ export function BlueprintEditor(
             },
           })}
       >
-        Add quota rule to section {index + 1}
+        {t("blueprint.addRule", { section: index + 1 })}
       </button>
       <button
         type="button"
@@ -247,7 +243,7 @@ export function BlueprintEditor(
           change(rest);
         }}
       >
-        Remove blueprint requirements from section {index + 1}
+        {t("blueprint.remove", { section: index + 1 })}
       </button>
     </fieldset>
   );

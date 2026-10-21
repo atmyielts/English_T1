@@ -4,9 +4,12 @@ import { ProctorJournal } from '../../../packages/proctor-web/src/journal';
 import { ProctorRuntime } from '../../../packages/proctor-web/src/runtime';
 import { attachBrowserSignals } from '../../../packages/proctor-web/src/browser';
 import type { CandidateProctorState,MonitoringStatus } from '../../../packages/proctor-web/src/types';
+import {useAppT} from './i18n/index.ts';
+import {errorText} from '../../../packages/assessment-web/src/i18n/errors.ts';
 export function useProctor(tenant:string,user:string,attemptId:string,initial:CandidateProctorState|null,onState:(state:CandidateProctorState)=>void) {
   const [status,setStatus]=useState<MonitoringStatus>({pending:0,problem:null}),[notices,setNotices]=useState<CandidateProctorState['notices']>([]);
   const runtime=useRef<ProctorRuntime|null>(null),callback=useRef(onState);callback.current=onState;
+  const t=useAppT(),translate=useRef(t);translate.current=t;
   const sessionId=initial?.session?.id??'';
   useEffect(()=>{
     let active=true,detach:(()=>void)|undefined,timer:ReturnType<typeof setInterval>|undefined,instance:ProctorRuntime|undefined;
@@ -19,7 +22,7 @@ export function useProctor(tenant:string,user:string,attemptId:string,initial:Ca
       runtime.current=instance;await instance.tick();if(!active)return;
       detach=attachBrowserSignals(instance);
       timer=setInterval(()=>void instance!.tick().catch(cause=>{if(active)setStatus(current=>({...current,problem:cause.message}));}),5000);
-    })().catch(cause=>{if(active)setStatus({pending:0,problem:`Monitoring could not start on this device: ${cause.message}`});});
+    })().catch(cause=>{if(active)setStatus({pending:0,problem:translate.current('exam.monitoring.startFailed',{reason:errorText(cause,translate.current)})});});
     const online=()=>void instance?.tick().catch(cause=>{if(active)setStatus(current=>({...current,problem:cause.message}));});window.addEventListener('online',online);
     return()=>{active=false;detach?.();if(timer)clearInterval(timer);window.removeEventListener('online',online);if(runtime.current===instance)runtime.current=null;void instance?.close();};
   },[tenant,user,attemptId,sessionId]);

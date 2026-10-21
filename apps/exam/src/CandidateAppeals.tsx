@@ -4,6 +4,9 @@ import { AppealList } from "../../../packages/assessment-web/src/AppealList";
 import { AppealView } from "../../../packages/assessment-web/src/AppealView";
 import type { ReleasedResult } from "../../../packages/assessment-web/src/grading";
 import "../../../packages/assessment-web/src/appeals.css";
+import { appealCategoryText } from "../../../packages/assessment-web/src/appeals";
+import { useI18n } from "../../../packages/service-i18n/src/i18n.tsx";
+import { useAppT } from "./i18n/index.ts";
 export function CandidateAppeals(
   { tenant, actor, results }: {
     tenant: string;
@@ -11,6 +14,7 @@ export function CandidateAppeals(
     results: ReleasedResult[];
   },
 ) {
+  const t = useAppT(), { date } = useI18n();
   const state = useAppeals(tenant, actor, "candidate"),
     [selected, setSelected] = useState(""),
     [category, setCategory] = useState("scoring"),
@@ -47,12 +51,8 @@ export function CandidateAppeals(
       aria-labelledby="candidate-appeals-title"
       aria-busy={state.loading || state.busy}
     >
-      <h2 id="candidate-appeals-title">Your result appeals</h2>
-      <p>
-        If you believe a released result needs review, explain your concern
-        here. An independent institution moderator will decide it. An accepted
-        appeal requests regrading; it does not immediately change your score.
-      </p>
+      <h2 id="candidate-appeals-title">{t("exam.appeals.title")}</h2>
+      <p>{t("exam.appeals.intro")}</p>
       <AppealList state={state} />
       {state.detail && (
         <AppealView
@@ -64,16 +64,13 @@ export function CandidateAppeals(
         />
       )}
       {!state.loading && results.length > 0 && !availableResults.length && (
-        <p>
-          These released results already have an appeal. Open the record above
-          to follow its review or decision.
-        </p>
+        <p>{t("exam.appeals.allAppealed")}</p>
       )}
       {availableResults.length > 0 && (
         <form onSubmit={(event) => void submit(event)}>
-          <h3>Submit a result appeal</h3>
+          <h3>{t("exam.appeals.formTitle")}</h3>
           <label>
-            Released result<select
+            {t("exam.appeals.result")}<select
               required
               value={selected}
               onChange={(event) => {
@@ -82,34 +79,41 @@ export function CandidateAppeals(
               }}
               disabled={blocked}
             >
-              <option value="">Choose a released result</option>
+              <option value="">{t("exam.appeals.chooseResult")}</option>
               {availableResults.map((row) => (
                 <option
                   key={row.score_revision_id}
                   value={row.score_revision_id}
                 >
-                  {row.total} / {row.max_score} · Generation {row.generation} ·
-                  {" "}
-                  {new Date(row.released_at).toLocaleString()} ·{" "}
-                  {row.attempt_id.slice(0, 8)}
+                  {t("exam.appeals.option", {
+                    total: row.total,
+                    max: row.max_score,
+                    generation: row.generation,
+                    date: date(row.released_at),
+                    id: row.attempt_id.slice(0, 8),
+                  })}
                 </option>
               ))}
             </select>
           </label>
           <label>
-            Concern<select
+            {t("exam.appeals.concern")}<select
               value={category}
               onChange={(event) =>
                 setCategory(event.target.value)}
               disabled={blocked}
             >
-              <option value="scoring">Scoring or marking</option>
-              <option value="procedure">Exam procedure</option>
-              <option value="accessibility">Access or accommodation</option>
+              <option value="scoring">{appealCategoryText("scoring", t)}</option>
+              <option value="procedure">
+                {appealCategoryText("procedure", t)}
+              </option>
+              <option value="accessibility">
+                {appealCategoryText("accessibility", t)}
+              </option>
             </select>
           </label>
           <label>
-            Explain your concern<textarea
+            {t("exam.appeals.explain")}<textarea
               required
               maxLength={5000}
               value={reason}
@@ -126,14 +130,13 @@ export function CandidateAppeals(
               checked={ack}
               onChange={(event) => setAck(event.target.checked)}
               disabled={blocked}
-            />I checked the selected result and understand that one appeal can
-            be submitted for each released score revision.
+            />{t("exam.appeals.ack")}
           </label>
           <button
             disabled={blocked || !result || !ack ||
               !reason.trim()}
           >
-            Submit appeal for review
+            {t("exam.appeals.submit")}
           </button>
         </form>
       )}

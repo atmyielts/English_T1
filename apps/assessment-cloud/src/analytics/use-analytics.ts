@@ -7,7 +7,9 @@ import {
   type AnalyticsSnapshot,
   openAnalyticsCommands,
 } from "../../../../packages/assessment-web/src/analytics";
+import { useAppT, useErrorText } from "../i18n/index.ts";
 export function useAnalytics(tenant: string, actor: string) {
+  const t = useAppT(), errorText = useErrorText();
   const [sittings, setSittings] = useState<AnalyticsChoice[]>([]),
     [cohorts, setCohorts] = useState<AnalyticsChoice[]>([]),
     [snapshots, setSnapshots] = useState<AnalyticsSnapshot[]>([]),
@@ -42,7 +44,7 @@ export function useAnalytics(tenant: string, actor: string) {
         actor,
       );
     if (!alive.current || scope.current !== expected) {
-      throw new Error("This report workspace is no longer open.");
+      throw new Error(t("analytics.closed"));
     }
     return value;
   };
@@ -55,9 +57,7 @@ export function useAnalytics(tenant: string, actor: string) {
       setCohorts([]);
       setSnapshots([]);
     }
-    setError(
-      cause instanceof Error ? cause.message : "The reporting request failed.",
-    );
+    setError(errorText(cause, "analytics.failed"));
   };
   async function list(
     kind: "sittings" | "cohorts" | "snapshots",

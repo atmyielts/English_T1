@@ -1,7 +1,8 @@
+import {LocalizedError} from './i18n/translate.ts';
 export interface DraftRecord<T>{version:string;source:string;value:T|null;updatedAt:string}
 export interface DraftStore<T>{read():Promise<DraftRecord<T>|null>;head?():Promise<string|null>;replace(expected:string|null,next:DraftRecord<T>):Promise<boolean>}
-export class DraftConflict extends Error{constructor(public kind:'conflict'|'changed'){super(kind==='changed'?'The source changed. Review the saved draft before restoring it.':'Another tab changed this draft. Load its saved version before continuing.');}}
-export function draftReceiptBinding(value:unknown,tenant:string,actor:string){if(!value)return null;const token=value as {scope?:unknown;version?:unknown},scope=token.scope;if(typeof scope!=='string'||scope.length>300||!['authoring','grading'].some(kind=>scope.startsWith(`${kind}:${tenant}:${actor}:`))||!(token.version===null||typeof token.version==='string'&&/^[0-9a-f-]{36}$/.test(token.version)))throw new Error('Invalid device draft receipt binding.');return {scope,version:token.version as string|null};}
+export class DraftConflict extends LocalizedError{constructor(public kind:'conflict'|'changed'){super(kind==='changed'?'draft.sourceChanged':'draft.otherTab');}}
+export function draftReceiptBinding(value:unknown,tenant:string,actor:string){if(!value)return null;const token=value as {scope?:unknown;version?:unknown},scope=token.scope;if(typeof scope!=='string'||scope.length>300||!['authoring','grading'].some(kind=>scope.startsWith(`${kind}:${tenant}:${actor}:`))||!(token.version===null||typeof token.version==='string'&&/^[0-9a-f-]{36}$/.test(token.version)))throw new LocalizedError("draft.invalidDeviceDraftReceipt");return {scope,version:token.version as string|null};}
 /** Opaque revisions (including deletion tombstones) prevent stale tabs and queued writes from resurrecting old drafts. */
 export class DraftSession<T>{
  private version:string|null=null;private blocked:'conflict'|'changed'|null=null;private tail:Promise<unknown>=Promise.resolve();

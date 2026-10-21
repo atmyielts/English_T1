@@ -1,4 +1,5 @@
 import type { ImportPlan } from "../../../../packages/assessment-core/src/bank-import.ts";
+import { useAppT } from "../i18n/index.ts";
 export interface SelectedImportFile {
   name: string;
   format: "csv" | "json";
@@ -12,19 +13,17 @@ export function ImportFileStatus(
     stage: (data: Record<string, unknown>) => void;
   },
 ) {
+  const t = useAppT();
   if (!file) return null;
   return (
     <>
       <p>
-        {file.name}: {file.plan.rows.length} valid questions,{" "}
-        {file.plan.errors.length} errors,{" "}
-        {file.plan.rows.filter((row) => row.warnings.length).length}{" "}
-        duplicate warnings.
+        {t("fileStatus.summary", { name: file.name, valid: String(file.plan.rows.length), errors: String(file.plan.errors.length), warnings: String(file.plan.rows.filter((row) => row.warnings.length).length) })}
       </p>
       {file.plan.errors.length > 0 && (
-        <ul aria-label="Import validation errors">
+        <ul aria-label={t("fileStatus.errorsLabel")}>
           {file.plan.errors.slice(0, 100).map((issue) => (
-            <li key={issue.line}>Entry {issue.line}: {issue.message}</li>
+            <li key={issue.line}>{t("fileStatus.entry", { line: String(issue.line), message: issue.message })}</li>
           ))}
         </ul>
       )}
@@ -38,7 +37,7 @@ export function ImportFileStatus(
             source: file.source,
           })}
       >
-        Stage file for review
+        {t("fileStatus.stage")}
       </button>
     </>
   );

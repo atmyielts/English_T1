@@ -1,4 +1,5 @@
 import type { BankImport } from "../../../../packages/assessment-web/src/bank-import";
+import { useAppT } from "../i18n/index.ts";
 export function ImportHistory(
   { jobs, disabled, more, open, loadMore }: {
     jobs: BankImport[];
@@ -8,28 +9,29 @@ export function ImportHistory(
     loadMore: () => void;
   },
 ) {
+  const t = useAppT();
   return (
     <section>
-      <h2>Import history</h2>
-      {!jobs.length && <p>No staged imports yet.</p>}
+      <h2>{t("history.title")}</h2>
+      {!jobs.length && <p>{t("history.empty")}</p>}
       <ul className="records">
         {jobs.map((job) => (
           <li key={job.id}>
             <strong>{job.source_name}</strong>
-            <span>{job.state} · {job.processed}/{job.total}</span>
+            <span>{t("history.meta", { state: job.state, processed: String(job.processed), total: String(job.total) })}</span>
             <button
               className="quiet"
               disabled={disabled}
               onClick={() => open(job.id)}
             >
-              Review {job.source_name}
+              {t("history.review", { name: job.source_name })}
             </button>
           </li>
         ))}
       </ul>
       {more && (
         <button disabled={disabled} onClick={loadMore}>
-          Load more imports
+          {t("history.more")}
         </button>
       )}
     </section>

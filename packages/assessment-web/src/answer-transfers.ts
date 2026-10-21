@@ -5,6 +5,7 @@ import {
 import { artifactHex } from "../../assessment-core/src/artifacts.ts";
 import { uuid } from "../../assessment-core/src/mod.ts";
 import type { LocalAnswerFile } from "./answer-types.ts";
+import {LocalizedError} from './i18n/translate.ts';
 export interface AnswerTransferStore {
   read(file: string): Promise<LocalAnswerFile>;
   bind(file: string, binding: unknown): Promise<LocalAnswerFile>;
@@ -46,9 +47,7 @@ export class AnswerTransfers {
     const state = await this.store.read(file);
     this.active();
     if (state.phase !== "sealed" || !state.manifest) {
-      throw new Error(
-        "Finish and seal the complete local answer before admission or upload.",
-      );
+      throw new LocalizedError("transfer.finishSealCompleteLocal");
     }
     if (state.binding) {
       mediaAnswer(state.binding);
@@ -58,9 +57,7 @@ export class AnswerTransfers {
     this.active();
     if (!receipt) {
       if (!admitNew) {
-        throw new Error(
-          "This device copy has no matching prior admission receipt. Recovery cannot admit or select a new answer after the clock closes.",
-        );
+        throw new LocalizedError("transfer.deviceCopyMatchingPrior");
       }
       receipt = await this.backend.admit(state);
     }
@@ -126,9 +123,7 @@ export class AnswerTransfers {
         uuid(receipt.id) !== id ||
         !["quarantined", "ready", "rejected"].includes(receipt.state)
       ) {
-        throw new Error(
-          "The service did not confirm completion of this academic answer.",
-        );
+        throw new LocalizedError("transfer.serviceConfirmCompletionAcademic");
       }
       const completed = await this.store.checkpoint(
         file,

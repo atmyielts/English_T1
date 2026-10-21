@@ -15,6 +15,12 @@ import {
 } from "./answer-upload";
 import type { LocalAnswerFile } from "./answer-types";
 import type { AttemptRuntime } from "./runtime";
+import {
+  english,
+  LocalizedError,
+  messageText,
+} from "./i18n/translate.ts";
+import { useWebT } from "./i18n/useWebT.ts";
 export function useAcademicAnswer(
   tenant: string,
   actor: string,
@@ -25,6 +31,7 @@ export function useAcademicAnswer(
   select: (binding: unknown) => Promise<boolean>,
   onRecording?: (active: boolean) => void,
 ) {
+  const t = useWebT();
   const [files, setFiles] = useState<LocalAnswerFile[]>([]),
     [assets, setAssets] = useState<CandidateAnswerAsset[]>([]),
     [error, setError] = useState(""),
@@ -48,9 +55,7 @@ export function useAcademicAnswer(
       !live.current || boundScope.current !== scope || !workspace.current ||
       (answering && !current.current.enabled)
     ) {
-      throw new Error(
-        "This question or active exam device changed. Saved bytes remain in their original recovery workspace.",
-      );
+      throw new LocalizedError("mediaAnswer.scopeChanged");
     }
   };
   async function refresh() {
@@ -94,21 +99,17 @@ export function useAcademicAnswer(
         await refresh();
       } catch (cause) {
         if (valid) {
-          setError(
-            cause instanceof Error
-              ? cause.message
-              : "Recovery status could not be loaded.",
-          );
+          setError(messageText(cause, t, "mediaAnswer.statusFailed"));
         }
       }
     }).catch((cause) => {
-      if (valid) setError(cause.message);
+      if (valid) setError(messageText(cause, t, "mediaAnswer.statusFailed"));
     });
     const hide = () => {
       generation.current++;
       current.current.onRecording?.(false);
       recorder.current?.interrupt(
-        "The exam page closed or was hidden. Review the saved interrupted take; it was not automatically selected.",
+        english("mediaAnswer.pageHidden"),
       );
       recorder.current = null;
     };
@@ -127,7 +128,7 @@ export function useAcademicAnswer(
       generation.current++;
       current.current.onRecording?.(false);
       recorder.current?.interrupt(
-        "The question clock, lease or exam state changed. The saved prefix is not a completed answer.",
+        english("mediaAnswer.stateChanged"),
       );
       recorder.current = null;
     }
@@ -144,11 +145,7 @@ export function useAcademicAnswer(
       await work();
     } catch (cause) {
       if (live.current && boundScope.current === scope) {
-        setError(
-          cause instanceof Error
-            ? cause.message
-            : "The academic answer action could not be completed.",
-        );
+        setError(messageText(cause, t, "mediaAnswer.actionFailed"));
       }
     } finally {
       running.current = false;
@@ -181,9 +178,7 @@ export function useAcademicAnswer(
         if (
           !policy || file.size < 1 || file.size > policy.max_bytes
         ) {
-          throw new Error(
-            "Choose a nonempty file within this question's reviewed size limit.",
-          );
+          throw new LocalizedError("mediaAnswer.fileTooLarge");
         }
         const store = workspace.current!.store;
         let state = resume ? await store.read(resume) : await store.begin(
@@ -198,9 +193,7 @@ export function useAcademicAnswer(
           state.item_version_id !== entry.item_version_id ||
           state.filename !== file.name || state.mime !== mime
         ) {
-          throw new Error(
-            "Reselect the saved file and format to recover this device copy, or start a separate answer.",
-          );
+          throw new LocalizedError("mediaAnswer.reselectFile");
         }
         for (
           let offset = 0;
@@ -220,7 +213,7 @@ export function useAcademicAnswer(
         active(true);
         await store.seal(state.id);
         setNotice(
-          "Device copy is encrypted and ready. Use this answer before the deadline; saving a file alone does not select it.",
+          t("mediaAnswer.copyReady"),
         );
       }),
     start: () =>
@@ -229,18 +222,14 @@ export function useAcademicAnswer(
         if (
           !policy || !policy.sources.includes("capture") || recorder.current
         ) {
-          throw new Error(
-            "Recording is not available for this question or a take is already active.",
-          );
+          throw new LocalizedError("mediaAnswer.recordingUnavailable");
         }
         const mime = policy.mimes.find((value) =>
           typeof MediaRecorder !== "undefined" &&
           MediaRecorder.isTypeSupported(value)
         );
         if (!mime || !navigator.mediaDevices?.getUserMedia) {
-          throw new Error(
-            "This browser cannot record a permitted format. Use an allowed upload or contact the institution before proceeding.",
-          );
+          throw new LocalizedError("mediaAnswer.browserCannotRecord");
         }
         current.current.onRecording?.(true);
         try {
@@ -254,9 +243,7 @@ export function useAcademicAnswer(
             !current.current.enabled || generation.current !== version
           ) {
             stream.getTracks().forEach((track) => track.stop());
-            throw new Error(
-              "Recording preparation was cancelled because the active question changed.",
-            );
+            throw new LocalizedError("mediaAnswer.preparationCancelled");
           }
           const started = await AcademicRecorder.start(
             workspace.current!.store,
@@ -299,11 +286,9 @@ export function useAcademicAnswer(
             !current.current.enabled || generation.current !== version
           ) {
             started.interrupt(
-              "Recording preparation no longer belongs to this active question.",
+              english("mediaAnswer.prepNotOwned"),
             );
-            throw new Error(
-              "The active question changed during recording preparation.",
-            );
+            throw new LocalizedError("mediaAnswer.questionChanged");
           }
           recorder.current = started;
         } finally {
@@ -313,11 +298,11 @@ export function useAcademicAnswer(
     stop: () =>
       run(async () => {
         const take = recorder.current;
-        if (!take) throw new Error("No active take is recording.");
+        if (!take) throw new LocalizedError("mediaAnswer.noActiveTake");
         try {
           await take.stop();
           setNotice(
-            "Recording is sealed on this device. Use this answer before the deadline, then finish its upload.",
+            t("mediaAnswer.sealed"),
           );
         } finally {
           recorder.current = null;
@@ -332,8 +317,8 @@ export function useAcademicAnswer(
         active();
         setNotice(
           confirmed
-            ? "The exam service confirmed this selected answer. Finish any remaining upload; scanning may complete later."
-            : "Selection is saved on this device but is still awaiting confirmation. Sync saved responses before the deadline.",
+            ? t("mediaAnswer.selectConfirmed")
+            : t("mediaAnswer.selectPending"),
         );
       }),
     clear: () =>
@@ -343,8 +328,8 @@ export function useAcademicAnswer(
         active();
         setNotice(
           confirmed
-            ? "The exam service confirmed that no answer is selected. Saved files and prior answer history are unchanged."
-            : "Clearing is saved on this device but still awaiting confirmation. Sync saved responses before the deadline.",
+            ? t("mediaAnswer.clearConfirmed")
+            : t("mediaAnswer.clearPending"),
         );
       }),
     upload: (id: string) =>
@@ -354,15 +339,15 @@ export function useAcademicAnswer(
         await workspace.current!.transfers.upload(id, (done, total) => {
           if (live.current && boundScope.current === scope) {
             setNotice(
-              `Transporting the pinned answer: ${
-                Math.floor(done / total * 100)
-              }%. Uploading does not select or change an answer.`,
+              t("mediaAnswer.transporting", {
+                percent: Math.floor(done / total * 100),
+              }),
             );
           }
         });
         active();
         setNotice(
-          "Transport completed. Refresh scan status to check availability; marks require human review.",
+          t("mediaAnswer.transportDone"),
         );
         await refresh();
       }),
@@ -370,7 +355,7 @@ export function useAcademicAnswer(
       run(async () => {
         await workspace.current!.store.discard(id);
         setNotice(
-          "Only this encrypted device copy was removed. Any server-side submission and academic answer are unchanged.",
+          t("mediaAnswer.copyRemoved"),
         );
       }),
   };

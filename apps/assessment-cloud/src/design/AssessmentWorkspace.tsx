@@ -20,6 +20,8 @@ import type { GradeAccess } from "../../../../packages/assessment-web/src/gradin
 import { AssessmentEditor } from "./AssessmentEditor";
 import { DefinitionSummary } from "./DefinitionSummary";
 import "./design.css";
+import { useI18n } from "../../../../packages/service-i18n/src/i18n.tsx";
+import { useAppT, useErrorText } from "../i18n/index.ts";
 type Editor = {
   initial: AssessmentDraft;
   source: string;
@@ -39,6 +41,7 @@ export function AssessmentWorkspace({
   rows: Record<string, Row[]>;
   reload: () => Promise<void>;
 }) {
+  const t = useAppT(), { date } = useI18n(), problem = useErrorText();
   const [ready, setReady] = useState(false),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
@@ -71,7 +74,7 @@ export function AssessmentWorkspace({
         }
       })
       .catch((cause) => {
-        if (!cancelled) setError(cause.message);
+        if (!cancelled) setError(problem(cause));
       });
     return () => {
       cancelled = true;
@@ -96,7 +99,7 @@ export function AssessmentWorkspace({
     let committed = false;
     try {
       if (!engine.current)
-        throw new Error("The encrypted assessment queue is not ready.");
+        throw new Error(t("design.queueNotReady"));
       const result = action
         ? await engine.current.commands.execute(action, data!)
         : await engine.current.commands.retry();
@@ -111,17 +114,13 @@ export function AssessmentWorkspace({
         setNotice(
           (result as { device_draft_preserved?: boolean })
             ?.device_draft_preserved
-            ? "Change recorded. A newer device draft was preserved for review."
-            : "Assessment change recorded. Published snapshots remain immutable.",
+            ? t("items.draftPreserved")
+            : t("design.recorded"),
         );
       return true;
     } catch (cause) {
       if (alive.current) {
-        setError(
-          cause instanceof Error
-            ? cause.message
-            : "The assessment change could not be recorded.",
-        );
+        setError(problem(cause, "design.recordFailed"));
         if (
           cause instanceof ServiceRequestError &&
           [401, 403].includes(cause.status)
@@ -132,7 +131,7 @@ export function AssessmentWorkspace({
         }
         if (committed)
           setNotice(
-            "The change was recorded. Refresh the institution records before continuing.",
+            t("items.recordedRefresh"),
           );
       }
       return committed;
@@ -142,7 +141,7 @@ export function AssessmentWorkspace({
           setPending((await engine.current?.commands.pending()) ?? null);
         } catch {
           setError(
-            "The encrypted request queue could not be read. Refresh before making changes.",
+            t("design.queueUnreadable"),
           );
           setReady(false);
         }
@@ -194,7 +193,7 @@ export function AssessmentWorkspace({
         setError(
           cause instanceof Error
             ? cause.message
-            : "Revision history could not be loaded.",
+            : t("design.historyFailed"),
         );
     } finally {
       if (alive.current && version === generation.current) setBusy(false);
@@ -213,10 +212,9 @@ export function AssessmentWorkspace({
   return (
     <>
       <section className="assessment-library">
-        <h2>Assessment library</h2>
+        <h2>{t("library.title")}</h2>
         <p>
-          Centers own their tests, question pools and published versions. Each
-          new publication is an independent snapshot.
+          {t("library.lead")}
         </p>
         {error && (
           <p role="alert" className="error">
@@ -225,35 +223,33 @@ export function AssessmentWorkspace({
         )}
         {notice && <p role="status">{notice}</p>}
         {!ready && !error && (
-          <p role="status">Opening encrypted assessment request queue…</p>
+          <p role="status">{t("library.opening")}</p>
         )}
         {pending && (
           <div role="alert">
             <p>
-              A saved {pending.action} request has no confirmed receipt. Retry
-              the same request before making another change.
+              {t("library.pending", { action: pending.action })}
             </p>
             <button disabled={busy || !ready} onClick={() => void mutate()}>
-              Retry saved assessment request
+              {t("library.retry")}
             </button>
           </div>
         )}
         {access.can_write_items && (
           <button disabled={locked} onClick={() => edit()}>
-            Create assessment
+            {t("library.create")}
           </button>
         )}
         {!(rows.assessments ?? []).length && (
           <p>
-            No working definitions yet. Create an assessment from approved
-            institution questions.
+            {t("library.empty")}
           </p>
         )}
         <ul className="records">
           {(rows.assessments ?? []).map((row) => (
             <li key={row.id}>
               <strong>{String(row.title)}</strong>
-              <span>Working revision {String(row.revision)}</span>
+              <span>{t("library.revision", { revision: String(row.revision) })}</span>
               <div className="design-actions">
                 {access.can_write_items && (
                   <button
@@ -261,7 +257,7 @@ export function AssessmentWorkspace({
                     disabled={locked}
                     onClick={() => edit(row)}
                   >
-                    Edit {String(row.title)}
+                    {t("library.edit", { title: String(row.title) })}
                   </button>
                 )}
                 {access.can_publish && (
@@ -273,7 +269,7 @@ export function AssessmentWorkspace({
                       setConfirmed(false);
                     }}
                   >
-                    Review publication of {String(row.title)}
+                    {t("library.reviewPublication", { title: String(row.title) })}
                   </button>
                 )}
                 <button
@@ -281,62 +277,57 @@ export function AssessmentWorkspace({
                   disabled={busy}
                   onClick={() => void revisions(row.id!)}
                 >
-                  Revision history of {String(row.title)}
+                  {t("library.history", { title: String(row.title) })}
                 </button>
               </div>
             </li>
           ))}
         </ul>
-        <h2>Published versions</h2>
+        <h2>{t("library.published")}</h2>
         {!(rows["assessment-versions"] ?? []).length && (
-          <p>No published assessment versions.</p>
+          <p>{t("library.noPublished")}</p>
         )}
         {(rows["assessment-versions"] ?? []).map((row) => (
           <details key={row.id}>
             <summary>
-              {String((row.definition as Definition).title)} · Published version{" "}
-              {String(row.version)}
+              {t("library.publishedSummary", { title: String((row.definition as Definition).title), version: String(row.version) })}
             </summary>
             <DefinitionSummary definition={row.definition as Definition} />
             <p>
-              Version ID: {row.id}. Editing the working definition will not
-              change this version.
+              {t("library.versionNote", { id: String(row.id) })}
             </p>
           </details>
         ))}
         {history && (
           <>
-            <h3>Immutable working revision history</h3>
-            {!history.length && <p>No revision records returned.</p>}
+            <h3>{t("library.historyTitle")}</h3>
+            {!history.length && <p>{t("library.noHistory")}</p>}
             {history.map((row) => (
               <details key={row.id}>
                 <summary>
-                  Revision {String(row.revision)} · {String(row.reason)}
+                  {t("library.historyRow", { revision: String(row.revision), reason: String(row.reason) })}
                 </summary>
                 <DefinitionSummary definition={row.definition as Definition} />
                 <p>
-                  Recorded by {String(row.actor_id)} at{" "}
-                  {new Date(String(row.created_at)).toLocaleString()}.
+                  {t("library.recordedBy", { actor: String(row.actor_id), date: date(String(row.created_at)) })}
                 </p>
               </details>
             ))}
             <button className="quiet" onClick={() => setHistory(null)}>
-              Close revision history
+              {t("library.closeHistory")}
             </button>
           </>
         )}
         {review && (
           <div className="publication-review">
-            <h3>Review publication: {String(review.title)}</h3>
+            <h3>{t("library.reviewTitle", { title: String(review.title) })}</h3>
             <DefinitionSummary definition={review.definition as Definition} />
             <p>
-              Publication pins all listed item versions and section rules.
-              Existing exam windows keep their previous version.
+              {t("library.reviewLead")}
             </p>
             {!reviewCurrent && (
               <p role="alert">
-                This working definition changed. Close this review and reopen
-                the latest revision.
+                {t("library.changed")}
               </p>
             )}
             <label className="check">
@@ -346,7 +337,7 @@ export function AssessmentWorkspace({
                 checked={confirmed}
                 onChange={(e) => setConfirmed(e.target.checked)}
               />
-              I reviewed this working revision and its section rules.
+              {t("library.confirm")}
             </label>
             <div className="design-actions">
               <button
@@ -358,7 +349,7 @@ export function AssessmentWorkspace({
                   })
                 }
               >
-                Publish immutable version
+                {t("library.publish")}
               </button>
               <button
                 className="quiet"
@@ -368,7 +359,7 @@ export function AssessmentWorkspace({
                   setConfirmed(false);
                 }}
               >
-                Close publication review
+                {t("library.closeReview")}
               </button>
             </div>
           </div>

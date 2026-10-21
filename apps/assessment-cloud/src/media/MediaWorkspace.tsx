@@ -14,6 +14,8 @@ import type {
   UploadProgress,
 } from "../../../../packages/assessment-web/src/artifact-upload";
 import "./media.css";
+import { useI18n } from "../../../../packages/service-i18n/src/i18n.tsx";
+import { useAppT, useErrorText } from "../i18n/index.ts";
 type Session = Awaited<ReturnType<typeof openArtifactUploads>>;
 export function MediaWorkspace({
   tenant,
@@ -24,6 +26,8 @@ export function MediaWorkspace({
   actor: string;
   canUpload: boolean;
 }) {
+  const t = useAppT(), { number } = useI18n(), problem = useErrorText();
+  const mib = (bytes: number) => number(bytes / 1048576, { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: false });
   const [rows, setRows] = useState<ArtifactRow[]>([]),
     [cursor, setCursor] = useState<string | null>(null),
     [loading, setLoading] = useState(true);
@@ -61,11 +65,7 @@ export function MediaWorkspace({
       if (alive.current && version === generation.current) {
         setRows([]);
         setCursor(null);
-        setError(
-          cause instanceof Error
-            ? cause.message
-            : "The media library could not be loaded.",
-        );
+        setError(problem(cause, "library.media.loadFailed"));
       }
     } finally {
       if (alive.current && version === generation.current) setLoading(false);
@@ -93,7 +93,7 @@ export function MediaWorkspace({
           }
         })
         .catch((cause) => {
-          if (active) setError(cause.message);
+          if (active) setError(problem(cause));
         });
     return () => {
       active = false;
@@ -111,10 +111,10 @@ export function MediaWorkspace({
       if (alive.current) {
         setNotice(
           receipt.state === "cancelled"
-            ? "Upload cancelled. Stored parts await the retention cleanup workflow."
+            ? t("library.media.cancelled")
             : receipt.state === "quarantined"
-              ? "Upload received. It remains quarantined until scanning finishes."
-              : `The service confirmed this artifact is ${receipt.state}.`,
+              ? t("library.media.quarantined")
+              : t("library.media.confirmed", { state: receipt.state }),
         );
         setFile(null);
         setProgress(null);
@@ -124,18 +124,14 @@ export function MediaWorkspace({
       }
     } catch (cause) {
       if (alive.current)
-        setError(
-          cause instanceof Error
-            ? cause.message
-            : "The upload did not return a confirmed receipt. Reselect the same file to resume.",
-        );
+        setError(problem(cause, "library.media.noReceipt"));
     } finally {
       if (alive.current) {
         try {
           setPending(await session!.uploads.pending());
         } catch {
           setError(
-            "Saved upload metadata could not be read. Reopen this workspace before retrying.",
+            t("library.media.metadataFailed"),
           );
         }
         setBusy(false);
@@ -154,11 +150,9 @@ export function MediaWorkspace({
   return (
     <div className="media-layout">
       <section>
-        <h2>Protected institution media</h2>
+        <h2>{t("library.media.title")}</h2>
         <p>
-          Upload images, audio, video or PDFs. Only scanned, ready images and
-          recordings can be attached to question prompts. A clean scan does not
-          approve a question.
+          {t("library.media.lead")}
         </p>
         {error && (
           <p className="error" role="alert">
@@ -179,13 +173,12 @@ export function MediaWorkspace({
             void load();
           }}
         >
-          Refresh scan status
+          {t("library.media.refresh")}
         </button>
-        {loading && <p role="status">Loading media library…</p>}
+        {loading && <p role="status">{t("library.media.loading")}</p>}
         {!loading && !error && !rows.length && (
           <p>
-            No media on this page. Upload a file to start building your
-            institution’s library.
+            {t("library.media.empty")}
           </p>
         )}
         <ul className="records media-records">
@@ -193,18 +186,18 @@ export function MediaWorkspace({
             <li key={row.id}>
               <strong>{row.filename}</strong>
               <span>
-                {row.mime} · {(row.byte_length / 1048576).toFixed(2)} MiB
+                {t("library.media.size", { mime: row.mime, size: mib(row.byte_length) })}
               </span>
               <span className="media-state">
                 {row.state === "quarantined"
-                  ? "Quarantined — scan pending"
+                  ? t("library.media.stateQuarantined")
                   : row.state === "ready"
-                    ? "Ready — scan passed"
+                    ? t("library.media.stateReady")
                     : row.state === "rejected"
-                      ? "Rejected — not available for use"
+                      ? t("library.media.stateRejected")
                       : row.state === "cancelled"
-                        ? "Cancelled — not available for use"
-                        : "Upload not complete"}
+                        ? t("library.media.stateCancelled")
+                        : t("library.media.stateIncomplete")}
               </span>
             </li>
           ))}
@@ -216,16 +209,16 @@ export function MediaWorkspace({
             disabled={loading || busy}
             onClick={() => void load(cursor)}
           >
-            Load more media
+            {t("library.media.more")}
           </button>
         )}
       </section>
       {canUpload && (
         <section className="editor">
-          <h2>{pending ? "Resume your saved upload" : "Upload media"}</h2>
+          <h2>{pending ? t("library.media.resumeTitle") : t("library.media.uploadTitle")}</h2>
           {!mediaConfigured && (
             <p role="status">
-              The protected media endpoint must be configured before uploading.
+              {t("library.media.unconfigured")}
             </p>
           )}
           {pending && (
@@ -234,13 +227,12 @@ export function MediaWorkspace({
                 <strong>{pending.manifest.filename}</strong>
               </p>
               <p>
-                {pending.manifest.mime} ·{" "}
-                {(pending.manifest.byte_length / 1048576).toFixed(2)} MiB
+                {t("library.media.size", { mime: pending.manifest.mime, size: mib(pending.manifest.byte_length) })}
               </p>
               <p>
                 {pending.cancelling
-                  ? "A cancellation is waiting for its receipt. Retry cancellation below."
-                  : "Reselect the original file and format. Its complete content is checked before resuming. File bytes and credentials are not saved on this device."}
+                  ? t("library.media.cancelWaiting")
+                  : t("library.media.reselect")}
               </p>
             </div>
           )}
@@ -248,9 +240,9 @@ export function MediaWorkspace({
             <fieldset
               disabled={busy || !session || pending?.cancelling === true}
             >
-              <legend>Source file</legend>
+              <legend>{t("library.media.source")}</legend>
               <label>
-                File (required, up to 2 GiB)
+                {t("library.media.file")}
                 <input
                   ref={fileInput}
                   type="file"
@@ -265,7 +257,7 @@ export function MediaWorkspace({
                 />
               </label>
               <label>
-                File format
+                {t("library.media.format")}
                 <select
                   value={mime}
                   onChange={(event) =>
@@ -280,12 +272,10 @@ export function MediaWorkspace({
                 </select>
               </label>
               <p className="hint">
-                The scanner checks actual contents, not just the filename or
-                selected format. Animated images and active/encrypted PDFs are
-                not accepted.
+                {t("library.media.scanHint")}
               </p>
               <button disabled={!file}>
-                {pending ? "Resume verified upload" : "Upload and scan"}
+                {pending ? t("library.media.resume") : t("library.media.upload")}
               </button>
             </fieldset>
           </form>
@@ -293,19 +283,19 @@ export function MediaWorkspace({
             <div role="status" className="media-progress">
               <p>
                 {progress.stage === "checking"
-                  ? "Checking file identity"
+                  ? t("library.media.checking")
                   : progress.stage === "uploading"
-                    ? "Uploading verified parts"
-                    : "Waiting for scan"}{" "}
-                · {Math.floor((progress.done / progress.total) * 100)}%
+                    ? t("library.media.uploading")
+                    : t("library.media.waiting")}{" "}
+                {t("library.media.percent", { percent: String(Math.floor((progress.done / progress.total) * 100)) })}
               </p>
               <progress
                 max={progress.total}
                 value={progress.done}
                 aria-label={
                   progress.stage === "checking"
-                    ? "Checking file identity"
-                    : "Upload progress"
+                    ? t("library.media.checking")
+                    : t("library.media.progress")
                 }
               />
             </div>
@@ -319,13 +309,12 @@ export function MediaWorkspace({
                   disabled={busy || !session}
                   onClick={() => setConfirmCancel(true)}
                 >
-                  Cancel saved upload…
+                  {t("library.media.cancelSaved")}
                 </button>
               ) : (
                 <>
                   <p>
-                    Cancelling stops this upload; it does not immediately erase
-                    stored encrypted parts. Completed media cannot be cancelled.
+                    {t("library.media.cancelLead")}
                   </p>
                   <button
                     type="button"
@@ -333,8 +322,8 @@ export function MediaWorkspace({
                     onClick={() => void run(() => session!.uploads.cancel())}
                   >
                     {pending.cancelling
-                      ? "Retry cancellation"
-                      : "Confirm cancellation"}
+                      ? t("library.media.retryCancel")
+                      : t("library.media.confirmCancel")}
                   </button>
                   {!pending.cancelling && (
                     <button
@@ -343,7 +332,7 @@ export function MediaWorkspace({
                       disabled={busy}
                       onClick={() => setConfirmCancel(false)}
                     >
-                      Keep upload
+                      {t("library.media.keep")}
                     </button>
                   )}
                 </>

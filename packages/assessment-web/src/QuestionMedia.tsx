@@ -3,6 +3,8 @@ import type { Item } from "../../assessment-core/src/mod.ts";
 import { artifactUrl } from "./artifacts";
 import { supabase } from "./client";
 import "./media.css";
+import { messageText } from "./i18n/translate.ts";
+import { useWebT } from "./i18n/useWebT.ts";
 type Media = NonNullable<Item["media"]>[number];
 function ProtectedMedia({
   media,
@@ -19,7 +21,8 @@ function ProtectedMedia({
   task?: string;
   imageOverlay?:(media:Media)=>React.ReactNode;
 }) {
-  const description = useId(),
+  const t = useWebT(),
+    description = useId(),
     player = useRef<HTMLMediaElement | null>(null),
     [retry, setRetry] = useState(0),
     [state, setState] = useState<"loading" | "ready" | "error">("loading");
@@ -28,8 +31,7 @@ function ProtectedMedia({
   try {
     src = artifactUrl(media.artifact_id, tenant, attempt, task);
   } catch (cause) {
-    configurationError =
-      cause instanceof Error ? cause.message : "Media is unavailable.";
+    configurationError = messageText(cause, t, "media.unavailable");
   }
   // The parent keys this component by actor/tenant/attempt/artifact. Native
   // load/error events own readiness; a mount effect resetting it can overwrite
@@ -65,13 +67,12 @@ function ProtectedMedia({
         </p>
       ) : (
         <>
-          {state === "loading" && <p role="status">Loading {media.kind}…</p>}
+          {state === "loading" && (
+            <p role="status">{t(`media.loading.${media.kind}` as const)}</p>
+          )}
           {state === "error" ? (
             <div className="error" role="alert">
-              <p>
-                This {media.kind} could not be loaded. Access may have expired
-                or playback may be unsupported.
-              </p>
+              <p>{t(`media.failed.${media.kind}` as const)}</p>
               <button
                 type="button"
                 className="quiet"
@@ -80,7 +81,7 @@ function ProtectedMedia({
                   setRetry((value) => value + 1);
                 }}
               >
-                Retry {media.kind}
+                {t(`media.retry.${media.kind}` as const)}
               </button>
             </div>
           ) : media.kind === "image" ? (
@@ -144,7 +145,7 @@ export function QuestionMedia({
   enabled?: boolean;
   imageOverlay?:(media:Media)=>React.ReactNode;
 }) {
-  const [authorized, setAuthorized] = useState("");
+  const t = useWebT(), [authorized, setAuthorized] = useState("");
   useEffect(() => {
     setAuthorized("");
     if (!enabled || !supabase) return;
@@ -166,12 +167,9 @@ export function QuestionMedia({
   if (!item.media?.length) return null;
   if (!enabled)
     return (
-      <p className="hint">
-        Question media is unavailable while this sitting is paused or
-        disconnected from its active lease.
-      </p>
+      <p className="hint">{t("media.paused")}</p>
     );
-  if (authorized !== actor) return <p role="status">Checking media access…</p>;
+  if (authorized !== actor) return <p role="status">{t("media.checking")}</p>;
   return (
     <div className="question-media-list">
       {item.media.filter(media=>media.artifact_id!==item.image_response?.artifact_id).map((media, index) => (

@@ -7,6 +7,9 @@ import { MediaAnswerRules, mediaFormatLabel } from "./MediaAnswerRules";
 import { useAcademicAnswer } from "./useAcademicAnswer";
 import { ClearAcademicSelection } from "./ClearAcademicSelection";
 import "./media-answer.css";
+import { useI18n } from "../../service-i18n/src/i18n.tsx";
+import { isWebKey, localizeText } from "./i18n/translate.ts";
+import { useWebT } from "./i18n/useWebT.ts";
 export function CandidateMediaAnswer({
   tenant,
   actor,
@@ -30,6 +33,12 @@ export function CandidateMediaAnswer({
   select: (binding: unknown) => Promise<boolean>;
   onRecording?: (active: boolean) => void;
 }) {
+  const t = useWebT(), { number } = useI18n();
+  /** Status codes keep their English wording; other languages translate them. */
+  const code = (prefix: "phase" | "asset", value: string) => {
+    const key = `mediaAnswer.${prefix}.${value}`;
+    return isWebKey(key) ? t(key) : value;
+  };
   const state = useAcademicAnswer(
       tenant,
       actor,
@@ -62,20 +71,24 @@ export function CandidateMediaAnswer({
           {state.error && <p className="error" role="alert">{state.error}</p>}
           {state.notice && <p role="status">{state.notice}</p>}
           {!state.ready && (
-            <p role="status">Opening encrypted academic answer recovery…</p>
+            <p role="status">{t("mediaAnswer.opening")}</p>
           )}
           {selected && (
             <p role="status">
-              {confirmed
-                ? "Selected answer confirmed by the exam service."
-                : "A selection is held on this device; check response sync before the deadline."}
+              {t(
+                confirmed
+                  ? "mediaAnswer.selectedConfirmed"
+                  : "mediaAnswer.selectedHeld",
+              )}
             </p>
           )}
           {value === null && (
             <p role="status">
-              {confirmed
-                ? "No answer selected — confirmed by the exam service."
-                : "Clearing is held on this device; check response sync before the deadline."}
+              {t(
+                confirmed
+                  ? "mediaAnswer.clearedConfirmed"
+                  : "mediaAnswer.clearedHeld",
+              )}
             </p>
           )}
           {selected && (
@@ -87,9 +100,9 @@ export function CandidateMediaAnswer({
           )}
           {policy.sources.includes("upload") && (
             <fieldset disabled={disabled || !enabled || capturing}>
-              <legend>Save a file on this device</legend>
+              <legend>{t("mediaAnswer.saveFile")}</legend>
               <label>
-                Submission file<input
+                {t("mediaAnswer.file")}<input
                   type="file"
                   accept={policy.mimes.join(",")}
                   onChange={(event) => {
@@ -105,31 +118,33 @@ export function CandidateMediaAnswer({
                 />
               </label>
               <label>
-                Submission format<select
+                {t("mediaAnswer.format")}<select
                   value={mime}
                   onChange={(event) =>
                     setMime(event.target.value as ArtifactMime)}
                 >
                   {policy.mimes.map((format) => (
                     <option key={format} value={format}>
-                      {mediaFormatLabel(format)}
+                      {mediaFormatLabel(format, t)}
                     </option>
                   ))}
                 </select>
               </label>
               <label>
-                Device copy to recover<select
+                {t("mediaAnswer.recoverCopy")}<select
                   value={resume}
                   onChange={(event) =>
                     setResume(event.target.value)}
                 >
-                  <option value="">Save as a new device copy</option>
+                  <option value="">{t("mediaAnswer.newCopy")}</option>
                   {state.files.filter((row) =>
                     row.phase === "open" && row.source === "upload"
                   ).map((row) => (
                     <option value={row.id} key={row.id}>
-                      {row.filename} · {row.byte_length.toLocaleString()}{" "}
-                      bytes saved
+                      {t("mediaAnswer.bytesSaved", {
+                        name: row.filename,
+                        bytes: number(row.byte_length),
+                      })}
                     </option>
                   ))}
                 </select>
@@ -140,26 +155,30 @@ export function CandidateMediaAnswer({
                 onClick={() =>
                   file && void state.stage(file, mime, resume || undefined)}
               >
-                Save encrypted device copy
+                {t("mediaAnswer.saveCopy")}
               </button>
             </fieldset>
           )}
           {policy.sources.includes("capture") && (
             <fieldset disabled={disabled || !enabled}>
-              <legend>Record this academic answer</legend>
+              <legend>{t("mediaAnswer.record")}</legend>
               <p className="hint">
-                This explicitly requests your
-                microphone{entry.item.type === "video_response"
-                  ? " and camera"
-                  : ""}{" "}
-                for this answer only. It is separate from proctor monitoring.
+                {t(
+                  entry.item.type === "video_response"
+                    ? "mediaAnswer.requestsVideo"
+                    : "mediaAnswer.requestsAudio",
+                )}
               </p>
               <p role="status">
                 {state.recording
-                  ? `${state.recording.phase}: ${state.recording.saved_bytes.toLocaleString()} bytes committed on this device. ${
-                    state.recording.problem ?? ""
-                  }`
-                  : "No academic take is recording."}
+                  ? t("mediaAnswer.committed", {
+                    phase: code("phase", state.recording.phase),
+                    bytes: number(state.recording.saved_bytes),
+                    problem: state.recording.problem
+                      ? localizeText(state.recording.problem, t)
+                      : "",
+                  })
+                  : t("mediaAnswer.noTake")}
               </p>
               <button
                 type="button"
@@ -167,9 +186,11 @@ export function CandidateMediaAnswer({
                 onClick={() =>
                   void state.start()}
               >
-                Start {entry.item.type === "video_response" ? "video" : "audio"}
-                {" "}
-                answer recording
+                {t(
+                  entry.item.type === "video_response"
+                    ? "mediaAnswer.startVideo"
+                    : "mediaAnswer.startAudio",
+                )}
               </button>
               <button
                 type="button"
@@ -177,21 +198,15 @@ export function CandidateMediaAnswer({
                 disabled={!capturing}
                 onClick={() => void state.stop()}
               >
-                Stop and seal this take
+                {t("mediaAnswer.stop")}
               </button>
             </fieldset>
           )}
-          <h3>Device copies and selected answer</h3>
-          <p className="hint">
-            A device copy is not automatically selected. Use a sealed copy
-            before the deadline; its exact pinned bytes may finish uploading
-            afterward.
-          </p>
+          <h3>{t("mediaAnswer.copies")}</h3>
+          <p className="hint">{t("mediaAnswer.copiesHint")}</p>
           {!state.files.length
             ? (
-              <p>
-                No answer bytes are saved in this question's device workspace.
-              </p>
+              <p>{t("mediaAnswer.noCopies")}</p>
             )
             : (
               <ul className="records">
@@ -204,22 +219,31 @@ export function CandidateMediaAnswer({
                     <li key={row.id}>
                       <strong>{row.filename}</strong>
                       <span>
-                        {row.byte_length.toLocaleString()} bytes ·{" "}
-                        {row.phase === "open"
-                          ? row.source === "capture"
-                            ? "Interrupted or unfinished take — not a complete answer"
-                            : "Incomplete device copy — reselect to recover"
-                          : "Sealed device copy"}
+                        {t("mediaAnswer.copyState", {
+                          bytes: number(row.byte_length),
+                          state: t(
+                            row.phase === "open"
+                              ? row.source === "capture"
+                                ? "mediaAnswer.copy.interrupted"
+                                : "mediaAnswer.copy.incomplete"
+                              : "mediaAnswer.copy.sealed",
+                          ),
+                        })}
                       </span>
                       {row.binding && (
                         <span>
-                          {chosen
-                            ? confirmed
-                              ? "Selected and confirmed"
-                              : "Selected locally; awaiting sync"
-                            : "Admitted, not currently selected"} ·{" "}
-                          {remote?.state ?? row.upload?.completed?.state ??
-                            "upload incomplete"}
+                          {t(
+                            chosen
+                              ? confirmed
+                                ? "mediaAnswer.binding.confirmed"
+                                : "mediaAnswer.binding.local"
+                              : "mediaAnswer.binding.admitted",
+                          )} ·{" "}
+                          {code(
+                            "asset",
+                            remote?.state ?? row.upload?.completed?.state ??
+                              "upload_incomplete",
+                          )}
                         </span>
                       )}
                       <div className="author-actions">
@@ -229,7 +253,7 @@ export function CandidateMediaAnswer({
                             row.phase !== "sealed"}
                           onClick={() => void state.select(row.id)}
                         >
-                          Use this answer
+                          {t("mediaAnswer.use")}
                         </button>
                         <button
                           type="button"
@@ -239,7 +263,7 @@ export function CandidateMediaAnswer({
                             (!enabled && !row.binding)}
                           onClick={() => void state.upload(row.id)}
                         >
-                          Finish or recover upload
+                          {t("mediaAnswer.finishUpload")}
                         </button>
                         <button
                           type="button"
@@ -247,7 +271,7 @@ export function CandidateMediaAnswer({
                           disabled={disabled || capturing}
                           onClick={() => setDiscard(row.id)}
                         >
-                          Remove device copy
+                          {t("mediaAnswer.remove")}
                         </button>
                       </div>
                     </li>
@@ -256,12 +280,8 @@ export function CandidateMediaAnswer({
               </ul>
             )}
           {discard && (
-            <div role="group" aria-label="Confirm device copy removal">
-              <p>
-                This removes only local recovery bytes. It does not clear the
-                selected answer or remove a server submission. Keep a copy until
-                transport is confirmed.
-              </p>
+            <div role="group" aria-label={t("mediaAnswer.confirmRemove")}>
+              <p>{t("mediaAnswer.removeExplain")}</p>
               <button
                 type="button"
                 disabled={disabled}
@@ -270,7 +290,7 @@ export function CandidateMediaAnswer({
                   setDiscard("");
                 }}
               >
-                Confirm device copy removal
+                {t("mediaAnswer.confirmRemove")}
               </button>
               <button
                 type="button"
@@ -278,7 +298,7 @@ export function CandidateMediaAnswer({
                 onClick={() =>
                   setDiscard("")}
               >
-                Keep device copy
+                {t("mediaAnswer.keep")}
               </button>
             </div>
           )}
@@ -288,7 +308,7 @@ export function CandidateMediaAnswer({
             disabled={disabled || capturing}
             onClick={() => void state.refresh()}
           >
-            Refresh academic scan status
+            {t("mediaAnswer.refresh")}
           </button>
         </>
       )}

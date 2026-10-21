@@ -1,7 +1,9 @@
 import {
   type AnalyticsReport,
-  metric,
+  metric as metricText,
 } from "../../../../packages/assessment-web/src/analytics";
+import { INTL, useI18n } from "../../../../packages/service-i18n/src/i18n.tsx";
+import { useAppT } from "../i18n/index.ts";
 export function ItemDiagnostics({
   report,
   disabled,
@@ -19,61 +21,51 @@ export function ItemDiagnostics({
   loadItems: () => void;
   moreItems: boolean;
 }) {
+  const t = useAppT(), { locale } = useI18n();
+  const metric = (value: number | null | undefined, digits = 1) => metricText(value, digits, t, INTL[locale]);
   return (
     <section aria-labelledby="item-diagnostics">
-      <h2 id="item-diagnostics">Question quality diagnostics</h2>
+      <h2 id="item-diagnostics">{t("diagnostics.title")}</h2>
       <p>
-        Compare only candidates who received the same selected question versions
-        and point weights. Shuffled order does not create a different group.
-        Different groups are not equated.
+        {t("diagnostics.lead")}
       </p>
       <p>
-        Corrected item-rest correlation requires at least five cases and nonzero
-        variation in both the item and remaining score. “Not available” is not a
-        zero correlation.
+        {t("diagnostics.correlationHint")}
       </p>
       <label>
-        Comparable form group<select
+        {t("diagnostics.form")}<select
           disabled={disabled}
           value={report.selected_form ?? ""}
           onChange={(event) => selectForm(event.target.value || null)}
         >
-          <option value="">All forms — descriptive totals only</option>
+          <option value="">{t("diagnostics.allForms")}</option>
           {report.forms.map((form) => (
             <option key={form.form_key} value={form.form_key}>
-              {form.item_count} questions · {form.sample_size} results ·{" "}
-              {form.form_key.slice(0, 8)}
+              {t("diagnostics.formOption", { questions: String(form.item_count), results: String(form.sample_size), key: form.form_key.slice(0, 8) })}
             </option>
           ))}
         </select>
       </label>
       {moreForms && (
         <button className="quiet" disabled={disabled} onClick={loadForms}>
-          Load more form groups
+          {t("diagnostics.moreForms")}
         </button>
       )}
       {!report.selected_form
         ? (
           <p>
-            Choose one form group to view item statistics and internal
-            consistency.
+            {t("diagnostics.chooseForm")}
           </p>
         )
         : (
           <>
             <p>
-              Raw coefficient alpha:{" "}
-              <strong>{metric(report.reliability?.raw_alpha, 3)}</strong>. Based
-              on {report.reliability?.sample_size} results and{" "}
-              {report.reliability?.item_count}{" "}
-              questions. At least five cases, two questions and nonzero total
-              variance are required. Unequal point weights affect raw alpha; it
-              is not a validity or fairness score.
+              {t("diagnostics.alpha")}{" "}
+              <strong>{metric(report.reliability?.raw_alpha, 3)}</strong>{t("diagnostics.alphaDetail", { results: String(report.reliability?.sample_size ?? ""), questions: String(report.reliability?.item_count ?? "") })}
             </p>
             {(report.reliability?.raw_alpha ?? 0) < 0 && (
               <p role="status">
-                Negative internal consistency: investigate content/scoring and
-                the sample. No scores or keys have been changed.
+                {t("diagnostics.negativeAlpha")}
               </p>
             )}
             <ul className="records analytics-items">
@@ -81,45 +73,40 @@ export function ItemDiagnostics({
                 <li key={item.id}>
                   <h3>{item.prompt}</h3>
                   <p>
-                    {item.locale} · {item.type.replaceAll("_", " ")} ·{" "}
-                    {item.sample_size} results
+                    {t("diagnostics.itemMeta", { locale: item.locale, type: item.type.replaceAll("_", " "), results: String(item.sample_size) })}
                   </p>
                   <dl>
                     <div>
-                      <dt>Mean points earned</dt>
+                      <dt>{t("diagnostics.mean")}</dt>
                       <dd>{metric(item.mean_percent)}%</dd>
                     </div>
                     <div>
-                      <dt>Full-credit results</dt>
+                      <dt>{t("diagnostics.fullCredit")}</dt>
                       <dd>{item.full_credit} / {item.sample_size}</dd>
                     </div>
                     <div>
-                      <dt>Response recorded</dt>
+                      <dt>{t("diagnostics.recorded")}</dt>
                       <dd>{item.recorded} / {item.sample_size}</dd>
                     </div>
                     <div>
-                      <dt>Corrected item-rest correlation</dt>
+                      <dt>{t("diagnostics.correlation")}</dt>
                       <dd>{metric(item.item_rest_correlation, 3)}</dd>
                     </div>
                   </dl>
                   {(item.item_rest_correlation ?? 0) < 0 && (
                     <p role="status">
-                      Negative relationship with the remaining test. Human
-                      investigation is needed; this does not automatically
-                      invalidate the question.
+                      {t("diagnostics.negativeItem")}
                     </p>
                   )}
                   {item.options.length > 0 && (
                     <table>
                       <caption>
-                        Option selection counts, not answer-key disclosure.
-                        Multiple-choice responses may select more than one
-                        option.
+                        {t("diagnostics.optionsCaption")}
                       </caption>
                       <thead>
                         <tr>
-                          <th scope="col">Option</th>
-                          <th scope="col">Selected</th>
+                          <th scope="col">{t("diagnostics.option")}</th>
+                          <th scope="col">{t("diagnostics.selected")}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -137,7 +124,7 @@ export function ItemDiagnostics({
             </ul>
             {moreItems && (
               <button className="quiet" disabled={disabled} onClick={loadItems}>
-                Load more question diagnostics
+                {t("diagnostics.moreItems")}
               </button>
             )}
           </>

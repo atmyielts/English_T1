@@ -15,6 +15,7 @@ import { captureTransport, evidenceEndpoint } from "./capture-transport";
 import {captureDeviceKey,type SavedCaptureDevice} from './capture-devices';
 import {CandidateLive} from '../../proctor-web/src/candidate-live';
 import {livePorts} from './live-proctor';
+import {LocalizedError} from './i18n/translate.ts';
 async function hold(scope: string): Promise<() => void> {
   let release!: () => void,
     yes!: (value: () => void) => void,
@@ -29,9 +30,7 @@ async function hold(scope: string): Promise<() => void> {
   }, async (lock) => {
     if (!lock) {
       no(
-        new Error(
-          "Required exam capture is already open in another tab. Close that tab first.",
-        ),
+        new LocalizedError("capture.requiredExamCaptureAlready"),
       );
       return;
     }
@@ -48,9 +47,7 @@ export async function openCandidateCapture(
 ) {
   evidenceEndpoint();
   if (!navigator.locks || !crypto.subtle || !window.isSecureContext) {
-    throw new Error(
-      "Required capture needs a secure supported browser with device locking.",
-    );
+    throw new LocalizedError("capture.requiredCaptureNeedsSecure");
   }
   const scope = `${tenant}:${actor}:${registration}`,
     key = captureDeviceKey(tenant,actor,registration),
@@ -71,9 +68,7 @@ export async function openCandidateCapture(
       typeof saved.open_key !== "string" ||
       !/^[a-f0-9-]{36}$/i.test(saved.open_key)
     ) {
-      throw new Error(
-        "Capture device data is invalid. Preserve this device and contact your institution.",
-      );
+      throw new LocalizedError("capture.captureDeviceDataInvalid");
     }
     sessionStorage.setItem(key, JSON.stringify(saved));
     const opened = await proctorRequest<CaptureLaunch>(
@@ -94,7 +89,7 @@ export async function openCandidateCapture(
       actor,
     );
     if (current.registration_id !== registration) {
-      throw new Error("Capture registration changed.");
+      throw new LocalizedError("capture.captureRegistrationChanged");
     }
     sessionStorage.setItem(key,JSON.stringify({...saved,session_id:current.session_id}));
     journal = await CaptureJournal.create(
@@ -113,9 +108,7 @@ export async function openCandidateCapture(
       acquire: (source) => acquireCapture(source),
       recorder: (id, stream, sink, status) => {
         if (!(stream instanceof MediaStream)) {
-          throw new Error(
-            "The browser did not provide a native capture stream.",
-          );
+          throw new LocalizedError("capture.browserProvideNativeCapture");
         }
         return new CaptureRecorder(id, stream, sink, status);
       },
@@ -143,15 +136,11 @@ export async function openCandidateCapture(
     if (current.state === "completed") {
       const states = await store.states();
       if (states.some((state) => state.phase !== "sealed")) {
-        throw new Error(
-          "Completed monitoring still has saved footage. Preserve this device and contact your institution.",
-        );
+        throw new LocalizedError("capture.completedMonitoringStillSaved");
       }
       if (!current.attempt_id) sessionStorage.removeItem(key);
-      throw new Error(
-        current.attempt_id
-          ? "This monitored assessment is already completed."
-          : "The previous preparation was cancelled. Choose Prepare capture again.",
+      throw new LocalizedError(
+        current.attempt_id ? "capture.alreadyCompleted" : "capture.preparationCancelled",
       );
     }
     await device.recover();
@@ -163,9 +152,7 @@ export async function openCandidateCapture(
       async startBinding() {
         await device.tick();
         if (!device.view().ready) {
-          throw new Error(
-            "Keep all required sources recording and wait for saved-media confirmation before starting.",
-          );
+          throw new LocalizedError("capture.keepAllRequiredSources");
         }
         return { session_id: current.session_id, ...binding };
       },
@@ -213,16 +200,16 @@ export async function openCandidateCapture(
 /** Explicit post-exam recovery never opens devices or creates an academic attempt. */
 export async function recoverCompletedCapture(tenant:string,actor:string,reference:SavedCaptureDevice){
  const state=await proctorRequest<CaptureLaunch>('capture/sessions/'+reference.session,tenant,undefined,undefined,actor);
- if(state.registration_id!==reference.registration)throw new Error('Saved recording registration changed.');
- if(state.state!=='completed')throw new Error('This monitoring session is still open. Resume its exam sitting to recover capture safely.');
+ if(state.registration_id!==reference.registration)throw new LocalizedError("capture.savedRecordingRegistrationChanged");
+ if(state.state!=='completed')throw new LocalizedError("capture.monitoringSessionStillOpen");
  const store=await CaptureJournal.create(`${tenant}:${actor}:${reference.session}`);
  try{
   const uploads=new CaptureUploads(store,captureTransport(tenant,actor,()=>{}));
   for(const entry of await store.states()){
-   if(entry.meta.session_id!==reference.session)throw new Error('Saved recording scope changed. Preserve this device.');
+   if(entry.meta.session_id!==reference.session)throw new LocalizedError("capture.savedRecordingScopeChanged");
    if(entry.phase!=='sealed')await uploads.close(entry.meta.recording_id,(entry.close_reason as 'runtime_end'|'track_lost'|'user_stop'|'capture_error'|null)??'runtime_end');
   }
-  if((await store.states()).some(entry=>entry.phase!=='sealed'))throw new Error('Some footage still needs confirmation. Keep this device and retry.');
+  if((await store.states()).some(entry=>entry.phase!=='sealed'))throw new LocalizedError("capture.someFootageStillNeeds");
   sessionStorage.removeItem(captureDeviceKey(tenant,actor,reference.registration));
  }finally{store.close();}
 }

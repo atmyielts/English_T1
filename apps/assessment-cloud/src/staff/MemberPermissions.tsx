@@ -1,8 +1,10 @@
 import { useEffect,useRef,useState, type FormEvent } from "react";
 import {
-  staffLabels,
   type StaffCapability,
 } from "../../../../packages/assessment-core/src/staff";
+import { useI18n } from "../../../../packages/service-i18n/src/i18n.tsx";
+import { useAppT } from "../i18n/index.ts";
+import { useStaffText } from "./staff-text";
 import type {
   StaffAccess,
   StaffDetail,
@@ -27,6 +29,7 @@ export function MemberPermissions({
   busy: boolean;
   submit: (action: string, data: Record<string, unknown>) => Promise<boolean>;
 }) {
+  const t = useAppT(), { date } = useI18n(), staff = useStaffText();
   const heading=useRef<HTMLHeadingElement>(null);useEffect(()=>{heading.current?.focus();},[member.id,member.membership_revision]);
   const [cap, setCap] = useState<StaffCapability | " ">(
       access.delegable[0] ?? " ",
@@ -52,35 +55,32 @@ export function MemberPermissions({
       : undefined;
   return (
     <section className="staff-detail">
-      <h2 tabIndex={-1} ref={heading}>Permissions for {member.name}</h2>
+      <h2 tabIndex={-1} ref={heading}>{t("perm.title", { name: member.name })}</h2>
       <p>
-        Assessment staff status: {member.status} · {member.org_role === 'assessment_member' ? 'Assessment-only staff member' : `Organization role: ${member.org_role}`}
+        {t("perm.status", { status: member.status, role: member.org_role === 'assessment_member' ? t("perm.assessmentOnly") : t("perm.orgRole", { role: String(member.org_role) }) })}
       </p>
       {readonly && (
         <p>
           {member.inherited
-            ? "Permissions are inherited from the organization owner/admin role. This service does not change that membership."
-            : "Another authorized manager must change your permissions."}
+            ? t("perm.inherited")
+            : t("perm.self")}
         </p>
       )}
       <MemberAccess key={`${member.id}:${member.membership_revision}`} member={member} actor={actor} busy={busy} submit={submit} />
-      <h3>Direct assessment grants</h3>
-      {!detail.grants.length&&<p>No direct assessment grants are recorded.</p>}
+      <h3>{t("perm.grants")}</h3>
+      {!detail.grants.length&&<p>{t("perm.noGrants")}</p>}
       <ul className="records">
         {detail.grants.map((row) => (
           <li key={row.capability}>
-            <strong>{staffLabels[row.capability]}</strong>
+            <strong>{staff.capability(row.capability)}</strong>
             <span>
-              Revision {row.revision} ·{" "}
-              {row.revoked_at
-                ? "withdrawn"
+              {t("perm.grantMeta", { revision: String(row.revision), expiry: row.revoked_at
+                ? t("perm.withdrawn")
                 : row.expires_at
-                  ? `Expires ${new Date(row.expires_at).toLocaleString()}`
-                  : "no expiry"}{" "}
-              ·{" "}
-              {row.effective
-                ? "effective through a grant or role"
-                : "not effective"}
+                  ? t("perm.expires", { date: date(row.expires_at) })
+                  : t("perm.noExpiry"), effect: row.effective
+                ? t("perm.effective")
+                : t("perm.notEffective") })}
             </span>
             {!row.revoked_at && (
               <button
@@ -100,30 +100,29 @@ export function MemberPermissions({
                   })
                 }
               >
-                Withdraw direct grant
+                {t("perm.withdrawGrant")}
               </button>
             )}
           </li>
         ))}
       </ul>
-      <h3>Role assignment history</h3>
-      {!detail.roles.length&&<p>No assessment role assignments are recorded.</p>}
+      <h3>{t("perm.roles")}</h3>
+      {!detail.roles.length&&<p>{t("perm.noRoles")}</p>}
       <ul className="records">
         {detail.roles.map((row) => (
           <li key={row.id}>
             <strong>
-              {row.title} · version {row.version}
+              {t("perm.roleTitle", { title: row.title, version: String(row.version) })}
             </strong>
             <span>
-              {row.revoked_at
-                ? "withdrawn"
+              {t("perm.roleMeta", { expiry: row.revoked_at
+                ? t("perm.withdrawn")
                 : row.expires_at
-                  ? `Expires ${new Date(row.expires_at).toLocaleString()}`
-                  : "no expiry"}{" "}
-              · revision {row.revision}
+                  ? t("perm.expires", { date: date(row.expires_at) })
+                  : t("perm.noExpiry"), revision: String(row.revision) })}
             </span>
             <p>
-              {row.capabilities.map((value) => staffLabels[value]).join(" · ")}
+              {row.capabilities.map((value) => staff.capability(value)).join(" · ")}
             </p>
             {!row.revoked_at && (
               <button
@@ -142,7 +141,7 @@ export function MemberPermissions({
                   })
                 }
               >
-                Withdraw role assignment
+                {t("perm.withdrawRole")}
               </button>
             )}
           </li>
@@ -151,7 +150,7 @@ export function MemberPermissions({
       {!readonly && (
         <>
           <label>
-            Permission change reason
+            {t("perm.reason")}
             <textarea
               disabled={busy}
               required
@@ -171,12 +170,12 @@ export function MemberPermissions({
               checked={confirmed}
               onChange={(event) => setConfirmed(event.target.checked)}
             />
-            I reviewed this member and the permissions being changed.
+            {t("perm.ack")}
           </label>
           {active && (
             <>
               <label>
-                Permission expiry (optional)
+                {t("perm.expiry")}
                 <input
                   type="datetime-local"
                   disabled={busy}
@@ -201,7 +200,7 @@ export function MemberPermissions({
                 )}
               >
                 <label>
-                  Assessment permission
+                  {t("perm.permission")}
                   <select
                     value={cap}
                     disabled={busy}
@@ -212,22 +211,20 @@ export function MemberPermissions({
                   >
                     {access.delegable.map((value) => (
                       <option key={value} value={value}>
-                        {staffLabels[value]}
+                        {staff.capability(value)}
                       </option>
                     ))}
                   </select>
                 </label>
                 {access.authority_ends_at[cap] && (
                   <p>
-                    Your authority for this permission ends{" "}
-                    {new Date(access.authority_ends_at[cap]!).toLocaleString()}.
-                    The grant cannot outlive it.
+                    {t("perm.authorityEnds", { date: date(access.authority_ends_at[cap]!) })}
                   </p>
                 )}
                 <button
                   disabled={busy || !confirmed || !reason.trim() || cap === " "}
                 >
-                  Grant or renew permission
+                  {t("perm.grant")}
                 </button>
               </form>
               <form
@@ -242,7 +239,7 @@ export function MemberPermissions({
                 )}
               >
                 <label>
-                  Assessment role version
+                  {t("perm.roleVersion")}
                   <select
                     required
                     disabled={busy}
@@ -252,14 +249,14 @@ export function MemberPermissions({
                       setConfirmed(false);
                     }}
                   >
-                    <option value="">Choose a reviewed role version</option>
+                    <option value="">{t("invites.chooseRole")}</option>
                     {roles.map((row) => (
                       <option
                         key={row.id}
                         value={row.id}
                         disabled={!canChange(row.capabilities)}
                       >
-                        {row.title} · version {row.version}
+                        {t("perm.roleTitle", { title: row.title, version: String(row.version) })}
                       </option>
                     ))}
                   </select>
@@ -267,10 +264,10 @@ export function MemberPermissions({
                 {selectedRole && (
                   <p>
                     {selectedRole.capabilities
-                      .map((value) => staffLabels[value])
+                      .map((value) => staff.capability(value))
                       .join(" · ")}
                     {existing
-                      ? " This replaces the member’s current assignment of this role."
+                      ? t("perm.replaces")
                       : ""}
                   </p>
                 )}
@@ -283,7 +280,7 @@ export function MemberPermissions({
                     !canChange(selectedRole.capabilities)
                   }
                 >
-                  Assign reviewed role version
+                  {t("perm.assign")}
                 </button>
               </form>
             </>
@@ -291,9 +288,7 @@ export function MemberPermissions({
         </>
       )}
       <p>
-        Withdrawals do not delete past questions, marks or audit history. A
-        permission may remain effective through another role. Proctor access is
-        managed separately.
+        {t("perm.footer")}
       </p>
     </section>
   );

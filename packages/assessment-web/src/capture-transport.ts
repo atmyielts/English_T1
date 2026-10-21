@@ -1,12 +1,11 @@
 import { proctorRequest, ServiceRequestError, supabase } from "./client";
 import type { CaptureBackend } from "../../proctor-web/src/capture-runtime";
 import type { RecordingCheckpoint } from "../../proctor-web/src/recording-types";
+import {LocalizedError,english} from './i18n/translate.ts';
 export function evidenceEndpoint() {
   const raw = import.meta.env.VITE_PROCTOR_EVIDENCE_URL as string | undefined;
   if (!raw) {
-    throw new Error(
-      "Private exam recording is not configured. Contact your institution before starting.",
-    );
+    throw new LocalizedError("capture.privateExamRecordingConfigured");
   }
   const base = new URL(raw),
     loopback = ["localhost", "127.0.0.1", "[::1]"].includes(base.hostname);
@@ -14,7 +13,7 @@ export function evidenceEndpoint() {
     (base.protocol !== "https:" && !(base.protocol === "http:" && loopback)) ||
     base.username || base.password || base.search || base.hash ||
     base.pathname !== "/"
-  ) throw new Error("The private evidence endpoint must be a secure root URL.");
+  ) throw new LocalizedError("capture.privateEvidenceEndpointSecure");
   return base;
 }
 export function captureTransport(
@@ -42,12 +41,10 @@ export function captureTransport(
     const controller = new AbortController(),
       timer = setTimeout(() => controller.abort(), 15000);
     try {
-      if (!supabase) throw new Error("Sign in to continue.");
+      if (!supabase) throw new LocalizedError("common.signIn");
       const { data: auth } = await supabase.auth.getSession();
       if (!auth.session || auth.session.user.id !== actor) {
-        throw new Error(
-          "The signed-in account changed. Reopen this workspace.",
-        );
+        throw new LocalizedError("common.accountChanged");
       }
       const url = new URL(
         `/v1/recordings/${recording}/segments/${sequence}/${suffix}`,
@@ -70,7 +67,7 @@ export function captureTransport(
         throw new ServiceRequestError(
           response.status,
           payload.code ?? "capture_transport_failed",
-          payload.error ?? "Saved recording could not sync.",
+          payload.error ?? english("capture.syncFailed"),
         );
       }
       return payload.data as T;

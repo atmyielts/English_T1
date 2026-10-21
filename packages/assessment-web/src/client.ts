@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import {watchAccount} from './account-watch';
+import {LocalizedError,english} from './i18n/translate.ts';
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 export const configured = Boolean(url && anon);
@@ -44,15 +45,15 @@ export async function proctorRequest<T>(path: string, tenant?: string, command?:
   return serviceRequest<T>('proctor', path, tenant, command, undefined, idempotencyKey,expectedActor);
 }
 async function serviceRequest<T>(service: 'assessment-cloud' | 'proctor', path: string, tenant?: string, command?: { action: string; data: unknown }, revision?: number, idempotencyKey?: string,expectedActor?:string): Promise<T> {
-  if (!supabase) throw new Error('This service has not been configured.');
+  if (!supabase) throw new LocalizedError("client.unconfigured");
   const { data } = await supabase!.auth.getSession();
-  if (!data.session) throw new Error('Sign in to continue.');
-  if(expectedActor&&data.session.user.id!==expectedActor)throw new Error('The signed-in account changed. Reopen this workspace.');
+  if (!data.session) throw new LocalizedError("common.signIn");
+  if(expectedActor&&data.session.user.id!==expectedActor)throw new LocalizedError("common.accountChanged");
   const headers: Record<string, string> = { Authorization: `Bearer ${data.session.access_token}`, apikey: anon!, 'Content-Type': 'application/json' };
   if (command) headers['Idempotency-Key'] = idempotencyKey ?? crypto.randomUUID();
   if (revision) headers['If-Match'] = String(revision);
   const endpoint = new URL(`${url}/functions/v1/${service}/${path}`);
   if (tenant) endpoint.searchParams.set('tenant_id', tenant);
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
-  try{const response=await fetch(endpoint,{method:command?'POST':'GET',headers,signal:controller.signal,...(command?{body:JSON.stringify(command)}:{})});const payload=await response.json();if(!response.ok)throw new ServiceRequestError(response.status,payload.code??'request_failed',payload.error??'Could not complete the request.');return payload.data as T;}finally{clearTimeout(timer);}
+  try{const response=await fetch(endpoint,{method:command?'POST':'GET',headers,signal:controller.signal,...(command?{body:JSON.stringify(command)}:{})});const payload=await response.json();if(!response.ok)throw new ServiceRequestError(response.status,payload.code??'request_failed',payload.error??english('client.requestFailed'));return payload.data as T;}finally{clearTimeout(timer);}
 }

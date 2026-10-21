@@ -1,11 +1,13 @@
 import { useState } from "react";
 import type { StaffMember } from "../../../../packages/assessment-web/src/staff";
+import { useAppT } from "../i18n/index.ts";
 export function MemberAccess({ member, actor, busy, submit }: {
   member: StaffMember;
   actor: string;
   busy: boolean;
   submit(action: string, data: Record<string, unknown>): Promise<boolean>;
 }) {
+  const t = useAppT();
   const [reason, setReason] = useState(""),
     [reviewed, setReviewed] = useState(false);
   if (member.inherited || member.id === actor) return null;
@@ -13,8 +15,7 @@ export function MemberAccess({ member, actor, busy, submit }: {
   if (member.membership_revision === undefined) {
     return (
       <p>
-        Assessment access controls are unavailable until this service's
-        membership update is installed.
+        {t("access.unavailable")}
       </p>
     );
   }
@@ -25,21 +26,19 @@ export function MemberAccess({ member, actor, busy, submit }: {
       role="group"
       aria-labelledby="assessment-member-access"
     >
-      <h3 id="assessment-member-access">Assessment staff access</h3>
+      <h3 id="assessment-member-access">{t("access.title")}</h3>
       <p role="status">
         {suspended
-          ? "Assessment staff access is suspended."
+          ? t("access.suspended")
           : member.status === "active"
-          ? "Assessment staff access follows this member's current grants and roles."
-          : "Organization membership is inactive. This service cannot reactivate it."}
+          ? t("access.active")
+          : t("access.inactive")}
       </p>
       <p>
-        Suspension retains roles and history. It does not change Academy or
-        Proctor access, or cancel candidate exams. Resuming restores any
-        unexpired Assessment grants and roles.
+        {t("access.lead")}
       </p>
       <label>
-        Reason for Assessment access change<textarea
+        {t("access.reason")}<textarea
           maxLength={5000}
           rows={3}
           disabled={busy}
@@ -56,8 +55,7 @@ export function MemberAccess({ member, actor, busy, submit }: {
           disabled={busy}
           checked={reviewed}
           onChange={(event) => setReviewed(event.target.checked)}
-        />I reviewed this member's retained Assessment permissions and the scope
-        of this change.
+        />{t("access.ack")}
       </label>
       <button
         className="quiet"
@@ -76,8 +74,8 @@ export function MemberAccess({ member, actor, busy, submit }: {
         }}
       >
         {suspended
-          ? "Resume Assessment staff access"
-          : "Suspend Assessment staff access"}
+          ? t("access.resume")
+          : t("access.suspend")}
       </button>
     </div>
   );

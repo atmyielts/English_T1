@@ -1,5 +1,6 @@
 import { type FormEvent, useState } from "react";
 import type { CertificateRow } from "../../../../packages/assessment-web/src/certificates";
+import { useAppT } from "../i18n/index.ts";
 export function CertificateDecision(
   { row, disabled, send }: {
     row: CertificateRow;
@@ -7,6 +8,7 @@ export function CertificateDecision(
     send: (action: string, data: Record<string, unknown>) => Promise<boolean>;
   },
 ) {
+  const t = useAppT();
   const [reason, setReason] = useState(""), [ack, setAck] = useState(false);
   if (!["issued", "pending"].includes(row.state)) return null;
   const cancel = row.state === "pending";
@@ -23,7 +25,7 @@ export function CertificateDecision(
   return (
     <form onSubmit={(event) => void submit(event)}>
       <label>
-        {cancel ? "Cancellation reason" : "Revocation reason"}
+        {cancel ? t("decision.cancelReason") : t("decision.revokeReason")}
         <textarea
           required
           maxLength={5000}
@@ -43,11 +45,11 @@ export function CertificateDecision(
           disabled={disabled}
         />
         {cancel
-          ? "Cancel this unfinished issuance permanently."
-          : "I understand that this permanent revocation changes verification status but does not change the academic result."}
+          ? t("decision.cancelAck")
+          : t("decision.revokeAck")}
       </label>
       <button className="quiet" disabled={disabled || !reason.trim() || !ack}>
-        {cancel ? "Cancel pending certificate" : "Revoke certificate"}
+        {cancel ? t("decision.cancel") : t("decision.revoke")}
       </button>
     </form>
   );

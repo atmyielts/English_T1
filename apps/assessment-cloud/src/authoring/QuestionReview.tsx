@@ -3,12 +3,12 @@ import type {
   AnswerKey,
   Item,
 } from "../../../../packages/assessment-core/src/mod.ts";
-import { itemLabels } from "../../../../packages/assessment-core/src/authoring.ts";
 import type { validateRubric } from "../../../../packages/assessment-core/src/grading.ts";
 import { QuestionResponse } from "../../../../packages/assessment-web/src/QuestionResponse";
 import { QuestionMedia } from "../../../../packages/assessment-web/src/QuestionMedia";
 import type { Row } from "../../../../packages/assessment-web/src/client";
 import {PrivateTargetOverlay} from './ImageInteractionFields';
+import { useAppT, useItemLabel, type AppKey } from "../i18n/index.ts";
 export function QuestionReview({
   material,
   tenant,
@@ -24,6 +24,8 @@ export function QuestionReview({
   busy: boolean;
   approve: () => void;
 }) {
+  const t = useAppT(), itemLabel = useItemLabel();
+  const difficulty = (value: string) => { const key = `difficulty.${value}` as AppKey, text = t(key); return text === key ? value : text; };
   const item = material.payload as Item,
     key = material.key as AnswerKey,
     rubric = material.rubric as ReturnType<typeof validateRubric> | undefined,
@@ -37,12 +39,11 @@ export function QuestionReview({
       aria-labelledby="content-review-heading"
     >
       <h3 id="content-review-heading">
-        Review question, scoring key and rubric
+        {t("questionReview.title")}
       </h3>
-      {item.classification&&<p>Blueprint topics: {item.classification.topics.join(" · ")||"Not classified"}. Author-estimated difficulty: {item.classification.estimated_difficulty??"Not classified"}. These labels are part of this reviewed version, not psychometric calibration.</p>}
+      {item.classification&&<p>{t("questionReview.classification", { topics: item.classification.topics.join(" · ")||t("classification.notClassified"), difficulty: item.classification.estimated_difficulty != null ? difficulty(item.classification.estimated_difficulty) : t("classification.notClassified") })}</p>}
       <p>
-        {itemLabels[item.type]} · {item.locale.toUpperCase()} · {item.max_score}{" "}
-        points
+        {t("questionReview.meta", { type: itemLabel(item.type) ?? "", locale: item.locale.toUpperCase(), score: String(item.max_score) })}
       </p>
       <h4>{item.prompt}</h4>
       <QuestionMedia item={item} tenant={tenant} actor={actor}/>
@@ -56,10 +57,10 @@ export function QuestionReview({
         onChange={setResponse}
         mediaContext={{tenant,actor}}
       />
-      <h4>Private scoring key</h4>
-      {key.hotspot?<><p>Full credit for a point inside any private accepted region, including its boundary.</p><ol>{key.hotspot.regions.map((region,index)=><li key={index}>{region.shape==='rectangle'?`Rectangle: left ${region.x1*100}%, top ${region.y1*100}%, right ${region.x2*100}%, bottom ${region.y2*100}%`:region.shape==='ellipse'?`Ellipse: center ${region.x*100}%, ${region.y*100}%; radii ${region.radius_x*100}%, ${region.radius_y*100}%`:`Polygon vertices: ${region.points.map(p=>`${p.x*100}%, ${p.y*100}%`).join(' → ')}`}</li>)}</ol><QuestionMedia item={{media:item.media?.filter(media=>media.artifact_id===item.image_response?.artifact_id)}} tenant={tenant} actor={actor} imageOverlay={()=><PrivateTargetOverlay regions={key.hotspot!.regions}/>}/></>:key.numeric ? (
+      <h4>{t("questionReview.key")}</h4>
+      {key.hotspot?<><p>{t('questionReview.hotspot')}</p><ol>{key.hotspot.regions.map((region,index)=><li key={index}>{region.shape==='rectangle'?t('questionReview.rectangle',{left:String(region.x1*100),top:String(region.y1*100),right:String(region.x2*100),bottom:String(region.y2*100)}):region.shape==='ellipse'?t('questionReview.ellipse',{x:String(region.x*100),y:String(region.y*100),rx:String(region.radius_x*100),ry:String(region.radius_y*100)}):t('questionReview.polygon',{points:region.points.map(p=>t('questionReview.point',{x:String(p.x*100),y:String(p.y*100)})).join(' → ')})}</li>)}</ol><QuestionMedia item={{media:item.media?.filter(media=>media.artifact_id===item.image_response?.artifact_id)}} tenant={tenant} actor={actor} imageOverlay={()=><PrivateTargetOverlay regions={key.hotspot!.regions}/>}/></>:key.numeric ? (
         <p>
-          Answer: {key.numeric.value} · tolerance ±{key.numeric.tolerance}
+          {t("questionReview.numeric", { value: String(key.numeric.value), tolerance: String(key.numeric.tolerance) })}
         </p>
       ) : typeof key.correct === "string" ? (
         <p>{optionText(key.correct)}</p>
@@ -83,16 +84,16 @@ export function QuestionReview({
           ))}
         </dl>
       ) : (
-        <p>Human marking required; no automatic answer key.</p>
+        <p>{t("questionReview.human")}</p>
       )}
       {key.correct && (
         <p>
           {key.case_sensitive
-            ? "Capitalization must match."
-            : "Capitalization is ignored for text answers."}{" "}
+            ? t("questionReview.caseSensitive")
+            : t("questionReview.caseIgnored")}{" "}
           {key.partial_credit
-            ? "Partial credit is enabled."
-            : "Partial credit is disabled."}
+            ? t("questionReview.partialOn")
+            : t("questionReview.partialOff")}
         </p>
       )}
       {rubric && (
@@ -102,7 +103,7 @@ export function QuestionReview({
             {rubric.criteria.map((row) => (
               <div key={row.id}>
                 <dt>
-                  {row.title} · Maximum {row.max_score}
+                  {t("questionReview.criterion", { title: row.title, max: String(row.max_score) })}
                 </dt>
                 <dd>{row.descriptor}</dd>
               </div>
@@ -119,10 +120,10 @@ export function QuestionReview({
               checked={checked}
               onChange={(event) => setChecked(event.target.checked)}
             />
-            I reviewed the question, private key and any marking rubric.
+            {t("questionReview.confirm")}
           </label>
           <button disabled={busy || !checked} onClick={approve}>
-            Approve reviewed question
+            {t("questionReview.approve")}
           </button>
         </>
       )}

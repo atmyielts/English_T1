@@ -1,5 +1,11 @@
 import React, { type FormEvent, useState } from "react";
-import { appealCategory, type AppealDetail, appealStatus } from "./appeals";
+import {
+  appealCategoryText,
+  type AppealDetail,
+  appealStatusText,
+} from "./appeals";
+import { useI18n } from "../../service-i18n/src/i18n.tsx";
+import { useWebT } from "./i18n/useWebT.ts";
 export function AppealView(
   { appeal, busy, blocked, send }: {
     appeal: AppealDetail;
@@ -8,6 +14,7 @@ export function AppealView(
     send: (action: string, data: Record<string, unknown>) => Promise<boolean>;
   },
 ) {
+  const t = useWebT(), { date } = useI18n();
   const [explanation, setExplanation] = useState(""),
     [outcome, setOutcome] = useState("upheld"),
     [ack, setAck] = useState(false);
@@ -32,28 +39,33 @@ export function AppealView(
       aria-labelledby={`appeal-heading-${appeal.id}`}
     >
       <h3 id={`appeal-heading-${appeal.id}`}>
-        {appealCategory[appeal.category]} appeal
+        {t("appeal.view.heading", {
+          category: appealCategoryText(appeal.category, t),
+        })}
       </h3>
       <p>
-        <strong>{appealStatus[appeal.status]}</strong> · Submitted{" "}
-        {new Date(appeal.created_at).toLocaleString()}
+        <strong>{appealStatusText(appeal.status, t)}</strong> ·{" "}
+        {t("appeal.view.submitted", { date: date(appeal.created_at) })}
       </p>
       <p className="appeal-text">{appeal.reason}</p>
       <p>
         <strong>{appeal.released_result.title}</strong> ·{" "}
-        {appeal.released_result.total} / {appeal.released_result.max_score}{" "}
-        points · Grading generation {appeal.released_result.generation}
+        {t("appeal.view.result", {
+          total: appeal.released_result.total,
+          max: appeal.released_result.max_score,
+          generation: appeal.released_result.generation,
+        })}
       </p>
       <p className="muted">
-        Result reference:{" "}
+        {t("appeal.view.reference")}{" "}
         <span className="appeal-reference">{appeal.score_revision_id}</span>
       </p>
       {appeal.events.length > 0 && (
-        <ol className="appeal-history" aria-label="Appeal history">
+        <ol className="appeal-history" aria-label={t("appeal.view.history")}>
           {appeal.events.map((event) => (
             <li key={event.revision}>
-              <strong>{appealStatus[event.event]}</strong>
-              <span>· {new Date(event.created_at).toLocaleString()}</span>
+              <strong>{appealStatusText(event.event, t)}</strong>
+              <span>· {date(event.created_at)}</span>
               <p className="appeal-text">{event.explanation}</p>
             </li>
           ))}
@@ -61,25 +73,21 @@ export function AppealView(
       )}
       {appeal.requested_generation && (
         <p>
-          Grading generation {appeal.requested_generation}{" "}
-          was requested. Your current released result remains visible until an
-          independently approved replacement is released.
+          {t("appeal.view.regradeRequested", {
+            generation: appeal.requested_generation,
+          })}
         </p>
       )}
       {appeal.status === "submitted" && !appeal.can_decide &&
         !appeal.can_withdraw && (
-        <p>
-          An independent authorized moderator must decide this appeal. People
-          who marked, adjudicated, approved or released the result cannot decide
-          it.
-        </p>
+        <p>{t("appeal.view.independent")}</p>
       )}
       {(appeal.can_withdraw || appeal.can_decide) && (
         <form onSubmit={(event) => void submit(event)}>
           {appeal.can_decide && (
             <>
               <label>
-                Decision<select
+                {t("appeal.view.decision")}<select
                   value={outcome}
                   onChange={(event) => {
                     setOutcome(event.target.value);
@@ -87,27 +95,26 @@ export function AppealView(
                   }}
                   disabled={busy || blocked}
                 >
-                  <option value="upheld">Uphold the original result</option>
+                  <option value="upheld">{t("appeal.view.uphold")}</option>
                   <option
                     value="regrade_requested"
                     disabled={!appeal.can_regrade}
                   >
-                    Accept and request regrading
+                    {t("appeal.view.regrade")}
                   </option>
                 </select>
               </label>
               {!appeal.can_regrade && (
-                <p>
-                  A newer grading generation is already pending or available.
-                  Review it before requesting another.
-                </p>
+                <p>{t("appeal.view.regradePending")}</p>
               )}
             </>
           )}
           <label>
-            {appeal.can_withdraw
-              ? "Withdrawal reason"
-              : "Decision explanation (visible to candidate)"}
+            {t(
+              appeal.can_withdraw
+                ? "appeal.view.withdrawReason"
+                : "appeal.view.explanation",
+            )}
             <textarea
               required
               maxLength={5000}
@@ -127,12 +134,14 @@ export function AppealView(
                 setAck(event.target.checked)}
               disabled={busy || blocked}
             />
-            {appeal.can_withdraw
-              ? "I understand this closes my appeal for this result."
-              : "I reviewed this appeal and its released result independently. This decision does not directly change a score."}
+            {t(
+              appeal.can_withdraw
+                ? "appeal.view.withdrawAck"
+                : "appeal.view.decideAck",
+            )}
           </label>
           <button disabled={busy || blocked || !ack || !explanation.trim()}>
-            {appeal.can_withdraw ? "Withdraw appeal" : "Record appeal decision"}
+            {t(appeal.can_withdraw ? "appeal.view.withdraw" : "appeal.view.record")}
           </button>
         </form>
       )}

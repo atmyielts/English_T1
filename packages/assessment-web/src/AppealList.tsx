@@ -1,9 +1,12 @@
 import React from "react";
-import { appealCategory, appealStatus } from "./appeals";
+import { appealCategoryText, appealStatusText } from "./appeals";
+import { useI18n } from "../../service-i18n/src/i18n.tsx";
+import { useWebT } from "./i18n/useWebT.ts";
 import type { useAppeals } from "./use-appeals";
 export function AppealList(
   { state }: { state: ReturnType<typeof useAppeals> },
 ) {
+  const t = useWebT(), { date } = useI18n();
   return (
     <>
       {state.error && <p role="alert" className="error">{state.error}</p>}
@@ -11,39 +14,39 @@ export function AppealList(
       {state.pending && (
         <div role="status">
           <p>
-            A saved {state.pending.action === "appeal.submit"
-              ? "appeal submission"
-              : state.pending.action === "appeal.withdraw"
-              ? "withdrawal"
-              : "decision"}{" "}
-            has no confirmed receipt. Retry it before another change.
+            {t(
+              state.pending.action === "appeal.submit"
+                ? "appeal.list.pendingSubmission"
+                : state.pending.action === "appeal.withdraw"
+                ? "appeal.list.pendingWithdrawal"
+                : "appeal.list.pendingDecision",
+            )}
           </p>
           <button disabled={state.busy} onClick={() => void state.send()}>
-            Retry saved appeal request
+            {t("appeal.list.retry")}
           </button>
         </div>
       )}
-      {state.loading && <p role="status">Checking appeal records…</p>}
+      {state.loading && <p role="status">{t("appeal.list.loading")}</p>}
       {!state.commandReady && !state.error && (
-        <p role="status">Preparing secure appeal recovery…</p>
+        <p role="status">{t("appeal.list.preparing")}</p>
       )}
       {!state.loading && !state.rows.length && !state.error && (
-        <p>No appeal records yet.</p>
+        <p>{t("appeal.list.empty")}</p>
       )}
-      <ul className="records appeal-list" aria-label="Appeal records">
+      <ul className="records appeal-list" aria-label={t("appeal.list.label")}>
         {state.rows.map((row) => (
           <li key={row.id}>
-            <strong>{appealCategory[row.category]}</strong>
+            <strong>{appealCategoryText(row.category, t)}</strong>
             <span>
-              {appealStatus[row.status]} ·{" "}
-              {new Date(row.created_at).toLocaleString()}
+              {appealStatusText(row.status, t)} · {date(row.created_at)}
             </span>
             <button
               className="quiet"
               disabled={state.busy}
               onClick={() => void state.open(row.id)}
             >
-              Open appeal
+              {t("appeal.list.open")}
             </button>
           </li>
         ))}
@@ -54,7 +57,7 @@ export function AppealList(
           disabled={state.loading || state.busy}
           onClick={() => void state.refresh()}
         >
-          Refresh appeals
+          {t("appeal.list.refresh")}
         </button>
         {state.more && (
           <button
@@ -62,7 +65,7 @@ export function AppealList(
             disabled={state.loading || state.busy}
             onClick={() => void state.loadMore()}
           >
-            Load more appeals
+            {t("appeal.list.more")}
           </button>
         )}
       </div>

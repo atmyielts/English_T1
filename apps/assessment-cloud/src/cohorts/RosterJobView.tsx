@@ -1,9 +1,10 @@
 import { useState } from "react";
 import {
   type RosterJob,
-  rosterOutcome,
-  rosterState,
+  rosterOutcomeText,
+  rosterStateText,
 } from "../../../../packages/assessment-web/src/cohorts";
+import { useAppT } from "../i18n/index.ts";
 export function RosterJobView({
   job,
   disabled,
@@ -18,35 +19,31 @@ export function RosterJobView({
   ) => Promise<Record<string, unknown> | null>;
   refresh: () => Promise<void>;
 }) {
+  const t = useAppT();
   const [reason, setReason] = useState(""), [ack, setAck] = useState(false);
   return (
     <section>
-      <h2>Registration progress</h2>
+      <h2>{t("job.title")}</h2>
       <h3>{job.window_snapshot.title}</h3>
       <p>
-        <strong>{rosterState[job.state] ?? job.state}</strong> · {job.processed}
-        {" "}
-        of {job.total} entries processed
+        <strong>{rosterStateText(job.state, t) ?? job.state}</strong> · {t("job.progress", { processed: String(job.processed), total: String(job.total) })}
       </p>
       {job.blocked_reason && (
         <p role="status">
-          Blocked reason:{" "}
-          {job.blocked_reason.replaceAll("_", " ")}. An authorized coordinator
-          must decide how to continue.
+          {t("job.blocked", { reason: job.blocked_reason.replaceAll("_", " ") })}
         </p>
       )}
-      <ul aria-label="Registration outcome summary">
+      <ul aria-label={t("job.summaryLabel")}>
         {Object.entries(job.summary ?? {}).map(([outcome, count]) => (
-          <li key={outcome}>{rosterOutcome[outcome]}: {count}</li>
+          <li key={outcome}>{t("job.summaryRow", { outcome: rosterOutcomeText(outcome, t) ?? "", count: String(count) })}</li>
         ))}
       </ul>
-      <ul className="records" aria-label="Candidate registration outcomes">
+      <ul className="records" aria-label={t("job.targetsLabel")}>
         {job.targets?.map((target) => (
           <li key={target.user_id}>
             <strong>{target.name}</strong>
             <span>
-              {target.extra_seconds} extra seconds ·{" "}
-              {rosterOutcome[target.outcome]}
+              {t("job.target", { count: target.extra_seconds, seconds: String(target.extra_seconds), outcome: rosterOutcomeText(target.outcome, t) ?? "" })}
             </span>
           </li>
         ))}
@@ -56,12 +53,12 @@ export function RosterJobView({
         disabled={disabled}
         onClick={() => void refresh()}
       >
-        Refresh registration progress
+        {t("job.refresh")}
       </button>
       {["queued", "running", "blocked"].includes(job.state) && (
         <>
           <label>
-            Reason for job action<textarea
+            {t("job.reason")}<textarea
               required
               maxLength={2000}
               value={reason}
@@ -78,8 +75,7 @@ export function RosterJobView({
               checked={ack}
               onChange={(event) => setAck(event.target.checked)}
               disabled={disabled}
-            />I reviewed current progress. Cancellation affects only unprocessed
-            entries. Resuming adopts authority for the same reviewed targets.
+            />{t("job.ack")}
           </label>
           <div className="cohort-actions">
             {job.state === "blocked" && (
@@ -92,7 +88,7 @@ export function RosterJobView({
                     reason,
                   })}
               >
-                Resume reviewed registration job
+                {t("job.resume")}
               </button>
             )}
             <button
@@ -105,7 +101,7 @@ export function RosterJobView({
                   reason,
                 })}
             >
-              Cancel remaining registrations
+              {t("job.cancel")}
             </button>
           </div>
         </>

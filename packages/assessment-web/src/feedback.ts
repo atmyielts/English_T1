@@ -1,6 +1,7 @@
 import { request } from "./client";
 import { GradeCommands } from "./grade-command";
 import { ResponseJournal } from "./journal";
+import {LocalizedError,english,type Translate} from './i18n/translate.ts';
 export type FeedbackLevel = "totals" | "sections" | "questions";
 export interface FeedbackPolicy {
   window_id: string;
@@ -38,19 +39,17 @@ export interface FeedbackRelease {
   held: boolean;
   revision: number;
 }
-export const feedbackLabel = (level: FeedbackLevel) =>
-  ({
-    totals: "Overall total only",
-    sections: "Overall and section totals",
-    questions: "Section totals and question points",
-  })[level];
-export const feedbackDate = (date: string | null) =>
-  date ? new Date(date).toLocaleString() : "When the result is released";
+export const feedbackLabel = (level: FeedbackLevel, t: Translate = english) =>
+  t(`feedback.level.${level}` as const);
+export const feedbackDate = (
+  date: string | null,
+  t: Translate = english,
+  formatDate: (value: string) => string = (value) =>
+    new Date(value).toLocaleString(),
+) => date ? formatDate(date) : t("feedback.date.onRelease");
 export async function openFeedbackCommands(tenant: string, actor: string) {
   if (!navigator.locks) {
-    throw new Error(
-      "Use a browser with secure workspace locking to manage result feedback.",
-    );
+    throw new LocalizedError("feedback.locks");
   }
   const scope = `feedback:${tenant}:${actor}`,
     journal = await ResponseJournal.create(scope);

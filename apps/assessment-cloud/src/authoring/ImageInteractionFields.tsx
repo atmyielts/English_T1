@@ -12,6 +12,7 @@ import { QuestionMedia } from "../../../../packages/assessment-web/src/QuestionM
 import "../../../../packages/assessment-web/src/image-response.css";
 import { PrivateTargetOverlay, RegionEditor } from "./ImageRegionEditor";
 export { PrivateTargetOverlay } from "./ImageRegionEditor";
+import { useAppT } from "../i18n/index.ts";
 export function ImageInteractionFields(
   { draft, setDraft, tenant, actor }: {
     draft: ItemDraft;
@@ -20,6 +21,7 @@ export function ImageInteractionFields(
     actor: string;
   },
 ) {
+  const t = useAppT();
   if (!["diagram_labeling", "hotspot"].includes(draft.type)) return null;
   const images = draft.media.filter((media) => media.kind === "image"),
     asset = images.find((media) => media.artifact_id === draft.imageArtifact);
@@ -32,24 +34,23 @@ export function ImageInteractionFields(
   return (
     <section
       className="image-interaction-editor"
-      aria-label="Image response design"
+      aria-label={t("image.design")}
     >
-      <h3>Image response design</h3>
+      <h3>{t("image.design")}</h3>
       <p>
-        Attach a scanned image, then choose it here. Positions are percentages
-        from the image’s left and top edges and scale with the image.
+        {t("image.lead")}
       </p>
       <label>
-        Interaction image<select
+        {t("image.select")}<select
           required
           value={draft.imageArtifact}
           onChange={(event) =>
             setDraft({ ...draft, imageArtifact: event.target.value })}
         >
-          <option value="">Choose an attached image</option>
+          <option value="">{t("image.choose")}</option>
           {images.map((media, i) => (
             <option key={media.artifact_id} value={media.artifact_id}>
-              Image {i + 1}: {media.alt}
+              {t("image.option", { number: i + 1, alt: media.alt })}
             </option>
           ))}
         </select>
@@ -57,16 +58,14 @@ export function ImageInteractionFields(
       {draft.type === "diagram_labeling"
         ? (
           <fieldset>
-            <legend>Public diagram marker positions</legend>
+            <legend>{t("image.markers")}</legend>
             <p className="hint">
-              Markers use the response labels above. Keep labels neutral so they
-              do not reveal accepted answers. The candidate can focus each
-              marker and type into its labelled field.
+              {t("image.markersHint")}
             </p>
             {draft.slots.map((slot, index) => (
               <div className="author-fields" key={index}>
                 <label>
-                  Marker {index + 1} horizontal (%)<input
+                  {t("image.markerX", { number: index + 1 })}<input
                     required
                     type="number"
                     min="0"
@@ -83,7 +82,7 @@ export function ImageInteractionFields(
                   />
                 </label>
                 <label>
-                  Marker {index + 1} vertical (%)<input
+                  {t("image.markerY", { number: index + 1 })}<input
                     required
                     type="number"
                     min="0"
@@ -105,11 +104,9 @@ export function ImageInteractionFields(
         )
         : (
           <fieldset className="private-key">
-            <legend>Private hotspot scoring regions</legend>
+            <legend>{t("image.regions")}</legend>
             <p>
-              One selected point inside any accepted target receives full
-              credit; boundaries count as inside. Regions and this overlay are
-              visible only to authorized authors/reviewers, never to candidates.
+              {t("image.regionsLead")}
             </p>
             {draft.regions.map((region, index) => (
               <RegionEditor
@@ -144,11 +141,11 @@ export function ImageInteractionFields(
                   ],
                 })}
             >
-              Add accepted target
+              {t("image.addTarget")}
             </button>
             {asset && (
               <>
-                <h4>Private target preview</h4>
+                <h4>{t("image.preview")}</h4>
                 <QuestionMedia
                   item={{ media: [asset] }}
                   tenant={tenant}

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useWebT } from "./i18n/useWebT.ts";
 /** Confirmation is pinned to the reviewed selection, not any later device copy. */
 export function ClearAcademicSelection(
   { selected, disabled, clear }: {
@@ -7,6 +8,7 @@ export function ClearAcademicSelection(
     clear: () => void;
   },
 ) {
+  const t = useWebT();
   const [reviewed, setReviewed] = useState(""),
     confirm = useRef<HTMLButtonElement>(null),
     trigger = useRef<HTMLButtonElement>(null),
@@ -30,18 +32,14 @@ export function ClearAcademicSelection(
         disabled={disabled}
         onClick={() => setReviewed(selected)}
       >
-        Clear selected answer
+        {t("clearSelection.clear")}
       </button>
     );
   }
   return (
     <fieldset disabled={disabled}>
-      <legend>Confirm clearing the selected answer</legend>
-      <p>
-        This question will have no selected answer. Your device copies, uploaded
-        files and prior answer history are not deleted. You can select a sealed
-        copy again only while this question remains open.
-      </p>
+      <legend>{t("clearSelection.legend")}</legend>
+      <p>{t("clearSelection.explain")}</p>
       <button
         type="button"
         ref={confirm}
@@ -50,7 +48,7 @@ export function ClearAcademicSelection(
           clear();
         }}
       >
-        Confirm clearing selected answer
+        {t("clearSelection.confirm")}
       </button>
       <button
         type="button"
@@ -60,7 +58,7 @@ export function ClearAcademicSelection(
           setReviewed("");
         }}
       >
-        Keep selected answer
+        {t("clearSelection.keep")}
       </button>
     </fieldset>
   );

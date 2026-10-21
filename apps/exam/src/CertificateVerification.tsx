@@ -13,6 +13,9 @@ import {
   referenceForCertificate,
 } from "../../../packages/assessment-core/src/certificate-document";
 import { resolveCertificateReference } from "../../../packages/assessment-web/src/certificate-document";
+import { LocaleSwitcher, useI18n } from "../../../packages/service-i18n/src/i18n.tsx";
+import { errorText } from "../../../packages/assessment-web/src/i18n/errors.ts";
+import { useAppT } from "./i18n/index.ts";
 type Verification = {
   status: string;
   signature_verified: boolean;
@@ -21,17 +24,22 @@ type Verification = {
   pdf_match?: boolean;
   replacement_id?: string;
 };
-const messages: Record<string, string> = {
-  valid: "Valid at the time checked",
-  revoked: "Revoked by the institution",
-  expired: "Expired",
-  superseded: "Superseded by a newer released result",
-  replaced:
-    "Replaced by a new certificate — this original is no longer current",
-  under_review: "Under academic review — do not treat as currently confirmed",
-  not_found: "Not recognized as an issued certificate",
-};
+const statuses = [
+  "valid",
+  "revoked",
+  "expired",
+  "superseded",
+  "replaced",
+  "under_review",
+  "not_found",
+] as const;
 export function CertificateVerification() {
+  const t = useAppT(), { date } = useI18n(), translate = useRef(t);
+  translate.current = t;
+  const statusText = (status: string) =>
+    (statuses as readonly string[]).includes(status)
+      ? t(`exam.verify.status.${status as (typeof statuses)[number]}`)
+      : t("exam.verify.status.unknown");
   const [initial] = useState(
     (): { reference: CertificateReference | null; error: string } => {
       try {
@@ -46,8 +54,7 @@ export function CertificateVerification() {
       } catch {
         return {
           reference: null,
-          error:
-            "This certificate QR reference is incomplete or invalid. Scan the original QR again or select the original signed JSON file.",
+          error: t("exam.verify.invalidReference"),
         };
       }
     },
@@ -92,9 +99,7 @@ export function CertificateVerification() {
         setError("");
       } catch {
         setReference(null);
-        setError(
-          "This certificate QR reference is incomplete or invalid. Scan the original QR again or select the original signed JSON file.",
-        );
+        setError(translate.current("exam.verify.invalidReference"));
       }
       removeReference();
     };
@@ -112,7 +117,7 @@ export function CertificateVerification() {
     try {
       if (reference) {
         if (pdf && pdf.size > 3000000) {
-          throw new Error("Use a certificate PDF smaller than 3 MB.");
+          throw new Error(t("exam.verify.pdfTooLarge"));
         }
         const resolved = await resolveCertificateReference(reference),
           keys = await certificatePublicRequest<CertificatePublicKey[]>("keys"),
@@ -124,9 +129,7 @@ export function CertificateVerification() {
           local.envelope.signature !== reference.signature ||
           local.envelope.key_id !== reference.key_id
         ) {
-          throw new Error(
-            "The QR reference does not match the signed certificate.",
-          );
+          throw new Error(t("exam.verify.referenceMismatch"));
         }
         let pdfMatch: boolean | undefined;
         if (pdf) {
@@ -151,9 +154,7 @@ export function CertificateVerification() {
         return;
       }
       if (file!.size > 32000) {
-        throw new Error(
-          "Use a signed certificate JSON file smaller than 32 KB.",
-        );
+        throw new Error(t("exam.verify.jsonTooLarge"));
       }
       const value = JSON.parse(await file!.text()),
         keys = await certificatePublicRequest<CertificatePublicKey[]>("keys"),
@@ -165,20 +166,16 @@ export function CertificateVerification() {
       );
       if (current === version.current) {
         if (!verified.signature_verified) {
-          throw new Error("The issuer did not confirm the signature.");
+          throw new Error(t("exam.verify.issuerUnconfirmed"));
         }
         if (verified.claims.certificate_id !== local.claims.certificate_id) {
-          throw new Error(
-            "The verification response refers to another certificate.",
-          );
+          throw new Error(t("exam.verify.otherCertificate"));
         }
         setResult({ ...verified, claims: local.claims });
       }
     } catch (cause) {
       if (current === version.current) {
-        setError(
-          cause instanceof Error ? cause.message : "Verification failed.",
-        );
+        setError(errorText(cause, t, "exam.verify.failed"));
       }
     } finally {
       if (current === version.current) setBusy(false);
@@ -186,29 +183,28 @@ export function CertificateVerification() {
   }
   return (
     <div className="exam-workspace">
-      <ServiceHeader service="Certificate verification" />
+      <ServiceHeader
+        service={t("exam.verify.service")}
+        labels={{
+          skip: t("header.skip"),
+          home: t("header.home"),
+          menu: t("header.menu"),
+          workspace: t("header.workspace"),
+        }}
+      >
+        <LocaleSwitcher label={t("locale.label")} />
+      </ServiceHeader>
       <main id="workspace-main" tabIndex={-1}>
-        <h1>Verify a Schood certificate</h1>
+        <h1>{t("exam.verify.title")}</h1>
         <section className="certificates-panel">
-          <p>
-            No account is needed. Use the certificate QR reference below or
-            select a signed certificate file. Its signature is checked in your
-            browser against this service's published keys, then the
-            institution's current status is checked. Names and results are sent
-            to the verifier only after you agree.
-          </p>
+          <p>{t("exam.verify.intro")}</p>
           {reference && (
             <div className="certificate-reference">
-              <h2>Certificate QR reference</h2>
-              <p>
-                This reference allows its holder to retrieve the institution’s
-                signed recipient name and result. Nothing is sent until you
-                agree and verify. The reference was removed from the address
-                bar.
-              </p>
-              <p>Certificate: {reference.id}</p>
+              <h2>{t("exam.verify.qrTitle")}</h2>
+              <p>{t("exam.verify.qrIntro")}</p>
+              <p>{t("exam.verify.certificate", { id: reference.id })}</p>
               <label>
-                Optional PDF to compare<input
+                {t("exam.verify.pdf")}<input
                   ref={pdfInput}
                   type="file"
                   accept=".pdf,application/pdf"
@@ -222,16 +218,12 @@ export function CertificateVerification() {
                   }}
                 />
               </label>
-              <p className="hint">
-                The PDF stays in your browser. Its file hash is compared with
-                the institution’s rendered-document receipts; the PDF itself is
-                not uploaded or opened.
-              </p>
+              <p className="hint">{t("exam.verify.pdfHint")}</p>
             </div>
           )}
           <form onSubmit={(event) => void verify(event)}>
             <label>
-              Signed certificate file<input
+              {t("exam.verify.file")}<input
                 ref={jsonInput}
                 type="file"
                 accept=".json,application/json"
@@ -253,73 +245,71 @@ export function CertificateVerification() {
                 checked={ack}
                 disabled={busy}
                 onChange={(event) => setAck(event.target.checked)}
-              />I have permission to submit the name and result in this
-              certificate for verification.
+              />{t("exam.verify.ack")}
             </label>
             <button disabled={busy || (!file && !reference) || !ack}>
-              Verify signature and current status
+              {t("exam.verify.submit")}
             </button>
           </form>
           {busy && (
-            <p role="status">Checking signature and institution status…</p>
+            <p role="status">{t("exam.verify.checking")}</p>
           )}
           {error && (
             <p className="error" role="alert">
-              {error} No current validity has been confirmed.
+              {t("exam.verify.error", { error })}
             </p>
           )}
           {result && (
             <div className="certificate-verify-result" role="status">
               <h2>
-                {messages[result.status] ??
-                  "Current status could not be confirmed"}
+                {statusText(result.status)}
               </h2>
-              <p>
-                Cryptographic signature verified. This does not independently
-                prove accreditation or the real-world identity of the recipient.
-              </p>
+              <p>{t("exam.verify.signatureVerified")}</p>
               <h3>{result.claims.achievement}</h3>
               <p>{result.claims.recipient} · {result.claims.issuer}</p>
               <p>
                 {result.claims.score} / {result.claims.maximum_score} ·{" "}
                 {result.claims.exam}
               </p>
-              <p>Certificate: {result.claims.certificate_id}</p>
+              <p>
+                {t("exam.verify.certificate", {
+                  id: result.claims.certificate_id,
+                })}
+              </p>
               {result.claims.replaces_certificate_id && (
                 <p className="certificate-reference">
-                  This signed credential replaces certificate{" "}
-                  {result.claims.replaces_certificate_id}.
+                  {t("exam.verify.replaces", {
+                    id: result.claims.replaces_certificate_id,
+                  })}
                 </p>
               )}
               {result.status === "replaced" && (
                 <p className="certificate-reference">
-                  Ask the holder for the replacement
-                  credential{result.replacement_id
-                    ? ` (${result.replacement_id})`
-                    : ""}{" "}
-                  and verify it separately. This original reference does not
-                  disclose the replacement’s signed details.
+                  {t(
+                    result.replacement_id
+                      ? "exam.verify.askReplacementId"
+                      : "exam.verify.askReplacement",
+                    { id: result.replacement_id ?? "" },
+                  )}
                 </p>
               )}
               {result.pdf_match !== undefined && (
                 <p>
-                  {result.pdf_match
-                    ? "This file matches an institution-rendered PDF receipt."
-                    : "This file does not match a known rendered PDF receipt. Its visible contents have not been confirmed; compare them with the signed details above."}
-                  {" "}
-                  This is not a PDF digital signature.
+                  {t(
+                    result.pdf_match
+                      ? "exam.verify.pdfMatch"
+                      : "exam.verify.pdfMismatch",
+                  )}
                 </p>
               )}
               {result.checked_at && (
                 <p>
-                  Checked{" "}
-                  {new Date(result.checked_at).toLocaleString()}. A downloaded
-                  copy does not carry future revocation updates.
+                  {t("exam.verify.checked", { date: date(result.checked_at) })}
                 </p>
               )}
             </div>
           )}
-          <a href={location.pathname}>Return to Schood Exam</a>
+          <a href={location.pathname}>{t("exam.verify.return")}</a>
         </section>
       </main>
     </div>

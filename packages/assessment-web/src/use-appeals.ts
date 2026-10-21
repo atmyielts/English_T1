@@ -7,11 +7,14 @@ import {
   openAppealCommands,
 } from "./appeals";
 import type { GradeIntent } from "./grade-command";
+import {LocalizedError} from './i18n/translate.ts';
+import {useWebT} from './i18n/useWebT.ts';
 export function useAppeals(
   tenant: string,
   actor: string,
   mode: "candidate" | "queue",
 ) {
+  const t = useWebT();
   const [rows, setRows] = useState<AppealRow[]>([]),
     [detail, setDetail] = useState<AppealDetail | null>(null),
     [more, setMore] = useState(false);
@@ -52,7 +55,7 @@ export function useAppeals(
       }
     } catch (cause) {
       if (alive.current && version === loadVersion.current) {
-        setError(appealProblem(cause));
+        setError(appealProblem(cause, t));
         if (
           cause instanceof ServiceRequestError &&
           [401, 403].includes(cause.status)
@@ -80,7 +83,7 @@ export function useAppeals(
       }
     } catch (cause) {
       if (alive.current && version === selectionVersion.current) {
-        setError(appealProblem(cause));
+        setError(appealProblem(cause, t));
       }
     }
   }
@@ -98,25 +101,23 @@ export function useAppeals(
     let saved = false;
     try {
       if (!engine.current) {
-        throw new Error(
-          "Secure appeal recovery is not ready. Reload this workspace.",
-        );
+        throw new LocalizedError("appeal.secureAppealRecoveryReady");
       }
       if (action) await engine.current.commands.execute(action, data ?? {});
       else await engine.current.commands.retry();
       saved = true;
       if (alive.current) {
-        setNotice("The institution recorded your appeal request.");
+        setNotice(t("appeal.notice.recorded"));
         await refresh();
       }
     } catch (cause) {
-      if (alive.current) setError(appealProblem(cause));
+      if (alive.current) setError(appealProblem(cause, t));
     } finally {
       if (alive.current) {
         try {
           setPending(await engine.current?.commands.pending() ?? null);
         } catch (cause) {
-          setError(appealProblem(cause));
+          setError(appealProblem(cause, t));
         }
         setBusy(false);
       }
@@ -149,7 +150,7 @@ export function useAppeals(
       }
     }).catch((cause) => {
       if (alive.current && epoch === lifecycle.current) {
-        setError(appealProblem(cause));
+        setError(appealProblem(cause, t));
       }
     });
     return () => {

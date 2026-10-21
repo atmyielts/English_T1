@@ -7,47 +7,47 @@ import {
   feedbackLabel,
 } from "../../../../packages/assessment-web/src/feedback";
 import "./feedback.css";
+import { useI18n } from "../../../../packages/service-i18n/src/i18n.tsx";
+import { useAppT } from "../i18n/index.ts";
 export function FeedbackWorkspace(
   { tenant, actor }: { tenant: string; actor: string },
 ) {
+  const t = useAppT(), { date: formatDate } = useI18n();
   const state = useFeedback(tenant, actor),
     locked = state.busy || state.pending || !state.ready || !state.allowed;
   return (
     <section
       className="grading-detail feedback-workspace"
-      aria-label="Institution result feedback"
+      aria-label={t("feedback.label")}
     >
-      <h2>Control what candidates receive</h2>
+      <h2>{t("feedback.title")}</h2>
       <p>
-        Set a sitting's feedback policy, obtain independent approval, then
-        review it again when releasing grades. No policy change silently expands
-        an old release.
+        {t("feedback.lead")}
       </p>
       {state.error && <p className="error" role="alert">{state.error}</p>}
       {state.notice && <p className="notice" role="status">{state.notice}</p>}
       {!state.ready && !state.error && (
-        <p role="status">Opening the protected feedback workspace…</p>
+        <p role="status">{t("feedback.opening")}</p>
       )}
       {state.pending && state.allowed && (
         <div role="status">
           <p>
-            A saved feedback request needs its canonical receipt. Retry it
-            before making another decision.
+            {t("feedback.pending")}
           </p>
           <button disabled={state.busy} onClick={() => void state.mutate()}>
-            Retry saved feedback request
+            {t("feedback.retry")}
           </button>
         </div>
       )}
       {state.allowed && (
         <>
           <label>
-            Feedback sitting<select
+            {t("feedback.sitting")}<select
               disabled={state.busy || !state.ready}
               value={state.selected}
               onChange={(event) => void state.choose(event.target.value)}
             >
-              <option value="">Choose a sitting</option>
+              <option value="">{t("windows.chooseSitting")}</option>
               {state.sittings.map((sitting) => (
                 <option key={sitting.id} value={sitting.id}>
                   {sitting.title}
@@ -56,7 +56,7 @@ export function FeedbackWorkspace(
             </select>
           </label>
           {state.ready && !state.sittings.length && (
-            <p>No sittings are available. Create an exam sitting first.</p>
+            <p>{t("feedback.noSittings")}</p>
           )}
           {state.moreSittings && (
             <button
@@ -64,7 +64,7 @@ export function FeedbackWorkspace(
               disabled={state.busy}
               onClick={() => void state.more()}
             >
-              Load more feedback sittings
+              {t("feedback.moreSittings")}
             </button>
           )}
           <button
@@ -72,17 +72,17 @@ export function FeedbackWorkspace(
             disabled={state.busy}
             onClick={() => void state.refresh()}
           >
-            Refresh feedback controls
+            {t("feedback.refresh")}
           </button>
           {state.history && (
             <div key={`${state.selected}:${state.history.revision}`}>
               <p className="notice">
-                Future releases: {feedbackLabel(state.history.current.level)}.
+                {t("feedback.future", { level: feedbackLabel(state.history.current.level, t) })}
                 {" "}
                 {state.history.current.level !== "totals" &&
-                  `Details: ${
-                    feedbackDate(state.history.current.available_after)
-                  }.`}
+                  t("feedback.futureDetails", { date:
+                    feedbackDate(state.history.current.available_after, t, (value) => formatDate(value))
+                  })}
               </p>
               <PolicyProposal
                 history={state.history}
@@ -101,17 +101,15 @@ export function FeedbackWorkspace(
                   disabled={state.busy}
                   onClick={() => void state.page("versions")}
                 >
-                  Next 100 policy versions
+                  {t("feedback.nextVersions")}
                 </button>
               )}
-              <h3>Released feedback</h3>
+              <h3>{t("feedback.released")}</h3>
               <p>
-                Withholding prevents future detail reads. It cannot erase
-                information already viewed or downloaded. Overall results,
-                grades and certificates are not revoked by a feedback hold.
+                {t("feedback.releasedLead")}
               </p>
               {!state.releases.length && (
-                <p>No result releases on this page.</p>
+                <p>{t("feedback.noReleases")}</p>
               )}
               <ul className="records">
                 {state.releases.map((release) => (
@@ -129,7 +127,7 @@ export function FeedbackWorkspace(
                   disabled={state.busy}
                   onClick={() => void state.page("releases")}
                 >
-                  Next 100 feedback releases
+                  {t("feedback.nextReleases")}
                 </button>
               )}
             </div>

@@ -1,5 +1,7 @@
 import { type FormEvent, useState } from "react";
 import type { CertificateProgram } from "../../../../packages/assessment-web/src/certificates";
+import { useI18n } from "../../../../packages/service-i18n/src/i18n.tsx";
+import { useAppT } from "../i18n/index.ts";
 export function ProgramRetirement(
   { program, disabled, send }: {
     program: CertificateProgram;
@@ -7,6 +9,7 @@ export function ProgramRetirement(
     send: (action: string, data: Record<string, unknown>) => Promise<boolean>;
   },
 ) {
+  const t = useAppT(), { date } = useI18n();
   const [open, setOpen] = useState(false),
     [reason, setReason] = useState(""),
     [ack, setAck] = useState(false);
@@ -22,10 +25,7 @@ export function ProgramRetirement(
   if (program.retirement) {
     return (
       <p>
-        Retired {new Date(program.retirement.retired_at).toLocaleDateString()}.
-        {" "}
-        {program.retirement.reason}{" "}
-        Existing signed awards remain in their original history.
+        {t("retirement.done", { date: date(program.retirement.retired_at, { dateStyle: "short" }), reason: program.retirement.reason })}
       </p>
     );
   }
@@ -37,19 +37,16 @@ export function ProgramRetirement(
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
       >
-        Retire program
+        {t("retirement.open")}
       </button>
       {open && (
         <form onSubmit={(event) => void retire(event)}>
-          <h4>Retire {program.title}</h4>
+          <h4>{t("retirement.title", { title: program.title })}</h4>
           <p>
-            This permanently stops approval and new signing under this program,
-            including unfinished preparations. Existing signed awards are not
-            revoked. Create and independently approve a new program to change
-            its criteria.
+            {t("retirement.lead")}
           </p>
           <label>
-            Program retirement reason<textarea
+            {t("retirement.reason")}<textarea
               required
               maxLength={5000}
               value={reason}
@@ -66,11 +63,10 @@ export function ProgramRetirement(
               checked={ack}
               disabled={disabled}
               onChange={(event) => setAck(event.target.checked)}
-            />I reviewed this program and understand that retirement is
-            permanent and does not revoke existing awards.
+            />{t("retirement.ack")}
           </label>
           <button disabled={disabled || !reason.trim() || !ack}>
-            Confirm program retirement
+            {t("retirement.confirm")}
           </button>
         </form>
       )}

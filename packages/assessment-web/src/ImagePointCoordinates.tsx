@@ -3,6 +3,7 @@ import {
   type ImagePoint,
   normalizedPoint,
 } from "../../assessment-core/src/image-response";
+import { useWebT } from "./i18n/useWebT.ts";
 const percent = (n: number) => String(Math.round(n * 1e6) / 10000);
 export function ImagePointCoordinates(
   { point, onChange }: {
@@ -10,6 +11,7 @@ export function ImagePointCoordinates(
     onChange: (value: ImagePoint | null) => void;
   },
 ) {
+  const t = useWebT();
   const [coordinates, setCoordinates] = useState({ x: "", y: "" }),
     [error, setError] = useState("");
   const x = point?.x, y = point?.y;
@@ -25,10 +27,10 @@ export function ImagePointCoordinates(
   };
   return (
     <fieldset>
-      <legend>Exact image coordinates</legend>
+      <legend>{t("image.coordinates")}</legend>
       <div className="image-coordinate-fields">
         <label>
-          Horizontal position (%)<input
+          {t("image.horizontal")}<input
             type="number"
             min="0"
             max="100"
@@ -42,7 +44,7 @@ export function ImagePointCoordinates(
           />
         </label>
         <label>
-          Vertical position (%)<input
+          {t("image.vertical")}<input
             type="number"
             min="0"
             max="100"
@@ -56,10 +58,7 @@ export function ImagePointCoordinates(
           />
         </label>
       </div>
-      <p className="hint">
-        0% is the left/top edge; 100% is the right/bottom edge. Apply
-        coordinates to save this selection.
-      </p>
+      <p className="hint">{t("image.coordinatesHint")}</p>
       <div className="image-response-actions">
         <button
           type="button"
@@ -72,22 +71,20 @@ export function ImagePointCoordinates(
               !Number.isFinite(px) || !Number.isFinite(py) || px < 0 ||
               px > 100 || py < 0 || py > 100
             ) {
-              setError(
-                "Enter both positions between 0 and 100 percent.",
-              );
+              setError(t("image.coordinatesInvalid"));
               return;
             }
             choose(normalizedPoint(px / 100, py / 100));
           }}
         >
-          Apply coordinates
+          {t("image.apply")}
         </button>
         <button
           type="button"
           className="quiet"
           onClick={() => choose(null)}
         >
-          Clear selected point
+          {t("image.clearPoint")}
         </button>
       </div>
       {error && <p role="alert" className="error">{error}</p>}

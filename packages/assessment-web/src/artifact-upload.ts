@@ -6,6 +6,7 @@ import {
   type ArtifactUpload,
   type ArtifactMime,
 } from "../../assessment-core/src/artifacts.ts";
+import {LocalizedError} from './i18n/translate.ts';
 export interface UploadFile extends Blob {
   readonly name: string;
 }
@@ -41,7 +42,7 @@ export async function fileManifest(
   progress: (p: UploadProgress) => void = () => {},
 ) {
   if (!file.size || file.size > ARTIFACT_MAX_BYTES)
-    throw new Error("Choose a nonempty file up to 2 GiB.");
+    throw new LocalizedError("upload.chooseNonemptyFileUp");
   const parts = [];
   progress({ stage: "checking", done: 0, total: file.size });
   for (let offset = 0; offset < file.size; offset += ARTIFACT_CHUNK_BYTES) {
@@ -89,13 +90,9 @@ export class ArtifactUploads {
       const manifest = await fileManifest(file, mime, progress);
       let intent = await this.store.pending();
       if (intent?.cancelling)
-        throw new Error(
-          "Retry the saved upload cancellation before starting another upload.",
-        );
+        throw new LocalizedError("upload.retrySavedUploadCancellation");
       if (intent && canonicalJson(intent.manifest) !== canonicalJson(manifest))
-        throw new Error(
-          "Reselect the original file and format to resume the saved upload, or cancel it first.",
-        );
+        throw new LocalizedError("upload.reselectOriginalFileFormat");
       intent ??= await this.store.save(manifest);
       const begun = await this.backend.begin(intent);
       let done = 0;
@@ -112,9 +109,7 @@ export class ArtifactUploads {
       }
       const receipt = await this.backend.complete(begun.id);
       if (!["quarantined", "ready", "rejected"].includes(receipt.state))
-        throw new Error(
-          "The service did not confirm upload completion. Retry the saved upload.",
-        );
+        throw new LocalizedError("upload.serviceConfirmUploadCompletion");
       await this.store.acknowledge();
       progress({ stage: "scanning", done: file.size, total: file.size });
       return receipt;
@@ -123,7 +118,7 @@ export class ArtifactUploads {
   cancel() {
     return this.run(async () => {
       const intent = await this.store.pending();
-      if (!intent) throw new Error("There is no saved upload to cancel.");
+      if (!intent) throw new LocalizedError("upload.nothingToCancel");
       if (!intent.cancelling) await this.store.cancel();
       const begun = await this.backend.begin(intent);
       let receipt: UploadReceipt;
@@ -139,7 +134,7 @@ export class ArtifactUploads {
           receipt.state,
         )
       )
-        throw new Error("The service did not confirm cancellation.");
+        throw new LocalizedError("upload.serviceConfirmCancellation");
       await this.store.acknowledge();
       return receipt;
     });
@@ -147,7 +142,7 @@ export class ArtifactUploads {
   private run(work: () => Promise<UploadReceipt>) {
     if (this.flight)
       return Promise.reject(
-        new Error("Wait for the current upload operation to finish."),
+        new LocalizedError("upload.waitCurrentUploadOperation"),
       );
     const result = this.lock(work);
     this.flight = result;

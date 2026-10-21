@@ -3,6 +3,7 @@ import type {
   CertificateProgram,
   CertificateResult,
 } from "../../../../packages/assessment-web/src/certificates";
+import { useAppT } from "../i18n/index.ts";
 export function CertificateIssuer({
   programs,
   results,
@@ -14,6 +15,7 @@ export function CertificateIssuer({
   disabled: boolean;
   send: (action: string, data: Record<string, unknown>) => Promise<boolean>;
 }) {
+  const t = useAppT();
   const [program, setProgram] = useState(""),
     [score, setScore] = useState(""),
     [ack, setAck] = useState(false),
@@ -37,15 +39,13 @@ export function CertificateIssuer({
   }
   return (
     <section>
-      <h2>Issue from a released result</h2>
+      <h2>{t("issuer.title")}</h2>
       <p>
-        The service uses the institution and candidate’s recorded names, checks
-        the current released generation against the approved threshold, and
-        rejects pending appeals/regrading. It does not edit grades.
+        {t("issuer.lead")}
       </p>
       <form onSubmit={(event) => void issue(event)}>
         <label>
-          Approved program<select
+          {t("issuer.program")}<select
             required
             value={program}
             onChange={(event) => {
@@ -54,18 +54,18 @@ export function CertificateIssuer({
             }}
             disabled={disabled}
           >
-            <option value="">Choose a program</option>
+            <option value="">{t("issuer.chooseProgram")}</option>
             {programs.filter((row) => row.approved_by && !row.retirement).map((
               row,
             ) => (
               <option key={row.id} value={row.id}>
-                {row.title} · Minimum {row.minimum_percent}%
+                {t("issuer.programOption", { title: row.title, minimum: String(row.minimum_percent) })}
               </option>
             ))}
           </select>
         </label>
         <label>
-          Released candidate result<select
+          {t("issuer.result")}<select
             required
             value={score}
             onChange={(event) => {
@@ -74,10 +74,10 @@ export function CertificateIssuer({
             }}
             disabled={disabled}
           >
-            <option value="">Choose a released result</option>
+            <option value="">{t("issuer.chooseResult")}</option>
             {results.map((row) => (
               <option key={row.score_revision_id} value={row.score_revision_id}>
-                {row.candidate} · {row.exam} · Generation {row.generation}
+                {t("issuer.resultOption", { candidate: row.candidate, exam: row.exam, generation: String(row.generation) })}
               </option>
             ))}
           </select>
@@ -88,11 +88,10 @@ export function CertificateIssuer({
             checked={ack}
             onChange={(event) => setAck(event.target.checked)}
             disabled={disabled}
-          />I reviewed the recipient, approved criteria and released result, and
-          authorize this institution’s certificate.
+          />{t("issuer.ack")}
         </label>
         <button disabled={disabled || !policy || !result || !ack}>
-          Issue signed certificate
+          {t("issuer.issue")}
         </button>
       </form>
     </section>

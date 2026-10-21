@@ -4,7 +4,7 @@ async(page)=>{
  const wait=async(predicate,message,tries=200)=>{for(let i=0;i<tries;i++){if(await predicate())return;await page.waitForTimeout(100);}throw Error(message);};
  async function login(name,app='assessment'){await page.setViewportSize({width:1440,height:1000});await page.goto(`${base}/${app}/?tenant_id=${info.tenant}`);if(await page.evaluate(()=>document.cookie.includes('schood-auth')))await page.getByRole('button',{name:'Sign out',exact:true}).waitFor();if(await page.getByRole('button',{name:'Sign out',exact:true}).count())await page.getByRole('button',{name:'Sign out',exact:true}).click();await page.getByLabel('Email',{exact:true}).fill(name+'@example.test');await page.getByLabel('Password',{exact:true}).fill('synthetic');await page.getByRole('button',{name:'Sign in',exact:true}).click();}
  async function screenshots(prefix,focus){for(const width of [1440,1024,768,390,320]){await page.setViewportSize({width,height:1000});await page.evaluate(()=>window.scrollTo(0,0));if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1))throw Error('Accommodation overflow '+prefix+' '+width);await page.screenshot({path:`output/playwright/accommodations/${prefix}-${width}.png`,fullPage:true});if(width===320&&focus)await focus.screenshot({path:`output/playwright/accommodations/${prefix}-detail-320.png`});}await page.setViewportSize({width:1440,height:1000});}
- const sittings=async()=>{await page.getByRole('button',{name:'Exam sittings',exact:true}).click();const panel=page.locator('section.accommodations');await panel.getByRole('heading',{name:'Accommodations',exact:true}).waitFor();await panel.getByRole('combobox',{name:'Sitting',exact:true}).selectOption({label:'Accommodated sitting'});return panel;};
+ const sittings=async()=>{await page.getByRole('button',{name:'Exam sittings',exact:true}).click();const panel=page.locator('section.accommodations');await panel.getByRole('heading',{name:'Accommodations',exact:true}).waitFor();await panel.getByRole('combobox',{name:'Sitting to review',exact:true}).selectOption({label:'Accommodated sitting'});return panel;};
  const row=panel=>panel.locator('.records > li').filter({has:page.getByText(ids.candidate,{exact:true})});
 
  // Institution approval: a committed approval whose reply is lost is recovered by its saved key.
@@ -28,7 +28,7 @@ async(page)=>{
  if(await panel.getByRole('button',{name:'Retry saved approval',exact:true}).count())throw Error('Refused stale approval stayed pending');
  await screenshots('approval-list',panel);
  // A second sitting uses a running-clock policy: breaks grant no exam time.
- await panel.getByRole('combobox',{name:'Sitting',exact:true}).selectOption({label:'Running-clock sitting'});
+ await panel.getByRole('combobox',{name:'Sitting to review',exact:true}).selectOption({label:'Running-clock sitting'});
  await row(panel).getByRole('button',{name:'Review accommodations',exact:true}).click();form=panel.getByRole('form',{name:'Approve accommodations',exact:true});
  await form.getByLabel('Allow timed breaks',{exact:true}).check();await form.getByLabel('Keep the exam clock running',{exact:true}).check();
  await form.getByLabel('Number of breaks',{exact:true}).fill('1');await form.getByLabel('Minutes per break',{exact:true}).fill('1');await form.getByLabel('Total break minutes',{exact:true}).fill('1');

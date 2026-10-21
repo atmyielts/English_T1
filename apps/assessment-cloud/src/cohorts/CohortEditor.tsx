@@ -3,6 +3,7 @@ import type {
   Cohort,
   DirectoryMember,
 } from "../../../../packages/assessment-web/src/cohorts";
+import { useAppT, useCodeText } from "../i18n/index.ts";
 export function CohortEditor({
   group,
   directory,
@@ -19,6 +20,7 @@ export function CohortEditor({
     data: Record<string, unknown>,
   ) => Promise<Record<string, unknown> | null>;
 }) {
+  const t = useAppT(), codeText = useCodeText();
   const [title, setTitle] = useState(group.title),
     [description, setDescription] = useState(group.description),
     [reason, setReason] = useState(""),
@@ -40,13 +42,11 @@ export function CohortEditor({
     <section>
       <h2>{group.title}</h2>
       <p>
-        State: {group.state} · Revision{" "}
-        {group.revision}. Removing a cohort entry never withdraws an existing
-        exam registration.
+        {t("cohort.summary", { state: codeText("cohort.state", group.state), revision: String(group.revision) })}
       </p>
       <form onSubmit={(event) => void revise(event)}>
         <label>
-          Cohort title<input
+          {t("cohort.title")}<input
             required
             maxLength={200}
             value={title}
@@ -55,7 +55,7 @@ export function CohortEditor({
           />
         </label>
         <label>
-          Description<textarea
+          {t("cohort.description")}<textarea
             maxLength={2000}
             value={description}
             onChange={(event) => setDescription(event.target.value)}
@@ -63,7 +63,7 @@ export function CohortEditor({
           />
         </label>
         <label>
-          Reason for roster change<textarea
+          {t("cohort.reason")}<textarea
             required
             maxLength={2000}
             value={reason}
@@ -73,7 +73,7 @@ export function CohortEditor({
         </label>
         <div className="cohort-actions">
           <button disabled={disabled || !reason.trim()}>
-            Save cohort details
+            {t("cohort.save")}
           </button>
           <button
             type="button"
@@ -89,16 +89,16 @@ export function CohortEditor({
                 reason,
               })}
           >
-            {group.state === "active" ? "Archive cohort" : "Reactivate cohort"}
+            {group.state === "active" ? t("cohort.archive") : t("cohort.reactivate")}
           </button>
         </div>
       </form>
-      <h3>Members and extra time</h3>
+      <h3>{t("cohort.members")}</h3>
       <ul className="records">
         {group.members?.map((member) => (
           <li key={member.id}>
             <strong>{member.name}</strong>
-            <span>{member.extra_seconds} extra seconds</span>
+            <span>{t("cohort.extraSeconds", { count: member.extra_seconds, seconds: String(member.extra_seconds) })}</span>
             <button
               className="quiet"
               disabled={disabled || group.state !== "active" || !reason.trim()}
@@ -110,7 +110,7 @@ export function CohortEditor({
                   reason,
                 })}
             >
-              Remove {member.name} from cohort
+              {t("cohort.removeMember", { name: member.name })}
             </button>
           </li>
         ))}
@@ -124,7 +124,7 @@ export function CohortEditor({
             }}
           >
             <label>
-              Search institution members<input
+              {t("cohort.search")}<input
                 type="search"
                 maxLength={200}
                 value={query}
@@ -136,7 +136,7 @@ export function CohortEditor({
               />
             </label>
             <button className="quiet" disabled={disabled}>
-              Search members
+              {t("cohort.searchSubmit")}
             </button>
           </form>
           <form
@@ -152,13 +152,13 @@ export function CohortEditor({
             }}
           >
             <label>
-              Institution member<select
+              {t("cohort.member")}<select
                 required
                 value={user}
                 onChange={(event) => setUser(event.target.value)}
                 disabled={disabled}
               >
-                <option value="">Choose an active institution member</option>
+                <option value="">{t("cohort.chooseMember")}</option>
                 {directory.map((member) => (
                   <option key={member.id} value={member.id}>
                     {member.name}
@@ -167,7 +167,7 @@ export function CohortEditor({
               </select>
             </label>
             <label>
-              Extra assessment seconds<input
+              {t("cohort.extra")}<input
                 type="number"
                 min={0}
                 max={86400}
@@ -179,7 +179,7 @@ export function CohortEditor({
               />
             </label>
             <button disabled={disabled || !user || !reason.trim()}>
-              Add or update cohort member
+              {t("cohort.addMember")}
             </button>
           </form>
         </>

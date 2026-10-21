@@ -1,18 +1,20 @@
 import type { AnswerKey } from "../../../../packages/assessment-core/src/mod.ts";
+import { useAppT } from "../i18n/index.ts";
 export function ImportKey({ answer }: { answer: AnswerKey }) {
+  const t = useAppT();
   const correct = answer.correct;
   return (
     <>
       <p>
         {answer.numeric
-          ? `Numeric answer: ${answer.numeric.value}; tolerance: ${answer.numeric.tolerance}`
+          ? t("key.numeric", { value: String(answer.numeric.value), tolerance: String(answer.numeric.tolerance) })
           : typeof correct === "string"
-          ? `Correct answer: ${correct}`
+          ? t("key.correct", { answer: correct })
           : Array.isArray(correct)
-          ? `Accepted answers / option order: ${correct.join(" · ")}`
+          ? t("key.accepted", { answers: correct.join(" · ") })
           : correct
-          ? "Answers by response field:"
-          : "Human marking with the referenced rubric."}
+          ? t("key.byField")
+          : t("key.human")}
       </p>
       {correct && typeof correct === "object" && !Array.isArray(correct) && (
         <dl>
@@ -27,10 +29,10 @@ export function ImportKey({ answer }: { answer: AnswerKey }) {
       {correct && (
         <p>
           {answer.case_sensitive
-            ? "Case-sensitive answers."
-            : "Case-insensitive answers."} {answer.partial_credit
-            ? "Partial credit enabled."
-            : "All-or-nothing scoring."}
+            ? t("key.caseSensitive")
+            : t("key.caseInsensitive")} {answer.partial_credit
+            ? t("key.partial")
+            : t("key.allOrNothing")}
         </p>
       )}
     </>

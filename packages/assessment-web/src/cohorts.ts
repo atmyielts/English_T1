@@ -1,6 +1,13 @@
 import { request } from "./client";
 import { ResponseJournal } from "./journal";
 import { GradeCommands } from "./grade-command";
+import {
+  english,
+  isWebKey,
+  LocalizedError,
+  messageText,
+  type Translate,
+} from "./i18n/translate.ts";
 export interface Cohort {
   id: string;
   title: string;
@@ -67,28 +74,27 @@ export interface RosterJob {
     registration_id: string | null;
   }[];
 }
-export const rosterOutcome: Record<string, string> = {
-  pending: "Awaiting processing",
-  created: "Registered by this job",
-  existing: "Already registered with matching extra time",
-  conflict: "Existing registration has different extra time — unchanged",
-  inactive: "Institution membership inactive or not eligible at review",
-  removed: "Cohort entry removed or its extra time changed",
-  cancelled: "Not processed — job cancelled",
-};
-export const rosterState: Record<string, string> = {
-  queued: "Queued for registration",
-  running: "Processing a registration batch",
-  completed: "All entries processed successfully",
-  completed_with_issues: "Finished with entries requiring attention",
-  blocked: "Paused — action required",
-  cancelled: "Remaining entries cancelled",
-};
+const outcomeCodes = ["pending", "created", "existing", "conflict", "inactive", "removed", "cancelled"];
+const rosterStateCodes = ["queued", "running", "completed", "completed_with_issues", "blocked", "cancelled"];
+/** Reader-language roster wording; unknown codes return undefined, as the maps did. */
+export function rosterOutcomeText(code: string, t: Translate = english) {
+  const key = `roster.outcome.${code}`;
+  return isWebKey(key) ? t(key) : undefined;
+}
+export function rosterStateText(code: string, t: Translate = english) {
+  const key = `roster.state.${code}`;
+  return isWebKey(key) ? t(key) : undefined;
+}
+/** English maps kept for existing callers; prefer the `*Text(code, t)` helpers. */
+export const rosterOutcome: Record<string, string> = Object.fromEntries(
+  outcomeCodes.map((code) => [code, rosterOutcomeText(code)!]),
+);
+export const rosterState: Record<string, string> = Object.fromEntries(
+  rosterStateCodes.map((code) => [code, rosterStateText(code)!]),
+);
 export async function openCohortCommands(tenant: string, actor: string) {
   if (!navigator.locks) {
-    throw new Error(
-      "Use a browser with secure workspace locking to manage cohorts.",
-    );
+    throw new LocalizedError("cohort.locks");
   }
   const scope = `cohorts:${tenant}:${actor}`,
     journal = await ResponseJournal.create(scope);
@@ -124,32 +130,12 @@ export async function openCohortCommands(tenant: string, actor: string) {
   );
   return { commands, close: () => journal.close() };
 }
-const messages: Record<string, string> = {
-  forbidden: "Your institution has not granted exam coordination permission.",
-  active_institution_member_required:
-    "Choose an active member of this institution. Invite or enroll other candidates through the institution’s approved workflow first.",
-  cohort_revision_conflict:
-    "This cohort changed. Refresh its roster before editing.",
-  roster_review_changed:
-    "The roster, sitting or existing registrations changed. Review a fresh preview before confirming.",
-  cohort_archived:
-    "Reactivate the cohort before changing its members or scheduling it.",
-  cohort_empty: "Add cohort members before creating a registration job.",
-  sitting_closed: "This sitting has closed. Choose an open or future sitting.",
-  roster_sitting_changed:
-    "The sitting configuration changed. Cancel the remaining work and review a new registration job.",
-  roster_job_revision_conflict:
-    "The job progressed or changed. Refresh its current state before this action.",
-  roster_job_not_blocked: "Only a blocked job can be explicitly resumed.",
-  cohort_not_found: "This cohort is not available in the selected institution.",
-};
-export function cohortProblem(cause: unknown) {
-  const code = (cause as { code?: string })?.code;
-  return code && messages[code]
-    ? messages[code]
+/** Known cohort refusals are translated under `cohort.code.<code>`. */
+export function cohortProblem(cause: unknown, t: Translate = english) {
+  const code = (cause as { code?: string })?.code, key = `cohort.code.${code}`;
+  return code && isWebKey(key)
+    ? t(key)
     : cause instanceof Error && cause.name === "AbortError"
-    ? "No receipt arrived in time. Retry the saved cohort request before another change."
-    : cause instanceof Error
-    ? cause.message
-    : "The cohort request could not be completed.";
+    ? t("cohort.problem.timeout")
+    : messageText(cause, t, "cohort.problem.failed");
 }

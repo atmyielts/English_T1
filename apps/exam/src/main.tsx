@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState, type FormEvent } from 'react';
 import { createRoot } from 'react-dom/client';
-import {I18nProvider} from '../../../packages/service-i18n/src/i18n.tsx';
-import {catalogs} from './i18n/index.ts';
+import {I18nProvider,LocaleSwitcher,useI18n} from '../../../packages/service-i18n/src/i18n.tsx';
+import {catalogs,useAppT} from './i18n/index.ts';
+import {errorText} from '../../../packages/assessment-web/src/i18n/errors.ts';
 import { configured, request, proctorRequest, supabase, observeAccount, type Row } from '../../../packages/assessment-web/src/client';
 import { ResponseJournal } from '../../../packages/assessment-web/src/journal';
 import { assertCoordinatorReady,openCoordinator } from '../../../packages/assessment-web/src/coordinator';
@@ -38,10 +39,11 @@ type Attempt = Row & { id:string; manifest: Manifest & {section_count:number}; r
 const LazyAcademicAnswer=React.lazy(()=>import('../../../packages/assessment-web/src/CandidateMediaAnswer').then(module=>({default:module.CandidateMediaAnswer})));
 const LazyAcademicRecovery=React.lazy(()=>import('./AcademicUploadRecovery').then(module=>({default:module.AcademicUploadRecovery})));
 const LazyAcademicDevices=React.lazy(()=>import('./AcademicDeviceRecovery').then(module=>({default:module.AcademicDeviceRecovery})));
-function CandidateMediaAnswer(props:React.ComponentProps<typeof CandidateMediaAnswerComponent>){return <React.Suspense fallback={<p role="status">Opening the academic answer controls…</p>}><LazyAcademicAnswer {...props}/></React.Suspense>;}
-function AcademicUploadRecovery(props:React.ComponentProps<typeof AcademicUploadRecoveryComponent>){return <React.Suspense fallback={<p role="status">Checking academic upload recovery…</p>}><LazyAcademicRecovery {...props}/></React.Suspense>;}
-function AcademicDeviceRecovery(props:React.ComponentProps<typeof AcademicDeviceRecoveryComponent>){return <React.Suspense fallback={<p role="status">Checking saved academic workspaces…</p>}><LazyAcademicDevices {...props}/></React.Suspense>;}
+function CandidateMediaAnswer(props:React.ComponentProps<typeof CandidateMediaAnswerComponent>){const t=useAppT();return <React.Suspense fallback={<p role="status">{t('exam.loading.mediaAnswer')}</p>}><LazyAcademicAnswer {...props}/></React.Suspense>;}
+function AcademicUploadRecovery(props:React.ComponentProps<typeof AcademicUploadRecoveryComponent>){const t=useAppT();return <React.Suspense fallback={<p role="status">{t('exam.loading.uploadRecovery')}</p>}><LazyAcademicRecovery {...props}/></React.Suspense>;}
+function AcademicDeviceRecovery(props:React.ComponentProps<typeof AcademicDeviceRecoveryComponent>){const t=useAppT();return <React.Suspense fallback={<p role="status">{t('exam.loading.deviceRecovery')}</p>}><LazyAcademicDevices {...props}/></React.Suspense>;}
 function App() {
+  const t=useAppT(),{number}=useI18n();
   const tenant = new URLSearchParams(location.search).get('tenant_id') ?? '';
   const [user,setUser]=useState(''),[email,setEmail]=useState(''),[password,setPassword]=useState('');
   const [registrations,setRegistrations]=useState<Row[]>([]),[attempt,setAttempt]=useState<Attempt|null>(null),[answers,setAnswers]=useState<Record<string,unknown>>({});
@@ -63,7 +65,7 @@ function App() {
   useEffect(()=>observeAccount(setUser),[]);
   useEffect(()=>{setConfirmedAnswers({});setAcademicCaptures(new Set());},[user,tenant]);
   useEffect(()=>{connection.current?.close();connection.current=null;journal.current?.close();journal.current=null;setAttempt(null);setAnswers({});setProctor(null);setPreflight(null);setPending(0);setError('');setBusy(false);setRuntimeStatus({ready:false,problem:null,expires_at:null});manifestIndex.current=-1;runtimeSnapshot.current=null;localFailure.current=false;saved.current={};sequence.current=0;},[user,tenant]);
-  useEffect(()=>{let active=true;setRegistrations([]);if(user&&tenant)request<Row[]>('candidate/registrations',tenant).then(value=>{if(active)setRegistrations(value);}).catch(cause=>{if(active)setError(cause.message);});return()=>{active=false;};},[user,tenant]);
+  useEffect(()=>{let active=true;setRegistrations([]);if(user&&tenant)request<Row[]>('candidate/registrations',tenant).then(value=>{if(active)setRegistrations(value);}).catch(cause=>{if(active)setError(errorText(cause,t));});return()=>{active=false;};},[user,tenant]);
   useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),1000);return()=>clearInterval(timer);},[]);
   useEffect(()=>()=>{connection.current?.close();journal.current?.close();},[]);
   async function loadSection(id:string){
@@ -76,7 +78,7 @@ function App() {
       for(const entry of await journal.current!.pending())restored[entry.item_version_id]=entry.response;
       sequence.current=Math.max(sequence.current,state.last_sequence);manifestIndex.current=Number(state.section_index);
       setAnswers(current=>({...current,...restored}));setConfirmedAnswers(current=>({...current,...Object.fromEntries(state.responses.map(row=>[String(row.item_version_id),JSON.stringify(row.response)]))}));setAttempt(current=>current?{...current,manifest:state.manifest,section_index:state.section_index}:current);
-    }catch(cause){if(account.current===expected)setError(cause instanceof Error?cause.message:'Could not load the current section.');}finally{loadingSection.current=false;}
+    }catch(cause){if(account.current===expected)setError(errorText(cause,t,'exam.error.loadSection'));}finally{loadingSection.current=false;}
   }
   function coordinated(snapshot:RuntimeSnapshot){
     if(connection.current?.id!==snapshot.attempt_id||account.current!==user)return;
@@ -90,7 +92,7 @@ function App() {
     const state=await request<Attempt>(`candidate/attempts/${id}`,tenant);
     const monitoringState=Array.isArray(state.required_services)&&state.required_services.includes('proctor')?await proctorRequest<CandidateProctorState>(`candidate/session?attempt_id=${id}`,tenant):null;
     if(account.current!==expected)return;
-    if(state.candidate_id!==expected)throw new Error('Assessment ownership changed. Sign in again.');
+    if(state.candidate_id!==expected)throw new Error(t('exam.error.ownership'));
     if(connection.current?.id!==id){
       connection.current?.close();connection.current=null;setRuntimeStatus({ready:false,problem:null,expires_at:null});
       const openedConnection=await openCoordinator(tenant,expected,id,coordinated,status=>{if(account.current===expected&&connection.current?.id===id)setRuntimeStatus(status);});
@@ -113,14 +115,14 @@ function App() {
     if(sending.current||!store||account.current!==expected)return;sending.current=true;
     try{for(const entry of await store.pending()){
       if(account.current!==expected)return;
-      const active=connection.current;if(active?.id!==id)throw new Error('Reconnect to this assessment before syncing saved responses.');
+      const active=connection.current;if(active?.id!==id)throw new Error(t('exam.error.reconnectSync'));
       await active.runtime.command('response.append',{sequence:entry.sequence,item_version_id:entry.item_version_id,response:entry.response},entry.command_key);
       await store.acknowledge(entry.sequence);
       if(account.current===expected&&connection.current?.id===id)setConfirmedAnswers(current=>({...current,[entry.item_version_id]:JSON.stringify(entry.response)}));
-    }if(account.current===expected){setPending((await store.pending()).length);setError('');}}catch(cause){if(account.current===expected)setError(cause instanceof Error?cause.message:'Answers remain saved on this device. Reconnect to sync.');}finally{sending.current=false;}
+    }if(account.current===expected){setPending((await store.pending()).length);setError('');}}catch(cause){if(account.current===expected)setError(errorText(cause,t,'exam.error.syncLater'));}finally{sending.current=false;}
   }
   useEffect(()=>{if(!attempt?.id||attempt.state!=='active')return;const timer=setInterval(()=>void flush(attempt.id!),5000);const online=()=>void flush(attempt.id!);window.addEventListener('online',online);return()=>{clearInterval(timer);window.removeEventListener('online',online);};},[attempt?.id,attempt?.state]);
-  async function run(work:()=>Promise<void>){const expected=user;setBusy(true);setError('');try{await work();}catch(cause){if(account.current===expected)setError(cause instanceof Error?cause.message:'Could not complete this action.');}finally{if(account.current===expected)setBusy(false);}}
+  async function run(work:()=>Promise<void>){const expected=user;setBusy(true);setError('');try{await work();}catch(cause){if(account.current===expected)setError(errorText(cause,t));}finally{if(account.current===expected)setBusy(false);}}
   function save(item:FormItem,value:unknown){
     const store=journal.current,expected=user;
     localWrite.current=localWrite.current.then(async()=>{
@@ -129,25 +131,25 @@ function App() {
       await store.append(sequence.current+1,item.item_version_id,value);
       if(account.current!==expected)return;sequence.current++;
       saved.current[item.item_version_id]=JSON.stringify(value);setPending((await store.pending()).length);
-    }).catch(cause=>{if(account.current===expected){localFailure.current=true;setError(`Response could not be saved on this device: ${cause.message}`);}});
+    }).catch(cause=>{if(account.current===expected){localFailure.current=true;setError(t('exam.error.localSave',{reason:errorText(cause,t)}));}});
     return localWrite.current;
   }
   async function selectAcademic(entry:FormItem,value:unknown){
     const expected=user,id=attempt?.id,store=journal.current;
-    if(!id||!store||attempt?.state!=='active'||!leaseReady||!captureReady||remaining===0||manifestIndex.current!==Number(attempt.section_index)||account.current!==expected||localFailure.current)throw new Error('Reconnect the active question and resolve any local save failure before selecting an academic answer.');
+    if(!id||!store||attempt?.state!=='active'||!leaseReady||!captureReady||remaining===0||manifestIndex.current!==Number(attempt.section_index)||account.current!==expected||localFailure.current)throw new Error(t('exam.error.selectBlocked'));
     setAnswers(current=>({...current,[entry.item_version_id]:value}));await save(entry,value);
-    if(localFailure.current)throw new Error('This answer selection could not be saved on this device. Contact the institution before continuing.');
+    if(localFailure.current)throw new Error(t('exam.error.selectUnsaved'));
     await flush(id);
-    if(account.current!==expected||connection.current?.id!==id||journal.current!==store)throw new Error('The candidate or attempt changed during answer confirmation. Reopen the original workspace to recover its saved request.');
+    if(account.current!==expected||connection.current?.id!==id||journal.current!==store)throw new Error(t('exam.error.selectChanged'));
     return !(await store.pending()).some(row=>row.item_version_id===entry.item_version_id);
   }
   async function finish(sectionOnly:boolean){
-    if(academicCaptureRef.current.size)throw new Error('Stop and seal each active academic answer recording before finishing this section. A device recording is not automatically selected.');
+    if(academicCaptureRef.current.size)throw new Error(t('exam.error.finishRecording'));
     await localWrite.current;
-    if(localFailure.current)throw new Error('A response could not be saved on this device. Contact your institution before submitting.');
+    if(localFailure.current)throw new Error(t('exam.error.finishUnsaved'));
     await flush(attempt!.id!);
-    if((await journal.current!.pending()).length)throw new Error('Sync all saved responses before continuing.');
-    const active=connection.current;if(!active||active.id!==attempt!.id)throw new Error('Reconnect before submitting.');
+    if((await journal.current!.pending()).length)throw new Error(t('exam.error.finishSync'));
+    const active=connection.current;if(!active||active.id!==attempt!.id)throw new Error(t('exam.error.finishReconnect'));
     const action=sectionOnly?'section.advance':'attempt.submit',key=`${attempt!.id}:${attempt!.section_index}:${action}`;
     actionKeys.current[key]??=crypto.randomUUID();await active.runtime.command(action,{},actionKeys.current[key]);delete actionKeys.current[key];
     if(sectionOnly)await loadSection(attempt!.id!);
@@ -155,11 +157,11 @@ function App() {
   // A break starts only after every saved answer is confirmed and no academic
   // recording is open, so nothing new is admitted while questions are hidden.
   async function beforeBreak(){
-    if(academicCaptureRef.current.size)throw new Error('Stop and seal each active academic answer recording before taking a break.');
+    if(academicCaptureRef.current.size)throw new Error(t('exam.error.breakRecording'));
     await localWrite.current;
-    if(localFailure.current)throw new Error('A response could not be saved on this device. Contact your institution before taking a break.');
+    if(localFailure.current)throw new Error(t('exam.error.breakUnsaved'));
     await flush(attempt!.id!);
-    if((await journal.current!.pending()).length)throw new Error('Sync all saved responses before taking a break.');
+    if((await journal.current!.pending()).length)throw new Error(t('exam.error.breakSync'));
   }
   async function launch(registrationId:string,captureBinding?:{session_id:string;device_id:string;token_hash:string}){
     assertCoordinatorReady();
@@ -174,19 +176,19 @@ function App() {
     assertCoordinatorReady();
     const assignments=await request<Row[]>('candidate/registrations',tenant);if(account.current!==user)return;setRegistrations(assignments);
     const registration=assignments.find(row=>row.id===registrationId);
-    if(!registration)throw new Error('Assessment registration is no longer assigned to this account.');
+    if(!registration)throw new Error(t('exam.error.unassigned'));
     if(!Array.isArray(registration.required_services)||!registration.required_services.includes('proctor')){await launch(registrationId);return;}
     const policy=await proctorRequest<Preflight>(`candidate/preflight?registration_id=${registrationId}`,tenant);
     if(account.current!==user)return;if(!policy.required){await launch(registrationId);return;}setAcknowledged(false);setPreflight({registrationId,policy});
   }
   async function acceptAndLaunch(){
     if(!preflight)return;
-    if(!preflight.policy.consented){if(!acknowledged)throw new Error('Read and acknowledge the monitoring policy before continuing.');await proctorRequest('commands',tenant,{action:'preparation.accept',data:{registration_id:preflight.registrationId,policy_id:preflight.policy.policy_id,acknowledged:true}},`consent:${preflight.registrationId}:${preflight.policy.policy_id}`);}
+    if(!preflight.policy.consented){if(!acknowledged)throw new Error(t('exam.error.acknowledge'));await proctorRequest('commands',tenant,{action:'preparation.accept',data:{registration_id:preflight.registrationId,policy_id:preflight.policy.policy_id,acknowledged:true}},`consent:${preflight.registrationId}:${preflight.policy.policy_id}`);}
     const current=await proctorRequest<Preflight>(`candidate/preflight?registration_id=${preflight.registrationId}`,tenant);
-    if(!current.required)throw new Error('The monitoring policy changed. Contact your institution.');setPreflight({...preflight,policy:current});
+    if(!current.required)throw new Error(t('exam.error.policyChanged'));setPreflight({...preflight,policy:current});
     if(current.runtime_ready&&current.identity_verified){
       if(current.capture_required){
-        if(!current.capture_enabled||current.capture_protocol!=='proctor.capture.v1')throw new Error('Required capture is not enabled for this Exam client.');
+        if(!current.capture_enabled||current.capture_protocol!=='proctor.capture.v1')throw new Error(t('exam.error.captureDisabled'));
         if(capture.registration!==preflight.registrationId||capture.view?.closed||!capture.view){await capture.prepare(preflight.registrationId);return;}
         await launch(preflight.registrationId,await capture.binding());
       }else await launch(preflight.registrationId);
@@ -198,25 +200,25 @@ function App() {
   const breaks=useBreaks(tenant,user,attempt?.id??'',()=>connection.current?.id===attempt?.id?connection.current!.runtime:null,beforeBreak);
   const autoRetried=useRef('');
   const captureReady=captureInteractionReady(captureRequired,capture.ready,String(attempt?.state??''),capture.view?.launch.auto_pause);
-  useEffect(()=>{if(!captureRequired||!attempt){hadCaptureLease.current=false;return;}if(leaseReady)hadCaptureLease.current=true;const terminal=['submitted','expired'].includes(attempt.state);if(terminal||(hadCaptureLease.current&&!leaseReady&&!!runtimeStatus.expires_at&&Date.parse(runtimeStatus.expires_at)<=now+offset)){hadCaptureLease.current=false;void capture.dispose(terminal?'runtime_end':'capture_error').catch(cause=>{if(account.current===user)setError('Recording stopped; saved footage needs recovery: '+cause.message);});}},[captureRequired,attempt?.id,attempt?.state,leaseReady,runtimeStatus.expires_at,now,offset]);
+  useEffect(()=>{if(!captureRequired||!attempt){hadCaptureLease.current=false;return;}if(leaseReady)hadCaptureLease.current=true;const terminal=['submitted','expired'].includes(attempt.state);if(terminal||(hadCaptureLease.current&&!leaseReady&&!!runtimeStatus.expires_at&&Date.parse(runtimeStatus.expires_at)<=now+offset)){hadCaptureLease.current=false;void capture.dispose(terminal?'runtime_end':'capture_error').catch(cause=>{if(account.current===user)setError(t('exam.error.recordingStopped',{reason:errorText(cause,t)}));});}},[captureRequired,attempt?.id,attempt?.state,leaseReady,runtimeStatus.expires_at,now,offset]);
   useEffect(()=>{const key=breaks.pending?.key;if(!key||!leaseReady||breaks.busy||autoRetried.current===key)return;autoRetried.current=key;void breaks.retry();},[breaks.pending?.key,leaseReady,breaks.busy]);
-  if(!configured)return <main className="configuration"><h1>Schood Exam</h1><p>The exam service has not been configured.</p></main>;
-  if(!user)return <main className="signin"><div className="brand">Schood <span>Exam</span></div><h1>Sign in for your assessment</h1><form onSubmit={(event:FormEvent)=>{event.preventDefault();void run(async()=>{const {error}=await supabase!.auth.signInWithPassword({email,password});if(error)throw error;});}}><label>Email<input type="email" required value={email} onChange={e=>setEmail(e.target.value)} autoComplete="username"/></label><label>Password<input type="password" required value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password"/></label><button disabled={busy}>Sign in</button></form>{error&&<p role="alert" className="error">{error}</p>}</main>;
-  if(attempt&&attempt.candidate_id!==user)return <main className="configuration"><p role="status">Changing signed-in account…</p></main>;
+  if(!configured)return <main className="configuration"><h1>Schood Exam</h1><p>{t('exam.unconfigured')}</p></main>;
+  if(!user)return <main className="signin"><div className="brand">Schood <span>Exam</span></div><LocaleSwitcher label={t('locale.label')}/><h1>{t('exam.signin.title')}</h1><form onSubmit={(event:FormEvent)=>{event.preventDefault();void run(async()=>{const {error}=await supabase!.auth.signInWithPassword({email,password});if(error)throw error;});}}><label>{t('exam.signin.email')}<input type="email" required value={email} onChange={e=>setEmail(e.target.value)} autoComplete="username"/></label><label>{t('exam.signin.password')}<input type="password" required value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password"/></label><button disabled={busy}>{t('exam.signin.submit')}</button></form>{error&&<p role="alert" className="error">{error}</p>}</main>;
+  if(attempt&&attempt.candidate_id!==user)return <main className="configuration"><p role="status">{t('exam.accountChanging')}</p></main>;
   const section=attempt?.manifest.sections[0];
   const recordingPanel=(registration:string,active=false)=><CapturePanel view={capture.registration===registration?capture.view:null} busy={busy||capture.busy} error={capture.error} start={capture.start} recover={capture.recover} sync={capture.sync} reconnectLive={capture.reconnectLive} reopen={active||preflight?.policy.consented&&preflight.policy.identity_verified?()=>void run(()=>capture.prepare(registration)):undefined} stop={active?()=>void run(()=>capture.dispose('user_stop')):undefined} active={active}/>;
-  return <div className="exam-workspace"><ServiceHeader service="Exam">{attempt?.state==='active'&&(onBreak?<div className="clock" aria-label="Break time remaining">Break {formatBreak(breakState,now+offset)}</div>:<div className="clock" aria-label="Time remaining">{Math.floor(remaining/60)}:{String(remaining%60).padStart(2,'0')}</div>)}<span role="status">{pending?`${pending} response${pending===1?'':'s'} awaiting sync`:'All saved responses synced'}</span>{(!attempt||['submitted','expired'].includes(attempt.state))&&<button className="quiet" disabled={busy} onClick={()=>void run(async()=>{const {error}=await supabase!.auth.signOut();if(error)throw error;})}>Sign out</button>}</ServiceHeader><main id="workspace-main" tabIndex={-1}>
+  return <div className="exam-workspace"><ServiceHeader service="Exam" labels={{skip:t('header.skip'),home:t('header.home'),menu:t('header.menu'),workspace:t('header.workspace')}}>{attempt?.state==='active'&&(onBreak?<div className="clock" aria-label={t('exam.clock.breakLabel')}>{t('exam.clock.break',{time:formatBreak(breakState,now+offset)})}</div>:<div className="clock" aria-label={t('exam.clock.label')}>{Math.floor(remaining/60)}:{String(remaining%60).padStart(2,'0')}</div>)}<span role="status">{pending?t('exam.sync.pending',{count:pending}):t('exam.sync.done')}</span>{(!attempt||['submitted','expired'].includes(attempt.state))&&<button className="quiet" disabled={busy} onClick={()=>void run(async()=>{const {error}=await supabase!.auth.signOut();if(error)throw error;})}>{t('exam.signout')}</button>}<LocaleSwitcher label={t('locale.label')}/></ServiceHeader><main id="workspace-main" tabIndex={-1}>
     {error&&<p role="alert" className="error">{error}</p>}
-    {attempt&&['active','paused'].includes(attempt.state)&&(!leaseReady||runtimeStatus.problem)&&<section className="runtime-status" aria-labelledby="runtime-heading"><h2 id="runtime-heading">{leaseReady?'Exam connection interrupted':'Exam connection needs attention'}</h2><p role="status">{runtimeStatus.problem??'Verifying this device with the exam service.'} Your saved responses remain on this device. The institution’s exam clock still applies.</p><button disabled={busy} onClick={()=>void run(async()=>{await connection.current!.runtime.tick();await flush(attempt.id!);})}>Reconnect to exam</button></section>}
+    {attempt&&['active','paused'].includes(attempt.state)&&(!leaseReady||runtimeStatus.problem)&&<section className="runtime-status" aria-labelledby="runtime-heading"><h2 id="runtime-heading">{t(leaseReady?'exam.runtime.interrupted':'exam.runtime.attention')}</h2><p role="status">{t('exam.runtime.status',{problem:runtimeStatus.problem?errorText(new Error(runtimeStatus.problem),t):t('exam.runtime.verifying')})}</p><button disabled={busy} onClick={()=>void run(async()=>{await connection.current!.runtime.tick();await flush(attempt.id!);})}>{t('exam.runtime.reconnect')}</button></section>}
     {monitoring.enabled&&<MonitoringPanel status={monitoring.status} notices={monitoring.notices} busy={busy} acknowledge={id=>void run(()=>monitoring.acknowledge(id))} sync={()=>void run(monitoring.sync)}/>}
     {!preflight&&captureRequired&&attempt&&['active','paused'].includes(attempt.state)&&recordingPanel(String(attempt.registration_id),true)}
-    {preflight?<PreflightScreen policy={preflight.policy} acknowledged={acknowledged} setAcknowledged={setAcknowledged} busy={busy||capture.busy} capturePrepared={capture.registration===preflight.registrationId&&!!capture.view} captureReady={capture.ready} proceed={()=>void run(acceptAndLaunch)} cancel={()=>void run(async()=>{if(capture.view?.launch.attempt_id)await capture.dispose('user_stop');else await capture.cancel();setPreflight(null);})}>{preflight.policy.capture_enabled&&recordingPanel(preflight.registrationId)}</PreflightScreen>:!tenant?<p>Open the assessment link provided by your institution.</p>:!attempt?<><h1>Your exam sittings</h1><ul className="records">{registrations.map(row=><li key={row.id}><strong>{typeof row.title==='string'&&row.title?row.title:'Assessment registration'}</strong><span>{row.id}</span><button disabled={busy} onClick={()=>void run(()=>prepare(row.id!))}>Start or resume</button></li>)}</ul>{!registrations.length&&<p>No assessments are assigned to this account.</p>}</>:attempt.state!=='active'?<><h1>{attempt.state==='paused'?'Assessment paused':attempt.state==='expired'?'Assessment time ended':'Assessment submitted'}</h1><p>{attempt.state==='paused'?'Contact your institution’s proctor to resume.':'Your institution will review and release your results.'}</p></>:<>
+    {preflight?<PreflightScreen policy={preflight.policy} acknowledged={acknowledged} setAcknowledged={setAcknowledged} busy={busy||capture.busy} capturePrepared={capture.registration===preflight.registrationId&&!!capture.view} captureReady={capture.ready} proceed={()=>void run(acceptAndLaunch)} cancel={()=>void run(async()=>{if(capture.view?.launch.attempt_id)await capture.dispose('user_stop');else await capture.cancel();setPreflight(null);})}>{preflight.policy.capture_enabled&&recordingPanel(preflight.registrationId)}</PreflightScreen>:!tenant?<p>{t('exam.noTenant')}</p>:!attempt?<><h1>{t('exam.sittings.title')}</h1><ul className="records">{registrations.map(row=><li key={row.id}><strong>{typeof row.title==='string'&&row.title?row.title:t('exam.sittings.untitled')}</strong><span>{row.id}</span><button disabled={busy} onClick={()=>void run(()=>prepare(row.id!))}>{t('exam.sittings.start')}</button></li>)}</ul>{!registrations.length&&<p>{t('exam.sittings.empty')}</p>}</>:attempt.state!=='active'?<><h1>{t(attempt.state==='paused'?'exam.state.paused':attempt.state==='expired'?'exam.state.expired':'exam.state.submitted')}</h1><p>{t(attempt.state==='paused'?'exam.state.pausedHint':'exam.state.doneHint')}</p></>:<>
       {onBreak?<BreakPanel state={breakState} serverNow={now+offset} monitored={captureRequired||monitoring.enabled} pending={breaks.pending} error={breaks.error} busy={busy||breaks.busy} blocked="" begin={()=>undefined} end={id=>void breaks.end(id)} retry={()=>void breaks.retry()}/>:<>
-      <p className="eyebrow">Section {Number(attempt.section_index)+1} of {attempt.manifest.section_count}</p><h1>{section?.title}</h1><p>Your responses save automatically on this device and sync when the connection is available.</p>
-      <div className="questions">{section?.items.map((entry,index)=><section key={entry.item_version_id}><p className="eyebrow">Question {index+1} · {entry.item.max_score} points</p><h2>{entry.item.prompt}</h2><QuestionMedia item={entry.item} tenant={tenant} actor={user} attempt={attempt.id} enabled={remaining>0&&leaseReady&&captureReady&&manifestIndex.current===Number(attempt.section_index)&&attempt.candidate_id===user}/><fieldset disabled={!(MEDIA_RESPONSE_TYPES as readonly string[]).includes(entry.item.type)&&(remaining===0||busy||!leaseReady||!captureReady||manifestIndex.current!==Number(attempt.section_index))}><Answer entry={entry} value={answers[entry.item_version_id]} mediaContext={{tenant,actor:user,attempt:attempt.id,enabled:remaining>0&&leaseReady&&captureReady&&manifestIndex.current===Number(attempt.section_index)&&attempt.candidate_id===user}} academicResponse={<CandidateMediaAnswer tenant={tenant} actor={user} attempt={attempt.id!} entry={entry} value={answers[entry.item_version_id]} confirmed={confirmedAnswers[entry.item_version_id]===JSON.stringify(answers[entry.item_version_id])} enabled={!busy&&remaining>0&&leaseReady&&captureReady&&manifestIndex.current===Number(attempt.section_index)&&attempt.candidate_id===user} runtime={()=>connection.current?.id===attempt.id?connection.current.runtime:null} select={value=>selectAcademic(entry,value)} onRecording={active=>{if(account.current===user)setAcademicCaptures(current=>{if(current.has(entry.item_version_id)===active)return current;const next=new Set(current);if(active)next.add(entry.item_version_id);else next.delete(entry.item_version_id);return next;});}}/>} onChange={value=>{setAnswers(current=>({...current,[entry.item_version_id]:value}));void save(entry,value);}}/></fieldset></section>)}</div>
-      {!!academicCaptures.size&&<p role="status">Stop and seal active answer recordings before finishing this section. Recordings are not automatically selected.</p>}
-      <BreakPanel state={breakState} serverNow={now+offset} monitored={captureRequired||monitoring.enabled} pending={breaks.pending} error={breaks.error} busy={busy||breaks.busy} blocked={academicCaptures.size?'Stop and seal active answer recordings before taking a break.':!leaseReady?'Reconnect to the exam to take a break.':!captureReady?'Restore required monitoring before taking a break.':remaining===0?'The section clock has ended.':''} begin={()=>void breaks.begin()} end={id=>void breaks.end(id)} retry={()=>void breaks.retry()}/>
-      <div className="exam-actions"><button className="quiet" disabled={busy} onClick={()=>void run(()=>flush(attempt.id!))}>Sync saved responses</button>{Number(attempt.section_index)+1<attempt.manifest.section_count?<button disabled={busy||pending>0||academicCaptures.size>0||!leaseReady||!captureReady||remaining===0} onClick={()=>void run(()=>finish(true))}>Finish section & continue</button>:<button disabled={busy||pending>0||academicCaptures.size>0||!leaseReady||!captureReady||remaining===0} onClick={()=>void run(()=>finish(false))}>Submit assessment</button>}</div>
+      <p className="eyebrow">{t('exam.section.position',{position:Number(attempt.section_index)+1,count:attempt.manifest.section_count})}</p><h1>{section?.title}</h1><p>{t('exam.section.autosave')}</p>
+      <div className="questions">{section?.items.map((entry,index)=><section key={entry.item_version_id}><p className="eyebrow">{t('exam.question.position',{position:index+1,points:number(entry.item.max_score)})}</p><h2>{entry.item.prompt}</h2><QuestionMedia item={entry.item} tenant={tenant} actor={user} attempt={attempt.id} enabled={remaining>0&&leaseReady&&captureReady&&manifestIndex.current===Number(attempt.section_index)&&attempt.candidate_id===user}/><fieldset disabled={!(MEDIA_RESPONSE_TYPES as readonly string[]).includes(entry.item.type)&&(remaining===0||busy||!leaseReady||!captureReady||manifestIndex.current!==Number(attempt.section_index))}><Answer entry={entry} value={answers[entry.item_version_id]} mediaContext={{tenant,actor:user,attempt:attempt.id,enabled:remaining>0&&leaseReady&&captureReady&&manifestIndex.current===Number(attempt.section_index)&&attempt.candidate_id===user}} academicResponse={<CandidateMediaAnswer tenant={tenant} actor={user} attempt={attempt.id!} entry={entry} value={answers[entry.item_version_id]} confirmed={confirmedAnswers[entry.item_version_id]===JSON.stringify(answers[entry.item_version_id])} enabled={!busy&&remaining>0&&leaseReady&&captureReady&&manifestIndex.current===Number(attempt.section_index)&&attempt.candidate_id===user} runtime={()=>connection.current?.id===attempt.id?connection.current.runtime:null} select={value=>selectAcademic(entry,value)} onRecording={active=>{if(account.current===user)setAcademicCaptures(current=>{if(current.has(entry.item_version_id)===active)return current;const next=new Set(current);if(active)next.add(entry.item_version_id);else next.delete(entry.item_version_id);return next;});}}/>} onChange={value=>{setAnswers(current=>({...current,[entry.item_version_id]:value}));void save(entry,value);}}/></fieldset></section>)}</div>
+      {!!academicCaptures.size&&<p role="status">{t('exam.recordings.open')}</p>}
+      <BreakPanel state={breakState} serverNow={now+offset} monitored={captureRequired||monitoring.enabled} pending={breaks.pending} error={breaks.error} busy={busy||breaks.busy} blocked={academicCaptures.size?t('exam.break.blocked.recording'):!leaseReady?t('exam.break.blocked.reconnect'):!captureReady?t('exam.break.blocked.monitoring'):remaining===0?t('exam.break.blocked.clock'):''} begin={()=>void breaks.begin()} end={id=>void breaks.end(id)} retry={()=>void breaks.retry()}/>
+      <div className="exam-actions"><button className="quiet" disabled={busy} onClick={()=>void run(()=>flush(attempt.id!))}>{t('exam.sync.button')}</button>{Number(attempt.section_index)+1<attempt.manifest.section_count?<button disabled={busy||pending>0||academicCaptures.size>0||!leaseReady||!captureReady||remaining===0} onClick={()=>void run(()=>finish(true))}>{t('exam.section.finish')}</button>:<button disabled={busy||pending>0||academicCaptures.size>0||!leaseReady||!captureReady||remaining===0} onClick={()=>void run(()=>finish(false))}>{t('exam.submit')}</button>}</div>
     </>}</>}
     {!attempt&&tenant&&<AcademicDeviceRecovery key={`${tenant}:${user}`} tenant={tenant} actor={user}/>}
     {attempt&&<AcademicUploadRecovery key={`${tenant}:${user}:${attempt.id}`} tenant={tenant} actor={user} attempt={attempt.id} revision={`${attempt.state}:${attempt.section_index}`}/>}

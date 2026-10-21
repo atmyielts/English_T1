@@ -5,7 +5,9 @@ import {
   type FeedbackRelease,
   openFeedbackCommands,
 } from "../../../../packages/assessment-web/src/feedback";
+import { useAppT, useErrorText } from "../i18n/index.ts";
 export function useFeedback(tenant: string, actor: string) {
+  const t = useAppT(), errorText = useErrorText();
   const [sittings, setSittings] = useState<{ id: string; title: string }[]>([]),
     [moreSittings, setMoreSittings] = useState(false),
     [selected, setSelected] = useState(""),
@@ -49,9 +51,7 @@ export function useFeedback(tenant: string, actor: string) {
       setReleases([]);
       setSittings([]);
     }
-    setError(
-      cause instanceof Error ? cause.message : "The feedback request failed.",
-    );
+    setError(errorText(cause, "feedback.failed"));
   }
   async function loadSittings(append = false) {
     const rows = await read<{ id: string; title: string }[]>(
@@ -128,7 +128,7 @@ export function useFeedback(tenant: string, actor: string) {
         if (!alive.current) return;
         setPending(false);
         setNotice(
-          "Feedback decision recorded. Grades and historical release policies are unchanged.",
+          t("feedback.recorded"),
         );
         if (selection.current) await load(selection.current);
       } finally {

@@ -5,7 +5,11 @@ import type {
   CandidateCaptureView,
   CaptureSource,
 } from "../../../packages/proctor-web/src/candidate-capture";
+import { useAppT } from "./i18n/index.ts";
+import { errorText } from "../../../packages/assessment-web/src/i18n/errors.ts";
 export function useCandidateCapture(tenant: string, actor: string) {
+  const t = useAppT(), translate = useRef(t);
+  translate.current = t;
   const [view, setView] = useState<CandidateCaptureView | null>(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
@@ -20,7 +24,7 @@ export function useCandidateCapture(tenant: string, actor: string) {
     setError("");
     setBusy(false);
     setSession("");
-    setRecoveryNotice('');try{setDevices(savedCaptureDevices(tenant,actor));}catch{setDevices([]);setError('Saved recording details could not be read. Preserve this device and contact your institution.');}
+    setRecoveryNotice('');try{setDevices(savedCaptureDevices(tenant,actor));}catch{setDevices([]);setError(translate.current('exam.capture.devicesUnreadable'));}
     const previous = engine.current;
     engine.current = null;
     void previous?.dispose().catch(() => {});
@@ -40,9 +44,7 @@ export function useCandidateCapture(tenant: string, actor: string) {
     } catch (cause) {
       if (version.current === token) {
         setError(
-          cause instanceof Error
-            ? cause.message
-            : "Required recording could not continue.",
+          errorText(cause, translate.current, "exam.capture.failed"),
         );
       }
     } finally {
@@ -80,9 +82,7 @@ export function useCandidateCapture(tenant: string, actor: string) {
     } catch (cause) {
       if (version.current === token) {
         setError(
-          cause instanceof Error
-            ? cause.message
-            : "Capture preparation failed.",
+          errorText(cause, translate.current, "exam.capture.prepareFailed"),
         );
       }
       throw cause;
@@ -118,7 +118,7 @@ export function useCandidateCapture(tenant: string, actor: string) {
     const current = engine.current;
     engine.current = null;
     try{await current?.dispose(reason);}finally{
-      if(version.current===token){try{setDevices(savedCaptureDevices(tenant,actor));}catch{setError('Saved recording details need institution support.');}}
+      if(version.current===token){try{setDevices(savedCaptureDevices(tenant,actor));}catch{setError(translate.current('exam.capture.devicesSupport'));}}
     }
   }
   return {
@@ -126,14 +126,14 @@ export function useCandidateCapture(tenant: string, actor: string) {
     busy,
     error,
     devices,recoveryNotice,
-    recoverSaved:(reference:SavedCaptureDevice)=>work(async()=>{const token=version.current;const{recoverCompletedCapture}=await import('../../../packages/assessment-web/src/candidate-capture');if(token!==version.current)return;await recoverCompletedCapture(tenant,actor,reference);if(token===version.current){setDevices(savedCaptureDevices(tenant,actor));setRecoveryNotice('Saved footage and its final recording receipts are confirmed.');}}),
+    recoverSaved:(reference:SavedCaptureDevice)=>work(async()=>{const token=version.current;const{recoverCompletedCapture}=await import('../../../packages/assessment-web/src/candidate-capture');if(token!==version.current)return;await recoverCompletedCapture(tenant,actor,reference);if(token===version.current){setDevices(savedCaptureDevices(tenant,actor));setRecoveryNotice(translate.current('exam.capture.recovered'));}}),
     prepare,
     ready: engine.current?.controller.view().ready === true,
     registration: engine.current?.registration,
     start: (source: CaptureSource) =>
       work(async () => {
         if (!engine.current) {
-          throw new Error("Prepare required recording first.");
+          throw new Error(translate.current("exam.capture.prepareFirst"));
         }
         await engine.current.controller.start(source);
       }),
@@ -141,7 +141,7 @@ export function useCandidateCapture(tenant: string, actor: string) {
       work(async () => {
         const current=engine.current,token=version.current;
         if (!current) {
-          throw new Error("Prepare required recording first.");
+          throw new Error(translate.current("exam.capture.prepareFirst"));
         }
         await current.controller.recover();
         if(version.current===token&&engine.current===current)await current.controller.tick();
@@ -150,12 +150,10 @@ export function useCandidateCapture(tenant: string, actor: string) {
       work(async () => {
         await engine.current?.controller.tick();
       }),
-    reconnectLive:(source:CaptureSource)=>work(async()=>{if(!engine.current)throw new Error('Prepare required recording first.');await engine.current.controller.reconnectLive(source);}),
+    reconnectLive:(source:CaptureSource)=>work(async()=>{if(!engine.current)throw new Error(translate.current('exam.capture.prepareFirst'));await engine.current.controller.reconnectLive(source);}),
     binding: async () => {
       if (!engine.current) {
-        throw new Error(
-          "Prepare required recording before starting.",
-        );
+        throw new Error(translate.current("exam.capture.prepareBeforeStart"));
       }
       return engine.current.startBinding();
     },

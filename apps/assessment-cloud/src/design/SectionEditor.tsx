@@ -3,6 +3,7 @@ import { type SectionDraft } from "../../../../packages/assessment-core/src/desi
 import { QuestionPicker } from "./QuestionPicker";
 import {BlueprintEditor} from "./BlueprintEditor";
 import type { Row } from "../../../../packages/assessment-web/src/client";
+import { useAppT } from "../i18n/index.ts";
 export function SectionEditor({
   section,
   index,
@@ -24,12 +25,13 @@ export function SectionEditor({
   move: (offset: number) => void;
   remove: () => void;
 }) {
+  const t = useAppT();
   return (
     <fieldset className="design-section" disabled={disabled}>
-      <legend>Section {index + 1}</legend>
+      <legend>{t("section.legend", { section: index + 1 })}</legend>
       <div className="design-fields">
         <label>
-          Section title {index + 1}
+          {t("section.title", { section: index + 1 })}
           <input
             maxLength={200}
             required
@@ -38,18 +40,18 @@ export function SectionEditor({
           />
         </label>
         <label>
-          Section time in seconds {index + 1}
+          {t("section.seconds", { section: index + 1 })}
           <input
             type="number"
             min={1}
             max={86400}
-            placeholder="Use overall deadline"
+            placeholder={t("section.overall")}
             value={section.seconds}
             onChange={(e) => change({ ...section, seconds: e.target.value })}
           />
         </label>
         <label>
-          Question selection {index + 1}
+          {t("section.selection", { section: index + 1 })}
           <select
             value={section.selection}
             onChange={(e) =>
@@ -59,13 +61,13 @@ export function SectionEditor({
               })
             }
           >
-            <option value="fixed">Include every selected question</option>
-            <option value="pool">Randomly draw from this pool</option>
+            <option value="fixed">{t("section.fixed")}</option>
+            <option value="pool">{t("section.pool")}</option>
           </select>
         </label>
         {section.selection === "pool" && (
           <label>
-            Questions drawn {index + 1}
+            {t("section.drawn", { section: index + 1 })}
             <input
               type="number"
               min={1}
@@ -78,9 +80,7 @@ export function SectionEditor({
         )}
       </div>
       <p>
-        Optional section time starts when the section opens and is capped by the
-        overall exam deadline. Sections advance in this order; candidates cannot
-        return to an earlier section.
+        {t("section.hint")}
       </p>
       <div className="design-actions">
         <button
@@ -89,7 +89,7 @@ export function SectionEditor({
           disabled={index === 0}
           onClick={() => move(-1)}
         >
-          Move section {index + 1} earlier
+          {t("section.earlier", { section: index + 1 })}
         </button>
         <button
           type="button"
@@ -97,7 +97,7 @@ export function SectionEditor({
           disabled={index === total - 1}
           onClick={() => move(1)}
         >
-          Move section {index + 1} later
+          {t("section.later", { section: index + 1 })}
         </button>
         <button
           type="button"
@@ -105,7 +105,7 @@ export function SectionEditor({
           disabled={total === 1}
           onClick={remove}
         >
-          Remove section {index + 1}
+          {t("section.remove", { section: index + 1 })}
         </button>
       </div>
       <QuestionPicker

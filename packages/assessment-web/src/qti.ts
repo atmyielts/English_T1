@@ -1,6 +1,7 @@
 import { request, ServiceRequestError, supabase } from "./client";
 import type { ImportRow } from "../../assessment-core/src/bank-import.ts";
 import { uuid } from "../../assessment-core/src/mod.ts";
+import {LocalizedError,english} from './i18n/translate.ts';
 export interface QtiJob {
   id: string;
   bank_id: string;
@@ -48,15 +49,15 @@ export async function qtiTransport(
       !(base.protocol === "http:" &&
         ["localhost", "127.0.0.1"].includes(base.hostname)))
   ) {
-    throw new Error("The protected QTI endpoint is not configured correctly.");
+    throw new LocalizedError("qti.protectedQtiEndpointConfigured");
   }
   const url = new URL(`/v1/qti/sources/${uuid(job)}/${suffix}`, base);
   url.searchParams.set("tenant_id", uuid(tenant));
-  if (!supabase) throw new Error("The assessment service is not configured.");
+  if (!supabase) throw new LocalizedError("common.serviceUnconfigured");
   const { data } = await supabase.auth.getSession();
   signal.throwIfAborted();
   if (!data.session || data.session.user.id !== actor) {
-    throw new Error("The signed-in account changed. Reopen this workspace.");
+    throw new LocalizedError("common.accountChanged");
   }
   const response = await fetch(url, {
     method: bytes ? "PUT" : "POST",
@@ -74,8 +75,7 @@ export async function qtiTransport(
     throw new ServiceRequestError(
       response.status,
       payload.code ?? "qti_transport_failed",
-      payload.error ??
-        "The package transfer failed. Select the same file and resume.",
+      payload.error ?? english("qti.transferFailed"),
     );
   }
   return payload.data;

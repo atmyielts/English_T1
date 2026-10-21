@@ -5,12 +5,14 @@ import {
 } from "../../../../packages/assessment-web/src/client";
 import {
   type InvitationLink,
-  invitationProblem,
+  invitationProblem as invitationProblemText,
   openInvitationCommands,
   type StaffInvitation,
 } from "../../../../packages/assessment-web/src/invitations";
 import type { GradeIntent } from "../../../../packages/assessment-web/src/grade-command";
-import { staffLabels } from "../../../../packages/assessment-core/src/staff";
+import { useI18n } from "../../../../packages/service-i18n/src/i18n.tsx";
+import { useAppT } from "../i18n/index.ts";
+import { useStaffText } from "./staff-text";
 import "./invitations.css";
 export function AcceptInvitation(
   { actor, link, done }: {
@@ -19,6 +21,8 @@ export function AcceptInvitation(
     done: () => void;
   },
 ) {
+  const t = useAppT(), { date } = useI18n(), staff = useStaffText(),
+    invitationProblem = (cause: unknown) => invitationProblemText(cause, t);
   const [review, setReview] = useState<StaffInvitation | null>(null),
     [ack, setAck] = useState(false),
     [busy, setBusy] = useState(false),
@@ -126,63 +130,56 @@ export function AcceptInvitation(
   return (
     <main className="signin invitation-accept">
       <div className="brand">
-        Schood <span>Assessment Cloud</span>
+        Schood <span>{t("app.name")}</span>
       </div>
-      <h1>Review your staff invitation</h1>
+      <h1>{t("accept.title")}</h1>
       <p>
-        This invitation adds Assessment Cloud access only, not Academy or
-        Proctor membership.
+        {t("accept.lead")}
       </p>
       {error && <p role="alert" className="error">{error}</p>}
       {pending && (
         <section>
-          <h2>Saved invitation acceptance needs a receipt</h2>
+          <h2>{t("accept.pendingTitle")}</h2>
           <p>
-            Acceptance may already be recorded. Retry the encrypted request to
-            recover its original receipt.
+            {t("accept.pendingBody")}
           </p>
           {pending.data.id !== link.id && (
             <p>
-              This saved acceptance belongs to another invitation at this
-              institution. Recover it before accepting a different invitation.
+              {t("accept.otherInvitation")}
             </p>
           )}
           <button disabled={busy} onClick={() => void accept(true)}>
-            Retry saved invitation acceptance
+            {t("accept.retry")}
           </button>
         </section>
       )}
       {accepted && !pending
         ? (
           <section>
-            <h2>Invitation accepted</h2>
+            <h2>{t("accept.accepted")}</h2>
             <p>
-              The invitation’s acceptance is recorded. Your current permissions
-              are checked when you open the workspace; this receipt does not
-              restore revoked or suspended access.
+              {t("accept.acceptedBody")}
             </p>
             <button disabled={busy} onClick={done}>
-              Open assessment workspace
+              {t("accept.open")}
             </button>
           </section>
         )
         : review && (
           <section>
-            <h2>{review.institution_name ?? "Institution"}</h2>
-            <p>Recipient: {review.recipient_email}</p>
-            <h3>{review.role_title} · version {review.role_version}</h3>
+            <h2>{review.institution_name ?? t("accept.institution")}</h2>
+            <p>{t("accept.recipient", { email: review.recipient_email })}</p>
+            <h3>{t("accept.role", { title: review.role_title, version: String(review.role_version) })}</h3>
             <ul>
               {review.capabilities.map((cap) => (
-                <li key={cap}>{staffLabels[cap]}</li>
+                <li key={cap}>{staff.capability(cap)}</li>
               ))}
             </ul>
-            <p>Accept by {new Date(review.expires_at).toLocaleString()}.</p>
+            <p>{t("accept.deadline", { date: date(review.expires_at) })}</p>
             <p>
               {review.permission_expires_at
-                ? `Role access ends ${
-                  new Date(review.permission_expires_at).toLocaleString()
-                }.`
-                : "Role access has no scheduled expiry. An authorized manager may suspend or withdraw it."}
+                ? t("accept.roleEnds", { date: date(review.permission_expires_at) })
+                : t("accept.noExpiry")}
             </p>
             <label className="check">
               <input
@@ -190,14 +187,13 @@ export function AcceptInvitation(
                 checked={ack}
                 disabled={busy || !!pending}
                 onChange={(e) => setAck(e.target.checked)}
-              />I reviewed this institution, role version, permissions and
-              expiry.
+              />{t("accept.ack")}
             </label>
             <button
               disabled={!ready || busy || !!pending || !ack}
               onClick={() => void accept()}
             >
-              Accept Assessment staff invitation
+              {t("accept.submit")}
             </button>
           </section>
         )}
@@ -207,7 +203,7 @@ export function AcceptInvitation(
           disabled={busy}
           onClick={() => void refresh()}
         >
-          Refresh invitation review
+          {t("accept.refresh")}
         </button>
       )}
       <button
@@ -215,7 +211,7 @@ export function AcceptInvitation(
         disabled={busy}
         onClick={() => void supabase?.auth.signOut()}
       >
-        Sign out
+        {t("header.signOut")}
       </button>
     </main>
   );

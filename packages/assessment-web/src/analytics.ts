@@ -1,6 +1,7 @@
 import { request } from "./client";
 import { GradeCommands } from "./grade-command";
 import { ResponseJournal } from "./journal";
+import {LocalizedError,english,type Translate} from './i18n/translate.ts';
 export interface AnalyticsChoice {
   id: string;
   title: string;
@@ -75,16 +76,19 @@ export interface ReleasedBreakdown {
     questions: { position: number; score: number; max_score: number }[];
   }[];
 }
-export const metric = (value: number | null | undefined, digits = 1) =>
-  value == null ? "Not available" : value.toLocaleString(undefined, {
+export const metric = (
+  value: number | null | undefined,
+  digits = 1,
+  t: Translate = english,
+  locale?: string,
+) =>
+  value == null ? t("analytics.notAvailable") : value.toLocaleString(locale, {
     maximumFractionDigits: digits,
     minimumFractionDigits: digits,
   });
 export async function openAnalyticsCommands(tenant: string, actor: string) {
   if (!navigator.locks) {
-    throw new Error(
-      "Use a browser with secure workspace locking to create report snapshots.",
-    );
+    throw new LocalizedError("analytics.locks");
   }
   const scope = `analytics:${tenant}:${actor}`,
     journal = await ResponseJournal.create(scope);

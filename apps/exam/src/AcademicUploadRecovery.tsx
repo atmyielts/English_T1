@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { openAnswerFiles } from "../../../packages/assessment-web/src/answer-upload";
 import type { LocalAnswerFile } from "../../../packages/assessment-web/src/answer-types";
+import { useI18n } from "../../../packages/service-i18n/src/i18n.tsx";
+import { useAppT } from "./i18n/index.ts";
+import { errorText } from "../../../packages/assessment-web/src/i18n/errors.ts";
 /** No selection or new-admission action is exposed here, even during an active
  * attempt. Late transport may recover only an existing opaque admission key. */
 export function AcademicUploadRecovery(
@@ -11,6 +14,8 @@ export function AcademicUploadRecovery(
     revision?: string;
   },
 ) {
+  const t = useAppT(), { number } = useI18n(), translate = useRef(t);
+  translate.current = t;
   const [files, setFiles] = useState<LocalAnswerFile[]>([]),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
@@ -47,11 +52,11 @@ export function AcademicUploadRecovery(
         try {
           await load();
         } catch (cause) {
-          if (valid) setError((cause as Error).message);
+          if (valid) setError(errorText(cause, translate.current));
         }
       },
     ).catch((cause) => {
-      if (valid) setError(cause.message);
+      if (valid) setError(errorText(cause, translate.current));
     });
     return () => {
       valid = false;
@@ -63,7 +68,7 @@ export function AcademicUploadRecovery(
   useEffect(() => {
     if (opened.current) {
       void load().catch((cause) => {
-        if (live.current) setError(cause.message);
+        if (live.current) setError(errorText(cause, translate.current));
       });
     }
   }, [revision]);
@@ -77,24 +82,20 @@ export function AcademicUploadRecovery(
       await workspace.transfers.recoverUpload(file.id, (done, total) => {
         if (live.current && opened.current === workspace) {
           setNotice(
-            `Recovering previously admitted bytes: ${
-              Math.floor(done / total * 100)
-            }%. The selected answer and exam clock are unchanged.`,
+            translate.current("exam.uploadRecovery.progress", {
+              percent: Math.floor(done / total * 100),
+            }),
           );
         }
       });
       if (live.current && opened.current === workspace) {
-        setNotice(
-          "Previously admitted bytes were received. Safety checks and human marking remain separate.",
-        );
+        setNotice(translate.current("exam.uploadRecovery.done"));
         await load();
       }
     } catch (cause) {
       if (live.current && opened.current === workspace) {
         setError(
-          cause instanceof Error
-            ? cause.message
-            : "Upload recovery failed; saved bytes remain on this device.",
+          errorText(cause, translate.current, "exam.uploadRecovery.failed"),
         );
       }
     } finally {
@@ -107,12 +108,10 @@ export function AcademicUploadRecovery(
       className="runtime-status"
       aria-labelledby="academic-upload-recovery-heading"
     >
-      <h2 id="academic-upload-recovery-heading">Academic upload recovery</h2>
-      <p>
-        Only bytes admitted before the question deadline can be recovered here.
-        This cannot select an answer, change a submitted answer or extend exam
-        time.
-      </p>
+      <h2 id="academic-upload-recovery-heading">
+        {t("exam.uploadRecovery.title")}
+      </h2>
+      <p>{t("exam.uploadRecovery.intro")}</p>
       {error && <p role="alert" className="error">{error}</p>}
       {notice && <p role="status">{notice}</p>}
       {files.length
@@ -122,29 +121,34 @@ export function AcademicUploadRecovery(
               <li key={file.id}>
                 <strong>{file.filename}</strong>
                 <span>
-                  {file.byte_length.toLocaleString()} bytes · {file.binding
-                    ? "Prior admission saved on this device"
-                    : "A prior admission receipt must be recovered"}
+                  {t("exam.uploadRecovery.file", {
+                    bytes: number(file.byte_length),
+                    state: t(
+                      file.binding
+                        ? "exam.uploadRecovery.bound"
+                        : "exam.uploadRecovery.unbound",
+                    ),
+                  })}
                 </span>
                 <button
                   type="button"
                   disabled={busy}
                   onClick={() => void recover(file)}
                 >
-                  Recover previously admitted upload
+                  {t("exam.uploadRecovery.recover")}
                 </button>
               </li>
             ))}
           </ul>
         )
-        : <p>No sealed pending device copies are loaded for this attempt.</p>}
+        : <p>{t("exam.uploadRecovery.empty")}</p>}
       <button
         type="button"
         className="quiet"
         disabled={busy}
-        onClick={() => void load().catch((cause) => setError(cause.message))}
+        onClick={() => void load().catch((cause) => setError(errorText(cause, t)))}
       >
-        Refresh pending academic uploads
+        {t("exam.uploadRecovery.refresh")}
       </button>
     </section>
   );

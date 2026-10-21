@@ -6,6 +6,8 @@ import {
   type StaffInvitation,
 } from "../../../../packages/assessment-web/src/invitations";
 import type { GradeIntent } from "../../../../packages/assessment-web/src/grade-command";
+import { useI18n } from "../../../../packages/service-i18n/src/i18n.tsx";
+import { useAppT, type AppKey } from "../i18n/index.ts";
 interface Delivery {
   id: string;
   invitation_id: string;
@@ -26,66 +28,35 @@ interface Delivery {
   last_code: string | null;
   retry_of: string | null;
 }
-const states = {
-  queued: "Waiting to send",
-  leased: "Preparing to send",
-  sending: "Handing off to mail server",
-  accepted: "Accepted by mail server",
-  failed: "Failed",
-  uncertain: "Delivery outcome unknown",
-  cancelled: "Cancelled",
-};
-const codes: Record<string, string> = {
-  smtp_accepted:
-    "The SMTP server accepted the message. Inbox delivery is not confirmed.",
-  smtp_temporary:
-    "The mail server temporarily refused this attempt. A bounded retry is scheduled.",
-  smtp_rejected:
-    "The mail server rejected the message. Review the recipient and transport before retrying.",
-  smtp_auth:
-    "The mail service could not authenticate. An operator must fix the sender configuration.",
-  smtp_connect:
-    "A confirmed pre-send connection failure occurred. A bounded retry is scheduled.",
-  smtp_unknown: "The message may have been sent, but its outcome is not known.",
-  smtp_timeout: "The handoff timed out; the message may have been sent.",
-  handoff_receipt_missing:
-    "The sender stopped before recording a receipt. The message may have been sent.",
-  lease_expired_before_handoff:
-    "The worker did not start sending before its lease expired.",
-  invitation_no_longer_sendable:
-    "The invitation expired, was finalized or the sender no longer has the required authority.",
-  render_unavailable:
-    "The invitation key or message configuration must be restored before retrying.",
-  manager_cancelled: "An authorized manager cancelled this queued delivery.",
-  begin_unavailable:
-    "The worker could not confirm the start. No SMTP message was sent by that attempt.",
-  handoff_spacing: "Waiting to avoid overlapping or closely spaced messages.",
-};
-function explanation(row: Delivery) {
+type Translate = ReturnType<typeof useAppT>;
+const mailCodes = new Set([
+  "smtp_accepted", "smtp_temporary", "smtp_rejected", "smtp_auth", "smtp_connect",
+  "smtp_unknown", "smtp_timeout", "handoff_receipt_missing",
+  "lease_expired_before_handoff", "invitation_no_longer_sendable",
+  "render_unavailable", "manager_cancelled", "begin_unavailable", "handoff_spacing",
+]);
+const mailProblems = new Set([
+  "mail_uncertainty_review_required", "mail_schedule_too_close",
+  "mail_handoff_already_started", "mail_revision_conflict",
+  "mail_retry_source_required", "invitation_mail_limit",
+]);
+const stateText = (state: Delivery["state"], t: Translate) =>
+  t(`mail.state.${state}` as AppKey);
+function explanation(row: Delivery, t: Translate) {
   if (row.state === "failed" && row.attempt_count >= 5) {
-    return "Automatic attempts are exhausted. No further automatic retry is scheduled; an authorized sender must review a new delivery.";
+    return t("mail.exhausted");
   }
   return row.last_code
-    ? (codes[row.last_code] ??
-      "Review this delivery with the service operator.")
+    ? (mailCodes.has(row.last_code)
+      ? t(`mail.code.${row.last_code}` as AppKey)
+      : t("mail.reviewOperator"))
     : "";
 }
-function problem(cause: unknown) {
-  const code = (cause as { code?: string })?.code;
-  return ({
-    mail_uncertainty_review_required:
-      "Review the unknown delivery and acknowledge the possible duplicate before explicitly replacing it.",
-    mail_schedule_too_close:
-      "Schedule this message at least one minute away from another delivery for this invitation.",
-    mail_handoff_already_started:
-      "Sending already started. You cannot cancel that handoff; revoke the invitation to prevent acceptance.",
-    mail_revision_conflict:
-      "This delivery changed. Refresh its status before changing it.",
-    mail_retry_source_required:
-      "Refresh and select a failed or unknown delivery to replace.",
-    invitation_mail_limit:
-      "This invitation reached its active or daily mail limit. Review queued messages before adding more.",
-  } as Record<string, string>)[code ?? ""] ?? invitationProblem(cause);
+function problem(cause: unknown, t: Translate) {
+  const code = (cause as { code?: string })?.code ?? "";
+  return mailProblems.has(code)
+    ? t(`mail.problem.${code}` as AppKey)
+    : invitationProblem(cause, t);
 }
 export function InvitationMailPanel(
   { actor, tenant, invitation, blocked, close }: {
@@ -96,6 +67,7 @@ export function InvitationMailPanel(
     close: () => void;
   },
 ) {
+  const t = useAppT(), { date } = useI18n();
   const [rows, setRows] = useState<Delivery[]>([]),
     [more, setMore] = useState(false),
     [kind, setKind] = useState("invitation"),
@@ -125,7 +97,7 @@ export function InvitationMailPanel(
     locked = blocked || busy || !ready || !!pending || denied;
   function fail(cause: unknown) {
     if (!live.current) return;
-    setError(problem(cause));
+    setError(problem(cause, t));
     if ([401, 403].includes((cause as { status?: number })?.status ?? 0)) {
       generation.current++;
       setRows([]);
@@ -200,7 +172,7 @@ export function InvitationMailPanel(
       committed = true;
       if (!live.current) return;
       setNotice(
-        "Delivery request recorded. Refresh the history to check what happened; queueing is not proof of inbox delivery.",
+        t("mail.recorded"),
       );
       setCancel(null);
       setAck(false);
@@ -209,7 +181,7 @@ export function InvitationMailPanel(
     } catch (cause) {
       fail(cause);
       if (live.current && committed) {
-        setNotice("The request was recorded. Refresh delivery history.");
+        setNotice(t("mail.recordedRefresh"));
       }
     } finally {
       if (live.current) {
@@ -246,34 +218,30 @@ export function InvitationMailPanel(
       aria-labelledby="invitation-mail-heading"
     >
       <h3 id="invitation-mail-heading">
-        Email & reminders for {invitation.recipient_email}
+        {t("mail.title", { email: invitation.recipient_email })}
       </h3>
       <p>
-        Messages go only to this invitation’s recipient and contain its pinned
-        role. Mail-server acceptance is not confirmation of inbox delivery.
-        Delivery status notifications and inbox placement require separate
-        provider verification.
+        {t("mail.lead")}
       </p>
       {error && <p className="error" role="alert">{error}</p>}
       {notice && <p role="status" className="notice">{notice}</p>}
       {pending && (
         <section>
-          <h4>Saved email request needs a receipt</h4>
+          <h4>{t("mail.pendingTitle")}</h4>
           <p>
-            This may already be recorded. Retry the encrypted request before
-            creating another delivery.
+            {t("mail.pendingBody")}
           </p>
           <button disabled={busy} onClick={() => void mutate()}>
-            Retry saved email request
+            {t("mail.retry")}
           </button>
         </section>
       )}
       {canSend && !denied
         ? (
           <form onSubmit={queue}>
-            <h4>Send or schedule an invitation</h4>
+            <h4>{t("mail.sendTitle")}</h4>
             <label>
-              Message type<select
+              {t("mail.kind")}<select
                 value={kind}
                 disabled={locked}
                 onChange={(e) => {
@@ -281,12 +249,12 @@ export function InvitationMailPanel(
                   setAck(false);
                 }}
               >
-                <option value="invitation">Invitation</option>
-                <option value="reminder">Reminder</option>
+                <option value="invitation">{t("mail.kindInvitation")}</option>
+                <option value="reminder">{t("mail.kindReminder")}</option>
               </select>
             </label>
             <label>
-              Email language<select
+              {t("mail.language")}<select
                 value={locale}
                 disabled={locked}
                 onChange={(e) => {
@@ -300,7 +268,7 @@ export function InvitationMailPanel(
               </select>
             </label>
             <label>
-              Delivery timing<select
+              {t("mail.timing")}<select
                 value={schedule}
                 disabled={locked}
                 onChange={(e) => {
@@ -308,13 +276,13 @@ export function InvitationMailPanel(
                   setAck(false);
                 }}
               >
-                <option value="now">Queue now</option>
-                <option value="scheduled">Schedule for later</option>
+                <option value="now">{t("mail.now")}</option>
+                <option value="scheduled">{t("mail.later")}</option>
               </select>
             </label>
             {schedule === "scheduled" && (
               <label>
-                Scheduled email time<input
+                {t("mail.when")}<input
                   type="datetime-local"
                   required
                   value={when}
@@ -327,12 +295,10 @@ export function InvitationMailPanel(
               </label>
             )}
             <p>
-              Scheduled times use your device’s timezone and must precede the
-              invitation deadline. Reminders are cancelled at handoff if the
-              invitation is no longer pending or the sender lost authority.
+              {t("mail.timingHint")}
             </p>
             <label>
-              Replace a failed or unknown delivery (optional)<select
+              {t("mail.replace")}<select
                 value={source}
                 disabled={locked}
                 onChange={(e) => {
@@ -341,15 +307,13 @@ export function InvitationMailPanel(
                   setDuplicate(false);
                 }}
               >
-                <option value="">New message, not a replacement</option>
+                <option value="">{t("mail.newMessage")}</option>
                 {rows.filter((row) =>
                   ["failed", "uncertain"].includes(row.state) &&
                   !rows.some((child) => child.retry_of === row.id)
                 ).map((row) => (
                   <option key={row.id} value={row.id}>
-                    {states[row.state]} ·{" "}
-                    {new Date(row.send_after).toLocaleString()} ·{" "}
-                    {row.id.slice(0, 8)}
+                    {t("mail.sourceOption", { state: stateText(row.state, t), date: date(row.send_after), id: row.id.slice(0, 8) })}
                   </option>
                 ))}
               </select>
@@ -361,12 +325,11 @@ export function InvitationMailPanel(
                   checked={duplicate}
                   disabled={locked}
                   onChange={(e) => setDuplicate(e.target.checked)}
-                />The earlier message may already have been sent. I accept the
-                risk of sending a duplicate.
+                />{t("mail.duplicateAck")}
               </label>
             )}
             <label>
-              Email delivery reason<textarea
+              {t("mail.reason")}<textarea
                 required
                 maxLength={5000}
                 disabled={locked}
@@ -383,58 +346,52 @@ export function InvitationMailPanel(
                 checked={ack}
                 disabled={locked}
                 onChange={(e) => setAck(e.target.checked)}
-              />I reviewed the recipient, pinned invitation, language and
-              delivery time.
+              />{t("mail.ack")}
             </label>
             <button
               disabled={locked || !ack ||
                 (selected?.state === "uncertain" && !duplicate)}
             >
               {schedule === "now"
-                ? "Queue invitation email"
-                : "Schedule invitation email"}
+                ? t("mail.queue")
+                : t("mail.schedule")}
             </button>
           </form>
         )
         : (
           <p>
-            Only the original sender may queue mail for a pending, unexpired
-            invitation. History remains available to current managers.
+            {t("mail.senderOnly")}
           </p>
         )}
-      <h4>Delivery history</h4>
+      <h4>{t("mail.history")}</h4>
       <button
         className="quiet"
         disabled={busy || !ready}
         onClick={() => void refresh()}
       >
-        Refresh email delivery
+        {t("mail.refresh")}
       </button>
-      {!rows.length && !denied && <p>No email deliveries on this page.</p>}
+      {!rows.length && !denied && <p>{t("mail.empty")}</p>}
       <ul className="records">
         {rows.map((row) => (
           <li key={row.id}>
-            <strong>{states[row.state]}</strong>
+            <strong>{stateText(row.state, t)}</strong>
             <span>
-              {row.kind} · {row.locale} ·{" "}
-              {new Date(row.send_after).toLocaleString()} · attempts{" "}
-              {row.attempt_count}/5
+              {t("mail.rowMeta", { kind: row.kind, locale: row.locale, date: date(row.send_after), attempts: String(row.attempt_count) })}
             </span>
             {row.last_code && (
               <p>
-                {explanation(row)}
+                {explanation(row, t)}
               </p>
             )}
             {row.state === "queued" && row.attempt_count > 0 && (
               <p>
-                Next eligible attempt:{" "}
-                {new Date(row.next_attempt_at).toLocaleString()}
+                {t("mail.nextAttempt", { date: date(row.next_attempt_at) })}
               </p>
             )}
             {row.retry_of && (
               <p>
-                This is an explicitly requested replacement. The earlier
-                delivery remains in history.
+                {t("mail.replacement")}
               </p>
             )}
             {["queued", "leased"].includes(row.state) && (
@@ -447,7 +404,7 @@ export function InvitationMailPanel(
                   setCancelAck(false);
                 }}
               >
-                Review email cancellation
+                {t("mail.reviewCancel")}
               </button>
             )}
           </li>
@@ -458,7 +415,7 @@ export function InvitationMailPanel(
           disabled={locked}
           onClick={() => void refresh(rows.at(-1)?.id)}
         >
-          Load more email deliveries
+          {t("mail.more")}
         </button>
       )}
       {cancel && (
@@ -473,13 +430,12 @@ export function InvitationMailPanel(
             });
           }}
         >
-          <h4>Cancel a queued email</h4>
+          <h4>{t("mail.cancelTitle")}</h4>
           <p>
-            This stops only a handoff that has not started. It does not revoke
-            the invitation or recall an accepted email.
+            {t("mail.cancelLead")}
           </p>
           <label>
-            Email cancellation reason<textarea
+            {t("mail.cancelReason")}<textarea
               required
               maxLength={5000}
               value={cancelReason}
@@ -496,13 +452,13 @@ export function InvitationMailPanel(
               checked={cancelAck}
               disabled={locked}
               onChange={(e) => setCancelAck(e.target.checked)}
-            />I reviewed the queued delivery to cancel.
+            />{t("mail.cancelAck")}
           </label>
-          <button disabled={locked || !cancelAck}>Cancel queued email</button>
+          <button disabled={locked || !cancelAck}>{t("mail.cancel")}</button>
         </form>
       )}
       <button type="button" className="quiet" disabled={busy} onClick={close}>
-        Close email delivery
+        {t("mail.close")}
       </button>
     </section>
   );

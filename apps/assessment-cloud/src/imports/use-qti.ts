@@ -9,7 +9,9 @@ import {
   type PreparedQtiSource,
   transferQtiSource,
 } from "../../../../packages/assessment-web/src/qti-source";
+import { useAppT, useErrorText } from "../i18n/index.ts";
 export function useQti(tenant: string, actor: string) {
+  const t = useAppT(), errorText = useErrorText();
   const [jobs, setJobs] = useState<QtiJob[]>([]),
     [job, setJob] = useState<QtiJob | null>(null),
     [busy, setBusy] = useState(false),
@@ -34,11 +36,7 @@ export function useQti(tenant: string, actor: string) {
       setJob(null);
       setJobs([]);
     }
-    setError(
-      cause instanceof Error
-        ? cause.message
-        : "The QTI request failed. Refresh the package before retrying.",
-    );
+    setError(errorText(cause, "qti.failed"));
   }
   async function list(append = false) {
     const start = append ? offset.current : 0;
@@ -121,7 +119,7 @@ export function useQti(tenant: string, actor: string) {
   async function command(action?: string, data: Record<string, unknown> = {}) {
     active();
     if (!engine.current) {
-      throw new Error("Secure QTI request recovery is not ready.");
+      throw new Error(t("qti.notReady"));
     }
     const result =
       await (action
@@ -139,14 +137,14 @@ export function useQti(tenant: string, actor: string) {
       const receipt = await command("source.begin", { ...source.manifest });
       if (!receipt?.id) {
         throw new Error(
-          "The package has no canonical upload receipt. Retry the saved request.",
+          t("qti.noReceipt"),
         );
       }
       target = await open(receipt.id);
     }
     if (target.created_by !== actor || target.state !== "uploading") {
       throw new Error(
-        "Only the package owner can resume an unfinished upload.",
+        t("qti.ownerOnly"),
       );
     }
     const id = target.id;
@@ -171,10 +169,10 @@ export function useQti(tenant: string, actor: string) {
           lifetime.current.signal,
         ),
       progress: (received, total) =>
-        setProgress(`${received} of ${total} package parts saved securely.`),
+        setProgress(t("qti.progress", { received: String(received), total: String(total) })),
     });
     setProgress(
-      "Package uploaded. Waiting for security scanning and question processing.",
+      t("qti.uploaded"),
     );
     await open(id);
     await list();

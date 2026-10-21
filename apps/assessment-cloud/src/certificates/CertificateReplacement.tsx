@@ -4,6 +4,7 @@ import type {
   CertificateResult,
   CertificateRow,
 } from "../../../../packages/assessment-web/src/certificates";
+import { useAppT } from "../i18n/index.ts";
 export function CertificateReplacement({
   row,
   programs,
@@ -17,6 +18,7 @@ export function CertificateReplacement({
   disabled: boolean;
   send: (action: string, data: Record<string, unknown>) => Promise<boolean>;
 }) {
+  const t = useAppT();
   const [open, setOpen] = useState(false),
     [program, setProgram] = useState(""),
     [score, setScore] = useState(""),
@@ -28,9 +30,7 @@ export function CertificateReplacement({
   if (row.replacement_pending) {
     return (
       <p>
-        A replacement is awaiting a signature. The original stays unchanged
-        until signing commits. Review the pending record before another
-        replacement.
+        {t("replacement.awaiting")}
       </p>
     );
   }
@@ -60,21 +60,16 @@ export function CertificateReplacement({
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
       >
-        Replace certificate
+        {t("replacement.open")}
       </button>
       {open && (
         <form onSubmit={(event) => void replace(event)}>
-          <h3>Review a replacement for {row.claims.recipient}</h3>
+          <h3>{t("replacement.title", { recipient: row.claims.recipient })}</h3>
           <p>
-            Original:{" "}
-            {row.id}. A replacement keeps this candidate and assessment attempt,
-            uses the current recorded name and latest eligible released result,
-            and requires independently approved criteria. It is a new award with
-            a new issue date and expiry. Only its committed signature marks the
-            original as replaced; no grade is changed.
+            {t("replacement.lead", { id: row.id })}
           </p>
           <label>
-            Replacement program<select
+            {t("replacement.program")}<select
               required
               value={program}
               disabled={disabled}
@@ -83,23 +78,23 @@ export function CertificateReplacement({
                 setAck(false);
               }}
             >
-              <option value="">Choose an active approved program</option>
+              <option value="">{t("replacement.chooseProgram")}</option>
               {eligible.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {item.title} · Minimum {item.minimum_percent}%
+                  {t("issuer.programOption", { title: item.title, minimum: String(item.minimum_percent) })}
                 </option>
               ))}
             </select>
           </label>
           {policy && (
             <p>
-              {policy.description} · {policy.valid_days
-                ? `${policy.valid_days} days validity from the new issue date`
-                : "No scheduled expiry"}
+              {t("replacement.policy", { description: policy.description, validity: policy.valid_days
+                ? t("replacement.validity", { count: policy.valid_days, days: String(policy.valid_days) })
+                : t("replacement.noExpiry") })}
             </p>
           )}
           <label>
-            Replacement released result<select
+            {t("replacement.result")}<select
               required
               value={score}
               disabled={disabled}
@@ -108,25 +103,24 @@ export function CertificateReplacement({
                 setAck(false);
               }}
             >
-              <option value="">Choose this candidate’s current result</option>
+              <option value="">{t("replacement.chooseResult")}</option>
               {options.map((item) => (
                 <option
                   key={item.score_revision_id}
                   value={item.score_revision_id}
                 >
-                  {item.candidate} · {item.exam} · Generation {item.generation}
+                  {t("issuer.resultOption", { candidate: item.candidate, exam: item.exam, generation: String(item.generation) })}
                 </option>
               ))}
             </select>
           </label>
           {!options.length && (
             <p>
-              Load or refresh released results for this original attempt. A
-              different candidate or assessment cannot be substituted.
+              {t("replacement.noResults")}
             </p>
           )}
           <label>
-            Replacement reason<textarea
+            {t("replacement.reason")}<textarea
               required
               maxLength={5000}
               value={reason}
@@ -143,13 +137,12 @@ export function CertificateReplacement({
               checked={ack}
               disabled={disabled}
               onChange={(event) => setAck(event.target.checked)}
-            />I reviewed the original, recipient, current result, replacement
-            criteria and new validity period, and authorize this replacement.
+            />{t("replacement.ack")}
           </label>
           <button
             disabled={disabled || !policy || !result || !reason.trim() || !ack}
           >
-            Issue replacement certificate
+            {t("replacement.issue")}
           </button>
         </form>
       )}

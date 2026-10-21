@@ -5,7 +5,7 @@ import {
 } from "../../../../packages/assessment-web/src/client";
 import {
   openStaffCommands,
-  staffProblem,
+  staffProblem as staffProblemText,
   type StaffAccess,
   type StaffDetail,
   type StaffMember,
@@ -16,6 +16,7 @@ import { RoleEditor } from "./RoleEditor";
 import { MemberPermissions } from "./MemberPermissions";
 import { InvitationsWorkspace } from './InvitationsWorkspace';
 import "./staff.css";
+import { useAppT } from "../i18n/index.ts";
 export function StaffWorkspace({
   tenant,
   actor,
@@ -23,6 +24,8 @@ export function StaffWorkspace({
   tenant: string;
   actor: string;
 }) {
+  const t = useAppT(),
+    staffProblem = (cause: unknown) => staffProblemText(cause, t);
   const [access, setAccess] = useState<StaffAccess | null>(null),
     [members, setMembers] = useState<StaffMember[]>([]),
     [roles, setRoles] = useState<StaffRole[]>([]),
@@ -135,12 +138,12 @@ export function StaffWorkspace({
     try {
       const active = engine.current;
       if (!active)
-        throw new Error("The encrypted staff request queue is not ready.");
+        throw new Error(t("staff.queueNotReady"));
       if (action) await active.commands.execute(action, data!);
       else await active.commands.retry();
       committed = true;
       if (!alive.current) return true;
-      setNotice("The assessment permission change was recorded.");
+      setNotice(t("staff.recorded"));
       await refresh();
       return true;
     } catch (cause) {
@@ -148,7 +151,7 @@ export function StaffWorkspace({
         if (cause instanceof ServiceRequestError && [401,403].includes(cause.status)) deny();
         setError(staffProblem(cause));
         if (committed)
-          setNotice("The change was recorded. Refresh the staff records.");
+          setNotice(t("staff.recordedRefresh"));
       }
       return committed;
     } finally {
@@ -200,51 +203,48 @@ export function StaffWorkspace({
       )}
       {pending && (
         <section>
-          <h2>Saved permission request needs a receipt</h2>
+          <h2>{t("staff.pendingTitle")}</h2>
           <p>
-            It may already be recorded. Retry the encrypted request before
-            making a different permission change.
+            {t("staff.pendingBody")}
           </p>
           <button disabled={busy} onClick={() => void mutate()}>
-            Retry saved permission request
+            {t("staff.retry")}
           </button>
         </section>
       )}
       {!access ? (
-        <p role="status">Loading current staff-management authority…</p>
+        <p role="status">{t("staff.loading")}</p>
       ) : !access.can_manage ? (
         <p>
-          Your current institution role cannot manage assessment permissions.
+          {t("staff.cannotManage")}
         </p>
       ) : (
         <div className="staff-layout">
           <section>
-            <h2>Institution members</h2>
+            <h2>{t("staff.members")}</h2>
             <p>
-              Organization membership and owner/admin roles remain in their
-              own workflow. Assessment-only membership and access changes here
-              do not grant Academy or Proctor access.
+              {t("staff.membersLead")}
             </p>
             <ul className="records">
               {members.map((person) => (
                 <li key={person.id}>
                   <strong>{person.name}</strong>
                   <span>
-                    {person.status} · {person.org_role}
+                    {t("staff.memberMeta", { status: person.status, role: String(person.org_role) })}
                   </span>
                   <button
                     className="quiet"
                     disabled={locked}
                     onClick={() => void open(person)}
                   >
-                    Review member permissions
+                    {t("staff.review")}
                   </button>
                 </li>
               ))}
             </ul>
             {memberMore && (
               <button disabled={locked} onClick={() => void more("members")}>
-                Load more members
+                {t("staff.moreMembers")}
               </button>
             )}
             <button
@@ -252,14 +252,14 @@ export function StaffWorkspace({
               disabled={locked}
               onClick={() => void refresh()}
             >
-              Refresh staff records
+              {t("staff.refresh")}
             </button>
-            <h3>Immutable assessment role versions</h3>
+            <h3>{t("staff.roles")}</h3>
             <ul className="records">
               {roles.map((role) => (
                 <li key={role.id}>
                   <strong>
-                    {role.title} · version {role.version}
+                    {t("staff.roleTitle", { title: role.title, version: String(role.version) })}
                   </strong>
                   <button
                     className="quiet"
@@ -271,18 +271,18 @@ export function StaffWorkspace({
                     }
                     onClick={() => setEditing(role)}
                   >
-                    Create revised role version
+                    {t("staff.revise")}
                   </button>
                 </li>
               ))}
             </ul>
             {roleMore && (
               <button disabled={locked} onClick={() => void more("roles")}>
-                Load more role versions
+                {t("staff.moreRoles")}
               </button>
             )}
             <button disabled={locked} onClick={() => setEditing("new")}>
-              Create assessment role
+              {t("staff.createRole")}
             </button>
           </section>
           <div className="staff-forms">
@@ -310,10 +310,9 @@ export function StaffWorkspace({
             )}{" "}
             {!editing && !detail && (
               <section>
-                <h2>Select a member or role</h2>
+                <h2>{t("staff.selectTitle")}</h2>
                 <p>
-                  Review the exact permission, expiry and reason before changing
-                  access. Past activity remains in the audit history.
+                  {t("staff.selectLead")}
                 </p>
               </section>
             )}

@@ -10,7 +10,9 @@ import type {
   StaffAccess,
   StaffRole,
 } from "../../../../packages/assessment-web/src/staff";
-import { staffLabels } from "../../../../packages/assessment-core/src/staff";
+import { useI18n } from "../../../../packages/service-i18n/src/i18n.tsx";
+import { useAppT } from "../i18n/index.ts";
+import { useStaffText } from "./staff-text";
 import "./invitations.css";
 import {InvitationMailPanel} from './InvitationMailPanel';
 export function InvitationsWorkspace(
@@ -21,6 +23,7 @@ export function InvitationsWorkspace(
     access: StaffAccess;
   },
 ) {
+  const t = useAppT(), { date } = useI18n(), staff = useStaffText();
   const [rows, setRows] = useState<StaffInvitation[]>([]),
     [more, setMore] = useState(false),
     [email, setEmail] = useState(""),
@@ -52,7 +55,7 @@ export function InvitationsWorkspace(
   const locked = busy || !ready || !!pending || denied;
   function fail(cause: unknown) {
     if (!live.current) return;
-    setError(invitationProblem(cause));
+    setError(invitationProblem(cause, t));
     if ([401, 403].includes((cause as { status?: number }).status ?? 0)) {
       sequence.current++;
       setRows([]);
@@ -130,7 +133,7 @@ export function InvitationsWorkspace(
       committed = true;
       if (!live.current) return;
       setNotice(
-        "Invitation change recorded. Creation alone sends no email; check email delivery separately or share a protected link.",
+        t("invites.recorded"),
       );
       setRevoke(null);
       setAck(false);
@@ -139,7 +142,7 @@ export function InvitationsWorkspace(
       fail(cause);
       if (live.current && committed) {
         setNotice(
-          "The change was recorded. Refresh the invitations to see its current state.",
+          t("invites.recordedRefresh"),
         );
       }
     } finally {
@@ -193,31 +196,28 @@ export function InvitationsWorkspace(
       className="invitations-workspace"
       aria-labelledby="invitations-heading"
     >
-      <h2 id="invitations-heading">Staff invitations</h2>
+      <h2 id="invitations-heading">{t("invites.title")}</h2>
       <p>
-        Invite staff to Assessment Cloud only. Recipients need a Schood account
-        with a verified email. These invitations do not add Academy or Proctor
-        access.
+        {t("invites.lead")}
       </p>
       {error && <p className="error" role="alert">{error}</p>}
       {notice && <p role="status" className="notice">{notice}</p>}
       {pending && (
         <section>
-          <h3>Saved invitation request needs a receipt</h3>
+          <h3>{t("invites.pendingTitle")}</h3>
           <p>
-            It may already be recorded. Retry the encrypted request before
-            making another invitation change.
+            {t("invites.pendingBody")}
           </p>
           <button disabled={busy} onClick={() => void mutate()}>
-            Retry saved invitation request
+            {t("invites.retry")}
           </button>
         </section>
       )}
       {!denied && (
         <form onSubmit={create}>
-          <h3>Invite an Assessment staff member</h3>
+          <h3>{t("invites.createTitle")}</h3>
           <label>
-            Recipient email<input
+            {t("invites.email")}<input
               type="email"
               required
               maxLength={254}
@@ -230,7 +230,7 @@ export function InvitationsWorkspace(
             />
           </label>
           <label>
-            Invitation role version<select
+            {t("invites.role")}<select
               required
               disabled={locked}
               value={role}
@@ -239,44 +239,37 @@ export function InvitationsWorkspace(
                 setAck(false);
               }}
             >
-              <option value="">Choose a reviewed role version</option>
+              <option value="">{t("invites.chooseRole")}</option>
               {eligible.map((value) => (
                 <option key={value.id} value={value.id}>
-                  {value.title} · version {value.version}
+                  {t("invites.roleOption", { title: value.title, version: String(value.version) })}
                 </option>
               ))}
             </select>
           </label>
           {!eligible.length && (
             <p>
-              Create a role you are authorized to delegate, or load more role
-              versions above.
+              {t("invites.noRoles")}
             </p>
           )}
           {selected && (
             <div>
               <p>
-                The invitation pins version{" "}
-                {selected.version}; later role revisions will not change it.
+                {t("invites.pins", { version: String(selected.version) })}
               </p>
               <ul>
                 {selected.capabilities.map((cap) => (
                   <li key={cap}>
-                    {staffLabels[cap]}
-                    {access.authority_ends_at[cap] && (
-                      <>
-                        · your authority ends{" "}
-                        {new Date(access.authority_ends_at[cap]!)
-                          .toLocaleString()}
-                      </>
-                    )}
+                    {staff.capability(cap)}
+                    {access.authority_ends_at[cap] &&
+                      t("invites.authorityEnds", { date: date(access.authority_ends_at[cap]!) })}
                   </li>
                 ))}
               </ul>
             </div>
           )}
           <label>
-            Invitation expires<input
+            {t("invites.expires")}<input
               type="datetime-local"
               required
               value={expires}
@@ -288,11 +281,10 @@ export function InvitationsWorkspace(
             />
           </label>
           <p>
-            Choose a future time within 30 days. This is the acceptance
-            deadline, not the role’s lifetime.
+            {t("invites.expiresHint")}
           </p>
           <label>
-            Role access expires (optional)<input
+            {t("invites.roleExpires")}<input
               type="datetime-local"
               value={permissionExpiry}
               disabled={locked}
@@ -303,11 +295,10 @@ export function InvitationsWorkspace(
             />
           </label>
           <p>
-            Leave blank only for ongoing access you are authorized to delegate.
-            A role expiry must not precede the invitation deadline.
+            {t("invites.roleExpiresHint")}
           </p>
           <label>
-            Invitation reason<textarea
+            {t("invites.reason")}<textarea
               required
               maxLength={5000}
               value={reason}
@@ -324,26 +315,24 @@ export function InvitationsWorkspace(
               checked={ack}
               disabled={locked}
               onChange={(e) => setAck(e.target.checked)}
-            />I reviewed the recipient, pinned role permissions and both expiry
-            times.
+            />{t("invites.ack")}
           </label>
           <button disabled={locked || !ack || !selected}>
-            Create staff invitation
+            {t("invites.create")}
           </button>
         </form>
       )}
-      <h3>Invitation history</h3>
+      <h3>{t("invites.history")}</h3>
       <button
         className="quiet"
         disabled={busy || !ready}
         onClick={() => void refresh()}
       >
-        Refresh invitations
+        {t("invites.refresh")}
       </button>
       {!rows.length && !denied && (
         <p>
-          No invitations on this page. Creating one does not send email
-          automatically.
+          {t("invites.empty")}
         </p>
       )}
       <ul className="records">
@@ -351,10 +340,10 @@ export function InvitationsWorkspace(
           <li key={row.id}>
             <strong>{row.recipient_email}</strong>
             <span>
-              {row.role_title} · version {row.role_version} · {row.state}
+              {t("invites.rowMeta", { title: row.role_title, version: String(row.role_version), state: row.state })}
             </span>
-            <span>Accept by {new Date(row.expires_at).toLocaleString()}</span>
-            {import.meta.env.VITE_ASSESSMENT_INVITATION_MAIL_ENABLED==='true'&&<button className="quiet" disabled={locked} onClick={()=>{setMail(row);setRevoke(null);setShare(null);}}>Email & reminders</button>}
+            <span>{t("invites.acceptBy", { date: date(row.expires_at) })}</span>
+            {import.meta.env.VITE_ASSESSMENT_INVITATION_MAIL_ENABLED==='true'&&<button className="quiet" disabled={locked} onClick={()=>{setMail(row);setRevoke(null);setShare(null);}}>{t("invites.mail")}</button>}
             {row.state === "pending" && (
               <>
                 {row.created_by === actor && (
@@ -363,7 +352,7 @@ export function InvitationsWorkspace(
                     disabled={locked}
                     onClick={() => void link(row)}
                   >
-                    Get protected share link
+                    {t("invites.link")}
                   </button>
                 )}
                 <button
@@ -376,37 +365,37 @@ export function InvitationsWorkspace(
                     setShare(null);
                   }}
                 >
-                  Review invitation revocation
+                  {t("invites.reviewRevoke")}
                 </button>
               </>
             )}
             {share?.id === row.id && (
               <div>
                 <label>
-                  Protected invitation link<textarea
+                  {t("invites.protectedLink")}<textarea
                     readOnly
                     value={share.url}
                   />
                 </label>
                 <p>
-                  Share only with {row.recipient_email}. Copying this link does not send email; check delivery history separately.
+                  {t("invites.shareOnly", { email: row.recipient_email })}
                 </p>
                 <button
                   type="button"
                   disabled={busy}
                   onClick={() => {
                     void navigator.clipboard.writeText(share.url).then(() => {
-                      if (live.current) setNotice("Invitation link copied.");
+                      if (live.current) setNotice(t("invites.copied"));
                     }).catch(() => {
                       if (live.current) {
                         setError(
-                          "Clipboard is unavailable. Select and copy the protected link.",
+                          t("invites.clipboard"),
                         );
                       }
                     });
                   }}
                 >
-                  Copy invitation link
+                  {t("invites.copy")}
                 </button>
               </div>
             )}
@@ -418,7 +407,7 @@ export function InvitationsWorkspace(
           disabled={locked}
           onClick={() => void refresh(rows.at(-1)?.id)}
         >
-          Load more invitations
+          {t("invites.more")}
         </button>
       )}
       {mail&&<InvitationMailPanel key={`${tenant}:${actor}:${mail.id}`} actor={actor} tenant={tenant} invitation={rows.find(row=>row.id===mail.id)??mail} blocked={locked} close={()=>setMail(null)}/>}
@@ -433,13 +422,12 @@ export function InvitationsWorkspace(
             });
           }}
         >
-          <h3>Revoke invitation for {revoke.recipient_email}</h3>
+          <h3>{t("invites.revokeTitle", { email: revoke.recipient_email })}</h3>
           <p>
-            This prevents acceptance of this pending invitation. It does not
-            remove an already accepted role.
+            {t("invites.revokeLead")}
           </p>
           <label>
-            Invitation revocation reason<textarea
+            {t("invites.revokeReason")}<textarea
               required
               disabled={locked}
               value={revokeReason}
@@ -456,10 +444,10 @@ export function InvitationsWorkspace(
               checked={revokeAck}
               disabled={locked}
               onChange={(e) => setRevokeAck(e.target.checked)}
-            />I reviewed the pending invitation to revoke.
+            />{t("invites.revokeAck")}
           </label>
           <button disabled={locked || !revokeAck}>
-            Revoke staff invitation
+            {t("invites.revoke")}
           </button>
           <button
             type="button"
@@ -467,7 +455,7 @@ export function InvitationsWorkspace(
             disabled={locked}
             onClick={() => setRevoke(null)}
           >
-            Cancel revocation
+            {t("invites.cancelRevoke")}
           </button>
         </form>
       )}

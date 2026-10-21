@@ -1,31 +1,32 @@
 import type { QtiScan } from "../../../../packages/assessment-web/src/qti";
+import { useAppT } from "../i18n/index.ts";
 export function QtiScanResult({ scan }: { scan?: QtiScan | null }) {
+  const t = useAppT();
   if (!scan) {
     return (
       <p>
-        No security scan result is available yet. Uploading alone does not clear
-        a package for import.
+        {t("scan.none")}
       </p>
     );
   }
   const passed = scan.verdict === "clean" && scan.byte_verified === true;
   const message = scan.reason === "historical_metadata"
-    ? "Only historical scan metadata is available. Exact-byte security clearance has not been verified."
+    ? t("scan.historical")
     : scan.reason === "source_hash_mismatch"
-    ? "The package bytes did not match the declared source. Upload a fresh package; this source cannot be imported."
+    ? t("scan.mismatch")
     : scan.verdict === "rejected"
-    ? "Security scanning rejected this package because of malware or a scan-policy limit. It cannot be imported."
+    ? t("scan.rejected")
     : passed
-    ? "Security scan passed for these exact package bytes. Content compatibility still requires separate review."
-    : "Exact-byte security clearance has not been verified. This package cannot be adopted.";
+    ? t("scan.passed")
+    : t("scan.unverified");
   return (
     <div>
-      <h3>Security scan</h3>
+      <h3>{t("scan.title")}</h3>
       <p role={passed ? "status" : "alert"}>{message}</p>
       <details>
-        <summary>Scan provenance</summary>
-        <p>Engine: {scan.engine_version}</p>
-        <p>Signature snapshot: {scan.signature_version}</p>
+        <summary>{t("scan.provenance")}</summary>
+        <p>{t("scan.engine", { version: String(scan.engine_version ?? "") })}</p>
+        <p>{t("scan.signature", { version: String(scan.signature_version ?? "") })}</p>
       </details>
     </div>
   );

@@ -1,6 +1,7 @@
 import React from "react";
 import type { RegionDraft } from "../../../../packages/assessment-core/src/authoring";
 import type { ImageRegion } from "../../../../packages/assessment-core/src/image-response";
+import { useAppT, type AppKey } from "../i18n/index.ts";
 export function PrivateTargetOverlay({ regions }: { regions: ImageRegion[] }) {
   return (
     <svg
@@ -41,15 +42,15 @@ export function PrivateTargetOverlay({ regions }: { regions: ImageRegion[] }) {
   );
 }
 const regionLabels = {
-  x1: "Left",
-  y1: "Top",
-  x2: "Right",
-  y2: "Bottom",
-  x: "Center horizontal",
-  y: "Center vertical",
-  radius_x: "Horizontal radius",
-  radius_y: "Vertical radius",
-};
+  x1: "region.x1",
+  y1: "region.y1",
+  x2: "region.x2",
+  y2: "region.y2",
+  x: "region.x",
+  y: "region.y",
+  radius_x: "region.radius_x",
+  radius_y: "region.radius_y",
+} satisfies Record<string, AppKey>;
 export function RegionEditor(
   { region, index, change, remove, canRemove }: {
     region: RegionDraft;
@@ -59,9 +60,10 @@ export function RegionEditor(
     canRemove: boolean;
   },
 ) {
+  const t = useAppT();
   const coordinate = (key: keyof typeof regionLabels) => (
     <label key={key}>
-      {regionLabels[key]} (%) for target {index + 1}
+      {t(regionLabels[key], { number: index + 1 })}
       <input
         required
         type="number"
@@ -75,9 +77,9 @@ export function RegionEditor(
   );
   return (
     <fieldset>
-      <legend>Accepted target {index + 1}</legend>
+      <legend>{t("region.legend", { number: index + 1 })}</legend>
       <label>
-        Target {index + 1} shape<select
+        {t("region.shape", { number: index + 1 })}<select
           value={region.shape}
           onChange={(event) =>
             change({
@@ -85,22 +87,21 @@ export function RegionEditor(
               shape: event.target.value as RegionDraft["shape"],
             })}
         >
-          <option value="rectangle">Rectangle</option>
-          <option value="ellipse">Ellipse</option>
-          <option value="polygon">Polygon</option>
+          <option value="rectangle">{t("region.rectangle")}</option>
+          <option value="ellipse">{t("region.ellipse")}</option>
+          <option value="polygon">{t("region.polygon")}</option>
         </select>
       </label>
       {region.shape === "polygon"
         ? (
           <>
             <p className="hint">
-              Place vertices around the boundary in order. Do not repeat the
-              first vertex. Intersecting or collinear edges are rejected.
+              {t("region.polygonHint")}
             </p>
             {region.points.map((p, i) => (
               <div className="author-fields" key={i}>
                 <label>
-                  Target {index + 1} vertex {i + 1} horizontal (%)<input
+                  {t("region.vertexX", { number: index + 1, vertex: i + 1 })}<input
                     type="number"
                     required
                     min="0"
@@ -117,7 +118,7 @@ export function RegionEditor(
                   />
                 </label>
                 <label>
-                  Target {index + 1} vertex {i + 1} vertical (%)<input
+                  {t("region.vertexY", { number: index + 1, vertex: i + 1 })}<input
                     type="number"
                     required
                     min="0"
@@ -143,7 +144,7 @@ export function RegionEditor(
                       points: region.points.filter((_, j) => i !== j),
                     })}
                 >
-                  Remove target {index + 1} vertex {i + 1}
+                  {t("region.removeVertex", { number: index + 1, vertex: i + 1 })}
                 </button>
               </div>
             ))}
@@ -157,7 +158,7 @@ export function RegionEditor(
                   points: [...region.points, { x: "", y: "" }],
                 })}
             >
-              Add vertex to target {index + 1}
+              {t("region.addVertex", { number: index + 1 })}
             </button>
           </>
         )
@@ -174,7 +175,7 @@ export function RegionEditor(
         disabled={!canRemove}
         onClick={remove}
       >
-        Remove target {index + 1}
+        {t("region.remove", { number: index + 1 })}
       </button>
     </fieldset>
   );

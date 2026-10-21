@@ -1,7 +1,6 @@
 import { useEffect,useRef,useState, type FormEvent } from "react";
 import {
   STAFF_CAPABILITIES,
-  staffLabels,
   staffPresets,
   type StaffCapability,
 } from "../../../../packages/assessment-core/src/staff";
@@ -9,6 +8,8 @@ import type {
   StaffAccess,
   StaffRole,
 } from "../../../../packages/assessment-web/src/staff";
+import { useAppT } from "../i18n/index.ts";
+import { useStaffText } from "./staff-text";
 export function RoleEditor({
   access,
   role,
@@ -22,6 +23,7 @@ export function RoleEditor({
   submit: (action: string, data: Record<string, unknown>) => Promise<boolean>;
   cancel: () => void;
 }) {
+  const t = useAppT(), staff = useStaffText();
   const heading=useRef<HTMLHeadingElement>(null);useEffect(()=>{heading.current?.focus();},[]);
   const [title, setTitle] = useState(role?.title ?? ""),
     [caps, setCaps] = useState<StaffCapability[]>(role?.capabilities ?? []),
@@ -44,18 +46,17 @@ export function RoleEditor({
     <section>
       <h2 tabIndex={-1} ref={heading}>
         {role
-          ? `Revise role version ${role.version}`
-          : "Create an assessment role"}
+          ? t("role.reviseTitle", { version: String(role.version) })
+          : t("role.createTitle")}
       </h2>
       <p>
-        Role versions are immutable. Revising a role does not change existing
-        staff assignments; reassign a reviewed version explicitly.
+        {t("role.lead")}
       </p>
       <form onSubmit={(event) => void save(event)}>
         <fieldset disabled={busy}>
-          <legend>Role definition</legend>
+          <legend>{t("role.definition")}</legend>
           <label>
-            Role title
+            {t("role.title")}
             <input
               required
               maxLength={200}
@@ -65,17 +66,17 @@ export function RoleEditor({
           </label>
           {!role && (
             <label>
-              Start from a role preset
+              {t("role.preset")}
               <select
                 defaultValue=""
                 onChange={(event) => {
                   const preset = event.target.value;
-                  setTitle(preset);
+                  setTitle(preset ? staff.preset(preset) : preset);
                   setCaps(staffPresets[preset] ?? []);
                 }}
               >
                 <option value="">
-                  Choose a preset or create a custom role
+                  {t("role.choosePreset")}
                 </option>
                 {Object.entries(staffPresets).map(([name, permissions]) => (
                   <option
@@ -87,14 +88,14 @@ export function RoleEditor({
                       )
                     }
                   >
-                    {name}
+                    {staff.preset(name)}
                   </option>
                 ))}
               </select>
             </label>
           )}
           <fieldset>
-            <legend>Assessment permissions</legend>
+            <legend>{t("role.permissions")}</legend>
             {STAFF_CAPABILITIES.map((cap) => (
               <label className="check" key={cap}>
                 <input
@@ -109,12 +110,12 @@ export function RoleEditor({
                     )
                   }
                 />
-                {staffLabels[cap]}
+                {staff.capability(cap)}
               </label>
             ))}
           </fieldset>
           <label>
-            Role change reason
+            {t("role.reason")}
             <textarea
               required
               maxLength={5000}
@@ -126,7 +127,7 @@ export function RoleEditor({
         </fieldset>
         <div className="staff-actions">
           <button disabled={busy || !caps.length}>
-            Save immutable role version
+            {t("role.save")}
           </button>
           <button
             type="button"
@@ -134,7 +135,7 @@ export function RoleEditor({
             disabled={busy}
             onClick={cancel}
           >
-            Close role editor
+            {t("role.close")}
           </button>
         </div>
       </form>

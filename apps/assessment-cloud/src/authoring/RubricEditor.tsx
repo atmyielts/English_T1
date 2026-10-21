@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { validateRubric } from "../../../../packages/assessment-core/src/grading.ts";
 import {useEncryptedDraft} from '../../../../packages/assessment-web/src/useEncryptedDraft';
 import {DraftStatus} from '../../../../packages/assessment-web/src/DraftStatus';
+import {useAppT} from '../i18n/index.ts';
 export function RubricEditor({
   busy,
   tenant,
@@ -13,8 +14,9 @@ export function RubricEditor({
   actor:string;
   save: (data: Record<string, unknown>) => Promise<boolean>;
 }) {
+  const t=useAppT();
   const [initial]=useState(()=>({title:'',criteria:[{id:crypto.randomUUID(),title:'',max:'1',descriptor:''}]}));
-  const encrypted=useEncryptedDraft(`authoring:${tenant}:${actor}:rubric:new`,'rubric-editor.v1',initial,value=>{const row=value as typeof initial;if(!row||typeof row.title!=='string'||!Array.isArray(row.criteria)||!row.criteria.length||row.criteria.length>30||row.criteria.some(c=>!c||!['id','title','max','descriptor'].every(id=>typeof (c as unknown as Record<string,unknown>)[id]==='string')))throw new Error('The saved rubric draft has an invalid structure.');return row;});
+  const encrypted=useEncryptedDraft(`authoring:${tenant}:${actor}:rubric:new`,'rubric-editor.v1',initial,value=>{const row=value as typeof initial;if(!row||typeof row.title!=='string'||!Array.isArray(row.criteria)||!row.criteria.length||row.criteria.length>30||row.criteria.some(c=>!c||!['id','title','max','descriptor'].every(id=>typeof (c as unknown as Record<string,unknown>)[id]==='string')))throw new Error(t('rubric.invalidDraft'));return row;});
   const {title,criteria}=encrypted.value;
   const setTitle=(title:string)=>encrypted.update(current=>({...current,title}));
   const setCriteria=(value:typeof criteria|((value:typeof criteria)=>typeof criteria))=>encrypted.update(current=>({...current,criteria:typeof value==='function'?value(current.criteria):value}));
@@ -25,7 +27,7 @@ export function RubricEditor({
     setSubmitting(true);
     setError("");
     try {
-      if(encrypted.blocked)throw new Error('Resolve encrypted draft recovery before saving.');
+      if(encrypted.blocked)throw new Error(t('rubric.resolveRecovery'));
       const prepared=await encrypted.prepare();
       const value = validateRubric({
         title:prepared.value.title,
@@ -36,16 +38,14 @@ export function RubricEditor({
       });
       if (await save({...value,_draft:prepared.token}))await encrypted.reload();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Complete the rubric.");
+      setError(cause instanceof Error ? cause.message : t("rubric.complete"));
     }finally{setSubmitting(false);}
   }
   return (
     <section className="editor">
-      <h2>Create a marking rubric</h2>
+      <h2>{t("rubric.title")}</h2>
       <p>
-        Rubrics are immutable. To change a rubric, create a new one and attach
-        it to a revised question. Existing questions and released grades remain
-        pinned to the old rubric.
+        {t("rubric.lead")}
       </p>
       {error && (
         <p className="error" role="alert">
@@ -55,9 +55,9 @@ export function RubricEditor({
       <form onSubmit={(event) => void submit(event)}>
         <DraftStatus {...encrypted} disabled={busy||submitting}/>
         <fieldset disabled={busy||submitting||encrypted.blocked}>
-          <legend>Rubric details</legend>
+          <legend>{t("rubric.details")}</legend>
           <label>
-            Rubric title
+            {t("rubric.name")}
             <input
               required
               maxLength={200}
@@ -67,10 +67,10 @@ export function RubricEditor({
           </label>
           {criteria.map((row, index) => (
             <fieldset key={row.id}>
-              <legend>Criterion {index + 1}</legend>
+              <legend>{t("rubric.criterion", { number: index + 1 })}</legend>
               <div className="author-fields">
                 <label>
-                  Criterion title {index + 1}
+                  {t("rubric.criterionTitle", { number: index + 1 })}
                   <input
                     required
                     maxLength={200}
@@ -87,7 +87,7 @@ export function RubricEditor({
                   />
                 </label>
                 <label>
-                  Criterion maximum {index + 1}
+                  {t("rubric.criterionMax", { number: index + 1 })}
                   <input
                     type="number"
                     required
@@ -108,7 +108,7 @@ export function RubricEditor({
                 </label>
               </div>
               <label>
-                Criterion descriptor {index + 1}
+                {t("rubric.criterionDescriptor", { number: index + 1 })}
                 <textarea
                   required
                   maxLength={5000}
@@ -135,7 +135,7 @@ export function RubricEditor({
                   )
                 }
               >
-                Remove criterion {index + 1}
+                {t("rubric.removeCriterion", { number: index + 1 })}
               </button>
             </fieldset>
           ))}
@@ -155,15 +155,13 @@ export function RubricEditor({
               ])
             }
           >
-            Add rubric criterion
+            {t("rubric.addCriterion")}
           </button>
         </fieldset>
         <p className="hint">
-          Criterion points are normalized to the question’s maximum score. Human
-          reviewers inspect the full rubric before approving a subjective
-          question.
+          {t("rubric.hint")}
         </p>
-        <button disabled={busy||submitting||encrypted.blocked}>Save immutable rubric</button>
+        <button disabled={busy||submitting||encrypted.blocked}>{t("rubric.save")}</button>
       </form>
     </section>
   );

@@ -5,6 +5,8 @@ import {
   feedbackLabel,
   type FeedbackPreview,
 } from "../../../../packages/assessment-web/src/feedback";
+import { useI18n } from "../../../../packages/service-i18n/src/i18n.tsx";
+import { useAppT, useErrorText } from "../i18n/index.ts";
 export function FeedbackReleaseReview(
   { tenant, actor, runId, locked, submit }: {
     tenant: string;
@@ -14,6 +16,7 @@ export function FeedbackReleaseReview(
     submit: (action: string, data: Record<string, unknown>) => Promise<boolean>;
   },
 ) {
+  const t = useAppT(), { date: formatDate } = useI18n(), problem = useErrorText();
   const [preview, setPreview] = useState<FeedbackPreview | null>(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
@@ -38,11 +41,7 @@ export function FeedbackReleaseReview(
       if (alive.current && token === epoch.current) setPreview(value);
     } catch (cause) {
       if (alive.current && token === epoch.current) {
-        setError(
-          cause instanceof Error
-            ? cause.message
-            : "The release policy could not be checked.",
-        );
+        setError(problem(cause, "release.checkFailed"));
       }
     } finally {
       if (alive.current && token === epoch.current) setBusy(false);
@@ -75,20 +74,20 @@ export function FeedbackReleaseReview(
         });
       }}
     >
-      <h3>Release approved results</h3>
+      <h3>{t("release.title")}</h3>
       {busy && (
-        <p role="status">Checking the current approved feedback policy…</p>
+        <p role="status">{t("release.checking")}</p>
       )}
       {error && <p className="error" role="alert">{error}</p>}
       {preview && (
         <p className="notice">
-          Candidate receives: {feedbackLabel(preview.level)}.{" "}
+          {t("release.receives", { level: feedbackLabel(preview.level, t) })}{" "}
           {preview.level !== "totals" &&
-            `Additional details: ${
-              feedbackDate(preview.available_after)
-            } (never before the result release).`} {preview.version
-            ? `Independently approved policy version ${preview.version}.`
-            : "Conservative default; no section or question points."}
+            t("release.details", { date:
+              feedbackDate(preview.available_after, t, (value) => formatDate(value))
+            })} {preview.version
+            ? t("release.approvedVersion", { version: String(preview.version) })
+            : t("release.default")}
         </p>
       )}
       <button
@@ -97,10 +96,10 @@ export function FeedbackReleaseReview(
         disabled={locked || busy}
         onClick={() => void load()}
       >
-        Refresh release feedback policy
+        {t("release.refresh")}
       </button>
       <label>
-        Release time (your local time; leave empty for now)<input
+        {t("release.time")}<input
           type="datetime-local"
           value={releaseAt}
           onChange={(event) => {
@@ -116,11 +115,10 @@ export function FeedbackReleaseReview(
           checked={confirmed}
           onChange={(event) => setConfirmed(event.target.checked)}
           disabled={locked || busy || !preview}
-        />I reviewed the grade, candidate feedback level and timing and
-        authorize this release.
+        />{t("release.ack")}
       </label>
       <button disabled={locked || busy || !preview || !confirmed}>
-        Release approved results
+        {t("release.submit")}
       </button>
     </form>
   );

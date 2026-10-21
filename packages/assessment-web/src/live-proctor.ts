@@ -8,11 +8,12 @@ import type {
   LivePeerPorts,
   LivePeerReply,
 } from "../../proctor-web/src/live-peer";
+import {LocalizedError,english} from './i18n/translate.ts';
 
 export function liveEndpoint() {
   const raw = import.meta.env.VITE_PROCTOR_LIVE_URL as string | undefined;
   if (!raw) {
-    throw new Error("Live monitoring is not configured in this environment.");
+    throw new LocalizedError("live.liveMonitoringConfiguredEnvironment");
   }
   const base = new URL(raw),
     loopback = ["localhost", "127.0.0.1", "[::1]"].includes(base.hostname);
@@ -20,7 +21,7 @@ export function liveEndpoint() {
     (base.protocol !== "https:" && !(base.protocol === "http:" && loopback)) ||
     base.username || base.password || base.search || base.hash ||
     base.pathname !== "/"
-  ) throw new Error("The live monitoring endpoint must be a secure root URL.");
+  ) throw new LocalizedError("live.liveMonitoringEndpointSecure");
   return base;
 }
 export const liveConfigured = Boolean(import.meta.env.VITE_PROCTOR_LIVE_URL);
@@ -55,7 +56,7 @@ export function livePorts(
       throw new ServiceRequestError(
         401,
         "unauthorized",
-        "Sign in to continue.",
+        english("common.signIn"),
       );
     }
     const { data: auth } = await supabase.auth.getSession();
@@ -63,7 +64,7 @@ export function livePorts(
       throw new ServiceRequestError(
         401,
         "account_changed",
-        "The signed-in account changed. Reopen this session.",
+        english("live.accountChanged"),
       );
     }
     const endpoint = new URL(`/v1/connections/${encodeURIComponent(id)}`, base);
@@ -86,7 +87,7 @@ export function livePorts(
       });
       const reader = response.body?.getReader();
       if (!reader) {
-        throw new Error("The live broker returned an empty response.");
+        throw new LocalizedError("live.liveBrokerReturnedEmpty");
       }
       const chunks: Uint8Array[] = [];
       let size = 0;
@@ -97,7 +98,7 @@ export function livePorts(
           size += value.byteLength;
           if (size > 150000) {
             await reader.cancel();
-            throw new Error("The live broker response exceeded its limit.");
+            throw new LocalizedError("live.liveBrokerResponseExceeded");
           }
           chunks.push(value);
         }
@@ -115,11 +116,11 @@ export function livePorts(
         throw new ServiceRequestError(
           response.status,
           payload.code ?? "live_unavailable",
-          payload.error ?? "Live monitoring could not continue.",
+          payload.error ?? english("live.unavailable"),
         );
       }
       const { data: current } = await supabase.auth.getSession();
-      if (!current.session || current.session.user.id !== actor) throw new ServiceRequestError(401, 'account_changed', 'The signed-in account changed. Reopen this session.');
+      if (!current.session || current.session.user.id !== actor) throw new ServiceRequestError(401, 'account_changed', english('live.accountChanged'));
       return payload.data;
     } finally {
       clearTimeout(timer);

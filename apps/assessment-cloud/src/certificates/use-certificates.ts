@@ -4,14 +4,17 @@ import {
   ServiceRequestError,
 } from "../../../../packages/assessment-web/src/client";
 import {
-  certificateProblem,
+  certificateProblem as certificateProblemText,
   type CertificateProgram,
   type CertificateResult,
   type CertificateRow,
   openCertificateCommands,
 } from "../../../../packages/assessment-web/src/certificates";
 import type { GradeIntent } from "../../../../packages/assessment-web/src/grade-command";
+import { useAppT } from "../i18n/index.ts";
 export function useCertificates(tenant: string, actor: string) {
+  const t = useAppT(),
+    certificateProblem = (cause: unknown) => certificateProblemText(cause, t);
   const [programs, setPrograms] = useState<CertificateProgram[]>([]),
     [certificates, setCertificates] = useState<CertificateRow[]>([]),
     [results, setResults] = useState<CertificateResult[]>([]),
@@ -138,14 +141,14 @@ export function useCertificates(tenant: string, actor: string) {
     let committed = false;
     try {
       if (!engine.current) {
-        throw new Error("Secure certificate recovery is not ready.");
+        throw new Error(t("certificates.notReady"));
       }
       if (action) await engine.current.commands.execute(action, data ?? {});
       else await engine.current.commands.retry();
       committed = true;
       if (current === epoch.current) {
         setNotice(
-          "Certificate change recorded. Existing results remain unchanged.",
+          t("certificates.recorded"),
         );
         await load();
       }

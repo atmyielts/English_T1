@@ -4,6 +4,7 @@ import {
   type Definition,
 } from "../../../../packages/assessment-core/src/mod.ts";
 import { request } from "../../../../packages/assessment-web/src/client";
+import { useAppT, useErrorText } from "../i18n/index.ts";
 type Example = {
   feasible: boolean;
   notice: string;
@@ -29,6 +30,7 @@ export function BlueprintPreview(
     disabled: boolean;
   },
 ) {
+  const t = useAppT(), problem = useErrorText();
   const [busy, setBusy] = useState(false),
     [example, setExample] = useState<Example | null>(null),
     [error, setError] = useState(""),
@@ -61,11 +63,7 @@ export function BlueprintPreview(
       if (epoch === generation.current) setExample(result);
     } catch (cause) {
       if (epoch === generation.current) {
-        setError(
-          cause instanceof Error
-            ? cause.message
-            : "Blueprint feasibility could not be confirmed.",
-        );
+        setError(problem(cause, "feasibility.failed"));
       }
     } finally {
       if (epoch === generation.current) setBusy(false);
@@ -74,11 +72,9 @@ export function BlueprintPreview(
   if (!definition?.sections.some((section) => section.blueprint)) return null;
   return (
     <div className="blueprint-preview">
-      <h3>Check blueprint feasibility</h3>
+      <h3>{t("feasibility.title")}</h3>
       <p>
-        Check all pinned approved versions together before saving. This produces
-        a satisfying example, not a candidate’s future form. Saving and
-        publishing repeat the check on the server.
+        {t("feasibility.lead")}
       </p>
       <button
         type="button"
@@ -86,29 +82,28 @@ export function BlueprintPreview(
         disabled={disabled || busy}
         onClick={() => void check()}
       >
-        Check constrained form
+        {t("feasibility.check")}
       </button>
-      {busy && <p role="status">Checking overlapping requirements…</p>}
+      {busy && <p role="status">{t("feasibility.checking")}</p>}
       {error && (
         <p className="error" role="alert">
-          {error} No feasible form has been confirmed.
+          {t("feasibility.error", { error })}
         </p>
       )}
       {example && (
         <div role="status">
-          <h4>Blueprint requirements can be satisfied</h4>
+          <h4>{t("feasibility.ok")}</h4>
           <p>{example.notice}</p>
           {example.sections.map((section) => (
             <div key={section.id}>
               <h4>{section.title}</h4>
               <p>
-                {section.questions} selected questions · {section.points} points
+                {t("feasibility.section", { questions: String(section.questions), points: String(section.points) })}
               </p>
               <ul>
                 {section.rules.map((rule) => (
                   <li key={rule.id}>
-                    {rule.label}: {rule.matched} matched (required{" "}
-                    {rule.minimum}–{rule.maximum})
+                    {t("feasibility.rule", { label: rule.label, matched: String(rule.matched), minimum: String(rule.minimum), maximum: String(rule.maximum) })}
                   </li>
                 ))}
               </ul>

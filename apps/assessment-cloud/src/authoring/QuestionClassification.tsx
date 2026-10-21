@@ -1,24 +1,23 @@
 import type { ItemDraft } from "../../../../packages/assessment-core/src/authoring.ts";
+import { useAppT } from "../i18n/index.ts";
 export function QuestionClassification(
   { draft, change }: {
     draft: ItemDraft;
     change: (value: Partial<ItemDraft>) => void;
   },
 ) {
+  const t = useAppT();
   const topics = draft.topics ?? [];
   return (
     <fieldset>
-      <legend>Blueprint classification</legend>
+      <legend>{t("classification.legend")}</legend>
       <p>
-        Topics and difficulty are pinned to this question version and included
-        in independent review. Difficulty is an author estimate, not calibrated
-        test difficulty. These fields are not sent in candidate question
-        manifests.
+        {t("classification.lead")}
       </p>
       {topics.map((topic, index) => (
         <div className="author-row" key={index}>
           <label>
-            Blueprint topic {index + 1}
+            {t("classification.topic", { number: index + 1 })}
             <input
               maxLength={80}
               value={topic}
@@ -35,9 +34,9 @@ export function QuestionClassification(
             type="button"
             onClick={() =>
               change({ topics: topics.filter((_, i) => i !== index) })}
-            aria-label={`Remove blueprint topic ${index + 1}`}
+            aria-label={t("classification.removeTopicLabel", { number: index + 1 })}
           >
-            Remove topic
+            {t("classification.removeTopic")}
           </button>
         </div>
       ))}
@@ -47,18 +46,18 @@ export function QuestionClassification(
         disabled={topics.length >= 20}
         onClick={() => change({ topics: [...topics, ""] })}
       >
-        Add blueprint topic
+        {t("classification.addTopic")}
       </button>
       <label>
-        Author-estimated difficulty<select
+        {t("classification.difficulty")}<select
           value={draft.estimatedDifficulty ?? ""}
           onChange={(event) =>
             change({ estimatedDifficulty: event.target.value })}
         >
-          <option value="">Not classified</option>
-          <option value="easy">Easy</option>
-          <option value="medium">Medium</option>
-          <option value="hard">Hard</option>
+          <option value="">{t("classification.notClassified")}</option>
+          <option value="easy">{t("classification.easy")}</option>
+          <option value="medium">{t("classification.medium")}</option>
+          <option value="hard">{t("classification.hard")}</option>
         </select>
       </label>
     </fieldset>

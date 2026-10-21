@@ -7,8 +7,8 @@ import React, {
   type FormEvent,
 } from "react";
 import { createRoot } from "react-dom/client";
-import { I18nProvider } from "../../../packages/service-i18n/src/i18n.tsx";
-import { catalogs } from "./i18n/index.ts";
+import { I18nProvider, LocaleSwitcher, useI18n } from "../../../packages/service-i18n/src/i18n.tsx";
+import { catalogs, useAppT, useErrorText, type AppKey } from "./i18n/index.ts";
 import { configured, request, supabase, observeAccount, type Row } from "./client";
 import { ServiceHeader } from "../../../packages/service-design/src/ServiceHeader";
 import { type Definition } from "../../../packages/assessment-core/src/mod.ts";
@@ -46,20 +46,20 @@ const FeedbackWorkspace = lazy(() => import("./feedback/FeedbackWorkspace").then
 import type { GradeAccess } from "../../../packages/assessment-web/src/grading";
 
 type Tab = "banks" | "items" | "media" | "assessments" | "windows" | "grading" | "staff" | "appeals" | "certificates" | "cohorts" | "imports" | "analytics" | "feedback";
-const labels: Record<Tab, string> = {
-  banks: "Question banks",
-  imports: "Import & export",
-  analytics: "Results & analytics",
-  feedback: "Result feedback",
-  items: "Questions & review",
-  media: "Media library",
-  assessments: "Assessments",
-  windows: "Exam sittings",
-  cohorts: "Cohorts & registration",
-  grading: "Grading & results",
-  appeals: "Result appeals",
-  certificates: "Certificates",
-  staff: "Staff & permissions",
+const labels: Record<Tab, AppKey> = {
+  banks: "nav.banks",
+  imports: "nav.imports",
+  analytics: "nav.analytics",
+  feedback: "nav.feedback",
+  items: "nav.items",
+  media: "nav.media",
+  assessments: "nav.assessments",
+  windows: "nav.windows",
+  cohorts: "nav.cohorts",
+  grading: "nav.grading",
+  appeals: "nav.appeals",
+  certificates: "nav.certificates",
+  staff: "nav.staff",
 };
 function availableTabs(access: GradeAccess): Tab[] {
   return [
@@ -80,6 +80,7 @@ function availableTabs(access: GradeAccess): Tab[] {
   ];
 }
 function App() {
+  const t = useAppT(), { date } = useI18n(), problem = useErrorText();
   const invitationEnabled=import.meta.env.VITE_ASSESSMENT_INVITATIONS_ENABLED==='true';
   const readInvitation=():{link:InvitationLink|null;error:string}=>{try{return{link:invitationEnabled?invitationFromFragment():null,error:''};}catch(cause){return{link:null,error:(cause as Error).message};}};
   const [invitation,setInvitation]=useState(readInvitation),[invitationRefresh,setInvitationRefresh]=useState(0);
@@ -156,7 +157,7 @@ function App() {
           }
         })
         .catch((cause) => {
-          if (active) setError(cause.message);
+          if (active) setError(problem(cause));
         });
     return () => {
       active = false;
@@ -230,7 +231,7 @@ function App() {
     setTitle("");
     const expected = scope;
     load().catch((cause) => {
-      if (liveScope.current === expected) setError(cause.message);
+      if (liveScope.current === expected) setError(problem(cause));
     });
     return () => {
       loadVersion.current++;
@@ -246,11 +247,7 @@ function App() {
       if (liveScope.current === expected) await load();
     } catch (cause) {
       if (liveScope.current === expected)
-        setError(
-          cause instanceof Error
-            ? cause.message
-            : "Could not complete this action.",
-        );
+        setError(problem(cause));
     } finally {
       if (liveScope.current === expected) setBusy(false);
     }
@@ -266,7 +263,7 @@ function App() {
         user,
       );
     if (liveScope.current !== expected)
-      throw new Error("The workspace changed.");
+      throw new Error(t("app.workspaceChanged"));
     return result;
   }
   const prevent = (fn: () => Promise<void>) => (event: FormEvent) => {
@@ -276,10 +273,9 @@ function App() {
   if (!configured)
     return (
       <main className="configuration">
-        <h1>Assessment Cloud</h1>
+        <h1>{t("app.name")}</h1>
         <p>
-          The service connection has not been configured. Set the public
-          Supabase URL and anonymous key before starting this application.
+          {t("app.notConfigured")}
         </p>
       </main>
     );
@@ -287,13 +283,13 @@ function App() {
     return (
       <main className="signin">
         <div className="brand">
-          Schood <span>Assessment Cloud</span>
+          Schood <span>{t("app.name")}</span>
         </div>
-        <h1>Your institution’s assessment workspace</h1>
+        <h1>{t("signin.title")}</h1>
         <p>
-          Create question banks, publish reviewed tests and schedule candidates.
+          {t("signin.lead")}
         </p>
-        {invitation.link&&<p>Sign in with the invitation recipient’s verified Schood email to review their Assessment role. If you do not have an account, complete the normal Schood account setup first, then reopen this link.</p>}
+        {invitation.link&&<p>{t("signin.invitation")}</p>}
         {invitation.error&&<p role="alert" className="error">{invitation.error}</p>}
         <form
           onSubmit={prevent(async () => {
@@ -305,7 +301,7 @@ function App() {
           })}
         >
           <label>
-            Email
+            {t("signin.email")}
             <input
               type="email"
               autoComplete="username"
@@ -315,7 +311,7 @@ function App() {
             />
           </label>
           <label>
-            Password
+            {t("signin.password")}
             <input
               type="password"
               autoComplete="current-password"
@@ -324,7 +320,7 @@ function App() {
               onChange={(event) => setPassword(event.target.value)}
             />
           </label>
-          <button disabled={busy}>Sign in</button>
+          <button disabled={busy}>{t("signin.submit")}</button>
         </form>
         {error && (
           <p role="alert" className="error">
@@ -334,14 +330,15 @@ function App() {
       </main>
     );
   if(invitation.link)return <AcceptInvitation key={`${user}:${invitation.link.tenant}:${invitation.link.id}`} actor={user} link={invitation.link} done={finishInvitation}/>;
-  if(invitation.error)return <main className="signin"><h1>Invitation link unavailable</h1><p role="alert">{invitation.error}</p><button onClick={finishInvitation}>Continue to Assessment Cloud</button></main>;
+  if(invitation.error)return <main className="signin"><h1>{t("invitation.unavailableTitle")}</h1><p role="alert">{invitation.error}</p><button onClick={finishInvitation}>{t("invitation.continue")}</button></main>;
   return (
     <div className="workspace">
       <ServiceHeader
-        service="Assessment Cloud"
+        service={t("app.name")}
+        labels={{ skip: t("header.skip"), home: t("header.home"), menu: t("header.menu"), workspace: t("header.workspace") }}
         nav={(access ? availableTabs(access) : []).map((value) => ({
           id: value,
-          label: labels[value],
+          label: t(labels[value]),
           active: tab === value,
           onClick: () => {
             setTab(value);
@@ -350,9 +347,9 @@ function App() {
         }))}
       >
         <label className="tenant">
-          Institution
+          {t("header.institution")}
           <select
-            aria-label="Institution"
+            aria-label={t("header.institution")}
             value={tenant}
             onChange={(event) => setTenant(event.target.value)}
           >
@@ -369,14 +366,15 @@ function App() {
           </select>
         </label>
         <button className="quiet" onClick={() => void supabase!.auth.signOut()}>
-          Sign out
+          {t("header.signOut")}
         </button>
+        <LocaleSwitcher label={t("locale.label")} />
       </ServiceHeader>
       <main id="workspace-main" tabIndex={-1}>
         <div className="page-heading">
           <div>
-            <p className="eyebrow">Institution workspace</p>
-            <h1>{access ? labels[tab] : "Your institution workspace"}</h1>
+            <p className="eyebrow">{t("workspace.eyebrow")}</p>
+            <h1>{access ? t(labels[tab]) : t("workspace.title")}</h1>
           </div>
           <button
             className="quiet"
@@ -388,7 +386,7 @@ function App() {
               })
             }
           >
-            Refresh
+            {t("workspace.refresh")}
           </button>
         </div>
         {error && (
@@ -402,14 +400,14 @@ function App() {
           </p>
         )}
         {!tenant ? (
-          <p>Join or create an institution through Schood to begin.</p>
+          <p>{t("workspace.noTenant")}</p>
         ) : !access ? (
-          <p role="status">Loading your institution permissions…</p>
+          <p role="status">{t("workspace.loadingPermissions")}</p>
         ) : !availableTabs(access).length ? (
-          <p>No assessment permissions have been assigned to this account.</p>
+          <p>{t("workspace.noPermissions")}</p>
         ) : (
           <Suspense
-            fallback={<p role="status">Loading institution workspace…</p>}
+            fallback={<p role="status">{t("workspace.loading")}</p>}
           >
             <div
               className={
@@ -450,10 +448,9 @@ function App() {
               {tab === "banks" && (
                 <>
                   <section>
-                    <h2>Institution libraries</h2>
+                    <h2>{t("banks.libraries")}</h2>
                     <p>
-                      Questions are versioned independently. Published tests
-                      keep the exact version their author selected.
+                      {t("banks.lead")}
                     </p>
                     <ul className="records">
                       {(rows["item-banks"] ?? []).map((row) => (
@@ -465,23 +462,22 @@ function App() {
                     </ul>
                     {!rows["item-banks"]?.length && (
                       <p>
-                        Create your first bank for a subject or placement
-                        program.
+                        {t("banks.empty")}
                       </p>
                     )}
                   </section>
                   {access.can_write_items && (
                     <section className="editor">
-                      <h2>Create a bank</h2>
+                      <h2>{t("banks.create")}</h2>
                       <form
                         onSubmit={prevent(async () => {
                           await command("bank.create", { title });
                           setTitle("");
-                          setNotice("Question bank created.");
+                          setNotice(t("banks.created"));
                         })}
                       >
                         <label>
-                          Bank name
+                          {t("banks.name")}
                           <input
                             required
                             maxLength={200}
@@ -489,7 +485,7 @@ function App() {
                             onChange={(e) => setTitle(e.target.value)}
                           />
                         </label>
-                        <button disabled={busy}>Create bank</button>
+                        <button disabled={busy}>{t("banks.submit")}</button>
                       </form>
                     </section>
                   )}
@@ -518,36 +514,35 @@ function App() {
               {tab === "windows" && (
                 <>
                   <section>
-                    <h2>Scheduled sittings</h2>
+                    <h2>{t("windows.scheduled")}</h2>
                     <ul className="records">
                       {(rows["exam-windows"] ?? []).map((row) => (
                         <li key={row.id}>
                           <strong>{String(row.title)}</strong>
                           <span>
-                            {new Date(String(row.opens_at)).toLocaleString()} –{" "}
-                            {new Date(String(row.closes_at)).toLocaleString()}
+                            {t("windows.range", { opens: date(String(row.opens_at)), closes: date(String(row.closes_at)) })}
                           </span>
                         </li>
                       ))}
                     </ul>
-                    <h2>Register a candidate</h2>
+                    <h2>{t("windows.register")}</h2>
                     <form
                       onSubmit={prevent(async () => {
                         await command("registration.create", {
                           window_id: windowId,
                           candidate_id: candidate,
                         });
-                        setNotice("Candidate registered.");
+                        setNotice(t("windows.registered"));
                       })}
                     >
                       <label>
-                        Sitting
+                        {t("windows.sitting")}
                         <select
                           required
                           value={windowId}
                           onChange={(e) => setWindowId(e.target.value)}
                         >
-                          <option value="">Choose a sitting</option>
+                          <option value="">{t("windows.chooseSitting")}</option>
                           {(rows["exam-windows"] ?? []).map((row) => (
                             <option key={row.id} value={row.id}>
                               {String(row.title)}
@@ -556,21 +551,21 @@ function App() {
                         </select>
                       </label>
                       <label>
-                        Schood candidate account ID
+                        {t("windows.candidateId")}
                         <input
                           required
                           value={candidate}
                           onChange={(e) => setCandidate(e.target.value)}
                         />
                       </label>
-                      <button disabled={busy}>Register candidate</button>
+                      <button disabled={busy}>{t("windows.registerSubmit")}</button>
                     </form>
                     <p className="hint">
-                      Use the candidate’s existing Schood account identifier.
+                      {t("windows.candidateHint")}
                     </p>
                   </section>
                   <section className="editor">
-                    <h2>Schedule an exam</h2>
+                    <h2>{t("windows.schedule")}</h2>
                     <form
                       onSubmit={prevent(async () => {
                         await command("window.create", {
@@ -579,11 +574,11 @@ function App() {
                           opens_at: new Date(opens).toISOString(),
                           closes_at: new Date(closes).toISOString(),
                         });
-                        setNotice("Exam sitting scheduled.");
+                        setNotice(t("windows.scheduledNotice"));
                       })}
                     >
                       <label>
-                        Sitting title
+                        {t("windows.title")}
                         <input
                           required
                           value={title}
@@ -591,23 +586,22 @@ function App() {
                         />
                       </label>
                       <label>
-                        Published assessment
+                        {t("windows.assessment")}
                         <select
                           required
                           value={selectedVersion}
                           onChange={(e) => setSelectedVersion(e.target.value)}
                         >
-                          <option value="">Choose an assessment</option>
+                          <option value="">{t("windows.chooseAssessment")}</option>
                           {(rows["assessment-versions"] ?? []).map((row) => (
                             <option key={row.id} value={row.id}>
-                              {String((row.definition as Definition).title)} ·{" "}
-                              {String(row.version)}
+                              {t("windows.versionOption", { title: String((row.definition as Definition).title), version: String(row.version) })}
                             </option>
                           ))}
                         </select>
                       </label>
                       <label>
-                        Opens at
+                        {t("windows.opens")}
                         <input
                           type="datetime-local"
                           required
@@ -616,7 +610,7 @@ function App() {
                         />
                       </label>
                       <label>
-                        Closes at
+                        {t("windows.closes")}
                         <input
                           type="datetime-local"
                           required
@@ -624,7 +618,7 @@ function App() {
                           onChange={(e) => setCloses(e.target.value)}
                         />
                       </label>
-                      <button disabled={busy}>Schedule exam</button>
+                      <button disabled={busy}>{t("windows.scheduleSubmit")}</button>
                     </form>
                   </section>
                   <AccommodationsPanel key={scope} tenant={tenant} actor={user} windows={rows["exam-windows"] ?? []} registrations={rows.registrations ?? []} reload={load}/>
@@ -635,7 +629,7 @@ function App() {
         )}
       </main>
       <footer>
-        Schood Assessment Cloud · Institution-controlled assessment
+        {t("workspace.footer")}
       </footer>
     </div>
   );

@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { itemLabels } from "../../../../packages/assessment-core/src/authoring.ts";
 import type { ItemType } from "../../../../packages/assessment-core/src/mod.ts";
 import {
   request,
@@ -7,8 +6,8 @@ import {
   type Row,
 } from "../../../../packages/assessment-web/src/client";
 import {
-  gradingProblem,
-  intentDescription,
+  gradingProblem as gradingProblemText,
+  intentDescription as intentDescriptionText,
   openGradeCommands,
   type GradeAccess,
   type GradeRun,
@@ -18,6 +17,8 @@ import type { GradeIntent } from "../../../../packages/assessment-web/src/grade-
 import { TaskEditor } from "./TaskEditor";
 import { RunReview } from "./RunReview";
 import "./grading.css";
+import { useI18n } from "../../../../packages/service-i18n/src/i18n.tsx";
+import { useAppT, useItemLabel } from "../i18n/index.ts";
 export function GradingWorkspace({
   tenant,
   actor,
@@ -29,6 +30,8 @@ export function GradingWorkspace({
   initialAccess: GradeAccess;
   refreshVersion: number;
 }) {
+  const t = useAppT(), { date } = useI18n(), itemLabel = useItemLabel();
+  const gradingProblem = (cause: unknown) => gradingProblemText(cause, t), intentDescription = (intent: GradeIntent) => intentDescriptionText(intent, t);
   const [access, setAccess] = useState(initialAccess),
     [tasks, setTasks] = useState<Row[]>([]),
     [runs, setRuns] = useState<Row[]>([]),
@@ -187,19 +190,19 @@ export function GradingWorkspace({
       const active = engine.current;
       if (!active)
         throw new Error(
-          "The encrypted grading queue is not ready. Refresh this workspace.",
+          t("grading.queueNotReady"),
         );
       const result=action?await active.commands.execute(action,data!):await active.commands.retry();
       committed=true;
       if (!alive.current) return false;
-      setNotice((result as {device_draft_preserved?:boolean})?.device_draft_preserved?'Your grading change was recorded. A newer device draft was preserved for review.':'Your grading change was recorded.');
+      setNotice((result as {device_draft_preserved?:boolean})?.device_draft_preserved?t('grading.recordedPreserved'):t('grading.recorded'));
       await load();
       const selected = selection.current;
       if (selected) await open(selected.kind, selected.id);
       return true;
     } catch (cause) {
       if (alive.current) setError(gradingProblem(cause));
-      if(committed&&alive.current)setNotice('Your grading change was recorded. Refresh its current state before continuing.');
+      if(committed&&alive.current)setNotice(t('grading.recordedRefresh'));
       return committed;
     } finally {
       if (alive.current) {
@@ -249,14 +252,12 @@ export function GradingWorkspace({
       )}
       {pending && (
         <section className="pending-grade">
-          <h2>Saved grading request needs a receipt</h2>
+          <h2>{t("grading.pendingTitle")}</h2>
           <p>
-            The request to {intentDescription(pending)} is encrypted on this
-            device. It may already be recorded. Retry it before making another
-            change.
+            {t("grading.pendingBody", { intent: intentDescription(pending) })}
           </p>
           <button disabled={busy} onClick={() => void mutate()}>
-            Retry saved grading request
+            {t("grading.retry")}
           </button>
         </section>
       )}
@@ -264,38 +265,37 @@ export function GradingWorkspace({
         <div className="grading-lists" aria-busy={loading}>
           {loading && (
             <p role="status">
-              Loading current grading permissions and records…
+              {t("grading.loading")}
             </p>
           )}
           {(access.can_mark || access.can_moderate) && (
             <section>
               <h2>
                 {access.can_moderate
-                  ? "Marking and moderation queue"
-                  : "Your marking queue"}
+                  ? t("grading.queueModeration")
+                  : t("grading.queueOwn")}
               </h2>
               <p>
-                Work only on assigned responses. Independent marks and approved
-                generations remain in the audit history.
+                {t("grading.queueLead")}
               </p>
               <ul className="records">
                 {tasks.map((row) => (
                   <li key={row.id}>
                     <strong>
-                      {itemLabels[row.type as ItemType] ?? "Submitted response"}
+                      {itemLabel(row.type as ItemType) ?? t("grading.submittedResponse")}
                     </strong>
                     <span>{String(row.status).replaceAll("_", " ")}</span>
                     <button
                       disabled={busy || !!pending}
                       onClick={() => void open("task", row.id!)}
                     >
-                      Open response
+                      {t("grading.openResponse")}
                     </button>
                   </li>
                 ))}
               </ul>
               {!loading && !tasks.length && (
-                <p>No responses are waiting in your queue.</p>
+                <p>{t("grading.queueEmpty")}</p>
               )}
               {taskMore && (
                 <button
@@ -303,33 +303,32 @@ export function GradingWorkspace({
                   disabled={busy || !!pending}
                   onClick={() => void more("tasks")}
                 >
-                  Load more responses
+                  {t("grading.moreResponses")}
                 </button>
               )}
             </section>
           )}
           {(access.can_moderate || access.can_release) && (
             <section>
-              <h2>Grade reviews and releases</h2>
+              <h2>{t("grading.runsTitle")}</h2>
               <ul className="records">
                 {runs.map((row) => (
                   <li key={row.id}>
-                    <strong>Grading generation {String(row.generation)}</strong>
+                    <strong>{t("grading.generation", { generation: String(row.generation) })}</strong>
                     <span>
-                      {String(row.status).replaceAll("_", " ")} ·{" "}
-                      {new Date(String(row.created_at)).toLocaleString()}
+                      {t("grading.runMeta", { status: String(row.status).replaceAll("_", " "), created: date(String(row.created_at)) })}
                     </span>
                     <button
                       disabled={busy || !!pending}
                       onClick={() => void open("run", row.id!)}
                     >
-                      Review grade
+                      {t("grading.reviewGrade")}
                     </button>
                   </li>
                 ))}
               </ul>
               {!loading && !runs.length && (
-                <p>No grading generations are available for your role.</p>
+                <p>{t("grading.runsEmpty")}</p>
               )}
               {runMore && (
                 <button
@@ -337,7 +336,7 @@ export function GradingWorkspace({
                   disabled={busy || !!pending}
                   onClick={() => void more("runs")}
                 >
-                  Load more grades
+                  {t("grading.moreRuns")}
                 </button>
               )}
             </section>
@@ -347,8 +346,7 @@ export function GradingWorkspace({
             !access.can_moderate &&
             !access.can_release && (
               <p>
-                Your institution has not assigned grading permissions to this
-                account.
+                {t("grading.noPermissions")}
               </p>
             )}
           <button
@@ -356,7 +354,7 @@ export function GradingWorkspace({
             disabled={busy || !!pending}
             onClick={() => void refresh()}
           >
-            Refresh grading records
+            {t("grading.refresh")}
           </button>
         </div>
         <div>
@@ -383,10 +381,9 @@ export function GradingWorkspace({
             />
           ) : (
             <section>
-              <h2>Select a response or grade</h2>
+              <h2>{t("grading.selectTitle")}</h2>
               <p>
-                Open a marking task to review its submitted response and rubric,
-                or open a complete grade for independent approval and release.
+                {t("grading.selectLead")}
               </p>
             </section>
           )}

@@ -6,7 +6,6 @@ import {
 } from "../../../../packages/assessment-core/src/mod.ts";
 import {
   blankItemDraft,
-  itemLabels,
   moveOrder,
   needsOptions,
   needsSlots,
@@ -16,6 +15,7 @@ import {
 import type { Row } from "../../../../packages/assessment-web/src/client";
 import { MediaAnswerFields } from "./MediaAnswerFields";
 import {QuestionClassification} from "./QuestionClassification";
+import { useAppT, useItemLabel } from "../i18n/index.ts";
 export const mediaToolTypes = new Set<ItemType>([
   "audio_response",
   "video_response",
@@ -30,6 +30,7 @@ export function ItemFields({
   setDraft: (value: ItemDraft) => void;
   rubrics: Row[];
 }) {
+  const t = useAppT(), itemLabel = useItemLabel();
   const tagsHint=useId();
   const update = (value: Partial<ItemDraft>) =>
     setDraft({ ...draft, ...value });
@@ -50,33 +51,33 @@ export function ItemFields({
     <>
       <div className="author-fields">
         <label>
-          Question type
+          {t("fields.type")}
           <select
             value={draft.type}
             onChange={(event) => changeType(event.target.value as ItemType)}
           >
             {ITEM_TYPES.map((type) => (
               <option key={type} value={type}>
-                {itemLabels[type]}
+                {itemLabel(type)}
               </option>
             ))}
           </select>
         </label>
         <label>
-          Question language
+          {t("fields.language")}
           <select
             value={draft.locale}
             onChange={(event) =>
               update({ locale: event.target.value as ItemDraft["locale"] })
             }
           >
-            <option value="en">English</option>
-            <option value="uz">Uzbek</option>
-            <option value="ru">Russian</option>
+            <option value="en">{t("fields.langEn")}</option>
+            <option value="uz">{t("fields.langUz")}</option>
+            <option value="ru">{t("fields.langRu")}</option>
           </select>
         </label>
         <label>
-          Maximum points
+          {t("fields.maxPoints")}
           <input
             type="number"
             required
@@ -89,7 +90,7 @@ export function ItemFields({
         </label>
       </div>
       <label>
-        Question prompt
+        {t("fields.prompt")}
         <textarea
           required
           maxLength={50000}
@@ -99,7 +100,7 @@ export function ItemFields({
         />
       </label>
       <label>
-        Question tags
+        {t("fields.tags")}
         <input
           aria-describedby={tagsHint}
           maxLength={10000}
@@ -108,24 +109,22 @@ export function ItemFields({
         />
       </label>
       <p id={tagsHint} className="hint">
-        Separate topics or skills with commas.
+        {t("fields.tagsHint")}
       </p>
       {mediaToolTypes.has(draft.type) && (
         <p role="alert" className="author-warning">
-          You can author and independently review submission rules. Candidate
-          delivery for this response type remains blocked until its recording,
-          recovery and upload workflow is enabled by the service.
+          {t("fields.mediaWarning")}
         </p>
       )}
       <MediaAnswerFields draft={draft} setDraft={setDraft}/>
       <QuestionClassification draft={draft} change={update}/>
       {needsOptions(draft.type) && (
         <fieldset>
-          <legend>Answer options</legend>
+          <legend>{t("fields.options")}</legend>
           {draft.options.map((row, index) => (
             <div className="author-row" key={row.id}>
               <label>
-                Option {index + 1}
+                {t("fields.option", { number: index + 1 })}
                 <textarea
                   required
                   maxLength={5000}
@@ -146,10 +145,10 @@ export function ItemFields({
                 type="button"
                 className="quiet"
                 disabled={draft.options.length <= 2}
-                aria-label={`Remove option ${index + 1}`}
+                aria-label={t("fields.removeOption", { number: index + 1 })}
                 onClick={() => setDraft(removeOption(draft, row.id))}
               >
-                Remove
+                {t("fields.remove")}
               </button>
             </div>
           ))}
@@ -167,21 +166,20 @@ export function ItemFields({
               });
             }}
           >
-            Add option
+            {t("fields.addOption")}
           </button>
         </fieldset>
       )}
       {needsSlots(draft.type) && (
         <fieldset>
-          <legend>Response fields</legend>
+          <legend>{t("fields.slots")}</legend>
           <p className="hint">
-            Use meaningful, unique labels such as “Gap 1” or “Row 2:
-            population”. Mention them in the question prompt.
+            {t("fields.slotsHint")}
           </p>
           {draft.slots.map((row, index) => (
             <div className="author-row" key={index}>
               <label>
-                Response label {index + 1}
+                {t("fields.slot", { number: index + 1 })}
                 <input
                   required
                   maxLength={200}
@@ -201,12 +199,12 @@ export function ItemFields({
                 type="button"
                 className="quiet"
                 disabled={draft.slots.length <= 1}
-                aria-label={`Remove response field ${index + 1}`}
+                aria-label={t("fields.removeSlot", { number: index + 1 })}
                 onClick={() =>
                   update({ slots: draft.slots.filter((_, i) => i !== index) })
                 }
               >
-                Remove
+                {t("fields.remove")}
               </button>
             </div>
           ))}
@@ -223,20 +221,20 @@ export function ItemFields({
               })
             }
           >
-            Add response field
+            {t("fields.addSlot")}
           </button>
         </fieldset>
       )}
       {isSubjective(draft.type) ? (
         <div>
           <label>
-            Marking rubric
+            {t("fields.rubric")}
             <select
               required
               value={draft.rubricId}
               onChange={(event) => update({ rubricId: event.target.value })}
             >
-              <option value="">Choose an immutable rubric</option>
+              <option value="">{t("fields.chooseRubric")}</option>
               {rubrics.map((row) => (
                 <option key={row.id} value={row.id}>
                   {String(row.title)}
@@ -245,16 +243,14 @@ export function ItemFields({
             </select>
           </label>
           <p className="hint">
-            Human marking is required. The selected rubric is pinned to this
-            question version.
+            {t("fields.rubricHint")}
           </p>
         </div>
       ) : draft.type==='hotspot'?null:(
         <fieldset className="private-key">
-          <legend>Private scoring key</legend>
+          <legend>{t("fields.privateKey")}</legend>
           <p className="hint">
-            Only authorized authors and reviewers can read this key. It is not
-            part of the candidate preview.
+            {t("fields.privateKeyHint")}
           </p>
           {["single_choice", "true_false"].includes(draft.type) &&
             draft.options.map((row, index) => (
@@ -266,7 +262,7 @@ export function ItemFields({
                   checked={draft.correctOption === row.id}
                   onChange={() => update({ correctOption: row.id })}
                 />
-                Correct option {index + 1}: {row.text || "Enter option text"}
+                {t("fields.correctOption", { number: index + 1, text: row.text || t("fields.enterOptionText") })}
               </label>
             ))}
           {draft.type === "multi_choice" &&
@@ -283,7 +279,7 @@ export function ItemFields({
                     })
                   }
                 />
-                Correct option {index + 1}: {row.text || "Enter option text"}
+                {t("fields.correctOption", { number: index + 1, text: row.text || t("fields.enterOptionText") })}
               </label>
             ))}
           {draft.type === "ordering" && (
@@ -292,30 +288,30 @@ export function ItemFields({
                 <li key={id}>
                   <span>
                     {draft.options.find((row) => row.id === id)?.text ||
-                      `Option ${index + 1}`}
+                      t("fields.option", { number: index + 1 })}
                   </span>
                   <div className="author-actions">
                     <button
                       type="button"
                       className="quiet"
                       disabled={index === 0}
-                      aria-label={`Move correct answer ${index + 1} up`}
+                      aria-label={t("fields.moveUpLabel", { number: index + 1 })}
                       onClick={() =>
                         update({ order: moveOrder(draft.order, index, -1) })
                       }
                     >
-                      Move up
+                      {t("fields.moveUp")}
                     </button>
                     <button
                       type="button"
                       className="quiet"
                       disabled={index === draft.order.length - 1}
-                      aria-label={`Move correct answer ${index + 1} down`}
+                      aria-label={t("fields.moveDownLabel", { number: index + 1 })}
                       onClick={() =>
                         update({ order: moveOrder(draft.order, index, 1) })
                       }
                     >
-                      Move down
+                      {t("fields.moveDown")}
                     </button>
                   </div>
                 </li>
@@ -325,7 +321,7 @@ export function ItemFields({
           {needsSlots(draft.type) &&
             draft.slots.map((row, index) => (
               <label key={index}>
-                Accepted answer for {row.id || `field ${index + 1}`}
+                {t("fields.acceptedFor", { field: row.id || t("fields.fieldNumber", { number: index + 1 }) })}
                 {draft.type === "matching" ? (
                   <select
                     required
@@ -340,10 +336,10 @@ export function ItemFields({
                       })
                     }
                   >
-                    <option value="">Choose the matching option</option>
+                    <option value="">{t("fields.chooseMatch")}</option>
                     {draft.options.map((option) => (
                       <option key={option.id} value={option.id}>
-                        {option.text || "Enter option text"}
+                        {option.text || t("fields.enterOptionText")}
                       </option>
                     ))}
                   </select>
@@ -369,7 +365,7 @@ export function ItemFields({
           {draft.type === "numeric" && (
             <div className="author-fields">
               <label>
-                Correct numeric answer
+                {t("fields.numericAnswer")}
                 <input
                   type="number"
                   required
@@ -383,7 +379,7 @@ export function ItemFields({
                 />
               </label>
               <label>
-                Allowed numeric tolerance
+                {t("fields.tolerance")}
                 <input
                   type="number"
                   required
@@ -401,7 +397,7 @@ export function ItemFields({
           {draft.type==='short_answer' && (
             <div>
               <label>
-                Accepted answers
+                {t("fields.accepted")}
                 <textarea
                   required
                   rows={4}
@@ -411,7 +407,7 @@ export function ItemFields({
                 />
               </label>
               <p className="hint">
-                For a short answer, enter one accepted alternative per line.
+                {t("fields.acceptedHint")}
               </p>
             </div>
           )}
@@ -429,7 +425,7 @@ export function ItemFields({
                   update({ caseSensitive: event.target.checked })
                 }
               />
-              Match capitalization exactly
+              {t("fields.caseSensitive")}
             </label>
           )}
           {[
@@ -447,7 +443,7 @@ export function ItemFields({
                   update({ partialCredit: event.target.checked })
                 }
               />
-              Award partial credit for correct parts
+              {t("fields.partialCredit")}
             </label>
           )}
         </fieldset>

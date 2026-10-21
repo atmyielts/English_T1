@@ -6,9 +6,11 @@ import {
   type CertificateRow,
 } from "../../../packages/assessment-web/src/certificates";
 import "../../../packages/assessment-web/src/certificates.css";
+import { useAppT } from "./i18n/index.ts";
 export function CandidateCertificates(
   { tenant, actor }: { tenant: string; actor: string },
 ) {
+  const t = useAppT();
   const [rows, setRows] = useState<CertificateRow[]>([]),
     [loading, setLoading] = useState(true),
     [more, setMore] = useState(false),
@@ -35,7 +37,7 @@ export function CandidateCertificates(
     } catch (cause) {
       if (alive.current && current === version.current) {
         setRows([]);
-        setError(certificateProblem(cause));
+        setError(certificateProblem(cause, t));
         setMore(false);
       }
     } finally {
@@ -56,16 +58,15 @@ export function CandidateCertificates(
       aria-labelledby="candidate-certificates-title"
       aria-busy={loading}
     >
-      <h2 id="candidate-certificates-title">Your certificates</h2>
+      <h2 id="candidate-certificates-title">{t("exam.certificates.title")}</h2>
       <p>
-        Your institution issues certificates using independently approved award
-        criteria and released results. Sharing is your choice.{" "}
-        <a href="?verify_certificate=1">Verify a signed certificate</a>
+        {t("exam.certificates.intro")}{" "}
+        <a href="?verify_certificate=1">{t("exam.certificates.verifyLink")}</a>
       </p>
       {error && <p className="error" role="alert">{error}</p>}
-      {loading && <p role="status">Checking certificate records…</p>}
+      {loading && <p role="status">{t("exam.certificates.loading")}</p>}
       {!loading && !error && !rows.length && (
-        <p>No certificates have been issued for this institution yet.</p>
+        <p>{t("exam.certificates.empty")}</p>
       )}
       {rows.map((row) => (
         <CertificateCard
@@ -81,7 +82,7 @@ export function CandidateCertificates(
           disabled={loading}
           onClick={() => void load()}
         >
-          Refresh certificates
+          {t("exam.certificates.refresh")}
         </button>
         {more && (
           <button
@@ -89,7 +90,7 @@ export function CandidateCertificates(
             disabled={loading}
             onClick={() => void load(rows.at(-1)?.id)}
           >
-            Load more certificates
+            {t("exam.certificates.more")}
           </button>
         )}
       </div>

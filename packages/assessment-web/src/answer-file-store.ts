@@ -13,6 +13,7 @@ import {
   type MediaAnswerPolicy,
 } from "../../assessment-core/src/media-answer.ts";
 import type { LocalAnswerFile } from "./answer-types.ts";
+import {LocalizedError} from './i18n/translate.ts';
 export type { LocalAnswerFile } from "./answer-types.ts";
 type Envelope = {
   id: string;
@@ -32,7 +33,7 @@ const complete = (tx: IDBTransaction) =>
     tx.onerror = () => reject(tx.error);
     tx.onabort = () =>
       reject(
-        tx.error ?? new Error("Local answer storage transaction was aborted."),
+        tx.error ?? new LocalizedError("answerStore.localAnswerStorageTransaction"),
       );
   });
 const digest = async (bytes: Uint8Array<ArrayBuffer>) =>
@@ -66,9 +67,7 @@ export class AnswerFileStore {
   ) {}
   static async create(tenant: string, actor: string, attempt: string) {
     if (!navigator.locks || !crypto.subtle) {
-      throw new Error(
-        "Secure answer recovery requires browser locking and encryption support.",
-      );
+      throw new LocalizedError("answerStore.secureAnswerRecoveryRequires");
     }
     const scope = `${uuid(tenant)}:${uuid(actor)}:${uuid(attempt)}`,
       db = await openAnswerDatabase();
@@ -131,7 +130,7 @@ export class AnswerFileStore {
   }
   private active() {
     if (this.closed) {
-      throw new Error("The answer recovery workspace is closed.");
+      throw new LocalizedError("answerStore.answerRecoveryWorkspaceClosed");
     }
   }
   private lock<T>(file: string, work: () => Promise<T>) {
@@ -163,7 +162,7 @@ export class AnswerFileStore {
   }
   private async decrypt(row: Envelope, id: string) {
     if (row.id !== id || row.scope !== this.scope) {
-      throw new Error("The saved answer belongs to another recovery scope.");
+      throw new LocalizedError("answerStore.savedAnswerBelongsAnother");
     }
     return new Uint8Array(
       await crypto.subtle.decrypt(
@@ -191,9 +190,7 @@ export class AnswerFileStore {
         this.db.transaction("states").objectStore("states").get(key),
       );
     if (!row) {
-      throw new Error(
-        "This answer is not saved in the current candidate/attempt workspace.",
-      );
+      throw new LocalizedError("answerStore.answerSavedCurrentCandidate");
     }
     const state = JSON.parse(
       new TextDecoder().decode(await this.decrypt(row, key)),
@@ -203,7 +200,7 @@ export class AnswerFileStore {
       !["upload", "capture"].includes(state.source) ||
       typeof state.filename !== "string" || !state.filename.trim() ||
       state.filename.length > 240
-    ) throw new Error("The saved answer checkpoint is invalid.");
+    ) throw new LocalizedError("answerStore.savedAnswerCheckpointInvalid");
     uuid(state.item_version_id);
     uuid(state.key);
     artifactMime(state.mime);
@@ -215,15 +212,13 @@ export class AnswerFileStore {
         manifest.byte_length !== state.byte_length ||
         manifest.mime !== state.mime || manifest.filename !== state.filename
       ) {
-        throw new Error(
-          "The sealed answer manifest does not match its checkpoint.",
-        );
+        throw new LocalizedError("answerStore.sealedAnswerManifestMatch");
       }
     }
     if (state.binding) mediaAnswer(state.binding);
     if (state.upload) {
       if (state.phase !== "sealed" || !state.binding) {
-        throw new Error("The saved upload has no sealed academic binding.");
+        throw new LocalizedError("answerStore.savedUploadSealedAcademic");
       }
       artifactInteger(
         state.upload.next_part,
@@ -237,7 +232,7 @@ export class AnswerFileStore {
           !["quarantined", "ready", "rejected"].includes(
             state.upload.completed.state,
           ) || !/^[a-f0-9]{64}$/.test(state.upload.completed.manifest_hash))
-      ) throw new Error("The saved completion receipt is invalid.");
+      ) throw new LocalizedError("answerStore.savedCompletionReceiptInvalid");
     }
     return state;
   }
@@ -263,15 +258,11 @@ export class AnswerFileStore {
         !policy.mimes.includes(artifactMime(mime)) ||
         !policy.sources.includes(source)
       ) {
-        throw new Error(
-          "This format or answer source is not allowed by the reviewed question.",
-        );
+        throw new LocalizedError("answerStore.formatAnswerSourceAllowed");
       }
       const files = await this.files();
       if (files.length >= 64) {
-        throw new Error(
-          "Too many local submissions are saved. Review and explicitly discard unneeded device copies.",
-        );
+        throw new LocalizedError("answerStore.tooManyLocalSubmissions");
       }
       const state: LocalAnswerFile = {
         id: crypto.randomUUID(),
@@ -303,9 +294,7 @@ export class AnswerFileStore {
         this.db.transaction("chunks").objectStore("chunks").get(id),
       );
     if (!row) {
-      throw new Error(
-        "Saved answer bytes are missing. Do not submit this copy.",
-      );
+      throw new LocalizedError("answerStore.savedAnswerBytesMissing");
     }
     return this.decrypt(row, id);
   }
@@ -324,14 +313,10 @@ export class AnswerFileStore {
     return this.lock(file, async () => {
       const state = await this.read(file), end = offset + bytes.byteLength;
       if (state.phase !== "open") {
-        throw new Error(
-          "This answer is sealed; record or choose a new answer to change its contents.",
-        );
+        throw new LocalizedError("answerStore.answerSealedRecordChoose");
       }
       if (offset > state.byte_length || end > state.max_bytes) {
-        throw new Error(
-          "The answer offset or file size exceeds its saved limits.",
-        );
+        throw new LocalizedError("answerStore.answerOffsetFileSize");
       }
       const overlap = Math.max(0, Math.min(end, state.byte_length) - offset);
       for (let checked = 0; checked < overlap;) {
@@ -348,9 +333,7 @@ export class AnswerFileStore {
             b !== chunk[start + i]
           )
         ) {
-          throw new Error(
-            "The reselected file differs from the saved answer. Its existing bytes were preserved.",
-          );
+          throw new LocalizedError("answerStore.reselectedFileDiffersSaved");
         }
         checked += count;
       }
@@ -361,7 +344,7 @@ export class AnswerFileStore {
           ? await this.chunk(file, tailIndex)
           : new Uint8Array(0);
       if (tail.length !== tailLength) {
-        throw new Error("The saved answer tail has an invalid length.");
+        throw new LocalizedError("answerStore.savedAnswerTailInvalid");
       }
       const merged = new Uint8Array(tailLength + bytes.byteLength - overlap);
       merged.set(tail);
@@ -394,7 +377,7 @@ export class AnswerFileStore {
     return this.lock(file, async () => {
       const state = await this.read(file);
       if (state.phase === "sealed") return state;
-      if (!state.byte_length) throw new Error("The saved answer is empty.");
+      if (!state.byte_length) throw new LocalizedError("answerStore.savedAnswerEmpty");
       const parts = [];
       for (
         let index = 0;
@@ -407,7 +390,7 @@ export class AnswerFileStore {
             state.byte_length - index * ARTIFACT_CHUNK_BYTES,
           );
         if (bytes.length !== expected) {
-          throw new Error("The answer contains an incomplete saved chunk.");
+          throw new LocalizedError("answerStore.answerContainsIncompleteSaved");
         }
         parts.push({ sha256: await digest(bytes), byte_length: bytes.length });
       }
@@ -429,9 +412,7 @@ export class AnswerFileStore {
   async part(file: string, index: number) {
     const state = await this.read(file);
     if (state.phase !== "sealed") {
-      throw new Error(
-        "Seal the complete local answer before uploading any academic bytes.",
-      );
+      throw new LocalizedError("answerStore.sealCompleteLocalAnswer");
     }
     artifactInteger(
       index,
@@ -445,9 +426,7 @@ export class AnswerFileStore {
       bytes.length !== expected.byte_length ||
       await digest(bytes) !== expected.sha256
     ) {
-      throw new Error(
-        "The saved part does not match the sealed answer. Its device copy was not deleted.",
-      );
+      throw new LocalizedError("answerStore.savedPartMatchSealed");
     }
     return bytes;
   }
@@ -456,14 +435,12 @@ export class AnswerFileStore {
     return this.lock(file, async () => {
       const state = await this.read(file);
       if (state.phase !== "sealed") {
-        throw new Error("Only a sealed answer may be admitted.");
+        throw new LocalizedError("answerStore.sealedAnswerAdmitted");
       }
       if (
         state.binding && canonicalJson(state.binding) !== canonicalJson(binding)
       ) {
-        throw new Error(
-          "The service returned a different binding for this saved answer.",
-        );
+        throw new LocalizedError("answerStore.serviceReturnedDifferentBinding");
       }
       state.binding = binding;
       const metadata = await this.stateEnvelope(state),
@@ -486,9 +463,7 @@ export class AnswerFileStore {
     return this.lock(file, async () => {
       const state = await this.read(file);
       if (state.phase !== "sealed" || !state.binding) {
-        throw new Error(
-          "Admit this sealed answer before checkpointing its transport.",
-        );
+        throw new LocalizedError("answerStore.admitSealedAnswerCheckpointing");
       }
       artifactInteger(
         nextPart,
@@ -502,15 +477,13 @@ export class AnswerFileStore {
           !["quarantined", "ready", "rejected"].includes(completed.state) ||
           !/^[a-f0-9]{64}$/.test(completed.manifest_hash))
       ) {
-        throw new Error(
-          "The service did not return a valid completion receipt.",
-        );
+        throw new LocalizedError("answerStore.serviceReturnValidCompletion");
       }
       if (
         state.upload?.completed &&
         canonicalJson(state.upload.completed) !==
           canonicalJson(completed ?? state.upload.completed)
-      ) throw new Error("The completed upload receipt changed.");
+      ) throw new LocalizedError("answerStore.completedUploadReceiptChanged");
       state.upload = {
         next_part: nextPart,
         ...(completed

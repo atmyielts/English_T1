@@ -7,6 +7,7 @@ import {
 } from "./artifact-upload";
 import { artifactUpload } from "../../assessment-core/src/artifacts.ts";
 import { uuid } from "../../assessment-core/src/mod.ts";
+import {LocalizedError,english} from './i18n/translate.ts';
 export interface ArtifactRow {
   id: string;
   filename: string;
@@ -25,7 +26,7 @@ export const mediaConfigured = Boolean(
 );
 function mediaBase() {
   if (!mediaConfigured)
-    throw new Error("The protected media service has not been configured.");
+    throw new LocalizedError("artifact.protectedMediaServiceBeen");
   const base = new URL(import.meta.env.VITE_ASSESSMENT_MEDIA_URL);
   if (
     base.username ||
@@ -39,11 +40,11 @@ function mediaBase() {
         ["localhost", "127.0.0.1"].includes(base.hostname)
       ))
   )
-    throw new Error("The protected media endpoint is invalid.");
+    throw new LocalizedError("artifact.protectedMediaEndpointInvalid");
   return base;
 }
 export function artifactUrl(id: string, tenant: string, attempt?: string, task?: string) {
-  if (attempt && task) throw new Error("Choose candidate or marking context, not both.");
+  if (attempt && task) throw new LocalizedError("artifact.chooseCandidateMarkingContext");
   const url = new URL(`/v1/artifacts/${uuid(id)}`, mediaBase());
   url.searchParams.set("tenant_id", uuid(tenant));
   if (attempt) url.searchParams.set("attempt_id", uuid(attempt));
@@ -70,11 +71,11 @@ export async function artifactTransport<T>(
 ): Promise<T> {
   const url = new URL(`/v1/artifacts/${uuid(id)}${suffix}`, mediaBase());
   url.searchParams.set("tenant_id", uuid(tenant));
-  if (!supabase) throw new Error("The assessment service is not configured.");
+  if (!supabase) throw new LocalizedError("common.serviceUnconfigured");
   const { data } = await supabase.auth.getSession();
   active();
   if (!data.session || data.session.user.id !== actor)
-    throw new Error("The signed-in account changed. Reopen this workspace.");
+    throw new LocalizedError("common.accountChanged");
   const controller = new AbortController(),
     timer = setTimeout(() => controller.abort(), 30000);
   try {
@@ -92,7 +93,7 @@ export async function artifactTransport<T>(
       throw new ServiceRequestError(
         response.status,
         payload.code ?? "media_request_failed",
-        payload.error ?? "The media request failed.",
+        payload.error ?? english("artifact.requestFailed"),
       );
     return payload.data as T;
   } finally {
@@ -104,17 +105,13 @@ export async function openArtifactUploads(tenant: string, actor: string) {
   uuid(tenant);
   uuid(actor);
   if (!navigator.locks)
-    throw new Error(
-      "Use a browser with secure workspace locking to upload media.",
-    );
+    throw new LocalizedError("artifact.locks");
   const scope = `artifact-upload:${tenant}:${actor}`,
     journal = await ResponseJournal.create(scope);
   let closed = false;
   const active = () => {
     if (closed)
-      throw new Error(
-        "The media workspace closed. Reopen it to resume the saved upload.",
-      );
+      throw new LocalizedError("artifact.mediaWorkspaceClosedReopen");
   };
   const store = {
     async pending(): Promise<UploadIntent | null> {

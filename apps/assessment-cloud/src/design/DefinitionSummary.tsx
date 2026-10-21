@@ -1,45 +1,33 @@
 import React from "react";
 import type { Definition } from "../../../../packages/assessment-core/src/mod.ts";
+import { useAppT, useCodeText } from "../i18n/index.ts";
 export function DefinitionSummary({ definition }: { definition: Definition }) {
+  const t = useAppT(), codeText = useCodeText();
   return (
     <div className="definition-summary">
       <p>
-        {definition.locale.toUpperCase()} · Overall{" "}
-        {definition.duration_seconds} seconds · Question order:{" "}
-        {definition.shuffle_items ? "randomized" : "author order"}{" "}
-        · Option order: {definition.shuffle_options
-          ? "randomized"
-          : "author order (ordering tasks excluded)"}
+        {t("summary.overview", { locale: definition.locale.toUpperCase(), seconds: String(definition.duration_seconds), questionOrder: definition.shuffle_items ? t("summary.randomized") : t("summary.authorOrder"), optionOrder: definition.shuffle_options
+          ? t("summary.randomized")
+          : t("summary.authorOrderOptions") })}
       </p>
       <ol>
         {definition.sections.map((s) => (
           <li key={s.id}>
             <strong>{s.title}</strong>
             <p>
-              {s.draw_count ?? s.item_version_ids.length} questions from{" "}
-              {s.item_version_ids.length} pinned approved versions ·{" "}
-              {s.duration_seconds === undefined
-                ? "Overall deadline only"
-                : `${s.duration_seconds} seconds for this section`}
+              {t("summary.section", { draw: String(s.draw_count ?? s.item_version_ids.length), count: String(s.item_version_ids.length), timing: s.duration_seconds === undefined
+                ? t("summary.overallOnly")
+                : t("summary.sectionSeconds", { seconds: String(s.duration_seconds) }) })}
             </p>
             {s.blueprint && (
               <>
                 <p>
-                  Blueprint point range: {s.blueprint.minimum_points ?? 0} to
-                  {" "}
-                  {s.blueprint.maximum_points ?? "no additional upper bound"}.
-                  All quotas apply together; estimated difficulty is not
-                  calibration.
+                  {t("summary.range", { minimum: String(s.blueprint.minimum_points ?? 0), maximum: s.blueprint.maximum_points == null ? t("summary.noUpper") : String(s.blueprint.maximum_points) })}
                 </p>
                 <ul>
                   {s.blueprint.rules.map((rule) => (
                     <li key={rule.id}>
-                      {rule.label}: {rule.minimum}–{rule.maximum}{" "}
-                      questions · Topics: {rule.topics.join(" · ") || "any"}
-                      {" "}
-                      ({rule.all_topics ? "all" : "any"}) · Estimated
-                      difficulty: {rule.difficulties.join(", ") || "any"}{" "}
-                      · Types: {rule.types.join(", ") || "any"}
+                      {t("summary.rule", { label: rule.label, minimum: String(rule.minimum), maximum: String(rule.maximum), topics: rule.topics.join(" · ") || t("summary.any"), match: rule.all_topics ? t("summary.all") : t("summary.any"), difficulties: rule.difficulties.map((value) => codeText("difficulty", value)).join(", ") || t("summary.any"), types: rule.types.join(", ") || t("summary.any") })}
                     </li>
                   ))}
                 </ul>

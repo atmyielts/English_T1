@@ -2,6 +2,7 @@ import { request } from "./client";
 import { ResponseJournal } from "./journal";
 import { GradeCommands } from "./grade-command";
 import type { StaffCapability } from "../../assessment-core/src/staff";
+import {LocalizedError,english,isWebKey,messageText,type Translate} from './i18n/translate.ts';
 export interface InvitationLink {
   tenant: string;
   id: string;
@@ -38,9 +39,7 @@ export function invitationFromFragment(): InvitationLink | null {
     ) throw new Error();
     return { tenant: value.tenant, id: value.id, token: value.token };
   } catch {
-    throw new Error(
-      "This invitation link is incomplete. Ask the sender for the full link.",
-    );
+    throw new LocalizedError("invitation.linkIncomplete");
   }
 }
 export async function openInvitationCommands(
@@ -50,9 +49,7 @@ export async function openInvitationCommands(
   mail = false,
 ) {
   if (!navigator.locks) {
-    throw new Error(
-      "Secure workspace locking is required for staff invitations.",
-    );
+    throw new LocalizedError("invitation.locks");
   }
   const scope = `invitations:${
       mail ? 'mail' : recipient ? "recipient" : "manager"
@@ -94,36 +91,10 @@ export async function openInvitationCommands(
   );
   return { commands, close: () => journal.close() };
 }
-const problems: Record<string, string> = {
-  invitation_recipient_required:
-    "Sign in with the verified email address this invitation was sent to. The link must be complete.",
-  verified_recipient_required:
-    "Verify your Schood email, then sign in with the invitation recipient’s account.",
-  recipient_profile_required:
-    "Complete your Schood account setup before accepting this invitation.",
-  invitation_unavailable:
-    "This invitation has expired or was revoked. Ask the center for a replacement.",
-  invitation_manager_required:
-    "The sender no longer has permission to invite staff. Ask the center to review the invitation.",
-  recipient_access_suspended:
-    "Your access is suspended. An authorized manager must restore it; another invitation cannot bypass that decision.",
-  pending_invitation_exists:
-    "A pending invitation already exists for this email and role version. Review it in the list below.",
-  invitation_review_changed:
-    "The reviewed invitation does not match. Refresh and review it again.",
-  invitation_link_unavailable:
-    "Only the original sender can recover a pending, unexpired link while they still hold the required permissions.",
-  invitation_finalized:
-    "This invitation is already finalized. Refresh the list.",
-  invitation_revision_conflict:
-    "This invitation changed. Refresh before revoking it.",
-  assignment_revision_conflict:
-    "This person already has an assignment for that role. Review their permissions instead of replacing it through an invitation.",
-};
-export function invitationProblem(cause: unknown) {
-  const code = (cause as { code?: string })?.code;
-  return (code && problems[code]) ||
-    (cause instanceof Error
-      ? cause.message
-      : "The invitation request could not be completed.");
+/** Known invitation refusals are translated under `invitation.code.<code>`. */
+export function invitationProblem(cause: unknown, t: Translate = english) {
+  const code = (cause as { code?: string })?.code, key = `invitation.code.${code}`;
+  return code && isWebKey(key)
+    ? t(key)
+    : messageText(cause, t, "invitation.problem.failed");
 }

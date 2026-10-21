@@ -8,6 +8,7 @@ import {
 } from "../../assessment-core/src/image-response";
 import { QuestionMedia } from "./QuestionMedia";
 import "./image-response.css";
+import { useWebT } from "./i18n/useWebT.ts";
 export interface QuestionMediaContext {
   tenant: string;
   actor: string;
@@ -23,7 +24,7 @@ export function ImageQuestionResponse(
     context?: QuestionMediaContext;
   },
 ) {
-  const id = useId();
+  const id = useId(), t = useWebT();
   let point: ImagePoint | null = null;
   try {
     point = imagePoint(value);
@@ -36,9 +37,7 @@ export function ImageQuestionResponse(
     );
   if (!context || !interaction || !asset) {
     return (
-      <p role="alert">
-        The image response context is unavailable. Reconnect before answering.
-      </p>
+      <p role="alert">{t("image.contextUnavailable")}</p>
     );
   }
   const ids = item.response_ids ?? [],
@@ -74,9 +73,11 @@ export function ImageQuestionResponse(
   return (
     <div className="image-question-response">
       <p id={id + "-instructions"}>
-        {item.type === "hotspot"
-          ? "Select one point on the image. You can use a pointer, focus the image and press arrow keys, or enter exact percentages below. Arrow keys move 0.1%; Shift moves 1%. Delete clears the point."
-          : "The numbered markers identify response fields, not accepted answers. Select a marker to focus its labelled answer field below."}
+        {t(
+          item.type === "hotspot"
+            ? "image.hotspotInstructions"
+            : "image.diagramInstructions",
+        )}
       </p>
       <QuestionMedia
         item={{ media: [asset] }}
@@ -88,7 +89,7 @@ export function ImageQuestionResponse(
                 <button
                   type="button"
                   className="image-point-surface"
-                  aria-label="Select a point on the question image"
+                  aria-label={t("image.selectPoint")}
                   aria-describedby={id + "-instructions"}
                   onPointerUp={(event) => {
                     if (
@@ -140,7 +141,7 @@ export function ImageQuestionResponse(
                     left: percent(anchor.x) + "%",
                     top: percent(anchor.y) + "%",
                   }}
-                  aria-label={`Focus answer ${anchor.response_id}`}
+                  aria-label={t("image.focusAnswer", { id: anchor.response_id })}
                   onClick={() =>
                     document.getElementById(id + "-answer-" + index)?.focus()}
                 >
@@ -152,7 +153,7 @@ export function ImageQuestionResponse(
       {item.type === "diagram_labeling"
         ? (
           <fieldset>
-            <legend>Label the diagram</legend>
+            <legend>{t("image.labelDiagram")}</legend>
             {ids.map((label, index) => (
               <label key={label} htmlFor={id + "-answer-" + index}>
                 {index + 1}. {label}
@@ -173,10 +174,11 @@ export function ImageQuestionResponse(
           <>
             <p role="status">
               {point
-                ? `Selected point: ${percent(point.x)}% from the left, ${
-                  percent(point.y)
-                }% from the top.`
-                : "No point selected."}
+                ? t("image.selected", {
+                  x: percent(point.x),
+                  y: percent(point.y),
+                })
+                : t("image.noPoint")}
             </p>
             <ImagePointCoordinates point={point} onChange={onChange} />
           </>

@@ -1,3 +1,4 @@
+import {LocalizedError,english} from './i18n/translate.ts';
 /** Browser protocol only. PostgreSQL and the coordinator remain the authority. */
 export interface RuntimeSnapshot {
   accommodations?:import('../../assessment-core/src/accommodations.ts').BreakState;
@@ -27,7 +28,7 @@ export class AttemptRuntime {
     this.changed(value.snapshot);this.report();
   }
   private serialize<T>(work:()=>Promise<T>):Promise<T>{
-    const result=this.chain.then(async()=>{if(this.stopped)throw new Error('The exam connection is closed.');try{return await work();}catch(cause){this.problem=cause instanceof Error?cause.message:'Could not reach the exam coordinator.';this.report();throw cause;}});
+    const result=this.chain.then(async()=>{if(this.stopped)throw new LocalizedError("runtime.examConnectionClosed");try{return await work();}catch(cause){this.problem=cause instanceof Error?cause.message:english('runtime.unreachable');this.report();throw cause;}});
     this.chain=result.catch(()=>{});return result;
   }
   private async acquire(){
@@ -35,23 +36,23 @@ export class AttemptRuntime {
     this.credentials.acquire_key??=this.key();this.persist();
     const value=await this.transport.command('lease.acquire',{device_id:this.credentials.device_id,token:this.credentials.token},this.credentials.acquire_key);
     const epoch=(value.result as {epoch?:number}|undefined)?.epoch;
-    if(!Number.isSafeInteger(epoch)||Number(epoch)<1)throw new Error('The coordinator returned an invalid device lease.');
+    if(!Number.isSafeInteger(epoch)||Number(epoch)<1)throw new LocalizedError("runtime.coordinatorReturnedInvalidDevice");
     this.credentials.epoch=epoch;delete this.credentials.acquire_key;delete this.credentials.renew_key;this.persist();this.accept(value);
     if(!this.valid()){
       // An acquisition committed before a network outage may already have expired. Start a new operation, not a new token.
       this.credentials.acquire_key=this.key();this.persist();
       const renewed=await this.transport.command('lease.acquire',{device_id:this.credentials.device_id,token:this.credentials.token},this.credentials.acquire_key);
       const next=(renewed.result as {epoch?:number}|undefined)?.epoch;
-      if(!Number.isSafeInteger(next)||Number(next)<1)throw new Error('The coordinator returned an invalid device lease.');
+      if(!Number.isSafeInteger(next)||Number(next)<1)throw new LocalizedError("runtime.coordinatorReturnedInvalidDevice");
       this.credentials.epoch=next;delete this.credentials.acquire_key;this.persist();this.accept(renewed);
-      if(!this.valid())throw new Error('This exam is active on another device or the device lease has expired.');
+      if(!this.valid())throw new LocalizedError("runtime.examActiveAnotherDevice");
     }
   }
   private lease(){return {device_id:this.credentials.device_id,token:this.credentials.token,epoch:this.credentials.epoch};}
   async withAnswerLease<T>(work:(lease:{device_id:string;token:string;epoch:number})=>Promise<T>):Promise<T>{return this.serialize(async()=>{
     if(!this.snapshot)await this.tickUnqueued();
     if(this.snapshot&&['active','paused'].includes(this.snapshot.state)&&!this.valid())await this.acquire();
-    if(this.stopped||!this.valid()||this.snapshot?.state!=='active'||this.snapshot.accommodations?.active||Math.min(Date.parse(this.snapshot.deadline_at),Date.parse(this.snapshot.section_deadline_at))<=this.now()+this.offset)throw new Error('New answer admission requires this active exam device, no active break and an unexpired section clock.');
+    if(this.stopped||!this.valid()||this.snapshot?.state!=='active'||this.snapshot.accommodations?.active||Math.min(Date.parse(this.snapshot.deadline_at),Date.parse(this.snapshot.section_deadline_at))<=this.now()+this.offset)throw new LocalizedError("runtime.newAnswerAdmissionRequires");
     return await work({device_id:this.credentials.device_id,token:this.credentials.token,epoch:this.credentials.epoch!});
   });}
   async tick(){return this.serialize(async()=>{

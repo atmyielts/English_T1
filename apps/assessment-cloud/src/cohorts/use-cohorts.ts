@@ -5,14 +5,17 @@ import {
 } from "../../../../packages/assessment-web/src/client";
 import {
   type Cohort,
-  cohortProblem,
+  cohortProblem as cohortProblemText,
   type CohortSitting,
   type DirectoryMember,
   openCohortCommands,
   type RosterJob,
 } from "../../../../packages/assessment-web/src/cohorts";
 import type { GradeIntent } from "../../../../packages/assessment-web/src/grade-command";
+import { useAppT } from "../i18n/index.ts";
 export function useCohorts(tenant: string, actor: string) {
+  const t = useAppT(),
+    cohortProblem = (cause: unknown) => cohortProblemText(cause, t);
   const [groups, setGroups] = useState<Cohort[]>([]),
     [sittings, setSittings] = useState<CohortSitting[]>([]),
     [jobs, setJobs] = useState<RosterJob[]>([]),
@@ -212,7 +215,7 @@ export function useCohorts(tenant: string, actor: string) {
     let result: Record<string, unknown> | null = null;
     try {
       if (!engine.current) {
-        throw new Error("Secure cohort recovery is not ready.");
+        throw new Error(t("cohorts.notReady"));
       }
       result = await (action
         ? engine.current.commands.execute(action, data ?? {})
@@ -220,10 +223,10 @@ export function useCohorts(tenant: string, actor: string) {
       if (current === epoch.current) {
         setNotice(
           action === "job.create"
-            ? "Registration job created. Follow its per-candidate outcomes below."
+            ? t("cohorts.jobCreated")
             : action === "job.cancel"
-            ? "Remaining entries cancelled. Existing registrations were preserved."
-            : "Cohort change recorded.",
+            ? t("cohorts.jobCancelled")
+            : t("cohorts.recorded"),
         );
         await load();
         if (selectedGroup.current) {

@@ -9,7 +9,6 @@ import type { GradeAccess } from "../../../../packages/assessment-web/src/gradin
 import {
   blankItemDraft,
   editItemDraft,
-  itemLabels,
   type ItemDraft,
 } from "../../../../packages/assessment-core/src/authoring.ts";
 import {
@@ -21,6 +20,7 @@ import { ItemEditor } from "./ItemEditor";
 import { QuestionReview } from "./QuestionReview";
 import { RubricEditor } from "./RubricEditor";
 import "./authoring.css";
+import { useAppT, useErrorText, useItemLabel } from "../i18n/index.ts";
 export function ItemWorkspace({
   tenant,
   actor,
@@ -34,6 +34,7 @@ export function ItemWorkspace({
   rows: Record<string, Row[]>;
   reload: () => Promise<void>;
 }) {
+  const t = useAppT(), problem = useErrorText(), itemLabel = useItemLabel();
   const [busy, setBusy] = useState(false),
     [ready, setReady] = useState(false),
     [error, setError] = useState(""),
@@ -84,7 +85,7 @@ export function ItemWorkspace({
         }
       })
       .catch((cause) => {
-        if (!cancelled) setError(cause.message);
+        if (!cancelled) setError(problem(cause));
       });
     return () => {
       cancelled = true;
@@ -103,7 +104,7 @@ export function ItemWorkspace({
     try {
       if (!engine.current)
         throw new Error(
-          "The encrypted authoring queue is not ready. Refresh this workspace.",
+          t("items.queueNotReady"),
         );
       const recovery=!action?await engine.current.commands.pending():null;
       const result=action?await engine.current.commands.execute(action,data!):await engine.current.commands.retry();
@@ -115,14 +116,14 @@ export function ItemWorkspace({
       await reload();
       if (alive.current)
         setNotice(
-          (result as {device_draft_preserved?:boolean})?.device_draft_preserved?'Change recorded. A newer device draft was preserved for review.':
+          (result as {device_draft_preserved?:boolean})?.device_draft_preserved?t('items.draftPreserved'):
           action === "rubric.create"
-            ? "Marking rubric saved."
+            ? t("items.rubricSaved")
             : action === "item.approve"
-              ? "Question approved."
+              ? t("items.approved")
               : action === "item.submit"
-                ? "Question submitted for review."
-                : "Question draft or saved request recorded.",
+                ? t("items.submitted")
+                : t("items.recorded"),
         );
       return true;
     } catch (cause) {
@@ -130,9 +131,9 @@ export function ItemWorkspace({
         setError(
           cause instanceof Error
             ? cause.message
-            : "Could not record this change.",
+            : t("items.recordFailed"),
         );
-      if(committed&&alive.current)setNotice('The change was recorded. Refresh the institution records before continuing.');
+      if(committed&&alive.current)setNotice(t('items.recordedRefresh'));
       return committed;
     } finally {
       if (alive.current) {
@@ -142,7 +143,7 @@ export function ItemWorkspace({
           setError(
             cause instanceof Error
               ? cause.message
-              : "Could not recover the saved request.",
+              : t("items.recoverFailed"),
           );
         }
         setBusy(false);
@@ -168,7 +169,7 @@ export function ItemWorkspace({
           key = validateKey(item, value.key);
         if (!value.bank_id || !value.item_id)
           throw new Error(
-            "The question’s institution bank could not be verified.",
+            t("items.bankUnverified"),
           );
         setEditor((current) => ({
           draft: editItemDraft(item, key),
@@ -188,7 +189,7 @@ export function ItemWorkspace({
         setError(
           cause instanceof Error
             ? cause.message
-            : "Could not load this question.",
+            : t("items.loadFailed"),
         );
     } finally {
       if (alive.current && version === readVersion.current) setBusy(false);
@@ -216,26 +217,24 @@ export function ItemWorkspace({
       )}
       {pending && (
         <section className="pending-author">
-          <h2>Saved authoring request needs a receipt</h2>
+          <h2>{t("items.pendingTitle")}</h2>
           <p>
-            This request is encrypted on this device. It may already be
-            recorded. Retry it before making another authoring change.
+            {t("items.pendingBody")}
           </p>
           <button disabled={busy} onClick={() => void mutate()}>
-            Retry saved authoring request
+            {t("items.retry")}
           </button>
         </section>
       )}
       <div className="author-layout">
         <section>
-          <h2>Question library and review</h2>
-          {access.can_write_items&&<a className="author-jump" href="#question-editor-heading">Go to question editor</a>}
+          <h2>{t("items.title")}</h2>
+          {access.can_write_items&&<a className="author-jump" href="#question-editor-heading">{t("items.jump")}</a>}
           <p>
-            Published tests keep their exact question versions. Review requires
-            a different authorized person from the author.
+            {t("items.lead")}
           </p>
           <label>
-            Find questions
+            {t("items.find")}
             <input
               type="search"
               value={filter}
@@ -243,15 +242,15 @@ export function ItemWorkspace({
             />
           </label>
           <label>
-            Question status
+            {t("items.status")}
             <select
               value={status}
               onChange={(event) => setStatus(event.target.value)}
             >
-              <option value="all">All versions</option>
-              <option value="draft">Drafts</option>
-              <option value="review">Awaiting review</option>
-              <option value="approved">Approved</option>
+              <option value="all">{t("items.statusAll")}</option>
+              <option value="draft">{t("items.statusDraft")}</option>
+              <option value="review">{t("items.statusReview")}</option>
+              <option value="approved">{t("items.statusApproved")}</option>
             </select>
           </label>
           <ul className="records">
@@ -261,8 +260,7 @@ export function ItemWorkspace({
                   {String((row.payload as { prompt: string }).prompt)}
                 </strong>
                 <span>
-                  Version {String(row.version)} · {String(row.status)} ·{" "}
-                  {itemLabels[(row.payload as { type: ItemType }).type]}
+                  {t("items.meta", { version: String(row.version), status: String(row.status), type: itemLabel((row.payload as { type: ItemType }).type) ?? "" })}
                 </span>
                 <div className="author-actions">
                   {row.status === "draft" && access.can_write_items && (
@@ -270,7 +268,7 @@ export function ItemWorkspace({
                       disabled={locked}
                       onClick={() => void mutate("item.submit", { id: row.id })}
                     >
-                      Submit for review
+                      {t("items.submit")}
                     </button>
                   )}
                   {(access.can_write_items || access.can_approve_items) && (
@@ -279,7 +277,7 @@ export function ItemWorkspace({
                       disabled={locked}
                       onClick={() => void inspect(row)}
                     >
-                      Review question & key
+                      {t("items.review")}
                     </button>
                   )}
                   {access.can_write_items && (
@@ -288,7 +286,7 @@ export function ItemWorkspace({
                       disabled={locked}
                       onClick={() => void inspect(row, true)}
                     >
-                      Create new revision
+                      {t("items.revise")}
                     </button>
                   )}
                 </div>
@@ -315,7 +313,7 @@ export function ItemWorkspace({
               </li>
             ))}
           </ul>
-          {!versions.length && <p>No question versions match this view.</p>}
+          {!versions.length && <p>{t("items.empty")}</p>}
           {access.can_write_items && (
             <>
               <button
@@ -323,16 +321,15 @@ export function ItemWorkspace({
                 disabled={locked}
                 onClick={() => setRubricOpen((current) => !current)}
               >
-                {rubricOpen ? "Close rubric editor" : "Create marking rubric"}
+                {rubricOpen ? t("items.closeRubric") : t("items.openRubric")}
               </button>
-              <h3>Available immutable rubrics</h3>
+              <h3>{t("items.rubrics")}</h3>
               <ul className="records">
                 {(rows.rubrics ?? []).map((row) => (
                   <li key={row.id}>
                     <strong>{String(row.title)}</strong>
                     <span>
-                      {Array.isArray(row.criteria) ? row.criteria.length : 0}{" "}
-                      criteria
+                      {t("items.criteriaCount", { count: Array.isArray(row.criteria) ? row.criteria.length : 0 })}
                     </span>
                   </li>
                 ))}

@@ -3,6 +3,7 @@ import {
   type FeedbackHistory,
   type FeedbackLevel,
 } from "../../../../packages/assessment-web/src/feedback";
+import { useAppT } from "../i18n/index.ts";
 export function PolicyProposal(
   { history, locked, submit }: {
     history: FeedbackHistory;
@@ -10,6 +11,7 @@ export function PolicyProposal(
     submit: (action: string, data: Record<string, unknown>) => Promise<void>;
   },
 ) {
+  const t = useAppT();
   const [level, setLevel] = useState<FeedbackLevel>("totals"),
     [after, setAfter] = useState(""),
     [reason, setReason] = useState(""),
@@ -29,31 +31,30 @@ export function PolicyProposal(
         });
       }}
     >
-      <h3>Propose a feedback policy</h3>
+      <h3>{t("proposal.title")}</h3>
       <p>
-        Another authorized staff member must approve it. Existing releases keep
-        their recorded policy.
+        {t("proposal.lead")}
       </p>
       <fieldset disabled={locked}>
-        <legend>Candidate disclosure</legend>
+        <legend>{t("proposal.disclosure")}</legend>
         <label>
-          Feedback level<select
+          {t("proposal.level")}<select
             value={level}
             onChange={(event) => {
               setLevel(event.target.value as FeedbackLevel);
               setConfirmed(false);
             }}
           >
-            <option value="totals">Overall total only</option>
-            <option value="sections">Overall and section totals</option>
+            <option value="totals">{t("proposal.totals")}</option>
+            <option value="sections">{t("proposal.sections")}</option>
             <option value="questions">
-              Section totals and question points
+              {t("proposal.questions")}
             </option>
           </select>
         </label>
         {level !== "totals" && (
           <label>
-            Details available after (your local time; optional)<input
+            {t("proposal.after")}<input
               type="datetime-local"
               value={after}
               onChange={(event) => {
@@ -64,12 +65,10 @@ export function PolicyProposal(
           </label>
         )}
         <p className="hint">
-          The overall result follows its own release time. Empty detail time
-          means details are available at release. Prompts, answer keys,
-          responses and marker identities are never included.
+          {t("proposal.hint")}
         </p>
         <label>
-          Policy reason<textarea
+          {t("proposal.reason")}<textarea
             required
             rows={3}
             maxLength={2000}
@@ -82,10 +81,10 @@ export function PolicyProposal(
             type="checkbox"
             checked={confirmed}
             onChange={(event) => setConfirmed(event.target.checked)}
-          />I have checked the proposed detail level and timing.
+          />{t("proposal.ack")}
         </label>
         <button disabled={!confirmed || !reason.trim()}>
-          Submit policy for independent approval
+          {t("proposal.submit")}
         </button>
       </fieldset>
     </form>

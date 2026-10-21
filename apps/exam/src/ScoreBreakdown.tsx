@@ -1,27 +1,39 @@
 import { useEffect, useRef, useState } from "react";
 import { request } from "../../../packages/assessment-web/src/client";
 import type { ReleasedBreakdown } from "../../../packages/assessment-web/src/analytics";
+import { useI18n } from "../../../packages/service-i18n/src/i18n.tsx";
+import { useAppT } from "./i18n/index.ts";
+import { errorText } from "../../../packages/assessment-web/src/i18n/errors.ts";
 function SectionPoints(
   { section }: { section: ReleasedBreakdown["sections"][number] },
 ) {
+  const t = useAppT();
   const [open, setOpen] = useState(false), [limit, setLimit] = useState(50);
   return (
     <li>
       <h4>
-        {section.title || `Section ${section.position}`} · {section.total} /
-        {" "}
-        {section.max_score} points
+        {t("exam.breakdown.section", {
+          title: section.title ||
+            t("exam.breakdown.sectionFallback", { position: section.position }),
+          total: section.total,
+          max: section.max_score,
+        })}
       </h4>
       {section.questions.length > 0 && (
         <details onToggle={(event) => setOpen(event.currentTarget.open)}>
-          <summary>Question points for section {section.position}</summary>
+          <summary>
+            {t("exam.breakdown.questions", { position: section.position })}
+          </summary>
           {open && (
             <>
               <ol>
                 {section.questions.slice(0, limit).map((question) => (
                   <li key={question.position}>
-                    Question {question.position}: {question.score} /{" "}
-                    {question.max_score} points
+                    {t("exam.breakdown.question", {
+                      position: question.position,
+                      score: question.score,
+                      max: question.max_score,
+                    })}
                   </li>
                 ))}
               </ol>
@@ -31,7 +43,7 @@ function SectionPoints(
                   onClick={() =>
                     setLimit((value) => value + 50)}
                 >
-                  Show more question points
+                  {t("exam.breakdown.more")}
                 </button>
               )}
             </>
@@ -49,6 +61,7 @@ export function ScoreBreakdown(
     scoreRevision: string;
   },
 ) {
+  const t = useAppT(), { date } = useI18n();
   const [opened, setOpened] = useState(false),
     [value, setValue] = useState<ReleasedBreakdown | null>(null),
     [busy, setBusy] = useState(false),
@@ -79,11 +92,7 @@ export function ScoreBreakdown(
       if (alive.current && token === version.current) setValue(detail);
     } catch (cause) {
       if (alive.current && token === version.current) {
-        setError(
-          cause instanceof Error
-            ? cause.message
-            : "The released result breakdown could not be loaded.",
-        );
+        setError(errorText(cause, t, "exam.breakdown.failed"));
       }
     } finally {
       if (alive.current && token === version.current) setBusy(false);
@@ -99,46 +108,37 @@ export function ScoreBreakdown(
             ? (version.current++, setOpened(false), setValue(null))
             : void load()}
       >
-        {opened ? "Close score breakdown" : "View score breakdown"}
+        {t(opened ? "exam.breakdown.close" : "exam.breakdown.view")}
       </button>
       {opened && (
-        <section aria-label="Released score breakdown">
-          <h3>Released score breakdown</h3>
-          {busy && <p role="status">Checking your latest eligible release…</p>}
+        <section aria-label={t("exam.breakdown.title")}>
+          <h3>{t("exam.breakdown.title")}</h3>
+          {busy && <p role="status">{t("exam.breakdown.loading")}</p>}
           {error && <p role="alert" className="error">{error}</p>}
           {value && (
             <>
               <p>
-                Released grading generation{" "}
-                {value.generation}. Feedback does not disclose prompts, answer
-                keys, responses or marker identities.
+                {t("exam.breakdown.generation", {
+                  generation: value.generation,
+                })}
               </p>
               {value.feedback_status === "totals_only" && (
-                <p>
-                  Your institution has shared your overall result only. Section
-                  and question points are not included.
-                </p>
+                <p>{t("exam.breakdown.totalsOnly")}</p>
               )}
               {value.feedback_status === "pending" && (
                 <p role="status">
-                  Additional feedback is scheduled for {value.available_at
-                    ? new Date(value.available_at).toLocaleString()
-                    : "a later time"}. Your overall released result is
-                  unchanged.
+                  {t("exam.breakdown.scheduled", {
+                    date: value.available_at
+                      ? date(value.available_at)
+                      : t("exam.breakdown.later"),
+                  })}
                 </p>
               )}
               {value.feedback_status === "withheld" && (
-                <p role="status">
-                  Your institution has withheld additional feedback. Your
-                  overall result is unchanged. Contact your institution about
-                  detail access.
-                </p>
+                <p role="status">{t("exam.breakdown.withheld")}</p>
               )}
               {value.score_revision_id !== scoreRevision && (
-                <p role="status">
-                  A newer released result is available. Refresh your released
-                  results list.
-                </p>
+                <p role="status">{t("exam.breakdown.newer")}</p>
               )}
               <ul className="records">
                 {value.sections.map((section) => (
@@ -152,7 +152,7 @@ export function ScoreBreakdown(
               className="quiet"
               onClick={() => void load()}
             >
-              Refresh score breakdown
+              {t("exam.breakdown.refresh")}
             </button>
           )}
         </section>

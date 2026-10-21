@@ -5,9 +5,11 @@ import { CertificateDecision } from "./CertificateDecision";
 import { CertificateReplacement } from "./CertificateReplacement";
 import { CertificateCard } from "../../../../packages/assessment-web/src/CertificateCard";
 import "../../../../packages/assessment-web/src/certificates.css";
+import { useAppT } from "../i18n/index.ts";
 export function CertificatesWorkspace(
   { tenant, actor }: { tenant: string; actor: string },
 ) {
+  const t = useAppT();
   const state = useCertificates(tenant, actor),
     disabled = state.busy || state.loading || !state.ready || !!state.pending;
   return (
@@ -15,23 +17,22 @@ export function CertificatesWorkspace(
       {state.error && <p role="alert" className="error">{state.error}</p>}
       {state.notice && <p role="status" className="notice">{state.notice}</p>}
       {state.loading && (
-        <p role="status">Checking certificate programs and results…</p>
+        <p role="status">{t("certificates.checking")}</p>
       )}
       {!state.ready && !state.error && (
-        <p role="status">Preparing secure certificate recovery…</p>
+        <p role="status">{t("certificates.preparing")}</p>
       )}
       {state.pending && (
         <section>
-          <h2>Saved certificate request needs a receipt</h2>
+          <h2>{t("certificates.pendingTitle")}</h2>
           <p>
-            Retry the saved request before another change. A prepared
-            certificate is not issued until its signing receipt commits.
+            {t("certificates.pendingBody")}
           </p>
           <button
             disabled={state.busy}
             onClick={() => void state.send()}
           >
-            Retry saved certificate request
+            {t("certificates.retry")}
           </button>
         </section>
       )}
@@ -41,7 +42,7 @@ export function CertificatesWorkspace(
         onClick={() =>
           void state.load()}
       >
-        Refresh certificates
+        {t("certificates.refresh")}
       </button>
       <ProgramEditor
         programs={state.programs}
@@ -55,7 +56,7 @@ export function CertificatesWorkspace(
           disabled={disabled}
           onClick={() => void state.page("programs")}
         >
-          Load more certificate programs
+          {t("certificates.morePrograms")}
         </button>
       )}
       <CertificateIssuer
@@ -66,9 +67,7 @@ export function CertificatesWorkspace(
       />
       {!state.loading && !state.issuanceReady && (
         <p role="status">
-          Certificate issuance is not enabled and configured for this
-          environment. Program approval and revocation remain available to
-          authorized managers.
+          {t("certificates.issuanceDisabled")}
         </p>
       )}
       {state.more.results && (
@@ -77,13 +76,13 @@ export function CertificatesWorkspace(
           disabled={disabled}
           onClick={() => void state.page("results")}
         >
-          Load more certificate results
+          {t("certificates.moreResults")}
         </button>
       )}
       <section>
-        <h2>Issued and pending certificates</h2>
+        <h2>{t("certificates.listTitle")}</h2>
         {!state.loading && !state.certificates.length && (
-          <p>No certificate records yet.</p>
+          <p>{t("certificates.empty")}</p>
         )}
         {state.certificates.map((row) => (
           <div key={`${row.id}:${row.revision}`}>
@@ -108,7 +107,7 @@ export function CertificatesWorkspace(
             disabled={disabled}
             onClick={() => void state.page("certificates")}
           >
-            Load more certificates
+            {t("certificates.more")}
           </button>
         )}
       </section>

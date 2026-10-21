@@ -2,6 +2,13 @@ import { request } from "./client";
 import { ResponseJournal } from "./journal";
 import { GradeCommands } from "./grade-command";
 import {
+  english,
+  isWebKey,
+  LocalizedError,
+  messageText,
+  type Translate,
+} from "./i18n/translate.ts";
+import {
   type CertificateClaims,
   certificateClaims,
   type CertificateEnvelope,
@@ -47,9 +54,7 @@ export interface CertificatePublicKey {
 }
 export async function openCertificateCommands(tenant: string, actor: string) {
   if (!navigator.locks) {
-    throw new Error(
-      "Use a browser with secure workspace locking to issue certificates.",
-    );
+    throw new LocalizedError("certificate.locks");
   }
   const scope = `certificates:${tenant}:${actor}`,
     journal = await ResponseJournal.create(scope);
@@ -96,14 +101,14 @@ export async function certificatePublicRequest<T>(
   certificate?: CertificateEnvelope,
 ): Promise<T> {
   const base = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-  if (!base) throw new Error("Certificate verification is not configured.");
+  if (!base) throw new LocalizedError("certificate.verify.unconfigured");
   const endpoint = new URL(
     `${base}/functions/v1/assessment-cloud/certificates/${path}`,
   );
   if (
     endpoint.protocol !== "https:" &&
     !["localhost", "127.0.0.1", "[::1]"].includes(endpoint.hostname)
-  ) throw new Error("Use a secure certificate verification endpoint.");
+  ) throw new LocalizedError("certificate.verify.insecure");
   const controller = new AbortController(),
     timer = setTimeout(() => controller.abort(), 15000);
   try {
@@ -121,7 +126,9 @@ export async function certificatePublicRequest<T>(
       }),
       body = await response.json();
     if (!response.ok) {
-      throw new Error(body.error ?? "Certificate verification failed.");
+      throw body.error
+        ? new Error(body.error)
+        : new LocalizedError("certificate.verify.failed");
     }
     return body.data;
   } finally {
@@ -135,9 +142,7 @@ export async function verifyCertificateSignature(
   const envelope = certificateEnvelope(value),
     key = keys.find((key) => key.id === envelope.key_id);
   if (!key || key.revoked) {
-    throw new Error(
-      "This certificate signing key is not trusted or has been revoked.",
-    );
+    throw new LocalizedError("certificate.verify.untrustedKey");
   }
   const imported = await crypto.subtle.importKey(
     "jwk",
@@ -153,50 +158,16 @@ export async function verifyCertificateSignature(
       unbase64url(envelope.signature),
       certificateMessage(envelope),
     )
-  ) throw new Error("The certificate signature does not match.");
+  ) throw new LocalizedError("certificate.verify.signatureMismatch");
   return { envelope, claims: certificateClaims(envelope.payload) };
 }
-const problems: Record<string, string> = {
-  certificate_program_retired:
-    "This program is retired. Choose another independently approved program. An unfinished award under the retired program cannot be signed; an authorized manager can cancel it.",
-  certificate_replacement_exists:
-    "This certificate already has a replacement or an unfinished replacement request. Refresh and review its history.",
-  certificate_replacement_subject_mismatch:
-    "A replacement must use a released result from the original candidate’s same assessment attempt.",
-  certificate_replacement_predecessor_changed:
-    "The original certificate changed before the replacement was signed. Refresh and review it; cancel the unfinished replacement if necessary.",
-  forbidden:
-    "Your institution has not granted certificate management permission.",
-  independent_certificate_approver_required:
-    "Another certificate manager must approve this program.",
-  certificate_program_review_required:
-    "Refresh and review the current program before approval.",
-  approved_certificate_program_required:
-    "Choose an independently approved certificate program.",
-  certificate_threshold_not_met:
-    "The released score does not meet this program’s award threshold.",
-  latest_released_result_required:
-    "The released result changed. Refresh before issuing.",
-  certificate_review_pending:
-    "An appeal or new grading generation is pending. Resolve it before issuing.",
-  certificate_identity_profile_required:
-    "The institution and candidate need their recorded display names before issuance.",
-  candidate_certificate_self_issue:
-    "A candidate cannot issue a certificate for their own result.",
-  certificate_revision_conflict:
-    "The certificate changed. Refresh before recording another decision.",
-  certificate_signing_key_unavailable:
-    "The pinned signing key is unavailable. Keep and retry the saved request after the institution restores that key.",
-  certificate_issuance_disabled:
-    "Certificate issuance is not enabled and configured for this environment.",
-};
-export function certificateProblem(cause: unknown) {
-  const code = (cause as { code?: string })?.code;
-  return code && problems[code]
-    ? problems[code]
+/** Known certificate refusals are translated under `certificate.code.<code>`. */
+export function certificateProblem(cause: unknown, t: Translate = english) {
+  const code = (cause as { code?: string })?.code,
+    key = `certificate.code.${code}`;
+  return code && isWebKey(key)
+    ? t(key)
     : cause instanceof Error && cause.name === "AbortError"
-    ? "No receipt arrived in time. Retry the saved certificate request before another change."
-    : cause instanceof Error
-    ? cause.message
-    : "The certificate request could not be completed.";
+    ? t("certificate.problem.timeout")
+    : messageText(cause, t, "certificate.problem.failed");
 }

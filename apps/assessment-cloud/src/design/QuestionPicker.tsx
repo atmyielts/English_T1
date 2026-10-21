@@ -4,6 +4,7 @@ import {
   type SectionDraft,
 } from "../../../../packages/assessment-core/src/design.ts";
 import type { Row } from "../../../../packages/assessment-web/src/client";
+import { useAppT } from "../i18n/index.ts";
 export function QuestionPicker({
   section,
   index,
@@ -17,39 +18,39 @@ export function QuestionPicker({
   used: Set<string>;
   change: (s: SectionDraft) => void;
 }) {
+  const t = useAppT();
   const [filter, setFilter] = useState(""),
     heading = useRef<HTMLHeadingElement>(null);
   const byId = new Map(questions.map((q) => [q.id, q]));
   const prompt = (id: string) =>
     String(
       (byId.get(id)?.payload as { prompt?: string })?.prompt ??
-        `Unavailable question version ${id}`,
+        t("picker.unavailable", { id }),
     );
   return (
     <>
       <h3 tabIndex={-1} ref={heading}>
-        Selected question versions ({section.items.length})
+        {t("picker.selected", { count: String(section.items.length) })}
       </h3>
       <p role="status">
-        {section.items.length} question versions selected for section{" "}
-        {index + 1}.
+        {t("picker.selectedStatus", { count: section.items.length, section: index + 1 })}
       </p>
       {!section.items.length && (
-        <p>No questions selected. Choose approved versions below.</p>
+        <p>{t("picker.none")}</p>
       )}
       <ol className="design-selected">
         {section.items.map((id, n) => (
           <li key={id}>
             <p>
               {prompt(id)}{" "}
-              <small>Version {String(byId.get(id)?.version ?? "?")}</small>
+              <small>{t("picker.version", { version: String(byId.get(id)?.version ?? "?") })}</small>
             </p>
             <div className="design-actions">
               <button
                 type="button"
                 className="quiet"
                 disabled={n === 0}
-                aria-label={`Move question ${n + 1} earlier in section ${index + 1}`}
+                aria-label={t("picker.earlierLabel", { number: n + 1, section: index + 1 })}
                 onClick={() =>
                   change({
                     ...section,
@@ -57,13 +58,13 @@ export function QuestionPicker({
                   })
                 }
               >
-                Earlier
+                {t("picker.earlier")}
               </button>
               <button
                 type="button"
                 className="quiet"
                 disabled={n === section.items.length - 1}
-                aria-label={`Move question ${n + 1} later in section ${index + 1}`}
+                aria-label={t("picker.laterLabel", { number: n + 1, section: index + 1 })}
                 onClick={() =>
                   change({
                     ...section,
@@ -71,12 +72,12 @@ export function QuestionPicker({
                   })
                 }
               >
-                Later
+                {t("picker.later")}
               </button>
               <button
                 type="button"
                 className="quiet"
-                aria-label={`Remove question ${n + 1} from section ${index + 1}`}
+                aria-label={t("picker.removeLabel", { number: n + 1, section: index + 1 })}
                 onClick={() => {
                   change({
                     ...section,
@@ -85,14 +86,14 @@ export function QuestionPicker({
                   heading.current?.focus();
                 }}
               >
-                Remove
+                {t("picker.remove")}
               </button>
             </div>
           </li>
         ))}
       </ol>
       <label>
-        Find approved questions for section {index + 1}
+        {t("picker.find", { section: index + 1 })}
         <input
           type="search"
           value={filter}
@@ -113,27 +114,27 @@ export function QuestionPicker({
               <span>
                 {prompt(q.id!)}{" "}
                 <small>
-                  Version {String(q.version)}
-                  {used.has(q.id!) ? " · Already in another section" : ""}
+                  {t("picker.version", { version: String(q.version) })}
+                  {used.has(q.id!) ? t("picker.elsewhere") : ""}
                 </small>
               </span>
               <button
                 type="button"
                 className="quiet"
-                aria-label={`Add ${prompt(q.id!)} (version ${q.version}) to section ${index + 1}`}
+                aria-label={t("picker.addLabel", { prompt: prompt(q.id!), version: String(q.version), section: index + 1 })}
                 disabled={used.has(q.id!) || section.items.length >= 500}
                 onClick={() => {
                   change({ ...section, items: [...section.items, q.id!] });
                   heading.current?.focus();
                 }}
               >
-                Add question
+                {t("picker.add")}
               </button>
             </div>
           ))}
       </div>
       {!questions.length && (
-        <p>Approve institution questions before creating an assessment.</p>
+        <p>{t("picker.approveFirst")}</p>
       )}
     </>
   );

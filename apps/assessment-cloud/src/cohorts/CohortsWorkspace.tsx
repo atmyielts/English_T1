@@ -3,11 +3,13 @@ import { useCohorts } from "./use-cohorts";
 import { CohortEditor } from "./CohortEditor";
 import { RosterPreview } from "./RosterPreview";
 import { RosterJobView } from "./RosterJobView";
-import { rosterState } from "../../../../packages/assessment-web/src/cohorts";
+import { rosterStateText } from "../../../../packages/assessment-web/src/cohorts";
+import { useAppT, useCodeText } from "../i18n/index.ts";
 import "./cohorts.css";
 export function CohortsWorkspace(
   { tenant, actor }: { tenant: string; actor: string },
 ) {
+  const t = useAppT(), codeText = useCodeText();
   const state = useCohorts(tenant, actor),
     [title, setTitle] = useState(""),
     [description, setDescription] = useState(""),
@@ -26,49 +28,46 @@ export function CohortsWorkspace(
       {state.error && <p role="alert" className="error">{state.error}</p>}
       {state.notice && <p role="status" className="notice">{state.notice}</p>}
       {state.loading && (
-        <p role="status">Checking institution cohorts and registration jobs…</p>
+        <p role="status">{t("cohorts.checking")}</p>
       )}
       {state.pending && (
         <section>
-          <h2>Saved cohort request needs a receipt</h2>
+          <h2>{t("cohorts.pendingTitle")}</h2>
           <p>
-            Retry the saved request before making another change. A job receipt
-            confirms its creation, not that every candidate has been registered.
+            {t("cohorts.pendingBody")}
           </p>
           <button
             disabled={state.busy}
             onClick={() => void state.send()}
           >
-            Retry saved cohort request
+            {t("cohorts.retry")}
           </button>
         </section>
       )}
       <section>
-        <h2>Institution cohorts</h2>
+        <h2>{t("cohorts.title")}</h2>
         <p>
-          Choose active institution members by name. These assessment cohorts do
-          not change Academy groups or the institution's identity/membership
-          records.
+          {t("cohorts.lead")}
         </p>
         <ul className="records">
           {state.groups.map((group) => (
             <li key={group.id}>
               <strong>{group.title}</strong>
               <span>
-                {group.state} · {group.member_count ?? 0} roster entries
+                {t("cohorts.groupMeta", { state: codeText("cohort.state", group.state), count: String(group.member_count ?? 0) })}
               </span>
               <button
                 className="quiet"
                 disabled={state.busy}
                 onClick={() => void state.openGroup(group.id)}
               >
-                Manage {group.title}
+                {t("cohorts.manage", { title: group.title })}
               </button>
             </li>
           ))}
         </ul>
         {!state.loading && !state.groups.length && (
-          <p>No assessment cohorts yet.</p>
+          <p>{t("cohorts.empty")}</p>
         )}
         {state.more.groups && (
           <button
@@ -76,16 +75,16 @@ export function CohortsWorkspace(
             disabled={disabled}
             onClick={() => void state.load("groups")}
           >
-            Load more cohorts
+            {t("cohorts.more")}
           </button>
         )}
         <form
           onSubmit={(event) =>
             void create(event)}
         >
-          <h3>Create an assessment cohort</h3>
+          <h3>{t("cohorts.create")}</h3>
           <label>
-            New cohort title<input
+            {t("cohorts.newTitle")}<input
               required
               maxLength={200}
               value={title}
@@ -95,14 +94,14 @@ export function CohortsWorkspace(
             />
           </label>
           <label>
-            New cohort description<textarea
+            {t("cohorts.newDescription")}<textarea
               maxLength={2000}
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               disabled={disabled}
             />
           </label>
-          <button disabled={disabled || !title.trim()}>Create cohort</button>
+          <button disabled={disabled || !title.trim()}>{t("cohorts.submit")}</button>
         </form>
       </section>
       {state.group && (
@@ -125,7 +124,7 @@ export function CohortsWorkspace(
                   state.group!.members?.at(-1)?.id,
                 )}
             >
-              Load more cohort members
+              {t("cohorts.moreMembers")}
             </button>
           )}
           {state.more.directory && (
@@ -134,7 +133,7 @@ export function CohortsWorkspace(
               disabled={disabled}
               onClick={() => void state.moreDirectory()}
             >
-              Load more institution members
+              {t("cohorts.moreDirectory")}
             </button>
           )}
           <RosterPreview
@@ -153,32 +152,32 @@ export function CohortsWorkspace(
               disabled={disabled}
               onClick={() => void state.load("sittings")}
             >
-              Load more exam sittings
+              {t("cohorts.moreSittings")}
             </button>
           )}
         </>
       )}
       <section>
-        <h2>Registration jobs</h2>
+        <h2>{t("cohorts.jobs")}</h2>
         <ul className="records">
           {state.jobs.map((job) => (
             <li key={job.id}>
               <strong>{job.window_snapshot.title}</strong>
               <span>
-                {rosterState[job.state]} · {job.processed} / {job.total}
+                {t("cohorts.jobMeta", { state: rosterStateText(job.state, t) ?? "", processed: String(job.processed), total: String(job.total) })}
               </span>
               <button
                 className="quiet"
                 disabled={state.busy}
                 onClick={() => void state.openJob(job.id)}
               >
-                Open registration job
+                {t("cohorts.openJob")}
               </button>
             </li>
           ))}
         </ul>
         {!state.loading && !state.jobs.length && (
-          <p>No registration jobs yet.</p>
+          <p>{t("cohorts.noJobs")}</p>
         )}
         {state.more.jobs && (
           <button
@@ -186,7 +185,7 @@ export function CohortsWorkspace(
             disabled={disabled}
             onClick={() => void state.load("jobs")}
           >
-            Load more registration jobs
+            {t("cohorts.moreJobs")}
           </button>
         )}
         <button
@@ -194,7 +193,7 @@ export function CohortsWorkspace(
           disabled={disabled}
           onClick={() => void state.load()}
         >
-          Refresh cohorts and jobs
+          {t("cohorts.refresh")}
         </button>
       </section>
       {state.job && (
@@ -216,7 +215,7 @@ export function CohortsWorkspace(
                   state.job!.targets?.at(-1)?.user_id,
                 )}
             >
-              Load more registration outcomes
+              {t("cohorts.moreTargets")}
             </button>
           )}
         </>

@@ -4,7 +4,9 @@ import {
   type BankImport,
   openImportCommands,
 } from "../../../../packages/assessment-web/src/bank-import";
+import { useAppT, useErrorText } from "../i18n/index.ts";
 export function useBankImports(tenant: string, actor: string) {
+  const t = useAppT(), errorText = useErrorText();
   const [jobs, setJobs] = useState<BankImport[]>([]),
     [job, setJob] = useState<BankImport | null>(null),
     [error, setError] = useState(""),
@@ -29,7 +31,7 @@ export function useBankImports(tenant: string, actor: string) {
       actor,
     );
     if (!alive.current) {
-      throw new Error("This institution workspace is no longer open.");
+      throw new Error(t("imports.closed"));
     }
     return value;
   };
@@ -40,11 +42,7 @@ export function useBankImports(tenant: string, actor: string) {
       setJobs([]);
       setJob(null);
     }
-    setError(
-      cause instanceof Error
-        ? cause.message
-        : "The question-bank request failed.",
-    );
+    setError(errorText(cause, "imports.failed"));
   }
   async function list(append = false) {
     const after = append ? offset : 0,

@@ -2,6 +2,7 @@ import { request } from "./client";
 import { ResponseJournal } from "./journal";
 import { GradeCommands } from "./grade-command";
 import { acknowledgeCommittedDraft } from "./draft-store";
+import {LocalizedError} from './i18n/translate.ts';
 /** Actor/tenant-scoped encrypted intent. API authority is still rechecked for every replay. */
 export async function openAuthorCommands(
   tenant: string,
@@ -9,9 +10,7 @@ export async function openAuthorCommands(
   workspace?: "assessment-design",
 ) {
   if (!navigator.locks)
-    throw new Error(
-      "Use a browser with secure workspace locking to save authoring changes.",
-    );
+    throw new LocalizedError("authoring.locks");
   const scope = `authoring:${tenant}:${actor}${workspace ? ":" + workspace : ""}`,
     journal = await ResponseJournal.create(scope);
   const locking = async <T>(work: () => Promise<T>): Promise<T> =>

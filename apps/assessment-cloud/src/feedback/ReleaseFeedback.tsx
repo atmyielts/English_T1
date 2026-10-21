@@ -4,6 +4,8 @@ import {
   feedbackLabel,
   type FeedbackRelease,
 } from "../../../../packages/assessment-web/src/feedback";
+import { useI18n } from "../../../../packages/service-i18n/src/i18n.tsx";
+import { useAppT } from "../i18n/index.ts";
 export function ReleaseFeedback(
   { release, locked, submit }: {
     release: FeedbackRelease;
@@ -11,24 +13,23 @@ export function ReleaseFeedback(
     submit: (action: string, data: Record<string, unknown>) => Promise<void>;
   },
 ) {
+  const t = useAppT(), { date: formatDate } = useI18n();
   const [reason, setReason] = useState(""),
     [confirmed, setConfirmed] = useState(false);
   return (
     <li>
-      <h4>Generation {release.generation} · {release.id}</h4>
+      <h4>{t("releaseRow.title", { generation: String(release.generation), id: release.id })}</h4>
       <p>
-        Result release: {feedbackDate(release.release_at)}. Recorded policy:
-        {" "}
-        {feedbackLabel(release.feedback_snapshot.level)}.
+        {t("releaseRow.summary", { date: feedbackDate(release.release_at, t, (value) => formatDate(value)), level: feedbackLabel(release.feedback_snapshot.level, t) })}
       </p>
       <p>
         {release.held
-          ? "Additional feedback is withheld."
-          : "No feedback hold."}
+          ? t("releaseRow.held")
+          : t("releaseRow.notHeld")}
         {release.feedback_snapshot.level !== "totals" &&
-          ` Detail time: ${
-            feedbackDate(release.feedback_snapshot.available_at)
-          }.`}
+          t("releaseRow.detail", { date:
+            feedbackDate(release.feedback_snapshot.available_at, t, (value) => formatDate(value))
+          })}
       </p>
       {release.feedback_snapshot.level !== "totals" && (
         <form
@@ -42,7 +43,7 @@ export function ReleaseFeedback(
           }}
         >
           <label>
-            Feedback decision reason<textarea
+            {t("releaseRow.reason")}<textarea
               required
               rows={2}
               maxLength={2000}
@@ -57,16 +58,15 @@ export function ReleaseFeedback(
               disabled={locked}
               checked={confirmed}
               onChange={(event) => setConfirmed(event.target.checked)}
-            />I confirm this changes detail access only, not the grade or
-            overall result.
+            />{t("releaseRow.ack")}
           </label>
           <button
             className="quiet"
             disabled={locked || !confirmed || !reason.trim()}
           >
             {release.held
-              ? "Restore pinned feedback"
-              : "Withhold additional feedback"}
+              ? t("releaseRow.restore")
+              : t("releaseRow.withhold")}
           </button>
         </form>
       )}

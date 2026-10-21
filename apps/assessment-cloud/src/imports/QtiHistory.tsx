@@ -1,5 +1,6 @@
 import type { QtiJob } from "../../../../packages/assessment-web/src/qti";
-import { qtiState } from "./QtiReview";
+import { useQtiState } from "./QtiReview";
+import { useAppT } from "../i18n/index.ts";
 export function QtiHistory(
   { jobs, ready, disabled, more, refresh, open, loadMore }: {
     jobs: QtiJob[];
@@ -11,36 +12,36 @@ export function QtiHistory(
     loadMore(): void;
   },
 ) {
+  const t = useAppT(), qtiState = useQtiState();
   return (
     <section>
-      <h2>QTI package history</h2>
+      <h2>{t("qtiHistory.title")}</h2>
       <button className="quiet" disabled={disabled} onClick={refresh}>
-        Refresh package status
+        {t("qtiHistory.refresh")}
       </button>
       {!jobs.length && ready && (
         <p>
-          No QTI packages yet. Choose a destination bank and upload a package to
-          begin.
+          {t("qtiHistory.empty")}
         </p>
       )}
       <ul className="records">
         {jobs.map((row) => (
           <li key={row.id}>
             <strong>{row.filename}</strong>
-            <span>{qtiState[row.state] ?? row.state}</span>
+            <span>{qtiState(row.state)}</span>
             <button
               className="quiet"
               disabled={disabled}
               onClick={() => open(row.id)}
             >
-              Review package: {row.filename}
+              {t("qtiHistory.review", { name: row.filename })}
             </button>
           </li>
         ))}
       </ul>
       {more && (
         <button disabled={disabled} onClick={loadMore}>
-          Load more QTI packages
+          {t("qtiHistory.more")}
         </button>
       )}
     </section>

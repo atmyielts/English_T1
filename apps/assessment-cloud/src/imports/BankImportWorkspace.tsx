@@ -13,6 +13,7 @@ import { ImportHistory } from "./ImportHistory";
 import { ImportFileStatus } from "./ImportFileStatus";
 import { QtiWorkspace } from "./QtiWorkspace";
 import "./imports.css";
+import { useAppT } from "../i18n/index.ts";
 export function BankImportWorkspace(
   { tenant, actor, banks, reviewDrafts }: {
     tenant: string;
@@ -21,6 +22,7 @@ export function BankImportWorkspace(
     reviewDrafts: () => void;
   },
 ) {
+  const t = useAppT();
   const model = useBankImports(tenant, actor),
     [bank, setBank] = useState(""),
     [file, setFile] = useState<
@@ -42,13 +44,13 @@ export function BankImportWorkspace(
     setLocalError("");
     if (!chosen) return;
     try {
-      if (chosen.size > 4_000_000) throw new Error("Choose a file up to 4 MB.");
+      if (chosen.size > 4_000_000) throw new Error(t("imports.tooLarge"));
       const format = chosen.name.toLowerCase().endsWith(".csv")
         ? "csv"
         : chosen.name.toLowerCase().endsWith(".json")
         ? "json"
         : null;
-      if (!format) throw new Error("Choose CSV or Schood bank JSON.");
+      if (!format) throw new Error(t("imports.wrongFormat"));
       const source = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true })
           .decode(await chosen.arrayBuffer()),
         plan = await prepareBankImport(format, source);
@@ -58,13 +60,13 @@ export function BankImportWorkspace(
     } catch (cause) {
       if (version === selection.current) {
         setLocalError(
-          cause instanceof Error ? cause.message : "Could not read the file.",
+          cause instanceof Error ? cause.message : t("imports.readFailed"),
         );
       }
     }
   }
   async function exportBank() {
-    if (!bank) throw new Error("Choose a question bank.");
+    if (!bank) throw new Error(t("imports.chooseBank"));
     const rows: { item: unknown; key: unknown }[] = [];
     let after = "", stamp = "";
     do {
@@ -88,10 +90,10 @@ export function BankImportWorkspace(
   if (!model.allowed) {
     return (
       <section>
-        <h2>Question-bank access changed</h2>
+        <h2>{t("imports.accessChanged")}</h2>
         <p role="alert" className="error">
           {model.error ||
-            "Reopen this institution after your question-bank permissions are restored."}
+            t("imports.accessRestore")}
         </p>
       </section>
     );
@@ -99,36 +101,33 @@ export function BankImportWorkspace(
   return (
     <div className="bank-imports">
       <section>
-        <h2>Question-bank files</h2>
+        <h2>{t("imports.title")}</h2>
         <p>
-          Bring an existing bank into Schood, review its questions and create
-          drafts without changing published exams. Files are limited to 2,000
-          questions / 4 MB each; larger banks can use multiple reviewed files.
+          {t("imports.lead")}
         </p>
         {(model.error || localError) && (
           <p role="alert" className="error">{model.error || localError}</p>
         )}
-        {!model.ready && <p role="status">Opening secure import recovery…</p>}
+        {!model.ready && <p role="status">{t("imports.opening")}</p>}
         {model.pending && (
           <div role="status">
             <p>
-              A submitted import request needs its canonical receipt. Retry it
-              before making another change.
+              {t("imports.pending")}
             </p>
             <button disabled={model.busy} onClick={() => void model.send()}>
-              Retry saved import request
+              {t("imports.retry")}
             </button>
           </div>
         )}
         <fieldset disabled={disabled}>
           <label>
-            Destination question bank<select
+            {t("imports.destination")}<select
               value={bank}
               onChange={(event) => {
                 setBank(event.target.value);
               }}
             >
-              <option value="">Choose a bank</option>
+              <option value="">{t("editor.chooseBank")}</option>
               {banks.map((row) => (
                 <option key={row.id} value={row.id}>{String(row.title)}</option>
               ))}
@@ -144,24 +143,21 @@ export function BankImportWorkspace(
                   "text/csv;charset=utf-8",
                 )}
             >
-              Download CSV template
+              {t("imports.template")}
             </button>
             <button
               className="quiet"
               disabled={!bank}
               onClick={() => void model.run(exportBank)}
             >
-              Export protected bank JSON
+              {t("imports.export")}
             </button>
           </div>
           <p>
-            The CSV template supports choice, true/false, ordering, short
-            answer, numeric and essay questions. Use Schood bank JSON for all
-            question types and existing institution media/rubric references.
-            Nothing in a file is executed.
+            {t("imports.formatsHint")}
           </p>
           <label>
-            Question-bank file<input
+            {t("imports.file")}<input
               type="file"
               accept=".csv,.json"
               onChange={(event) => void choose(event.target.files?.[0])}

@@ -1,5 +1,6 @@
 import type {BreakState} from '../../assessment-core/src/accommodations.ts';
 import {GradeCommands,type GradeIntent,type IntentStore} from './grade-command';
+import {english,isWebKey,LocalizedError,localizeText,type Translate} from './i18n/translate.ts';
 
 /** What the candidate may do now. The coordinator/database remain the authority;
  * this only decides which controls to offer and how to describe them. */
@@ -28,16 +29,11 @@ export function formatDuration(seconds:number){
   const whole=Math.max(0,Math.floor(seconds)),hours=Math.floor(whole/3600),minutes=Math.floor((whole%3600)/60),rest=whole%60;
   return hours?`${hours}:${String(minutes).padStart(2,'0')}:${String(rest).padStart(2,'0')}`:`${minutes}:${String(rest).padStart(2,'0')}`;
 }
-const messages:Record<string,string>={
-  break_allowance_exhausted:'Your approved break allowance has been used.',
-  break_window_closed:'There is not enough time left in this sitting for a break.',
-  assessment_break_active:'A break is already in progress.',
-  attempt_not_active:'The exam is not active. Only an institution proctor can resume a paused exam.',
-  device_lease_invalid:'This device no longer holds the exam. Reconnect before taking a break.',
-};
-export function breakProblem(cause:unknown){
-  const message=cause instanceof Error?cause.message:String(cause??'');
-  return messages[message]??(message||'The break request could not be confirmed. Your request is saved on this device; retry when connected.');
+/** Known break refusals are translated under `break.code.<code>`. */
+export function breakProblem(cause:unknown,t:Translate=english){
+  if(cause instanceof LocalizedError)return cause.render(t);
+  const message=cause instanceof Error?cause.message:String(cause??''),key=`break.code.${message}`;
+  return isWebKey(key)?t(key):message?localizeText(message,t):t('break.problem.unconfirmed');
 }
 /** One durable break intent per candidate attempt. A lost reply is retried with
  * the same key so the coordinator returns the one committed break, never a second. */

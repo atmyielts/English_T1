@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from "react";
 import type { CertificateProgram } from "../../../../packages/assessment-web/src/certificates";
 import { ProgramRetirement } from "./ProgramRetirement";
+import { useAppT } from "../i18n/index.ts";
 export function ProgramEditor(
   { programs, actor, disabled, send }: {
     programs: CertificateProgram[];
@@ -9,6 +10,7 @@ export function ProgramEditor(
     send: (action: string, data: Record<string, unknown>) => Promise<boolean>;
   },
 ) {
+  const t = useAppT();
   const [title, setTitle] = useState(""),
     [description, setDescription] = useState(""),
     [threshold, setThreshold] = useState("70"),
@@ -31,11 +33,9 @@ export function ProgramEditor(
   }
   return (
     <section>
-      <h2>Certificate programs</h2>
+      <h2>{t("programs.title")}</h2>
       <p>
-        Each program pins an achievement, award criteria, score threshold and
-        expiry. Another authorized certificate manager must approve it before
-        issuance.
+        {t("programs.lead")}
       </p>
       <ul className="records">
         {programs.map((program) => (
@@ -43,13 +43,13 @@ export function ProgramEditor(
             <h3>{program.title}</h3>
             <p>{program.description}</p>
             <span>
-              Minimum {program.minimum_percent}% · {program.valid_days
-                ? `${program.valid_days} days validity`
-                : "No scheduled expiry"} · {program.retirement
-                ? "Retired"
+              {t("programs.summary", { minimum: String(program.minimum_percent), validity: program.valid_days
+                ? t("programs.validity", { count: program.valid_days, days: String(program.valid_days) })
+                : t("replacement.noExpiry"), state: program.retirement
+                ? t("programs.retired")
                 : program.approved_by
-                ? "Approved"
-                : "Awaiting independent approval"}
+                ? t("programs.approved")
+                : t("programs.awaiting") })}
             </span>
             {!program.retirement && !program.approved_by &&
               program.created_by !== actor && (
@@ -61,8 +61,7 @@ export function ProgramEditor(
                     onChange={(event) =>
                       setReviewed(event.target.checked ? program.id : "")}
                     disabled={disabled}
-                  />I reviewed the achievement, criteria, threshold and expiry
-                  independently.
+                  />{t("programs.ack")}
                 </label>
                 <button
                   disabled={disabled || reviewed !== program.id}
@@ -72,13 +71,13 @@ export function ProgramEditor(
                       review_hash: program.review_hash,
                     })}
                 >
-                  Approve certificate program
+                  {t("programs.approve")}
                 </button>
               </>
             )}
             {!program.retirement && !program.approved_by &&
               program.created_by === actor && (
-              <p>Another certificate manager must approve your program.</p>
+              <p>{t("programs.ownProgram")}</p>
             )}
             <ProgramRetirement
               program={program}
@@ -89,9 +88,9 @@ export function ProgramEditor(
         ))}
       </ul>
       <form onSubmit={(event) => void create(event)}>
-        <h3>Create a program</h3>
+        <h3>{t("programs.create")}</h3>
         <label>
-          Achievement title<input
+          {t("programs.achievement")}<input
             required
             maxLength={200}
             value={title}
@@ -100,7 +99,7 @@ export function ProgramEditor(
           />
         </label>
         <label>
-          Award criteria<textarea
+          {t("programs.criteria")}<textarea
             required
             maxLength={2000}
             value={description}
@@ -109,7 +108,7 @@ export function ProgramEditor(
           />
         </label>
         <label>
-          Minimum score percentage<input
+          {t("programs.minimum")}<input
             required
             type="number"
             min={0}
@@ -121,7 +120,7 @@ export function ProgramEditor(
           />
         </label>
         <label>
-          Validity in days (empty means no scheduled expiry)<input
+          {t("programs.days")}<input
             type="number"
             min={1}
             max={36500}
@@ -132,7 +131,7 @@ export function ProgramEditor(
           />
         </label>
         <button disabled={disabled || !title.trim() || !description.trim()}>
-          Create certificate program
+          {t("programs.submit")}
         </button>
       </form>
     </section>

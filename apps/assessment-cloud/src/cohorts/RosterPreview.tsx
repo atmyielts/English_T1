@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { request } from "../../../../packages/assessment-web/src/client";
 import {
   type Cohort,
-  cohortProblem,
+  cohortProblem as cohortProblemText,
   type CohortSitting,
   type RosterPreview as Preview,
 } from "../../../../packages/assessment-web/src/cohorts";
+import { useI18n } from "../../../../packages/service-i18n/src/i18n.tsx";
+import { useAppT } from "../i18n/index.ts";
 export function RosterPreview({
   group,
   sittings,
@@ -26,6 +28,8 @@ export function RosterPreview({
   ) => Promise<Record<string, unknown> | null>;
   openJob: (id: string) => Promise<void>;
 }) {
+  const t = useAppT(), { date } = useI18n(),
+    cohortProblem = (cause: unknown) => cohortProblemText(cause, t);
   const [sitting, setSitting] = useState(""),
     [preview, setPreview] = useState<Preview | null>(null),
     [busy, setBusy] = useState(false),
@@ -56,7 +60,7 @@ export function RosterPreview({
         if (after && preview?.review_hash !== next.review_hash) {
           setPreview(null);
           throw new Error(
-            "The roster or sitting changed while paging. Review it again.",
+            t("preview.changed"),
           );
         }
         setPreview((previous) =>
@@ -90,14 +94,12 @@ export function RosterPreview({
   }
   return (
     <section>
-      <h2>Register this cohort for a sitting</h2>
+      <h2>{t("preview.title")}</h2>
       <p>
-        Review the complete roster summary. Existing registrations and responses
-        remain unchanged. Extra-time differences are reported as conflicts, not
-        silently replaced.
+        {t("preview.lead")}
       </p>
       <label>
-        Exam sitting<select
+        {t("preview.sitting")}<select
           value={sitting}
           onChange={(event) => {
             version.current++;
@@ -108,10 +110,10 @@ export function RosterPreview({
           }}
           disabled={disabled || busy}
         >
-          <option value="">Choose a sitting</option>
+          <option value="">{t("windows.chooseSitting")}</option>
           {sittings.map((row) => (
             <option key={row.id} value={row.id}>
-              {row.title} · {new Date(row.closes_at).toLocaleDateString()}
+              {t("preview.sittingOption", { title: row.title, date: date(row.closes_at, { dateStyle: "short" }) })}
             </option>
           ))}
         </select>
@@ -121,36 +123,31 @@ export function RosterPreview({
         disabled={disabled || busy || !sitting || group.state !== "active"}
         onClick={() => void load()}
       >
-        Review cohort registration
+        {t("preview.review")}
       </button>
-      {busy && <p role="status">Checking the current roster and sitting…</p>}
+      {busy && <p role="status">{t("preview.checking")}</p>}
       {error && <p role="alert" className="error">{error}</p>}
       {preview && (
         <>
-          <h3>{preview.cohort_title} → {preview.sitting.title}</h3>
+          <h3>{t("preview.heading", { cohort: preview.cohort_title, sitting: preview.sitting.title })}</h3>
           <p>
-            {preview.total} roster entries · {preview.eligible}{" "}
-            currently eligible · {preview.existing} existing registrations ·
-            {" "}
-            {preview.conflicts} extra-time conflicts
+            {t("preview.summary", { total: String(preview.total), eligible: String(preview.eligible), existing: String(preview.existing), conflicts: String(preview.conflicts) })}
           </p>
           <p>
-            Opens {new Date(preview.sitting.opens_at).toLocaleString()} · Closes
-            {" "}
-            {new Date(preview.sitting.closes_at).toLocaleString()}
+            {t("preview.window", { opens: date(preview.sitting.opens_at), closes: date(preview.sitting.closes_at) })}
           </p>
           <ul className="records">
             {preview.members.map((member) => (
               <li key={member.user_id}>
                 <strong>{member.name}</strong>
                 <span>
-                  {member.extra_seconds} extra seconds · {!member.eligible
-                    ? "Institution membership inactive"
+                  {t("preview.member", { count: member.extra_seconds, seconds: String(member.extra_seconds), status: !member.eligible
+                    ? t("preview.inactive")
                     : member.registration_id
                     ? (member.registered_extra_seconds === member.extra_seconds
-                      ? "Already registered with matching extra time"
-                      : "Existing registration has conflicting extra time")
-                    : "New registration planned"}
+                      ? t("preview.matching")
+                      : t("preview.conflict"))
+                    : t("preview.planned") })}
                 </span>
               </li>
             ))}
@@ -161,7 +158,7 @@ export function RosterPreview({
               disabled={busy || disabled}
               onClick={() => void load(preview.members.at(-1)?.user_id)}
             >
-              Load more preview entries
+              {t("preview.more")}
             </button>
           )}
           <label className="check">
@@ -170,9 +167,7 @@ export function RosterPreview({
               checked={ack}
               onChange={(event) => setAck(event.target.checked)}
               disabled={disabled || busy}
-            />I reviewed this cohort, sitting and summary. Only the reviewed
-            roster will be processed, with current membership checks and
-            explicit per-candidate outcomes.
+            />{t("preview.ack")}
           </label>
           <button
             disabled={disabled || busy || !ack || !preview.total ||
@@ -180,7 +175,7 @@ export function RosterPreview({
               Date.parse(preview.sitting.closes_at) <= Date.now()}
             onClick={() => void create()}
           >
-            Create cohort registration job
+            {t("preview.create")}
           </button>
         </>
       )}

@@ -3,9 +3,12 @@ import { useAnalytics } from "./use-analytics";
 import { ReportSummary } from "./ReportSummary";
 import { ItemDiagnostics } from "./ItemDiagnostics";
 import "./analytics.css";
+import { useI18n } from "../../../../packages/service-i18n/src/i18n.tsx";
+import { useAppT } from "../i18n/index.ts";
 export function AnalyticsWorkspace(
   { tenant, actor }: { tenant: string; actor: string },
 ) {
+  const t = useAppT(), { date } = useI18n();
   const model = useAnalytics(tenant, actor),
     [windowId, setWindowId] = useState(""),
     [cohort, setCohort] = useState(""),
@@ -16,7 +19,7 @@ export function AnalyticsWorkspace(
   if (!model.allowed) {
     return (
       <section>
-        <h2>Report access changed</h2>
+        <h2>{t("analytics.accessChanged")}</h2>
         <p role="alert" className="error">{model.error}</p>
       </section>
     );
@@ -24,23 +27,21 @@ export function AnalyticsWorkspace(
   return (
     <div className="analytics-workspace">
       <section>
-        <h2>Create a result snapshot</h2>
+        <h2>{t("analytics.createTitle")}</h2>
         <p>
-          Use the latest eligible released result per attempt. A snapshot stays
-          reproducible when results are later regraded. Reporting never changes
-          grades, answer keys or integrity decisions.
+          {t("analytics.createLead")}
         </p>
         {model.error && <p role="alert" className="error">{model.error}</p>}
         {!model.ready && (
           <p role="status">
-            Opening reporting permissions and secure request recovery…
+            {t("analytics.opening")}
           </p>
         )}
         {model.pending && (
           <div role="status">
-            <p>A report request needs its canonical receipt.</p>
+            <p>{t("analytics.pending")}</p>
             <button disabled={model.busy} onClick={() => void model.create()}>
-              Retry saved report request
+              {t("analytics.retry")}
             </button>
           </div>
         )}
@@ -57,12 +58,12 @@ export function AnalyticsWorkspace(
         >
           <fieldset disabled={disabled}>
             <label>
-              Report sitting<select
+              {t("analytics.sitting")}<select
                 value={windowId}
                 onChange={(event) => setWindowId(event.target.value)}
                 required
               >
-                <option value="">Choose a sitting</option>
+                <option value="">{t("windows.chooseSitting")}</option>
                 {model.sittings.map((row) => (
                   <option key={row.id} value={row.id}>{row.title}</option>
                 ))}
@@ -74,15 +75,15 @@ export function AnalyticsWorkspace(
                 className="quiet"
                 onClick={() => void model.loadMore("sittings")}
               >
-                Load more report sittings
+                {t("analytics.moreSittings")}
               </button>
             )}
             <label>
-              Report cohort<select
+              {t("analytics.cohort")}<select
                 value={cohort}
                 onChange={(event) => setCohort(event.target.value)}
               >
-                <option value="">Whole sitting</option>
+                <option value="">{t("analytics.wholeSitting")}</option>
                 {model.cohorts.map((row) => (
                   <option key={row.id} value={row.id}>{row.title}</option>
                 ))}
@@ -94,15 +95,14 @@ export function AnalyticsWorkspace(
                 className="quiet"
                 onClick={() => void model.loadMore("cohorts")}
               >
-                Load more report cohorts
+                {t("analytics.moreCohorts")}
               </button>
             )}
             <p>
-              Cohort filtering uses active cohort entries at snapshot creation,
-              not historical membership at exam time.
+              {t("analytics.cohortHint")}
             </p>
             <label>
-              Analysis cutoff percentage<input
+              {t("analytics.cutoff")}<input
                 type="number"
                 min="0"
                 max="100"
@@ -113,7 +113,7 @@ export function AnalyticsWorkspace(
               />
             </label>
             <label>
-              Report purpose<textarea
+              {t("analytics.purpose")}<textarea
                 required
                 maxLength={2000}
                 value={reason}
@@ -125,32 +125,30 @@ export function AnalyticsWorkspace(
                 type="checkbox"
                 checked={ack}
                 onChange={(event) => setAck(event.target.checked)}
-              />I understand this cutoff is exploratory and does not create
-              official pass/fail decisions.
+              />{t("analytics.ack")}
             </label>
             <button disabled={!windowId || !reason.trim() || !ack}>
-              Create released-result snapshot
+              {t("analytics.create")}
             </button>
           </fieldset>
         </form>
       </section>
       <section>
-        <h2>Saved report snapshots</h2>
-        {!model.snapshots.length && <p>No snapshots have been created yet.</p>}
+        <h2>{t("analytics.saved")}</h2>
+        {!model.snapshots.length && <p>{t("analytics.noSnapshots")}</p>}
         <ul className="records">
           {model.snapshots.map((row) => (
             <li key={row.id}>
               <strong>{row.title}</strong>
               <span>
-                {new Date(row.as_of).toLocaleString()} ·{" "}
-                {row.population.released} released results
+                {t("analytics.snapshotMeta", { date: date(row.as_of), count: String(row.population.released) })}
               </span>
               <button
                 className="quiet"
                 disabled={model.busy}
                 onClick={() => void model.open(row.id)}
               >
-                Open result report
+                {t("analytics.open")}
               </button>
             </li>
           ))}
@@ -160,11 +158,11 @@ export function AnalyticsWorkspace(
             disabled={model.busy}
             onClick={() => void model.loadMore("snapshots")}
           >
-            Load more report snapshots
+            {t("analytics.moreSnapshots")}
           </button>
         )}
       </section>
-      {model.busy && <p role="status">Loading canonical report…</p>}
+      {model.busy && <p role="status">{t("analytics.loading")}</p>}
       {model.report && (
         <>
           <ReportSummary report={model.report} />

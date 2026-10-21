@@ -8,6 +8,8 @@ import type { Row } from "../../../../packages/assessment-web/src/client";
 import { useQti } from "./use-qti";
 import { QtiReview } from "./QtiReview";
 import { QtiHistory } from "./QtiHistory";
+import { useI18n } from "../../../../packages/service-i18n/src/i18n.tsx";
+import { useAppT } from "../i18n/index.ts";
 export function QtiWorkspace(
   props: {
     tenant: string;
@@ -16,13 +18,13 @@ export function QtiWorkspace(
     openImport(id: string): void;
   },
 ) {
+  const t = useAppT();
   if (!qtiConfigured) {
     return (
       <section>
-        <h2>QTI test packages</h2>
+        <h2>{t("qtiWorkspace.title")}</h2>
         <p>
-          QTI package processing is not enabled in this environment. CSV and
-          Schood JSON imports remain available above.
+          {t("qtiWorkspace.disabled")}
         </p>
       </section>
     );
@@ -37,6 +39,7 @@ function ConnectedQtiWorkspace(
     openImport(id: string): void;
   },
 ) {
+  const t = useAppT(), { number } = useI18n();
   const model = useQti(tenant, actor),
     [bank, setBank] = useState(""),
     [source, setSource] = useState<PreparedQtiSource | null>(null),
@@ -64,7 +67,7 @@ function ConnectedQtiWorkspace(
       const value = await prepareQtiSource(file, bank, () => {
         model.active();
         if (selection.current !== version) {
-          throw new Error("File selection changed.");
+          throw new Error(t("qtiWorkspace.selectionChanged"));
         }
       });
       if (selection.current === version) setSource(value);
@@ -73,7 +76,7 @@ function ConnectedQtiWorkspace(
         setFileError(
           cause instanceof Error
             ? cause.message
-            : "Could not prepare the package.",
+            : t("qtiWorkspace.prepareFailed"),
         );
       }
     } finally {
@@ -83,10 +86,10 @@ function ConnectedQtiWorkspace(
   if (!model.allowed) {
     return (
       <section>
-        <h2>QTI access changed</h2>
+        <h2>{t("qtiWorkspace.accessChanged")}</h2>
         <p role="alert">{model.error}</p>
         <p>
-          Reopen this institution after question-bank permissions are restored.
+          {t("qtiWorkspace.accessRestore")}
         </p>
       </section>
     );
@@ -94,40 +97,35 @@ function ConnectedQtiWorkspace(
   return (
     <div className="bank-imports qti-workspace">
       <section aria-labelledby="qti-heading">
-        <h2 id="qti-heading">QTI test packages</h2>
+        <h2 id="qti-heading">{t("qtiWorkspace.title")}</h2>
         <p>
-          Upload a QTI ZIP package, review its proposed questions and answer
-          keys, then adopt it into your own question bank. Unsupported content
-          is shown explicitly; nothing in the package is executed.
+          {t("qtiWorkspace.lead")}
         </p>
         <p>
-          Maximum 64 MiB. Package bytes are kept in memory only on this device.
-          After closing or reloading, select the identical file to resume an
-          unfinished upload.
+          {t("qtiWorkspace.limits")}
         </p>
         {(model.error || fileError) && (
           <p className="error" role="alert">{model.error || fileError}</p>
         )}
         {!model.ready && (
-          <p role="status">Opening secure package request recovery…</p>
+          <p role="status">{t("qtiWorkspace.opening")}</p>
         )}
         {model.pending && (
           <div role="status">
             <p>
-              A saved package request needs its canonical receipt. Retry it
-              before making another change.
+              {t("qtiWorkspace.pending")}
             </p>
             <button
               disabled={model.busy}
               onClick={() => void model.run(() => model.command())}
             >
-              Retry saved QTI request
+              {t("qtiWorkspace.retry")}
             </button>
           </div>
         )}
         <fieldset disabled={disabled}>
           <label>
-            QTI destination question bank<select
+            {t("qtiWorkspace.bank")}<select
               value={bank}
               onChange={(event) => {
                 selection.current++;
@@ -136,14 +134,14 @@ function ConnectedQtiWorkspace(
                 setFileError("");
               }}
             >
-              <option value="">Choose a bank</option>
+              <option value="">{t("editor.chooseBank")}</option>
               {banks.map((row) => (
                 <option key={row.id} value={row.id}>{String(row.title)}</option>
               ))}
             </select>
           </label>
           <label>
-            QTI package file<input
+            {t("qtiWorkspace.file")}<input
               type="file"
               accept=".zip,application/zip"
               disabled={!bank}
@@ -153,14 +151,12 @@ function ConnectedQtiWorkspace(
           {source && (
             <>
               <p>
-                {source.manifest.filename} ·{" "}
-                {source.manifest.byte_length.toLocaleString()} bytes ·{" "}
-                {source.manifest.parts.length} upload parts
+                {t("qtiWorkspace.manifest", { name: source.manifest.filename, bytes: number(source.manifest.byte_length), parts: String(source.manifest.parts.length) })}
               </p>
               <button
                 onClick={() => void model.run(() => model.upload(source))}
               >
-                Upload QTI package for review
+                {t("qtiWorkspace.upload")}
               </button>
             </>
           )}
@@ -171,11 +167,11 @@ function ConnectedQtiWorkspace(
               onClick={() =>
                 void model.run(() => model.upload(source, model.job!))}
             >
-              Resume selected package upload
+              {t("qtiWorkspace.resume")}
             </button>
           )}
         </fieldset>
-        {preparing && <p role="status">Checking package identity…</p>}
+        {preparing && <p role="status">{t("qtiWorkspace.checking")}</p>}
         {model.progress && <p role="status">{model.progress}</p>}
       </section>
       <QtiHistory

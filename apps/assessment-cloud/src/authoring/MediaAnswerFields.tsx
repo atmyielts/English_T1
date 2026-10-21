@@ -3,18 +3,20 @@ import "../../../../packages/assessment-web/src/media-answer.css";
 import type { ItemDraft } from "../../../../packages/assessment-core/src/authoring.ts";
 import type { ArtifactMime } from "../../../../packages/assessment-core/src/artifacts.ts";
 import { MEDIA_RESPONSE_TYPES } from "../../../../packages/assessment-core/src/media-answer.ts";
-export const answerFormatLabels: Partial<Record<ArtifactMime, string>> = {
-  "application/pdf": "PDF document",
-  "image/png": "PNG image",
-  "image/jpeg": "JPEG image",
-  "image/webp": "WebP image",
-  "audio/mpeg": "MP3 audio",
-  "audio/wav": "WAV audio",
-  "audio/ogg": "OGG audio",
-  "audio/webm": "WebM audio (browser recording)",
-  "audio/mp4": "MP4 / M4A audio (browser recording)",
-  "video/mp4": "MP4 video",
-  "video/webm": "WebM video",
+import { useI18n } from "../../../../packages/service-i18n/src/i18n.tsx";
+import { useAppT, type AppKey } from "../i18n/index.ts";
+export const answerFormatLabels: Partial<Record<ArtifactMime, AppKey>> = {
+  "application/pdf": "format.pdf",
+  "image/png": "format.png",
+  "image/jpeg": "format.jpeg",
+  "image/webp": "format.webp",
+  "audio/mpeg": "format.mp3",
+  "audio/wav": "format.wav",
+  "audio/ogg": "format.ogg",
+  "audio/webm": "format.webmAudio",
+  "audio/mp4": "format.m4a",
+  "video/mp4": "format.mp4",
+  "video/webm": "format.webmVideo",
 };
 export function MediaAnswerFields(
   { draft, setDraft }: {
@@ -22,7 +24,7 @@ export function MediaAnswerFields(
     setDraft: (draft: ItemDraft) => void;
   },
 ) {
-  const hint = useId();
+  const hint = useId(), t = useAppT(), { number } = useI18n();
   if (!(MEDIA_RESPONSE_TYPES as readonly string[]).includes(draft.type)) {
     return null;
   }
@@ -44,13 +46,12 @@ export function MediaAnswerFields(
     setDraft({ ...draft, responsePolicy: { ...rules, ...value } });
   return (
     <fieldset className="submission-rules">
-      <legend>Submission rules</legend>
+      <legend>{t("rules.legend")}</legend>
       <p className="hint">
-        These rules are versioned with the question and independently reviewed.
-        A later revision cannot change a published exam.
+        {t("rules.lead")}
       </p>
       <fieldset>
-        <legend>Allowed answer formats — choose at least one</legend>
+        <legend>{t("rules.formats")}</legend>
         {formats.map((mime) => (
           <label className="check" key={mime}>
             <input
@@ -63,12 +64,12 @@ export function MediaAnswerFields(
                     : rules.mimes.filter((value) => value !== mime),
                 })}
             />
-            {answerFormatLabels[mime]}
+            {answerFormatLabels[mime] && t(answerFormatLabels[mime])}
           </label>
         ))}
       </fieldset>
       <label>
-        Maximum submission size<select
+        {t("rules.maxSize")}<select
           value={custom ? "custom" : rules.maxBytes}
           aria-describedby={hint}
           onChange={(event) =>
@@ -81,12 +82,12 @@ export function MediaAnswerFields(
           {sizes.map((size) => (
             <option key={size.bytes} value={size.bytes}>{size.label}</option>
           ))}
-          <option value="custom">Custom exact size</option>
+          <option value="custom">{t("rules.custom")}</option>
         </select>
       </label>
       {custom && (
         <label>
-          Custom maximum size (bytes)<input
+          {t("rules.customBytes")}<input
             type="number"
             required
             min="1"
@@ -102,17 +103,15 @@ export function MediaAnswerFields(
         {rules.maxBytes.trim() &&
             Number.isSafeInteger(Number(rules.maxBytes)) &&
             Number(rules.maxBytes) > 0
-          ? `Each selected answer may contain up to ${
-            (Number(rules.maxBytes) / 1048576).toLocaleString(undefined, {
+          ? t("rules.limit", { size: number(Number(rules.maxBytes) / 1048576, {
               maximumFractionDigits: 3,
-            })
-          } MiB.`
-          : "Enter a custom exact byte limit or choose a standard size."}{" "}
-        Larger files are rejected; the limit cannot exceed 2 GiB.
+            }) })
+          : t("rules.limitMissing")}{" "}
+        {t("rules.limitCap")}
       </p>
       <fieldset>
         <legend>
-          How candidates may produce the answer — choose at least one
+          {t("rules.sources")}
         </legend>
         {([
           "upload",
@@ -130,14 +129,13 @@ export function MediaAnswerFields(
                 })}
             />
             {source === "upload"
-              ? "Upload a prepared file"
-              : "Record inside the exam"}
+              ? t("rules.upload")
+              : t("rules.capture")}
           </label>
         ))}
       </fieldset>
       <p className="hint">
-        Only one answer is selected at a time. Scanning does not award marks; an
-        assigned human marker uses the approved rubric.
+        {t("rules.single")}
       </p>
     </fieldset>
   );
