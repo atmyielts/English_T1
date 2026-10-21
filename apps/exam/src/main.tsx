@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState, type FormEvent } from 'react';
 import { createRoot } from 'react-dom/client';
+import {I18nProvider} from '../../../packages/service-i18n/src/i18n.tsx';
+import {catalogs} from './i18n/index.ts';
 import { configured, request, proctorRequest, supabase, observeAccount, type Row } from '../../../packages/assessment-web/src/client';
 import { ResponseJournal } from '../../../packages/assessment-web/src/journal';
 import { assertCoordinatorReady,openCoordinator } from '../../../packages/assessment-web/src/coordinator';
@@ -222,4 +224,4 @@ function App() {
     {tenant&&!preflight&&(!attempt||['submitted','expired'].includes(attempt.state))&&<CaptureRecoveryPanel devices={capture.devices} busy={busy||capture.busy} error={capture.error} notice={capture.recoveryNotice} recover={device=>void capture.recoverSaved(device)}/>}
   </main></div>;
 }
-createRoot(document.getElementById('root')!).render(<React.StrictMode>{new URLSearchParams(location.search).get('verify_certificate')==='1'?<CertificateVerification/>:<App/>}</React.StrictMode>);
+createRoot(document.getElementById('root')!).render(<React.StrictMode><I18nProvider catalogs={catalogs}>{new URLSearchParams(location.search).get('verify_certificate')==='1'?<CertificateVerification/>:<App/>}</I18nProvider></React.StrictMode>);

@@ -7,6 +7,8 @@ import React, {
   type FormEvent,
 } from "react";
 import { createRoot } from "react-dom/client";
+import { I18nProvider } from "../../../packages/service-i18n/src/i18n.tsx";
+import { catalogs } from "./i18n/index.ts";
 import { configured, request, supabase, observeAccount, type Row } from "./client";
 import { ServiceHeader } from "../../../packages/service-design/src/ServiceHeader";
 import { type Definition } from "../../../packages/assessment-core/src/mod.ts";
@@ -640,6 +642,8 @@ function App() {
 }
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    <I18nProvider catalogs={catalogs}>
+      <App />
+    </I18nProvider>
   </React.StrictMode>,
 );

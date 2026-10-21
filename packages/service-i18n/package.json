@@ -1,0 +1,7 @@
+{
+  "name": "@schood/service-i18n",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/i18n.tsx" },
+  "peerDependencies": { "react": "^19.2.0" }
+}
