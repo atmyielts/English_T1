@@ -1,12 +1,13 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-independent-refund-discount-authority",
+  "releaseId": "academy-grading-revisions-and-adjustment-authority",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
     "academy"
   ],
   "migrations": [
+    "20261021003500_academy_gradebook_review_revisions.sql",
     "20261021004000_academy_adjustment_subtype_authority.sql"
   ],
   "edgeFunctions": [],
@@ -15,15 +16,17 @@
   "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
+    "migration:20261021003500_academy_gradebook_review_revisions.sql",
     "migration:20261021004000_academy_adjustment_subtype_authority.sql"
   ],
   "manualFollowUps": [
-    "After exact-head protected CI, main CI and tracked Pages pass, apply only 20261021004000_academy_adjustment_subtype_authority.sql with supabase db push --linked --include-all from an isolated 233-entry baseline catalogue whose dry run lists exactly this migration. Do not apply unrelated Assessment or Proctor changes.",
-    "Capture the installed academy_finance_command body and compare it with the qualified wallet command. The migration retains the installed function definition and changes only subtype capability selection; it refuses unexpected command structure. Read back and prove the exact replacement. Preserve all other financial guards, receipts, cash custody and wallet policy. No Edge deployment or secret changes are required.",
+    "After exact-head protected CI, main CI and tracked Pages pass, apply only 20261021003500_academy_gradebook_review_revisions.sql and 20261021004000_academy_adjustment_subtype_authority.sql with supabase db push --linked --include-all from an isolated 233-entry baseline catalogue whose dry run lists exactly these two migrations. Do not apply unrelated Assessment or Proctor changes.",
+    "Capture the installed academy_finance_command body and compare it with the qualified wallet command. The migration retains the installed function definition and changes only subtype capability selection; it refuses unexpected command structure. Read back and prove the exact replacement. Preserve all other financial guards, receipts, cash custody and wallet policy. No Edge deployment or secret changes are required. Capture academy_operational_read and prove only assignment/submission updated_at fields are added; retain scope filtering and final authority recheck. The installed v95 serializer already returns submission updated_at. Repeat real published grading recovery and stale-review acceptance after this forward repair.",
     "Run fourteen installed rollback-only fixture groups and owned live API/UI checks for center administrator refunds, accountant discounts, mixed branch grants and receipt replay after revocation. Only internal QA ledger entries are needed; no external payments or provider deliveries. Close owned accounts and archive the QA institution."
   ],
   "verification": [
-    "Twenty-two captured-schema stages passed with owned-container cleanup, including legitimate/denied independent adjustment subtypes, mixed scopes and replay after generic adjustment access remains. Focused browser checks, Academy build/lint, complete exact-head CI, verify:prod and release manifest are required. Installed and owned hosted checks remain separate gates."
+    "Twenty-two captured-schema stages passed with owned-container cleanup, including legitimate/denied independent adjustment subtypes, mixed scopes and replay after generic adjustment access remains. Focused browser checks, Academy build/lint, complete exact-head CI, verify:prod and release manifest are required. Installed and owned hosted checks remain separate gates.",
+    "A live owned test on v95 identified missing revision fields in the scoped SQL gradebook projection. A native scoped-read-to-grade roundtrip now verifies actual production read fields can construct the current-attempt grading command. Do not claim grading accepted until its published workflow passes."
   ],
   "rollback": {
     "pages": "Prior tracked Pages main 3df7e4557f1fd9b3b8d2d4adba763d4500a1e52e.",

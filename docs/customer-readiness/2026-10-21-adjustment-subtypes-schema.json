@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-10-21T05:57:37.828Z",
+  "recordedAt": "2026-10-21T06:09:22.455Z",
   "passed": true,
   "cleanupVerified": true,
   "stage": "real student resubmission wins over stale grading; blocked grading expiry rolls back snapshots, audit and receipt",
@@ -331,6 +331,10 @@
       "sha256LF": "4d143549c2e1588470729df35e3fc7bca5b3a3b554f6f6ee9f49076df1c96f3b"
     },
     {
+      "file": "20261021003500_academy_gradebook_review_revisions.sql",
+      "sha256LF": "d9567a0e561b3916442bd5f8c1c46d125281646d4c174a0624193cdf16aa17cd"
+    },
+    {
       "file": "20261021004000_academy_adjustment_subtype_authority.sql",
       "sha256LF": "35f7e7edcf8f05e0d3a70594717701e6e2d41ca5e0eddb4092f59d44b85755ca"
     },
@@ -369,7 +373,7 @@
     },
     {
       "file": "scripts/fixtures/academy-operational-read.sql",
-      "sha256LF": "f2dbfda9fa5193c30dbc1ab8e7eef2419abae1bda33a41f6f80e2ab2f603349f"
+      "sha256LF": "9a609cebba01ae0269124a2d79e4e46f1d960520ea5d1808126819655abb59b4"
     },
     {
       "file": "scripts/fixtures/academy-operational-commands.sql",
