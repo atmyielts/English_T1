@@ -526,7 +526,7 @@ const officeShellLabel = (
 
 const officeIntentForAccess = (access: TeacherStudioAccessProfile | null | undefined): OfficeRouteIntent => {
   if (isCenterAccess(access)) return 'center';
-  if (isAcademyAdminAccess(access) && hasAccessPermission(access, 'manageAcademy')) return 'admin';
+  if (isAcademyAdminAccess(access) && officeIntentCanEnter(access,'admin')) return 'admin';
   if (isAcademyOperationsAccess(access)) return 'office';
   if (isTeacherWorkspaceAccess(access) && (hasAccessPermission(access, 'viewClassrooms') || hasAccessPermission(access, 'viewEducationOS'))) return 'teacher';
   return 'office';
@@ -2042,16 +2042,6 @@ const App = () => {
         try {
           if (academiesResult.status === 'rejected') throw academiesResult.reason;
           academyList = academiesResult.value;
-          // Establish the selected role before route canonicalization or data
-          // loading. A full owner profile must not redirect a cashier branch.
-          academyList=await Promise.all(academyList.map(async academy=>{
-            const branch=selectedWorkspaceBranch(academy.id,meResponse.user.id);
-            if(!branch||!academy.access?.capability_scopes)return academy;
-            const contexts=await academyOfficeRequest<{branches:Array<{id:string;access:TeacherStudioAccessProfile}>}>(academy.id,'branch_contexts',{});
-            const chosen=contexts.branches.find(item=>item.id===branch);
-            if(!chosen){selectWorkspaceBranch(academy.id,meResponse.user.id,null);return academy;}
-            return {...academy,role:chosen.access.role,access:chosen.access};
-          }));
           academyList = academyList.filter(academyCanEnterOffice);
         } catch (teacherErr) {
           const emptyStaffDirectory = teacherMembershipRows.length === 0 &&

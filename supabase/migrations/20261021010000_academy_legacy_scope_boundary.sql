@@ -113,6 +113,13 @@ begin
   end loop;
   return scopes;
  end if;
+ if relation_name='academy_guardians' then
+  for origin in select r.contact_id from public.academy_student_guardian_relationships r where r.academy_id=academy and r.guardian_id=identifier loop
+   scope:=public.academy_legacy_contact_scope(academy,origin.contact_id);
+   if scope is not null then scopes:=scopes||jsonb_build_array(scope);end if;
+  end loop;
+  return scopes;
+ end if;
  if relation_name='academy_contacts' then
   scope:=public.academy_legacy_contact_scope(academy,identifier);return case when scope is null then '[]'::jsonb else jsonb_build_array(scope) end;
  end if;
@@ -135,6 +142,16 @@ begin
   if contact is not null then scope:=public.academy_legacy_contact_scope(academy,contact,classroom,branch);
   else scope:=jsonb_build_object('kind','classroom','classroom_id',classroom,'branch_id',branch);end if;
   return case when scope is null then '[]'::jsonb else jsonb_build_array(scope) end;
+ end if;
+ if contact is not null and relation_name='academy_unified_student_intelligence' then
+  select primary_branch_id into branch from public.academy_contacts where academy_id=academy and id=contact;
+  if branch is not null then scopes:=jsonb_build_array(jsonb_build_object('kind','branch','branch_id',branch));end if;
+  for origin in select c.id,c.branch_id from public.academy_classrooms c where c.academy_id=academy and c.id in(
+   select m.classroom_id from public.academy_classroom_memberships m where m.academy_id=academy and m.contact_id=contact
+   union select a.classroom_id from public.academy_submissions a where a.academy_id=academy and a.contact_id=contact
+   union select a.classroom_id from public.academy_attendance a where a.academy_id=academy and a.contact_id=contact)
+  loop scopes:=scopes||jsonb_build_array(jsonb_build_object('kind','classroom','classroom_id',origin.id,'branch_id',origin.branch_id));end loop;
+  return scopes;
  end if;
  if contact is not null then
   scope:=public.academy_legacy_contact_scope(academy,contact);
@@ -166,9 +183,26 @@ begin
   loop scopes:=scopes||jsonb_build_array(jsonb_build_object('kind','branch','branch_id',staff.id));end loop;
   if jsonb_array_length(scopes)>0 then return scopes;end if;
  end if;
+ -- Child evidence follows its actual resource, never a sender/assignee or
+ -- a shared parent's unrelated branch. Other referenced parents are still
+ -- checked independently by the write guard.
+ for edge in select value from jsonb_array_elements(coalesce((select edges from public.academy_legacy_boundary_relations where name=relation_name),'[]'))
+  where exists(select 1 from jsonb_array_elements(value->'columns') p where p->>'from' in('relationship_id','conversation_id','session_id','learning_plan_id','plan_id'))
+  order by case when exists(select 1 from jsonb_array_elements(value->'columns') p where p->>'from'='relationship_id') then 0 else 1 end
+ loop
+  predicate:='';
+  for column_pair in select value from jsonb_array_elements(edge->'columns') loop
+   if row_data->>(column_pair->>'from') is null then predicate:='';exit;end if;
+   predicate:=predicate||case when predicate='' then '' else ' and ' end||format('p.%I=($1->>%L)::%s',column_pair->>'to',column_pair->>'from',column_pair->>'type');
+  end loop;
+  if predicate='' then continue;end if;target:=to_regclass('public.'||(edge->>'table'));if target is null then continue;end if;
+  execute format('select to_jsonb(p) from %s p where %s limit 1',target,predicate) into parent using row_data;
+  return case when parent is null then '[]'::jsonb else public.academy_legacy_row_scopes(ctx,edge->>'table',parent,seen,depth+1) end;
+ end loop;
  -- Parent edges are frozen from the installed FK catalogue, never from input
  -- identifiers supplied by a client. Creator/auditor pointers are excluded.
  for edge in select value from jsonb_array_elements(coalesce((select edges from public.academy_legacy_boundary_relations where name=relation_name),'[]')) loop
+  if edge->>'table'='users' then continue;end if;
   predicate:='';
   for column_pair in select value from jsonb_array_elements(edge->'columns') loop
    if row_data->>(column_pair->>'from') is null then predicate:='';exit;end if;
@@ -212,6 +246,13 @@ begin
  if not writing and relation_name='users' and identifier=public.academy_legacy_uuid(ctx->>'actor_id') then return true;end if;
  scopes:=public.academy_legacy_row_scopes(ctx,relation_name,row_data);
  if jsonb_array_length(scopes)=0 then return false;end if;
+ if not writing and relation_name in('academy_staff_performance_metrics','academy_teacher_performance_metrics')
+  and public.academy_legacy_uuid(row_data->>'branch_id') is null and public.academy_legacy_uuid(row_data->>'classroom_id') is null
+  and not public.academy_legacy_scope_covered(ctx,jsonb_build_object('kind','academy')) then return false;end if;
+ if not writing and relation_name='academy_workforce_requests' then
+  if not exists(select 1 from jsonb_array_elements(scopes) s where public.academy_legacy_scope_covered(ctx,s,array['manageStaff','manageAcademicOperations','viewPayroll']))
+   and not exists(select 1 from public.academy_staff staff where staff.academy_id=academy and staff.id=public.academy_legacy_uuid(row_data->>'staff_id') and staff.user_id=(ctx->>'actor_id')::uuid and staff.is_active) then return false;end if;
+ end if;
  if not writing and ctx->>'action'='teacher_day' and relation_name='academy_lesson_sessions' then
   if not exists(select 1 from jsonb_array_elements(scopes) s where public.academy_legacy_scope_covered(ctx,s,array['manageAcademicOperations']))
    and not exists(select 1 from public.academy_staff staff where staff.academy_id=academy and staff.user_id=(ctx->>'actor_id')::uuid and staff.is_active
@@ -219,7 +260,7 @@ begin
  end if;
  if not writing and relation_name in('academy_payments','academy_charge_balances','academy_account_balances','academy_account_ledger_entries','academy_payment_allocations','academy_pricing_adjustments')
   and not public.academy_legacy_finance_visible(ctx,relation_name,row_data) then return false;end if;
- if not writing and relation_name in('academy_staff_performance','academy_staff_performance_v2','academy_teacher_performance','academy_teacher_performance_v2') then
+ if not writing and relation_name in('academy_unified_student_intelligence','academy_staff_performance','academy_staff_performance_v2','academy_teacher_performance','academy_teacher_performance_v2') then
   for scope in select value from jsonb_array_elements(scopes) loop
    if not public.academy_legacy_scope_covered(ctx,scope) then return false;end if;
   end loop;
@@ -329,7 +370,7 @@ create function public.academy_legacy_finance_visible(ctx jsonb,relation_name te
 returns boolean language plpgsql volatile security definer set search_path=pg_catalog,public as $$
 declare scope jsonb;scopes jsonb;caps text[];
 begin
- caps:=case when ctx->>'action'='education_os' then array['manageFinance'] else array['viewFinancialReports','manageFinance'] end;
+ caps:=case when ctx->>'action'='education_os' then array['manageFinance'] when ctx->>'action' in('business_intelligence','owner_dashboard','global_search') then array['viewFinancialReports','manageFinance'] else array['viewFinance','manageFinance','collectFinance','viewFinancialReports'] end;
  scopes:=public.academy_legacy_row_scopes(ctx,relation_name,row_data);
  if jsonb_array_length(scopes)=0 then return false;end if;
  for scope in select value from jsonb_array_elements(scopes) loop
@@ -667,10 +708,10 @@ begin
   columns:='';
   for column_item in select a.attname,format_type(a.atttypid,a.atttypmod) type_name from pg_attribute a where a.attrelid=item.relation_id and a.attnum>0 and not a.attisdropped order by a.attnum loop
    projection:=format('t.%I',column_item.attname);
-    if column_item.attname ~ '(revenue|collected_amount|outstanding_amount|teacher_cost|contribution|generated_amount|final_payable_amount|payroll_total|discounts|refunds|lifetime_value|total_paid)' then
+    if column_item.attname ~ '(revenue|amount|balance|cost|contribution|payroll_total|discounts|refunds|lifetime_value|total_paid|last_payment_at)' then
       projection:=format('case when public.academy_legacy_finance_visible(ctx.value,%L,to_jsonb(t)) then t.%I else null::%s end as %I',item.name,column_item.attname,column_item.type_name,column_item.attname);
       -- Old institution totals sum unrelated currencies; unavailable is honest.
-      if item.name in('academy_business_dashboard_v2','academy_owner_intelligence') then projection:=format('null::%s as %I',column_item.type_name,column_item.attname);end if;
+      if item.name in('academy_business_dashboard_v2','academy_owner_intelligence') or(column_item.attname<>'last_payment_at' and item.relkind='v' and item.name<>'academy_branch_comparison_v2' and not exists(select 1 from pg_attribute c where c.attrelid=item.relation_id and c.attname='currency' and not c.attisdropped)) then projection:=format('null::%s as %I',column_item.type_name,column_item.attname);end if;
     end if;
     if item.name='academy_branch_comparison_v2' and column_item.attname in('collected_revenue','outstanding_amount') then
       if column_item.attname='collected_revenue' then
@@ -680,6 +721,12 @@ begin
       end if;
       projection:=format('case when public.academy_legacy_finance_visible(ctx.value,%L,to_jsonb(t)) then %s else null::bigint end as %I',item.name,projection,column_item.attname);
     end if;
+   if item.name='academy_branch_comparison_v2' and column_item.attname='attendance_percent' then
+    projection:='(select round(avg(case when a.status in(''present'',''late'') then 100 else 0 end),2) from public.academy_attendance a join public.academy_classrooms c on c.academy_id=a.academy_id and c.id=a.classroom_id where a.academy_id=t.academy_id and c.branch_id=t.branch_id) as attendance_percent';
+   end if;
+   if item.name='academy_staff' and column_item.attname='metadata' then
+    projection:='case when public.academy_legacy_scope_covered(ctx.value,jsonb_build_object(''kind'',''academy''),array[''manageStaff'']) then t.metadata else ''{}''::jsonb end as metadata';
+   end if;
    if item.name='users' and column_item.attname not in('id','email','full_name','is_active','created_at','updated_at') then
     projection:=format('case when t.id=(ctx.value->>''actor_id'')::uuid then t.%I else null::%s end as %I',column_item.attname,column_item.type_name,column_item.attname);
    elsif item.name='academy_classrooms' and column_item.attname not in('id','academy_id','branch_id','name','description','is_active','created_at','updated_at') then

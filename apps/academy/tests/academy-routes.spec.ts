@@ -6171,7 +6171,7 @@ test('global branch selection reloads the workspace and applies each branch role
   const requests:Array<{action:unknown;branch:string|null}>=[];
   await mockAcademyEdge(page,'owner',{respond:async body=>{
     if(body.action==='academies')return {academies:[{...academy('owner'),access:full}]};
-    if(body.action==='summary')return {academy_id:academyId,access:full,counts:{contacts:0,classrooms:0,offers:0,active_entitlements:0,open_alerts:0}};
+    if(body.action==='summary')return {academy_id:academyId,access:requests.at(-1)?.branch===a?narrow:full,counts:{contacts:0,classrooms:0,offers:0,active_entitlements:0,open_alerts:0}};
     if(body.action==='branch_contexts')return {actor_id:'owner-user',academy_id:academyId,access:full,branches:[{id:a,name:'Owned cashier A',access:narrow},{id:b,name:'Owned administrator B',access:full}]};
   }});
   await page.route('**/functions/v1/academy*',async route=>{const body=route.request().postDataJSON();requests.push({action:body?.action,branch:new URL(route.request().url()).searchParams.get('_scope_branch_id')});return route.fallback();});

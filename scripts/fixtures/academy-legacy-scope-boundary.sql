@@ -4,6 +4,7 @@ declare owner_id uuid:=gen_random_uuid();actor uuid:=gen_random_uuid();student u
  payment_a uuid:=gen_random_uuid();payment_b uuid:=gen_random_uuid();payment_usd uuid:=gen_random_uuid();payment_unknown uuid:=gen_random_uuid();
  branch_a uuid:=gen_random_uuid();branch_b uuid:=gen_random_uuid();class_a uuid:=gen_random_uuid();class_b uuid:=gen_random_uuid();
  child_a uuid:=gen_random_uuid();child_b uuid:=gen_random_uuid();peer_a uuid:=gen_random_uuid();assignment_a uuid:=gen_random_uuid();assignment_b uuid:=gen_random_uuid();
+ guardian_a uuid:=gen_random_uuid();guardian_b uuid:=gen_random_uuid();guardian_shared uuid:=gen_random_uuid();
  room_a uuid:=gen_random_uuid();room_b uuid:=gen_random_uuid();admin_grant uuid;headers jsonb;ctx jsonb;result jsonb;n integer;before_generation bigint;
 begin
  insert into auth.users(id,email,aud,role,email_confirmed_at,raw_app_meta_data,raw_user_meta_data)
@@ -41,6 +42,13 @@ begin
  insert into public.academy_role_grants(academy_id,user_id,email,role,scope_type,scope_ids,status,granted_by)
  values(academy,complement,complement||'+admin@example.invalid','admin','branches',jsonb_build_array(branch_a),'active',owner_id),
  (academy,complement,complement||'+manager@example.invalid','manager','branches',jsonb_build_array(branch_b),'active',owner_id);
+ insert into public.academy_guardians(id,academy_id,full_name,email,status,created_by)
+ values(guardian_a,academy,'Owned only A parent',guardian_a||'@example.invalid','verified',owner_id),
+ (guardian_b,academy,'Owned only B parent',guardian_b||'@example.invalid','verified',owner_id),
+ (guardian_shared,academy,'Owned shared parent',guardian_shared||'@example.invalid','verified',owner_id);
+ insert into public.academy_student_guardian_relationships(academy_id,contact_id,guardian_id,relationship_type,status,consent_status,consented_at)
+ values(academy,child_a,guardian_a,'mother','active','granted',now()),(academy,child_b,guardian_b,'father','active','granted',now()),
+ (academy,child_a,guardian_shared,'guardian','active','granted',now()),(academy,child_b,guardian_shared,'guardian','active','granted',now());
  perform set_config('request.jwt.claims','{"role":"service_role"}',true);
  headers:=jsonb_build_object('x-schood-legacy-academy',academy,'x-schood-legacy-actor',actor,'x-schood-legacy-action','business_intelligence','x-schood-legacy-mode','read');
  perform set_config('request.headers',headers::text,true);
@@ -67,6 +75,11 @@ begin
  if (select collected_revenue from public.academy_scope_academy_branch_comparison_v2 where branch_id=branch_a)<>200 or (select collected_revenue from public.academy_scope_academy_branch_comparison_v2 where branch_id=branch_b) is not null then raise exception 'A higher role promoted financial access into a lower-role branch';end if;
  headers:=headers||jsonb_build_object('x-schood-legacy-actor',actor);
  perform set_config('request.headers',headers::text,true);
+
+ headers:=headers||jsonb_build_object('x-schood-legacy-action','guardian_relationships');
+ perform set_config('request.headers',headers::text,true);
+ if (select count(*) from public.academy_scope_academy_guardians where academy_id=academy)<>2 or exists(select 1 from public.academy_scope_academy_guardians where id=guardian_a) then raise exception 'Parent directory lost a linked B parent or exposed an unrelated A parent';end if;
+ if (select count(*) from public.academy_scope_academy_student_guardian_relationships where academy_id=academy)<>2 then raise exception 'A shared parent exposed another branch child relationship';end if;
 
  -- A lower-role student grant keeps its legitimate row without granting its
  -- peers' work or merging the cashier branch into grading authority.

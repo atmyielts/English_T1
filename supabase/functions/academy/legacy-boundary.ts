@@ -99,7 +99,10 @@ export async function openLegacyBoundary<T extends Db>(
     db,
     membership(original: MembershipRow): MembershipRow {
       const entries = initial.entries.map(entry => ({...entry, tenant_id: input.academy, status:'active'} as MembershipRow));
-      return effectiveLegacyMembership(original, entries);
+      const allEntries=initial.authorities.map(entry=>({...entry as Row,source:'grant',tenant_id:input.academy,status:'active'} as MembershipRow));
+      const presented={...effectiveLegacyMembership(original,allEntries),legacy_original_access:undefined};
+      presented.source=(initial.authorities as Row[]).find(entry=>entry.role===presented.role)?.source as MembershipRow['source']??presented.source;
+      return {...effectiveLegacyMembership(original,entries),legacy_original_access:presented} as MembershipRow;
     },
     async verifyCurrent() {
       const current = await context();

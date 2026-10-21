@@ -1,3 +1,4 @@
+import {currentAcademyAccessProfile} from './legacy-scope-profile.ts';
 import { openLegacyBoundary, scopeLegacySelection } from './legacy-boundary.ts';
 const academy='00000000-0000-4000-8000-000000000001',actor='00000000-0000-4000-8000-000000000002';
 const assert=(value:unknown)=>{if(!value)throw Error('Legacy table boundary assertion failed');};
@@ -24,4 +25,12 @@ Deno.test('nested legacy joins choose the reviewed composite tenant FK without r
  const hints={academy_classroom_memberships:{academy_contacts:'academy_memberships_contact_tenant_fk'},academy_contacts:{users:'academy_contacts_user_id_fkey'}};
  const selected=scopeLegacySelection('id,academy_contacts(id,users(id)),academy_classrooms!custom_fk!inner(id)','academy_classroom_memberships',hints);
  assert(selected==='id,academy_contacts:academy_scope_academy_contacts!academy_memberships_contact_tenant_fk(id,users:academy_scope_users!academy_contacts_user_id_fkey(id)),academy_classrooms:academy_scope_academy_classrooms!custom_fk!inner(id)');
+});
+
+Deno.test('selected-branch summaries use the current cashier binding instead of a cached owner role',async()=>{
+ const entry={role:'cashier',source:'grant',scope_type:'branches',scope_ids:[academy]};
+ const boundary=await openLegacyBoundary(()=>({from:()=>({}),rpc:()=>Promise.resolve({data:{academy_id:academy,actor_id:actor,action:'summary',mode:'read',authorities:[entry],entries:[entry]},error:null})}),{academy,actor,action:'summary',mode:'read'});
+ const profile=currentAcademyAccessProfile(boundary.membership({tenant_id:academy,role:'owner',status:'active',source:'tenant'}));
+ assert(profile.role==='cashier'&&profile.scope==='assigned_branches');
+ assert((profile.permissions as Record<string,boolean>).manageAcademy===false);
 });
