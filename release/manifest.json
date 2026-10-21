@@ -1,46 +1,27 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-classroom-files-written-recovery",
+  "releaseId": "academy-readonly-write-preflights",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [
-    "academy"
-  ],
+  "frontends": [],
   "migrations": [
-    "20261021011000_academy_classroom_file_authority.sql",
-    "20261021012000_academy_written_submission_receipts.sql"
+    "20261021013000_academy_write_preflight_reads.sql"
   ],
-  "edgeFunctions": [
-    "academy"
-  ],
+  "edgeFunctions": [],
   "workers": [],
   "sharedEdgeConsumers": [],
-  "requiredSecrets": [
-    "ACADEMY_AUDIO_ENCRYPTION_KEY",
-    "GMAIL_SMTP_APP_PASSWORD",
-    "GMAIL_SMTP_EMAIL",
-    "SITE_URL"
-  ],
+  "requiredSecrets": [],
   "rolloutOrder": [
-    "pages",
-    "migration:20261021011000_academy_classroom_file_authority.sql",
-    "migration:20261021012000_academy_written_submission_receipts.sql",
-    "secret:ACADEMY_AUDIO_ENCRYPTION_KEY",
-    "secret:GMAIL_SMTP_APP_PASSWORD",
-    "secret:GMAIL_SMTP_EMAIL",
-    "secret:SITE_URL",
-    "function:academy"
+    "migration:20261021013000_academy_write_preflight_reads.sql"
   ],
   "manualFollowUps": [
-    "After exact-head/main CI and tracked Pages publication, apply only the two qualified additive migrations from an isolated copy of the 240 installed migrations, then deploy Academy from a fresh v99 source-preserving capture. Retain all unrelated runtime modules, audio encryption and provider configuration. Read back every module and private command body/ACL; run installed rollback-only fixtures and owned production classroom/file/submission recovery acceptance before closure.",
-    "Use supabase db push --linked only from the isolated qualified migration catalogue, then supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel from the prepared source-preserving bundle.",
-    "Retain installed values; supabase secrets set ACADEMY_AUDIO_ENCRYPTION_KEY=, supabase secrets set GMAIL_SMTP_APP_PASSWORD=, supabase secrets set GMAIL_SMTP_EMAIL= and supabase secrets set SITE_URL= are inventory command templates only, not instructions to replace values or set blanks. Missing Academy mail delivery configuration remains an external acceptance blocker."
+    "After exact-head/main CI and the tracked Pages decision, use supabase db push --linked only from an isolated copy of the 242 installed migrations plus this one qualified migration. Retain Academy v100 and all 42 installed source modules; no Edge deploy or secrets change. Read back the changed context body and unchanged other function/view ACLs, then run rollback-only installed fixtures and fresh owned resource/file/written acceptance."
   ],
   "verification": [
-    "Current classroom identity and independent capabilities, active recipient/roster guards, exact bucket/classroom/purpose file issuance, stored-reference replacement/revocation refusal, batched current authorization and replay-safe written/file receipts. Run full Edge tests, Academy build/lint/localization/browser checks, native installed-schema fixtures and production-owned acceptance/cleanup."
+    "A real read-only transaction must permit legitimate write-action preflight GETs while actual mutations keep locked current-authority and before/after guards. All owned failed fixtures must close and remain separate from accepted evidence."
   ],
   "rollback": {
-    "edge": "Restore the captured v99 Academy bundle; the two additive migrations keep old clients compatible.",
-    "migration": "Retain private receipt history and new service-only guards. No columns are dropped and no customer references or secrets are rewritten."
+    "edge": "Academy v100 is unchanged.",
+    "migration": "Retain the exact prior context definition; only the read-only authority helper selection changes, while actual write transactions keep the original locked helper."
   }
 }
