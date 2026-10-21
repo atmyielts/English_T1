@@ -337,6 +337,9 @@ try {
   const {blueprintRace}=await import('./test-assessment-blueprint-race.mjs');
   await blueprintRace(query=>docker(['exec','-i',container,'psql','-At','-U','postgres','-v','ON_ERROR_STOP=1'],query),parallelSql);
   process.stdout.write('Passed four-process constrained definition/publication/start replay with differing valid derived witnesses: one definition, version, attempt and pinned form\n');
+  const {accommodationsRace}=await import('./test-assessment-accommodations-race.mjs');
+  await accommodationsRace(query=>docker(['exec','-i',container,'psql','-At','-U','postgres','-v','ON_ERROR_STOP=1'],query),parallelSql);
+  process.stdout.write('Passed four-process accommodation approval/start and break begin/end/pause/expiry races: one revision-fence winner, matching pinned snapshot, one break, single end without double credit, exact late end, unchanged scores\n');
 } finally {
   spawnSync('docker',['stop',container],{encoding:'utf8',timeout:20000});
 }

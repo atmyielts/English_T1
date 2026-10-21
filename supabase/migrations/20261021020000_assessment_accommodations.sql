@@ -140,7 +140,7 @@ end;$$;
 
 alter function public.assessment_runtime_command(uuid,uuid,text,text,jsonb) rename to assessment_runtime_command_before_breaks;
 create function public.assessment_runtime_command(p_actor uuid,p_tenant uuid,p_key text,p_action text,p_data jsonb) returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$
-declare a public.assessment_attempts;b public.assessment_breaks;l public.assessment_attempt_leases;prior public.assessment_runtime_commands;request jsonb;result jsonb;p jsonb;closing timestamptz;seconds integer;used numeric;counted integer;begin
+declare a public.assessment_attempts;b public.assessment_breaks;l public.assessment_attempt_leases;prior public.assessment_runtime_commands;request jsonb;result jsonb;p jsonb;closing timestamptz;ending timestamptz;began timestamptz;seconds integer;used numeric;counted integer;begin
  select * into a from public.assessment_attempts where tenant_id=p_tenant and id=(p_data->>'attempt_id')::uuid and candidate_id=p_actor for update;
  if not found then raise exception 'not_found' using errcode='P0002';end if;
  if p_key is null or length(p_key) not between 8 and 200 then raise exception 'idempotency_key_required' using errcode='22023';end if;
@@ -165,7 +165,14 @@ declare a public.assessment_attempts;b public.assessment_breaks;l public.assessm
   seconds:=least((p->>'max_seconds')::integer,floor((p->>'total_seconds')::numeric-used)::integer);
   if p is null or counted>=coalesce((p->>'max_breaks')::integer,0) or seconds is null or seconds<1 then raise exception 'break_allowance_exhausted' using errcode='23514';end if;
   select w.closes_at into closing from public.assessment_registrations r join public.assessment_exam_windows w on w.id=r.window_id where r.id=a.registration_id;
-  insert into public.assessment_breaks(tenant_id,attempt_id,ordinal,clock,started_at,ends_at,deadline_before,section_before) values(p_tenant,a.id,counted+1,p->>'clock',clock_timestamp(),least(closing,clock_timestamp()+make_interval(secs=>seconds)),a.deadline_at,a.section_deadline_at) returning * into b;
+  -- A running-clock break grants no time, so it cannot outlast the attempt's own
+  -- deadline; neither kind can outlast the sitting. A window too short to be a
+  -- meaningful break is refused rather than recorded as a zero-length break.
+  began:=clock_timestamp();
+  ending:=least(closing,began+make_interval(secs=>seconds));
+  if p->>'clock'='running' then ending:=least(ending,a.deadline_at);end if;
+  if ending<=began+interval '1 second' then raise exception 'break_window_closed' using errcode='23514';end if;
+  insert into public.assessment_breaks(tenant_id,attempt_id,ordinal,clock,started_at,ends_at,deadline_before,section_before) values(p_tenant,a.id,counted+1,p->>'clock',began,ending,a.deadline_at,a.section_deadline_at) returning * into b;
   if b.clock='stopped' then update public.assessment_attempts set deadline_at=least(closing,deadline_at+(b.ends_at-b.started_at)),section_deadline_at=least(closing,section_deadline_at+(b.ends_at-b.started_at)) where id=a.id;end if;
   result:=jsonb_build_object('id',b.id,'ends_at',b.ends_at,'clock',b.clock);
   insert into public.assessment_audit_events(tenant_id,actor_id,action,target_id,details) values(p_tenant,p_actor,'assessment.break.began',a.id,result);
