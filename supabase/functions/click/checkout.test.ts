@@ -29,11 +29,11 @@ async function scenario(test:(ctx:any)=>Promise<void>) {
       ctx.calls.push({table});
       const finish=()=>{
         if(table==="tenant_memberships")return {data:[{tenant_id:tenant}],error:null};
-        if(table==="plans")return {data:{id:plan,product_id:plan,name:"Synthetic plan",amount:ctx.price??1000,currency:"UZS",duration_days:30,metadata:{}},error:null};
+        if(table==="plans")return {data:{id:plan,product_id:plan,name:"Synthetic plan",amount:ctx.price??1000,currency:"UZS",duration_days:30,metadata:{},...(ctx.product?{product:ctx.product}:{})},error:null};
         if(table==="referral_programs")return {data:null,error:null};
         throw Error("No partial payment/reservation writes allowed: "+table);
       };
-      const query:any={select:()=>query,eq:()=>query,order:()=>query,limit:()=>query,maybeSingle:async()=>finish(),
+      const query:any={select:()=>query,eq:()=>query,order:()=>query,limit:()=>query,maybeSingle:async()=>table==="tenant_memberships"?{data:{role:ctx.role??"owner"},error:null}:finish(),
         then:(resolve:any,reject:any)=>Promise.resolve(finish()).then(resolve,reject)};return query;
     }};
   ctx.request=async(patch={})=>{
@@ -169,3 +169,12 @@ for(const action of ["create_wallet_topup","create_ticket_purchase","create_seat
   if(action==="create_wallet_topup")assertEquals(payload.credit_amount,undefined);
   if(action==="create_tier_upgrade_payment"){assertEquals(payload.plan_id,undefined);assertEquals((payload.metadata as any).requested_tier,"growth");}
 });
+
+Deno.test("actual institution service checkout requires the tenant owner or administrator",()=>scenario(async ctx=>{
+  ctx.allowPricing=true;ctx.replay={ok:true,state:"absent"};ctx.product={metadata:{kind:"institution_service",service:"assessment-cloud"}};ctx.role="member";
+  const refused=await ctx.request();assert(refused.status>=400&&refused.status<500);assertEquals(refused.body.error_code,"institution_admin_required");
+  assert(!ctx.calls.some((c:any)=>c.name==="create_payment_checkout"));
+  ctx.role="admin";ctx.created={ok:true,state:"created",payment:order({provider:"click",provider_transaction_id:id,status:"pending",amount:0,grant_completed_at:null})};
+  const allowed=await ctx.request();assertEquals(allowed.status,200);
+  const created=ctx.calls.find((c:any)=>c.name==="create_payment_checkout");assert(created);assert(!JSON.stringify(created.args).includes("institution_service"));
+}));

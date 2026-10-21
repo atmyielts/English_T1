@@ -115,3 +115,12 @@ export const isAllowedClickStatusTransition = (
   }
   return false;
 };
+
+/** Products sold to an institution as a whole (for example Schood Assessment
+ * Cloud) are marked `metadata.kind = "institution_service"`. Only the
+ * institution's owner or administrator may buy them for that tenant. */
+export const isInstitutionServiceProduct = (metadata: unknown): boolean =>
+  !!metadata && typeof metadata === "object" && !Array.isArray(metadata) &&
+  (metadata as Record<string, unknown>).kind === "institution_service";
+export const canPurchaseForInstitution = (role: unknown): boolean =>
+  role === "owner" || role === "admin";

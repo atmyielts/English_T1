@@ -76,3 +76,10 @@ Deno.test("checkout idempotency keys are bounded and state transitions are termi
   assert(!isAllowedClickStatusTransition("paid", "canceled"));
   assert(!isAllowedClickStatusTransition("canceled", "paid"));
 });
+
+Deno.test("institution service products require the tenant owner or administrator", async () => {
+  const { isInstitutionServiceProduct, canPurchaseForInstitution } = await import("./payment-safety.ts");
+  assertEquals(isInstitutionServiceProduct({ kind: "institution_service", service: "assessment-cloud" }), true);
+  assertEquals([null, [], {}, { kind: "course" }, "institution_service"].map(isInstitutionServiceProduct), [false, false, false, false, false]);
+  assertEquals(["owner", "admin", "member", "teacher", "counselor", null].map(canPurchaseForInstitution), [true, true, false, false, false, false]);
+});
