@@ -9,6 +9,9 @@ on:
       - 'packages/proctor-web/**'
       - 'packages/service-design/**'
       - 'workers/assessment-coordinator/**'
+      - 'workers/assessment-webhooks/**'
+      - 'packages/service-i18n/**'
+      - 'scripts/test-assessment-entitlements-race.mjs'
       - 'workers/assessment-grading/**'
       - 'workers/assessment-roster/**'
       - 'workers/assessment-media/**'
@@ -131,6 +134,29 @@ jobs:
           if-no-files-found: ignore
       # Disposable identity/PostgREST fixtures, real local PG/coordinator. The
       # proctor pause is a state-change fixture; no hosted or device acceptance.
+  integrations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: npm ci
+      - name: Webhook signing, delivery, billing API, CTT uncertainty and localization contracts
+        run: deno test --no-lock packages/assessment-core/src/webhooks.test.ts packages/assessment-core/src/psychometrics.test.ts supabase/functions/assessment-cloud/webhook-handler.test.ts supabase/functions/assessment-cloud/billing-handler.test.ts workers/assessment-webhooks/src/deliver.test.ts packages/service-i18n/tests/i18n.test.ts
+      - name: Separate webhook delivery Worker build and isolated configuration
+        run: |
+          npm --workspace workers/assessment-webhooks run build
+          npm --workspace workers/assessment-webhooks run test:config
+          deno check --no-lock supabase/functions/assessment-cloud/index.ts
+          node scripts/verify-assessment-boundaries.mjs
+      # Database authority for billing and webhooks runs in validate's isolated
+      # migration suite. No provider resource, deployment or outbound delivery.
   certificate-documents:
     runs-on: ubuntu-latest
     timeout-minutes: 20
