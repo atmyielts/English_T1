@@ -96,7 +96,8 @@ try {
   ]) {
     const result = await cli(["run-code", "--filename", file]);
     const json = /### Result\r?\n([^\r\n]+)/.exec(result)?.[1];
-    assert.ok(json, `No completed acceptance result from ${file}`);
+    assert.ok(json, `No completed acceptance result from ${file}
+${result.slice(-3000)}`);
     console.log(
       JSON.stringify({ script: path.basename(file), checks: JSON.parse(json) }),
     );
