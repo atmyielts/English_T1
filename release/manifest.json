@@ -277,7 +277,7 @@
     "Runtime-provided, not a project secret: supabase secrets set ENVIRONMENT= is not run.",
     "Edge: supabase functions deploy assessment-cloud --project-ref bbjawctnqrufvnesdsel and supabase functions deploy assessment-runtime --project-ref bbjawctnqrufvnesdsel after the migrations, with every ASSESSMENT_* feature flag unset.",
     "Not deployed in this release: supabase functions deploy proctor (Proctor paused) and supabase functions deploy click (its institution-plan guard ships with the coordinated payment release, not before).",
-    "Workers: deploy only assessment-coordinator (wrangler deploy --env production; SQLite Durable Objects, recovery queue and DLQ, cron; ALLOWED_ORIGINS=https://exam.schood.online). assessment-grading, assessment-media, assessment-qti, assessment-roster, assessment-webhooks, proctor-evidence, proctor-live stay undeployed until their features are enabled."
+    "Workers: deploy only assessment-coordinator (wrangler deploy --env production; SQLite Durable Objects, recovery queue and DLQ, cron; ALLOWED_ORIGINS=https://exam.schood.online, custom domain exam-api.schood.online; wrangler secret put SUPABASE_ANON_KEY and ASSESSMENT_COORDINATOR_SECRET --env production, the latter piped from the same locally generated value as the Supabase secret). assessment-grading, assessment-media, assessment-qti, assessment-roster, assessment-webhooks, proctor-evidence, proctor-live stay undeployed until their features are enabled."
   ],
   "verification": [
     "supabase migration list --linked shows the Assessment migrations applied and the 9 #220 payment migrations still pending; existing apps (platform, academy, simulators) load and sign in.",

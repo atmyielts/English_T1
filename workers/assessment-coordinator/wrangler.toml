@@ -55,11 +55,14 @@ dead_letter_queue = "schood-assessment-recovery-dlq-staging"
 [env.production]
 name = "schood-assessment-coordinator"
 workers_dev = false
+# The Exam app reaches the coordinator on its own subdomain; Cloudflare creates the DNS record.
+routes = [{ pattern = "exam-api.schood.online", custom_domain = true }]
 [[env.production.durable_objects.bindings]]
 name = "ATTEMPTS"
 class_name = "AttemptCoordinator"
 [env.production.vars]
-ALLOWED_ORIGINS = ""
+ALLOWED_ORIGINS = "https://exam.schood.online"
+SUPABASE_URL = "https://bbjawctnqrufvnesdsel.supabase.co"
 RECOVERY_BATCH_LIMIT = "200"
 [env.production.triggers]
 crons = ["* * * * *"]

@@ -11,5 +11,6 @@ for(const environment of [undefined,'staging','production']){
  assert.notEqual(consumer.dead_letter_queue,consumer.queue);assert.equal(Number(config.vars.RECOVERY_BATCH_LIMIT),200);
  names.push(config.name);queues.push(producer.queue);deadLetters.push(consumer.dead_letter_queue);
 }
+const production=unstable_readConfig({config:configPath,env:'production'});assert.equal(production.vars.ALLOWED_ORIGINS,'https://exam.schood.online');assert.match(String(production.vars.SUPABASE_URL),/^https:\/\/[a-z0-9]+\.supabase\.co$/);assert.equal(JSON.stringify(production.routes),JSON.stringify([{pattern:'exam-api.schood.online',custom_domain:true}]));
 assert.equal(new Set(names).size,3);assert.equal(new Set([...queues,...deadLetters]).size,6);
 process.stdout.write('Passed local Wrangler config validation: separate dev/staging/production Workers, recovery queues and DLQs, bounded consumers and owned minute cron. No provider resource was created.\n');
