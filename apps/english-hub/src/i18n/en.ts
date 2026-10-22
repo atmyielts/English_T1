@@ -345,7 +345,7 @@ export const en: Record<string, string> = {
   'landing.lead': 'Find your level in 10 minutes. Then get a short daily session across reading, listening, writing, speaking, grammar and vocabulary, with feedback on every answer.',
   'landing.cta': 'Find my level',
   'landing.pricing': 'See plans',
-  'landing.free': 'The placement test is free with a Schood account.',
+  'landing.free': 'Free with a Schood account: the level test, one activity every day and Review. A plan unlocks the full daily session.',
   'landing.sample.eyebrow': 'A day in Schood English',
   'landing.sample.reading': 'Read: Smart grocery choices',
   'landing.sample.grammar': 'Grammar: a, an and the',

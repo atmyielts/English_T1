@@ -345,7 +345,7 @@ export const uz: Partial<Record<string, string>> = {
   'landing.lead': '10 daqiqada darajangizni aniqlang. Soʻng har kuni oʻqish, tinglab tushunish, yozish, gapirish, grammatika va soʻz boyligi boʻyicha qisqa mashgʻulot oling — har bir javobga fikr-mulohaza bilan.',
   'landing.cta': 'Darajamni aniqlash',
   'landing.pricing': 'Tariflarni koʻrish',
-  'landing.free': 'Schood hisobi bilan daraja testi bepul.',
+  'landing.free': 'Schood hisobi bilan bepul: daraja testi, har kuni bitta mashq va takrorlash. Tarif toʻliq kundalik mashgʻulotni ochadi.',
   'landing.sample.eyebrow': 'Schood English bilan bir kun',
   'landing.sample.reading': 'Oʻqish: Smart grocery choices',
   'landing.sample.grammar': 'Grammatika: a, an va the',

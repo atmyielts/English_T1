@@ -345,7 +345,7 @@ export const ru: Partial<Record<string, string>> = {
   'landing.lead': 'Определите уровень за 10 минут. Затем получайте короткое ежедневное занятие: чтение, аудирование, письмо, говорение, грамматика и словарный запас — с отзывом на каждый ответ.',
   'landing.cta': 'Узнать мой уровень',
   'landing.pricing': 'Смотреть тарифы',
-  'landing.free': 'Тест на уровень бесплатен с аккаунтом Schood.',
+  'landing.free': 'Бесплатно с аккаунтом Schood: тест на уровень, одно задание каждый день и повторение. Тариф открывает полное ежедневное занятие.',
   'landing.sample.eyebrow': 'Один день в Schood English',
   'landing.sample.reading': 'Чтение: Smart grocery choices',
   'landing.sample.grammar': 'Грамматика: a, an и the',
