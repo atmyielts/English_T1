@@ -1,0 +1,64 @@
+{
+  "item": {
+    "slug": "a1-check-in-at-a-hotel",
+    "title": "Check In at a Hotel",
+    "level": "A1",
+    "prompt_text": "You arrive at a small hotel in Bukhara. Talk to the receptionist. Say hello and give your name, say you have a booking for two nights, ask what time breakfast is, and ask for the wifi password.",
+    "prompt_type": "roleplay",
+    "target_duration_seconds": 35,
+    "target_grammar": "I have…; What time is…? What is…? questions",
+    "fluency_objective": "Say each part of the check-in in one short, clear sentence.",
+    "pronunciation_objective": "Say numbers and times clearly: 'two nights', 'seven o'clock'.",
+    "target_vocabulary": [
+      "good evening",
+      "my name is",
+      "I have a booking",
+      "two nights",
+      "here is my passport",
+      "what time is breakfast",
+      "wifi password"
+    ],
+    "task_type": "roleplay",
+    "model_answer": "Good evening! My name is Aziz Rakhimov. I have a booking for two nights. Here is my passport. What time is breakfast, please? From seven o'clock? Great. And what is the wifi password? Thank you very much. Where is my room?",
+    "model_opening": "Good evening! My name is Aziz Rakhimov.",
+    "cues": [
+      {
+        "text": "hello and your name",
+        "keywords": [
+          "hello",
+          "good evening",
+          "good morning",
+          "good afternoon",
+          "my name",
+          "i'm"
+        ]
+      },
+      {
+        "text": "your booking",
+        "keywords": [
+          "booking",
+          "reservation",
+          "night",
+          "room"
+        ]
+      },
+      {
+        "text": "breakfast time",
+        "keywords": [
+          "breakfast",
+          "what time"
+        ]
+      },
+      {
+        "text": "the wifi password",
+        "keywords": [
+          "wifi",
+          "wi-fi",
+          "internet",
+          "password"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

@@ -1,0 +1,183 @@
+{
+  "item": {
+    "slug": "a1-dinner-at-a-friends-house",
+    "title": "Dinner at a friend's house",
+    "level": "A1",
+    "context_text": "Your friend Malika invites you to dinner with her family on Saturday. You answer her, find out what to bring, and say hello to her family at the door.",
+    "objective_text": "Accept the invitation, ask what to bring, and greet your friend's father politely.",
+    "mission_type": "social",
+    "target_grammar": "Can I…? for offers and requests (Can I bring something?)",
+    "cultural_note": "In Uzbekistan guests often bring bread (non), sweets or fruit when they visit a family. In many other countries guests bring flowers or a dessert.",
+    "target_vocabulary": [
+      "invite",
+      "dinner",
+      "bring",
+      "bread",
+      "come in"
+    ],
+    "success_conditions": [
+      "Understand the day and time of the dinner",
+      "Say yes, say thank you and ask what to bring",
+      "Greet Malika's father and give your present"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read Malika's invitation",
+      "instructions": "Read Malika's message. Then answer the questions.",
+      "prompt_text": "Malika: Hi! Can you come to dinner at my house on Saturday? My mum is making plov! Dinner is at 7 pm. My dad can meet you at the bus stop.",
+      "estimated_minutes": 2,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "What day is the dinner?",
+          "options": [
+            "Friday",
+            "Saturday",
+            "Sunday"
+          ],
+          "answer_index": 1,
+          "explanation": "Malika says \"on Saturday\"."
+        },
+        {
+          "prompt": "What is Malika's mum making?",
+          "options": [
+            "Plov",
+            "Soup",
+            "Cake"
+          ],
+          "answer_index": 0,
+          "explanation": "\"My mum is making plov!\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Answer Malika",
+      "instructions": "Answer Malika. Say yes, say thank you, and ask what you can bring.",
+      "prompt_text": "Malika: Can you come on Saturday?",
+      "estimated_minutes": 3,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Accept the invitation, thank Malika and ask what to bring.",
+      "points": [
+        {
+          "label": "say yes",
+          "any": [
+            "yes",
+            "sure",
+            "of course",
+            "i can",
+            "i'd love",
+            "i would love",
+            "great"
+          ]
+        },
+        {
+          "label": "say thank you",
+          "any": [
+            "thank*",
+            "thanks"
+          ]
+        },
+        {
+          "label": "ask what to bring",
+          "any": [
+            "bring",
+            "take",
+            "buy"
+          ]
+        }
+      ],
+      "model_answer": "Yes, I can come! Thank you very much. What can I bring? Can I bring some fruit or a cake?",
+      "min_words": null
+    },
+    {
+      "title": "Listen to Malika",
+      "instructions": "Malika answers with a voice message. Listen. Then answer the questions. You can listen again.",
+      "prompt_text": "Hi! Thank you for your message. Please don't bring a big present. Maybe some bread from the bazaar? My grandmother lives with us too. She doesn't speak English, but she is very friendly. See you at seven!",
+      "estimated_minutes": 2,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "gb",
+      "questions": [
+        {
+          "prompt": "What can you bring?",
+          "options": [
+            "Bread",
+            "A cake",
+            "Flowers"
+          ],
+          "answer_index": 0,
+          "explanation": "Malika says \"Maybe some bread from the bazaar?\""
+        },
+        {
+          "prompt": "Who lives with Malika's family?",
+          "options": [
+            "Her aunt",
+            "Her grandmother",
+            "Her cousin"
+          ],
+          "answer_index": 1,
+          "explanation": "\"My grandmother lives with us too.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Say hello at the door",
+      "instructions": "You arrive at Malika's house. Her father opens the door. Say hello, say who you are, and give him the bread.",
+      "prompt_text": "Malika's father: Good evening! Come in, come in!",
+      "estimated_minutes": 2,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Greet Malika's father, say who you are and give your present.",
+      "points": [
+        {
+          "label": "say hello",
+          "any": [
+            "hello",
+            "good evening",
+            "hi",
+            "assalomu alaykum",
+            "salam"
+          ]
+        },
+        {
+          "label": "say who you are",
+          "any": [
+            "my name",
+            "name is",
+            "i'm",
+            "i am",
+            "call me",
+            "friend"
+          ]
+        },
+        {
+          "label": "give the bread",
+          "any": [
+            "bread",
+            "for you",
+            "this is for",
+            "non"
+          ]
+        }
+      ],
+      "model_answer": "Hello, good evening! I am Aziz, Malika's friend. Thank you for inviting me. This bread is for you.",
+      "min_words": null
+    }
+  ]
+}

@@ -1,0 +1,124 @@
+{
+  "item": {
+    "slug": "b2-non-defining-relative-clauses",
+    "title": "Non-defining relative clauses: adding extra information",
+    "level": "B2",
+    "focus_area": "relative-clauses",
+    "explanation_text": "A non-defining relative clause adds extra information about a noun that is already clear. It is separated by commas: My sister, who lives in Seoul, is a nurse. Use who for people, which for things, whose for possession, where for places and when for times. In a non-defining clause you cannot use that, and you cannot leave the relative pronoun out. which can also refer back to a whole idea: He passed the exam, which surprised everyone. A defining clause has no commas, because it tells us which person or thing we mean: The man who called you is my uncle.",
+    "contrast_text": "Compare: My brother who works in IT lives in Tashkent (I have more than one brother; this tells you which one). My brother, who works in IT, lives in Tashkent (I have one brother; his job is extra information).",
+    "common_error_pattern": "Using that after a comma, joining two sentences with only a comma ('..., it was...'), or leaving out the commas around extra information.",
+    "tags": [
+      "relative clauses",
+      "non-defining",
+      "commas"
+    ],
+    "examples": [
+      {
+        "bad": "Samarkand, that is over 2,500 years old, attracts many tourists.",
+        "good": "Samarkand, which is over 2,500 years old, attracts many tourists."
+      },
+      {
+        "bad": "The train was late, what meant we missed the meeting.",
+        "good": "The train was late, which meant we missed the meeting."
+      },
+      {
+        "bad": "Dilnoza, her brother is my classmate, is coming tonight.",
+        "good": "Dilnoza, whose brother is my classmate, is coming tonight."
+      },
+      {
+        "bad": "We spent a day in Bukhara, there we saw the Ark fortress.",
+        "good": "We spent a day in Bukhara, where we saw the Ark fortress."
+      }
+    ]
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Type who, which, whose, where or when.",
+      "prompt_text": "Our teacher, ___ is from Canada, speaks a little Uzbek.",
+      "accepted_answers": [
+        "who"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.relative-clauses"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Type who, which, whose, where or when.",
+      "prompt_text": "The Chorsu Bazaar, ___ you can buy fresh bread and spices, is always busy.",
+      "accepted_answers": [
+        "where"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.relative-clauses"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Type who, which, whose, where or when.",
+      "prompt_text": "My laptop, ___ I bought only last year, has already stopped working.",
+      "accepted_answers": [
+        "which"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.relative-clauses"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Type who, which, whose, where or when.",
+      "prompt_text": "Daniel, ___ parents live in London, is visiting us in May.",
+      "accepted_answers": [
+        "whose"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.relative-clauses"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Type who, which, whose, where or when.",
+      "prompt_text": "He forgot my birthday, ___ really upset me.",
+      "accepted_answers": [
+        "which"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.relative-clauses"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Type who, which, whose, where or when.",
+      "prompt_text": "I'll never forget 2020, ___ all our lessons suddenly moved online.",
+      "accepted_answers": [
+        "when"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.relative-clauses"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "instructions": "Find the mistake and write the whole sentence correctly.",
+      "prompt_text": "My grandmother, that is 85, still bakes bread every week.",
+      "accepted_answers": [
+        "My grandmother, who is 85, still bakes bread every week."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.relative-clauses"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "instructions": "Find the mistake and write the whole sentence correctly.",
+      "prompt_text": "We stayed in a small guesthouse in Khiva, it was close to the old city.",
+      "accepted_answers": [
+        "We stayed in a small guesthouse in Khiva, which was close to the old city."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.relative-clauses"
+    }
+  ]
+}

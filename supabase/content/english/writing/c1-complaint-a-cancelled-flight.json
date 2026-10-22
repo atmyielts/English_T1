@@ -1,0 +1,87 @@
+{
+  "item": {
+    "slug": "c1-complaint-a-cancelled-flight",
+    "title": "Complaint: A Cancelled Flight",
+    "level": "C1",
+    "prompt_text": "Your flight from Istanbul to Tashkent was cancelled only two hours before departure. Airline staff gave no clear information, no hotel was offered, and you had to pay for a hotel and a new ticket yourself. You also missed an important day at work. Write a formal letter of complaint to the airline's customer relations department.",
+    "genre": "formal letter of complaint",
+    "target_grammar": "formal passives (I was informed…, no assistance was offered); inversion for emphasis (Not only…)",
+    "target_structure": "purpose and booking details + account of events + criticism of how it was handled + consequences + specific demands + firm closing",
+    "expected_length_min": 220,
+    "expected_length_max": 300,
+    "target_vocabulary": [
+      "booking reference",
+      "cancellation",
+      "notice",
+      "inadequate",
+      "reimbursement",
+      "compensation",
+      "receipts",
+      "unacceptable",
+      "I expect",
+      "at your earliest convenience"
+    ],
+    "audience": "The airline's customer relations department",
+    "checklist": [
+      {
+        "point": "State the purpose and give the flight details",
+        "keywords": [
+          "i am writing",
+          "complain",
+          "flight",
+          "booking",
+          "reference",
+          "dated"
+        ]
+      },
+      {
+        "point": "Explain what happened and how badly it was handled",
+        "keywords": [
+          "cancelled",
+          "canceled",
+          "notice",
+          "no information",
+          "staff",
+          "informed",
+          "unclear"
+        ]
+      },
+      {
+        "point": "Describe the consequences for you",
+        "keywords": [
+          "as a result",
+          "consequently",
+          "had to pay",
+          "missed",
+          "cost",
+          "expense",
+          "hotel"
+        ]
+      },
+      {
+        "point": "State clearly what you expect the airline to do",
+        "keywords": [
+          "refund",
+          "reimburse",
+          "compensation",
+          "expect",
+          "request",
+          "explanation"
+        ]
+      },
+      {
+        "point": "Refer to evidence and close firmly but politely",
+        "keywords": [
+          "receipts",
+          "attached",
+          "enclosed",
+          "copies",
+          "yours faithfully",
+          "yours sincerely",
+          "look forward"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

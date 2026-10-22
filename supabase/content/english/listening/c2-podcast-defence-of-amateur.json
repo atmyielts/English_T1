@@ -1,0 +1,171 @@
+{
+  "item": {
+    "slug": "c2-podcast-defence-of-amateur",
+    "title": "In Defence of the Amateur",
+    "level": "C2",
+    "summary": "A podcast host argues for doing things badly, purely for the love of it, in an age that wants every hobby to become a project.",
+    "transcript_text": "There's a word I've been thinking about a great deal lately, and it's one we've managed to turn into an insult: amateur. Call someone's work amateurish and you've dismissed it in a single stroke. And yet the word comes, by way of French, from the Latin for lover. An amateur, originally, was simply someone who did something for the love of it. Somewhere along the way, we seem to have decided that anything worth doing is worth monetising, optimising, or at the very least posting online. A friend of mine, Daniel, took up the piano at forty-five. Within a month, people were asking him whether he planned to take exams, or perform, or teach. He told me, with some exasperation, that he simply wanted to play badly in his own living room, and that nobody seemed to find that an acceptable ambition. I think there's something quietly radical in that. When you do something purely for its own sake, failure loses most of its sting, because there's no audience to disappoint and nothing to lose but an evening. That freedom, paradoxically, is often where real improvement comes from, because you take risks you'd never take if your reputation were at stake. I'm not suggesting we abandon ambition altogether. Professional standards exist for good reasons, and I'd rather my surgeon weren't a hobbyist. But perhaps we could reclaim a corner of life where the only measure of success is whether we enjoyed ourselves. So here's my challenge for the week: find one thing you're unashamedly mediocre at, and do it anyway.",
+    "category": "Society",
+    "accent": "general",
+    "speed_label": "fast",
+    "speed_wpm": 170,
+    "duration_seconds": 92,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "podcast",
+      "hobbies",
+      "opinion",
+      "wellbeing"
+    ],
+    "questions": [
+      {
+        "prompt": "Why does the speaker mention where the word \"amateur\" comes from?",
+        "options": [
+          "To show that the word has always been an insult",
+          "To contrast its original meaning of love with today's negative use",
+          "To prove that French and Latin are related",
+          "To explain why amateurs are usually beginners"
+        ],
+        "answer_index": 1,
+        "explanation": "It comes \"from the Latin for lover\", yet \"we've managed to turn [it] into an insult\"."
+      },
+      {
+        "prompt": "Why was Daniel exasperated?",
+        "options": [
+          "He could not find a piano teacher.",
+          "His playing was not improving.",
+          "People assumed his hobby needed a goal beyond enjoyment.",
+          "His family complained about the noise."
+        ],
+        "answer_index": 2,
+        "explanation": "People asked about exams, performing or teaching, while \"he simply wanted to play badly in his own living room\"."
+      },
+      {
+        "prompt": "According to the speaker, why does failure lose its sting in a hobby?",
+        "options": [
+          "Because hobbies are easy",
+          "Because nothing important is at stake and nobody is watching",
+          "Because amateurs rarely fail",
+          "Because friends always encourage you"
+        ],
+        "answer_index": 1,
+        "explanation": "\"There's no audience to disappoint and nothing to lose but an evening.\""
+      },
+      {
+        "prompt": "What is the purpose of the remark about the surgeon?",
+        "options": [
+          "To argue that professionals should have hobbies",
+          "To admit that high professional standards are sometimes essential",
+          "To criticise doctors who play music",
+          "To show that the speaker distrusts experts"
+        ],
+        "answer_index": 1,
+        "explanation": "It qualifies the argument: \"Professional standards exist for good reasons.\""
+      },
+      {
+        "prompt": "What does the speaker challenge listeners to do?",
+        "options": [
+          "Turn a hobby into a small business",
+          "Practise until they are good at something new",
+          "Do something they are mediocre at, without shame",
+          "Share their hobbies online"
+        ],
+        "answer_index": 2,
+        "explanation": "\"Find one thing you're unashamedly mediocre at, and do it anyway.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "There's a word I've been thinking about a great deal lately, and it's one we've managed to turn into an insult: amateur.",
+      "focus_phrase": "turn into an insult",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Call someone's work amateurish and you've dismissed it in a single stroke.",
+      "focus_phrase": "in a single stroke",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "And yet the word comes, by way of French, from the Latin for lover.",
+      "focus_phrase": "the Latin for lover",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "An amateur, originally, was simply someone who did something for the love of it.",
+      "focus_phrase": "for the love of it",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Somewhere along the way, we seem to have decided that anything worth doing is worth monetising, optimising, or at the very least posting online.",
+      "focus_phrase": "worth monetising",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "A friend of mine, Daniel, took up the piano at forty-five.",
+      "focus_phrase": "took up the piano",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Within a month, people were asking him whether he planned to take exams, or perform, or teach.",
+      "focus_phrase": "take exams",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "He told me, with some exasperation, that he simply wanted to play badly in his own living room, and that nobody seemed to find that an acceptable ambition.",
+      "focus_phrase": "an acceptable ambition",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I think there's something quietly radical in that.",
+      "focus_phrase": "quietly radical",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "When you do something purely for its own sake, failure loses most of its sting, because there's no audience to disappoint and nothing to lose but an evening.",
+      "focus_phrase": "loses most of its sting",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "That freedom, paradoxically, is often where real improvement comes from, because you take risks you'd never take if your reputation were at stake.",
+      "focus_phrase": "at stake",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I'm not suggesting we abandon ambition altogether.",
+      "focus_phrase": "abandon ambition",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Professional standards exist for good reasons, and I'd rather my surgeon weren't a hobbyist.",
+      "focus_phrase": "a hobbyist",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "But perhaps we could reclaim a corner of life where the only measure of success is whether we enjoyed ourselves.",
+      "focus_phrase": "the only measure of success",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "So here's my challenge for the week: find one thing you're unashamedly mediocre at, and do it anyway.",
+      "focus_phrase": "unashamedly mediocre",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

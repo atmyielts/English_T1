@@ -1,0 +1,86 @@
+{
+  "item": {
+    "slug": "a1-my-best-friend",
+    "title": "My Best Friend",
+    "level": "A1",
+    "prompt_text": "Your English class is making a wall poster called 'Our Friends'. Write a few sentences about your best friend for the poster.",
+    "genre": "description",
+    "target_grammar": "present simple with he / she; have got / has",
+    "target_structure": "name and age + home and job + appearance + character + what we do together",
+    "expected_length_min": 30,
+    "expected_length_max": 50,
+    "target_vocabulary": [
+      "best friend",
+      "years old",
+      "tall",
+      "short",
+      "hair",
+      "eyes",
+      "kind",
+      "funny",
+      "together"
+    ],
+    "audience": "Your classmates",
+    "checklist": [
+      {
+        "point": "Give your friend's name and age",
+        "keywords": [
+          "name is",
+          "years old",
+          "#number",
+          "he is",
+          "she is"
+        ]
+      },
+      {
+        "point": "Say where your friend lives and what he or she does",
+        "keywords": [
+          "lives",
+          "works",
+          "studies",
+          "student",
+          "school",
+          "university",
+          "job"
+        ]
+      },
+      {
+        "point": "Say what your friend looks like",
+        "keywords": [
+          "tall",
+          "short",
+          "hair",
+          "eyes",
+          "beautiful",
+          "handsome",
+          "glasses"
+        ]
+      },
+      {
+        "point": "Say what your friend is like",
+        "keywords": [
+          "kind",
+          "funny",
+          "friendly",
+          "clever",
+          "nice",
+          "quiet",
+          "happy"
+        ]
+      },
+      {
+        "point": "Say what you do together",
+        "keywords": [
+          "together",
+          "we play",
+          "we go",
+          "we watch",
+          "we study",
+          "we talk",
+          "every"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

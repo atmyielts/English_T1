@@ -1,0 +1,75 @@
+{
+  "item": {
+    "slug": "c2-a-moment-that-changed-your-mind",
+    "title": "A Moment That Changed Your Mind",
+    "level": "C2",
+    "prompt_text": "Tell the story of a moment when you realised that something you strongly believed was wrong. Set the scene, explain what you believed and why, describe what happened, and reflect on how it changed your thinking.",
+    "prompt_type": "storytelling",
+    "target_duration_seconds": 165,
+    "target_grammar": "a full range of narrative tenses; inversion and fronting for dramatic effect (Little did I know…, Only later did I…)",
+    "fluency_objective": "Control the pace of the story, building tension before the turning point and slowing down for your reflection.",
+    "pronunciation_objective": "Use tone and pausing to separate the narrator's past voice from your present reflective voice.",
+    "target_vocabulary": [
+      "I was utterly convinced",
+      "it never occurred to me",
+      "little did I know",
+      "it dawned on me",
+      "humbling",
+      "in hindsight",
+      "to this day",
+      "a blind spot"
+    ],
+    "task_type": "story",
+    "model_answer": "For most of my teenage years, I was utterly convinced that talent was something you were either born with or not. I'd grown up hearing phrases like 'he's a natural' or 'she just has a gift', and since I'd never been naturally good at anything artistic, I'd quietly decided that music and drawing simply weren't for me. It never occurred to me to question that. The moment that changed my mind came when I was about nineteen. My closest friend, Timur, announced that he was going to learn the dutar. I remember almost laughing, because at school he'd been famously unmusical; he couldn't keep a rhythm to save his life. Little did I know how stubborn he could be. For a year, he practised every single evening, often for just twenty minutes, and he recorded himself so he could hear his mistakes. I'd visit him and hear the same short passage played clumsily, over and over again. Then, at his cousin's wedding the following summer, he played in front of about two hundred guests, and he played beautifully. Watching people's faces, it dawned on me that what I'd been calling talent was, in his case, a thousand ordinary evenings that nobody had seen. It was a humbling realisation, because it meant my own excuses had been exactly that: excuses. In hindsight, my belief had been a convenient blind spot; it protected me from the discomfort of being a beginner. To this day, whenever I catch myself saying 'I'm just not good at that', I think of those evenings and ask myself whether I've actually tried.",
+    "model_opening": "For most of my teenage years, I was utterly convinced that talent was something you were either born with or not.",
+    "cues": [
+      {
+        "text": "what you believed and why",
+        "keywords": [
+          "convinced",
+          "believed",
+          "i'd decided",
+          "i thought",
+          "assumed",
+          "grown up hearing"
+        ]
+      },
+      {
+        "text": "set the scene",
+        "keywords": [
+          "when i was",
+          "years",
+          "at the time",
+          "moment",
+          "came when",
+          "remember"
+        ]
+      },
+      {
+        "text": "what happened",
+        "keywords": [
+          "announced",
+          "practised",
+          "practiced",
+          "played",
+          "watching",
+          "then",
+          "one day"
+        ]
+      },
+      {
+        "text": "how it changed your thinking",
+        "keywords": [
+          "dawned",
+          "realis",
+          "realiz",
+          "in hindsight",
+          "to this day",
+          "changed",
+          "humbling"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

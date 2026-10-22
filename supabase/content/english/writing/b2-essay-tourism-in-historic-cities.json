@@ -1,0 +1,87 @@
+{
+  "item": {
+    "slug": "b2-essay-tourism-in-historic-cities",
+    "title": "Essay: Tourism in Historic Cities",
+    "level": "B2",
+    "prompt_text": "Every year more tourists visit historic cities such as Samarkand, Bukhara and Khiva. Your teacher has asked you to write an essay answering this question: Does tourism do more good than harm to historic cities?",
+    "genre": "opinion essay",
+    "target_grammar": "linking words of contrast and addition (however, whereas, moreover); first conditional",
+    "target_structure": "introduction with opinion + benefits paragraph + drawbacks paragraph + possible solutions + conclusion",
+    "expected_length_min": 180,
+    "expected_length_max": 250,
+    "target_vocabulary": [
+      "local economy",
+      "employment",
+      "restoration",
+      "crowded",
+      "prices",
+      "authentic",
+      "heritage",
+      "on the other hand",
+      "in conclusion"
+    ],
+    "audience": "Your teacher",
+    "checklist": [
+      {
+        "point": "Introduce the topic and give your opinion",
+        "keywords": [
+          "in my opinion",
+          "i believe",
+          "i think",
+          "in my view",
+          "this essay",
+          "i would argue"
+        ]
+      },
+      {
+        "point": "Explain the benefits of tourism",
+        "keywords": [
+          "jobs",
+          "employment",
+          "income",
+          "economy",
+          "restoration",
+          "restore",
+          "businesses",
+          "benefit"
+        ]
+      },
+      {
+        "point": "Explain the problems tourism can cause",
+        "keywords": [
+          "however",
+          "crowd",
+          "prices",
+          "damage",
+          "pollution",
+          "noise",
+          "authentic",
+          "drawback"
+        ]
+      },
+      {
+        "point": "Suggest how problems could be reduced",
+        "keywords": [
+          "should",
+          "could",
+          "limit",
+          "rules",
+          "solution",
+          "manage",
+          "if"
+        ]
+      },
+      {
+        "point": "Write a clear conclusion",
+        "keywords": [
+          "in conclusion",
+          "to conclude",
+          "overall",
+          "to sum up",
+          "on balance"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

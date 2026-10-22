@@ -1,0 +1,88 @@
+{
+  "item": {
+    "slug": "c2-letter-to-the-editor-ai-and-teachers",
+    "title": "Letter to the Editor: Will AI Replace Teachers?",
+    "level": "C2",
+    "prompt_text": "A newspaper recently published an opinion column arguing that artificial intelligence will soon make human teachers unnecessary. Write a letter to the editor responding to the column. Engage seriously with its arguments and present your own position.",
+    "genre": "letter to the editor",
+    "target_grammar": "concessive structures (While it is true that…, Granted…); nuanced hedging and emphasis",
+    "target_structure": "reference to the column + stance + fair concession + counter-arguments + alternative vision + incisive close",
+    "expected_length_min": 280,
+    "expected_length_max": 350,
+    "target_vocabulary": [
+      "columnist",
+      "concede",
+      "personalised",
+      "conflates",
+      "judgement",
+      "motivation",
+      "rapport",
+      "augment",
+      "overlooks",
+      "far from"
+    ],
+    "audience": "The newspaper's editor and readers",
+    "checklist": [
+      {
+        "point": "Refer to the column and state your position",
+        "keywords": [
+          "column",
+          "article",
+          "your columnist",
+          "recent",
+          "i write",
+          "in response"
+        ]
+      },
+      {
+        "point": "Fairly acknowledge what the column gets right",
+        "keywords": [
+          "granted",
+          "admittedly",
+          "while it is true",
+          "it is true that",
+          "concede",
+          "to be fair",
+          "undeniably"
+        ]
+      },
+      {
+        "point": "Argue what teachers do that AI cannot",
+        "keywords": [
+          "motivat",
+          "relationship",
+          "rapport",
+          "judgement",
+          "judgment",
+          "empathy",
+          "trust",
+          "human"
+        ]
+      },
+      {
+        "point": "Propose a more realistic role for AI in education",
+        "keywords": [
+          "tool",
+          "augment",
+          "support",
+          "assist",
+          "free teachers",
+          "alongside",
+          "rather than"
+        ]
+      },
+      {
+        "point": "End with a sharp, memorable conclusion",
+        "keywords": [
+          "ultimately",
+          "in short",
+          "the question is",
+          "far from",
+          "in the end",
+          "what we need"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

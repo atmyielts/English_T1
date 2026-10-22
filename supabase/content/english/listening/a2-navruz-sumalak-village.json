@@ -1,0 +1,136 @@
+{
+  "item": {
+    "slug": "a2-navruz-sumalak-village",
+    "title": "Navruz in the Village",
+    "level": "A2",
+    "summary": "A friend retells Aziz's story about making sumalak at his grandmother's house for Navruz.",
+    "transcript_text": "Last week my friend Aziz told me about his Navruz holiday. He and his parents drove to his grandmother's village near Samarkand. The journey took about four hours because the roads were very busy. When they arrived, all the neighbours were in the garden. They were making sumalak in a huge pot over a fire. Aziz said that sumalak is made from young wheat, and people cook it all night. Everyone took turns to stir it, and they sang songs and told stories. Aziz stirred the pot until two o'clock in the morning, and then he fell asleep. In the morning, the sumalak was sweet and brown. His grandmother gave a small bowl to every family in the street. Aziz says it was the best Navruz of his life, and next year he wants to take me with him.",
+    "category": "Culture",
+    "accent": "general",
+    "speed_label": "slow",
+    "speed_wpm": 125,
+    "duration_seconds": 67,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "Navruz",
+      "sumalak",
+      "story",
+      "family"
+    ],
+    "questions": [
+      {
+        "prompt": "Why did the journey take about four hours?",
+        "options": [
+          "The car broke down.",
+          "The roads were very busy.",
+          "They stopped for lunch.",
+          "They went by bus."
+        ],
+        "answer_index": 1,
+        "explanation": "\"The journey took about four hours because the roads were very busy.\""
+      },
+      {
+        "prompt": "How long do people cook sumalak?",
+        "options": [
+          "For one hour",
+          "All afternoon",
+          "All night",
+          "For two days"
+        ],
+        "answer_index": 2,
+        "explanation": "Aziz said that \"people cook it all night\"."
+      },
+      {
+        "prompt": "What happened to Aziz at two o'clock in the morning?",
+        "options": [
+          "He went home.",
+          "He fell asleep.",
+          "He ate the sumalak.",
+          "He started singing."
+        ],
+        "answer_index": 1,
+        "explanation": "\"Aziz stirred the pot until two o'clock in the morning, and then he fell asleep.\""
+      },
+      {
+        "prompt": "What did his grandmother do with the sumalak?",
+        "options": [
+          "She sold it at the bazaar.",
+          "She kept it for the family.",
+          "She gave a bowl to every family in the street.",
+          "She sent it to Tashkent."
+        ],
+        "answer_index": 2,
+        "explanation": "\"His grandmother gave a small bowl to every family in the street.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Last week my friend Aziz told me about his Navruz holiday.",
+      "focus_phrase": "Navruz holiday",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "He and his parents drove to his grandmother's village near Samarkand.",
+      "focus_phrase": "grandmother's village",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The journey took about four hours because the roads were very busy.",
+      "focus_phrase": "very busy",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "When they arrived, all the neighbours were in the garden.",
+      "focus_phrase": "neighbours",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "They were making sumalak in a huge pot over a fire.",
+      "focus_phrase": "huge pot",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Aziz said that sumalak is made from young wheat, and people cook it all night.",
+      "focus_phrase": "all night",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Everyone took turns to stir it, and they sang songs and told stories.",
+      "focus_phrase": "took turns",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Aziz stirred the pot until two o'clock in the morning, and then he fell asleep.",
+      "focus_phrase": "fell asleep",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "In the morning, the sumalak was sweet and brown.",
+      "focus_phrase": "sweet and brown",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "His grandmother gave a small bowl to every family in the street.",
+      "focus_phrase": "every family",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Aziz says it was the best Navruz of his life, and next year he wants to take me with him.",
+      "focus_phrase": "best Navruz",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "b2-social-issues",
+    "title": "Social issues",
+    "level": "B2",
+    "topic": "society",
+    "description": "Talking about problems in society and how people help."
+  },
+  "children": [
+    {
+      "word": "poverty",
+      "part_of_speech": "noun",
+      "definition": "the state of being very poor",
+      "example": "Education is one of the best ways out of poverty.",
+      "translation_ru": "бедность",
+      "translation_uz": "qashshoqlik"
+    },
+    {
+      "word": "unemployment",
+      "part_of_speech": "noun",
+      "definition": "the situation when people want a job but cannot find one",
+      "example": "Youth unemployment is a serious problem in many countries.",
+      "translation_ru": "безработица",
+      "translation_uz": "ishsizlik"
+    },
+    {
+      "word": "inequality",
+      "part_of_speech": "noun",
+      "definition": "an unfair situation in which some people have more money, rights or chances than others",
+      "example": "The report looks at inequality between cities and villages.",
+      "translation_ru": "неравенство",
+      "translation_uz": "tengsizlik"
+    },
+    {
+      "word": "homeless",
+      "part_of_speech": "adjective",
+      "definition": "having no place to live",
+      "example": "The charity gives hot meals to homeless people.",
+      "translation_ru": "бездомный",
+      "translation_uz": "boshpanasiz, uysiz"
+    },
+    {
+      "word": "charity",
+      "part_of_speech": "noun",
+      "definition": "an organisation that collects money to help people in need",
+      "example": "She gives part of her salary to a children's charity.",
+      "translation_ru": "благотворительная организация",
+      "translation_uz": "xayriya tashkiloti"
+    },
+    {
+      "word": "volunteer",
+      "part_of_speech": "verb",
+      "definition": "to offer to do work without being paid",
+      "example": "Students volunteer at the local hospital every Saturday.",
+      "translation_ru": "работать волонтёром",
+      "translation_uz": "koʻngilli boʻlib ishlamoq"
+    },
+    {
+      "word": "tackle",
+      "part_of_speech": "verb",
+      "definition": "to make a serious effort to deal with a difficult problem",
+      "example": "The city is building new bus lanes to tackle traffic.",
+      "translation_ru": "решать, бороться с (проблемой)",
+      "translation_uz": "hal qilishga kirishmoq, bartaraf etmoq"
+    },
+    {
+      "word": "discrimination",
+      "part_of_speech": "noun",
+      "definition": "treating a person or group unfairly because of who they are",
+      "example": "The law protects workers from discrimination.",
+      "translation_ru": "дискриминация",
+      "translation_uz": "kamsitish"
+    },
+    {
+      "word": "vulnerable",
+      "part_of_speech": "adjective",
+      "definition": "easily hurt or harmed, physically or emotionally",
+      "example": "Elderly people who live alone are especially vulnerable in winter.",
+      "translation_ru": "уязвимый",
+      "translation_uz": "himoyasiz, zaif"
+    },
+    {
+      "word": "raise awareness",
+      "part_of_speech": "phrase",
+      "definition": "to help people know and understand more about a problem",
+      "example": "The campaign aims to raise awareness of road safety.",
+      "translation_ru": "повышать осведомлённость",
+      "translation_uz": "xabardorlikni oshirmoq"
+    },
+    {
+      "word": "community",
+      "part_of_speech": "noun",
+      "definition": "the people who live in one area, or a group of people with something in common",
+      "example": "In our mahalla, the community helps families who are in need.",
+      "translation_ru": "сообщество, местные жители",
+      "translation_uz": "jamoa, mahalla ahli"
+    },
+    {
+      "word": "donate",
+      "part_of_speech": "verb",
+      "definition": "to give money or goods to help people",
+      "example": "We donated our old clothes to a local charity.",
+      "translation_ru": "жертвовать",
+      "translation_uz": "xayriya qilmoq, ehson qilmoq"
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "a2-cooking",
+    "title": "Cooking",
+    "level": "A2",
+    "topic": "cooking",
+    "description": "Cooking at home: recipes, ingredients and ways to cook."
+  },
+  "children": [
+    {
+      "word": "recipe",
+      "part_of_speech": "noun",
+      "definition": "a set of instructions that tells you how to cook a dish",
+      "example": "My grandmother never uses a recipe when she makes plov.",
+      "translation_ru": "рецепт",
+      "translation_uz": "retsept"
+    },
+    {
+      "word": "ingredient",
+      "part_of_speech": "noun",
+      "definition": "one of the foods you use to make a dish",
+      "example": "Rice, carrots, onions and meat are the main ingredients of plov.",
+      "translation_ru": "ингредиент",
+      "translation_uz": "masalliq"
+    },
+    {
+      "word": "boil",
+      "part_of_speech": "verb",
+      "definition": "to cook something in very hot water",
+      "example": "Boil the potatoes for twenty minutes.",
+      "translation_ru": "варить, кипятить",
+      "translation_uz": "qaynatmoq"
+    },
+    {
+      "word": "fry",
+      "part_of_speech": "verb",
+      "definition": "to cook something in hot oil",
+      "example": "She fried the onions until they were golden.",
+      "translation_ru": "жарить",
+      "translation_uz": "qovurmoq"
+    },
+    {
+      "word": "bake",
+      "part_of_speech": "verb",
+      "definition": "to cook bread or cakes in an oven",
+      "example": "We baked a cake for Dad's birthday.",
+      "translation_ru": "печь",
+      "translation_uz": "pishirmoq (pechda)"
+    },
+    {
+      "word": "chop",
+      "part_of_speech": "verb",
+      "definition": "to cut something into small pieces with a knife",
+      "example": "Chop the carrots into long thin pieces.",
+      "translation_ru": "нарезать, рубить",
+      "translation_uz": "toʻgʻramoq"
+    },
+    {
+      "word": "pot",
+      "part_of_speech": "noun",
+      "definition": "a deep round container for cooking",
+      "example": "Plov is cooked in a big heavy pot called a kazan.",
+      "translation_ru": "кастрюля, котёл",
+      "translation_uz": "qozon, kastryul"
+    },
+    {
+      "word": "oven",
+      "part_of_speech": "noun",
+      "definition": "the part of a cooker with a door, where you bake or roast food",
+      "example": "Put the bread in the oven for thirty minutes.",
+      "translation_ru": "духовка",
+      "translation_uz": "duxovka"
+    },
+    {
+      "word": "taste",
+      "part_of_speech": "verb",
+      "definition": "to try a little food to find out what it is like",
+      "example": "Taste the soup. Does it need more salt?",
+      "translation_ru": "пробовать (на вкус)",
+      "translation_uz": "tatib koʻrmoq"
+    },
+    {
+      "word": "spicy",
+      "part_of_speech": "adjective",
+      "definition": "having a strong hot taste from pepper or chilli",
+      "example": "This sauce is too spicy for me.",
+      "translation_ru": "острый",
+      "translation_uz": "achchiq"
+    },
+    {
+      "word": "fresh",
+      "part_of_speech": "adjective",
+      "definition": "recently made, picked or bought; not old",
+      "example": "We buy fresh bread every morning.",
+      "translation_ru": "свежий",
+      "translation_uz": "yangi, yangi uzilgan"
+    },
+    {
+      "word": "raw",
+      "part_of_speech": "adjective",
+      "definition": "not cooked",
+      "example": "Never eat raw chicken.",
+      "translation_ru": "сырой",
+      "translation_uz": "xom"
+    }
+  ]
+}

@@ -1,0 +1,141 @@
+{
+  "item": {
+    "slug": "a2-hotel-booking-voicemail",
+    "title": "A Message From the Hotel",
+    "level": "A2",
+    "summary": "A hotel receptionist in Istanbul calls to confirm a booking and explain arrival details.",
+    "transcript_text": "Good afternoon, this is a message for Mr Timur Rakhimov. My name is Sara, and I'm calling from the Blue Garden Hotel in Istanbul. Thank you for your booking. You have a double room for three nights, from the twelfth to the fifteenth of May. Your room will be ready at two o'clock in the afternoon. If you arrive earlier, you can leave your bags at the reception desk. Breakfast is included, and we serve it from seven to ten in the morning. You asked about getting here from the airport. There is a bus every thirty minutes, and it stops just in front of the hotel. A taxi is faster, but it is more expensive. If you have any questions, please call us back or send us an email. We look forward to seeing you, and have a good trip!",
+    "category": "Travel",
+    "accent": "general",
+    "speed_label": "slow",
+    "speed_wpm": 125,
+    "duration_seconds": 68,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "voicemail",
+      "hotel",
+      "travel"
+    ],
+    "questions": [
+      {
+        "prompt": "How many nights is Timur's booking for?",
+        "options": [
+          "Two",
+          "Three",
+          "Four",
+          "Fifteen"
+        ],
+        "answer_index": 1,
+        "explanation": "\"You have a double room for three nights, from the twelfth to the fifteenth of May.\""
+      },
+      {
+        "prompt": "What can Timur do if he arrives before two o'clock?",
+        "options": [
+          "Go to his room",
+          "Have a free lunch",
+          "Leave his bags at reception",
+          "Change his room"
+        ],
+        "answer_index": 2,
+        "explanation": "\"If you arrive earlier, you can leave your bags at the reception desk.\""
+      },
+      {
+        "prompt": "What does Sara say about breakfast?",
+        "options": [
+          "It is not included.",
+          "It is included and served from seven to ten.",
+          "It is served until noon.",
+          "It costs extra on Sundays."
+        ],
+        "answer_index": 1,
+        "explanation": "\"Breakfast is included, and we serve it from seven to ten in the morning.\""
+      },
+      {
+        "prompt": "What is true about the bus from the airport?",
+        "options": [
+          "It is faster than a taxi.",
+          "It runs once an hour.",
+          "It stops in front of the hotel.",
+          "It only runs in the morning."
+        ],
+        "answer_index": 2,
+        "explanation": "\"There is a bus every thirty minutes, and it stops just in front of the hotel.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Good afternoon, this is a message for Mr Timur Rakhimov.",
+      "focus_phrase": "a message for",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "My name is Sara, and I'm calling from the Blue Garden Hotel in Istanbul.",
+      "focus_phrase": "calling from",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Thank you for your booking.",
+      "focus_phrase": "your booking",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "You have a double room for three nights, from the twelfth to the fifteenth of May.",
+      "focus_phrase": "three nights",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Your room will be ready at two o'clock in the afternoon.",
+      "focus_phrase": "two o'clock",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "If you arrive earlier, you can leave your bags at the reception desk.",
+      "focus_phrase": "reception desk",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Breakfast is included, and we serve it from seven to ten in the morning.",
+      "focus_phrase": "Breakfast is included",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "You asked about getting here from the airport.",
+      "focus_phrase": "from the airport",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "There is a bus every thirty minutes, and it stops just in front of the hotel.",
+      "focus_phrase": "every thirty minutes",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "A taxi is faster, but it is more expensive.",
+      "focus_phrase": "more expensive",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "If you have any questions, please call us back or send us an email.",
+      "focus_phrase": "call us back",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "We look forward to seeing you, and have a good trip!",
+      "focus_phrase": "have a good trip",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

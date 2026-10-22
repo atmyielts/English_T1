@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "a1-the-body",
+    "title": "The body",
+    "level": "A1",
+    "topic": "body",
+    "description": "Parts of the body and saying what hurts."
+  },
+  "children": [
+    {
+      "word": "head",
+      "part_of_speech": "noun",
+      "definition": "the top part of your body, with your eyes, nose and mouth",
+      "example": "I have a cold and my head is hot.",
+      "translation_ru": "голова",
+      "translation_uz": "bosh"
+    },
+    {
+      "word": "eye",
+      "part_of_speech": "noun",
+      "definition": "the part of your face that you see with",
+      "example": "She has big brown eyes.",
+      "translation_ru": "глаз",
+      "translation_uz": "koʻz"
+    },
+    {
+      "word": "ear",
+      "part_of_speech": "noun",
+      "definition": "the part of your head that you hear with",
+      "example": "Put your hands over your ears. It's very loud!",
+      "translation_ru": "ухо",
+      "translation_uz": "quloq"
+    },
+    {
+      "word": "nose",
+      "part_of_speech": "noun",
+      "definition": "the part of your face that you smell with",
+      "example": "My nose is red because I have a cold.",
+      "translation_ru": "нос",
+      "translation_uz": "burun"
+    },
+    {
+      "word": "mouth",
+      "part_of_speech": "noun",
+      "definition": "the part of your face that you eat and speak with",
+      "example": "Open your mouth, please.",
+      "translation_ru": "рот",
+      "translation_uz": "ogʻiz"
+    },
+    {
+      "word": "tooth",
+      "part_of_speech": "noun",
+      "definition": "one of the hard white things in your mouth that you bite with (plural: teeth)",
+      "example": "I brush my teeth every morning and every evening.",
+      "translation_ru": "зуб",
+      "translation_uz": "tish"
+    },
+    {
+      "word": "hand",
+      "part_of_speech": "noun",
+      "definition": "the part at the end of your arm, with four fingers and a thumb",
+      "example": "Wash your hands before lunch.",
+      "translation_ru": "кисть руки, рука",
+      "translation_uz": "qoʻl, kaft"
+    },
+    {
+      "word": "arm",
+      "part_of_speech": "noun",
+      "definition": "the long part of your body between your shoulder and your hand",
+      "example": "Lift your arms up, please.",
+      "translation_ru": "рука",
+      "translation_uz": "qoʻl, bilak"
+    },
+    {
+      "word": "leg",
+      "part_of_speech": "noun",
+      "definition": "one of the two long parts of your body that you walk on",
+      "example": "My legs are tired after the long walk.",
+      "translation_ru": "нога",
+      "translation_uz": "oyoq"
+    },
+    {
+      "word": "foot",
+      "part_of_speech": "noun",
+      "definition": "the part at the end of your leg that you stand on (plural: feet)",
+      "example": "My left foot hurts in these new shoes.",
+      "translation_ru": "ступня",
+      "translation_uz": "oyoq panjasi"
+    },
+    {
+      "word": "back",
+      "part_of_speech": "noun",
+      "definition": "the part of your body behind you, from your neck to your bottom",
+      "example": "I carry my school bag on my back.",
+      "translation_ru": "спина",
+      "translation_uz": "orqa, bel"
+    },
+    {
+      "word": "hurt",
+      "part_of_speech": "verb",
+      "definition": "to feel pain in a part of your body",
+      "example": "My stomach hurts. I can't eat.",
+      "translation_ru": "болеть",
+      "translation_uz": "ogʻrimoq"
+    }
+  ]
+}

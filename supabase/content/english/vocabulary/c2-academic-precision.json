@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "c2-academic-precision",
+    "title": "Academic precision",
+    "level": "C2",
+    "topic": "academic",
+    "description": "Precise verbs and adjectives for research, evidence and argument."
+  },
+  "children": [
+    {
+      "word": "corroborate",
+      "part_of_speech": "verb",
+      "definition": "to support a statement or finding with new evidence from another source",
+      "example": "Later studies corroborated her findings.",
+      "translation_ru": "подтверждать",
+      "translation_uz": "tasdiqlamoq"
+    },
+    {
+      "word": "substantiate",
+      "part_of_speech": "verb",
+      "definition": "to show that a claim is true by giving evidence for it",
+      "example": "He was unable to substantiate his accusations.",
+      "translation_ru": "обосновывать",
+      "translation_uz": "asoslab bermoq, isbotlamoq"
+    },
+    {
+      "word": "posit",
+      "part_of_speech": "verb",
+      "definition": "to suggest an idea as a basis for an argument or theory",
+      "example": "The author posits that language shapes the way we think.",
+      "translation_ru": "постулировать, выдвигать",
+      "translation_uz": "ilgari surmoq"
+    },
+    {
+      "word": "tenuous",
+      "part_of_speech": "adjective",
+      "definition": "very weak or uncertain",
+      "example": "The link between the two events is tenuous at best.",
+      "translation_ru": "слабый, шаткий",
+      "translation_uz": "zaif, asossiz"
+    },
+    {
+      "word": "salient",
+      "part_of_speech": "adjective",
+      "definition": "most noticeable or most important",
+      "example": "She summarised the salient points of the report in five minutes.",
+      "translation_ru": "главный, наиболее важный",
+      "translation_uz": "eng muhim, koʻzga tashlanadigan"
+    },
+    {
+      "word": "empirical",
+      "part_of_speech": "adjective",
+      "definition": "based on observation or experiment rather than theory",
+      "example": "There is little empirical evidence for this claim.",
+      "translation_ru": "эмпирический",
+      "translation_uz": "empirik, tajribaga asoslangan"
+    },
+    {
+      "word": "extrapolate",
+      "part_of_speech": "verb",
+      "definition": "to use known facts to estimate or predict something unknown",
+      "example": "It is risky to extrapolate from such a small sample.",
+      "translation_ru": "экстраполировать",
+      "translation_uz": "maʼlum faktlardan taxmin chiqarmoq"
+    },
+    {
+      "word": "caveat",
+      "part_of_speech": "noun",
+      "definition": "a warning that something is true only under certain conditions",
+      "example": "The results are encouraging, with one caveat: the trial lasted only six weeks.",
+      "translation_ru": "оговорка",
+      "translation_uz": "ogohlantiruvchi izoh"
+    },
+    {
+      "word": "conflate",
+      "part_of_speech": "verb",
+      "definition": "to wrongly treat two different ideas as if they were the same",
+      "example": "The article conflates correlation with causation.",
+      "translation_ru": "смешивать, путать",
+      "translation_uz": "chalkashtirmoq, aralashtirib yubormoq"
+    },
+    {
+      "word": "ubiquitous",
+      "part_of_speech": "adjective",
+      "definition": "seeming to be everywhere",
+      "example": "Smartphones have become ubiquitous in classrooms.",
+      "translation_ru": "повсеместный",
+      "translation_uz": "hamma joyda uchraydigan"
+    },
+    {
+      "word": "paradigm",
+      "part_of_speech": "noun",
+      "definition": "a typical model or accepted way of thinking about something",
+      "example": "The discovery led to a paradigm shift in medicine.",
+      "translation_ru": "парадигма",
+      "translation_uz": "paradigma"
+    },
+    {
+      "word": "discrepancy",
+      "part_of_speech": "noun",
+      "definition": "a difference between two things that should be the same",
+      "example": "There is a discrepancy between the two sets of figures.",
+      "translation_ru": "расхождение, несоответствие",
+      "translation_uz": "nomuvofiqlik, tafovut"
+    }
+  ]
+}

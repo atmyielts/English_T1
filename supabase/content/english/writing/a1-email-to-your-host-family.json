@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "a1-email-to-your-host-family",
+    "title": "Hello to Your Host Family",
+    "level": "A1",
+    "prompt_text": "You are going to stay with a host family in York for a two-week English course. Write a short email to your host family. Tell them about yourself.",
+    "genre": "email",
+    "target_grammar": "present simple of be, have and like",
+    "target_structure": "greeting + name and age + home and study + what I like + question + goodbye",
+    "expected_length_min": 30,
+    "expected_length_max": 50,
+    "target_vocabulary": [
+      "my name is",
+      "years old",
+      "I live in",
+      "student",
+      "I like",
+      "family",
+      "see you soon"
+    ],
+    "audience": "Your host family",
+    "checklist": [
+      {
+        "point": "Say hello and give your name and age",
+        "keywords": [
+          "my name is",
+          "i'm",
+          "i am",
+          "years old",
+          "#number"
+        ]
+      },
+      {
+        "point": "Say where you live and what you do",
+        "keywords": [
+          "live in",
+          "from",
+          "student",
+          "study",
+          "work",
+          "school",
+          "university"
+        ]
+      },
+      {
+        "point": "Say what you like or do in your free time",
+        "keywords": [
+          "like",
+          "love",
+          "enjoy",
+          "play",
+          "free time",
+          "hobby"
+        ]
+      },
+      {
+        "point": "Ask your host family one question",
+        "keywords": [
+          "?",
+          "do you",
+          "is there",
+          "are there",
+          "can i",
+          "have you"
+        ]
+      },
+      {
+        "point": "Say goodbye",
+        "keywords": [
+          "see you",
+          "best wishes",
+          "bye",
+          "thank you",
+          "thanks",
+          "love"
+        ]
+      }
+    ]
+  },
+  "children": []
+}
