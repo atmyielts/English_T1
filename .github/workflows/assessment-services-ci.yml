@@ -539,6 +539,8 @@ jobs:
         run: node scripts/test-assessment-appeals-browser.mjs --item-review
       - name: Connected two-device takeover with late-answer disclosure
         run: node scripts/test-assessment-appeals-browser.mjs --takeover
+      - name: Connected self-service join link, account handoff and institution name
+        run: node scripts/test-assessment-appeals-browser.mjs --join
       - name: Connected certificate program, rotated issuance recovery and public verification
         run: node scripts/test-assessment-appeals-browser.mjs --certificates
       - name: Connected cohort, bounded roster Worker and explicit coordinator adoption

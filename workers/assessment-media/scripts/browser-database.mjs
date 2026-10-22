@@ -109,6 +109,7 @@ export function testDatabase(container,transport) {
           "assessment_items",
           "assessment_item_keys",
           "assessment_item_review_comments",
+          "assessment_join_links",
           "assessment_rubrics",
           "assessment_definitions",
           "assessment_definition_revisions",

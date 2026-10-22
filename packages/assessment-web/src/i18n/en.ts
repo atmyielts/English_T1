@@ -600,4 +600,11 @@ export const en = {
   'runtime.deviceChoiceRequired': "Choose whether to continue this exam on this device.",
   'error.device_takeover_required': "This exam was last open on another device. Continue here only if you have stopped using it.",
   'error.device_lease_superseded': "This exam continued on another device, so this device can no longer save answers.",
+  'account.create': "Create a Schood account",
+  'account.forgot': "Forgot your password?",
+  'error.join_link_invalid': "This join link is not valid. Ask your institution for a new link.",
+  'error.join_link_revoked': "This join link was turned off. Ask your institution for a new link.",
+  'error.join_link_full': "This sitting is full. Ask your institution for help.",
+  'error.window_closed': "This sitting is closed.",
+  'error.invalid_institution_name': "Enter an institution name of 2 to 120 characters.",
 };

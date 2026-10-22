@@ -181,3 +181,27 @@ Deno.test('review comments, change requests and revisions carry only bounded fie
  equal((await handle(req('commands',{action:'item.revise',data:{item_id:actor,base_version_id:actor,item:payload,key}}))).status,200);
  same(sent,[['item.comment',{id:actor,area:'options',body:'Check option B'}],['item.request_changes',{id:actor,area:'key',body:'B is defensible',review_hash:reviewed}],['item.revise',{item:payload,key:{case_sensitive:false,partial_credit:false,correct:'a'},item_id:actor,base_version_id:actor}]]);
 });
+Deno.test('join links: candidates preview and join by link without an institution link; staff commands stay bounded',async()=>{
+ const code='a'.repeat(64),calls:unknown[]=[];
+ const repo:Repository={...repository,join:(user,step,link,value)=>{calls.push([user,step,link,value]);return Promise.resolve({tenant_id:tenant,state:'open'});},candidateInstitutions:user=>Promise.resolve([{tenant_id:tenant,name:'Atlas',user}])};
+ const handle=createHandler({repository:repo,allowedOrigins:[]});
+ // No tenant_id is needed: the link names its sitting.
+ equal((await handle(req('candidate/join/preview',{link_id:actor,code}))).status,200);
+ equal((await handle(req('candidate/join/accept',{link_id:actor,code,candidate_id:tenant,tenant_id:tenant}))).status,200);
+ same(calls,[[actor,'preview',actor,code],[actor,'accept',actor,code]]);
+ // Malformed codes never reach the database.
+ for(const bad of ['short','A'.repeat(64),'g'.repeat(64)])equal((await handle(req('candidate/join/preview',{link_id:actor,code:bad}))).status,404);
+ equal((await handle(req('candidate/join/accept',{link_id:'nope',code}))).status,422);equal(calls.length,2);
+ equal((await handle(req('candidate/join/accept',{link_id:actor,code},'invalid'))).status,401);equal(calls.length,2);
+ const institutions=await(await handle(req('candidate/institutions'))).json();same(institutions.data,[{tenant_id:tenant,name:'Atlas',user:actor}]);
+ // Staff side: exam rights for links, team rights for the institution name; only canonical fields forwarded.
+ let stored:Record<string,unknown>|null=null,capability='';
+ const staff=(allowed:boolean)=>createHandler({repository:{...repository,capability:(_t,_a,name)=>{capability=name;return Promise.resolve(allowed);},command:(_a,_t,_k,_action,input)=>{stored=input as Record<string,unknown>;return Promise.resolve({id:actor});}},allowedOrigins:[]});
+ equal((await staff(false)(req('commands',{action:'join_link.create',data:{window_id:actor}}))).status,403);equal(capability,'exams.manage');
+ equal((await staff(true)(req('commands',{action:'join_link.create',data:{window_id:actor,max_joins:0}}))).status,422);
+ equal((await staff(true)(req('commands',{action:'join_link.create',data:{window_id:actor,code:'b'.repeat(64),tenant_id:tenant}}))).status,200);same(stored,{window_id:actor});
+ equal((await staff(true)(req('commands',{action:'join_link.create',data:{window_id:actor,max_joins:30}}))).status,200);same(stored,{window_id:actor,max_joins:30});
+ equal((await staff(false)(req('commands',{action:'institution.rename',data:{name:'Atlas',revision:0}}))).status,403);equal(capability,'team.manage');
+ equal((await staff(true)(req('commands',{action:'institution.rename',data:{name:' A ',revision:0}}))).status,422);
+ equal((await staff(true)(req('commands',{action:'institution.rename',data:{name:'  Atlas Centre ',revision:1,tenant_id:actor}}))).status,200);same(stored,{name:'Atlas Centre',revision:1});
+});

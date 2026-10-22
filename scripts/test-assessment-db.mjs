@@ -78,6 +78,7 @@ try {
   files.push('supabase/migrations/20261022150000_assessment_appeal_workflow.sql','supabase/tests/assessment-appeal-workflow.integration.sql');
   files.push('supabase/migrations/20261022160000_assessment_item_review.sql','supabase/tests/assessment-item-review.integration.sql');
   files.push('supabase/migrations/20261022170000_assessment_device_takeover.sql','supabase/tests/assessment-device-takeover.integration.sql');
+  files.push('supabase/migrations/20261022180000_assessment_join_links.sql','supabase/tests/assessment-join-links.integration.sql');
   const program=files.map(file=>{
     const protocol=file.endsWith('.integration.sql')?readFileSync('supabase/tests/assessment-runtime.fixture.sql','utf8')+'\n':'';
     const analyticsFixture=file.endsWith('assessment-analytics.integration.sql')?'begin;\n'+readFileSync('supabase/tests/assessment-analytics.fixture.sql','utf8')+'\n':'';
@@ -357,6 +358,10 @@ try {
   process.stdout.write('Passed four-process question review races: one revision from a shared base version, three item_revision_conflict refusals, same replay; one approve-or-request-changes decision\n');
   const {takeoverRace}=await import('./test-assessment-takeover-race.mjs');
   await takeoverRace(query=>docker(['exec','-i',container,'psql','-At','-U','postgres','-v','ON_ERROR_STOP=1'],query),parallelSql);
+  const {joinRace}=await import('./test-assessment-join-race.mjs');
+  await joinRace(query=>docker(['exec','-i',container,'psql','-At','-U','postgres','-v','ON_ERROR_STOP=1'],query),parallelSql);
+  process.stdout.write('Passed four-process join link races: one person in four tabs gets one registration; four joins for the last two places admit two, refuse one person as join_link_full
+');
   process.stdout.write('Passed four-process device takeover race: three confirmed takeovers form one epoch chain with one holder; the racing old-device answer is saved before a takeover or refused as superseded\n');
 } finally {
   spawnSync('docker',['stop',container],{encoding:'utf8',timeout:20000});
