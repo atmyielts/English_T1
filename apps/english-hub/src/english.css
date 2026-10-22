@@ -57,6 +57,10 @@ body {
 a { color: inherit; text-decoration: none; }
 p { line-height: 1.6; color: var(--ink-700); font-size: 0.95rem; }
 h1, h2, h3 { font-family: var(--heading-font); color: var(--ink); }
+/* Outfit and Sora have no Cyrillic; the brand kit uses Manrope ExtraBold for Cyrillic headings. */
+html:lang(ru) { --heading-font: 'Manrope', sans-serif; }
+html:lang(ru) h1, html:lang(ru) h2, html:lang(ru) h3, html:lang(ru) .en-stat strong, html:lang(ru) .en-score strong { font-weight: 800; }
+html:lang(ru) .en-workspace { --heading-font: 'Manrope', sans-serif; }
 h1 { font-size: clamp(30px, 4.2vw, 52px); line-height: 1.02; letter-spacing: -0.02em; margin: 0.25rem 0 0.75rem; }
 h2 { font-size: 1.2rem; line-height: 1.35; margin: 0 0 0.75rem; }
 h3 { font-size: 1rem; line-height: 1.4; margin: 0 0 0.5rem; }
@@ -459,6 +463,13 @@ textarea.en-writing { font-size: 1rem; line-height: 1.7; min-height: 14rem; }
 .en-tools-body textarea, .en-tools-body input { max-width: 100%; }
 
 /* ---------- Responsive ---------- */
+/* Mid widths (and longer Russian/Uzbek labels): navigation gets its own row under the brand. */
+@media (max-width: 1240px) and (min-width: 961px) {
+  .en-hubnav { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'brand controls' 'links links'; row-gap: 10px; }
+  .en-hubnav .en-brand { grid-area: brand; }
+  .en-hubnav .en-hubcontrols { grid-area: controls; }
+  .en-hubnav .en-hublinks { grid-area: links; justify-content: flex-start; flex-wrap: nowrap; overflow-x: auto; padding-top: 10px; border-top: 1px solid var(--soft-line); }
+}
 @media (max-width: 960px) {
   .en-hubnav { grid-template-columns: auto auto; }
   .en-menu-toggle { display: inline-flex; justify-self: end; background: rgba(255, 255, 255, 0.85); color: var(--ink); border-color: var(--line); }
