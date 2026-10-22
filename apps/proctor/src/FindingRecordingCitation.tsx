@@ -1,32 +1,28 @@
 import React from "react";
-import { label, type RecordingCitation } from "./types";
+import { useAppT, useCodeText } from "./i18n/index.ts";
+import type { RecordingCitation } from "./types";
 export function FindingRecordingCitation(
   { cite }: { cite: RecordingCitation },
 ) {
+  const t = useAppT(), code = useCodeText();
   return (
     <div className="permanent-recording-citation">
       <strong>
-        {label(cite.source)} · entries {cite.from_sequence}–{cite.to_sequence}
+        {t("recording.entries", { source: code("source", cite.source), from: String(cite.from_sequence), to: String(cite.to_sequence) })}
       </strong>
       <p>
-        {cite.media_count} saved media{" "}
-        {cite.media_count === 1 ? "entry" : "entries"} · {cite.gap_count}{" "}
-        missing-footage {cite.gap_count === 1 ? "entry" : "entries"} · source:
-        {" "}
-        {label(cite.provenance)}
+        {t("citation.counts", { media: cite.media_count, gaps: cite.gap_count, source: code("source", cite.provenance) })}
       </p>
       <span>
-        Reported interval:{" "}
-        {(cite.start_ms / 1000).toFixed(3)}–{(cite.end_ms / 1000)
-          .toFixed(3)} seconds
+        {t("citation.interval", { start: (cite.start_ms / 1000).toFixed(3), end: (cite.end_ms / 1000).toFixed(3) })}
       </span>
       <details>
-        <summary>Pinned recording receipts</summary>
+        <summary>{t("citation.receipts")}</summary>
         <p className="recording-hash">
-          Recording: {cite.recording_id}
-          <br />Manifest: {cite.recording_head_hash}
-          <br />First entry: {cite.from_chain_hash}
-          <br />Last entry: {cite.to_chain_hash}
+          {t("citation.recording", { id: cite.recording_id })}
+          <br />{t("citation.manifest", { hash: cite.recording_head_hash })}
+          <br />{t("citation.first", { hash: cite.from_chain_hash })}
+          <br />{t("citation.last", { hash: cite.to_chain_hash })}
         </p>
       </details>
     </div>

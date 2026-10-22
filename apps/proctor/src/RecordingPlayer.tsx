@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import type { RecordingRow } from "./recording-client";
 import { useRecordingPlayback } from "./use-recording-playback";
+import { useAppT, useCodeText, useErrorText } from "./i18n/index.ts";
 export function RecordingPlayer(
   { row, tenant, actor }: { row: RecordingRow; tenant: string; actor: string },
 ) {
@@ -14,6 +15,7 @@ export function RecordingPlayer(
     setStatus,
   } = useRecordingPlayback(row, tenant, actor);
   const [seconds, setSeconds] = useState("0");
+  const t = useAppT(), code = useCodeText(), problemText = useErrorText();
 
   return (
     <div className="recording-player">
@@ -24,18 +26,18 @@ export function RecordingPlayer(
           onClick={() =>
             setPlayback({ target: 0, epoch: (playback?.epoch ?? 0) + 1 })}
         >
-          Load verified playback
+          {t("player.load")}
         </button>
         {playback && (
           <button
             className="quiet"
             onClick={() => {
               setPlayback(null);
-              setStatus("Playback cleared.");
-              setProblem("");
+              setStatus({ key: "player.cleared" });
+              setProblem(null);
             }}
           >
-            Clear playback
+            {t("player.clear")}
           </button>
         )}
       </div>
@@ -43,15 +45,12 @@ export function RecordingPlayer(
         ref={video}
         controls
         preload="metadata"
-        aria-label={`${row.source} recording playback`}
+        aria-label={t("player.video", { source: code("source", row.source) })}
         playsInline
       />
-      <p className="hint">
-        No autoplay. Footage and timestamps are browser-reported, not proof of
-        identity or misconduct. A transcript is not available yet.
-      </p>
-      {status && <p role="status">{status}</p>}
-      {problem && <p role="alert" className="error">{problem}</p>}
+      <p className="hint">{t("player.hint")}</p>
+      {status && <p role="status">{t(status.key, status.params)}</p>}
+      {problem != null && <p role="alert" className="error">{problemText(problem, "player.failed")}</p>}
       {playback && (
         <form
           className="playback-seek"
@@ -65,7 +64,7 @@ export function RecordingPlayer(
           }}
         >
           <label>
-            Jump to playback time (seconds)<input
+            {t("player.jump")}<input
               type="number"
               min={0}
               max={row.last_end_ms / 1000}
@@ -74,12 +73,8 @@ export function RecordingPlayer(
               onChange={(event) => setSeconds(event.target.value)}
             />
           </label>
-          <button className="quiet">Seek from verified initialization</button>
-          <p className="hint">
-            Seeking outside the buffer rereads the ordered container from its
-            beginning. Indexed processed renditions are still required for
-            efficient long-recording access.
-          </p>
+          <button className="quiet">{t("player.seek")}</button>
+          <p className="hint">{t("player.seekHint")}</p>
         </form>
       )}
     </div>

@@ -79,6 +79,8 @@ try {
   files.push('supabase/migrations/20261022160000_assessment_item_review.sql','supabase/tests/assessment-item-review.integration.sql');
   files.push('supabase/migrations/20261022170000_assessment_device_takeover.sql','supabase/tests/assessment-device-takeover.integration.sql');
   files.push('supabase/migrations/20261022180000_assessment_join_links.sql','supabase/tests/assessment-join-links.integration.sql');
+  files.push('supabase/migrations/20261022190000_proctor_snapshots.sql','supabase/tests/proctor-snapshots.integration.sql');
+  files.push('supabase/migrations/20261022200000_proctor_adjudication.sql','supabase/tests/proctor-adjudication.integration.sql');
   const program=files.map(file=>{
     const protocol=file.endsWith('.integration.sql')?readFileSync('supabase/tests/assessment-runtime.fixture.sql','utf8')+'\n':'';
     const analyticsFixture=file.endsWith('assessment-analytics.integration.sql')?'begin;\n'+readFileSync('supabase/tests/assessment-analytics.fixture.sql','utf8')+'\n':'';

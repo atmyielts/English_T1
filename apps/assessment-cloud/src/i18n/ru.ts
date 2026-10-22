@@ -1356,4 +1356,10 @@ export const ru: Record<keyof typeof en, string> = {
   'institution.name': "Название",
   'institution.save': "Сохранить название",
   'institution.saved': "Название организации сохранено.",
+  'nav.group.services': "Другие сервисы",
+  'nav.proctor': "Прокторинг Proctor",
+  'monitoring.on': "С наблюдением",
+  'monitoring.off': "Без наблюдения",
+  'monitoring.open': "Открыть в Proctor",
+  'monitoring.setup': "Настроить наблюдение",
 };

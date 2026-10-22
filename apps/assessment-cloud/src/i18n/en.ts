@@ -1356,4 +1356,10 @@ export const en = {
   'institution.name': "Name",
   'institution.save': "Save name",
   'institution.saved': "Institution name saved.",
+  'nav.group.services': "Other services",
+  'nav.proctor': "Proctor monitoring",
+  'monitoring.on': "Monitored",
+  'monitoring.off': "Not monitored",
+  'monitoring.open': "Open in Proctor",
+  'monitoring.setup': "Set up monitoring",
 };

@@ -1,3 +1,4 @@
+import { AppError } from "./i18n/index.ts";
 export function waitEvent(
   target: EventTarget,
   event: string,
@@ -10,13 +11,11 @@ export function waitEvent(
       },
       error = () => {
         clean();
-        reject(
-          new Error("The recording decoder could not process this media."),
-        );
+        reject(new AppError("player.decoder"));
       },
       abort = () => {
         clean();
-        reject(new Error("Playback stopped."));
+        reject(new AppError("player.halted"));
       },
       timer = setTimeout(error, 20000);
     function clean() {
@@ -41,7 +40,7 @@ export function waitTime(signal: AbortSignal) {
     function abort() {
       clearTimeout(timer);
       signal.removeEventListener("abort", abort);
-      reject(new Error("Playback stopped."));
+      reject(new AppError("player.halted"));
     }
     signal.addEventListener("abort", abort, { once: true });
     if (signal.aborted) abort();

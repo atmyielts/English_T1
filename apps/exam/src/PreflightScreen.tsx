@@ -16,6 +16,7 @@ export function PreflightScreen({
   cancel,
   captureReady = false,
   capturePrepared = false,
+  snapshotsReady = true,
   children,
 }: {
   policy: Extract<Preflight, { required: true }>;
@@ -26,6 +27,7 @@ export function PreflightScreen({
   cancel: () => void;
   captureReady?: boolean;
   capturePrepared?: boolean;
+  snapshotsReady?: boolean;
   children?: React.ReactNode;
 }) {
   const t = useAppT();
@@ -86,6 +88,14 @@ export function PreflightScreen({
             </dd>
           </div>
           <div>
+            <dt>{t("exam.preflight.snapshots")}</dt>
+            <dd>
+              {(rules.snapshot_interval_seconds ?? 0) > 0
+                ? t("exam.preflight.snapshotsEvery", { seconds: rules.snapshot_interval_seconds })
+                : t("exam.preflight.snapshotsOff")}
+            </dd>
+          </div>
+          <div>
             <dt>{t("exam.preflight.identityRetention")}</dt>
             <dd>
               {t("exam.preflight.days", { count: rules.identity_retention_days })}
@@ -140,7 +150,8 @@ export function PreflightScreen({
             <button
               disabled={busy || (!policy.consented && !acknowledged) ||
                 !policy.runtime_ready ||
-                (needsCapture && capturePrepared && !captureReady)}
+                (needsCapture && capturePrepared && !captureReady) ||
+                !snapshotsReady}
             >
               {action}
             </button>

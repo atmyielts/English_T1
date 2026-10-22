@@ -1,0 +1,35 @@
+name: Proctor snapshot retention
+
+# Deletes webcam snapshots whose retention period has ended (sessions with an
+# open review case are kept until the case is resolved). Each run removes at
+# most 200 pictures; hourly runs keep up with normal volume.
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Delete expired snapshots
+        env:
+          SWEEP_SECRET: ${{ secrets.PROCTOR_SNAPSHOT_SWEEP_SECRET }}
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+        run: |
+          if [ -z "$SWEEP_SECRET" ] || [ -z "$SUPABASE_URL" ]; then
+            echo "Snapshot retention is not configured; nothing to do."
+            exit 0
+          fi
+          for round in 1 2 3 4 5; do
+            response=$(curl -sS --fail-with-body -X POST \
+              -H "x-proctor-sweep-secret: $SWEEP_SECRET" \
+              "$SUPABASE_URL/functions/v1/proctor/snapshots/internal/sweep")
+            echo "$response"
+            deleted=$(echo "$response" | sed -n 's/.*"deleted":\([0-9]*\).*/\1/p')
+            [ "${deleted:-0}" -lt 200 ] && break
+          done

@@ -258,6 +258,8 @@ export interface ProctorPolicy {
   auto_pause: boolean;
   recovery_seconds: number;
   reviewer_quorum: 1 | 2;
+  /** Proctor Lite webcam stills: 0 is off; otherwise one picture per interval plus an identity photo at the start. */
+  snapshot_interval_seconds: number;
 }
 export function validatePolicy(value: unknown): ProctorPolicy {
   const raw = object(value);
@@ -269,8 +271,10 @@ export function validatePolicy(value: unknown): ProctorPolicy {
   const identity = number(raw.identity_retention_days ?? 30, "Identity retention", 1, 365);
   const recovery = number(raw.recovery_seconds ?? 10, "Recovery window", 10, 300);
   const quorum = number(raw.reviewer_quorum ?? 2, "Reviewer quorum", 1, 2);
+  const snapshots = raw.snapshot_interval_seconds === undefined || raw.snapshot_interval_seconds === 0 ? 0 : number(raw.snapshot_interval_seconds, "Snapshot interval", 30, 600);
+  if (!Number.isInteger(snapshots)) fail("Snapshot interval must be an integer");
   if (![recording, identity, recovery, quorum].every(Number.isInteger)) fail("Policy intervals and quorum must be integers");
-  return { schema_version: "proctor.policy.v1", mode: raw.mode as ProctorPolicy["mode"], identity_level: level as ProctorPolicy["identity_level"], camera: raw.camera === true, microphone: raw.microphone === true, screen: raw.screen === true, second_camera: raw.second_camera === true, recording_retention_days: recording, identity_retention_days: identity, auto_pause: raw.auto_pause === true, recovery_seconds: recovery, reviewer_quorum: quorum as 1 | 2 };
+  return { schema_version: "proctor.policy.v1", mode: raw.mode as ProctorPolicy["mode"], identity_level: level as ProctorPolicy["identity_level"], camera: raw.camera === true, microphone: raw.microphone === true, screen: raw.screen === true, second_camera: raw.second_camera === true, recording_retention_days: recording, identity_retention_days: identity, auto_pause: raw.auto_pause === true, recovery_seconds: recovery, reviewer_quorum: quorum as 1 | 2, snapshot_interval_seconds: snapshots };
 }
 export type IntegrityAction = "observe" | "warn" | "pause" | "reverify";
 export function integrityAction(policy: ProctorPolicy, input: { kind: "capture_lost" | "client_tampered" | "extra_display" | "ml_anomaly"; duration_seconds: number; observation_windows: number }): IntegrityAction {

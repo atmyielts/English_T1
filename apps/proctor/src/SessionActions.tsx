@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useAppT } from "./i18n/index.ts";
 import type { Command, Session } from "./types";
 export function SessionActions(
   { session, busy, command }: {
@@ -7,7 +8,9 @@ export function SessionActions(
     command: Command;
   },
 ) {
+  const t = useAppT();
   const [reason, setReason] = useState("");
+  const paused = session.state === "paused";
   return (
     <form
       onSubmit={(event) => {
@@ -15,11 +18,11 @@ export function SessionActions(
         void command("session.warn", {
           session_id: session.id,
           reason,
-        }, "Candidate warning recorded.");
+        }, t("actions.warned"));
       }}
     >
       <label>
-        Reason for session action<textarea
+        {t("actions.reason")}<textarea
           className="prose-input"
           required
           maxLength={2000}
@@ -29,35 +32,23 @@ export function SessionActions(
         />
       </label>
       <div className="action-row">
-        <button disabled={busy}>Record warning</button>
+        <button disabled={busy}>{t("actions.warn")}</button>
         <button
           type="button"
           className="quiet"
           disabled={busy || !reason.trim()}
           onClick={() => {
-            const action = session.state === "paused"
-              ? "session.resume"
-              : "session.pause";
-            if (
-              window.confirm(
-                `${
-                  session.state === "paused" ? "Resume" : "Pause"
-                } this candidate’s exam? The reason will be audited.`,
-              )
-            ) {
+            const action = paused ? "session.resume" : "session.pause";
+            if (window.confirm(t(paused ? "actions.confirmResume" : "actions.confirmPause"))) {
               void command(
                 action,
                 { session_id: session.id, reason },
-                action === "session.pause"
-                  ? "Assessment paused."
-                  : "Assessment resumed.",
+                action === "session.pause" ? t("actions.paused") : t("actions.resumed"),
               );
             }
           }}
         >
-          {session.state === "paused"
-            ? "Resume assessment"
-            : "Pause assessment"}
+          {paused ? t("actions.resume") : t("actions.pause")}
         </button>
       </div>
     </form>

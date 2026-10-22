@@ -15,6 +15,9 @@ async(page)=>{
  // 2. The owner creates a join link for the sitting and copies it.
  await page.getByRole('button',{name:'Exam sittings',exact:true}).click();
  const sitting=page.getByRole('listitem').filter({hasText:'Open placement sitting'});await sitting.waitFor();
+ // The sitting says it is not monitored and links into Proctor on the same institution.
+ await sitting.getByText('Not monitored',{exact:true}).waitFor();const proctorHref=await sitting.getByRole('link',{name:'Set up monitoring',exact:true}).getAttribute('href');
+ const proctor_link=proctorHref===`${base}/proctor/?tenant_id=${encodeURIComponent(info.tenant)}&tab=policies`;
  await sitting.getByRole('button',{name:'Create join link',exact:true}).click();await page.getByText('Join link created. Copy it and send it to your candidates.',{exact:true}).waitFor();
  const link=await sitting.getByRole('textbox',{name:'Join link for candidates',exact:true}).inputValue();
  if(!/\/exam\/#join=[0-9a-f-]{36}\.[a-f0-9]{64}$/.test(link))throw new Error('Unexpected join link '+link);
@@ -47,5 +50,5 @@ async(page)=>{
  const late=await page.context().browser().newContext(),stranger=await late.newPage();await stranger.goto(link);await signIn(stranger,'observer');
  await stranger.getByText('This join link was turned off. Ask your institution for a new link.',{exact:true}).waitFor();const revoked_refused=true;await late.close();
  if(errors.length)throw new Error(errors.join('\n'));
- return {...revoked_check,staff_signup_link,signup_returns_to_link,code_hidden_from_address,preview_named,institution_found,started,revoked_refused};
+ return {...revoked_check,proctor_link,staff_signup_link,signup_returns_to_link,code_hidden_from_address,preview_named,institution_found,started,revoked_refused};
 }

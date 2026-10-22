@@ -1,4 +1,4 @@
-name: Configure Assessment Cloud and Exam Domains
+name: Configure Assessment Cloud, Exam and Proctor Domains
 
 on:
   workflow_dispatch:
@@ -14,6 +14,8 @@ jobs:
             project: schood-assessment
           - domain: exam.schood.online
             project: schood-exam
+          - domain: proctor.schood.online
+            project: schood-proctor
 
     steps:
       - name: Validate required secrets

@@ -447,7 +447,7 @@ jobs:
       - name: Institution feedback policy, independent approval and release disclosure contracts
         run: deno test --no-lock supabase/functions/assessment-cloud/feedback-handler.test.ts
       - name: Pre-clock capture launch, binding, default-off and canonical readiness contracts
-        run: deno test --no-lock supabase/functions/proctor/capture-handler.test.ts packages/proctor-web/src/candidate-capture.test.ts
+        run: deno test --no-lock supabase/functions/proctor/snapshot-handler.test.ts supabase/functions/proctor/capture-handler.test.ts packages/proctor-web/src/candidate-capture.test.ts
       - name: Isolated migration, authority and concurrent replay tests
         run: node scripts/test-assessment-db.mjs
       - name: Real PG fixture transport authority, rollback and concurrent framing
@@ -541,6 +541,8 @@ jobs:
         run: node scripts/test-assessment-appeals-browser.mjs --takeover
       - name: Connected self-service join link, account handoff and institution name
         run: node scripts/test-assessment-appeals-browser.mjs --join
+      - name: Connected Proctor Lite snapshots, senior decision and candidate explanation
+        run: node scripts/test-assessment-appeals-browser.mjs --proctor-lite
       - name: Connected certificate program, rotated issuance recovery and public verification
         run: node scripts/test-assessment-appeals-browser.mjs --certificates
       - name: Connected cohort, bounded roster Worker and explicit coordinator adoption

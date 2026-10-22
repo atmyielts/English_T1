@@ -1,5 +1,5 @@
 import type { ProctorPolicy } from '../../assessment-core/src/mod.ts';
-export const BROWSER_EVENTS = ['focus_loss','focus_return','tab_hidden','tab_visible','fullscreen_enter','fullscreen_exit','copy','paste','cut','context_menu','online','offline','client_loaded'] as const;
+export const BROWSER_EVENTS = ['focus_loss','focus_return','tab_hidden','tab_visible','fullscreen_enter','fullscreen_exit','copy','paste','cut','context_menu','online','offline','client_loaded','camera_lost','camera_restored'] as const;
 export type BrowserEventKind = typeof BROWSER_EVENTS[number];
 export interface BrowserEvent { stream_id: string; sequence: number; kind: BrowserEventKind; occurred_at: string }
 export interface CandidateNotice { id: string; kind: 'warning' | 'paused' | 'resumed'; reason: string; issued_at: string; acknowledged: boolean;issuer_kind?:'user'|'system' }
