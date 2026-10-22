@@ -10,7 +10,8 @@ import { createRoot } from "react-dom/client";
 import { I18nProvider, LocaleSwitcher, useI18n } from "../../../packages/service-i18n/src/i18n.tsx";
 import { catalogs, useAppT, useErrorText, type AppKey } from "./i18n/index.ts";
 import { configured, request, supabase, observeAccount, type Row } from "./client";
-import { ServiceHeader } from "../../../packages/service-design/src/ServiceHeader";
+import { ServiceHeader } from "../../../packages/service-design/src/ServiceHeader"
+import { WorkspaceNavigation } from "../../../packages/service-design/src/WorkspaceNavigation";
 import { type Definition } from "../../../packages/assessment-core/src/mod.ts";
 import {invitationFromFragment,type InvitationLink} from '../../../packages/assessment-web/src/invitations';
 import {AcceptInvitation} from './staff/AcceptInvitation';
@@ -65,6 +66,14 @@ const labels: Record<Tab, AppKey> = {
   billing: "nav.billing",
   integrations: "nav.integrations",
 };
+// Workspace areas, grouped in the order institutions work: build content,
+// deliver it, handle results, then run the institution.
+const sections: { id: string; label: AppKey; tabs: Tab[] }[] = [
+  { id: "content", label: "nav.group.content", tabs: ["banks", "items", "media", "assessments", "imports"] },
+  { id: "delivery", label: "nav.group.delivery", tabs: ["windows", "cohorts"] },
+  { id: "results", label: "nav.group.results", tabs: ["grading", "appeals", "certificates", "analytics", "feedback"] },
+  { id: "institution", label: "nav.group.institution", tabs: ["staff", "billing", "integrations"] },
+];
 function availableTabs(access: GradeAccess): Tab[] {
   return [
     ...(access.can_read_banks
@@ -340,18 +349,9 @@ function App() {
       <ServiceHeader
         service={t("app.name")}
         labels={{ skip: t("header.skip"), home: t("header.home"), menu: t("header.menu"), workspace: t("header.workspace") }}
-        nav={(access ? availableTabs(access) : []).map((value) => ({
-          id: value,
-          label: t(labels[value]),
-          active: tab === value,
-          onClick: () => {
-            setTab(value);
-            setTitle("");
-          },
-        }))}
       >
         <label className="tenant">
-          {t("header.institution")}
+          <span className="visually-hidden">{t("header.institution")}</span>
           <select
             aria-label={t("header.institution")}
             value={tenant}
@@ -374,6 +374,26 @@ function App() {
         </button>
         <LocaleSwitcher label={t("locale.label")} />
       </ServiceHeader>
+      <div className="workspace-layout">
+      <WorkspaceNavigation
+        label={t("header.workspace").replace("{service}", t("app.name"))}
+        menuLabel={t("nav.menu")}
+        sections={sections.map((section) => ({
+          id: section.id,
+          label: t(section.label),
+          items: (access ? availableTabs(access) : [])
+            .filter((value) => section.tabs.includes(value))
+            .map((value) => ({
+              id: value,
+              label: t(labels[value]),
+              active: tab === value,
+              onClick: () => {
+                setTab(value);
+                setTitle("");
+              },
+            })),
+        }))}
+      />
       <main id="workspace-main" tabIndex={-1}>
         <div className="page-heading">
           <div>
@@ -636,6 +656,7 @@ function App() {
           </Suspense>
         )}
       </main>
+      </div>
       <footer>
         {t("workspace.footer")}
       </footer>
