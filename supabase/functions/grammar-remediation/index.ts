@@ -16,6 +16,7 @@ import {
   toNumber,
   toText,
 } from "../_shared/english-learning.ts";
+import { queueReviewItems } from "../_shared/english-review.ts";
 import { checkGrammarAnswer } from "../_shared/english-grammar.ts";
 
 type JsonRecord = Record<string, unknown>;
@@ -347,6 +348,30 @@ serve(async (req) => {
         score,
         feedback,
         products,
+      });
+
+      // Questions answered wrongly come back on the Review page.
+      const drillById = new Map(drills.map((drill) => [String(drill.id), drill]));
+      await queueReviewItems(sb, {
+        userId: auth.userId,
+        languageId: scope.languageId,
+        attemptId: String(recorded.attempt.id ?? "") || null,
+        items: results.filter((result) => !result.correct).flatMap((result) => {
+          const drill = drillById.get(result.drill_id);
+          if (!drill) return [];
+          return [{
+            kind: "grammar" as const,
+            item_key: `grammar:${result.drill_id}`,
+            payload: {
+              type: "grammar" as const,
+              prompt: result.prompt,
+              instructions: toText(drill.instructions, 300),
+              accepted: acceptedAnswersOf(drill),
+              source_title: toText(unit.title, 220),
+              source_slug: toText(unit.slug, 120),
+            },
+          }];
+        }),
       });
 
       // Passing the lesson marks matching mistakes from writing and speaking as practised.

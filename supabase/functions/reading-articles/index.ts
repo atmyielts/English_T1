@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { queueReviewItems } from "../_shared/english-review.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   buildFeedbackPayload,
@@ -499,6 +500,31 @@ const submitArticle = async (
     score,
     feedback,
     products,
+  });
+
+  // Questions answered wrongly come back on the Review page.
+  const questionById = new Map(questions.map((question) => [question.id, question]));
+  await queueReviewItems(sb, {
+    userId,
+    languageId: scope.languageId,
+    attemptId: String(recorded.attempt.id ?? "") || null,
+    items: checked.results.filter((result) => !result.correct).flatMap((result) => {
+      const question = questionById.get(result.question_id);
+      if (!question) return [];
+      return [{
+        kind: "reading" as const,
+        item_key: `reading:${article.slug}:${question.id}`,
+        payload: {
+          type: "choice" as const,
+          prompt: question.prompt,
+          options: question.options,
+          answer_index: question.answer_index,
+          explanation: question.explanation,
+          source_title: String(article.title ?? ""),
+          source_slug: String(article.slug ?? ""),
+        },
+      }];
+    }),
   });
 
   return json(200, {

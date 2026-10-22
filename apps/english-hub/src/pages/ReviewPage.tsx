@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useT } from '../i18n';
 import { getProgress } from '../lib/hub';
+import { getReviewItems } from '../lib/review';
+import { ReviewQuestions } from './ReviewQuestions';
 import { getNotebook, reviewCard, type NotebookCard } from '../lib/notebook';
 import { speak, canSpeak } from '../lib/speech';
 import { useResource } from '../lib/useResource';
@@ -75,14 +77,18 @@ export const ReviewPage = () => {
   const t = useT();
   const due = useResource((signal) => getNotebook('due', 20, signal), []);
   const progress = useResource((signal) => getProgress(signal), []);
+  const questions = useResource((signal) => getReviewItems(signal), []);
   const [finished, setFinished] = useState<number | null>(null);
+  const [questionsDone, setQuestionsDone] = useState<number | null>(null);
   const cards = due.data?.cards ?? [];
+  const reviewItems = questions.data?.items ?? [];
   const mistakes = (progress.data?.mistakes ?? []).slice(0, 8);
 
   return (
     <>
       <PageHeader eyebrow={t('review.eyebrow')} title={t('review.title')} lead={t('review.lead')} />
       <div className="en-grid-2">
+        <div className="en-stack">
         <Panel
           title={t('review.words.title')}
           aside={due.data ? <span>{t('review.words.count', { due: due.data.summary.due_count, total: due.data.summary.total_count })}</span> : null}
@@ -108,6 +114,27 @@ export const ReviewPage = () => {
             <Flashcards key={cards[0]?.id} cards={cards} onFinished={setFinished} />
           ) : null}
         </Panel>
+
+        <Panel
+          title={t('review.questions.title')}
+          aside={questions.data ? <span>{t('review.questions.count', { count: questions.data.due })}</span> : null}
+        >
+          <p className="hint">{t('review.questions.lead')}</p>
+          {questions.loading && !questions.data ? <Loading lines={3} /> : null}
+          {questions.error ? <ErrorState error={questions.error} onRetry={questions.reload} /> : null}
+          {questionsDone !== null ? (
+            <EmptyState
+              title={t('review.questions.doneTitle')}
+              body={t('review.questions.doneBody', { right: questionsDone, total: reviewItems.length })}
+              action={<button type="button" onClick={() => { setQuestionsDone(null); questions.reload(); }}>{t('review.finished.more')}</button>}
+            />
+          ) : questions.data && reviewItems.length === 0 ? (
+            <p>{t('review.questions.none')}</p>
+          ) : reviewItems.length ? (
+            <ReviewQuestions key={reviewItems[0]?.id} items={reviewItems} onFinished={setQuestionsDone} />
+          ) : null}
+        </Panel>
+        </div>
 
         <Panel title={t('review.mistakes.title')}>
           <p className="hint">{t('review.mistakes.lead')}</p>

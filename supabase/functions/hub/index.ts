@@ -42,6 +42,7 @@ import {
   type TodayTask,
   weekStrip,
 } from "../_shared/english-today.ts";
+import { checkReviewAnswer, parseReviewPayload, publicReviewPayload, RETIRED_BOX, scheduleAfterAnswer } from "../_shared/english-review.ts";
 import { topicFromSubskill } from "../_shared/english-mistakes.ts";
 
 const routeMarker = "/hub";
@@ -353,7 +354,7 @@ serve(async (req) => {
         && Math.abs(Date.parse(requestedDate) - Date.parse(utcToday)) <= 86_400_000;
       const planDate = dateOk ? requestedDate : utcToday;
 
-      const [items, attemptRows, goalRes, notebook, access, existingRes, mistakesRes, unitsRes] = await Promise.all([
+      const [items, attemptRows, goalRes, notebook, access, existingRes, mistakesRes, unitsRes, reviewDueRes] = await Promise.all([
         loadCatalog(),
         loadAttempts(60, 400),
         sb.from("learner_language_goals")
@@ -381,7 +382,16 @@ serve(async (req) => {
           .select("slug, focus_area, level")
           .eq("language_id", scope.languageId)
           .eq("status", "published"),
+        sb.from("learner_review_items")
+          .select("id", { head: true, count: "exact" })
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId)
+          .lt("box", RETIRED_BOX)
+          .lte("next_due_at", new Date().toISOString()),
       ]);
+      // Words and missed questions are reviewed together on the Review page.
+      const reviewItemsDue = Number(reviewDueRes.count ?? 0) || 0;
+      const dueReviews = notebook.dueCount + reviewItemsDue;
 
       const goal = goalRes.data as Record<string, unknown> | null;
       const meta = (goal?.metadata && typeof goal.metadata === "object" ? goal.metadata : {}) as Record<string, unknown>;
@@ -448,7 +458,7 @@ serve(async (req) => {
         perSkillLevel,
         items,
         attempts,
-        dueReviews: notebook.dueCount,
+        dueReviews,
         availableSkills,
         existing,
         fixes,
@@ -491,11 +501,69 @@ serve(async (req) => {
         tasks: plan.tasks,
         minutes_total: plan.minutes_total,
         done_count: plan.done_count,
-        due_reviews: notebook.dueCount,
+        due_reviews: dueReviews,
+        due_words: notebook.dueCount,
+        due_review_items: reviewItemsDue,
         total_words: notebook.totalCount,
         streak: currentStreak(attempts, planDate),
         week: weekStrip(attempts, planDate),
       });
+    }
+
+    // === Mixed review: missed questions and dictation sentences ===
+
+    if (req.method === "GET" && route === "/review/items") {
+      const limit = Math.max(1, Math.min(20, Number(url.searchParams.get("limit") ?? 10) || 10));
+      const nowIso = new Date().toISOString();
+      const [dueRes, countRes] = await Promise.all([
+        sb.from("learner_review_items")
+          .select("id, kind, payload, box")
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId)
+          .lt("box", RETIRED_BOX)
+          .lte("next_due_at", nowIso)
+          .order("next_due_at", { ascending: true })
+          .limit(limit),
+        sb.from("learner_review_items")
+          .select("id", { head: true, count: "exact" })
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId)
+          .lt("box", RETIRED_BOX)
+          .lte("next_due_at", nowIso),
+      ]);
+      if (dueRes.error) throw new Error(`Failed to load review items: ${dueRes.error.message}`);
+      const items = ((dueRes.data ?? []) as Array<Record<string, unknown>>).flatMap((row) => {
+        const payload = parseReviewPayload(row.payload);
+        return payload ? [{ id: String(row.id), kind: String(row.kind), step: Number(row.box ?? 1), ...publicReviewPayload(payload) }] : [];
+      });
+      return json(200, { ok: true, due: Number(countRes.count ?? items.length), items });
+    }
+
+    if (req.method === "POST" && route === "/review/answer") {
+      const body = await parseBody(req) as Record<string, unknown>;
+      const id = toText(body.id, 64);
+      if (!id) return json(422, { error: "id is required" });
+      const { data: row, error } = await sb.from("learner_review_items")
+        .select("id, payload, box, times_reviewed")
+        .eq("id", id)
+        .eq("user_id", auth.userId)
+        .maybeSingle();
+      if (error) throw new Error(`Failed to load review item: ${error.message}`);
+      const payload = row ? parseReviewPayload((row as Record<string, unknown>).payload) : null;
+      if (!row || !payload) return json(404, { error: "Review item not found" });
+      const checked = checkReviewAnswer(payload, body.answer);
+      const next = scheduleAfterAnswer(Number((row as Record<string, unknown>).box ?? 1), checked.correct, new Date());
+      const { error: updateError } = await sb.from("learner_review_items")
+        .update({
+          box: next.box,
+          next_due_at: next.next_due_at,
+          last_result: checked.correct ? "correct" : "incorrect",
+          times_reviewed: Number((row as Record<string, unknown>).times_reviewed ?? 0) + 1,
+        })
+        .eq("id", id)
+        .eq("user_id", auth.userId);
+      if (updateError) throw new Error(`Failed to save review answer: ${updateError.message}`);
+      return json(200, { ok: true, ...checked, retired: next.box >= RETIRED_BOX, next_due_at: next.next_due_at });
     }
 
     // Legacy daily plan endpoint, kept for older clients.
