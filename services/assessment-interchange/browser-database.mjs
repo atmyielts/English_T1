@@ -13,6 +13,8 @@ export function browserDatabase(service, db) {
     "assessment_definition_revisions",
     "assessment_versions",
     "assessment_exam_windows",
+    "assessment_join_links",
+    "assessment_institution_profiles",
     "assessment_registrations",
     "assessment_attempts",
     "assessment_forms",
