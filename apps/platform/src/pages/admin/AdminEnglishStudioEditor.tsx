@@ -2,6 +2,7 @@ import React, { createContext, useContext, useMemo, useState } from 'react';
 import {
   AdminEnglishStudioError,
   adminEnglishStudioCreate,
+  adminEnglishStudioDraft,
   adminEnglishStudioUpdate,
   type AdminEnglishStudioFieldError,
   type AdminEnglishStudioItem,
@@ -705,6 +706,10 @@ export const AdminEnglishStudioEditor: React.FC<{
   const [errors, setErrors] = useState<AdminEnglishStudioFieldError[]>([]);
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [aiTopic, setAiTopic] = useState('');
+  const [aiLevel, setAiLevel] = useState(() => asText(initial.item.level) || 'B1');
+  const [aiNotes, setAiNotes] = useState('');
+  const [drafting, setDrafting] = useState(false);
 
   const childMeta = CHILD_LABEL[serviceKey];
   const isNew = !existing;
@@ -773,6 +778,33 @@ export const AdminEnglishStudioEditor: React.FC<{
     }
   };
 
+  const draftWithAi = async () => {
+    setMessage(null);
+    setDrafting(true);
+    try {
+      const draft = await withFreshToken((token) =>
+        adminEnglishStudioDraft(token, { service_key: serviceKey, topic: aiTopic.trim(), level: aiLevel, notes: aiNotes.trim() }),
+      );
+      setItem({ ...structuredClone(draft.editor.item), metadata: item.metadata, presentation_meta: item.presentation_meta });
+      setChildren(structuredClone(draft.editor.children));
+      setSlugTouched(true);
+      setErrors(draft.errors);
+      setMessage(
+        draft.errors.length
+          ? { kind: 'error', text: `Draft ready, but ${draft.errors.length} thing(s) need fixing before it can be saved. Review every field.` }
+          : { kind: 'success', text: 'Draft ready. Read it through and fix anything that is off, then Create item. It stays a draft until you publish.' },
+      );
+    } catch (err) {
+      if (err instanceof AdminEnglishStudioError && err.fieldErrors.length) setErrors(err.fieldErrors);
+      setMessage({
+        kind: 'error',
+        text: err instanceof AdminEnglishStudioError && err.serverMessage ? err.serverMessage : toFriendlyAdminError(err, 'Could not draft this item.'),
+      });
+    } finally {
+      setDrafting(false);
+    }
+  };
+
   const registryStatus = existing?.registry ? String(existing.registry.status ?? '') : null;
   const errorList = useMemo(
     () => errors.map((error) => `${error.field ? `${humanPath(error.field, childMeta?.one ?? 'Row')}: ` : ''}${error.message}`),
@@ -824,6 +856,56 @@ export const AdminEnglishStudioEditor: React.FC<{
             </button>
           </div>
         </div>
+
+        {isNew ? (
+          <div className="space-y-3 rounded-3xl border border-violet-200 bg-violet-50/60 p-5">
+            <div>
+              <h3 className="text-sm font-bold text-gray-900">Draft with AI</h3>
+              <p className="mt-1 text-xs text-gray-600">
+                Describe the topic and the AI fills in the whole {serviceKey} item, modelled on one of your published items. Nothing is
+                saved until you click Create item, so check every fact and answer first.
+              </p>
+            </div>
+            <div className="grid gap-3 md:grid-cols-[1fr_auto]">
+              <label className="block text-xs font-semibold text-gray-700">
+                Topic
+                <input
+                  value={aiTopic}
+                  onChange={(event) => setAiTopic(event.target.value)}
+                  placeholder="e.g. ordering food at a Tashkent café"
+                  className="mt-1 w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm"
+                />
+              </label>
+              <label className="block text-xs font-semibold text-gray-700">
+                Level
+                <select
+                  value={aiLevel}
+                  onChange={(event) => setAiLevel(event.target.value)}
+                  className="mt-1 w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm"
+                >
+                  {['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map((level) => <option key={level} value={level}>{level}</option>)}
+                </select>
+              </label>
+            </div>
+            <label className="block text-xs font-semibold text-gray-700">
+              Notes for the AI (optional)
+              <input
+                value={aiNotes}
+                onChange={(event) => setAiNotes(event.target.value)}
+                placeholder="e.g. focus on polite requests; 5 questions"
+                className="mt-1 w-full rounded-2xl border border-gray-200 bg-white px-3 py-2 text-sm"
+              />
+            </label>
+            <button
+              type="button"
+              onClick={() => void draftWithAi()}
+              disabled={drafting || aiTopic.trim().length < 3}
+              className="rounded-full bg-violet-700 px-5 py-2 text-sm font-semibold text-white disabled:bg-gray-300"
+            >
+              {drafting ? 'Drafting… (up to a minute)' : 'Draft with AI'}
+            </button>
+          </div>
+        ) : null}
 
         {message ? (
           <div
