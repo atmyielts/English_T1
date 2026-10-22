@@ -30,6 +30,8 @@ export type TodayResponse = {
   daily_minutes: number;
   placement_done: boolean;
   available_skills: SkillKey[];
+  /** Present for learners without a plan: today's free activities. */
+  free?: { left: number; per_day: number } | null;
   tasks: TodayTask[];
   minutes_total: number;
   done_count: number;
@@ -121,6 +123,15 @@ export const moveUpLevel = (skill: SkillKey) =>
     query: { language_code: 'en' },
     body: { skill },
   });
+
+export type TopicWeek = {
+  topic: string;
+  week: number;
+  steps: Array<{ skill: SkillKey; content_item_id: string; slug: string; title: string; level: CefrLevel | null; minutes: number; done: boolean }>;
+};
+
+export const getTopicWeek = (signal?: AbortSignal) =>
+  edge<{ week: TopicWeek | null }>('hub', '/week', { query: { language_code: 'en', date: localDate() }, signal });
 
 export type SaveOnboardingBody = {
   placement?: { overall_level: CefrLevel; per_skill: Partial<Record<SkillKey, { level: CefrLevel }>> };

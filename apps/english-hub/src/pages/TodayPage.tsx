@@ -6,6 +6,7 @@ import type { SkillKey } from '../lib/skills';
 import { useResource } from '../lib/useResource';
 import { EmptyState, ErrorState, LevelBadge, Loading, Panel, ProgressBar, SkillDot, Tag } from '../ui/kit';
 import { Onboarding } from './Onboarding';
+import { TopicWeekPanel } from './TopicWeekPanel';
 
 const greetingKey = (): string => {
   const hour = new Date().getHours();
@@ -66,7 +67,7 @@ const WeekStrip = ({ week }: { week: TodayResponse['week'] }) => {
 
 export const TodayPage = () => {
   const t = useT();
-  const { onboarding, displayName, access, pricingHref } = useEnglish();
+  const { onboarding, displayName, pricingHref } = useEnglish();
   const placed = onboarding.value?.placementDone ?? false;
   const today = useResource((signal) => getToday(signal), [placed], placed);
 
@@ -80,7 +81,6 @@ export const TodayPage = () => {
   const tasks = data?.tasks ?? [];
   const nextIndex = tasks.findIndex((task) => !task.done);
   const allDone = tasks.length > 0 && nextIndex === -1;
-  const hasAccess = access.status === 'ready' && access.unlocked.size > 0;
   const level = data?.level ?? onboarding.value?.level ?? null;
   const target = data?.target_level ?? onboarding.value?.targetLevel ?? null;
   const readySkills = Object.entries(data?.level_status ?? {})
@@ -134,15 +134,21 @@ export const TodayPage = () => {
           {today.loading && !data ? <Loading lines={4} label={t('today.session.loading')} /> : null}
           {today.error ? <ErrorState error={today.error} onRetry={today.reload} /> : null}
 
-          {data && !hasAccess && access.status === 'ready' ? (
+          {data?.free ? (
+            <p className="en-explain" style={{ margin: 0 }}>
+              <strong>{t('free.todayTitle')}.</strong> {t('free.todayBody')} <a href={pricingHref()}>{t('free.seePlans')}</a>
+            </p>
+          ) : null}
+
+          {data?.free && !tasks.some((task) => task.kind === 'activity') ? (
             <EmptyState
-              title={t('today.noAccess.title')}
-              body={t('today.noAccess.body')}
+              title={t('free.usedTitle')}
+              body={t('free.usedBody')}
               action={<a className="en-button" href={pricingHref()}>{t('today.noAccess.cta')}</a>}
             />
           ) : null}
 
-          {data && hasAccess && tasks.length === 0 ? (
+          {data && !data.free && tasks.length === 0 ? (
             <EmptyState title={t('today.empty.title')} body={t('today.empty.body')} action={<Link className="en-button" to="/practice">{t('today.empty.cta')}</Link>} />
           ) : null}
 
@@ -170,6 +176,8 @@ export const TodayPage = () => {
             {data ? <WeekStrip week={data.week} /> : <Loading lines={1} />}
             <p className="hint">{data && data.streak > 0 ? t('today.week.keepGoing') : t('today.week.start')}</p>
           </Panel>
+
+          <TopicWeekPanel />
 
           <Panel title={t('today.words.title')}>
             {data ? (

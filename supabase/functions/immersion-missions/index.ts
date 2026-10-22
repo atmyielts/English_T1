@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { guardActivity } from "../_shared/english-allowance.ts";
 import { grammarTopicFor, topicSubskill } from "../_shared/english-mistakes.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
@@ -181,6 +182,9 @@ serve(async (req) => {
 
     // Submit a whole mission: every step checked together, one attempt recorded.
     if (req.method === "POST" && route.startsWith("/missions/") && route.endsWith("/submit")) {
+      // Paid skills, or today's free activity.
+      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "immersion");
+      if (blocked) return blocked;
       const identifier = decodeURIComponent(route.slice("/missions/".length, -"/submit".length)).trim();
       const loaded = identifier ? await loadMission(sb, productId, scope.languageId, identifier) : null;
       if (!loaded) return json(404, { error: "Task not found" });

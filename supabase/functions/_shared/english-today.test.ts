@@ -13,6 +13,8 @@ import {
   pickItem,
   planToday,
   skillProgress,
+  topicWeek,
+  isoWeek,
   TODAY_SKILLS,
   weekStrip,
 } from "./english-today.ts";
@@ -270,4 +272,21 @@ Deno.test("at the same level, items that suit the learner's goal come first", ()
   assertEquals(pickItem(items, [], "B1", [])?.item.id, "r-airport".localeCompare("r-museum") < 0 ? "r-airport" : "r-museum");
   assertEquals(matchesGoals({ title: "Team update after a delay", tags: ["workplace"] }, ["work"]), true);
   assertEquals(matchesGoals({ title: "Networking", tags: ["homework"] }, ["work"]), false);
+});
+
+Deno.test("a topic week links one activity per skill on the same theme", () => {
+  const items: CatalogItem[] = [
+    { ...item("v-travel", "vocabulary", "B1"), title: "Travel", tags: ["travel"] },
+    { ...item("r-airport", "reading", "B1"), title: "Airport guides without stress", tags: ["Travel"] },
+    { ...item("l-flight", "listening", "B1"), title: "A delayed flight", tags: ["airport"] },
+    { ...item("s-trip", "speaking", "B1"), title: "A trip you remember", tags: ["story"] },
+    { ...item("r-museum", "reading", "B1"), title: "Museum captions", tags: ["Culture"] },
+  ];
+  // isoWeek 43 % 8 = 3 → health has no items, so the planner moves on until a theme covers 3+ skills.
+  const week = topicWeek({ date: "2026-10-22", items, attempts: [attempt("l-flight", "listening", 0.8, "2026-10-20")], levelFor: () => "B1" });
+  assertEquals(week?.topic, "travel");
+  assertEquals(week?.steps.map((step) => step.skill), ["vocabulary", "reading", "listening", "speaking"]);
+  assertEquals(week?.steps.find((step) => step.skill === "listening")?.done, true);
+  assertEquals(isoWeek("2026-10-22"), 43);
+  assertEquals(isoWeek("2027-01-01"), 53);
 });

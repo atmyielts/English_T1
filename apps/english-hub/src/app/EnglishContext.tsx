@@ -44,7 +44,11 @@ type EnglishState = {
   session: Session | null;
   accessToken: string | null;
   displayName: string | null;
-  access: { status: Status; unlocked: Set<SkillKey> };
+  /** unlocked: skills in the learner's plan. freeLeft: free activities left today in other skills. */
+  access: { status: Status; unlocked: Set<SkillKey>; freeLeft: number; freePerDay: number };
+  /** Whether the learner can do an activity in this skill right now (plan or free allowance). */
+  canPractise: (skill: SkillKey) => boolean;
+  refreshAccess: () => Promise<void>;
   onboarding: { status: Status; value: Onboarding | null };
   refreshOnboarding: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -104,7 +108,7 @@ const nameFrom = (session: Session | null): string | null => {
 export const EnglishProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [sessionResolved, setSessionResolved] = useState(false);
-  const [access, setAccess] = useState<EnglishState['access']>({ status: 'loading', unlocked: new Set() });
+  const [access, setAccess] = useState<EnglishState['access']>({ status: 'loading', unlocked: new Set(), freeLeft: 0, freePerDay: 0 });
   const [onboarding, setOnboarding] = useState<EnglishState['onboarding']>({ status: 'loading', value: null });
 
   useEffect(() => {
@@ -125,24 +129,38 @@ export const EnglishProvider = ({ children }: { children: ReactNode }) => {
 
   const userId = session?.user.id ?? null;
 
+  const refreshAccess = useCallback(async () => {
+    try {
+      const [me, allowance] = await Promise.all([
+        edge<MeResponse>('me'),
+        edge<{ entitled_skills: string[]; free_left: number; free_per_day: number }>('hub', '/access', { query: { language_code: 'en' } })
+          .catch(() => null),
+      ]);
+      const fromServer = allowance
+        ? new Set(SKILLS.filter((skill) => allowance.entitled_skills.includes(skill.key)).map((skill) => skill.key))
+        : unlockedSkills(me.entitlements ?? []);
+      setAccess({
+        status: 'ready',
+        unlocked: fromServer,
+        freeLeft: allowance?.free_left ?? 0,
+        freePerDay: allowance?.free_per_day ?? 0,
+      });
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
+        return;
+      }
+      setAccess({ status: 'error', unlocked: new Set(), freeLeft: 0, freePerDay: 0 });
+    }
+  }, []);
+
   useEffect(() => {
     if (!userId) {
-      setAccess({ status: 'loading', unlocked: new Set() });
+      setAccess({ status: 'loading', unlocked: new Set(), freeLeft: 0, freePerDay: 0 });
       return;
     }
-    let cancelled = false;
-    edge<MeResponse>('me')
-      .then((me) => { if (!cancelled) setAccess({ status: 'ready', unlocked: unlockedSkills(me.entitlements ?? []) }); })
-      .catch(async (error) => {
-        if (cancelled) return;
-        if (error instanceof ApiError && error.status === 401) {
-          await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
-          return;
-        }
-        setAccess({ status: 'error', unlocked: new Set() });
-      });
-    return () => { cancelled = true; };
-  }, [userId]);
+    void refreshAccess();
+  }, [userId, refreshAccess]);
 
   const refreshOnboarding = useCallback(async () => {
     try {
@@ -169,6 +187,8 @@ export const EnglishProvider = ({ children }: { children: ReactNode }) => {
       accessToken: session?.access_token ?? null,
       displayName: nameFrom(session),
       access,
+      canPractise: (skill) => access.status !== 'ready' || access.unlocked.has(skill) || access.freeLeft > 0,
+      refreshAccess,
       onboarding,
       refreshOnboarding,
       signOut: async () => { await supabase.auth.signOut({ scope: 'local' }); },
@@ -181,7 +201,7 @@ export const EnglishProvider = ({ children }: { children: ReactNode }) => {
         }),
       accountHref: buildPlatformHref(platformUrl, '/student-center'),
     };
-  }, [access, onboarding, refreshOnboarding, session, sessionResolved]);
+  }, [access, onboarding, refreshAccess, refreshOnboarding, session, sessionResolved]);
 
   return <EnglishContext.Provider value={value}>{children}</EnglishContext.Provider>;
 };

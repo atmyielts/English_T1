@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { guardActivity } from "../_shared/english-allowance.ts";
 import { creditUsedWords, loadPracticeWords } from "../_shared/english-words.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
@@ -366,6 +367,9 @@ serve(async (req) => {
 
     // Submit a draft for feedback: POST /prompts/:slug/submit { text, time_spent_seconds }
     if (req.method === "POST" && route.startsWith("/prompts/") && route.endsWith("/submit")) {
+      // Paid skills, or today's free activity.
+      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "writing");
+      if (blocked) return blocked;
       const identifier = decodeURIComponent(route.slice("/prompts/".length, -"/submit".length)).trim();
       const prompt = identifier ? await loadPrompt(sb, productId, scope.languageId, identifier) : null;
       if (!prompt) return json(404, { error: "Writing task not found" });
@@ -462,6 +466,9 @@ serve(async (req) => {
     }
 
     if (req.method === "POST" && route === "/drafts/submit") {
+      // Paid skills, or today's free activity.
+      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "writing");
+      if (blocked) return blocked;
       const draftId = toText(body.draft_id, 120);
       const text = toText(body.submission_text ?? body.text, MAX_TEXT);
       if (!isUuid(draftId) || !text) return json(422, { error: "draft_id and submission_text are required" });

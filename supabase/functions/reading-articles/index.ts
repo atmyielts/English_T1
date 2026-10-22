@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { guardActivity } from "../_shared/english-allowance.ts";
 import { queueReviewItems } from "../_shared/english-review.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
@@ -574,6 +575,9 @@ serve(async (req) => {
       }
       if (req.method === "GET" && !articleMatch[2]) return await getArticleForLearner(serviceClient, scope, slug);
       if (req.method === "POST" && articleMatch[2]) {
+        // Paid skills, or today's free activity.
+        const blocked = await guardActivity(serviceClient, authedUserId, scope.languageId, "reading");
+        if (blocked) return blocked;
         return await submitArticle(serviceClient, scope, slug, await parseBody(req), authedUserId);
       }
       return json(405, { error: "Method not allowed" });

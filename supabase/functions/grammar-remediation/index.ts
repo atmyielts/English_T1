@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { guardActivity } from "../_shared/english-allowance.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   authUser,
@@ -257,6 +258,9 @@ serve(async (req) => {
     // Submit a whole lesson: every practice item in a unit, checked together and
     // recorded as one attempt on the unit, so the lesson shows as done everywhere.
     if (req.method === "POST" && route.startsWith("/units/") && route.endsWith("/submit")) {
+      // Paid skills, or today's free activity.
+      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "grammar");
+      if (blocked) return blocked;
       const identifier = decodeURIComponent(route.slice("/units/".length, -"/submit".length)).trim();
       const unit = identifier ? await loadUnit(sb, productId, scope.languageId, identifier) : null;
       if (!unit) return json(404, { error: "Grammar unit not found" });
@@ -402,6 +406,9 @@ serve(async (req) => {
     }
 
     if (req.method === "POST" && route === "/drills/submit") {
+      // Paid skills, or today's free activity.
+      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "grammar");
+      if (blocked) return blocked;
       const drillId = toText(body.drill_id, 120);
       const responseText = toText(body.response_text, 6000);
       if (!drillId || !responseText) return json(422, { error: "drill_id and response_text are required" });

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useEnglish } from '../app/EnglishContext';
 import { useT } from '../i18n';
@@ -31,8 +31,9 @@ export const ActivityFrame = ({
   children?: ReactNode;
 }) => {
   const t = useT();
-  const { access, pricingHref } = useEnglish();
-  const locked = access.status === 'ready' && !access.unlocked.has(skill);
+  const { access, canPractise, pricingHref } = useEnglish();
+  const locked = !canPractise(skill);
+  const usingFree = access.status === 'ready' && !access.unlocked.has(skill) && access.freeLeft > 0;
   return (
     <>
       <PageHeader
@@ -47,7 +48,10 @@ export const ActivityFrame = ({
           </span>
         )}
       />
-      {locked ? <LockedPanel skillName={t(`skill.${skill}`)} pricingHref={pricingHref(skill)} /> : null}
+      {locked ? <LockedPanel skillName={t(`skill.${skill}`)} pricingHref={pricingHref(skill)} freeUsed={access.freePerDay > 0} /> : null}
+      {usingFree && !loading ? (
+        <p className="en-notice">{t('free.usingToday', { count: access.freeLeft })} <a href={pricingHref(skill)}>{t('free.seePlans')}</a></p>
+      ) : null}
       {!locked && loading ? <section className="en-panel"><Loading lines={6} /></section> : null}
       {!locked && error ? <ErrorState error={error} onRetry={onRetry} /> : null}
       {!locked && !loading && !error ? <div className="en-activity">{children}</div> : null}
@@ -93,6 +97,9 @@ export const ResultPanel = ({
   savedWords?: number;
 }) => {
   const t = useT();
+  const { refreshAccess } = useEnglish();
+  // A free learner's allowance changes once an activity is submitted.
+  useEffect(() => { void refreshAccess(); }, [refreshAccess]);
   return (
     <section className="en-panel" aria-live="polite">
       <div className="en-result">
