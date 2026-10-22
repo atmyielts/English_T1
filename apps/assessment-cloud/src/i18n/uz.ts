@@ -1327,4 +1327,9 @@ export const uz: Record<keyof typeof en, string> = {
   'error.review_required': "Savol, baholash kaliti va rubrikani qayta ko‘rib chiqing: siz ochganingizdan keyin ular o‘zgargan.",
   'error.invalid_item_transition': "Bu versiya endi ko‘rib chiqilmayapti. Joriy holatini ko‘rish uchun yangilang.",
   'error.reviewer_must_differ_from_author': "Savol muallifi o‘z versiyasini tasdiqlay yoki unga o‘zgartirish so‘ray olmaydi.",
+  'items.rowStatus.draft': "Qoralama",
+  'items.rowStatus.review': "Ko‘rib chiqish kutilmoqda",
+  'items.rowStatus.changes_requested': "O‘zgartirish so‘ralgan",
+  'items.rowStatus.approved': "Tasdiqlangan",
+  'items.rowStatus.retired': "Foydalanishdan chiqarilgan",
 };

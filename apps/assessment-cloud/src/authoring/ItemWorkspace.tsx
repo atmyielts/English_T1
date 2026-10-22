@@ -20,7 +20,7 @@ import { ItemEditor } from "./ItemEditor";
 import { QuestionReview } from "./QuestionReview";
 import { RubricEditor } from "./RubricEditor";
 import "./authoring.css";
-import { useAppT, useErrorText, useItemLabel } from "../i18n/index.ts";
+import { useAppT, useErrorText, useItemLabel, type AppKey } from "../i18n/index.ts";
 export function ItemWorkspace({
   tenant,
   actor,
@@ -191,7 +191,7 @@ export function ItemWorkspace({
     }
   }
   const statusText = (status: string) =>
-    status === "draft" ? t("items.statusDraft") : status === "review" ? t("items.statusReview") : status === "approved" ? t("items.statusApproved") : status === "changes_requested" ? t("items.statusChangesRequested") : status;
+    ["draft", "review", "changes_requested", "approved", "retired"].includes(status) ? t(`items.rowStatus.${status}` as AppKey) : status;
   const locked = busy || !!pending || !ready,
     versions = (rows["item-versions"] ?? []).filter(
       (row) =>

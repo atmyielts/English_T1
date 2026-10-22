@@ -1327,4 +1327,9 @@ export const ru: Record<keyof typeof en, string> = {
   'error.review_required': "Проверьте вопрос, ключ оценивания и рубрику ещё раз: они изменились после открытия.",
   'error.invalid_item_transition': "Эта версия больше не на рецензии. Обновите страницу, чтобы увидеть её статус.",
   'error.reviewer_must_differ_from_author': "Автор вопроса не может утверждать свою версию или запрашивать к ней изменения.",
+  'items.rowStatus.draft': "Черновик",
+  'items.rowStatus.review': "Ожидает проверки",
+  'items.rowStatus.changes_requested': "Запрошены изменения",
+  'items.rowStatus.approved': "Утверждён",
+  'items.rowStatus.retired': "Выведен из обращения",
 };

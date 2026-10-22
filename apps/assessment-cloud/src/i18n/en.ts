@@ -1327,4 +1327,9 @@ export const en = {
   'error.review_required': "Review the question, scoring key and rubric again: they changed since you opened them.",
   'error.invalid_item_transition': "This version is no longer in review. Refresh to see its current status.",
   'error.reviewer_must_differ_from_author': "The question author cannot approve or request changes to their own version.",
+  'items.rowStatus.draft': "Draft",
+  'items.rowStatus.review': "Awaiting review",
+  'items.rowStatus.changes_requested': "Changes requested",
+  'items.rowStatus.approved': "Approved",
+  'items.rowStatus.retired': "Retired",
 };
