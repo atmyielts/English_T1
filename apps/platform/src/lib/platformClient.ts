@@ -932,6 +932,23 @@ export const adminEnglishStudioUpdate = async (
     body: JSON.stringify({ language_code: 'en', ...body }),
   });
 
+export type AdminEnglishStudioDraft = {
+  ok: boolean;
+  editor: { item: AdminEnglishStudioRecord; children: AdminEnglishStudioRecord[] };
+  /** Problems the validator still sees in the draft; the admin fixes them before saving. */
+  errors: AdminEnglishStudioFieldError[];
+};
+
+/** Draft with AI: returns a new item in editor shape. Nothing is saved. */
+export const adminEnglishStudioDraft = async (
+  accessToken: string,
+  body: { service_key: string; topic: string; level: string; notes?: string },
+): Promise<AdminEnglishStudioDraft> =>
+  (await callAdminEnglishStudio(accessToken, '/admin-english-content/content/draft', {
+    method: 'POST',
+    body: JSON.stringify({ language_code: 'en', ...body }),
+  })) as unknown as AdminEnglishStudioDraft;
+
 export const adminEnglishStudioDuplicate = async (
   accessToken: string,
   body: { service_key: string; id: string },
