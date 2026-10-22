@@ -8,10 +8,9 @@ import {
   extractRoute,
   getEnv,
   json,
-  normalizeServiceKey,
   parseBody,
-  recordEvaluatedAttempt,
   rebuildRecommendationsForUser,
+  recordEvaluatedAttempt,
   reopenMasteryFromTransferFailure,
   resolveEnglishProducts,
   resolveLanguageScope,
@@ -20,60 +19,91 @@ import {
   toText,
   type EnglishServiceKey,
 } from "../_shared/english-learning.ts";
+import { callEnglishAIWithStatus } from "../_shared/english-ai.ts";
+import {
+  applyJudgement,
+  basicReplyCheck,
+  buildJudgeRequest,
+  checkChoices,
+  minWordsFor,
+  missionScore,
+  ownWordCount,
+  parseQuestions,
+  publicQuestions,
+  stepKind,
+  type ChoiceResult,
+  type ReplyCheck,
+  type StepKind,
+} from "../_shared/english-immersion.ts";
 
 type JsonRecord = Record<string, unknown>;
-type MissionRow = Record<string, unknown>;
-type MissionStepRow = Record<string, unknown>;
+type Row = Record<string, unknown>;
 
 const routeMarker = "/immersion-missions";
+
+const MISSION_COLUMNS =
+  "id, slug, title, context_text, objective_text, mission_type, level, target_vocabulary, target_grammar, skill_mix, success_conditions_json, cultural_note, status, sort_order, metadata";
+const STEP_COLUMNS =
+  "id, mission_id, step_index, service_key, step_type, title, instructions, prompt_text, expected_answer_json, target_skill_key, estimated_minutes, status, metadata";
 
 const isUuid = (value: string): boolean =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 
-const clip = (value: number, min: number, max: number): number => Math.max(min, Math.min(max, value));
+const asRecord = (value: unknown): JsonRecord =>
+  value && typeof value === "object" && !Array.isArray(value) ? value as JsonRecord : {};
 
-const countWords = (text: string): number => {
-  const trimmed = String(text ?? "").trim();
-  if (!trimmed) return 0;
-  return trimmed.split(/\s+/).filter(Boolean).length;
+const stringList = (value: unknown): string[] =>
+  Array.isArray(value) ? value.map((entry) => String(entry ?? "").trim()).filter(Boolean) : [];
+
+const SKILL_OF_KIND: Record<StepKind, EnglishServiceKey> = {
+  read: "reading",
+  listen: "listening",
+  reply: "writing",
+  speak: "speaking",
 };
 
-const tokenize = (text: string): string[] =>
-  String(text ?? "")
-    .toLowerCase()
-    .replace(/[^a-z0-9'\s-]+/g, " ")
-    .split(/\s+/)
-    .map((entry) => entry.trim())
-    .filter(Boolean);
+const stepMinutes = (steps: Row[]): number =>
+  steps.reduce((sum, step) => sum + Math.max(1, Math.floor(toNumber(step.estimated_minutes) ?? 3)), 0);
 
-const hasKeyword = (text: string, keyword: string): boolean => {
-  const normalizedText = ` ${String(text ?? "").toLowerCase()} `;
-  const normalizedKeyword = String(keyword ?? "").trim().toLowerCase();
-  return normalizedKeyword.length > 0 && normalizedText.includes(` ${normalizedKeyword} `);
+/** Mission fields a learner sees before starting. The tip is saved for the result. */
+const publicMission = (mission: Row, steps: Row[]) => ({
+  id: String(mission.id),
+  slug: toText(mission.slug, 160),
+  title: toText(mission.title, 220),
+  context_text: toText(mission.context_text, 2000),
+  objective_text: toText(mission.objective_text, 900),
+  mission_type: toText(mission.mission_type, 40),
+  level: toText(mission.level, 8) || null,
+  target_vocabulary: stringList(mission.target_vocabulary),
+  success_conditions: stringList(mission.success_conditions_json),
+  estimated_minutes: stepMinutes(steps),
+  step_count: steps.length,
+});
+
+/** A step as sent before submitting: no answer key, no model answer. */
+const publicStep = (step: Row, level: string | null) => {
+  const kind = stepKind(step.step_type);
+  const meta = asRecord(step.metadata);
+  const accent = meta.accent === "gb" || meta.accent === "us" ? meta.accent : null;
+  return {
+    id: String(step.id),
+    step_index: Number(step.step_index ?? 0),
+    kind,
+    title: toText(step.title, 220),
+    instructions: toText(step.instructions, 900),
+    // read: the notice; listen: the script the browser reads aloud (shown only after checking); reply/speak: the cue.
+    text: String(step.prompt_text ?? "").slice(0, 4000),
+    estimated_minutes: Math.max(1, Math.floor(toNumber(step.estimated_minutes) ?? 3)),
+    questions: kind === "read" || kind === "listen" ? publicQuestions(step.expected_answer_json) : [],
+    min_words: kind === "reply" || kind === "speak" ? minWordsFor(kind, level, step.expected_answer_json) : null,
+    accent,
+  };
 };
 
-const categoryToServiceKey = (value: unknown): EnglishServiceKey | null => {
-  const text = toText(value, 80).toLowerCase();
-  if (!text) return null;
-  if (text.includes("grammar")) return "grammar";
-  if (text.includes("vocabulary")) return "vocabulary";
-  if (text.includes("reading")) return "reading";
-  if (text.includes("listening")) return "listening";
-  if (text.includes("writing")) return "writing";
-  if (text.includes("speaking")) return "speaking";
-  if (text.includes("immersion")) return "immersion";
-  return null;
-};
-
-const loadMissionWithSteps = async (
-  sb: any,
-  productId: string,
-  languageId: string,
-  identifier: string,
-): Promise<{ mission: MissionRow; steps: MissionStepRow[] } | null> => {
+const loadMission = async (sb: any, productId: string, languageId: string, identifier: string): Promise<{ mission: Row; steps: Row[] } | null> => {
   let query = sb
     .from("immersion_missions")
-    .select("id, slug, title, context_text, objective_text, mission_type, level, target_vocabulary, target_grammar, skill_mix, success_conditions_json, cultural_note, status, sort_order, metadata, presentation_meta")
+    .select(MISSION_COLUMNS)
     .eq("product_id", productId)
     .eq("language_id", languageId)
     .eq("status", "published")
@@ -81,368 +111,243 @@ const loadMissionWithSteps = async (
   query = isUuid(identifier) ? query.eq("id", identifier) : query.eq("slug", identifier);
   const { data, error } = await query.maybeSingle();
   if (error || !data?.id) return null;
-
   const stepsRes = await sb
     .from("immersion_mission_steps")
-    .select("id, mission_id, step_index, service_key, step_type, title, instructions, prompt_text, expected_answer_json, target_skill_key, estimated_minutes, status, metadata")
+    .select(STEP_COLUMNS)
     .eq("mission_id", String(data.id))
     .eq("status", "published")
     .order("step_index", { ascending: true });
-
-  return {
-    mission: data as MissionRow,
-    steps: Array.isArray(stepsRes.data) ? stepsRes.data as MissionStepRow[] : [],
-  };
+  const steps = ((stepsRes.data ?? []) as Row[]).filter((step) => stepKind(step.step_type) !== null);
+  return { mission: data as Row, steps };
 };
 
-const loadMissionList = async (
-  sb: any,
-  productId: string,
-  languageId: string,
-  options: { limit: number; level?: string },
-): Promise<Array<MissionRow & { steps: MissionStepRow[] }>> => {
-  let query = sb
-    .from("immersion_missions")
-    .select("id, slug, title, context_text, objective_text, mission_type, level, target_vocabulary, target_grammar, skill_mix, success_conditions_json, cultural_note, status, sort_order, metadata, presentation_meta")
-    .eq("product_id", productId)
-    .eq("language_id", languageId)
-    .eq("status", "published")
-    .order("sort_order", { ascending: true })
-    .limit(options.limit);
-  if (options.level) query = query.eq("level", options.level);
-  const { data, error } = await query;
-  if (error) throw new Error(`Failed to load immersion missions: ${error.message}`);
-
-  const missions = Array.isArray(data) ? data as MissionRow[] : [];
-  const missionIds = missions.map((mission) => String(mission.id ?? "")).filter(Boolean);
-  if (missionIds.length === 0) return [];
-
-  const stepsRes = await sb
-    .from("immersion_mission_steps")
-    .select("id, mission_id, step_index, service_key, step_type, title, instructions, prompt_text, expected_answer_json, target_skill_key, estimated_minutes, status, metadata")
-    .in("mission_id", missionIds)
-    .eq("status", "published")
-    .order("step_index", { ascending: true });
-  const steps = Array.isArray(stepsRes.data) ? stepsRes.data as MissionStepRow[] : [];
-  const stepsByMission = new Map<string, MissionStepRow[]>();
-  for (const step of steps) {
-    const missionId = String(step.mission_id ?? "");
-    const bucket = stepsByMission.get(missionId) ?? [];
-    bucket.push(step);
-    stepsByMission.set(missionId, bucket);
-  }
-
-  return missions.map((mission) => ({
-    ...mission,
-    steps: stepsByMission.get(String(mission.id ?? "")) ?? [],
-  }));
-};
-
-const evaluateMission = (
-  mission: MissionRow,
-  steps: MissionStepRow[],
-  responses: Array<Record<string, unknown>>,
-  previousAttempt: Record<string, unknown> | null,
-): {
-  issues: Array<Record<string, unknown>>;
-  stepResults: Array<Record<string, unknown>>;
-  completionRatio: number;
-  correctnessRatio: number;
-  correctionQualityRatio: number;
-  usedMissionVocabulary: string[];
-  missedMissionVocabulary: string[];
-  comparison: Record<string, unknown>;
-  transferServicesToReopen: EnglishServiceKey[];
-} => {
-  const responseMap = new Map<string, string>();
-  for (const row of responses) {
-    const stepId = toText(row.step_id, 120);
-    if (!stepId) continue;
-    responseMap.set(stepId, toText(row.response_text, 12000));
-  }
-
-  const missionVocabulary = Array.isArray(mission.target_vocabulary)
-    ? mission.target_vocabulary.map((entry) => String(entry ?? "").trim().toLowerCase()).filter(Boolean)
-    : [];
-  const issues: Array<Record<string, unknown>> = [];
-  const stepResults: Array<Record<string, unknown>> = [];
-  const transferServices = new Set<EnglishServiceKey>();
-  const usedMissionVocab = new Set<string>();
-
-  for (const step of steps) {
-    const stepId = String(step.id ?? "");
-    const responseText = responseMap.get(stepId) ?? "";
-    const trimmedResponse = responseText.trim();
-    const expected = step.expected_answer_json && typeof step.expected_answer_json === "object"
-      ? step.expected_answer_json as Record<string, unknown>
-      : {};
-    const requiredKeywords = Array.isArray(expected.required_keywords)
-      ? expected.required_keywords.map((entry) => String(entry ?? "").trim().toLowerCase()).filter(Boolean)
-      : [];
-    const minimumWords = Math.max(0, Math.floor(toNumber(expected.minimum_words) ?? 0));
-    const wordCount = countWords(trimmedResponse);
-    const matchedKeywords = requiredKeywords.filter((keyword) => hasKeyword(trimmedResponse, keyword));
-    const missingKeywords = requiredKeywords.filter((keyword) => !matchedKeywords.includes(keyword));
-    const serviceKey = normalizeServiceKey(step.service_key) ?? "immersion";
-    const serviceSubskillBase = serviceKey === "immersion" ? "immersion.transfer" : `${serviceKey}.detail`;
-    const stepIssues: Array<Record<string, unknown>> = [];
-
-    if (!trimmedResponse) {
-      stepIssues.push({
-        category: serviceKey,
-        subskill_key: serviceSubskillBase,
-        location_ref: `step-${Number(step.step_index ?? 0) + 1}`,
-        explanation: "This mission step was left blank, so transfer could not be validated here.",
-        correction_hint: "Complete the step with one clear response before retrying the mission.",
-        severity: 0.88,
-      });
-    }
-
-    if (minimumWords > 0 && trimmedResponse && wordCount < minimumWords) {
-      stepIssues.push({
-        category: serviceKey,
-        subskill_key: serviceKey === "speaking" ? "speaking.task_completion" : serviceKey === "writing" ? "writing.task_completion" : serviceSubskillBase,
-        location_ref: `step-${Number(step.step_index ?? 0) + 1}`,
-        explanation: `This response is too short for the task. Aim for at least ${minimumWords} words.`,
-        correction_hint: "Add one more complete idea so the step solves the mission problem clearly.",
-        severity: 0.68,
-      });
-    }
-
-    if (missingKeywords.length > 0 && trimmedResponse) {
-      stepIssues.push({
-        category: serviceKey,
-        subskill_key: serviceSubskillBase,
-        location_ref: `step-${Number(step.step_index ?? 0) + 1}`,
-        explanation: `Important task details are missing: ${missingKeywords.slice(0, 3).join(", ")}.`,
-        correction_hint: "Reuse the key facts from the prompt so your answer covers the mission requirement fully.",
-        severity: clip(missingKeywords.length / Math.max(1, requiredKeywords.length), 0.35, 0.78),
-      });
-    }
-
-    if ((serviceKey === "speaking" || serviceKey === "writing") && /\bi\b/.test(trimmedResponse)) {
-      stepIssues.push({
-        category: "grammar",
-        subskill_key: `${serviceKey}.grammar`,
-        location_ref: `step-${Number(step.step_index ?? 0) + 1}`,
-        explanation: "The response still uses lowercase 'i' where 'I' should be capitalized.",
-        correction_hint: "Clean up sentence-level grammar before retrying the mission.",
-        severity: 0.42,
-      });
-    }
-
-    if (serviceKey === "writing" && trimmedResponse && !/[.!?]$/.test(trimmedResponse)) {
-      stepIssues.push({
-        category: "grammar",
-        subskill_key: "writing.sentence_control",
-        location_ref: `step-${Number(step.step_index ?? 0) + 1}`,
-        explanation: "The written message needs clear sentence punctuation at the end.",
-        correction_hint: "Finish the last sentence with a full stop or question mark.",
-        severity: 0.46,
-      });
-    }
-
-    const completionRatio = trimmedResponse ? 1 : 0;
-    const keywordRatio = requiredKeywords.length > 0 ? matchedKeywords.length / requiredKeywords.length : (trimmedResponse ? 1 : 0);
-    const lengthRatio = minimumWords > 0 ? clip(wordCount / minimumWords, trimmedResponse ? 0.2 : 0, 1) : (trimmedResponse ? 1 : 0);
-    const grammarPenalty = stepIssues.filter((issue) => String(issue.category ?? "") === "grammar").length * 0.06;
-    const stepScore = clip(
-      (completionRatio * 0.35) + (keywordRatio * 0.45) + (lengthRatio * 0.2) - grammarPenalty,
-      0.08,
-      0.98,
-    );
-
-    for (const token of missionVocabulary) {
-      if (hasKeyword(trimmedResponse, token)) usedMissionVocab.add(token);
-    }
-    if (stepScore < 0.7 && serviceKey !== "immersion") transferServices.add(serviceKey);
-    for (const issue of stepIssues) {
-      const issueService = categoryToServiceKey(issue.category);
-      if (issueService && issueService !== "immersion") transferServices.add(issueService);
-    }
-
-    issues.push(...stepIssues);
-    stepResults.push({
-      step_id: stepId,
-      title: toText(step.title, 220),
-      service_key: serviceKey,
-      step_type: toText(step.step_type, 80),
-      word_count: wordCount,
-      matched_keywords: matchedKeywords,
-      missing_keywords: missingKeywords,
-      score: stepScore,
-      response_text: responseText,
-    });
-  }
-
-  const completedSteps = stepResults.filter((row) => toText(row.response_text, 12000).length > 0).length;
-  const completionRatio = steps.length > 0 ? completedSteps / steps.length : 0;
-  const stepAverage = stepResults.length > 0
-    ? stepResults.reduce((sum, row) => sum + Number(row.score ?? 0), 0) / stepResults.length
-    : 0;
-  const usedMissionVocabulary = Array.from(usedMissionVocab);
-  const missedMissionVocabulary = missionVocabulary.filter((entry) => !usedMissionVocab.has(entry));
-
-  if (missionVocabulary.length > 0 && usedMissionVocabulary.length === 0) {
-    issues.push({
-      category: "vocabulary",
-      subskill_key: "vocabulary.activation",
-      location_ref: "mission-wide",
-      explanation: "The mission did not activate any of the target vocabulary in a real-use response.",
-      correction_hint: `Reuse at least one target phrase next time: ${missedMissionVocabulary.slice(0, 3).join(", ")}.`,
-      severity: 0.58,
-    });
-    transferServices.add("vocabulary");
-  }
-
-  const previousScore = Number(previousAttempt?.overall_score ?? 0);
-  const previousCompletion = Number(previousAttempt?.completion_ratio ?? 0);
-  const improvementBonus = previousAttempt
-    ? (stepAverage > previousScore ? 0.08 : 0) + (completionRatio > previousCompletion ? 0.06 : 0)
-    : 0.08;
-  const missionVocabRatio = missionVocabulary.length > 0 ? usedMissionVocabulary.length / missionVocabulary.length : 1;
-  const correctnessRatio = clip(
-    (stepAverage * 0.72) + (completionRatio * 0.18) + (missionVocabRatio * 0.1),
-    0.12,
-    0.98,
-  );
-  const correctionQualityRatio = clip(
-    0.35 + (correctnessRatio * 0.4) + (completionRatio * 0.15) + (missionVocabRatio * 0.05) + improvementBonus,
-    0.22,
-    0.98,
-  );
-
-  return {
-    issues: issues.slice(0, 12),
-    stepResults,
-    completionRatio,
-    correctnessRatio,
-    correctionQualityRatio,
-    usedMissionVocabulary,
-    missedMissionVocabulary,
-    comparison: previousAttempt
-      ? {
-          previous_score: previousScore,
-          previous_completion_ratio: previousCompletion,
-          score_delta: correctnessRatio - previousScore,
-        }
-      : {},
-    transferServicesToReopen: Array.from(transferServices),
-  };
+type StepOutcome = {
+  step_id: string;
+  kind: StepKind;
+  title: string;
+  score: number;
+  questions?: ChoiceResult[];
+  transcript?: string;
+  response?: string;
+  mode?: "voice" | "typed";
+  check?: ReplyCheck;
+  model_answer?: string;
 };
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const supabaseUrl = getEnv("SUPABASE_URL");
-    const serviceRoleKey = getEnv("SUPABASE_SERVICE_ROLE_KEY");
-    const sb = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
+    const sb = createClient(getEnv("SUPABASE_URL"), getEnv("SUPABASE_SERVICE_ROLE_KEY"), { auth: { persistSession: false } });
     const auth = await authUser(sb, req);
     if (!auth) return json(401, { error: "Unauthorized" });
 
     const url = new URL(req.url);
     const route = extractRoute(url, routeMarker);
     const body = req.method === "POST" ? await parseBody(req) : {};
-    const scope = await resolveLanguageScope(
-      sb,
-      toText(url.searchParams.get("language_code") ?? body.language_code, 16) || "en",
-    );
+    const scope = await resolveLanguageScope(sb, toText(url.searchParams.get("language_code") ?? body.language_code, 16) || "en");
     const products = await resolveEnglishProducts(sb);
     const productId = products.immersion?.productId;
-    if (!productId) return json(500, { error: "english-immersion product is not configured" });
+    if (!productId) return json(500, { error: "Real-life tasks are not available right now" });
 
+    // List of missions (summaries only).
     if (req.method === "GET" && (route === "" || route === "/" || route === "/missions")) {
       const level = toText(url.searchParams.get("level"), 8).toUpperCase();
-      const limit = Math.max(1, Math.min(20, Math.floor(toNumber(url.searchParams.get("limit")) ?? 12)));
-      const missions = await loadMissionList(sb, productId, scope.languageId, { limit, level: level || undefined });
-      return json(200, {
-        missions,
-        scope: {
-          product_id: productId,
-          language_id: scope.languageId,
-        },
-      });
+      let query = sb
+        .from("immersion_missions")
+        .select(MISSION_COLUMNS)
+        .eq("product_id", productId)
+        .eq("language_id", scope.languageId)
+        .eq("status", "published")
+        .order("sort_order", { ascending: true })
+        .limit(50);
+      if (level) query = query.eq("level", level);
+      const { data, error } = await query;
+      if (error) return json(500, { error: "Could not load tasks" });
+      const missions = (data ?? []) as Row[];
+      const ids = missions.map((mission) => String(mission.id));
+      const stepsRes = ids.length
+        ? await sb.from("immersion_mission_steps").select("id, mission_id, step_type, estimated_minutes").in("mission_id", ids).eq("status", "published")
+        : { data: [] };
+      const byMission = new Map<string, Row[]>();
+      for (const step of (stepsRes.data ?? []) as Row[]) {
+        if (!stepKind(step.step_type)) continue;
+        const key = String(step.mission_id);
+        byMission.set(key, [...(byMission.get(key) ?? []), step]);
+      }
+      return json(200, { missions: missions.map((mission) => publicMission(mission, byMission.get(String(mission.id)) ?? [])) });
     }
 
-    if (req.method === "GET" && route.startsWith("/missions/")) {
-      const identifier = decodeURIComponent(route.slice("/missions/".length)).trim();
-      if (!identifier) return json(404, { error: "Immersion mission not found" });
-      const loaded = await loadMissionWithSteps(sb, productId, scope.languageId, identifier);
-      if (!loaded) return json(404, { error: "Immersion mission not found" });
-      return json(200, loaded);
-    }
+    // Submit a whole mission: every step checked together, one attempt recorded.
+    if (req.method === "POST" && route.startsWith("/missions/") && route.endsWith("/submit")) {
+      const identifier = decodeURIComponent(route.slice("/missions/".length, -"/submit".length)).trim();
+      const loaded = identifier ? await loadMission(sb, productId, scope.languageId, identifier) : null;
+      if (!loaded) return json(404, { error: "Task not found" });
+      const { mission, steps } = loaded;
+      if (!steps.length) return json(422, { error: "This task has no steps yet" });
 
-    if (req.method === "POST" && route === "/missions/submit") {
-      const identifier = toText(body.mission_id ?? body.slug ?? body.source_ref, 120);
-      const rawResponses = Array.isArray(body.step_responses) ? body.step_responses : [];
-      if (!identifier || rawResponses.length === 0) {
-        return json(422, { error: "mission_id (or slug) and step_responses are required" });
+      const level = toText(mission.level, 8) || null;
+      const situation = toText(mission.context_text, 2000);
+      const submitted = new Map<string, JsonRecord>();
+      for (const entry of Array.isArray(body.steps) ? body.steps : []) {
+        const rec = asRecord(entry);
+        const id = toText(rec.step_id, 120);
+        if (id) submitted.set(id, rec);
+      }
+      if (!submitted.size) return json(422, { error: "Please complete at least one step" });
+
+      const outcomes: StepOutcome[] = await Promise.all(steps.map(async (step): Promise<StepOutcome> => {
+        const kind = stepKind(step.step_type)!;
+        const stepId = String(step.id);
+        const given = submitted.get(stepId) ?? {};
+        const base = { step_id: stepId, kind, title: toText(step.title, 220) };
+        const expected = asRecord(step.expected_answer_json);
+        const promptText = String(step.prompt_text ?? "");
+
+        if (kind === "read" || kind === "listen") {
+          const { results, score } = checkChoices(parseQuestions(expected), given.answers);
+          return { ...base, score, questions: results, ...(kind === "listen" ? { transcript: promptText } : {}) };
+        }
+
+        const response = toText(given.text, 3000);
+        const mode = kind === "speak" && given.mode === "voice" ? "voice" : "typed";
+        const replyKind = kind;
+        const basic = basicReplyCheck({ kind: replyKind, level, prompt: promptText, response, expected });
+        let check: ReplyCheck = basic;
+        // Only ask the AI about a real attempt in the learner's own words.
+        if (ownWordCount(promptText, response) >= 3) {
+          const ai = await callEnglishAIWithStatus<unknown>(
+            buildJudgeRequest({
+              kind: replyKind,
+              level,
+              situation,
+              stepTitle: toText(step.title, 220),
+              instructions: toText(step.instructions, 900),
+              prompt: promptText,
+              response,
+              expected,
+            }),
+            null,
+          );
+          if (ai.status === "ok") {
+            check = applyJudgement({ raw: ai.data, kind: replyKind, level, prompt: promptText, response, expected }) ?? basic;
+          }
+        }
+        return {
+          ...base,
+          score: check.score,
+          response,
+          mode,
+          check,
+          model_answer: toText(expected.model_answer, 1200) || undefined,
+        };
+      }));
+
+      const correctnessRatio = missionScore(outcomes.map((outcome) => outcome.score));
+      const replySteps = outcomes.filter((outcome) => outcome.check);
+      const feedbackMode = replySteps.length === 0
+        ? null
+        : replySteps.every((outcome) => outcome.check!.feedback_mode === "ai") ? "ai" : "basic";
+
+      // Issues for the learner profile: wrong answers, missed points, corrections, tone.
+      const issues: Array<Record<string, unknown>> = [];
+      for (const outcome of outcomes) {
+        const skill = SKILL_OF_KIND[outcome.kind];
+        const location = `${toText(mission.slug, 120)}#${outcome.step_id}`;
+        for (const question of outcome.questions ?? []) {
+          if (question.correct) continue;
+          issues.push({
+            category: skill,
+            subskill_key: `${skill}.detail`,
+            location_ref: location,
+            explanation: question.explanation || question.prompt,
+            correction_hint: question.options[question.answer] ?? "",
+            severity: 0.5,
+          });
+        }
+        if (!outcome.check) continue;
+        for (const point of outcome.check.points) {
+          if (point.met) continue;
+          issues.push({
+            category: "immersion",
+            subskill_key: "immersion.task_completion",
+            location_ref: location,
+            explanation: `The reply did not ${point.label}.`,
+            correction_hint: `Next time, ${point.label}.`,
+            severity: 0.55,
+          });
+        }
+        for (const correction of outcome.check.corrections) {
+          issues.push({
+            category: skill,
+            subskill_key: `${skill}.accuracy`,
+            location_ref: location,
+            explanation: correction.explanation || `Better: ${correction.better}`,
+            correction_hint: `${correction.original} → ${correction.better}`,
+            severity: 0.45,
+          });
+        }
+        if (outcome.check.tone && outcome.check.tone !== "good") {
+          issues.push({
+            category: "immersion",
+            subskill_key: "immersion.register",
+            location_ref: location,
+            explanation: outcome.check.tone_note || "The tone did not quite fit the situation.",
+            correction_hint: "Match how polite or formal you are to the person and the situation.",
+            severity: outcome.check.tone === "inappropriate" ? 0.7 : 0.4,
+          });
+        }
       }
 
-      const loaded = await loadMissionWithSteps(sb, productId, scope.languageId, identifier);
-      if (!loaded) return json(404, { error: "Immersion mission not found" });
-      const { mission, steps } = loaded;
-
-      const previousAttemptRes = await sb
-        .from("immersion_mission_attempts")
-        .select("id, overall_score, completion_ratio")
-        .eq("user_id", auth.userId)
-        .eq("mission_id", String(mission.id))
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      const previousAttempt = previousAttemptRes.data as Record<string, unknown> | null;
-
-      const evaluation = evaluateMission(
-        mission,
-        steps,
-        rawResponses.map((entry) => (entry && typeof entry === "object" ? entry as Record<string, unknown> : {})),
-        previousAttempt,
-      );
-      const stepMinutes = steps.reduce((sum, step) => sum + Math.max(1, Number(step.estimated_minutes ?? 4)), 0);
+      const minutes = stepMinutes(steps);
+      const slug = toText(mission.slug, 160);
       const contentItem = await resolveOrCreateContentItem(sb, {
         productId,
         languageId: scope.languageId,
         serviceKey: "immersion",
         contentType: "immersion.mission",
-        sourceRef: toText(mission.slug, 160) || String(mission.id),
+        sourceRef: slug,
         title: toText(mission.title, 220),
         description: toText(mission.objective_text, 900),
         skillKey: "immersion",
         subskillKeys: ["immersion.transfer", "immersion.communication", "immersion.problem-solving"],
-        cefrLevel: toText(mission.level, 8),
-        estimatedMinutes: Math.max(10, stepMinutes),
+        cefrLevel: level,
+        estimatedMinutes: minutes,
         learningObjective: toText(mission.objective_text, 900),
-        tags: [
-          toText(mission.mission_type, 80),
-          toText(mission.target_grammar, 120),
-          ...(Array.isArray(mission.skill_mix) ? mission.skill_mix.map((entry) => String(entry ?? "")) : []),
-        ].filter(Boolean),
-        payloadJson: {
-          mission_type: toText(mission.mission_type, 80),
-          target_vocabulary: Array.isArray(mission.target_vocabulary) ? mission.target_vocabulary : [],
-          skill_mix: Array.isArray(mission.skill_mix) ? mission.skill_mix : [],
-          step_count: steps.length,
-        },
-        metadata: mission.metadata && typeof mission.metadata === "object" ? mission.metadata as JsonRecord : {},
+        tags: [toText(mission.mission_type, 80), ...stringList(mission.skill_mix)].filter(Boolean),
       });
 
       const score = calculateAttemptScore({
-        correctnessRatio: evaluation.correctnessRatio,
-        estimatedMinutes: Number(contentItem.estimated_minutes ?? stepMinutes),
+        correctnessRatio,
+        estimatedMinutes: Number(contentItem.estimated_minutes ?? minutes),
         timeSpentSeconds: toNumber(body.time_spent_seconds),
-        hintUsageCount: toNumber(body.hint_usage_count),
-        retryCount: toNumber(body.retry_count),
-        correctionQualityRatio: evaluation.correctionQualityRatio,
+        hintUsageCount: 0,
+        retryCount: 0,
+        correctionQualityRatio: correctnessRatio,
       });
       const feedback = buildFeedbackPayload({
         serviceKey: "immersion",
         score: score.overallScore,
         title: toText(mission.title, 220),
-        reason: "Immersion missions validate whether skill work transfers into realistic English use across multiple steps.",
-        issues: evaluation.issues,
+        reason: toText(mission.objective_text, 900),
+        issues: issues.slice(0, 12),
       });
+
+      const stepSummaries = outcomes.map((outcome) => ({
+        step_id: outcome.step_id,
+        kind: outcome.kind,
+        score: Math.round(outcome.score * 100),
+        ...(outcome.questions ? { answers: outcome.questions.map((question) => ({ id: question.id, chosen: question.chosen, correct: question.correct })) } : {}),
+        ...(outcome.check
+          ? {
+              response: outcome.response,
+              mode: outcome.mode,
+              feedback_mode: outcome.check.feedback_mode,
+              points: outcome.check.points,
+              corrections: outcome.check.corrections,
+            }
+          : {}),
+      }));
 
       const recorded = await recordEvaluatedAttempt(sb, {
         userId: auth.userId,
@@ -451,109 +356,97 @@ serve(async (req) => {
         serviceKey: "immersion",
         contentItem,
         attemptType: "immersion.mission",
-        responseJson: {
-          mission_id: String(mission.id),
-          step_responses: rawResponses,
-          used_target_vocabulary: evaluation.usedMissionVocabulary,
-          missed_target_vocabulary: evaluation.missedMissionVocabulary,
-        },
-        metadata: {
-          mission_id: String(mission.id),
-          mission_type: toText(mission.mission_type, 80),
-          skill_mix: Array.isArray(mission.skill_mix) ? mission.skill_mix : [],
-        },
-        hintUsageCount: toNumber(body.hint_usage_count),
-        retryCount: toNumber(body.retry_count),
+        responseJson: { mission_id: String(mission.id), steps: stepSummaries },
+        metadata: { mission_id: String(mission.id), mission_slug: slug, feedback_mode: feedbackMode },
         timeSpentSeconds: toNumber(body.time_spent_seconds),
         score,
         feedback,
         products,
       });
+      const attemptId = String(recorded.attempt.id ?? "");
 
-      const masteryReopenedCount = score.overallScore < 0.65
-        ? await reopenMasteryFromTransferFailure(sb, {
-            userId: auth.userId,
-            languageId: scope.languageId,
-            serviceKeys: evaluation.transferServicesToReopen,
-            reason: `Immersion mission "${toText(mission.title, 220)}" showed transfer instability.`,
-            metadata: {
-              mission_id: String(mission.id),
-              mission_slug: toText(mission.slug, 160),
-              learning_attempt_id: String(recorded.attempt.id ?? ""),
-              transfer_score: score.overallScore,
-            },
-          })
-        : 0;
-      if (masteryReopenedCount > 0) {
-        await rebuildRecommendationsForUser(sb, {
-          userId: auth.userId,
-          languageId: scope.languageId,
-          products,
-        });
-      }
-
-      const { data: missionAttempt, error: missionAttemptError } = await sb
-        .from("immersion_mission_attempts")
-        .insert({
+      // Mission history and adaptive follow-up are useful but must never fail the submit.
+      try {
+        await sb.from("immersion_mission_attempts").insert({
           user_id: auth.userId,
           language_id: scope.languageId,
           product_id: productId,
           mission_id: String(mission.id),
-          status: score.overallScore >= 0.78 ? "completed" : score.overallScore >= 0.6 ? "submitted" : "needs_recovery",
-          latest_learning_attempt_id: String(recorded.attempt.id ?? ""),
-          previous_attempt_id: previousAttempt?.id ? String(previousAttempt.id) : null,
-          overall_score: score.overallScore,
-          completion_ratio: evaluation.completionRatio,
-          transfer_reopen_count: masteryReopenedCount,
-          step_results_json: evaluation.stepResults,
-          feedback_json: {
-            summary: String(recorded.feedbackRow.summary ?? ""),
-            overall_score: score.overallScore,
-            completion_ratio: evaluation.completionRatio,
-            used_target_vocabulary: evaluation.usedMissionVocabulary,
-            missed_target_vocabulary: evaluation.missedMissionVocabulary,
-          },
-          metadata: {
-            mission_slug: toText(mission.slug, 160),
-            mission_type: toText(mission.mission_type, 80),
-            comparison: evaluation.comparison,
-          },
-        })
-        .select("*")
-        .maybeSingle();
-      if (missionAttemptError || !missionAttempt?.id) {
-        return json(500, {
-          error: "Failed to store immersion mission attempt",
-          details: missionAttemptError?.message ?? null,
+          status: correctnessRatio >= 0.78 ? "completed" : correctnessRatio >= 0.6 ? "submitted" : "needs_recovery",
+          latest_learning_attempt_id: attemptId || null,
+          overall_score: Number(correctnessRatio.toFixed(4)),
+          completion_ratio: Number((outcomes.filter((outcome) => submitted.has(outcome.step_id)).length / outcomes.length).toFixed(4)),
+          step_results_json: stepSummaries,
+          feedback_json: { feedback_mode: feedbackMode, issues: issues.slice(0, 12) },
+          metadata: { mission_slug: slug },
         });
+        if (correctnessRatio < 0.5) {
+          const weak = [...new Set(outcomes.filter((outcome) => outcome.score < 0.6).map((outcome) => SKILL_OF_KIND[outcome.kind]))];
+          const reopened = weak.length
+            ? await reopenMasteryFromTransferFailure(sb, {
+                userId: auth.userId,
+                languageId: scope.languageId,
+                serviceKeys: weak,
+                reason: `Real-life task "${toText(mission.title, 220)}" showed these skills are not yet stable.`,
+                metadata: { mission_slug: slug, learning_attempt_id: attemptId },
+              })
+            : 0;
+          if (reopened > 0) await rebuildRecommendationsForUser(sb, { userId: auth.userId, languageId: scope.languageId, products });
+        }
+      } catch (_error) {
+        // ignore: the attempt itself is already recorded
       }
 
       return json(200, {
         ok: true,
-        mission,
-        step_results: evaluation.stepResults,
-        attempt: missionAttempt,
-        feedback: recorded.feedbackRow,
-        scoring: {
-          overall_score: score.overallScore,
-          correctness_ratio: score.correctnessRatio,
-          correction_quality_ratio: score.correctionQualityRatio,
-          completion_ratio: evaluation.completionRatio,
-        },
-        evaluation: {
-          used_target_vocabulary: evaluation.usedMissionVocabulary,
-          missed_target_vocabulary: evaluation.missedMissionVocabulary,
-          comparison: evaluation.comparison,
-        },
-        mastery_reopened_count: masteryReopenedCount,
-        note: masteryReopenedCount > 0
-          ? `${masteryReopenedCount} stable mastery unit(s) reopened because this mission did not transfer cleanly.`
-          : "Immersion mission recorded.",
+        attempt_id: attemptId,
+        score: Math.round(correctnessRatio * 100),
+        feedback_mode: feedbackMode,
+        cultural_note: toText(mission.cultural_note, 1200) || null,
+        success_conditions: stringList(mission.success_conditions_json),
+        steps: outcomes.map((outcome) => ({
+          step_id: outcome.step_id,
+          kind: outcome.kind,
+          title: outcome.title,
+          score: Math.round(outcome.score * 100),
+          questions: outcome.questions ?? [],
+          transcript: outcome.transcript ?? null,
+          response: outcome.response ?? null,
+          mode: outcome.mode ?? null,
+          feedback: outcome.check
+            ? {
+                mode: outcome.check.feedback_mode,
+                achieved: outcome.check.achieved,
+                points: outcome.check.points,
+                tone: outcome.check.tone,
+                tone_note: outcome.check.tone_note,
+                corrections: outcome.check.corrections,
+                summary: outcome.check.summary,
+                word_count: outcome.check.word_count,
+                min_words: outcome.check.min_words,
+                too_short: outcome.check.too_short,
+              }
+            : null,
+          model_answer: outcome.model_answer ?? null,
+        })),
+      });
+    }
+
+    // One mission with its steps, answer keys removed.
+    if (req.method === "GET" && route.startsWith("/missions/")) {
+      const identifier = decodeURIComponent(route.slice("/missions/".length)).trim();
+      const loaded = identifier ? await loadMission(sb, productId, scope.languageId, identifier) : null;
+      if (!loaded) return json(404, { error: "Task not found" });
+      const level = toText(loaded.mission.level, 8) || null;
+      return json(200, {
+        mission: publicMission(loaded.mission, loaded.steps),
+        steps: loaded.steps.map((step) => publicStep(step, level)),
       });
     }
 
     return json(405, { error: "Method not allowed" });
   } catch (error) {
-    return json(500, { error: error instanceof Error ? error.message : "Unknown error" });
+    console.error("immersion-missions", error);
+    return json(500, { error: "Something went wrong. Please try again." });
   }
 });

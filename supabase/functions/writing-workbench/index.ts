@@ -5,6 +5,8 @@ import {
   buildFeedbackPayload,
   calculateAttemptScore,
   corsHeaders,
+  type EnglishProductInfo,
+  type EnglishServiceKey,
   extractRoute,
   getEnv,
   json,
@@ -16,222 +18,88 @@ import {
   toNumber,
   toText,
 } from "../_shared/english-learning.ts";
+import { callEnglishAIWithStatus, isEnglishAIConfigured } from "../_shared/english-ai.ts";
+import { consumeEnglishAiDailyQuota, parseEnglishAiDailyLimit, requireEnglishSuiteAccess } from "../_shared/english-access.ts";
+import {
+  buildWritingAIRequest,
+  buildWritingFeedback,
+  countWords,
+  issuesFromFeedback,
+  minimumWordsToSubmit,
+  parseChecklist,
+  type WritingFeedback,
+  type WritingPromptSpec,
+} from "../_shared/english-writing.ts";
 
 type JsonRecord = Record<string, unknown>;
 
 const routeMarker = "/writing-workbench";
+const MAX_TEXT = 12000;
+
+const PROMPT_COLUMNS =
+  "id, slug, title, prompt_text, guidance_text, level, genre, target_grammar, target_vocabulary, target_structure, expected_length_min, expected_length_max, status, sort_order, metadata";
 
 const isUuid = (value: string): boolean =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 
-const stopwords = new Set([
-  "the",
-  "a",
-  "an",
-  "to",
-  "of",
-  "and",
-  "or",
-  "but",
-  "is",
-  "are",
-  "was",
-  "were",
-  "i",
-  "you",
-  "we",
-  "they",
-  "it",
-  "in",
-  "on",
-  "for",
-  "with",
-  "this",
-  "that",
-  "be",
-  "because",
-]);
+const asRecord = (value: unknown): JsonRecord => (value && typeof value === "object" && !Array.isArray(value) ? value as JsonRecord : {});
 
-const countWords = (text: string): number => {
-  const trimmed = String(text ?? "").trim();
-  if (!trimmed) return 0;
-  return trimmed.split(/\s+/).filter(Boolean).length;
+/** Minutes per activity, by level band: A 8, B 15, C 25. */
+const minutesFor = (level: unknown): number => {
+  const key = String(level ?? "").toUpperCase();
+  if (key.startsWith("A")) return 8;
+  if (key.startsWith("C")) return 25;
+  return 15;
 };
 
-const tokenize = (text: string): string[] =>
-  String(text ?? "")
-    .toLowerCase()
-    .replace(/[^a-z0-9'\s]+/g, " ")
-    .split(/\s+/)
-    .map((entry) => entry.trim())
-    .filter(Boolean);
-
-const clip = (value: number, min: number, max: number): number => Math.max(min, Math.min(max, value));
-
-const detectWritingIssues = (
-  text: string,
-  prompt: Record<string, unknown>,
-): {
-  issues: Array<Record<string, unknown>>;
-  correctionTargets: Array<Record<string, unknown>>;
-  wordCount: number;
-  uniqueRatio: number;
-} => {
-  const issues: Array<Record<string, unknown>> = [];
-  const wordCount = countWords(text);
-  const minWords = Math.max(10, Number(prompt.expected_length_min ?? 60));
-  const maxWords = Math.max(minWords, Number(prompt.expected_length_max ?? 180));
-  const tokens = tokenize(text);
-  const lexicalTokens = tokens.filter((token) => !stopwords.has(token));
-  const uniqueRatio = lexicalTokens.length > 0 ? new Set(lexicalTokens).size / lexicalTokens.length : 0;
-
-  if (wordCount < minWords) {
-    issues.push({
-      id: crypto.randomUUID(),
-      category: "writing",
-      subskill_key: "writing.task_completion",
-      location_ref: "whole-draft",
-      span_start: 0,
-      span_end: Math.max(0, text.length - 1),
-      explanation: `The draft is too short for this task. Aim for at least ${minWords} words.`,
-      correction_hint: "Add one more supporting idea and one closing sentence before resubmitting.",
-      severity: 0.82,
-    });
-  }
-
-  if (wordCount > maxWords) {
-    issues.push({
-      id: crypto.randomUUID(),
-      category: "writing",
-      subskill_key: "writing.control",
-      location_ref: "whole-draft",
-      span_start: 0,
-      span_end: Math.max(0, text.length - 1),
-      explanation: `The response is longer than the target range of ${maxWords} words.`,
-      correction_hint: "Cut repetition and keep only the clearest support points.",
-      severity: 0.42,
-    });
-  }
-
-  const lowercaseI = /\bi\b/g;
-  for (const match of text.matchAll(lowercaseI)) {
-    issues.push({
-      id: crypto.randomUUID(),
-      category: "grammar",
-      subskill_key: "writing.grammar_accuracy",
-      location_ref: "capitalization",
-      span_start: match.index ?? 0,
-      span_end: (match.index ?? 0) + String(match[0]).length,
-      explanation: "The pronoun 'I' should be capitalized.",
-      correction_hint: "Review sentence-level grammar and fix pronouns before the next draft.",
-      severity: 0.52,
-    });
-  }
-
-  const trimmed = text.trim();
-  if (trimmed && !/[.!?]$/.test(trimmed)) {
-    issues.push({
-      id: crypto.randomUUID(),
-      category: "grammar",
-      subskill_key: "writing.sentence_control",
-      location_ref: "final-sentence",
-      span_start: Math.max(0, text.length - 1),
-      span_end: Math.max(0, text.length),
-      explanation: "The draft does not end with sentence punctuation.",
-      correction_hint: "Finish the final sentence clearly with a full stop, question mark, or exclamation mark.",
-      severity: 0.46,
-    });
-  }
-
-  const sentencePattern = /[^.!?]+[.!?]?/g;
-  for (const match of text.matchAll(sentencePattern)) {
-    const sentence = String(match[0] ?? "").trim();
-    if (!sentence) continue;
-    const sentenceWordCount = countWords(sentence);
-    if (sentenceWordCount > 28) {
-      const start = match.index ?? 0;
-      issues.push({
-        id: crypto.randomUUID(),
-        category: "grammar",
-        subskill_key: "writing.sentence_control",
-        location_ref: "long-sentence",
-        span_start: start,
-        span_end: start + sentence.length,
-        explanation: "One sentence is too long and hard to control clearly.",
-        correction_hint: "Split the long sentence into two shorter ideas or add clearer punctuation.",
-        severity: 0.58,
-      });
-    }
-  }
-
-  if (wordCount >= 50 && uniqueRatio < 0.45) {
-    issues.push({
-      id: crypto.randomUUID(),
-      category: "vocabulary",
-      subskill_key: "writing.vocabulary_range",
-      location_ref: "whole-draft",
-      span_start: 0,
-      span_end: Math.max(0, text.length - 1),
-      explanation: "The draft reuses the same words too often, so lexical range stays narrow.",
-      correction_hint: "Replace repeated basic words with one stronger synonym or a useful collocation.",
-      severity: 0.62,
-    });
-  }
-
-  const connectorPattern = /\b(first|second|because|although|however|therefore|so|but)\b/i;
-  if (wordCount >= 70 && !connectorPattern.test(text)) {
-    issues.push({
-      id: crypto.randomUUID(),
-      category: "writing",
-      subskill_key: "writing.coherence",
-      location_ref: "whole-draft",
-      span_start: 0,
-      span_end: Math.max(0, text.length - 1),
-      explanation: "The ideas need clearer linking words to improve flow.",
-      correction_hint: "Add at least one connector such as because, however, first, or therefore.",
-      severity: 0.56,
-    });
-  }
-
-  if (wordCount >= 60 && countWords(text.replace(/[.!?]+/g, " ")) <= wordCount && (text.match(/[.!?]/g) ?? []).length < 2) {
-    issues.push({
-      id: crypto.randomUUID(),
-      category: "writing",
-      subskill_key: "writing.organization",
-      location_ref: "whole-draft",
-      span_start: 0,
-      span_end: Math.max(0, text.length - 1),
-      explanation: "The response would be easier to follow with more than one clear sentence.",
-      correction_hint: "Break the draft into shorter sentences with one main idea in each.",
-      severity: 0.54,
-    });
-  }
-
-  const correctionTargets = Array.from(
-    new Map(
-      issues.map((issue) => [
-        `${toText(issue.category, 80)}:${toText(issue.subskill_key, 120)}`,
-        {
-          category: toText(issue.category, 80),
-          subskill_key: toText(issue.subskill_key, 120),
-          label: toText(issue.explanation, 160),
-        },
-      ]),
-    ).values(),
-  );
-
+/** The prompt as the learner sees it (no internal metadata). */
+const publicPrompt = (prompt: JsonRecord) => {
+  const meta = asRecord(prompt.metadata);
   return {
-    issues: issues.slice(0, 8),
-    correctionTargets,
-    wordCount,
-    uniqueRatio,
+    id: String(prompt.id),
+    slug: toText(prompt.slug, 160),
+    title: toText(prompt.title, 220),
+    prompt_text: toText(prompt.prompt_text, 2000),
+    guidance_text: toText(prompt.guidance_text, 2000) || null,
+    checklist: parseChecklist(toText(prompt.guidance_text, 2000)),
+    level: toText(prompt.level, 8) || null,
+    genre: toText(prompt.genre, 80) || null,
+    audience: toText(meta.audience, 200) || null,
+    target_grammar: toText(prompt.target_grammar, 200) || null,
+    target_vocabulary: Array.isArray(prompt.target_vocabulary) ? (prompt.target_vocabulary as unknown[]).map((word) => toText(word, 60)).filter(Boolean) : [],
+    target_structure: toText(prompt.target_structure, 300) || null,
+    expected_length_min: Number(prompt.expected_length_min ?? 60),
+    expected_length_max: Number(prompt.expected_length_max ?? 180),
+    minutes: minutesFor(prompt.level),
+    min_words_to_submit: minimumWordsToSubmit(Number(prompt.expected_length_min ?? 60)),
   };
 };
 
-const loadPrompt = async (sb: any, productId: string, languageId: string, identifier: string): Promise<Record<string, unknown> | null> => {
+const promptSpec = (prompt: JsonRecord): WritingPromptSpec => {
+  const meta = asRecord(prompt.metadata);
+  const keywords = Array.isArray(meta.checklist_keywords)
+    ? (meta.checklist_keywords as unknown[]).map((entry) => (Array.isArray(entry) ? entry.map((word) => toText(word, 60)).filter(Boolean) : []))
+    : null;
+  const pub = publicPrompt(prompt);
+  return {
+    title: pub.title,
+    prompt_text: pub.prompt_text,
+    guidance_text: pub.guidance_text,
+    level: pub.level,
+    genre: pub.genre,
+    target_grammar: pub.target_grammar,
+    target_vocabulary: pub.target_vocabulary,
+    target_structure: pub.target_structure,
+    expected_length_min: pub.expected_length_min,
+    expected_length_max: pub.expected_length_max,
+    checklist_keywords: keywords,
+  };
+};
+
+const loadPrompt = async (sb: any, productId: string, languageId: string, identifier: string): Promise<JsonRecord | null> => {
   let query = sb
     .from("writing_prompts")
-    .select("id, slug, title, prompt_text, guidance_text, level, genre, target_grammar, target_vocabulary, target_structure, expected_length_min, expected_length_max, status, sort_order, metadata, presentation_meta")
+    .select(PROMPT_COLUMNS)
     .eq("product_id", productId)
     .eq("language_id", languageId)
     .eq("status", "published")
@@ -239,7 +107,209 @@ const loadPrompt = async (sb: any, productId: string, languageId: string, identi
   query = isUuid(identifier) ? query.eq("id", identifier) : query.eq("slug", identifier);
   const { data, error } = await query.maybeSingle();
   if (error || !data?.id) return null;
-  return data as Record<string, unknown>;
+  return data as JsonRecord;
+};
+
+const findRegistryItemId = async (sb: any, languageId: string, slug: string): Promise<string | null> => {
+  const { data } = await sb
+    .from("learning_content_registry_items")
+    .select("id")
+    .eq("language_id", languageId)
+    .eq("service_key", "writing")
+    .eq("content_type", "writing.prompt")
+    .eq("source_ref", slug)
+    .maybeSingle();
+  return data?.id ? String(data.id) : null;
+};
+
+/** Best accuracy (0..100) the learner has had on this prompt, or null if never tried. */
+const bestScore = async (sb: any, userId: string, contentItemId: string | null): Promise<number | null> => {
+  if (!contentItemId) return null;
+  const { data } = await sb
+    .from("learning_attempts")
+    .select("correctness_ratio")
+    .eq("user_id", userId)
+    .eq("content_item_id", contentItemId)
+    .in("status", ["submitted", "scored", "failed"])
+    .not("correctness_ratio", "is", null)
+    .order("correctness_ratio", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const value = Number(data?.correctness_ratio);
+  return data && Number.isFinite(value) ? Math.round(Math.max(0, Math.min(1, value)) * 100) : null;
+};
+
+const latestDraft = async (sb: any, userId: string, languageId: string, promptId: string): Promise<JsonRecord | null> => {
+  const { data } = await sb
+    .from("writing_drafts")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("language_id", languageId)
+    .eq("prompt_id", promptId)
+    .neq("status", "archived")
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data?.id ? data as JsonRecord : null;
+};
+
+/** Calls the AI only for learners with access and AI quota left; otherwise returns null (basic feedback). */
+const askAI = async (sb: any, userId: string, products: Record<EnglishServiceKey, EnglishProductInfo>, text: string, spec: WritingPromptSpec) => {
+  if (!isEnglishAIConfigured()) return null;
+  try {
+    const access = await requireEnglishSuiteAccess(sb, userId, products);
+    if (!access.allowed) return null;
+    const quota = await consumeEnglishAiDailyQuota(sb, userId, parseEnglishAiDailyLimit(Deno.env.get("ENGLISH_AI_DAILY_LIMIT")));
+    if (!quota.allowed) return null;
+    const result = await callEnglishAIWithStatus<unknown>(buildWritingAIRequest(text, spec), null);
+    if (result.status !== "ok") console.warn("writing-workbench: AI feedback unavailable", result.status, result.error ?? "");
+    return { status: result.status, data: result.data };
+  } catch (error) {
+    console.warn("writing-workbench: AI feedback failed", error instanceof Error ? error.message : String(error));
+    return null;
+  }
+};
+
+/**
+ * Checks one submission and records it as ONE attempt on the prompt's registry
+ * item. Revisions are new attempts and are never penalised; the best score counts.
+ */
+const evaluateSubmission = async (
+  sb: any,
+  input: {
+    userId: string;
+    languageId: string;
+    productId: string;
+    products: Record<EnglishServiceKey, EnglishProductInfo>;
+    prompt: JsonRecord;
+    text: string;
+    timeSpentSeconds: number | null;
+  },
+): Promise<Response> => {
+  const { prompt, text } = input;
+  const spec = promptSpec(prompt);
+  const slug = toText(prompt.slug, 160) || String(prompt.id);
+  const wordCount = countWords(text);
+  const minWords = minimumWordsToSubmit(spec.expected_length_min);
+  if (wordCount < minWords) {
+    return json(422, { error: `Write at least ${minWords} words before asking for feedback.`, code: "too_short", min_words: minWords });
+  }
+
+  const ai = await askAI(sb, input.userId, input.products, text, spec);
+  const feedback: WritingFeedback = buildWritingFeedback(text, spec, ai);
+
+  const minutes = minutesFor(prompt.level);
+  const contentItem = await resolveOrCreateContentItem(sb, {
+    productId: input.productId,
+    languageId: input.languageId,
+    serviceKey: "writing",
+    contentType: "writing.prompt",
+    sourceRef: slug,
+    title: spec.title,
+    description: spec.prompt_text,
+    skillKey: "writing",
+    subskillKeys: ["writing.task_completion", "writing.organisation", "writing.vocabulary", "writing.grammar"],
+    cefrLevel: spec.level,
+    estimatedMinutes: minutes,
+    learningObjective: spec.guidance_text ?? spec.prompt_text,
+    tags: [spec.genre ?? "", spec.target_grammar ?? ""].filter(Boolean),
+  });
+
+  const previousBest = await bestScore(sb, input.userId, String(contentItem.id));
+  const ratio = Math.max(0, Math.min(1, feedback.overall / 100));
+  const score = calculateAttemptScore({
+    correctnessRatio: ratio,
+    estimatedMinutes: Number(contentItem.estimated_minutes ?? minutes),
+    timeSpentSeconds: input.timeSpentSeconds,
+    hintUsageCount: 0,
+    retryCount: 0,
+    correctionQualityRatio: ratio,
+  });
+  const issues = issuesFromFeedback(feedback, slug);
+  const feedbackPayload = buildFeedbackPayload({
+    serviceKey: "writing",
+    score: score.overallScore,
+    title: spec.title,
+    reason: spec.prompt_text,
+    issues,
+  });
+
+  // Keep the learner's draft and revision history (best effort; the attempt is what counts).
+  let revision = 1;
+  let draftId: string | null = null;
+  const existing = await latestDraft(sb, input.userId, input.languageId, String(prompt.id)).catch(() => null);
+  if (existing) {
+    revision = Number(existing.revision_count ?? 0) + 1;
+    draftId = String(existing.id);
+  }
+
+  const recorded = await recordEvaluatedAttempt(sb, {
+    userId: input.userId,
+    languageId: input.languageId,
+    productId: input.productId,
+    serviceKey: "writing",
+    contentItem,
+    attemptType: "writing.submission",
+    responseJson: { prompt_id: String(prompt.id), text, word_count: wordCount, feedback },
+    metadata: { prompt_slug: slug, feedback_source: feedback.source, revision, overall: feedback.overall },
+    hintUsageCount: 0,
+    retryCount: 0,
+    timeSpentSeconds: input.timeSpentSeconds,
+    score,
+    feedback: feedbackPayload,
+    products: input.products,
+  });
+  const attemptId = String(recorded.attempt.id ?? "");
+
+  try {
+    const previousOverall = Number(asRecord(existing?.latest_feedback).overall);
+    const draftFields = {
+      status: revision > 1 ? "revising" : "submitted",
+      current_text: text,
+      word_count: wordCount,
+      revision_count: revision,
+      latest_attempt_id: attemptId || null,
+      latest_feedback: { overall: feedback.overall, source: feedback.source, corrections: feedback.corrections.length },
+    };
+    if (draftId) {
+      await sb.from("writing_drafts").update(draftFields).eq("id", draftId);
+    } else {
+      const inserted = await sb
+        .from("writing_drafts")
+        .insert({ user_id: input.userId, language_id: input.languageId, product_id: input.productId, prompt_id: String(prompt.id), metadata: { prompt_slug: slug }, ...draftFields })
+        .select("id")
+        .maybeSingle();
+      draftId = inserted.data?.id ? String(inserted.data.id) : null;
+    }
+    if (draftId) {
+      await sb.from("writing_revision_cycles").insert({
+        draft_id: draftId,
+        user_id: input.userId,
+        revision_index: revision,
+        submitted_text: text,
+        word_count: wordCount,
+        issues,
+        correction_targets: feedback.corrections,
+        feedback_summary: feedback.next_step,
+        attempt_id: attemptId || null,
+        improvement_ratio: Number.isFinite(previousOverall) && previousOverall < 100
+          ? Math.max(0, Math.min(1, (feedback.overall - previousOverall) / (100 - previousOverall)))
+          : null,
+        metadata: { overall: feedback.overall, source: feedback.source },
+      });
+    }
+  } catch (error) {
+    console.warn("writing-workbench: draft history not saved", error instanceof Error ? error.message : String(error));
+  }
+
+  return json(200, {
+    ok: true,
+    attempt_id: attemptId,
+    score: feedback.overall,
+    previous_best: previousBest,
+    revision,
+    feedback,
+  });
 };
 
 serve(async (req) => {
@@ -255,332 +325,151 @@ serve(async (req) => {
     const url = new URL(req.url);
     const route = extractRoute(url, routeMarker);
     const body = req.method === "POST" ? await parseBody(req) : {};
-    const scope = await resolveLanguageScope(
-      sb,
-      toText(url.searchParams.get("language_code") ?? body.language_code, 16) || "en",
-    );
+    const scope = await resolveLanguageScope(sb, toText(url.searchParams.get("language_code") ?? body.language_code, 16) || "en");
     const products = await resolveEnglishProducts(sb);
     const productId = products.writing?.productId;
-    if (!productId) return json(500, { error: "english-writing product is not configured" });
+    if (!productId) return json(500, { error: "Writing is not available right now." });
 
+    const timeSpent = (() => {
+      const value = toNumber(body.time_spent_seconds);
+      return value === null ? null : Math.max(1, Math.min(4 * 3600, Math.round(value)));
+    })();
+
+    // Library list (the skill home uses /hub/catalog; kept for older clients).
     if (req.method === "GET" && (route === "" || route === "/" || route === "/prompts")) {
       const level = toText(url.searchParams.get("level"), 8).toUpperCase();
-      const limit = Math.max(1, Math.min(30, Math.floor(toNumber(url.searchParams.get("limit")) ?? 12)));
-
+      const limit = Math.max(1, Math.min(60, Math.floor(toNumber(url.searchParams.get("limit")) ?? 30)));
       let query = sb
         .from("writing_prompts")
-        .select("id, slug, title, prompt_text, guidance_text, level, genre, target_grammar, target_vocabulary, target_structure, expected_length_min, expected_length_max, status, sort_order, metadata, presentation_meta")
+        .select(PROMPT_COLUMNS)
         .eq("product_id", productId)
         .eq("language_id", scope.languageId)
         .eq("status", "published")
         .order("sort_order", { ascending: true })
         .limit(limit);
       if (level) query = query.eq("level", level);
-
       const { data, error } = await query;
-      if (error) return json(500, { error: "Failed to load writing prompts", details: error.message });
-      return json(200, {
-        prompts: data ?? [],
-        scope: {
-          product_id: productId,
-          language_id: scope.languageId,
-        },
+      if (error) return json(500, { error: "Could not load writing tasks." });
+      return json(200, { prompts: ((data ?? []) as JsonRecord[]).map(publicPrompt) });
+    }
+
+    // Submit a draft for feedback: POST /prompts/:slug/submit { text, time_spent_seconds }
+    if (req.method === "POST" && route.startsWith("/prompts/") && route.endsWith("/submit")) {
+      const identifier = decodeURIComponent(route.slice("/prompts/".length, -"/submit".length)).trim();
+      const prompt = identifier ? await loadPrompt(sb, productId, scope.languageId, identifier) : null;
+      if (!prompt) return json(404, { error: "Writing task not found" });
+      const text = toText(body.text, MAX_TEXT);
+      return await evaluateSubmission(sb, {
+        userId: auth.userId,
+        languageId: scope.languageId,
+        productId,
+        products,
+        prompt,
+        text,
+        timeSpentSeconds: timeSpent,
       });
     }
 
+    // One task with the learner's saved draft and best score.
     if (req.method === "GET" && route.startsWith("/prompts/")) {
       const identifier = decodeURIComponent(route.slice("/prompts/".length)).trim();
-      if (!identifier) return json(404, { error: "Writing prompt not found" });
-      const prompt = await loadPrompt(sb, productId, scope.languageId, identifier);
-      if (!prompt) return json(404, { error: "Writing prompt not found" });
-      return json(200, { prompt });
+      const prompt = identifier ? await loadPrompt(sb, productId, scope.languageId, identifier) : null;
+      if (!prompt) return json(404, { error: "Writing task not found" });
+      const [itemId, draft] = await Promise.all([
+        findRegistryItemId(sb, scope.languageId, toText(prompt.slug, 160)),
+        latestDraft(sb, auth.userId, scope.languageId, String(prompt.id)),
+      ]);
+      const best = await bestScore(sb, auth.userId, itemId);
+      return json(200, {
+        prompt: publicPrompt(prompt),
+        best_score: best,
+        draft: draft
+          ? {
+            text: toText(draft.current_text, MAX_TEXT),
+            revision_count: Number(draft.revision_count ?? 0),
+            updated_at: draft.updated_at ?? null,
+          }
+          : null,
+      });
     }
 
+    // ---- Older draft endpoints (kept working on the same scoring) ----
+
     if (req.method === "POST" && route === "/drafts/start") {
-      const identifier = toText(body.prompt_id ?? body.slug ?? body.source_ref, 120);
+      const identifier = toText(body.prompt_id ?? body.slug ?? body.source_ref, 160);
       if (!identifier) return json(422, { error: "prompt_id (or slug) is required" });
-
       const prompt = await loadPrompt(sb, productId, scope.languageId, identifier);
-      if (!prompt) return json(404, { error: "Writing prompt not found" });
-
-      const existingRes = await sb
-        .from("writing_drafts")
-        .select("*")
-        .eq("user_id", auth.userId)
-        .eq("language_id", scope.languageId)
-        .eq("prompt_id", String(prompt.id))
-        .in("status", ["draft", "submitted", "revising"])
-        .order("updated_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (!existingRes.error && existingRes.data?.id) {
-        const cyclesRes = await sb
-          .from("writing_revision_cycles")
-          .select("id, revision_index, feedback_summary, issues, correction_targets, improvement_ratio, created_at")
-          .eq("draft_id", String(existingRes.data.id))
-          .order("revision_index", { ascending: false })
-          .limit(6);
-        return json(200, {
-          draft: existingRes.data,
-          prompt,
-          revision_cycles: cyclesRes.data ?? [],
-        });
+      if (!prompt) return json(404, { error: "Writing task not found" });
+      let draft = await latestDraft(sb, auth.userId, scope.languageId, String(prompt.id));
+      if (!draft) {
+        const inserted = await sb
+          .from("writing_drafts")
+          .insert({
+            user_id: auth.userId,
+            language_id: scope.languageId,
+            product_id: productId,
+            prompt_id: String(prompt.id),
+            status: "draft",
+            current_text: "",
+            word_count: 0,
+            revision_count: 0,
+            metadata: { prompt_slug: toText(prompt.slug, 160) },
+          })
+          .select("*")
+          .maybeSingle();
+        if (inserted.error || !inserted.data?.id) return json(500, { error: "Could not start a draft." });
+        draft = inserted.data as JsonRecord;
       }
-
-      const { data, error } = await sb
-        .from("writing_drafts")
-        .insert({
-          user_id: auth.userId,
-          language_id: scope.languageId,
-          product_id: productId,
-          prompt_id: String(prompt.id),
-          status: "draft",
-          current_text: "",
-          word_count: 0,
-          revision_count: 0,
-          metadata: {
-            prompt_slug: toText(prompt.slug, 120),
-            genre: toText(prompt.genre, 80),
-          },
-        })
-        .select("*")
-        .maybeSingle();
-      if (error || !data?.id) return json(500, { error: "Failed to start writing draft", details: error?.message ?? null });
-
-      return json(200, {
-        draft: data,
-        prompt,
-        revision_cycles: [],
-      });
+      const cycles = await sb
+        .from("writing_revision_cycles")
+        .select("id, revision_index, feedback_summary, issues, correction_targets, improvement_ratio, created_at")
+        .eq("draft_id", String(draft.id))
+        .order("revision_index", { ascending: false })
+        .limit(6);
+      return json(200, { draft, prompt: publicPrompt(prompt), revision_cycles: cycles.data ?? [] });
     }
 
     if (req.method === "GET" && route.startsWith("/drafts/")) {
       const draftId = decodeURIComponent(route.slice("/drafts/".length)).trim();
-      if (!draftId) return json(404, { error: "Writing draft not found" });
-
-      const draftRes = await sb
-        .from("writing_drafts")
-        .select("*")
-        .eq("id", draftId)
-        .maybeSingle();
-      if (draftRes.error || !draftRes.data?.id) return json(404, { error: "Writing draft not found" });
+      if (!isUuid(draftId)) return json(404, { error: "Draft not found" });
+      const draftRes = await sb.from("writing_drafts").select("*").eq("id", draftId).maybeSingle();
+      if (draftRes.error || !draftRes.data?.id) return json(404, { error: "Draft not found" });
       if (String(draftRes.data.user_id ?? "") !== auth.userId) return json(403, { error: "Forbidden" });
-
-      const draft = draftRes.data as Record<string, unknown>;
+      const draft = draftRes.data as JsonRecord;
       const prompt = await loadPrompt(sb, productId, scope.languageId, String(draft.prompt_id ?? ""));
-      if (!prompt) return json(404, { error: "Writing prompt not found" });
-
-      const cyclesRes = await sb
+      if (!prompt) return json(404, { error: "Writing task not found" });
+      const cycles = await sb
         .from("writing_revision_cycles")
         .select("id, revision_index, feedback_summary, issues, correction_targets, improvement_ratio, attempt_id, created_at")
         .eq("draft_id", draftId)
         .order("revision_index", { ascending: false })
         .limit(12);
-
-      return json(200, {
-        draft,
-        prompt,
-        revision_cycles: cyclesRes.data ?? [],
-      });
+      return json(200, { draft, prompt: publicPrompt(prompt), revision_cycles: cycles.data ?? [] });
     }
 
     if (req.method === "POST" && route === "/drafts/submit") {
       const draftId = toText(body.draft_id, 120);
-      const submissionText = toText(body.submission_text, 12000);
-      if (!draftId || !submissionText) return json(422, { error: "draft_id and submission_text are required" });
-
-      const draftRes = await sb
-        .from("writing_drafts")
-        .select("*")
-        .eq("id", draftId)
-        .maybeSingle();
-      if (draftRes.error || !draftRes.data?.id) return json(404, { error: "Writing draft not found" });
+      const text = toText(body.submission_text ?? body.text, MAX_TEXT);
+      if (!isUuid(draftId) || !text) return json(422, { error: "draft_id and submission_text are required" });
+      const draftRes = await sb.from("writing_drafts").select("id, user_id, prompt_id").eq("id", draftId).maybeSingle();
+      if (draftRes.error || !draftRes.data?.id) return json(404, { error: "Draft not found" });
       if (String(draftRes.data.user_id ?? "") !== auth.userId) return json(403, { error: "Forbidden" });
-      const draft = draftRes.data as Record<string, unknown>;
-
-      const prompt = await loadPrompt(sb, productId, scope.languageId, String(draft.prompt_id ?? ""));
-      if (!prompt) return json(404, { error: "Writing prompt not found" });
-
-      const cyclesRes = await sb
-        .from("writing_revision_cycles")
-        .select("id, revision_index, issues")
-        .eq("draft_id", draftId)
-        .order("revision_index", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      const previousCycle = cyclesRes.data as Record<string, unknown> | null;
-      const previousIssues = Array.isArray(previousCycle?.issues) ? previousCycle?.issues as Array<Record<string, unknown>> : [];
-
-      const analysis = detectWritingIssues(submissionText, prompt);
-      const previousIssueCount = previousIssues.length;
-      const improvementRatio = previousIssueCount > 0
-        ? clip((previousIssueCount - analysis.issues.length) / previousIssueCount, 0, 1)
-        : null;
-
-      const contentItem = await resolveOrCreateContentItem(sb, {
-        productId,
-        languageId: scope.languageId,
-        serviceKey: "writing",
-        contentType: "writing.prompt",
-        sourceRef: toText(prompt.slug, 160) || String(prompt.id),
-        title: toText(prompt.title, 220),
-        description: toText(prompt.prompt_text, 900),
-        skillKey: "writing",
-        subskillKeys: ["writing.grammar_accuracy", "writing.sentence_control", "writing.coherence", "vocabulary.usage"],
-        cefrLevel: toText(prompt.level, 8),
-        estimatedMinutes: Math.max(8, Math.min(30, Math.ceil(Number(prompt.expected_length_max ?? 160) / 18))),
-        learningObjective: toText(prompt.guidance_text ?? prompt.prompt_text, 900),
-        tags: [
-          toText(prompt.genre, 80),
-          toText(prompt.target_grammar, 120),
-        ].filter(Boolean),
-        payloadJson: {
-          genre: toText(prompt.genre, 80),
-          target_grammar: toText(prompt.target_grammar, 120),
-          target_structure: toText(prompt.target_structure, 160),
-          expected_length_min: Number(prompt.expected_length_min ?? 60),
-          expected_length_max: Number(prompt.expected_length_max ?? 180),
-        },
-        metadata: prompt.metadata && typeof prompt.metadata === "object" ? prompt.metadata as JsonRecord : {},
-      });
-
-      const lengthPenalty = analysis.wordCount < Number(prompt.expected_length_min ?? 60)
-        ? Math.min(0.35, (Number(prompt.expected_length_min ?? 60) - analysis.wordCount) / Number(prompt.expected_length_min ?? 60))
-        : analysis.wordCount > Number(prompt.expected_length_max ?? 180)
-        ? Math.min(0.18, (analysis.wordCount - Number(prompt.expected_length_max ?? 180)) / Number(prompt.expected_length_max ?? 180))
-        : 0;
-      const issuePenalty = Math.min(0.68, analysis.issues.length * 0.11);
-      const lexicalPenalty = analysis.wordCount >= 50 && analysis.uniqueRatio < 0.45 ? 0.08 : 0;
-      const correctnessRatio = clip(1 - lengthPenalty - issuePenalty - lexicalPenalty, 0.15, 0.98);
-      const correctionQualityRatio = improvementRatio == null
-        ? clip(correctnessRatio * 0.92, 0.25, 0.95)
-        : clip(0.45 + (improvementRatio * 0.45) + (correctnessRatio * 0.1), 0.25, 0.98);
-
-      const score = calculateAttemptScore({
-        correctnessRatio,
-        estimatedMinutes: Number(contentItem.estimated_minutes ?? 12),
-        timeSpentSeconds: toNumber(body.time_spent_seconds),
-        hintUsageCount: toNumber(body.hint_usage_count),
-        retryCount: toNumber(body.retry_count ?? Number(draft.revision_count ?? 0)),
-        correctionQualityRatio,
-      });
-      const feedback = buildFeedbackPayload({
-        serviceKey: "writing",
-        score: score.overallScore,
-        title: toText(prompt.title, 220),
-        reason: toText(prompt.prompt_text, 900),
-        issues: analysis.issues,
-      });
-
-      const recorded = await recordEvaluatedAttempt(sb, {
+      const prompt = await loadPrompt(sb, productId, scope.languageId, String(draftRes.data.prompt_id ?? ""));
+      if (!prompt) return json(404, { error: "Writing task not found" });
+      return await evaluateSubmission(sb, {
         userId: auth.userId,
         languageId: scope.languageId,
         productId,
-        serviceKey: "writing",
-        contentItem,
-        attemptType: "writing.revision",
-        responseJson: {
-          draft_id: draftId,
-          prompt_id: String(prompt.id),
-          submission_text: submissionText,
-          word_count: analysis.wordCount,
-          raw_issues: analysis.issues,
-        },
-        metadata: {
-          draft_id: draftId,
-          prompt_id: String(prompt.id),
-          revision_index: Number(draft.revision_count ?? 0) + 1,
-          genre: toText(prompt.genre, 80),
-          target_grammar: toText(prompt.target_grammar, 120),
-        },
-        hintUsageCount: toNumber(body.hint_usage_count),
-        retryCount: toNumber(body.retry_count ?? Number(draft.revision_count ?? 0)),
-        timeSpentSeconds: toNumber(body.time_spent_seconds),
-        score,
-        feedback,
         products,
-      });
-
-      const nextRevisionIndex = Number(draft.revision_count ?? 0) + 1;
-      const nextStatus = score.overallScore >= 0.8 && nextRevisionIndex > 1
-        ? "completed"
-        : nextRevisionIndex > 1
-        ? "revising"
-        : "submitted";
-
-      const revisionCycleRes = await sb
-        .from("writing_revision_cycles")
-        .insert({
-          draft_id: draftId,
-          user_id: auth.userId,
-          revision_index: nextRevisionIndex,
-          submitted_text: submissionText,
-          word_count: analysis.wordCount,
-          issues: analysis.issues,
-          correction_targets: analysis.correctionTargets,
-          feedback_summary: String(recorded.feedbackRow.summary ?? ""),
-          attempt_id: String(recorded.attempt.id ?? ""),
-          improvement_ratio: improvementRatio,
-          metadata: {
-            unique_ratio: analysis.uniqueRatio,
-            target_grammar: toText(prompt.target_grammar, 120),
-          },
-        })
-        .select("*")
-        .maybeSingle();
-      if (revisionCycleRes.error || !revisionCycleRes.data?.id) {
-        return json(500, { error: "Failed to create revision cycle", details: revisionCycleRes.error?.message ?? null });
-      }
-
-      const updatedDraftRes = await sb
-        .from("writing_drafts")
-        .update({
-          status: nextStatus,
-          current_text: submissionText,
-          word_count: analysis.wordCount,
-          revision_count: nextRevisionIndex,
-          latest_attempt_id: String(recorded.attempt.id ?? ""),
-          latest_feedback: {
-            normalized_feedback: recorded.feedbackRow,
-            raw_issues: analysis.issues,
-            correction_targets: analysis.correctionTargets,
-          },
-          metadata: {
-            ...(draft.metadata && typeof draft.metadata === "object" ? draft.metadata as JsonRecord : {}),
-            prompt_slug: toText(prompt.slug, 120),
-            genre: toText(prompt.genre, 80),
-          },
-        })
-        .eq("id", draftId)
-        .select("*")
-        .maybeSingle();
-      if (updatedDraftRes.error || !updatedDraftRes.data?.id) {
-        return json(500, { error: "Failed to update draft", details: updatedDraftRes.error?.message ?? null });
-      }
-
-      return json(200, {
-        ok: true,
-        draft: updatedDraftRes.data,
         prompt,
-        revision_cycle: revisionCycleRes.data,
-        attempt: recorded.attempt,
-        feedback: recorded.feedbackRow,
-        scoring: {
-          correctness_ratio: score.correctnessRatio,
-          correction_quality_ratio: score.correctionQualityRatio,
-          overall_score: score.overallScore,
-        },
-        raw_issues: analysis.issues,
-        correction_targets: analysis.correctionTargets,
-        signals_enqueued: recorded.signalsCount,
-        errors_updated: recorded.errorsCount,
-        recommendations_regenerated: recorded.recommendationsCount,
+        text,
+        timeSpentSeconds: timeSpent,
       });
     }
 
     return json(405, { error: "Method not allowed" });
   } catch (error) {
-    return json(500, { error: error instanceof Error ? error.message : "Unknown error" });
+    console.error("writing-workbench error", error instanceof Error ? error.message : String(error));
+    return json(500, { error: "Something went wrong. Please try again." });
   }
 });

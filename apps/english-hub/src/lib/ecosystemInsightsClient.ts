@@ -1,190 +1,47 @@
-import { edgeBase, supabase, supabaseAnonKey } from './supabase';
+import { edge } from './api';
+import type { CefrLevel } from './skills';
 
-// Cross-skill insights client — wraps the new /hub/dashboard +
-// /hub/insights/* endpoints powered by the english-ai + english-insights
-// shared modules. Mirrors the auth/refresh pattern the existing hub plan
-// client uses.
+// Client for the AI practice tools served by the `hub` edge function
+// (`/hub/ai/*`). Every response carries `ai_status`; when it is not 'ok' the
+// handler returns either a rule-based result (`fallback: true`) or an empty
+// one, and the card explains that to the learner in plain words.
 
-export type CefrLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
+export type { CefrLevel };
+export type AiStatus = 'ok' | 'unconfigured' | 'failed';
 
-export type EnglishSkillKey =
-  | 'reading'
-  | 'writing'
-  | 'listening'
-  | 'speaking'
-  | 'grammar'
-  | 'vocabulary'
-  | 'immersion';
-
-export interface CefrEstimate {
-  skill: EnglishSkillKey;
-  level: CefrLevel;
-  numeric: number;
-  confidence: 'low' | 'medium' | 'high';
-  sample_count: number;
-}
-
-export interface CefrSnapshot {
-  ok: boolean;
-  estimates: CefrEstimate[];
-  overall: { level: CefrLevel; numeric: number };
-  generated_at: string;
-}
-
-export interface CrossSkillActivityDay {
-  date: string;
-  events: number;
-  skills_touched: EnglishSkillKey[];
-  minutes_estimate: number;
-}
-
-export interface CrossSkillActivity {
-  ok: boolean;
-  days: CrossSkillActivityDay[];
-  streak: { current_days: number; longest_days: number; last_session_date: string | null };
-  totals: { last_7_days: number; last_30_days: number; all_time: number };
-}
-
-export interface UnifiedMistakeRow {
-  service: EnglishSkillKey;
-  pattern: string;
-  count: number;
-  last_seen_at: string;
-}
-
-export interface CoachInsight {
-  type: 'progress' | 'risk' | 'recommendation' | 'celebration' | string;
-  title: string;
-  body: string;
-  action_label: string;
-  action_route: string;
-}
-
-export interface CoachSummary {
+type AiBase = {
   ok: boolean;
   ai_available: boolean;
-  ai_status: 'ok' | 'unconfigured' | 'failed';
-  ai_provider: 'openai' | 'anthropic' | 'google';
-  ai_error: string | null;
-  summary: string;
-  insights: CoachInsight[];
-  generated_at: string;
-}
-
-export interface EcosystemDashboard {
-  ok: boolean;
-  cefr: CefrSnapshot | null;
-  activity: CrossSkillActivity | null;
-  mistakes: UnifiedMistakeRow[];
-  plan: unknown;
-}
-
-const resolveLatestAccessToken = async (): Promise<string | null> => {
-  const { data } = await supabase.auth.getSession();
-  return data.session?.access_token ?? null;
+  ai_status: AiStatus;
+  generated_at?: string;
 };
 
-const runEdgeGet = (url: string, accessToken: string): Promise<Response> =>
-  fetch(url, {
-    method: 'GET',
-    headers: {
-      apikey: supabaseAnonKey,
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+const post = <T>(path: string, body: unknown) => edge<T>('hub', path, { body, query: { language_code: 'en' } });
 
-const callEdge = async <T>(path: string, accessToken: string): Promise<T> => {
-  const url = `${edgeBase}${path}`;
-  const primaryToken = accessToken.trim();
-  let res = await runEdgeGet(url, primaryToken);
-  if (res.status === 401) {
-    const latest = (await resolveLatestAccessToken())?.trim() ?? '';
-    if (latest && latest !== primaryToken) {
-      res = await runEdgeGet(url, latest);
-    }
-  }
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    const err = new Error(`${path} failed (${res.status}): ${text.slice(0, 200)}`);
-    (err as { status?: number }).status = res.status;
-    throw err;
-  }
-  return (await res.json()) as T;
-};
+// --- Vocabulary in context ---
 
-export const getEcosystemDashboard = (
-  accessToken: string,
-  languageCode: string = 'en',
-): Promise<EcosystemDashboard> =>
-  callEdge<EcosystemDashboard>(
-    `/hub/dashboard?language_code=${encodeURIComponent(languageCode)}`,
-    accessToken,
-  );
+export type NotebookExample = { word: string; definition: string; example: string };
 
-export const getCoachSummary = (
-  accessToken: string,
-  languageCode: string = 'en',
-): Promise<CoachSummary> =>
-  callEdge<CoachSummary>(
-    `/hub/insights/coach-summary?language_code=${encodeURIComponent(languageCode)}`,
-    accessToken,
-  );
-
-// === New AI features (Tier B #12, #14) ===
-
-export interface VocabInContextResponse {
-  ok: boolean;
-  ai_available: boolean;
-  ai_status: 'ok' | 'unconfigured' | 'failed';
-  ai_provider?: 'openai' | 'anthropic' | 'google';
-  ai_error?: string | null;
+export type VocabInContextResponse = AiBase & {
+  fallback: boolean;
+  /** True when the learner has no saved words yet. */
+  empty: boolean;
   words: string[];
+  entries: NotebookExample[];
   passage: string;
   translations: Record<string, string>;
   topic: string | null;
-  message?: string;
-  generated_at?: string;
-}
-
-const callEdgePost = async <T>(path: string, accessToken: string, body: unknown): Promise<T> => {
-  const url = `${edgeBase}${path}`;
-  const primaryToken = accessToken.trim();
-  const send = (token: string) =>
-    fetch(url, {
-      method: 'POST',
-      headers: {
-        apikey: supabaseAnonKey,
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body ?? {}),
-    });
-  let res = await send(primaryToken);
-  if (res.status === 401) {
-    const latest = (await resolveLatestAccessToken())?.trim() ?? '';
-    if (latest && latest !== primaryToken) res = await send(latest);
-  }
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    const err = new Error(`${path} failed (${res.status}): ${text.slice(0, 200)}`);
-    (err as { status?: number }).status = res.status;
-    throw err;
-  }
-  return (await res.json()) as T;
 };
 
-export const generateVocabInContext = (
-  accessToken: string,
-  body: { words?: string[]; topic?: string } = {},
-): Promise<VocabInContextResponse> =>
-  callEdgePost<VocabInContextResponse>('/hub/ai/vocab-in-context', accessToken, body);
+export const generateVocabInContext = (body: { words?: string[]; topic?: string; target_level?: CefrLevel }) =>
+  post<VocabInContextResponse>('/ai/vocab-in-context', body);
 
-export interface GrammarDecodeResponse {
-  ok: boolean;
-  ai_available: boolean;
-  ai_status: 'ok' | 'unconfigured' | 'failed';
-  ai_provider?: 'openai' | 'anthropic' | 'google';
-  ai_error?: string | null;
+// --- Grammar decoder ---
+
+export type GrammarSignal = { label: string; match: string; tip: string };
+
+export type GrammarDecodeResponse = AiBase & {
+  fallback: boolean;
   sentence: string;
   clauses: Array<{ role: string; text: string; function: string }>;
   tense: string;
@@ -192,90 +49,60 @@ export interface GrammarDecodeResponse {
   register: string;
   notes: string[];
   rephrasings: Array<{ text: string; why_different: string }>;
-  generated_at?: string;
-}
+  signals: GrammarSignal[];
+};
 
-export const decodeGrammar = (
-  accessToken: string,
-  sentence: string,
-): Promise<GrammarDecodeResponse> =>
-  callEdgePost<GrammarDecodeResponse>('/hub/ai/grammar-decode', accessToken, { sentence });
+export const decodeGrammar = (sentence: string) => post<GrammarDecodeResponse>('/ai/grammar-decode', { sentence });
 
-// === Iter 3: essay grader, translation comparison, idiom explorer ===
+// --- Writing feedback ---
 
-export type CefrTargetLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
-
-export interface EssayGradeResponse {
-  ok: boolean;
-  ai_available: boolean;
-  ai_status: 'ok' | 'unconfigured' | 'failed';
-  ai_provider?: 'openai' | 'anthropic' | 'google';
-  ai_error?: string | null;
-  target_level: CefrTargetLevel;
+export type EssayGradeResponse = AiBase & {
+  fallback: boolean;
+  target_level: CefrLevel;
   word_count: number;
-  overall_level: CefrTargetLevel | string;
-  criteria: Record<'task' | 'coherence' | 'range' | 'accuracy', { level: string; comment: string }>;
+  stats: { words: number; sentences: number; paragraphs: number; avg_sentence_words: number };
+  checks: string[];
+  overall_level: CefrLevel | null;
+  criteria: Partial<Record<'task' | 'coherence' | 'range' | 'accuracy', { level: string; comment: string }>>;
   strengths: string[];
   improvements: string[];
   actionable_next_step: string;
   rewrite_sample: string;
-  generated_at?: string;
-}
+};
 
-export const gradeEssay = (
-  accessToken: string,
-  body: { text: string; target_level?: CefrTargetLevel; prompt?: string },
-): Promise<EssayGradeResponse> =>
-  callEdgePost<EssayGradeResponse>('/hub/ai/essay-grade', accessToken, body);
+export const gradeEssay = (body: { text: string; target_level?: CefrLevel; prompt?: string }) =>
+  post<EssayGradeResponse>('/ai/essay-grade', body);
 
-export interface TranslationCompareResponse {
-  ok: boolean;
-  ai_available: boolean;
-  ai_status: 'ok' | 'unconfigured' | 'failed';
-  ai_provider?: 'openai' | 'anthropic' | 'google';
-  ai_error?: string | null;
+// --- Translation compare ---
+
+export type TranslationCompareResponse = AiBase & {
   source_text: string;
   detected_language: string;
   translations: Array<{ text: string; register: string; style_note: string }>;
   nuance_summary: string;
-  generated_at?: string;
-}
+};
 
-export const compareTranslations = (
-  accessToken: string,
-  body: { source_text: string; source_language?: string },
-): Promise<TranslationCompareResponse> =>
-  callEdgePost<TranslationCompareResponse>('/hub/ai/translation-compare', accessToken, body);
+export const compareTranslations = (body: { source_text: string; source_language?: string }) =>
+  post<TranslationCompareResponse>('/ai/translation-compare', body);
 
-export interface IdiomExtractResponse {
-  ok: boolean;
-  ai_available: boolean;
-  ai_status: 'ok' | 'unconfigured' | 'failed';
-  ai_provider?: 'openai' | 'anthropic' | 'google';
-  ai_error?: string | null;
-  target_level: CefrTargetLevel;
+// --- Idioms and collocations ---
+
+export type IdiomExtractResponse = AiBase & {
+  target_level: CefrLevel;
   source_text_length: number;
   idioms: Array<{ phrase: string; meaning: string; register: string; example: string }>;
   collocations: Array<{ phrase: string; type: string; meaning: string; example: string }>;
   cultural_notes: string[];
-  generated_at?: string;
-}
+};
 
-export const extractIdioms = (
-  accessToken: string,
-  body: { source_text: string; target_level?: CefrTargetLevel },
-): Promise<IdiomExtractResponse> =>
-  callEdgePost<IdiomExtractResponse>('/hub/ai/idiom-extract', accessToken, body);
+export const extractIdioms = (body: { source_text: string; target_level?: CefrLevel }) =>
+  post<IdiomExtractResponse>('/ai/idiom-extract', body);
 
-// === Iter 4: dictation, daily challenge, cultural notes ===
+// --- Dictation ---
 
-export interface DictationGenerateResponse {
-  ok: boolean;
-  ai_available: boolean;
-  ai_status: 'ok' | 'unconfigured' | 'failed';
-  ai_provider?: 'openai' | 'anthropic' | 'google';
-  ai_error?: string | null;
-  target_level: CefrTargetLevel;
+export type DictationGenerateResponse = AiBase & {
+  fallback: boolean;
+  target_level: CefrLevel;
   topic: string | null;
   accent: string;
   speed: string;
@@ -283,146 +110,82 @@ export interface DictationGenerateResponse {
   tricky_tokens: string[];
   comprehension_question: string;
   comprehension_answer: string;
-  generated_at?: string;
-}
+};
 
-export const generateDictation = (
-  accessToken: string,
-  body: { target_level?: CefrTargetLevel; topic?: string; accent?: string; speed?: string },
-): Promise<DictationGenerateResponse> =>
-  callEdgePost<DictationGenerateResponse>('/hub/ai/dictation/generate', accessToken, body);
+export const generateDictation = (body: { target_level?: CefrLevel; topic?: string; previous_text?: string }) =>
+  post<DictationGenerateResponse>('/ai/dictation/generate', body);
 
-export interface DailyChallengeTask {
-  skill: 'reading' | 'writing' | 'listening' | 'speaking' | 'grammar' | 'vocabulary';
+// --- Daily challenge ---
+
+export type PracticeSkill = 'reading' | 'writing' | 'listening' | 'speaking' | 'grammar' | 'vocabulary';
+
+export type DailyChallengeTask = {
+  skill: PracticeSkill;
   label: string;
   instruction: string;
   estimated_minutes: number;
   route_hint: string;
-}
+};
 
-export interface DailyChallengeResponse {
-  ok: boolean;
-  ai_available: boolean;
-  ai_status: 'ok' | 'unconfigured' | 'failed';
-  ai_provider?: 'openai' | 'anthropic' | 'google';
-  ai_error?: string | null;
+export type DailyChallengeResponse = AiBase & {
   theme: string;
   why_this_theme: string;
   tasks: DailyChallengeTask[];
   cefr_level: CefrLevel;
   minutes_budget: number;
-  generated_at?: string;
-}
+};
 
-export const generateDailyChallenge = (
-  accessToken: string,
-  body: { minutes_budget?: number } = {},
-): Promise<DailyChallengeResponse> =>
-  callEdgePost<DailyChallengeResponse>('/hub/ai/daily-challenge', accessToken, body);
+export const generateDailyChallenge = (body: { minutes_budget?: number } = {}) =>
+  post<DailyChallengeResponse>('/ai/daily-challenge', body);
 
-export interface CulturalNotesResponse {
-  ok: boolean;
-  ai_available: boolean;
-  ai_status: 'ok' | 'unconfigured' | 'failed';
-  ai_provider?: 'openai' | 'anthropic' | 'google';
-  ai_error?: string | null;
+// --- Culture and tone notes ---
+
+export type CulturalNotesResponse = AiBase & {
   cultural_references: string[];
   register_observations: string[];
   regional_variants: string[];
   tone_pitfalls: string[];
-  generated_at?: string;
-}
+};
 
-export const extractCulturalNotes = (
-  accessToken: string,
-  body: { source_text: string },
-): Promise<CulturalNotesResponse> =>
-  callEdgePost<CulturalNotesResponse>('/hub/ai/cultural-notes', accessToken, body);
+export const extractCulturalNotes = (body: { source_text: string }) =>
+  post<CulturalNotesResponse>('/ai/cultural-notes', body);
 
-// === Iter 5: goal templates, writing rubric calibration, themed week ===
+// --- Level examples (rubric calibration) ---
 
-export type EnglishGoalKey =
-  | 'study_abroad'
-  | 'business'
-  | 'immigration'
-  | 'academic'
-  | 'conversational'
-  | 'exam_prep';
-
-export interface GoalTemplateResponse {
-  ok: boolean;
-  ai_available: boolean;
-  ai_status: 'ok' | 'unconfigured' | 'failed';
-  ai_provider?: 'openai' | 'anthropic' | 'google';
-  ai_error?: string | null;
-  goal: EnglishGoalKey;
-  cefr_level: CefrLevel;
-  horizon_weeks: number;
-  minutes_per_day: number;
-  plan_title: string;
-  narrative: string;
-  weekly_hours: Record<EnglishSkillKey, number>;
-  priorities: Array<{ skill: EnglishSkillKey; why: string }>;
-  skill_focus: Record<EnglishSkillKey, string>;
-  recommended_routes: Array<{ label: string; route: string; why: string }>;
-  success_criteria: string[];
-  risks: string[];
-  generated_at?: string;
-}
-
-export const generateGoalTemplate = (
-  accessToken: string,
-  body: { goal: EnglishGoalKey; horizon_weeks?: number; minutes_per_day?: number },
-): Promise<GoalTemplateResponse> =>
-  callEdgePost<GoalTemplateResponse>('/hub/ai/goal-templates', accessToken, body);
-
-export interface RubricCalibrateResponse {
-  ok: boolean;
-  ai_available: boolean;
-  ai_status: 'ok' | 'unconfigured' | 'failed';
-  ai_provider?: 'openai' | 'anthropic' | 'google';
-  ai_error?: string | null;
+export type RubricCalibrateResponse = AiBase & {
   prompt: string;
-  lower_level: CefrTargetLevel;
-  mid_level: CefrTargetLevel;
-  upper_level: CefrTargetLevel;
-  samples: Array<{
-    level: CefrTargetLevel | string;
-    word_count_target: number;
-    text: string;
-    examiner_note: string;
-  }>;
+  lower_level: CefrLevel;
+  mid_level: CefrLevel;
+  upper_level: CefrLevel;
+  samples: Array<{ level: string; word_count_target: number; text: string; examiner_note: string }>;
   deltas: Array<{
-    from_level: CefrTargetLevel | string;
-    to_level: CefrTargetLevel | string;
+    from_level: string;
+    to_level: string;
     axes: { task: string; coherence: string; range: string; accuracy: string; register: string };
   }>;
   what_to_practise: string[];
-  generated_at?: string;
-}
+};
 
-export const calibrateWritingRubric = (
-  accessToken: string,
-  body: { prompt: string; lower_level?: CefrTargetLevel; mid_level?: CefrTargetLevel; upper_level?: CefrTargetLevel },
-): Promise<RubricCalibrateResponse> =>
-  callEdgePost<RubricCalibrateResponse>('/hub/ai/rubric-calibrate', accessToken, body);
+export const calibrateWritingRubric = (body: {
+  prompt: string;
+  lower_level?: CefrLevel;
+  mid_level?: CefrLevel;
+  upper_level?: CefrLevel;
+}) => post<RubricCalibrateResponse>('/ai/rubric-calibrate', body);
 
-export interface ThemedWeekDay {
+// --- Themed week ---
+
+export type ThemedWeekDay = {
   day_index: number;
   day_label: string;
-  skill: 'reading' | 'writing' | 'listening' | 'speaking' | 'grammar' | 'vocabulary';
+  skill: PracticeSkill;
   activity_label: string;
   instruction: string;
   recycles_words: string[];
   route_hint: string;
-}
+};
 
-export interface ThemedWeekResponse {
-  ok: boolean;
-  ai_available: boolean;
-  ai_status: 'ok' | 'unconfigured' | 'failed';
-  ai_provider?: 'openai' | 'anthropic' | 'google';
-  ai_error?: string | null;
+export type ThemedWeekResponse = AiBase & {
   theme: string;
   why_this_theme: string;
   cefr_level: CefrLevel;
@@ -430,223 +193,107 @@ export interface ThemedWeekResponse {
   anchor_vocabulary: string[];
   days: ThemedWeekDay[];
   weekend_review: string;
-  generated_at?: string;
-}
+};
 
-export const generateThemedWeek = (
-  accessToken: string,
-  body: { theme?: string; minutes_per_day?: number } = {},
-): Promise<ThemedWeekResponse> =>
-  callEdgePost<ThemedWeekResponse>('/hub/ai/themed-week', accessToken, body);
+export const generateThemedWeek = (body: { theme?: string; minutes_per_day?: number } = {}) =>
+  post<ThemedWeekResponse>('/ai/themed-week', body);
 
-// === Iter 6: real content recommendation, shadowing prep, adaptive placement test ===
+// --- Real-world content ideas ---
 
-export type ContentItemType = 'book' | 'article' | 'podcast' | 'youtube' | 'film' | 'newsletter' | 'tv_show';
-
-export interface ContentRecommendItem {
-  type: ContentItemType | string;
+export type ContentRecommendItem = {
+  type: string;
   title: string;
   creator: string;
   why_for_you: string;
   where_to_find: string;
   difficulty_note: string;
   first_step: string;
-}
+};
 
-export interface ContentRecommendResponse {
-  ok: boolean;
-  ai_available: boolean;
-  ai_status: 'ok' | 'unconfigured' | 'failed';
-  ai_provider?: 'openai' | 'anthropic' | 'google';
-  ai_error?: string | null;
+export type ContentRecommendResponse = AiBase & {
   cefr_level: CefrLevel;
   interests: string[];
   session_minutes: number;
   items: ContentRecommendItem[];
   immersion_tip: string;
-  generated_at?: string;
-}
+};
 
-export const recommendContent = (
-  accessToken: string,
-  body: { interests?: string[]; session_minutes?: number; formats?: string[] } = {},
-): Promise<ContentRecommendResponse> =>
-  callEdgePost<ContentRecommendResponse>('/hub/ai/content-recommend', accessToken, body);
+export const recommendContent = (body: { interests?: string[]; session_minutes?: number; formats?: string[] } = {}) =>
+  post<ContentRecommendResponse>('/ai/content-recommend', body);
 
-export interface ShadowingChunk {
+// --- Shadowing ---
+
+export type ShadowingChunk = {
   index: number;
   text: string;
   focus_label: string;
   focus_explanation: string;
   watch_for: string[];
-}
+};
 
-export interface ShadowingPrepResponse {
-  ok: boolean;
-  ai_available: boolean;
-  ai_status: 'ok' | 'unconfigured' | 'failed';
-  ai_provider?: 'openai' | 'anthropic' | 'google';
-  ai_error?: string | null;
-  target_level: CefrTargetLevel;
+export type ShadowingPrepResponse = AiBase & {
+  fallback: boolean;
+  target_level: CefrLevel;
   accent: string;
   source_text_length: number;
   warm_up: string;
   chunks: ShadowingChunk[];
   global_tips: string[];
-  generated_at?: string;
-}
+};
 
-export const prepareShadowing = (
-  accessToken: string,
-  body: { source_text: string; target_level?: CefrTargetLevel; accent?: string },
-): Promise<ShadowingPrepResponse> =>
-  callEdgePost<ShadowingPrepResponse>('/hub/ai/shadowing-prep', accessToken, body);
+export const prepareShadowing = (body: { source_text: string; target_level?: CefrLevel; accent?: string }) =>
+  post<ShadowingPrepResponse>('/ai/shadowing-prep', body);
 
-export interface PlacementQuestion {
-  skill: 'reading' | 'writing' | 'listening' | 'grammar';
-  prompt: string;
-  passage: string;
-  choices: string[];
-  expected_answer_pattern: string;
-}
+// --- Pronunciation ---
 
-export interface PlacementHistoryEntry {
-  question: PlacementQuestion;
-  answer: string;
-}
-
-export interface PlacementTestRoundResponse {
-  ok: boolean;
-  ai_available: boolean;
-  ai_status: 'ok' | 'unconfigured' | 'failed';
-  ai_provider?: 'openai' | 'anthropic' | 'google';
-  ai_error?: string | null;
-  finalized: false;
-  round: number;
-  target_level_guess: string;
-  rationale: string;
-  questions: PlacementQuestion[];
-  generated_at?: string;
-}
-
-export interface PlacementTestFinalResponse {
-  ok: boolean;
-  ai_available: boolean;
-  ai_status: 'ok' | 'unconfigured' | 'failed';
-  ai_provider?: 'openai' | 'anthropic' | 'google';
-  ai_error?: string | null;
-  finalized: true;
-  overall_level: CefrLevel | string;
-  per_skill: Record<string, { level: string; evidence: string }>;
-  narrative: string;
-  next_steps: string[];
-  generated_at?: string;
-}
-
-export type PlacementTestResponse = PlacementTestRoundResponse | PlacementTestFinalResponse;
-
-export const stepPlacementTest = (
-  accessToken: string,
-  body: { round?: number; history?: PlacementHistoryEntry[]; finalize?: boolean } = {},
-): Promise<PlacementTestResponse> =>
-  callEdgePost<PlacementTestResponse>('/hub/ai/placement-test', accessToken, body);
-
-// === Iter 7: AI tutor with cross-session memory + pronunciation analysis ===
-
-export type TutorMessageRole = 'user' | 'assistant';
-
-export interface TutorMessage {
-  role: TutorMessageRole;
-  content: string;
-}
-
-export type TutorMemoryKind = 'goal' | 'preference' | 'struggle' | 'win' | 'context' | 'deadline';
-
-export interface TutorMemory {
-  id: string;
-  kind: TutorMemoryKind | string;
-  text: string;
-  added_at: string;
-}
-
-export interface TutorChatResponse {
-  ok: boolean;
-  ai_available: boolean;
-  ai_status: 'ok' | 'unconfigured' | 'failed';
-  ai_provider?: 'openai' | 'anthropic' | 'google';
-  ai_error?: string | null;
-  reply: string;
-  suggested_memories: Array<{ kind: TutorMemoryKind | string; text: string }>;
-  suggested_actions: Array<{ label: string; route: string; why: string }>;
-  generated_at?: string;
-}
-
-export const sendTutorMessage = (
-  accessToken: string,
-  body: { messages: TutorMessage[]; memories?: Array<Pick<TutorMemory, 'id' | 'kind' | 'text'>> },
-): Promise<TutorChatResponse> =>
-  callEdgePost<TutorChatResponse>('/hub/ai/tutor-chat', accessToken, body);
-
-export interface PronunciationPerWord {
+export type PronunciationPerWord = {
   target_word: string;
   what_was_heard: string;
   likely_issue: string;
   fix_tip: string;
-}
+};
 
-export interface PronunciationFeedbackResponse {
-  ok: boolean;
-  ai_available: boolean;
-  ai_status: 'ok' | 'unconfigured' | 'failed';
-  ai_provider?: 'openai' | 'anthropic' | 'google';
-  ai_error?: string | null;
+export type PronunciationFeedbackResponse = AiBase & {
+  fallback: boolean;
   target_text: string;
   recognized_text: string;
   user_l1: string | null;
-  target_level: CefrTargetLevel;
+  target_level: CefrLevel;
+  /** Share of target words the speech recognizer heard (0-100). */
   accuracy_score: number;
+  words_total: number;
+  words_matched: number;
+  missed_words: string[];
   per_word: PronunciationPerWord[];
   prosody_notes: string[];
   l1_interference: string[];
   retry_priority: string;
-  generated_at?: string;
-}
+};
 
-export const analyzePronunciation = (
-  accessToken: string,
-  body: { target_text: string; recognized_text: string; user_l1?: string; target_level?: CefrTargetLevel },
-): Promise<PronunciationFeedbackResponse> =>
-  callEdgePost<PronunciationFeedbackResponse>('/hub/ai/pronunciation-feedback', accessToken, body);
+export const analyzePronunciation = (body: {
+  target_text: string;
+  recognized_text: string;
+  user_l1?: string;
+  target_level?: CefrLevel;
+}) => post<PronunciationFeedbackResponse>('/ai/pronunciation-feedback', body);
 
-// === Iter 8: voice conversation partner ===
+// --- Conversation partner ---
 
-export interface VoiceConversationCorrection {
-  original: string;
-  better: string;
-  why: string;
-}
+export type ChatMessage = { role: 'user' | 'assistant'; content: string };
 
-export interface VoiceConversationTurnResponse {
-  ok: boolean;
-  ai_available: boolean;
-  ai_status: 'ok' | 'unconfigured' | 'failed';
-  ai_provider?: 'openai' | 'anthropic' | 'google';
-  ai_error?: string | null;
+export type VoiceConversationCorrection = { original: string; better: string; why: string };
+
+export type VoiceConversationTurnResponse = AiBase & {
   cefr_level: CefrLevel | string;
   partner_reply: string;
   correction: VoiceConversationCorrection | null;
   suggested_user_reply: string;
   scenario_progress: string;
-  generated_at?: string;
-}
+};
 
-export const sendVoiceConversationTurn = (
-  accessToken: string,
-  body: {
-    messages: TutorMessage[];
-    scenario?: string;
-    persona_name?: string;
-    target_level?: CefrTargetLevel;
-  },
-): Promise<VoiceConversationTurnResponse> =>
-  callEdgePost<VoiceConversationTurnResponse>('/hub/ai/voice-conversation-turn', accessToken, body);
+export const sendVoiceConversationTurn = (body: {
+  messages: ChatMessage[];
+  scenario?: string;
+  persona_name?: string;
+  target_level?: CefrLevel;
+}) => post<VoiceConversationTurnResponse>('/ai/voice-conversation-turn', body);

@@ -16,218 +16,73 @@ import {
   toNumber,
   toText,
 } from "../_shared/english-learning.ts";
+import {
+  combineDictation,
+  gradeQuestions,
+  listeningCorrectness,
+  parseQuestions,
+  publicQuestions,
+  scoreDictation,
+} from "../_shared/english-listening.ts";
 
 type JsonRecord = Record<string, unknown>;
 
 const routeMarker = "/listening-content";
 
+/** How many sentences the learner writes down in one activity. */
+const DICTATION_SENTENCES = 2;
+
+const ITEM_COLUMNS =
+  "id, slug, title, summary, transcript_text, level, category, accent, speed_label, speed_wpm, duration_seconds, audio_url, focus_skill, tags, status, sort_order, metadata, questions";
+
 const isUuid = (value: string): boolean =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 
-const tokenize = (value: string): string[] =>
-  String(value ?? "")
-    .toLowerCase()
-    .replace(/[^a-z0-9'\s]+/g, " ")
-    .split(/\s+/)
-    .map((entry) => entry.trim())
-    .filter(Boolean);
-
-const unique = (values: string[]): string[] => Array.from(new Set(values.filter(Boolean)));
-
-const functionWords = new Set([
-  "a",
-  "an",
-  "the",
-  "to",
-  "of",
-  "for",
-  "at",
-  "on",
-  "in",
-  "is",
-  "are",
-  "was",
-  "were",
-  "am",
-  "be",
-  "been",
-  "being",
-  "do",
-  "does",
-  "did",
-  "has",
-  "have",
-  "had",
-  "will",
-  "would",
-  "can",
-  "could",
-  "should",
-  "from",
-  "with",
-  "and",
-  "but",
-  "or",
-  "because",
-  "before",
-  "after",
-  "this",
-  "that",
-  "it",
-  "one",
-  "two",
-]);
-
-const buildLcsMatches = (expected: string[], actual: string[]): { expectedMatched: number[]; actualMatched: number[] } => {
-  const rows = expected.length + 1;
-  const cols = actual.length + 1;
-  const dp: number[][] = Array.from({ length: rows }, () => Array.from({ length: cols }, () => 0));
-
-  for (let i = 1; i < rows; i += 1) {
-    for (let j = 1; j < cols; j += 1) {
-      if (expected[i - 1] === actual[j - 1]) dp[i][j] = dp[i - 1][j - 1] + 1;
-      else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
-    }
-  }
-
-  const expectedMatched: number[] = [];
-  const actualMatched: number[] = [];
-  let i = expected.length;
-  let j = actual.length;
-  while (i > 0 && j > 0) {
-    if (expected[i - 1] === actual[j - 1]) {
-      expectedMatched.push(i - 1);
-      actualMatched.push(j - 1);
-      i -= 1;
-      j -= 1;
-      continue;
-    }
-    if (dp[i - 1][j] >= dp[i][j - 1]) i -= 1;
-    else j -= 1;
-  }
-
-  return {
-    expectedMatched: expectedMatched.reverse(),
-    actualMatched: actualMatched.reverse(),
-  };
+const clampInt = (value: unknown, min: number, max: number, fallback: number): number => {
+  const parsed = value === null || value === undefined || value === "" ? null : toNumber(value);
+  return parsed === null ? fallback : Math.max(min, Math.min(max, Math.round(parsed)));
 };
 
-const evaluateDictation = (
-  transcript: string,
-  responseText: string,
-): {
-  correctnessRatio: number;
-  issues: Array<Record<string, unknown>>;
-  missingWords: string[];
-  extraWords: string[];
-  notebookWords: Array<Record<string, unknown>>;
-} => {
-  const expectedTokens = tokenize(transcript);
-  const actualTokens = tokenize(responseText);
-  const matches = buildLcsMatches(expectedTokens, actualTokens);
-  const expectedMatchedSet = new Set(matches.expectedMatched);
-  const actualMatchedSet = new Set(matches.actualMatched);
-  const missingWords = expectedTokens.filter((_, index) => !expectedMatchedSet.has(index));
-  const extraWords = actualTokens.filter((_, index) => !actualMatchedSet.has(index));
-  const functionWordMisses = missingWords.filter((word) => functionWords.has(word));
-  const contentWordMisses = unique(missingWords.filter((word) => !functionWords.has(word)));
-  const correctnessRatio = expectedTokens.length > 0 ? matches.expectedMatched.length / expectedTokens.length : 0;
+/** Same formula as the registry seed: listening time plus about four minutes of tasks. */
+const estimatedMinutesOf = (item: JsonRecord): number =>
+  Math.max(1, Math.min(30, Math.ceil(Number(item.duration_seconds ?? 60) / 60) + 4));
 
-  const issues: Array<Record<string, unknown>> = [];
-  if (correctnessRatio < 0.72) {
-    issues.push({
-      category: "listening",
-      subskill_key: "listening.detail_recall",
-      location_ref: "whole-clip",
-      explanation: "Too many key details were missed in the dictation.",
-      correction_hint: "Replay one clause at a time, then type the meaning before typing the full sentence.",
-      severity: 0.82,
-    });
-  }
-  if (functionWordMisses.length >= 2) {
-    issues.push({
-      category: "grammar",
-      subskill_key: "listening.function_word_accuracy",
-      location_ref: "connected-speech",
-      explanation: `Small grammar words were missed: ${functionWordMisses.slice(0, 4).join(", ")}.`,
-      correction_hint: "Use a slower replay and listen for articles, prepositions, and auxiliary verbs.",
-      severity: 0.7,
-    });
-  }
-  if (contentWordMisses.length > 0) {
-    issues.push({
-      category: "vocabulary",
-      subskill_key: "listening.word_recognition",
-      location_ref: "keyword-recovery",
-      explanation: `Useful words were missed: ${contentWordMisses.slice(0, 4).join(", ")}.`,
-      correction_hint: "Replay the clip, say each missed word aloud, and send the unstable ones to Vocabulary review.",
-      severity: contentWordMisses.length >= 3 ? 0.74 : 0.58,
-    });
-  }
-  if (extraWords.length >= 3) {
-    issues.push({
-      category: "listening",
-      subskill_key: "listening.transcription_control",
-      location_ref: "response-draft",
-      explanation: "The response added extra words that were not in the clip.",
-      correction_hint: "Pause after each chunk and write only the exact wording you heard.",
-      severity: 0.48,
-    });
-  }
-
-  const notebookWords = contentWordMisses.slice(0, 5).map((word) => ({
-    word,
-    definition: null,
-    example: transcript,
-    context_text: transcript,
-    source_type: "english.listening.dictation",
-    source_label: "English Listening",
-    metadata: {
-      seeded_by: "listening-content.submit",
-      transcript_excerpt: transcript.slice(0, 220),
-    },
-  }));
-
-  return {
-    correctnessRatio,
-    issues,
-    missingWords: unique(missingWords),
-    extraWords: unique(extraWords),
-    notebookWords,
-  };
+/** Item as sent to the browser: question keys and explanations stay on the server. */
+const publicItem = (item: JsonRecord): JsonRecord => {
+  const { questions, ...rest } = item;
+  return { ...rest, questions: publicQuestions(parseQuestions(questions)), estimated_minutes: estimatedMinutesOf(item) };
 };
 
 const listItems = async (sb: any, productId: string, languageId: string, url: URL): Promise<Response> => {
   const level = toText(url.searchParams.get("level"), 8).toUpperCase();
-  const limit = Math.max(1, Math.min(40, Math.floor(toNumber(url.searchParams.get("limit")) ?? 12)));
+  const limit = clampInt(url.searchParams.get("limit"), 1, 60, 40);
 
   let query = sb
     .from("listening_items")
-    .select("id, slug, title, summary, transcript_text, level, category, accent, speed_label, speed_wpm, duration_seconds, focus_skill, tags, status, sort_order, metadata, presentation_meta")
+    .select(ITEM_COLUMNS)
     .eq("product_id", productId)
     .eq("language_id", languageId)
     .eq("status", "published")
     .order("sort_order", { ascending: true })
     .limit(limit);
-
   if (level) query = query.eq("level", level);
 
   const { data, error } = await query;
-  if (error) return json(500, { error: "Failed to load listening items", details: error.message });
+  if (error) return json(500, { error: "Failed to load listening items" });
 
   return json(200, {
-    items: data ?? [],
-    scope: {
-      product_id: productId,
-      language_id: languageId,
-    },
+    items: ((data ?? []) as JsonRecord[]).map((row) => {
+      const { questions, ...rest } = row;
+      return { ...rest, question_count: parseQuestions(questions).length, estimated_minutes: estimatedMinutesOf(row) };
+    }),
+    scope: { product_id: productId, language_id: languageId },
   });
 };
 
-const loadItem = async (sb: any, productId: string, languageId: string, identifier: string): Promise<Record<string, unknown> | null> => {
+const loadItem = async (sb: any, productId: string, languageId: string, identifier: string): Promise<JsonRecord | null> => {
   let query = sb
     .from("listening_items")
-    .select("id, slug, title, summary, transcript_text, level, category, accent, speed_label, speed_wpm, duration_seconds, focus_skill, tags, status, sort_order, metadata, presentation_meta")
+    .select(ITEM_COLUMNS)
     .eq("product_id", productId)
     .eq("language_id", languageId)
     .eq("status", "published")
@@ -235,8 +90,29 @@ const loadItem = async (sb: any, productId: string, languageId: string, identifi
   query = isUuid(identifier) ? query.eq("id", identifier) : query.eq("slug", identifier);
   const { data, error } = await query.maybeSingle();
   if (error || !data?.id) return null;
-  return data as Record<string, unknown>;
+  return data as JsonRecord;
 };
+
+type Segment = { segment_index: number; segment_text: string; focus_phrase: string | null };
+
+const loadSegments = async (sb: any, itemId: string): Promise<Segment[]> => {
+  const { data } = await sb
+    .from("listening_segments")
+    .select("segment_index, segment_text, focus_phrase")
+    .eq("listening_item_id", itemId)
+    .order("segment_index", { ascending: true });
+  return ((data ?? []) as JsonRecord[])
+    .map((row) => ({
+      segment_index: Number(row.segment_index ?? 0),
+      segment_text: toText(row.segment_text, 1000),
+      focus_phrase: toText(row.focus_phrase, 200) || null,
+    }))
+    .filter((row) => row.segment_text);
+};
+
+/** The sentences the learner writes down: segments marked with a focus phrase, in order. */
+const dictationTargets = (segments: Segment[]): Segment[] =>
+  segments.filter((segment) => segment.focus_phrase).slice(0, DICTATION_SENTENCES);
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -257,155 +133,273 @@ serve(async (req) => {
     );
     const products = await resolveEnglishProducts(sb);
     const productId = products.listening?.productId;
-    if (!productId) return json(500, { error: "english-listening product is not configured" });
+    if (!productId) return json(500, { error: "Listening is not available right now" });
 
     if (req.method === "GET" && (route === "" || route === "/" || route === "/items")) {
       return await listItems(sb, productId, scope.languageId, url);
     }
 
+    // One activity: the script (read aloud by the browser), questions without
+    // answer keys, and the sentences used for dictation.
     if (req.method === "GET" && route.startsWith("/items/")) {
       const identifier = decodeURIComponent(route.slice("/items/".length)).trim();
-      if (!identifier) return json(404, { error: "Listening item not found" });
-      const item = await loadItem(sb, productId, scope.languageId, identifier);
+      const item = identifier ? await loadItem(sb, productId, scope.languageId, identifier) : null;
       if (!item) return json(404, { error: "Listening item not found" });
-
-      const [segmentsRes, taskSetsRes] = await Promise.all([
-        sb
-          .from("listening_segments")
-          .select("id, segment_index, segment_text, starts_at_seconds, ends_at_seconds, focus_phrase, metadata")
-          .eq("listening_item_id", String(item.id))
-          .order("segment_index", { ascending: true }),
-        sb
-          .from("listening_task_sets")
-          .select("id, task_type, title, instructions, target_skill_key, expected_answer_json, metadata, status, sort_order")
-          .eq("listening_item_id", String(item.id))
-          .eq("status", "published")
-          .order("sort_order", { ascending: true }),
-      ]);
-
+      const segments = await loadSegments(sb, String(item.id));
       return json(200, {
-        item,
-        segments: segmentsRes.data ?? [],
-        task_sets: taskSetsRes.data ?? [],
+        item: publicItem(item),
+        segments,
+        dictation: dictationTargets(segments),
       });
     }
 
+    // Submit a whole activity once: questions + dictation, recorded as ONE
+    // attempt on the item's registry entry so it shows as done everywhere.
+    if (req.method === "POST" && route.startsWith("/items/") && route.endsWith("/submit")) {
+      const identifier = decodeURIComponent(route.slice("/items/".length, -"/submit".length)).trim();
+      const item = identifier ? await loadItem(sb, productId, scope.languageId, identifier) : null;
+      if (!item) return json(404, { error: "Listening item not found" });
+
+      const questions = parseQuestions(item.questions);
+      const targets = dictationTargets(await loadSegments(sb, String(item.id)));
+      // Reading mode = the browser could not play audio and the learner read the text.
+      // Questions are checked, but nothing is recorded as listening practice.
+      const mode = body.mode === "reading" ? "reading" : "listening";
+      const usedTargets = mode === "reading" ? [] : targets;
+      if (!questions.length && !usedTargets.length) return json(422, { error: "This activity has nothing to check yet" });
+
+      const answersIn = (Array.isArray(body.answers) ? body.answers : []).slice(0, 50) as Array<JsonRecord>;
+      const graded = gradeQuestions(questions, answersIn);
+
+      const typedBySegment = new Map<number, string>();
+      for (const entry of (Array.isArray(body.dictation) ? body.dictation : []).slice(0, 20) as Array<JsonRecord>) {
+        const index = toNumber(entry?.segment_index);
+        if (index !== null && !typedBySegment.has(index)) typedBySegment.set(index, toText(entry?.text, 1000));
+      }
+      const scored = usedTargets.map((target) => {
+        const typed = typedBySegment.get(target.segment_index) ?? "";
+        return { target, typed, result: scoreDictation(target.segment_text, typed) };
+      });
+      const dictationAccuracy = combineDictation(scored.map((entry) => entry.result));
+      const dictationResults = scored.map(({ target, typed, result }) => ({
+        segment_index: target.segment_index,
+        text: target.segment_text,
+        focus_phrase: target.focus_phrase,
+        typed,
+        ...result,
+        accuracy: Math.round(result.accuracy * 100),
+      }));
+      const correctnessRatio = listeningCorrectness({
+        questionCorrect: graded.correct,
+        questionTotal: graded.total,
+        dictationAccuracy,
+      });
+
+      const reviewSeen = new Set<string>();
+      const reviewWords: Array<{ word: string; context: string }> = [];
+      for (const result of dictationResults) {
+        for (const word of result.review_words) {
+          const key = word.toLowerCase();
+          if (reviewSeen.has(key)) continue;
+          reviewSeen.add(key);
+          reviewWords.push({ word, context: result.text });
+        }
+      }
+
+      const plays = clampInt(body.plays, 0, 50, 0);
+      const timeSpentSeconds = clampInt(body.time_spent_seconds, 1, 7200, 0) || null;
+      const transcript = toText(item.transcript_text, 8000);
+
+      let attemptId: string | null = null;
+      if (mode === "listening") {
+        const contentItem = await resolveOrCreateContentItem(sb, {
+          productId,
+          languageId: scope.languageId,
+          serviceKey: "listening",
+          contentType: "listening.item",
+          sourceRef: toText(item.slug, 160),
+          title: toText(item.title, 220),
+          description: toText(item.summary, 900),
+          skillKey: "listening",
+          subskillKeys: ["listening.word_recognition", "listening.detail_recall", "vocabulary.recall"],
+          cefrLevel: toText(item.level, 8),
+          estimatedMinutes: estimatedMinutesOf(item),
+          learningObjective: toText(item.summary, 900),
+          tags: Array.isArray(item.tags) ? item.tags.map((entry) => String(entry)) : [],
+          payloadJson: {
+            accent: toText(item.accent, 80),
+            speed_label: toText(item.speed_label, 40),
+            speed_wpm: Number(item.speed_wpm ?? 130),
+            duration_seconds: Number(item.duration_seconds ?? 20),
+          },
+        });
+
+        const issues: JsonRecord[] = [];
+        if (graded.total && graded.correct < graded.total) {
+          issues.push({
+            category: "listening",
+            subskill_key: "listening.detail_recall",
+            location_ref: toText(item.slug, 120),
+            explanation: `${graded.total - graded.correct} of ${graded.total} questions were answered incorrectly.`,
+            correction_hint: "Listen again with the questions in front of you and note the key words.",
+            severity: graded.correct / graded.total < 0.5 ? 0.76 : 0.48,
+          });
+        }
+        if (dictationAccuracy !== null && dictationAccuracy < 0.8) {
+          issues.push({
+            category: "listening",
+            subskill_key: "listening.word_recognition",
+            location_ref: "dictation",
+            explanation: reviewWords.length
+              ? `Missed words in dictation: ${reviewWords.slice(0, 4).map((entry) => entry.word).join(", ")}.`
+              : "Some words in the dictation sentences were missed.",
+            correction_hint: "Play the sentence slowly, write it in short chunks, then check small words.",
+            severity: dictationAccuracy < 0.5 ? 0.74 : 0.5,
+          });
+        }
+
+        const score = calculateAttemptScore({
+          correctnessRatio,
+          estimatedMinutes: Number(contentItem.estimated_minutes ?? estimatedMinutesOf(item)),
+          timeSpentSeconds,
+          hintUsageCount: 0,
+          retryCount: 0,
+          correctionQualityRatio: correctnessRatio,
+        });
+        const feedback = buildFeedbackPayload({
+          serviceKey: "listening",
+          score: score.overallScore,
+          title: toText(item.title, 220),
+          reason: toText(item.summary, 900),
+          issues,
+        });
+        const recorded = await recordEvaluatedAttempt(sb, {
+          userId: auth.userId,
+          languageId: scope.languageId,
+          productId,
+          serviceKey: "listening",
+          contentItem,
+          attemptType: "listening.item",
+          responseJson: {
+            listening_item_id: String(item.id),
+            answers: graded.results.map((result) => ({ question_id: result.question_id, option_index: result.chosen_index, correct: result.correct })),
+            dictation: dictationResults.map((result) => ({ segment_index: result.segment_index, typed: result.typed, accuracy: result.accuracy })),
+            missed_words: reviewWords.map((entry) => entry.word),
+          },
+          metadata: {
+            listening_item_id: String(item.id),
+            slug: toText(item.slug, 160),
+            plays,
+            questions_correct: graded.correct,
+            questions_total: graded.total,
+            dictation_accuracy: dictationAccuracy,
+          },
+          timeSpentSeconds,
+          score,
+          feedback,
+          products,
+        });
+        attemptId = String(recorded.attempt?.id ?? "") || null;
+      }
+
+      return json(200, {
+        ok: true,
+        mode,
+        recorded: attemptId !== null,
+        attempt_id: attemptId,
+        score: Math.round(correctnessRatio * 100),
+        questions: graded,
+        dictation: {
+          score: dictationAccuracy === null ? null : Math.round(dictationAccuracy * 100),
+          results: dictationResults,
+        },
+        review_words: reviewWords,
+        transcript,
+        plays,
+      });
+    }
+
+    // Older single-clip dictation (whole script typed at once). Kept for old clients.
     if (req.method === "POST" && route === "/practice/submit") {
       const identifier = toText(body.item_id ?? body.slug ?? body.source_ref, 120);
       const responseText = toText(body.response_text, 6000);
-      if (!identifier || !responseText) {
-        return json(422, { error: "item_id (or slug) and response_text are required" });
-      }
+      if (!identifier || !responseText) return json(422, { error: "item_id (or slug) and response_text are required" });
 
       const item = await loadItem(sb, productId, scope.languageId, identifier);
       if (!item) return json(404, { error: "Listening item not found" });
 
-      const taskSetRes = await sb
-        .from("listening_task_sets")
-        .select("id, task_type, title, instructions, target_skill_key, expected_answer_json, metadata")
-        .eq("listening_item_id", String(item.id))
-        .eq("status", "published")
-        .order("sort_order", { ascending: true })
-        .limit(1)
-        .maybeSingle();
-      const taskSet = taskSetRes.data as Record<string, unknown> | null;
-
-      const transcript = toText(item.transcript_text, 6000);
-      const evaluation = evaluateDictation(transcript, responseText);
+      const transcript = toText(item.transcript_text, 8000);
+      const result = scoreDictation(transcript, responseText);
       const contentItem = await resolveOrCreateContentItem(sb, {
         productId,
         languageId: scope.languageId,
         serviceKey: "listening",
-        contentType: `listening.${toText(taskSet?.task_type, 80) || "dictation"}`,
+        contentType: "listening.dictation",
         sourceRef: toText(item.slug, 160) || String(item.id),
         title: toText(item.title, 220),
         description: toText(item.summary, 900),
         skillKey: "listening",
         subskillKeys: ["listening.word_recognition", "listening.detail_recall", "vocabulary.recall"],
         cefrLevel: toText(item.level, 8),
-        difficulty: undefined,
-        estimatedMinutes: Math.max(4, Math.min(18, Math.ceil((Number(item.duration_seconds ?? 18) / 60) + 3))),
-        learningObjective: toText(taskSet?.instructions, 900) || toText(item.summary, 900),
+        estimatedMinutes: estimatedMinutesOf(item),
+        learningObjective: toText(item.summary, 900),
         tags: Array.isArray(item.tags) ? item.tags.map((entry) => String(entry)) : [],
-        payloadJson: {
-          accent: toText(item.accent, 80),
-          speed_label: toText(item.speed_label, 40),
-          speed_wpm: Number(item.speed_wpm ?? 130),
-          duration_seconds: Number(item.duration_seconds ?? 20),
-        },
-        metadata: item.metadata && typeof item.metadata === "object" ? item.metadata as JsonRecord : {},
       });
-
       const score = calculateAttemptScore({
-        correctnessRatio: evaluation.correctnessRatio,
+        correctnessRatio: result.accuracy,
         estimatedMinutes: Number(contentItem.estimated_minutes ?? 6),
         timeSpentSeconds: toNumber(body.time_spent_seconds),
-        hintUsageCount: toNumber(body.hint_usage_count),
-        retryCount: toNumber(body.retry_count),
-        correctionQualityRatio: Math.max(0.35, Math.min(0.95, evaluation.correctnessRatio + 0.08)),
+        correctionQualityRatio: result.accuracy,
       });
       const feedback = buildFeedbackPayload({
         serviceKey: "listening",
         score: score.overallScore,
         title: toText(item.title, 220),
         reason: toText(item.summary, 900),
-        issues: evaluation.issues,
+        issues: result.accuracy < 0.8
+          ? [{
+              category: "listening",
+              subskill_key: "listening.word_recognition",
+              location_ref: "whole-clip",
+              explanation: "Some words in the clip were missed.",
+              correction_hint: "Replay one sentence at a time and check small words.",
+              severity: result.accuracy < 0.5 ? 0.74 : 0.5,
+            }]
+          : [],
       });
-
       const recorded = await recordEvaluatedAttempt(sb, {
         userId: auth.userId,
         languageId: scope.languageId,
         productId,
         serviceKey: "listening",
         contentItem,
-        attemptType: `listening.${toText(taskSet?.task_type, 80) || "dictation"}`,
-        responseJson: {
-          listening_item_id: String(item.id),
-          task_set_id: String(taskSet?.id ?? ""),
-          response_text: responseText,
-          expected_transcript: transcript,
-          missing_words: evaluation.missingWords,
-          extra_words: evaluation.extraWords,
-        },
-        metadata: {
-          listening_item_id: String(item.id),
-          task_set_id: String(taskSet?.id ?? ""),
-          accent: toText(item.accent, 80),
-          speed_label: toText(item.speed_label, 40),
-        },
-        hintUsageCount: toNumber(body.hint_usage_count),
-        retryCount: toNumber(body.retry_count),
+        attemptType: "listening.dictation",
+        responseJson: { listening_item_id: String(item.id), response_text: responseText, review_words: result.review_words },
+        metadata: { listening_item_id: String(item.id) },
         timeSpentSeconds: toNumber(body.time_spent_seconds),
         score,
         feedback,
         products,
       });
-
+      const missing = result.tokens.filter((token) => token.kind !== "ok" && token.kind !== "extra").map((token) => token.text);
+      const extra = result.tokens.filter((token) => token.kind === "extra").map((token) => token.text);
       return json(200, {
         ok: true,
-        item,
-        task_set: taskSet,
         attempt: recorded.attempt,
-        feedback: recorded.feedbackRow,
-        scoring: {
-          correctness_ratio: score.correctnessRatio,
-          overall_score: score.overallScore,
-          time_efficiency_ratio: score.timeEfficiencyRatio,
-        },
-        evaluation: {
-          missing_words: evaluation.missingWords,
-          extra_words: evaluation.extraWords,
-          expected_transcript: transcript,
-        },
-        notebook_words: evaluation.notebookWords,
-        signals_enqueued: recorded.signalsCount,
-        errors_updated: recorded.errorsCount,
-        recommendations_regenerated: recorded.recommendationsCount,
+        scoring: { correctness_ratio: score.correctnessRatio, overall_score: score.overallScore },
+        evaluation: { missing_words: missing, extra_words: extra, expected_transcript: transcript, tokens: result.tokens },
+        notebook_words: result.review_words.map((word) => ({
+          word,
+          context_text: transcript.slice(0, 220),
+          source_type: "english.listening.dictation",
+          source_label: "English Listening",
+        })),
       });
     }
 
     return json(405, { error: "Method not allowed" });
   } catch (error) {
-    return json(500, { error: error instanceof Error ? error.message : "Unknown error" });
+    console.error("listening-content", error);
+    return json(500, { error: "Something went wrong. Please try again." });
   }
 });

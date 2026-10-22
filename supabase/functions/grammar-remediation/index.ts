@@ -16,6 +16,7 @@ import {
   toNumber,
   toText,
 } from "../_shared/english-learning.ts";
+import { checkGrammarAnswer } from "../_shared/english-grammar.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -24,12 +25,20 @@ const routeMarker = "/grammar-remediation";
 const isUuid = (value: string): boolean =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 
-const normalizeAnswer = (value: string): string =>
-  String(value ?? "")
-    .toLowerCase()
-    .replace(/[^a-z0-9'\s]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+/** Drills as sent to the learner: the answer key stays on the server. */
+const publicDrill = (drill: Record<string, unknown>): Record<string, unknown> => {
+  const { expected_answer_json: _hidden, ...rest } = drill;
+  return rest;
+};
+
+const acceptedAnswersOf = (drill: Record<string, unknown>): string[] => {
+  const expected = drill.expected_answer_json && typeof drill.expected_answer_json === "object"
+    ? drill.expected_answer_json as Record<string, unknown>
+    : {};
+  return Array.isArray(expected.accepted_answers)
+    ? expected.accepted_answers.map((entry) => String(entry ?? "").trim()).filter(Boolean)
+    : [];
+};
 
 const mapErrorToUnitSlug = (errorText: string, skillKey = "", subskillKey = ""): string | null => {
   const haystack = `${errorText} ${skillKey} ${subskillKey}`.toLowerCase();
@@ -213,7 +222,7 @@ serve(async (req) => {
 
       return json(200, {
         units: unitsRes.data ?? [],
-        drills: drillsRes.data ?? [],
+        drills: ((drillsRes.data ?? []) as Array<Record<string, unknown>>).map(publicDrill),
         assignments,
         scope: {
           product_id: productId,
@@ -240,7 +249,113 @@ serve(async (req) => {
         .order("sort_order", { ascending: true });
       return json(200, {
         unit,
-        drills: drillsRes.data ?? [],
+        drills: ((drillsRes.data ?? []) as Array<Record<string, unknown>>).map(publicDrill),
+      });
+    }
+
+    // Submit a whole lesson: every practice item in a unit, checked together and
+    // recorded as one attempt on the unit, so the lesson shows as done everywhere.
+    if (req.method === "POST" && route.startsWith("/units/") && route.endsWith("/submit")) {
+      const identifier = decodeURIComponent(route.slice("/units/".length, -"/submit".length)).trim();
+      const unit = identifier ? await loadUnit(sb, productId, scope.languageId, identifier) : null;
+      if (!unit) return json(404, { error: "Grammar unit not found" });
+
+      const drillsRes = await sb
+        .from("grammar_drills")
+        .select("id, drill_type, title, instructions, prompt_text, expected_answer_json, sort_order")
+        .eq("grammar_unit_id", String(unit.id))
+        .eq("status", "published")
+        .order("sort_order", { ascending: true });
+      const drills = (drillsRes.data ?? []) as Array<Record<string, unknown>>;
+      if (!drills.length) return json(422, { error: "This lesson has no practice items yet" });
+
+      const answersIn = Array.isArray(body.answers) ? body.answers as Array<Record<string, unknown>> : [];
+      const responseByDrill = new Map(
+        answersIn.map((entry) => [toText(entry.drill_id, 120), toText(entry.response, 2000)]),
+      );
+
+      const results = drills.map((drill) => {
+        const response = responseByDrill.get(String(drill.id)) ?? "";
+        const check = checkGrammarAnswer({
+          prompt: toText(drill.prompt_text, 900),
+          accepted: acceptedAnswersOf(drill),
+          response,
+        });
+        return {
+          drill_id: String(drill.id),
+          prompt: toText(drill.prompt_text, 900),
+          response,
+          correct: check.correct,
+          typo: check.typo,
+          expected: check.expected,
+        };
+      });
+      const correctCount = results.filter((result) => result.correct).length;
+      const correctnessRatio = correctCount / results.length;
+
+      const contentItem = await resolveOrCreateContentItem(sb, {
+        productId,
+        languageId: scope.languageId,
+        serviceKey: "grammar",
+        contentType: "grammar.unit",
+        sourceRef: toText(unit.slug, 120),
+        title: toText(unit.title, 220),
+        description: toText(unit.explanation_text, 900),
+        skillKey: "grammar",
+        subskillKeys: [`grammar.${toText(unit.focus_area, 80) || "accuracy"}`],
+        cefrLevel: toText(unit.level, 8),
+        estimatedMinutes: 8,
+        tags: [toText(unit.focus_area, 80)].filter(Boolean),
+      });
+
+      const issues = correctnessRatio >= 1
+        ? []
+        : [{
+            category: "grammar",
+            subskill_key: `grammar.${toText(unit.focus_area, 80) || "accuracy"}`,
+            location_ref: toText(unit.slug, 120),
+            explanation: toText(unit.common_error_pattern, 320) || toText(unit.title, 220),
+            correction_hint: toText(unit.contrast_text ?? unit.explanation_text, 220),
+            severity: correctnessRatio < 0.5 ? 0.76 : 0.48,
+          }];
+
+      const score = calculateAttemptScore({
+        correctnessRatio,
+        estimatedMinutes: Number(contentItem.estimated_minutes ?? 8),
+        timeSpentSeconds: toNumber(body.time_spent_seconds),
+        hintUsageCount: 0,
+        retryCount: 0,
+        correctionQualityRatio: correctnessRatio,
+      });
+      const feedback = buildFeedbackPayload({
+        serviceKey: "grammar",
+        score: score.overallScore,
+        title: toText(unit.title, 220),
+        reason: toText(unit.explanation_text, 900),
+        issues,
+      });
+      const recorded = await recordEvaluatedAttempt(sb, {
+        userId: auth.userId,
+        languageId: scope.languageId,
+        productId,
+        serviceKey: "grammar",
+        contentItem,
+        attemptType: "grammar.lesson",
+        responseJson: { unit_id: String(unit.id), results },
+        metadata: { unit_id: String(unit.id), unit_slug: toText(unit.slug, 120), correct: correctCount, total: results.length },
+        timeSpentSeconds: toNumber(body.time_spent_seconds),
+        score,
+        feedback,
+        products,
+      });
+
+      return json(200, {
+        ok: true,
+        attempt_id: String(recorded.attempt.id ?? ""),
+        score: Math.round(correctnessRatio * 100),
+        correct: correctCount,
+        total: results.length,
+        results,
       });
     }
 
@@ -261,18 +376,11 @@ serve(async (req) => {
       const unit = await loadUnit(sb, productId, scope.languageId, String(drill.grammar_unit_id ?? ""));
       if (!unit) return json(404, { error: "Grammar unit not found" });
 
-      const expectedAnswerJson = drill.expected_answer_json && typeof drill.expected_answer_json === "object"
-        ? drill.expected_answer_json as Record<string, unknown>
-        : {};
-      const acceptedAnswers = Array.isArray(expectedAnswerJson.accepted_answers)
-        ? expectedAnswerJson.accepted_answers.map((entry) => normalizeAnswer(String(entry ?? ""))).filter(Boolean)
-        : [];
-      const normalizedResponse = normalizeAnswer(responseText);
-      const exactMatch = acceptedAnswers.includes(normalizedResponse);
-      const partialMatch = !exactMatch && acceptedAnswers.some((answer) =>
-        answer.includes(normalizedResponse) || normalizedResponse.includes(answer)
-      );
-      const correctnessRatio = exactMatch ? 1 : partialMatch ? 0.72 : 0.22;
+      const acceptedAnswers = acceptedAnswersOf(drill);
+      const check = checkGrammarAnswer({ prompt: toText(drill.prompt_text, 900), accepted: acceptedAnswers, response: responseText });
+      const exactMatch = check.correct;
+      const partialMatch = false;
+      const correctnessRatio = exactMatch ? 1 : 0;
 
       const issues = exactMatch
         ? []
@@ -375,8 +483,9 @@ serve(async (req) => {
           correction_quality_ratio: score.correctionQualityRatio,
         },
         evaluation: {
-          normalized_response: normalizedResponse,
-          accepted_answers: acceptedAnswers,
+          correct: check.correct,
+          typo: check.typo,
+          expected: check.expected,
           exact_match: exactMatch,
           partial_match: partialMatch,
         },
