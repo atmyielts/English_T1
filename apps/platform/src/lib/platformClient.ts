@@ -843,6 +843,104 @@ export const adminEnglishContentUpdate = async (
     body: JSON.stringify({ language_code: 'en', ...body }),
   })) as { ok: boolean; item: AdminEnglishContentItem };
 
+export type AdminEnglishStudioFieldError = { field: string; message: string };
+
+/** A failed studio request; `fieldErrors` holds per-field validation messages (422 / 409). */
+export class AdminEnglishStudioError extends Error {
+  status: number;
+  fieldErrors: AdminEnglishStudioFieldError[];
+  serverMessage: string;
+
+  constructor(message: string, status: number, serverMessage: string, fieldErrors: AdminEnglishStudioFieldError[]) {
+    super(message);
+    this.name = 'AdminEnglishStudioError';
+    this.status = status;
+    this.serverMessage = serverMessage;
+    this.fieldErrors = fieldErrors;
+  }
+}
+
+export type AdminEnglishStudioRecord = Record<string, unknown>;
+
+export type AdminEnglishStudioItem = {
+  ok?: boolean;
+  service_key: string;
+  item: AdminEnglishStudioRecord & { id: string; slug: string; title: string; status: string };
+  children: AdminEnglishStudioRecord[];
+  registry: AdminEnglishStudioRecord | null;
+  /** The item in the shape the create/update routes accept. */
+  editor: { item: AdminEnglishStudioRecord; children: AdminEnglishStudioRecord[] };
+};
+
+const callAdminEnglishStudio = async (
+  accessToken: string,
+  pathname: string,
+  init: RequestInit,
+): Promise<AdminEnglishStudioItem> => {
+  const res = await fetch(`${edgeBase}${pathname}`, {
+    ...init,
+    headers: {
+      ...apiHeaders(accessToken),
+      'Content-Type': 'application/json',
+      ...(init.headers ?? {}),
+    },
+  });
+  const payload = await readJsonOrText(res);
+  if (!res.ok) {
+    const record = payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : {};
+    const fieldErrors = Array.isArray(record.errors)
+      ? (record.errors as Array<Record<string, unknown>>)
+          .map((entry) => ({ field: String(entry.field ?? ''), message: String(entry.message ?? '') }))
+          .filter((entry) => entry.message)
+      : [];
+    const serverMessage = typeof record.error === 'string' ? record.error : typeof payload === 'string' ? payload : '';
+    const details = typeof record.details === 'string' ? ` (${record.details})` : '';
+    throw new AdminEnglishStudioError(
+      `${init.method ?? 'GET'} ${pathname} failed (${res.status}): ${serverMessage}${details}`,
+      res.status,
+      `${serverMessage}${details}`,
+      fieldErrors,
+    );
+  }
+  return payload as AdminEnglishStudioItem;
+};
+
+export const adminEnglishStudioGet = async (
+  accessToken: string,
+  serviceKey: string,
+  id: string,
+): Promise<AdminEnglishStudioItem> => {
+  const query = new URLSearchParams({ language_code: 'en', service_key: serviceKey, id });
+  return callAdminEnglishStudio(accessToken, `/admin-english-content/content/item?${query.toString()}`, { method: 'GET' });
+};
+
+export const adminEnglishStudioCreate = async (
+  accessToken: string,
+  body: { service_key: string; item: AdminEnglishStudioRecord; children: AdminEnglishStudioRecord[] },
+): Promise<AdminEnglishStudioItem> =>
+  callAdminEnglishStudio(accessToken, '/admin-english-content/content/item', {
+    method: 'POST',
+    body: JSON.stringify({ language_code: 'en', ...body }),
+  });
+
+export const adminEnglishStudioUpdate = async (
+  accessToken: string,
+  body: { service_key: string; id: string; item: AdminEnglishStudioRecord; children: AdminEnglishStudioRecord[] },
+): Promise<AdminEnglishStudioItem> =>
+  callAdminEnglishStudio(accessToken, '/admin-english-content/content/item', {
+    method: 'PUT',
+    body: JSON.stringify({ language_code: 'en', ...body }),
+  });
+
+export const adminEnglishStudioDuplicate = async (
+  accessToken: string,
+  body: { service_key: string; id: string },
+): Promise<AdminEnglishStudioItem> =>
+  callAdminEnglishStudio(accessToken, '/admin-english-content/content/item/duplicate', {
+    method: 'POST',
+    body: JSON.stringify({ language_code: 'en', ...body }),
+  });
+
 export const adminEnglishOpsDashboard = async (accessToken: string): Promise<AdminEnglishOpsDashboard> =>
   (await callAdminEnglish(accessToken, '/admin-english-ops/dashboard?language_code=en', {
     method: 'GET',
