@@ -99,6 +99,14 @@ jobs:
             workspace: apps/english-hub
             dist: apps/english-hub/dist
             project: schood-english
+          - label: assessment-cloud
+            workspace: apps/assessment-cloud
+            dist: apps/assessment-cloud/dist
+            project: schood-assessment
+          - label: exam
+            workspace: apps/exam
+            dist: apps/exam/dist
+            project: schood-exam
 
     steps:
       - name: Checkout
@@ -187,6 +195,8 @@ jobs:
           VITE_DEBUG_AUTH: "false"
           VITE_ACADEMY_TEACHER_FLOW_V2: ${{ vars.VITE_ACADEMY_TEACHER_FLOW_V2 || 'false' }}
           VITE_RELEASE_SHA: ${{ github.sha }}
+          # Exam reaches its attempt coordinator Worker; other apps ignore it.
+          VITE_ASSESSMENT_COORDINATOR_URL: https://exam-api.schood.online
         run: npm --workspace ${{ matrix.workspace }} run build
 
       - name: Academy product smoke

@@ -180,6 +180,8 @@ jobs:
             workspaces: apps/ielts-simulator apps/sat-simulator apps/toefl-ibt-simulator apps/itep-simulator
           - group: practice-and-playbooks
             workspaces: apps/ielts-practice apps/ielts-playbook apps/sat-practice apps/sat-playbook apps/toefl-playbook
+          - group: assessment-services
+            workspaces: apps/assessment-cloud apps/exam
     steps:
       - name: Checkout
         uses: actions/checkout@v4
