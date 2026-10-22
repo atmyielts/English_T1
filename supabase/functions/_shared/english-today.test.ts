@@ -3,8 +3,11 @@ import {
   type AttemptRow,
   type CatalogItem,
   currentStreak,
+  dailyCounts,
+  longestStreak,
   pickItem,
   planToday,
+  skillProgress,
   TODAY_SKILLS,
   weekStrip,
 } from "./english-today.ts";
@@ -145,6 +148,41 @@ Deno.test("an existing plan keeps its selection and marks finished work done", (
   assertEquals(second.tasks.find((task) => task.id === activity.id)?.done, true);
   assertEquals(second.tasks.find((task) => task.kind === "review")?.done, true);
   assertEquals(second.done_count, 2);
+});
+
+Deno.test("skill progress uses only real attempts and the learner's level", () => {
+  const attempts = [
+    attempt("r-b1", "reading", 0.8, "2026-10-22"),
+    attempt("r-a2", "reading", 0.4, "2026-10-21"),
+    attempt("g-b1", "grammar", null, "2026-10-20"),
+  ];
+  const levels: Record<string, "A2" | "B1"> = { "r-b1": "B1", "r-a2": "A2", "g-b1": "B1" };
+  const rows = skillProgress(attempts, (id) => levels[id] ?? null, () => "B1");
+  const reading = rows.find((row) => row.skill === "reading")!;
+  assertEquals(reading.activities, 2);
+  assertEquals(reading.recent_accuracy, 60);
+  assertEquals(reading.accuracy_at_level, 80);
+  assertEquals(reading.attempts_at_level, 1);
+  const grammar = rows.find((row) => row.skill === "grammar")!;
+  assertEquals(grammar.activities, 1);
+  assertEquals(grammar.recent_accuracy, null);
+  assertEquals(rows.find((row) => row.skill === "writing")!.activities, 0);
+});
+
+Deno.test("longest streak and daily counts", () => {
+  const attempts = [
+    attempt("a", "reading", 1, "2026-10-01"),
+    attempt("b", "reading", 1, "2026-10-02"),
+    attempt("c", "reading", 1, "2026-10-03"),
+    attempt("d", "reading", 1, "2026-10-10"),
+    attempt("e", "grammar", 1, "2026-10-10"),
+  ];
+  assertEquals(longestStreak(attempts), 3);
+  assertEquals(longestStreak([]), 0);
+  const days = dailyCounts(attempts, "2026-10-10", 10);
+  assertEquals(days.length, 10);
+  assertEquals(days[9], { date: "2026-10-10", count: 2 });
+  assertEquals(days[0], { date: "2026-10-01", count: 1 });
 });
 
 Deno.test("streak counts consecutive days ending today or yesterday", () => {

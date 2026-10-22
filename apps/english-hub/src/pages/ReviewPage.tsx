@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useT } from '../i18n';
-import { getDashboard } from '../lib/hub';
+import { getProgress } from '../lib/hub';
 import { getNotebook, reviewCard, type NotebookCard } from '../lib/notebook';
 import { speak, canSpeak } from '../lib/speech';
 import { useResource } from '../lib/useResource';
@@ -74,10 +74,10 @@ const Flashcards = ({ cards, onFinished }: { cards: NotebookCard[]; onFinished: 
 export const ReviewPage = () => {
   const t = useT();
   const due = useResource((signal) => getNotebook('due', 20, signal), []);
-  const dashboard = useResource((signal) => getDashboard(signal), []);
+  const progress = useResource((signal) => getProgress(signal), []);
   const [finished, setFinished] = useState<number | null>(null);
   const cards = due.data?.cards ?? [];
-  const mistakes = (dashboard.data?.mistakes ?? []).slice(0, 8);
+  const mistakes = (progress.data?.mistakes ?? []).filter((mistake) => mistake.pattern).slice(0, 8);
 
   return (
     <>
@@ -111,18 +111,18 @@ export const ReviewPage = () => {
 
         <Panel title={t('review.mistakes.title')}>
           <p className="hint">{t('review.mistakes.lead')}</p>
-          {dashboard.loading && !dashboard.data ? <Loading lines={3} /> : null}
-          {dashboard.error ? <ErrorState error={dashboard.error} onRetry={dashboard.reload} /> : null}
-          {dashboard.data && mistakes.length === 0 ? <p>{t('review.mistakes.empty')}</p> : null}
+          {progress.loading && !progress.data ? <Loading lines={3} /> : null}
+          {progress.error ? <ErrorState error={progress.error} onRetry={progress.reload} /> : null}
+          {progress.data && mistakes.length === 0 ? <p>{t('review.mistakes.empty')}</p> : null}
           {mistakes.length ? (
             <ul className="en-list">
               {mistakes.map((mistake) => (
-                <li key={`${mistake.service}-${mistake.pattern}`}>
-                  <Link className="en-item" to={mistake.service === 'grammar' || mistake.service === 'writing' ? '/grammar' : `/${mistake.service}`}>
-                    <SkillDot skill={mistake.service} />
+                <li key={`${mistake.skill}-${mistake.pattern}`}>
+                  <Link className="en-item" to={mistake.skill === 'writing' ? '/grammar' : `/${mistake.skill}`}>
+                    <SkillDot skill={mistake.skill} />
                     <span className="en-item-main">
                       <strong>{mistake.pattern}</strong>
-                      <span>{t(`skill.${mistake.service}`)} · {t('review.mistakes.times', { count: mistake.count })}</span>
+                      <span>{t(`skill.${mistake.skill}`)} · {t('review.mistakes.times', { count: mistake.count })}</span>
                     </span>
                     <span className="en-item-meta"><span className="en-button-quiet">{t('review.mistakes.practise')}</span></span>
                   </Link>

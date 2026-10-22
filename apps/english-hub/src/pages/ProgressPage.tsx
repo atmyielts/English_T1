@@ -1,41 +1,43 @@
 import { Link } from 'react-router-dom';
 import { useEnglish } from '../app/EnglishContext';
 import { useI18n, useT } from '../i18n';
-import { getDashboard, getHistory, type DashboardResponse } from '../lib/hub';
-import { CEFR_LEVELS, SKILLS } from '../lib/skills';
+import { getHistory, getProgress, type ProgressResponse, type SkillProgress } from '../lib/hub';
+import { nextLevel, SKILLS } from '../lib/skills';
 import { useResource } from '../lib/useResource';
 import { EmptyState, ErrorState, LevelBadge, Loading, PageHeader, Panel, ProgressBar, SkillDot, Stat, Tag } from '../ui/kit';
 
-const WEEKS = 18;
-
-const Heatmap = ({ days }: { days: NonNullable<DashboardResponse['activity']>['days'] }) => {
+const Heatmap = ({ days }: { days: ProgressResponse['days'] }) => {
   const t = useT();
-  const counts = new Map(days.map((day) => [day.date, day.events]));
-  const end = new Date();
-  // Align the grid so each column is one week ending today.
-  const cells = Array.from({ length: WEEKS * 7 }, (_, index) => {
-    const date = new Date(end.getTime() - (WEEKS * 7 - 1 - index) * 86_400_000);
-    const key = date.toISOString().slice(0, 10);
-    const count = counts.get(key) ?? 0;
-    const level = count === 0 ? 0 : count < 2 ? 1 : count < 5 ? 2 : 3;
-    return { key, count, level };
-  });
   return (
-    <div className="en-heatmap" role="img" aria-label={t('progress.heatmap.label', { weeks: WEEKS })}>
-      {cells.map((cell) => <span key={cell.key} data-level={cell.level} title={`${cell.key}: ${cell.count}`} />)}
+    <div className="en-heatmap" role="img" aria-label={t('progress.heatmap.label', { weeks: Math.round(days.length / 7) })}>
+      {days.map((day) => {
+        const level = day.count === 0 ? 0 : day.count < 2 ? 1 : day.count < 4 ? 2 : 3;
+        return <span key={day.date} data-level={level} title={`${day.date}: ${day.count}`} />;
+      })}
     </div>
   );
+};
+
+/** One honest line about where the learner stands in a skill. */
+const skillNote = (row: SkillProgress, t: (key: string, params?: Record<string, string | number>) => string): string => {
+  if (row.activities === 0) return t('progress.skills.notStarted');
+  if (row.level && row.attempts_at_level >= 3 && (row.accuracy_at_level ?? 0) >= 85) {
+    return t('progress.skills.readyNext', { level: nextLevel(row.level) });
+  }
+  if (row.accuracy_at_level !== null) {
+    return t('progress.skills.atLevel', { score: row.accuracy_at_level, count: row.attempts_at_level });
+  }
+  return t('progress.skills.activities', { count: row.activities });
 };
 
 export const ProgressPage = () => {
   const t = useT();
   const { date } = useI18n();
   const { onboarding } = useEnglish();
-  const dashboard = useResource((signal) => getDashboard(signal), []);
+  const progress = useResource((signal) => getProgress(signal), []);
   const history = useResource((signal) => getHistory(undefined, signal), []);
   const placement = onboarding.value;
-  const estimates = dashboard.data?.cefr?.estimates ?? [];
-  const activity = dashboard.data?.activity;
+  const data = progress.data;
 
   return (
     <>
@@ -43,47 +45,53 @@ export const ProgressPage = () => {
         eyebrow={t('progress.eyebrow')}
         title={t('progress.title')}
         lead={t('progress.lead')}
-        actions={placement?.level ? <span className="en-row"><span className="hint">{t('progress.placement')}</span><LevelBadge level={placement.level} />{placement.targetLevel ? <><span aria-hidden="true">→</span><LevelBadge level={placement.targetLevel} muted /></> : null}</span> : null}
+        actions={placement?.level ? (
+          <span className="en-row">
+            <span className="hint">{t('progress.placement')}</span>
+            <LevelBadge level={placement.level} />
+            {placement.targetLevel ? <><span aria-hidden="true">→</span><LevelBadge level={placement.targetLevel} muted /></> : null}
+          </span>
+        ) : null}
       />
-      {dashboard.error ? <ErrorState error={dashboard.error} onRetry={dashboard.reload} /> : null}
+      {progress.error ? <ErrorState error={progress.error} onRetry={progress.reload} /> : null}
 
       <section className="en-panel">
         <div className="en-stats">
-          <Stat label={t('progress.stat.streak')} value={activity ? t('progress.days', { count: activity.streak.current_days }) : '—'} hint={activity ? t('progress.stat.best', { count: activity.streak.longest_days }) : undefined} />
-          <Stat label={t('progress.stat.week')} value={activity ? activity.totals.last_7_days : '—'} hint={t('progress.stat.activities')} />
-          <Stat label={t('progress.stat.month')} value={activity ? activity.totals.last_30_days : '—'} hint={t('progress.stat.activities')} />
-          <Stat label={t('progress.stat.all')} value={activity ? activity.totals.all_time : '—'} hint={t('progress.stat.activities')} />
+          <Stat label={t('progress.stat.streak')} value={data ? t('progress.days', { count: data.streak.current }) : '—'} hint={data ? t('progress.stat.best', { count: data.streak.longest }) : undefined} />
+          <Stat label={t('progress.stat.week')} value={data ? data.totals.last_7_days : '—'} hint={t('progress.stat.activities')} />
+          <Stat label={t('progress.stat.month')} value={data ? data.totals.last_30_days : '—'} hint={t('progress.stat.activities')} />
+          <Stat label={t('progress.stat.all')} value={data ? data.totals.all_time : '—'} hint={t('progress.stat.activities')} />
         </div>
-        {activity ? <Heatmap days={activity.days} /> : <Loading lines={2} />}
+        {data ? <Heatmap days={data.days} /> : <Loading lines={2} />}
       </section>
 
       <div className="en-grid-2">
-        <Panel title={t('progress.skills.title')} aside={<span>{t('progress.skills.scale')}</span>}>
+        <Panel title={t('progress.skills.title')}>
           <p className="hint">{t('progress.skills.lead')}</p>
-          {dashboard.loading && !dashboard.data ? <Loading lines={6} /> : null}
-          <div className="en-skill-rows">
-            {SKILLS.map((skill) => {
-              const estimate = estimates.find((entry) => entry.skill === skill.key);
-              const measured = Boolean(estimate && estimate.sample_count > 0);
-              const baseline = placement?.perSkill[skill.key] ?? placement?.level ?? null;
-              const shown = measured ? estimate!.level : baseline;
-              const position = shown ? ((CEFR_LEVELS.indexOf(shown) + 1) / CEFR_LEVELS.length) * 100 : 0;
-              return (
-                <div key={skill.key} className="en-skill-row">
-                  <span><SkillDot skill={skill.key} />{t(`skill.${skill.key}`)}</span>
-                  <div className="en-stack" style={{ gap: '.25rem' }}>
-                    <ProgressBar value={position} label={t('progress.skills.barLabel', { skill: t(`skill.${skill.key}`) })} skill={skill.key} />
-                    <small>
-                      {measured
-                        ? t('progress.skills.measured', { count: estimate!.sample_count, confidence: t(`progress.confidence.${estimate!.confidence}`) })
-                        : baseline ? t('progress.skills.fromPlacement') : t('progress.skills.notMeasured')}
-                    </small>
-                  </div>
-                  {shown ? <LevelBadge level={shown} muted={!measured} /> : <Tag>—</Tag>}
-                </div>
-              );
-            })}
-          </div>
+          {progress.loading && !data ? <Loading lines={6} /> : null}
+          {data ? (
+            <div className="en-skill-rows">
+              {SKILLS.map((skill) => {
+                const row = data.skills.find((entry) => entry.skill === skill.key);
+                if (!row) return null;
+                return (
+                  <Link key={skill.key} to={skill.path} className="en-skill-row" style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <span><SkillDot skill={skill.key} />{t(`skill.${skill.key}`)}</span>
+                    <div className="en-stack" style={{ gap: '.25rem' }}>
+                      <ProgressBar
+                        value={row.recent_accuracy ?? 0}
+                        label={t('progress.skills.barLabel', { skill: t(`skill.${skill.key}`) })}
+                        skill={skill.key}
+                      />
+                      <small>{skillNote(row, t)}</small>
+                    </div>
+                    {row.level ? <LevelBadge level={row.level} muted={row.activities === 0} /> : <Tag>—</Tag>}
+                  </Link>
+                );
+              })}
+            </div>
+          ) : null}
+          <p className="hint">{t('progress.skills.barExplain')}</p>
         </Panel>
 
         <Panel title={t('progress.history.title')}>

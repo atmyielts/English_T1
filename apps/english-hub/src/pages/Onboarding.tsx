@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useEnglish } from '../app/EnglishContext';
 import { useT } from '../i18n';
 import { edge } from '../lib/api';
@@ -51,6 +51,10 @@ export const Onboarding = ({ onDone, retake = false }: { onDone?: () => void; re
   const [testUnavailable, setTestUnavailable] = useState(false);
   const [result, setResult] = useState<FinalResponse | null>(null);
   const [selfLevel, setSelfLevel] = useState<CefrLevel | null>(null);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [step, round]);
 
   const toggleGoal = (goal: Goal) =>
     setGoals((current) => (current.includes(goal) ? current.filter((entry) => entry !== goal) : [...current, goal].slice(-2)));

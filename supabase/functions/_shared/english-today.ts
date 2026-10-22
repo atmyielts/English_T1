@@ -3,7 +3,7 @@
 // Pure functions only: the hub function loads rows and passes them in, so the
 // selection rules are testable without a database. The plan is honest by
 // construction. It reasons only from the learner's placement, their real
-// attempts and their due reviews, and it never invents readiness scores.
+// attempts and their due reviews, and it never invents scores.
 
 export const TODAY_SKILLS = [
   "reading",
@@ -289,6 +289,70 @@ export const weekStrip = (attempts: AttemptRow[], date: string): Array<{ date: s
     const day = new Date(end - (6 - index) * 86_400_000).toISOString().slice(0, 10);
     return { date: day, count: counts.get(day) ?? 0 };
   });
+};
+
+export type SkillProgress = {
+  skill: TodaySkill;
+  activities: number;
+  /** Mean accuracy (0..100) of the five most recent scored attempts, or null. */
+  recent_accuracy: number | null;
+  /** Mean accuracy (0..100) on items at the learner's level for this skill, or null. */
+  accuracy_at_level: number | null;
+  attempts_at_level: number;
+  last_practised: string | null;
+};
+
+/** Per-skill progress from real attempts. `levelOf` maps a content item to its CEFR level. */
+export const skillProgress = (
+  attempts: AttemptRow[],
+  levelOf: (contentItemId: string) => Cefr | null,
+  levelFor: (skill: TodaySkill) => Cefr | null,
+): SkillProgress[] =>
+  TODAY_SKILLS.map((skill) => {
+    const own = attempts.filter((attempt) => attempt.skill === skill);
+    const scored = own.filter((attempt) => attempt.score !== null);
+    const recent = scored.slice(0, 5);
+    const target = levelFor(skill);
+    const atLevel = target ? scored.filter((attempt) => levelOf(attempt.content_item_id) === target) : [];
+    const mean = (rows: AttemptRow[]) =>
+      rows.length ? Math.round((rows.reduce((sum, row) => sum + (row.score ?? 0), 0) / rows.length) * 100) : null;
+    return {
+      skill,
+      activities: own.length,
+      recent_accuracy: mean(recent),
+      accuracy_at_level: mean(atLevel),
+      attempts_at_level: atLevel.length,
+      last_practised: own[0]?.submitted_at ?? null,
+    };
+  });
+
+/** Practice days in a window ending on `date`, oldest first. */
+export const dailyCounts = (attempts: AttemptRow[], date: string, days: number): Array<{ date: string; count: number }> => {
+  const counts = new Map<string, number>();
+  for (const attempt of attempts) {
+    const day = attempt.submitted_at.slice(0, 10);
+    counts.set(day, (counts.get(day) ?? 0) + 1);
+  }
+  const end = Date.parse(date);
+  return Array.from({ length: days }, (_, index) => {
+    const day = new Date(end - (days - 1 - index) * 86_400_000).toISOString().slice(0, 10);
+    return { date: day, count: counts.get(day) ?? 0 };
+  });
+};
+
+/** Longest run of consecutive practice days ever. */
+export const longestStreak = (attempts: AttemptRow[]): number => {
+  const days = [...new Set(attempts.map((attempt) => attempt.submitted_at.slice(0, 10)))].sort();
+  let best = 0;
+  let run = 0;
+  let previous: number | null = null;
+  for (const day of days) {
+    const time = Date.parse(day);
+    run = previous !== null && time - previous === 86_400_000 ? run + 1 : 1;
+    best = Math.max(best, run);
+    previous = time;
+  }
+  return best;
 };
 
 /** Consecutive days with at least one submitted attempt, ending today or yesterday. */

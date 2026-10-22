@@ -30,8 +30,11 @@ import {
   type CatalogItem,
   type Cefr,
   currentStreak,
+  dailyCounts,
   isCefr as isTodayCefr,
+  longestStreak,
   planToday,
+  skillProgress,
   TODAY_SKILLS,
   type TodaySkill,
   type TodayTask,
@@ -144,7 +147,7 @@ serve(async (req) => {
     // === Today, catalog and history (learner home) ===
     // Built only from the learner's placement, real attempts and due reviews.
 
-    if (req.method === "GET" && (route === "/today" || route === "/catalog" || route === "/history")) {
+    if (req.method === "GET" && (route === "/today" || route === "/catalog" || route === "/history" || route === "/progress")) {
       const skillFilter = toText(url.searchParams.get("skill"), 24).toLowerCase();
       const wantSkill = (TODAY_SKILLS as readonly string[]).includes(skillFilter) ? skillFilter : null;
 
@@ -228,6 +231,67 @@ serve(async (req) => {
               time_spent_seconds: Number(row.time_spent_seconds ?? 0) || null,
             };
           }),
+        });
+      }
+
+      if (route === "/progress") {
+        const [items, attemptRows, goalRes, errorsRes] = await Promise.all([
+          loadCatalog(),
+          loadAttempts(3650, 2000),
+          sb.from("learner_language_goals")
+            .select("current_cefr_estimate, metadata")
+            .eq("user_id", auth.userId)
+            .eq("language_id", scope.languageId)
+            .maybeSingle(),
+          sb.from("learner_language_errors")
+            .select("service_key, subskill_key, error_type, error_frequency, last_seen_at, mastery_status")
+            .eq("user_id", auth.userId)
+            .eq("language_id", scope.languageId)
+            .in("mastery_status", ["open", "reopened", "improving"])
+            .order("error_frequency", { ascending: false })
+            .order("last_seen_at", { ascending: false })
+            .limit(10),
+        ]);
+        const attempts: AttemptRow[] = attemptRows
+          .filter((row) => (TODAY_SKILLS as readonly string[]).includes(String(row.service_key)))
+          .map((row) => ({
+            content_item_id: String(row.content_item_id ?? ""),
+            skill: String(row.service_key) as TodaySkill,
+            score: scoreOf(row),
+            submitted_at: String(row.submitted_at),
+          }));
+        const levelById = new Map(items.map((entry) => [entry.id, entry.level]));
+        const goal = goalRes.data as Record<string, unknown> | null;
+        const meta = (goal?.metadata && typeof goal.metadata === "object" ? goal.metadata : {}) as Record<string, unknown>;
+        const placement = (meta.placement && typeof meta.placement === "object" ? meta.placement : {}) as Record<string, unknown>;
+        const perSkill = (placement.per_skill && typeof placement.per_skill === "object" ? placement.per_skill : {}) as Record<string, unknown>;
+        const overall = isTodayCefr(goal?.current_cefr_estimate) ? goal!.current_cefr_estimate as Cefr : null;
+        const levelFor = (skill: TodaySkill): Cefr | null => {
+          const entry = perSkill[skill];
+          const level = typeof entry === "string" ? entry : (entry as Record<string, unknown> | undefined)?.level;
+          return isTodayCefr(level) ? level : overall;
+        };
+        const requestedDate = toText(url.searchParams.get("date"), 10);
+        const date = /^\d{4}-\d{2}-\d{2}$/.test(requestedDate) ? requestedDate : new Date().toISOString().slice(0, 10);
+        const days = dailyCounts(attempts, date, 126);
+        return json(200, {
+          ok: true,
+          streak: { current: currentStreak(attempts, date), longest: longestStreak(attempts) },
+          totals: {
+            last_7_days: days.slice(-7).reduce((sum, day) => sum + day.count, 0),
+            last_30_days: days.slice(-30).reduce((sum, day) => sum + day.count, 0),
+            all_time: attempts.length,
+          },
+          days,
+          skills: skillProgress(attempts, (id) => levelById.get(id) ?? null, levelFor)
+            .map((row) => ({ ...row, level: levelFor(row.skill) })),
+          mistakes: ((errorsRes.data ?? []) as Array<Record<string, unknown>>).map((row) => ({
+            skill: String(row.service_key ?? ""),
+            subskill: String(row.subskill_key ?? ""),
+            pattern: String(row.error_type ?? ""),
+            count: Number(row.error_frequency ?? 1),
+            last_seen_at: String(row.last_seen_at ?? ""),
+          })),
         });
       }
 

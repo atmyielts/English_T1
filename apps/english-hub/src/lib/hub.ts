@@ -75,26 +75,28 @@ export const getCatalog = (skill?: SkillKey, signal?: AbortSignal) =>
 export const getHistory = (skill?: SkillKey, signal?: AbortSignal) =>
   edge<{ attempts: HistoryEntry[] }>('hub', '/history', { query: { language_code: 'en', skill }, signal });
 
-export type SkillEstimate = {
+export type SkillProgress = {
   skill: SkillKey;
-  level: CefrLevel;
-  numeric: number;
-  confidence: 'low' | 'medium' | 'high';
-  sample_count: number;
+  level: CefrLevel | null;
+  activities: number;
+  recent_accuracy: number | null;
+  accuracy_at_level: number | null;
+  attempts_at_level: number;
+  last_practised: string | null;
 };
 
-export type DashboardResponse = {
-  cefr: { estimates: SkillEstimate[]; overall: { level: CefrLevel; numeric: number } } | null;
-  activity: {
-    days: Array<{ date: string; events: number; skills_touched: SkillKey[]; minutes_estimate: number }>;
-    streak: { current_days: number; longest_days: number; last_session_date: string | null };
-    totals: { last_7_days: number; last_30_days: number; all_time: number };
-  } | null;
-  mistakes: Array<{ service: SkillKey; pattern: string; count: number; last_seen_at: string }>;
+export type Mistake = { skill: SkillKey; subskill: string; pattern: string; count: number; last_seen_at: string };
+
+export type ProgressResponse = {
+  streak: { current: number; longest: number };
+  totals: { last_7_days: number; last_30_days: number; all_time: number };
+  days: Array<{ date: string; count: number }>;
+  skills: SkillProgress[];
+  mistakes: Mistake[];
 };
 
-export const getDashboard = (signal?: AbortSignal) =>
-  edge<DashboardResponse>('hub', '/dashboard', { query: { language_code: 'en' }, signal });
+export const getProgress = (signal?: AbortSignal) =>
+  edge<ProgressResponse>('hub', '/progress', { query: { language_code: 'en', date: localDate() }, signal });
 
 export type SaveOnboardingBody = {
   placement?: { overall_level: CefrLevel; per_skill: Partial<Record<SkillKey, { level: CefrLevel }>> };
