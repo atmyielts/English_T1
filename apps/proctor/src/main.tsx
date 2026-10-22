@@ -4,6 +4,7 @@ import { configured, proctorRequest, supabase, observeAccount, type Row } from '
 import { ServiceHeader } from '../../../packages/service-design/src/ServiceHeader';
 import { WorkspaceNavigation } from '../../../packages/service-design/src/WorkspaceNavigation';
 import { I18nProvider, LocaleSwitcher } from '../../../packages/service-i18n/src/i18n.tsx';
+import { accountLink } from '../../../packages/assessment-web/src/account-links';
 import { catalogs, useAppT, useErrorText, type AppKey } from './i18n/index.ts';
 import { PolicyScreen } from './PolicyScreen';
 import { IdentityScreen } from './IdentityScreen';
@@ -121,7 +122,7 @@ function App() {
     finally { if (scope.current === expectedScope && detailRequest.current === request) setDetailLoading(false); }
   }
   if (!configured) return <main className="configuration"><h1>{t('app.title')}</h1><p>{t('app.notConfigured')}</p></main>;
-  if (!user) return <main className="signin"><div className="brand">Schood <span>{t('app.name')}</span></div><h1>{t('signin.title')}</h1><p>{t('signin.lead')}</p><form onSubmit={(event: FormEvent) => { event.preventDefault(); void run(async () => { const { error } = await supabase!.auth.signInWithPassword({ email, password }); if (error) throw error; }); }}><label>{t('signin.email')}<input type="email" required autoComplete="username" value={email} onChange={event => setEmail(event.target.value)}/></label><label>{t('signin.password')}<input type="password" required autoComplete="current-password" value={password} onChange={event => setPassword(event.target.value)}/></label><button disabled={busy}>{t('signin.submit')}</button></form>{error && <p className="error" role="alert">{error}</p>}</main>;
+  if (!user) return <main className="signin"><div className="brand">Schood <span>{t('app.name')}</span></div><LocaleSwitcher label={t('locale.label')}/><h1>{t('signin.title')}</h1><p>{t('signin.lead')}</p><form onSubmit={(event: FormEvent) => { event.preventDefault(); void run(async () => { const { error } = await supabase!.auth.signInWithPassword({ email, password }); if (error) throw error; }); }}><label>{t('signin.email')}<input type="email" required autoComplete="username" value={email} onChange={event => setEmail(event.target.value)}/></label><label>{t('signin.password')}<input type="password" required autoComplete="current-password" value={password} onChange={event => setPassword(event.target.value)}/></label><button disabled={busy}>{t('signin.submit')}</button></form><p className="account-links"><a href={accountLink('signup')}>{t('account.create')}</a><a href={accountLink('forgot')}>{t('account.forgot')}</a></p>{error && <p className="error" role="alert">{error}</p>}</main>;
   const availableTabs = (Object.keys(tabLabels) as Tab[]).filter(item => manager || !managerTabs.includes(item));
   if(workspaceActor!==user)return <main className="configuration"><p role="status">{t('workspace.loadingAccount')}</p>{error&&<p role="alert" className="error">{error}</p>}<button className="quiet" onClick={()=>void supabase!.auth.signOut({scope:'local'})}>{t('header.signOut')}</button></main>;
   const contextLoading=loading||Boolean(tenant&&loadedScope!==scope.current);
