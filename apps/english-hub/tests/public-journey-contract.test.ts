@@ -3,8 +3,22 @@ import {
   assertStringIncludes,
 } from "https://deno.land/std@0.224.0/assert/mod.ts";
 
+const learnerCopy = async (): Promise<string> => {
+  const parts = [await Deno.readTextFile(new URL("../src/i18n/en.ts", import.meta.url))];
+  for await (const entry of Deno.readDir(new URL("../src/skills/", import.meta.url))) {
+    if (!entry.isDirectory) continue;
+    try {
+      parts.push(await Deno.readTextFile(new URL(`../src/skills/${entry.name}/i18n.ts`, import.meta.url)));
+    } catch {
+      // A skill without its own strings uses the shared catalog.
+    }
+  }
+  return parts.join("\n");
+};
+
 Deno.test("the public English journey speaks to learners and preserves a contextual sign-in handoff", async () => {
-  const hub = await Deno.readTextFile(new URL("../src/App.tsx", import.meta.url));
+  const app = await Deno.readTextFile(new URL("../src/App.tsx", import.meta.url));
+  const copy = await learnerCopy();
   const discovery = await Deno.readTextFile(
     new URL("../../platform/src/content/discoveryPages.ts", import.meta.url),
   );
@@ -16,28 +30,28 @@ Deno.test("the public English journey speaks to learners and preserves a context
     "Continue to your English route",
     "gives search engines and learners",
     "Stronger internal linking",
+    "orchestrat",
   ]) {
     assert(
-      !hub.includes(internalPhrase) && !discovery.includes(internalPhrase),
+      !copy.includes(internalPhrase) && !discovery.includes(internalPhrase),
       `public copy must not expose implementation language: ${internalPhrase}`,
     );
   }
 
-  assertStringIncludes(hub, "Know what to practice today—and why.");
-  assertStringIncludes(hub, "Your place is saved");
-  assertStringIncludes(hub, "Continue to English ${requestedService.label}");
-  assertStringIncludes(hub, "Sign in and continue");
+  assert(!copy.includes("readiness"), "English learners see levels and scores, never invented readiness");
+  assertStringIncludes(copy, "English practice that knows what you need next");
+  assertStringIncludes(copy, "'gate.titleSkill': 'Sign in to practise {skill}'");
+  // Signed-out visitors to any deep link are sent to sign-in and brought back to that exact page.
+  assertStringIncludes(app, "signInHref(location.pathname + location.search)");
   assertStringIncludes(discovery, "Build every English skill without losing sight of what comes next.");
 });
 
-Deno.test("the English sign-in handoff stays inside the existing responsive design system", async () => {
-  const styles = await Deno.readTextFile(new URL("../src/index.css", import.meta.url));
-
-  assertStringIncludes(styles, ".access-gate-shell");
-  assertStringIncludes(styles, ".access-redirect-card");
-  assertStringIncludes(styles, "grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr)");
-  assertStringIncludes(styles, "@media (max-width: 760px)");
-  assertStringIncludes(styles, ".access-gate-actions");
+Deno.test("the English app keeps its own responsive, accessible look", async () => {
+  const styles = await Deno.readTextFile(new URL("../src/english.css", import.meta.url));
+  assertStringIncludes(styles, "family=Outfit");
+  assertStringIncludes(styles, ".en-rail");
+  assertStringIncludes(styles, "@media (max-width: 720px)");
+  assertStringIncludes(styles, "prefers-reduced-motion");
   assertStringIncludes(styles, "a:focus-visible");
 });
 

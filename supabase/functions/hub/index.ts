@@ -7,6 +7,7 @@ import {
   extractRoute,
   getEnv,
   json,
+  loadNotebookStats,
   resolveEnglishProducts,
   resolveLanguageScope,
   toText,
@@ -24,8 +25,35 @@ import {
 } from "../_shared/english-access.ts";
 import { parseBody } from "../_shared/english-learning.ts";
 import { parseEnglishClientRecoveryEvent } from "../_shared/english-client-recovery.ts";
+import {
+  type AttemptRow,
+  type CatalogItem,
+  type Cefr,
+  currentStreak,
+  dailyCounts,
+  isCefr as isTodayCefr,
+  longestStreak,
+  planToday,
+  skillProgress,
+  TODAY_SKILLS,
+  type TodaySkill,
+  type TodayTask,
+  weekStrip,
+} from "../_shared/english-today.ts";
 
 const routeMarker = "/hub";
+
+// One learner-facing activity per row: lessons, articles, prompts and missions.
+// Sub-items such as individual grammar drills are recorded separately and excluded.
+const PRIMARY_CONTENT_TYPES = [
+  "reading.article",
+  "listening.item",
+  "writing.prompt",
+  "speaking.prompt",
+  "grammar.unit",
+  "immersion.mission",
+  "vocabulary.deck",
+];
 
 const jsonCached = (status: number, body: unknown, maxAgeSeconds = 60): Response =>
   new Response(JSON.stringify(body), {
@@ -88,7 +116,10 @@ serve(async (req) => {
     const isEnglishAiRequest = (req.method === "GET" && route === "/insights/coach-summary")
       || (req.method === "POST" && route.startsWith("/ai/"));
     if (isEnglishAiRequest) {
-      const access = await requireEnglishSuiteAccess(sb, auth.userId, products);
+      // The placement test is the front door, so it is open to every signed-in
+      // learner; it still counts against the daily AI quota below.
+      const isFreeAiRequest = route === "/ai/placement-test";
+      const access = isFreeAiRequest ? { allowed: true } : await requireEnglishSuiteAccess(sb, auth.userId, products);
       if (!access.allowed) {
         return json(403, {
           error: "An active English service entitlement is required",
@@ -113,7 +144,277 @@ serve(async (req) => {
       }
     }
 
-    // Existing daily plan endpoint (unchanged).
+    // === Today, catalog and history (learner home) ===
+    // Built only from the learner's placement, real attempts and due reviews.
+
+    if (req.method === "GET" && (route === "/today" || route === "/catalog" || route === "/history" || route === "/progress")) {
+      const skillFilter = toText(url.searchParams.get("skill"), 24).toLowerCase();
+      const wantSkill = (TODAY_SKILLS as readonly string[]).includes(skillFilter) ? skillFilter : null;
+
+      const loadCatalog = async (): Promise<CatalogItem[]> => {
+        let query = sb
+          .from("learning_content_registry_items")
+          .select("id, service_key, source_ref, title, cefr_level, estimated_minutes, difficulty")
+          .eq("language_id", scope.languageId)
+          .eq("status", "published")
+          .in("content_type", PRIMARY_CONTENT_TYPES)
+          .limit(2000);
+        if (wantSkill) query = query.eq("service_key", wantSkill);
+        const { data, error } = await query;
+        if (error) throw new Error(`Failed to load catalog: ${error.message}`);
+        return (data ?? [])
+          .filter((row: Record<string, unknown>) => (TODAY_SKILLS as readonly string[]).includes(String(row.service_key)))
+          .map((row: Record<string, unknown>) => ({
+            id: String(row.id),
+            skill: String(row.service_key) as TodaySkill,
+            slug: String(row.source_ref),
+            title: String(row.title ?? ""),
+            level: isTodayCefr(row.cefr_level) ? row.cefr_level : null,
+            minutes: Math.max(1, Number(row.estimated_minutes ?? 10)),
+            difficulty: Number(row.difficulty ?? 0.5),
+          }));
+      };
+
+      const loadAttempts = async (days: number, limit: number) => {
+        let query = sb
+          .from("learning_attempts")
+          .select("id, content_item_id, service_key, overall_score, correctness_ratio, submitted_at, time_spent_seconds")
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId)
+          // "failed" means a low score, not a broken attempt; it still counts as done.
+          .in("status", ["submitted", "scored", "failed"])
+          .not("submitted_at", "is", null)
+          .gte("submitted_at", new Date(Date.now() - days * 86_400_000).toISOString())
+          .order("submitted_at", { ascending: false })
+          .limit(limit);
+        if (wantSkill) query = query.eq("service_key", wantSkill);
+        const { data, error } = await query;
+        if (error) throw new Error(`Failed to load attempts: ${error.message}`);
+        return (data ?? []) as Array<Record<string, unknown>>;
+      };
+
+      const scoreOf = (row: Record<string, unknown>): number | null => {
+        // Learners see accuracy; overall_score also blends speed and hint use.
+        const raw = row.correctness_ratio ?? row.overall_score;
+        const value = Number(raw);
+        return raw === null || raw === undefined || !Number.isFinite(value) ? null : Math.max(0, Math.min(1, value));
+      };
+
+      if (route === "/catalog") {
+        const [items, attempts] = await Promise.all([loadCatalog(), loadAttempts(3650, 2000)]);
+        const best: Record<string, number> = {};
+        for (const row of attempts) {
+          const id = String(row.content_item_id ?? "");
+          const score = scoreOf(row);
+          if (!id) continue;
+          best[id] = Math.max(best[id] ?? 0, Math.round((score ?? 0) * 100));
+        }
+        return jsonCached(200, { ok: true, items, best_scores: best }, 30);
+      }
+
+      if (route === "/history") {
+        const [items, attempts] = await Promise.all([loadCatalog(), loadAttempts(3650, 60)]);
+        const byId = new Map(items.map((entry) => [entry.id, entry]));
+        return json(200, {
+          ok: true,
+          attempts: attempts.map((row) => {
+            const entry = byId.get(String(row.content_item_id ?? ""));
+            const score = scoreOf(row);
+            return {
+              id: String(row.id),
+              skill: entry?.skill ?? String(row.service_key ?? ""),
+              title: entry?.title ?? null,
+              slug: entry?.slug ?? null,
+              level: entry?.level ?? null,
+              score: score === null ? null : Math.round(score * 100),
+              submitted_at: String(row.submitted_at),
+              time_spent_seconds: Number(row.time_spent_seconds ?? 0) || null,
+            };
+          }),
+        });
+      }
+
+      if (route === "/progress") {
+        const [items, attemptRows, goalRes, errorsRes] = await Promise.all([
+          loadCatalog(),
+          loadAttempts(3650, 2000),
+          sb.from("learner_language_goals")
+            .select("current_cefr_estimate, metadata")
+            .eq("user_id", auth.userId)
+            .eq("language_id", scope.languageId)
+            .maybeSingle(),
+          sb.from("learner_language_errors")
+            .select("service_key, subskill_key, error_type, error_frequency, last_seen_at, mastery_status")
+            .eq("user_id", auth.userId)
+            .eq("language_id", scope.languageId)
+            .in("mastery_status", ["open", "reopened", "improving"])
+            .order("error_frequency", { ascending: false })
+            .order("last_seen_at", { ascending: false })
+            .limit(10),
+        ]);
+        const attempts: AttemptRow[] = attemptRows
+          .filter((row) => (TODAY_SKILLS as readonly string[]).includes(String(row.service_key)))
+          .map((row) => ({
+            content_item_id: String(row.content_item_id ?? ""),
+            skill: String(row.service_key) as TodaySkill,
+            score: scoreOf(row),
+            submitted_at: String(row.submitted_at),
+          }));
+        const levelById = new Map(items.map((entry) => [entry.id, entry.level]));
+        const goal = goalRes.data as Record<string, unknown> | null;
+        const meta = (goal?.metadata && typeof goal.metadata === "object" ? goal.metadata : {}) as Record<string, unknown>;
+        const placement = (meta.placement && typeof meta.placement === "object" ? meta.placement : {}) as Record<string, unknown>;
+        const perSkill = (placement.per_skill && typeof placement.per_skill === "object" ? placement.per_skill : {}) as Record<string, unknown>;
+        const overall = isTodayCefr(goal?.current_cefr_estimate) ? goal!.current_cefr_estimate as Cefr : null;
+        const levelFor = (skill: TodaySkill): Cefr | null => {
+          const entry = perSkill[skill];
+          const level = typeof entry === "string" ? entry : (entry as Record<string, unknown> | undefined)?.level;
+          return isTodayCefr(level) ? level : overall;
+        };
+        const requestedDate = toText(url.searchParams.get("date"), 10);
+        const date = /^\d{4}-\d{2}-\d{2}$/.test(requestedDate) ? requestedDate : new Date().toISOString().slice(0, 10);
+        const days = dailyCounts(attempts, date, 126);
+        return json(200, {
+          ok: true,
+          streak: { current: currentStreak(attempts, date), longest: longestStreak(attempts) },
+          totals: {
+            last_7_days: days.slice(-7).reduce((sum, day) => sum + day.count, 0),
+            last_30_days: days.slice(-30).reduce((sum, day) => sum + day.count, 0),
+            all_time: attempts.length,
+          },
+          days,
+          skills: skillProgress(attempts, (id) => levelById.get(id) ?? null, levelFor)
+            .map((row) => ({ ...row, level: levelFor(row.skill) })),
+          mistakes: ((errorsRes.data ?? []) as Array<Record<string, unknown>>).map((row) => ({
+            skill: String(row.service_key ?? ""),
+            subskill: String(row.subskill_key ?? ""),
+            pattern: String(row.error_type ?? ""),
+            count: Number(row.error_frequency ?? 1),
+            last_seen_at: String(row.last_seen_at ?? ""),
+          })),
+        });
+      }
+
+      // /today
+      const requestedDate = toText(url.searchParams.get("date"), 10);
+      const utcToday = new Date().toISOString().slice(0, 10);
+      const dateOk = /^\d{4}-\d{2}-\d{2}$/.test(requestedDate)
+        && Math.abs(Date.parse(requestedDate) - Date.parse(utcToday)) <= 86_400_000;
+      const planDate = dateOk ? requestedDate : utcToday;
+
+      const [items, attemptRows, goalRes, notebook, access, existingRes] = await Promise.all([
+        loadCatalog(),
+        loadAttempts(60, 400),
+        sb.from("learner_language_goals")
+          .select("current_cefr_estimate, target_cefr, daily_time_minutes, goal_keys, metadata")
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId)
+          .maybeSingle(),
+        loadNotebookStats(sb, auth.userId, scope.languageId),
+        requireEnglishSuiteAccess(sb, auth.userId, products),
+        sb.from("learner_language_daily_plans")
+          .select("summary")
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId)
+          .eq("plan_date", planDate)
+          .maybeSingle(),
+      ]);
+
+      const goal = goalRes.data as Record<string, unknown> | null;
+      const meta = (goal?.metadata && typeof goal.metadata === "object" ? goal.metadata : {}) as Record<string, unknown>;
+      const placement = (meta.placement && typeof meta.placement === "object" ? meta.placement : null) as Record<string, unknown> | null;
+      const perSkillRaw = (placement?.per_skill && typeof placement.per_skill === "object" ? placement.per_skill : {}) as Record<string, unknown>;
+      const perSkillLevel: Partial<Record<TodaySkill, Cefr>> = {};
+      for (const skill of TODAY_SKILLS) {
+        const entry = perSkillRaw[skill];
+        const level = typeof entry === "string" ? entry : (entry as Record<string, unknown> | undefined)?.level;
+        if (isTodayCefr(level)) perSkillLevel[skill] = level;
+      }
+      const overallLevel = isTodayCefr(goal?.current_cefr_estimate) ? goal!.current_cefr_estimate as Cefr : null;
+
+      const availableSkills = access.admin
+        ? [...TODAY_SKILLS]
+        : TODAY_SKILLS.filter((skill) => {
+          const productId = (products as Record<string, { productId?: string }>)[skill]?.productId;
+          return Boolean(productId && access.entitlementProductIds.includes(productId));
+        });
+
+      const attempts: AttemptRow[] = attemptRows
+        .filter((row) => (TODAY_SKILLS as readonly string[]).includes(String(row.service_key)))
+        .map((row) => ({
+          content_item_id: String(row.content_item_id ?? ""),
+          skill: String(row.service_key) as TodaySkill,
+          score: scoreOf(row),
+          submitted_at: String(row.submitted_at),
+        }));
+
+      const dailyMinutes = Number(goal?.daily_time_minutes ?? 20) || 20;
+      // A stored plan is reused only while the inputs that shaped it are unchanged.
+      const planKey = [overallLevel ?? "-", dailyMinutes, availableSkills.join(","), JSON.stringify(perSkillLevel)].join("|");
+      const existingSummary = (existingRes.data?.summary ?? {}) as Record<string, unknown>;
+      const existing = existingSummary.generated_by === "hub.today.v1"
+          && existingSummary.plan_key === planKey
+          && Array.isArray(existingSummary.today_tasks)
+        ? existingSummary.today_tasks as TodayTask[]
+        : null;
+
+      const plan = planToday({
+        date: planDate,
+        dailyMinutes,
+        overallLevel,
+        perSkillLevel,
+        items,
+        attempts,
+        dueReviews: notebook.dueCount,
+        availableSkills,
+        existing,
+      });
+
+      // Persist so the selection stays stable all day and Student Center can show it.
+      const appUrl = (Deno.env.get("ENGLISH_APP_URL") ?? "https://english.schood.online").replace(/\/$/, "");
+      await sb.from("learner_language_daily_plans").upsert({
+        user_id: auth.userId,
+        language_id: scope.languageId,
+        plan_date: planDate,
+        minutes_budget: Math.max(5, Math.min(240, Math.round(dailyMinutes))),
+        total_estimated_minutes: plan.minutes_total,
+        status: plan.tasks.length > 0 && plan.done_count === plan.tasks.length ? "completed" : "active",
+        tasks: plan.tasks.map((task) => ({
+          id: task.id,
+          service_key: task.skill,
+          service_label: task.skill.slice(0, 1).toUpperCase() + task.skill.slice(1),
+          title: task.kind === "review" ? "Review due vocabulary" : task.title,
+          reason: task.reason,
+          intent: task.kind,
+          skill: task.skill,
+          estimated_minutes: task.minutes,
+          content_item_id: task.content_item_id,
+          href: task.kind === "review" ? `${appUrl}/review` : `${appUrl}/${task.skill}/${task.slug ?? ""}`,
+          done: task.done,
+        })),
+        summary: { generated_by: "hub.today.v1", plan_key: planKey, today_tasks: plan.tasks, done_count: plan.done_count },
+      }, { onConflict: "user_id,language_id,plan_date" });
+
+      return json(200, {
+        ok: true,
+        date: plan.date,
+        level: overallLevel,
+        target_level: isTodayCefr(goal?.target_cefr) ? goal!.target_cefr : null,
+        per_skill_level: perSkillLevel,
+        daily_minutes: dailyMinutes,
+        placement_done: Boolean(placement?.completed_at),
+        available_skills: availableSkills,
+        tasks: plan.tasks,
+        minutes_total: plan.minutes_total,
+        done_count: plan.done_count,
+        due_reviews: notebook.dueCount,
+        total_words: notebook.totalCount,
+        streak: currentStreak(attempts, planDate),
+        week: weekStrip(attempts, planDate),
+      });
+    }
+
+    // Legacy daily plan endpoint, kept for older clients.
     if (req.method === "GET" && route === "/plan") {
       const rebuild = String(url.searchParams.get("rebuild") ?? "").toLowerCase() === "true"
         || String(url.searchParams.get("rebuild") ?? "") === "1";
@@ -124,6 +425,114 @@ serve(async (req) => {
         rebuild,
       });
       return json(200, payload);
+    }
+
+    // === Front-door onboarding (placement + goal) persistence ===
+    // The hub gates new learners through an adaptive CEFR placement and a goal
+    // selection. Both were previously stateless AI calls; these endpoints make
+    // their results durable in learner_language_goals so the gate can detect
+    // completion across sessions/devices and the dashboard can show a real CEFR
+    // estimate instead of hardcoded fallback scores.
+
+    if (req.method === "GET" && route === "/onboarding/status") {
+      const { data } = await sb
+        .from("learner_language_goals")
+        .select("current_cefr_estimate, target_cefr, goal_keys, daily_time_minutes, metadata")
+        .eq("user_id", auth.userId)
+        .eq("language_id", scope.languageId)
+        .maybeSingle();
+      const meta = (data?.metadata ?? {}) as Record<string, unknown>;
+      const placement = (meta.placement && typeof meta.placement === "object" && !Array.isArray(meta.placement)
+        ? meta.placement as Record<string, unknown>
+        : null);
+      const goalKeys = Array.isArray(data?.goal_keys) ? data!.goal_keys as string[] : [];
+      return json(200, {
+        ok: true,
+        placement_done: !!(placement && placement.completed_at),
+        goal_set: goalKeys.length > 0,
+        cefr_estimate: data?.current_cefr_estimate ?? null,
+        target_cefr: data?.target_cefr ?? null,
+        goal_keys: goalKeys,
+        daily_time_minutes: Number(data?.daily_time_minutes ?? 40),
+        placement,
+      });
+    }
+
+    if (req.method === "POST" && route === "/onboarding/save") {
+      const isCefr = (v: string) => /^(A1|A2|B1|B2|C1|C2)$/.test(v);
+      const body = await parseBody(req) as Record<string, unknown>;
+      const placementIn = body.placement && typeof body.placement === "object" && !Array.isArray(body.placement)
+        ? body.placement as Record<string, unknown>
+        : null;
+      const goalIn = body.goal && typeof body.goal === "object" && !Array.isArray(body.goal)
+        ? body.goal as Record<string, unknown>
+        : null;
+      if (!placementIn && !goalIn) {
+        return json(400, { error: "Provide a placement and/or goal payload to save." });
+      }
+
+      // Merge with any existing row so a placement-only or goal-only save never
+      // clobbers the other half of the learner's onboarding state.
+      const { data: existing } = await sb
+        .from("learner_language_goals")
+        .select("goal_keys, target_cefr, daily_time_minutes, current_cefr_estimate, metadata")
+        .eq("user_id", auth.userId)
+        .eq("language_id", scope.languageId)
+        .maybeSingle();
+
+      const meta = (existing?.metadata && typeof existing.metadata === "object" && !Array.isArray(existing.metadata)
+        ? existing.metadata as Record<string, unknown>
+        : {}) as Record<string, unknown>;
+      const row: Record<string, unknown> = {
+        user_id: auth.userId,
+        language_id: scope.languageId,
+        goal_keys: Array.isArray(existing?.goal_keys) ? existing!.goal_keys : [],
+        target_cefr: existing?.target_cefr ?? null,
+        daily_time_minutes: Number(existing?.daily_time_minutes ?? 40),
+        current_cefr_estimate: existing?.current_cefr_estimate ?? null,
+        metadata: meta,
+      };
+
+      if (placementIn) {
+        const overall = toText(placementIn.overall_level, 8).toUpperCase();
+        const perSkill = placementIn.per_skill && typeof placementIn.per_skill === "object" && !Array.isArray(placementIn.per_skill)
+          ? placementIn.per_skill
+          : {};
+        if (isCefr(overall)) row.current_cefr_estimate = overall;
+        meta.placement = {
+          overall_level: isCefr(overall) ? overall : null,
+          per_skill: perSkill,
+          completed_at: new Date().toISOString(),
+        };
+        row.metadata = meta;
+      }
+
+      if (goalIn) {
+        const keys = Array.isArray(goalIn.goal_keys)
+          ? (goalIn.goal_keys as unknown[]).map((k) => toText(k, 40)).filter(Boolean).slice(0, 12)
+          : [];
+        if (keys.length) row.goal_keys = keys;
+        const target = toText(goalIn.target_cefr, 8).toUpperCase();
+        if (isCefr(target)) row.target_cefr = target;
+        const mins = Number(goalIn.daily_time_minutes);
+        if (Number.isFinite(mins) && mins >= 5 && mins <= 240) row.daily_time_minutes = Math.round(mins);
+      }
+
+      const { error } = await sb
+        .from("learner_language_goals")
+        .upsert(row, { onConflict: "user_id,language_id" });
+      if (error) return json(500, { error: "Failed to save onboarding", details: error.message });
+
+      const savedPlacement = (row.metadata as Record<string, unknown>)?.placement as Record<string, unknown> | undefined;
+      return json(200, {
+        ok: true,
+        placement_done: !!(savedPlacement && savedPlacement.completed_at),
+        goal_set: Array.isArray(row.goal_keys) && (row.goal_keys as unknown[]).length > 0,
+        cefr_estimate: row.current_cefr_estimate ?? null,
+        target_cefr: row.target_cefr ?? null,
+        goal_keys: row.goal_keys ?? [],
+        daily_time_minutes: row.daily_time_minutes ?? 40,
+      });
     }
 
     // === New cross-skill insights endpoints (Tier A foundation) ===
@@ -225,89 +634,135 @@ serve(async (req) => {
       });
     }
 
-    // Tier B #12 — vocab-in-context generator. Pulls the user's weakest
-    // vocabulary notebook entries (or accepts an explicit words list) and
-    // asks AI to produce a short passage featuring them naturally, with
-    // word-level highlights so the learner sees them in context.
+    // Vocabulary in context: weaves the learner's due / recent notebook words
+    // into a short passage at their level. Without AI (or when the model's
+    // passage does not actually use the words) it returns the same words with
+    // their saved meanings and example sentences, flagged `fallback: true`.
     if (req.method === "POST" && route === "/ai/vocab-in-context") {
-      const body = await parseBody(req);
-      const requestedWords: string[] = Array.isArray((body as Record<string, unknown>).words)
-        ? ((body as Record<string, unknown>).words as unknown[]).map((w) => String(w ?? "").trim()).filter(Boolean)
+      const body = await parseBody(req) as Record<string, unknown>;
+      const requestedWords: string[] = Array.isArray(body.words)
+        ? (body.words as unknown[]).map((w) => toText(w, 60)).filter(Boolean).slice(0, 8)
         : [];
-      const topic = toText((body as Record<string, unknown>).topic, 200);
+      const topic = toText(body.topic, 120);
+      const levelIn = toText(body.target_level, 8).toUpperCase();
+      const level = ["A1", "A2", "B1", "B2", "C1", "C2"].includes(levelIn) ? levelIn : "B1";
 
-      let words = requestedWords.slice(0, 8);
-      if (words.length === 0) {
-        // Pull the user's lowest-Leitner-box vocab as a default.
-        const { data: rows } = await sb
-          .from("user_vocabulary_notebook_entries")
-          .select("word")
-          .eq("user_id", auth.userId)
-          .eq("language_id", scope.languageId)
-          .eq("is_archived", false)
-          .lte("leitner_box", 2)
-          .order("created_at", { ascending: false })
-          .limit(8);
-        words = ((rows ?? []) as Array<{ word: string }>).map((r) => r.word).filter(Boolean);
+      type NotebookRow = { id: string; word: string; context_text: string | null; metadata: unknown; lexicon_entry_id: string | null };
+      const columns = "id, word, context_text, metadata, lexicon_entry_id";
+      const base = () => sb
+        .from("user_vocabulary_notebook_entries")
+        .select(columns)
+        .eq("user_id", auth.userId)
+        .eq("language_id", scope.languageId)
+        .eq("is_archived", false);
+      const { data: dueRows } = await base()
+        .lte("next_review_at", new Date().toISOString())
+        .order("next_review_at", { ascending: true })
+        .limit(8);
+      let rows = (dueRows ?? []) as NotebookRow[];
+      if (rows.length < 8) {
+        const { data: recentRows } = await base().order("updated_at", { ascending: false }).limit(8);
+        const seen = new Set(rows.map((r) => r.id));
+        rows = [...rows, ...((recentRows ?? []) as NotebookRow[]).filter((r) => !seen.has(r.id))].slice(0, 8);
       }
+      const lexiconIds = rows.map((r) => r.lexicon_entry_id).filter((v): v is string => Boolean(v));
+      const lexicon = new Map<string, { definition: string; example: string }>();
+      if (lexiconIds.length) {
+        const { data: lexRows } = await sb
+          .from("language_lexicon_entries")
+          .select("id, definition, example")
+          .in("id", lexiconIds);
+        for (const l of (lexRows ?? []) as Array<{ id: string; definition: unknown; example: unknown }>) {
+          lexicon.set(l.id, { definition: toText(l.definition, 240), example: toText(l.example, 400) });
+        }
+      }
+      const notebookEntries = rows
+        .map((r) => {
+          const meta = (r.metadata && typeof r.metadata === "object" && !Array.isArray(r.metadata))
+            ? r.metadata as Record<string, unknown>
+            : {};
+          const lex = r.lexicon_entry_id ? lexicon.get(r.lexicon_entry_id) : undefined;
+          return {
+            word: toText(r.word, 60),
+            definition: toText(meta.definition, 240) || lex?.definition || "",
+            example: toText(meta.example, 400) || lex?.example || toText(r.context_text, 400),
+          };
+        })
+        .filter((e) => e.word);
+
+      const requestedSet = new Set(requestedWords.map((w) => w.toLowerCase()));
+      const matchingEntries = notebookEntries.filter((e) => requestedSet.has(e.word.toLowerCase()));
+      const entries = requestedWords.length && matchingEntries.length ? matchingEntries : notebookEntries;
+      const words = requestedWords.length ? requestedWords : notebookEntries.map((e) => e.word);
 
       if (words.length === 0) {
         return json(200, {
           ok: true,
           ai_available: isEnglishAIConfigured(),
           ai_status: "ok",
+          fallback: false,
+          empty: true,
           words: [],
+          entries: [],
           passage: "",
           translations: {},
-          message: "Add a few words to your notebook (or pass words: [...] in the request body) to generate a contextual passage.",
+          topic: topic || null,
         });
       }
 
-      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+      const { data: result, status: aiStatus, error: aiError } = await callEnglishAIWithStatus<{
         passage?: unknown;
         translations?: unknown;
       }>(
         {
           systemPrompt:
-            "You are an English teacher generating a short, natural reading passage that uses the given words IN CONTEXT. The passage should be 110-160 words at upper-intermediate (B2) reading level — readable but not artificial. Use each given word at least once, naturally, in a way that demonstrates its meaning. Reply in strict JSON: {passage: string, translations: { word: 1-line plain-English definition for each given word }}.",
-          userPayload: JSON.stringify({ topic: topic || "any natural everyday topic", words }),
+            "You are an English teacher writing a short, natural reading passage that uses the given words IN CONTEXT. Write 90-150 words at the given CEFR level: everyday, friendly, easy to follow, with no difficult words beyond the level except the given words. Use each given word at least once, naturally, so its meaning is clear from the sentence. Avoid real people, brands, politics and religion. Reply in strict JSON: {passage: string, translations: { word: one short plain-English meaning for each given word }}.",
+          userPayload: JSON.stringify({ level, topic: topic || "an everyday situation", words }),
           temperature: 0.6,
         },
         { passage: "", translations: {} },
       );
+      if (aiStatus === "failed") console.error(JSON.stringify({ event: "english_ai_failed", route, request_id: requestId, error: String(aiError ?? "").slice(0, 300) }));
 
-      const passage = typeof result.passage === "string" ? result.passage : "";
+      const passage = aiStatus === "ok" ? toText(result.passage, 1600) : "";
+      const lowerPassage = passage.toLowerCase();
+      const usedWords = words.filter((w) => lowerPassage.includes(w.toLowerCase()));
+      const passageUsable = passage.length >= 60 && usedWords.length >= Math.ceil(words.length / 2);
       const translations: Record<string, string> = {};
-      if (result.translations && typeof result.translations === "object" && !Array.isArray(result.translations)) {
+      if (passageUsable && result.translations && typeof result.translations === "object" && !Array.isArray(result.translations)) {
+        const wanted = new Set(words.map((w) => w.toLowerCase()));
         for (const [k, v] of Object.entries(result.translations as Record<string, unknown>)) {
-          translations[String(k).toLowerCase()] = toText(v, 240);
+          const key = String(k).toLowerCase().trim();
+          const meaning = toText(v, 240);
+          if (wanted.has(key) && meaning) translations[key] = meaning;
         }
       }
       return json(200, {
         ok: true,
         ai_available: isEnglishAIConfigured(),
         ai_status: aiStatus,
-        ai_provider: provider,
-        ai_error: aiError ?? null,
-        words,
-        passage,
+        fallback: !passageUsable,
+        empty: false,
+        words: passageUsable ? usedWords : words,
+        entries,
+        passage: passageUsable ? passage : "",
         translations,
         topic: topic || null,
         generated_at: new Date().toISOString(),
       });
     }
 
-    // Tier B #14 — grammar pattern decoder. Takes one English sentence and
-    // returns its parsed grammatical structure with annotated explanation.
-    // For advanced learners hitting pattern walls.
+    // Grammar decoder: explains how one English sentence is built. Without AI
+    // it returns rule-based "things to notice" (modal verbs, perfect forms,
+    // possible passives, conditions, linking words) flagged `fallback: true`.
     if (req.method === "POST" && route === "/ai/grammar-decode") {
       const body = await parseBody(req);
-      const sentence = toText((body as Record<string, unknown>).sentence, 1000);
+      const sentence = toText((body as Record<string, unknown>).sentence, 600);
       if (!sentence || sentence.length < 5) {
-        return json(400, { error: "sentence is required (min 5 characters)" });
+        return json(400, { error: "sentence is required (min 5 characters)", code: "sentence_too_short" });
       }
 
-      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+      const { data: result, status: aiStatus, error: aiError } = await callEnglishAIWithStatus<{
         clauses?: unknown;
         tense?: unknown;
         voice?: unknown;
@@ -317,74 +772,196 @@ serve(async (req) => {
       }>(
         {
           systemPrompt:
-            "You are an English grammar tutor parsing a sentence for an advanced learner. Decode its structure and return strict JSON with: clauses (array of {role: 'main'|'subordinate'|'relative'|'noun'|'adverbial'|'participial', text: exact substring, function: one-sentence purpose}), tense (e.g., 'past perfect continuous'), voice ('active'|'passive'), register ('formal'|'neutral'|'informal'|'literary'|'spoken'), notes (1-3 short observations on what makes this sentence work or where learners stumble), rephrasings (array of 2 alternate ways to express the same idea, each {text, why_different}).",
+            "You are a friendly English grammar teacher explaining one sentence to an intermediate learner (CEFR A2-B2). Use short, plain English and simple grammar names. Return strict JSON with: clauses (array of {role: 'main'|'subordinate'|'relative'|'noun'|'adverbial'|'participial', text: an exact substring of the sentence, function: one short sentence saying what this part does}), tense (e.g. 'present perfect'), voice ('active'|'passive'), register ('formal'|'neutral'|'informal'), notes (1-3 short tips on what to notice or where learners make mistakes), rephrasings (2 other correct ways to say the same idea, each {text, why_different: one short sentence}).",
           userPayload: JSON.stringify({ sentence }),
           temperature: 0.3,
         },
         { clauses: [], tense: "", voice: "", register: "", notes: [], rephrasings: [] },
       );
+      if (aiStatus === "failed") console.error(JSON.stringify({ event: "english_ai_failed", route, request_id: requestId, error: String(aiError ?? "").slice(0, 300) }));
 
-      const clauses = Array.isArray(result.clauses)
+      const lowerSentence = sentence.toLowerCase();
+      const clauseRoles = ["main", "subordinate", "relative", "noun", "adverbial", "participial"];
+      const clauses = aiStatus === "ok" && Array.isArray(result.clauses)
         ? (result.clauses as unknown[])
             .filter((c): c is Record<string, unknown> => !!c && typeof c === "object" && !Array.isArray(c))
             .map((c) => ({
-              role: toText(c.role, 32),
+              role: clauseRoles.includes(toText(c.role, 32).toLowerCase()) ? toText(c.role, 32).toLowerCase() : "main",
               text: toText(c.text, 600),
-              function: toText(c.function, 400),
+              function: toText(c.function, 300),
             }))
-            .filter((c) => c.text)
+            .filter((c) => c.text && lowerSentence.includes(c.text.toLowerCase()))
             .slice(0, 8)
         : [];
-      const notes = Array.isArray(result.notes)
-        ? (result.notes as unknown[]).map((n) => toText(n, 400)).filter(Boolean).slice(0, 4)
+      const notes = aiStatus === "ok" && Array.isArray(result.notes)
+        ? (result.notes as unknown[]).map((n) => toText(n, 300)).filter(Boolean).slice(0, 4)
         : [];
-      const rephrasings = Array.isArray(result.rephrasings)
+      const rephrasings = aiStatus === "ok" && Array.isArray(result.rephrasings)
         ? (result.rephrasings as unknown[])
             .filter((r): r is Record<string, unknown> => !!r && typeof r === "object" && !Array.isArray(r))
             .map((r) => ({
               text: toText(r.text, 600),
-              why_different: toText(r.why_different, 400),
+              why_different: toText(r.why_different, 300),
             }))
             .filter((r) => r.text)
             .slice(0, 3)
         : [];
+      const voiceRaw = toText(result.voice, 24).toLowerCase();
+      const registerRaw = toText(result.register, 32).toLowerCase();
+      const tense = aiStatus === "ok" ? toText(result.tense, 60) : "";
+      const usable = aiStatus === "ok" && (clauses.length > 0 || Boolean(tense) || notes.length > 0);
+
+      // Rule-based signals: only patterns that are reliable enough to point at.
+      const signals: Array<{ label: string; match: string; tip: string }> = [];
+      if (!usable) {
+        const participles = "built|made|written|given|taken|seen|done|known|found|told|sold|held|brought|bought|sent|kept|paid|spent|shown|chosen|driven|eaten|broken|spoken|stolen|forgotten|hidden|understood|born|left|lost|won|grown|thrown|worn|caught|taught";
+        const rules: Array<{ re: RegExp; label: string; tip: string }> = [
+          {
+            re: /\b(can|could|may|might|must|should|would|will|shall)(?:\s+not|n't)?\s+\w+/i,
+            label: "Modal verb",
+            tip: "After can, must, should, will and other modal verbs, use the base verb: 'can swim', not 'can swims'.",
+          },
+          {
+            re: new RegExp(`\\b(have|has|had)(?:\\s+(?:not|never|already|just|ever|always))?\\s+(been|gone|come|become|begun|run|met|felt|thought|said|\\w+ed|${participles})\\b`, "i"),
+            label: "Perfect form (have / has / had + past participle)",
+            tip: "This form connects two times, for example the past and now (I have lived here for two years).",
+          },
+          {
+            re: new RegExp(`\\b(am|is|are|was|were|be|been|being)(?:\\s+not)?\\s+(\\w+ed|${participles})\\b`, "i"),
+            label: "Maybe passive (be + past participle)",
+            tip: "The passive puts the focus on what happens, not on who does it (The road was built in 2010). Some words after 'be' are just adjectives (I am tired).",
+          },
+          {
+            re: /\b(am|is|are|was|were)(?:\s+not)?\s+(\w{2,}ing)\b/i,
+            label: "be + -ing",
+            tip: "This often shows an action in progress (She is working now). Some -ing words are adjectives (The film was interesting).",
+          },
+          {
+            re: /\b(if|unless)\b/i,
+            label: "Condition (if / unless)",
+            tip: "Look at the verb in each half of the sentence: the condition and the result often use different tenses.",
+          },
+          {
+            re: /\b(who|whom|whose|which)\b/i,
+            label: "who / which / whose",
+            tip: "These words often start extra information about a noun (the teacher who helped me).",
+          },
+          {
+            re: /\b(although|even though|though|because|since|while|whereas|however|despite|therefore|so that|in order to)\b/i,
+            label: "Linking word",
+            tip: "Linking words join ideas. Find the idea on each side and how they connect: reason, contrast or result.",
+          },
+        ];
+        for (const rule of rules) {
+          const m = sentence.match(rule.re);
+          if (m && m[0]) signals.push({ label: rule.label, match: m[0], tip: rule.tip });
+        }
+        const wordCount = sentence.split(/\s+/).filter(Boolean).length;
+        if (wordCount > 25) {
+          signals.push({
+            label: "Long sentence",
+            match: `${wordCount} words`,
+            tip: "Split it at the commas and linking words, then find the main subject and verb first.",
+          });
+        }
+      }
 
       return json(200, {
         ok: true,
         ai_available: isEnglishAIConfigured(),
         ai_status: aiStatus,
-        ai_provider: provider,
-        ai_error: aiError ?? null,
+        fallback: !usable,
         sentence,
-        clauses,
-        tense: toText(result.tense, 80),
-        voice: toText(result.voice, 24),
-        register: toText(result.register, 32),
-        notes,
-        rephrasings,
+        clauses: usable ? clauses : [],
+        tense: usable ? tense : "",
+        voice: usable && ["active", "passive"].includes(voiceRaw) ? voiceRaw : "",
+        register: usable && ["formal", "neutral", "informal", "literary", "spoken"].includes(registerRaw) ? registerRaw : "",
+        notes: usable ? notes : [],
+        rephrasings: usable ? rephrasings : [],
+        signals,
         generated_at: new Date().toISOString(),
       });
     }
 
-    // Tier B #11 — AI essay grader (general English, CEFR-aligned).
-    // Stateless. Takes a written response + target level, returns
-    // per-criterion scores with concrete feedback. Distinct from the
-    // IELTS rubric path; this one anchors to CEFR descriptors so it's
-    // useful for general English learners outside the test-prep flow.
+    // Writing feedback (general English, CEFR-aligned). With AI: a level per
+    // criterion, strengths, things to improve, one next step and a short
+    // rewrite. Always: honest text statistics and rule-based checks
+    // (capital letters, very long sentences, repeated words, paragraphs,
+    // linking words). Without AI the response is flagged `fallback: true` and
+    // carries no level, because a level cannot be measured by rules.
     if (req.method === "POST" && route === "/ai/essay-grade") {
       const body = await parseBody(req);
       const text = toText((body as Record<string, unknown>).text, 5000);
-      const targetLevel = toText((body as Record<string, unknown>).target_level, 8).toUpperCase() || "B2";
-      const prompt = toText((body as Record<string, unknown>).prompt, 1200);
+      const targetLevel = toText((body as Record<string, unknown>).target_level, 8).toUpperCase() || "B1";
+      const prompt = toText((body as Record<string, unknown>).prompt, 600);
       if (!text || text.length < 40) {
-        return json(400, { error: "text is required (min 40 characters)" });
+        return json(400, { error: "text is required (min 40 characters)", code: "text_too_short" });
       }
       if (!["A1", "A2", "B1", "B2", "C1", "C2"].includes(targetLevel)) {
-        return json(400, { error: "target_level must be one of A1 A2 B1 B2 C1 C2" });
+        return json(400, { error: "target_level must be one of A1 A2 B1 B2 C1 C2", code: "invalid_level" });
       }
 
-      const wordCount = text.split(/\s+/).filter(Boolean).length;
-      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+      const words = text.split(/\s+/).filter(Boolean);
+      const wordCount = words.length;
+      const sentences = text.split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter((s) => /[a-z]/i.test(s));
+      const paragraphs = text.split(/\n\s*\n|\r\n\s*\r\n/).map((p) => p.trim()).filter(Boolean);
+      const stats = {
+        words: wordCount,
+        sentences: sentences.length,
+        paragraphs: paragraphs.length,
+        avg_sentence_words: sentences.length ? Math.round(wordCount / sentences.length) : wordCount,
+      };
+
+      // Rule-based checks: facts about the text, not a grade.
+      const checks: string[] = [];
+      const positives: string[] = [];
+      if (/(^|[\s"(])i(?=[\s,!?;:'’]|\.(?!\w)|$)/.test(text)) {
+        checks.push("Write the word 'I' with a capital letter.");
+      }
+      const lowerStarts = sentences.filter((s) => /^[a-z]/.test(s)).length;
+      if (lowerStarts > 0) {
+        checks.push(lowerStarts === 1
+          ? "One sentence starts with a small letter. Start every sentence with a capital letter."
+          : `${lowerStarts} sentences start with a small letter. Start every sentence with a capital letter.`);
+      }
+      const longSentences = sentences.filter((s) => s.split(/\s+/).filter(Boolean).length > 35).length;
+      if (longSentences > 0) {
+        checks.push(longSentences === 1
+          ? "One sentence is very long (more than 35 words). Try splitting it into two."
+          : `${longSentences} sentences are very long (more than 35 words). Try splitting them.`);
+      }
+      if (/\s[,.!?;:]/.test(text)) {
+        checks.push("Remove the space before commas, full stops and question marks.");
+      }
+      if (!/[.!?]["')\]]?\s*$/.test(text)) {
+        checks.push("End your last sentence with a full stop, question mark or exclamation mark.");
+      }
+      const stopWords = new Set(["that", "this", "with", "have", "they", "there", "their", "them", "then", "than", "from", "were", "what", "when", "will", "would", "your", "about", "which", "because", "also", "very", "some", "more", "into", "been", "just", "like", "many", "much", "only", "other", "people", "these", "those", "think"]);
+      const counts = new Map<string, number>();
+      for (const w of words) {
+        const clean = w.toLowerCase().replace(/[^a-z']/g, "");
+        if (clean.length < 4 || stopWords.has(clean)) continue;
+        counts.set(clean, (counts.get(clean) ?? 0) + 1);
+      }
+      const [topWord, topCount] = [...counts.entries()].sort((a, b) => b[1] - a[1])[0] ?? ["", 0];
+      if (topWord && topCount >= 4 && topCount / Math.max(1, wordCount) > 0.03) {
+        checks.push(`You used '${topWord}' ${topCount} times. Try a different word sometimes.`);
+      }
+      if (paragraphs.length === 1 && wordCount >= 120) {
+        checks.push("Try dividing your text into paragraphs: one main idea in each.");
+      } else if (paragraphs.length >= 2) {
+        positives.push(`You organised your text into ${paragraphs.length} paragraphs.`);
+      }
+      const linkers = ["because", "but", "however", "although", "so", "also", "first", "then", "finally", "for example", "in addition", "on the other hand", "therefore", "while"];
+      const lowerText = ` ${text.toLowerCase().replace(/[^a-z\s]/g, " ")} `;
+      const usedLinkers = linkers.filter((l) => lowerText.includes(` ${l} `));
+      if (usedLinkers.length >= 3) {
+        positives.push(`You used linking words to connect ideas (${usedLinkers.slice(0, 4).join(", ")}).`);
+      } else if (wordCount >= 80) {
+        checks.push("Use more linking words (because, however, for example) to connect your ideas.");
+      }
+
+      const { data: result, status: aiStatus, error: aiError } = await callEnglishAIWithStatus<{
         overall_level?: unknown;
         criteria?: unknown;
         strengths?: unknown;
@@ -394,17 +971,17 @@ serve(async (req) => {
       }>(
         {
           systemPrompt:
-            "You are a CEFR-aligned English writing examiner. Grade the response below against the target level using the four criteria: TASK (whether the response addresses the prompt fully and stays on topic), COHERENCE (logical flow, paragraph structure, cohesive devices), RANGE (lexical and grammatical range — variety, idiom, register), ACCURACY (grammatical and spelling correctness). Return strict JSON: {overall_level: one of A1 A2 B1 B2 C1 C2, criteria: {task: {level, comment}, coherence: {level, comment}, range: {level, comment}, accuracy: {level, comment}}, strengths: array of 2-3 short strings, improvements: array of 2-3 short strings, actionable_next_step: 1-2 sentence concrete next move for THIS learner, rewrite_sample: a short rewrite of the most pivotal 1-2 sentences from their text demonstrating the target level}.",
+            "You are a kind, CEFR-aligned English writing teacher. Give feedback on the learner's text against the target level using four criteria: TASK (does it answer the prompt and stay on topic), COHERENCE (order of ideas, paragraphs, linking words), RANGE (variety of words and grammar), ACCURACY (grammar and spelling). Write all comments in short, simple English that a B1 learner can understand. Return strict JSON: {overall_level: one of A1 A2 B1 B2 C1 C2, criteria: {task: {level, comment}, coherence: {level, comment}, range: {level, comment}, accuracy: {level, comment}}, strengths: 2-3 short strings, improvements: 2-3 short strings, actionable_next_step: 1-2 sentences with one concrete thing to do next, rewrite_sample: a better version of the 1-2 most important sentences from the text}.",
           userPayload: JSON.stringify({
             target_level: targetLevel,
-            prompt: prompt || "(no prompt provided)",
+            prompt: prompt || "(no task given)",
             response_text: text,
             word_count: wordCount,
           }),
           temperature: 0.3,
         },
         {
-          overall_level: targetLevel,
+          overall_level: "",
           criteria: {},
           strengths: [],
           improvements: [],
@@ -412,12 +989,13 @@ serve(async (req) => {
           rewrite_sample: "",
         },
       );
+      if (aiStatus === "failed") console.error(JSON.stringify({ event: "english_ai_failed", route, request_id: requestId, error: String(aiError ?? "").slice(0, 300) }));
 
-      const safeLevel = (raw: unknown): string => {
-        const v = String(raw ?? "").toUpperCase();
-        return ["A1", "A2", "B1", "B2", "C1", "C2"].includes(v) ? v : targetLevel;
+      const validLevel = (raw: unknown): string | null => {
+        const v = String(raw ?? "").trim().toUpperCase();
+        return ["A1", "A2", "B1", "B2", "C1", "C2"].includes(v) ? v : null;
       };
-      const criteriaIn = (result.criteria && typeof result.criteria === "object" && !Array.isArray(result.criteria))
+      const criteriaIn = (aiStatus === "ok" && result.criteria && typeof result.criteria === "object" && !Array.isArray(result.criteria))
         ? result.criteria as Record<string, unknown>
         : {};
       const criteria: Record<string, { level: string; comment: string }> = {};
@@ -425,30 +1003,35 @@ serve(async (req) => {
         const c = criteriaIn[key];
         if (c && typeof c === "object" && !Array.isArray(c)) {
           const cr = c as Record<string, unknown>;
-          criteria[key] = { level: safeLevel(cr.level), comment: toText(cr.comment, 600) };
-        } else {
-          criteria[key] = { level: targetLevel, comment: "" };
+          const level = validLevel(cr.level);
+          const comment = toText(cr.comment, 500);
+          if (level && comment) criteria[key] = { level, comment };
         }
       }
+      const overallLevel = aiStatus === "ok" ? validLevel(result.overall_level) : null;
+      const aiStrengths = aiStatus === "ok" && Array.isArray(result.strengths)
+        ? (result.strengths as unknown[]).map((s) => toText(s, 240)).filter(Boolean).slice(0, 4)
+        : [];
+      const aiImprovements = aiStatus === "ok" && Array.isArray(result.improvements)
+        ? (result.improvements as unknown[]).map((s) => toText(s, 240)).filter(Boolean).slice(0, 4)
+        : [];
+      const usable = Boolean(overallLevel) && Object.keys(criteria).length > 0;
 
       return json(200, {
         ok: true,
         ai_available: isEnglishAIConfigured(),
         ai_status: aiStatus,
-        ai_provider: provider,
-        ai_error: aiError ?? null,
+        fallback: !usable,
         target_level: targetLevel,
         word_count: wordCount,
-        overall_level: safeLevel(result.overall_level),
-        criteria,
-        strengths: Array.isArray(result.strengths)
-          ? (result.strengths as unknown[]).map((s) => toText(s, 240)).filter(Boolean).slice(0, 4)
-          : [],
-        improvements: Array.isArray(result.improvements)
-          ? (result.improvements as unknown[]).map((s) => toText(s, 240)).filter(Boolean).slice(0, 4)
-          : [],
-        actionable_next_step: toText(result.actionable_next_step, 600),
-        rewrite_sample: toText(result.rewrite_sample, 1200),
+        stats,
+        checks,
+        overall_level: usable ? overallLevel : null,
+        criteria: usable ? criteria : {},
+        strengths: usable ? aiStrengths : positives,
+        improvements: usable ? aiImprovements : checks,
+        actionable_next_step: usable ? toText(result.actionable_next_step, 500) : "",
+        rewrite_sample: usable ? toText(result.rewrite_sample, 1000) : "",
         generated_at: new Date().toISOString(),
       });
     }
@@ -464,7 +1047,7 @@ serve(async (req) => {
         return json(400, { error: "source_text is required" });
       }
 
-      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+      const { data: result, status: aiStatus, error: aiError } = await callEnglishAIWithStatus<{
         detected_language?: unknown;
         translations?: unknown;
         nuance_summary?: unknown;
@@ -477,6 +1060,7 @@ serve(async (req) => {
         },
         { detected_language: sourceLanguage, translations: [], nuance_summary: "" },
       );
+      if (aiStatus === "failed") console.error(JSON.stringify({ event: "english_ai_failed", route, request_id: requestId, error: String(aiError ?? "").slice(0, 300) }));
 
       const translations = Array.isArray(result.translations)
         ? (result.translations as unknown[])
@@ -494,8 +1078,6 @@ serve(async (req) => {
         ok: true,
         ai_available: isEnglishAIConfigured(),
         ai_status: aiStatus,
-        ai_provider: provider,
-        ai_error: aiError ?? null,
         source_text: sourceText,
         detected_language: toText(result.detected_language, 16) || "unknown",
         translations,
@@ -515,7 +1097,7 @@ serve(async (req) => {
         return json(400, { error: "source_text is required (min 30 characters)" });
       }
 
-      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+      const { data: result, status: aiStatus, error: aiError } = await callEnglishAIWithStatus<{
         idioms?: unknown;
         collocations?: unknown;
         cultural_notes?: unknown;
@@ -528,6 +1110,7 @@ serve(async (req) => {
         },
         { idioms: [], collocations: [], cultural_notes: [] },
       );
+      if (aiStatus === "failed") console.error(JSON.stringify({ event: "english_ai_failed", route, request_id: requestId, error: String(aiError ?? "").slice(0, 300) }));
 
       const cleanList = <T extends Record<string, unknown>>(rows: unknown, mapper: (r: Record<string, unknown>) => T, max: number): T[] =>
         Array.isArray(rows)
@@ -538,19 +1121,22 @@ serve(async (req) => {
               .slice(0, max)
           : [];
 
-      const idioms = cleanList(result.idioms, (r) => ({
+      // Only keep phrases that really appear in the learner's text.
+      const lowerSource = sourceText.toLowerCase();
+      const inSource = (phrase: string) => Boolean(phrase) && lowerSource.includes(phrase.toLowerCase());
+      const idioms = (aiStatus === "ok" ? cleanList(result.idioms, (r) => ({
         phrase: toText(r.phrase, 200),
         meaning: toText(r.meaning, 400),
         register: toText(r.register, 24),
         example: toText(r.example, 400),
-      }), 6);
-      const collocations = cleanList(result.collocations, (r) => ({
+      }), 6) : []).filter((r) => inSource(r.phrase) && r.meaning);
+      const collocations = (aiStatus === "ok" ? cleanList(result.collocations, (r) => ({
         phrase: toText(r.phrase, 160),
         type: toText(r.type, 24),
         meaning: toText(r.meaning, 240),
         example: toText(r.example, 400),
-      }), 8);
-      const culturalNotes = Array.isArray(result.cultural_notes)
+      }), 8) : []).filter((r) => inSource(r.phrase) && r.meaning);
+      const culturalNotes = aiStatus === "ok" && Array.isArray(result.cultural_notes)
         ? (result.cultural_notes as unknown[]).map((n) => toText(n, 400)).filter(Boolean).slice(0, 4)
         : [];
 
@@ -558,8 +1144,6 @@ serve(async (req) => {
         ok: true,
         ai_available: isEnglishAIConfigured(),
         ai_status: aiStatus,
-        ai_provider: provider,
-        ai_error: aiError ?? null,
         target_level: targetLevel,
         source_text_length: sourceText.length,
         idioms,
@@ -569,23 +1153,54 @@ serve(async (req) => {
       });
     }
 
-    // Tier B #13 — Listening dictation drill. Generates a passage at the
-    // requested CEFR level (the frontend speaks it via browser TTS) plus
-    // optional difficulty knobs (speed cue, accent cue, contains_numbers).
-    // The AI returns BOTH the canonical text AND a list of tricky tokens
-    // so the frontend can score the user's typed transcription generously
-    // (case-insensitive, ignore terminal punctuation).
+    // Dictation: a short passage the browser reads aloud; the learner types
+    // what they hear and the card scores it word by word. With AI the passage
+    // follows the learner's topic; without AI (or if the model's passage is
+    // unusable) a written passage from a small library at the same level is
+    // returned, flagged `fallback: true`.
     if (req.method === "POST" && route === "/ai/dictation/generate") {
       const body = await parseBody(req);
-      const targetLevel = toText((body as Record<string, unknown>).target_level, 8).toUpperCase() || "B2";
-      const topic = toText((body as Record<string, unknown>).topic, 200);
+      const targetLevel = toText((body as Record<string, unknown>).target_level, 8).toUpperCase() || "B1";
+      const topic = toText((body as Record<string, unknown>).topic, 120);
       const accent = toText((body as Record<string, unknown>).accent, 24).toLowerCase() || "neutral";
-      const speed = toText((body as Record<string, unknown>).speed, 16).toLowerCase() || "normal";
+      const speed = toText((body as Record<string, unknown>).speed, 16).toLowerCase() === "slow" ? "slow" : "normal";
+      const previousText = toText((body as Record<string, unknown>).previous_text, 600);
       if (!["A1", "A2", "B1", "B2", "C1", "C2"].includes(targetLevel)) {
-        return json(400, { error: "target_level must be one of A1 A2 B1 B2 C1 C2" });
+        return json(400, { error: "target_level must be one of A1 A2 B1 B2 C1 C2", code: "invalid_level" });
       }
 
-      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+      type DictationItem = { text: string; tricky: string[]; question: string; answer: string };
+      const library: Record<string, DictationItem[]> = {
+        A1: [
+          { text: "My name is Aziz. I live in Samarkand with my family. Every morning I drink green tea and eat bread.", tricky: ["Samarkand", "family", "morning"], question: "What does Aziz drink every morning?", answer: "green tea" },
+          { text: "Today is Sunday. The weather is sunny and warm. We are going to the park with our friends.", tricky: ["weather", "warm", "friends"], question: "What day is it today?", answer: "Sunday" },
+          { text: "This is my classroom. There are twenty desks and a big window. Our teacher is kind and funny.", tricky: ["classroom", "twenty", "window"], question: "How many desks are there?", answer: "twenty" },
+        ],
+        A2: [
+          { text: "Last weekend I visited my grandparents in the village. My grandmother cooked plov, and we ate it in the garden. In the evening we walked to the river.", tricky: ["grandparents", "village", "evening"], question: "Where did they eat the plov?", answer: "in the garden" },
+          { text: "The bus to the city centre leaves every twenty minutes. You can buy a ticket from the driver or pay with a card.", tricky: ["centre", "leaves", "ticket"], question: "How often does the bus leave?", answer: "every twenty minutes" },
+          { text: "On Saturdays I help my uncle at his shop. I put fruit and vegetables on the shelves and talk to the customers. It is tiring, but I enjoy it.", tricky: ["vegetables", "shelves", "customers"], question: "Who does the speaker help on Saturdays?", answer: "uncle" },
+        ],
+        B1: [
+          { text: "Although it was raining, we decided to walk to the new museum because the bus was running late. When we arrived, our shoes were wet, but the exhibition was worth it.", tricky: ["although", "decided", "exhibition", "worth"], question: "Why did they walk to the museum?", answer: "the bus was late" },
+          { text: "My sister has been learning to cook for six months. At first she burned almost everything, but now she can make soup, salads and even fresh bread.", tricky: ["has been learning", "burned", "almost", "salads"], question: "How long has she been learning to cook?", answer: "six months" },
+          { text: "When I started my new job, I was nervous about speaking English in meetings. My manager suggested that I prepare a few notes before each meeting, and it really helped.", tricky: ["nervous", "manager", "suggested", "prepare"], question: "What did the manager suggest?", answer: "prepare notes" },
+        ],
+        B2: [
+          { text: "If I had known about the meeting earlier, I would have prepared a more detailed proposal. Next time, I'll ask the team to share the agenda at least a day in advance.", tricky: ["would have", "detailed", "proposal", "agenda"], question: "What will the speaker ask the team to share?", answer: "the agenda" },
+          { text: "Many students choose to study online because it lets them work part-time while they finish their degrees. However, they often say that staying motivated at home is harder than they expected.", tricky: ["part-time", "degrees", "motivated", "expected"], question: "What do the students find harder than they expected?", answer: "staying motivated" },
+        ],
+        C1: [
+          { text: "The committee acknowledged that, despite the complexity of the proposal, its underlying logic was surprisingly convincing. Nevertheless, they postponed the final decision until further research could be carried out.", tricky: ["acknowledged", "underlying", "nevertheless", "postponed"], question: "What did the committee do with the final decision?", answer: "postponed it" },
+          { text: "Learning a language as an adult requires patience, but it has its advantages: adults are often good at noticing patterns and at setting realistic goals for themselves.", tricky: ["requires", "advantages", "noticing", "realistic"], question: "What are adults often good at noticing?", answer: "patterns" },
+        ],
+        C2: [
+          { text: "Notwithstanding the initial scepticism, the restoration of the old caravanserai has been widely praised, not least because the architects resisted the temptation to modernise its character.", tricky: ["notwithstanding", "scepticism", "caravanserai", "temptation"], question: "What did the architects resist?", answer: "the temptation to modernise" },
+          { text: "Had the negotiations collapsed, the consequences for regional trade would have been considerable; as it was, both sides emerged with a compromise that, while imperfect, proved remarkably durable.", tricky: ["had the negotiations", "consequences", "considerable", "durable"], question: "What did both sides emerge with?", answer: "a compromise" },
+        ],
+      };
+
+      const { data: result, status: aiStatus, error: aiError } = await callEnglishAIWithStatus<{
         text?: unknown;
         tricky_tokens?: unknown;
         comprehension_question?: unknown;
@@ -593,34 +1208,54 @@ serve(async (req) => {
       }>(
         {
           systemPrompt:
-            "You are an English listening teacher generating a short dictation passage. Write 2-3 sentences (about 30-55 words) at the target CEFR reading-aloud level, on the requested topic, in natural spoken English suitable for being read aloud once. Return strict JSON: {text: the passage exactly as it should be heard, tricky_tokens: array (max 5) of words/phrases the learner is most likely to mishear or misspell, comprehension_question: 1 short follow-up question to confirm understanding, comprehension_answer: the expected answer in 1-3 words}.",
+            "You are an English listening teacher writing a short dictation passage. Write 2-3 sentences (about 25-50 words) at the target CEFR level, on the requested topic, in natural spoken English that is easy to read aloud. Avoid real people, brands, politics and religion. Return strict JSON: {text: the passage exactly as it should be heard, tricky_tokens: array (max 5) of words from the passage the learner may mishear or misspell, comprehension_question: one short question about the passage, comprehension_answer: the answer in 1-4 words taken from the passage}.",
           userPayload: JSON.stringify({
             target_level: targetLevel,
-            topic: topic || "an everyday situation a learner would naturally encounter",
+            topic: topic || "an everyday situation a learner would meet",
             accent_hint: accent,
-            speed_hint: speed,
           }),
           temperature: 0.7,
         },
         { text: "", tricky_tokens: [], comprehension_question: "", comprehension_answer: "" },
       );
+      if (aiStatus === "failed") console.error(JSON.stringify({ event: "english_ai_failed", route, request_id: requestId, error: String(aiError ?? "").slice(0, 300) }));
+
+      const aiText = aiStatus === "ok" ? toText(result.text, 600) : "";
+      const aiWords = aiText.split(/\s+/).filter(Boolean).length;
+      const usable = aiWords >= 8 && aiWords <= 90;
+      let item: DictationItem;
+      if (usable) {
+        const lowerText = aiText.toLowerCase();
+        const question = toText(result.comprehension_question, 200);
+        const answer = toText(result.comprehension_answer, 60);
+        item = {
+          text: aiText,
+          tricky: Array.isArray(result.tricky_tokens)
+            ? (result.tricky_tokens as unknown[]).map((t) => toText(t, 60)).filter((t) => t && lowerText.includes(t.toLowerCase())).slice(0, 5)
+            : [],
+          question: question && answer ? question : "",
+          answer: question && answer ? answer : "",
+        };
+      } else {
+        const pool = library[targetLevel] ?? library.B1!;
+        const options = pool.filter((p) => p.text !== previousText);
+        const pick = options.length ? options : pool;
+        item = pick[Math.floor(Math.random() * pick.length)]!;
+      }
 
       return json(200, {
         ok: true,
         ai_available: isEnglishAIConfigured(),
         ai_status: aiStatus,
-        ai_provider: provider,
-        ai_error: aiError ?? null,
+        fallback: !usable,
         target_level: targetLevel,
-        topic: topic || null,
+        topic: usable ? topic || null : null,
         accent,
         speed,
-        text: toText(result.text, 1200),
-        tricky_tokens: Array.isArray(result.tricky_tokens)
-          ? (result.tricky_tokens as unknown[]).map((t) => toText(t, 80)).filter(Boolean).slice(0, 8)
-          : [],
-        comprehension_question: toText(result.comprehension_question, 240),
-        comprehension_answer: toText(result.comprehension_answer, 80),
+        text: item.text,
+        tricky_tokens: item.tricky,
+        comprehension_question: item.question,
+        comprehension_answer: item.answer,
         generated_at: new Date().toISOString(),
       });
     }
@@ -635,7 +1270,7 @@ serve(async (req) => {
       const cefr = await buildCefrSnapshot(sb, scope.languageId, auth.userId).catch(() => null);
       const overallLevel = cefr?.overall.level ?? "B1";
 
-      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+      const { data: result, status: aiStatus, error: aiError } = await callEnglishAIWithStatus<{
         theme?: unknown;
         why_this_theme?: unknown;
         tasks?: unknown;
@@ -652,6 +1287,7 @@ serve(async (req) => {
         },
         { theme: "", why_this_theme: "", tasks: [] },
       );
+      if (aiStatus === "failed") console.error(JSON.stringify({ event: "english_ai_failed", route, request_id: requestId, error: String(aiError ?? "").slice(0, 300) }));
 
       const tasks = Array.isArray(result.tasks)
         ? (result.tasks as unknown[])
@@ -673,8 +1309,6 @@ serve(async (req) => {
         ok: true,
         ai_available: isEnglishAIConfigured(),
         ai_status: aiStatus,
-        ai_provider: provider,
-        ai_error: aiError ?? null,
         theme: toText(result.theme, 200),
         why_this_theme: toText(result.why_this_theme, 600),
         tasks,
@@ -695,7 +1329,7 @@ serve(async (req) => {
         return json(400, { error: "source_text is required (min 30 characters)" });
       }
 
-      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+      const { data: result, status: aiStatus, error: aiError } = await callEnglishAIWithStatus<{
         cultural_references?: unknown;
         register_observations?: unknown;
         regional_variants?: unknown;
@@ -709,6 +1343,7 @@ serve(async (req) => {
         },
         { cultural_references: [], register_observations: [], regional_variants: [], tone_pitfalls: [] },
       );
+      if (aiStatus === "failed") console.error(JSON.stringify({ event: "english_ai_failed", route, request_id: requestId, error: String(aiError ?? "").slice(0, 300) }));
 
       const safeArrayOfStrings = (raw: unknown): string[] =>
         Array.isArray(raw) ? (raw as unknown[]).map((r) => toText(r, 400)).filter(Boolean).slice(0, 6) : [];
@@ -717,8 +1352,6 @@ serve(async (req) => {
         ok: true,
         ai_available: isEnglishAIConfigured(),
         ai_status: aiStatus,
-        ai_provider: provider,
-        ai_error: aiError ?? null,
         cultural_references: safeArrayOfStrings(result.cultural_references),
         register_observations: safeArrayOfStrings(result.register_observations),
         regional_variants: safeArrayOfStrings(result.regional_variants),
@@ -875,7 +1508,7 @@ serve(async (req) => {
         return json(400, { error: "prompt is required (min 20 characters)" });
       }
 
-      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+      const { data: result, status: aiStatus, error: aiError } = await callEnglishAIWithStatus<{
         samples?: unknown;
         deltas?: unknown;
         what_to_practise?: unknown;
@@ -893,6 +1526,7 @@ serve(async (req) => {
         },
         { samples: [], deltas: [], what_to_practise: [] },
       );
+      if (aiStatus === "failed") console.error(JSON.stringify({ event: "english_ai_failed", route, request_id: requestId, error: String(aiError ?? "").slice(0, 300) }));
 
       const samples = Array.isArray(result.samples)
         ? (result.samples as unknown[])
@@ -938,8 +1572,6 @@ serve(async (req) => {
         ok: true,
         ai_available: isEnglishAIConfigured(),
         ai_status: aiStatus,
-        ai_provider: provider,
-        ai_error: aiError ?? null,
         prompt,
         lower_level: lowerLevel,
         mid_level: midLevel,
@@ -963,7 +1595,7 @@ serve(async (req) => {
       const cefr = await buildCefrSnapshot(sb, scope.languageId, auth.userId).catch(() => null);
       const overallLevel = cefr?.overall.level ?? "B1";
 
-      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+      const { data: result, status: aiStatus, error: aiError } = await callEnglishAIWithStatus<{
         theme?: unknown;
         why_this_theme?: unknown;
         anchor_vocabulary?: unknown;
@@ -982,6 +1614,7 @@ serve(async (req) => {
         },
         { theme: "", why_this_theme: "", anchor_vocabulary: [], days: [], weekend_review: "" },
       );
+      if (aiStatus === "failed") console.error(JSON.stringify({ event: "english_ai_failed", route, request_id: requestId, error: String(aiError ?? "").slice(0, 300) }));
 
       const allowedSkills = ["reading", "writing", "listening", "speaking", "grammar", "vocabulary"];
       const days = Array.isArray(result.days)
@@ -1012,8 +1645,6 @@ serve(async (req) => {
         ok: true,
         ai_available: isEnglishAIConfigured(),
         ai_status: aiStatus,
-        ai_provider: provider,
-        ai_error: aiError ?? null,
         theme: toText(result.theme, 200),
         why_this_theme: toText(result.why_this_theme, 600),
         cefr_level: overallLevel,
@@ -1046,7 +1677,7 @@ serve(async (req) => {
       const cefr = await buildCefrSnapshot(sb, scope.languageId, auth.userId).catch(() => null);
       const overallLevel = cefr?.overall.level ?? "B1";
 
-      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+      const { data: result, status: aiStatus, error: aiError } = await callEnglishAIWithStatus<{
         items?: unknown;
         immersion_tip?: unknown;
       }>(
@@ -1063,6 +1694,7 @@ serve(async (req) => {
         },
         { items: [], immersion_tip: "" },
       );
+      if (aiStatus === "failed") console.error(JSON.stringify({ event: "english_ai_failed", route, request_id: requestId, error: String(aiError ?? "").slice(0, 300) }));
 
       const allowedTypes = ["book", "article", "podcast", "youtube", "film", "newsletter", "tv_show"];
       const items = Array.isArray(result.items)
@@ -1085,8 +1717,6 @@ serve(async (req) => {
         ok: true,
         ai_available: isEnglishAIConfigured(),
         ai_status: aiStatus,
-        ai_provider: provider,
-        ai_error: aiError ?? null,
         cefr_level: overallLevel,
         interests,
         session_minutes: sessionMinutes,
@@ -1114,14 +1744,14 @@ serve(async (req) => {
         return json(400, { error: "source_text is required (min 30 characters)" });
       }
 
-      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+      const { data: result, status: aiStatus, error: aiError } = await callEnglishAIWithStatus<{
         chunks?: unknown;
         global_tips?: unknown;
         warm_up?: unknown;
       }>(
         {
           systemPrompt:
-            "You are an English pronunciation and prosody coach preparing a passage for SHADOWING practice. Split the source into 6-12 chunks of 4-7 seconds spoken time (~10-22 words each, naturally bounded by clauses or breath groups — never mid-phrase). For each chunk pick the SINGLE most useful pronunciation focus for a learner at the target level. Return strict JSON: {chunks: array of {index: 0-based, text: the exact words to shadow (preserve casing/punctuation as it should be spoken), focus_label: 1-3 word skill name (e.g. 'linking', 'weak forms', 'rising intonation', 'sentence stress', 'consonant clusters'), focus_explanation: 1 sentence telling the learner exactly what to do with their voice on THIS chunk, watch_for: 1-3 specific words/sounds in the chunk to nail}, warm_up: 1-2 sentence overall framing for the practice session, global_tips: array (max 3) of session-wide reminders}.",
+            "You are an English pronunciation and prosody coach preparing a passage for SHADOWING practice. Split the source into 6-12 chunks of 4-7 seconds spoken time (~10-22 words each, naturally bounded by clauses or breath groups — never mid-phrase). For each chunk pick the SINGLE most useful pronunciation focus for a learner at the target level. Return strict JSON: {chunks: array of {index: 0-based, text: the exact words to shadow (preserve casing/punctuation as it should be spoken), focus_label: 1-3 word skill name (e.g. 'linking', 'weak forms', 'rising intonation', 'sentence stress', 'consonant clusters'), focus_explanation: 1 short sentence in simple English telling the learner exactly what to do with their voice on THIS chunk, watch_for: 1-3 words from the chunk to say carefully}, warm_up: 1-2 short sentences in simple English to start the practice, global_tips: array (max 3) of short reminders in simple English}.",
           userPayload: JSON.stringify({
             source_text: sourceText,
             target_level: targetLevel,
@@ -1131,37 +1761,77 @@ serve(async (req) => {
         },
         { chunks: [], global_tips: [], warm_up: "" },
       );
+      if (aiStatus === "failed") console.error(JSON.stringify({ event: "english_ai_failed", route, request_id: requestId, error: String(aiError ?? "").slice(0, 300) }));
 
-      const chunks = Array.isArray(result.chunks)
+      const aiChunks = aiStatus === "ok" && Array.isArray(result.chunks)
         ? (result.chunks as unknown[])
             .filter((c): c is Record<string, unknown> => !!c && typeof c === "object" && !Array.isArray(c))
-            .map((c, idx) => ({
-              index: Number.isFinite(Number(c.index)) ? Number(c.index) : idx,
-              text: toText(c.text, 600),
-              focus_label: toText(c.focus_label, 80),
-              focus_explanation: toText(c.focus_explanation, 400),
+            .map((c) => ({
+              text: toText(c.text, 400),
+              focus_label: toText(c.focus_label, 60),
+              focus_explanation: toText(c.focus_explanation, 300),
               watch_for: Array.isArray(c.watch_for)
-                ? (c.watch_for as unknown[]).map((w) => toText(w, 80)).filter(Boolean).slice(0, 5)
+                ? (c.watch_for as unknown[]).map((w) => toText(w, 60)).filter(Boolean).slice(0, 4)
                 : [],
             }))
             .filter((c) => c.text && c.focus_label)
             .slice(0, 14)
+            .map((c, index) => ({ index, ...c }))
         : [];
+      const usable = aiChunks.length >= 2;
 
-      const globalTips = Array.isArray(result.global_tips)
-        ? (result.global_tips as unknown[]).map((t) => toText(t, 320)).filter(Boolean).slice(0, 4)
+      // Without AI: split the passage into short breath groups (sentences,
+      // then commas, then about 12 words) so shadowing still works.
+      const splitIntoChunks = (passage: string): string[] => {
+        const out: string[] = [];
+        const wordsOf = (s: string) => s.split(/\s+/).filter(Boolean);
+        for (const sentence of passage.replace(/\s+/g, " ").split(/(?<=[.!?])\s+/)) {
+          const trimmed = sentence.trim();
+          if (!trimmed) continue;
+          if (wordsOf(trimmed).length <= 18) {
+            out.push(trimmed);
+            continue;
+          }
+          let current = "";
+          for (const part of trimmed.split(/(?<=[,;:])\s+|\s+(?=[–—-]\s)/)) {
+            const candidate = current ? `${current} ${part}` : part;
+            if (current && wordsOf(candidate).length > 18) {
+              out.push(current);
+              current = part;
+            } else {
+              current = candidate;
+            }
+          }
+          if (current) out.push(current);
+        }
+        const final: string[] = [];
+        for (const chunk of out) {
+          const w = wordsOf(chunk);
+          if (w.length <= 22) {
+            final.push(chunk);
+          } else {
+            for (let i = 0; i < w.length; i += 12) final.push(w.slice(i, i + 12).join(" "));
+          }
+        }
+        return final.slice(0, 14);
+      };
+      const chunks = usable
+        ? aiChunks
+        : splitIntoChunks(sourceText).map((text, index) => ({ index, text, focus_label: "", focus_explanation: "", watch_for: [] as string[] }));
+
+      const globalTips = usable && Array.isArray(result.global_tips)
+        ? (result.global_tips as unknown[]).map((t) => toText(t, 300)).filter(Boolean).slice(0, 3)
         : [];
 
       return json(200, {
         ok: true,
         ai_available: isEnglishAIConfigured(),
         ai_status: aiStatus,
-        ai_provider: provider,
-        ai_error: aiError ?? null,
+        fallback: !usable,
         target_level: targetLevel,
         accent,
         source_text_length: sourceText.length,
-        warm_up: toText(result.warm_up, 400),
+        warm_up: usable ? toText(result.warm_up, 300) : "",
         chunks,
         global_tips: globalTips,
         generated_at: new Date().toISOString(),
@@ -1334,7 +2004,7 @@ serve(async (req) => {
 
       const cefr = await buildCefrSnapshot(sb, scope.languageId, auth.userId).catch(() => null);
 
-      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+      const { data: result, status: aiStatus, error: aiError } = await callEnglishAIWithStatus<{
         reply?: unknown;
         suggested_memories?: unknown;
         suggested_actions?: unknown;
@@ -1351,6 +2021,7 @@ serve(async (req) => {
         },
         { reply: "", suggested_memories: [], suggested_actions: [] },
       );
+      if (aiStatus === "failed") console.error(JSON.stringify({ event: "english_ai_failed", route, request_id: requestId, error: String(aiError ?? "").slice(0, 300) }));
 
       const allowedKinds = ["goal", "preference", "struggle", "win", "context", "deadline"];
       const suggestedMemories = Array.isArray(result.suggested_memories)
@@ -1380,8 +2051,6 @@ serve(async (req) => {
         ok: true,
         ai_available: isEnglishAIConfigured(),
         ai_status: aiStatus,
-        ai_provider: provider,
-        ai_error: aiError ?? null,
         reply: toText(result.reply, 4000),
         suggested_memories: suggestedMemories,
         suggested_actions: suggestedActions,
@@ -1412,8 +2081,7 @@ serve(async (req) => {
         return json(400, { error: "target_level must be one of A1 A2 B1 B2 C1 C2" });
       }
 
-      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
-        accuracy_score?: unknown;
+      const { data: result, status: aiStatus, error: aiError } = await callEnglishAIWithStatus<{
         per_word?: unknown;
         prosody_notes?: unknown;
         l1_interference?: unknown;
@@ -1421,7 +2089,7 @@ serve(async (req) => {
       }>(
         {
           systemPrompt:
-            "You are an English pronunciation coach analysing a learner's spoken attempt. You receive (a) the canonical target text, (b) what a speech recognizer heard, (c) optional learner L1, (d) target CEFR level. Compare carefully — recognizer errors include substitutions ('three'→'tree'), omissions, and run-ons (worst-case word boundaries). Diagnose the likely pronunciation issues (specific phonemes, stress placement, weak forms, linking) — NOT spelling. Return strict JSON: {accuracy_score: integer 0-100 (rough overall match), per_word: array of {target_word, what_was_heard, likely_issue: 1 line on the phonetic problem, fix_tip: 1 line on how to articulate it}, prosody_notes: array (max 3) of observations on stress / rhythm / linking based on the divergence pattern, l1_interference: array (max 2) of common L1-driven issues likely behind these errors (only if user_l1 hints at it; else empty), retry_priority: 1 sentence telling the learner the SINGLE most useful thing to fix on the next attempt}.",
+            "You are an English pronunciation coach analysing a learner's spoken attempt. You receive (a) the canonical target text, (b) what a speech recognizer heard, (c) optional learner L1, (d) target CEFR level. Compare carefully — recognizer errors include substitutions ('three'→'tree'), omissions, and run-ons (worst-case word boundaries). Diagnose the likely pronunciation issues (specific phonemes, stress placement, weak forms, linking) — NOT spelling. Write every tip in short, simple English that a B1 learner understands. Return strict JSON: {per_word: array of {target_word, what_was_heard, likely_issue: 1 line on the phonetic problem, fix_tip: 1 line on how to articulate it}, prosody_notes: array (max 3) of observations on stress / rhythm / linking based on the divergence pattern, l1_interference: array (max 2) of common L1-driven issues likely behind these errors (only if user_l1 hints at it; else empty), retry_priority: 1 sentence telling the learner the SINGLE most useful thing to fix on the next attempt}.",
           userPayload: JSON.stringify({
             target_text: targetText,
             recognized_text: recognized,
@@ -1430,44 +2098,69 @@ serve(async (req) => {
           }),
           temperature: 0.3,
         },
-        { accuracy_score: 0, per_word: [], prosody_notes: [], l1_interference: [], retry_priority: "" },
+        { per_word: [], prosody_notes: [], l1_interference: [], retry_priority: "" },
       );
+      if (aiStatus === "failed") console.error(JSON.stringify({ event: "english_ai_failed", route, request_id: requestId, error: String(aiError ?? "").slice(0, 300) }));
 
-      const accuracyScore = Math.max(0, Math.min(100, Number(result.accuracy_score) || 0));
-      const perWord = Array.isArray(result.per_word)
+      // Rule-based word match (always returned): which words of the target
+      // the speech recognizer heard. This is a measured number, not a guess.
+      const normalizeWords = (s: string) => s.toLowerCase().replace(/[’']/g, "'").replace(/[^a-z0-9'\s-]/g, " ").split(/[\s-]+/).filter(Boolean);
+      const targetWords = normalizeWords(targetText);
+      const heardCounts = new Map<string, number>();
+      for (const w of normalizeWords(recognized)) heardCounts.set(w, (heardCounts.get(w) ?? 0) + 1);
+      const missed: string[] = [];
+      let matched = 0;
+      for (const w of targetWords) {
+        const left = heardCounts.get(w) ?? 0;
+        if (left > 0) {
+          matched += 1;
+          heardCounts.set(w, left - 1);
+        } else if (!missed.includes(w)) {
+          missed.push(w);
+        }
+      }
+      const wordsTotal = targetWords.length;
+      const accuracyScore = wordsTotal ? Math.round((matched / wordsTotal) * 100) : 0;
+
+      const lowerTarget = targetText.toLowerCase();
+      const perWord = aiStatus === "ok" && Array.isArray(result.per_word)
         ? (result.per_word as unknown[])
             .filter((w): w is Record<string, unknown> => !!w && typeof w === "object" && !Array.isArray(w))
             .map((w) => ({
-              target_word: toText(w.target_word, 80),
-              what_was_heard: toText(w.what_was_heard, 80),
+              target_word: toText(w.target_word, 60),
+              what_was_heard: toText(w.what_was_heard, 60),
               likely_issue: toText(w.likely_issue, 240),
-              fix_tip: toText(w.fix_tip, 320),
+              fix_tip: toText(w.fix_tip, 300),
             }))
-            .filter((w) => w.target_word && w.likely_issue)
+            .filter((w) => w.target_word && w.likely_issue && lowerTarget.includes(w.target_word.toLowerCase()))
             .slice(0, 12)
         : [];
-      const prosodyNotes = Array.isArray(result.prosody_notes)
-        ? (result.prosody_notes as unknown[]).map((n) => toText(n, 320)).filter(Boolean).slice(0, 4)
+      const prosodyNotes = aiStatus === "ok" && Array.isArray(result.prosody_notes)
+        ? (result.prosody_notes as unknown[]).map((n) => toText(n, 300)).filter(Boolean).slice(0, 3)
         : [];
-      const l1Interference = Array.isArray(result.l1_interference)
-        ? (result.l1_interference as unknown[]).map((n) => toText(n, 320)).filter(Boolean).slice(0, 3)
+      const l1Interference = aiStatus === "ok" && Array.isArray(result.l1_interference)
+        ? (result.l1_interference as unknown[]).map((n) => toText(n, 300)).filter(Boolean).slice(0, 2)
         : [];
+      const retryPriority = aiStatus === "ok" ? toText(result.retry_priority, 300) : "";
+      const usable = Boolean(retryPriority) || perWord.length > 0 || prosodyNotes.length > 0;
 
       return json(200, {
         ok: true,
         ai_available: isEnglishAIConfigured(),
         ai_status: aiStatus,
-        ai_provider: provider,
-        ai_error: aiError ?? null,
+        fallback: !usable,
         target_text: targetText,
         recognized_text: recognized,
         user_l1: userL1 || null,
         target_level: targetLevel,
         accuracy_score: accuracyScore,
+        words_total: wordsTotal,
+        words_matched: matched,
+        missed_words: missed.slice(0, 15),
         per_word: perWord,
         prosody_notes: prosodyNotes,
         l1_interference: l1Interference,
-        retry_priority: toText(result.retry_priority, 400),
+        retry_priority: retryPriority,
         generated_at: new Date().toISOString(),
       });
     }
@@ -1507,7 +2200,7 @@ serve(async (req) => {
         ? targetLevel
         : cefr?.overall.level ?? "B1";
 
-      const { data: result, status: aiStatus, error: aiError, provider } = await callEnglishAIWithStatus<{
+      const { data: result, status: aiStatus, error: aiError } = await callEnglishAIWithStatus<{
         partner_reply?: unknown;
         correction?: unknown;
         suggested_user_reply?: unknown;
@@ -1531,6 +2224,7 @@ serve(async (req) => {
           scenario_progress: "",
         },
       );
+      if (aiStatus === "failed") console.error(JSON.stringify({ event: "english_ai_failed", route, request_id: requestId, error: String(aiError ?? "").slice(0, 300) }));
 
       let correctionOut: { original: string; better: string; why: string } | null = null;
       const corrRaw = result.correction;
@@ -1546,8 +2240,6 @@ serve(async (req) => {
         ok: true,
         ai_available: isEnglishAIConfigured(),
         ai_status: aiStatus,
-        ai_provider: provider,
-        ai_error: aiError ?? null,
         cefr_level: effectiveLevel,
         partner_reply: toText(result.partner_reply, 1200),
         correction: correctionOut,
