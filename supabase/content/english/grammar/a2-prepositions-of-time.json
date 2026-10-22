@@ -1,0 +1,114 @@
+{
+  "item": {
+    "slug": "a2-prepositions-of-time",
+    "title": "In, on, at for time",
+    "level": "A2",
+    "focus_area": "prepositions",
+    "explanation_text": "Use at for clock times and a few fixed phrases: at 7 o'clock, at noon, at night, at the weekend (British English). Use on for days and dates: on Monday, on 21 March, on my birthday, on Friday morning. Use in for longer periods: in the morning, in July, in winter, in 2010. Don't use in, on or at before this, next, last, every, today, tomorrow or yesterday: I saw her last Monday. We're leaving next week.",
+    "contrast_text": "Compare: in the morning, but on Monday morning. at night, but in the evening.",
+    "common_error_pattern": "Using in with days and dates ('in Monday'), or putting a preposition before next, last or every ('on next week').",
+    "tags": [
+      "prepositions",
+      "time"
+    ],
+    "examples": [
+      {
+        "bad": "The lesson starts in 9 o'clock.",
+        "good": "The lesson starts at 9 o'clock."
+      },
+      {
+        "bad": "We celebrate Navruz in 21 March.",
+        "good": "We celebrate Navruz on 21 March."
+      },
+      {
+        "bad": "My birthday is on July.",
+        "good": "My birthday is in July."
+      },
+      {
+        "bad": "I'll call you on next Friday.",
+        "good": "I'll call you next Friday."
+      }
+    ]
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Type in, on or at.",
+      "prompt_text": "The shop opens ___ 8 a.m.",
+      "accepted_answers": [
+        "at"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Type in, on or at.",
+      "prompt_text": "We usually visit my grandparents ___ Sundays.",
+      "accepted_answers": [
+        "on"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Type in, on or at.",
+      "prompt_text": "It is very hot in Tashkent ___ summer.",
+      "accepted_answers": [
+        "in"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Type in, on or at.",
+      "prompt_text": "My sister was born ___ 2009.",
+      "accepted_answers": [
+        "in"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Type in, on or at.",
+      "prompt_text": "What did you do ___ your birthday?",
+      "accepted_answers": [
+        "on"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "instructions": "Find the mistake and write the whole sentence correctly.",
+      "prompt_text": "I don't like driving in night.",
+      "accepted_answers": [
+        "I don't like driving at night.",
+        "I do not like driving at night."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "instructions": "Find the mistake and write the whole sentence correctly.",
+      "prompt_text": "We are going to Samarkand on next weekend.",
+      "accepted_answers": [
+        "We are going to Samarkand next weekend.",
+        "We're going to Samarkand next weekend."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions"
+    }
+  ]
+}

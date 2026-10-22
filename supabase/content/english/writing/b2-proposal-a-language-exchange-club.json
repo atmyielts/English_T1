@@ -1,0 +1,98 @@
+{
+  "item": {
+    "slug": "b2-proposal-a-language-exchange-club",
+    "title": "Proposal: A Language Exchange Club",
+    "level": "B2",
+    "prompt_text": "Your university has international students from several countries, and many local students want more chances to practise speaking English. The student council is inviting proposals for new activities. Write a proposal for a language exchange club.",
+    "genre": "proposal",
+    "target_grammar": "would / could for suggestions; passive (would be held, could be funded)",
+    "target_structure": "heading + purpose + background + how the club would work + what is needed + benefits + recommendation",
+    "expected_length_min": 180,
+    "expected_length_max": 240,
+    "target_vocabulary": [
+      "purpose",
+      "proposal",
+      "participants",
+      "sessions",
+      "would be held",
+      "volunteers",
+      "budget",
+      "benefit",
+      "recommend"
+    ],
+    "audience": "The student council",
+    "checklist": [
+      {
+        "point": "State the purpose of the proposal",
+        "keywords": [
+          "purpose",
+          "aim",
+          "propose",
+          "this proposal",
+          "introduction"
+        ]
+      },
+      {
+        "point": "Explain the background or need",
+        "keywords": [
+          "international students",
+          "practise",
+          "practice",
+          "opportunity",
+          "currently",
+          "at the moment",
+          "need"
+        ]
+      },
+      {
+        "point": "Describe how the club would work",
+        "keywords": [
+          "would",
+          "sessions",
+          "meet",
+          "week",
+          "pairs",
+          "groups",
+          "topics",
+          "held"
+        ]
+      },
+      {
+        "point": "Say what resources are needed",
+        "keywords": [
+          "room",
+          "budget",
+          "volunteers",
+          "need",
+          "require",
+          "equipment",
+          "funding",
+          "snacks"
+        ]
+      },
+      {
+        "point": "Explain the benefits",
+        "keywords": [
+          "benefit",
+          "improve",
+          "confidence",
+          "friendships",
+          "culture",
+          "help"
+        ]
+      },
+      {
+        "point": "Make a clear recommendation",
+        "keywords": [
+          "recommend",
+          "suggest",
+          "conclusion",
+          "strongly",
+          "i hope",
+          "approve"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

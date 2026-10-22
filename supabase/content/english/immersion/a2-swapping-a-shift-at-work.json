@@ -1,0 +1,175 @@
+{
+  "item": {
+    "slug": "a2-swapping-a-shift-at-work",
+    "title": "Swapping a shift at your part-time job",
+    "level": "A2",
+    "context_text": "You work part-time at a café in your university building. Next Thursday morning you have an exam, but you are on the rota that day. You need to find someone to swap with.",
+    "objective_text": "Read the rota, find a colleague who can swap, and tell your manager.",
+    "mission_type": "workplace",
+    "target_grammar": "can / could for requests (Could you work my shift?)",
+    "cultural_note": "In many workplaces, you find a colleague to swap with first and then ask the manager. Asking early and giving a reason is seen as professional.",
+    "target_vocabulary": [
+      "rota",
+      "shift",
+      "swap",
+      "day off",
+      "free"
+    ],
+    "success_conditions": [
+      "Read the rota and the swap rules",
+      "Understand who can help you",
+      "Ask a colleague to swap and explain why",
+      "Tell your manager about the change"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the staff rota",
+      "instructions": "Read next week's rota. Then answer the questions.",
+      "prompt_text": "STAFF ROTA — next week\nMon: Aziz, Lola (9–3)\nTue: You, Timur (12–6)\nWed: Lola, Timur (12–6)\nThu: You, Aziz (9–3)\nFri: Lola, You (12–6)\nTo swap a shift: first find a person to swap with, then tell the manager by Friday.",
+      "estimated_minutes": 3,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "Which days do you work next week?",
+          "options": [
+            "Monday, Thursday and Friday",
+            "Tuesday, Thursday and Friday",
+            "Tuesday, Wednesday and Friday"
+          ],
+          "answer_index": 1,
+          "explanation": "The rota has \"You\" on Tuesday, Thursday and Friday."
+        },
+        {
+          "prompt": "What must you do first to swap a shift?",
+          "options": [
+            "Tell the manager",
+            "Find a person to swap with",
+            "Write to the university"
+          ],
+          "answer_index": 1,
+          "explanation": "\"First find a person to swap with, then tell the manager.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to Lola",
+      "instructions": "You asked Lola for help. She answers with a voice message. Listen and answer the questions. You can listen again.",
+      "prompt_text": "Hi, it's Lola. I got your message about Thursday. Sorry, I can't help. I have a class on Thursday morning. But Timur is free that day. He wants a day off on Wednesday, so maybe you can swap with him. Good luck with your exam!",
+      "estimated_minutes": 3,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "gb",
+      "questions": [
+        {
+          "prompt": "Why can't Lola help?",
+          "options": [
+            "She is ill",
+            "She has a class",
+            "She is on holiday"
+          ],
+          "answer_index": 1,
+          "explanation": "\"I have a class on Thursday morning.\""
+        },
+        {
+          "prompt": "What does Timur want?",
+          "options": [
+            "A day off on Wednesday",
+            "More hours on Friday",
+            "To work in the evening"
+          ],
+          "answer_index": 0,
+          "explanation": "\"He wants a day off on Wednesday.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Write to Timur",
+      "instructions": "Write to Timur. Ask him to work your Thursday shift, offer to work his Wednesday shift, and say why.",
+      "prompt_text": "Timur: Hi! Lola says you want to talk to me?",
+      "estimated_minutes": 4,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Ask Timur to swap shifts and explain why.",
+      "points": [
+        {
+          "label": "ask him to swap",
+          "any": [
+            "swap",
+            "change",
+            "could you",
+            "can you",
+            "would you"
+          ]
+        },
+        {
+          "label": "say the days",
+          "any": [
+            "thursday",
+            "wednesday"
+          ]
+        },
+        {
+          "label": "give the reason",
+          "any": [
+            "exam",
+            "test",
+            "study"
+          ]
+        }
+      ],
+      "model_answer": "Hi Timur! Yes, I have an exam next Thursday morning. Could you work my Thursday shift from 9 to 3? I can work your Wednesday shift from 12 to 6. Thank you!",
+      "min_words": null
+    },
+    {
+      "title": "Tell your manager",
+      "instructions": "Timur says yes. Now tell your manager about the swap. Explain the change and the reason.",
+      "prompt_text": "Manager: Hi, you wanted to see me?",
+      "estimated_minutes": 3,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Explain the swap and the reason to your manager.",
+      "points": [
+        {
+          "label": "say you are swapping",
+          "any": [
+            "swap",
+            "change",
+            "switch"
+          ]
+        },
+        {
+          "label": "say who and which days",
+          "any": [
+            "timur",
+            "thursday",
+            "wednesday"
+          ]
+        },
+        {
+          "label": "give the reason",
+          "any": [
+            "exam",
+            "test"
+          ]
+        }
+      ],
+      "model_answer": "Yes. I have an exam next Thursday, so Timur and I want to swap shifts. He can work on Thursday and I can work on Wednesday. Is that OK?",
+      "min_words": null
+    }
+  ]
+}

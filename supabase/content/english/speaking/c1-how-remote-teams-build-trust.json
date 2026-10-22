@@ -1,0 +1,87 @@
+{
+  "item": {
+    "slug": "c1-how-remote-teams-build-trust",
+    "title": "How Remote Teams Build Trust",
+    "level": "C1",
+    "prompt_text": "You have been invited to speak at an online meetup for IT professionals in Tashkent. Explain why trust is harder to build in fully remote teams, what managers and team members can do about it, and give an example from your own experience or observation.",
+    "prompt_type": "guided_response",
+    "target_duration_seconds": 135,
+    "target_grammar": "cause and effect language (stems from, leads to, as a consequence); modal verbs for recommendations",
+    "fluency_objective": "Signpost the talk clearly: the problem, the causes, the solutions, then an example and a takeaway.",
+    "pronunciation_objective": "Chunk long sentences into meaningful groups with short pauses, so listeners on a video call can follow.",
+    "target_vocabulary": [
+      "face-to-face",
+      "misread",
+      "stems from",
+      "visibility",
+      "over-communicate",
+      "check-in",
+      "psychological safety",
+      "deliver on",
+      "as a consequence",
+      "the takeaway"
+    ],
+    "task_type": "explain",
+    "model_answer": "Thanks for having me. I want to talk about something every remote team struggles with sooner or later: trust. In an office, trust builds up almost without effort. You see people arrive, you overhear how they solve problems, you have lunch together. Remotely, most of that disappears. You only see a colleague's output, usually in short written messages, and it's very easy to misread tone. A quick 'OK.' in a chat can feel cold, even when it isn't meant that way. As a consequence, small doubts grow, and people start to assume the worst. So what can we do? For managers, I'd say the key is visibility and predictability. Make priorities and decisions visible in one shared place, and hold short, regular check-ins, not to control people, but so nobody feels forgotten. For team members, it helps to over-communicate a little: say what you're working on, flag problems early, and, crucially, deliver on small promises. Trust is really a record of kept commitments. One team I worked with had developers in four cities, and they introduced a fifteen-minute call every Monday with no work talk at all, just weekend stories. It sounded like a waste of time, but within a month people were asking each other for help much more openly. So the takeaway is this: in a remote team, trust doesn't happen by accident. You have to design it.",
+    "model_opening": "Thanks for having me. I want to talk about something every remote team struggles with sooner or later: trust.",
+    "cues": [
+      {
+        "text": "why trust is harder remotely",
+        "keywords": [
+          "misread",
+          "disappears",
+          "only see",
+          "written",
+          "tone",
+          "harder",
+          "in an office"
+        ]
+      },
+      {
+        "text": "what managers can do",
+        "keywords": [
+          "managers",
+          "visibility",
+          "check-in",
+          "priorities",
+          "regular",
+          "predictab"
+        ]
+      },
+      {
+        "text": "what team members can do",
+        "keywords": [
+          "team members",
+          "over-communicate",
+          "flag",
+          "deliver",
+          "promises",
+          "commitments"
+        ]
+      },
+      {
+        "text": "an example",
+        "keywords": [
+          "one team",
+          "for example",
+          "for instance",
+          "i worked",
+          "in my experience",
+          "i've seen"
+        ]
+      },
+      {
+        "text": "a clear takeaway",
+        "keywords": [
+          "takeaway",
+          "so",
+          "in short",
+          "the key",
+          "to sum up",
+          "ultimately"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

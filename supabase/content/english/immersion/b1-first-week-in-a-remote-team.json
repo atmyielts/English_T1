@@ -1,0 +1,227 @@
+{
+  "item": {
+    "slug": "b1-first-week-in-a-remote-team",
+    "title": "Your first week in a remote team",
+    "level": "B1",
+    "context_text": "You have just started a remote job as a junior web developer for a small software company in Europe. You work from Tashkent, and the whole team communicates in English.",
+    "objective_text": "Understand how the team works, introduce yourself, and give your first stand-up update.",
+    "mission_type": "workplace",
+    "target_grammar": "past simple, present perfect and future for updates (Yesterday I set up… I've found… Today I'm going to…)",
+    "cultural_note": "In many remote teams, people ask questions in a shared channel rather than in private messages, so everyone can learn. Asking for help early is seen as a strength, not a weakness.",
+    "target_vocabulary": [
+      "stand-up",
+      "task",
+      "ticket",
+      "stuck",
+      "channel"
+    ],
+    "success_conditions": [
+      "Understand the team's routines and your first task",
+      "Introduce yourself in the team chat",
+      "Understand the team lead's instructions",
+      "Give a clear stand-up update: yesterday, today, a problem"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the welcome email",
+      "instructions": "Read the welcome email from your team lead. Then answer the questions.",
+      "prompt_text": "Subject: Welcome to the team!\nHi and welcome! Here's what you need for your first week:\n• Daily stand-up: a 15-minute video call at 2 pm your time. Say what you did yesterday, what you'll do today, and any problems.\n• Your first task: fix the contact form on our client's website (ticket #112).\n• Questions: please ask in the #dev-help channel, not in private messages, so everyone can learn.\n• On Friday at 3 pm your time we have a team quiz, just for fun!\nBest,\nAnna (Team Lead)",
+      "estimated_minutes": 4,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "What should you say at stand-up?",
+          "options": [
+            "Only your problems",
+            "Yesterday's work, today's plan and any problems",
+            "A summary of the whole week"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Say what you did yesterday, what you'll do today, and any problems.\""
+        },
+        {
+          "prompt": "Where should you ask questions?",
+          "options": [
+            "In private messages to Anna",
+            "In the #dev-help channel",
+            "By email"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Please ask in the #dev-help channel, not in private messages.\""
+        },
+        {
+          "prompt": "What is your first task?",
+          "options": [
+            "Fix the contact form",
+            "Build a new website",
+            "Organise the team quiz"
+          ],
+          "answer_index": 0,
+          "explanation": "\"Your first task: fix the contact form on our client's website.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Introduce yourself",
+      "instructions": "Anna asks you to introduce yourself in the team chat. Say who you are, where you work from, a little about your experience, and what you're looking forward to.",
+      "prompt_text": "Anna: Everyone, please welcome our new developer! Tell us a bit about yourself.",
+      "estimated_minutes": 5,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Write a friendly, informative introduction for your new team.",
+      "points": [
+        {
+          "label": "say who you are",
+          "any": [
+            "my name",
+            "i'm",
+            "i am",
+            "junior"
+          ]
+        },
+        {
+          "label": "say where you work from",
+          "any": [
+            "tashkent",
+            "uzbekistan",
+            "based in",
+            "work from",
+            "live in"
+          ]
+        },
+        {
+          "label": "mention your experience",
+          "any": [
+            "experience",
+            "worked",
+            "studied",
+            "university",
+            "course",
+            "years",
+            "project*",
+            "javascript",
+            "python",
+            "html",
+            "css"
+          ]
+        },
+        {
+          "label": "say what you're looking forward to",
+          "any": [
+            "looking forward",
+            "excited",
+            "can't wait",
+            "happy to",
+            "glad to",
+            "learn"
+          ]
+        }
+      ],
+      "model_answer": "Hi everyone! I'm Timur, and I'm working from Tashkent, Uzbekistan. I studied computer science at university and I've worked on a few small websites with JavaScript. I'm really looking forward to working with you all and learning a lot!",
+      "min_words": null
+    },
+    {
+      "title": "Listen to the team lead",
+      "instructions": "At the first stand-up, Anna gives you some instructions. Listen and answer the questions.",
+      "prompt_text": "OK, a quick one today. Timur, about your ticket: the contact form problem only happens on mobile phones, not on computers, so start there. Please don't change the design. If you're stuck for more than an hour, write in dev-help. Don't wait until the next day. Oh, and there's no stand-up on Friday, because of the quiz.",
+      "estimated_minutes": 3,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "gb",
+      "questions": [
+        {
+          "prompt": "Where does the contact form problem happen?",
+          "options": [
+            "Only on computers",
+            "Only on mobile phones",
+            "On all devices"
+          ],
+          "answer_index": 1,
+          "explanation": "\"The contact form problem only happens on mobile phones, not on computers.\""
+        },
+        {
+          "prompt": "What should Timur do if he's stuck for more than an hour?",
+          "options": [
+            "Wait until the next stand-up",
+            "Write in dev-help",
+            "Call Anna"
+          ],
+          "answer_index": 1,
+          "explanation": "\"If you're stuck for more than an hour, write in dev-help.\""
+        },
+        {
+          "prompt": "What's different on Friday?",
+          "options": [
+            "There's no stand-up",
+            "The stand-up is longer",
+            "The quiz is cancelled"
+          ],
+          "answer_index": 0,
+          "explanation": "\"There's no stand-up on Friday, because of the quiz.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Give your stand-up update",
+      "instructions": "It's your second day. Give your stand-up update out loud: what you did yesterday, what you'll do today, and one problem or question.",
+      "prompt_text": "Anna: Timur, your turn. How's it going?",
+      "estimated_minutes": 3,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Give a short update: yesterday, today, and one problem or question.",
+      "points": [
+        {
+          "label": "say what you did yesterday",
+          "any": [
+            "yesterday",
+            "i found",
+            "i started",
+            "i set up",
+            "i looked",
+            "i checked"
+          ]
+        },
+        {
+          "label": "say what you'll do today",
+          "any": [
+            "today",
+            "going to",
+            "i'll",
+            "i will",
+            "plan"
+          ]
+        },
+        {
+          "label": "mention a problem or question",
+          "any": [
+            "problem",
+            "question",
+            "stuck",
+            "not sure",
+            "issue",
+            "help",
+            "don't know",
+            "who can"
+          ]
+        }
+      ],
+      "model_answer": "Yesterday I set up my laptop and I found the bug in the contact form. The button is hidden on small screens. Today I'm going to fix it and test it on different phones. One question: who can check my code when it's ready?",
+      "min_words": null
+    }
+  ]
+}

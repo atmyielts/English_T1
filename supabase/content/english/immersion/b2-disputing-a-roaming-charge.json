@@ -1,0 +1,227 @@
+{
+  "item": {
+    "slug": "b2-disputing-a-roaming-charge",
+    "title": "Disputing an unexpected phone bill",
+    "level": "B2",
+    "context_text": "You've just come back from a week's holiday in Turkey. Your monthly mobile bill is three times higher than usual, even though you were sure you had switched off mobile data roaming before you left.",
+    "objective_text": "Understand the charge, weigh the operator's offer, make a formal written case, and pass on what you've learned.",
+    "mission_type": "problem_solving",
+    "target_grammar": "reporting and hedging (According to your agent… I was not made aware that…)",
+    "cultural_note": "With most service providers, a polite but firm written complaint creates a record and is taken more seriously than a phone call. Stating the outcome you expect is normal, not rude.",
+    "target_vocabulary": [
+      "roaming",
+      "statement",
+      "goodwill gesture",
+      "formal complaint",
+      "waive"
+    ],
+    "success_conditions": [
+      "Identify what caused the high bill and the deadline for a review",
+      "Understand the cause the operator gives and the two options offered",
+      "Write a formal complaint that explains why the charge is unfair and states the outcome you expect",
+      "Give a friend practical advice to avoid the same problem"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read your bill",
+      "instructions": "Read your mobile statement. Then answer the questions.",
+      "prompt_text": "MONTHLY STATEMENT — April\nStandard plan: 90,000 som\nRoaming data (Turkey): 2.1 GB — 186,000 som\nInternational calls: 0 som\nTotal: 276,000 som\nNote: Roaming charges apply when data roaming is switched on in your phone settings. Customers may request a review of any charge within 30 days of the statement date.",
+      "estimated_minutes": 4,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "What made the bill so high?",
+          "options": [
+            "International calls",
+            "Mobile data used abroad",
+            "A new, more expensive plan"
+          ],
+          "answer_index": 1,
+          "explanation": "The extra cost is \"Roaming data (Turkey): 2.1 GB — 186,000 som\"."
+        },
+        {
+          "prompt": "What does the note suggest?",
+          "options": [
+            "Roaming is free for all customers",
+            "You can only be charged if data roaming was switched on",
+            "Charges cannot be reviewed"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Roaming charges apply when data roaming is switched on in your phone settings.\""
+        },
+        {
+          "prompt": "How long do you have to ask for a review?",
+          "options": [
+            "7 days",
+            "30 days from the statement date",
+            "Until the next bill"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Within 30 days of the statement date.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to the call centre",
+      "instructions": "You phone the operator. Listen to the agent and answer the questions.",
+      "prompt_text": "Thanks for holding. So, I've looked at your account. You're right that data roaming was switched off when you left. But our records show it was switched on again on the fifth of April, probably during an automatic phone update. I'm afraid I can't remove the charge completely, but as this is your first roaming charge, I can offer a fifty per cent goodwill refund today. Alternatively, you can submit a formal complaint in writing, and our billing team will review it within ten working days.",
+      "estimated_minutes": 4,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "us",
+      "questions": [
+        {
+          "prompt": "According to the agent, what probably caused the problem?",
+          "options": [
+            "You changed your plan",
+            "An automatic phone update switched roaming on",
+            "The network made a billing error"
+          ],
+          "answer_index": 1,
+          "explanation": "\"It was switched on again… probably during an automatic phone update.\""
+        },
+        {
+          "prompt": "What are your two options?",
+          "options": [
+            "A full refund or a new phone",
+            "A 50% refund now or a formal written review",
+            "A discount next month or a new SIM card"
+          ],
+          "answer_index": 1,
+          "explanation": "She offers \"a fifty per cent goodwill refund today\" or \"a formal complaint in writing\"."
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Write a formal complaint",
+      "instructions": "You decide not to accept the 50% offer. Write a formal complaint to the billing team: explain the situation, say why you think the charge is unfair, and state the outcome you expect.",
+      "prompt_text": "To: Billing Team\nSubject: Request for review — April statement",
+      "estimated_minutes": 10,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Make a clear, polite case that the charge is unfair and ask for a specific outcome.",
+      "points": [
+        {
+          "label": "explain the situation",
+          "any": [
+            "abroad",
+            "holiday",
+            "turkey",
+            "travel*",
+            "switched off",
+            "turned off",
+            "update"
+          ]
+        },
+        {
+          "label": "say why it is unfair",
+          "any": [
+            "unfair",
+            "not aware",
+            "unaware",
+            "without my",
+            "no warning",
+            "no notification",
+            "no text",
+            "no message",
+            "didn't",
+            "did not"
+          ]
+        },
+        {
+          "label": "state the outcome you expect",
+          "any": [
+            "full refund",
+            "refund",
+            "remove",
+            "cancel",
+            "waive",
+            "credit",
+            "reimburs*"
+          ]
+        },
+        {
+          "label": "refer to evidence",
+          "any": [
+            "attached",
+            "screenshot",
+            "evidence",
+            "records",
+            "settings"
+          ]
+        }
+      ],
+      "model_answer": "Dear Billing Team,\nI am writing to request a review of the roaming data charge of 186,000 som on my April statement. Before travelling to Turkey, I deliberately switched off data roaming. According to your agent, it was switched on again during an automatic phone update, which I was not aware of. I also received no text message warning me that I was paying roaming rates. I therefore consider the charge unfair and ask you to remove it in full. I have attached a screenshot of my settings from before the trip.\nYours faithfully,\nDilnoza Rakhimova",
+      "min_words": null
+    },
+    {
+      "title": "Advise a friend",
+      "instructions": "A friend is about to travel abroad and asks for advice. Using your experience, tell her how to avoid a surprise bill.",
+      "prompt_text": "Friend: I'm flying to Dubai next week. Anything I should know about my phone?",
+      "estimated_minutes": 4,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Give practical, specific advice based on what happened to you.",
+      "points": [
+        {
+          "label": "warn about the cost",
+          "any": [
+            "expensive",
+            "cost",
+            "bill",
+            "charge*",
+            "pay"
+          ]
+        },
+        {
+          "label": "tell her to switch off roaming",
+          "any": [
+            "switch off",
+            "turn off",
+            "data roaming",
+            "roaming",
+            "settings"
+          ]
+        },
+        {
+          "label": "mention checking after updates",
+          "any": [
+            "update",
+            "check",
+            "double check",
+            "again"
+          ]
+        },
+        {
+          "label": "suggest an alternative",
+          "any": [
+            "local sim",
+            "sim",
+            "esim",
+            "wi fi",
+            "wifi",
+            "package",
+            "bundle"
+          ]
+        }
+      ],
+      "model_answer": "Yes, be careful with roaming, because it can be really expensive. Switch off data roaming in your settings before you go, and check it again after any phone update, because that's what happened to me. Honestly, it's cheaper to buy a local SIM or a roaming package, and use Wi-Fi when you can.",
+      "min_words": null
+    }
+  ]
+}

@@ -1,0 +1,153 @@
+{
+  "item": {
+    "slug": "b2-freelance-price-negotiation",
+    "title": "When the Client Says It's Too Expensive",
+    "level": "B2",
+    "summary": "A freelance designer retells a difficult phone call with a client and what she learned about negotiating.",
+    "transcript_text": "Last week I had a slightly awkward conversation with a new client, and I want to tell you how it went. I'm a freelance designer, and this client, a small travel company, wanted a new logo and a website. I sent them my quote, and a day later the manager called me. He said the work in my portfolio looked great, but my price was about a third higher than they had expected. My first instinct was to apologise and simply lower it, because I really wanted the project. Instead, I asked him what their budget was based on and what mattered most to them. It turned out that they needed the website before the tourist season, but the logo was much less urgent. So rather than cutting my rate, I suggested cutting the scope. I offered to build the website first, at a lower total price, and to do the logo later as a separate project. He sounded a bit surprised, but he agreed almost immediately. Looking back, what I learned is that a client who says your price is too high isn't always saying no. Sometimes they're really asking you to help them solve a problem within their limits.",
+    "category": "Work and Study",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 150,
+    "duration_seconds": 80,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "freelance",
+      "negotiation",
+      "story",
+      "work"
+    ],
+    "questions": [
+      {
+        "prompt": "Why did the manager call the designer?",
+        "options": [
+          "He did not like her portfolio.",
+          "Her price was higher than they had expected.",
+          "He wanted the logo first.",
+          "He wanted to cancel the project."
+        ],
+        "answer_index": 1,
+        "explanation": "He said \"my price was about a third higher than they had expected\"."
+      },
+      {
+        "prompt": "What did she nearly do at first?",
+        "options": [
+          "Refuse the project",
+          "Apologise and lower her price",
+          "Ask for more time",
+          "Raise her price"
+        ],
+        "answer_index": 1,
+        "explanation": "\"My first instinct was to apologise and simply lower it, because I really wanted the project.\""
+      },
+      {
+        "prompt": "What did she find out by asking questions?",
+        "options": [
+          "The company had no budget at all.",
+          "The website was urgent, but the logo was not.",
+          "The company wanted a cheaper designer.",
+          "The logo was more important than the website."
+        ],
+        "answer_index": 1,
+        "explanation": "\"They needed the website before the tourist season, but the logo was much less urgent.\""
+      },
+      {
+        "prompt": "How did she solve the problem?",
+        "options": [
+          "She cut her hourly rate.",
+          "She worked for free on the logo.",
+          "She reduced the scope of the first project.",
+          "She found a partner to share the work."
+        ],
+        "answer_index": 2,
+        "explanation": "\"Rather than cutting my rate, I suggested cutting the scope\": the website now, the logo later."
+      },
+      {
+        "prompt": "What is the main lesson of her story?",
+        "options": [
+          "Never discuss price on the phone.",
+          "Clients who say a price is too high may still want to work with you.",
+          "Freelancers should always charge less.",
+          "Small companies cannot afford designers."
+        ],
+        "answer_index": 1,
+        "explanation": "\"A client who says your price is too high isn't always saying no.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Last week I had a slightly awkward conversation with a new client, and I want to tell you how it went.",
+      "focus_phrase": "slightly awkward",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I'm a freelance designer, and this client, a small travel company, wanted a new logo and a website.",
+      "focus_phrase": "freelance designer",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I sent them my quote, and a day later the manager called me.",
+      "focus_phrase": "my quote",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "He said the work in my portfolio looked great, but my price was about a third higher than they had expected.",
+      "focus_phrase": "a third higher",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "My first instinct was to apologise and simply lower it, because I really wanted the project.",
+      "focus_phrase": "first instinct",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Instead, I asked him what their budget was based on and what mattered most to them.",
+      "focus_phrase": "mattered most",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "It turned out that they needed the website before the tourist season, but the logo was much less urgent.",
+      "focus_phrase": "less urgent",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "So rather than cutting my rate, I suggested cutting the scope.",
+      "focus_phrase": "cutting the scope",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I offered to build the website first, at a lower total price, and to do the logo later as a separate project.",
+      "focus_phrase": "separate project",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "He sounded a bit surprised, but he agreed almost immediately.",
+      "focus_phrase": "agreed almost immediately",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Looking back, what I learned is that a client who says your price is too high isn't always saying no.",
+      "focus_phrase": "isn't always saying no",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Sometimes they're really asking you to help them solve a problem within their limits.",
+      "focus_phrase": "within their limits",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

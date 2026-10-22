@@ -1,0 +1,87 @@
+{
+  "item": {
+    "slug": "a2-how-we-celebrated-navruz",
+    "title": "How We Celebrated Navruz",
+    "level": "A2",
+    "prompt_text": "Your online friend Daniel lives in Canada. He wants to know about Navruz, the spring holiday on 21 March. Write him an email about how you and your family celebrated it this year.",
+    "genre": "email to a friend",
+    "target_grammar": "past simple (regular and irregular verbs)",
+    "target_structure": "greeting + when and who + food + activities + feelings + question",
+    "expected_length_min": 70,
+    "expected_length_max": 100,
+    "target_vocabulary": [
+      "holiday",
+      "spring",
+      "celebrate",
+      "relatives",
+      "cooked",
+      "sumalak",
+      "visited",
+      "traditional"
+    ],
+    "audience": "Your online friend Daniel",
+    "checklist": [
+      {
+        "point": "Say when and with whom you celebrated",
+        "keywords": [
+          "march",
+          "family",
+          "relatives",
+          "grandparents",
+          "parents",
+          "friends",
+          "neighbours"
+        ]
+      },
+      {
+        "point": "Describe the food you cooked or ate",
+        "keywords": [
+          "sumalak",
+          "plov",
+          "somsa",
+          "halim",
+          "cooked",
+          "ate",
+          "made",
+          "food"
+        ]
+      },
+      {
+        "point": "Say what you did during the holiday",
+        "keywords": [
+          "visited",
+          "went",
+          "played",
+          "danced",
+          "music",
+          "watched",
+          "park",
+          "concert"
+        ]
+      },
+      {
+        "point": "Say how you felt",
+        "keywords": [
+          "felt",
+          "happy",
+          "fun",
+          "enjoyed",
+          "great",
+          "wonderful",
+          "loved"
+        ]
+      },
+      {
+        "point": "Ask Daniel a question about his holidays",
+        "keywords": [
+          "?",
+          "do you",
+          "what do",
+          "how do",
+          "in canada"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

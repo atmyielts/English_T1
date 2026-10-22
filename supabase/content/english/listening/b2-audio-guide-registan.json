@@ -1,0 +1,153 @@
+{
+  "item": {
+    "slug": "b2-audio-guide-registan",
+    "title": "Audio Guide: Registan Square",
+    "level": "B2",
+    "summary": "An audio guide introduces the three madrasahs of Registan Square in Samarkand and how they were designed.",
+    "transcript_text": "Welcome to Registan Square, the heart of old Samarkand. You're now standing in front of three great madrasahs, which were schools where students lived and studied for many years. Although they look like a single design, they were actually built over more than two centuries. The building on your left is the Ulugh Beg Madrasah, completed in the fifteenth century. Ulugh Beg was a ruler who was also a serious astronomer, and his school taught mathematics and astronomy alongside other subjects. Opposite it, on your right, is the Sher-Dor Madrasah, built about two hundred years later. Its architect deliberately mirrored the older building, so the two facades face each other almost like reflections. Now look above the Sher-Dor entrance, and you'll see two striped big cats chasing deer, with a human face in a rising sun behind them. Images of living creatures were rare on buildings like this, which is one reason the decoration is so famous. The third building, in the centre, is the Tilya-Kori Madrasah, which also served as the city's main mosque. Its name means covered with gold, and inside, the walls and dome are decorated with gold leaf. Take a few minutes to walk to the middle of the square and notice how balanced the whole space feels.",
+    "category": "Culture",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 150,
+    "duration_seconds": 85,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "audio guide",
+      "Samarkand",
+      "architecture",
+      "history"
+    ],
+    "questions": [
+      {
+        "prompt": "What were the madrasahs originally?",
+        "options": [
+          "Palaces for rulers",
+          "Schools where students lived and studied",
+          "Markets for traders",
+          "Hotels for travellers"
+        ],
+        "answer_index": 1,
+        "explanation": "They \"were schools where students lived and studied for many years\"."
+      },
+      {
+        "prompt": "What surprising fact does the guide mention about the three buildings?",
+        "options": [
+          "They were built in the same year.",
+          "They were built over more than two centuries.",
+          "They were designed by one architect.",
+          "They were moved from another city."
+        ],
+        "answer_index": 1,
+        "explanation": "\"Although they look like a single design, they were actually built over more than two centuries.\""
+      },
+      {
+        "prompt": "What was Ulugh Beg known for, apart from ruling?",
+        "options": [
+          "Poetry",
+          "Astronomy",
+          "Medicine",
+          "Music"
+        ],
+        "answer_index": 1,
+        "explanation": "\"Ulugh Beg was a ruler who was also a serious astronomer.\""
+      },
+      {
+        "prompt": "How is the Sher-Dor Madrasah connected to the Ulugh Beg Madrasah?",
+        "options": [
+          "It is a smaller copy built inside it.",
+          "Its facade mirrors the older building opposite.",
+          "It replaced the older building.",
+          "They share one entrance."
+        ],
+        "answer_index": 1,
+        "explanation": "\"Its architect deliberately mirrored the older building, so the two facades face each other almost like reflections.\""
+      },
+      {
+        "prompt": "Why is the decoration above the Sher-Dor entrance so famous?",
+        "options": [
+          "It is made of pure gold.",
+          "It shows images of living creatures, which were rare.",
+          "It is the oldest decoration in the city.",
+          "It was painted by Ulugh Beg."
+        ],
+        "answer_index": 1,
+        "explanation": "\"Images of living creatures were rare on buildings like this, which is one reason the decoration is so famous.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Welcome to Registan Square, the heart of old Samarkand.",
+      "focus_phrase": "the heart of old Samarkand",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "You're now standing in front of three great madrasahs, which were schools where students lived and studied for many years.",
+      "focus_phrase": "lived and studied",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Although they look like a single design, they were actually built over more than two centuries.",
+      "focus_phrase": "more than two centuries",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The building on your left is the Ulugh Beg Madrasah, completed in the fifteenth century.",
+      "focus_phrase": "fifteenth century",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Ulugh Beg was a ruler who was also a serious astronomer, and his school taught mathematics and astronomy alongside other subjects.",
+      "focus_phrase": "serious astronomer",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Opposite it, on your right, is the Sher-Dor Madrasah, built about two hundred years later.",
+      "focus_phrase": "two hundred years later",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Its architect deliberately mirrored the older building, so the two facades face each other almost like reflections.",
+      "focus_phrase": "almost like reflections",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Now look above the Sher-Dor entrance, and you'll see two striped big cats chasing deer, with a human face in a rising sun behind them.",
+      "focus_phrase": "rising sun",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Images of living creatures were rare on buildings like this, which is one reason the decoration is so famous.",
+      "focus_phrase": "living creatures",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The third building, in the centre, is the Tilya-Kori Madrasah, which also served as the city's main mosque.",
+      "focus_phrase": "main mosque",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Its name means covered with gold, and inside, the walls and dome are decorated with gold leaf.",
+      "focus_phrase": "covered with gold",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Take a few minutes to walk to the middle of the square and notice how balanced the whole space feels.",
+      "focus_phrase": "how balanced",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

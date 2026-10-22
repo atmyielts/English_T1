@@ -1,0 +1,197 @@
+{
+  "item": {
+    "slug": "b1-volunteering-at-a-charity-run",
+    "title": "Volunteering at a charity run",
+    "level": "B1",
+    "context_text": "You have signed up to volunteer at a 10 km charity run in a big city park on Sunday. Many runners are international students and visitors, so the volunteers work in English.",
+    "objective_text": "Understand your role and a last-minute change, help a runner who gets hurt, and report back to the coordinator.",
+    "mission_type": "social",
+    "target_grammar": "will and going to for promises and plans (I'll call the medical team. They're going to come.)",
+    "cultural_note": "At events like this, volunteers are expected to follow the safety plan exactly. Staying calm and telling an injured person what you are doing helps them feel safe.",
+    "target_vocabulary": [
+      "volunteer",
+      "water station",
+      "coordinator",
+      "injured",
+      "run out of"
+    ],
+    "success_conditions": [
+      "Understand your post, your job and the safety rule",
+      "Follow the coordinator's changes",
+      "Help an injured runner calmly and correctly",
+      "Report what happened and suggest an improvement"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the volunteer briefing",
+      "instructions": "Read the volunteer briefing. Then answer the questions.",
+      "prompt_text": "VOLUNTEER BRIEFING — Sunday Charity Run\nArrive at 7:15 am at the blue tent next to the main gate. Collect your orange T-shirt and a bottle of water.\nYour post: Water Station 2 (the 5 km point, by the lake).\nYour job: hand out water, keep the path clear and put empty cups in the bins.\nIf a runner is hurt or feels unwell, do not move them. Call the medical team on the radio (Channel 3) and stay with them until help arrives.\nThe run starts at 8:00. The last runners usually pass your station by 9:30.",
+      "estimated_minutes": 4,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "Where is your post?",
+          "options": [
+            "At the main gate",
+            "At the 5 km point by the lake",
+            "At the finish line"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Your post: Water Station 2 (the 5 km point, by the lake).\""
+        },
+        {
+          "prompt": "What should you do if a runner is hurt?",
+          "options": [
+            "Take them to the blue tent",
+            "Call the medical team and stay with them",
+            "Give them water and let them continue"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Do not move them. Call the medical team… and stay with them until help arrives.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to the coordinator",
+      "instructions": "On Sunday morning, the coordinator speaks to all the volunteers. Listen and answer the questions.",
+      "prompt_text": "Morning, everyone. It's Jamshid, your coordinator. A small change: because of the rain last night, the path next to the lake is really muddy, so we've moved Water Station 2 about two hundred metres up the hill, next to the café. Also, we're short of cups, so please don't fill more than fifty at a time. Thanks, and have fun!",
+      "estimated_minutes": 3,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "us",
+      "questions": [
+        {
+          "prompt": "Why has Water Station 2 moved?",
+          "options": [
+            "The lake path is muddy",
+            "The café asked them to",
+            "There are too many runners"
+          ],
+          "answer_index": 0,
+          "explanation": "\"Because of the rain last night, the path next to the lake is really muddy.\""
+        },
+        {
+          "prompt": "What is the instruction about cups?",
+          "options": [
+            "Use bigger cups",
+            "Fill no more than fifty at a time",
+            "Give each runner two cups"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Please don't fill more than fifty at a time.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Help a runner",
+      "instructions": "A runner stops at your station in pain. Answer her calmly: tell her what she should do now and what you are going to do.",
+      "prompt_text": "Runner: Ow! I think I've twisted my ankle. What should I do?",
+      "estimated_minutes": 3,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Keep the runner still, call for medical help and reassure her.",
+      "points": [
+        {
+          "label": "tell her to stay still",
+          "any": [
+            "sit down",
+            "stay",
+            "don't move",
+            "do not move",
+            "stop",
+            "rest",
+            "wait",
+            "don't walk"
+          ]
+        },
+        {
+          "label": "say you will call for help",
+          "any": [
+            "medical",
+            "medic*",
+            "doctor",
+            "first aid",
+            "radio",
+            "call"
+          ]
+        },
+        {
+          "label": "reassure her",
+          "any": [
+            "don't worry",
+            "it's ok",
+            "it's okay",
+            "be fine",
+            "with you",
+            "i'll stay",
+            "i will stay",
+            "calm"
+          ]
+        }
+      ],
+      "model_answer": "Don't worry, please sit down here and don't try to walk on it. I'm going to call the medical team on the radio right now. They'll be here in a few minutes, and I'll stay with you until they arrive.",
+      "min_words": null
+    },
+    {
+      "title": "Report to the coordinator",
+      "instructions": "After the run, Jamshid asks for feedback. Write a short message: what happened at your station, what went wrong, and what should change next time.",
+      "prompt_text": "Jamshid: Thanks for today! Anything I should know about Water Station 2?",
+      "estimated_minutes": 6,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Report the incident and the problem, and suggest an improvement.",
+      "points": [
+        {
+          "label": "report the injured runner",
+          "any": [
+            "ankle",
+            "runner",
+            "injur*",
+            "hurt",
+            "medical",
+            "medic*"
+          ]
+        },
+        {
+          "label": "describe a problem",
+          "any": [
+            "cups",
+            "ran out",
+            "not enough",
+            "short",
+            "mud*",
+            "bins"
+          ]
+        },
+        {
+          "label": "suggest a change",
+          "any": [
+            "next time",
+            "should",
+            "suggest",
+            "more",
+            "could",
+            "would be"
+          ]
+        }
+      ],
+      "model_answer": "Hi Jamshid, it went well overall. At about nine o'clock a runner twisted her ankle, so I called the medical team and they arrived quickly. We ran out of cups before the last runners came. Next time I think we need more cups, or maybe a second table.",
+      "min_words": null
+    }
+  ]
+}

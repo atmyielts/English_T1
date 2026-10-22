@@ -1,0 +1,168 @@
+{
+  "item": {
+    "slug": "a1-taxi-from-the-airport",
+    "title": "Taking a taxi from the airport",
+    "level": "A1",
+    "context_text": "You land at an airport in a new country in the evening. You need a taxi to your hotel. Your mum is waiting for a message from you.",
+    "objective_text": "Find the official taxis, tell the driver your address, understand him, and send a message home.",
+    "mission_type": "travel",
+    "target_grammar": "present continuous for now (I am in the taxi now.)",
+    "cultural_note": "At many airports it is safer to use the official taxi rank. Show the driver the hotel address on your phone if he doesn't understand.",
+    "target_vocabulary": [
+      "taxi",
+      "address",
+      "exit",
+      "traffic",
+      "pay by card"
+    ],
+    "success_conditions": [
+      "Find where the official taxis are",
+      "Give the driver the hotel name and address",
+      "Tell your mum where you are and when you arrive"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the hotel information",
+      "instructions": "Read the information from your hotel. Then answer the questions.",
+      "prompt_text": "City Star Hotel\n12 Park Road\nFrom the airport: about 30 minutes by taxi.\nPlease use the official taxis at the yellow sign, Exit B.",
+      "estimated_minutes": 2,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "Where are the official taxis?",
+          "options": [
+            "At Exit A",
+            "At the yellow sign, Exit B",
+            "At the bus stop"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Please use the official taxis at the yellow sign, Exit B.\""
+        },
+        {
+          "prompt": "How long is the taxi ride?",
+          "options": [
+            "About 13 minutes",
+            "About 30 minutes",
+            "About 1 hour"
+          ],
+          "answer_index": 1,
+          "explanation": "\"From the airport: about 30 minutes by taxi.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Talk to the driver",
+      "instructions": "You get into the taxi. Tell the driver where you want to go. Give the hotel name and the address.",
+      "prompt_text": "Driver: Good evening! Where to?",
+      "estimated_minutes": 2,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Give the driver the hotel name and address.",
+      "points": [
+        {
+          "label": "say the hotel name",
+          "any": [
+            "city star",
+            "hotel"
+          ]
+        },
+        {
+          "label": "say the address",
+          "any": [
+            "12",
+            "twelve",
+            "park road"
+          ]
+        }
+      ],
+      "model_answer": "Hello. To the City Star Hotel, please. It is at 12 Park Road.",
+      "min_words": null
+    },
+    {
+      "title": "Listen to the driver",
+      "instructions": "Listen to the driver. Then answer the questions. You can listen again.",
+      "prompt_text": "OK, Park Road. No problem. It's about thirty minutes now, because there is not much traffic. You can pay by card in the taxi. Can I put your bag in the car for you?",
+      "estimated_minutes": 2,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "us",
+      "questions": [
+        {
+          "prompt": "How can you pay?",
+          "options": [
+            "Only in cash",
+            "By card in the taxi",
+            "At the hotel"
+          ],
+          "answer_index": 1,
+          "explanation": "The driver says \"You can pay by card in the taxi.\""
+        },
+        {
+          "prompt": "What does the driver say about the traffic?",
+          "options": [
+            "There is a lot of traffic",
+            "There is not much traffic",
+            "The road is closed"
+          ],
+          "answer_index": 1,
+          "explanation": "He says \"there is not much traffic\"."
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Message your mum",
+      "instructions": "Your mum sends you a message. Write back. Say you are OK, you are in a taxi, and when you arrive at the hotel.",
+      "prompt_text": "Mum: Did you land? Are you OK?",
+      "estimated_minutes": 3,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Tell your mum you are fine, in a taxi, and when you arrive.",
+      "points": [
+        {
+          "label": "say you are fine",
+          "any": [
+            "fine",
+            "good",
+            "yes",
+            "all right",
+            "alright"
+          ]
+        },
+        {
+          "label": "say you are in a taxi",
+          "any": [
+            "taxi",
+            "car"
+          ]
+        },
+        {
+          "label": "say when you arrive",
+          "any": [
+            "30",
+            "thirty",
+            "half an hour",
+            "minutes",
+            "soon"
+          ]
+        }
+      ],
+      "model_answer": "Yes, Mum, I am fine! I am in a taxi now. The hotel is thirty minutes from the airport. I can call you from the hotel.",
+      "min_words": null
+    }
+  ]
+}

@@ -1,0 +1,189 @@
+{
+  "item": {
+    "slug": "a2-navruz-in-the-mahalla",
+    "title": "Navruz in the mahalla",
+    "level": "A2",
+    "context_text": "It's March, and your mahalla is having a Navruz party in the courtyard. Your new neighbour, Emily, is from Canada and doesn't speak Uzbek yet. She wants to join in, so you help her in English.",
+    "objective_text": "Understand the plan for the party, help Emily take part, and explain the holiday to her.",
+    "mission_type": "social",
+    "target_grammar": "will and can for offers and plans (You can come later. We will start at 8.)",
+    "cultural_note": "Navruz (21 March) is the spring new year in Uzbekistan and many other countries. Neighbours often cook sumalak together through the night and share it the next day.",
+    "target_vocabulary": [
+      "courtyard",
+      "share",
+      "neighbour",
+      "traditional",
+      "all night"
+    ],
+    "success_conditions": [
+      "Understand when things happen and what to bring",
+      "Answer Emily's questions about sumalak, time and food",
+      "Tell Emily two things people do at Navruz"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the mahalla notice",
+      "instructions": "The mahalla committee put this notice on the door in Uzbek, Russian and English. Read it and answer the questions.",
+      "prompt_text": "NAVRUZ IN OUR MAHALLA\n21 March, from 10 am, in the courtyard behind Building 3.\nWe are cooking sumalak on the night of 20 March. Helpers are welcome from 8 pm!\nPlease bring a plate of food to share, or sweets for the children.\nMusic, games for children, and dancing at 4 pm.",
+      "estimated_minutes": 3,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "When does the cooking of sumalak start?",
+          "options": [
+            "On the morning of 21 March",
+            "On the evening of 20 March",
+            "At 4 pm on 21 March"
+          ],
+          "answer_index": 1,
+          "explanation": "\"We are cooking sumalak on the night of 20 March. Helpers are welcome from 8 pm.\""
+        },
+        {
+          "prompt": "What can people bring?",
+          "options": [
+            "Flowers",
+            "Food to share or sweets",
+            "Chairs"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Please bring a plate of food to share, or sweets for the children.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to Emily",
+      "instructions": "Emily sends you a voice message. Listen and answer the questions. You can listen again.",
+      "prompt_text": "Hi, it's Emily from flat 12. I saw the notice, but I don't understand everything. What is sumalak? I'd like to help, but I work until seven on the twentieth. Can I come later? And what can I bring? I make really good apple pie.",
+      "estimated_minutes": 3,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "us",
+      "questions": [
+        {
+          "prompt": "What time does Emily finish work on 20 March?",
+          "options": [
+            "At five",
+            "At seven",
+            "At eight"
+          ],
+          "answer_index": 1,
+          "explanation": "\"I work until seven on the twentieth.\""
+        },
+        {
+          "prompt": "What food can Emily make?",
+          "options": [
+            "Apple pie",
+            "Plov",
+            "Salad"
+          ],
+          "answer_index": 0,
+          "explanation": "\"I make really good apple pie.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Answer Emily",
+      "instructions": "Write back to Emily. Explain what sumalak is in simple words, tell her she can come after work, and answer her question about food.",
+      "prompt_text": "Emily: What is sumalak? Can I come after work? What can I bring?",
+      "estimated_minutes": 5,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Explain sumalak, invite Emily to come later and answer her food question.",
+      "points": [
+        {
+          "label": "explain what sumalak is",
+          "any": [
+            "wheat",
+            "sweet",
+            "dish",
+            "cook*",
+            "pot",
+            "traditional",
+            "night"
+          ]
+        },
+        {
+          "label": "say she can come later",
+          "any": [
+            "yes",
+            "of course",
+            "sure",
+            "8 pm",
+            "eight",
+            "no problem",
+            "later"
+          ]
+        },
+        {
+          "label": "answer about food",
+          "any": [
+            "pie",
+            "apple*",
+            "dessert",
+            "great idea",
+            "perfect"
+          ]
+        }
+      ],
+      "model_answer": "Hi Emily! Sumalak is a sweet, traditional Navruz dish. We cook it from wheat in a very big pot all night. Yes, of course you can come later. We start at 8 pm and finish in the morning! Your apple pie is a great idea.",
+      "min_words": null
+    },
+    {
+      "title": "Explain Navruz",
+      "instructions": "At the party, Emily asks you about the holiday. Tell her two things people do at Navruz.",
+      "prompt_text": "Emily: This is fun! What do people usually do on Navruz?",
+      "estimated_minutes": 3,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Tell Emily what people eat and one more Navruz tradition.",
+      "points": [
+        {
+          "label": "say what people eat",
+          "any": [
+            "sumalak",
+            "halim",
+            "plov",
+            "cook*",
+            "eat",
+            "dish*"
+          ]
+        },
+        {
+          "label": "say another tradition",
+          "any": [
+            "visit*",
+            "family",
+            "friends",
+            "danc*",
+            "music",
+            "sing",
+            "clean",
+            "plant*",
+            "tree*",
+            "games",
+            "spring",
+            "new year",
+            "celebrat*"
+          ]
+        }
+      ],
+      "model_answer": "We celebrate the new year and spring. People cook sumalak and halim, and they visit their family and friends. Children play games and everyone dances.",
+      "min_words": null
+    }
+  ]
+}

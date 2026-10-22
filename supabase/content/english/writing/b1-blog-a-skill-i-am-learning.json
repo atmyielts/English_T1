@@ -1,0 +1,88 @@
+{
+  "item": {
+    "slug": "b1-blog-a-skill-i-am-learning",
+    "title": "Blog: A Skill I Am Learning",
+    "level": "B1",
+    "prompt_text": "You write a blog for English learners. Write a post about a new skill you have started learning recently, for example coding, cooking, driving or playing the dutar. Tell your readers about your experience.",
+    "genre": "blog post",
+    "target_grammar": "present perfect (have learned, have been practising) vs past simple",
+    "target_structure": "title + the skill and why I started + how I learn + a difficulty + progress + advice for readers",
+    "expected_length_min": 120,
+    "expected_length_max": 160,
+    "target_vocabulary": [
+      "decided to",
+      "beginner",
+      "practise",
+      "online course",
+      "difficult",
+      "progress",
+      "so far",
+      "give up",
+      "motivated"
+    ],
+    "audience": "Readers of your blog",
+    "checklist": [
+      {
+        "point": "Say what the skill is and why you started",
+        "keywords": [
+          "decided",
+          "started",
+          "began",
+          "because",
+          "wanted to",
+          "always wanted"
+        ]
+      },
+      {
+        "point": "Explain how you are learning it",
+        "keywords": [
+          "course",
+          "teacher",
+          "lessons",
+          "videos",
+          "online",
+          "practise",
+          "practice",
+          "every day",
+          "week"
+        ]
+      },
+      {
+        "point": "Describe a difficulty and how you dealt with it",
+        "keywords": [
+          "difficult",
+          "hard",
+          "problem",
+          "mistake",
+          "struggled",
+          "challenge",
+          "but"
+        ]
+      },
+      {
+        "point": "Say what progress you have made so far",
+        "keywords": [
+          "so far",
+          "have learned",
+          "have learnt",
+          "now i can",
+          "already",
+          "i've",
+          "progress"
+        ]
+      },
+      {
+        "point": "Give advice or ask your readers a question",
+        "keywords": [
+          "if you",
+          "my advice",
+          "don't give up",
+          "try",
+          "?",
+          "you should"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

@@ -1,36 +1,35 @@
 {
   "schemaVersion": 1,
-  "releaseId": "english-studio-ai-draft",
+  "releaseId": "english-content-library-fill",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "platform"
+    "english-hub"
   ],
-  "migrations": [],
-  "edgeFunctions": [
-    "admin-english-content"
+  "migrations": [
+    "20261023140000_english_content_library_fill.sql"
   ],
+  "edgeFunctions": [],
   "workers": [],
-  "sharedEdgeConsumers": [
-    "admin-english-content"
-  ],
+  "sharedEdgeConsumers": [],
   "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "function:admin-english-content"
+    "migration:20261023140000_english_content_library_fill.sql"
   ],
   "manualFollowUps": [
-    "Pages: merging publishes platform with the 'Draft with AI' box on new items in Admin → English → Content. Until the function is deployed the button returns an error; everything else keeps working.",
-    "Edge: supabase functions deploy admin-english-content --project-ref bbjawctnqrufvnesdsel (adds POST /content/draft; uses the existing OpenRouter key through _shared/english-ai.ts, admin-only, nothing is saved)."
+    "Pages: merging publishes english-hub with two layout fixes (word rows on phones, Practice heading levels).",
+    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus 20261023140000_english_content_library_fill.sql, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then supabase migration list --linked. Adds 101 published lessons (grammar 9, immersion 26, listening 12, speaking 17, vocabulary 18, writing 19) with their drills/steps/segments/words and catalog rows; idempotent, existing slugs are skipped."
   ],
   "verification": [
-    "Without a session POST /functions/v1/admin-english-content/content/draft returns 401.",
-    "As an admin: New item → Draft with AI with a topic fills the editor with a valid draft (status draft); nothing appears in the catalog until Create item and Publish."
+    "supabase migration list --linked shows 20261023140000 applied and the 9 #220 payment migrations still pending.",
+    "Published catalog per skill reaches A1-B2: 8, C1: 6, C2: 4 (reading C1 stays 8).",
+    "As a learner: /hub/catalog?skill=immersion lists the new A1 missions (e.g. a1-buying-a-sim-card) and each opens."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-platform to the previous deployment.",
-    "migration": "None.",
-    "edge": "Redeploy admin-english-content from the previous main commit; the Draft with AI button stops, the rest of the studio keeps working.",
+    "pages": "Cloudflare Pages rollback of schood-english to the previous deployment.",
+    "migration": "Archive the new items instead of deleting (learner attempts reference them): update each content table set status='archived' where slug in the seeded list; the registry sync trigger hides them from the catalog.",
+    "edge": "Nothing deployed.",
     "worker": "Nothing deployed."
   }
 }

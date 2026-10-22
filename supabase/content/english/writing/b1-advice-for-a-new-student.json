@@ -1,0 +1,90 @@
+{
+  "item": {
+    "slug": "b1-advice-for-a-new-student",
+    "title": "Advice for a New University Student",
+    "level": "B1",
+    "prompt_text": "Your cousin Malika is starting her first year at university in Tashkent next month. She feels nervous and has asked you for advice. Write an email to her with your best tips.",
+    "genre": "email of advice",
+    "target_grammar": "should / shouldn't; if + present simple; Why don't you…?",
+    "target_structure": "reassurance + study tips + social tips + practical tips (money, transport, food) + offer of help",
+    "expected_length_min": 120,
+    "expected_length_max": 160,
+    "target_vocabulary": [
+      "nervous",
+      "normal",
+      "should",
+      "timetable",
+      "deadline",
+      "join",
+      "club",
+      "budget",
+      "make friends",
+      "if you need"
+    ],
+    "audience": "Your cousin Malika",
+    "checklist": [
+      {
+        "point": "Respond to her feelings and reassure her",
+        "keywords": [
+          "nervous",
+          "normal",
+          "don't worry",
+          "worried",
+          "everyone",
+          "of course"
+        ]
+      },
+      {
+        "point": "Give advice about studying",
+        "keywords": [
+          "study",
+          "lecture",
+          "notes",
+          "deadline",
+          "library",
+          "timetable",
+          "exam",
+          "homework"
+        ]
+      },
+      {
+        "point": "Give advice about making friends",
+        "keywords": [
+          "friends",
+          "club",
+          "join",
+          "classmates",
+          "talk to",
+          "society",
+          "team"
+        ]
+      },
+      {
+        "point": "Give a practical tip about money, transport or daily life",
+        "keywords": [
+          "money",
+          "budget",
+          "metro",
+          "bus",
+          "dormitory",
+          "food",
+          "cook",
+          "cheap"
+        ]
+      },
+      {
+        "point": "Offer help and end in a friendly way",
+        "keywords": [
+          "if you need",
+          "call me",
+          "let me know",
+          "help",
+          "good luck",
+          "love",
+          "see you"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

@@ -1,0 +1,71 @@
+{
+  "item": {
+    "slug": "a1-can-you-take-my-parcel",
+    "title": "Can You Take My Parcel?",
+    "level": "A1",
+    "prompt_text": "A parcel is coming to your flat on Friday, but you are at work all day. Write a short note to your neighbour, Mrs Karimova, in flat 12. Ask her to take the parcel for you.",
+    "genre": "note",
+    "target_grammar": "Can you…? for requests; present simple",
+    "target_structure": "hello + who I am + problem + request + thanks",
+    "expected_length_min": 25,
+    "expected_length_max": 45,
+    "target_vocabulary": [
+      "neighbour",
+      "flat",
+      "parcel",
+      "at work",
+      "can you",
+      "please",
+      "thank you"
+    ],
+    "audience": "Your neighbour, Mrs Karimova",
+    "checklist": [
+      {
+        "point": "Say hello and who you are (your name and flat)",
+        "keywords": [
+          "hello",
+          "dear",
+          "hi",
+          "my name",
+          "i'm",
+          "flat",
+          "live"
+        ]
+      },
+      {
+        "point": "Say when you are not at home",
+        "keywords": [
+          "friday",
+          "at work",
+          "not at home",
+          "not home",
+          "all day",
+          "out"
+        ]
+      },
+      {
+        "point": "Ask her to take the parcel",
+        "keywords": [
+          "can you",
+          "could you",
+          "please",
+          "take",
+          "parcel"
+        ]
+      },
+      {
+        "point": "Say thank you and when you can get it",
+        "keywords": [
+          "thank",
+          "evening",
+          "pm",
+          "o'clock",
+          "#number",
+          "after work",
+          "come"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

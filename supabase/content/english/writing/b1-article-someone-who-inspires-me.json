@@ -1,0 +1,77 @@
+{
+  "item": {
+    "slug": "b1-article-someone-who-inspires-me",
+    "title": "Article: Someone Who Inspires Me",
+    "level": "B1",
+    "prompt_text": "A student magazine is asking readers: 'Who inspires you, and why?' Write an article about a person you know personally, for example a family member, a teacher or a neighbour.",
+    "genre": "article",
+    "target_grammar": "past simple and past continuous for a short story; relative clauses (who, which)",
+    "target_structure": "engaging opening + who the person is + a story about them + their qualities + what I learned",
+    "expected_length_min": 120,
+    "expected_length_max": 160,
+    "target_vocabulary": [
+      "inspire",
+      "admire",
+      "hard-working",
+      "generous",
+      "never gave up",
+      "taught me",
+      "example",
+      "respect"
+    ],
+    "audience": "Readers of a student magazine",
+    "checklist": [
+      {
+        "point": "Introduce the person and how you know them",
+        "keywords": [
+          "my grandmother",
+          "my grandfather",
+          "my mother",
+          "my father",
+          "teacher",
+          "neighbour",
+          "uncle",
+          "aunt",
+          "who"
+        ]
+      },
+      {
+        "point": "Tell a short story about something they did",
+        "keywords": [
+          "when",
+          "once",
+          "one day",
+          "years ago",
+          "was",
+          "were"
+        ]
+      },
+      {
+        "point": "Describe their best qualities",
+        "keywords": [
+          "kind",
+          "hard-working",
+          "generous",
+          "patient",
+          "brave",
+          "honest",
+          "strong",
+          "admire"
+        ]
+      },
+      {
+        "point": "Explain how they have influenced you",
+        "keywords": [
+          "taught me",
+          "learned",
+          "learnt",
+          "inspire",
+          "because of",
+          "now i",
+          "example"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

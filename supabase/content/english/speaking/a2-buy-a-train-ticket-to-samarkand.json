@@ -1,0 +1,68 @@
+{
+  "item": {
+    "slug": "a2-buy-a-train-ticket-to-samarkand",
+    "title": "Buy a Train Ticket to Samarkand",
+    "level": "A2",
+    "prompt_text": "You are at the ticket office at Tashkent railway station. Buy a ticket to Samarkand. Say when you want to travel, ask about the train times, ask the price, and ask which platform the train leaves from.",
+    "prompt_type": "roleplay",
+    "target_duration_seconds": 45,
+    "target_grammar": "I'd like…; polite questions (What time…? How much…? Which…?)",
+    "fluency_objective": "React to the answers with short words like 'OK', 'great' or 'perfect' and continue.",
+    "pronunciation_objective": "Stress the important word in each question: 'What TIME…?', 'How MUCH…?', 'Which PLATform…?'",
+    "target_vocabulary": [
+      "I'd like a ticket to",
+      "for tomorrow",
+      "what time",
+      "the next train",
+      "I'll take",
+      "how much is it",
+      "pay by card",
+      "which platform"
+    ],
+    "task_type": "roleplay",
+    "model_answer": "Good morning. I'd like one ticket to Samarkand for tomorrow, please. What time are the trains in the morning? Is there a fast train? OK, I'll take the one at eight o'clock. How much is the ticket? Can I pay by card? Great. And which platform does the train leave from? Platform two. Perfect, thank you very much.",
+    "model_opening": "Good morning. I'd like one ticket to Samarkand for tomorrow, please.",
+    "cues": [
+      {
+        "text": "when you want to travel",
+        "keywords": [
+          "tomorrow",
+          "today",
+          "saturday",
+          "sunday",
+          "monday",
+          "friday",
+          "morning",
+          "for"
+        ]
+      },
+      {
+        "text": "train times",
+        "keywords": [
+          "what time",
+          "when",
+          "leave",
+          "next train",
+          "o'clock"
+        ]
+      },
+      {
+        "text": "the price",
+        "keywords": [
+          "how much",
+          "price",
+          "cost",
+          "pay"
+        ]
+      },
+      {
+        "text": "the platform",
+        "keywords": [
+          "platform",
+          "which"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

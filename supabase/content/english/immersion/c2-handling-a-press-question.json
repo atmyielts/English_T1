@@ -1,0 +1,237 @@
+{
+  "item": {
+    "slug": "c2-handling-a-press-question",
+    "title": "Handling a hostile press question",
+    "level": "C2",
+    "context_text": "You're the communications lead for an international food festival in Tashkent. On the first evening, the main outdoor area had to be closed for two hours after the crowd went over capacity, and many ticket holders were turned away. At the next morning's press briefing, a journalist has a pointed question for you.",
+    "objective_text": "Master the facts and the legal limits, separate accurate claims from inaccurate ones, answer on the record with composure, and publish a precise public statement.",
+    "mission_type": "problem_solving",
+    "target_grammar": "precise passive and impersonal structures (The area was closed on safety advice. Refunds will be offered…)",
+    "cultural_note": "In a press briefing, correcting an inaccurate claim works best when you first acknowledge the public's experience, then state the facts calmly. Sounding defensive or blaming others on the record usually becomes the headline.",
+    "target_vocabulary": [
+      "capacity",
+      "on safety advice",
+      "on the record",
+      "speculate",
+      "remedy"
+    ],
+    "success_conditions": [
+      "Know exactly what happened, what is being offered and what must not be said",
+      "Identify which part of the journalist's claim is not supported by the facts",
+      "Answer with empathy, a calm correction, the facts and the remedies, staying within legal limits",
+      "Write a clear, accountable public statement"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the internal fact sheet",
+      "instructions": "Read the internal fact sheet prepared before the briefing. Then answer the questions.",
+      "prompt_text": "INTERNAL: not for distribution\n• Capacity of the main area: 8,000. Peak attendance last night: approximately 9,500. The gate scanners failed to count people re-entering.\n• The area was closed from 20:10 to 22:05 on the advice of the police and our safety officer. No serious injuries; two people were treated for heat exhaustion.\n• About 1,200 ticket holders were refused entry during the closure.\n• Agreed remedy: a full refund or free entry on another day for anyone refused entry. Scanner software patched overnight; extra staff on all gates.\n• Do NOT speculate about the scanner supplier's liability: a legal review is under way.",
+      "estimated_minutes": 6,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "Why did attendance exceed capacity?",
+          "options": [
+            "More tickets were sold than planned",
+            "The gate scanners didn't count re-entries",
+            "Security let people in without tickets"
+          ],
+          "answer_index": 1,
+          "explanation": "\"The gate scanners failed to count people re-entering.\""
+        },
+        {
+          "prompt": "What must you avoid saying in public?",
+          "options": [
+            "The details of the refund offer",
+            "Anything about the scanner supplier's responsibility",
+            "When the area was closed"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Do NOT speculate about the scanner supplier's liability.\""
+        },
+        {
+          "prompt": "What is offered to people who were refused entry?",
+          "options": [
+            "A partial refund",
+            "A full refund or free entry on another day",
+            "Free food vouchers"
+          ],
+          "answer_index": 1,
+          "explanation": "\"A full refund or free entry on another day for anyone refused entry.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to the journalist's question",
+      "instructions": "At the briefing, a journalist puts her question to you. Listen and answer the questions.",
+      "prompt_text": "Thank you. Kamola Ergasheva, City Today. Last night over a thousand people with valid tickets were left standing outside, and I'm told people were collapsing in the crowd. Your organisers knew the capacity. So isn't the truth that you simply oversold the event to make money, and put people's safety at risk in the process?",
+      "estimated_minutes": 4,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "us",
+      "questions": [
+        {
+          "prompt": "What is the journalist's central accusation?",
+          "options": [
+            "The festival deliberately oversold tickets and endangered people",
+            "The food was unsafe",
+            "The police closed the event for no reason"
+          ],
+          "answer_index": 0,
+          "explanation": "\"Isn't the truth that you simply oversold the event to make money, and put people's safety at risk?\""
+        },
+        {
+          "prompt": "Which claim goes beyond the facts in the fact sheet?",
+          "options": [
+            "That over a thousand ticket holders were left outside",
+            "That the event was deliberately oversold",
+            "That the closure happened last night"
+          ],
+          "answer_index": 1,
+          "explanation": "The fact sheet attributes the overcrowding to scanners not counting re-entries, not to overselling."
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Answer on the record",
+      "instructions": "Answer the journalist on the record. Acknowledge people's experience, correct the inaccurate claim without being combative, state what happened and what has changed, and stay within what you are allowed to say.",
+      "prompt_text": "Journalist: So isn't the truth that you oversold the event and put people at risk?",
+      "estimated_minutes": 5,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Give a composed, accurate answer that corrects the record and sets out the remedy.",
+      "points": [
+        {
+          "label": "acknowledge people's experience",
+          "any": [
+            "apolog*",
+            "sorry",
+            "regret",
+            "frustrat*",
+            "disappoint*",
+            "understand"
+          ]
+        },
+        {
+          "label": "correct the claim calmly",
+          "any": [
+            "not the case",
+            "wasn't",
+            "was not",
+            "did not",
+            "didn't",
+            "scanner*",
+            "re enter*",
+            "re entry",
+            "re entries",
+            "count*"
+          ]
+        },
+        {
+          "label": "state the safety facts",
+          "any": [
+            "safety",
+            "police",
+            "precaution*",
+            "closed",
+            "closure",
+            "heat",
+            "treated",
+            "no serious"
+          ]
+        },
+        {
+          "label": "set out the remedy and changes",
+          "any": [
+            "refund*",
+            "free entry",
+            "another day",
+            "patched",
+            "fixed",
+            "extra staff",
+            "additional staff"
+          ]
+        }
+      ],
+      "model_answer": "I understand why people are angry, and I'm genuinely sorry to everyone who was turned away. But I do need to correct one thing: the event was not oversold. Our gate scanners did not count people re-entering, so the crowd grew beyond capacity. We closed the area on the advice of the police and our safety officer; two people were treated for heat exhaustion, with no serious injuries. Everyone refused entry will get a full refund or free entry on another day, the software has been fixed, and there are extra staff on every gate.",
+      "min_words": null
+    },
+    {
+      "title": "Write the public statement",
+      "instructions": "Write a short public statement for the festival's website. Explain what happened and why, the safety decision, the remedy, and what has changed. Take responsibility without speculating about anyone else's liability.",
+      "prompt_text": "Statement on the closure of the main area: Day 1",
+      "estimated_minutes": 14,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Write a precise, accountable statement that restores public confidence.",
+      "points": [
+        {
+          "label": "apologise",
+          "any": [
+            "apolog*",
+            "sorry",
+            "regret"
+          ]
+        },
+        {
+          "label": "explain what happened",
+          "any": [
+            "capacity",
+            "scanner*",
+            "re enter*",
+            "re entry",
+            "count*",
+            "two hours"
+          ]
+        },
+        {
+          "label": "explain the safety decision",
+          "any": [
+            "safety",
+            "precaution*",
+            "advice",
+            "police",
+            "treated",
+            "heat"
+          ]
+        },
+        {
+          "label": "set out the remedy",
+          "any": [
+            "refund*",
+            "free entry",
+            "another day"
+          ]
+        },
+        {
+          "label": "describe what has changed",
+          "any": [
+            "patched",
+            "software",
+            "extra staff",
+            "additional staff",
+            "fixed",
+            "measures"
+          ]
+        }
+      ],
+      "model_answer": "We sincerely apologise to everyone who was unable to enter the main area on the festival's first evening. Our gate scanners did not count visitors who were re-entering the area, and as a result the crowd exceeded its safe capacity. On the advice of the police and our safety officer, we closed the area as a precaution from 20:10 to 22:05. Two visitors were treated for heat exhaustion; there were no serious injuries. Every ticket holder who was refused entry can now choose either a full refund or free entry on another day of the festival. The scanner software was updated overnight, and we have placed additional staff at every gate. We take full responsibility for the experience of our visitors and thank them for their patience.",
+      "min_words": null
+    }
+  ]
+}

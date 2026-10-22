@@ -1,0 +1,212 @@
+{
+  "item": {
+    "slug": "b2-scholarship-missing-documents",
+    "title": "Scholarship application: missing documents",
+    "level": "B2",
+    "context_text": "You've applied for a master's scholarship at a university abroad. A few weeks later the admissions office writes to say your application is incomplete, and the deadline is close.",
+    "objective_text": "Find out exactly what is missing, solve the problem with your reference, and keep the admissions office informed.",
+    "mission_type": "study",
+    "target_grammar": "polite indirect questions (Could you let me know whether… I was wondering if…)",
+    "cultural_note": "Admissions offices deal with thousands of files. A short, well-organised email that answers each point in turn, with the applicant's full name and reference number, gets dealt with faster.",
+    "target_vocabulary": [
+      "incomplete",
+      "certified translation",
+      "reference letter",
+      "referee",
+      "deadline"
+    ],
+    "success_conditions": [
+      "Identify both missing documents, the real deadline and the translation rule",
+      "Understand why the reference letter is delayed",
+      "Write to the office explaining your actions and asking a precise question",
+      "Summarise your progress clearly on the phone"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the admissions email",
+      "instructions": "Read the email from the admissions office. Then answer the questions.",
+      "prompt_text": "Dear applicant,\nThank you for applying for the Global Futures Scholarship. Your file is currently incomplete. We have not yet received:\n1. An official English translation of your bachelor's diploma (the copy you uploaded is in Uzbek only).\n2. Your second reference letter.\nPlease note that the scholarship committee meets on 15 March, and files that are still incomplete on 1 March will not be considered this year. Translations must be certified by a notary or an official translation agency; translations made by applicants themselves cannot be accepted.\nKind regards,\nAdmissions Office",
+      "estimated_minutes": 5,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "Why is the diploma not accepted?",
+          "options": [
+            "It was uploaded too late",
+            "It is not in English",
+            "It has no signature"
+          ],
+          "answer_index": 1,
+          "explanation": "\"The copy you uploaded is in Uzbek only.\""
+        },
+        {
+          "prompt": "By when must your file be complete?",
+          "options": [
+            "1 March",
+            "15 March",
+            "There is no fixed date"
+          ],
+          "answer_index": 0,
+          "explanation": "\"Files that are still incomplete on 1 March will not be considered.\" 15 March is the committee meeting."
+        },
+        {
+          "prompt": "Which translation would be accepted?",
+          "options": [
+            "One you do carefully yourself",
+            "One certified by a notary or an official agency",
+            "Any translation signed by a teacher"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Translations must be certified by a notary or an official translation agency.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to your referee",
+      "instructions": "Your former professor, who is writing your second reference, leaves you a voice message. Listen and answer the questions.",
+      "prompt_text": "Hello, it's Professor Nazarova. I'm so sorry, I got your reminder about the reference. I've been at a conference and only got back yesterday. The thing is, the university's system keeps rejecting my upload. It says the file is too large. Could you ask the admissions office whether I can email it to them directly instead? I can have it finished by Friday, so there should still be plenty of time.",
+      "estimated_minutes": 4,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "gb",
+      "questions": [
+        {
+          "prompt": "What is the technical problem?",
+          "options": [
+            "The system rejects the file because it is too large",
+            "The professor has forgotten her password",
+            "The upload page is closed"
+          ],
+          "answer_index": 0,
+          "explanation": "\"The university's system keeps rejecting my upload. It says the file is too large.\""
+        },
+        {
+          "prompt": "What does the professor ask you to do?",
+          "options": [
+            "Upload the letter yourself",
+            "Ask whether she can email the letter directly",
+            "Ask for a later deadline"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Could you ask the admissions office whether I can email it to them directly instead?\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Write to the admissions office",
+      "instructions": "Write to the admissions office. Say what you are doing about the translation, explain the problem with the reference letter, and ask your question about it. Show that you are aware of the deadline.",
+      "prompt_text": "To: Admissions Office\nSubject: Global Futures Scholarship — incomplete file",
+      "estimated_minutes": 10,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Answer each point of the office's email clearly and ask one precise question.",
+      "points": [
+        {
+          "label": "say what you are doing about the translation",
+          "any": [
+            "translat*",
+            "notar*",
+            "agency",
+            "certified"
+          ]
+        },
+        {
+          "label": "explain the reference problem",
+          "any": [
+            "reference",
+            "referee",
+            "professor",
+            "upload*",
+            "too large",
+            "file size",
+            "system"
+          ]
+        },
+        {
+          "label": "ask whether it can be emailed",
+          "any": [
+            "could",
+            "would it be possible",
+            "is it possible",
+            "whether",
+            "directly",
+            "by email",
+            "email it"
+          ]
+        },
+        {
+          "label": "show awareness of the deadline",
+          "any": [
+            "1 march",
+            "first of march",
+            "before the deadline",
+            "by friday",
+            "deadline",
+            "in time"
+          ]
+        }
+      ],
+      "model_answer": "Dear Admissions Office,\nThank you for letting me know that my file is incomplete. I have already sent my diploma to an official translation agency, and the certified English translation will be uploaded by Wednesday. Regarding my second reference, Professor Nazarova has written the letter, but your system rejects her upload because the file is too large. Would it be possible for her to email it to you directly? She can send it by Friday, well before the 1 March deadline.\nKind regards,\nAziz Tursunov (Applicant ID 20417)",
+      "min_words": null
+    },
+    {
+      "title": "Update the admissions officer",
+      "instructions": "Later that week an admissions officer phones you. Summarise your progress: what is done, what is still pending, and when everything will be complete.",
+      "prompt_text": "Officer: Hi, I'm just checking where you are with the missing documents.",
+      "estimated_minutes": 4,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Give a clear status update on both documents with a completion date.",
+      "points": [
+        {
+          "label": "update on the translation",
+          "any": [
+            "translat*",
+            "notar*",
+            "agency",
+            "certified",
+            "uploaded",
+            "submitted"
+          ]
+        },
+        {
+          "label": "update on the reference letter",
+          "any": [
+            "reference",
+            "letter",
+            "professor",
+            "referee"
+          ]
+        },
+        {
+          "label": "say when it will be complete",
+          "any": [
+            "friday",
+            "by the",
+            "before",
+            "end of the week",
+            "tomorrow",
+            "in time"
+          ]
+        }
+      ],
+      "model_answer": "Thanks for calling. The certified translation of my diploma was uploaded yesterday, so that part is done. My second reference letter is still pending: Professor Nazarova is emailing it to you directly on Friday, as you agreed. So everything should be complete well before the first of March.",
+      "min_words": null
+    }
+  ]
+}

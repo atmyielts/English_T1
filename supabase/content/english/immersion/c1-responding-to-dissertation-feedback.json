@@ -1,0 +1,218 @@
+{
+  "item": {
+    "slug": "c1-responding-to-dissertation-feedback",
+    "title": "Responding to your supervisor's feedback",
+    "level": "C1",
+    "context_text": "You're writing a master's dissertation at a university abroad on remote work and productivity in small IT companies in Uzbekistan. Your supervisor, Dr Harris, has sent detailed comments on your methodology chapter. You agree with most of them, but you want to keep your online survey.",
+    "objective_text": "Interpret the feedback accurately, negotiate your position in a supervision meeting, and confirm the agreed actions in writing.",
+    "mission_type": "study",
+    "target_grammar": "concession and counter-argument (I take the point that…; that said,…)",
+    "cultural_note": "In UK and US universities, students are expected to engage critically with supervisors' feedback. Respectfully defending a choice with evidence is welcomed; simply accepting or rejecting every comment is not.",
+    "target_vocabulary": [
+      "sample",
+      "bias",
+      "limitation",
+      "triangulation",
+      "ethical approval"
+    ],
+    "success_conditions": [
+      "Distinguish the supervisor's major concerns from minor ones",
+      "Understand the conditions for keeping the survey",
+      "Accept valid criticism and argue your case for the survey",
+      "Confirm the agreed actions and a timeline in writing"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the supervisor's comments",
+      "instructions": "Read Dr Harris's comments on your chapter. Then answer the questions.",
+      "prompt_text": "Comments on Chapter 3 (Methodology)\n1. Your sample of 12 interviews is defensible for a qualitative study, but you need to justify it explicitly rather than leave the reader to infer it.\n2. I'm not convinced the online survey adds much. It was answered mainly by your own former classmates, which raises obvious questions about bias. Consider either dropping it or presenting it explicitly as a limitation.\n3. The section on ethics is far too thin. Where is the consent procedure? How did you anonymise the data?\n4. Overall, the chapter reads well. Tighten it and this will be solid.",
+      "estimated_minutes": 5,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "What is the supervisor's view of the 12 interviews?",
+          "options": [
+            "Too few to be acceptable",
+            "Acceptable, but the choice must be justified",
+            "They should be replaced by a survey"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Your sample of 12 interviews is defensible… but you need to justify it explicitly.\""
+        },
+        {
+          "prompt": "What is the problem with the survey?",
+          "options": [
+            "It was too long",
+            "Its respondents may not be representative",
+            "It was not anonymous"
+          ],
+          "answer_index": 1,
+          "explanation": "It \"was answered mainly by your own former classmates, which raises obvious questions about bias\"."
+        },
+        {
+          "prompt": "How would you describe the overall tone?",
+          "options": [
+            "Broadly positive but demanding",
+            "Entirely negative",
+            "Indifferent"
+          ],
+          "answer_index": 0,
+          "explanation": "Point 4 is positive, while points 1–3 ask for significant work."
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to your supervisor",
+      "instructions": "In your supervision meeting, Dr Harris explains her position on the survey. Listen and answer the questions.",
+      "prompt_text": "Look, I'm open to keeping the survey, but you'd have to make a much stronger case for it. If you can show it tells us something the interviews can't, say, how widespread a pattern is, and you're upfront about who actually answered it, then fine, keep it as a secondary source. What I won't accept is presenting it as if it were representative. And please, sort out the ethics section before anything else. The board won't even look at a submission without it.",
+      "estimated_minutes": 4,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "us",
+      "questions": [
+        {
+          "prompt": "Under what conditions can the survey stay?",
+          "options": [
+            "If more people answer it",
+            "If it adds something the interviews can't and its limits are made clear",
+            "If it is moved to an appendix"
+          ],
+          "answer_index": 1,
+          "explanation": "\"If you can show it tells us something the interviews can't… and you're upfront about who actually answered it.\""
+        },
+        {
+          "prompt": "What is the top priority?",
+          "options": [
+            "The ethics section",
+            "The survey",
+            "The interview sample"
+          ],
+          "answer_index": 0,
+          "explanation": "\"Please, sort out the ethics section before anything else.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Make your case in the meeting",
+      "instructions": "Respond to Dr Harris. Accept the points you agree with, and make a reasoned case for keeping the survey while acknowledging its limitations.",
+      "prompt_text": "Dr Harris: So, what's your plan for the chapter?",
+      "estimated_minutes": 5,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Concede valid points and argue persuasively for a qualified use of the survey.",
+      "points": [
+        {
+          "label": "accept the ethics point",
+          "any": [
+            "ethics",
+            "ethical",
+            "consent",
+            "anonymi*"
+          ]
+        },
+        {
+          "label": "address the interview sample",
+          "any": [
+            "sample",
+            "twelve",
+            "12",
+            "justif*",
+            "saturation"
+          ]
+        },
+        {
+          "label": "argue for the survey",
+          "any": [
+            "survey",
+            "widespread",
+            "pattern*",
+            "complement*",
+            "secondary",
+            "triangulat*",
+            "breadth"
+          ]
+        },
+        {
+          "label": "acknowledge its limitations",
+          "any": [
+            "limitation*",
+            "bias",
+            "not representative",
+            "upfront",
+            "transparent",
+            "acknowledge"
+          ]
+        }
+      ],
+      "model_answer": "First, you're absolutely right about ethics, so I'll rewrite that section this week with the consent procedure and how I anonymised the data. I'll also add a paragraph justifying the sample of twelve. On the survey, I take the point about bias, but I'd like to keep it as a secondary source: it shows how widespread some of the patterns from the interviews are. I'll be transparent that most respondents were former classmates and treat that as a clear limitation.",
+      "min_words": null
+    },
+    {
+      "title": "Confirm the actions by email",
+      "instructions": "After the meeting, email Dr Harris to confirm what you agreed: the actions for each point and when she will receive the revised chapter.",
+      "prompt_text": "To: Dr Harris\nSubject: Chapter 3: next steps",
+      "estimated_minutes": 12,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Record the agreed actions precisely and commit to a timeline.",
+      "points": [
+        {
+          "label": "confirm the ethics revision",
+          "any": [
+            "ethics",
+            "ethical",
+            "consent",
+            "anonymi*"
+          ]
+        },
+        {
+          "label": "confirm the decision on the survey",
+          "any": [
+            "survey",
+            "secondary",
+            "limitation*",
+            "bias"
+          ]
+        },
+        {
+          "label": "confirm the sample justification",
+          "any": [
+            "sample",
+            "interviews",
+            "justif*",
+            "twelve",
+            "12"
+          ]
+        },
+        {
+          "label": "give a timeline",
+          "any": [
+            "by",
+            "next week",
+            "friday",
+            "monday",
+            "draft",
+            "end of the month"
+          ]
+        }
+      ],
+      "model_answer": "Dear Dr Harris,\nThank you for a very useful meeting today. To confirm what we agreed: first, I will rewrite the ethics section, setting out the consent procedure and how the data were anonymised. Second, I will add an explicit justification for the sample of twelve interviews. Third, I will keep the survey, but only as a secondary source showing how widespread certain patterns are, and I will discuss the bias in its respondents openly as a limitation. I will send you the revised chapter by the end of next week.\nBest wishes,\nDilnoza",
+      "min_words": null
+    }
+  ]
+}

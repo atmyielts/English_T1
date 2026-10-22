@@ -1,0 +1,78 @@
+{
+  "item": {
+    "slug": "a2-a-birthday-you-remember",
+    "title": "A Birthday You Remember",
+    "level": "A2",
+    "prompt_text": "Tell a friend about a birthday you remember well. Say when it was and where you were, who was with you, what happened, and how you felt.",
+    "prompt_type": "storytelling",
+    "target_duration_seconds": 50,
+    "target_grammar": "past simple (regular and irregular verbs)",
+    "fluency_objective": "Move the story forward with 'first', 'then', 'when' and 'in the end'.",
+    "pronunciation_objective": "Pronounce -ed endings correctly: 'asked' /t/, 'shouted' /ɪd/, 'played' /d/.",
+    "target_vocabulary": [
+      "I remember",
+      "it was",
+      "years ago",
+      "in the morning",
+      "then",
+      "when we came back",
+      "a surprise",
+      "I felt",
+      "the best birthday"
+    ],
+    "task_type": "story",
+    "model_answer": "I remember my eighteenth birthday very well. It was three years ago, and I was at home in Fergana. In the morning, everyone was very quiet, and I thought my family forgot my birthday. I was a bit sad. Then in the evening, my sister asked me to go to the shop with her. When we came back, all my friends and cousins were in the living room! They shouted 'Happy birthday!' and my mother brought a big chocolate cake. My father gave me a new watch. I felt really surprised and very happy. It was the best birthday ever.",
+    "model_opening": "I remember my eighteenth birthday very well.",
+    "cues": [
+      {
+        "text": "when and where it was",
+        "keywords": [
+          "years ago",
+          "last year",
+          "when i was",
+          "at home",
+          "restaurant",
+          "it was"
+        ]
+      },
+      {
+        "text": "who was with you",
+        "keywords": [
+          "family",
+          "friends",
+          "parents",
+          "sister",
+          "brother",
+          "cousins",
+          "mother",
+          "father"
+        ]
+      },
+      {
+        "text": "what happened",
+        "keywords": [
+          "gave",
+          "brought",
+          "made",
+          "sang",
+          "shouted",
+          "surprise",
+          "cake",
+          "present",
+          "went"
+        ]
+      },
+      {
+        "text": "how you felt",
+        "keywords": [
+          "felt",
+          "happy",
+          "surprised",
+          "excited",
+          "sad"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

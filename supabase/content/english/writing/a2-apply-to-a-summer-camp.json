@@ -1,0 +1,85 @@
+{
+  "item": {
+    "slug": "a2-apply-to-a-summer-camp",
+    "title": "Apply to Help at a Summer Camp",
+    "level": "A2",
+    "prompt_text": "A children's summer camp in the Chimgan mountains is looking for young helpers for July. Write an email to the camp manager to apply.",
+    "genre": "application email",
+    "target_grammar": "can / can't for skills; past simple for experience",
+    "target_structure": "reason for writing + about me + experience and skills + when I'm free + question + closing",
+    "expected_length_min": 70,
+    "expected_length_max": 100,
+    "target_vocabulary": [
+      "apply",
+      "helper",
+      "experience",
+      "children",
+      "patient",
+      "free",
+      "I'd like",
+      "regards"
+    ],
+    "audience": "The camp manager",
+    "checklist": [
+      {
+        "point": "Say why you are writing",
+        "keywords": [
+          "apply",
+          "helper",
+          "job",
+          "advert",
+          "i'd like",
+          "i would like",
+          "interested"
+        ]
+      },
+      {
+        "point": "Give some information about yourself",
+        "keywords": [
+          "years old",
+          "student",
+          "study",
+          "university",
+          "school",
+          "i am",
+          "i'm"
+        ]
+      },
+      {
+        "point": "Describe your experience or skills",
+        "keywords": [
+          "experience",
+          "can",
+          "children",
+          "looked after",
+          "taught",
+          "helped",
+          "sport",
+          "swim"
+        ]
+      },
+      {
+        "point": "Say when you are free",
+        "keywords": [
+          "july",
+          "free",
+          "available",
+          "all month",
+          "summer"
+        ]
+      },
+      {
+        "point": "Ask a question and end politely",
+        "keywords": [
+          "?",
+          "could you",
+          "regards",
+          "thank you",
+          "best wishes",
+          "yours"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

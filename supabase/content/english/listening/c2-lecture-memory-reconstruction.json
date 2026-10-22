@@ -1,0 +1,164 @@
+{
+  "item": {
+    "slug": "c2-lecture-memory-reconstruction",
+    "title": "Lecture: Memory Is Not a Recording",
+    "level": "C2",
+    "summary": "A psychology lecture on why remembering is an act of reconstruction rather than playback, drawing on Bartlett's classic study.",
+    "transcript_text": "Let me begin with a claim that most of you will instinctively resist: your memories are not recordings. We tend to imagine remembering as a kind of playback, as if the past were stored somewhere intact, merely waiting to be retrieved. The evidence suggests something rather less flattering. In the early nineteen-thirties, the British psychologist Frederic Bartlett asked volunteers to read an unfamiliar folk tale and then reproduce it from memory, sometimes repeatedly over weeks and months. What he found was not simply that details went missing. Rather, the story was quietly reshaped: elements that seemed strange to the readers were dropped or rationalised, and the narrative drifted towards what they already found familiar. Bartlett concluded that remembering is an act of reconstruction, guided by what he called schemas, the frameworks of expectation we bring to any experience. Crucially, the people in his study did not experience their versions as inventions. As far as they were concerned, they were simply recalling what they had read. This is the uncomfortable part. Confidence, it turns out, is a poor guide to accuracy: a memory can feel vivid and certain and still be substantially wrong. The implications extend well beyond the laboratory, to courtrooms, to job interviews, and to every family argument about who said what. None of this means that memory is worthless. It means that memory is built for usefulness, not fidelity, and we would do well to hold even our most cherished recollections a little more lightly.",
+    "category": "Science",
+    "accent": "general",
+    "speed_label": "fast",
+    "speed_wpm": 170,
+    "duration_seconds": 87,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "lecture",
+      "psychology",
+      "memory"
+    ],
+    "questions": [
+      {
+        "prompt": "Which common belief does the lecturer set out to challenge?",
+        "options": [
+          "That memory gets worse with age",
+          "That memories are stored intact and simply played back",
+          "That stories are easier to remember than facts",
+          "That confidence improves memory"
+        ],
+        "answer_index": 1,
+        "explanation": "We imagine remembering \"as a kind of playback, as if the past were stored somewhere intact\"; the lecturer argues this is wrong."
+      },
+      {
+        "prompt": "What did Bartlett's study show, beyond the loss of details?",
+        "options": [
+          "Participants added completely new characters to the story.",
+          "The story was reshaped towards what the readers found familiar.",
+          "Repeating the story made it more accurate.",
+          "Participants remembered strange details best."
+        ],
+        "answer_index": 1,
+        "explanation": "Strange elements \"were dropped or rationalised, and the narrative drifted towards what they already found familiar\"."
+      },
+      {
+        "prompt": "In the lecture, what are schemas?",
+        "options": [
+          "Notes participants made while reading",
+          "Errors that appear in repeated retellings",
+          "The frameworks of expectation we bring to experience",
+          "Techniques for improving recall"
+        ],
+        "answer_index": 2,
+        "explanation": "Bartlett's schemas are \"the frameworks of expectation we bring to any experience\"."
+      },
+      {
+        "prompt": "Why does the lecturer call one finding \"the uncomfortable part\"?",
+        "options": [
+          "Because the participants knew they were inventing details",
+          "Because distorted memories can feel just as genuine and certain as accurate ones",
+          "Because the study was carried out unfairly",
+          "Because the folk tale was frightening"
+        ],
+        "answer_index": 1,
+        "explanation": "The participants did not see their versions as inventions, and \"a memory can feel vivid and certain and still be substantially wrong\"."
+      },
+      {
+        "prompt": "What is the lecturer's overall conclusion?",
+        "options": [
+          "Memory is too unreliable to be useful.",
+          "Only recorded evidence should be trusted.",
+          "Memory serves us well but is not built for exact accuracy, so we should hold it lightly.",
+          "Training can make memory as reliable as a recording."
+        ],
+        "answer_index": 2,
+        "explanation": "\"None of this means that memory is worthless. It means that memory is built for usefulness, not fidelity.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Let me begin with a claim that most of you will instinctively resist: your memories are not recordings.",
+      "focus_phrase": "not recordings",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "We tend to imagine remembering as a kind of playback, as if the past were stored somewhere intact, merely waiting to be retrieved.",
+      "focus_phrase": "a kind of playback",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The evidence suggests something rather less flattering.",
+      "focus_phrase": "less flattering",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "In the early nineteen-thirties, the British psychologist Frederic Bartlett asked volunteers to read an unfamiliar folk tale and then reproduce it from memory, sometimes repeatedly over weeks and months.",
+      "focus_phrase": "unfamiliar folk tale",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "What he found was not simply that details went missing.",
+      "focus_phrase": "went missing",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Rather, the story was quietly reshaped: elements that seemed strange to the readers were dropped or rationalised, and the narrative drifted towards what they already found familiar.",
+      "focus_phrase": "quietly reshaped",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Bartlett concluded that remembering is an act of reconstruction, guided by what he called schemas, the frameworks of expectation we bring to any experience.",
+      "focus_phrase": "act of reconstruction",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Crucially, the people in his study did not experience their versions as inventions.",
+      "focus_phrase": "as inventions",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "As far as they were concerned, they were simply recalling what they had read.",
+      "focus_phrase": "simply recalling",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "This is the uncomfortable part.",
+      "focus_phrase": "uncomfortable part",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Confidence, it turns out, is a poor guide to accuracy: a memory can feel vivid and certain and still be substantially wrong.",
+      "focus_phrase": "poor guide to accuracy",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The implications extend well beyond the laboratory, to courtrooms, to job interviews, and to every family argument about who said what.",
+      "focus_phrase": "beyond the laboratory",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "None of this means that memory is worthless.",
+      "focus_phrase": "worthless",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "It means that memory is built for usefulness, not fidelity, and we would do well to hold even our most cherished recollections a little more lightly.",
+      "focus_phrase": "usefulness, not fidelity",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

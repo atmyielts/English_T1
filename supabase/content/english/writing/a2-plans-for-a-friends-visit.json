@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "a2-plans-for-a-friends-visit",
+    "title": "Plans for Your Friend's Visit",
+    "level": "A2",
+    "prompt_text": "Your friend Timur lives in Andijan. He is coming to stay with you in Tashkent next weekend for two days. Write a message to tell him your plans.",
+    "genre": "message",
+    "target_grammar": "be going to and will for plans",
+    "target_structure": "excitement + meeting time and place + Saturday plan + Sunday plan + what to bring",
+    "expected_length_min": 60,
+    "expected_length_max": 90,
+    "target_vocabulary": [
+      "can't wait",
+      "meet you",
+      "station",
+      "going to",
+      "visit",
+      "bring",
+      "comfortable"
+    ],
+    "audience": "Your friend Timur",
+    "checklist": [
+      {
+        "point": "Say you are happy he is coming",
+        "keywords": [
+          "can't wait",
+          "happy",
+          "glad",
+          "great",
+          "excited",
+          "looking forward"
+        ]
+      },
+      {
+        "point": "Say where and when you will meet him",
+        "keywords": [
+          "meet",
+          "station",
+          "pick you up",
+          "o'clock",
+          "pm",
+          "am",
+          "#number"
+        ]
+      },
+      {
+        "point": "Describe your plans for Saturday",
+        "keywords": [
+          "saturday",
+          "going to",
+          "we'll",
+          "we will",
+          "visit",
+          "go to"
+        ]
+      },
+      {
+        "point": "Describe your plans for Sunday",
+        "keywords": [
+          "sunday",
+          "then",
+          "after that",
+          "next day"
+        ]
+      },
+      {
+        "point": "Tell him what to bring",
+        "keywords": [
+          "bring",
+          "don't forget",
+          "remember",
+          "shoes",
+          "jacket",
+          "money",
+          "camera"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

@@ -1,0 +1,118 @@
+{
+  "item": {
+    "slug": "a2-present-perfect-experience",
+    "title": "Present perfect: ever, never and experiences",
+    "level": "A2",
+    "focus_area": "present-perfect",
+    "explanation_text": "Use have or has + past participle to talk about experiences in your life up to now, when the exact time is not important: I have visited Bukhara. She has never eaten sushi. Ask with ever: Have you ever flown on a plane? Short answers: Yes, I have. / No, I haven't. Regular past participles end in -ed (visited, worked). Many common verbs are irregular: be → been, see → seen, eat → eaten, ride → ridden, do → done. Use been (not gone) for a place you visited and came back from. If you say when it happened (yesterday, in 2022, last summer), use the past simple: I visited Bukhara last summer.",
+    "contrast_text": "Compare: I have been to Samarkand (some time in my life). I went to Samarkand last summer (a finished time).",
+    "common_error_pattern": "Using the past simple form after have ('I have saw'), or using the present perfect with a finished time ('I have seen him yesterday').",
+    "tags": [
+      "present perfect",
+      "experience"
+    ],
+    "examples": [
+      {
+        "bad": "Have you ever ate kazy?",
+        "good": "Have you ever eaten kazy?"
+      },
+      {
+        "bad": "She has never went abroad.",
+        "good": "She has never been abroad."
+      },
+      {
+        "bad": "I have seen that film last week.",
+        "good": "I saw that film last week."
+      },
+      {
+        "bad": "He never has played tennis.",
+        "good": "He has never played tennis."
+      }
+    ]
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Use the present perfect with the words in brackets.",
+      "prompt_text": "I ___ to London, but I'd love to go one day. (never / be)",
+      "accepted_answers": [
+        "have never been",
+        "'ve never been"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-perfect"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Use the present perfect with the words in brackets.",
+      "prompt_text": "My brother ___ three marathons. (run)",
+      "accepted_answers": [
+        "has run",
+        "'s run"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-perfect"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Use the present perfect with the words in brackets.",
+      "prompt_text": "We ___ this film before. Let's watch something else. (see)",
+      "accepted_answers": [
+        "have seen",
+        "'ve seen",
+        "have already seen",
+        "'ve already seen"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-perfect"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Use the present perfect with the words in brackets.",
+      "prompt_text": "Sara ___ a horse. She's afraid of them. (never / ride)",
+      "accepted_answers": [
+        "has never ridden",
+        "'s never ridden"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-perfect"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Write the past participle of the verb in brackets.",
+      "prompt_text": "Have you ever ___ plov at a wedding? (eat)",
+      "accepted_answers": [
+        "eaten"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-perfect"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "instructions": "Find the mistake and write the whole sentence correctly.",
+      "prompt_text": "Have you ever went to Khiva?",
+      "accepted_answers": [
+        "Have you ever been to Khiva?"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-perfect"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "instructions": "Find the mistake and write the whole sentence correctly.",
+      "prompt_text": "I have met Daniel at a conference in 2023.",
+      "accepted_answers": [
+        "I met Daniel at a conference in 2023."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-perfect"
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "item": {
+    "slug": "b2-verbs-ing-or-to-meaning",
+    "title": "Remember, stop, try: -ing or to + verb?",
+    "level": "B2",
+    "focus_area": "verb-patterns",
+    "explanation_text": "Some verbs can be followed by -ing or by to + infinitive, but the meaning changes. remember / forget + -ing = a memory of something you did earlier: I remember locking the door. remember / forget + to = something you need to do: Remember to lock the door. stop + -ing = no longer do something: He stopped smoking. stop + to = stop one activity in order to do another: He stopped to buy water. try + -ing = do something as an experiment to see if it helps: Try restarting the laptop. try + to = make an effort to do something difficult: I tried to open the window, but it was stuck. regret + -ing = be sorry about something in the past: I regret leaving so early. regret + to = a formal way to give bad news: We regret to inform you that the flight has been cancelled. go on + -ing = continue the same activity; go on + to = do something new next.",
+    "contrast_text": "Compare: I'll never forget meeting you (a memory of the past). Don't forget to meet Daniel at the airport (a task for the future).",
+    "common_error_pattern": "Choosing -ing or to + verb by sound rather than meaning, for example 'I stopped to smoke' when you mean you gave it up.",
+    "tags": [
+      "gerund",
+      "infinitive",
+      "verb patterns"
+    ],
+    "examples": [
+      {
+        "bad": "Please remember sending me the file tonight.",
+        "good": "Please remember to send me the file tonight."
+      },
+      {
+        "bad": "My father stopped to smoke ten years ago.",
+        "good": "My father stopped smoking ten years ago."
+      },
+      {
+        "bad": "We regret informing you that your application was unsuccessful.",
+        "good": "We regret to inform you that your application was unsuccessful."
+      },
+      {
+        "bad": "I'll never forget to visit Khiva for the first time.",
+        "good": "I'll never forget visiting Khiva for the first time."
+      }
+    ]
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Write the verb in brackets as -ing or to + verb.",
+      "prompt_text": "I clearly remember ___ my keys on the table, but now they've gone. (leave)",
+      "accepted_answers": [
+        "leaving"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.verb-patterns"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Write the verb in brackets as -ing or to + verb.",
+      "prompt_text": "On the way to Samarkand we stopped ___ some fresh bread. (buy)",
+      "accepted_answers": [
+        "to buy"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.verb-patterns"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Write the verb in brackets as -ing or to + verb.",
+      "prompt_text": "Don't forget ___ your passport. You'll need it at the airport. (take)",
+      "accepted_answers": [
+        "to take"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.verb-patterns"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Write the verb in brackets as -ing or to + verb.",
+      "prompt_text": "If the screen goes black, try ___ the cable and plugging it in again. It sometimes helps. (unplug)",
+      "accepted_answers": [
+        "unplugging"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.verb-patterns"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Write the verb in brackets as -ing or to + verb.",
+      "prompt_text": "Malika regrets not ___ harder for her final exams. (study)",
+      "accepted_answers": [
+        "studying"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.verb-patterns"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Write the verb in brackets as -ing or to + verb.",
+      "prompt_text": "After ten years as a nurse, she went on ___ her own medical charity. (start)",
+      "accepted_answers": [
+        "to start"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.verb-patterns"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "instructions": "Find the mistake and write the whole sentence correctly.",
+      "prompt_text": "Have you stopped to eat sugar? You look much healthier.",
+      "accepted_answers": [
+        "Have you stopped eating sugar? You look much healthier."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.verb-patterns"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "instructions": "Find the mistake and write the whole sentence correctly.",
+      "prompt_text": "I'll never forget to see the Registan for the first time.",
+      "accepted_answers": [
+        "I'll never forget seeing the Registan for the first time.",
+        "I will never forget seeing the Registan for the first time."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.verb-patterns"
+    }
+  ]
+}
