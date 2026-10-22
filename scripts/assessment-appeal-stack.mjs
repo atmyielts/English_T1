@@ -560,6 +560,10 @@ export async function appealBrowserStack({ certificates = false,documents=false,
         });
       }
     });
+    // Keep idle sockets open longer than the browser's reuse window: Node's 5 s
+    // default can close a socket just as Playwright reuses it (ECONNRESET).
+    server.keepAliveTimeout = 65000;
+    server.headersTimeout = 66000;
     await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
     base = `http://127.0.0.1:${server.address().port}`;
     const bundleFile = path.join(directory, "edge.mjs");
