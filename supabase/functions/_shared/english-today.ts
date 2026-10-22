@@ -454,3 +454,27 @@ export const pickFixes = (input: {
   }
   return out.sort((a, b) => b.count - a.count);
 };
+
+export type LevelStatus = "ready" | "struggling" | "steady" | "new";
+
+/**
+ * How the learner is doing at their level in one skill, from the last scored
+ * attempts at that level (most recent first). Three or more attempts averaging
+ * 85+ means ready to move up; averaging under 50 means step down for a while.
+ */
+export const levelStatus = (scoresAtLevel: number[]): LevelStatus => {
+  const recent = scoresAtLevel.slice(0, 5);
+  if (recent.length < 3) return "new";
+  const mean = recent.reduce((sum, value) => sum + value, 0) / recent.length;
+  if (mean >= 0.85) return "ready";
+  if (mean < 0.5) return "struggling";
+  return "steady";
+};
+
+/** The level to practise at: one step down while struggling, never below A1. */
+export const practiceLevel = (level: Cefr | null, status: LevelStatus): Cefr | null => {
+  if (!level || status !== "struggling") return level;
+  return CEFR_ORDER[Math.max(0, CEFR_ORDER.indexOf(level) - 1)] ?? level;
+};
+
+export const nextCefr = (level: Cefr): Cefr | null => CEFR_ORDER[CEFR_ORDER.indexOf(level) + 1] ?? null;

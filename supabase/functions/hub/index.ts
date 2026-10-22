@@ -33,8 +33,12 @@ import {
   currentStreak,
   dailyCounts,
   isCefr as isTodayCefr,
+  type LevelStatus,
+  levelStatus,
   longestStreak,
+  nextCefr,
   pickFixes,
+  practiceLevel,
   planToday,
   skillProgress,
   TODAY_SKILLS,
@@ -64,6 +68,23 @@ const PRIMARY_CONTENT_TYPES = [
  * sentences where the learner made the same kind of error) and linked to the
  * lesson that practises it; other mistakes are listed one by one.
  */
+/** How the learner is doing at their own level in each skill (scored attempts, newest first). */
+const statusesByLevel = (
+  attempts: AttemptRow[],
+  levelById: Map<string, Cefr | null>,
+  levelFor: (skill: TodaySkill) => Cefr | null,
+): Record<TodaySkill, LevelStatus> => {
+  const out = {} as Record<TodaySkill, LevelStatus>;
+  for (const skill of TODAY_SKILLS) {
+    const level = levelFor(skill);
+    const scores = attempts
+      .filter((attempt) => attempt.skill === skill && attempt.score !== null && level && levelById.get(attempt.content_item_id) === level)
+      .map((attempt) => attempt.score as number);
+    out[skill] = levelStatus(scores);
+  }
+  return out;
+};
+
 const groupMistakes = (
   rows: Array<Record<string, unknown>>,
   units: Array<Record<string, unknown>>,
@@ -337,8 +358,14 @@ serve(async (req) => {
             all_time: attempts.length,
           },
           days,
-          skills: skillProgress(attempts, (id) => levelById.get(id) ?? null, levelFor)
-            .map((row) => ({ ...row, level: levelFor(row.skill) })),
+          skills: (() => {
+            const statuses = statusesByLevel(attempts, levelById, levelFor);
+            return skillProgress(attempts, (id) => levelById.get(id) ?? null, levelFor)
+              .map((row) => {
+                const level = levelFor(row.skill);
+                return { ...row, level, status: statuses[row.skill], next_level: level ? nextCefr(level) : null };
+              });
+          })(),
           mistakes: groupMistakes(
             (errorsRes.data ?? []) as Array<Record<string, unknown>>,
             (unitsRes.data ?? []) as Array<Record<string, unknown>>,
@@ -421,9 +448,18 @@ serve(async (req) => {
           submitted_at: String(row.submitted_at),
         }));
 
+      // Adapt to recent results: step down a level in a skill while scores there stay low.
+      const levelById = new Map(items.map((entry) => [entry.id, entry.level]));
+      const levelStatuses = statusesByLevel(attempts, levelById, (skill) => perSkillLevel[skill] ?? overallLevel);
+      const practiceLevels: Partial<Record<TodaySkill, Cefr>> = {};
+      for (const skill of TODAY_SKILLS) {
+        const level = practiceLevel(perSkillLevel[skill] ?? overallLevel, levelStatuses[skill]);
+        if (level) practiceLevels[skill] = level;
+      }
+
       const dailyMinutes = Number(goal?.daily_time_minutes ?? 20) || 20;
       // A stored plan is reused only while the inputs that shaped it are unchanged.
-      const planKey = [overallLevel ?? "-", dailyMinutes, availableSkills.join(","), JSON.stringify(perSkillLevel)].join("|");
+      const planKey = [overallLevel ?? "-", dailyMinutes, availableSkills.join(","), JSON.stringify(practiceLevels)].join("|");
       const existingSummary = (existingRes.data?.summary ?? {}) as Record<string, unknown>;
       const existing = existingSummary.generated_by === "hub.today.v1"
           && existingSummary.plan_key === planKey
@@ -455,7 +491,7 @@ serve(async (req) => {
         date: planDate,
         dailyMinutes,
         overallLevel,
-        perSkillLevel,
+        perSkillLevel: practiceLevels,
         items,
         attempts,
         dueReviews,
@@ -495,6 +531,7 @@ serve(async (req) => {
         level: overallLevel,
         target_level: isTodayCefr(goal?.target_cefr) ? goal!.target_cefr : null,
         per_skill_level: perSkillLevel,
+        level_status: levelStatuses,
         daily_minutes: dailyMinutes,
         placement_done: Boolean(placement?.completed_at),
         available_skills: availableSkills,
@@ -508,6 +545,61 @@ serve(async (req) => {
         streak: currentStreak(attempts, planDate),
         week: weekStrip(attempts, planDate),
       });
+    }
+
+    // === Moving up a level in one skill ===
+    // Only when recent results at the current level show the learner is ready.
+    if (req.method === "POST" && route === "/level/up") {
+      const body = await parseBody(req) as Record<string, unknown>;
+      const skill = toText(body.skill, 24) as TodaySkill;
+      if (!(TODAY_SKILLS as readonly string[]).includes(skill)) return json(422, { error: "Unknown skill" });
+      const { data: goal } = await sb.from("learner_language_goals")
+        .select("current_cefr_estimate, metadata")
+        .eq("user_id", auth.userId)
+        .eq("language_id", scope.languageId)
+        .maybeSingle();
+      const meta = ((goal as Record<string, unknown> | null)?.metadata ?? {}) as Record<string, unknown>;
+      const placement = (meta.placement && typeof meta.placement === "object" ? { ...(meta.placement as Record<string, unknown>) } : {}) as Record<string, unknown>;
+      const perSkill = (placement.per_skill && typeof placement.per_skill === "object" ? { ...(placement.per_skill as Record<string, unknown>) } : {}) as Record<string, unknown>;
+      const entry = perSkill[skill];
+      const stored = typeof entry === "string" ? entry : (entry as Record<string, unknown> | undefined)?.level;
+      const overall = (goal as Record<string, unknown> | null)?.current_cefr_estimate;
+      const current = isTodayCefr(stored) ? stored : isTodayCefr(overall) ? overall : null;
+      if (!current) return json(409, { error: "Set your level first", code: "no_level" });
+      const next = nextCefr(current);
+      if (!next) return json(409, { error: "You are already at the highest level", code: "top_level" });
+
+      const { data: catalogRows } = await sb.from("learning_content_registry_items")
+        .select("id, cefr_level")
+        .eq("language_id", scope.languageId)
+        .eq("service_key", skill)
+        .eq("status", "published");
+      const levelOfItem = new Map(((catalogRows ?? []) as Array<Record<string, unknown>>).map((row) => [String(row.id), isTodayCefr(row.cefr_level) ? row.cefr_level : null]));
+      const { data: attemptRows } = await sb.from("learning_attempts")
+        .select("content_item_id, correctness_ratio, overall_score, submitted_at")
+        .eq("user_id", auth.userId)
+        .eq("language_id", scope.languageId)
+        .eq("service_key", skill)
+        .in("status", ["submitted", "scored", "failed"])
+        .not("submitted_at", "is", null)
+        .order("submitted_at", { ascending: false })
+        .limit(50);
+      const scores = ((attemptRows ?? []) as Array<Record<string, unknown>>)
+        .filter((row) => levelOfItem.get(String(row.content_item_id)) === current)
+        .map((row) => Number(row.correctness_ratio ?? row.overall_score))
+        .filter((value) => Number.isFinite(value));
+      if (levelStatus(scores) !== "ready") {
+        return json(409, { error: "Keep practising at your level first", code: "not_ready" });
+      }
+
+      perSkill[skill] = { level: next, moved_up_from: current, moved_up_at: new Date().toISOString() };
+      placement.per_skill = perSkill;
+      const { error } = await sb.from("learner_language_goals")
+        .update({ metadata: { ...meta, placement } })
+        .eq("user_id", auth.userId)
+        .eq("language_id", scope.languageId);
+      if (error) throw new Error(`Failed to save level: ${error.message}`);
+      return json(200, { ok: true, skill, level: next, previous_level: current });
     }
 
     // === Mixed review: missed questions and dictation sentences ===

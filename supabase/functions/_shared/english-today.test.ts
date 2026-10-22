@@ -4,7 +4,10 @@ import {
   type CatalogItem,
   currentStreak,
   dailyCounts,
+  levelStatus,
   longestStreak,
+  nextCefr,
+  practiceLevel,
   pickFixes,
   pickItem,
   planToday,
@@ -243,4 +246,16 @@ Deno.test("fix candidates need two mistakes and drop topics whose lesson was pas
     attempts: [attempt("g-art", "grammar", 0.5, "2026-10-22")],
   });
   assertEquals(failedAgain.map((fix) => fix.topic), ["articles"]);
+});
+
+Deno.test("level status needs three results and moves up at 85, down under 50", () => {
+  assertEquals(levelStatus([1, 1]), "new");
+  assertEquals(levelStatus([0.9, 0.85, 0.9]), "ready");
+  assertEquals(levelStatus([0.4, 0.5, 0.3]), "struggling");
+  assertEquals(levelStatus([0.7, 0.6, 0.8, 0.2, 0.2, 0.2]), "steady");
+  assertEquals(practiceLevel("B1", "struggling"), "A2");
+  assertEquals(practiceLevel("A1", "struggling"), "A1");
+  assertEquals(practiceLevel("B1", "ready"), "B1");
+  assertEquals(nextCefr("B1"), "B2");
+  assertEquals(nextCefr("C2"), null);
 });

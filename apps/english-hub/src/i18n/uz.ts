@@ -419,4 +419,10 @@ export const uz: Partial<Record<string, string>> = {
   "review.questions.doneTitle": "Savollar tugadi",
   "review.questions.doneBody": "{total} tadan {right} tasi toʻgʻri. Xatolar ertaga qaytadi.",
   "review.questions.none": "Hozircha takrorlaydigan narsa yoʻq. Darslarda xato qilgan savollaringiz shu yerda chiqadi.",
+  "progress.skills.struggling": "Ishonch hosil qilish uchun hozircha bir daraja pastda mashq qilamiz",
+  "progress.skills.moveUp": "{level} darajasiga oʻtish",
+  "progress.skills.moved": "{skill}: endi {level} darajasida mashq qilasiz. Reja yangi darajani hisobga oladi.",
+  "today.ready.title": "Keyingi darajaga tayyorsiz",
+  "today.ready.body": "{skills} boʻyicha natijalaringiz yaxshi. Tayyor boʻlsangiz, keyingi darajaga oʻting.",
+  "today.ready.cta": "Natijalarimni koʻrish",
 };

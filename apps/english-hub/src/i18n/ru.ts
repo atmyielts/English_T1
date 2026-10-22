@@ -419,4 +419,10 @@ export const ru: Partial<Record<string, string>> = {
   "review.questions.doneTitle": "Вопросы пройдены",
   "review.questions.doneBody": "Правильно: {right} из {total}. Ошибочные вернутся завтра.",
   "review.questions.none": "Сейчас повторять нечего. Здесь появятся вопросы, в которых вы ошибётесь.",
+  "progress.skills.struggling": "Пока занимаемся на уровень ниже, чтобы набрать уверенность",
+  "progress.skills.moveUp": "Перейти на {level}",
+  "progress.skills.moved": "{skill}: теперь вы занимаетесь на уровне {level}. План учтёт новый уровень.",
+  "today.ready.title": "Вы готовы к следующему уровню",
+  "today.ready.body": "У вас хорошие результаты: {skills}. Переходите дальше, когда будете готовы.",
+  "today.ready.cta": "Мой прогресс",
 };

@@ -419,4 +419,10 @@ export const en: Record<string, string> = {
   "review.questions.doneTitle": "Questions done",
   "review.questions.doneBody": "You got {right} of {total} right. Missed ones will come back tomorrow.",
   "review.questions.none": "Nothing to try again right now. Questions you miss in lessons will appear here.",
+  "progress.skills.struggling": "Practising a level lower for a while to build confidence",
+  "progress.skills.moveUp": "Move up to {level}",
+  "progress.skills.moved": "{skill}: you're now practising at {level}. Your plan will use the new level.",
+  "today.ready.title": "You're ready to move up",
+  "today.ready.body": "Your recent scores in {skills} are strong. Move up when you're ready.",
+  "today.ready.cta": "See my progress",
 };

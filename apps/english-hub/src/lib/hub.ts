@@ -26,6 +26,7 @@ export type TodayResponse = {
   level: CefrLevel | null;
   target_level: CefrLevel | null;
   per_skill_level: Partial<Record<SkillKey, CefrLevel>>;
+  level_status?: Partial<Record<SkillKey, 'ready' | 'struggling' | 'steady' | 'new'>>;
   daily_minutes: number;
   placement_done: boolean;
   available_skills: SkillKey[];
@@ -85,6 +86,9 @@ export type SkillProgress = {
   accuracy_at_level: number | null;
   attempts_at_level: number;
   last_practised: string | null;
+  /** ready: strong at this level; struggling: practising a level lower for now. */
+  status?: 'ready' | 'struggling' | 'steady' | 'new';
+  next_level?: CefrLevel | null;
 };
 
 /** Mistakes for Review: grammar ones grouped by topic and linked to the lesson that practises them. */
@@ -109,6 +113,12 @@ export type ProgressResponse = {
 
 export const getProgress = (signal?: AbortSignal) =>
   edge<ProgressResponse>('hub', '/progress', { query: { language_code: 'en', date: localDate() }, signal });
+
+export const moveUpLevel = (skill: SkillKey) =>
+  edge<{ ok: boolean; skill: SkillKey; level: CefrLevel; previous_level: CefrLevel }>('hub', '/level/up', {
+    query: { language_code: 'en' },
+    body: { skill },
+  });
 
 export type SaveOnboardingBody = {
   placement?: { overall_level: CefrLevel; per_skill: Partial<Record<SkillKey, { level: CefrLevel }>> };
