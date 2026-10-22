@@ -1,0 +1,236 @@
+{
+  "item": {
+    "slug": "c2-responding-to-peer-reviewers",
+    "title": "Responding to a critical peer reviewer",
+    "level": "C2",
+    "context_text": "You and a co-author have submitted a research article on water-saving irrigation methods used by farmers in the Fergana Valley to an international journal. It has come back with \"major revisions\". One reviewer is supportive; Reviewer 2 is sharply critical, partly, you believe, because they misread your study design. In fact, your study compared 30 farms using drip irrigation with 14 control farms (Section 3.2), and you adjusted the results for rainfall.",
+    "objective_text": "Separate valid criticism from misreading, agree a strategy with your co-author, write a measured response, and brief the editor diplomatically.",
+    "mission_type": "study",
+    "target_grammar": "academic hedging and polite rebuttal (We respectfully note that…; We have now clarified…)",
+    "cultural_note": "In academic publishing, a response to reviewers should thank them, answer every point, show exactly what was changed, and disagree only with evidence. Treating a misreading as a sign that the text was unclear is more persuasive than accusing the reviewer of carelessness.",
+    "target_vocabulary": [
+      "major revisions",
+      "control group",
+      "rebuttal",
+      "concede",
+      "misreading"
+    ],
+    "success_conditions": [
+      "Distinguish the reviewer's misreading from valid criticism",
+      "Understand the agreed strategy for each point",
+      "Write a response that clarifies, concedes and defends with evidence and courtesy",
+      "Summarise your approach to the editor concisely and diplomatically"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read Reviewer 2's comments",
+      "instructions": "Read Reviewer 2's comments. Then answer the questions.",
+      "prompt_text": "Reviewer 2:\nThe authors claim that drip irrigation reduced water use by \"around a third\" across participating farms, yet the comparison appears to be with the previous season rather than with a control group. Differences in weather between seasons could alone explain much of the effect. I am also puzzled by the absence of any discussion of cost: for smallholders, the initial investment is surely the decisive factor. Finally, the literature review leans heavily on studies from Israel and Spain, whose conditions differ substantially from those in Central Asia. As it stands, the conclusions are not supported.",
+      "estimated_minutes": 6,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "What is the reviewer's main methodological objection?",
+          "options": [
+            "The sample is too small",
+            "The comparison seems to be with the previous season, not a control group",
+            "The data were collected by the farmers themselves"
+          ],
+          "answer_index": 1,
+          "explanation": "\"The comparison appears to be with the previous season rather than with a control group.\""
+        },
+        {
+          "prompt": "Given your actual design, which point is based on a misreading?",
+          "options": [
+            "The missing control group",
+            "The missing discussion of cost",
+            "The choice of literature"
+          ],
+          "answer_index": 0,
+          "explanation": "Your study did include 14 control farms (Section 3.2) and adjusted for rainfall."
+        },
+        {
+          "prompt": "What does \"As it stands\" signal?",
+          "options": [
+            "The reviewer rejects the paper outright",
+            "In its current form the conclusions are unsupported, but revision could change that",
+            "The reviewer agrees with the conclusions"
+          ],
+          "answer_index": 1,
+          "explanation": "\"As it stands\" refers to the present version, leaving room for revision."
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to your co-author",
+      "instructions": "Your co-author leaves you a voice message about the reviews. Listen and answer the questions.",
+      "prompt_text": "I've read Reviewer Two's comments, and yes, I'm irritated too, but let's not be defensive. The control group point is a misreading, but clearly we didn't make the design prominent enough. If they missed it, other readers will too. I'd move the design summary into the abstract and add a figure. On cost, they're simply right; we should add a short section. On the literature, I'd push back politely: we already cite the Central Asian studies that exist, and there aren't many.",
+      "estimated_minutes": 5,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "gb",
+      "questions": [
+        {
+          "prompt": "How does the co-author interpret the misreading?",
+          "options": [
+            "As evidence the reviewer is careless",
+            "As a sign the design wasn't presented clearly enough",
+            "As grounds for complaining to the editor"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Clearly we didn't make the design prominent enough. If they missed it, other readers will too.\""
+        },
+        {
+          "prompt": "On which point does the co-author concede fully?",
+          "options": [
+            "The control group",
+            "The cost discussion",
+            "The literature review"
+          ],
+          "answer_index": 1,
+          "explanation": "\"On cost, they're simply right; we should add a short section.\""
+        },
+        {
+          "prompt": "What is the planned approach to the literature point?",
+          "options": [
+            "Add many new European studies",
+            "Politely defend the existing choice",
+            "Remove the literature review"
+          ],
+          "answer_index": 1,
+          "explanation": "\"On the literature, I'd push back politely.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Write the response to Reviewer 2",
+      "instructions": "Draft your response to Reviewer 2. Thank them, clarify the control-group point without scolding, show what you have changed, accept the cost point, and respectfully defend your choice of literature.",
+      "prompt_text": "Response to Reviewer 2",
+      "estimated_minutes": 15,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Write a measured, evidence-based response that addresses every point.",
+      "points": [
+        {
+          "label": "thank the reviewer",
+          "any": [
+            "thank*",
+            "grateful",
+            "appreciat*"
+          ]
+        },
+        {
+          "label": "clarify the control group",
+          "any": [
+            "control",
+            "14",
+            "fourteen",
+            "section 3 2",
+            "rainfall",
+            "adjust*"
+          ]
+        },
+        {
+          "label": "show the changes for clarity",
+          "any": [
+            "abstract",
+            "figure",
+            "clarif*",
+            "prominent*",
+            "revised"
+          ]
+        },
+        {
+          "label": "accept the cost point",
+          "any": [
+            "cost*",
+            "investment",
+            "afford*",
+            "econom*"
+          ]
+        },
+        {
+          "label": "defend the literature",
+          "any": [
+            "central asia*",
+            "literature",
+            "region*",
+            "scarce",
+            "limited",
+            "few"
+          ]
+        }
+      ],
+      "model_answer": "We thank Reviewer 2 for their careful reading and helpful comments. On the first point, we respectfully note that the study did include a control group: 30 farms using drip irrigation were compared with 14 control farms in the same seasons, and the results were adjusted for rainfall (Section 3.2). We accept, however, that this was not made sufficiently clear, and we have now summarised the design in the abstract and added a figure. On cost, we fully agree, and we have added a new section on the initial investment and its affordability for smallholders. Finally, regarding the literature, we already cite the published studies from Central Asia, which remain limited in number; we have now explained this explicitly.",
+      "min_words": null
+    },
+    {
+      "title": "Brief the editor",
+      "instructions": "The journal's editor phones to ask briefly how you're handling the reviews. Summarise your approach diplomatically in under a minute.",
+      "prompt_text": "Editor: Reviewer 2 was fairly critical. How are you planning to respond?",
+      "estimated_minutes": 5,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Brief the editor concisely, showing a constructive, non-defensive approach.",
+      "points": [
+        {
+          "label": "explain the control-group misunderstanding tactfully",
+          "any": [
+            "control",
+            "misunderst*",
+            "misread*",
+            "clarif*",
+            "design"
+          ]
+        },
+        {
+          "label": "show what you concede",
+          "any": [
+            "cost*",
+            "fair point",
+            "right",
+            "valid",
+            "agree",
+            "accept"
+          ]
+        },
+        {
+          "label": "mention the literature point",
+          "any": [
+            "literature",
+            "central asia*",
+            "studies",
+            "respectfully"
+          ]
+        },
+        {
+          "label": "show a constructive outcome",
+          "any": [
+            "revision*",
+            "weeks",
+            "resubmit*",
+            "stronger",
+            "improve*"
+          ]
+        }
+      ],
+      "model_answer": "We found the comments useful overall. The reviewer thought we had no control group, which isn't the case, but we take that as a sign our design wasn't clear enough, so we've put it in the abstract and added a figure. The point about cost is entirely fair, and we're adding a section on it. On the literature, we'll respectfully explain that we already cite the few Central Asian studies available. We expect to resubmit within three weeks, and we think the paper will be stronger for it.",
+      "min_words": null
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "item": {
+    "slug": "a1-postcard-from-samarkand",
+    "title": "A Postcard From Samarkand",
+    "level": "A1",
+    "prompt_text": "You are on holiday in Samarkand with your family. Write a postcard to your English teacher. Say where you are and what the city is like.",
+    "genre": "postcard",
+    "target_grammar": "present simple of be; there is / there are",
+    "target_structure": "greeting + where and who with + weather + the city + food + goodbye",
+    "expected_length_min": 30,
+    "expected_length_max": 50,
+    "target_vocabulary": [
+      "holiday",
+      "weather",
+      "sunny",
+      "beautiful",
+      "old",
+      "buildings",
+      "delicious"
+    ],
+    "audience": "Your English teacher",
+    "checklist": [
+      {
+        "point": "Say where you are and who you are with",
+        "keywords": [
+          "samarkand",
+          "with my",
+          "family",
+          "parents",
+          "brother",
+          "sister",
+          "holiday"
+        ]
+      },
+      {
+        "point": "Say what the weather is like",
+        "keywords": [
+          "weather",
+          "sunny",
+          "hot",
+          "warm",
+          "cold",
+          "rain",
+          "cloudy"
+        ]
+      },
+      {
+        "point": "Say what the city is like",
+        "keywords": [
+          "beautiful",
+          "old",
+          "big",
+          "building",
+          "registan",
+          "blue",
+          "there is",
+          "there are"
+        ]
+      },
+      {
+        "point": "Say something about the food",
+        "keywords": [
+          "food",
+          "plov",
+          "bread",
+          "non",
+          "eat",
+          "delicious",
+          "tasty"
+        ]
+      },
+      {
+        "point": "Say goodbye",
+        "keywords": [
+          "see you",
+          "best wishes",
+          "bye",
+          "love",
+          "wishes"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

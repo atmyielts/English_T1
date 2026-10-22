@@ -14,8 +14,8 @@ import {
   type TelegramItem, text,
 } from "./lib.ts";
 
-type LinkedUser = { id: string; name: string };
-type Centre = { academy_id: string; name: string; contact_ids: string[] };
+export type LinkedUser = { id: string; name: string };
+export type Centre = { academy_id: string; name: string; contact_ids: string[] };
 
 export type TelegramDeps = {
   sb: Db;
@@ -40,14 +40,14 @@ const send = (deps: TelegramDeps, chatId: string, body: string, markup?: Row) =>
     ...(markup ? { reply_markup: markup } : {}),
   });
 
-const linkedUser = async (sb: Db, telegramUserId: string): Promise<LinkedUser | null> => {
+export const linkedUser = async (sb: Db, telegramUserId: string): Promise<LinkedUser | null> => {
   const { data } = await sb.from("users").select("id, full_name, email").eq("telegram_chat_id", telegramUserId).maybeSingle();
   if (!data?.id) return null;
   return { id: String(data.id), name: String(data.full_name || String(data.email ?? "").split("@")[0] || "Student") };
 };
 
 /** Centres the learner belongs to, from the confirmed-contact RPC. */
-const loadCentres = async (sb: Db, userId: string): Promise<Centre[]> => {
+export const loadCentres = async (sb: Db, userId: string): Promise<Centre[]> => {
   const result = await rpc<Row>(sb, "academy_student_contacts_command", { p_actor_id: userId }, "Your student links could not be confirmed.");
   const contacts = Array.isArray(result?.contacts) ? result.contacts as Row[] : [];
   const byAcademy = new Map<string, string[]>();
@@ -64,17 +64,17 @@ const loadCentres = async (sb: Db, userId: string): Promise<Centre[]> => {
     .sort((a, b) => a.name.localeCompare(b.name));
 };
 
-const loadPreference = async (sb: Db, userId: string): Promise<Row | null> => {
+export const loadPreference = async (sb: Db, userId: string): Promise<Row | null> => {
   const { data } = await sb.from("telegram_student_preferences")
     .select("active_academy_id, focus_assignment_id, focus_set_at").eq("user_id", userId).maybeSingle();
   return data ?? null;
 };
 
-const savePreference = (sb: Db, userId: string, patch: Row) =>
+export const savePreference = (sb: Db, userId: string, patch: Row) =>
   sb.from("telegram_student_preferences").upsert({ user_id: userId, ...patch, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
 
 /** Centres whose plan and settings currently allow Telegram hand-in. */
-const handinCentres = async (sb: Db, centres: Centre[]): Promise<Centre[]> => {
+export const handinCentres = async (sb: Db, centres: Centre[]): Promise<Centre[]> => {
   if (!centres.length) return [];
   const { data: settings } = await sb.from("academy_homework_settings")
     .select("academy_id, telegram_handin_enabled").in("academy_id", centres.map((c) => c.academy_id));
@@ -224,35 +224,45 @@ const viewAssignment = async (deps: TelegramDeps, chatId: string, user: LinkedUs
 // Hand-in
 // ---------------------------------------------------------------------------
 
-type StoredFile = Row & { sha256: string; telegram_file_unique_id: string | null; kind: string };
+export type StoredFile = Row & { sha256: string; telegram_file_unique_id: string | null; kind: string };
+export type IncomingFile = { bytes: Uint8Array<ArrayBuffer>; name: string | null; mime: string; kind: string; uniqueId: string | null };
 
 const sha256Hex = async (bytes: Uint8Array<ArrayBuffer>) =>
   Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)), (b) => b.toString(16).padStart(2, "0")).join("");
 
-const storeItems = async (deps: TelegramDeps, target: OpenWork, items: TelegramItem[]): Promise<StoredFile[]> => {
-  const upload = deps.upload ?? uploadFileToS3;
+/** Uploads hand-in files under the classroom's submission prefix, as the Academy web upload does. */
+export const storeBytes = async (upload: typeof uploadFileToS3, target: OpenWork, files: IncomingFile[], route: string): Promise<StoredFile[]> => {
   const stored: StoredFile[] = [];
-  for (const item of items) {
-    if (!allowedMime(item.mime_type)) throw new HttpError(415, "This file type cannot be handed in.", "file_type_not_allowed");
-    if ((item.file_size ?? 0) > TELEGRAM_DOWNLOAD_LIMIT) throw new HttpError(413, "This file is too large for Telegram hand-in.", "telegram_file_too_large");
-    const { bytes } = await deps.tg.download(item.file_id, TELEGRAM_DOWNLOAD_LIMIT);
-    const ext = fileExtension(item);
+  for (const file of files) {
+    if (!allowedMime(file.mime)) throw new HttpError(415, "This file type cannot be handed in.", "file_type_not_allowed");
+    const ext = fileExtension({ mime_type: file.mime, file_name: file.name, kind: file.kind as TelegramItem["kind"] });
     const path = `academy/${target.academy_id}/classrooms/${target.classroom_id}/submission/${crypto.randomUUID()}.${ext}`;
-    const filename = (item.file_name || `${item.kind}.${ext}`).replace(/[^\w.\- ]+/g, "_").slice(0, 120);
-    const result = await upload(path, new File([bytes], filename, { type: item.mime_type }), item.mime_type, { route: "academy-learning.telegram.upload" });
+    const filename = (file.name || `${file.kind}.${ext}`).replace(/[^\w.\- ]+/g, "_").slice(0, 120);
+    const result = await upload(path, new File([file.bytes], filename, { type: file.mime }), file.mime, { route });
     stored.push({
-      provider: "s3", bucket: result.bucket, path: result.path, filename, mime_type: item.mime_type, size_bytes: bytes.byteLength,
-      uploaded_at: new Date().toISOString(), sha256: await sha256Hex(bytes), telegram_file_unique_id: item.file_unique_id, kind: item.kind,
+      provider: "s3", bucket: result.bucket, path: result.path, filename, mime_type: file.mime, size_bytes: file.bytes.byteLength,
+      uploaded_at: new Date().toISOString(), sha256: await sha256Hex(file.bytes), telegram_file_unique_id: file.uniqueId, kind: file.kind,
     });
   }
   return stored;
 };
 
-const flagIntegrity = async (sb: Db, submission: Row, files: StoredFile[], typedText: boolean) => {
+const storeItems = async (deps: TelegramDeps, target: OpenWork, items: TelegramItem[]): Promise<StoredFile[]> => {
+  const incoming: IncomingFile[] = [];
+  for (const item of items) {
+    if (!allowedMime(item.mime_type)) throw new HttpError(415, "This file type cannot be handed in.", "file_type_not_allowed");
+    if ((item.file_size ?? 0) > TELEGRAM_DOWNLOAD_LIMIT) throw new HttpError(413, "This file is too large for Telegram hand-in.", "telegram_file_too_large");
+    const { bytes } = await deps.tg.download(item.file_id, TELEGRAM_DOWNLOAD_LIMIT);
+    incoming.push({ bytes, name: item.file_name, mime: item.mime_type, kind: item.kind, uniqueId: item.file_unique_id });
+  }
+  return storeBytes(deps.upload ?? uploadFileToS3, target, incoming, "academy-learning.telegram.upload");
+};
+
+const flagIntegrity = async (sb: Db, submission: Row, files: StoredFile[], typedSource: string | null) => {
   const attempt = Math.max(1, Number(submission.attempt_number ?? 1));
   const signals: Row[] = [];
-  if (typedText && !files.length) {
-    signals.push({ signal: "untimed_source", severity: "info", detail: { source: "telegram_text" } });
+  if (typedSource && !files.length) {
+    signals.push({ signal: "untimed_source", severity: "info", detail: { source: typedSource } });
   }
   const uniques = files.map((f) => f.telegram_file_unique_id).filter(Boolean) as string[];
   const hashes = files.map((f) => f.sha256);
@@ -274,16 +284,22 @@ const flagIntegrity = async (sb: Db, submission: Row, files: StoredFile[], typed
   })), { onConflict: "submission_id,attempt_number,signal", ignoreDuplicates: true });
 };
 
-const fileWork = async (deps: TelegramDeps, chatId: string, user: LinkedUser, target: OpenWork, items: TelegramItem[], body: string | null) => {
-  const files = await storeItems(deps, target, items);
+export type HandInResult = { kind: "submission"; submission: Row } | { kind: "correction" };
+
+/**
+ * Saves a hand-in for the learner: a correction row, or a submission through
+ * academy_assignment_written_command (the RPC keeps enrollment, wallet and attempt rules).
+ */
+export const recordHandIn = async (
+  sb: Db, userId: string, target: OpenWork, files: StoredFile[], body: string | null, source: "telegram_bot" | "telegram_app",
+): Promise<HandInResult> => {
   if (target.type === "correction" && target.submission_id) {
-    const { error } = await deps.sb.from("academy_homework_corrections").insert({
+    const { error } = await sb.from("academy_homework_corrections").insert({
       academy_id: target.academy_id, submission_id: target.submission_id, assignment_id: target.assignment_id,
-      classroom_id: target.classroom_id, contact_id: target.contact_id, content: body, media: files, source: "telegram_bot",
+      classroom_id: target.classroom_id, contact_id: target.contact_id, content: body, media: files, source,
     });
     if (error) throw new HttpError(503, "Your correction was not saved. Send it again.");
-    await send(deps, chatId, `✅ Correction received for <b>${escapeHtml(target.title)}</b> · ${escapeHtml(target.center_name)}.\nYour teacher will check it.`);
-    return;
+    return { kind: "correction" };
   }
   const payload = {
     submission_content: body ?? "",
@@ -294,14 +310,25 @@ const fileWork = async (deps: TelegramDeps, chatId: string, user: LinkedUser, ta
       ...(files[0] ? { storage: files[0] } : {}),
       ...(files.length > 1 ? { pages: files.slice(1) } : {}),
       storage_kind: files.length ? "student_submission" : undefined,
-      source: "telegram_bot",
+      source,
       media_kinds: [...new Set(files.map((f) => f.kind))],
     },
   };
-  const submission = await rpc<Row>(deps.sb, "academy_assignment_written_command",
-    { p_academy: target.academy_id, p_actor: user.id, p_assignment: target.assignment_id, p_payload: payload },
+  const submission = await rpc<Row>(sb, "academy_assignment_written_command",
+    { p_academy: target.academy_id, p_actor: userId, p_assignment: target.assignment_id, p_payload: payload },
     "Your homework was not saved. Send it again.");
-  await flagIntegrity(deps.sb, submission, files, Boolean(body) && !files.length);
+  await flagIntegrity(sb, submission, files, body && !files.length && source === "telegram_bot" ? "telegram_text" : null);
+  return { kind: "submission", submission };
+};
+
+const fileWork = async (deps: TelegramDeps, chatId: string, user: LinkedUser, target: OpenWork, items: TelegramItem[], body: string | null) => {
+  const files = await storeItems(deps, target, items);
+  const result = await recordHandIn(deps.sb, user.id, target, files, body, "telegram_bot");
+  if (result.kind === "correction") {
+    await send(deps, chatId, `✅ Correction received for <b>${escapeHtml(target.title)}</b> · ${escapeHtml(target.center_name)}.\nYour teacher will check it.`);
+    return;
+  }
+  const { submission } = result;
   await savePreference(deps.sb, user.id, { focus_assignment_id: null, focus_set_at: null });
   const parts = files.length ? `${files.length} file${files.length > 1 ? "s" : ""}` : "your text answer";
   const late = submission.status === "late" ? "\n⚠️ Marked late." : "";

@@ -1,0 +1,75 @@
+{
+  "item": {
+    "slug": "b2-pitch-a-small-business-idea",
+    "title": "Pitch a Small Business Idea",
+    "level": "B2",
+    "prompt_text": "You are taking part in a start-up competition for young people in your city. Pitch a small business idea to the judges. Explain the problem it solves, how it works, who your customers are, and what you need to get started.",
+    "prompt_type": "guided_response",
+    "target_duration_seconds": 120,
+    "target_grammar": "would / will for describing a plan; zero and first conditionals",
+    "fluency_objective": "Present persuasively: open with the problem, move to the solution, and end with a clear request.",
+    "pronunciation_objective": "Sound enthusiastic: use a wider pitch range on key benefits and slow down on your final request.",
+    "target_vocabulary": [
+      "the problem is",
+      "our solution",
+      "here's how it works",
+      "target customers",
+      "affordable",
+      "word of mouth",
+      "to get started",
+      "we're asking for"
+    ],
+    "task_type": "presentation",
+    "model_answer": "Good afternoon. Think about the last time you had lunch at work. For a lot of office workers in Tashkent, the choice is fast food or nothing, because they don't have time to cook. Meanwhile, in every mahalla there are people who cook delicious home food every day. Our idea, Home Lunch, connects them. Here's how it works. Local cooks register with us, and every evening they post tomorrow's menu on a simple website. Office workers order before ten in the morning, and our couriers collect the meals and deliver them by one o'clock. The cooks earn extra income from home, and customers get healthy, affordable food that tastes like their mother's cooking. Our target customers are young professionals in business districts, and later small companies that want to offer lunch to their staff. To get started, we're asking for a small grant to build the website, buy insulated delivery bags and two bicycles, and pay for food safety training for our first ten cooks. We'd start in one district, grow through word of mouth, and expand when we're profitable. Thank you.",
+    "model_opening": "Good afternoon. Think about the last time you had lunch at work.",
+    "cues": [
+      {
+        "text": "the problem it solves",
+        "keywords": [
+          "problem",
+          "don't have time",
+          "difficult",
+          "no choice",
+          "the choice is",
+          "need"
+        ]
+      },
+      {
+        "text": "how it works",
+        "keywords": [
+          "how it works",
+          "order",
+          "register",
+          "deliver",
+          "app",
+          "website",
+          "connects"
+        ]
+      },
+      {
+        "text": "who your customers are",
+        "keywords": [
+          "customers",
+          "target",
+          "clients",
+          "people who",
+          "professionals",
+          "students"
+        ]
+      },
+      {
+        "text": "what you need to get started",
+        "keywords": [
+          "need",
+          "asking for",
+          "grant",
+          "investment",
+          "budget",
+          "to get started",
+          "start"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

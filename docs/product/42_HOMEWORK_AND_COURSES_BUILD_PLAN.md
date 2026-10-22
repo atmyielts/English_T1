@@ -251,10 +251,28 @@ Each phase ships on its own, behind a per-academy flag, and leaves production wo
 
 **Launch switches (owner decisions, in order):** `telegram_handin.enabled` → `VITE_ACADEMY_HOMEWORK_OS=true` → `premark.enabled` → `digest.enabled`. Set Schood Teaching prices and activate the plans before `billing.enforced`.
 
+**Left for later releases:** see §12.
+
+## 12. Release `academy-homework-launch` (code ready 2026-10-23)
+
+Owner go-ahead on 2026-10-22: "do them all, make it perfectly ready for use".
+
+**Built**
+- **Launch:** migration `20261024110000_academy_homework_launch.sql` turns on Telegram hand-in, AI pre-marking and the weekly parent summary, and adds `/homework` and `/center` to the student bot's menu. `billing.enforced` stays off until real Schood Teaching prices exist. The Pages variable `VITE_ACADEMY_HOMEWORK_OS=true` shows the Homework screen.
+- **Telegram Mini App:** a "Homework to hand in" card with photo, audio, video and PDF upload (up to 6 files, 20 MB each and 50 MB total), centre switching and "My mistakes". These are served by `academy-learning` actions `miniapp_homework`, `miniapp_submit`, `miniapp_center` and `miniapp_mistakes`, authenticated by Telegram's signed initData. The bot and the Mini App share one save path (`recordHandIn`).
+- **Learners in Academy:** a **My mistakes** screen.
+- **Catalogue (V-CRS-F10, lead-based):**
+  - Migration `20261024105000_academy_course_listings.sql`.
+  - Staff list a published course from Homework → Course checks → "Public listing".
+  - Anyone can browse **schood.online/courses** in uz, ru and en.
+  - "Request a place" creates a lead in that academy's Admissions pipeline (`academy_create_lead`), rate-limited per visitor.
+  - Completion appears only once at least 15 learners have taken the course.
+  - Listing needs a centre tier or a Schood Teaching plan once billing is enforced.
+
 **Left for later releases**
 - D4: feed consented homework mistakes into the learner's own Daily plan.
-- Mini App file upload and a learner "My mistakes" screen (`student_mistakes` is already served).
 - Course versions pinned per run, three-phase lesson blocks, Telegram delivery of lesson audio and PDFs, Course Studio AI structuring.
 - The Assessment Cloud bridge (§6) for module checks and signed certificates.
-- Marketplace listings for centres and independent teachers (lead-based first).
+- Collecting course fees through Schood (41 F12/F13: instalments, payouts, fiscal receipts).
 - Math OCR quality checks, centre-calibrated marking (V-HW-F11), churn warnings to parents (V-HW-F10).
+- Real Schood Teaching prices, then `billing.enforced`.

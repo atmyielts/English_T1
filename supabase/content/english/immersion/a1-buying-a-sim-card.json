@@ -1,0 +1,183 @@
+{
+  "item": {
+    "slug": "a1-buying-a-sim-card",
+    "title": "Buying a SIM card",
+    "level": "A1",
+    "context_text": "You are in a new city for a language course. Your phone needs a local SIM card. You go to a small phone shop near your hostel.",
+    "objective_text": "Choose a SIM plan, understand the shop assistant, and send your new number to a friend.",
+    "mission_type": "service",
+    "target_grammar": "can for requests and permission (Can I pay by card?)",
+    "cultural_note": "In many countries you need your passport to buy a SIM card. Take it with you to the shop.",
+    "target_vocabulary": [
+      "SIM card",
+      "plan",
+      "data",
+      "a month",
+      "passport"
+    ],
+    "success_conditions": [
+      "Find the price of the plan you want",
+      "Understand how to pay and where your new number is",
+      "Ask for a plan and send your new number to a friend"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the price board",
+      "instructions": "Read the price board in the shop. Then answer the questions.",
+      "prompt_text": "SIM CARDS\nPlan S: 5 GB data — 10 euros a month\nPlan M: 15 GB data — 15 euros a month\nPlan L: 50 GB data — 25 euros a month\nAll plans: free calls in the country.\nPlease show your passport.",
+      "estimated_minutes": 2,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "How much is Plan M?",
+          "options": [
+            "10 euros a month",
+            "15 euros a month",
+            "25 euros a month"
+          ],
+          "answer_index": 1,
+          "explanation": "The board says \"Plan M: 15 GB data — 15 euros a month\"."
+        },
+        {
+          "prompt": "What do you need to show?",
+          "options": [
+            "Your passport",
+            "Your bank card",
+            "Your student card"
+          ],
+          "answer_index": 0,
+          "explanation": "The board says \"Please show your passport.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Ask for a plan",
+      "instructions": "The shop assistant asks you a question. Answer out loud. Say which plan you want and how you want to pay.",
+      "prompt_text": "Shop assistant: Hello! Which one would you like?",
+      "estimated_minutes": 2,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Ask for one plan and say how you want to pay.",
+      "points": [
+        {
+          "label": "say which plan you want",
+          "any": [
+            "plan m",
+            "plan s",
+            "plan l",
+            "medium",
+            "small",
+            "large",
+            "15 gb",
+            "5 gb",
+            "50 gb",
+            "fifteen"
+          ]
+        },
+        {
+          "label": "say how you want to pay",
+          "any": [
+            "card",
+            "cash",
+            "pay"
+          ]
+        }
+      ],
+      "model_answer": "Hello. I would like Plan M, please. Can I pay by card?",
+      "min_words": null
+    },
+    {
+      "title": "Listen to the shop assistant",
+      "instructions": "Listen to the shop assistant. Then answer the questions. You can listen again.",
+      "prompt_text": "OK, Plan M. That is fifteen euros. You can pay by card or in cash. Can I see your passport, please? Thank you. Here is your SIM card. Your new number is on the card. Have a nice day!",
+      "estimated_minutes": 2,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "gb",
+      "questions": [
+        {
+          "prompt": "How can you pay?",
+          "options": [
+            "Only by card",
+            "Only in cash",
+            "By card or in cash"
+          ],
+          "answer_index": 2,
+          "explanation": "The assistant says \"You can pay by card or in cash.\""
+        },
+        {
+          "prompt": "Where is your new number?",
+          "options": [
+            "On the SIM card",
+            "On the receipt",
+            "In a text message"
+          ],
+          "answer_index": 0,
+          "explanation": "The assistant says \"Your new number is on the card.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Send your new number",
+      "instructions": "Your friend Aziz cannot call you. Write a short message. Say your phone is OK, say you have a new SIM card, and give him your new number.",
+      "prompt_text": "Aziz: Hi! I can't call you. Is your phone OK?",
+      "estimated_minutes": 3,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Tell Aziz about your new SIM card and give him the number.",
+      "points": [
+        {
+          "label": "give the new number",
+          "any": [
+            "number",
+            "0*",
+            "1*",
+            "2*",
+            "3*",
+            "4*",
+            "5*",
+            "6*",
+            "7*",
+            "8*",
+            "9*"
+          ]
+        },
+        {
+          "label": "say it is a new SIM card",
+          "any": [
+            "new",
+            "sim"
+          ]
+        },
+        {
+          "label": "say your phone is fine",
+          "any": [
+            "fine",
+            "good",
+            "yes",
+            "all right",
+            "alright",
+            "no problem"
+          ]
+        }
+      ],
+      "model_answer": "Hi Aziz! Yes, my phone is fine. I have a new SIM card. My new number is 07700 900123. Please call me!",
+      "min_words": null
+    }
+  ]
+}

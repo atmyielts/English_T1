@@ -1,0 +1,64 @@
+{
+  "item": {
+    "slug": "a1-your-favourite-day-of-the-week",
+    "title": "Your Favourite Day of the Week",
+    "level": "A1",
+    "prompt_text": "Say which day of the week is your favourite. Give two reasons, and say what you usually do on that day.",
+    "prompt_type": "guided_response",
+    "target_duration_seconds": 35,
+    "target_grammar": "present simple with usually, often, always; because",
+    "fluency_objective": "Use 'because' to give your reasons and 'then' to order your day.",
+    "pronunciation_objective": "Stress the day clearly: MONday, FRIday, SATurday, SUNday.",
+    "target_vocabulary": [
+      "my favourite day",
+      "because",
+      "I don't go to",
+      "usually",
+      "often",
+      "in the morning",
+      "in the afternoon",
+      "then"
+    ],
+    "task_type": "opinion",
+    "model_answer": "My favourite day is Sunday. I like Sunday because I don't go to work. I also love it because all my family is at home. On Sunday morning, I usually sleep late. Then we have a big breakfast together. In the afternoon, I often play football with my friends in the park. In the evening, I watch a film.",
+    "model_opening": "My favourite day is Sunday.",
+    "cues": [
+      {
+        "text": "your favourite day",
+        "keywords": [
+          "monday",
+          "tuesday",
+          "wednesday",
+          "thursday",
+          "friday",
+          "saturday",
+          "sunday"
+        ]
+      },
+      {
+        "text": "two reasons",
+        "keywords": [
+          "because",
+          "i like",
+          "i love",
+          "also"
+        ]
+      },
+      {
+        "text": "what you usually do",
+        "keywords": [
+          "usually",
+          "often",
+          "always",
+          "play",
+          "visit",
+          "watch",
+          "go",
+          "sleep",
+          "cook"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

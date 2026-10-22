@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "c2-idioms",
+    "title": "Idioms for debate",
+    "level": "C2",
+    "topic": "idioms",
+    "description": "Advanced idioms for discussion, argument and opinion."
+  },
+  "children": [
+    {
+      "word": "a moot point",
+      "part_of_speech": "idiom",
+      "definition": "a question that is open to debate, or no longer worth discussing because it makes no difference",
+      "example": "Whether we could have won is a moot point now.",
+      "translation_ru": "спорный (уже неважный) вопрос",
+      "translation_uz": "munozarali masala"
+    },
+    {
+      "word": "a double-edged sword",
+      "part_of_speech": "idiom",
+      "definition": "something that has both good and bad effects",
+      "example": "Working from home can be a double-edged sword.",
+      "translation_ru": "палка о двух концах",
+      "translation_uz": "ham foydali, ham zararli narsa"
+    },
+    {
+      "word": "the elephant in the room",
+      "part_of_speech": "idiom",
+      "definition": "an obvious problem that everyone avoids talking about",
+      "example": "The budget cut was the elephant in the room at the meeting.",
+      "translation_ru": "очевидная проблема, о которой молчат",
+      "translation_uz": "hamma biladigan, lekin tilga olinmaydigan muammo"
+    },
+    {
+      "word": "a foregone conclusion",
+      "part_of_speech": "idiom",
+      "definition": "a result that is certain even before it happens",
+      "example": "With their best player injured, defeat seemed a foregone conclusion.",
+      "translation_ru": "предрешённый исход",
+      "translation_uz": "oldindan maʼlum natija"
+    },
+    {
+      "word": "a red herring",
+      "part_of_speech": "idiom",
+      "definition": "something that takes attention away from the real issue",
+      "example": "The question of cost is a red herring; the real problem is time.",
+      "translation_ru": "ложный след, отвлекающий манёвр",
+      "translation_uz": "chalgʻituvchi narsa"
+    },
+    {
+      "word": "split hairs",
+      "part_of_speech": "idiom",
+      "definition": "to argue about very small, unimportant differences",
+      "example": "Let's not split hairs over the exact wording.",
+      "translation_ru": "придираться к мелочам",
+      "translation_uz": "mayda-chuydaga yopishib olmoq"
+    },
+    {
+      "word": "pay lip service to",
+      "part_of_speech": "idiom",
+      "definition": "to say you support something without doing anything to help it",
+      "example": "Many firms pay lip service to work–life balance.",
+      "translation_ru": "поддерживать на словах",
+      "translation_uz": "soʻzda qoʻllab-quvvatlamoq"
+    },
+    {
+      "word": "muddy the waters",
+      "part_of_speech": "idiom",
+      "definition": "to make a situation more confusing or less clear",
+      "example": "Adding a third option only muddied the waters.",
+      "translation_ru": "запутывать ситуацию",
+      "translation_uz": "vaziyatni chigallashtirmoq"
+    },
+    {
+      "word": "a tall order",
+      "part_of_speech": "idiom",
+      "definition": "a task or request that is very difficult to achieve",
+      "example": "Finishing the whole report by tomorrow is a tall order.",
+      "translation_ru": "трудная задача",
+      "translation_uz": "ogʻir vazifa"
+    },
+    {
+      "word": "by the same token",
+      "part_of_speech": "phrase",
+      "definition": "for the same reason; following the same logic",
+      "example": "If you expect honesty from your team, by the same token you must be honest with them.",
+      "translation_ru": "по той же причине, точно так же",
+      "translation_uz": "xuddi shu mantiqqa koʻra"
+    },
+    {
+      "word": "vested interest",
+      "part_of_speech": "noun",
+      "definition": "a personal reason, often financial, for wanting something to happen",
+      "example": "The study was paid for by a company with a vested interest in the result.",
+      "translation_ru": "личная заинтересованность",
+      "translation_uz": "shaxsiy manfaatdorlik"
+    },
+    {
+      "word": "bite the bullet",
+      "part_of_speech": "idiom",
+      "definition": "to make yourself do something unpleasant that you have been avoiding",
+      "example": "I finally bit the bullet and booked a dentist appointment.",
+      "translation_ru": "стиснуть зубы и сделать",
+      "translation_uz": "tishni tishga qoʻyib qilmoq"
+    }
+  ]
+}

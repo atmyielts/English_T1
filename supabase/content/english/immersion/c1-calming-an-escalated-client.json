@@ -1,0 +1,226 @@
+{
+  "item": {
+    "slug": "c1-calming-an-escalated-client",
+    "title": "Handling an escalated client complaint",
+    "level": "C1",
+    "context_text": "You're an account manager at a software company that supplies the booking system for a chain of guesthouses in Bukhara and Khiva. After last night's update, guests couldn't pay online for six hours. The client's operations director has sent a furious email, and your CTO has briefed you on what went wrong.",
+    "objective_text": "Grasp the client's demands and the real cause, reply in writing without being defensive or over-promising, and hold your ground honestly on the phone.",
+    "mission_type": "workplace",
+    "target_grammar": "concessive and hedged structures (While we cannot…, what we can commit to is…)",
+    "cultural_note": "In English-speaking business culture, an effective response to an angry client usually acknowledges the impact first, takes clear ownership, and only then explains. Over-promising (\"this will never happen again\") tends to damage trust later.",
+    "target_vocabulary": [
+      "outage",
+      "take ownership",
+      "root cause",
+      "goodwill gesture",
+      "safeguard"
+    ],
+    "success_conditions": [
+      "Identify the client's three demands and the implied threat",
+      "Understand the root cause, what has been fixed and what can honestly be promised",
+      "Write a reply that acknowledges the impact, explains the cause, sets out changes and makes an offer",
+      "Answer a demand for a guarantee honestly while reassuring the client"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the client's email",
+      "instructions": "Read the email from the client. Then answer the questions.",
+      "prompt_text": "Subject: Completely unacceptable\nI am frankly astonished. For six hours last night, during our busiest weekend of the season, not a single guest could complete a payment. We had to turn away walk-in customers because staff couldn't see availability either. Nobody from your side warned us about this update, and your support line went straight to voicemail.\nI want three things by the end of today: an explanation of what went wrong, an assurance that it won't happen again, and a proposal for how you will compensate us. Otherwise, we will be reviewing our contract.\nRavshan Aliev, Operations Director",
+      "estimated_minutes": 5,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "What made the impact especially serious, according to Ravshan?",
+          "options": [
+            "It happened during the busiest weekend of the season",
+            "Guests left bad online reviews",
+            "The system deleted existing bookings"
+          ],
+          "answer_index": 0,
+          "explanation": "\"During our busiest weekend of the season, not a single guest could complete a payment.\""
+        },
+        {
+          "prompt": "Which of these does Ravshan NOT complain about?",
+          "options": [
+            "Not being warned about the update",
+            "The support line not answering",
+            "The price of the service"
+          ],
+          "answer_index": 2,
+          "explanation": "He mentions the lack of warning and the voicemail, but says nothing about price."
+        },
+        {
+          "prompt": "What does \"we will be reviewing our contract\" imply?",
+          "options": [
+            "They may end the contract",
+            "They want to sign a cheaper contract today",
+            "They plan to add new services"
+          ],
+          "answer_index": 0,
+          "explanation": "It is a polite but clear threat to reconsider, and possibly end, the business relationship."
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to your CTO's briefing",
+      "instructions": "Your CTO briefs you before you reply. Listen and answer the questions.",
+      "prompt_text": "Right, here's what we know. The update itself was fine. The problem was a payment security certificate that expired at the same time, and our monitoring didn't flag it because the alert was going to an old email address. That's on us. It's fixed now, and we've added a second, independent alert. What I can't do is promise it'll never happen again; no one honestly can. But I can commit to notifying clients forty-eight hours before every update. Commercially, I've been cleared to offer one month's fees waived.",
+      "estimated_minutes": 4,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "gb",
+      "questions": [
+        {
+          "prompt": "What actually caused the outage?",
+          "options": [
+            "The software update was faulty",
+            "A payment certificate expired unnoticed",
+            "The client's staff made an error"
+          ],
+          "answer_index": 1,
+          "explanation": "\"The update itself was fine. The problem was a payment security certificate that expired.\""
+        },
+        {
+          "prompt": "Why didn't the team notice in time?",
+          "options": [
+            "The alert went to an outdated email address",
+            "Nobody was working that night",
+            "The monitoring system was switched off"
+          ],
+          "answer_index": 0,
+          "explanation": "\"The alert was going to an old email address.\""
+        },
+        {
+          "prompt": "What is the CTO's position on a guarantee?",
+          "options": [
+            "He can guarantee it completely",
+            "He can't honestly promise it, but can commit to advance notice of updates",
+            "He refuses to discuss future risks"
+          ],
+          "answer_index": 1,
+          "explanation": "\"What I can't do is promise it'll never happen again… But I can commit to notifying clients forty-eight hours before every update.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Reply to the client",
+      "instructions": "Reply to Ravshan. Acknowledge the impact without being defensive, explain the cause honestly, set out what has changed, and make the compensation offer. Don't promise what you can't deliver.",
+      "prompt_text": "To: Ravshan Aliev\nSubject: Re: Completely unacceptable",
+      "estimated_minutes": 12,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Rebuild trust with an honest, well-structured reply that answers all three demands.",
+      "points": [
+        {
+          "label": "acknowledge the impact and apologise",
+          "any": [
+            "apolog*",
+            "sorry",
+            "regret",
+            "frustrat*",
+            "impact",
+            "understand"
+          ]
+        },
+        {
+          "label": "explain the cause honestly",
+          "any": [
+            "certificate",
+            "expired",
+            "monitoring",
+            "alert"
+          ]
+        },
+        {
+          "label": "set out what has changed",
+          "any": [
+            "second alert",
+            "additional alert",
+            "48 hours",
+            "forty eight hours",
+            "notify",
+            "in advance",
+            "advance notice"
+          ]
+        },
+        {
+          "label": "make the compensation offer",
+          "any": [
+            "month",
+            "fees",
+            "waive*",
+            "free of charge",
+            "credit",
+            "compensat*"
+          ]
+        }
+      ],
+      "model_answer": "Dear Ravshan,\nI am very sorry for last night's disruption. I fully understand how serious it was to lose six hours of payments during your busiest weekend, and to be unable to reach us. The update itself was not the cause: a payment security certificate expired at the same time, and our monitoring alert was going to an outdated address. That was our failure. The certificate has been renewed and we have added a second, independent alert. From now on, we will also notify you at least 48 hours before every update. As a gesture of goodwill, we will waive next month's fees in full. I would welcome a call today to talk this through.\nKind regards,\nSardor Nazarov",
+      "min_words": null
+    },
+    {
+      "title": "Take the client's call",
+      "instructions": "Ravshan calls you, still angry. Respond honestly but reassuringly: don't give a promise you can't keep, but show what has concretely changed and how you'll maintain the relationship.",
+      "prompt_text": "Ravshan: I read your email. But I'll ask you directly: can you guarantee this will never happen again?",
+      "estimated_minutes": 5,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Be candid about the limits of any guarantee while giving concrete reassurance.",
+      "points": [
+        {
+          "label": "be honest about what can be promised",
+          "any": [
+            "honest*",
+            "can't promise",
+            "cannot promise",
+            "won't pretend",
+            "no one can",
+            "nobody can",
+            "absolute*"
+          ]
+        },
+        {
+          "label": "give concrete measures",
+          "any": [
+            "alert*",
+            "monitor*",
+            "48 hours",
+            "forty eight",
+            "notif*",
+            "in advance",
+            "checks"
+          ]
+        },
+        {
+          "label": "commit to the relationship",
+          "any": [
+            "value",
+            "relationship",
+            "personally",
+            "meet",
+            "report",
+            "monthly",
+            "update you"
+          ]
+        }
+      ],
+      "model_answer": "I'll be honest with you, Ravshan: no supplier can guarantee that nothing will ever go wrong, and I won't pretend otherwise. What I can tell you is that this specific failure can't go unnoticed again: there are now two independent alerts, and you'll hear from us forty-eight hours before any update. I'll also personally send you a short monthly report, because we value this relationship.",
+      "min_words": null
+    }
+  ]
+}

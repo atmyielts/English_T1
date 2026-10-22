@@ -1,0 +1,84 @@
+{
+  "item": {
+    "slug": "b2-are-exams-the-best-way-to-measure-learning",
+    "title": "Are Exams the Best Way to Measure Learning?",
+    "level": "B2",
+    "prompt_text": "Some people say that written exams are the fairest way to measure what students have learned. Others think they only show how well students perform under pressure. Give your opinion, with arguments on both sides, and suggest what a better system might include.",
+    "prompt_type": "guided_response",
+    "target_duration_seconds": 105,
+    "target_grammar": "contrast and concession (although, whereas, on the other hand); second conditional",
+    "fluency_objective": "Show the shape of your argument: your view, one side, the other side, a suggestion, a conclusion.",
+    "pronunciation_objective": "Use contrastive stress to highlight opposing ideas, e.g. 'exams test MEMORY, not UNDERSTANDING'.",
+    "target_vocabulary": [
+      "to some extent",
+      "objective",
+      "under pressure",
+      "memorise",
+      "on the other hand",
+      "continuous assessment",
+      "a combination of",
+      "all things considered"
+    ],
+    "task_type": "opinion",
+    "model_answer": "Personally, I think exams are useful, but only to some extent. On the one hand, they're objective. Everyone answers the same questions in the same time, and the papers are often marked anonymously, so it's hard for a teacher's personal feelings to affect the result. They also make students review a whole course, which helps them see how the topics connect. On the other hand, exams mostly measure how well you perform on one particular day. I have a friend who understood maths far better than me, but she got so anxious in exams that her marks never showed it. Exams also reward memorising, whereas in real life you can usually look things up, and what matters is how you use the information. If I could design a better system, I'd keep exams but combine them with continuous assessment, such as projects, presentations and short regular tests throughout the year. That way, one bad day wouldn't decide everything. So, all things considered, exams aren't the best way on their own, but they're a valuable part of a fair mix.",
+    "model_opening": "Personally, I think exams are useful, but only to some extent.",
+    "cues": [
+      {
+        "text": "your opinion",
+        "keywords": [
+          "i think",
+          "personally",
+          "in my opinion",
+          "i believe",
+          "in my view"
+        ]
+      },
+      {
+        "text": "arguments for exams",
+        "keywords": [
+          "objective",
+          "fair",
+          "same questions",
+          "on the one hand",
+          "review",
+          "anonymous"
+        ]
+      },
+      {
+        "text": "arguments against exams",
+        "keywords": [
+          "on the other hand",
+          "pressure",
+          "anxious",
+          "stress",
+          "memoris",
+          "memoriz",
+          "one day"
+        ]
+      },
+      {
+        "text": "a better system",
+        "keywords": [
+          "combine",
+          "continuous",
+          "projects",
+          "presentations",
+          "if i could",
+          "instead",
+          "mix"
+        ]
+      },
+      {
+        "text": "a conclusion",
+        "keywords": [
+          "all things considered",
+          "overall",
+          "so",
+          "to sum up",
+          "in conclusion"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

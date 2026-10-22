@@ -1,0 +1,236 @@
+{
+  "item": {
+    "slug": "c2-mediating-a-team-conflict",
+    "title": "Mediating a conflict between colleagues",
+    "level": "C2",
+    "context_text": "You lead a product team of eight at a software company. Two senior members, Bekzod, the lead developer, and Claire, the product designer, have clashed repeatedly over a checkout redesign, and the tension is now affecting the whole team. You've spoken to each of them privately and arranged a joint conversation.",
+    "objective_text": "Read the dynamics behind the conflict, run a fair joint conversation that moves towards a solution, and record what was agreed.",
+    "mission_type": "workplace",
+    "target_grammar": "reframing and inclusive language (What I'm hearing from both of you is…; How might we…?)",
+    "cultural_note": "In mediation, naming the shared goal and acknowledging both people's pressures before discussing solutions lowers defensiveness. Taking sides, even implicitly, usually entrenches the conflict.",
+    "target_vocabulary": [
+      "obstruction",
+      "on call",
+      "phased rollout",
+      "ground rules",
+      "reframe"
+    ],
+    "success_conditions": [
+      "Identify each person's stated position and underlying grievance",
+      "Understand what is really at stake for each of them",
+      "Open the joint conversation neutrally, with ground rules, a shared goal and a proposal",
+      "Record the agreement and the process change accurately and diplomatically"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the team chat",
+      "instructions": "Read this exchange from the team channel yesterday. Then answer the questions.",
+      "prompt_text": "Claire: Users loved the checkout redesign in testing. Can we please ship it this sprint?\nBekzod: As I've said three times now, it breaks the payment flow on older phones. Shipping it now would be reckless.\nClaire: It's been \"three weeks away\" for two months. At some point this starts to look like obstruction.\nBekzod: If you'd involved engineering before the user tests, we wouldn't be here.\nAziz: Could we maybe take this offline?",
+      "estimated_minutes": 5,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "What is Bekzod's technical concern?",
+          "options": [
+            "The design hasn't been tested with users",
+            "It breaks the payment flow on older phones",
+            "It is too expensive to build"
+          ],
+          "answer_index": 1,
+          "explanation": "\"It breaks the payment flow on older phones.\""
+        },
+        {
+          "prompt": "What does Claire imply by \"starts to look like obstruction\"?",
+          "options": [
+            "Bekzod may be delaying the work deliberately",
+            "The project lacks resources",
+            "Engineering needs more staff"
+          ],
+          "answer_index": 0,
+          "explanation": "She suggests the repeated delays may be intentional rather than technical."
+        },
+        {
+          "prompt": "What is Bekzod's underlying grievance?",
+          "options": [
+            "He dislikes the visual design",
+            "Engineering wasn't involved before the user testing",
+            "The sprints are too short"
+          ],
+          "answer_index": 1,
+          "explanation": "\"If you'd involved engineering before the user tests, we wouldn't be here.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to the private conversations",
+      "instructions": "Listen to extracts from your private conversations with Claire and Bekzod. Then answer the questions.",
+      "prompt_text": "Claire: Honestly, I'm exhausted. I've got users asking for this, and every week there's a new reason not to ship. I don't think he respects design as a discipline.\nBekzod: She thinks I'm being difficult. I'm not. About fifteen per cent of our paying customers are on those older phones. If payments fail for them, it's my team who gets called at two in the morning, not hers.",
+      "estimated_minutes": 4,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "us",
+      "questions": [
+        {
+          "prompt": "What is Claire's deeper frustration?",
+          "options": [
+            "She feels design is not respected",
+            "She feels underpaid",
+            "She thinks the users are wrong"
+          ],
+          "answer_index": 0,
+          "explanation": "\"I don't think he respects design as a discipline.\""
+        },
+        {
+          "prompt": "What is at stake for Bekzod's team?",
+          "options": [
+            "Being called out at night if payments fail",
+            "Losing their bonus",
+            "Having to redesign the checkout"
+          ],
+          "answer_index": 0,
+          "explanation": "\"It's my team who gets called at two in the morning, not hers.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Open the joint conversation",
+      "instructions": "Open the joint conversation. Set ground rules, reframe the dispute around a shared goal, acknowledge both perspectives without taking sides, and put forward a possible way forward.",
+      "prompt_text": "Claire and Bekzod sit down, both visibly tense. They look at you.",
+      "estimated_minutes": 6,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Lower the temperature and steer both colleagues towards a joint solution.",
+      "points": [
+        {
+          "label": "set ground rules",
+          "any": [
+            "ground rules",
+            "one at a time",
+            "interrupt*",
+            "listen",
+            "respect*",
+            "confidential*"
+          ]
+        },
+        {
+          "label": "name the shared goal",
+          "any": [
+            "both want",
+            "shared",
+            "same goal",
+            "common",
+            "customers",
+            "users"
+          ]
+        },
+        {
+          "label": "acknowledge both perspectives",
+          "any": [
+            "understand",
+            "hear",
+            "concern*",
+            "pressure",
+            "frustrat*",
+            "valid"
+          ]
+        },
+        {
+          "label": "propose a way forward",
+          "any": [
+            "propose",
+            "suggest",
+            "phased",
+            "staged",
+            "roll out",
+            "rollout",
+            "what if",
+            "could we"
+          ]
+        }
+      ],
+      "model_answer": "Thank you both for coming. A couple of ground rules: one person speaks at a time, and we listen to understand rather than to reply. As I see it, you both want the same thing, a checkout that customers love and that actually works for all of them. Claire, I hear the frustration of having a validated design stuck for months. Bekzod, I hear the pressure of being the one who's called at two in the morning. So what if we looked at a phased rollout: newer devices first, and older phones once the payment issue is fixed?",
+      "min_words": null
+    },
+    {
+      "title": "Record the agreement",
+      "instructions": "Email both of them to record what was agreed: a phased release (newer devices in the next sprint, older phones once the payment fix is tested), a review date, and earlier engineering involvement in future design work. Keep the tone appreciative and neutral.",
+      "prompt_text": "To: Claire, Bekzod\nSubject: Today's conversation",
+      "estimated_minutes": 14,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Record the agreement precisely and in a way that both parties will accept as fair.",
+      "points": [
+        {
+          "label": "record the phased release",
+          "any": [
+            "phase*",
+            "staged",
+            "gradual*",
+            "newer",
+            "older phones"
+          ]
+        },
+        {
+          "label": "give the timing",
+          "any": [
+            "next sprint",
+            "sprint",
+            "date",
+            "deadline",
+            "by"
+          ]
+        },
+        {
+          "label": "record the process change",
+          "any": [
+            "involve*",
+            "earlier",
+            "early",
+            "before user test*",
+            "from the start",
+            "outset",
+            "kick off"
+          ]
+        },
+        {
+          "label": "express appreciation",
+          "any": [
+            "thank*",
+            "appreciat*",
+            "candour",
+            "candor",
+            "openness",
+            "constructive"
+          ]
+        },
+        {
+          "label": "set a review",
+          "any": [
+            "review",
+            "check in",
+            "follow up",
+            "catch up",
+            "revisit"
+          ]
+        }
+      ],
+      "model_answer": "Dear Claire and Bekzod,\nThank you both for such a candid and constructive conversation today. To confirm what we agreed: the redesigned checkout will be released in phases. It will go live for newer devices in the next sprint, and older phones will follow once Bekzod's team has fixed and tested the payment issue, which we expect to take no more than two sprints. For future projects, engineering will be involved from the start of the design process, before any user testing, so that technical risks surface early. I suggest the three of us review progress together in two weeks.\nBest regards,\nNodira",
+      "min_words": null
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+{
+  "item": {
+    "slug": "a1-voicemail-birthday-party",
+    "title": "An Invitation to a Birthday Party",
+    "level": "A1",
+    "summary": "Malika leaves a voicemail to invite Aziz to her birthday party on Saturday.",
+    "transcript_text": "Hi Aziz, it's Malika. It's my birthday on Saturday. I'm having a small party at my flat. It starts at six o'clock in the evening. My mother is making plov, and my sister is making a big cake. Please don't bring a present. Just bring your guitar! My flat is near Chilonzor metro station. Call me or send me a message. See you on Saturday!",
+    "category": "Daily Life",
+    "accent": "general",
+    "speed_label": "slow",
+    "speed_wpm": 110,
+    "duration_seconds": 35,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "voicemail",
+      "birthday",
+      "friends"
+    ],
+    "questions": [
+      {
+        "prompt": "When is the party?",
+        "options": [
+          "On Friday",
+          "On Saturday",
+          "On Sunday",
+          "On Monday"
+        ],
+        "answer_index": 1,
+        "explanation": "Malika says: \"It's my birthday on Saturday.\""
+      },
+      {
+        "prompt": "What time does the party start?",
+        "options": [
+          "At five o'clock",
+          "At six o'clock",
+          "At seven o'clock",
+          "At eight o'clock"
+        ],
+        "answer_index": 1,
+        "explanation": "\"It starts at six o'clock in the evening.\""
+      },
+      {
+        "prompt": "Who is making the cake?",
+        "options": [
+          "Malika",
+          "Malika's mother",
+          "Malika's sister",
+          "Aziz"
+        ],
+        "answer_index": 2,
+        "explanation": "\"My sister is making a big cake.\" Her mother is making plov."
+      },
+      {
+        "prompt": "What does Malika want Aziz to bring?",
+        "options": [
+          "A present",
+          "A cake",
+          "His guitar",
+          "Some plov"
+        ],
+        "answer_index": 2,
+        "explanation": "She says: \"Please don't bring a present. Just bring your guitar!\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Hi Aziz, it's Malika.",
+      "focus_phrase": "it's Malika",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "It's my birthday on Saturday.",
+      "focus_phrase": "my birthday",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I'm having a small party at my flat.",
+      "focus_phrase": "small party",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "It starts at six o'clock in the evening.",
+      "focus_phrase": "six o'clock",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "My mother is making plov, and my sister is making a big cake.",
+      "focus_phrase": "a big cake",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Please don't bring a present.",
+      "focus_phrase": "a present",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Just bring your guitar!",
+      "focus_phrase": "your guitar",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "My flat is near Chilonzor metro station.",
+      "focus_phrase": "metro station",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Call me or send me a message.",
+      "focus_phrase": "send me a message",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "See you on Saturday!",
+      "focus_phrase": "See you",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

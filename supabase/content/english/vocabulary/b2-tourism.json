@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "b2-tourism",
+    "title": "Tourism",
+    "level": "B2",
+    "topic": "tourism",
+    "description": "Planning trips, sightseeing and the effects of tourism."
+  },
+  "children": [
+    {
+      "word": "destination",
+      "part_of_speech": "noun",
+      "definition": "the place that someone is travelling to",
+      "example": "Samarkand is a popular destination for history lovers.",
+      "translation_ru": "место назначения",
+      "translation_uz": "manzil, sayohat manzili"
+    },
+    {
+      "word": "itinerary",
+      "part_of_speech": "noun",
+      "definition": "a detailed plan of a journey, with places and times",
+      "example": "Our itinerary includes two days in Bukhara and one in Khiva.",
+      "translation_ru": "маршрут поездки",
+      "translation_uz": "sayohat rejasi"
+    },
+    {
+      "word": "accommodation",
+      "part_of_speech": "noun",
+      "definition": "a place to stay, such as a hotel or guesthouse",
+      "example": "We booked accommodation near the old city.",
+      "translation_ru": "жильё, размещение",
+      "translation_uz": "turar joy"
+    },
+    {
+      "word": "sightseeing",
+      "part_of_speech": "noun",
+      "definition": "the activity of visiting interesting places as a tourist",
+      "example": "We spent the afternoon sightseeing in Khiva.",
+      "translation_ru": "осмотр достопримечательностей",
+      "translation_uz": "diqqatga sazovor joylarni tomosha qilish"
+    },
+    {
+      "word": "landmark",
+      "part_of_speech": "noun",
+      "definition": "a famous building or place that is easy to recognise",
+      "example": "The Registan is Samarkand's best-known landmark.",
+      "translation_ru": "достопримечательность",
+      "translation_uz": "mashhur obida, diqqatga sazovor joy"
+    },
+    {
+      "word": "off the beaten track",
+      "part_of_speech": "idiom",
+      "definition": "far away from the places that most tourists visit",
+      "example": "We found a quiet village off the beaten track in the mountains.",
+      "translation_ru": "вдали от туристических маршрутов",
+      "translation_uz": "sayyohlar kam boradigan joyda"
+    },
+    {
+      "word": "souvenir",
+      "part_of_speech": "noun",
+      "definition": "something you buy to help you remember a place you visited",
+      "example": "I bought a ceramic plate from Rishtan as a souvenir.",
+      "translation_ru": "сувенир",
+      "translation_uz": "esdalik sovgʻa"
+    },
+    {
+      "word": "guided tour",
+      "part_of_speech": "noun",
+      "definition": "a visit to a place with a guide who explains things to you",
+      "example": "We took a guided tour of the old city.",
+      "translation_ru": "экскурсия с гидом",
+      "translation_uz": "gid bilan ekskursiya"
+    },
+    {
+      "word": "package holiday",
+      "part_of_speech": "noun",
+      "definition": "a holiday where the travel and the hotel are sold together at one price",
+      "example": "A package holiday can be cheaper than booking everything separately.",
+      "translation_ru": "пакетный тур",
+      "translation_uz": "tayyor tur paketi"
+    },
+    {
+      "word": "jet lag",
+      "part_of_speech": "noun",
+      "definition": "a tired, confused feeling after a long flight to a different time zone",
+      "example": "I had terrible jet lag after flying to New York.",
+      "translation_ru": "усталость от смены часовых поясов",
+      "translation_uz": "vaqt mintaqasi almashuvidan charchash"
+    },
+    {
+      "word": "overcrowded",
+      "part_of_speech": "adjective",
+      "definition": "with too many people in one place",
+      "example": "The beach was overcrowded in August.",
+      "translation_ru": "переполненный",
+      "translation_uz": "haddan tashqari gavjum"
+    },
+    {
+      "word": "hospitality",
+      "part_of_speech": "noun",
+      "definition": "friendly and generous behaviour towards guests",
+      "example": "Many visitors remember Uzbek hospitality long after their trip.",
+      "translation_ru": "гостеприимство",
+      "translation_uz": "mehmondoʻstlik"
+    }
+  ]
+}

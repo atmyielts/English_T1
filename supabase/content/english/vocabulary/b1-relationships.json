@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "b1-relationships",
+    "title": "Friends and relationships",
+    "level": "B1",
+    "topic": "relationships",
+    "description": "Getting on with people, arguing and making up."
+  },
+  "children": [
+    {
+      "word": "get on with",
+      "part_of_speech": "phrasal verb",
+      "definition": "to have a friendly relationship with someone",
+      "example": "I get on well with my flatmates.",
+      "translation_ru": "ладить с",
+      "translation_uz": "til topishmoq, yaxshi chiqishmoq"
+    },
+    {
+      "word": "fall out with",
+      "part_of_speech": "phrasal verb",
+      "definition": "to stop being friends with someone after an argument",
+      "example": "Timur fell out with his best friend over money.",
+      "translation_ru": "поссориться с",
+      "translation_uz": "urishib qolmoq, aloqani uzmoq"
+    },
+    {
+      "word": "make up",
+      "part_of_speech": "phrasal verb",
+      "definition": "to become friends again after an argument",
+      "example": "They argued all morning but made up before lunch.",
+      "translation_ru": "помириться",
+      "translation_uz": "yarashmoq"
+    },
+    {
+      "word": "trust",
+      "part_of_speech": "verb",
+      "definition": "to believe that someone is honest and will not hurt you",
+      "example": "I trust my sister completely.",
+      "translation_ru": "доверять",
+      "translation_uz": "ishonmoq"
+    },
+    {
+      "word": "support",
+      "part_of_speech": "verb",
+      "definition": "to help and encourage someone, especially when things are difficult",
+      "example": "My family supported me when I lost my job.",
+      "translation_ru": "поддерживать",
+      "translation_uz": "qoʻllab-quvvatlamoq"
+    },
+    {
+      "word": "argue",
+      "part_of_speech": "verb",
+      "definition": "to speak angrily to someone because you disagree",
+      "example": "My brothers argue about everything.",
+      "translation_ru": "спорить, ссориться",
+      "translation_uz": "tortishmoq, janjallashmoq"
+    },
+    {
+      "word": "apologise",
+      "part_of_speech": "verb",
+      "definition": "to say you are sorry for something you did",
+      "example": "She apologised for being late.",
+      "translation_ru": "извиняться",
+      "translation_uz": "kechirim soʻramoq"
+    },
+    {
+      "word": "close",
+      "part_of_speech": "adjective",
+      "definition": "knowing someone very well and liking them a lot",
+      "example": "Malika and I have been close friends since school.",
+      "translation_ru": "близкий",
+      "translation_uz": "yaqin"
+    },
+    {
+      "word": "acquaintance",
+      "part_of_speech": "noun",
+      "definition": "a person you know, but not very well",
+      "example": "He isn't really a friend, just an acquaintance from work.",
+      "translation_ru": "знакомый",
+      "translation_uz": "tanish"
+    },
+    {
+      "word": "jealous",
+      "part_of_speech": "adjective",
+      "definition": "unhappy because someone has something that you want",
+      "example": "She was jealous of her sister's new phone.",
+      "translation_ru": "завистливый, ревнивый",
+      "translation_uz": "hasad qiladigan, rashkchi"
+    },
+    {
+      "word": "rely on",
+      "part_of_speech": "phrasal verb",
+      "definition": "to need someone and trust them to help you",
+      "example": "You can always rely on Dilnoza; she never forgets a promise.",
+      "translation_ru": "полагаться на",
+      "translation_uz": "tayanmoq, ishonmoq"
+    },
+    {
+      "word": "keep in touch",
+      "part_of_speech": "phrase",
+      "definition": "to continue to talk or write to someone who is far away",
+      "example": "My cousin moved to Seoul, but we keep in touch online.",
+      "translation_ru": "поддерживать связь",
+      "translation_uz": "aloqani saqlamoq"
+    }
+  ]
+}

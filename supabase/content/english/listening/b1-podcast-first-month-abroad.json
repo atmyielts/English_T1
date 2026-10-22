@@ -1,0 +1,153 @@
+{
+  "item": {
+    "slug": "b1-podcast-first-month-abroad",
+    "title": "My First Month Studying Abroad",
+    "level": "B1",
+    "summary": "A student podcaster shares what surprised her in her first month at a university abroad, and what helped.",
+    "transcript_text": "Hi everyone, and welcome back to the podcast. Today I want to talk honestly about my first month as a student abroad. When I arrived in Germany last September, I thought my English would be enough for everything. At the university it was, but in shops and offices I often felt lost. So I downloaded a language app and started learning ten German words every day. The second surprise was cooking. At home, my mother always cooked, and I had never made plov on my own. In the first week, I lived on bread and soup, which wasn't great. Then I called my mum, and she taught me her recipe over a video call. Now I cook for my flatmates every Sunday, and it's the best way I've found to make friends. The hardest part, to be honest, was feeling homesick in the evenings. What helped was having a routine, so I joined the university running club, which meets three times a week. My advice is simple: don't wait for life to feel normal; build small habits that make it normal. That's all for today, and see you next week.",
+    "category": "Work and Study",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 140,
+    "duration_seconds": 81,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "podcast",
+      "study abroad",
+      "advice"
+    ],
+    "questions": [
+      {
+        "prompt": "What was her first surprise about language?",
+        "options": [
+          "Nobody at the university spoke English.",
+          "English was enough at university but not in shops and offices.",
+          "Her English was much better than she expected.",
+          "German was easy to learn."
+        ],
+        "answer_index": 1,
+        "explanation": "\"At the university it was, but in shops and offices I often felt lost.\""
+      },
+      {
+        "prompt": "How did she learn to cook plov?",
+        "options": [
+          "From a cookbook",
+          "From her flatmates",
+          "Her mother taught her over a video call.",
+          "She took a cooking class."
+        ],
+        "answer_index": 2,
+        "explanation": "\"I called my mum, and she taught me her recipe over a video call.\""
+      },
+      {
+        "prompt": "Why does she cook for her flatmates every Sunday?",
+        "options": [
+          "It is cheaper than eating out.",
+          "Her flatmates cannot cook.",
+          "It is the best way she has found to make friends.",
+          "She is practising for a job."
+        ],
+        "answer_index": 2,
+        "explanation": "She says it's \"the best way I've found to make friends\"."
+      },
+      {
+        "prompt": "What helped her with feeling homesick?",
+        "options": [
+          "Calling home every evening",
+          "Having a routine, like the running club",
+          "Travelling at weekends",
+          "Watching films in her language"
+        ],
+        "answer_index": 1,
+        "explanation": "\"What helped was having a routine, so I joined the university running club.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Hi everyone, and welcome back to the podcast.",
+      "focus_phrase": "welcome back",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Today I want to talk honestly about my first month as a student abroad.",
+      "focus_phrase": "student abroad",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "When I arrived in Germany last September, I thought my English would be enough for everything.",
+      "focus_phrase": "enough for everything",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "At the university it was, but in shops and offices I often felt lost.",
+      "focus_phrase": "felt lost",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "So I downloaded a language app and started learning ten German words every day.",
+      "focus_phrase": "ten German words",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The second surprise was cooking.",
+      "focus_phrase": "second surprise",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "At home, my mother always cooked, and I had never made plov on my own.",
+      "focus_phrase": "on my own",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "In the first week, I lived on bread and soup, which wasn't great.",
+      "focus_phrase": "bread and soup",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Then I called my mum, and she taught me her recipe over a video call.",
+      "focus_phrase": "video call",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Now I cook for my flatmates every Sunday, and it's the best way I've found to make friends.",
+      "focus_phrase": "make friends",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The hardest part, to be honest, was feeling homesick in the evenings.",
+      "focus_phrase": "homesick",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "What helped was having a routine, so I joined the university running club, which meets three times a week.",
+      "focus_phrase": "running club",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "My advice is simple: don't wait for life to feel normal; build small habits that make it normal.",
+      "focus_phrase": "small habits",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "That's all for today, and see you next week.",
+      "focus_phrase": "see you next week",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

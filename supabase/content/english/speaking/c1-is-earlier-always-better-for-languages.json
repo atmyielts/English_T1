@@ -1,0 +1,73 @@
+{
+  "item": {
+    "slug": "c1-is-earlier-always-better-for-languages",
+    "title": "Is Earlier Always Better for Languages?",
+    "level": "C1",
+    "prompt_text": "Many parents believe children should start learning a foreign language as early as possible, even in nursery school. Give your view. Discuss the advantages of starting young, the limitations of the 'earlier is better' idea, and what you think matters more than age.",
+    "prompt_type": "guided_response",
+    "target_duration_seconds": 135,
+    "target_grammar": "hedging and qualification (tends to, it's widely assumed that, arguably); cleft sentences",
+    "fluency_objective": "Develop each point with an explanation and an example before moving on, linking ideas with 'what's more' and 'that said'.",
+    "pronunciation_objective": "Use falling intonation to sound decisive on your main claims, and a fall-rise to signal reservations.",
+    "target_vocabulary": [
+      "it's widely assumed",
+      "pick up",
+      "accent",
+      "exposure",
+      "that said",
+      "arguably",
+      "what really matters is",
+      "motivation",
+      "consistency"
+    ],
+    "task_type": "opinion",
+    "model_answer": "It's widely assumed that the earlier a child starts a language, the better, and I think that's partly true, but it's an oversimplification. Let me start with the advantages. Young children tend to pick up pronunciation remarkably well, so early learners often end up with a more natural accent. They're also less afraid of making mistakes, and if a language is part of their routine from a young age, it simply feels normal rather than like a school subject. That said, starting early doesn't guarantee anything. A child who has one forty-minute lesson a week with a tired teacher isn't going to absorb much, however young they are. And older learners actually have some real advantages: they can understand grammar rules, use strategies, and set goals for themselves. Plenty of people in Uzbekistan only started English seriously at university and now use it confidently at work. So, in my view, what really matters is not age but the quality and amount of exposure, and above all motivation. A teenager who loves English songs and watches films in English will arguably learn more than a five-year-old forced to memorise vocabulary lists. If I were a parent, I'd introduce a language early in a playful way, but I wouldn't panic about the exact starting age. Consistency and genuine interest are what make the difference in the long run.",
+    "model_opening": "It's widely assumed that the earlier a child starts a language, the better, and I think that's partly true, but it's an oversimplification.",
+    "cues": [
+      {
+        "text": "your overall view",
+        "keywords": [
+          "i think",
+          "in my view",
+          "i'd argue",
+          "personally",
+          "i believe"
+        ]
+      },
+      {
+        "text": "advantages of starting young",
+        "keywords": [
+          "pronunciation",
+          "accent",
+          "pick up",
+          "less afraid",
+          "natural",
+          "advantage"
+        ]
+      },
+      {
+        "text": "limitations of 'earlier is better'",
+        "keywords": [
+          "that said",
+          "however",
+          "doesn't guarantee",
+          "oversimplif",
+          "older learners",
+          "limitation"
+        ]
+      },
+      {
+        "text": "what matters more than age",
+        "keywords": [
+          "what really matters",
+          "motivation",
+          "exposure",
+          "quality",
+          "consistency",
+          "interest"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

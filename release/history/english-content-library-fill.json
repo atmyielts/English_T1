@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "english-content-library-fill",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": [
+    "english-hub"
+  ],
+  "migrations": [
+    "20261023140000_english_content_library_fill.sql"
+  ],
+  "edgeFunctions": [],
+  "workers": [],
+  "sharedEdgeConsumers": [],
+  "requiredSecrets": [],
+  "rolloutOrder": [
+    "pages",
+    "migration:20261023140000_english_content_library_fill.sql"
+  ],
+  "manualFollowUps": [
+    "Pages: merging publishes english-hub with two layout fixes (word rows on phones, Practice heading levels).",
+    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus 20261023140000_english_content_library_fill.sql, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then supabase migration list --linked. Adds 101 published lessons (grammar 9, immersion 26, listening 12, speaking 17, vocabulary 18, writing 19) with their drills/steps/segments/words and catalog rows; idempotent, existing slugs are skipped."
+  ],
+  "verification": [
+    "supabase migration list --linked shows 20261023140000 applied and the 9 #220 payment migrations still pending.",
+    "Published catalog per skill reaches A1-B2: 8, C1: 6, C2: 4 (reading C1 stays 8).",
+    "As a learner: /hub/catalog?skill=immersion lists the new A1 missions (e.g. a1-buying-a-sim-card) and each opens."
+  ],
+  "rollback": {
+    "pages": "Cloudflare Pages rollback of schood-english to the previous deployment.",
+    "migration": "Archive the new items instead of deleting (learner attempts reference them): update each content table set status='archived' where slug in the seeded list; the registry sync trigger hides them from the catalog.",
+    "edge": "Nothing deployed.",
+    "worker": "Nothing deployed."
+  }
+}

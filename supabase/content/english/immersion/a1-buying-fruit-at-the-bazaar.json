@@ -1,0 +1,137 @@
+{
+  "item": {
+    "slug": "a1-buying-fruit-at-the-bazaar",
+    "title": "Buying fruit at the bazaar",
+    "level": "A1",
+    "context_text": "Your friend Sara from Australia is visiting Tashkent. You take her to Chorsu Bazaar. She wants to buy fruit, and she asks you for help in English.",
+    "objective_text": "Read the prices, understand what Sara wants, and tell her the total price.",
+    "mission_type": "service",
+    "target_grammar": "How much is / are…? and numbers with thousand",
+    "cultural_note": "At an Uzbek bazaar, sellers often let you taste the fruit before you buy. Prices are usually for one kilo.",
+    "target_vocabulary": [
+      "kilo",
+      "half a kilo",
+      "price",
+      "grapes",
+      "dried apricots"
+    ],
+    "success_conditions": [
+      "Read and compare the prices on the stall",
+      "Understand what Sara wants to buy",
+      "Tell Sara the total price"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the price list",
+      "instructions": "Read the price list on the fruit stall. Then answer the questions.",
+      "prompt_text": "Today's prices (for 1 kilo)\nApples — 12,000 som\nGrapes — 18,000 som\nPomegranates — 25,000 som\nDried apricots — 60,000 som\nBuy 3 kilos of apples, pay for 2!",
+      "estimated_minutes": 3,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "What is the most expensive?",
+          "options": [
+            "Grapes",
+            "Pomegranates",
+            "Dried apricots"
+          ],
+          "answer_index": 2,
+          "explanation": "Dried apricots are 60,000 som a kilo, the highest price."
+        },
+        {
+          "prompt": "You buy 3 kilos of apples. How much do you pay?",
+          "options": [
+            "12,000 som",
+            "24,000 som",
+            "36,000 som"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Buy 3 kilos of apples, pay for 2\": 2 × 12,000 = 24,000 som."
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to Sara",
+      "instructions": "Listen to Sara. Then answer the questions. You can listen again.",
+      "prompt_text": "Wow, this bazaar is so big! I want some fruit for my hotel room. I love grapes, but I don't like apples. Can you ask for one kilo of grapes and half a kilo of dried apricots, please?",
+      "estimated_minutes": 3,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "us",
+      "questions": [
+        {
+          "prompt": "What does Sara not like?",
+          "options": [
+            "Grapes",
+            "Apples",
+            "Dried apricots"
+          ],
+          "answer_index": 1,
+          "explanation": "Sara says \"I don't like apples.\""
+        },
+        {
+          "prompt": "How many grapes does she want?",
+          "options": [
+            "Half a kilo",
+            "One kilo",
+            "Two kilos"
+          ],
+          "answer_index": 1,
+          "explanation": "She asks for \"one kilo of grapes\"."
+        },
+        {
+          "prompt": "How much does Sara's fruit cost?",
+          "options": [
+            "48,000 som",
+            "30,000 som",
+            "78,000 som"
+          ],
+          "answer_index": 0,
+          "explanation": "One kilo of grapes is 18,000 som and half a kilo of dried apricots is 30,000 som: 48,000 som."
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Tell Sara the price",
+      "instructions": "Sara asks you a question. Answer out loud. Tell her the total price for her fruit.",
+      "prompt_text": "Sara: So how much do I pay?",
+      "estimated_minutes": 2,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Tell Sara the total price.",
+      "points": [
+        {
+          "label": "say the total price",
+          "any": [
+            "48",
+            "48 000",
+            "forty eight"
+          ]
+        },
+        {
+          "label": "say the money",
+          "any": [
+            "som",
+            "sum",
+            "thousand"
+          ]
+        }
+      ],
+      "model_answer": "It is forty-eight thousand som. The grapes are eighteen thousand and the apricots are thirty thousand.",
+      "min_words": null
+    }
+  ]
+}

@@ -66,6 +66,7 @@ const PeerReviewPage = lazyWithChunkRetry(() => import('./pages/PeerReviewPage')
 const WhitelabelPage = lazyWithChunkRetry(() => import('./pages/WhitelabelPage').then((m) => ({ default: m.WhitelabelPage })));
 const CorporateAssessmentPage = lazyWithChunkRetry(() => import('./pages/CorporateAssessmentPage').then((m) => ({ default: m.CorporateAssessmentPage })));
 const TeacherMarketplacePage = lazyWithChunkRetry(() => import('./pages/TeacherMarketplacePage').then((m) => ({ default: m.TeacherMarketplacePage })));
+const CoursesCatalogPage = lazyWithChunkRetry(() => import('./pages/CoursesCatalogPage').then((m) => ({ default: m.CoursesCatalogPage })));
 const CenterInitiationPage = lazyWithChunkRetry(() => import('./pages/CenterInitiationPage').then((m) => ({ default: m.CenterInitiationPage })));
 const RedeemPage = lazyWithChunkRetry(() => import('./pages/RedeemPage').then((m) => ({ default: m.RedeemPage })));
 const CenterLandingPage = lazyWithChunkRetry(() => import('./pages/CenterLandingPage').then((m) => ({ default: m.CenterLandingPage })));
@@ -167,6 +168,8 @@ function App() {
           <Route path="/telegram" element={<TelegramAppPage />} />
           <Route path="/telegram/discover" element={<TelegramDiscoverPage />} />
           <Route path="/marketplace" element={<TeacherMarketplacePage />} />
+          <Route path="/courses" element={<CoursesCatalogPage />} />
+          <Route path="/courses/:slug" element={<CoursesCatalogPage />} />
 
           <Route element={<RequireAuth />}>
             <Route path="/pricing" element={<PricingPage />} />

@@ -1,0 +1,129 @@
+{
+  "item": {
+    "slug": "a1-school-trip-botanical-garden",
+    "title": "The School Trip Tomorrow",
+    "level": "A1",
+    "summary": "A teacher tells the class about tomorrow's trip to the botanical garden.",
+    "transcript_text": "Good morning, class. Tomorrow we have a school trip to the botanical garden. The bus leaves at nine o'clock, so please come to school at half past eight. Please bring a hat and a bottle of water. It is very hot in the afternoon. We have lunch in the garden at one o'clock. You can bring sandwiches or fruit from home. Please do not bring a big bag. We come back to school at three o'clock. See you tomorrow!",
+    "category": "Work and Study",
+    "accent": "general",
+    "speed_label": "slow",
+    "speed_wpm": 110,
+    "duration_seconds": 43,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "school",
+      "announcement",
+      "trip"
+    ],
+    "questions": [
+      {
+        "prompt": "Where is the school trip?",
+        "options": [
+          "To a museum",
+          "To the zoo",
+          "To the botanical garden",
+          "To a park in the mountains"
+        ],
+        "answer_index": 2,
+        "explanation": "\"Tomorrow we have a school trip to the botanical garden.\""
+      },
+      {
+        "prompt": "What time should the students come to school?",
+        "options": [
+          "At eight o'clock",
+          "At half past eight",
+          "At nine o'clock",
+          "At one o'clock"
+        ],
+        "answer_index": 1,
+        "explanation": "The bus leaves at nine, \"so please come to school at half past eight\"."
+      },
+      {
+        "prompt": "Why should students bring a hat and water?",
+        "options": [
+          "It is very hot in the afternoon.",
+          "It is going to rain.",
+          "There is no shop in the garden.",
+          "The bus is very long."
+        ],
+        "answer_index": 0,
+        "explanation": "The teacher says: \"It is very hot in the afternoon.\""
+      },
+      {
+        "prompt": "When do they come back to school?",
+        "options": [
+          "At one o'clock",
+          "At two o'clock",
+          "At three o'clock",
+          "At four o'clock"
+        ],
+        "answer_index": 2,
+        "explanation": "\"We come back to school at three o'clock.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Good morning, class.",
+      "focus_phrase": "Good morning",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Tomorrow we have a school trip to the botanical garden.",
+      "focus_phrase": "botanical garden",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The bus leaves at nine o'clock, so please come to school at half past eight.",
+      "focus_phrase": "half past eight",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Please bring a hat and a bottle of water.",
+      "focus_phrase": "a bottle of water",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "It is very hot in the afternoon.",
+      "focus_phrase": "very hot",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "We have lunch in the garden at one o'clock.",
+      "focus_phrase": "have lunch",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "You can bring sandwiches or fruit from home.",
+      "focus_phrase": "sandwiches or fruit",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Please do not bring a big bag.",
+      "focus_phrase": "a big bag",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "We come back to school at three o'clock.",
+      "focus_phrase": "come back",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "See you tomorrow!",
+      "focus_phrase": "See you tomorrow",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

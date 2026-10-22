@@ -15,6 +15,7 @@ import {
   User2,
 } from 'lucide-react';
 import { edgeBase } from '../lib/supabase';
+import { TelegramHomeworkPanel } from '../components/telegram/TelegramHomeworkPanel';
 
 declare global {
   interface Window {
@@ -513,6 +514,7 @@ export const TelegramAppPage: React.FC = () => {
 
         {tab === 'academy' && (
           <div className="space-y-4">
+            <TelegramHomeworkPanel initData={initData} onSubmitted={() => void load()} />
             <Card>
               <div className="text-sm font-black">Classrooms</div>
               <div className="mt-3 space-y-2">

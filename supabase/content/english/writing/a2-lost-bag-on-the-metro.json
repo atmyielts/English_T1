@@ -1,0 +1,91 @@
+{
+  "item": {
+    "slug": "a2-lost-bag-on-the-metro",
+    "title": "I Left My Bag on the Metro",
+    "level": "A2",
+    "prompt_text": "Yesterday you left your bag on a train on the Tashkent metro. Write an email to the metro's lost property office. Explain what happened and ask for help.",
+    "genre": "email",
+    "target_grammar": "past simple; adjectives to describe things",
+    "target_structure": "greeting + what happened + description of the bag + what was inside + contact details + thanks",
+    "expected_length_min": 60,
+    "expected_length_max": 90,
+    "target_vocabulary": [
+      "left",
+      "lost",
+      "station",
+      "train",
+      "describe",
+      "inside",
+      "wallet",
+      "contact",
+      "phone number"
+    ],
+    "audience": "The lost property office",
+    "checklist": [
+      {
+        "point": "Say what happened, when and where",
+        "keywords": [
+          "yesterday",
+          "left",
+          "lost",
+          "station",
+          "train",
+          "metro",
+          "line"
+        ]
+      },
+      {
+        "point": "Describe the bag",
+        "keywords": [
+          "black",
+          "blue",
+          "brown",
+          "red",
+          "grey",
+          "green",
+          "small",
+          "big",
+          "leather",
+          "colour",
+          "color"
+        ]
+      },
+      {
+        "point": "Say what was in the bag",
+        "keywords": [
+          "inside",
+          "in it",
+          "wallet",
+          "keys",
+          "book",
+          "laptop",
+          "documents",
+          "phone",
+          "card"
+        ]
+      },
+      {
+        "point": "Give your contact details",
+        "keywords": [
+          "phone",
+          "number",
+          "call me",
+          "contact",
+          "email",
+          "#number"
+        ]
+      },
+      {
+        "point": "Ask for help and say thank you",
+        "keywords": [
+          "could you",
+          "can you",
+          "please",
+          "help",
+          "thank"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

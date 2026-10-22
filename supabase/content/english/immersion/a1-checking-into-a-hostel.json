@@ -1,0 +1,166 @@
+{
+  "item": {
+    "slug": "a1-checking-into-a-hostel",
+    "title": "Checking into a hostel",
+    "level": "A1",
+    "context_text": "You are on holiday. You arrive at a small hostel in the city centre. The receptionist is at the desk. Later, your friend Dilnoza comes to the hostel too.",
+    "objective_text": "Check in, understand the receptionist, and tell your friend your room and the breakfast time.",
+    "mission_type": "travel",
+    "target_grammar": "present simple with be (I am in room 6. Breakfast is at 7:30.)",
+    "cultural_note": "In a hostel you often share a room with other travellers. Say hello to them and keep the room quiet at night.",
+    "target_vocabulary": [
+      "booking",
+      "night",
+      "room",
+      "breakfast",
+      "stairs"
+    ],
+    "success_conditions": [
+      "Understand your booking: nights and breakfast",
+      "Give your name and the number of nights at reception",
+      "Tell your friend your room number and the breakfast time"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read your booking",
+      "instructions": "Read the booking email on your phone. Then answer the questions.",
+      "prompt_text": "BOOKING CONFIRMED\nHostel: Green House Hostel\nRoom: 4-bed room\nNights: 3 (Friday to Monday)\nBreakfast: 7:30 to 10:00, in the kitchen\nCheck-in: from 2 pm",
+      "estimated_minutes": 2,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "How many nights is your booking?",
+          "options": [
+            "Two",
+            "Three",
+            "Four"
+          ],
+          "answer_index": 1,
+          "explanation": "The booking says \"Nights: 3 (Friday to Monday)\"."
+        },
+        {
+          "prompt": "Where is breakfast?",
+          "options": [
+            "In your room",
+            "In the kitchen",
+            "In a café"
+          ],
+          "answer_index": 1,
+          "explanation": "The booking says breakfast is \"in the kitchen\"."
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Talk to the receptionist",
+      "instructions": "The receptionist says hello. Answer out loud. Say your name and how many nights you are staying.",
+      "prompt_text": "Receptionist: Hello! Do you have a booking?",
+      "estimated_minutes": 2,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Give your name and say how many nights you are staying.",
+      "points": [
+        {
+          "label": "say your name",
+          "any": [
+            "my name",
+            "name is",
+            "i'm",
+            "i am",
+            "call me"
+          ]
+        },
+        {
+          "label": "say how many nights",
+          "any": [
+            "three",
+            "3",
+            "nights",
+            "friday",
+            "monday"
+          ]
+        }
+      ],
+      "model_answer": "Yes, I do. My name is Malika Karimova. I am here for three nights.",
+      "min_words": null
+    },
+    {
+      "title": "Listen to the receptionist",
+      "instructions": "Listen to the receptionist. Then answer the questions. You can listen again.",
+      "prompt_text": "Thank you. Welcome! You are in room six, on the second floor. Sorry, the lift is broken today. The stairs are on the left. The Wi-Fi password is on your key card. Have a nice stay!",
+      "estimated_minutes": 2,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "us",
+      "questions": [
+        {
+          "prompt": "What is your room number?",
+          "options": [
+            "Two",
+            "Six",
+            "Ten"
+          ],
+          "answer_index": 1,
+          "explanation": "The receptionist says \"You are in room six\"."
+        },
+        {
+          "prompt": "Where is the Wi-Fi password?",
+          "options": [
+            "On the wall",
+            "On your key card",
+            "At the desk"
+          ],
+          "answer_index": 1,
+          "explanation": "The receptionist says \"The Wi-Fi password is on your key card.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Text your friend",
+      "instructions": "Your friend Dilnoza is coming to the hostel later. Write a message. Tell her your room number and the breakfast time.",
+      "prompt_text": "Dilnoza: I'm at the bus station now. Where are you?",
+      "estimated_minutes": 3,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Tell Dilnoza your room number and when breakfast is.",
+      "points": [
+        {
+          "label": "give the room number",
+          "any": [
+            "six",
+            "6",
+            "room",
+            "second floor"
+          ]
+        },
+        {
+          "label": "give the breakfast time",
+          "any": [
+            "breakfast",
+            "7 30",
+            "seven thirty",
+            "half past seven",
+            "ten",
+            "10"
+          ]
+        }
+      ],
+      "model_answer": "Hi Dilnoza! I am in room 6, on the second floor. The lift is broken, so take the stairs. Breakfast is from 7:30 to 10 in the kitchen.",
+      "min_words": null
+    }
+  ]
+}

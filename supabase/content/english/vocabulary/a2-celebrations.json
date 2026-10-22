@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "a2-celebrations",
+    "title": "Celebrations",
+    "level": "A2",
+    "topic": "celebrations",
+    "description": "Holidays, weddings and birthdays: talking about special days."
+  },
+  "children": [
+    {
+      "word": "celebrate",
+      "part_of_speech": "verb",
+      "definition": "to do something special and enjoyable for an important day or event",
+      "example": "We celebrate Navruz on 21 March.",
+      "translation_ru": "праздновать",
+      "translation_uz": "nishonlamoq"
+    },
+    {
+      "word": "holiday",
+      "part_of_speech": "noun",
+      "definition": "a day when most people do not work, often to celebrate something",
+      "example": "Navruz is a public holiday in Uzbekistan.",
+      "translation_ru": "праздник, выходной день",
+      "translation_uz": "bayram, dam olish kuni"
+    },
+    {
+      "word": "wedding",
+      "part_of_speech": "noun",
+      "definition": "a ceremony when two people get married",
+      "example": "My cousin's wedding was in a big hall with hundreds of guests.",
+      "translation_ru": "свадьба",
+      "translation_uz": "toʻy"
+    },
+    {
+      "word": "guest",
+      "part_of_speech": "noun",
+      "definition": "a person you invite to your home or to an event",
+      "example": "We had twenty guests for dinner last night.",
+      "translation_ru": "гость",
+      "translation_uz": "mehmon"
+    },
+    {
+      "word": "invite",
+      "part_of_speech": "verb",
+      "definition": "to ask someone to come to a party or event",
+      "example": "Dilnoza invited all her classmates to her birthday party.",
+      "translation_ru": "приглашать",
+      "translation_uz": "taklif qilmoq"
+    },
+    {
+      "word": "gift",
+      "part_of_speech": "noun",
+      "definition": "something you give to someone, for example on their birthday",
+      "example": "I bought a gift for my sister.",
+      "translation_ru": "подарок",
+      "translation_uz": "sovgʻa"
+    },
+    {
+      "word": "decorate",
+      "part_of_speech": "verb",
+      "definition": "to make a place look nice with flowers, lights or other things",
+      "example": "We decorated the room with balloons.",
+      "translation_ru": "украшать",
+      "translation_uz": "bezamoq"
+    },
+    {
+      "word": "traditional",
+      "part_of_speech": "adjective",
+      "definition": "done or made in the same way for a very long time",
+      "example": "Sumalak is a traditional Navruz dish.",
+      "translation_ru": "традиционный",
+      "translation_uz": "anʼanaviy"
+    },
+    {
+      "word": "congratulate",
+      "part_of_speech": "verb",
+      "definition": "to tell someone you are happy about their good news or special day",
+      "example": "Everyone congratulated Timur on his new job.",
+      "translation_ru": "поздравлять",
+      "translation_uz": "tabriklamoq"
+    },
+    {
+      "word": "fireworks",
+      "part_of_speech": "noun",
+      "definition": "bright coloured lights that explode in the sky at celebrations",
+      "example": "We watched the fireworks over the city at New Year.",
+      "translation_ru": "фейерверк, салют",
+      "translation_uz": "salyut, mushakbozlik"
+    },
+    {
+      "word": "anniversary",
+      "part_of_speech": "noun",
+      "definition": "the same date as an important event in an earlier year",
+      "example": "My parents celebrate their wedding anniversary every June.",
+      "translation_ru": "годовщина",
+      "translation_uz": "yillik sana"
+    },
+    {
+      "word": "festival",
+      "part_of_speech": "noun",
+      "definition": "a special time of celebration, often with music, food and events",
+      "example": "Our town has a music festival every summer.",
+      "translation_ru": "фестиваль",
+      "translation_uz": "festival, sayl"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "english-studio-ai-draft",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": [
+    "platform"
+  ],
+  "migrations": [],
+  "edgeFunctions": [
+    "admin-english-content"
+  ],
+  "workers": [],
+  "sharedEdgeConsumers": [
+    "admin-english-content"
+  ],
+  "requiredSecrets": [],
+  "rolloutOrder": [
+    "pages",
+    "function:admin-english-content"
+  ],
+  "manualFollowUps": [
+    "Pages: merging publishes platform with the 'Draft with AI' box on new items in Admin → English → Content. Until the function is deployed the button returns an error; everything else keeps working.",
+    "Edge: supabase functions deploy admin-english-content --project-ref bbjawctnqrufvnesdsel (adds POST /content/draft; uses the existing OpenRouter key through _shared/english-ai.ts, admin-only, nothing is saved)."
+  ],
+  "verification": [
+    "Without a session POST /functions/v1/admin-english-content/content/draft returns 401.",
+    "As an admin: New item → Draft with AI with a topic fills the editor with a valid draft (status draft); nothing appears in the catalog until Create item and Publish."
+  ],
+  "rollback": {
+    "pages": "Cloudflare Pages rollback of schood-platform to the previous deployment.",
+    "migration": "None.",
+    "edge": "Redeploy admin-english-content from the previous main commit; the Draft with AI button stops, the rest of the studio keeps working.",
+    "worker": "Nothing deployed."
+  }
+}

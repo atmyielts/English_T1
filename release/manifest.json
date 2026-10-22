@@ -5,8 +5,7 @@
   "backwardCompatible": true,
   "frontends": [
     "admission",
-    "assessment-cloud",
-    "exam"
+    "assessment-cloud"
   ],
   "migrations": [
     "20261024200000_admission_learner_state.sql"

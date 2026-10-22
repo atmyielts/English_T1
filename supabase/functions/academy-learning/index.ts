@@ -13,6 +13,8 @@ import {
 } from "./core.ts";
 import { isUuid, type Row } from "./lib.ts";
 import { runPremarkSweep } from "./premark.ts";
+import * as catalog from "./catalog.ts";
+import * as miniapp from "./miniapp.ts";
 import * as staff from "./staff.ts";
 import { handleTelegramUpdate } from "./telegram.ts";
 
@@ -27,6 +29,8 @@ const STAFF_ACTIONS: Record<string, (ctx: Parameters<typeof staff.overview>[0]) 
   homework_funnel: staff.funnel,
   course_modules: staff.courseModules,
   set_module_unlock: staff.setModuleUnlock,
+  course_listing_get: catalog.listingGet,
+  course_listing_save: catalog.listingSave,
 };
 
 const bearer = (req: Request): string | null => {
@@ -50,20 +54,68 @@ const isTelegramWorker = async (req: Request): Promise<boolean> => {
   return header.startsWith("Bearer ") && secretEquals(header.slice(7).trim(), env("SUPABASE_SERVICE_ROLE_KEY") ?? "");
 };
 
-const studentMistakes = async (sb: Db, userId: string) => {
+const studentMistakes = async (sb: Db, userId: string, academyId: string | null) => {
   const result = await rpc<Row>(sb, "academy_student_contacts_command", { p_actor_id: userId }, "Your student links could not be confirmed.");
-  const contactIds = (Array.isArray(result?.contacts) ? result.contacts as Row[] : []).map((c) => String(c.id)).filter(isUuid);
+  const contacts = (Array.isArray(result?.contacts) ? result.contacts as Row[] : [])
+    .filter((c) => !academyId || String(c.academy_id) === academyId);
+  const contactIds = contacts.map((c) => String(c.id)).filter(isUuid);
   if (!contactIds.length) return { mistakes: [] };
   const { data } = await sb.from("academy_homework_mistakes")
-    .select("id, academy_id, assignment_id, tag, excerpt, correction, explanation, status, created_at")
-    .in("contact_id", contactIds).order("created_at", { ascending: false }).limit(200);
-  return { mistakes: data ?? [] };
+    .select("id, academy_id, assignment_id, tag, excerpt, correction, explanation, status, created_at, resolved_at")
+    .in("contact_id", contactIds).neq("status", "dismissed").order("created_at", { ascending: false }).limit(300);
+  const rows = (data ?? []) as Row[];
+  const assignmentIds = [...new Set(rows.map((m) => String(m.assignment_id)))];
+  const { data: assignments } = assignmentIds.length
+    ? await sb.from("academy_assignments").select("id, title").in("id", assignmentIds)
+    : { data: [] };
+  const titles = new Map(((assignments ?? []) as Row[]).map((a) => [String(a.id), String(a.title ?? "")]));
+  return { mistakes: rows.map((m) => ({ ...m, assignment_title: titles.get(String(m.assignment_id)) ?? null })) };
+};
+
+// Checked once per warm instance; cheap (one getMyCommands) and idempotent.
+let botCommandsChecked = false;
+
+const HOMEWORK_BOT_COMMANDS = [
+  { command: "homework", description: "Open homework; send answers here" },
+  { command: "center", description: "Choose which centre gets your homework" },
+];
+
+/** Adds the homework commands to the student bot's menu, keeping every existing command. */
+export const ensureBotCommands = async (tg: Pick<ReturnType<typeof telegramClient>, "call">) => {
+  const current = await tg.call("getMyCommands", {});
+  const existing = Array.isArray(current.result) ? current.result as Array<{ command: string; description: string }> : [];
+  // A bot with no menu yet gets the commands its /help already advertises.
+  const base = existing.length ? existing : [
+    { command: "app", description: "Open the Schood Telegram app" },
+    { command: "assignments", description: "Assignments due this week" },
+    { command: "results", description: "Recent scores" },
+    { command: "schedule", description: "Weekly class timetable" },
+    { command: "help", description: "All commands" },
+  ];
+  const missing = HOMEWORK_BOT_COMMANDS.filter((c) => !base.some((e) => e.command === c.command));
+  if (!existing.length) {
+    const result = await tg.call("setMyCommands", { commands: [...base.slice(0, 2), ...missing, ...base.slice(2)] });
+    return { changed: result.ok === true, commands: base.length + missing.length };
+  }
+  if (!missing.length) return { changed: false, commands: existing.length };
+  const result = await tg.call("setMyCommands", { commands: [...existing, ...missing] });
+  return { changed: result.ok === true, commands: existing.length + missing.length };
 };
 
 export const handleAcademyLearningRequest = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json(405, { error: "Use POST" });
   try {
+    if ((req.headers.get("content-type") ?? "").toLowerCase().startsWith("multipart/form-data")) {
+      let form: FormData;
+      try {
+        form = await req.formData();
+      } catch {
+        return json(400, { error: "Invalid upload" });
+      }
+      if (form.get("action") !== "miniapp_submit") return json(400, { error: "Unknown action" });
+      return json(200, await miniapp.miniAppSubmit({ sb: serviceClient() }, form));
+    }
     let body: Row;
     try {
       body = await req.json();
@@ -83,16 +135,28 @@ export const handleAcademyLearningRequest = async (req: Request): Promise<Respon
         if (error) throw new HttpError(503, "Digest queueing failed");
         return json(200, { queued: data });
       }
+      if (body.cycle === "bot_commands") return json(200, await ensureBotCommands(telegramClient(requiredEnv("TELEGRAM_BOT_TOKEN"))));
       return json(400, { error: "Unknown worker cycle" });
     }
+
+    if (action === "miniapp_homework") return json(200, await miniapp.miniAppHomework({ sb }, body));
+    if (action === "miniapp_center") return json(200, await miniapp.miniAppSetCentre({ sb }, body));
+    if (action === "miniapp_mistakes") return json(200, await miniapp.miniAppMistakes({ sb }, body));
+
+    if (action === "public_courses") return json(200, await catalog.publicCourses(sb, body));
+    if (action === "public_course") return json(200, await catalog.publicCourse(sb, body));
+    if (action === "public_course_lead") return json(200, await catalog.publicCourseLead(sb, req, body));
 
     if (action === "telegram_update") {
       if (!(await isTelegramWorker(req))) return json(401, { error: "Unauthorized" });
       const update = body.update && typeof body.update === "object" ? body.update as Row : null;
       if (!update) return json(400, { error: "update is required" });
-      const result = await handleTelegramUpdate({
-        sb, tg: telegramClient(requiredEnv("TELEGRAM_BOT_TOKEN")), siteUrl: env("SITE_URL") ?? "https://schood.online",
-      }, update);
+      const tg = telegramClient(requiredEnv("TELEGRAM_BOT_TOKEN"));
+      const result = await handleTelegramUpdate({ sb, tg, siteUrl: env("SITE_URL") ?? "https://schood.online" }, update);
+      if (result.handled && !botCommandsChecked) {
+        botCommandsChecked = true;
+        await ensureBotCommands(tg).catch(() => { botCommandsChecked = false; });
+      }
       return json(200, result);
     }
 
@@ -105,7 +169,7 @@ export const handleAcademyLearningRequest = async (req: Request): Promise<Respon
       return json(409, { error: "Your account changed. Reopen this page." });
     }
 
-    if (action === "student_mistakes") return json(200, await studentMistakes(sb, userId));
+    if (action === "student_mistakes") return json(200, await studentMistakes(sb, userId, isUuid(body.academy_id) ? String(body.academy_id) : null));
 
     const handler = STAFF_ACTIONS[action];
     if (!handler) return json(400, { error: "Unknown action" });

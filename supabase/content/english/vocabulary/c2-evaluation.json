@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "c2-evaluation",
+    "title": "Praise and criticism",
+    "level": "C2",
+    "topic": "evaluation",
+    "description": "Precise words for judging work, ideas and performances."
+  },
+  "children": [
+    {
+      "word": "scathing",
+      "part_of_speech": "adjective",
+      "definition": "extremely critical in an angry or scornful way",
+      "example": "The novel received a scathing review in a national newspaper.",
+      "translation_ru": "уничтожающий, резкий (о критике)",
+      "translation_uz": "ayovsiz, oʻta keskin"
+    },
+    {
+      "word": "lukewarm",
+      "part_of_speech": "adjective",
+      "definition": "showing little interest or enthusiasm",
+      "example": "The proposal met with a lukewarm response from the board.",
+      "translation_ru": "прохладный, сдержанный",
+      "translation_uz": "sovuqqon, befarq"
+    },
+    {
+      "word": "laudable",
+      "part_of_speech": "adjective",
+      "definition": "deserving praise, even if not fully successful",
+      "example": "Their aim is laudable, but the plan is unrealistic.",
+      "translation_ru": "похвальный",
+      "translation_uz": "maqtovga loyiq"
+    },
+    {
+      "word": "flawed",
+      "part_of_speech": "adjective",
+      "definition": "having a mistake or weakness that makes it less effective or valid",
+      "example": "The study was deeply flawed because the sample was too small.",
+      "translation_ru": "имеющий изъяны, ущербный",
+      "translation_uz": "nuqsonli, kamchilikli"
+    },
+    {
+      "word": "derivative",
+      "part_of_speech": "adjective",
+      "definition": "copying the ideas of others; not original",
+      "example": "Critics found the film derivative and predictable.",
+      "translation_ru": "вторичный, подражательный",
+      "translation_uz": "taqlidiy, oʻziga xos boʻlmagan"
+    },
+    {
+      "word": "incisive",
+      "part_of_speech": "adjective",
+      "definition": "showing clear thought and the ability to get to the heart of an issue",
+      "example": "Her incisive questions exposed the weaknesses in the argument.",
+      "translation_ru": "проницательный, острый",
+      "translation_uz": "oʻtkir, teran"
+    },
+    {
+      "word": "pedestrian",
+      "part_of_speech": "adjective",
+      "definition": "ordinary and dull, without imagination",
+      "example": "The writing is competent but rather pedestrian.",
+      "translation_ru": "заурядный, скучный",
+      "translation_uz": "siyqa, oʻrtamiyona"
+    },
+    {
+      "word": "seminal",
+      "part_of_speech": "adjective",
+      "definition": "very important and strongly influencing later work",
+      "example": "Her seminal paper changed the way linguists study bilingual children.",
+      "translation_ru": "основополагающий",
+      "translation_uz": "asos soluvchi, burilish yasagan"
+    },
+    {
+      "word": "disparage",
+      "part_of_speech": "verb",
+      "definition": "to speak about someone or something in a way that shows you do not respect them",
+      "example": "He never disparages his rivals in public.",
+      "translation_ru": "пренебрежительно отзываться",
+      "translation_uz": "kamsitib gapirmoq"
+    },
+    {
+      "word": "damning",
+      "part_of_speech": "adjective",
+      "definition": "strongly suggesting that someone is guilty or has done something wrong",
+      "example": "The audit produced a damning report on the company's finances.",
+      "translation_ru": "изобличающий, разгромный",
+      "translation_uz": "fosh qiluvchi"
+    },
+    {
+      "word": "understated",
+      "part_of_speech": "adjective",
+      "definition": "pleasingly simple and not trying to attract attention",
+      "example": "The hotel's design is elegant and understated.",
+      "translation_ru": "сдержанный, неброский",
+      "translation_uz": "vazmin, ortiqcha bezaksiz"
+    },
+    {
+      "word": "damn with faint praise",
+      "part_of_speech": "idiom",
+      "definition": "to praise someone or something so weakly that it sounds like criticism",
+      "example": "Calling her speech 'adequate' was damning it with faint praise.",
+      "translation_ru": "сдержанно похвалить (по сути, критикуя)",
+      "translation_uz": "maqtagan boʻlib kamsitmoq"
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "a1-in-the-classroom",
+    "title": "In the classroom",
+    "level": "A1",
+    "topic": "classroom",
+    "description": "Things and words for lessons at school or a language course."
+  },
+  "children": [
+    {
+      "word": "desk",
+      "part_of_speech": "noun",
+      "definition": "a table where you sit to read, write or work",
+      "example": "My book is on the desk.",
+      "translation_ru": "парта, письменный стол",
+      "translation_uz": "parta, yozuv stoli"
+    },
+    {
+      "word": "board",
+      "part_of_speech": "noun",
+      "definition": "a big flat surface on the wall where the teacher writes",
+      "example": "The teacher writes the new words on the board.",
+      "translation_ru": "доска",
+      "translation_uz": "doska"
+    },
+    {
+      "word": "pen",
+      "part_of_speech": "noun",
+      "definition": "a thing you use to write with ink",
+      "example": "Have you got a blue pen?",
+      "translation_ru": "ручка",
+      "translation_uz": "ruchka"
+    },
+    {
+      "word": "pencil",
+      "part_of_speech": "noun",
+      "definition": "a thin wooden thing for writing or drawing, usually in grey",
+      "example": "I draw pictures with a pencil.",
+      "translation_ru": "карандаш",
+      "translation_uz": "qalam"
+    },
+    {
+      "word": "notebook",
+      "part_of_speech": "noun",
+      "definition": "a small book with empty pages that you write in",
+      "example": "Write the new words in your notebook.",
+      "translation_ru": "тетрадь",
+      "translation_uz": "daftar"
+    },
+    {
+      "word": "homework",
+      "part_of_speech": "noun",
+      "definition": "work that a teacher gives you to do at home",
+      "example": "Our homework is on page 12.",
+      "translation_ru": "домашнее задание",
+      "translation_uz": "uy vazifasi"
+    },
+    {
+      "word": "lesson",
+      "part_of_speech": "noun",
+      "definition": "a time when a teacher teaches you something",
+      "example": "Our English lesson starts at nine.",
+      "translation_ru": "урок",
+      "translation_uz": "dars"
+    },
+    {
+      "word": "question",
+      "part_of_speech": "noun",
+      "definition": "something you ask when you want to know something",
+      "example": "Can I ask a question, please?",
+      "translation_ru": "вопрос",
+      "translation_uz": "savol"
+    },
+    {
+      "word": "answer",
+      "part_of_speech": "noun",
+      "definition": "what you say or write after someone asks you something",
+      "example": "Is your answer right?",
+      "translation_ru": "ответ",
+      "translation_uz": "javob"
+    },
+    {
+      "word": "classmate",
+      "part_of_speech": "noun",
+      "definition": "a person in the same class as you",
+      "example": "Aziz is my classmate. We sit together.",
+      "translation_ru": "одноклассник",
+      "translation_uz": "sinfdosh"
+    },
+    {
+      "word": "repeat",
+      "part_of_speech": "verb",
+      "definition": "to say something again",
+      "example": "Listen and repeat after me.",
+      "translation_ru": "повторять",
+      "translation_uz": "takrorlamoq"
+    },
+    {
+      "word": "understand",
+      "part_of_speech": "verb",
+      "definition": "to know what something means",
+      "example": "Sorry, I don't understand this word.",
+      "translation_ru": "понимать",
+      "translation_uz": "tushunmoq"
+    }
+  ]
+}
