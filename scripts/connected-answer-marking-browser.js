@@ -1,7 +1,7 @@
 async(page)=>{
   const endpoint='http://localhost:5911',config=await(await page.request.get(endpoint+'/test/config')).json(),errors=[];
   page.on('pageerror',error=>errors.push(error.message));
-  async function login(name,application=config.institution){await page.context().clearCookies();await page.goto(application);await page.getByLabel('Email',{exact:true}).fill(name+'@example.test');await page.getByLabel('Password',{exact:true}).fill('synthetic-only');await page.getByRole('button',{name:'Sign in',exact:true}).click();if(application===config.institution)await page.getByRole('button',{name:'Grading & results',exact:true}).click();}
+  async function login(name,application=config.institution){await page.getByText('Saving encrypted device draft…',{exact:true}).waitFor({state:'detached',timeout:10000}).catch(()=>{});const unsaved=page.getByText('This local draft has not been submitted or approved.',{exact:false});if(await unsaved.count())throw new Error('Draft not saved before leaving: '+await unsaved.first().textContent());await page.context().clearCookies();await page.goto(application);await page.getByLabel('Email',{exact:true}).fill(name+'@example.test');await page.getByLabel('Password',{exact:true}).fill('synthetic-only');await page.getByRole('button',{name:'Sign in',exact:true}).click();if(application===config.institution)await page.getByRole('button',{name:'Grading & results',exact:true}).click();}
   const taskRow=label=>page.locator('.grading-lists .records > li').filter({has:page.getByText(label,{exact:true})});
   await login('owner');
   for(const label of ['File response','Audio response','Video response']){
