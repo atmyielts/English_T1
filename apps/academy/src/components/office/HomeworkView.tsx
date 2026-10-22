@@ -177,6 +177,48 @@ function CourseChecksTab({academyId,actorId}:Props){
   <label>{t('Course')}<select className="input" value={courseId} onChange={event=>setCourseId(event.target.value)}><option value="">{t('Choose a course')}</option>{courses.map(c=><option key={c.id} value={c.id}>{c.title}</option>)}</select></label>
   {error&&<p className="form-error" role="alert">{t(error)}</p>}
   {data&&(data.modules.length===0?<p>{t('This course has no modules yet.')}</p>:<ol className="homework-modules">{data.modules.map((m,i)=><ModuleRule key={m.id} index={i} module={m} quizzes={data.quizzes} saved={saved===m.id} onSave={rule=>void save(m.id,rule)}/>)}</ol>)}
+  {data&&courseId&&<CourseListingPanel key={courseId} academyId={academyId} actorId={actorId} courseId={courseId}/>}
+ </div>;
+}
+
+type Listing={id:string;slug:string;status:'draft'|'listed'|'hidden';headline:string;summary:string|null;format:string;city:string|null;language:string;level:string|null;
+ price_text:string|null;schedule_text:string|null;starts_on:string|null;seats:number|null;teacher_name:string|null};
+const LISTING_FIELDS=['headline','summary','format','language','city','level','price_text','schedule_text','starts_on','seats','teacher_name'] as const;
+
+function CourseListingPanel({academyId,actorId,courseId}:Props&{courseId:string}){
+ const [state,setState]=useState<{course:{title:string;status:string};listing:Listing|null;site_url:string}|null>(null),[form,setForm]=useState<Record<string,string>>({}),[error,setError]=useState(''),[saved,setSaved]=useState(''),[hidden,setHidden]=useState(false);
+ useEffect(()=>{let active=true;homeworkRequest<{course:{title:string;status:string};listing:Listing|null;site_url:string}>(academyId,actorId,'course_listing_get',{course_id:courseId}).then(value=>{if(!active)return;setState(value);
+   const l=value.listing;setForm(Object.fromEntries(LISTING_FIELDS.map(k=>[k,l?String(l[k]??''):k==='headline'?value.course.title:k==='format'?'blended':k==='language'?'uz':''])));})
+  .catch(reason=>{if(!active)return;if(reason?.status===403)setHidden(true);else setError(reason instanceof Error?reason.message:'The listing could not load.');});return()=>{active=false;};},[academyId,actorId,courseId]);
+ if(hidden)return null;
+ const save=async(status:Listing['status'])=>{setError('');setSaved('');try{const value=await homeworkRequest<{listing:Listing}>(academyId,actorId,'course_listing_save',{course_id:courseId,status,...form});
+  setState(current=>current?{...current,listing:value.listing}:current);setSaved(status);}catch(reason){setError(reason instanceof Error?reason.message:'The listing was not saved. Retry.');}};
+ const field=(key:string,label:string,props:Record<string,unknown>={})=><label key={key}>{t(label)}<input className="input" value={form[key]??''} onChange={event=>setForm(value=>({...value,[key]:event.target.value}))} {...props}/></label>;
+ const listing=state?.listing,url=listing&&state?`${state.site_url.replace(/\/$/,'')}/courses/${listing.slug}`:'';
+ return <div className="homework-plan-card homework-listing">
+  <h3>{t('Public listing on schood.online/courses')}</h3>
+  <p className="muted">{t('Learners find your course in the Schood catalogue and send a request. Requests arrive in Admissions as new leads. You set the price and take payment as you do today.')}</p>
+  {!state&&!error&&<p role="status">{t('Loading…')}</p>}
+  {state&&<>
+   {state.course.status!=='published'&&<p className="status status--warning">{t('Publish the course in Curriculum before listing it.')}</p>}
+   <p>{t('Status')}: <strong>{listing?.status==='listed'?t('Listed'):listing?.status==='hidden'?t('Hidden'):t('Not listed')}</strong>{listing?.status==='listed'&&<> · <a href={url} target="_blank" rel="noreferrer">{url}</a></>}</p>
+   <div className="homework-listing-grid">
+    {field('headline','Headline',{maxLength:160})}
+    <label>{t('Format')}<select className="input" value={form.format??'blended'} onChange={event=>setForm(value=>({...value,format:event.target.value}))}>
+     <option value="online">{t('Online')}</option><option value="offline">{t('In person')}</option><option value="blended">{t('Blended')}</option></select></label>
+    <label>{t('Teaching language')}<select className="input" value={form.language??'uz'} onChange={event=>setForm(value=>({...value,language:event.target.value}))}>
+     <option value="uz">{t('O‘zbekcha')}</option><option value="ru">{t('Русский')}</option><option value="en">{t('English')}</option><option value="other">{t('Other')}</option></select></label>
+    {field('city','City',{maxLength:80})}{field('level','Level',{maxLength:60})}{field('price_text','Price (as you want it shown)',{maxLength:120,placeholder:t('For example: 450 000 so‘m per month')})}
+    {field('schedule_text','Schedule',{maxLength:200,placeholder:t('For example: Mon, Wed, Fri 18:00')})}{field('starts_on','Start date',{type:'date'})}{field('seats','Seats',{type:'number',min:1,max:1000})}{field('teacher_name','Teacher',{maxLength:120})}
+   </div>
+   <label>{t('About the course')}<textarea className="input" rows={4} maxLength={2000} value={form.summary??''} onChange={event=>setForm(value=>({...value,summary:event.target.value}))}/></label>
+   {error&&<p className="form-error" role="alert">{t(error)}</p>}
+   {saved&&<p className="form-success">{t('Saved')}</p>}
+   <div className="homework-actions">
+    <button type="button" className="primary-btn" disabled={state.course.status!=='published'} onClick={()=>void save('listed')}>{listing?.status==='listed'?t('Update listing'):t('List publicly')}</button>
+    <button type="button" className="ghost-btn" onClick={()=>void save(listing?.status==='listed'?'hidden':'draft')}>{listing?.status==='listed'?t('Hide from catalogue'):t('Save draft')}</button>
+   </div>
+  </>}
  </div>;
 }
 

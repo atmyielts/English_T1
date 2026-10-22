@@ -55,7 +55,7 @@ Course run = Course + Academy group + teacher + schedule
 | V-CRS-F7 | Verified-results card per course: score gains and completion from Schood mocks and verified real results, with minimum sample sizes | Launch for own-center courses; required before a course is listed publicly |
 | V-CRS-F8 | Schood-verified certificate with center branding and a QR code (Assessment Cloud certificates) | Launch |
 | V-CRS-F9 | Star-teacher publishing: under a center's brand (center owns the course) or independently on a paid Schood Teaching plan `[DECIDED]` 2026-10-22 | Launch for both; revenue share from course sales stays Launch+1 (needs F13) |
-| V-CRS-F10 | Marketplace: browse, compare by verified results, enrol into a remote cohort; the center's teachers review homework remotely | Launch+1 |
+| V-CRS-F10 | Marketplace: browse, compare by verified results, enrol into a remote cohort; the center's teachers review homework remotely | Built (lead-based) at schood.online/courses, 42 §12; payment through Schood stays F12/F13 |
 | V-CRS-F11 | Proctored final exam for certificates (Proctor record-and-review) | Later; Proctor resumed 2026-10-22 as Proctor Lite (record-and-review, human review), so plan F11 on it |
 | V-CRS-F12 | Instalment payments for marketplace courses | Later stage |
 | V-CRS-F13 | Schood as payment agent: collect for centers, split payouts, issue fiscal receipts per sale | Later stage |
