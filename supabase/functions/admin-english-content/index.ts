@@ -8,14 +8,26 @@ import {
   toNumber,
   toText,
 } from "../_shared/english-learning.ts";
+import {
+  buildRegistryRow,
+  copySlug,
+  type FieldError,
+  isStudioServiceKey,
+  mergeMetadata,
+  normalizeStudioItem,
+  type RegistryDraft,
+  rowToStudioPayload,
+  STUDIO_SKILLS,
+  type StudioServiceKey,
+} from "../_shared/english-content-studio.ts";
 
 type JsonRecord = Record<string, unknown>;
 type ServiceKey = "reading" | "listening" | "writing" | "speaking" | "grammar" | "vocabulary" | "immersion";
 type ServiceConfig = {
-  serviceKey: Exclude<ServiceKey, "vocabulary">;
+  serviceKey: ServiceKey;
   label: string;
   table: string;
-  productKey: Exclude<ServiceKey, "vocabulary">;
+  productKey: ServiceKey;
   select: string;
   childTable?: string;
   childForeignKey?: string;
@@ -28,7 +40,7 @@ const routeMarker = "/admin-english-content";
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "GET, PATCH, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, OPTIONS",
 };
 
 const getEnv = (key: string): string => {
@@ -89,7 +101,7 @@ const countChildren = async (
   return counts;
 };
 
-const SERVICE_CONFIGS: Record<Exclude<ServiceKey, "vocabulary">, ServiceConfig> = {
+const SERVICE_CONFIGS: Record<ServiceKey, ServiceConfig> = {
   reading: {
     serviceKey: "reading",
     label: "Reading",
@@ -373,6 +385,43 @@ const SERVICE_CONFIGS: Record<Exclude<ServiceKey, "vocabulary">, ServiceConfig> 
       return update;
     },
   },
+  vocabulary: {
+    serviceKey: "vocabulary",
+    label: "Vocabulary",
+    table: "vocabulary_decks",
+    productKey: "vocabulary",
+    select: "id, slug, title, level, topic, description, status, sort_order, updated_at",
+    childTable: "vocabulary_deck_words",
+    childForeignKey: "deck_id",
+    normalize: (row, relatedCount) => ({
+      id: row.id,
+      service_key: "vocabulary",
+      item_kind: "deck",
+      slug: toText(row.slug, 160),
+      title: toText(row.title, 220),
+      summary: toText(row.description, 900),
+      level: toText(row.level, 16),
+      status: toText(row.status, 32),
+      sort_order: Math.floor(toNumber(row.sort_order) ?? 0),
+      updated_at: row.updated_at ?? null,
+      presentation_meta: null,
+      detail_badges: [toText(row.topic, 120), `${relatedCount} words`].filter(Boolean),
+      metrics: {
+        word_count: relatedCount,
+      },
+      raw: row,
+    }),
+    buildUpdate: (patch) => {
+      const update: JsonRecord = {};
+      if (patch.title != null) update.title = toText(patch.title, 220);
+      if (patch.level != null) update.level = toText(patch.level, 16).toUpperCase();
+      if (patch.topic != null) update.topic = toText(patch.topic, 80);
+      if (patch.description != null) update.description = toNullableText(patch.description, 900);
+      if (patch.status != null) update.status = toText(patch.status, 32).toLowerCase();
+      if (patch.sort_order != null) update.sort_order = Math.floor(toNumber(patch.sort_order) ?? 0);
+      return update;
+    },
+  },
 };
 
 const loadServiceSummary = async (
@@ -409,20 +458,353 @@ const loadServiceSummary = async (
     });
   }
 
-  summaryRows.push({
-    service_key: "vocabulary",
-    label: "Vocabulary",
-    total_count: 0,
-    published_count: 0,
-    draft_count: 0,
-    archived_count: 0,
-    latest_updated_at: null,
-    readiness: "service-driven",
-    note:
-      "Vocabulary is fed by learner capture and activation rules rather than a curated authored content table.",
+  return summaryRows;
+};
+
+// ---------------------------------------------------------------------------
+// Content studio: full item read / create / update / duplicate
+// ---------------------------------------------------------------------------
+
+type Scope = { languageId: string; languageCode: string };
+type StudioContext = { sb: any; scope: Scope; productId: string; userId: string };
+
+const validationFailed = (errors: FieldError[]): Response =>
+  json(422, { error: "Some fields need fixing before this can be saved.", errors });
+
+const isUniqueViolation = (error: unknown): boolean =>
+  !!error && typeof error === "object" && String((error as JsonRecord).code ?? "") === "23505";
+
+const describeError = (error: unknown): string =>
+  error && typeof error === "object" ? toText((error as JsonRecord).message, 400) || "unknown error" : String(error ?? "unknown error");
+
+const studioProductId = (products: Record<string, { productId?: string | null }>, key: StudioServiceKey): string =>
+  toText(products[key]?.productId, 64);
+
+const loadParent = async (ctx: StudioContext, key: StudioServiceKey, id: string): Promise<JsonRecord | null> => {
+  const { data, error } = await ctx.sb
+    .from(STUDIO_SKILLS[key].table)
+    .select("*")
+    .eq("id", id)
+    .eq("language_id", ctx.scope.languageId)
+    .maybeSingle();
+  if (error) throw new Error(`Failed to load item: ${error.message}`);
+  return (data as JsonRecord | null) ?? null;
+};
+
+const loadChildren = async (ctx: StudioContext, key: StudioServiceKey, parentId: string): Promise<JsonRecord[]> => {
+  const config = STUDIO_SKILLS[key];
+  if (!config.childTable || !config.childForeignKey || !config.childOrderColumn) return [];
+  const { data, error } = await ctx.sb
+    .from(config.childTable)
+    .select("*")
+    .eq(config.childForeignKey, parentId)
+    .order(config.childOrderColumn, { ascending: true })
+    .order("created_at", { ascending: true });
+  if (error) throw new Error(`Failed to load child rows: ${error.message}`);
+  return Array.isArray(data) ? data as JsonRecord[] : [];
+};
+
+const findRegistryRow = async (ctx: StudioContext, key: StudioServiceKey, parentId: string, slug: string): Promise<JsonRecord | null> => {
+  const config = STUDIO_SKILLS[key];
+  const byRecord = await ctx.sb
+    .from("learning_content_registry_items")
+    .select("*")
+    .eq("source_table", config.table)
+    .eq("source_record_id", parentId)
+    .limit(1)
+    .maybeSingle();
+  if (byRecord.data) return byRecord.data as JsonRecord;
+  if (!slug) return null;
+  const byRef = await ctx.sb
+    .from("learning_content_registry_items")
+    .select("*")
+    .eq("language_id", ctx.scope.languageId)
+    .eq("service_key", key)
+    .eq("content_type", config.contentType)
+    .eq("source_ref", slug)
+    .limit(1)
+    .maybeSingle();
+  return (byRef.data as JsonRecord | null) ?? null;
+};
+
+const loadStudioItem = async (ctx: StudioContext, key: StudioServiceKey, id: string): Promise<JsonRecord | null> => {
+  const parent = await loadParent(ctx, key, id);
+  if (!parent) return null;
+  const children = await loadChildren(ctx, key, id);
+  const registry = await findRegistryRow(ctx, key, id, toText(parent.slug, 160));
+  return {
+    service_key: key,
+    item: parent,
+    children,
+    registry,
+    editor: rowToStudioPayload(key, parent, children),
+  };
+};
+
+/** Is `slug` used by another item of this skill (same scope as the table's unique key)? */
+const slugTaken = async (ctx: StudioContext, key: StudioServiceKey, slug: string, excludeId: string | null): Promise<boolean> => {
+  const config = STUDIO_SKILLS[key];
+  let query = ctx.sb.from(config.table).select("id").eq("language_id", ctx.scope.languageId).eq("slug", slug);
+  if (config.slugScope === "product_language") query = query.eq("product_id", ctx.productId);
+  const { data, error } = await query.limit(2);
+  if (error) throw new Error(`Failed to check slug: ${error.message}`);
+  return (Array.isArray(data) ? data as JsonRecord[] : []).some((row) => String(row.id) !== excludeId);
+};
+
+const slugConflict = (slug: string): Response =>
+  json(409, {
+    error: `The slug "${slug}" is already used by another item.`,
+    errors: [{ field: "slug", message: "This slug is already used by another item. Choose a different one." }],
   });
 
-  return summaryRows;
+/** Creates or updates the item's catalog row (matched by record id, then by slug). */
+const upsertRegistry = async (
+  ctx: StudioContext,
+  key: StudioServiceKey,
+  parentId: string,
+  registry: RegistryDraft,
+): Promise<{ error: string | null }> => {
+  const existing = await findRegistryRow(ctx, key, parentId, registry.source_ref);
+  const row: JsonRecord = {
+    ...registry,
+    product_id: ctx.productId,
+    language_id: ctx.scope.languageId,
+    source_record_id: parentId,
+    metadata: {
+      ...(isObject(existing?.metadata) ? existing!.metadata as JsonRecord : {}),
+      edited_with: "admin-english-content",
+    },
+    updated_by: ctx.userId,
+    updated_at: new Date().toISOString(),
+  };
+  if (existing?.id) {
+    const { error } = await ctx.sb.from("learning_content_registry_items").update(row).eq("id", String(existing.id));
+    return { error: error ? describeError(error) : null };
+  }
+  const { error } = await ctx.sb.from("learning_content_registry_items").insert({ ...row, created_by: ctx.userId });
+  return { error: error ? describeError(error) : null };
+};
+
+const withForeignKey = (key: StudioServiceKey, parentId: string, child: JsonRecord): JsonRecord => ({
+  ...child,
+  [STUDIO_SKILLS[key].childForeignKey!]: parentId,
+});
+
+/** Inserts a new item with its children and catalog row. Undoes the insert if a later write fails. */
+const createStudioItem = async (
+  ctx: StudioContext,
+  key: StudioServiceKey,
+  itemIn: unknown,
+  childrenIn: unknown,
+): Promise<Response> => {
+  const config = STUDIO_SKILLS[key];
+  const result = normalizeStudioItem(key, itemIn, childrenIn, { defaultStatus: "draft" });
+  if (!result.ok) return validationFailed(result.errors);
+  const slug = String(result.parent.slug);
+  if (await slugTaken(ctx, key, slug, null)) return slugConflict(slug);
+
+  const parentRow: JsonRecord = {
+    ...result.parent,
+    product_id: ctx.productId,
+    language_id: ctx.scope.languageId,
+  };
+  if (config.hasCreatedBy) {
+    parentRow.created_by = ctx.userId;
+    parentRow.updated_by = ctx.userId;
+  }
+  const inserted = await ctx.sb.from(config.table).insert(parentRow).select("id").maybeSingle();
+  if (inserted.error || !inserted.data?.id) {
+    if (isUniqueViolation(inserted.error)) return slugConflict(slug);
+    return json(500, { error: "Could not create the item. Nothing was saved.", details: describeError(inserted.error) });
+  }
+  const parentId = String(inserted.data.id);
+  const undo = async () => {
+    // Children cascade with the parent.
+    await ctx.sb.from(config.table).delete().eq("id", parentId);
+  };
+
+  if (config.childTable && result.children.length) {
+    const rows = result.children.map(({ id: _id, ...child }) => withForeignKey(key, parentId, child));
+    const { error } = await ctx.sb.from(config.childTable).insert(rows);
+    if (error) {
+      await undo();
+      return json(500, { error: "Could not save the child rows. Nothing was saved.", details: describeError(error) });
+    }
+  }
+
+  const registry = await upsertRegistry(ctx, key, parentId, buildRegistryRow(key, result.parent, result.children, parentId));
+  if (registry.error) {
+    await undo();
+    return json(500, { error: "Could not add the item to the learner catalog. Nothing was saved.", details: registry.error });
+  }
+
+  return json(201, { ok: true, ...(await loadStudioItem(ctx, key, parentId)) });
+};
+
+/** Puts the children back exactly as they were before a failed save. */
+const restoreChildren = async (ctx: StudioContext, key: StudioServiceKey, parentId: string, snapshot: JsonRecord[]): Promise<boolean> => {
+  const config = STUDIO_SKILLS[key];
+  if (!config.childTable || !config.childForeignKey) return true;
+  const removed = await ctx.sb.from(config.childTable).delete().eq(config.childForeignKey, parentId);
+  if (removed.error) return false;
+  if (!snapshot.length) return true;
+  const { error } = await ctx.sb.from(config.childTable).insert(snapshot);
+  return !error;
+};
+
+/** A value for the unique ordering column that cannot clash with final values while rows are re-ordered. */
+const temporaryOrder = (key: StudioServiceKey, index: number, id: string): JsonRecord => {
+  switch (key) {
+    case "listening":
+      return { segment_index: 100000 + index };
+    case "immersion":
+      return { step_index: 100000 + index };
+    case "grammar":
+      return { sort_order: 100000 + index };
+    case "vocabulary":
+      return { word: `~studio-tmp~${id}`, sort_order: 100000 + index };
+    default:
+      return {};
+  }
+};
+
+const syncChildren = async (
+  ctx: StudioContext,
+  key: StudioServiceKey,
+  parentId: string,
+  existing: JsonRecord[],
+  next: JsonRecord[],
+): Promise<string | null> => {
+  const config = STUDIO_SKILLS[key];
+  if (!config.childTable || !config.childForeignKey) return null;
+  const keptIds = new Set(next.map((child) => String(child.id ?? "")).filter(Boolean));
+  const removedIds = existing.map((row) => String(row.id)).filter((id) => !keptIds.has(id));
+
+  if (removedIds.length) {
+    const { error } = await ctx.sb.from(config.childTable).delete().in("id", removedIds);
+    if (error) return `removing rows: ${describeError(error)}`;
+  }
+
+  const kept = next.filter((child) => child.id);
+  for (const [index, child] of kept.entries()) {
+    const temp = temporaryOrder(key, index, String(child.id));
+    if (!Object.keys(temp).length) continue;
+    const { error } = await ctx.sb.from(config.childTable).update(temp).eq("id", String(child.id));
+    if (error) return `re-ordering rows: ${describeError(error)}`;
+  }
+  const now = new Date().toISOString();
+  for (const child of kept) {
+    const { id, ...fields } = child;
+    const { error } = await ctx.sb
+      .from(config.childTable)
+      .update({ ...fields, updated_at: now })
+      .eq("id", String(id))
+      .eq(config.childForeignKey, parentId);
+    if (error) return `updating a row: ${describeError(error)}`;
+  }
+
+  const fresh = next.filter((child) => !child.id).map((child) => withForeignKey(key, parentId, child));
+  if (fresh.length) {
+    const { error } = await ctx.sb.from(config.childTable).insert(fresh);
+    if (error) return `adding rows: ${describeError(error)}`;
+  }
+  return null;
+};
+
+const updateStudioItem = async (
+  ctx: StudioContext,
+  key: StudioServiceKey,
+  id: string,
+  itemIn: unknown,
+  childrenIn: unknown,
+): Promise<Response> => {
+  const config = STUDIO_SKILLS[key];
+  const existing = await loadParent(ctx, key, id);
+  if (!existing) return json(404, { error: "Item not found" });
+  const existingChildren = await loadChildren(ctx, key, id);
+
+  const result = normalizeStudioItem(key, itemIn, childrenIn, { defaultStatus: String(existing.status ?? "draft"), id });
+  if (!result.ok) return validationFailed(result.errors);
+
+  const ownIds = new Set(existingChildren.map((row) => String(row.id)));
+  const foreign: FieldError[] = [];
+  result.children.forEach((child, index) => {
+    if (child.id && !ownIds.has(String(child.id))) {
+      foreign.push({ field: `children[${index}].id`, message: "This row belongs to another item; remove its id to add it as new." });
+    }
+  });
+  if (foreign.length) return validationFailed(foreign);
+
+  const slug = String(result.parent.slug);
+  if (slug !== String(existing.slug) && await slugTaken(ctx, key, slug, id)) return slugConflict(slug);
+
+  // Children first: if they fail, the item is untouched and the old children are restored.
+  const childError = await syncChildren(ctx, key, id, existingChildren, result.children);
+  if (childError) {
+    const restored = await restoreChildren(ctx, key, id, existingChildren);
+    return json(500, {
+      error: restored
+        ? "Could not save the child rows; the item was left unchanged."
+        : "Could not save the child rows, and restoring the previous rows also failed. Reload and check this item.",
+      details: childError,
+    });
+  }
+
+  const update: JsonRecord = {
+    ...result.parent,
+    metadata: mergeMetadata(existing.metadata, result.parent.metadata as JsonRecord, config.managedMetadataKeys, result.metadataSource),
+    updated_at: new Date().toISOString(),
+  };
+  if (config.hasCreatedBy) update.updated_by = ctx.userId;
+  const saved = await ctx.sb.from(config.table).update(update).eq("id", id).select("id").maybeSingle();
+  if (saved.error || !saved.data?.id) {
+    const restored = await restoreChildren(ctx, key, id, existingChildren);
+    if (isUniqueViolation(saved.error)) return slugConflict(slug);
+    return json(500, {
+      error: restored
+        ? "Could not save the item; nothing was changed."
+        : "Could not save the item, and restoring its previous child rows failed. Reload and check this item.",
+      details: describeError(saved.error),
+    });
+  }
+
+  const registry = await upsertRegistry(ctx, key, id, buildRegistryRow(key, result.parent, result.children, id));
+  const payload = await loadStudioItem(ctx, key, id);
+  if (registry.error) {
+    return json(500, {
+      error: "The item was saved, but the learner catalog entry could not be updated. Save again to retry.",
+      details: registry.error,
+      ...payload,
+    });
+  }
+  return json(200, { ok: true, ...payload });
+};
+
+const duplicateStudioItem = async (ctx: StudioContext, key: StudioServiceKey, id: string): Promise<Response> => {
+  const config = STUDIO_SKILLS[key];
+  const existing = await loadParent(ctx, key, id);
+  if (!existing) return json(404, { error: "Item not found" });
+  const children = await loadChildren(ctx, key, id);
+  const baseSlug = toText(existing.slug, 160);
+
+  let query = ctx.sb
+    .from(config.table)
+    .select("slug")
+    .eq("language_id", ctx.scope.languageId)
+    .like("slug", `${baseSlug.slice(0, 110)}-copy%`);
+  if (config.slugScope === "product_language") query = query.eq("product_id", ctx.productId);
+  const { data: taken, error } = await query.limit(1000);
+  if (error) return json(500, { error: "Could not check existing copies", details: describeError(error) });
+
+  const editor = rowToStudioPayload(key, existing, children);
+  const item = {
+    ...editor.item,
+    slug: copySlug(baseSlug, (Array.isArray(taken) ? taken as JsonRecord[] : []).map((row) => String(row.slug))),
+    title: `${toText(existing.title, 200)} (copy)`,
+    status: "draft",
+  };
+  const childCopies = editor.children.map(({ id: _id, ...child }) => child);
+  return await createStudioItem(ctx, key, item, childCopies);
 };
 
 serve(async (req) => {
@@ -431,13 +813,14 @@ serve(async (req) => {
   try {
     const url = new URL(req.url);
     const route = extractRoute(url, routeMarker);
-    const body = req.method === "PATCH" ? await parseBody(req) : {};
+    const isWrite = req.method === "PATCH" || req.method === "POST" || req.method === "PUT";
+    const body = isWrite ? await parseBody(req) : {};
     const serviceKey = toText(url.searchParams.get("service_key") ?? body.service_key, 32).toLowerCase() as ServiceKey;
 
     const requiredPermission =
-      req.method === "PATCH"
+      isWrite
         ? "admin.products.manage"
-        : route === "/content"
+        : route === "/content" || route.startsWith("/content/")
         ? "admin.products.manage"
         : "admin.analytics.view";
 
@@ -468,19 +851,36 @@ serve(async (req) => {
       });
     }
 
+    if (route === "/content/item" || route === "/content/item/duplicate") {
+      if (!isStudioServiceKey(serviceKey)) return json(422, { error: "A valid service_key is required" });
+      const productId = studioProductId(products, serviceKey);
+      if (!productId) return json(500, { error: `The English ${serviceKey} product is not configured` });
+      const ctx: StudioContext = { sb, scope, productId, userId: authz.context.userId };
+      const id = toText(url.searchParams.get("id") ?? body.id, 64);
+
+      if (req.method === "GET" && route === "/content/item") {
+        if (!id) return json(422, { error: "id is required" });
+        const payload = await loadStudioItem(ctx, serviceKey, id);
+        return payload ? json(200, payload) : json(404, { error: "Item not found" });
+      }
+      if (req.method === "POST" && route === "/content/item") {
+        return await createStudioItem(ctx, serviceKey, body.item, body.children);
+      }
+      if (req.method === "PUT" && route === "/content/item") {
+        if (!id) return json(422, { error: "id is required" });
+        return await updateStudioItem(ctx, serviceKey, id, body.item, body.children);
+      }
+      if (req.method === "POST" && route === "/content/item/duplicate") {
+        if (!id) return json(422, { error: "id is required" });
+        return await duplicateStudioItem(ctx, serviceKey, id);
+      }
+      return json(405, { error: "Method not allowed" });
+    }
+
     if (req.method === "GET" && route === "/content") {
       if (!serviceKey) return json(422, { error: "service_key is required" });
-      if (serviceKey === "vocabulary") {
-        return json(200, {
-          service_key: "vocabulary",
-          label: "Vocabulary",
-          items: [],
-          note:
-            "Vocabulary content is learner-captured and activation-driven. Use rules and service prompts to shape the experience.",
-        });
-      }
 
-      const config = SERVICE_CONFIGS[serviceKey as Exclude<ServiceKey, "vocabulary">];
+      const config = SERVICE_CONFIGS[serviceKey];
       if (!config) return json(404, { error: "Unknown service_key" });
       const status = toText(url.searchParams.get("status"), 32).toLowerCase();
       const limit = clip(Math.floor(toNumber(url.searchParams.get("limit")) ?? 120), 1, 300);
@@ -506,14 +906,15 @@ serve(async (req) => {
     }
 
     if (req.method === "PATCH" && route === "/content") {
-      if (!serviceKey || serviceKey === "vocabulary") return json(422, { error: "Editable service_key is required" });
-      const config = SERVICE_CONFIGS[serviceKey as Exclude<ServiceKey, "vocabulary">];
+      if (!serviceKey) return json(422, { error: "Editable service_key is required" });
+      const config = SERVICE_CONFIGS[serviceKey];
       if (!config) return json(404, { error: "Unknown service_key" });
       const id = toText(body.id, 120);
       if (!id) return json(422, { error: "id is required" });
       const patch = isObject(body.patch) ? body.patch : {};
       const update = config.buildUpdate(patch);
       if (Object.keys(update).length === 0) return json(422, { error: "No supported fields were provided in patch" });
+      if (isStudioServiceKey(serviceKey) && STUDIO_SKILLS[serviceKey].hasCreatedBy) update.updated_by = authz.context.userId;
 
       const { data, error } = await sb
         .from(config.table)

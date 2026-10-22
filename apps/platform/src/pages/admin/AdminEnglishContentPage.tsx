@@ -1,14 +1,27 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import {
+  AdminEnglishStudioError,
   adminEnglishContentList,
   adminEnglishContentSummary,
   adminEnglishContentUpdate,
+  adminEnglishStudioDuplicate,
+  adminEnglishStudioGet,
   type AdminEnglishContentItem,
   type AdminEnglishContentSummaryRow,
+  type AdminEnglishStudioItem,
   type EnglishPresentationMeta,
 } from '../../lib/platformClient';
+import { AdminEnglishStudioEditor, newStudioDraft } from './AdminEnglishStudioEditor';
 import { EnglishAdminSubnav, toFriendlyAdminError, useAdminAccessToken } from './AdminEnglishUtils';
+
+/** Server message for studio failures, except auth/rate-limit errors which get the friendly text. */
+const studioErrorText = (err: unknown, fallback: string): string =>
+  err instanceof AdminEnglishStudioError && err.serverMessage && ![401, 403, 429].includes(err.status)
+    ? err.serverMessage
+    : toFriendlyAdminError(err, fallback);
+
+type StudioState = { mode: 'new'; key: number } | { mode: 'edit'; key: number; data: AdminEnglishStudioItem } | null;
 
 const SERVICES = [
   'reading',
@@ -94,11 +107,55 @@ export const AdminEnglishContentPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [studio, setStudio] = useState<StudioState>(null);
+  const [studioBusy, setStudioBusy] = useState(false);
+  const [reloadToken, setReloadToken] = useState(0);
+  const preferredIdRef = useRef<string | null>(null);
 
   const selectedItem = useMemo(
     () => items.find((item) => item.id === selectedId) ?? items[0] ?? null,
     [items, selectedId],
   );
+
+  /** Re-reads the list and summary, keeping `preferId` selected. */
+  const reloadList = (preferId?: string) => {
+    preferredIdRef.current = preferId ?? selectedId ?? null;
+    setReloadToken((value) => value + 1);
+  };
+
+  const openEditor = async (id: string) => {
+    setStudioBusy(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const data = await withFreshToken((token) => adminEnglishStudioGet(token, serviceKey, id));
+      setStudio({ mode: 'edit', key: Date.now(), data });
+    } catch (err) {
+      setError(studioErrorText(err, 'Could not open this item.'));
+    } finally {
+      setStudioBusy(false);
+    }
+  };
+
+  const duplicateItem = async (id: string) => {
+    setStudioBusy(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const data = await withFreshToken((token) => adminEnglishStudioDuplicate(token, { service_key: serviceKey, id }));
+      reloadList(data.item.id);
+      setStudio({ mode: 'edit', key: Date.now(), data });
+      setSuccess(`Created draft copy "${data.item.title}".`);
+    } catch (err) {
+      const details =
+        err instanceof AdminEnglishStudioError && err.fieldErrors.length
+          ? ` ${err.fieldErrors.map((entry) => `${entry.field}: ${entry.message}`).join(' ')}`
+          : '';
+      setError(`${studioErrorText(err, 'Could not duplicate this item.')}${details}`);
+    } finally {
+      setStudioBusy(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -113,21 +170,22 @@ export const AdminEnglishContentPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [withFreshToken]);
+  }, [withFreshToken, reloadToken]);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    setError(null);
-    setSuccess(null);
-    void withFreshToken((token) => adminEnglishContentList(token, { service_key: serviceKey, limit: 200 }))
+    void withFreshToken((token) => adminEnglishContentList(token, { service_key: serviceKey, limit: 300 }))
       .then((payload) => {
         if (cancelled) return;
-        setItems(payload.items ?? []);
+        const list = payload.items ?? [];
+        setItems(list);
         setNote(payload.note ?? null);
-        const first = payload.items?.[0] ?? null;
-        setSelectedId(first?.id ?? '');
-        setDraft(draftFromItem(first));
+        const preferred = preferredIdRef.current;
+        preferredIdRef.current = null;
+        const chosen = list.find((entry) => entry.id === preferred) ?? list[0] ?? null;
+        setSelectedId(chosen?.id ?? '');
+        setDraft(draftFromItem(chosen));
       })
       .catch((err) => {
         if (cancelled) return;
@@ -143,7 +201,7 @@ export const AdminEnglishContentPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [serviceKey, withFreshToken]);
+  }, [serviceKey, withFreshToken, reloadToken]);
 
   useEffect(() => {
     setDraft(draftFromItem(selectedItem));
@@ -203,7 +261,8 @@ export const AdminEnglishContentPage: React.FC = () => {
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">Content authoring</h1>
                 <p className="mt-2 max-w-3xl text-sm leading-6 text-gray-600">
-                  Edit premium presentation metadata, review readiness, and keep each service’s signature atmosphere content-driven.
+                  Create and edit lessons for every English skill: texts, questions, practice items, steps and word sets. Changes are
+                  checked so learners can always be graded, and published items appear in the learner catalog.
                 </p>
               </div>
             </div>
@@ -222,7 +281,12 @@ export const AdminEnglishContentPage: React.FC = () => {
                 <button
                   key={service}
                   type="button"
-                  onClick={() => setServiceKey(service)}
+                  onClick={() => {
+                    setServiceKey(service);
+                    setStudio(null);
+                    setError(null);
+                    setSuccess(null);
+                  }}
                   className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
                     serviceKey === service
                       ? 'border-orange-300 bg-orange-50 text-orange-900'
@@ -245,14 +309,42 @@ export const AdminEnglishContentPage: React.FC = () => {
           ) : null}
         </section>
 
-        <section className="grid gap-4 xl:grid-cols-[0.92fr_1.08fr]">
+        {studio ? (
+          <AdminEnglishStudioEditor
+            key={studio.key}
+            serviceKey={serviceKey}
+            initial={studio.mode === 'edit' ? studio.data.editor : newStudioDraft(serviceKey)}
+            existing={studio.mode === 'edit' ? studio.data : null}
+            withFreshToken={withFreshToken}
+            onSaved={(saved) => {
+              setStudio((prev) => (prev ? { mode: 'edit', key: prev.key, data: saved } : prev));
+              reloadList(saved.item.id);
+            }}
+            onClose={() => setStudio(null)}
+          />
+        ) : null}
+
+        <section className={`grid gap-4 xl:grid-cols-[0.92fr_1.08fr] ${studio ? 'hidden' : ''}`}>
           <div className="rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Catalog</h2>
-                <p className="mt-1 text-sm text-gray-600">Choose a service item to edit its premium presentation layer.</p>
+                <p className="mt-1 text-sm text-gray-600">Choose an item to edit, or start a new one.</p>
               </div>
-              {loading ? <span className="text-sm text-gray-500">Loading...</span> : null}
+              <div className="flex items-center gap-3">
+                {loading ? <span className="text-sm text-gray-500">Loading...</span> : null}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setError(null);
+                    setSuccess(null);
+                    setStudio({ mode: 'new', key: Date.now() });
+                  }}
+                  className="rounded-full bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600"
+                >
+                  New item
+                </button>
+              </div>
             </div>
             {note ? (
               <div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm leading-6 text-gray-600">{note}</div>
@@ -297,18 +389,38 @@ export const AdminEnglishContentPage: React.FC = () => {
           <div className="rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Presentation editor</h2>
-                <p className="mt-1 text-sm text-gray-600">Author the art direction and learner-facing tone without changing core backend logic.</p>
+                <h2 className="text-xl font-bold text-gray-900">Quick settings</h2>
+                <p className="mt-1 text-sm text-gray-600">
+                  Title, status, order and presentation. Use Edit content for the lesson itself.
+                </p>
               </div>
               {selectedItem ? (
-                <button
-                  type="button"
-                  onClick={() => void handleSave()}
-                  disabled={saving}
-                  className="rounded-full bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white disabled:bg-gray-300"
-                >
-                  {saving ? 'Saving...' : 'Save changes'}
-                </button>
+                <div className="flex flex-wrap justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void openEditor(selectedItem.id)}
+                    disabled={studioBusy}
+                    className="rounded-full border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-800 disabled:opacity-50"
+                  >
+                    Edit content
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void duplicateItem(selectedItem.id)}
+                    disabled={studioBusy}
+                    className="rounded-full border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-800 disabled:opacity-50"
+                  >
+                    Duplicate
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void handleSave()}
+                    disabled={saving}
+                    className="rounded-full bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white disabled:bg-gray-300"
+                  >
+                    {saving ? 'Saving...' : 'Save changes'}
+                  </button>
+                </div>
               ) : null}
             </div>
 
@@ -351,6 +463,8 @@ export const AdminEnglishContentPage: React.FC = () => {
                   />
                 </label>
 
+                {serviceKey !== 'vocabulary' ? (
+                <>
                 <div className="grid gap-4 md:grid-cols-2">
                   <label className="block text-sm font-medium text-gray-700">
                     Scene label
@@ -450,6 +564,8 @@ export const AdminEnglishContentPage: React.FC = () => {
                     className="mt-2 w-full rounded-2xl border border-gray-200 px-4 py-3"
                   />
                 </label>
+                </>
+                ) : null}
 
                 {selectedItem.notes && selectedItem.notes.length > 0 ? (
                   <div className="rounded-3xl border border-gray-200 bg-gray-50 p-4">
