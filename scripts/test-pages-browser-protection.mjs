@@ -6,7 +6,7 @@ const require = createRequire(new URL('../apps/platform/package.json', import.me
 const {chromium} = require('playwright');
 const deployment = readFileSync(new URL('../.github/workflows/deploy-pages.yml', import.meta.url), 'utf8');
 const workspaces = [...deployment.matchAll(/^\s+workspace: (apps\/\S+)\s*$/gm)].map(m => m[1]);
-assert.equal(workspaces.length, 13);
+assert.equal(workspaces.length, 15);
 const policies = new Map(workspaces.map(workspace => {
   const source = readFileSync(new URL('../'+workspace+'/public/_headers', import.meta.url), 'utf8').replaceAll('\r\n', '\n');
   const block = source.match(/^\/\*\n((?:[ \t]+[^\n]*\n?)+)/m)?.[1];

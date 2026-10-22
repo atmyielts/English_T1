@@ -87,7 +87,7 @@ test('deployment plan is carried between runs and manual live smoke remains exec
 test('parallel CI builds each deployed frontend exactly once', () => {
   const expected = [...pages.matchAll(/^\s+workspace: (apps\/\S+)\s*$/gm)].map(match => match[1]).sort();
   const actual = [...job('build').matchAll(/^\s+workspaces: (.+)$/gm)].flatMap(match => match[1].trim().split(/\s+/)).sort();
-  assert.equal(expected.length, 13);
+  assert.equal(expected.length, 15);
   assert.deepEqual(actual, expected);
   assert.match(job('build'), /fail-fast: false/);
   assert.match(job('build'), /max-parallel: 3/);
