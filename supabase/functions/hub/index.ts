@@ -54,6 +54,7 @@ import { checkReviewAnswer, parseReviewPayload, publicReviewPayload, RETIRED_BOX
 import { topicFromSubskill } from "../_shared/english-mistakes.ts";
 import { mergeReminderSettings, readReminderSettings, REMINDER_HOURS } from "../_shared/english-reminders.ts";
 import { isReminderWorker, runReminderCycle } from "./reminders.ts";
+import { appendLevelHistory, levelCheckStatus, perSkillLevels, readLevelHistory } from "../_shared/english-levels.ts";
 
 const routeMarker = "/hub";
 
@@ -509,6 +510,8 @@ serve(async (req) => {
         const days = dailyCounts(attempts, date, 126);
         return json(200, {
           ok: true,
+          level_history: readLevelHistory(meta),
+          level_check: levelCheckStatus(meta),
           streak: { current: currentStreak(attempts, date), longest: longestStreak(attempts) },
           totals: {
             last_7_days: days.slice(-7).reduce((sum, day) => sum + day.count, 0),
@@ -700,6 +703,7 @@ serve(async (req) => {
         level_status: levelStatuses,
         daily_minutes: dailyMinutes,
         placement_done: Boolean(placement?.completed_at),
+        level_check: levelCheckStatus(meta),
         available_skills: availableSkills,
         free: allowance ? { left: allowance.free_left, per_day: allowance.free_per_day } : null,
         tasks: plan.tasks,
@@ -830,10 +834,17 @@ serve(async (req) => {
         return json(409, { error: "Keep practising at your level first", code: "not_ready" });
       }
 
-      perSkill[skill] = { level: next, moved_up_from: current, moved_up_at: new Date().toISOString() };
+      const movedAt = new Date().toISOString();
+      perSkill[skill] = { level: next, moved_up_from: current, moved_up_at: movedAt };
       placement.per_skill = perSkill;
+      const level_history = appendLevelHistory(meta, {
+        at: movedAt,
+        source: "level_up",
+        overall: isTodayCefr(overall) ? overall : null,
+        per_skill: perSkillLevels({ per_skill: perSkill }),
+      });
       const { error } = await sb.from("learner_language_goals")
-        .update({ metadata: { ...meta, placement } })
+        .update({ metadata: { ...meta, placement, level_history } })
         .eq("user_id", auth.userId)
         .eq("language_id", scope.languageId);
       if (error) throw new Error(`Failed to save level: ${error.message}`);
@@ -977,14 +988,29 @@ serve(async (req) => {
 
       if (placementIn) {
         const overall = toText(placementIn.overall_level, 8).toUpperCase();
-        const perSkill = placementIn.per_skill && typeof placementIn.per_skill === "object" && !Array.isArray(placementIn.per_skill)
-          ? placementIn.per_skill
+        const isCheck = body.source === "check";
+        const tested = placementIn.per_skill && typeof placementIn.per_skill === "object" && !Array.isArray(placementIn.per_skill)
+          ? placementIn.per_skill as Record<string, unknown>
           : {};
+        // A monthly check re-measures the skills it tested and keeps the rest.
+        const previousPerSkill = (meta.placement && typeof meta.placement === "object"
+          ? (meta.placement as Record<string, unknown>).per_skill
+          : null) as Record<string, unknown> | null;
+        const perSkill = isCheck && previousPerSkill && typeof previousPerSkill === "object"
+          ? { ...previousPerSkill, ...tested }
+          : tested;
         if (isCefr(overall)) row.current_cefr_estimate = overall;
+        const completedAt = new Date().toISOString();
+        meta.level_history = appendLevelHistory(meta, {
+          at: completedAt,
+          source: isCheck ? "check" : "placement",
+          overall: isCefr(overall) ? overall as Cefr : null,
+          per_skill: perSkillLevels({ per_skill: perSkill }),
+        });
         meta.placement = {
           overall_level: isCefr(overall) ? overall : null,
           per_skill: perSkill,
-          completed_at: new Date().toISOString(),
+          completed_at: completedAt,
         };
         row.metadata = meta;
       }

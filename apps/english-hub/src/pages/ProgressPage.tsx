@@ -6,6 +6,7 @@ import { getHistory, getProgress, moveUpLevel, type ProgressResponse, type Skill
 import { nextLevel, SKILLS, type SkillKey } from '../lib/skills';
 import { useResource } from '../lib/useResource';
 import { CanDoPanel } from './CanDoPanel';
+import { LevelJourneyPanel } from './LevelJourneyPanel';
 import { EmptyState, ErrorState, LevelBadge, Loading, PageHeader, Panel, ProgressBar, SkillDot, Stat, Tag } from '../ui/kit';
 
 const Heatmap = ({ days }: { days: ProgressResponse['days'] }) => {
@@ -160,10 +161,7 @@ export const ProgressPage = () => {
 
       {history.data ? <CanDoPanel level={placement?.level ?? null} history={history.data.attempts} /> : null}
 
-      <Panel title={t('progress.retake.title')}>
-        <p>{t('progress.retake.body')}</p>
-        <div className="en-actions"><Link className="en-button-quiet" to="/settings">{t('progress.retake.cta')}</Link></div>
-      </Panel>
+      {data ? <LevelJourneyPanel history={data.level_history ?? []} check={data.level_check ?? null} /> : null}
     </>
   );
 };

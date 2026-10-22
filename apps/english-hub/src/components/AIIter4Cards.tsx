@@ -10,76 +10,9 @@ import {
   type DictationGenerateResponse,
 } from '../lib/ecosystemInsightsClient';
 import { canSpeak, speak, stopSpeaking } from '../lib/speech';
+import { useT } from '../i18n';
 import { FeedbackList, Segmented, Tag } from '../ui/kit';
-import { LevelPicker, SHARED_COPY, ToolError, skillHref, useLearnerLevel, useToolRequest } from './aiToolShared';
-
-const COPY = {
-  dictation: {
-    intro: 'Listen to a short text and type what you hear.',
-    levelLabel: 'Level',
-    topicLabel: 'Topic (optional)',
-    topicPlaceholder: 'For example: shopping at the market',
-    speedLabel: 'Speed',
-    speedNormal: 'Normal',
-    speedSlow: 'Slow',
-    get: 'Get a text',
-    next: 'New text',
-    busy: 'Getting a text…',
-    libraryNote: 'This text is from our practice library.',
-    play: 'Play',
-    stop: 'Stop',
-    noSpeech: "Your browser can't read text aloud. Try Chrome, Edge or Safari.",
-    answerLabel: 'What you heard',
-    answerPlaceholder: 'Type what you hear. You can listen again.',
-    check: 'Check my answer',
-    score: (matched: number, total: number) => `${matched} of ${total} words correct`,
-    missed: 'Words you missed',
-    allCorrect: 'Every word is correct. Great listening!',
-    tricky: 'Listen carefully for',
-    questionHeading: 'Did you understand?',
-    questionLabel: 'Your answer',
-    checkAnswer: 'Check',
-    right: 'Correct!',
-    wrong: (answer: string) => `Not quite. The answer is: ${answer}`,
-    showText: 'Show the text',
-    hideText: 'Hide the text',
-  },
-  challenge: {
-    intro: 'Get five short tasks on one theme for today.',
-    minutesLabel: 'Time you have today',
-    minutes: (n: number) => `${n} min`,
-    submit: 'Plan my tasks',
-    again: 'New tasks',
-    busy: 'Planning…',
-    todayHint: 'Your Today page always has a plan for you.',
-    todayLink: 'Go to Today',
-    progress: (done: number, total: number) => `${done} of ${total} done`,
-    about: (n: number) => `about ${n} min`,
-    open: (skill: string) => `Open ${skill}`,
-    done: 'Done',
-  },
-  culture: {
-    intro: 'Paste an English text. Learn about culture, tone, and British or American words in it.',
-    label: 'English text',
-    placeholder: 'Paste a paragraph from an article, a story or a dialogue…',
-    submit: 'Explain the text',
-    busy: 'Reading…',
-    tooShort: 'Please paste a longer text (at least 30 characters).',
-    references: 'Culture',
-    register: 'Formal or informal?',
-    regional: 'British and American English',
-    tone: 'Watch the tone',
-    none: "We didn't find special notes for this text.",
-  },
-  skills: {
-    reading: 'Reading',
-    writing: 'Writing',
-    listening: 'Listening',
-    speaking: 'Speaking',
-    grammar: 'Grammar',
-    vocabulary: 'Vocabulary',
-  } as Record<string, string>,
-};
+import { LevelPicker, ToolError, optionalLabel, skillHref, useLearnerLevel, useToolRequest } from './aiToolShared';
 
 const normalize = (s: string) => s.toLowerCase().replace(/[’']/g, "'").replace(/[^a-z0-9'\s-]/g, ' ').split(/[\s-]+/).filter(Boolean);
 
@@ -113,6 +46,7 @@ const answerMatches = (expected: string, given: string): boolean => {
 // === Dictation ===
 
 export const DictationDrillCard = ({ accessToken }: { accessToken?: string | null }) => {
+  const t = useT();
   const learnerLevel = useLearnerLevel();
   const [level, setLevel] = useState<CefrLevel>(learnerLevel);
   const [topic, setTopic] = useState('');
@@ -144,15 +78,15 @@ export const DictationDrillCard = ({ accessToken }: { accessToken?: string | nul
 
   return (
     <div className="en-stack">
-      <p className="hint">{COPY.dictation.intro}</p>
+      <p className="hint">{t('ai.dictation.intro')}</p>
       <form onSubmit={getText}>
-        <LevelPicker label={COPY.dictation.levelLabel} value={level} onChange={setLevel} />
+        <LevelPicker label={t('ai.dictation.levelLabel')} value={level} onChange={setLevel} />
         <label className="en-stack" htmlFor="dictation-topic" style={{ gap: '0.35rem' }}>
-          {COPY.dictation.topicLabel}
-          <input id="dictation-topic" type="text" value={topic} maxLength={120} onChange={(e) => setTopic(e.target.value)} placeholder={COPY.dictation.topicPlaceholder} />
+          {t('ai.dictation.topicLabel')}
+          <input id="dictation-topic" type="text" value={topic} maxLength={120} onChange={(e) => setTopic(e.target.value)} placeholder={t('ai.dictation.topicPlaceholder')} />
         </label>
         <div className="en-actions">
-          <button type="submit" disabled={busy}>{busy ? COPY.dictation.busy : data ? COPY.dictation.next : COPY.dictation.get}</button>
+          <button type="submit" disabled={busy}>{busy ? t('ai.dictation.busy') : data ? t('ai.dictation.next') : t('ai.dictation.get')}</button>
         </div>
       </form>
 
@@ -160,54 +94,54 @@ export const DictationDrillCard = ({ accessToken }: { accessToken?: string | nul
         <ToolError message={error} />
         {data?.text ? (
           <>
-            {data.fallback && topic.trim() ? <p className="hint">{COPY.dictation.libraryNote}</p> : null}
+            {data.fallback && topic.trim() ? <p className="hint">{t('ai.dictation.libraryNote')}</p> : null}
             {speechOk ? (
               <div className="en-row">
-                <button type="button" onClick={() => void speak(data.text, { rate: slow === 'slow' ? 0.8 : 1 })}>{COPY.dictation.play}</button>
-                <button type="button" className="quiet" onClick={stopSpeaking}>{COPY.dictation.stop}</button>
+                <button type="button" onClick={() => void speak(data.text, { rate: slow === 'slow' ? 0.8 : 1 })}>{t('ai.dictation.play')}</button>
+                <button type="button" className="quiet" onClick={stopSpeaking}>{t('ai.dictation.stop')}</button>
                 <Segmented
-                  label={COPY.dictation.speedLabel}
+                  label={t('ai.dictation.speedLabel')}
                   value={slow}
                   onChange={setSlow}
-                  options={[{ value: 'normal', label: COPY.dictation.speedNormal }, { value: 'slow', label: COPY.dictation.speedSlow }]}
+                  options={[{ value: 'normal', label: t('ai.dictation.speedNormal') }, { value: 'slow', label: t('ai.dictation.speedSlow') }]}
                 />
               </div>
             ) : (
-              <p className="en-explain">{COPY.dictation.noSpeech}</p>
+              <p className="en-explain">{t('ai.dictation.noSpeech')}</p>
             )}
 
             <label className="en-stack" htmlFor="dictation-answer" style={{ gap: '0.35rem' }}>
-              {COPY.dictation.answerLabel}
+              {t('ai.dictation.answerLabel')}
               <textarea
                 id="dictation-answer"
                 value={typed}
                 onChange={(e) => { setTyped(e.target.value); setChecked(false); }}
-                placeholder={COPY.dictation.answerPlaceholder}
+                placeholder={t('ai.dictation.answerPlaceholder')}
                 rows={3}
               />
             </label>
             <div className="en-actions">
-              <button type="button" disabled={!typed.trim()} onClick={() => setChecked(true)}>{COPY.dictation.check}</button>
+              <button type="button" disabled={!typed.trim()} onClick={() => setChecked(true)}>{t('ai.dictation.check')}</button>
               <button type="button" className="quiet" onClick={() => setShowText((v) => !v)} aria-expanded={showText}>
-                {showText ? COPY.dictation.hideText : COPY.dictation.showText}
+                {showText ? t('ai.dictation.hideText') : t('ai.dictation.showText')}
               </button>
             </div>
 
             {score ? (
               score.missed.length ? (
                 <div className="en-feedback is-fix">
-                  <h3>{COPY.dictation.score(score.matched, score.total)}</h3>
-                  <p className="hint">{COPY.dictation.missed}:</p>
+                  <h3>{t('ai.dictation.score', { matched: score.matched, total: score.total })}</h3>
+                  <p className="hint">{t('ai.dictation.missed')}:</p>
                   <div className="en-row">{score.missed.map((w) => <Tag key={w}>{w}</Tag>)}</div>
                 </div>
               ) : (
-                <p className="en-notice">{COPY.dictation.allCorrect}</p>
+                <p className="en-notice">{t('ai.dictation.allCorrect')}</p>
               )
             ) : null}
 
             {score && data.tricky_tokens.length ? (
               <div className="en-row">
-                <span className="hint">{COPY.dictation.tricky}:</span>
+                <span className="hint">{t('ai.dictation.tricky')}:</span>
                 {data.tricky_tokens.map((w, i) => <Tag key={`${w}-${i}`}>{w}</Tag>)}
               </div>
             ) : null}
@@ -216,7 +150,7 @@ export const DictationDrillCard = ({ accessToken }: { accessToken?: string | nul
 
             {data.comprehension_question ? (
               <div className="en-question">
-                <h3>{COPY.dictation.questionHeading}</h3>
+                <h3>{t('ai.dictation.questionHeading')}</h3>
                 <p className="en-question-prompt">{data.comprehension_question}</p>
                 <form
                   onSubmit={(e) => {
@@ -225,15 +159,15 @@ export const DictationDrillCard = ({ accessToken }: { accessToken?: string | nul
                   }}
                 >
                   <label className="en-stack" htmlFor="dictation-question" style={{ gap: '0.35rem' }}>
-                    {COPY.dictation.questionLabel}
+                    {t('ai.dictation.questionLabel')}
                     <input id="dictation-question" type="text" value={answer} onChange={(e) => { setAnswer(e.target.value); setAnswerResult(null); }} />
                   </label>
                   <div className="en-actions">
-                    <button type="submit" className="quiet" disabled={!answer.trim()}>{COPY.dictation.checkAnswer}</button>
+                    <button type="submit" className="quiet" disabled={!answer.trim()}>{t('ai.dictation.checkAnswer')}</button>
                   </div>
                 </form>
-                {answerResult === 'right' ? <p className="en-notice">{COPY.dictation.right}</p> : null}
-                {answerResult === 'wrong' ? <p className="en-explain">{COPY.dictation.wrong(data.comprehension_answer)}</p> : null}
+                {answerResult === 'right' ? <p className="en-notice">{t('ai.dictation.right')}</p> : null}
+                {answerResult === 'wrong' ? <p className="en-explain">{t('ai.dictation.wrong', { answer: data.comprehension_answer })}</p> : null}
               </div>
             ) : null}
           </>
@@ -248,6 +182,7 @@ export const DictationDrillCard = ({ accessToken }: { accessToken?: string | nul
 const MINUTE_OPTIONS = ['15', '30', '45', '60'] as const;
 
 export const DailyChallengeCard = ({ accessToken }: { accessToken?: string | null }) => {
+  const t = useT();
   const [minutes, setMinutes] = useState<(typeof MINUTE_OPTIONS)[number]>('30');
   const [done, setDone] = useState<Record<number, boolean>>({});
   const { data, busy, error, run } = useToolRequest<DailyChallengeResponse>();
@@ -265,19 +200,19 @@ export const DailyChallengeCard = ({ accessToken }: { accessToken?: string | nul
 
   return (
     <div className="en-stack">
-      <p className="hint">{COPY.challenge.intro}</p>
+      <p className="hint">{t('ai.challenge.intro')}</p>
       <form onSubmit={submit}>
         <div className="en-row">
-          <span className="hint" aria-hidden="true">{COPY.challenge.minutesLabel}</span>
+          <span className="hint" aria-hidden="true">{t('ai.challenge.minutesLabel')}</span>
           <Segmented
-            label={COPY.challenge.minutesLabel}
+            label={t('ai.challenge.minutesLabel')}
             value={minutes}
             onChange={setMinutes}
-            options={MINUTE_OPTIONS.map((m) => ({ value: m, label: COPY.challenge.minutes(Number(m)) }))}
+            options={MINUTE_OPTIONS.map((m) => ({ value: m, label: t('ai.challenge.minutes', { count: Number(m) }) }))}
           />
         </div>
         <div className="en-actions">
-          <button type="submit" disabled={busy}>{busy ? COPY.challenge.busy : data ? COPY.challenge.again : COPY.challenge.submit}</button>
+          <button type="submit" disabled={busy}>{busy ? t('ai.challenge.busy') : data ? t('ai.challenge.again') : t('ai.challenge.submit')}</button>
         </div>
       </form>
 
@@ -285,8 +220,8 @@ export const DailyChallengeCard = ({ accessToken }: { accessToken?: string | nul
         <ToolError message={error} />
         {unavailable ? (
           <div className="en-empty">
-            <p>{SHARED_COPY.unavailable} {COPY.challenge.todayHint}</p>
-            <Link className="en-button-quiet" to="/today">{COPY.challenge.todayLink}</Link>
+            <p>{t('ai.shared.unavailable')} {t('ai.challenge.todayHint')}</p>
+            <Link className="en-button-quiet" to="/today">{t('ai.challenge.todayLink')}</Link>
           </div>
         ) : null}
         {data && !unavailable ? (
@@ -295,22 +230,22 @@ export const DailyChallengeCard = ({ accessToken }: { accessToken?: string | nul
               {data.theme ? <h3>{data.theme}</h3> : null}
               {data.why_this_theme ? <p className="hint">{data.why_this_theme}</p> : null}
             </div>
-            <p className="hint">{COPY.challenge.progress(doneCount, data.tasks.length)}</p>
+            <p className="hint">{t('ai.challenge.progress', { done: doneCount, total: data.tasks.length })}</p>
             <ol className="en-list">
               {data.tasks.map((task, index) => {
                 const href = skillHref(task.skill);
-                const skillName = COPY.skills[task.skill] ?? '';
+                const skillName = optionalLabel(t, `ai.skills.${task.skill}`);
                 return (
                   <li key={index} className="en-explain">
                     <div className="en-stack" style={{ gap: '0.5rem' }}>
                       <span className="en-row">
                         {skillName ? <Tag>{skillName}</Tag> : null}
                         <strong>{task.label}</strong>
-                        <span className="hint">{COPY.challenge.about(task.estimated_minutes)}</span>
+                        <span className="hint">{t('ai.challenge.about', { count: task.estimated_minutes })}</span>
                       </span>
                       <span>{task.instruction}</span>
                       <span className="en-row">
-                        {href && skillName ? <Link className="en-button-quiet" to={href}>{COPY.challenge.open(skillName)}</Link> : null}
+                        {href && skillName ? <Link className="en-button-quiet" to={href}>{t('ai.challenge.open', { skill: skillName })}</Link> : null}
                         <label className="en-row">
                           <input
                             type="checkbox"
@@ -318,7 +253,7 @@ export const DailyChallengeCard = ({ accessToken }: { accessToken?: string | nul
                             checked={Boolean(done[index])}
                             onChange={(e) => setDone((prev) => ({ ...prev, [index]: e.target.checked }))}
                           />
-                          {COPY.challenge.done}
+                          {t('ai.challenge.done')}
                         </label>
                       </span>
                     </div>
@@ -336,13 +271,14 @@ export const DailyChallengeCard = ({ accessToken }: { accessToken?: string | nul
 // === Culture and tone ===
 
 export const CulturalNotesCard = ({ accessToken }: { accessToken?: string | null }) => {
+  const t = useT();
   const [sourceText, setSourceText] = useState('');
   const { data, busy, error, run, setError } = useToolRequest<CulturalNotesResponse>();
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
     if (sourceText.trim().length < 30) {
-      setError(COPY.culture.tooShort);
+      setError(t('ai.culture.tooShort'));
       return;
     }
     void run(() => extractCulturalNotes({ source_text: sourceText.trim() }));
@@ -358,34 +294,34 @@ export const CulturalNotesCard = ({ accessToken }: { accessToken?: string | null
 
   return (
     <div className="en-stack">
-      <p className="hint">{COPY.culture.intro}</p>
+      <p className="hint">{t('ai.culture.intro')}</p>
       <form onSubmit={submit}>
         <label className="en-stack" htmlFor="culture-source" style={{ gap: '0.35rem' }}>
-          {COPY.culture.label}
+          {t('ai.culture.label')}
           <textarea
             id="culture-source"
             value={sourceText}
             maxLength={4000}
             onChange={(e) => setSourceText(e.target.value)}
-            placeholder={COPY.culture.placeholder}
+            placeholder={t('ai.culture.placeholder')}
             rows={6}
           />
         </label>
         <div className="en-actions">
-          <button type="submit" disabled={busy}>{busy ? COPY.culture.busy : COPY.culture.submit}</button>
+          <button type="submit" disabled={busy}>{busy ? t('ai.culture.busy') : t('ai.culture.submit')}</button>
         </div>
       </form>
 
       <div className="en-stack" aria-live="polite">
         <ToolError message={error} />
-        {data && data.ai_status !== 'ok' ? <p className="en-explain">{SHARED_COPY.unavailable}</p> : null}
-        {data && data.ai_status === 'ok' && empty ? <p className="hint">{COPY.culture.none}</p> : null}
+        {data && data.ai_status !== 'ok' ? <p className="en-explain">{t('ai.shared.unavailable')}</p> : null}
+        {data && data.ai_status === 'ok' && empty ? <p className="hint">{t('ai.culture.none')}</p> : null}
         {data && data.ai_status === 'ok' ? (
           <>
-            <FeedbackList title={COPY.culture.references} items={data.cultural_references} tone="good" />
-            <FeedbackList title={COPY.culture.register} items={data.register_observations} tone="good" />
-            <FeedbackList title={COPY.culture.regional} items={data.regional_variants} tone="good" />
-            <FeedbackList title={COPY.culture.tone} items={data.tone_pitfalls} tone="fix" />
+            <FeedbackList title={t('ai.culture.references')} items={data.cultural_references} tone="good" />
+            <FeedbackList title={t('ai.culture.register')} items={data.register_observations} tone="good" />
+            <FeedbackList title={t('ai.culture.regional')} items={data.regional_variants} tone="good" />
+            <FeedbackList title={t('ai.culture.tone')} items={data.tone_pitfalls} tone="fix" />
           </>
         ) : null}
       </div>

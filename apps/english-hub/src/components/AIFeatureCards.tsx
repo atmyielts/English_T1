@@ -5,50 +5,9 @@ import {
   type GrammarDecodeResponse,
   type VocabInContextResponse,
 } from '../lib/ecosystemInsightsClient';
+import { useT } from '../i18n';
 import { Tag } from '../ui/kit';
-import { ToolError, useLearnerLevel, useToolRequest } from './aiToolShared';
-
-const COPY = {
-  vocab: {
-    intro: 'Read your saved words in a short story at your level.',
-    topicLabel: 'Topic (optional)',
-    topicPlaceholder: 'For example: a trip to the bazaar',
-    make: 'Make a story',
-    again: 'Make another story',
-    busy: 'Writing…',
-    storyHeading: 'Your story',
-    wordsHeading: 'Words in this story',
-    fallbackNote: "Stories aren't available right now. Here are your words with examples instead.",
-    fallbackHeading: 'Your words with examples',
-    noExample: 'No example saved yet.',
-    emptyTitle: 'No saved words yet',
-    emptyBody: 'Save new words while you read or listen, then come back here.',
-  },
-  grammar: {
-    intro: 'Paste a sentence you find hard. See how it is built.',
-    label: 'Your sentence',
-    placeholder: 'For example: Although it was raining, we walked to the market.',
-    explain: 'Explain',
-    busy: 'Explaining…',
-    tooShort: 'Please write a full sentence first.',
-    tense: 'Tense',
-    voice: 'Voice',
-    style: 'Style',
-    partsHeading: 'Parts of the sentence',
-    notesHeading: 'What to notice',
-    rephraseHeading: 'Other ways to say it',
-    fallbackNote: "Full explanations aren't available right now. Here are some things to notice in your sentence.",
-    noSignals: "We couldn't find common patterns here. Try a longer sentence, or come back later for a full explanation.",
-    roles: {
-      main: 'Main part',
-      subordinate: 'Extra part',
-      relative: 'Describes a noun',
-      noun: 'Works like a noun',
-      adverbial: 'When, why or how',
-      participial: '-ing / -ed part',
-    } as Record<string, string>,
-  },
-};
+import { ToolError, optionalLabel, useLearnerLevel, useToolRequest } from './aiToolShared';
 
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -66,6 +25,7 @@ const HighlightedPassage = ({ passage, words }: { passage: string; words: string
 // === Vocabulary in context ===
 
 export const VocabInContextCard = ({ accessToken }: { accessToken?: string | null }) => {
+  const t = useT();
   const level = useLearnerLevel();
   const [topic, setTopic] = useState('');
   const { data, busy, error, run } = useToolRequest<VocabInContextResponse>();
@@ -82,22 +42,22 @@ export const VocabInContextCard = ({ accessToken }: { accessToken?: string | nul
 
   return (
     <div className="en-stack">
-      <p className="hint">{COPY.vocab.intro}</p>
+      <p className="hint">{t('ai.vocab.intro')}</p>
       <form onSubmit={submit}>
         <label className="en-stack" htmlFor="vocab-story-topic" style={{ gap: '0.35rem' }}>
-          {COPY.vocab.topicLabel}
+          {t('ai.vocab.topicLabel')}
           <input
             id="vocab-story-topic"
             type="text"
             value={topic}
             maxLength={120}
             onChange={(e) => setTopic(e.target.value)}
-            placeholder={COPY.vocab.topicPlaceholder}
+            placeholder={t('ai.vocab.topicPlaceholder')}
           />
         </label>
         <div className="en-actions">
           <button type="submit" disabled={busy}>
-            {busy ? COPY.vocab.busy : data ? COPY.vocab.again : COPY.vocab.make}
+            {busy ? t('ai.vocab.busy') : data ? t('ai.vocab.again') : t('ai.vocab.make')}
           </button>
         </div>
       </form>
@@ -106,16 +66,16 @@ export const VocabInContextCard = ({ accessToken }: { accessToken?: string | nul
         <ToolError message={error} />
         {data?.empty ? (
           <div className="en-empty">
-            <strong>{COPY.vocab.emptyTitle}</strong>
-            <p>{COPY.vocab.emptyBody}</p>
+            <strong>{t('ai.vocab.emptyTitle')}</strong>
+            <p>{t('ai.vocab.emptyBody')}</p>
           </div>
         ) : null}
 
         {showStory && data ? (
           <>
-            <h3>{COPY.vocab.storyHeading}</h3>
+            <h3>{t('ai.vocab.storyHeading')}</h3>
             <HighlightedPassage passage={data.passage} words={data.words} />
-            <h3>{COPY.vocab.wordsHeading}</h3>
+            <h3>{t('ai.vocab.wordsHeading')}</h3>
             <ul className="en-list">
               {data.words.map((word) => {
                 const meaning = data.translations[word.toLowerCase()]
@@ -133,14 +93,14 @@ export const VocabInContextCard = ({ accessToken }: { accessToken?: string | nul
 
         {showFallback && data ? (
           <>
-            <p className="en-explain">{COPY.vocab.fallbackNote}</p>
-            <h3>{COPY.vocab.fallbackHeading}</h3>
+            <p className="en-explain">{t('ai.vocab.fallbackNote')}</p>
+            <h3>{t('ai.vocab.fallbackHeading')}</h3>
             <ul className="en-list">
               {data.entries.map((entry) => (
                 <li key={entry.word} className="en-explain">
                   <strong>{entry.word}</strong>{entry.definition ? ` — ${entry.definition}` : ''}
                   <br />
-                  <em>{entry.example || COPY.vocab.noExample}</em>
+                  <em>{entry.example || t('ai.vocab.noExample')}</em>
                 </li>
               ))}
             </ul>
@@ -154,6 +114,7 @@ export const VocabInContextCard = ({ accessToken }: { accessToken?: string | nul
 // === Grammar decoder ===
 
 export const GrammarDecoderCard = ({ accessToken }: { accessToken?: string | null }) => {
+  const t = useT();
   const [sentence, setSentence] = useState('');
   const { data, busy, error, run, setError } = useToolRequest<GrammarDecodeResponse>();
 
@@ -161,7 +122,7 @@ export const GrammarDecoderCard = ({ accessToken }: { accessToken?: string | nul
     event.preventDefault();
     const clean = sentence.trim();
     if (clean.length < 5) {
-      setError(COPY.grammar.tooShort);
+      setError(t('ai.grammar.tooShort'));
       return;
     }
     void run(() => decodeGrammar(clean));
@@ -171,21 +132,21 @@ export const GrammarDecoderCard = ({ accessToken }: { accessToken?: string | nul
 
   return (
     <div className="en-stack">
-      <p className="hint">{COPY.grammar.intro}</p>
+      <p className="hint">{t('ai.grammar.intro')}</p>
       <form onSubmit={submit}>
         <label className="en-stack" htmlFor="grammar-decode-sentence" style={{ gap: '0.35rem' }}>
-          {COPY.grammar.label}
+          {t('ai.grammar.label')}
           <textarea
             id="grammar-decode-sentence"
             value={sentence}
             maxLength={600}
             onChange={(e) => setSentence(e.target.value)}
-            placeholder={COPY.grammar.placeholder}
+            placeholder={t('ai.grammar.placeholder')}
             rows={3}
           />
         </label>
         <div className="en-actions">
-          <button type="submit" disabled={busy}>{busy ? COPY.grammar.busy : COPY.grammar.explain}</button>
+          <button type="submit" disabled={busy}>{busy ? t('ai.grammar.busy') : t('ai.grammar.explain')}</button>
         </div>
       </form>
 
@@ -195,18 +156,18 @@ export const GrammarDecoderCard = ({ accessToken }: { accessToken?: string | nul
           <>
             {data.tense || data.voice || data.register ? (
               <div className="en-row">
-                {data.tense ? <Tag>{COPY.grammar.tense}: {data.tense}</Tag> : null}
-                {data.voice ? <Tag>{COPY.grammar.voice}: {data.voice}</Tag> : null}
-                {data.register ? <Tag>{COPY.grammar.style}: {data.register}</Tag> : null}
+                {data.tense ? <Tag>{t('ai.grammar.tense')}: {data.tense}</Tag> : null}
+                {data.voice ? <Tag>{t('ai.grammar.voice')}: {data.voice}</Tag> : null}
+                {data.register ? <Tag>{t('ai.grammar.style')}: {data.register}</Tag> : null}
               </div>
             ) : null}
             {data.clauses.length ? (
               <>
-                <h3>{COPY.grammar.partsHeading}</h3>
+                <h3>{t('ai.grammar.partsHeading')}</h3>
                 <ul className="en-list">
                   {data.clauses.map((clause, index) => (
                     <li key={index} className="en-explain">
-                      <span className="eyebrow">{COPY.grammar.roles[clause.role] ?? COPY.grammar.roles.main}</span>
+                      <span className="eyebrow">{optionalLabel(t, `ai.grammar.role.${clause.role}`) || t('ai.grammar.role.main')}</span>
                       <br />
                       <strong>“{clause.text}”</strong>
                       {clause.function ? <><br />{clause.function}</> : null}
@@ -217,13 +178,13 @@ export const GrammarDecoderCard = ({ accessToken }: { accessToken?: string | nul
             ) : null}
             {data.notes.length ? (
               <div className="en-feedback is-good">
-                <h3>{COPY.grammar.notesHeading}</h3>
+                <h3>{t('ai.grammar.notesHeading')}</h3>
                 <ul>{data.notes.map((note, index) => <li key={index}>{note}</li>)}</ul>
               </div>
             ) : null}
             {data.rephrasings.length ? (
               <>
-                <h3>{COPY.grammar.rephraseHeading}</h3>
+                <h3>{t('ai.grammar.rephraseHeading')}</h3>
                 <ul className="en-list">
                   {data.rephrasings.map((r, index) => (
                     <li key={index} className="en-explain">
@@ -239,7 +200,7 @@ export const GrammarDecoderCard = ({ accessToken }: { accessToken?: string | nul
 
         {data?.fallback ? (
           <>
-            <p className="en-explain">{COPY.grammar.fallbackNote}</p>
+            <p className="en-explain">{t('ai.grammar.fallbackNote')}</p>
             {data.signals.length ? (
               <ul className="en-list">
                 {data.signals.map((signal, index) => (
@@ -251,7 +212,7 @@ export const GrammarDecoderCard = ({ accessToken }: { accessToken?: string | nul
                 ))}
               </ul>
             ) : (
-              <p className="hint">{COPY.grammar.noSignals}</p>
+              <p className="hint">{t('ai.grammar.noSignals')}</p>
             )}
           </>
         ) : null}

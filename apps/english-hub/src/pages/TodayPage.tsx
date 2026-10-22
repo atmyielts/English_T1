@@ -101,6 +101,18 @@ export const TodayPage = () => {
         </div>
       </div>
 
+      {data?.level_check?.due ? (
+        <section className="en-panel en-tone-lime">
+          <div className="en-panel-head">
+            <div>
+              <h2>{t('levels.todayTitle')}</h2>
+              <p style={{ margin: 0 }}>{t('levels.dueBody')}</p>
+            </div>
+            <Link className="en-button" to="/check">{t('levels.dueCta')}</Link>
+          </div>
+        </section>
+      ) : null}
+
       {readySkills.length ? (
         <section className="en-panel en-tone-lime">
           <div className="en-panel-head">

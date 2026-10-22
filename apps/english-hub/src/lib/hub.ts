@@ -29,6 +29,7 @@ export type TodayResponse = {
   level_status?: Partial<Record<SkillKey, 'ready' | 'struggling' | 'steady' | 'new'>>;
   daily_minutes: number;
   placement_done: boolean;
+  level_check?: LevelCheck;
   available_skills: SkillKey[];
   /** Present for learners without a plan: today's free activities. */
   free?: { left: number; per_day: number } | null;
@@ -108,6 +109,8 @@ export type MistakeGroup = {
 };
 
 export type ProgressResponse = {
+  level_history?: LevelEntry[];
+  level_check?: LevelCheck;
   streak: { current: number; longest: number };
   totals: { last_7_days: number; last_30_days: number; all_time: number };
   days: Array<{ date: string; count: number }>;
@@ -151,6 +154,16 @@ export const saveReminders = (body: Partial<Pick<ReminderSettings, 'enabled' | '
 export type SaveOnboardingBody = {
   placement?: { overall_level: CefrLevel; per_skill: Partial<Record<SkillKey, { level: CefrLevel }>> };
   goal?: { goal_keys: string[]; target_cefr?: CefrLevel; daily_time_minutes?: number };
+  /** The monthly level check: keeps goals and untested skills. */
+  source?: 'check';
+};
+
+export type LevelCheck = { due: boolean; last_at: string | null; next_at: string | null };
+export type LevelEntry = {
+  at: string;
+  source: 'placement' | 'check' | 'level_up';
+  overall: CefrLevel | null;
+  per_skill: Partial<Record<SkillKey, CefrLevel>>;
 };
 
 export const saveOnboarding = (body: SaveOnboardingBody) =>

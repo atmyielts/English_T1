@@ -1,31 +1,35 @@
 import { useCallback, useRef, useState } from 'react';
 import { useEnglish } from '../app/EnglishContext';
+import { useT } from '../i18n';
 import { ApiError } from '../lib/api';
 import { CEFR_LEVELS, SKILLS, type CefrLevel } from '../lib/skills';
 import { Segmented } from '../ui/kit';
 
 // Shared pieces for the AI practice tools that live in the skill "AI tools"
-// drawers and on the Tutor page. Learner-facing strings stay in COPY objects
-// so the translation pass can lift them out in one go.
+// drawers and on the Tutor page. Learner-facing strings live in i18n/ai.*.ts
+// under `ai.<card>.<name>` keys.
 
-export const SHARED_COPY = {
-  offline: 'You seem to be offline. Check your connection and try again.',
-  limit: "You've used today's AI practice. It resets tomorrow.",
-  plan: 'This tool is part of an English plan.',
-  unavailable: "This tool isn't available right now. Please try again later.",
-  level: 'Level',
-  working: 'Working…',
+/** The translator returned by `useT()`. */
+export type Translate = ReturnType<typeof useT>;
+
+/** i18n key for one short, friendly sentence about any failure. Never shows server text. */
+export const friendlyErrorKey = (error: unknown): string => {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return 'ai.shared.offline';
+  if (error instanceof ApiError) {
+    if (error.status === 0) return 'ai.shared.offline';
+    if (error.status === 429 || error.code === 'english_ai_daily_limit_reached') return 'ai.shared.limit';
+    if (error.status === 403) return 'ai.shared.plan';
+  }
+  return 'ai.shared.unavailable';
 };
 
-/** Maps any failure to one short, friendly sentence. Never shows server text. */
-export const friendlyError = (error: unknown): string => {
-  if (typeof navigator !== 'undefined' && navigator.onLine === false) return SHARED_COPY.offline;
-  if (error instanceof ApiError) {
-    if (error.status === 0) return SHARED_COPY.offline;
-    if (error.status === 429 || error.code === 'english_ai_daily_limit_reached') return SHARED_COPY.limit;
-    if (error.status === 403) return SHARED_COPY.plan;
-  }
-  return SHARED_COPY.unavailable;
+/** Maps any failure to one short, friendly sentence in the learner's language. */
+export const friendlyError = (error: unknown, t: Translate): string => t(friendlyErrorKey(error));
+
+/** Label for a value the server sends (a register, a type, a role), or '' when there is none. */
+export const optionalLabel = (t: Translate, key: string): string => {
+  const label = t(key);
+  return label === key ? '' : label;
 };
 
 /**
@@ -34,6 +38,7 @@ export const friendlyError = (error: unknown): string => {
  * makes older answers stale so a slow reply never overwrites a newer one.
  */
 export const useToolRequest = <T,>() => {
+  const t = useT();
   const [data, setData] = useState<T | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,12 +54,12 @@ export const useToolRequest = <T,>() => {
       setData(result);
       return result;
     } catch (cause) {
-      if (id === seq.current) setError(friendlyError(cause));
+      if (id === seq.current) setError(friendlyError(cause, t));
       return null;
     } finally {
       if (id === seq.current) setBusy(false);
     }
-  }, []);
+  }, [t]);
 
   const reset = useCallback(() => {
     seq.current += 1;
@@ -72,12 +77,16 @@ export const useLearnerLevel = (): CefrLevel => {
   return onboarding.value?.level ?? 'B1';
 };
 
-export const LevelPicker = ({ value, onChange, label = SHARED_COPY.level }: { value: CefrLevel; onChange: (level: CefrLevel) => void; label?: string }) => (
-  <div className="en-row">
-    <span className="hint" aria-hidden="true">{label}</span>
-    <Segmented label={label} value={value} onChange={onChange} options={CEFR_LEVELS.map((level) => ({ value: level, label: level }))} />
-  </div>
-);
+export const LevelPicker = ({ value, onChange, label }: { value: CefrLevel; onChange: (level: CefrLevel) => void; label?: string }) => {
+  const t = useT();
+  const text = label ?? t('ai.shared.level');
+  return (
+    <div className="en-row">
+      <span className="hint" aria-hidden="true">{text}</span>
+      <Segmented label={text} value={value} onChange={onChange} options={CEFR_LEVELS.map((level) => ({ value: level, label: level }))} />
+    </div>
+  );
+};
 
 /** Inline error line for a tool. */
 export const ToolError = ({ message }: { message: string | null }) =>
