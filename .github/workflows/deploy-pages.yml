@@ -166,6 +166,10 @@ jobs:
         if: ${{ matrix.label == 'academy' }}
         run: npm run test:academy:edge
 
+      - name: Homework OS and Courses Edge typecheck and tests
+        if: ${{ matrix.label == 'academy' }}
+        run: deno check supabase/functions/academy-learning/index.ts && npm run test:academy-learning:edge
+
       - name: Academy lint
         if: ${{ matrix.label == 'academy' }}
         run: npm --workspace apps/academy run lint
@@ -202,6 +206,7 @@ jobs:
           VITE_USE_MOCK_PERSISTENCE: "false"
           VITE_DEBUG_AUTH: "false"
           VITE_ACADEMY_TEACHER_FLOW_V2: ${{ vars.VITE_ACADEMY_TEACHER_FLOW_V2 || 'false' }}
+          VITE_ACADEMY_HOMEWORK_OS: ${{ vars.VITE_ACADEMY_HOMEWORK_OS || 'false' }}
           VITE_RELEASE_SHA: ${{ github.sha }}
           # Exam reaches its attempt coordinator Worker; other apps ignore it.
           VITE_ASSESSMENT_COORDINATOR_URL: https://exam-api.schood.online

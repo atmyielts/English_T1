@@ -233,6 +233,9 @@ verify_jwt = false
 [functions.academy]
 verify_jwt = false
 
+[functions.academy-learning]
+verify_jwt = false
+
 # Assessment Cloud validates ES256 user sessions inside its request handler.
 [functions.assessment-cloud]
 verify_jwt = false

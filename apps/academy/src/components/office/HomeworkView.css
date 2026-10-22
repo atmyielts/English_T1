@@ -1,0 +1,42 @@
+.homework-os{min-width:0;grid-template-columns:minmax(0,1fr)}
+.homework-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0;border-bottom:1px solid var(--line)}
+.homework-tab{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border:0;border-bottom:3px solid transparent;background:none;color:var(--muted);font:inherit;font-weight:700;cursor:pointer}
+.homework-tab.is-active{color:var(--ink);border-bottom-color:var(--accent)}
+.homework-badge{min-width:22px;padding:2px 7px;border-radius:999px;background:var(--accent);color:#fff;font-size:12px;text-align:center}
+.homework-review{display:grid;grid-template-columns:minmax(220px,300px) minmax(0,1fr);gap:16px;align-items:start}
+.homework-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;max-height:75vh;overflow:auto}
+.homework-list-item{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);font:inherit;text-align:start;cursor:pointer}
+.homework-list-item span{font-size:14px}.homework-list-item small{color:var(--muted)}
+.homework-list-item.is-active{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft,rgba(46,96,76,.15))}
+.homework-detail{min-width:0}
+.homework-card{display:flex;flex-direction:column;gap:12px;padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.homework-card header h3{margin:0}.homework-card header p{margin:4px 0 0}
+.homework-answer{margin:0;padding:12px;border-inline-start:3px solid var(--line);background:var(--bg);white-space:pre-wrap;overflow-wrap:anywhere}
+.homework-files{display:flex;flex-wrap:wrap;gap:8px}.homework-files img{max-width:min(100%,360px);max-height:420px;border-radius:8px;border:1px solid var(--line)}
+.homework-files audio,.homework-files video{max-width:100%}
+.homework-signals{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0;padding:0}
+.homework-mark{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:10px;background:var(--bg)}
+.homework-mark h4{margin:0}.homework-mark label{display:flex;flex-direction:column;gap:6px}
+.homework-score span{display:flex;align-items:center;gap:8px}.homework-score input.input{width:120px;max-width:120px}
+.homework-rubric{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.homework-mistakes{border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.homework-mistakes label{flex-direction:row;align-items:flex-start;gap:8px;padding:4px 0}
+.homework-mistakes code,.homework-mistake-list code{font-size:12px;padding:1px 6px;border-radius:6px;background:var(--panel);border:1px solid var(--line)}
+.homework-actions{display:flex;flex-wrap:wrap;gap:8px}.homework-actions button{min-height:44px}
+.homework-keys{margin-top:8px;font-size:13px}
+.homework-period{display:flex;flex-direction:column;gap:6px;max-width:240px;margin-bottom:16px}
+.homework-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.homework-kpis div{display:flex;flex-direction:column;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.homework-kpis strong{font-size:24px}.homework-kpis span{color:var(--muted);font-size:13px}
+.homework-table{max-width:100%;overflow:auto;margin:12px 0;border:1px solid var(--line);border-radius:12px}
+.homework-table table{border-collapse:collapse;width:100%;min-width:760px}.homework-table th,.homework-table td{padding:10px 12px;text-align:start;border-bottom:1px solid var(--line);font-size:14px}
+.homework-table thead{background:var(--bg)}.homework-table:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.homework-courses{display:flex;flex-direction:column;gap:12px}.homework-courses>label{display:flex;flex-direction:column;gap:6px;max-width:420px}
+.homework-modules{display:flex;flex-direction:column;gap:12px;padding-inline-start:20px}
+.homework-rule{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}.homework-rule .input{min-height:40px;max-width:280px}
+.homework-plan{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.homework-plan-card{padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}.homework-plan-card h3{margin-top:0}
+.homework-teaching-plans{display:flex;flex-direction:column;gap:10px}
+.homework-plan-option{display:flex;flex-direction:column;gap:4px;padding:10px;border:1px dashed var(--line);border-radius:10px}
+.homework-toggle{display:flex;gap:10px;align-items:flex-start;padding:6px 0}
+@media (max-width:820px){.homework-review{grid-template-columns:1fr}.homework-list{max-height:none;flex-direction:row;overflow-x:auto}.homework-list li{flex:0 0 220px}}
