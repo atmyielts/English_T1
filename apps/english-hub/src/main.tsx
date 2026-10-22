@@ -2,19 +2,26 @@ import { recoveryRootOptions } from '../../../packages/ui-recovery/src/RecoveryB
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
+import { I18nProvider } from '../../../packages/service-i18n/src/i18n.tsx';
 import App from './App';
+import { EnglishProvider } from './app/EnglishContext';
 import { AppErrorBoundary } from './components/AppErrorBoundary';
+import { catalogs } from './i18n';
 import { installEnglishGlobalRecoveryReporting } from './lib/clientRecovery';
-import './index.css';
+import './english.css';
 
 installEnglishGlobalRecoveryReporting();
 
 createRoot(document.getElementById('root')!, recoveryRootOptions).render(
   <StrictMode>
     <AppErrorBoundary>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <I18nProvider catalogs={catalogs}>
+        <BrowserRouter>
+          <EnglishProvider>
+            <App />
+          </EnglishProvider>
+        </BrowserRouter>
+      </I18nProvider>
     </AppErrorBoundary>
   </StrictMode>,
 );

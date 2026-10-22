@@ -504,7 +504,10 @@ export const ShadowingPracticeCard = ({ accessToken }: Props) => {
 
 // === Tier A #7 — Adaptive CEFR placement test ===
 
-export const PlacementTestCard = ({ accessToken }: Props) => {
+export const PlacementTestCard = ({
+  accessToken,
+  onComplete,
+}: Props & { onComplete?: (final: PlacementTestFinalResponse) => void }) => {
   const [round, setRound] = useState(0);
   const [history, setHistory] = useState<PlacementHistoryEntry[]>([]);
   const [current, setCurrent] = useState<PlacementTestRoundResponse | null>(null);
@@ -537,6 +540,7 @@ export const PlacementTestCard = ({ accessToken }: Props) => {
       if (res.finalized) {
         setFinal(res as PlacementTestFinalResponse);
         setCurrent(null);
+        onComplete?.(res as PlacementTestFinalResponse);
       } else {
         const round0 = res as PlacementTestRoundResponse;
         setCurrent(round0);
@@ -568,6 +572,7 @@ export const PlacementTestCard = ({ accessToken }: Props) => {
       if (res.finalized) {
         setFinal(res as PlacementTestFinalResponse);
         setCurrent(null);
+        onComplete?.(res as PlacementTestFinalResponse);
       } else {
         const r = res as PlacementTestRoundResponse;
         setCurrent(r);

@@ -7,6 +7,7 @@ import {
   extractRoute,
   getEnv,
   json,
+  loadNotebookStats,
   resolveEnglishProducts,
   resolveLanguageScope,
   toText,
@@ -24,8 +25,32 @@ import {
 } from "../_shared/english-access.ts";
 import { parseBody } from "../_shared/english-learning.ts";
 import { parseEnglishClientRecoveryEvent } from "../_shared/english-client-recovery.ts";
+import {
+  type AttemptRow,
+  type CatalogItem,
+  type Cefr,
+  currentStreak,
+  isCefr as isTodayCefr,
+  planToday,
+  TODAY_SKILLS,
+  type TodaySkill,
+  type TodayTask,
+  weekStrip,
+} from "../_shared/english-today.ts";
 
 const routeMarker = "/hub";
+
+// One learner-facing activity per row: lessons, articles, prompts and missions.
+// Sub-items such as individual grammar drills are recorded separately and excluded.
+const PRIMARY_CONTENT_TYPES = [
+  "reading.article",
+  "listening.item",
+  "writing.prompt",
+  "speaking.prompt",
+  "grammar.unit",
+  "immersion.mission",
+  "vocabulary.deck",
+];
 
 const jsonCached = (status: number, body: unknown, maxAgeSeconds = 60): Response =>
   new Response(JSON.stringify(body), {
@@ -88,7 +113,10 @@ serve(async (req) => {
     const isEnglishAiRequest = (req.method === "GET" && route === "/insights/coach-summary")
       || (req.method === "POST" && route.startsWith("/ai/"));
     if (isEnglishAiRequest) {
-      const access = await requireEnglishSuiteAccess(sb, auth.userId, products);
+      // The placement test is the front door, so it is open to every signed-in
+      // learner; it still counts against the daily AI quota below.
+      const isFreeAiRequest = route === "/ai/placement-test";
+      const access = isFreeAiRequest ? { allowed: true } : await requireEnglishSuiteAccess(sb, auth.userId, products);
       if (!access.allowed) {
         return json(403, {
           error: "An active English service entitlement is required",
@@ -113,7 +141,216 @@ serve(async (req) => {
       }
     }
 
-    // Existing daily plan endpoint (unchanged).
+    // === Today, catalog and history (learner home) ===
+    // Built only from the learner's placement, real attempts and due reviews.
+
+    if (req.method === "GET" && (route === "/today" || route === "/catalog" || route === "/history")) {
+      const skillFilter = toText(url.searchParams.get("skill"), 24).toLowerCase();
+      const wantSkill = (TODAY_SKILLS as readonly string[]).includes(skillFilter) ? skillFilter : null;
+
+      const loadCatalog = async (): Promise<CatalogItem[]> => {
+        let query = sb
+          .from("learning_content_registry_items")
+          .select("id, service_key, source_ref, title, cefr_level, estimated_minutes, difficulty")
+          .eq("language_id", scope.languageId)
+          .eq("status", "published")
+          .in("content_type", PRIMARY_CONTENT_TYPES)
+          .limit(2000);
+        if (wantSkill) query = query.eq("service_key", wantSkill);
+        const { data, error } = await query;
+        if (error) throw new Error(`Failed to load catalog: ${error.message}`);
+        return (data ?? [])
+          .filter((row: Record<string, unknown>) => (TODAY_SKILLS as readonly string[]).includes(String(row.service_key)))
+          .map((row: Record<string, unknown>) => ({
+            id: String(row.id),
+            skill: String(row.service_key) as TodaySkill,
+            slug: String(row.source_ref),
+            title: String(row.title ?? ""),
+            level: isTodayCefr(row.cefr_level) ? row.cefr_level : null,
+            minutes: Math.max(1, Number(row.estimated_minutes ?? 10)),
+            difficulty: Number(row.difficulty ?? 0.5),
+          }));
+      };
+
+      const loadAttempts = async (days: number, limit: number) => {
+        let query = sb
+          .from("learning_attempts")
+          .select("id, content_item_id, service_key, overall_score, correctness_ratio, submitted_at, time_spent_seconds")
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId)
+          // "failed" means a low score, not a broken attempt; it still counts as done.
+          .in("status", ["submitted", "scored", "failed"])
+          .not("submitted_at", "is", null)
+          .gte("submitted_at", new Date(Date.now() - days * 86_400_000).toISOString())
+          .order("submitted_at", { ascending: false })
+          .limit(limit);
+        if (wantSkill) query = query.eq("service_key", wantSkill);
+        const { data, error } = await query;
+        if (error) throw new Error(`Failed to load attempts: ${error.message}`);
+        return (data ?? []) as Array<Record<string, unknown>>;
+      };
+
+      const scoreOf = (row: Record<string, unknown>): number | null => {
+        // Learners see accuracy; overall_score also blends speed and hint use.
+        const raw = row.correctness_ratio ?? row.overall_score;
+        const value = Number(raw);
+        return raw === null || raw === undefined || !Number.isFinite(value) ? null : Math.max(0, Math.min(1, value));
+      };
+
+      if (route === "/catalog") {
+        const [items, attempts] = await Promise.all([loadCatalog(), loadAttempts(3650, 2000)]);
+        const best: Record<string, number> = {};
+        for (const row of attempts) {
+          const id = String(row.content_item_id ?? "");
+          const score = scoreOf(row);
+          if (!id) continue;
+          best[id] = Math.max(best[id] ?? 0, Math.round((score ?? 0) * 100));
+        }
+        return jsonCached(200, { ok: true, items, best_scores: best }, 30);
+      }
+
+      if (route === "/history") {
+        const [items, attempts] = await Promise.all([loadCatalog(), loadAttempts(3650, 60)]);
+        const byId = new Map(items.map((entry) => [entry.id, entry]));
+        return json(200, {
+          ok: true,
+          attempts: attempts.map((row) => {
+            const entry = byId.get(String(row.content_item_id ?? ""));
+            const score = scoreOf(row);
+            return {
+              id: String(row.id),
+              skill: entry?.skill ?? String(row.service_key ?? ""),
+              title: entry?.title ?? null,
+              slug: entry?.slug ?? null,
+              level: entry?.level ?? null,
+              score: score === null ? null : Math.round(score * 100),
+              submitted_at: String(row.submitted_at),
+              time_spent_seconds: Number(row.time_spent_seconds ?? 0) || null,
+            };
+          }),
+        });
+      }
+
+      // /today
+      const requestedDate = toText(url.searchParams.get("date"), 10);
+      const utcToday = new Date().toISOString().slice(0, 10);
+      const dateOk = /^\d{4}-\d{2}-\d{2}$/.test(requestedDate)
+        && Math.abs(Date.parse(requestedDate) - Date.parse(utcToday)) <= 86_400_000;
+      const planDate = dateOk ? requestedDate : utcToday;
+
+      const [items, attemptRows, goalRes, notebook, access, existingRes] = await Promise.all([
+        loadCatalog(),
+        loadAttempts(60, 400),
+        sb.from("learner_language_goals")
+          .select("current_cefr_estimate, target_cefr, daily_time_minutes, goal_keys, metadata")
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId)
+          .maybeSingle(),
+        loadNotebookStats(sb, auth.userId, scope.languageId),
+        requireEnglishSuiteAccess(sb, auth.userId, products),
+        sb.from("learner_language_daily_plans")
+          .select("summary")
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId)
+          .eq("plan_date", planDate)
+          .maybeSingle(),
+      ]);
+
+      const goal = goalRes.data as Record<string, unknown> | null;
+      const meta = (goal?.metadata && typeof goal.metadata === "object" ? goal.metadata : {}) as Record<string, unknown>;
+      const placement = (meta.placement && typeof meta.placement === "object" ? meta.placement : null) as Record<string, unknown> | null;
+      const perSkillRaw = (placement?.per_skill && typeof placement.per_skill === "object" ? placement.per_skill : {}) as Record<string, unknown>;
+      const perSkillLevel: Partial<Record<TodaySkill, Cefr>> = {};
+      for (const skill of TODAY_SKILLS) {
+        const entry = perSkillRaw[skill];
+        const level = typeof entry === "string" ? entry : (entry as Record<string, unknown> | undefined)?.level;
+        if (isTodayCefr(level)) perSkillLevel[skill] = level;
+      }
+      const overallLevel = isTodayCefr(goal?.current_cefr_estimate) ? goal!.current_cefr_estimate as Cefr : null;
+
+      const availableSkills = access.admin
+        ? [...TODAY_SKILLS]
+        : TODAY_SKILLS.filter((skill) => {
+          const productId = (products as Record<string, { productId?: string }>)[skill]?.productId;
+          return Boolean(productId && access.entitlementProductIds.includes(productId));
+        });
+
+      const attempts: AttemptRow[] = attemptRows
+        .filter((row) => (TODAY_SKILLS as readonly string[]).includes(String(row.service_key)))
+        .map((row) => ({
+          content_item_id: String(row.content_item_id ?? ""),
+          skill: String(row.service_key) as TodaySkill,
+          score: scoreOf(row),
+          submitted_at: String(row.submitted_at),
+        }));
+
+      const dailyMinutes = Number(goal?.daily_time_minutes ?? 20) || 20;
+      // A stored plan is reused only while the inputs that shaped it are unchanged.
+      const planKey = [overallLevel ?? "-", dailyMinutes, availableSkills.join(","), JSON.stringify(perSkillLevel)].join("|");
+      const existingSummary = (existingRes.data?.summary ?? {}) as Record<string, unknown>;
+      const existing = existingSummary.generated_by === "hub.today.v1"
+          && existingSummary.plan_key === planKey
+          && Array.isArray(existingSummary.today_tasks)
+        ? existingSummary.today_tasks as TodayTask[]
+        : null;
+
+      const plan = planToday({
+        date: planDate,
+        dailyMinutes,
+        overallLevel,
+        perSkillLevel,
+        items,
+        attempts,
+        dueReviews: notebook.dueCount,
+        availableSkills,
+        existing,
+      });
+
+      // Persist so the selection stays stable all day and Student Center can show it.
+      const appUrl = (Deno.env.get("ENGLISH_APP_URL") ?? "https://english.schood.online").replace(/\/$/, "");
+      await sb.from("learner_language_daily_plans").upsert({
+        user_id: auth.userId,
+        language_id: scope.languageId,
+        plan_date: planDate,
+        minutes_budget: Math.max(5, Math.min(240, Math.round(dailyMinutes))),
+        total_estimated_minutes: plan.minutes_total,
+        status: plan.tasks.length > 0 && plan.done_count === plan.tasks.length ? "completed" : "active",
+        tasks: plan.tasks.map((task) => ({
+          id: task.id,
+          service_key: task.skill,
+          service_label: task.skill.slice(0, 1).toUpperCase() + task.skill.slice(1),
+          title: task.kind === "review" ? "Review due vocabulary" : task.title,
+          reason: task.reason,
+          intent: task.kind,
+          skill: task.skill,
+          estimated_minutes: task.minutes,
+          content_item_id: task.content_item_id,
+          href: task.kind === "review" ? `${appUrl}/review` : `${appUrl}/${task.skill}/${task.slug ?? ""}`,
+          done: task.done,
+        })),
+        summary: { generated_by: "hub.today.v1", plan_key: planKey, today_tasks: plan.tasks, done_count: plan.done_count },
+      }, { onConflict: "user_id,language_id,plan_date" });
+
+      return json(200, {
+        ok: true,
+        date: plan.date,
+        level: overallLevel,
+        target_level: isTodayCefr(goal?.target_cefr) ? goal!.target_cefr : null,
+        per_skill_level: perSkillLevel,
+        daily_minutes: dailyMinutes,
+        placement_done: Boolean(placement?.completed_at),
+        available_skills: availableSkills,
+        tasks: plan.tasks,
+        minutes_total: plan.minutes_total,
+        done_count: plan.done_count,
+        due_reviews: notebook.dueCount,
+        total_words: notebook.totalCount,
+        streak: currentStreak(attempts, planDate),
+        week: weekStrip(attempts, planDate),
+      });
+    }
+
+    // Legacy daily plan endpoint, kept for older clients.
     if (req.method === "GET" && route === "/plan") {
       const rebuild = String(url.searchParams.get("rebuild") ?? "").toLowerCase() === "true"
         || String(url.searchParams.get("rebuild") ?? "") === "1";
@@ -124,6 +361,114 @@ serve(async (req) => {
         rebuild,
       });
       return json(200, payload);
+    }
+
+    // === Front-door onboarding (placement + goal) persistence ===
+    // The hub gates new learners through an adaptive CEFR placement and a goal
+    // selection. Both were previously stateless AI calls; these endpoints make
+    // their results durable in learner_language_goals so the gate can detect
+    // completion across sessions/devices and the dashboard can show a real CEFR
+    // estimate instead of hardcoded fallback scores.
+
+    if (req.method === "GET" && route === "/onboarding/status") {
+      const { data } = await sb
+        .from("learner_language_goals")
+        .select("current_cefr_estimate, target_cefr, goal_keys, daily_time_minutes, metadata")
+        .eq("user_id", auth.userId)
+        .eq("language_id", scope.languageId)
+        .maybeSingle();
+      const meta = (data?.metadata ?? {}) as Record<string, unknown>;
+      const placement = (meta.placement && typeof meta.placement === "object" && !Array.isArray(meta.placement)
+        ? meta.placement as Record<string, unknown>
+        : null);
+      const goalKeys = Array.isArray(data?.goal_keys) ? data!.goal_keys as string[] : [];
+      return json(200, {
+        ok: true,
+        placement_done: !!(placement && placement.completed_at),
+        goal_set: goalKeys.length > 0,
+        cefr_estimate: data?.current_cefr_estimate ?? null,
+        target_cefr: data?.target_cefr ?? null,
+        goal_keys: goalKeys,
+        daily_time_minutes: Number(data?.daily_time_minutes ?? 40),
+        placement,
+      });
+    }
+
+    if (req.method === "POST" && route === "/onboarding/save") {
+      const isCefr = (v: string) => /^(A1|A2|B1|B2|C1|C2)$/.test(v);
+      const body = await parseBody(req) as Record<string, unknown>;
+      const placementIn = body.placement && typeof body.placement === "object" && !Array.isArray(body.placement)
+        ? body.placement as Record<string, unknown>
+        : null;
+      const goalIn = body.goal && typeof body.goal === "object" && !Array.isArray(body.goal)
+        ? body.goal as Record<string, unknown>
+        : null;
+      if (!placementIn && !goalIn) {
+        return json(400, { error: "Provide a placement and/or goal payload to save." });
+      }
+
+      // Merge with any existing row so a placement-only or goal-only save never
+      // clobbers the other half of the learner's onboarding state.
+      const { data: existing } = await sb
+        .from("learner_language_goals")
+        .select("goal_keys, target_cefr, daily_time_minutes, current_cefr_estimate, metadata")
+        .eq("user_id", auth.userId)
+        .eq("language_id", scope.languageId)
+        .maybeSingle();
+
+      const meta = (existing?.metadata && typeof existing.metadata === "object" && !Array.isArray(existing.metadata)
+        ? existing.metadata as Record<string, unknown>
+        : {}) as Record<string, unknown>;
+      const row: Record<string, unknown> = {
+        user_id: auth.userId,
+        language_id: scope.languageId,
+        goal_keys: Array.isArray(existing?.goal_keys) ? existing!.goal_keys : [],
+        target_cefr: existing?.target_cefr ?? null,
+        daily_time_minutes: Number(existing?.daily_time_minutes ?? 40),
+        current_cefr_estimate: existing?.current_cefr_estimate ?? null,
+        metadata: meta,
+      };
+
+      if (placementIn) {
+        const overall = toText(placementIn.overall_level, 8).toUpperCase();
+        const perSkill = placementIn.per_skill && typeof placementIn.per_skill === "object" && !Array.isArray(placementIn.per_skill)
+          ? placementIn.per_skill
+          : {};
+        if (isCefr(overall)) row.current_cefr_estimate = overall;
+        meta.placement = {
+          overall_level: isCefr(overall) ? overall : null,
+          per_skill: perSkill,
+          completed_at: new Date().toISOString(),
+        };
+        row.metadata = meta;
+      }
+
+      if (goalIn) {
+        const keys = Array.isArray(goalIn.goal_keys)
+          ? (goalIn.goal_keys as unknown[]).map((k) => toText(k, 40)).filter(Boolean).slice(0, 12)
+          : [];
+        if (keys.length) row.goal_keys = keys;
+        const target = toText(goalIn.target_cefr, 8).toUpperCase();
+        if (isCefr(target)) row.target_cefr = target;
+        const mins = Number(goalIn.daily_time_minutes);
+        if (Number.isFinite(mins) && mins >= 5 && mins <= 240) row.daily_time_minutes = Math.round(mins);
+      }
+
+      const { error } = await sb
+        .from("learner_language_goals")
+        .upsert(row, { onConflict: "user_id,language_id" });
+      if (error) return json(500, { error: "Failed to save onboarding", details: error.message });
+
+      const savedPlacement = (row.metadata as Record<string, unknown>)?.placement as Record<string, unknown> | undefined;
+      return json(200, {
+        ok: true,
+        placement_done: !!(savedPlacement && savedPlacement.completed_at),
+        goal_set: Array.isArray(row.goal_keys) && (row.goal_keys as unknown[]).length > 0,
+        cefr_estimate: row.current_cefr_estimate ?? null,
+        target_cefr: row.target_cefr ?? null,
+        goal_keys: row.goal_keys ?? [],
+        daily_time_minutes: row.daily_time_minutes ?? 40,
+      });
     }
 
     // === New cross-skill insights endpoints (Tier A foundation) ===

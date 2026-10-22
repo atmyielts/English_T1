@@ -201,6 +201,57 @@ export const decodeGrammar = (
 ): Promise<GrammarDecodeResponse> =>
   callEdgePost<GrammarDecodeResponse>('/hub/ai/grammar-decode', accessToken, { sentence });
 
+// === Front-door onboarding (placement + goal) persistence ===
+// Backs the hard gate: status tells the hub whether a learner has been placed
+// and has set a goal; save persists placement / goal results so the dashboard
+// stops falling back to hardcoded scores.
+
+export interface OnboardingStatus {
+  ok: boolean;
+  placement_done: boolean;
+  goal_set: boolean;
+  cefr_estimate: string | null;
+  target_cefr: string | null;
+  goal_keys: string[];
+  daily_time_minutes: number;
+  placement?: {
+    overall_level: string | null;
+    per_skill: Record<string, { level: string; evidence?: string }>;
+    completed_at: string;
+  } | null;
+}
+
+export interface SaveOnboardingPlacement {
+  overall_level: string;
+  per_skill: Record<string, { level: string; evidence?: string }>;
+}
+
+export interface SaveOnboardingGoal {
+  goal_keys: string[];
+  target_cefr?: string;
+  daily_time_minutes?: number;
+}
+
+export const getOnboardingStatus = (
+  accessToken: string,
+  languageCode: string = 'en',
+): Promise<OnboardingStatus> =>
+  callEdge<OnboardingStatus>(
+    `/hub/onboarding/status?language_code=${encodeURIComponent(languageCode)}`,
+    accessToken,
+  );
+
+export const saveOnboarding = (
+  accessToken: string,
+  body: { placement?: SaveOnboardingPlacement; goal?: SaveOnboardingGoal },
+  languageCode: string = 'en',
+): Promise<OnboardingStatus> =>
+  callEdgePost<OnboardingStatus>(
+    `/hub/onboarding/save?language_code=${encodeURIComponent(languageCode)}`,
+    accessToken,
+    body,
+  );
+
 // === Iter 3: essay grader, translation comparison, idiom explorer ===
 
 export type CefrTargetLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';

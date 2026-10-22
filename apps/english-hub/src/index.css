@@ -822,6 +822,29 @@ textarea:focus-visible {
   background: linear-gradient(90deg, var(--service-accent) 0%, color-mix(in srgb, var(--service-accent) 72%, #ffffff 28%) 100%);
 }
 
+/* Honest empty state — skill not yet measured by a placement test. */
+.progress-track.is-unmeasured {
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(116, 101, 86, 0.12),
+    rgba(116, 101, 86, 0.12) 6px,
+    rgba(116, 101, 86, 0.04) 6px,
+    rgba(116, 101, 86, 0.04) 12px
+  );
+}
+
+.not-placed-cta {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #9c2c1a;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.not-placed-cta:hover {
+  text-decoration: underline;
+}
+
 .jump-list {
   margin: 12px 0 16px;
   display: flex;

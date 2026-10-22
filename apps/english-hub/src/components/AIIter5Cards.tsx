@@ -92,7 +92,12 @@ const GOALS: { key: EnglishGoalKey; label: string; tagline: string }[] = [
   { key: 'exam_prep', label: 'Exam prep', tagline: 'IELTS, TOEFL, SAT, ITEP, Cambridge' },
 ];
 
-export const GoalTemplateCard = ({ accessToken }: Props) => {
+export const GoalTemplateCard = ({
+  accessToken,
+  onGenerated,
+}: Props & {
+  onGenerated?: (info: { goal: EnglishGoalKey; minutes_per_day: number; data: GoalTemplateResponse }) => void;
+}) => {
   const [goal, setGoal] = useState<EnglishGoalKey>('study_abroad');
   const [horizonWeeks, setHorizonWeeks] = useState(12);
   const [minutesPerDay, setMinutesPerDay] = useState(30);
@@ -111,6 +116,7 @@ export const GoalTemplateCard = ({ accessToken }: Props) => {
         minutes_per_day: minutesPerDay,
       });
       setData(res);
+      onGenerated?.({ goal, minutes_per_day: minutesPerDay, data: res });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to generate plan');
     } finally {

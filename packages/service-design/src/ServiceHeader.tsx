@@ -1,4 +1,4 @@
-import React, { useId, useState, type ReactNode } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 
 export type ServiceNavItem = { id: string; label: string; active?: boolean; onClick: () => void };
 /** Visible chrome text, supplied already translated by the service. English defaults. */
