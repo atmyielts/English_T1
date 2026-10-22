@@ -103,6 +103,17 @@ for (const file of productionExampleFiles) {
   }
 }
 
+// Supabase records migrations by their version prefix: two files with one
+// version cannot both be applied to production.
+const migrationVersions = new Map();
+for (const file of trackedFiles.filter((file) => /^supabase\/migrations\/[^/]+\.sql$/.test(file))) {
+  const version = file.split('/').pop().split('_')[0];
+  migrationVersions.set(version, [...(migrationVersions.get(version) ?? []), file]);
+}
+for (const [version, files] of migrationVersions) {
+  if (files.length > 1) errors.push(`Migration version ${version} is used by ${files.length} files: ${files.join(', ')}`);
+}
+
 if (errors.length) {
   console.error('Production readiness checks failed:');
   for (const error of errors) console.error(`- ${error}`);
