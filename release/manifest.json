@@ -1,32 +1,16 @@
 {
   "schemaVersion": 1,
-  "releaseId": "admission-math-foundation",
+  "releaseId": "admission-service",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [
-    "assessment-cloud",
-    "exam",
-    "proctor"
-  ],
+  "frontends": [],
   "migrations": [],
   "edgeFunctions": [],
   "workers": [],
   "sharedEdgeConsumers": [],
   "requiredSecrets": [],
-  "rolloutOrder": [
-    "pages"
-  ],
-  "manualFollowUps": [
-    "None: frontend-only. Merging rebuilds schood-assessment, schood-exam and schood-proctor. KaTeX loads only for questions that contain \( \) or \[ \] formulas, so existing questions render as before."
-  ],
-  "verification": [
-    "assessment.schood.online, exam.schood.online and proctor.schood.online load and sign in as before.",
-    "An Assessment Cloud question preview with \(x^2\) shows a rendered formula."
-  ],
-  "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-assessment, schood-exam and schood-proctor.",
-    "migration": "None.",
-    "edge": "None.",
-    "worker": "None."
-  }
+  "rolloutOrder": ["pages"],
+  "manualFollowUps": [],
+  "verification": [],
+  "rollback": {}
 }

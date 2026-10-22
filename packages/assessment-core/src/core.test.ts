@@ -52,3 +52,12 @@ Deno.test("AI integrity decisions require repeated windows and never invalidate"
   equal(integrityAction(policy,{kind:"capture_lost",duration_seconds:9,observation_windows:0}),"observe");
   equal(integrityAction(policy,{kind:"capture_lost",duration_seconds:10,observation_windows:0}),"pause");
 });
+Deno.test("a worked solution stays with the private key and never enters the item", () => {
+  const withSolution = validateKey(item(), { correct: "b", solution: "  5 has exactly two divisors.  " });
+  equal(withSolution, { case_sensitive: false, partial_credit: false, correct: "b", solution: "5 has exactly two divisors." });
+  equal(validateKey(item(), { correct: "b", solution: "   " }).solution, undefined);
+  equal(validateKey(item({ type: "numeric", options: undefined }), { numeric: { value: 5, tolerance: 0 }, solution: "x = 5" }).solution, "x = 5");
+  rejects(() => validateKey(item(), { correct: "b", solution: "x".repeat(20001) }), "Worked solution");
+  rejects(() => validateKey(item(), { correct: "b", solution: 7 }), "Worked solution");
+  equal(Object.hasOwn(validateItem({ ...item(), solution: "leak" }) as object, "solution"), false);
+});

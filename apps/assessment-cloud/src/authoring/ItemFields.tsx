@@ -31,7 +31,7 @@ export function ItemFields({
   rubrics: Row[];
 }) {
   const t = useAppT(), itemLabel = useItemLabel();
-  const tagsHint=useId();
+  const tagsHint=useId(),solutionHint=useId();
   const update = (value: Partial<ItemDraft>) =>
     setDraft({ ...draft, ...value });
   function changeType(type: ItemType) {
@@ -446,6 +446,17 @@ export function ItemFields({
               {t("fields.partialCredit")}
             </label>
           )}
+          <label>
+            {t("fields.solution")}
+            <textarea
+              rows={5}
+              maxLength={20000}
+              aria-describedby={solutionHint}
+              value={draft.solution ?? ""}
+              onChange={(event) => update({ solution: event.target.value })}
+            />
+          </label>
+          <p className="hint" id={solutionHint}>{t("fields.solutionHint")}</p>
         </fieldset>
       )}
     </>

@@ -1,7 +1,7 @@
 import {
   assertPublishable, blockShares, buildDailyPlan, certificateAdmissionPoints, certificateGrade, certificateProblems, classifyError,
   formatMaxScore, formatProblems, initialMastery, masteryLevel, predictSection, publishBlockers, scoreSection,
-  taxonomyProblems, topicPriorities, topicsFromTags, topicTag, updateMastery,
+  knownTopics, taxonomyProblems, topicPriorities, updateMastery,
   UZ_ADMISSION_2026, UZ_MATH_CERTIFICATE_2026, UZ_MATH_TOPICS,
   type ExamFormat, type MasteryState, type Taxonomy,
 } from './mod.ts';
@@ -86,7 +86,7 @@ Deno.test('the maths topic graph is consistent and covers both blocks in three l
   ] };
   ok(taxonomyProblems(cyclic).some((problem) => problem.endsWith('.cycle')), 'cycle');
   equal(taxonomyProblems({ ...UZ_MATH_TOPICS, topics: [{ ...UZ_MATH_TOPICS.topics[0], prerequisites: ['math.none'] }] }), ['math.num.natural.prerequisite.math.none']);
-  equal(topicsFromTags(['algebra', topicTag('math.alg.quadratic'), 'difficulty:hard']), ['math.alg.quadratic']);
+  equal(knownTopics(UZ_MATH_TOPICS, ['algebra', 'math.geo.circles', 'math.alg.quadratic']), ['math.alg.quadratic', 'math.geo.circles']);
 });
 
 Deno.test('mastery rises with correct answers, settles with evidence and fades without practice', () => {
@@ -125,6 +125,9 @@ Deno.test('the daily plan puts weak high-weight topics first, sends weak prerequ
   mastery.set('math.geo.circles', { ...practised(1, 15, days(-40)), next_review_at: days(-1).toISOString() });
   ok(buildDailyPlan({ ...input, minutes: 60 }).some((task) => task.topic_code === 'math.geo.circles' && task.reason === 'review'), 'due review');
   equal(buildDailyPlan({ ...input, minutes: 0 }), [], 'no time, no tasks');
+  // Topics without questions yet are left out rather than planned.
+  const available = new Set(['math.alg.quadratic', 'math.geo.circles']);
+  equal(buildDailyPlan({ ...input, minutes: 60, available }).map((task) => task.topic_code).sort(), ['math.alg.quadratic', 'math.geo.circles'], 'only available topics');
 });
 
 Deno.test('the predicted range is honest about how much we know', () => {

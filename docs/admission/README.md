@@ -10,7 +10,7 @@ Product thesis and feature list: `docs/product/11_NATIONAL_ADMISSION.md` (strate
 |---|---|---|
 | Engine: exam formats, topic graph, mastery, daily plan, prediction | `packages/subject-core` | Phase 1, built |
 | Formula rendering, `\( … \)` inline and `\[ … \]` display | `packages/assessment-web/src/MathText.tsx` (KaTeX 0.19.0, loaded only when a question has a formula) | Phase 1, built; used in Exam and Assessment Cloud previews |
-| Question bank, review and item statistics | Assessment Cloud, in a Schood content workspace; items tagged `topic:<code>` and `difficulty:<easy\|medium\|hard>` | Phase 2 |
+| Question bank, review and item statistics | Assessment Cloud, in a Schood content workspace; each question's `classification` holds its topic codes and estimated difficulty, and the private key holds the worked solution | Phase 2 |
 | Learner state (goal, mastery, answers, daily plans) | New `learner_subject_*` tables, separate from the English `learner_language_*` tables | Phase 2 |
 | Server API | `supabase/functions/admission` | Phase 2 |
 | Learner app and centre view | `apps/admission`, Pages project `schood-admission`, working domain `admission.schood.online` | Phase 2 |

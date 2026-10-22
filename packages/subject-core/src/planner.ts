@@ -30,6 +30,8 @@ export interface PlanInput {
   now: Date;
   examDate: Date | null;
   minutes: number;
+  /** Topics that have practice questions. Others are left out of the plan. */
+  available?: ReadonlySet<string>;
 }
 
 const DAY = 86_400_000;
@@ -84,7 +86,9 @@ export function topicPriorities(input: PlanInput): TopicPriority[] {
       }
     }
   }
-  return [...priorities.values()].sort((a, b) => b.priority - a.priority || a.topic_code.localeCompare(b.topic_code));
+  return [...priorities.values()]
+    .filter((row) => !input.available || input.available.has(row.topic_code))
+    .sort((a, b) => b.priority - a.priority || a.topic_code.localeCompare(b.topic_code));
 }
 
 export function buildDailyPlan(input: PlanInput): PlanTask[] {

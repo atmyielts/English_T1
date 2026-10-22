@@ -257,6 +257,8 @@ export const uz: Record<keyof typeof en, string> = {
   'fields.rubricHint': 'Baholovchi tomonidan baholash talab qilinadi. Tanlangan baholash mezonlari ushbu savol versiyasiga biriktiriladi.',
   'fields.privateKey': 'Maxfiy baholash kaliti',
   'fields.privateKeyHint': 'Bu kalitni faqat vakolatli mualliflar va tekshiruvchilar o‘qiy oladi. U nomzod ko‘rinishiga kirmaydi.',
+  'fields.solution': 'Yechim',
+  'fields.solutionHint': 'Ixtiyoriy. O‘quvchiga faqat mashqda javob berganidan keyin ko‘rsatiladi, imtihon paytida hech qachon. Formulalarni qator ichida \\( … \\), alohida qatorda \\[ … \\] ko‘rinishida yozing.',
   'fields.correctOption': 'To‘g‘ri variant {number}: {text}',
   'fields.enterOptionText': 'Variant matnini kiriting',
   'fields.moveUpLabel': '{number}-to‘g‘ri javobni yuqoriga surish',

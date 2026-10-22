@@ -17,6 +17,7 @@
     "apps/assessment-cloud",
     "apps/exam",
     "apps/proctor",
+    "apps/admission",
     "apps/english-hub",
     "workers/*",
     "packages/*"
