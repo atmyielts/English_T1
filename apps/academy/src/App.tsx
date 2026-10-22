@@ -195,6 +195,8 @@ const GuardianRelationshipsView = lazy(loadGuardianRelationshipsView);
 const TeacherRetentionView = lazy(loadTeacherRetentionView);
 const loadHomeworkView = () => import('./components/office/HomeworkView').then((module) => ({ default: module.HomeworkView }));
 const HomeworkView = lazy(loadHomeworkView);
+const loadStudentMistakesView = () => import('./components/students/StudentMistakesView').then((module) => ({ default: module.StudentMistakesView }));
+const StudentMistakesView = lazy(loadStudentMistakesView);
 const IntelligenceOperationsView = lazy(loadIntelligenceOperationsView);
 const StudentImportView = lazy(loadStudentImportView);
 const BusinessPlatformView = lazy(loadBusinessPlatformView);
@@ -246,7 +248,7 @@ type DirectoryWorkspaceAcademy = {
 };
 type WorkspaceMode = 'teacher' | 'student';
 type OfficeView = 'homework' | 'imports' | 'rooms' | 'today' | 'academy' | 'platform' | 'services' | 'assessments' | 'business' | 'commercial' | 'academic' | 'relationships' | 'retention' | 'intelligence' | 'operations' | 'os' | 'contacts' | 'inbox' | 'announcements' | 'alerts' | 'classrooms' | 'offers' | 'payments' | 'entitlements';
-type StudentPortalView = 'academy' | 'classrooms' | 'messages' | 'alerts' | 'access' | 'requests' | 'plan' | 'assessments';
+type StudentPortalView = 'academy' | 'classrooms' | 'messages' | 'alerts' | 'access' | 'requests' | 'plan' | 'assessments' | 'mistakes';
 
 const OFFICE_VIEW_PRELOADERS: Partial<Record<OfficeView, () => Promise<unknown>>> = {
   academy: loadAcademyView,
@@ -309,7 +311,7 @@ type ClassroomLandingSettings = Omit<ClassroomLandingFormState, 'description'>;
 
 const OFFICE_VIEWS: OfficeView[] = ['imports', 'rooms', 'today', 'academy', 'platform', 'services', 'assessments', 'business', 'commercial', 'academic', 'relationships', 'intelligence', 'retention', 'operations', 'classrooms', 'contacts', 'inbox', 'announcements', 'alerts', 'offers', 'payments', 'entitlements', 'os', 'homework'];
 const ACADEMY_STAFF_ROLES = new Set(['owner', 'admin', 'center_admin', 'branch_manager', 'manager', 'counselor', 'receptionist', 'salesperson', 'cashier', 'accountant', 'payroll_officer', 'parent_liaison', 'teacher', 'assistant']);
-const STUDENT_PORTAL_VIEWS: StudentPortalView[] = ['academy', 'classrooms', 'messages', 'alerts', 'access', 'requests', 'plan', 'assessments'];
+const STUDENT_PORTAL_VIEWS: StudentPortalView[] = ['academy', 'classrooms', 'messages', 'alerts', 'access', 'requests', 'plan', 'assessments', 'mistakes'];
 const CLASSROOM_AUTO_REFRESH_MS = 12000;
 const CLASSROOM_BOTTOM_THRESHOLD_PX = 56;
 const CLASSROOM_RESOURCE_KIND_LABELS: Record<TeacherStudioClassroomResource['kind'], string> = {
@@ -769,6 +771,7 @@ const STUDENT_PORTAL_LABELS: Record<StudentPortalView, string> = {
   requests: 'My requests',
   plan: 'Learning plan',
   assessments: 'My assessments',
+  mistakes: 'My mistakes',
 };
 
 const toAuthUrl = (): string => {
@@ -4948,6 +4951,12 @@ const App = () => {
             onSelect: () => navigate(academyScopedPath('/academy/student/assessments', studentAcademyId)),
             onPrepare: () => { void loadStudentAssessmentsView().catch(() => undefined); },
           },
+          ...(academyHomeworkOsEnabled ? [{
+            id: 'student-mistakes', label: 'My mistakes', icon: <ShieldAlert size={17} />,
+            active: studentPortalView === 'mistakes',
+            onSelect: () => navigate(academyScopedPath('/academy/student/mistakes', studentAcademyId)),
+            onPrepare: () => { void loadStudentMistakesView().catch(() => undefined); },
+          }] : []),
         ],
       },
       {
@@ -5100,6 +5109,12 @@ const App = () => {
             {studentPortalView === 'requests' || studentPortalView === 'plan' ? (
               <LazyRouteBoundary fallback={<WorkspaceSectionSkeleton />}>
                 <StudentServicesView academyId={studentAcademyId} mode={studentPortalView} classrooms={studentClassrooms} formatDate={formatDate} />
+              </LazyRouteBoundary>
+            ) : null}
+
+            {studentPortalView === 'mistakes' && academyHomeworkOsEnabled && me?.user?.id ? (
+              <LazyRouteBoundary fallback={<WorkspaceSectionSkeleton />}>
+                <StudentMistakesView key={studentAcademyId} academyId={studentAcademyId} actorId={me.user.id} />
               </LazyRouteBoundary>
             ) : null}
 

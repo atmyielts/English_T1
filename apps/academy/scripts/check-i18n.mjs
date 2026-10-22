@@ -326,7 +326,15 @@ const runtimeKeys = [
   "Handed in",
   "On time",
   "Reviewed",
-  "Median review time"
+  "Median review time",
+  "Headline",
+  "City",
+  "Level",
+  "Price (as you want it shown)",
+  "Schedule",
+  "Start date",
+  "Seats",
+  "Teacher"
 ];
 const files = [];
 
