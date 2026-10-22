@@ -208,7 +208,9 @@ const groupMistakes = (
       lesson: topic ? lessonFor(topic) : null,
     };
     group.count += Number(row.error_frequency ?? 1);
-    if (group.examples.length < 3 && !group.examples.includes(example)) group.examples.push(example);
+    // For a topic, show only the learner's own sentences ("wrong → right"), not lesson descriptions.
+    const isLearnerSentence = !topic || example.includes("→");
+    if (isLearnerSentence && group.examples.length < 3 && !group.examples.includes(example)) group.examples.push(example);
     if (status === "open") group.status = "open";
     groups.set(key, group);
   }
