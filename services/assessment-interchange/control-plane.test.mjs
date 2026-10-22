@@ -82,7 +82,7 @@ test(
       const migrations = readdirSync(
         new URL("../../supabase/migrations", import.meta.url),
       ).filter((name) => /^\d{14}_(assessment|proctor)_/.test(name)).sort();
-      assert.equal(migrations.length, 43);
+      assert.equal(migrations.length, 44);
       const program = readFileSync(
         new URL(
           "../../supabase/tests/assessment-cloud.fixture.sql",

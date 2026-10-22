@@ -360,8 +360,7 @@ try {
   await takeoverRace(query=>docker(['exec','-i',container,'psql','-At','-U','postgres','-v','ON_ERROR_STOP=1'],query),parallelSql);
   const {joinRace}=await import('./test-assessment-join-race.mjs');
   await joinRace(query=>docker(['exec','-i',container,'psql','-At','-U','postgres','-v','ON_ERROR_STOP=1'],query),parallelSql);
-  process.stdout.write('Passed four-process join link races: one person in four tabs gets one registration; four joins for the last two places admit two, refuse one person as join_link_full
-');
+  process.stdout.write('Passed four-process join link races: one person in four tabs gets one registration; four joins for the last two places admit two, refuse one person as join_link_full\n');
   process.stdout.write('Passed four-process device takeover race: three confirmed takeovers form one epoch chain with one holder; the racing old-device answer is saved before a takeover or refused as superseded\n');
 } finally {
   spawnSync('docker',['stop',container],{encoding:'utf8',timeout:20000});

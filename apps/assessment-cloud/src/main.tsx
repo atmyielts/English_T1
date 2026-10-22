@@ -568,8 +568,7 @@ function App() {
                         </li>
                       ))}
                     </ul>
-                    <details className="manual-registration">
-                    <summary>{t("windows.register")}</summary>
+                    <h2>{t("windows.register")}</h2>
                     <form
                       onSubmit={prevent(async () => {
                         await command("registration.create", {
@@ -607,7 +606,6 @@ function App() {
                     <p className="hint">
                       {t("windows.candidateHint")}
                     </p>
-                    </details>
                   </section>
                   <section className="editor">
                     <h2>{t("windows.schedule")}</h2>
