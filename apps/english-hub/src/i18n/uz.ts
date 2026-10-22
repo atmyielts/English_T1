@@ -291,7 +291,7 @@ export const uz: Partial<Record<string, string>> = {
   // Tutor
   'tutor.eyebrow': 'Ustoz',
   'tutor.title': 'AI ustozingiz',
-  'tutor.lead': 'Savol bering, gaplaringizni tekshiring yoki suhbatni mashq qiling. Ustoz darajangiz va maqsadingizni biladi.',
+  'tutor.lead': "Savol bering, gaplaringizni tekshiring yoki suhbatni mashq qiling. Ustoz darajangiz, maqsadingiz va takrorlanadigan xatolaringizni biladi.",
   'tutor.mode': 'Ustoz rejimi',
   'tutor.mode.chat': 'Chat',
   'tutor.mode.voice': 'Ovoz',
@@ -314,7 +314,7 @@ export const uz: Partial<Record<string, string>> = {
   'tutor.memory.keep': 'Saqlash',
   'tutor.memory.forget': 'Unutish',
   'tutor.memory.empty': 'Hali hech narsa saqlanmagan.',
-  'tutor.memory.device': 'Qaydlar va chat tarixi shu qurilmada saqlanadi.',
+  'tutor.memory.device': "Eslatmalar hisobingizda saqlanadi, shuning uchun ustoz ularni istalgan qurilmada eslaydi. Suhbatning oʻzi faqat shu qurilmada saqlanadi.",
 
   // Settings
   'settings.eyebrow': 'Sozlamalar',

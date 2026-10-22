@@ -47,9 +47,9 @@ const safeRoute = (route: string): string | null => {
 const ChatTutor = () => {
   const t = useT();
   const errorText = useErrorMessage();
-  const { onboarding } = useEnglish();
   const [messages, setMessages] = useState<Message[]>(() => readJson<Message[]>(HISTORY_KEY, []).filter((m) => m && m.content));
-  const [memories, setMemories] = useState<Memory[]>(() => readJson<Memory[]>(MEMORY_KEY, []).filter((m) => m && m.text));
+  const [memories, setMemories] = useState<Memory[]>([]);
+  const [memoryError, setMemoryError] = useState<string | null>(null);
   const [suggested, setSuggested] = useState<Array<{ kind: string; text: string }>>([]);
   const [actions, setActions] = useState<TutorReply['suggested_actions']>([]);
   const [input, setInput] = useState('');
@@ -58,18 +58,49 @@ const ChatTutor = () => {
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { writeJson(HISTORY_KEY, messages.slice(-30)); }, [messages]);
-  useEffect(() => { writeJson(MEMORY_KEY, memories); }, [memories]);
+  // Memories live on the account, so they follow the learner to every device.
+  // Notes kept on this device by the earlier tutor move to the account once.
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const local = readJson<Memory[]>(MEMORY_KEY, []).filter((m) => m && m.text);
+        const response = local.length
+          ? await edge<{ memories: Memory[] }>('hub', '/tutor/memory', { body: { action: 'add', memories: local.map(({ kind, text }) => ({ kind, text })) } })
+          : await edge<{ memories: Memory[] }>('hub', '/tutor/memory');
+        if (local.length) {
+          try { window.localStorage.removeItem(MEMORY_KEY); } catch { /* storage blocked */ }
+        }
+        if (!cancelled) setMemories(response.memories ?? []);
+      } catch (cause) {
+        if (!cancelled) setMemoryError(errorText(cause));
+      }
+    };
+    void load();
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const keepMemory = async (memo: { kind: string; text: string }) => {
+    try {
+      const response = await edge<{ memories: Memory[] }>('hub', '/tutor/memory', { body: { action: 'add', memory: memo } });
+      setMemories(response.memories ?? []);
+      setSuggested((current) => current.filter((entry) => entry.text !== memo.text));
+    } catch (cause) {
+      setMemoryError(errorText(cause));
+    }
+  };
+
+  const forgetMemory = async (id: string) => {
+    try {
+      const response = await edge<{ memories: Memory[] }>('hub', '/tutor/memory', { body: { action: 'remove', id } });
+      setMemories(response.memories ?? []);
+    } catch (cause) {
+      setMemoryError(errorText(cause));
+    }
+  };
   useEffect(() => { endRef.current?.scrollIntoView({ block: 'end' }); }, [messages, busy]);
 
-  const profileMemories = (): Array<Pick<Memory, 'id' | 'kind' | 'text'>> => {
-    const value = onboarding.value;
-    if (!value) return [];
-    const parts: Array<Pick<Memory, 'id' | 'kind' | 'text'>> = [];
-    if (value.level) parts.push({ id: 'profile-level', kind: 'context', text: `My current English level is about ${value.level}.` });
-    if (value.targetLevel) parts.push({ id: 'profile-target', kind: 'goal', text: `I want to reach ${value.targetLevel}.` });
-    if (value.goalKeys.length) parts.push({ id: 'profile-goals', kind: 'goal', text: `I am learning English for: ${value.goalKeys.join(', ').replace(/_/g, ' ')}.` });
-    return parts;
-  };
 
   const send = async (text: string) => {
     const content = text.trim();
@@ -83,7 +114,7 @@ const ChatTutor = () => {
       const reply = await edge<TutorReply>('hub', '/ai/tutor-chat', {
         body: {
           messages: next.slice(-16),
-          memories: [...profileMemories(), ...memories.map(({ id, kind, text: memo }) => ({ id, kind, text: memo }))],
+          memories: [],
         },
       });
       if (reply.ai_status !== 'ok' || !reply.reply) {
@@ -161,10 +192,7 @@ const ChatTutor = () => {
                 <button
                   type="button"
                   className="quiet"
-                  onClick={() => {
-                    setMemories((current) => [...current, { id: `mem_${Date.now().toString(36)}`, kind: memo.kind, text: memo.text, added_at: new Date().toISOString() }]);
-                    setSuggested((current) => current.filter((entry) => entry !== memo));
-                  }}
+                  onClick={() => void keepMemory(memo)}
                 >
                   {t('tutor.memory.keep')}
                 </button>
@@ -177,11 +205,12 @@ const ChatTutor = () => {
             {memories.map((memo) => (
               <li key={memo.id} className="en-row" style={{ fontSize: '.85rem' }}>
                 <span style={{ flex: 1 }}>{memo.text}</span>
-                <button type="button" className="is-link" onClick={() => setMemories((current) => current.filter((entry) => entry.id !== memo.id))}>{t('tutor.memory.forget')}</button>
+                <button type="button" className="is-link" onClick={() => void forgetMemory(memo.id)}>{t('tutor.memory.forget')}</button>
               </li>
             ))}
           </ul>
         ) : <p>{t('tutor.memory.empty')}</p>}
+        {memoryError ? <p className="error">{memoryError}</p> : null}
         <p className="hint">{t('tutor.memory.device')}</p>
       </Panel>
     </div>

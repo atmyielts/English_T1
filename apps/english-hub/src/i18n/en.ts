@@ -291,7 +291,7 @@ export const en: Record<string, string> = {
   // Tutor
   'tutor.eyebrow': 'Tutor',
   'tutor.title': 'Your AI tutor',
-  'tutor.lead': 'Ask questions, check your sentences, or practise a conversation. The tutor knows your level and goal.',
+  'tutor.lead': "Ask questions, check your sentences, or practise a conversation. The tutor knows your level, your goal and the mistakes you keep making.",
   'tutor.mode': 'Tutor mode',
   'tutor.mode.chat': 'Chat',
   'tutor.mode.voice': 'Speak',
@@ -314,7 +314,7 @@ export const en: Record<string, string> = {
   'tutor.memory.keep': 'Keep',
   'tutor.memory.forget': 'Forget',
   'tutor.memory.empty': 'Nothing saved yet.',
-  'tutor.memory.device': 'Notes and chat history are stored on this device.',
+  'tutor.memory.device': "Notes are saved to your account, so the tutor remembers them on any device. The chat itself stays on this device.",
 
   // Settings
   'settings.eyebrow': 'Settings',
