@@ -20,6 +20,14 @@ import {
   STUDIO_SKILLS,
   type StudioServiceKey,
 } from "../_shared/english-content-studio.ts";
+import { callEnglishAIWithStatus, isEnglishAIConfigured } from "../_shared/english-ai.ts";
+import {
+  cleanDraft,
+  DRAFT_SYSTEM_PROMPT,
+  draftExample,
+  draftUserPayload,
+  repairUserPayload,
+} from "../_shared/english-content-draft.ts";
 
 type JsonRecord = Record<string, unknown>;
 type ServiceKey = "reading" | "listening" | "writing" | "speaking" | "grammar" | "vocabulary" | "immersion";
@@ -541,6 +549,82 @@ const loadStudioItem = async (ctx: StudioContext, key: StudioServiceKey, id: str
   };
 };
 
+/**
+ * Draft with AI: a new item on the admin's topic, in editor shape, checked by
+ * the same validator as a save. Nothing is written; the admin reviews and saves.
+ */
+const draftStudioItem = async (ctx: StudioContext, key: StudioServiceKey, body: JsonRecord): Promise<Response> => {
+  const topic = toText(body.topic, 200);
+  const level = toText(body.level, 4).toUpperCase();
+  const notes = toText(body.notes, 600);
+  if (topic.length < 3) return json(422, { error: "Describe the topic in a few words.", errors: [{ field: "topic", message: "Describe the topic in a few words." }] });
+  if (!/^(A1|A2|B1|B2|C1|C2)$/.test(level)) return json(422, { error: "Choose a level.", errors: [{ field: "level", message: "Choose a level." }] });
+  if (!isEnglishAIConfigured()) return json(503, { error: "AI drafting is not configured on this server.", code: "ai_unconfigured" });
+
+  // One real published item of this skill, nearest the requested level, shows the model the shape.
+  const config = STUDIO_SKILLS[key];
+  const { data: candidates, error } = await ctx.sb
+    .from(config.table)
+    .select("id, level")
+    .eq("language_id", ctx.scope.languageId)
+    .eq("status", "published")
+    .limit(200);
+  if (error) return json(500, { error: "Could not load an example item", details: describeError(error) });
+  const order = ["A1", "A2", "B1", "B2", "C1", "C2"];
+  const rows = (Array.isArray(candidates) ? candidates as JsonRecord[] : [])
+    .sort((a, b) => Math.abs(order.indexOf(String(a.level)) - order.indexOf(level)) - Math.abs(order.indexOf(String(b.level)) - order.indexOf(level)));
+  const exampleRow = rows[0] ? await loadParent(ctx, key, String(rows[0].id)) : null;
+  if (!exampleRow) return json(409, { error: "Publish at least one item in this skill first; it is used as the pattern." });
+  const example = draftExample(rowToStudioPayload(key, exampleRow, await loadChildren(ctx, key, String(exampleRow.id))));
+
+  const request = { serviceKey: key, topic, level, notes };
+  const first = await callEnglishAIWithStatus<unknown>(
+    { systemPrompt: DRAFT_SYSTEM_PROMPT, userPayload: draftUserPayload(request, example), temperature: 0.7 },
+    null,
+  );
+  let draft = first.status === "ok" ? cleanDraft(first.data, request) : null;
+  if (!draft) {
+    return json(502, {
+      error: "The AI did not return a usable draft. Try again or rephrase the topic.",
+      ai_status: first.status,
+      details: first.error ? first.error.slice(0, 200) : undefined,
+    });
+  }
+
+  let check = normalizeStudioItem(key, draft.item, draft.children);
+  if (!check.ok) {
+    const repair = await callEnglishAIWithStatus<unknown>(
+      { systemPrompt: DRAFT_SYSTEM_PROMPT, userPayload: repairUserPayload(request, draft, check.errors), temperature: 0.2 },
+      null,
+    );
+    const repaired = repair.status === "ok" ? cleanDraft(repair.data, request) : null;
+    if (repaired) {
+      const recheck = normalizeStudioItem(key, repaired.item, repaired.children);
+      if (recheck.ok || recheck.errors.length < check.errors.length) {
+        draft = repaired;
+        check = recheck;
+      }
+    }
+  }
+
+  // Never suggest a slug that is already taken.
+  const baseSlug = toText(draft.item.slug, 120) || "draft";
+  let slugQuery = ctx.sb.from(config.table).select("slug").eq("language_id", ctx.scope.languageId).like("slug", `${baseSlug}%`);
+  if (config.slugScope === "product_language") slugQuery = slugQuery.eq("product_id", ctx.productId);
+  const { data: taken } = await slugQuery.limit(1000);
+  const takenSlugs = (Array.isArray(taken) ? taken as JsonRecord[] : []).map((row) => String(row.slug));
+  let suffix = 2;
+  while (takenSlugs.includes(String(draft.item.slug))) draft.item.slug = `${baseSlug}-${suffix++}`;
+
+  return json(200, {
+    ok: true,
+    service_key: key,
+    editor: draft,
+    errors: check.ok ? [] : check.errors,
+    example_id: String(exampleRow.id),
+  });
+};
+
 /** Is `slug` used by another item of this skill (same scope as the table's unique key)? */
 const slugTaken = async (ctx: StudioContext, key: StudioServiceKey, slug: string, excludeId: string | null): Promise<boolean> => {
   const config = STUDIO_SKILLS[key];
@@ -851,7 +935,7 @@ serve(async (req) => {
       });
     }
 
-    if (route === "/content/item" || route === "/content/item/duplicate") {
+    if (route === "/content/item" || route === "/content/item/duplicate" || route === "/content/draft") {
       if (!isStudioServiceKey(serviceKey)) return json(422, { error: "A valid service_key is required" });
       const productId = studioProductId(products, serviceKey);
       if (!productId) return json(500, { error: `The English ${serviceKey} product is not configured` });
@@ -869,6 +953,9 @@ serve(async (req) => {
       if (req.method === "PUT" && route === "/content/item") {
         if (!id) return json(422, { error: "id is required" });
         return await updateStudioItem(ctx, serviceKey, id, body.item, body.children);
+      }
+      if (req.method === "POST" && route === "/content/draft") {
+        return await draftStudioItem(ctx, serviceKey, body as JsonRecord);
       }
       if (req.method === "POST" && route === "/content/item/duplicate") {
         if (!id) return json(422, { error: "id is required" });
