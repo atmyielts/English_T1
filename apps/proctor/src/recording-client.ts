@@ -8,6 +8,8 @@ import type {
   RecordingRow,
   RecordingSegment,
 } from "../../../packages/proctor-web/src/recording-types";
+import { LocalizedError } from "../../../packages/assessment-web/src/i18n/translate.ts";
+import { AppError } from "./i18n/index.ts";
 export type { RecordingPage, RecordingRow, RecordingSegment };
 export async function recordingPage(
   id: string,
@@ -24,9 +26,7 @@ export async function recordingPage(
       actor,
     );
   } catch {
-    throw new Error(
-      "Recording authorization could not be confirmed. Refresh the session before retrying.",
-    );
+    throw new AppError("client.recordingAuthorization");
   }
 }
 export async function recordingBytes(
@@ -38,9 +38,7 @@ export async function recordingBytes(
 ) {
   const raw = import.meta.env.VITE_PROCTOR_EVIDENCE_URL as string | undefined;
   if (!raw) {
-    throw new Error(
-      "Private recording playback is not configured. Ask your institution administrator.",
-    );
+    throw new AppError("client.playbackUnconfigured");
   }
   const base = new URL(raw),
     loopback = ["localhost", "127.0.0.1", "[::1]"].includes(base.hostname);
@@ -48,11 +46,11 @@ export async function recordingBytes(
     (base.protocol !== "https:" && !(base.protocol === "http:" && loopback)) ||
     base.username || base.password || base.search || base.hash ||
     base.pathname !== "/"
-  ) throw new Error("The private evidence endpoint must be a secure root URL.");
-  if (!supabase) throw new Error("Sign in to continue.");
+  ) throw new LocalizedError("capture.privateEvidenceEndpointSecure");
+  if (!supabase) throw new LocalizedError("common.signIn");
   const { data } = await supabase.auth.getSession();
   if (!data.session || data.session.user.id !== actor) {
-    throw new Error("The signed-in account changed. Reopen this session.");
+    throw new LocalizedError("error.account_changed");
   }
   const url = new URL(
     `/v1/recordings/${id}/segments/${segment.sequence}`,
@@ -72,13 +70,11 @@ export async function recordingBytes(
       cache: "no-store",
     });
     if (!response.ok) {
-      throw new Error(
-        "Recording access was denied or is no longer available. Refresh the session before retrying.",
-      );
+      throw new AppError("client.recordingDenied");
     }
     reader = response.body?.getReader();
     if (!reader || !segment.byte_length || segment.byte_length > 8388608) {
-      throw new Error("Recording segment metadata is invalid.");
+      throw new AppError("client.segmentInvalid");
     }
     const bytes = new Uint8Array(segment.byte_length);
     let offset = 0;
@@ -86,14 +82,14 @@ export async function recordingBytes(
       const { done, value } = await reader.read();
       if (done) break;
       if (offset + value.length > bytes.length) {
-        throw new Error("Recording bytes exceed their pinned manifest.");
+        throw new AppError("client.bytesExceed");
       }
       bytes.set(value, offset);
       offset += value.length;
     }
     if (
       offset !== bytes.length || await captureDigest(bytes) !== segment.sha256
-    ) throw new Error("Recording content failed integrity verification.");
+    ) throw new AppError("client.integrity");
     return bytes;
   } finally {
     clearTimeout(timer);

@@ -4,7 +4,7 @@ import {
   recordingReferences,
 } from "../../../packages/assessment-core/src/recording-citations";
 import type { RecordingRow } from "./recording-client";
-import { label } from "./types";
+import { useAppT, useCodeText, useErrorText } from "./i18n/index.ts";
 export interface RecordingSelection {
   reference: RecordingReference;
   source: string;
@@ -17,17 +17,13 @@ export function RecordingCitationPicker(
     selected: (value: RecordingSelection) => void;
   },
 ) {
+  const t = useAppT(), code = useCodeText(), problem = useErrorText();
   const [first, setFirst] = useState("1"),
     [last, setLast] = useState(String(recording.last_sequence)),
     [error, setError] = useState(""),
     [notice, setNotice] = useState("");
   if (recording.state !== "sealed" || !recording.last_sequence) {
-    return (
-      <p className="hint">
-        Only sealed, nonempty recording timelines can be cited in permanent
-        findings.
-      </p>
-    );
+    return <p className="hint">{t("picker.sealedOnly")}</p>;
   }
   return (
     <form
@@ -44,27 +40,17 @@ export function RecordingCitationPicker(
             head_hash: recording.head_hash,
           }]);
           selected({ reference, source: recording.source });
-          setNotice(
-            "Recording interval prepared. Select it in the relevant human finding below.",
-          );
+          setNotice(t("picker.prepared"));
         } catch (cause) {
-          setError(
-            cause instanceof Error
-              ? cause.message
-              : "Could not prepare this citation.",
-          );
+          setError(problem(cause, "picker.failed"));
         }
       }}
     >
-      <h5>Prepare recording evidence</h5>
-      <p className="hint">
-        Choose timeline entry numbers you personally reviewed. This pins the
-        immutable recording and selected interval, including any missing-footage
-        entries; it does not generate a misconduct decision.
-      </p>
+      <h5>{t("picker.title")}</h5>
+      <p className="hint">{t("picker.hint")}</p>
       <div className="form-pair">
         <label>
-          First recording entry<input
+          {t("picker.first")}<input
             type="number"
             required
             min={1}
@@ -75,7 +61,7 @@ export function RecordingCitationPicker(
           />
         </label>
         <label>
-          Last recording entry<input
+          {t("picker.last")}<input
             type="number"
             required
             min={Number(first) || 1}
@@ -87,7 +73,7 @@ export function RecordingCitationPicker(
         </label>
       </div>
       <button className="quiet">
-        Prepare {label(recording.source)} interval
+        {t("picker.submit", { source: code("source", recording.source) })}
       </button>
       {notice && <p role="status">{notice}</p>}
       {error && <p role="alert" className="error">{error}</p>}

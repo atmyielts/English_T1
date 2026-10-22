@@ -4,20 +4,17 @@ import { SessionActions } from "./SessionActions";
 import { useRecordingReferences } from "./use-recording-references";
 import { PreparedRecordings } from "./PreparedRecordings";
 import {
-  type Command,
-  dateTime,
-  identifier,
-  label,
+  evidenceConfigured,
+  liveConfigured,
   type ScreenProps,
   type SessionDetail,
 } from "./types";
+import { useAppT, useCodeText, useDateTime } from "./i18n/index.ts";
 import { RecordingPanel } from "./RecordingPanel";
 import { LivePanel } from './LivePanel';
 import { CasePanel } from "./CasePanel";
-import {
-  type RecordingSelection,
-  referenceKey,
-} from "./RecordingCitationPicker";
+import { SnapshotGallery } from "./SnapshotGallery";
+import { referenceKey } from "./RecordingCitationPicker";
 
 export function SessionScreen({
   rows,
@@ -39,6 +36,7 @@ export function SessionScreen({
   reviewerId: string;
   tenantId: string;
 }) {
+  const t = useAppT(), code = useCodeText(), dateTime = useDateTime();
   const [caseTitle, setCaseTitle] = useState("");
   const {
     recordingSelections,
@@ -50,20 +48,12 @@ export function SessionScreen({
     <>
       <div className="page-heading">
         <div>
-          <p className="eyebrow">Institution monitoring</p>
-          <h1>Exam sessions</h1>
-          <p>
-            Observe authorized sessions and review browser reports with their
-            source intact.
-          </p>
+          <p className="eyebrow">{t("sessions.eyebrow")}</p>
+          <h1>{t("nav.sessions")}</h1>
+          <p>{t("sessions.lead")}</p>
         </div>
       </div>
-      <p className="service-warning">
-        Recorded evidence can be inspected by assigned reviewers when the
-        private recording service is enabled. Live feeds are available only
-        for enabled institution policies and assigned observers. Browser events
-        and connection interruptions are not findings of misconduct.
-      </p>
+      <p className="service-warning">{t("sessions.warning")}</p>
       <div className="split proctor-session-layout">
         <SessionList
           rows={rows}
@@ -73,30 +63,24 @@ export function SessionScreen({
         />
         <section aria-busy={detailLoading}>
           {detailLoading
-            ? <p role="status">Loading session evidence…</p>
+            ? <p role="status">{t("sessions.loadingEvidence")}</p>
             : !detail
             ? (
               <>
-                <h2>Session evidence</h2>
-                <p>
-                  Select a session to inspect its timeline, controls and review
-                  cases.
-                </p>
+                <h2>{t("sessions.evidence")}</h2>
+                <p>{t("sessions.selectHint")}</p>
               </>
             )
             : (
               <>
                 <div className="record-heading">
-                  <h2>Session evidence</h2>
+                  <h2>{t("sessions.evidence")}</h2>
                   <span className="state-badge">
-                    {label(detail.session.state)}
+                    {code("state", detail.session.state)}
                   </span>
                 </div>
-                <p>Candidate: {detail.session.candidate_id}</p>
-                <p className="hint">
-                  A browser event describes a reported interaction. It is not a
-                  finding of misconduct.
-                </p>
+                <p>{t("sessions.candidate", { id: detail.session.candidate_id })}</p>
+                <p className="hint">{t("sessions.eventHint")}</p>
                 {canObserve && detail.session.state !== "completed" && (
                   <SessionActions
                     session={detail.session}
@@ -104,22 +88,23 @@ export function SessionScreen({
                     command={command}
                   />
                 )}
-                {canObserve && detail.session.policy_snapshot.mode === 'live' && detail.session.state !== 'completed' && <LivePanel key={`${tenantId}:${reviewerId}:${detail.session.id}`} tenant={tenantId} actor={reviewerId} session={detail.session.id} />}
-                <h3 className="following-heading">Browser event timeline</h3>
-                {!detail.events.length && (
-                  <p>No browser events have been received for this session.</p>
-                )}
+                {liveConfigured && canObserve && detail.session.policy_snapshot.mode === 'live' && detail.session.state !== 'completed' && <LivePanel key={`${tenantId}:${reviewerId}:${detail.session.id}`} tenant={tenantId} actor={reviewerId} session={detail.session.id} />}
+                <h3 className="following-heading">{t("sessions.timeline")}</h3>
+                {!detail.events.length && <p>{t("sessions.noEvents")}</p>}
                 <ol className="evidence-timeline">
                   {detail.events.map((event) => (
                     <li key={event.id}>
-                      <strong>{label(event.kind)}</strong>
-                      <span>Source: {label(event.source)}</span>
-                      <span>Reported: {dateTime(event.occurred_at)}</span>
-                      <span>Received: {dateTime(event.received_at)}</span>
+                      <strong>{code("event", event.kind)}</strong>
+                      <span>{t("sessions.eventSource", { source: code("source", event.source) })}</span>
+                      <span>{t("sessions.reported", { time: dateTime(event.occurred_at) })}</span>
+                      <span>{t("sessions.received", { time: dateTime(event.received_at) })}</span>
                     </li>
                   ))}
                 </ol>
-                {canReview && (
+                {(canReview || canObserve) && (
+                  <SnapshotGallery key={`snapshots:${detail.session.id}:${reviewerId}:${tenantId}`} tenant={tenantId} actor={reviewerId} session={detail.session.id} interval={detail.session.policy_snapshot.snapshot_interval_seconds ?? 0} />
+                )}
+                {evidenceConfigured && canReview && (
                   <RecordingPanel
                     key={`${detail.session.id}:${reviewerId}:${tenantId}`}
                     session={detail.session.id}
@@ -129,7 +114,7 @@ export function SessionScreen({
                   />
                 )}
                 {canReview && recordingProblem && (
-                  <p className="error" role="alert">{recordingProblem}</p>
+                  <p className="error" role="alert">{t(recordingProblem)}</p>
                 )}
                 {canReview && recordingSelections.length > 0 && (
                   <PreparedRecordings
@@ -142,33 +127,28 @@ export function SessionScreen({
                       )}
                   />
                 )}
-                <h3>Review cases</h3>
+                <h3>{t("sessions.cases")}</h3>
                 <form
                   onSubmit={(event) => {
                     event.preventDefault();
                     void command("case.create", {
                       session_id: detail.session.id,
                       title: caseTitle,
-                    }, "Review case opened.");
+                    }, t("sessions.caseOpened"));
                   }}
                 >
                   <label>
-                    Case title<input
+                    {t("sessions.caseTitle")}<input
                       required
                       maxLength={200}
                       value={caseTitle}
                       onChange={(event) => setCaseTitle(event.target.value)}
                     />
                   </label>
-                  <button disabled={busy}>Open review case</button>
+                  <button disabled={busy}>{t("sessions.openCase")}</button>
                 </form>
                 <p className="hint">
-                  This policy requires{" "}
-                  {detail.session.policy_snapshot.reviewer_quorum}{" "}
-                  agreeing human
-                  reviewer{detail.session.policy_snapshot.reviewer_quorum === 1
-                    ? ""
-                    : "s"}. Integrity findings do not change academic grades.
+                  {t("sessions.quorum", { count: detail.session.policy_snapshot.reviewer_quorum })}
                 </p>
                 {detail.cases.map((reviewCase) => (
                   <CasePanel
@@ -180,6 +160,7 @@ export function SessionScreen({
                     command={command}
                     reviewerId={reviewerId}
                     recordingSelections={recordingSelections}
+                    recordingsEnabled={evidenceConfigured}
                   />
                 ))}
               </>

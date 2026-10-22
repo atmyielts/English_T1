@@ -112,7 +112,7 @@ export async function recordingBrowserStack() {
     rpc(name, args) {
       assert.match(
         name,
-        /^(proctor_recording_(command|read|transport|checkpoint|catalog)|proctor_(command|can_access)|assessment_has_capability)$/,
+        /^(proctor_recording_(command|read|transport|checkpoint|catalog)|proctor_(command|can_access|case_outcome|candidate_outcomes)|assessment_has_capability)$/,
       );
       return query(
         `select to_jsonb(public.${name}(${
@@ -361,6 +361,7 @@ export async function recordingBrowserStack() {
           "20261014120500_proctor_recordings",
           "20261014130500_proctor_recording_recovery",
           "20261014140500_proctor_recording_citations",
+          "20261022200000_proctor_adjudication",
         ].map((n) => `supabase/migrations/${n}.sql`),
         "supabase/tests/assessment-stack.fixture.sql",
       ]

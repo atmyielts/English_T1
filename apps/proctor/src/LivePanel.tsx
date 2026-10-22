@@ -13,6 +13,7 @@ import {
   type LivePeerPorts,
   type LivePeerView,
 } from "../../../packages/proctor-web/src/live-peer";
+import { useAppT } from "./i18n/index.ts";
 
 export interface LiveServices {
   configured: boolean;
@@ -28,11 +29,13 @@ const services: LiveServices = {
   sources: liveSources,
   ports: (tenant, actor, session, publisher) => livePorts(tenant, actor, session, undefined, publisher.id),
 };
-const names: Record<LiveSource, string> = {
-  camera: "Camera",
-  screen: "Screen",
-  microphone: "Microphone",
-};
+// Per-source catalog keys: source names inflect differently in each language.
+const names = { camera: "live.source.camera", screen: "live.source.screen", microphone: "live.source.microphone" } as const;
+const openKeys = { camera: "live.open.camera", screen: "live.open.screen", microphone: "live.open.microphone" } as const;
+const feedKeys = { camera: "live.feed.camera", screen: "live.feed.screen", microphone: "live.feed.microphone" } as const;
+const streamKeys = { camera: "live.stream.camera", screen: "live.stream.screen", microphone: "live.stream.microphone" } as const;
+const reconnectKeys = { camera: "live.reconnect.camera", screen: "live.reconnect.screen", microphone: "live.reconnect.microphone" } as const;
+const stopKeys = { camera: "live.stop.camera", screen: "live.stop.screen", microphone: "live.stop.microphone" } as const;
 
 /** Explicit subscriptions only. Account/session keys and the current authorized
  * catalog bound the receiver lifetime. No automatic candidate surveillance. */
@@ -46,16 +49,17 @@ export function LivePanel(
     allowedSources?:readonly LiveSource[];
   },
 ) {
+  const t = useAppT();
   const [catalog, setCatalog] = useState<LiveConnection[]>([]),
     [selected, setSelected] = useState<string[]>([]),
-    [problem, setProblem] = useState(""),
+    [problem, setProblem] = useState(false),
     [checking, setChecking] = useState(true),
     [refresh, setRefresh] = useState(0);
   useEffect(() => {
     let active = true, flight = false;
     setCatalog([]);
     setSelected([]);
-    setProblem("");
+    setProblem(false);
     setChecking(true);
     if (!service.configured) {
       setChecking(false);
@@ -76,14 +80,12 @@ export function LivePanel(
         setSelected((current) =>
           current.filter((id) => valid.some((row) => row.id === id))
         );
-        setProblem("");
+        setProblem(false);
       } catch {
         if (active) {
           setCatalog([]);
           setSelected([]);
-          setProblem(
-            "Live source access could not be confirmed. Feeds are closed. Refresh to check your assignment and reconnect.",
-          );
+          setProblem(true);
         }
       } finally {
         flight = false;
@@ -98,34 +100,23 @@ export function LivePanel(
     };
   }, [tenant, actor, session, service, refresh]);
   return (
-    <section className="live-monitoring" aria-label="Live monitoring">
+    <section className="live-monitoring" aria-label={t("live.label")}>
       <div className="record-heading">
-        <h3>Live monitoring</h3>
-        <span className="state-badge">Assigned observers only</span>
+        <h3>{t("live.label")}</h3>
+        <span className="state-badge">{t("live.badge")}</span>
       </div>
-      <p className="hint">
-        Open only the feeds you need. A missing feed or interrupted connection
-        is not evidence of misconduct. Saved recording is independent.
-      </p>
+      <p className="hint">{t("live.hint")}</p>
       {!service.configured
         ? (
-          <p role="status">
-            Live monitoring is not configured in this environment. Recording and
-            browser evidence remain separate.
-          </p>
+          <p role="status">{t("live.unconfigured")}</p>
         )
         : (
           <>
-            {problem && <p role="alert" className="error">{problem}</p>}
+            {problem && <p role="alert" className="error">{t("live.accessProblem")}</p>}
             {checking
-              ? <p role="status">Checking available live sources…</p>
+              ? <p role="status">{t("live.checking")}</p>
               : !catalog.length && !problem
-              ? (
-                <p role="status">
-                  No current live sources. The candidate must consent and
-                  connect the sources required by the live policy.
-                </p>
-              )
+              ? <p role="status">{t("live.none")}</p>
               : null}
             <div className="action-row">
               {catalog.filter(row=>!allowedSources||allowedSources.includes(row.source)).map((row) => (
@@ -137,7 +128,7 @@ export function LivePanel(
                   onClick={() =>
                     setSelected((current) => current.length>=maxFeeds?current:[...new Set([...current, row.id])])}
                 >
-                  Open {names[row.source].toLowerCase()}
+                  {t(openKeys[row.source])}
                 </button>
               ))}
               <button
@@ -145,7 +136,7 @@ export function LivePanel(
                 className="quiet"
                 onClick={() => setRefresh((value) => value + 1)}
               >
-                Refresh live sources
+                {t("live.refresh")}
               </button>
               {!!selected.length && (
                 <button
@@ -153,11 +144,11 @@ export function LivePanel(
                   className="quiet"
                   onClick={() => setSelected([])}
                 >
-                  Stop all live feeds
+                  {t("live.stopAll")}
                 </button>
               )}
             </div>
-            {maxFeeds<3&&<p className="hint">One feed per candidate on this board. Stop the current feed before choosing another source.</p>}
+            {maxFeeds<3&&<p className="hint">{t("live.oneFeed")}</p>}
             <div className="live-feed-grid">
               {selected.map((id) => {
                 const row = catalog.find((value) => value.id === id);
@@ -189,6 +180,7 @@ function LiveFeed(
     stop: () => void;
   },
 ) {
+  const t = useAppT();
   const [view, setView] = useState<LivePeerView | null>(null),
     [audible, setAudible] = useState(false),
     [retry, setRetry] = useState(0),
@@ -217,8 +209,7 @@ function LiveFeed(
         state: "failed",
         source,
         role: "viewer",
-        problem:
-          "Live monitoring is not correctly configured. Contact your institution administrator.",
+        problem: t("live.misconfigured"),
         stream: null,
         bytes: 0,
       });
@@ -254,19 +245,19 @@ function LiveFeed(
   }, [view?.stream, view?.state, audible]);
   const live = view?.state === "live";
   return (
-    <article className="live-feed" aria-label={`${names[source]} live feed`}>
+    <article className="live-feed" aria-label={t(feedKeys[source])}>
       <div className="record-heading">
-        <h4>{names[source]}</h4>
+        <h4>{t(names[source])}</h4>
         <span className="state-badge" role="status">
           {live
-            ? "Live media received"
+            ? t("live.state.live")
             : view?.state === "stalled"
-            ? "Interrupted · last frame hidden"
+            ? t("live.state.stalled")
             : view?.state === "failed"
-            ? "Connection failed"
+            ? t("live.state.failed")
             : view?.state === "closed"
-            ? "Closed"
-            : "Connecting…"}
+            ? t("live.state.closed")
+            : t("live.state.connecting")}
         </span>
       </div>
       <video
@@ -275,13 +266,10 @@ function LiveFeed(
         playsInline
         muted={!audible || !live}
         hidden={!live || source === "microphone"}
-        aria-label={`${names[source]} stream`}
+        aria-label={t(streamKeys[source])}
       />
       {source === "microphone" && live && (
-        <p>
-          Microphone media is arriving. Audio stays muted until you choose
-          Listen.
-        </p>
+        <p>{t("live.micArriving")}</p>
       )}
       {view?.problem && <p role="status" className="hint">{view.problem}</p>}
       {playProblem && (
@@ -295,7 +283,7 @@ function LiveFeed(
                 setPlayProblem(true),
             )}
         >
-          Play live media
+          {t("live.play")}
         </button>
       )}
       <div className="action-row">
@@ -315,7 +303,7 @@ function LiveFeed(
               }
             }}
           >
-            {audible ? "Mute" : "Listen"}
+            {audible ? t("live.mute") : t("live.listen")}
           </button>
         )}
         {["failed", "closed", "stalled"].includes(view?.state ?? "") && (
@@ -330,11 +318,11 @@ function LiveFeed(
               });
             }}
           >
-            Reconnect {names[source].toLowerCase()}
+            {t(reconnectKeys[source])}
           </button>
         )}
         <button type="button" className="quiet" onClick={stop}>
-          Stop {names[source].toLowerCase()} feed
+          {t(stopKeys[source])}
         </button>
       </div>
     </article>

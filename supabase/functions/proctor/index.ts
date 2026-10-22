@@ -9,6 +9,8 @@ import {createLiveHandler} from './live-handler.ts';
 import {createLiveRepository} from './live-repository.ts';
 import {createWorkloadHandler} from './workload-handler.ts';
 import {createWorkloadRepository} from './workload-repository.ts';
+import {createSnapshotHandler} from './snapshot-handler.ts';
+import {createSnapshotRepository,createSnapshotStore} from './snapshot-repository.ts';
 const required=(name:string)=>{const value=Deno.env.get(name);if(!value)throw new Error(`Missing ${name}`);return value;};
 const auth=createClient(required('SUPABASE_URL'),required('SUPABASE_ANON_KEY'),{auth:{persistSession:false}});
 const service=createClient(required('SUPABASE_URL'),required('SUPABASE_SERVICE_ROLE_KEY'),{auth:{persistSession:false}});
@@ -20,4 +22,6 @@ const main=createProctorHandler(repository,origins,{captureLaunchEnabled:Deno.en
 const capture=createCaptureHandler(createCaptureRepository(repository.user,service as unknown as RecordingDatabase,{liveLaunchEnabled}),origins,Deno.env.get('PROCTOR_CAPTURE_LAUNCH')==='true'&&Deno.env.get('PROCTOR_RECORDING_INGEST')==='true');
 const live=createLiveHandler(createLiveRepository(repository.user,service as unknown as RecordingDatabase),origins,{enabled:Deno.env.get('PROCTOR_LIVE_ENABLED')==='true',brokerSecret:Deno.env.get('PROCTOR_LIVE_BROKER_SECRET')??''});
 const workload=createWorkloadHandler(createWorkloadRepository(repository.user,service as unknown as RecordingDatabase),origins);
-Deno.serve(req=>new URL(req.url).pathname.includes('/proctor/workload/')?workload(req):new URL(req.url).pathname.includes('/proctor/live/')?live(req):new URL(req.url).pathname.includes('/proctor/capture/')?capture(req):new URL(req.url).pathname.includes('/proctor/recordings/')?recordings(req):main(req));
+// Proctor Lite webcam stills live in a private Supabase Storage bucket; retention runs with its own secret.
+const snapshots=createSnapshotHandler(createSnapshotRepository(repository.user,service as unknown as RecordingDatabase),createSnapshotStore(service.storage as never),origins,{sweepSecret:Deno.env.get('PROCTOR_SNAPSHOT_SWEEP_SECRET')??''});
+Deno.serve(req=>new URL(req.url).pathname.includes('/proctor/snapshots/')?snapshots(req):new URL(req.url).pathname.includes('/proctor/workload/')?workload(req):new URL(req.url).pathname.includes('/proctor/live/')?live(req):new URL(req.url).pathname.includes('/proctor/capture/')?capture(req):new URL(req.url).pathname.includes('/proctor/recordings/')?recordings(req):main(req));

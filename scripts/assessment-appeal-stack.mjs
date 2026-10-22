@@ -18,8 +18,8 @@ import {seedAssessmentIntegrations,assessmentIntegrationProof} from './assessmen
 import {seedAssessmentAccommodations,bumpAccommodation,setAccommodatedAttemptState,assessmentAccommodationProof} from './assessment-accommodations-fixture.mjs';
 const root = fileURLToPath(new URL("../", import.meta.url)),
   tenant = "10000000-0000-4000-8000-000000000001";
-export async function appealBrowserStack({ certificates = false,documents=false,lifecycle=false,blueprints=false,accommodations=false,integrations=false,cohorts=false,imports=false,analytics=false,feedback=false,capture=false,live=false,workload=false,staff=false,invitations=false,mail=false,appealWorkflow=false,itemReview=false,takeover=false,join=false } = {}) {
-  if(blueprints||accommodations||takeover||join)capture=true;
+export async function appealBrowserStack({ certificates = false,documents=false,lifecycle=false,blueprints=false,accommodations=false,integrations=false,cohorts=false,imports=false,analytics=false,feedback=false,capture=false,live=false,workload=false,staff=false,invitations=false,mail=false,appealWorkflow=false,itemReview=false,takeover=false,join=false,proctorLite=false } = {}) {
+  if(blueprints||accommodations||takeover||join||proctorLite)capture=true;
   if(join)staff=true;
   if(lifecycle)documents=true;
   if(documents)certificates=true;
@@ -40,6 +40,8 @@ export async function appealBrowserStack({ certificates = false,documents=false,
   if(appealWorkflow)actors.moderator='00000000-0000-4000-8000-0000000000d2';
   // A brand-new person with no institution membership and no registration.
   if(join)actors.newcomer='00000000-0000-4000-8000-0000000000e9';
+  // Two reviewers who will disagree; the owner decides as an independent proctor manager.
+  const liteReviewers=['00000000-0000-4000-8000-0000000000b1','00000000-0000-4000-8000-0000000000b2'];
   let server,
     bridge,
     base,
@@ -103,7 +105,7 @@ export async function appealBrowserStack({ certificates = false,documents=false,
     rpc(name, args) {
       assert.match(
         name,
-        /^(assessment_(workspaces|join_(preview|accept)|candidate_institutions|blueprint_saturated|billing_summary|usage_adjust|billing_configure|webhook_(?:command|read|claim|report)|api_(?:client_command|client_list|token_issue|read|command)|invitation_(mail_(read|command|claim|begin|report)|read|command|preview|accept)|staff_(read|command)|command(_live_gate)?|runtime_(snapshot|command|expire|schedule_claim|schedule_reconcile)|appeal_(read|command)|grading_(read|command)|certificate_(read|command|seal|status|reference|document_report)|cohort_(read|command)|roster_(claim|step)|bank_(import_(read|command)|export)|analytics_(read|command)|feedback_(read|command)|artifact_read|released_breakdown|has_capability)|proctor_(command|can_access|workload_(read|staff|command)|capture_(read|command(_live_gate)?)|live_(read|command|context|report)|recording_(command|checkpoint|transport|catalog|read)))$/,
+        /^(assessment_(workspaces|join_(preview|accept)|candidate_institutions|blueprint_saturated|billing_summary|usage_adjust|billing_configure|webhook_(?:command|read|claim|report)|api_(?:client_command|client_list|token_issue|read|command)|invitation_(mail_(read|command|claim|begin|report)|read|command|preview|accept)|staff_(read|command)|command(_live_gate)?|runtime_(snapshot|command|expire|schedule_claim|schedule_reconcile)|appeal_(read|command)|grading_(read|command)|certificate_(read|command|seal|status|reference|document_report)|cohort_(read|command)|roster_(claim|step)|bank_(import_(read|command)|export)|analytics_(read|command)|feedback_(read|command)|artifact_read|released_breakdown|has_capability)|proctor_(case_outcome|candidate_outcomes|snapshot_(reserve|stored|list|expired|forget)|command|can_access|workload_(read|staff|command)|capture_(read|command(_live_gate)?)|live_(read|command|context|report)|recording_(command|checkpoint|transport|catalog|read)))$/,
       );
       const query=`select to_jsonb(public.${name}(${Object.entries(args).map(([key,value])=>{assert.match(key,/^p_[a-z][a-z0-9_]*$/);return `${key}=>${literal(value)}${key==='p_data'?'::jsonb':''}`;}).join(',')}));`;
       return bridge.query(query).then(async result=>{
@@ -218,6 +220,8 @@ export async function appealBrowserStack({ certificates = false,documents=false,
       "20261022160000_assessment_item_review",
       "20261022170000_assessment_device_takeover",
       "20261022180000_assessment_join_links",
+      "20261022190000_proctor_snapshots",
+      "20261022200000_proctor_adjudication",
     ];
     sql(
       await readFile(
@@ -285,6 +289,17 @@ export async function appealBrowserStack({ certificates = false,documents=false,
     if(itemReview)sql(`select assessment_command('${actors.owner}','${tenant}','fixture-review-submit','item.submit',jsonb_build_object('id',(assessment_command('${actors.owner}','${tenant}','fixture-review-item','item.create',jsonb_build_object('bank_id',(select id from assessment_item_banks where title='Grading bank'),'item','{"schema_version":"assessment.item.v1","type":"single_choice","locale":"en","prompt":"Which planet is the red planet?","max_score":1,"tags":[],"options":[{"id":"a","text":"Mars"},{"id":"b","text":"Venus"}]}'::jsonb,'key','{"correct":"a"}'::jsonb))->>'id')::uuid));`);
     if(appealWorkflow){loseSubmit=false;loseDecision=false;sql(`insert into users(id,full_name) values('${actors.moderator}','Second Moderator');insert into tenant_memberships(tenant_id,user_id,status,role) values('${tenant}','${actors.moderator}','active','member');insert into assessment_capability_grants(tenant_id,user_id,capability,granted_by) select '${tenant}',u,'grades.moderate','${actors.owner}' from unnest(array['${actors.reviewer}','${actors.moderator}']::uuid[]) u on conflict do nothing;`);}
     if(invitations)invitationIds=seedAssessmentInvitations(sql,actors,tenant);
+    // A published one-question sitting for Proctor Lite, registered to the candidate, plus two reviewers.
+    if(proctorLite)sql(`insert into users(id,full_name) values('${liteReviewers[0]}','First Reviewer'),('${liteReviewers[1]}','Second Reviewer');insert into tenant_memberships(tenant_id,user_id,status,role) values('${tenant}','${liteReviewers[0]}','active','member'),('${tenant}','${liteReviewers[1]}','active','member');insert into assessment_capability_grants(tenant_id,user_id,capability,granted_by) select '${tenant}',u,'proctor.review','${actors.owner}' from unnest(array['${liteReviewers[0]}','${liteReviewers[1]}']::uuid[]) u;do $$declare bank uuid;a uuid;d uuid;v uuid;w uuid;q jsonb:='{"schema_version":"assessment.item.v1","type":"single_choice","locale":"en","max_score":1,"tags":[],"prompt":"Which planet is red?","options":[{"id":"a","text":"Mars"},{"id":"b","text":"Venus"}]}';begin
+      bank:=(assessment_command('${actors.owner}','${tenant}','lite-bank','bank.create','{"title":"Lite bank"}')->>'id')::uuid;
+      a:=(assessment_command('${actors.owner}','${tenant}','lite-item','item.create',jsonb_build_object('bank_id',bank,'item',q,'key','{"correct":"a"}'::jsonb))->>'id')::uuid;
+      perform assessment_command('${actors.owner}','${tenant}','lite-submit','item.submit',jsonb_build_object('id',a));
+      perform assessment_command('${actors.reviewer}','${tenant}','lite-approve','item.approve',jsonb_build_object('id',a));
+      d:=(assessment_command('${actors.owner}','${tenant}','lite-definition','assessment.create',jsonb_build_object('definition',jsonb_build_object('schema_version','assessment.definition.v1','title','Monitored test','locale','en','duration_seconds',1800,'shuffle_items',false,'shuffle_options',false,'sections',jsonb_build_array(jsonb_build_object('id','64000000-0000-4000-8000-000000000001','title','Planets','item_version_ids',jsonb_build_array(a))))))->>'id')::uuid;
+      v:=(assessment_command('${actors.owner}','${tenant}','lite-publish','assessment.publish',jsonb_build_object('id',d,'revision',1))->>'id')::uuid;
+      w:=(assessment_command('${actors.owner}','${tenant}','lite-window','window.create',jsonb_build_object('assessment_version_id',v,'title','Monitored placement','opens_at',clock_timestamp()-interval '1 hour','closes_at',clock_timestamp()+interval '2 hours'))->>'id')::uuid;
+      perform assessment_command('${actors.owner}','${tenant}','lite-registration','registration.create',jsonb_build_object('window_id',w,'candidate_id','${actors.candidate}'));
+    end;$$;`);
     // A published one-question sitting that candidates join by link.
     if(join)sql(`insert into users(id,full_name) values('${actors.newcomer}','New Candidate');do $$declare bank uuid;a uuid;d uuid;v uuid;q jsonb:='{"schema_version":"assessment.item.v1","type":"single_choice","locale":"en","max_score":1,"tags":[],"prompt":"Which planet is red?","options":[{"id":"a","text":"Mars"},{"id":"b","text":"Venus"}]}';begin
       bank:=(assessment_command('${actors.owner}','${tenant}','join-bank','bank.create','{"title":"Join bank"}')->>'id')::uuid;
@@ -345,6 +360,7 @@ export async function appealBrowserStack({ certificates = false,documents=false,
         const chunks = [];
         for await (const chunk of req) chunks.push(chunk);
         const body = Buffer.concat(chunks);
+        if(proctorLite&&url.pathname.startsWith('/fixture-snapshots/')){const bytes=captureServices.snapshotObjects.get(decodeURIComponent(url.pathname.slice('/fixture-snapshots/'.length)));if(!bytes){reply(res,404,{code:'not_found'});return;}res.writeHead(200,{'Content-Type':'image/jpeg','Cache-Control':'no-store'});res.end(bytes);return;}
         if (url.pathname === "/test/info") {
           reply(res, 200, { tenant, control,document_enabled:documents,lifecycle_enabled:lifecycle,blueprints_enabled:blueprints,blueprintIds,accommodations_enabled:accommodations,accommodationIds,integrations_enabled:integrations,integrationIds,live_enabled:live,mail_enabled:mail,seededCohort,rosterSitting,importBank,analyticsIds,feedbackIds,captureIds,invitationIds:invitationIds?{role:invitationIds.role,invited:invitationIds.invited}:undefined,staffIds:staffIds?{local:staffIds.local,legacy:staffIds.legacy}:undefined });
           return;
@@ -403,6 +419,18 @@ export async function appealBrowserStack({ certificates = false,documents=false,
             reply(res, 200, {});
             return;
           }
+          if(proctorLite&&url.pathname==='/test/proctor-lite-review'){
+            // Two assigned reviewers open a case and disagree, as real reviewers would through Proctor.
+            const caseId=sql(`do $$declare s uuid;c uuid;begin select ps.id into s from proctor_sessions ps join assessment_attempts a on a.id=ps.attempt_id where a.candidate_id='${actors.candidate}' order by ps.created_at desc limit 1;
+              perform proctor_command('${actors.owner}','${tenant}','lite-assign-1','session.assign',jsonb_build_object('session_id',s,'user_id','${liteReviewers[0]}','assignment_role','reviewer'));
+              perform proctor_command('${actors.owner}','${tenant}','lite-assign-2','session.assign',jsonb_build_object('session_id',s,'user_id','${liteReviewers[1]}','assignment_role','reviewer'));
+              c:=(proctor_command('${liteReviewers[0]}','${tenant}','lite-case-0001','case.create',jsonb_build_object('session_id',s,'title','Looked away from the screen'))->>'id')::uuid;
+              perform proctor_command('${liteReviewers[0]}','${tenant}','lite-find-0001','case.finding',jsonb_build_object('case_id',c,'disposition','confirmed','rationale','Looking away in several snapshots.','evidence_event_ids','[]'::jsonb));
+              perform proctor_command('${liteReviewers[1]}','${tenant}','lite-find-0002','case.finding',jsonb_build_object('case_id',c,'disposition','clear','rationale','The candidate was reading the question aloud.','evidence_event_ids','[]'::jsonb));
+              create temporary table if not exists lite_case(id uuid);insert into lite_case values(c);end;$$;select id from lite_case;`).trim().split('\n').at(-1);
+            reply(res,200,{case_id:caseId});return;
+          }
+          if(proctorLite&&url.pathname==='/test/proctor-lite-proof'){reply(res,200,{...JSON.parse(sql(`select jsonb_build_object('identity',(select count(*) from proctor_snapshots where kind='identity' and stored_at is not null),'periodic',(select count(*) from proctor_snapshots where kind='periodic' and stored_at is not null),'case',(select state||':'||disposition from proctor_review_cases order by created_at desc limit 1),'adjudications',(select count(*) from proctor_case_adjudications where adjudicator_id='${actors.owner}'),'disclosures',(select count(*) from proctor_case_disclosures),'attempt',(select state from assessment_attempts where candidate_id='${actors.candidate}' order by starts_at desc nulls last limit 1));`)),stored_objects:captureServices.snapshotObjects.size});return;}
           if(join&&url.pathname==='/test/join-proof'){reply(res,200,JSON.parse(sql(`select jsonb_build_object('registrations',(select count(*) from assessment_registrations where candidate_id='${actors.newcomer}'),'self_registered',(select count(*) from assessment_registrations where candidate_id='${actors.newcomer}' and created_by='${actors.newcomer}'),'memberships',(select count(*) from tenant_memberships where user_id='${actors.newcomer}')+(select count(*) from assessment_memberships where user_id='${actors.newcomer}'),'attempts',(select count(*) from assessment_attempts where candidate_id='${actors.newcomer}'),'links',(select jsonb_agg(jsonb_build_object('joined',joined,'revoked',revoked_at is not null) order by created_at) from assessment_join_links),'institution',(select display_name from assessment_institution_profiles where tenant_id='${tenant}'),'join_audits',(select count(*) from assessment_audit_events where action='registration.join'));`)));return;}
           if(takeover&&url.pathname==='/test/takeover-proof'){reply(res,200,{...JSON.parse(sql(`select jsonb_build_object('takeovers',(select jsonb_agg(jsonb_build_object('from_epoch',t.from_epoch,'to_epoch',t.to_epoch,'previous_lease_active',t.previous_lease_active,'acknowledged_sequence',t.acknowledged_sequence) order by t.created_at) from assessment_attempt_takeovers t),'answers',(select jsonb_agg(j.response order by j.sequence) from assessment_response_journal j join assessment_attempts x on x.id=j.attempt_id join assessment_registrations r on r.id=x.registration_id join assessment_exam_windows w on w.id=r.window_id where w.title='Two device sitting'),'state',(select x.state from assessment_attempts x join assessment_registrations r on r.id=x.registration_id join assessment_exam_windows w on w.id=r.window_id where w.title='Two device sitting'),'audits',(select count(*) from assessment_audit_events where action='attempt.device_takeover'));`)),scores_unchanged:scoreSnapshot===sql('select jsonb_agg(to_jsonb(s) order by id) from assessment_score_revisions s;')});return;}
           if(itemReview&&url.pathname==='/test/item-review-proof'){reply(res,200,{...JSON.parse(sql(`select jsonb_build_object('versions',(select jsonb_agg(jsonb_build_object('version',v.version,'status',v.status,'author_is_owner',v.created_by='${actors.owner}','approver_is_reviewer',v.approved_by is not distinct from (case when v.status='approved' then '${actors.reviewer}'::uuid end)) order by v.version) from assessment_item_versions v where v.item_id=(select item_id from assessment_item_versions where payload->>'prompt'='Which planet is the red planet?')),'comments',(select jsonb_agg(jsonb_build_object('kind',kind,'area',area,'by_reviewer',author_id='${actors.reviewer}') order by created_at) from assessment_item_review_comments),'audits',(select count(*) from assessment_audit_events where action in('item.comment','item.request_changes')));`)),scores_unchanged:scoreSnapshot===sql('select jsonb_agg(to_jsonb(s) order by id) from assessment_score_revisions s;')});return;}
@@ -564,7 +592,7 @@ export async function appealBrowserStack({ certificates = false,documents=false,
           });
           return;
         }
-        const app = url.pathname.startsWith("/exam/") ? "exam" : (live||workload)&&url.pathname.startsWith('/proctor/')?'proctor':"assessment",
+        const app = url.pathname.startsWith("/exam/") ? "exam" : (live||workload||proctorLite)&&url.pathname.startsWith('/proctor/')?'proctor':"assessment",
           relative = url.pathname.slice(`/${app}/`.length),
           file = path.resolve(
             directory,
@@ -589,7 +617,7 @@ export async function appealBrowserStack({ certificates = false,documents=false,
         });
         res.end(bytes);
       } catch (cause) {
-        console.error("Appeal fixture request failed:", cause.message);
+        console.error("Appeal fixture request failed:", cause.message, process.env.FIXTURE_DEBUG?String(cause.stack)+" cause="+String(cause.cause?.stack??cause.cause):"");
         reply(res, 500, {
           code: "fixture_error",
           error: "Local fixture request failed",
@@ -687,7 +715,7 @@ export async function appealBrowserStack({ certificates = false,documents=false,
       certificateOptions,
     );
     if(documents)documentServices=await assessmentDocumentFixture({root,base,modules,repository:modules.createCertificateRepository(auth,database),database,currentSigner:()=>certificateOptions.signer});
-    for (const app of ["assessment", "exam",...((live||workload)?['proctor']:[])]) {
+    for (const app of ["assessment", "exam",...((live||workload||proctorLite)?['proctor']:[])]) {
       await new Promise((resolve, reject) => {
         const child = spawn(process.execPath, [
           path.join(root, "node_modules/vite/bin/vite.js"),
@@ -715,6 +743,7 @@ export async function appealBrowserStack({ certificates = false,documents=false,
             VITE_ASSESSMENT_COORDINATOR_URL:capture?base+'/coordinator':'',
             VITE_ASSESSMENT_EXAM_URL:base+'/exam',
             VITE_PLATFORM_URL:base+'/platform',
+            VITE_PROCTOR_URL:base+'/proctor',
           },
           stdio: ["ignore", "pipe", "pipe"],
         });

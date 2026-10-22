@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { FindingRecordingCitation } from "./FindingRecordingCitation";
-import { type Command, dateTime, label, type SessionDetail } from "./types";
+import { CaseDecision } from "./CaseDecision";
+import { type Command, type SessionDetail } from "./types";
+import { useAppT, useCodeText, useDateTime } from "./i18n/index.ts";
 import {
   type RecordingSelection,
   referenceKey,
@@ -13,6 +15,7 @@ export function CasePanel({
   command,
   reviewerId,
   recordingSelections,
+  recordingsEnabled = true,
 }: {
   detail: SessionDetail;
   caseId: string;
@@ -21,7 +24,9 @@ export function CasePanel({
   command: Command;
   reviewerId: string;
   recordingSelections: RecordingSelection[];
+  recordingsEnabled?: boolean;
 }) {
+  const t = useAppT(), code = useCodeText(), dateTime = useDateTime();
   const reviewCase = detail.cases.find((row) => row.id === caseId)!;
   const [disposition, setDisposition] = useState("insufficient_evidence"),
     [rationale, setRationale] = useState(""),
@@ -36,22 +41,19 @@ export function CasePanel({
     <article className="case-panel">
       <div className="record-heading">
         <h4>{reviewCase.title}</h4>
-        <span className="state-badge">{label(reviewCase.state)}</span>
+        <span className="state-badge">{code("state", reviewCase.state)}</span>
       </div>
       {reviewCase.disposition && (
-        <p>Disposition: {label(reviewCase.disposition)}</p>
+        <p>{t("case.disposition", { disposition: code("disposition", reviewCase.disposition) })}</p>
       )}
       <ul className="records">
         {findings.map((finding) => (
           <li key={finding.id}>
-            <strong>{label(finding.disposition)}</strong>
-            <span>Reviewer: {finding.reviewer_id}</span>
+            <strong>{code("disposition", finding.disposition)}</strong>
+            <span>{t("case.reviewer", { id: finding.reviewer_id })}</span>
             <p>{finding.rationale}</p>
             <span>
-              {finding.evidence_event_ids.length}{" "}
-              evidence event{finding.evidence_event_ids.length === 1 ? "" : "s"}
-              {" "}
-              cited
+              {t("case.evidenceCited", { count: finding.evidence_event_ids.length })}
             </span>
             {(detail.recording_citations ?? []).filter((cite) =>
               cite.finding_id === finding.id
@@ -61,19 +63,14 @@ export function CasePanel({
           </li>
         ))}
       </ul>
-      {!findings.length && <p>No human findings yet.</p>}
+      {!findings.length && <p>{t("case.noFindings")}</p>}
       {reviewCase.state === "reviewing" && findings.length > 1 &&
         new Set(findings.map((row) => row.disposition)).size > 1 && (
-        <p className="service-warning">
-          Reviewers disagree. The case remains open; a senior adjudication
-          workflow is still required.
-        </p>
+        <p className="service-warning">{t("case.disagree")}</p>
       )}
+      <CaseDecision detail={detail} caseId={caseId} busy={busy} command={command} actor={reviewerId} />
       {alreadyReviewed && reviewCase.state !== "resolved" && (
-        <p>
-          You have recorded your finding. Another independent reviewer must
-          complete the review.
-        </p>
+        <p>{t("case.alreadyReviewed")}</p>
       )}
       {canReview && !alreadyReviewed && reviewCase.state !== "resolved" && (
         <form
@@ -89,28 +86,28 @@ export function CasePanel({
                 rationale,
                 evidence_event_ids: evidence,
                 ...(refs.length ? { evidence_recording_refs: refs } : {}),
-              }, "Human review finding recorded.");
+              }, t("case.recorded"));
             }
           }}
         >
           <label>
-            Human finding<select
+            {t("case.finding")}<select
               value={disposition}
               onChange={(event) =>
                 setDisposition(event.target.value)}
             >
               <option value="insufficient_evidence">
-                Insufficient evidence
+                {t("case.finding.insufficient_evidence")}
               </option>
-              <option value="clear">No breach found</option>
+              <option value="clear">{t("case.finding.clear")}</option>
               <option value="confirmed">
-                Breach confirmed by human review
+                {t("case.finding.confirmed")}
               </option>
             </select>
           </label>
           <fieldset>
-            <legend>Evidence reviewed</legend>
-            {!detail.events.length && <p>No event evidence is available.</p>}
+            <legend>{t("case.evidence")}</legend>
+            {!detail.events.length && <p>{t("case.noEvents")}</p>}
             {detail.events.map((event) => (
               <label className="check" key={event.id}>
                 <input
@@ -125,18 +122,13 @@ export function CasePanel({
                         )
                     )}
                 />
-                {label(event.kind)} · {dateTime(event.occurred_at)}
+                {t("case.eventOption", { kind: code("event", event.kind), time: dateTime(event.occurred_at) })}
               </label>
             ))}
           </fieldset>
-          <fieldset>
-            <legend>Recording intervals reviewed</legend>
-            {!recordingSelections.length && (
-              <p>
-                Inspect a recording timeline and prepare an interval above to
-                cite it here.
-              </p>
-            )}
+          {recordingsEnabled && <fieldset>
+            <legend>{t("case.intervals")}</legend>
+            {!recordingSelections.length && <p>{t("case.noIntervals")}</p>}
             {recordingSelections.map((entry) => {
               const key = referenceKey(entry.reference);
               return (
@@ -151,18 +143,14 @@ export function CasePanel({
                           : current.filter((value) => value !== key)
                       )}
                   />
-                  {label(entry.source)} · entries{" "}
-                  {entry.reference.from_sequence}–{entry.reference.to_sequence}
+                  {t("recording.entries", { source: code("source", entry.source), from: String(entry.reference.from_sequence), to: String(entry.reference.to_sequence) })}
                 </label>
               );
             })}
-            <p className="hint">
-              A gap citation preserves missing footage. It is not proof of
-              misconduct.
-            </p>
-          </fieldset>
+            <p className="hint">{t("case.gapHint")}</p>
+          </fieldset>}
           <label>
-            Finding rationale<textarea
+            {t("case.rationale")}<textarea
               className="prose-input"
               minLength={10}
               maxLength={10000}
@@ -178,9 +166,9 @@ export function CasePanel({
               required
               checked={acknowledged}
               onChange={(event) => setAcknowledged(event.target.checked)}
-            />I personally reviewed this evidence. My finding will be permanent.
+            />{t("case.ack")}
           </label>
-          <button disabled={busy || !acknowledged}>Record human finding</button>
+          <button disabled={busy || !acknowledged}>{t("case.submit")}</button>
         </form>
       )}
     </article>

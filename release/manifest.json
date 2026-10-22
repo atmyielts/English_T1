@@ -1,45 +1,66 @@
 {
   "schemaVersion": 1,
-  "releaseId": "assessment-self-service-join",
+  "releaseId": "proctor-lite",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
     "assessment-cloud",
-    "exam"
+    "exam",
+    "proctor"
   ],
   "migrations": [
-    "20261022180000_assessment_join_links.sql"
+    "20261022190000_proctor_snapshots.sql",
+    "20261022200000_proctor_adjudication.sql"
   ],
   "edgeFunctions": [
-    "assessment-cloud"
+    "proctor"
   ],
   "workers": [
-    "assessment-media"
+    "assessment-media",
+    "proctor-evidence"
   ],
   "sharedEdgeConsumers": [],
-  "requiredSecrets": [],
+  "requiredSecrets": [
+    "PROCTOR_CAPTURE_LAUNCH",
+    "PROCTOR_EVIDENCE_SECRET",
+    "PROCTOR_LIVE_BROKER_SECRET",
+    "PROCTOR_LIVE_ENABLED",
+    "PROCTOR_LIVE_LAUNCH",
+    "PROCTOR_RECORDING_INGEST",
+    "PROCTOR_SNAPSHOT_SWEEP_SECRET"
+  ],
   "rolloutOrder": [
     "pages",
-    "migration:20261022180000_assessment_join_links.sql",
-    "function:assessment-cloud",
-    "worker:assessment-media"
+    "migration:20261022190000_proctor_snapshots.sql",
+    "migration:20261022200000_proctor_adjudication.sql",
+    "secret:PROCTOR_SNAPSHOT_SWEEP_SECRET",
+    "secret:PROCTOR_CAPTURE_LAUNCH",
+    "secret:PROCTOR_EVIDENCE_SECRET",
+    "secret:PROCTOR_LIVE_BROKER_SECRET",
+    "secret:PROCTOR_LIVE_ENABLED",
+    "secret:PROCTOR_LIVE_LAUNCH",
+    "secret:PROCTOR_RECORDING_INGEST",
+    "function:proctor",
+    "worker:assessment-media",
+    "worker:proctor-evidence"
   ],
   "manualFollowUps": [
-    "Pages: merging rebuilds assessment-cloud and exam (join links, institution name, account links) and adds assessment.schood.online and exam.schood.online to the platform's allowed return hosts. Until the migration and function below are live, Assessment Cloud treats a missing join-links endpoint as no links and the sittings stay usable.",
-    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus 20261022180000_assessment_join_links.sql. Keep excluding the 9 pending payment migrations from #220 (20261010162000-20261010174000). Dry run first, then supabase migration list --linked.",
-    "Edge: supabase functions deploy assessment-cloud --project-ref bbjawctnqrufvnesdsel after the migration.",
-    "Staff invite links (already-deployed code): supabase secrets set ASSESSMENT_INVITATIONS_ENABLED=true, ASSESSMENT_APP_URL=https://assessment.schood.online and a freshly generated ASSESSMENT_INVITATION_ACTIVE_KEY/ASSESSMENT_INVITATION_KEYS keyring before the Pages build that sets VITE_ASSESSMENT_INVITATIONS_ENABLED=true. Invitation email stays off (ASSESSMENT_INVITATION_MAIL_ENABLED unset).",
-    "Workers: assessment-media changes only its local browser-test fixture allowlists; nothing is deployed for it."
+    "Pages: merging publishes the Proctor staff app to the new schood-proctor project (created beforehand) and rebuilds assessment-cloud and exam; then run the 'Configure Assessment Cloud, Exam and Proctor Domains' workflow to bind proctor.schood.online. Exam only calls the new snapshot and outcome routes for sittings that require Proctor, and none do until an institution attaches a policy.",
+    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus these two Proctor migrations, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then supabase migration list --linked. The snapshot migration creates the private Storage bucket proctor-snapshots.",
+    "Secrets: supabase secrets set PROCTOR_SNAPSHOT_SWEEP_SECRET=<random 64 hex, generated locally> and the same value as the GitHub repository secret PROCTOR_SNAPSHOT_SWEEP_SECRET for the hourly retention workflow. PROCTOR_ALLOWED_ORIGINS is already set to https://proctor.schood.online,https://exam.schood.online.",
+    "Left unset in this release (Proctor Lite needs no paid infrastructure): supabase secrets set PROCTOR_CAPTURE_LAUNCH=, supabase secrets set PROCTOR_EVIDENCE_SECRET=, supabase secrets set PROCTOR_LIVE_BROKER_SECRET=, supabase secrets set PROCTOR_LIVE_ENABLED=, supabase secrets set PROCTOR_LIVE_LAUNCH= and supabase secrets set PROCTOR_RECORDING_INGEST= are not run; recordings, capture and live video stay off.",
+    "Edge: supabase functions deploy proctor --project-ref bbjawctnqrufvnesdsel after the migrations.",
+    "Workers: assessment-media and proctor-evidence change only their local browser-test fixtures; nothing is deployed for them."
   ],
   "verification": [
-    "supabase migration list --linked shows 20261022180000 applied and the 9 #220 payment migrations still pending.",
-    "POST /functions/v1/assessment-cloud/candidate/join/preview without a session returns 401; with a malformed code returns 404 join_link_invalid.",
-    "assessment.schood.online and exam.schood.online return 200; the Exam sign-in page links to schood.online/auth?mode=signup with returnTo pointing back to Exam."
+    "supabase migration list --linked shows 20261022190000 and 20261022200000 applied and the 9 #220 payment migrations still pending.",
+    "proctor.schood.online returns 200 with the security headers; POST /functions/v1/proctor/snapshots/internal/sweep without the secret returns 403 and with it returns {deleted:0}.",
+    "POST /functions/v1/proctor/snapshots/candidate without a session returns 401; a foreign Origin returns 403."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-assessment and schood-exam to the previous deployment.",
-    "migration": "Additive: two new tables and new RPCs; leave in place. assessment_command delegates every earlier action unchanged to assessment_command_before_join_links.",
-    "edge": "Redeploy the previous assessment-cloud version; the new routes simply disappear.",
+    "pages": "Cloudflare Pages rollback of schood-assessment and schood-exam; schood-proctor can be rolled back or its domain unbound.",
+    "migration": "Additive tables and RPCs; leave in place. proctor_command delegates every earlier action unchanged to proctor_command_before_adjudication.",
+    "edge": "Redeploy the previous proctor function; snapshot and decision routes disappear.",
     "worker": "Nothing deployed."
   }
 }

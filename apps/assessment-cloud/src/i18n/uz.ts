@@ -1356,4 +1356,10 @@ export const uz: Record<keyof typeof en, string> = {
   'institution.name': "Nomi",
   'institution.save': "Nomni saqlash",
   'institution.saved': "Muassasa nomi saqlandi.",
+  'nav.group.services': "Boshqa xizmatlar",
+  'nav.proctor': "Proctor nazorati",
+  'monitoring.on': "Nazorat ostida",
+  'monitoring.off': "Nazoratsiz",
+  'monitoring.open': "Proctorda ochish",
+  'monitoring.setup': "Nazoratni sozlash",
 };

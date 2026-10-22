@@ -14,7 +14,7 @@ import {
 import { RecordingTimeline } from "./RecordingTimeline";
 import { RecordingCatalog } from "./RecordingCatalog";
 import type { RecordingSelection } from "./RecordingCitationPicker";
-import { label } from "./types";
+import { useAppT, useErrorText } from "./i18n/index.ts";
 export function RecordingPanel(
   { session, tenant, actor, prepareReference }: {
     session: string;
@@ -33,6 +33,7 @@ export function RecordingPanel(
     [pageLoading, setPageLoading] = useState(false),
     generation = useRef(0),
     position = useRef<ChainPosition>(emptyChain());
+  const t = useAppT(), problem = useErrorText();
   const scope = useRef("");
   scope.current = `${actor}:${tenant}:${session}`;
   async function catalog(after: string | null = null) {
@@ -62,11 +63,7 @@ export function RecordingPanel(
       }
     } catch (cause) {
       if (scope.current === expected) {
-        setError(
-          cause instanceof Error
-            ? cause.message
-            : "Could not load recorded evidence.",
-        );
+        setError(problem(cause, "recording.loadFailed"));
         setSelected(null);
       }
     } finally {
@@ -116,11 +113,7 @@ export function RecordingPanel(
     } catch (cause) {
       if (scope.current === expected && ticket === generation.current) {
         setSelected(null);
-        setError(
-          cause instanceof Error
-            ? cause.message
-            : "Could not verify the recording timeline.",
-        );
+        setError(problem(cause, "recording.verifyFailed"));
       }
     } finally {
       if (scope.current === expected && ticket === generation.current) {
@@ -131,29 +124,23 @@ export function RecordingPanel(
   return (
     <section className="recorded-evidence" aria-busy={loading || pageLoading}>
       <div className="record-heading">
-        <h3>Recorded evidence</h3>
+        <h3>{t("recording.heading")}</h3>
         <button
           className="quiet"
           disabled={loading || pageLoading}
           onClick={() =>
             void catalog()}
         >
-          Refresh recordings
+          {t("recording.refresh")}
         </button>
       </div>
-      <p className="hint">
-        Only currently authorized assigned reviewers can retrieve recorded
-        bytes. A sealed manifest can still contain gaps.
-      </p>
+      <p className="hint">{t("recording.hint")}</p>
       {error && <p className="error" role="alert">{error}</p>}
       {loading && !rows.length
-        ? <p role="status">Loading authorized recordings…</p>
+        ? <p role="status">{t("recording.loading")}</p>
         : !rows.length && !error
         ? (
-          <p>
-            No recording manifests have been received for this session. Browser
-            events are not a substitute for required footage.
-          </p>
+          <p>{t("recording.empty")}</p>
         )
         : null}
       <RecordingCatalog
@@ -168,11 +155,11 @@ export function RecordingPanel(
           disabled={loading}
           onClick={() => void catalog(cursor)}
         >
-          Load more recording manifests
+          {t("recording.more")}
         </button>
       )}
       {pageLoading && !selected && (
-        <p role="status">Verifying the immutable recording timeline…</p>
+        <p role="status">{t("recording.verifying")}</p>
       )}
       {selected && (
         <RecordingTimeline

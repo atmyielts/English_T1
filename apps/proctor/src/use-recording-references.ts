@@ -3,11 +3,12 @@ import {
   type RecordingSelection,
   referenceKey,
 } from "./RecordingCitationPicker";
+import type { ProctorKey } from "./i18n/index.ts";
 export function useRecordingReferences(canReview: boolean) {
   const [recordingSelections, setRecordingSelections] = useState<
       RecordingSelection[]
     >([]),
-    [recordingProblem, setRecordingProblem] = useState("");
+    [recordingProblem, setRecordingProblem] = useState<ProctorKey | "">("");
   useEffect(() => {
     if (!canReview) {
       setRecordingSelections([]);
@@ -23,9 +24,7 @@ export function useRecordingReferences(canReview: boolean) {
       )
     ) return;
     if (recordingSelections.length >= 25) {
-      setRecordingProblem(
-        "At most 25 recording intervals can be prepared. Remove an interval before adding another.",
-      );
+      setRecordingProblem("prepared.limit");
       return;
     }
     setRecordingSelections((current) => [...current, value]);

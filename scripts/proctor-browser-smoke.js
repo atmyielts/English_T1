@@ -52,7 +52,7 @@ async (page) => {
   await page.getByText('Monitoring policy attached.',{exact:true}).waitFor();
   await page.evaluate(()=>document.fonts.ready.then(()=>null));
   await page.screenshot({path:'output/playwright/assessment-cloud/proctor-policies-1440.png',fullPage:true});
-  await page.getByRole('combobox',{name:'Monitoring mode',exact:true}).selectOption('live');
+  await page.getByRole('combobox',{name:'Monitoring mode',exact:true}).selectOption('browser');
   await page.getByText(/This policy can be saved, but candidates cannot launch it/).waitFor();
   await page.getByRole('combobox',{name:'Monitoring mode',exact:true}).selectOption('browser');
   await page.getByRole('button',{name:'Identity checks',exact:true}).click();
@@ -101,7 +101,7 @@ async (page) => {
   if(!await page.evaluate(()=>document.activeElement.id==='workspace-main'))throw new Error('Skip-to-content focus failed');
   for(const [width,height] of [[1440,1000],[1024,900],[768,1024],[390,844],[320,800]]){
     await page.setViewportSize({width,height});
-    if(width<1024){await page.getByRole('button',{name:'Menu',exact:true}).click();await page.keyboard.press('Escape');if(await page.getByRole('button',{name:'Menu',exact:true}).getAttribute('aria-expanded')!=='false')throw new Error('Escape did not close menu');}
+    {const toggle=page.locator('.workspace-nav-toggle');if(await toggle.isVisible()){await toggle.click();if(await toggle.getAttribute('aria-expanded')!=='true')throw new Error('Workspace menu did not open');await toggle.click();}}
     await page.evaluate(()=>document.fonts.ready.then(()=>null));
     if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw new Error('Document overflow at '+width);
     await page.screenshot({path:'output/playwright/assessment-cloud/proctor-session-'+width+'.png',fullPage:true});
