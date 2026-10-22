@@ -6203,3 +6203,36 @@ test('written submissions wait for receipt support before sending any response b
  await page.route('**/functions/v1/academy*',async route=>{if(route.request().url().includes('written_submission_capabilities'))return route.fulfill({status:404,json:{error:'Not found'}});if((route.request().postData()??'').includes('name="idempotency_key"'))posts++;return route.fallback();});
  const error=await page.evaluate(async academy=>{const path='/src/lib/writtenRequest.ts';const m=await import(path);try{await m.writtenRequest(academy,'owned-rollout',{submission_content:'Never send to an old server'});return null;}catch(e){return(e as Error).message;}},academyId);expect(error).toBe('Written submissions are updating. Refresh shortly.');expect(posts).toBe(0);
 });
+
+test('homework review approves the AI draft through academy-learning and shows the funnel on a phone',async({page})=>{
+ const decisions:Record<string,unknown>[]=[];
+ await seedSessionCookie(page,'owner-user');await mockAcademyEdge(page,'owner');
+ const overview={plan:{billing_enforced:false,audience:'independent',center_tier:null,teacher_tier:null,teacher_plan_ends_at:null,paid:{homework:false,courses:false,homework_ai:false},allowed:{homework:true,courses:true,homework_ai:true}},
+  settings:{premark_enabled:true,digest_enabled:true,telegram_handin_enabled:true},flags:{telegram_handin:true,premark:true,digest:false},can:{review:true,reports:true,manage:true},waiting:1,
+  teaching_plans:[{id:'p1',name:'Teacher',amount:0,currency:'UZS',duration_days:30,is_active:false,metadata:{placeholder_price:true,features:['Review queue']}}]};
+ const item={kind:'submission',submission:{id:'owned-sub',attempt_number:1,status:'submitted',submitted_at:'2026-10-24T08:00:00Z',submission_content:'My city are very big and beautiful.',submission_url:null,max_score:10,source:'telegram_bot',files:[]},
+  assignment:{id:'owned-hw',title:'Unit 5 essay',due_at:'2026-10-25T08:00:00Z',max_score:10,rubric_id:null},rubric:null,student:{id:'owned-c',name:'Aziza Karimova'},classroom:{id:'owned-k',name:'IELTS evening'},
+  ai:{id:'owned-mark',status:'ready',suggested_score:7,max_score:10,rubric_scores:{},summary:'Clear ideas, check verb agreement.',strengths:[],improvements:[],mistakes:[{tag:'grammar.agreement',excerpt:'My city are',correction:'My city is',explanation:'Singular subject'}],confidence:0.8,skip_reason:null,model:'free'},
+  signals:[{signal:'untimed_source',severity:'info',detail:{}}]};
+ await page.route('**/functions/v1/academy-learning',async route=>{const body=route.request().postDataJSON() as Record<string,unknown>;
+  if(body.action==='homework_overview')return route.fulfill({json:overview});
+  if(body.action==='review_queue')return route.fulfill({json:{items:decisions.length?[]:[item],classrooms:[]}});
+  if(body.action==='review_decide'){decisions.push(body);return route.fulfill({json:{ok:true,decision:body.decision,score:7,max_score:10}});}
+  if(body.action==='homework_funnel')return route.fulfill({json:{from:body.from,to:body.to,assignments:3,classrooms:[{classroom_id:'owned-k',classroom_name:'IELTS evening',assigned:24,opened:20,submitted:18,on_time:15,reviewed:16,returned:2,corrected:1,mastered:0,median_review_hours:5.5}],reviewers:[{user_id:'owner-user',name:'Owner',reviewed:16,median_review_hours:5.5}]}});
+  return route.fulfill({status:400,json:{error:'Unknown action'}});});
+ await page.setViewportSize({width:390,height:1000});
+ await page.goto('/academy/admin/homework?academy_id='+academyId);
+ await expect(page.getByRole('heading',{name:'Homework',exact:true,level:1})).toBeVisible();await expect(page.getByRole('heading',{name:'Homework OS',exact:true})).toBeVisible();
+ await expect(page.getByText('Typed in Telegram (not timed)',{exact:true})).toBeVisible();
+ await expect(page.getByLabel('Comment to the student')).toHaveValue('Clear ideas, check verb agreement.');
+ await page.getByRole('button',{name:'Approve AI draft (A)',exact:true}).click();
+ await expect.poll(()=>decisions.length).toBe(1);
+ expect(decisions[0]).toMatchObject({action:'review_decide',decision:'approve',submission_id:'owned-sub',expected_attempt_number:1,score:7,max_score:10,_expected_actor:'owner-user'});
+ expect((decisions[0].mistakes as unknown[]).length).toBe(1);
+ await expect(page.getByText('Nothing to review. New hand-ins appear here as soon as students send them.',{exact:true})).toBeVisible();
+ await page.getByRole('tab',{name:'Homework funnel'}).click();
+ await expect(page.getByRole('region',{name:'Homework funnel by group'})).toContainText('IELTS evening');
+ await expect(page.getByText('75%',{exact:true}).first()).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await mkdir(resolve('test-results'),{recursive:true});await page.screenshot({path:resolve('test-results/homework-funnel-phone.png'),fullPage:true});
+});
