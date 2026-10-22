@@ -36,10 +36,15 @@
     "vocabulary-notebook",
     "writing-workbench"
   ],
-  "requiredSecrets": [],
+  "requiredSecrets": [
+    "ENGLISH_AI_DAILY_LIMIT",
+    "ENGLISH_APP_URL"
+  ],
   "rolloutOrder": [
     "pages",
     "migration:20261023110000_english_review_items.sql",
+    "secret:ENGLISH_AI_DAILY_LIMIT",
+    "secret:ENGLISH_APP_URL",
     "function:grammar-remediation",
     "function:hub",
     "function:immersion-missions",
@@ -51,6 +56,7 @@
   "manualFollowUps": [
     "Pages: merging publishes english-hub (Review questions panel, Fix it links, saved-word hints, Move up, tutor memory on the account, listen-and-repeat, read aloud, I can goals). Until the functions below are deployed the new panels show their empty states.",
     "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus 20261023110000_english_review_items.sql, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then supabase migration list --linked. Creates learner_review_items with RLS on and no client grants (answer keys are server-only).",
+    "Secrets: supabase secrets set ENGLISH_AI_DAILY_LIMIT= and supabase secrets set ENGLISH_APP_URL= are not run; both keep their safe code defaults (30 AI requests per learner per day; https://english.schood.online).",
     "Edge: supabase functions deploy grammar-remediation --project-ref bbjawctnqrufvnesdsel after the migration.",
     "Edge: supabase functions deploy hub --project-ref bbjawctnqrufvnesdsel after the migration.",
     "Edge: supabase functions deploy immersion-missions --project-ref bbjawctnqrufvnesdsel after the migration.",
