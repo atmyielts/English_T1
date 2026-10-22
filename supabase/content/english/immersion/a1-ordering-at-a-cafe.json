@@ -1,0 +1,134 @@
+{
+  "item": {
+    "slug": "a1-ordering-at-a-cafe",
+    "title": "Ordering at a café",
+    "level": "A1",
+    "context_text": "You are on a trip to London. You are hungry, so you go into a small café. You read the menu and order your food.",
+    "objective_text": "Read the menu, understand the waiter, and order one food and one drink.",
+    "mission_type": "service",
+    "target_grammar": "Can I have…? / I'd like… for ordering",
+    "cultural_note": "In British cafés people say \"please\" and \"thank you\" a lot. \"Can I have a tea, please?\" sounds friendly and normal.",
+    "target_vocabulary": [
+      "menu",
+      "soup",
+      "sandwich",
+      "a cup of tea",
+      "please"
+    ],
+    "success_conditions": [
+      "Find prices and what comes with the food",
+      "Understand what the café does not have today",
+      "Order one food and one drink politely"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the menu",
+      "instructions": "Read the menu. Then answer the questions.",
+      "prompt_text": "CAFÉ MENU\nDrinks: tea £2, coffee £3, orange juice £3\nFood: chicken sandwich £6, vegetable soup £5, chocolate cake £4\nThe soup comes with bread.",
+      "estimated_minutes": 2,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "How much is the vegetable soup?",
+          "options": [
+            "£4",
+            "£5",
+            "£6"
+          ],
+          "answer_index": 1,
+          "explanation": "The menu says \"vegetable soup £5\"."
+        },
+        {
+          "prompt": "What comes with the soup?",
+          "options": [
+            "Bread",
+            "Salad",
+            "Tea"
+          ],
+          "answer_index": 0,
+          "explanation": "The menu says \"The soup comes with bread.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to the waiter",
+      "instructions": "The waiter comes to your table. Listen. Then answer the questions. You can listen again.",
+      "prompt_text": "Hi there! Sorry, we have no chicken sandwiches today. But the soup is very good, and the chocolate cake is fresh. Sit down, and I can bring your food to your table.",
+      "estimated_minutes": 2,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "gb",
+      "questions": [
+        {
+          "prompt": "What is not available today?",
+          "options": [
+            "The soup",
+            "The chicken sandwich",
+            "The chocolate cake"
+          ],
+          "answer_index": 1,
+          "explanation": "The waiter says \"we have no chicken sandwiches today\"."
+        },
+        {
+          "prompt": "What does the waiter say he can do?",
+          "options": [
+            "Bring the food to your table",
+            "Give you a new menu",
+            "Make a sandwich later"
+          ],
+          "answer_index": 0,
+          "explanation": "He says \"I can bring your food to your table.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Order your food",
+      "instructions": "Order out loud. Ask for one food and one drink from the menu. Remember: there are no chicken sandwiches today.",
+      "prompt_text": "Waiter: What can I get you?",
+      "estimated_minutes": 2,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Order one food and one drink politely.",
+      "points": [
+        {
+          "label": "order a food",
+          "any": [
+            "soup",
+            "cake"
+          ]
+        },
+        {
+          "label": "order a drink",
+          "any": [
+            "tea",
+            "coffee",
+            "juice"
+          ]
+        },
+        {
+          "label": "be polite",
+          "any": [
+            "please",
+            "thank you",
+            "thanks"
+          ]
+        }
+      ],
+      "model_answer": "Can I have the vegetable soup and a cup of tea, please?",
+      "min_words": null
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "item": {
+    "slug": "a1-come-to-my-birthday-party",
+    "title": "Come to My Birthday Party",
+    "level": "A1",
+    "prompt_text": "It is your birthday next Saturday. Write a message to your friend Sara and invite her to your party.",
+    "genre": "invitation",
+    "target_grammar": "present simple; imperatives (Come…, Bring…)",
+    "target_structure": "invitation + day and time + place + what we do + please answer",
+    "expected_length_min": 25,
+    "expected_length_max": 45,
+    "target_vocabulary": [
+      "birthday",
+      "party",
+      "Saturday",
+      "come",
+      "address",
+      "cake",
+      "music"
+    ],
+    "audience": "Your friend Sara",
+    "checklist": [
+      {
+        "point": "Invite Sara to your birthday party",
+        "keywords": [
+          "birthday",
+          "party",
+          "invite",
+          "come"
+        ]
+      },
+      {
+        "point": "Give the day and the time",
+        "keywords": [
+          "saturday",
+          "pm",
+          "o'clock",
+          "#number",
+          "evening",
+          "afternoon"
+        ]
+      },
+      {
+        "point": "Say where the party is",
+        "keywords": [
+          "my flat",
+          "my house",
+          "home",
+          "street",
+          "address",
+          "cafe",
+          "café",
+          "at the"
+        ]
+      },
+      {
+        "point": "Say what you are going to do or eat",
+        "keywords": [
+          "cake",
+          "music",
+          "dance",
+          "games",
+          "food",
+          "pizza",
+          "plov",
+          "eat",
+          "play"
+        ]
+      },
+      {
+        "point": "Ask her to answer",
+        "keywords": [
+          "can you come",
+          "tell me",
+          "write",
+          "reply",
+          "answer",
+          "call me",
+          "?"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

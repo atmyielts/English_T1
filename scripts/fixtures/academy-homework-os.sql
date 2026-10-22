@@ -132,11 +132,27 @@ begin
   result := public.academy_telegram_draft_append(student, '555', 'album-1', '{"file_id":"b"}', null);
   if result->>'created' <> 'false' or jsonb_array_length(result->'draft'->'items') <> 2 then raise exception 'Album draft lost a photo: %', result; end if;
 
-  -- 9. Browsers never reach the new tables or functions directly.
+  -- 9. Catalogue: a listed published course is public; a lead with no signed-in actor lands in Admissions.
+  insert into public.academy_course_listings(academy_id, course_id, status, slug, headline, format, language, price_text, listed_at)
+  values (academy, course, 'listed', 'fixture-course-' || left(md5(academy::text), 6), 'Fixture IELTS evening course', 'blended', 'uz', '450 000 so''m / month', now());
+  result := public.academy_public_course_catalog(null, 'IELTS', null, null, 10);
+  if jsonb_array_length(result) <> 1 or result->0->'provider'->>'kind' <> 'teacher' or result->0->'results'->>'completion_percent' is not null then
+    raise exception 'Catalogue result is wrong: %', result;
+  end if;
+  update public.academy_courses set status = 'draft' where id = course;
+  if jsonb_array_length(public.academy_public_course_catalog(null, 'IELTS', null, null, 10)) <> 0 then raise exception 'A draft course stayed public'; end if;
+  update public.academy_courses set status = 'published' where id = course;
+  result := public.academy_create_lead(academy, null, jsonb_build_object('full_name', 'Catalogue visitor', 'phone', '+998901234567',
+    'interested_course', 'Fixture IELTS evening course', 'source_key', 'website', 'campaign', 'schood_courses'), 'course_lead:fixture-1');
+  if result->>'status' <> 'open' or result->>'academy_id' <> academy::text then raise exception 'Public lead was not created: %', result; end if;
+
+  -- 10. Browsers never reach the new tables or functions directly.
   if has_table_privilege('authenticated', 'public.academy_homework_ai_marks', 'SELECT')
      or has_table_privilege('anon', 'public.academy_homework_events', 'SELECT')
      or has_function_privilege('authenticated', 'public.academy_learning_plan(uuid)', 'EXECUTE')
-     or has_function_privilege('authenticated', 'public.academy_homework_staff_scope(uuid,uuid,text)', 'EXECUTE') then
+     or has_function_privilege('authenticated', 'public.academy_homework_staff_scope(uuid,uuid,text)', 'EXECUTE')
+     or has_table_privilege('anon', 'public.academy_course_listings', 'SELECT')
+     or has_function_privilege('anon', 'public.academy_public_course_catalog(text,text,text,text,integer)', 'EXECUTE') then
     raise exception 'Browser role bypasses the Homework OS gateway';
   end if;
 end;

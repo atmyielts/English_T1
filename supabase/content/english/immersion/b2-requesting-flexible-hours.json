@@ -1,0 +1,217 @@
+{
+  "item": {
+    "slug": "b2-requesting-flexible-hours",
+    "title": "Requesting flexible working hours",
+    "level": "B2",
+    "context_text": "You work full-time at an IT company in Tashkent and you've been accepted onto an evening master's programme. Classes start at 5 pm on Tuesdays and Thursdays, but you normally work until 6. You need to change your hours.",
+    "objective_text": "Check the company policy, understand your manager's concern, make a formal request, and reassure your manager in a meeting.",
+    "mission_type": "workplace",
+    "target_grammar": "tentative language for requests (I would like to propose… Would it be possible to…?)",
+    "cultural_note": "A flexible-working request is more likely to be accepted when it solves the employer's problem too: show how your work will be covered and offer a trial period.",
+    "target_vocabulary": [
+      "core hours",
+      "trial period",
+      "cover",
+      "hand over",
+      "line manager"
+    ],
+    "success_conditions": [
+      "Understand who can apply, what a request must include and the trial option",
+      "Identify the manager's specific concern",
+      "Write a request with a schedule, a reason and a cover plan",
+      "Answer the manager's concern convincingly in a meeting"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the HR policy",
+      "instructions": "Read the summary of the company's flexible working policy. Then answer the questions.",
+      "prompt_text": "Flexible Working Policy (summary)\n• Any employee with at least six months' service may request flexible hours.\n• Requests must be made in writing to your line manager, explaining the proposed schedule and how your work will be covered.\n• Core hours (10:00–16:00) must be worked by all staff unless agreed otherwise with HR.\n• Managers must reply within 14 days. A trial period of up to three months may be agreed before a permanent change.",
+      "estimated_minutes": 4,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "Who can request flexible hours?",
+          "options": [
+            "Only managers",
+            "Anyone who has worked there for at least six months",
+            "Only part-time staff"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Any employee with at least six months' service may request flexible hours.\""
+        },
+        {
+          "prompt": "What must a written request include?",
+          "options": [
+            "A note from your university",
+            "The proposed schedule and how your work will be covered",
+            "A doctor's letter"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Explaining the proposed schedule and how your work will be covered.\""
+        },
+        {
+          "prompt": "What can happen before a permanent change?",
+          "options": [
+            "A trial period",
+            "A pay cut",
+            "A meeting with the director"
+          ],
+          "answer_index": 0,
+          "explanation": "\"A trial period of up to three months may be agreed before a permanent change.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to your manager",
+      "instructions": "You mentioned the course to your manager, Nilufar. She replies with a voice message. Listen and answer the questions.",
+      "prompt_text": "Hi, thanks for flagging this. In principle I'm supportive. I know how much the master's means to you. My only worry is Tuesday afternoons. That's when we do the weekly client calls, and they often run until half past five. If you can find a way to cover those, or hand them over to someone, I don't see a problem. Put it in writing and I'll take it to HR.",
+      "estimated_minutes": 3,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "gb",
+      "questions": [
+        {
+          "prompt": "What is the manager's concern?",
+          "options": [
+            "The cost of the course",
+            "The weekly client calls on Tuesday afternoons",
+            "Your performance last year"
+          ],
+          "answer_index": 1,
+          "explanation": "\"My only worry is Tuesday afternoons. That's when we do the weekly client calls.\""
+        },
+        {
+          "prompt": "What does she ask you to do next?",
+          "options": [
+            "Talk to HR yourself",
+            "Put the request in writing",
+            "Change your class days"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Put it in writing and I'll take it to HR.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Write your request",
+      "instructions": "Write your formal request to Nilufar. Propose a new schedule for Tuesdays and Thursdays that respects core hours, give the reason, explain how the client calls will be covered, and suggest a trial period.",
+      "prompt_text": "To: Nilufar Saidova\nSubject: Flexible working request",
+      "estimated_minutes": 10,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Make a complete, persuasive request that follows the policy.",
+      "points": [
+        {
+          "label": "propose a schedule",
+          "any": [
+            "8",
+            "eight",
+            "earlier",
+            "4 30",
+            "half past four",
+            "finish at",
+            "leave at",
+            "start at"
+          ]
+        },
+        {
+          "label": "give the reason",
+          "any": [
+            "master*",
+            "degree",
+            "course",
+            "classes",
+            "stud*",
+            "university"
+          ]
+        },
+        {
+          "label": "explain how work will be covered",
+          "any": [
+            "cover*",
+            "hand over",
+            "handover",
+            "colleague",
+            "take over",
+            "client calls"
+          ]
+        },
+        {
+          "label": "suggest a trial",
+          "any": [
+            "trial",
+            "three months",
+            "3 months",
+            "review"
+          ]
+        }
+      ],
+      "model_answer": "Dear Nilufar,\nFollowing our conversation, I would like to request a change to my working hours on Tuesdays and Thursdays, so that I can attend my master's classes, which start at 5 pm. On those two days I propose to start at 8:00 and finish at 16:30, so I would still work all core hours. For the Tuesday client calls, Aziz has agreed to take over any call that runs past 16:30, and I will send him a short handover note beforehand. I would be happy to try this for a three-month trial period and review it with you afterwards.\nBest regards,\nTimur",
+      "min_words": null
+    },
+    {
+      "title": "Reassure your manager",
+      "instructions": "In a short meeting, Nilufar asks a direct question. Explain the cover arrangement, show some flexibility, and offer to review it.",
+      "prompt_text": "Nilufar: Talk me through Tuesdays. How will the client calls work if you leave early?",
+      "estimated_minutes": 4,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Reassure your manager with a concrete plan and a willingness to adjust.",
+      "points": [
+        {
+          "label": "explain the cover arrangement",
+          "any": [
+            "colleague",
+            "aziz",
+            "handover",
+            "hand over",
+            "cover",
+            "take over",
+            "notes",
+            "brief*"
+          ]
+        },
+        {
+          "label": "show flexibility",
+          "any": [
+            "move",
+            "reschedul*",
+            "morning",
+            "remotely",
+            "online",
+            "dial in",
+            "from my phone"
+          ]
+        },
+        {
+          "label": "offer a review",
+          "any": [
+            "trial",
+            "review",
+            "check in",
+            "after a month",
+            "feedback",
+            "doesn't work"
+          ]
+        }
+      ],
+      "model_answer": "I'll join the start of every call and stay until half past four. After that, Aziz will take over, and I'll brief him beforehand with notes on each client. I could also ask our regular clients whether we can move their call to the morning. And if it doesn't work, we can review it after the first month.",
+      "min_words": null
+    }
+  ]
+}

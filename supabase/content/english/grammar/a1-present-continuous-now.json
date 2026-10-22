@@ -1,0 +1,119 @@
+{
+  "item": {
+    "slug": "a1-present-continuous-now",
+    "title": "Present continuous: what is happening now",
+    "level": "A1",
+    "focus_area": "present-continuous",
+    "explanation_text": "Use am, is or are + verb-ing for actions that are happening now, at the moment you speak: I am reading. She is cooking. They are playing football. Negatives: I'm not working. He isn't sleeping. They aren't listening. Questions: Are you listening? Is it raining? Spelling: most verbs add -ing (read → reading). If the verb ends in -e, drop the -e (make → making). Short verbs like sit, run and swim double the last letter (sitting, running, swimming).",
+    "contrast_text": "Compare: I drink tea every morning (a habit, present simple). I am drinking tea now (at this moment, present continuous).",
+    "common_error_pattern": "Leaving out am, is or are ('She cooking'), or forgetting -ing after am, is or are ('I am read').",
+    "tags": [
+      "present continuous",
+      "now"
+    ],
+    "examples": [
+      {
+        "bad": "She cooking dinner now.",
+        "good": "She is cooking dinner now."
+      },
+      {
+        "bad": "They are play football in the park.",
+        "good": "They are playing football in the park."
+      },
+      {
+        "bad": "Look! It snowing.",
+        "good": "Look! It's snowing."
+      },
+      {
+        "bad": "I am siting on the bus.",
+        "good": "I am sitting on the bus."
+      }
+    ]
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Use the present continuous of the verb in brackets.",
+      "prompt_text": "Please be quiet. The baby ___. (sleep)",
+      "accepted_answers": [
+        "is sleeping",
+        "'s sleeping"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-continuous"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Use the present continuous of the verb in brackets.",
+      "prompt_text": "Look! Aziz and Timur ___ football in the yard. (play)",
+      "accepted_answers": [
+        "are playing"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-continuous"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Use the present continuous of the verb in brackets.",
+      "prompt_text": "I ___ to music right now. (listen)",
+      "accepted_answers": [
+        "am listening",
+        "'m listening"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-continuous"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Use the present continuous of the verb in brackets.",
+      "prompt_text": "My mum ___ plov in the kitchen. (make)",
+      "accepted_answers": [
+        "is making",
+        "'s making"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-continuous"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Use the present continuous of the verb in brackets.",
+      "prompt_text": "We ___ TV. We are reading. (not / watch)",
+      "accepted_answers": [
+        "are not watching",
+        "aren't watching",
+        "'re not watching"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-continuous"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "instructions": "Find the mistake and write the whole sentence correctly.",
+      "prompt_text": "He is run to the bus stop.",
+      "accepted_answers": [
+        "He is running to the bus stop.",
+        "He's running to the bus stop."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-continuous"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "instructions": "Find the mistake and write the whole sentence correctly.",
+      "prompt_text": "Malika reading a book in her room.",
+      "accepted_answers": [
+        "Malika is reading a book in her room.",
+        "Malika's reading a book in her room."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.present-continuous"
+    }
+  ]
+}

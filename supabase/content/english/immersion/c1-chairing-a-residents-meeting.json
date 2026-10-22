@@ -1,0 +1,220 @@
+{
+  "item": {
+    "slug": "c1-chairing-a-residents-meeting",
+    "title": "Chairing a residents' meeting",
+    "level": "C1",
+    "context_text": "You've volunteered to chair a meeting of residents in your apartment building in Tashkent. Several foreign families live there, so meetings are held in English. The question is how to spend this year's shared maintenance fund: modernise the old lift, or renovate the courtyard and playground.",
+    "objective_text": "Understand both options and both sides, keep the discussion fair, steer the meeting towards a decision, and communicate the outcome tactfully.",
+    "mission_type": "problem_solving",
+    "target_grammar": "neutral summarising language (What I'm hearing is…; On the one hand…, on the other…)",
+    "cultural_note": "A good chair in English-speaking meetings stays visibly neutral: summarising each side fairly before moving to a vote helps people accept a decision they didn't vote for.",
+    "target_vocabulary": [
+      "maintenance fund",
+      "majority",
+      "compromise",
+      "concern",
+      "set aside"
+    ],
+    "success_conditions": [
+      "Understand the costs and implications of each option and the voting rule",
+      "Identify each resident's main argument",
+      "Summarise both views neutrally and propose a fair procedure",
+      "Announce the result and show how the minority's concerns will be addressed"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the proposal summary",
+      "instructions": "Read the summary circulated before the meeting. Then answer the questions.",
+      "prompt_text": "Maintenance fund: 48 million som available this year.\nOption A: Lift modernisation, 45 million som. The lift is 30 years old and broke down seven times last year. Engineers say it is currently safe, but spare parts are increasingly hard to find.\nOption B: Courtyard and playground, 30 million som for new play equipment, benches and lighting. The remaining 18 million som would be set aside towards lift modernisation next year.\nThe decision requires a simple majority of the households present.",
+      "estimated_minutes": 5,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "What is one financial argument for Option B?",
+          "options": [
+            "It costs nothing this year",
+            "It leaves money set aside for future lift work",
+            "It includes a new lift"
+          ],
+          "answer_index": 1,
+          "explanation": "\"The remaining 18 million som would be set aside towards lift modernisation next year.\""
+        },
+        {
+          "prompt": "What do the engineers say about the lift?",
+          "options": [
+            "It is unsafe and must close",
+            "It is safe for now, but spare parts are getting harder to find",
+            "It must be replaced this month"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Engineers say it is currently safe, but spare parts are increasingly hard to find.\""
+        },
+        {
+          "prompt": "How will the decision be made?",
+          "options": [
+            "Everyone must agree",
+            "A simple majority of households present",
+            "The chair decides"
+          ],
+          "answer_index": 1,
+          "explanation": "\"The decision requires a simple majority of the households present.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to two residents",
+      "instructions": "Two residents speak at the meeting. Listen and answer the questions.",
+      "prompt_text": "Mrs Usmonova: I live on the ninth floor. When the lift broke down in January, I couldn't leave my flat for three days. A playground is lovely, but this is about people's basic access to their own homes.\nMr Brown: I hear that, and I'm not dismissing it for a second. But the engineers say the lift is safe, and meanwhile our children are playing on broken equipment right now. If we set money aside this year, we can do the lift properly next year instead of rushing it.",
+      "estimated_minutes": 4,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "gb",
+      "questions": [
+        {
+          "prompt": "What is Mrs Usmonova's main argument?",
+          "options": [
+            "The playground is too expensive",
+            "Some residents depend on the lift for basic access",
+            "The engineers are wrong"
+          ],
+          "answer_index": 1,
+          "explanation": "\"This is about people's basic access to their own homes.\""
+        },
+        {
+          "prompt": "How does Mr Brown respond?",
+          "options": [
+            "He dismisses her concern",
+            "He acknowledges it but argues the playground is more urgent now",
+            "He agrees to drop Option B"
+          ],
+          "answer_index": 1,
+          "explanation": "\"I'm not dismissing it… meanwhile our children are playing on broken equipment right now.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Summarise and move to a decision",
+      "instructions": "As chair, summarise both positions neutrally and propose how the meeting should reach a decision.",
+      "prompt_text": "Resident: So, chair, where are we? Can we decide now?",
+      "estimated_minutes": 4,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Give a balanced summary of both views and set out a fair procedure.",
+      "points": [
+        {
+          "label": "summarise the case for the lift",
+          "any": [
+            "lift",
+            "access",
+            "ninth floor",
+            "broke*",
+            "breakdown*"
+          ]
+        },
+        {
+          "label": "summarise the case for the courtyard",
+          "any": [
+            "playground",
+            "children",
+            "kids",
+            "equipment",
+            "courtyard"
+          ]
+        },
+        {
+          "label": "stay neutral",
+          "any": [
+            "both",
+            "on the one hand",
+            "on the other hand",
+            "valid",
+            "fair point*",
+            "concerns",
+            "understand"
+          ]
+        },
+        {
+          "label": "propose a procedure",
+          "any": [
+            "majority",
+            "show of hands",
+            "vote",
+            "ballot",
+            "households",
+            "proposal",
+            "option a",
+            "option b"
+          ]
+        }
+      ],
+      "model_answer": "Let me summarise. On the one hand, Option A addresses a real access problem: when the lift breaks down, some residents can't leave their homes. On the other hand, Option B fixes equipment the children are using now and sets money aside for the lift next year. Both concerns are clearly valid. I suggest we take a show of hands, one per household, and decide by simple majority.",
+      "min_words": null
+    },
+    {
+      "title": "Announce the result",
+      "instructions": "The meeting voted 23 to 17 for Option B, and agreed that the lift will be inspected every month. Write the announcement for the residents' group chat, for people who couldn't attend. Show that the concerns of the other side were heard.",
+      "prompt_text": "Residents' group chat\nNeighbour: I couldn't come to the meeting last night. What did we decide?",
+      "estimated_minutes": 10,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Report the decision clearly and tactfully, addressing the minority's concerns.",
+      "points": [
+        {
+          "label": "state the decision",
+          "any": [
+            "option b",
+            "playground",
+            "courtyard"
+          ]
+        },
+        {
+          "label": "give the vote",
+          "any": [
+            "23",
+            "17",
+            "majority",
+            "vote*"
+          ]
+        },
+        {
+          "label": "address the lift concerns",
+          "any": [
+            "lift",
+            "18",
+            "next year",
+            "inspect*",
+            "monthly",
+            "every month",
+            "priority"
+          ]
+        },
+        {
+          "label": "thank people and keep the tone inclusive",
+          "any": [
+            "thank*",
+            "everyone",
+            "respect*",
+            "appreciat*"
+          ]
+        }
+      ],
+      "model_answer": "Hi everyone, here's a summary for those who couldn't make it. After a good discussion, the meeting voted 23 to 17 for Option B: new play equipment, benches and lighting in the courtyard. The remaining 18 million som will be set aside, so the lift modernisation can go ahead next year. We all understood how difficult the January breakdown was for residents on the upper floors, so we also agreed that the lift will be inspected every month until then. Thank you to everyone who came and spoke so respectfully.",
+      "min_words": null
+    }
+  ]
+}

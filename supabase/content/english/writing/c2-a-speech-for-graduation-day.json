@@ -1,0 +1,85 @@
+{
+  "item": {
+    "slug": "c2-a-speech-for-graduation-day",
+    "title": "A Speech for Graduation Day",
+    "level": "C2",
+    "prompt_text": "You have been chosen to give a speech at your university graduation ceremony on behalf of your year group. Write the speech. It should be warm and personal but also offer your classmates a meaningful message about the future.",
+    "genre": "speech",
+    "target_grammar": "rhetorical devices (tricolon, rhetorical questions, parallelism); varied sentence length for effect",
+    "target_structure": "address the audience + shared memories + thanks + reflection on uncertainty + central message + memorable close",
+    "expected_length_min": 280,
+    "expected_length_max": 350,
+    "target_vocabulary": [
+      "fellow graduates",
+      "milestone",
+      "sleepless nights",
+      "gratitude",
+      "uncertainty",
+      "resilience",
+      "chapter",
+      "carry with us"
+    ],
+    "audience": "Graduates, families and university staff",
+    "checklist": [
+      {
+        "point": "Address the audience and acknowledge the occasion",
+        "keywords": [
+          "fellow graduates",
+          "dear",
+          "good afternoon",
+          "good morning",
+          "ladies and gentlemen",
+          "today"
+        ]
+      },
+      {
+        "point": "Reflect on shared experiences",
+        "keywords": [
+          "remember",
+          "first day",
+          "exams",
+          "nights",
+          "together",
+          "years ago",
+          "we"
+        ]
+      },
+      {
+        "point": "Thank the people who helped",
+        "keywords": [
+          "thank",
+          "grateful",
+          "gratitude",
+          "parents",
+          "families",
+          "teachers",
+          "professors"
+        ]
+      },
+      {
+        "point": "Reflect on the future and its uncertainty",
+        "keywords": [
+          "future",
+          "uncertain",
+          "unknown",
+          "don't know",
+          "ahead",
+          "next chapter"
+        ]
+      },
+      {
+        "point": "Deliver a central message and a memorable close",
+        "keywords": [
+          "so",
+          "let us",
+          "let's",
+          "my wish",
+          "congratulations",
+          "never forget",
+          "whatever"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

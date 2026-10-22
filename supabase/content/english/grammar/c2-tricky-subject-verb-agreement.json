@@ -1,0 +1,123 @@
+{
+  "item": {
+    "slug": "c2-tricky-subject-verb-agreement",
+    "title": "Tricky agreement: a number of, neither of, the majority",
+    "level": "C2",
+    "focus_area": "agreement",
+    "explanation_text": "In careful writing, the verb agrees with the real head of the subject, not with the nearest noun: The quality of the photos is poor. Phrases such as along with, as well as and together with do not change the subject: The director, as well as her assistants, is attending. A number of + plural noun takes a plural verb (A number of problems have arisen), but the number of takes a singular verb (The number of applicants has doubled). Each, either and neither (of) take a singular verb in formal style: Neither of the reports mentions the cost. Words like majority, half, the rest and fractions agree with the noun after of: Half of the money was stolen; half of the students were absent. An amount seen as one unit takes a singular verb: Ten kilometres is a long way to walk. With either ... or and neither ... nor, the verb agrees with the nearer subject: Neither the manager nor the staff were informed.",
+    "contrast_text": "Compare: The number of students in the group is small. A number of students in the group are from abroad.",
+    "common_error_pattern": "Making the verb agree with the nearest noun instead of the real subject, e.g. 'The list of requirements are online.'",
+    "tags": [
+      "subject-verb agreement",
+      "formal writing"
+    ],
+    "examples": [
+      {
+        "bad": "The list of requirements are on the website.",
+        "good": "The list of requirements is on the website."
+      },
+      {
+        "bad": "The number of complaints have risen sharply.",
+        "good": "The number of complaints has risen sharply."
+      },
+      {
+        "bad": "Neither of the candidates have any management experience.",
+        "good": "Neither of the candidates has any management experience."
+      },
+      {
+        "bad": "Twenty dollars are too much for a cup of coffee.",
+        "good": "Twenty dollars is too much for a cup of coffee."
+      }
+    ]
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Write the correct present form of the verb in brackets.",
+      "prompt_text": "The quality of the recordings ___ surprisingly good. (be)",
+      "accepted_answers": [
+        "is"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.agreement"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Write the correct present form of the verb in brackets.",
+      "prompt_text": "A number of students ___ asked for extra lessons before the exam. (have)",
+      "accepted_answers": [
+        "have"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.agreement"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Write the correct present form of the verb in brackets.",
+      "prompt_text": "The number of people working remotely ___ grown in recent years. (have)",
+      "accepted_answers": [
+        "has"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.agreement"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Write the correct present form of the verb in brackets.",
+      "prompt_text": "Two-thirds of the land ___ used for farming. (be)",
+      "accepted_answers": [
+        "is"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.agreement"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Write the correct present form of the verb in brackets.",
+      "prompt_text": "Neither the teacher nor the students ___ happy with the new timetable. (be)",
+      "accepted_answers": [
+        "are"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.agreement"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Write the correct present form of the verb in brackets.",
+      "prompt_text": "The head of the department, together with two professors, ___ the conference every year. (attend)",
+      "accepted_answers": [
+        "attends"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.agreement"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "instructions": "Find the mistake and write the whole sentence correctly.",
+      "prompt_text": "Each of the applicants have to submit two references.",
+      "accepted_answers": [
+        "Each of the applicants has to submit two references."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.agreement"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "instructions": "Find the mistake and write the whole sentence correctly.",
+      "prompt_text": "The majority of the people in the survey was under thirty.",
+      "accepted_answers": [
+        "The majority of the people in the survey were under thirty."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.agreement"
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "item": {
+    "slug": "c2-in-defence-of-boredom",
+    "title": "In Defence of Boredom",
+    "level": "C2",
+    "prompt_text": "'Boredom is not a problem to be solved, but a space to be used.' Discuss this statement. Consider why people today try so hard to avoid boredom, what boredom might offer us, and where the argument has its limits.",
+    "prompt_type": "guided_response",
+    "target_duration_seconds": 165,
+    "target_grammar": "complex nominalisation; concessive and conditional structures (Were we to…, Much as…)",
+    "fluency_objective": "Sustain an extended argument with smooth transitions, returning to the statement to frame your conclusion.",
+    "pronunciation_objective": "Use pausing and emphasis for rhetorical effect, especially before a key contrast or your final point.",
+    "target_vocabulary": [
+      "at the first flicker of",
+      "reflexively",
+      "fertile ground",
+      "mind-wandering",
+      "self-reflection",
+      "much as",
+      "it would be naive to",
+      "conflate",
+      "chronic",
+      "on reflection"
+    ],
+    "task_type": "opinion",
+    "model_answer": "I find this statement largely persuasive, though I'd want to qualify it. Let's begin with why we're so desperate to avoid boredom. For most of us, the cure is always within reach. At the first flicker of restlessness, in a queue, on the metro, even during a conversation, we reach reflexively for our phones. Boredom has gone from being an ordinary part of life to something that feels almost intolerable, a gap that has to be filled immediately. Yet that gap may be exactly what we need. When the mind has nothing external to hold on to, it starts to wander, and mind-wandering is fertile ground for creativity and self-reflection. Many people find their best ideas arrive not at their desks, but on a long bus journey or while washing the dishes. Boredom also carries information: it tells us that something in our lives lacks meaning, and if we silence it every time, we never hear the message. That said, it would be naive to romanticise boredom entirely. Much as a quiet afternoon can spark insight, chronic boredom, in an unfulfilling job, say, or in long-term unemployment, can be corrosive, and telling someone in that position to 'use the space' risks sounding glib. We shouldn't conflate the occasional, chosen pause with a situation people are trapped in. So, on reflection, I'd rephrase the statement slightly. Boredom isn't always a space to be used, but it is often a signal worth listening to, and we lose something valuable when we refuse to sit with it for even a minute.",
+    "model_opening": "I find this statement largely persuasive, though I'd want to qualify it.",
+    "cues": [
+      {
+        "text": "your position on the statement",
+        "keywords": [
+          "persuasive",
+          "i'd argue",
+          "i agree",
+          "i find",
+          "qualify",
+          "my view"
+        ]
+      },
+      {
+        "text": "why people avoid boredom",
+        "keywords": [
+          "phones",
+          "reach for",
+          "intolerable",
+          "restless",
+          "avoid",
+          "filled",
+          "screen"
+        ]
+      },
+      {
+        "text": "what boredom offers",
+        "keywords": [
+          "creativ",
+          "mind-wandering",
+          "ideas",
+          "reflection",
+          "signal",
+          "meaning",
+          "insight"
+        ]
+      },
+      {
+        "text": "the limits of the argument",
+        "keywords": [
+          "that said",
+          "naive",
+          "chronic",
+          "however",
+          "romanticis",
+          "romanticiz",
+          "trapped",
+          "limits"
+        ]
+      },
+      {
+        "text": "a conclusion",
+        "keywords": [
+          "on reflection",
+          "so",
+          "ultimately",
+          "in the end",
+          "to conclude"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

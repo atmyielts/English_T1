@@ -1,0 +1,142 @@
+{
+  "item": {
+    "slug": "b1-mahalla-hashar-saturday",
+    "title": "A Hashar in Our Mahalla",
+    "level": "B1",
+    "summary": "At a neighbourhood meeting, a volunteer explains the plan for Saturday's community clean-up and tree planting.",
+    "transcript_text": "Good evening, neighbours, and thank you for coming to this meeting. As you know, spring is here, and our mahalla is organising a hashar this Saturday. For anyone who is new to the area, a hashar is when neighbours work together to help the community. This time we're planning to clean the park next to the school and plant fifty young trees. We'll meet at the park gate at eight in the morning, before it gets too hot. Please wear old clothes and bring gloves if you have them. The mahalla will provide spades, rubbish bags and drinking water. We especially need a few people with cars to collect the trees from the garden centre on Friday evening. If you can help with that, please speak to me after the meeting. Children are very welcome, but they should stay with an adult. When we've finished, at about one o'clock, there will be lunch for everyone in the school yard. I hope to see as many of you there as possible.",
+    "category": "Community",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 140,
+    "duration_seconds": 73,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "mahalla",
+      "hashar",
+      "community",
+      "volunteering"
+    ],
+    "questions": [
+      {
+        "prompt": "What is a hashar, according to the speaker?",
+        "options": [
+          "A spring festival with music",
+          "When neighbours work together to help the community",
+          "A meeting of the mahalla committee",
+          "A competition between schools"
+        ],
+        "answer_index": 1,
+        "explanation": "\"A hashar is when neighbours work together to help the community.\""
+      },
+      {
+        "prompt": "Why will they meet at eight in the morning?",
+        "options": [
+          "The park opens at eight.",
+          "The trees arrive at eight.",
+          "It is before it gets too hot.",
+          "The school starts later."
+        ],
+        "answer_index": 2,
+        "explanation": "\"We'll meet at the park gate at eight in the morning, before it gets too hot.\""
+      },
+      {
+        "prompt": "What should volunteers bring themselves?",
+        "options": [
+          "Spades",
+          "Gloves, if they have them",
+          "Rubbish bags",
+          "Young trees"
+        ],
+        "answer_index": 1,
+        "explanation": "\"Please wear old clothes and bring gloves if you have them.\" The mahalla provides spades, bags and water."
+      },
+      {
+        "prompt": "What help does the speaker especially need?",
+        "options": [
+          "People to cook lunch",
+          "People to look after the children",
+          "People with cars to collect the trees on Friday",
+          "People to clean the school"
+        ],
+        "answer_index": 2,
+        "explanation": "\"We especially need a few people with cars to collect the trees from the garden centre on Friday evening.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Good evening, neighbours, and thank you for coming to this meeting.",
+      "focus_phrase": "thank you for coming",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "As you know, spring is here, and our mahalla is organising a hashar this Saturday.",
+      "focus_phrase": "organising a hashar",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "For anyone who is new to the area, a hashar is when neighbours work together to help the community.",
+      "focus_phrase": "work together",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "This time we're planning to clean the park next to the school and plant fifty young trees.",
+      "focus_phrase": "plant fifty young trees",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "We'll meet at the park gate at eight in the morning, before it gets too hot.",
+      "focus_phrase": "park gate",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Please wear old clothes and bring gloves if you have them.",
+      "focus_phrase": "old clothes",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The mahalla will provide spades, rubbish bags and drinking water.",
+      "focus_phrase": "rubbish bags",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "We especially need a few people with cars to collect the trees from the garden centre on Friday evening.",
+      "focus_phrase": "people with cars",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "If you can help with that, please speak to me after the meeting.",
+      "focus_phrase": "after the meeting",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Children are very welcome, but they should stay with an adult.",
+      "focus_phrase": "stay with an adult",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "When we've finished, at about one o'clock, there will be lunch for everyone in the school yard.",
+      "focus_phrase": "lunch for everyone",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I hope to see as many of you there as possible.",
+      "focus_phrase": "as many of you",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "a1-clothes",
+    "title": "Clothes",
+    "level": "A1",
+    "topic": "clothes",
+    "description": "Everyday clothes and what you wear."
+  },
+  "children": [
+    {
+      "word": "shirt",
+      "part_of_speech": "noun",
+      "definition": "a piece of clothing for the top of your body, with buttons at the front",
+      "example": "My father wears a white shirt to work.",
+      "translation_ru": "рубашка",
+      "translation_uz": "koʻylak"
+    },
+    {
+      "word": "trousers",
+      "part_of_speech": "noun",
+      "definition": "a piece of clothing that covers your legs, one part for each leg",
+      "example": "These trousers are too long for me.",
+      "translation_ru": "брюки",
+      "translation_uz": "shim"
+    },
+    {
+      "word": "skirt",
+      "part_of_speech": "noun",
+      "definition": "a piece of clothing for women and girls that hangs down from the waist",
+      "example": "Her school skirt is dark blue.",
+      "translation_ru": "юбка",
+      "translation_uz": "yubka"
+    },
+    {
+      "word": "shoes",
+      "part_of_speech": "noun",
+      "definition": "things you wear on your feet, often made of leather",
+      "example": "These shoes are very comfortable.",
+      "translation_ru": "обувь, туфли",
+      "translation_uz": "poyabzal, tufli"
+    },
+    {
+      "word": "coat",
+      "part_of_speech": "noun",
+      "definition": "a long warm piece of clothing you wear outside when it is cold",
+      "example": "It's cold today. Wear your coat.",
+      "translation_ru": "пальто",
+      "translation_uz": "palto"
+    },
+    {
+      "word": "jacket",
+      "part_of_speech": "noun",
+      "definition": "a short coat",
+      "example": "Take a jacket. It's windy.",
+      "translation_ru": "куртка",
+      "translation_uz": "kurtka"
+    },
+    {
+      "word": "hat",
+      "part_of_speech": "noun",
+      "definition": "a thing you wear on your head",
+      "example": "My grandfather always wears a hat in the sun.",
+      "translation_ru": "шляпа, шапка",
+      "translation_uz": "shlyapa, bosh kiyim"
+    },
+    {
+      "word": "socks",
+      "part_of_speech": "noun",
+      "definition": "soft things you wear on your feet inside your shoes",
+      "example": "I need clean socks.",
+      "translation_ru": "носки",
+      "translation_uz": "paypoq"
+    },
+    {
+      "word": "wear",
+      "part_of_speech": "verb",
+      "definition": "to have clothes on your body",
+      "example": "I wear a uniform at school.",
+      "translation_ru": "носить (одежду)",
+      "translation_uz": "kiymoq, kiyib yurmoq"
+    },
+    {
+      "word": "put on",
+      "part_of_speech": "phrasal verb",
+      "definition": "to start wearing a piece of clothing",
+      "example": "Put on your hat. It's cold outside.",
+      "translation_ru": "надевать",
+      "translation_uz": "kiyib olmoq"
+    },
+    {
+      "word": "take off",
+      "part_of_speech": "phrasal verb",
+      "definition": "to remove a piece of clothing from your body",
+      "example": "Please take off your shoes at the door.",
+      "translation_ru": "снимать",
+      "translation_uz": "yechmoq"
+    },
+    {
+      "word": "clothes",
+      "part_of_speech": "noun",
+      "definition": "the things you wear, like shirts, dresses and trousers",
+      "example": "I buy new clothes for Navruz.",
+      "translation_ru": "одежда",
+      "translation_uz": "kiyim-kechak"
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "item": {
+    "slug": "c1-lecture-borrowed-words",
+    "title": "Lecture: Why Languages Borrow Words",
+    "level": "C1",
+    "summary": "A linguistics lecture on loanwords, from French food words in English to English terms in modern Uzbek.",
+    "transcript_text": "Good morning. Today I'd like to look at something every one of you does dozens of times a day without noticing: borrowing words. Linguists call a word taken from one language into another a loanword, although, strictly speaking, nothing is ever given back. Borrowing tends to follow contact, and contact tends to follow trade, migration and, quite often, conquest. English offers a textbook case. After the Norman Conquest in ten sixty-six, French became the language of the ruling class in England for several centuries. The result is still visible on every menu. The animals in the field kept their Old English names: cow, pig and sheep. But the meat that reached the lord's table was called beef, pork and mutton, all of which come from French. In other words, the vocabulary preserves a social hierarchy that disappeared long ago. Uzbek tells a similar story, layer by layer. Many words connected with learning and administration came from Persian and Arabic, while a great deal of twentieth-century technical vocabulary arrived through Russian. Today, of course, the dominant source is English, which is why you hear people talk about a startup or a deadline in otherwise entirely Uzbek sentences. Now, it's tempting to see all this as a sign that a language is under threat. I'd argue the opposite. Borrowing is usually a sign of vitality: a language that absorbs new words and bends them to its own grammar is a language that people are still actively using. What actually endangers a language is not borrowing, but the moment its speakers stop passing it on to their children.",
+    "category": "Language",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 160,
+    "duration_seconds": 99,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "lecture",
+      "linguistics",
+      "loanwords",
+      "history"
+    ],
+    "questions": [
+      {
+        "prompt": "Why does the lecturer say that \"nothing is ever given back\"?",
+        "options": [
+          "To show that some languages refuse to share words",
+          "To point out that the term \"loanword\" is not literally accurate",
+          "To criticise English for taking too many words",
+          "To explain why loanwords disappear over time"
+        ],
+        "answer_index": 1,
+        "explanation": "A loan is normally returned, so the remark highlights that the metaphor in \"loanword\" does not literally fit."
+      },
+      {
+        "prompt": "According to the lecture, what usually leads to borrowing?",
+        "options": [
+          "Deliberate decisions by governments",
+          "Contact between groups through trade, migration or conquest",
+          "A shortage of words in the borrowing language",
+          "The influence of schools and dictionaries"
+        ],
+        "answer_index": 1,
+        "explanation": "\"Borrowing tends to follow contact, and contact tends to follow trade, migration and, quite often, conquest.\""
+      },
+      {
+        "prompt": "What does the example of cow and beef illustrate?",
+        "options": [
+          "French had no words for farm animals.",
+          "English speakers preferred French food.",
+          "Vocabulary can preserve traces of an old social hierarchy.",
+          "Old English words were replaced completely."
+        ],
+        "answer_index": 2,
+        "explanation": "Animals kept English names while the meat served to the French-speaking elite got French names: \"the vocabulary preserves a social hierarchy\"."
+      },
+      {
+        "prompt": "Where did much twentieth-century technical vocabulary in Uzbek come from?",
+        "options": [
+          "Persian",
+          "Arabic",
+          "Russian",
+          "English"
+        ],
+        "answer_index": 2,
+        "explanation": "\"A great deal of twentieth-century technical vocabulary arrived through Russian.\""
+      },
+      {
+        "prompt": "What is the lecturer's main argument?",
+        "options": [
+          "Borrowing is the biggest threat to small languages.",
+          "Borrowing shows a language is alive; the real danger is speakers not passing it on.",
+          "Uzbek should stop borrowing English words.",
+          "Languages that borrow lose their grammar."
+        ],
+        "answer_index": 1,
+        "explanation": "Borrowing is \"a sign of vitality\"; what endangers a language is \"the moment its speakers stop passing it on to their children\"."
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Good morning. Today I'd like to look at something every one of you does dozens of times a day without noticing: borrowing words.",
+      "focus_phrase": "borrowing words",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Linguists call a word taken from one language into another a loanword, although, strictly speaking, nothing is ever given back.",
+      "focus_phrase": "nothing is ever given back",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Borrowing tends to follow contact, and contact tends to follow trade, migration and, quite often, conquest.",
+      "focus_phrase": "tends to follow contact",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "English offers a textbook case.",
+      "focus_phrase": "textbook case",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "After the Norman Conquest in ten sixty-six, French became the language of the ruling class in England for several centuries.",
+      "focus_phrase": "ruling class",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The result is still visible on every menu.",
+      "focus_phrase": "on every menu",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The animals in the field kept their Old English names: cow, pig and sheep.",
+      "focus_phrase": "Old English names",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "But the meat that reached the lord's table was called beef, pork and mutton, all of which come from French.",
+      "focus_phrase": "beef, pork and mutton",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "In other words, the vocabulary preserves a social hierarchy that disappeared long ago.",
+      "focus_phrase": "social hierarchy",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Uzbek tells a similar story, layer by layer.",
+      "focus_phrase": "layer by layer",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Many words connected with learning and administration came from Persian and Arabic, while a great deal of twentieth-century technical vocabulary arrived through Russian.",
+      "focus_phrase": "through Russian",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Today, of course, the dominant source is English, which is why you hear people talk about a startup or a deadline in otherwise entirely Uzbek sentences.",
+      "focus_phrase": "the dominant source",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Now, it's tempting to see all this as a sign that a language is under threat.",
+      "focus_phrase": "under threat",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I'd argue the opposite.",
+      "focus_phrase": "the opposite",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Borrowing is usually a sign of vitality: a language that absorbs new words and bends them to its own grammar is a language that people are still actively using.",
+      "focus_phrase": "a sign of vitality",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "What actually endangers a language is not borrowing, but the moment its speakers stop passing it on to their children.",
+      "focus_phrase": "passing it on",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

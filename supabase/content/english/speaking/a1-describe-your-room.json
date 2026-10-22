@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "a1-describe-your-room",
+    "title": "Describe Your Room",
+    "level": "A1",
+    "prompt_text": "Describe your bedroom. Say if it is big or small, what furniture is in it, what colours you can see, and what you do there.",
+    "prompt_type": "guided_response",
+    "target_duration_seconds": 40,
+    "target_grammar": "there is / there are; present simple",
+    "fluency_objective": "Join short sentences with 'and' and 'but' instead of stopping after every one.",
+    "pronunciation_objective": "Say 'there is' and 'there are' smoothly, linking the words together.",
+    "target_vocabulary": [
+      "my room is",
+      "there is",
+      "there are",
+      "bed",
+      "desk",
+      "wardrobe",
+      "window",
+      "next to",
+      "I study",
+      "I relax"
+    ],
+    "task_type": "describe",
+    "model_answer": "My room is small, but I like it. There is a bed, a desk and a chair. There is a big window next to the desk, so my room is very light. The walls are white and the curtains are blue. I study at my desk every evening, and I read books in bed. At the weekend, I listen to music and relax in my room.",
+    "model_opening": "My room is small, but I like it.",
+    "cues": [
+      {
+        "text": "big or small",
+        "keywords": [
+          "big",
+          "small",
+          "large",
+          "little"
+        ]
+      },
+      {
+        "text": "the furniture",
+        "keywords": [
+          "bed",
+          "desk",
+          "chair",
+          "wardrobe",
+          "table",
+          "sofa",
+          "shelf",
+          "there is",
+          "there are"
+        ]
+      },
+      {
+        "text": "the colours",
+        "keywords": [
+          "white",
+          "blue",
+          "green",
+          "yellow",
+          "red",
+          "pink",
+          "grey",
+          "brown",
+          "colour",
+          "color"
+        ]
+      },
+      {
+        "text": "what you do there",
+        "keywords": [
+          "study",
+          "read",
+          "sleep",
+          "listen",
+          "play",
+          "relax",
+          "watch"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

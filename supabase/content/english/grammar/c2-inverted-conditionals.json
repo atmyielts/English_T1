@@ -1,0 +1,128 @@
+{
+  "item": {
+    "slug": "c2-inverted-conditionals",
+    "title": "Had I known, should you need, were it not for",
+    "level": "C2",
+    "focus_area": "inversion",
+    "explanation_text": "In formal English, if can be dropped from a conditional and the auxiliary moved in front of the subject. Should + subject + bare infinitive replaces if for possible but unlikely future events, especially in formal letters and instructions: Should you require further information, please contact us. Were + subject + to-infinitive replaces if in hypothetical sentences: Were the university to raise its fees, many students would leave. With be, use were alone: Were I in your position, I would decline the offer. Had + subject + past participle replaces if in third and mixed conditionals: Had we left earlier, we would have caught the train. Were it not for (present) and Had it not been for (past) mean 'without': Were it not for her help, I would be lost. Had it not been for her help, I would have failed. In the negative, not comes after the subject and is never contracted: Had I not seen it (not Hadn't I seen it).",
+    "contrast_text": "Compare: If I had known about the strike, I would have taken a taxi. Had I known about the strike, I would have taken a taxi. The meaning is the same; the second is more formal.",
+    "common_error_pattern": "Keeping if together with inversion ('If had I known'), contracting the negative ('Hadn't I known'), or adding will after should ('Should you will need').",
+    "tags": [
+      "inversion",
+      "conditionals",
+      "formal style"
+    ],
+    "examples": [
+      {
+        "bad": "If had we booked earlier, we would have got a discount.",
+        "good": "Had we booked earlier, we would have got a discount."
+      },
+      {
+        "bad": "Hadn't it been for the map, we would have got lost.",
+        "good": "Had it not been for the map, we would have got lost."
+      },
+      {
+        "bad": "Should you will need help, call reception.",
+        "good": "Should you need help, call reception."
+      },
+      {
+        "bad": "Were the university raise its fees, many students would leave.",
+        "good": "Were the university to raise its fees, many students would leave."
+      }
+    ]
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Complete the inverted conditional.",
+      "prompt_text": "___ you have any questions, please do not hesitate to contact me.",
+      "accepted_answers": [
+        "Should"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.inversion"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Complete the inverted conditional.",
+      "prompt_text": "___ I known how demanding the course was, I would never have enrolled.",
+      "accepted_answers": [
+        "Had"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.inversion"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Complete the inverted conditional.",
+      "prompt_text": "___ it not for the scholarship, Aziz could not afford to study in Germany.",
+      "accepted_answers": [
+        "Were"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.inversion"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Complete the inverted conditional with the verb in brackets.",
+      "prompt_text": "Had the driver not ___ so quickly, the accident would have been far worse. (react)",
+      "accepted_answers": [
+        "reacted"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.inversion"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Write one word.",
+      "prompt_text": "Were the project ___ fail, the investors would lose everything.",
+      "accepted_answers": [
+        "to"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.inversion"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Write two words.",
+      "prompt_text": "___ not been for her quick thinking, the whole system would have crashed.",
+      "accepted_answers": [
+        "Had it"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.inversion"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "instructions": "Find the mistake and write the whole sentence correctly.",
+      "prompt_text": "If had I realised the meeting was cancelled, I wouldn't have driven to the office.",
+      "accepted_answers": [
+        "Had I realised the meeting was cancelled, I wouldn't have driven to the office.",
+        "Had I realised the meeting was cancelled, I would not have driven to the office.",
+        "If I had realised the meeting was cancelled, I wouldn't have driven to the office."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.inversion"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "instructions": "Find the mistake and write the whole sentence correctly.",
+      "prompt_text": "Hadn't she warned us, we would have missed the deadline.",
+      "accepted_answers": [
+        "Had she not warned us, we would have missed the deadline.",
+        "If she hadn't warned us, we would have missed the deadline.",
+        "If she had not warned us, we would have missed the deadline."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.inversion"
+    }
+  ]
+}

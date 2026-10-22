@@ -1,0 +1,64 @@
+{
+  "item": {
+    "slug": "a1-ask-the-way-to-the-metro",
+    "title": "Ask the Way to the Metro",
+    "level": "A1",
+    "prompt_text": "You are in a new part of Tashkent and you want to take the metro. Stop a person in the street. Say excuse me, ask where the nearest metro station is, ask if it is far, and say thank you.",
+    "prompt_type": "roleplay",
+    "target_duration_seconds": 30,
+    "target_grammar": "Where is…? / Is it…? / Can I…? questions",
+    "fluency_objective": "Ask your questions one after the other without long pauses.",
+    "pronunciation_objective": "Use a polite, rising tone on 'Excuse me?' and on yes/no questions like 'Is it far?'",
+    "target_vocabulary": [
+      "excuse me",
+      "where is",
+      "the nearest",
+      "metro station",
+      "is it far",
+      "on foot",
+      "minutes",
+      "thank you very much"
+    ],
+    "task_type": "roleplay",
+    "model_answer": "Excuse me, can you help me, please? I want to take the metro. Where is the nearest metro station? Is it far from here? Can I walk there? Ten minutes on foot? OK, great. Straight on and then left. Thank you very much! Have a nice day.",
+    "model_opening": "Excuse me, can you help me, please?",
+    "cues": [
+      {
+        "text": "say excuse me",
+        "keywords": [
+          "excuse me",
+          "sorry",
+          "hello",
+          "can you help"
+        ]
+      },
+      {
+        "text": "ask where the station is",
+        "keywords": [
+          "where is",
+          "where's",
+          "metro",
+          "station"
+        ]
+      },
+      {
+        "text": "ask if it is far",
+        "keywords": [
+          "far",
+          "near",
+          "walk",
+          "minutes",
+          "on foot"
+        ]
+      },
+      {
+        "text": "say thank you",
+        "keywords": [
+          "thank",
+          "thanks"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "c2-contracts",
+    "title": "Contracts and legal language",
+    "level": "C2",
+    "topic": "legal",
+    "description": "Formal language for agreements, terms and obligations."
+  },
+  "children": [
+    {
+      "word": "stipulate",
+      "part_of_speech": "verb",
+      "definition": "to state clearly that something must be done, as part of an agreement or rule",
+      "example": "The contract stipulates that payment must be made within 30 days.",
+      "translation_ru": "оговаривать, предусматривать",
+      "translation_uz": "belgilab qoʻymoq, shart qilib qoʻymoq"
+    },
+    {
+      "word": "binding",
+      "part_of_speech": "adjective",
+      "definition": "that must be obeyed because of a law or agreement",
+      "example": "Once signed, the agreement is legally binding.",
+      "translation_ru": "обязательный (юридически)",
+      "translation_uz": "majburiy, yuridik kuchga ega"
+    },
+    {
+      "word": "liability",
+      "part_of_speech": "noun",
+      "definition": "legal responsibility for something, especially costs or damage",
+      "example": "The airline accepts no liability for valuables left in checked luggage.",
+      "translation_ru": "ответственность",
+      "translation_uz": "javobgarlik"
+    },
+    {
+      "word": "breach",
+      "part_of_speech": "noun",
+      "definition": "an act of breaking a law, rule or agreement",
+      "example": "Sharing client data would be a breach of contract.",
+      "translation_ru": "нарушение",
+      "translation_uz": "buzilish, buzish"
+    },
+    {
+      "word": "clause",
+      "part_of_speech": "noun",
+      "definition": "a separate section of a legal document",
+      "example": "A confidentiality clause prevents staff from discussing the deal.",
+      "translation_ru": "пункт, положение (договора)",
+      "translation_uz": "band, modda"
+    },
+    {
+      "word": "waive",
+      "part_of_speech": "verb",
+      "definition": "to choose not to demand something you have a right to",
+      "example": "The bank agreed to waive the late payment fee.",
+      "translation_ru": "отказываться (от права, требования)",
+      "translation_uz": "voz kechmoq"
+    },
+    {
+      "word": "terminate",
+      "part_of_speech": "verb",
+      "definition": "to end something formally, such as a contract",
+      "example": "Either side may terminate the agreement with 60 days' notice.",
+      "translation_ru": "расторгать, прекращать",
+      "translation_uz": "bekor qilmoq"
+    },
+    {
+      "word": "null and void",
+      "part_of_speech": "phrase",
+      "definition": "having no legal force",
+      "example": "The court declared the contract null and void.",
+      "translation_ru": "недействительный",
+      "translation_uz": "haqiqiy emas, kuchsiz"
+    },
+    {
+      "word": "in accordance with",
+      "part_of_speech": "phrase",
+      "definition": "following a rule, law or someone's wishes",
+      "example": "Your data will be deleted in accordance with company policy.",
+      "translation_ru": "в соответствии с",
+      "translation_uz": "...ga muvofiq"
+    },
+    {
+      "word": "jurisdiction",
+      "part_of_speech": "noun",
+      "definition": "the official power to make legal decisions, or the area where this power applies",
+      "example": "The case falls outside the court's jurisdiction.",
+      "translation_ru": "юрисдикция",
+      "translation_uz": "yurisdiksiya, vakolat doirasi"
+    },
+    {
+      "word": "party",
+      "part_of_speech": "noun",
+      "definition": "one of the people or organisations involved in a legal agreement",
+      "example": "Both parties signed the agreement on Monday.",
+      "translation_ru": "сторона (договора)",
+      "translation_uz": "tomon"
+    },
+    {
+      "word": "indemnify",
+      "part_of_speech": "verb",
+      "definition": "to promise to pay for any loss or damage that someone may suffer",
+      "example": "The client agrees to indemnify the agency against any claims.",
+      "translation_ru": "возмещать убытки",
+      "translation_uz": "zararni qoplash majburiyatini olmoq"
+    }
+  ]
+}

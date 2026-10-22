@@ -1,0 +1,78 @@
+{
+  "item": {
+    "slug": "b1-recommend-a-city-to-visit",
+    "title": "Recommend a City to Visit",
+    "level": "B1",
+    "prompt_text": "Your international classmates are planning a trip to Uzbekistan. Give a short presentation recommending one city, for example Khiva. Say where it is, what visitors can see and do there, the best time to go, and give one practical tip.",
+    "prompt_type": "guided_response",
+    "target_duration_seconds": 90,
+    "target_grammar": "can / should / it's worth + -ing for recommendations",
+    "fluency_objective": "Open with a clear introduction and use 'first', 'also' and 'finally' to move between points.",
+    "pronunciation_objective": "Pause briefly after each section so your audience can follow the presentation.",
+    "target_vocabulary": [
+      "I'd like to recommend",
+      "is located in",
+      "the old town",
+      "it's worth",
+      "you can",
+      "the best time to go",
+      "my tip is",
+      "don't miss"
+    ],
+    "task_type": "presentation",
+    "model_answer": "Today I'd like to recommend Khiva, a small city in the west of Uzbekistan, not far from Urgench. The most famous part of Khiva is the old inner city, called Itchan Kala, which is surrounded by high mud-brick walls. It's a UNESCO World Heritage Site, and walking inside feels like going back in time. First, you can see the Kalta Minor, a short, wide minaret covered in blue and green tiles. It was never finished, so it looks really unusual. You can also visit old madrasahs and palaces, and climb a minaret for a great view of the city. The best time to go is spring or autumn, because in summer it can be extremely hot. Finally, my practical tip: wear comfortable shoes, and try to stay at least one night. In the evening, when most tour groups have left, the old town is quiet and the walls look beautiful at sunset.",
+    "model_opening": "Today I'd like to recommend Khiva, a small city in the west of Uzbekistan, not far from Urgench.",
+    "cues": [
+      {
+        "text": "where it is",
+        "keywords": [
+          "in the west",
+          "in the east",
+          "in the north",
+          "in the south",
+          "near",
+          "not far from",
+          "located",
+          "region"
+        ]
+      },
+      {
+        "text": "what visitors can see and do",
+        "keywords": [
+          "you can",
+          "visit",
+          "see",
+          "walk",
+          "climb",
+          "museum",
+          "minaret",
+          "madrasah"
+        ]
+      },
+      {
+        "text": "the best time to go",
+        "keywords": [
+          "best time",
+          "spring",
+          "autumn",
+          "summer",
+          "winter",
+          "season"
+        ]
+      },
+      {
+        "text": "one practical tip",
+        "keywords": [
+          "tip",
+          "wear",
+          "bring",
+          "don't forget",
+          "should",
+          "try to",
+          "remember"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

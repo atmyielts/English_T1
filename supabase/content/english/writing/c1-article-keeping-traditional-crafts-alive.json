@@ -1,0 +1,88 @@
+{
+  "item": {
+    "slug": "c1-article-keeping-traditional-crafts-alive",
+    "title": "Article: Keeping Traditional Crafts Alive",
+    "level": "C1",
+    "prompt_text": "An international culture magazine has invited articles on the theme 'Old skills in a new world'. Write an article about how traditional crafts, such as Rishtan ceramics or suzani embroidery, can survive and stay relevant in the modern economy.",
+    "genre": "magazine article",
+    "target_grammar": "cleft sentences (What makes… is…); a range of modal verbs for speculation",
+    "target_structure": "eye-catching title + hook + why crafts matter + the threats they face + ways they can survive + memorable conclusion",
+    "expected_length_min": 250,
+    "expected_length_max": 320,
+    "target_vocabulary": [
+      "craftsmanship",
+      "handmade",
+      "mass-produced",
+      "pass down",
+      "apprentice",
+      "heritage",
+      "niche",
+      "reinvent",
+      "reach a wider audience"
+    ],
+    "audience": "Readers of an international culture magazine",
+    "checklist": [
+      {
+        "point": "Hook the reader in the opening",
+        "keywords": [
+          "imagine",
+          "?",
+          "picture",
+          "have you ever",
+          "walk into",
+          "anyone who"
+        ]
+      },
+      {
+        "point": "Explain why traditional crafts matter",
+        "keywords": [
+          "heritage",
+          "identity",
+          "history",
+          "skill",
+          "generations",
+          "tradition",
+          "meaning"
+        ]
+      },
+      {
+        "point": "Describe the threats crafts face",
+        "keywords": [
+          "mass-produced",
+          "cheap",
+          "factory",
+          "young people",
+          "disappear",
+          "threat",
+          "decline",
+          "competition"
+        ]
+      },
+      {
+        "point": "Suggest realistic ways crafts can survive",
+        "keywords": [
+          "online",
+          "tourism",
+          "workshops",
+          "apprentice",
+          "designers",
+          "collaborat",
+          "export",
+          "social media"
+        ]
+      },
+      {
+        "point": "End with a memorable conclusion",
+        "keywords": [
+          "ultimately",
+          "in the end",
+          "perhaps",
+          "future",
+          "after all",
+          "the next time"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

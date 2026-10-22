@@ -1,0 +1,75 @@
+{
+  "item": {
+    "slug": "b1-an-app-you-find-useful",
+    "title": "An App You Find Useful",
+    "level": "B1",
+    "prompt_text": "Talk about an app or website that you use often. Explain what it does, how you started using it, how it helps you in your daily life, and one thing you don't like about it.",
+    "prompt_type": "guided_response",
+    "target_duration_seconds": 75,
+    "target_grammar": "present simple for habits; past simple for how it started; so / because",
+    "fluency_objective": "Use signposts like 'basically', 'for example' and 'however' to guide the listener.",
+    "pronunciation_objective": "Stress the key content words in each sentence, not the small words like 'a' or 'the'.",
+    "target_vocabulary": [
+      "basically",
+      "I started using it",
+      "a friend recommended",
+      "it saves me time",
+      "for example",
+      "however",
+      "the downside is",
+      "on the whole"
+    ],
+    "task_type": "explain",
+    "model_answer": "One app I use almost every day is a map app on my phone. Basically, it shows you how to get from one place to another, by bus, by metro or on foot. I started using it about two years ago, when I moved to Tashkent to study. A friend recommended it because I kept getting lost! Now it really helps me in my daily life. For example, it tells me when the next bus is coming, so I don't waste time waiting at the stop. It also helps me find cafés and shops near my university. However, there's one thing I don't like. It uses a lot of battery, so sometimes my phone dies in the evening. On the whole, though, I think it's one of the most useful apps I have.",
+    "model_opening": "One app I use almost every day is a map app on my phone.",
+    "cues": [
+      {
+        "text": "what it does",
+        "keywords": [
+          "basically",
+          "it shows",
+          "it helps",
+          "you can",
+          "it lets",
+          "it's for"
+        ]
+      },
+      {
+        "text": "how you started using it",
+        "keywords": [
+          "started",
+          "began",
+          "recommended",
+          "ago",
+          "first",
+          "when i"
+        ]
+      },
+      {
+        "text": "how it helps you",
+        "keywords": [
+          "helps",
+          "save",
+          "useful",
+          "every day",
+          "for example",
+          "easier"
+        ]
+      },
+      {
+        "text": "one thing you don't like",
+        "keywords": [
+          "don't like",
+          "however",
+          "problem",
+          "downside",
+          "battery",
+          "annoying",
+          "adverts",
+          "ads"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

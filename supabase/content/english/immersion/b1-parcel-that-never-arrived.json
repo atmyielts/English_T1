@@ -1,0 +1,202 @@
+{
+  "item": {
+    "slug": "b1-parcel-that-never-arrived",
+    "title": "A parcel that never arrived",
+    "level": "B1",
+    "context_text": "Two weeks ago you ordered a pair of running shoes from an online shop. The tracking page says the parcel was delivered and left with a neighbour, but you have never received it.",
+    "objective_text": "Work out what happened, complain clearly in writing, and explain the problem on the phone.",
+    "mission_type": "problem_solving",
+    "target_grammar": "past simple vs present perfect (It was delivered on 14 May. I haven't received it.)",
+    "cultural_note": "Online shops usually ask you to check with neighbours before they open an investigation. Saying \"I've already checked with…\" shows you have done your part.",
+    "target_vocabulary": [
+      "tracking",
+      "delivered",
+      "investigation",
+      "refund",
+      "replacement"
+    ],
+    "success_conditions": [
+      "Understand the delivery status and the shop's rules",
+      "Find out why the neighbour doesn't have the parcel",
+      "Write a clear complaint that says what you want",
+      "Explain the problem and your preferred solution on the phone"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the delivery email",
+      "instructions": "Read the email from the shop. Then answer the questions.",
+      "prompt_text": "Order #48213 — Delivery update\nStatus: Delivered\nDelivered on: 14 May, 3:12 pm\nLeft with: neighbour (Flat 5)\nIf you have not received your parcel, please check with your neighbours first. If you still cannot find it, contact us within 7 days of the delivery date and we will open an investigation.",
+      "estimated_minutes": 3,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "According to the email, where is the parcel?",
+          "options": [
+            "In your post box",
+            "With a neighbour in Flat 5",
+            "At the post office"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Left with: neighbour (Flat 5)\"."
+        },
+        {
+          "prompt": "What should you do before contacting the shop?",
+          "options": [
+            "Wait seven days",
+            "Ask your neighbours",
+            "Call the delivery driver"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Please check with your neighbours first.\""
+        },
+        {
+          "prompt": "What is the time limit for contacting the shop?",
+          "options": [
+            "7 days after delivery",
+            "14 days after ordering",
+            "There is no limit"
+          ],
+          "answer_index": 0,
+          "explanation": "\"Contact us within 7 days of the delivery date.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to your neighbour",
+      "instructions": "You knock on the door of Flat 5. Listen to your neighbour and answer the questions.",
+      "prompt_text": "Oh, hi. A parcel? No, sorry, I didn't take anything for you. Actually, I was away on holiday all last week. I only came back yesterday. Maybe the driver left it with someone else? The woman in flat fifteen often takes parcels for people. You could ask her, but I think she's at work until six.",
+      "estimated_minutes": 3,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "gb",
+      "questions": [
+        {
+          "prompt": "Why couldn't the neighbour have taken the parcel?",
+          "options": [
+            "She was at work",
+            "She was away on holiday",
+            "She was asleep"
+          ],
+          "answer_index": 1,
+          "explanation": "\"I was away on holiday all last week.\""
+        },
+        {
+          "prompt": "What does the neighbour suggest?",
+          "options": [
+            "Calling the police",
+            "Asking the woman in flat 15",
+            "Ordering the shoes again"
+          ],
+          "answer_index": 1,
+          "explanation": "\"The woman in flat fifteen often takes parcels for people. You could ask her.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Write to customer service",
+      "instructions": "You asked in flat 15 too, but she doesn't have the parcel either. Write to the shop's customer service. Explain what happened and say what you want them to do.",
+      "prompt_text": "To: Customer Service\nSubject: Order #48213 — parcel not received",
+      "estimated_minutes": 7,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Explain the problem clearly and ask for a specific solution.",
+      "points": [
+        {
+          "label": "explain what the tracking says",
+          "any": [
+            "delivered",
+            "tracking",
+            "status",
+            "says"
+          ]
+        },
+        {
+          "label": "say you checked with the neighbours",
+          "any": [
+            "neighbour*",
+            "neighbor*",
+            "flat 5",
+            "flat 15",
+            "holiday",
+            "away"
+          ]
+        },
+        {
+          "label": "say what you want",
+          "any": [
+            "refund",
+            "replace*",
+            "new pair",
+            "send",
+            "investigat*",
+            "money back",
+            "look into"
+          ]
+        }
+      ],
+      "model_answer": "Dear Customer Service,\nI am writing about my order of running shoes. The tracking page says it was delivered on 14 May and left with my neighbour in Flat 5. However, she was away on holiday that week and did not take it. I have also asked my other neighbours, but nobody has it. Could you please open an investigation and send me a replacement or give me a refund?\nBest regards,\nMalika Yusupova",
+      "min_words": null
+    },
+    {
+      "title": "Explain on the phone",
+      "instructions": "The shop calls you back. Explain the problem in a few sentences and say what you would prefer: a new pair or your money back.",
+      "prompt_text": "Support agent: Hello, I'm calling about your email. Can you tell me what happened?",
+      "estimated_minutes": 3,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Explain the problem briefly and say which solution you prefer.",
+      "points": [
+        {
+          "label": "say it was marked delivered but never arrived",
+          "any": [
+            "delivered",
+            "never",
+            "didn't get",
+            "did not get",
+            "haven't got",
+            "haven't received",
+            "not received",
+            "missing"
+          ]
+        },
+        {
+          "label": "mention the neighbours",
+          "any": [
+            "neighbour*",
+            "neighbor*",
+            "flat"
+          ]
+        },
+        {
+          "label": "say what you would prefer",
+          "any": [
+            "refund",
+            "money back",
+            "new pair",
+            "replacement",
+            "replace*",
+            "prefer",
+            "rather"
+          ]
+        }
+      ],
+      "model_answer": "Yes, of course. The tracking page says my parcel was delivered to my neighbour in flat 5, but she was on holiday and never took it. I've checked with other neighbours too. I'd prefer a new pair of shoes, if possible.",
+      "min_words": null
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "item": {
+    "slug": "a2-your-plans-for-the-summer",
+    "title": "Your Plans for the Summer",
+    "level": "A2",
+    "prompt_text": "A classmate asks about your plans for the summer holidays. Say where you are going to go, who you are going to be with, what you are going to do there, and one thing you want to learn this summer.",
+    "prompt_type": "guided_response",
+    "target_duration_seconds": 50,
+    "target_grammar": "be going to for plans; want to + verb",
+    "fluency_objective": "Keep talking by adding details with 'so', 'because' and 'in the evenings'.",
+    "pronunciation_objective": "Practise the natural fast form of 'going to': I'm going to /ˈɡʌnə/ in relaxed speech.",
+    "target_vocabulary": [
+      "this summer",
+      "I'm going to",
+      "stay with",
+      "for two weeks",
+      "help with",
+      "in the evenings",
+      "I want to learn",
+      "it will be"
+    ],
+    "task_type": "describe",
+    "model_answer": "This summer, I'm going to visit my grandparents in their village near Jizzakh. I'm going to stay there for two weeks with my little brother. My grandparents have a big garden, so we're going to help them with the fruit and vegetables. In the evenings, we're going to swim in the river and cook plov outside. In August, I want to learn to drive, so I'm going to take lessons with my uncle. I think it will be a great summer.",
+    "model_opening": "This summer, I'm going to visit my grandparents in their village near Jizzakh.",
+    "cues": [
+      {
+        "text": "where you are going",
+        "keywords": [
+          "going to",
+          "visit",
+          "village",
+          "travel",
+          "mountains",
+          "sea",
+          "city"
+        ]
+      },
+      {
+        "text": "who you will be with",
+        "keywords": [
+          "with my",
+          "family",
+          "friends",
+          "brother",
+          "sister",
+          "grandparents",
+          "parents"
+        ]
+      },
+      {
+        "text": "what you are going to do",
+        "keywords": [
+          "help",
+          "swim",
+          "cook",
+          "walk",
+          "work",
+          "play",
+          "read"
+        ]
+      },
+      {
+        "text": "one thing you want to learn",
+        "keywords": [
+          "learn",
+          "want to",
+          "lessons",
+          "course",
+          "improve"
+        ]
+      }
+    ]
+  },
+  "children": []
+}
