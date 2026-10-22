@@ -1,0 +1,326 @@
+{
+  "recordedAt": "2026-10-22T19:31:16.527Z",
+  "sourceLabel": "baseline-fixed-selector",
+  "app": "https://academy.schood.online",
+  "passed": true,
+  "cleanupVerified": true,
+  "customerRecordsChanged": false,
+  "externalFundsMoved": false,
+  "externalProviderDeliveries": 0,
+  "immutableOwnedHistoryRetained": true,
+  "checks": [
+    {
+      "name": "create owned account",
+      "passed": true
+    },
+    {
+      "name": "sign in owned account",
+      "passed": true
+    },
+    {
+      "name": "create owned tenants",
+      "passed": true
+    },
+    {
+      "name": "create owned tenant_memberships",
+      "passed": true
+    },
+    {
+      "name": "create owned academy_branches",
+      "passed": true
+    },
+    {
+      "name": "create owned academy_classrooms",
+      "passed": true
+    },
+    {
+      "name": "create owned academy_contacts",
+      "passed": true
+    },
+    {
+      "name": "create owned academy_classroom_memberships",
+      "passed": true
+    },
+    {
+      "name": "no populated overflow 1440",
+      "passed": true
+    },
+    {
+      "name": "no uncaught browser error 1440",
+      "passed": true
+    },
+    {
+      "name": "no populated overflow 390",
+      "passed": true
+    },
+    {
+      "name": "no uncaught browser error 390",
+      "passed": true
+    }
+  ],
+  "cleanupChecks": [
+    {
+      "name": "archive is restricted to exact owned institution",
+      "passed": true
+    },
+    {
+      "name": "no foreign institutional members",
+      "passed": true
+    },
+    {
+      "name": "archive owned academy_classroom_memberships",
+      "passed": true
+    },
+    {
+      "name": "archive owned academy_contacts",
+      "passed": true
+    },
+    {
+      "name": "archive owned academy_classrooms",
+      "passed": true
+    },
+    {
+      "name": "archive owned academy_branches",
+      "passed": true
+    },
+    {
+      "name": "remove owned institution membership",
+      "passed": true
+    },
+    {
+      "name": "archive institution and remove ownership",
+      "passed": true
+    },
+    {
+      "name": "verify account before closing",
+      "passed": true
+    },
+    {
+      "name": "remaining owned tenants personal",
+      "passed": true
+    },
+    {
+      "name": "personal tenant unshared",
+      "passed": true
+    },
+    {
+      "name": "remove owned personal tenant",
+      "passed": true
+    },
+    {
+      "name": "retention preflight permits closure",
+      "passed": true
+    },
+    {
+      "name": "close owned account",
+      "passed": true
+    },
+    {
+      "name": "personal login and identity removed",
+      "passed": true
+    },
+    {
+      "name": "outbox belongs exclusively to owned fixture",
+      "passed": true
+    },
+    {
+      "name": "clear owned outbox batch",
+      "passed": true
+    },
+    {
+      "name": "clear owned outbox batch",
+      "passed": true
+    },
+    {
+      "name": "clear owned outbox batch",
+      "passed": true
+    },
+    {
+      "name": "clear owned outbox batch",
+      "passed": true
+    },
+    {
+      "name": "no external provider delivery",
+      "passed": true
+    }
+  ],
+  "samples": [
+    {
+      "width": 1440,
+      "fixtureContacts": 200,
+      "headingMs": 14241,
+      "firstContactMs": 14276,
+      "fcp": 2180,
+      "requests": [
+        {
+          "action": "academies",
+          "startMs": 2039,
+          "status": 200,
+          "endMs": 6260,
+          "durationMs": 4221
+        },
+        {
+          "action": "me",
+          "startMs": 2039,
+          "status": 200,
+          "endMs": 4230,
+          "durationMs": 2191
+        },
+        {
+          "action": "summary",
+          "startMs": 6262,
+          "status": 200,
+          "endMs": 9922,
+          "durationMs": 3660
+        },
+        {
+          "action": "branch_contexts",
+          "startMs": 6264,
+          "status": 200,
+          "endMs": 10336,
+          "durationMs": 4072
+        },
+        {
+          "action": "contacts",
+          "startMs": 9926,
+          "status": 200,
+          "endMs": 13814,
+          "durationMs": 3888
+        },
+        {
+          "action": "classrooms",
+          "startMs": 13819
+        },
+        {
+          "action": "classroom-memberships",
+          "startMs": 13819
+        },
+        {
+          "action": "alerts",
+          "startMs": 13819,
+          "status": 200,
+          "endMs": 17107,
+          "durationMs": 3288
+        },
+        {
+          "action": "payments",
+          "startMs": 13819
+        },
+        {
+          "action": "education_os",
+          "startMs": 13819
+        },
+        {
+          "action": "branch_contexts",
+          "startMs": 13909,
+          "status": 200,
+          "endMs": 16826,
+          "durationMs": 2917
+        },
+        {
+          "action": "student-feed",
+          "startMs": 13915,
+          "status": 200,
+          "endMs": 14840,
+          "durationMs": 925
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "fixtureContacts": 200,
+      "headingMs": 12347,
+      "firstContactMs": 12374,
+      "fcp": 636,
+      "requests": [
+        {
+          "action": "academies",
+          "startMs": 1052,
+          "status": 200,
+          "endMs": 5262,
+          "durationMs": 4210
+        },
+        {
+          "action": "me",
+          "startMs": 1052,
+          "status": 200,
+          "endMs": 3674,
+          "durationMs": 2622
+        },
+        {
+          "action": "summary",
+          "startMs": 5263,
+          "status": 200,
+          "endMs": 8594,
+          "durationMs": 3331
+        },
+        {
+          "action": "branch_contexts",
+          "startMs": 5265,
+          "status": 200,
+          "endMs": 7750,
+          "durationMs": 2485
+        },
+        {
+          "action": "contacts",
+          "startMs": 8596,
+          "status": 200,
+          "endMs": 11957,
+          "durationMs": 3361
+        },
+        {
+          "action": "classrooms",
+          "startMs": 11961,
+          "status": 200,
+          "endMs": 14102,
+          "durationMs": 2141
+        },
+        {
+          "action": "classroom-memberships",
+          "startMs": 11961,
+          "status": 200,
+          "endMs": 14145,
+          "durationMs": 2184
+        },
+        {
+          "action": "alerts",
+          "startMs": 11961,
+          "status": 200,
+          "endMs": 14834,
+          "durationMs": 2873
+        },
+        {
+          "action": "payments",
+          "startMs": 11962,
+          "status": 200,
+          "endMs": 14812,
+          "durationMs": 2850
+        },
+        {
+          "action": "education_os",
+          "startMs": 11962
+        },
+        {
+          "action": "branch_contexts",
+          "startMs": 11990,
+          "status": 200,
+          "endMs": 14400,
+          "durationMs": 2410
+        },
+        {
+          "action": "student-feed",
+          "startMs": 11992,
+          "status": 200,
+          "endMs": 13199,
+          "durationMs": 1207
+        }
+      ]
+    }
+  ],
+  "sourceMainWhenMeasured": "2f541af41bc1663cb7b982f573760f20def76983",
+  "limitations": [
+    "One cold observation per viewport with200 owned fixture contacts; not an SLA or load test.",
+    "Only this owned institution/account was created; cleanup verified and institutional history retained.",
+    "The earlier harness attempt used an over-specific accessible-name selector, failed, and cleaned up; it is not a passing measurement."
+  ]
+}

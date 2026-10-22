@@ -1755,11 +1755,27 @@ const App = () => {
     }
   }, []);
 
-  const loadAcademyData = useCallback(async (academy: string, preferredConversationId?: string, reuseSummary = false) => {
+  const loadAcademyData = useCallback(async (
+    academy: string,
+    preferredConversationId?: string,
+    reuseSummary = false,
+    entryAccess?: TeacherStudioAccessProfile,
+  ) => {
     if (academyScopeRef.current !== academy) return;
     const request = ++academyDataRequestRef.current;
     const isCurrent = () => academyScopeRef.current === academy && academyDataRequestRef.current === request;
     const cachedSummary = reuseSummary ? summaryCacheRef.current.get(academy) : undefined;
+    // The fresh workspace directory can start this read while summary resolves.
+    // Contacts authenticates independently; its result is not published until
+    // the current summary succeeds and still permits this route. Handle a read
+    // rejection immediately even if summary fails before we consume the result.
+    const entryContacts = !cachedSummary && !officeClassroomId && officeView === 'contacts'
+      && entryAccess && hasOfficeRoutePermission(entryAccess, officeRouteIntent, 'viewContacts')
+      ? teacherStudioContacts(academy).then(
+          (data) => ({ ok: true as const, data }),
+          (error: unknown) => ({ ok: false as const, error }),
+        )
+      : null;
     let summaryData = cachedSummary ?? await teacherStudioSummary(academy);
     if (!isCurrent()) return;
     summaryCacheRef.current.set(academy, summaryData);
@@ -1799,7 +1815,11 @@ const App = () => {
     const canLoadEducationOS = needsEducationOS && hasOfficeRoutePermission(access, officeRouteIntent, 'viewEducationOS');
 
     if (loadView === 'contacts') {
-      const contactsData = canLoadContacts ? await teacherStudioContacts(academy) : [];
+      const preloadedContacts = canLoadContacts && entryContacts ? await entryContacts : null;
+      if (preloadedContacts && !preloadedContacts.ok) throw preloadedContacts.error;
+      const contactsData = canLoadContacts
+        ? preloadedContacts?.data ?? await teacherStudioContacts(academy)
+        : [];
       if (!isCurrent()) return;
       const loadKey = academyDataLoadKey(academy);
       contactsCacheRef.current.set(academy, contactsData);
@@ -2099,7 +2119,12 @@ const App = () => {
         setAcademies(academyList);
         activateAcademy(selectedAcademy);
         if (selectedAcademy && !isWorkspaceEntry && !isAcademyDirectory) {
-          const pending = loadAcademyData(selectedAcademy);
+          const pending = loadAcademyData(
+            selectedAcademy,
+            undefined,
+            false,
+            academyList.find((item) => item.id === selectedAcademy)?.access,
+          );
           const dataRequest = academyDataRequestRef.current;
           await pending;
           if (isCurrent() && dataRequest === academyDataRequestRef.current && academyScopeRef.current === selectedAcademy) {
