@@ -93,6 +93,9 @@ jobs:
       - name: Academy Edge contract tests
         run: npm run test:academy:edge
 
+      - name: Homework OS and Courses Edge typecheck and tests
+        run: deno check supabase/functions/academy-learning/index.ts && npm run test:academy-learning:edge
+
       - name: Audit runtime dependencies
         # Fail closed on high/critical findings. The wrapper permits only the
         # owner-approved, RSC-only exception documented in the repository.
