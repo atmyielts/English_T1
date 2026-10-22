@@ -5,8 +5,9 @@ import { saveWords } from '../../lib/notebook';
 import { useElapsedSeconds, useResource } from '../../lib/useResource';
 import { EmptyState, Panel, useErrorMessage } from '../../ui/kit';
 import { ActivityFrame, ResultPanel } from '../ActivityKit';
+import { RepeatAfterMe } from '../RepeatAfterMe';
 import { getArticle, submitArticle, type ReadingSkillKey, type ReadingSubmitResponse } from './api';
-import { findSentenceWithWord, parsePassage, savedForm } from './markdown';
+import { findSentenceWithWord, parsePassage, savedForm, type PassageBlock } from './markdown';
 import { Passage, type PickedWord } from './Passage';
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -27,6 +28,17 @@ const SentenceWithWord = ({ sentence, word }: { sentence: string; word: string }
     </>
   );
 };
+
+/** Up to three sentences to read aloud: the first sentence of each paragraph that is a comfortable length. */
+const readAloudSentences = (blocks: PassageBlock[]): string[] =>
+  blocks
+    .filter((block): block is Extract<PassageBlock, { type: 'paragraph' }> => block.type === 'paragraph')
+    .map((block) => block.runs.map((run) => run.text).join('').match(/[^.!?]+[.!?]+/)?.[0]?.trim() ?? '')
+    .filter((sentence) => {
+      const count = sentence.split(/\s+/).length;
+      return count >= 5 && count <= 24;
+    })
+    .slice(0, 3);
 
 export const ReadingArticle = () => {
   const t = useT();
@@ -168,7 +180,9 @@ export const ReadingArticle = () => {
           fix={fix}
           savedWords={saved.length}
           onRetry={result.no_questions ? undefined : retry}
-        />
+        >
+          <RepeatAfterMe title={t('repeat.reading.title')} lead={t('repeat.reading.lead')} sentences={readAloudSentences(blocks)} />
+        </ResultPanel>
       ) : null}
 
       <Panel

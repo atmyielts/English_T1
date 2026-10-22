@@ -2,6 +2,7 @@ import type { SkillCatalog } from '../catalogs';
 
 export const grammarCatalog: SkillCatalog = {
   en: {
+    'grammar.result.practisedMistakes': "{count|one:# mistake|other:# mistakes} from your writing and speaking marked as practised.",
     'grammar.rule.title': 'The rule',
     'grammar.rule.examples': 'Examples',
     'grammar.rule.watchOut': 'Watch out:',
@@ -24,6 +25,7 @@ export const grammarCatalog: SkillCatalog = {
     'grammar.tool.decoderHint': 'Paste any sentence to see its structure, tense and how to rephrase it.',
   },
   ru: {
+    'grammar.result.practisedMistakes': "{count|one:# ошибка|few:# ошибки|many:# ошибок|other:# ошибки} из письма и устной речи отмечены как отработанные.",
     'grammar.rule.title': 'Правило',
     'grammar.rule.examples': 'Примеры',
     'grammar.rule.watchOut': 'Обратите внимание:',
@@ -46,6 +48,7 @@ export const grammarCatalog: SkillCatalog = {
     'grammar.tool.decoderHint': 'Вставьте любое предложение и посмотрите его структуру, время и как его перефразировать.',
   },
   uz: {
+    'grammar.result.practisedMistakes': "Yozish va gapirishdagi {count|one:# ta xato|other:# ta xato} mashq qilingan deb belgilandi.",
     'grammar.rule.title': 'Qoida',
     'grammar.rule.examples': 'Misollar',
     'grammar.rule.watchOut': 'Eʼtibor bering:',

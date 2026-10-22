@@ -28,11 +28,18 @@ import { parseEnglishClientRecoveryEvent } from "../_shared/english-client-recov
 import {
   type AttemptRow,
   type CatalogItem,
+  CEFR_ORDER,
   type Cefr,
   currentStreak,
   dailyCounts,
   isCefr as isTodayCefr,
+  type LevelStatus,
+  levelStatus,
   longestStreak,
+  matchesGoals,
+  nextCefr,
+  pickFixes,
+  practiceLevel,
   planToday,
   skillProgress,
   TODAY_SKILLS,
@@ -40,6 +47,9 @@ import {
   type TodayTask,
   weekStrip,
 } from "../_shared/english-today.ts";
+import { loadPracticeWords } from "../_shared/english-words.ts";
+import { checkReviewAnswer, parseReviewPayload, publicReviewPayload, RETIRED_BOX, scheduleAfterAnswer } from "../_shared/english-review.ts";
+import { topicFromSubskill } from "../_shared/english-mistakes.ts";
 
 const routeMarker = "/hub";
 
@@ -54,6 +64,161 @@ const PRIMARY_CONTENT_TYPES = [
   "immersion.mission",
   "vocabulary.deck",
 ];
+
+/**
+ * Mistakes for Review. Grammar mistakes are grouped by topic (all the different
+ * sentences where the learner made the same kind of error) and linked to the
+ * lesson that practises it; other mistakes are listed one by one.
+ */
+const TUTOR_MEMORY_KINDS = ["goal", "preference", "struggle", "win", "context", "deadline"];
+type TutorMemory = { id: string; kind: string; text: string; added_at: string };
+
+const loadTutorMemories = async (sb: any, userId: string, languageId: string): Promise<TutorMemory[]> => {
+  const { data } = await sb.from("learner_language_goals")
+    .select("metadata")
+    .eq("user_id", userId)
+    .eq("language_id", languageId)
+    .maybeSingle();
+  const raw = ((data as Record<string, unknown> | null)?.metadata as Record<string, unknown> | undefined)?.tutor_memories;
+  return (Array.isArray(raw) ? raw : [])
+    .filter((m): m is Record<string, unknown> => !!m && typeof m === "object" && !Array.isArray(m))
+    .map((m) => ({ id: String(m.id ?? ""), kind: String(m.kind ?? "context"), text: String(m.text ?? ""), added_at: String(m.added_at ?? "") }))
+    .filter((m) => m.id && m.text)
+    .slice(-30);
+};
+
+const saveTutorMemories = async (sb: any, userId: string, languageId: string, memories: TutorMemory[]): Promise<void> => {
+  const { data } = await sb.from("learner_language_goals")
+    .select("metadata")
+    .eq("user_id", userId)
+    .eq("language_id", languageId)
+    .maybeSingle();
+  const meta = ((data as Record<string, unknown> | null)?.metadata ?? {}) as Record<string, unknown>;
+  const row = { user_id: userId, language_id: languageId, metadata: { ...meta, tutor_memories: memories.slice(-30) } };
+  const { error } = await sb.from("learner_language_goals").upsert(row, { onConflict: "user_id,language_id" });
+  if (error) throw new Error(`Failed to save tutor memory: ${error.message}`);
+};
+
+/** A compact, factual picture of the learner for the tutor: no invented numbers. */
+const buildTutorProfile = async (sb: any, userId: string, languageId: string) => {
+  const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
+  const [goalRes, errorsRes, attemptsRes, words] = await Promise.all([
+    sb.from("learner_language_goals")
+      .select("current_cefr_estimate, target_cefr, goal_keys, daily_time_minutes, metadata")
+      .eq("user_id", userId)
+      .eq("language_id", languageId)
+      .maybeSingle(),
+    sb.from("learner_language_errors")
+      .select("service_key, subskill_key, error_type, error_frequency, mastery_status, last_seen_at")
+      .eq("user_id", userId)
+      .eq("language_id", languageId)
+      .in("mastery_status", ["open", "reopened"])
+      .gte("last_seen_at", since)
+      .order("error_frequency", { ascending: false })
+      .limit(40),
+    sb.from("learning_attempts")
+      .select("service_key, correctness_ratio, overall_score, submitted_at, content_item_id")
+      .eq("user_id", userId)
+      .eq("language_id", languageId)
+      .not("submitted_at", "is", null)
+      .order("submitted_at", { ascending: false })
+      .limit(8),
+    loadPracticeWords(sb, userId, languageId, 5).catch(() => []),
+  ]);
+  const goal = (goalRes.data ?? {}) as Record<string, unknown>;
+  const placement = ((goal.metadata as Record<string, unknown> | undefined)?.placement ?? {}) as Record<string, unknown>;
+  const perSkillRaw = (placement.per_skill ?? {}) as Record<string, unknown>;
+  const perSkill: Record<string, string> = {};
+  for (const [skill, entry] of Object.entries(perSkillRaw)) {
+    const level = typeof entry === "string" ? entry : (entry as Record<string, unknown> | undefined)?.level;
+    if (typeof level === "string") perSkill[skill] = level;
+  }
+  const topics = new Map<string, { count: number; examples: string[] }>();
+  for (const row of (errorsRes.data ?? []) as Array<Record<string, unknown>>) {
+    const topic = topicFromSubskill(String(row.subskill_key ?? "")) ?? String(row.subskill_key ?? "other");
+    const entry = topics.get(topic) ?? { count: 0, examples: [] };
+    entry.count += Number(row.error_frequency ?? 1);
+    if (entry.examples.length < 2) entry.examples.push(String(row.error_type ?? "").slice(0, 120));
+    topics.set(topic, entry);
+  }
+  return {
+    level: goal.current_cefr_estimate ?? null,
+    level_by_skill: perSkill,
+    target_level: goal.target_cefr ?? null,
+    goals: Array.isArray(goal.goal_keys) ? goal.goal_keys : [],
+    daily_minutes: goal.daily_time_minutes ?? null,
+    recurring_mistakes: [...topics.entries()]
+      .sort((a, b) => b[1].count - a[1].count)
+      .slice(0, 4)
+      .map(([topic, entry]) => ({ topic, times: entry.count, examples: entry.examples })),
+    recent_results: ((attemptsRes.data ?? []) as Array<Record<string, unknown>>).map((row) => {
+      const score = Number(row.correctness_ratio ?? row.overall_score);
+      return { skill: String(row.service_key ?? ""), score: Number.isFinite(score) ? Math.round(score * 100) : null, when: String(row.submitted_at ?? "").slice(0, 10) };
+    }),
+    words_to_practise: words.map((word) => word.word),
+  };
+};
+
+/** How the learner is doing at their own level in each skill (scored attempts, newest first). */
+const statusesByLevel = (
+  attempts: AttemptRow[],
+  levelById: Map<string, Cefr | null>,
+  levelFor: (skill: TodaySkill) => Cefr | null,
+): Record<TodaySkill, LevelStatus> => {
+  const out = {} as Record<TodaySkill, LevelStatus>;
+  for (const skill of TODAY_SKILLS) {
+    const level = levelFor(skill);
+    const scores = attempts
+      .filter((attempt) => attempt.skill === skill && attempt.score !== null && level && levelById.get(attempt.content_item_id) === level)
+      .map((attempt) => attempt.score as number);
+    out[skill] = levelStatus(scores);
+  }
+  return out;
+};
+
+const groupMistakes = (
+  rows: Array<Record<string, unknown>>,
+  units: Array<Record<string, unknown>>,
+  grammarLevel: string | null,
+) => {
+  const target = CEFR_ORDER.indexOf((grammarLevel ?? "B1") as Cefr);
+  const lessonFor = (topic: string) => {
+    const unit = units
+      .filter((entry) => entry.focus_area === topic)
+      .sort((a, b) => Math.abs(CEFR_ORDER.indexOf(a.level as Cefr) - target) - Math.abs(CEFR_ORDER.indexOf(b.level as Cefr) - target))[0];
+    return unit ? { slug: String(unit.slug), title: String(unit.title ?? "") } : null;
+  };
+  const groups = new Map<string, {
+    key: string; topic: string | null; skill: string; count: number; examples: string[];
+    status: "open" | "improving"; last_seen_at: string; lesson: { slug: string; title: string } | null;
+  }>();
+  for (const row of rows) {
+    const topic = topicFromSubskill(String(row.subskill_key ?? ""));
+    const example = String(row.error_type ?? "").trim();
+    if (!example) continue;
+    const key = topic ? `topic:${topic}` : `one:${String(row.service_key)}:${example}`;
+    const status = row.mastery_status === "improving" ? "improving" : "open";
+    const group = groups.get(key) ?? {
+      key,
+      topic,
+      skill: topic ? "grammar" : String(row.service_key ?? ""),
+      count: 0,
+      examples: [],
+      status,
+      last_seen_at: String(row.last_seen_at ?? ""),
+      lesson: topic ? lessonFor(topic) : null,
+    };
+    group.count += Number(row.error_frequency ?? 1);
+    // For a topic, show only the learner's own sentences ("wrong → right"), not lesson descriptions.
+    const isLearnerSentence = !topic || example.includes("→");
+    if (isLearnerSentence && group.examples.length < 3 && !group.examples.includes(example)) group.examples.push(example);
+    if (status === "open") group.status = "open";
+    groups.set(key, group);
+  }
+  return [...groups.values()]
+    .sort((a, b) => (a.status === b.status ? 0 : a.status === "open" ? -1 : 1) || b.count - a.count)
+    .slice(0, 12);
+};
 
 const jsonCached = (status: number, body: unknown, maxAgeSeconds = 60): Response =>
   new Response(JSON.stringify(body), {
@@ -154,7 +319,7 @@ serve(async (req) => {
       const loadCatalog = async (): Promise<CatalogItem[]> => {
         let query = sb
           .from("learning_content_registry_items")
-          .select("id, service_key, source_ref, title, cefr_level, estimated_minutes, difficulty")
+          .select("id, service_key, source_ref, title, cefr_level, estimated_minutes, difficulty, tags")
           .eq("language_id", scope.languageId)
           .eq("status", "published")
           .in("content_type", PRIMARY_CONTENT_TYPES)
@@ -172,6 +337,7 @@ serve(async (req) => {
             level: isTodayCefr(row.cefr_level) ? row.cefr_level : null,
             minutes: Math.max(1, Number(row.estimated_minutes ?? 10)),
             difficulty: Number(row.difficulty ?? 0.5),
+            tags: Array.isArray(row.tags) ? (row.tags as unknown[]).map(String).slice(0, 12) : [],
           }));
       };
 
@@ -201,7 +367,13 @@ serve(async (req) => {
       };
 
       if (route === "/catalog") {
-        const [items, attempts] = await Promise.all([loadCatalog(), loadAttempts(3650, 2000)]);
+        const [catalogItems, attempts, goalRes] = await Promise.all([
+          loadCatalog(),
+          loadAttempts(3650, 2000),
+          sb.from("learner_language_goals").select("goal_keys").eq("user_id", auth.userId).eq("language_id", scope.languageId).maybeSingle(),
+        ]);
+        const goalKeys = Array.isArray(goalRes.data?.goal_keys) ? (goalRes.data!.goal_keys as unknown[]).map(String) : [];
+        const items = catalogItems.map((entry) => ({ ...entry, goal_match: matchesGoals(entry, goalKeys) }));
         const best: Record<string, number> = {};
         for (const row of attempts) {
           const id = String(row.content_item_id ?? "");
@@ -235,7 +407,7 @@ serve(async (req) => {
       }
 
       if (route === "/progress") {
-        const [items, attemptRows, goalRes, errorsRes] = await Promise.all([
+        const [items, attemptRows, goalRes, errorsRes, unitsRes] = await Promise.all([
           loadCatalog(),
           loadAttempts(3650, 2000),
           sb.from("learner_language_goals")
@@ -248,9 +420,12 @@ serve(async (req) => {
             .eq("user_id", auth.userId)
             .eq("language_id", scope.languageId)
             .in("mastery_status", ["open", "reopened", "improving"])
-            .order("error_frequency", { ascending: false })
             .order("last_seen_at", { ascending: false })
-            .limit(10),
+            .limit(300),
+          sb.from("grammar_units")
+            .select("slug, title, focus_area, level")
+            .eq("language_id", scope.languageId)
+            .eq("status", "published"),
         ]);
         const attempts: AttemptRow[] = attemptRows
           .filter((row) => (TODAY_SKILLS as readonly string[]).includes(String(row.service_key)))
@@ -283,15 +458,19 @@ serve(async (req) => {
             all_time: attempts.length,
           },
           days,
-          skills: skillProgress(attempts, (id) => levelById.get(id) ?? null, levelFor)
-            .map((row) => ({ ...row, level: levelFor(row.skill) })),
-          mistakes: ((errorsRes.data ?? []) as Array<Record<string, unknown>>).map((row) => ({
-            skill: String(row.service_key ?? ""),
-            subskill: String(row.subskill_key ?? ""),
-            pattern: String(row.error_type ?? ""),
-            count: Number(row.error_frequency ?? 1),
-            last_seen_at: String(row.last_seen_at ?? ""),
-          })),
+          skills: (() => {
+            const statuses = statusesByLevel(attempts, levelById, levelFor);
+            return skillProgress(attempts, (id) => levelById.get(id) ?? null, levelFor)
+              .map((row) => {
+                const level = levelFor(row.skill);
+                return { ...row, level, status: statuses[row.skill], next_level: level ? nextCefr(level) : null };
+              });
+          })(),
+          mistakes: groupMistakes(
+            (errorsRes.data ?? []) as Array<Record<string, unknown>>,
+            (unitsRes.data ?? []) as Array<Record<string, unknown>>,
+            levelFor("grammar"),
+          ),
         });
       }
 
@@ -302,7 +481,7 @@ serve(async (req) => {
         && Math.abs(Date.parse(requestedDate) - Date.parse(utcToday)) <= 86_400_000;
       const planDate = dateOk ? requestedDate : utcToday;
 
-      const [items, attemptRows, goalRes, notebook, access, existingRes] = await Promise.all([
+      const [items, attemptRows, goalRes, notebook, access, existingRes, mistakesRes, unitsRes, reviewDueRes] = await Promise.all([
         loadCatalog(),
         loadAttempts(60, 400),
         sb.from("learner_language_goals")
@@ -318,7 +497,28 @@ serve(async (req) => {
           .eq("language_id", scope.languageId)
           .eq("plan_date", planDate)
           .maybeSingle(),
+        sb.from("learner_language_errors")
+          .select("subskill_key, error_type, error_frequency, last_seen_at")
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId)
+          .like("subskill_key", "grammar.%")
+          .in("mastery_status", ["open", "reopened"])
+          .gte("last_seen_at", new Date(Date.now() - 30 * 86_400_000).toISOString())
+          .limit(200),
+        sb.from("grammar_units")
+          .select("slug, focus_area, level")
+          .eq("language_id", scope.languageId)
+          .eq("status", "published"),
+        sb.from("learner_review_items")
+          .select("id", { head: true, count: "exact" })
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId)
+          .lt("box", RETIRED_BOX)
+          .lte("next_due_at", new Date().toISOString()),
       ]);
+      // Words and missed questions are reviewed together on the Review page.
+      const reviewItemsDue = Number(reviewDueRes.count ?? 0) || 0;
+      const dueReviews = notebook.dueCount + reviewItemsDue;
 
       const goal = goalRes.data as Record<string, unknown> | null;
       const meta = (goal?.metadata && typeof goal.metadata === "object" ? goal.metadata : {}) as Record<string, unknown>;
@@ -348,9 +548,18 @@ serve(async (req) => {
           submitted_at: String(row.submitted_at),
         }));
 
+      // Adapt to recent results: step down a level in a skill while scores there stay low.
+      const levelById = new Map(items.map((entry) => [entry.id, entry.level]));
+      const levelStatuses = statusesByLevel(attempts, levelById, (skill) => perSkillLevel[skill] ?? overallLevel);
+      const practiceLevels: Partial<Record<TodaySkill, Cefr>> = {};
+      for (const skill of TODAY_SKILLS) {
+        const level = practiceLevel(perSkillLevel[skill] ?? overallLevel, levelStatuses[skill]);
+        if (level) practiceLevels[skill] = level;
+      }
+
       const dailyMinutes = Number(goal?.daily_time_minutes ?? 20) || 20;
       // A stored plan is reused only while the inputs that shaped it are unchanged.
-      const planKey = [overallLevel ?? "-", dailyMinutes, availableSkills.join(","), JSON.stringify(perSkillLevel)].join("|");
+      const planKey = [overallLevel ?? "-", dailyMinutes, availableSkills.join(","), JSON.stringify(practiceLevels)].join("|");
       const existingSummary = (existingRes.data?.summary ?? {}) as Record<string, unknown>;
       const existing = existingSummary.generated_by === "hub.today.v1"
           && existingSummary.plan_key === planKey
@@ -358,16 +567,38 @@ serve(async (req) => {
         ? existingSummary.today_tasks as TodayTask[]
         : null;
 
+      const grammarBySlug = new Map(items.filter((entry) => entry.skill === "grammar").map((entry) => [entry.slug, entry]));
+      const lessonFor = (topic: string): CatalogItem | null => {
+        const target = CEFR_ORDER.indexOf(perSkillLevel.grammar ?? overallLevel ?? "B1");
+        const units = ((unitsRes.data ?? []) as Array<Record<string, unknown>>)
+          .filter((unit) => unit.focus_area === topic && grammarBySlug.has(String(unit.slug)))
+          .sort((a, b) =>
+            Math.abs(CEFR_ORDER.indexOf(a.level as Cefr) - target) - Math.abs(CEFR_ORDER.indexOf(b.level as Cefr) - target));
+        return units[0] ? grammarBySlug.get(String(units[0].slug)) ?? null : null;
+      };
+      const fixes = pickFixes({
+        mistakes: ((mistakesRes.data ?? []) as Array<Record<string, unknown>>).flatMap((row) => {
+          const topic = topicFromSubskill(String(row.subskill_key ?? ""));
+          return topic
+            ? [{ topic, count: Number(row.error_frequency ?? 1), example: String(row.error_type ?? ""), last_seen_at: String(row.last_seen_at ?? "") }]
+            : [];
+        }),
+        lessonFor,
+        attempts,
+      });
+
       const plan = planToday({
         date: planDate,
         dailyMinutes,
         overallLevel,
-        perSkillLevel,
+        perSkillLevel: practiceLevels,
         items,
         attempts,
-        dueReviews: notebook.dueCount,
+        dueReviews,
         availableSkills,
         existing,
+        fixes,
+        goalKeys: Array.isArray(goal?.goal_keys) ? (goal!.goal_keys as unknown[]).map(String) : [],
       });
 
       // Persist so the selection stays stable all day and Student Center can show it.
@@ -401,17 +632,161 @@ serve(async (req) => {
         level: overallLevel,
         target_level: isTodayCefr(goal?.target_cefr) ? goal!.target_cefr : null,
         per_skill_level: perSkillLevel,
+        level_status: levelStatuses,
         daily_minutes: dailyMinutes,
         placement_done: Boolean(placement?.completed_at),
         available_skills: availableSkills,
         tasks: plan.tasks,
         minutes_total: plan.minutes_total,
         done_count: plan.done_count,
-        due_reviews: notebook.dueCount,
+        due_reviews: dueReviews,
+        due_words: notebook.dueCount,
+        due_review_items: reviewItemsDue,
         total_words: notebook.totalCount,
         streak: currentStreak(attempts, planDate),
         week: weekStrip(attempts, planDate),
       });
+    }
+
+    // === Tutor memory: notes the learner chose to keep, on every device ===
+    if (route === "/tutor/memory" && (req.method === "GET" || req.method === "POST")) {
+      if (req.method === "GET") {
+        return json(200, { ok: true, memories: await loadTutorMemories(sb, auth.userId, scope.languageId) });
+      }
+      const body = await parseBody(req) as Record<string, unknown>;
+      const action = toText(body.action, 16);
+      const current = await loadTutorMemories(sb, auth.userId, scope.languageId);
+      let next = current;
+      if (action === "add") {
+        const items = (Array.isArray(body.memories) ? body.memories : [body.memory])
+          .filter((m): m is Record<string, unknown> => !!m && typeof m === "object" && !Array.isArray(m))
+          .map((m) => ({
+            id: `mem_${crypto.randomUUID().slice(0, 12)}`,
+            kind: TUTOR_MEMORY_KINDS.includes(toText(m.kind, 24)) ? toText(m.kind, 24) : "context",
+            text: toText(m.text, 320),
+            added_at: new Date().toISOString(),
+          }))
+          .filter((m) => m.text && !current.some((existing) => existing.text.toLowerCase() === m.text.toLowerCase()));
+        next = [...current, ...items].slice(-30);
+      } else if (action === "remove") {
+        const id = toText(body.id, 64);
+        next = current.filter((memory) => memory.id !== id);
+      } else {
+        return json(422, { error: "action must be add or remove" });
+      }
+      await saveTutorMemories(sb, auth.userId, scope.languageId, next);
+      return json(200, { ok: true, memories: next });
+    }
+
+    // === Moving up a level in one skill ===
+    // Only when recent results at the current level show the learner is ready.
+    if (req.method === "POST" && route === "/level/up") {
+      const body = await parseBody(req) as Record<string, unknown>;
+      const skill = toText(body.skill, 24) as TodaySkill;
+      if (!(TODAY_SKILLS as readonly string[]).includes(skill)) return json(422, { error: "Unknown skill" });
+      const { data: goal } = await sb.from("learner_language_goals")
+        .select("current_cefr_estimate, metadata")
+        .eq("user_id", auth.userId)
+        .eq("language_id", scope.languageId)
+        .maybeSingle();
+      const meta = ((goal as Record<string, unknown> | null)?.metadata ?? {}) as Record<string, unknown>;
+      const placement = (meta.placement && typeof meta.placement === "object" ? { ...(meta.placement as Record<string, unknown>) } : {}) as Record<string, unknown>;
+      const perSkill = (placement.per_skill && typeof placement.per_skill === "object" ? { ...(placement.per_skill as Record<string, unknown>) } : {}) as Record<string, unknown>;
+      const entry = perSkill[skill];
+      const stored = typeof entry === "string" ? entry : (entry as Record<string, unknown> | undefined)?.level;
+      const overall = (goal as Record<string, unknown> | null)?.current_cefr_estimate;
+      const current = isTodayCefr(stored) ? stored : isTodayCefr(overall) ? overall : null;
+      if (!current) return json(409, { error: "Set your level first", code: "no_level" });
+      const next = nextCefr(current);
+      if (!next) return json(409, { error: "You are already at the highest level", code: "top_level" });
+
+      const { data: catalogRows } = await sb.from("learning_content_registry_items")
+        .select("id, cefr_level")
+        .eq("language_id", scope.languageId)
+        .eq("service_key", skill)
+        .eq("status", "published");
+      const levelOfItem = new Map(((catalogRows ?? []) as Array<Record<string, unknown>>).map((row) => [String(row.id), isTodayCefr(row.cefr_level) ? row.cefr_level : null]));
+      const { data: attemptRows } = await sb.from("learning_attempts")
+        .select("content_item_id, correctness_ratio, overall_score, submitted_at")
+        .eq("user_id", auth.userId)
+        .eq("language_id", scope.languageId)
+        .eq("service_key", skill)
+        .in("status", ["submitted", "scored", "failed"])
+        .not("submitted_at", "is", null)
+        .order("submitted_at", { ascending: false })
+        .limit(50);
+      const scores = ((attemptRows ?? []) as Array<Record<string, unknown>>)
+        .filter((row) => levelOfItem.get(String(row.content_item_id)) === current)
+        .map((row) => Number(row.correctness_ratio ?? row.overall_score))
+        .filter((value) => Number.isFinite(value));
+      if (levelStatus(scores) !== "ready") {
+        return json(409, { error: "Keep practising at your level first", code: "not_ready" });
+      }
+
+      perSkill[skill] = { level: next, moved_up_from: current, moved_up_at: new Date().toISOString() };
+      placement.per_skill = perSkill;
+      const { error } = await sb.from("learner_language_goals")
+        .update({ metadata: { ...meta, placement } })
+        .eq("user_id", auth.userId)
+        .eq("language_id", scope.languageId);
+      if (error) throw new Error(`Failed to save level: ${error.message}`);
+      return json(200, { ok: true, skill, level: next, previous_level: current });
+    }
+
+    // === Mixed review: missed questions and dictation sentences ===
+
+    if (req.method === "GET" && route === "/review/items") {
+      const limit = Math.max(1, Math.min(20, Number(url.searchParams.get("limit") ?? 10) || 10));
+      const nowIso = new Date().toISOString();
+      const [dueRes, countRes] = await Promise.all([
+        sb.from("learner_review_items")
+          .select("id, kind, payload, box")
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId)
+          .lt("box", RETIRED_BOX)
+          .lte("next_due_at", nowIso)
+          .order("next_due_at", { ascending: true })
+          .limit(limit),
+        sb.from("learner_review_items")
+          .select("id", { head: true, count: "exact" })
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId)
+          .lt("box", RETIRED_BOX)
+          .lte("next_due_at", nowIso),
+      ]);
+      if (dueRes.error) throw new Error(`Failed to load review items: ${dueRes.error.message}`);
+      const items = ((dueRes.data ?? []) as Array<Record<string, unknown>>).flatMap((row) => {
+        const payload = parseReviewPayload(row.payload);
+        return payload ? [{ id: String(row.id), kind: String(row.kind), step: Number(row.box ?? 1), ...publicReviewPayload(payload) }] : [];
+      });
+      return json(200, { ok: true, due: Number(countRes.count ?? items.length), items });
+    }
+
+    if (req.method === "POST" && route === "/review/answer") {
+      const body = await parseBody(req) as Record<string, unknown>;
+      const id = toText(body.id, 64);
+      if (!id) return json(422, { error: "id is required" });
+      const { data: row, error } = await sb.from("learner_review_items")
+        .select("id, payload, box, times_reviewed")
+        .eq("id", id)
+        .eq("user_id", auth.userId)
+        .maybeSingle();
+      if (error) throw new Error(`Failed to load review item: ${error.message}`);
+      const payload = row ? parseReviewPayload((row as Record<string, unknown>).payload) : null;
+      if (!row || !payload) return json(404, { error: "Review item not found" });
+      const checked = checkReviewAnswer(payload, body.answer);
+      const next = scheduleAfterAnswer(Number((row as Record<string, unknown>).box ?? 1), checked.correct, new Date());
+      const { error: updateError } = await sb.from("learner_review_items")
+        .update({
+          box: next.box,
+          next_due_at: next.next_due_at,
+          last_result: checked.correct ? "correct" : "incorrect",
+          times_reviewed: Number((row as Record<string, unknown>).times_reviewed ?? 0) + 1,
+        })
+        .eq("id", id)
+        .eq("user_id", auth.userId);
+      if (updateError) throw new Error(`Failed to save review answer: ${updateError.message}`);
+      return json(200, { ok: true, ...checked, retired: next.box >= RETIRED_BOX, next_due_at: next.next_due_at });
     }
 
     // Legacy daily plan endpoint, kept for older clients.
@@ -2002,7 +2377,14 @@ serve(async (req) => {
             .slice(0, 30)
         : [];
 
-      const cefr = await buildCefrSnapshot(sb, scope.languageId, auth.userId).catch(() => null);
+      // Everything the tutor should know about this learner, built on the server.
+      const profile = await buildTutorProfile(sb, auth.userId, scope.languageId);
+      const savedMemories = await loadTutorMemories(sb, auth.userId, scope.languageId);
+      const knownTexts = new Set(savedMemories.map((memory) => memory.text.toLowerCase()));
+      const allMemories = [
+        ...savedMemories.map((memory) => ({ id: memory.id, text: memory.text, kind: memory.kind })),
+        ...memories.filter((memory) => !knownTexts.has(memory.text.toLowerCase())),
+      ].slice(0, 30);
 
       const { data: result, status: aiStatus, error: aiError } = await callEnglishAIWithStatus<{
         reply?: unknown;
@@ -2011,10 +2393,10 @@ serve(async (req) => {
       }>(
         {
           systemPrompt:
-            "You are an English study tutor with personal continuity. The learner's message history and a list of MEMORIES (facts they previously asked you to remember about them — goals, preferences, struggles, wins, context) are provided. Use the memories naturally; do NOT recite them. Reply in 1-3 paragraphs, warm but concise, in the same language they wrote in (default English). When something in the conversation looks worth remembering long-term — a stated goal, a recurring weakness, a deadline, a preference about how they want to be coached, a notable win — propose 1-3 NEW memories to add. Do NOT suggest memories that duplicate what's already saved. Optionally suggest 1-2 short next-actions with relative routes ('/reading', '/writing', '/grammar', '/vocabulary', '/speaking', '/listening', '/'). Return strict JSON: {reply: the assistant message, suggested_memories: array (max 3) of {kind: 'goal'|'preference'|'struggle'|'win'|'context'|'deadline', text: 1-sentence fact in second person ('You prefer...', 'You aim to...')}, suggested_actions: array (max 2) of {label: 3-5 word CTA, route: relative URL, why: 1 short sentence}}.",
+            "You are an English study tutor with personal continuity. The learner's message history and a list of MEMORIES (facts they previously asked you to remember about them — goals, preferences, struggles, wins, context) are provided. Use the memories naturally; do NOT recite them. A LEARNER_PROFILE built from their real activity is also provided: their level per skill, goal, the grammar mistakes they keep making (with examples), recent results and saved words they are practising. Personalise with it: when a question touches a recurring mistake, point it out kindly and give a short example; weave their saved words into examples; never invent progress that is not in the profile. Reply in 1-3 paragraphs, warm but concise, in the same language they wrote in (default English). When something in the conversation looks worth remembering long-term — a stated goal, a recurring weakness, a deadline, a preference about how they want to be coached, a notable win — propose 1-3 NEW memories to add. Do NOT suggest memories that duplicate what's already saved. Optionally suggest 1-2 short next-actions with relative routes ('/reading', '/writing', '/grammar', '/vocabulary', '/speaking', '/listening', '/immersion', '/review', '/progress', '/today', or a specific lesson like '/grammar/<lesson-slug>' taken from the profile). Return strict JSON: {reply: the assistant message, suggested_memories: array (max 3) of {kind: 'goal'|'preference'|'struggle'|'win'|'context'|'deadline', text: 1-sentence fact in second person ('You prefer...', 'You aim to...')}, suggested_actions: array (max 2) of {label: 3-5 word CTA, route: relative URL, why: 1 short sentence}}.",
           userPayload: JSON.stringify({
-            cefr_level: cefr?.overall.level ?? "B1",
-            existing_memories: memories,
+            learner_profile: profile,
+            existing_memories: allMemories,
             messages,
           }),
           temperature: 0.6,

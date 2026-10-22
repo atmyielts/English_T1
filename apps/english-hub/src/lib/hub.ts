@@ -1,7 +1,7 @@
 import { edge } from './api';
 import type { CefrLevel, SkillKey } from './skills';
 
-export type TodayReason = 'review_due' | 'not_started' | 'weakest' | 'keep_fresh' | 'balance';
+export type TodayReason = 'review_due' | 'fix_mistake' | 'not_started' | 'weakest' | 'keep_fresh' | 'balance';
 export type TodayItemKind = 'new' | 'stretch' | 'retry' | 'easier';
 
 export type TodayTask = {
@@ -16,6 +16,8 @@ export type TodayTask = {
   reason: TodayReason;
   item_kind: TodayItemKind | null;
   previous_score: number | null;
+  /** For fix_mistake tasks: an example of the mistake, as "what you wrote → correct". */
+  detail?: string | null;
   done: boolean;
 };
 
@@ -24,6 +26,7 @@ export type TodayResponse = {
   level: CefrLevel | null;
   target_level: CefrLevel | null;
   per_skill_level: Partial<Record<SkillKey, CefrLevel>>;
+  level_status?: Partial<Record<SkillKey, 'ready' | 'struggling' | 'steady' | 'new'>>;
   daily_minutes: number;
   placement_done: boolean;
   available_skills: SkillKey[];
@@ -44,6 +47,8 @@ export type CatalogEntry = {
   level: CefrLevel | null;
   minutes: number;
   difficulty: number;
+  /** The item's topic suits the learner's goals. */
+  goal_match?: boolean;
 };
 
 export type CatalogResponse = { items: CatalogEntry[]; best_scores: Record<string, number> };
@@ -83,20 +88,39 @@ export type SkillProgress = {
   accuracy_at_level: number | null;
   attempts_at_level: number;
   last_practised: string | null;
+  /** ready: strong at this level; struggling: practising a level lower for now. */
+  status?: 'ready' | 'struggling' | 'steady' | 'new';
+  next_level?: CefrLevel | null;
 };
 
-export type Mistake = { skill: SkillKey; subskill: string; pattern: string; count: number; last_seen_at: string };
+/** Mistakes for Review: grammar ones grouped by topic and linked to the lesson that practises them. */
+export type MistakeGroup = {
+  key: string;
+  topic: string | null;
+  skill: SkillKey;
+  count: number;
+  examples: string[];
+  status: 'open' | 'improving';
+  last_seen_at: string;
+  lesson: { slug: string; title: string } | null;
+};
 
 export type ProgressResponse = {
   streak: { current: number; longest: number };
   totals: { last_7_days: number; last_30_days: number; all_time: number };
   days: Array<{ date: string; count: number }>;
   skills: SkillProgress[];
-  mistakes: Mistake[];
+  mistakes: MistakeGroup[];
 };
 
 export const getProgress = (signal?: AbortSignal) =>
   edge<ProgressResponse>('hub', '/progress', { query: { language_code: 'en', date: localDate() }, signal });
+
+export const moveUpLevel = (skill: SkillKey) =>
+  edge<{ ok: boolean; skill: SkillKey; level: CefrLevel; previous_level: CefrLevel }>('hub', '/level/up', {
+    query: { language_code: 'en' },
+    body: { skill },
+  });
 
 export type SaveOnboardingBody = {
   placement?: { overall_level: CefrLevel; per_skill: Partial<Record<SkillKey, { level: CefrLevel }>> };

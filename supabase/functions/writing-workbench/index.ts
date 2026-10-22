@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { creditUsedWords, loadPracticeWords } from "../_shared/english-words.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   authUser,
@@ -184,6 +185,8 @@ const evaluateSubmission = async (
     prompt: JsonRecord;
     text: string;
     timeSpentSeconds: number | null;
+    /** Saved words suggested for this task; using them counts as review. */
+    yourWordIds?: string[];
   },
 ): Promise<Response> => {
   const { prompt, text } = input;
@@ -302,6 +305,13 @@ const evaluateSubmission = async (
     console.warn("writing-workbench: draft history not saved", error instanceof Error ? error.message : String(error));
   }
 
+  const yourWordsUsed = await creditUsedWords(sb, {
+    userId: input.userId,
+    languageId: input.languageId,
+    wordIds: input.yourWordIds ?? [],
+    text,
+  }).catch(() => [] as string[]);
+
   return json(200, {
     ok: true,
     attempt_id: attemptId,
@@ -309,6 +319,7 @@ const evaluateSubmission = async (
     previous_best: previousBest,
     revision,
     feedback,
+    your_words_used: yourWordsUsed,
   });
 };
 
@@ -367,6 +378,7 @@ serve(async (req) => {
         prompt,
         text,
         timeSpentSeconds: timeSpent,
+        yourWordIds: Array.isArray(body.your_word_ids) ? (body.your_word_ids as unknown[]).map(String) : [],
       });
     }
 
@@ -375,14 +387,16 @@ serve(async (req) => {
       const identifier = decodeURIComponent(route.slice("/prompts/".length)).trim();
       const prompt = identifier ? await loadPrompt(sb, productId, scope.languageId, identifier) : null;
       if (!prompt) return json(404, { error: "Writing task not found" });
-      const [itemId, draft] = await Promise.all([
+      const [itemId, draft, yourWords] = await Promise.all([
         findRegistryItemId(sb, scope.languageId, toText(prompt.slug, 160)),
         latestDraft(sb, auth.userId, scope.languageId, String(prompt.id)),
+        loadPracticeWords(sb, auth.userId, scope.languageId, 3),
       ]);
       const best = await bestScore(sb, auth.userId, itemId);
       return json(200, {
         prompt: publicPrompt(prompt),
         best_score: best,
+        your_words: yourWords.map((entry) => ({ id: entry.id, word: entry.word, definition: entry.definition })),
         draft: draft
           ? {
             text: toText(draft.current_text, MAX_TEXT),

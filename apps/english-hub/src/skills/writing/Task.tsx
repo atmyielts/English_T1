@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useT } from '../../i18n';
 import { useElapsedSeconds, useResource } from '../../lib/useResource';
 import { Panel, ProgressBar, useErrorMessage } from '../../ui/kit';
+import { YourWordsHint, YourWordsResult } from '../YourWords';
 import { ActivityFrame, ResultPanel } from '../ActivityKit';
 import {
   countWords,
@@ -219,6 +220,7 @@ export const WritingTask = () => {
   const [error, setError] = useState<unknown>(null);
 
   const prompt = task.data?.prompt;
+  const yourWords = task.data?.your_words ?? [];
 
   // Start from the draft saved on this device, else the last text sent to the server.
   useEffect(() => {
@@ -248,7 +250,7 @@ export const WritingTask = () => {
     setError(null);
     try {
       const now = elapsed();
-      const response = await submitWriting(slug, text, Math.max(1, now - lastSubmitAt.current));
+      const response = await submitWriting(slug, text, Math.max(1, now - lastSubmitAt.current), yourWords.map((entry) => entry.id));
       lastSubmitAt.current = now;
       setSubmittedText(text);
       setResult(response);
@@ -308,6 +310,7 @@ export const WritingTask = () => {
           fix={result.feedback.improvements}
         >
           {comparison ? <div className="en-stack" style={{ gap: '.4rem' }}>{comparison}</div> : null}
+          <YourWordsResult suggested={yourWords} used={result.your_words_used ?? []} />
           <FeedbackDetail feedback={result.feedback} text={submittedText} />
           <div className="en-actions">
             <button type="button" className="is-large" onClick={revise}>{t('writing.revise')}</button>
@@ -320,6 +323,7 @@ export const WritingTask = () => {
 
       {prompt && !result ? (
         <Panel title={t('writing.editor.title')}>
+          <YourWordsHint words={yourWords} />
           {previous ? (
             <div className="en-stack" style={{ gap: '.5rem' }}>
               <p className="en-notice" style={{ margin: 0 }}>{t('writing.editor.revising', { score: previous.score })}</p>

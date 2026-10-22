@@ -30,7 +30,7 @@ export type GrammarResult = {
   expected: string;
 };
 
-export type GrammarSubmitResponse = { score: number; correct: number; total: number; results: GrammarResult[] };
+export type GrammarSubmitResponse = { score: number; correct: number; total: number; results: GrammarResult[]; practised_mistakes?: number };
 
 export const getUnit = (slug: string, signal?: AbortSignal) =>
   edge<{ unit: GrammarUnit; drills: GrammarDrill[] }>('grammar-remediation', `/units/${encodeURIComponent(slug)}`, {

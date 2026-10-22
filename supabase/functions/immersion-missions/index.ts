@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { grammarTopicFor, topicSubskill } from "../_shared/english-mistakes.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   authUser,
@@ -278,9 +279,11 @@ serve(async (req) => {
           });
         }
         for (const correction of outcome.check.corrections) {
+          const topic = grammarTopicFor({ original: correction.original, corrected: correction.better, explanation: correction.explanation });
           issues.push({
-            category: skill,
-            subskill_key: `${skill}.accuracy`,
+            category: topic ? "grammar" : skill,
+            // A grammar topic links the mistake to the lesson that fixes it.
+            subskill_key: topic ? topicSubskill(topic) : `${skill}.accuracy`,
             location_ref: location,
             explanation: correction.explanation || `Better: ${correction.better}`,
             correction_hint: `${correction.original} → ${correction.better}`,

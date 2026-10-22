@@ -6,6 +6,7 @@ import { canSpeak } from '../../lib/speech';
 import { useElapsedSeconds, useResource } from '../../lib/useResource';
 import { Panel, ProgressBar, Segmented, Tag, useErrorMessage } from '../../ui/kit';
 import { ActivityFrame, ResultPanel } from '../ActivityKit';
+import { RepeatAfterMe } from '../RepeatAfterMe';
 import { getItem, submitItem, type DiffToken, type ListeningSubmitResponse } from './api';
 import { parseScript, speakersOf, speechChunks, type ScriptLine } from './script';
 import { usePlayer } from './usePlayer';
@@ -217,6 +218,14 @@ export const ListeningActivity = () => {
                 </div>
               ))}
             </div>
+          ) : null}
+
+          {result.mode !== 'reading' && result.dictation.results.length ? (
+            <RepeatAfterMe
+              title={t('repeat.listening.title')}
+              lead={t('repeat.listening.lead')}
+              sentences={result.dictation.results.map((entry) => entry.text)}
+            />
           ) : null}
 
           {result.review_words.length ? (

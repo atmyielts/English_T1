@@ -30,6 +30,29 @@ export type CatalogItem = {
   level: Cefr | null;
   minutes: number;
   difficulty: number;
+  /** Topic words (tags) used to match the learner's goals. */
+  tags?: string[];
+};
+
+/** Topic words that suit each learning goal (matched against item titles and tags). */
+export const GOAL_KEYWORDS: Record<string, string[]> = {
+  everyday: ["home", "family", "food", "shopping", "weather", "health", "daily", "routine", "friend", "neighbour", "cafe", "café", "market", "bazaar", "city", "sport", "hobby"],
+  work: ["work", "workplace", "office", "meeting", "manager", "email", "team", "job", "interview", "business", "project", "career", "colleague", "client", "report", "deadline"],
+  study_abroad: ["study", "university", "academic", "lecture", "essay", "campus", "student", "course", "abroad", "library", "research", "dormitory"],
+  exam: ["academic", "essay", "argument", "opinion", "report", "lecture", "science", "research", "proposal", "society", "environment"],
+  travel: ["travel", "airport", "hotel", "flight", "trip", "holiday", "booking", "restaurant", "transport", "train", "metro", "directions", "tourist", "guest"],
+  school: ["school", "homework", "class", "teacher", "student", "exam", "lesson", "study", "sport", "friend"],
+  // Older goal keys from the earlier goal picker.
+  exam_prep: ["academic", "essay", "argument", "opinion", "report", "lecture", "science"],
+  career: ["work", "workplace", "office", "meeting", "email", "team", "job", "interview", "business"],
+};
+
+/** True when an item's title or tags mention a topic that suits the learner's goals. */
+export const matchesGoals = (item: Pick<CatalogItem, "title" | "tags">, goalKeys: string[]): boolean => {
+  const words = goalKeys.flatMap((key) => GOAL_KEYWORDS[key] ?? []);
+  if (!words.length) return false;
+  const haystack = ` ${[item.title, ...(item.tags ?? [])].join(" ").toLowerCase()} `;
+  return words.some((word) => new RegExp(`[^a-z]${word}`).test(haystack));
 };
 
 export type AttemptRow = {
@@ -42,6 +65,7 @@ export type AttemptRow = {
 
 export type TodayReason =
   | "review_due"
+  | "fix_mistake"
   | "not_started"
   | "weakest"
   | "keep_fresh"
@@ -62,7 +86,18 @@ export type TodayTask = {
   item_kind: TodayItemKind | null;
   /** Score (0..100) of the learner's best earlier attempt on this item, for retries. */
   previous_score: number | null;
+  /** For fix_mistake tasks: one example of the mistake, as the learner wrote it. */
+  detail?: string | null;
   done: boolean;
+};
+
+/** A grammar lesson that targets a mistake the learner keeps making. */
+export type FixCandidate = {
+  topic: string;
+  /** Times the mistake was recorded recently (all instances of the topic). */
+  count: number;
+  example: string;
+  item: CatalogItem;
 };
 
 export type TodayInput = {
@@ -79,6 +114,10 @@ export type TodayInput = {
   availableSkills: TodaySkill[];
   /** A plan already stored for this date. Its selection is kept so the day stays stable. */
   existing?: TodayTask[] | null;
+  /** Lessons for repeated mistakes, most urgent first. The first one is planned. */
+  fixes?: FixCandidate[];
+  /** The learner's goals; at the same level, matching topics come first. */
+  goalKeys?: string[];
 };
 
 export type TodayPlan = {
@@ -162,6 +201,7 @@ export const pickItem = (
   items: CatalogItem[],
   attempts: AttemptRow[],
   target: Cefr | null,
+  goalKeys: string[] = [],
 ): { item: CatalogItem; kind: TodayItemKind; previousScore: number | null } | null => {
   if (!items.length) return null;
   const best = new Map<string, number>();
@@ -175,8 +215,11 @@ export const pickItem = (
     const da = Math.abs(levelIndex(a.level) - targetIndex);
     const db = Math.abs(levelIndex(b.level) - targetIndex);
     if (da !== db) return da - db;
-    // At equal distance prefer the easier side for a learner, then lower difficulty.
+    // At equal distance prefer the easier side for a learner, then topics that suit their goals.
     if (levelIndex(a.level) !== levelIndex(b.level)) return levelIndex(a.level) - levelIndex(b.level);
+    const goalA = matchesGoals(a, goalKeys) ? 0 : 1;
+    const goalB = matchesGoals(b, goalKeys) ? 0 : 1;
+    if (goalA !== goalB) return goalA - goalB;
     return a.difficulty - b.difficulty || a.slug.localeCompare(b.slug);
   };
   if (unseen.length) {
@@ -212,6 +255,26 @@ export const planToday = (input: TodayInput): TodayPlan => {
   // Keep the day's selection stable once made; only refresh completion.
   if (input.existing && input.existing.length) {
     const kept = input.existing.filter((task) => task.kind === "review" || available.has(task.skill));
+    // A mistake that became "repeated" during the day joins today's plan right away.
+    const fresh = available.has("grammar") ? (input.fixes ?? [])[0] : undefined;
+    if (fresh && !kept.some((task) => task.content_item_id === fresh.item.id)) {
+      const at = kept[0]?.kind === "review" ? 1 : 0;
+      kept.splice(at, 0, {
+        id: `fix:${fresh.item.id}`,
+        kind: "activity",
+        skill: "grammar",
+        content_item_id: fresh.item.id,
+        slug: fresh.item.slug,
+        title: fresh.item.title,
+        level: fresh.item.level,
+        minutes: Math.max(3, Math.min(30, fresh.item.minutes)),
+        reason: "fix_mistake",
+        item_kind: null,
+        previous_score: null,
+        detail: fresh.example,
+        done: false,
+      });
+    }
     if (kept.length) return finish(input.date, withDone(kept, input.attempts, input.date, input.dueReviews));
   }
 
@@ -237,13 +300,35 @@ export const planToday = (input: TodayInput): TodayPlan => {
     used += REVIEW_MINUTES;
   }
 
+  // A mistake the learner keeps making comes first: it is the most useful practice there is.
+  const fix = available.has("grammar") ? (input.fixes ?? [])[0] : undefined;
+  if (fix) {
+    tasks.push({
+      id: `fix:${fix.item.id}`,
+      kind: "activity",
+      skill: "grammar",
+      content_item_id: fix.item.id,
+      slug: fix.item.slug,
+      title: fix.item.title,
+      level: fix.item.level,
+      minutes: Math.max(3, Math.min(30, fix.item.minutes)),
+      reason: "fix_mistake",
+      item_kind: null,
+      previous_score: null,
+      detail: fix.example,
+      done: false,
+    });
+    used += tasks[tasks.length - 1]!.minutes;
+  }
+
   const signals = skillSignals(input.attempts, input.date);
   const ranked = TODAY_SKILLS
     .filter((skill) => available.has(skill) && input.items.some((item) => item.skill === skill))
+    .filter((skill) => !(fix && skill === "grammar"))
     .map((skill) => ({ skill, ...skillPriority(signals.get(skill)!, input.date) }))
     .sort((a, b) => b.priority - a.priority);
 
-  let activities = 0;
+  let activities = fix ? 1 : 0;
   for (const entry of ranked) {
     if (activities >= MAX_ACTIVITIES) break;
     const target = input.perSkillLevel[entry.skill] ?? input.overallLevel;
@@ -251,6 +336,7 @@ export const planToday = (input: TodayInput): TodayPlan => {
       input.items.filter((item) => item.skill === entry.skill),
       input.attempts.filter((attempt) => attempt.skill === entry.skill),
       target,
+      input.goalKeys ?? [],
     );
     if (!picked) continue;
     const minutes = Math.max(3, Math.min(30, picked.item.minutes));
@@ -367,3 +453,58 @@ export const currentStreak = (attempts: AttemptRow[], date: string): number => {
   }
   return streak;
 };
+
+/** Keeps topics recorded at least twice whose lesson wasn't passed since, most frequent first. */
+export const pickFixes = (input: {
+  mistakes: Array<{ topic: string; count: number; example: string; last_seen_at: string }>;
+  lessonFor: (topic: string) => CatalogItem | null;
+  attempts: AttemptRow[];
+  minCount?: number;
+}): FixCandidate[] => {
+  const byTopic = new Map<string, { count: number; example: string; last: string }>();
+  for (const mistake of input.mistakes) {
+    const entry = byTopic.get(mistake.topic) ?? { count: 0, example: mistake.example, last: mistake.last_seen_at };
+    entry.count += mistake.count;
+    if (mistake.last_seen_at > entry.last) {
+      entry.last = mistake.last_seen_at;
+      entry.example = mistake.example;
+    }
+    byTopic.set(mistake.topic, entry);
+  }
+  const out: FixCandidate[] = [];
+  for (const [topic, entry] of byTopic) {
+    if (entry.count < (input.minCount ?? 2)) continue;
+    const item = input.lessonFor(topic);
+    if (!item) continue;
+    const passedSince = input.attempts.some((attempt) =>
+      attempt.content_item_id === item.id && (attempt.score ?? 0) >= 0.8 && attempt.submitted_at > entry.last
+    );
+    if (passedSince) continue;
+    out.push({ topic, count: entry.count, example: entry.example, item });
+  }
+  return out.sort((a, b) => b.count - a.count);
+};
+
+export type LevelStatus = "ready" | "struggling" | "steady" | "new";
+
+/**
+ * How the learner is doing at their level in one skill, from the last scored
+ * attempts at that level (most recent first). Three or more attempts averaging
+ * 85+ means ready to move up; averaging under 50 means step down for a while.
+ */
+export const levelStatus = (scoresAtLevel: number[]): LevelStatus => {
+  const recent = scoresAtLevel.slice(0, 5);
+  if (recent.length < 3) return "new";
+  const mean = recent.reduce((sum, value) => sum + value, 0) / recent.length;
+  if (mean >= 0.85) return "ready";
+  if (mean < 0.5) return "struggling";
+  return "steady";
+};
+
+/** The level to practise at: one step down while struggling, never below A1. */
+export const practiceLevel = (level: Cefr | null, status: LevelStatus): Cefr | null => {
+  if (!level || status !== "struggling") return level;
+  return CEFR_ORDER[Math.max(0, CEFR_ORDER.indexOf(level) - 1)] ?? level;
+};
+
+export const nextCefr = (level: Cefr): Cefr | null => CEFR_ORDER[CEFR_ORDER.indexOf(level) + 1] ?? null;

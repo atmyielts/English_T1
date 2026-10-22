@@ -16,6 +16,7 @@ import {
   toNumber,
   toText,
 } from "../_shared/english-learning.ts";
+import { queueReviewItems } from "../_shared/english-review.ts";
 import { checkGrammarAnswer } from "../_shared/english-grammar.ts";
 
 type JsonRecord = Record<string, unknown>;
@@ -349,9 +350,50 @@ serve(async (req) => {
         products,
       });
 
+      // Questions answered wrongly come back on the Review page.
+      const drillById = new Map(drills.map((drill) => [String(drill.id), drill]));
+      await queueReviewItems(sb, {
+        userId: auth.userId,
+        languageId: scope.languageId,
+        attemptId: String(recorded.attempt.id ?? "") || null,
+        items: results.filter((result) => !result.correct).flatMap((result) => {
+          const drill = drillById.get(result.drill_id);
+          if (!drill) return [];
+          return [{
+            kind: "grammar" as const,
+            item_key: `grammar:${result.drill_id}`,
+            payload: {
+              type: "grammar" as const,
+              prompt: result.prompt,
+              instructions: toText(drill.instructions, 300),
+              accepted: acceptedAnswersOf(drill),
+              source_title: toText(unit.title, 220),
+              source_slug: toText(unit.slug, 120),
+            },
+          }];
+        }),
+      });
+
+      // Passing the lesson marks matching mistakes from writing and speaking as practised.
+      // If the learner makes them again later, recording them reopens them.
+      let practisedMistakes = 0;
+      const focus = toText(unit.focus_area, 80);
+      if (correctnessRatio >= 0.8 && focus) {
+        const { data: improved } = await sb
+          .from("learner_language_errors")
+          .update({ mastery_status: "improving" })
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId)
+          .eq("subskill_key", `grammar.${focus}`)
+          .in("mastery_status", ["open", "reopened"])
+          .select("id");
+        practisedMistakes = Array.isArray(improved) ? improved.length : 0;
+      }
+
       return json(200, {
         ok: true,
         attempt_id: String(recorded.attempt.id ?? ""),
+        practised_mistakes: practisedMistakes,
         score: Math.round(correctnessRatio * 100),
         correct: correctCount,
         total: results.length,

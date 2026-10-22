@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { queueReviewItems } from "../_shared/english-review.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   authUser,
@@ -300,6 +301,40 @@ serve(async (req) => {
           products,
         });
         attemptId = String(recorded.attempt?.id ?? "") || null;
+
+        // Missed questions and dictation sentences come back on the Review page.
+        const questionById = new Map(questions.map((question) => [question.id, question]));
+        const title = toText(item.title, 220);
+        const slug = toText(item.slug, 160);
+        await queueReviewItems(sb, {
+          userId: auth.userId,
+          languageId: scope.languageId,
+          attemptId,
+          items: [
+            ...graded.results.filter((result) => !result.correct).flatMap((result) => {
+              const question = questionById.get(result.question_id);
+              if (!question) return [];
+              return [{
+                kind: "listening" as const,
+                item_key: `listening:${slug}:${question.id}`,
+                payload: {
+                  type: "choice" as const,
+                  prompt: question.prompt,
+                  options: question.options,
+                  answer_index: question.answer_index,
+                  explanation: question.explanation,
+                  source_title: title,
+                  source_slug: slug,
+                },
+              }];
+            }),
+            ...dictationResults.filter((result) => result.accuracy < 90).map((result) => ({
+              kind: "listening" as const,
+              item_key: `listening:${slug}:dictation:${result.segment_index}`,
+              payload: { type: "dictation" as const, sentence: result.text, source_title: title, source_slug: slug },
+            })),
+          ],
+        });
       }
 
       return json(200, {

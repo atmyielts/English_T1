@@ -17,9 +17,10 @@ export const pickNext = (items: CatalogEntry[], best: Record<string, number>, le
   const target = level ? CEFR_LEVELS.indexOf(level) : 1;
   const distance = (item: CatalogEntry) => Math.abs((item.level ? CEFR_LEVELS.indexOf(item.level) : target) - target);
   const level_ = (item: CatalogEntry) => (item.level ? CEFR_LEVELS.indexOf(item.level) : target);
-  // Same order as the Today planner: nearest level, easier side first, then difficulty, then slug.
+  const goal = (item: CatalogEntry) => (item.goal_match ? 0 : 1);
+  // Same order as the Today planner: nearest level, easier side first, goal topics, then difficulty, then slug.
   const unseen = items.filter((item) => best[item.id] === undefined)
-    .sort((a, b) => distance(a) - distance(b) || level_(a) - level_(b) || a.difficulty - b.difficulty || a.slug.localeCompare(b.slug));
+    .sort((a, b) => distance(a) - distance(b) || level_(a) - level_(b) || goal(a) - goal(b) || a.difficulty - b.difficulty || a.slug.localeCompare(b.slug));
   if (unseen[0]) return unseen[0];
   return [...items].sort((a, b) => (best[a.id] ?? 0) - (best[b.id] ?? 0))[0] ?? null;
 };

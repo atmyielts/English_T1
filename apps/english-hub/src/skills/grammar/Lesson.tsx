@@ -59,7 +59,10 @@ export const GrammarLesson = () => {
           slug={slug}
           score={result.score}
           summary={t('grammar.result.summary', { correct: result.correct, total: result.total })}
-          good={result.correct > 0 ? [t('grammar.result.good', { count: result.correct })] : []}
+          good={[
+            ...(result.correct > 0 ? [t('grammar.result.good', { count: result.correct })] : []),
+            ...(result.practised_mistakes ? [t('grammar.result.practisedMistakes', { count: result.practised_mistakes })] : []),
+          ]}
           fix={result.correct < result.total ? [unit?.common_error_pattern ?? t('grammar.result.fixDefault')] : []}
           onRetry={retry}
         />

@@ -4,7 +4,12 @@ import {
   type CatalogItem,
   currentStreak,
   dailyCounts,
+  levelStatus,
   longestStreak,
+  matchesGoals,
+  nextCefr,
+  practiceLevel,
+  pickFixes,
   pickItem,
   planToday,
   skillProgress,
@@ -197,4 +202,72 @@ Deno.test("streak counts consecutive days ending today or yesterday", () => {
   assertEquals(strip.length, 7);
   assertEquals(strip[6], { date: "2026-10-22", count: 0 });
   assertEquals(strip[5], { date: "2026-10-21", count: 1 });
+});
+
+Deno.test("a repeated mistake puts its grammar lesson first, instead of another grammar item", () => {
+  const lesson = item("g-art", "grammar", "A2", 8);
+  const plan = planToday({
+    date: "2026-10-22",
+    dailyMinutes: 20,
+    overallLevel: "B1",
+    perSkillLevel: {},
+    items: [...catalog, lesson],
+    attempts: [],
+    dueReviews: 0,
+    availableSkills: [...TODAY_SKILLS],
+    fixes: [{ topic: "articles", count: 3, example: "She opened door → She opened the door", item: lesson }],
+  });
+  assertEquals(plan.tasks[0]?.reason, "fix_mistake");
+  assertEquals(plan.tasks[0]?.slug, "g-art");
+  assertEquals(plan.tasks[0]?.detail, "She opened door → She opened the door");
+  assertEquals(plan.tasks.filter((task) => task.skill === "grammar").length, 1);
+});
+
+Deno.test("fix candidates need two mistakes and drop topics whose lesson was passed since", () => {
+  const lesson = item("g-art", "grammar", "A2");
+  const lessons: Record<string, CatalogItem> = { articles: lesson, comparatives: item("g-cmp", "grammar", "A2") };
+  const mistakes = [
+    { topic: "articles", count: 1, example: "a umbrella → an umbrella", last_seen_at: "2026-10-20T10:00:00Z" },
+    { topic: "articles", count: 1, example: "She opened door → She opened the door", last_seen_at: "2026-10-21T10:00:00Z" },
+    { topic: "comparatives", count: 1, example: "more better → better", last_seen_at: "2026-10-21T10:00:00Z" },
+  ];
+  const fixes = pickFixes({ mistakes, lessonFor: (topic) => lessons[topic] ?? null, attempts: [] });
+  assertEquals(fixes.map((fix) => fix.topic), ["articles"]);
+  assertEquals(fixes[0]?.count, 2);
+  assertEquals(fixes[0]?.example, "She opened door → She opened the door");
+  const passed = pickFixes({
+    mistakes,
+    lessonFor: (topic) => lessons[topic] ?? null,
+    attempts: [attempt("g-art", "grammar", 0.9, "2026-10-22")],
+  });
+  assertEquals(passed, []);
+  const failedAgain = pickFixes({
+    mistakes,
+    lessonFor: (topic) => lessons[topic] ?? null,
+    attempts: [attempt("g-art", "grammar", 0.5, "2026-10-22")],
+  });
+  assertEquals(failedAgain.map((fix) => fix.topic), ["articles"]);
+});
+
+Deno.test("level status needs three results and moves up at 85, down under 50", () => {
+  assertEquals(levelStatus([1, 1]), "new");
+  assertEquals(levelStatus([0.9, 0.85, 0.9]), "ready");
+  assertEquals(levelStatus([0.4, 0.5, 0.3]), "struggling");
+  assertEquals(levelStatus([0.7, 0.6, 0.8, 0.2, 0.2, 0.2]), "steady");
+  assertEquals(practiceLevel("B1", "struggling"), "A2");
+  assertEquals(practiceLevel("A1", "struggling"), "A1");
+  assertEquals(practiceLevel("B1", "ready"), "B1");
+  assertEquals(nextCefr("B1"), "B2");
+  assertEquals(nextCefr("C2"), null);
+});
+
+Deno.test("at the same level, items that suit the learner's goal come first", () => {
+  const items: CatalogItem[] = [
+    { ...item("r-museum", "reading", "B1"), title: "Museum captions", tags: ["Culture", "museums"] },
+    { ...item("r-airport", "reading", "B1"), title: "Airport guides", tags: ["Travel", "airport"] },
+  ];
+  assertEquals(pickItem(items, [], "B1", ["travel"])?.item.id, "r-airport");
+  assertEquals(pickItem(items, [], "B1", [])?.item.id, "r-airport".localeCompare("r-museum") < 0 ? "r-airport" : "r-museum");
+  assertEquals(matchesGoals({ title: "Team update after a delay", tags: ["workplace"] }, ["work"]), true);
+  assertEquals(matchesGoals({ title: "Networking", tags: ["homework"] }, ["work"]), false);
 });

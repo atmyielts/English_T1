@@ -1,3 +1,4 @@
+import type { YourWord } from '../YourWords';
 import { edge } from '../../lib/api';
 
 export type WritingPrompt = {
@@ -43,6 +44,8 @@ export type WritingTaskResponse = {
   prompt: WritingPrompt;
   best_score: number | null;
   draft: { text: string; revision_count: number; updated_at: string | null } | null;
+  /** Saved words to try in this task. */
+  your_words?: YourWord[];
 };
 
 export type WritingSubmitResponse = {
@@ -52,6 +55,7 @@ export type WritingSubmitResponse = {
   previous_best: number | null;
   revision: number;
   feedback: WritingFeedback;
+  your_words_used?: string[];
 };
 
 export const getWritingTask = (slug: string, signal?: AbortSignal) =>
@@ -60,10 +64,10 @@ export const getWritingTask = (slug: string, signal?: AbortSignal) =>
     signal,
   });
 
-export const submitWriting = (slug: string, text: string, timeSpentSeconds: number) =>
+export const submitWriting = (slug: string, text: string, timeSpentSeconds: number, yourWordIds: string[] = []) =>
   edge<WritingSubmitResponse>('writing-workbench', `/prompts/${encodeURIComponent(slug)}/submit`, {
     query: { language_code: 'en' },
-    body: { text, time_spent_seconds: timeSpentSeconds },
+    body: { text, time_spent_seconds: timeSpentSeconds, your_word_ids: yourWordIds },
   });
 
 /** Same rule as the server: tokens that contain a letter or a digit. */

@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { creditUsedWords, loadPracticeWords } from "../_shared/english-words.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   authUser,
@@ -298,6 +299,13 @@ serve(async (req) => {
         console.warn(JSON.stringify({ event: "speaking_attempt_store_failed", error: error instanceof Error ? error.message : "unknown" }));
       }
 
+      const yourWordsUsed = await creditUsedWords(sb, {
+        userId: auth.userId,
+        languageId: scope.languageId,
+        wordIds: Array.isArray(body.your_word_ids) ? (body.your_word_ids as unknown[]).map(String) : [],
+        text: transcript,
+      }).catch(() => [] as string[]);
+
       return json(200, {
         ok: true,
         attempt_id: attemptId,
@@ -306,6 +314,7 @@ serve(async (req) => {
         mode,
         transcript,
         feedback,
+        your_words_used: yourWordsUsed,
       });
     }
 
@@ -314,7 +323,11 @@ serve(async (req) => {
       if (!identifier) return json(404, { error: "Speaking prompt not found" });
       const prompt = await loadPrompt(sb, productId, scope.languageId, identifier);
       if (!prompt) return json(404, { error: "Speaking prompt not found" });
-      return json(200, { prompt: publicPrompt(prompt) });
+      const yourWords = await loadPracticeWords(sb, auth.userId, scope.languageId, 3);
+      return json(200, {
+        prompt: publicPrompt(prompt),
+        your_words: yourWords.map((entry) => ({ id: entry.id, word: entry.word, definition: entry.definition })),
+      });
     }
 
     return json(405, { error: "Method not allowed" });

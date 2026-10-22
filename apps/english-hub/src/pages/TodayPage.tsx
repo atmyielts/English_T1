@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useEnglish } from '../app/EnglishContext';
 import { useI18n, useT } from '../i18n';
 import { getToday, taskHref, type TodayResponse, type TodayTask } from '../lib/hub';
+import type { SkillKey } from '../lib/skills';
 import { useResource } from '../lib/useResource';
 import { EmptyState, ErrorState, LevelBadge, Loading, Panel, ProgressBar, SkillDot, Tag } from '../ui/kit';
 import { Onboarding } from './Onboarding';
@@ -19,7 +20,9 @@ const TaskRow = ({ task, dueReviews, primary }: { task: TodayTask; dueReviews: n
   const title = task.kind === 'review' ? t('today.task.review', { count: dueReviews }) : task.title;
   const reason = task.reason === 'review_due'
     ? t('today.reason.review_due')
-    : t(`today.reason.${task.reason}`, { skill: skillName });
+    : task.reason === 'fix_mistake'
+      ? t('today.reason.fix_mistake', { example: task.detail ?? '' })
+      : t(`today.reason.${task.reason}`, { skill: skillName });
   const kindNote = task.item_kind === 'retry' && task.previous_score !== null
     ? t('today.kind.retry', { score: task.previous_score })
     : task.item_kind && task.item_kind !== 'new' ? t(`today.kind.${task.item_kind}`) : null;
@@ -80,6 +83,9 @@ export const TodayPage = () => {
   const hasAccess = access.status === 'ready' && access.unlocked.size > 0;
   const level = data?.level ?? onboarding.value?.level ?? null;
   const target = data?.target_level ?? onboarding.value?.targetLevel ?? null;
+  const readySkills = Object.entries(data?.level_status ?? {})
+    .filter(([skill, status]) => status === 'ready' && (data?.available_skills ?? []).includes(skill as SkillKey))
+    .map(([skill]) => skill as SkillKey);
 
   return (
     <>
@@ -94,6 +100,18 @@ export const TodayPage = () => {
           </p>
         </div>
       </div>
+
+      {readySkills.length ? (
+        <section className="en-panel en-tone-lime">
+          <div className="en-panel-head">
+            <div>
+              <h2>{t('today.ready.title')}</h2>
+              <p style={{ margin: 0 }}>{t('today.ready.body', { skills: readySkills.map((skill) => t(`skill.${skill}`)).join(', ') })}</p>
+            </div>
+            <Link className="en-button" to="/progress">{t('today.ready.cta')}</Link>
+          </div>
+        </section>
+      ) : null}
 
       <div className="en-grid-2">
         <section className="en-panel en-session">
