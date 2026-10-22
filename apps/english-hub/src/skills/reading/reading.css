@@ -1,0 +1,48 @@
+/* Reading player: passage typography, word picking, saved words. */
+
+.rd-passage { overflow-wrap: break-word; }
+.rd-passage .rd-heading { font-size: 1.15rem; line-height: 1.4; margin: 1.25rem 0 .5rem; color: var(--ink); }
+.rd-passage h3.rd-heading { font-size: 1.02rem; }
+.rd-passage > .rd-heading:first-child { margin-top: 0; }
+.rd-passage .rd-quote { margin: 0 0 1rem; padding: .25rem 0 .25rem 1rem; border-left: 3px solid var(--skill-reading); color: #374151; font-style: italic; }
+.rd-passage .rd-list { margin: 0 0 1rem; padding-left: 1.4rem; display: grid; gap: .35rem; }
+.rd-passage strong { color: var(--ink); }
+
+/* In picking mode every word is a button that still reads like text. */
+.rd-word {
+  all: unset;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 0 .05em;
+  box-shadow: inset 0 -1px 0 #cbd5e1;
+  -webkit-tap-highlight-color: transparent;
+}
+.rd-word:hover { background: #eef6f9; }
+.rd-word:focus-visible { outline: 2px solid var(--navy, #0f172a); outline-offset: 1px; }
+.rd-word.is-saved { background: #ecfccb; box-shadow: inset 0 -2px 0 #84cc16; }
+.rd-word[aria-pressed='true'] { background: var(--lime); box-shadow: none; }
+
+.rd-picked {
+  position: sticky;
+  bottom: .75rem;
+  z-index: 2;
+  display: grid;
+  gap: .5rem;
+  max-width: 68ch;
+  padding: 1rem;
+  border: 1px solid var(--soft-line);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(15 23 42 / .12);
+}
+.rd-picked-word { font-family: Sora, Manrope, sans-serif; font-size: 1.15rem; }
+.rd-picked-sentence { margin: 0; color: #1f2937; font-size: .95rem; line-height: 1.6; }
+.rd-picked-sentence mark { background: var(--lime); border-radius: 3px; padding: 0 .1em; color: inherit; }
+
+.rd-lookup { gap: .4rem; max-width: 68ch; }
+.rd-lookup input { min-width: 0; }
+.rd-lookup button { flex-shrink: 0; }
+
+.rd-subtitle { margin: 0; font-size: .9rem; }
+.rd-saved { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .4rem; }
+.rd-saved li { padding: .2rem .7rem; border-radius: 999px; background: #ecfccb; border: 1px solid #bef264; font-size: .85rem; color: var(--ink); }

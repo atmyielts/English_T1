@@ -43,3 +43,11 @@ Deno.test("saved form lowercases sentence-initial words and keeps names", () => 
   assertEquals(savedForm("UN", "The UN met."), "UN");
   assertEquals(savedForm("bus", "The bus was late."), "bus");
 });
+
+Deno.test("hard line breaks (two trailing spaces) start a new line", () => {
+  const blocks = parsePassage("First, stop.  \r\nSecond, look.\r\nStill second.");
+  assertEquals(blocks, [
+    { type: "paragraph", runs: [{ text: "First, stop." }] },
+    { type: "paragraph", runs: [{ text: "Second, look. Still second." }] },
+  ]);
+});

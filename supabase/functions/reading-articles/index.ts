@@ -1,5 +1,20 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  buildFeedbackPayload,
+  calculateAttemptScore,
+  extractRoute,
+  recordEvaluatedAttempt,
+  resolveEnglishProducts,
+  resolveOrCreateContentItem,
+} from "../_shared/english-learning.ts";
+import {
+  buildReadingIssues,
+  normalizeQuestions,
+  publicQuestions,
+  READING_SUBSKILLS,
+  scoreReadingAnswers,
+} from "../_shared/english-reading.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -230,6 +245,9 @@ const createArticle = async (sb: any, scope: Scope, body: JsonRecord, userId: st
   const slug = slugify(toText(body.slug, 140) || title);
   if (!slug) return json(422, { error: "slug could not be generated" });
 
+  const questions = body.questions === undefined ? [] : validQuestionsOrNull(body.questions);
+  if (!questions) return json(422, { error: QUESTIONS_ERROR });
+
   const row = {
     product_id: scope.productId,
     language_id: scope.languageId,
@@ -247,6 +265,7 @@ const createArticle = async (sb: any, scope: Scope, body: JsonRecord, userId: st
     sort_order: Math.floor(toNumber(body.sort_order) ?? 100),
     metadata: isObject(body.metadata) ? body.metadata : {},
     presentation_meta: isObject(body.presentation_meta) ? body.presentation_meta : {},
+    questions,
     created_by: userId,
     updated_by: userId,
   };
@@ -289,6 +308,11 @@ const patchArticle = async (sb: any, body: JsonRecord, userId: string): Promise<
   if (patch.sort_order != null) update.sort_order = Math.floor(toNumber(patch.sort_order) ?? 100);
   if (patch.metadata != null && isObject(patch.metadata)) update.metadata = patch.metadata;
   if (patch.presentation_meta != null && isObject(patch.presentation_meta)) update.presentation_meta = patch.presentation_meta;
+  if (patch.questions !== undefined) {
+    const questions = validQuestionsOrNull(patch.questions);
+    if (!questions) return json(422, { error: QUESTIONS_ERROR });
+    update.questions = questions;
+  }
 
   const { data, error } = await sb
     .from("reading_articles")
@@ -311,6 +335,181 @@ const archiveArticle = async (sb: any, id: string, userId: string): Promise<Resp
     .maybeSingle();
   if (error || !data) return json(500, { error: "Failed to archive reading article", details: error?.message ?? null });
   return json(200, { article: data });
+};
+
+const QUESTIONS_ERROR =
+  "questions must be an array of { id, type: 'mcq', prompt, options (2-6), answer_index, explanation, skill? }";
+
+/** Admin input: every question must be well-formed, otherwise nothing is saved. */
+const validQuestionsOrNull = (raw: unknown): ReturnType<typeof normalizeQuestions> | null => {
+  if (!Array.isArray(raw)) return null;
+  const questions = normalizeQuestions(raw);
+  return questions.length === raw.length ? questions : null;
+};
+
+type LearnerArticle = ReadingArticleRow & { questions: unknown };
+
+const loadPublishedArticle = async (sb: any, scope: Scope, slug: string): Promise<LearnerArticle | null> => {
+  const cleanSlug = slugify(slug);
+  if (!cleanSlug) return null;
+  const { data, error } = await sb
+    .from("reading_articles")
+    .select("id,slug,title,summary,content_markdown,level,category,theme,tone,read_time_minutes,is_hot,status,sort_order,metadata,presentation_meta,created_at,updated_at,questions")
+    .eq("product_id", scope.productId)
+    .eq("language_id", scope.languageId)
+    .eq("slug", cleanSlug)
+    .eq("status", "published")
+    .maybeSingle();
+  if (error || !data?.id) return null;
+  return data as LearnerArticle;
+};
+
+/** One article for the learner: the text and its questions, without the answer key. */
+const getArticleForLearner = async (sb: any, scope: Scope, slug: string): Promise<Response> => {
+  const article = await loadPublishedArticle(sb, scope, slug);
+  if (!article) return json(404, { error: "Reading article not found" });
+  return json(200, {
+    article: {
+      id: article.id,
+      slug: article.slug,
+      title: article.title,
+      summary: article.summary,
+      content_markdown: article.content_markdown ?? "",
+      level: article.level,
+      category: article.category,
+      theme: article.theme,
+      read_time_minutes: article.read_time_minutes,
+      questions: publicQuestions(normalizeQuestions(article.questions)),
+    },
+  });
+};
+
+/**
+ * Checks the learner's answers and records ONE attempt on the article's
+ * `reading.article` registry item, so it shows as done in Today and the library.
+ * An article without questions records a "finished reading" attempt with no score.
+ */
+const submitArticle = async (
+  sb: any,
+  scope: Scope,
+  slug: string,
+  body: JsonRecord,
+  userId: string,
+): Promise<Response> => {
+  const article = await loadPublishedArticle(sb, scope, slug);
+  if (!article) return json(404, { error: "Reading article not found" });
+
+  const products = await resolveEnglishProducts(sb);
+  const productId = products.reading?.productId ?? scope.productId;
+  const questions = normalizeQuestions(article.questions);
+  const timeSpentSeconds = (() => {
+    const value = toNumber(body.time_spent_seconds);
+    return value === null ? null : clamp(Math.floor(value), 1, 4 * 60 * 60);
+  })();
+
+  const contentItem = await resolveOrCreateContentItem(sb, {
+    productId,
+    languageId: scope.languageId,
+    serviceKey: "reading",
+    contentType: "reading.article",
+    sourceRef: article.slug,
+    title: article.title,
+    description: article.summary,
+    skillKey: "reading",
+    subskillKeys: [...READING_SUBSKILLS],
+    cefrLevel: article.level,
+    estimatedMinutes: article.read_time_minutes,
+    tags: [article.category, article.theme].filter(Boolean),
+  });
+  const estimatedMinutes = Number(contentItem.estimated_minutes ?? article.read_time_minutes ?? 6);
+
+  if (!questions.length) {
+    // No questions to check understanding, so there is nothing to score. The
+    // shared attempt record needs a ratio; completion (1) is the only honest
+    // basis, and metadata.no_questions marks it as "finished reading", not a quiz score.
+    const score = calculateAttemptScore({
+      correctnessRatio: 1,
+      estimatedMinutes,
+      timeSpentSeconds,
+      hintUsageCount: 0,
+      retryCount: 0,
+      correctionQualityRatio: 1,
+    });
+    const feedback = buildFeedbackPayload({
+      serviceKey: "reading",
+      score: score.overallScore,
+      title: article.title,
+      reason: article.summary,
+      issues: [],
+    });
+    const recorded = await recordEvaluatedAttempt(sb, {
+      userId,
+      languageId: scope.languageId,
+      productId,
+      serviceKey: "reading",
+      contentItem,
+      attemptType: "reading.finished",
+      responseJson: { article_id: article.id, finished: true },
+      metadata: { article_id: article.id, article_slug: article.slug, no_questions: true },
+      timeSpentSeconds,
+      score,
+      feedback,
+      products,
+    });
+    return json(200, {
+      ok: true,
+      attempt_id: String(recorded.attempt.id ?? ""),
+      no_questions: true,
+      score: null,
+      correct: 0,
+      total: 0,
+      results: [],
+    });
+  }
+
+  const checked = scoreReadingAnswers(questions, body.answers);
+  const score = calculateAttemptScore({
+    correctnessRatio: checked.ratio,
+    estimatedMinutes,
+    timeSpentSeconds,
+    hintUsageCount: 0,
+    retryCount: 0,
+    correctionQualityRatio: checked.ratio,
+  });
+  const feedback = buildFeedbackPayload({
+    serviceKey: "reading",
+    score: score.overallScore,
+    title: article.title,
+    reason: article.summary,
+    issues: buildReadingIssues(questions, checked, article.slug),
+  });
+  const recorded = await recordEvaluatedAttempt(sb, {
+    userId,
+    languageId: scope.languageId,
+    productId,
+    serviceKey: "reading",
+    contentItem,
+    attemptType: "reading.quiz",
+    responseJson: {
+      article_id: article.id,
+      answers: checked.results.map((result) => ({ question_id: result.question_id, chosen_index: result.chosen_index, correct: result.correct })),
+    },
+    metadata: { article_id: article.id, article_slug: article.slug, correct: checked.correct, total: checked.total },
+    timeSpentSeconds,
+    score,
+    feedback,
+    products,
+  });
+
+  return json(200, {
+    ok: true,
+    attempt_id: String(recorded.attempt.id ?? ""),
+    no_questions: false,
+    score: checked.score,
+    correct: checked.correct,
+    total: checked.total,
+    results: checked.results,
+  });
 };
 
 serve(async (req) => {
@@ -336,6 +535,25 @@ serve(async (req) => {
 
     const url = new URL(req.url);
     const scope = await resolveScope(serviceClient, url);
+    const route = extractRoute(url, "/reading-articles").replace(/\/+$/, "");
+
+    // Learner routes: /articles/:slug and /articles/:slug/submit
+    const articleMatch = /^\/articles\/([^/]+)(\/submit)?$/.exec(route);
+    if (articleMatch) {
+      let slug = "";
+      try {
+        slug = decodeURIComponent(articleMatch[1] ?? "");
+      } catch {
+        return json(404, { error: "Reading article not found" });
+      }
+      if (req.method === "GET" && !articleMatch[2]) return await getArticleForLearner(serviceClient, scope, slug);
+      if (req.method === "POST" && articleMatch[2]) {
+        return await submitArticle(serviceClient, scope, slug, await parseBody(req), authedUserId);
+      }
+      return json(405, { error: "Method not allowed" });
+    }
+    if (route) return json(404, { error: "Not found" });
+
     const isAdmin = await resolveIsAdmin(serviceClient, authedUserId);
 
     if (req.method === "GET") {

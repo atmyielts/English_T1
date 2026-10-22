@@ -26,11 +26,24 @@ Deno.test("full-sentence corrections ignore case and punctuation, allow one-lett
   const accepted = ["She opened the door and the cat ran outside.", "She opened the door, and the cat ran outside."];
   const prompt = "She opened door and the cat ran outside.";
   assertEquals(checkGrammarAnswer({ prompt, accepted, response: "she opened the door and the cat ran outside" }).correct, true);
-  const typo = checkGrammarAnswer({ prompt, accepted, response: "She opened the door and the cat ran outsde." });
+  const typo = checkGrammarAnswer({ prompt, accepted, response: "She opened the door and the cat ran otside." });
   assertEquals(typo, { correct: true, typo: true, expected: accepted[0] });
   assertEquals(checkGrammarAnswer({ prompt, accepted, response: "She opened door and the cat ran outside." }).correct, false);
 });
 
 Deno.test("an empty answer is wrong", () => {
   assertEquals(checkGrammarAnswer({ prompt: "x ___", accepted: ["went"], response: "  " }).correct, false);
+});
+
+Deno.test("one-letter grammar errors are never forgiven as spelling", () => {
+  const cases: Array<{ prompt: string; accepted: string[]; response: string }> = [
+    { prompt: "He work in a hospital.", accepted: ["He works in a hospital."], response: "He work in a hospital." },
+    { prompt: "These plans needs more detail before Friday.", accepted: ["These plans need more detail before Friday."], response: "These plans needs more detail before Friday." },
+    { prompt: "She didn't used to get up early.", accepted: ["She didn't use to get up early."], response: "She didn't used to get up early." },
+    { prompt: "By the time we arrived, the train ___ already left.", accepted: ["had"], response: "has" },
+    { prompt: "The bridge was ___ in 1990. (build)", accepted: ["built"], response: "build" },
+  ];
+  for (const entry of cases) {
+    assertEquals(checkGrammarAnswer(entry).correct, false, entry.response);
+  }
 });

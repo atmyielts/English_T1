@@ -86,7 +86,31 @@ export const checkGrammarAnswer = (input: { prompt: string; accepted: string[]; 
   const targets = [...new Set([...accepted.map(normalizeAnswer), ...fills.map(normalizeAnswer)])].filter(Boolean);
   if (targets.includes(response)) return { correct: true, typo: false, expected: display };
 
-  // A one-letter slip in a longer answer counts, with a spelling note.
-  const typo = targets.some((target) => target.length >= 6 && editDistance(target, response) === 1);
+  const typo = targets.some((target) => isSpellingSlip(target, response, input.prompt));
   return { correct: typo, typo, expected: display };
+};
+
+/**
+ * Many grammar errors are a single letter (work/works, has/had, use/used), so a
+ * slip is forgiven only in sentence corrections, only inside one longer word,
+ * never in its last two letters (where endings like -s, -d, -ed live), and
+ * never when the learner simply kept the original wrong word.
+ */
+export const isSpellingSlip = (target: string, response: string, prompt: string): boolean => {
+  if (/_{2,}/.test(prompt)) return false;
+  const promptWords = words(prompt);
+  const responseWords = response.split(" ");
+  if (responseWords.join(" ") === promptWords.join(" ")) return false;
+  const targetWords = target.split(" ");
+  if (targetWords.length !== responseWords.length) return false;
+  const diffs = targetWords
+    .map((word, index) => ({ index, expected: word, given: responseWords[index]! }))
+    .filter((entry) => entry.expected !== entry.given);
+  if (diffs.length !== 1) return false;
+  const { index, expected, given } = diffs[0]!;
+  if (expected.length < 5 || editDistance(expected, given) !== 1) return false;
+  if (promptWords.includes(given) && promptWords[index] === given) return false;
+  let first = 0;
+  while (first < Math.min(expected.length, given.length) && expected[first] === given[first]) first += 1;
+  return first < Math.min(expected.length, given.length) - 2;
 };
