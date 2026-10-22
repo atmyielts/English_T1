@@ -1332,4 +1332,9 @@ export const ru: Record<keyof typeof en, string> = {
   'items.rowStatus.changes_requested': "Запрошены изменения",
   'items.rowStatus.approved': "Утверждён",
   'items.rowStatus.retired': "Выведен из обращения",
+  'nav.menu': "Меню рабочего пространства",
+  'nav.group.content': "Контент",
+  'nav.group.delivery': "Проведение",
+  'nav.group.results': "Результаты",
+  'nav.group.institution': "Организация",
 };

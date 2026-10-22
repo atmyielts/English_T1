@@ -1332,4 +1332,9 @@ export const en = {
   'items.rowStatus.changes_requested': "Changes requested",
   'items.rowStatus.approved': "Approved",
   'items.rowStatus.retired': "Retired",
+  'nav.menu': "Workspace menu",
+  'nav.group.content': "Content",
+  'nav.group.delivery': "Delivery",
+  'nav.group.results': "Results",
+  'nav.group.institution': "Institution",
 };

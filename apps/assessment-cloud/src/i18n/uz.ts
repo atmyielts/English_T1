@@ -1332,4 +1332,9 @@ export const uz: Record<keyof typeof en, string> = {
   'items.rowStatus.changes_requested': "O‘zgartirish so‘ralgan",
   'items.rowStatus.approved': "Tasdiqlangan",
   'items.rowStatus.retired': "Foydalanishdan chiqarilgan",
+  'nav.menu': "Ish maydoni menyusi",
+  'nav.group.content': "Kontent",
+  'nav.group.delivery': "O‘tkazish",
+  'nav.group.results': "Natijalar",
+  'nav.group.institution': "Muassasa",
 };
