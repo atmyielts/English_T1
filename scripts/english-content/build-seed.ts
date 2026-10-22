@@ -1,0 +1,156 @@
+// Builds an English content seed migration from authored JSON files.
+//
+//   deno run --no-lock -A scripts/english-content/build-seed.ts <content-dir> <migration-file> [--check] [--only=grammar,reading]
+//
+// <content-dir> holds <skill>/<slug>.json files in the content studio's editor shape
+// ({ "item": {...}, "children": [...] }). Every file goes through the studio validator
+// (normalizeStudioItem), so anything that builds can be graded by the learner apps.
+// The migration is idempotent: an item whose slug already exists is skipped, and its
+// catalog row is upserted. With --check nothing is written.
+import {
+  normalizeStudioItem,
+  STUDIO_SKILLS,
+  STUDIO_SERVICE_KEYS,
+  type StudioServiceKey,
+} from "../../supabase/functions/_shared/english-content-studio.ts";
+
+type Row = Record<string, unknown>;
+
+const [contentDir, migrationFile, ...flags] = Deno.args;
+if (!contentDir || !migrationFile) {
+  console.error("usage: build-seed.ts <content-dir> <migration-file|--check> [--check] [--only=skill,skill]");
+  Deno.exit(2);
+}
+const allFlags = [migrationFile ?? "", ...flags];
+const checkOnly = allFlags.includes("--check");
+const onlyFlag = allFlags.find((flag) => flag.startsWith("--only="));
+const only = onlyFlag ? new Set(onlyFlag.slice("--only=".length).split(",").map((skill) => skill.trim())) : null;
+
+const TAG = "$seed$";
+const literal = (value: unknown): string => {
+  const text = JSON.stringify(value);
+  if (text.includes(TAG)) throw new Error(`Content contains the reserved marker ${TAG}`);
+  return `${TAG}${text}${TAG}::jsonb`;
+};
+
+const insertFromJson = (table: string, row: Row, extra: Record<string, string>, returning?: string): string => {
+  const columns = [...Object.keys(row), ...Object.keys(extra)];
+  const select = [
+    ...Object.keys(row).map((column) => `r.${column}`),
+    ...Object.values(extra),
+  ];
+  return `insert into public.${table} (${columns.join(", ")})
+    select ${select.join(", ")}
+    from jsonb_populate_record(null::public.${table}, ${literal(row)}) r${returning ? `\n    returning ${returning}` : ""};`;
+};
+
+const errors: string[] = [];
+const blocks: string[] = [];
+const counts: Record<string, number> = {};
+const slugs = new Set<string>();
+
+for (const skill of STUDIO_SERVICE_KEYS) {
+  if (only && !only.has(skill)) continue;
+  let entries: Deno.DirEntry[] = [];
+  try {
+    entries = [...Deno.readDirSync(`${contentDir}/${skill}`)].filter((entry) => entry.isFile && entry.name.endsWith(".json"));
+  } catch {
+    continue;
+  }
+  entries.sort((a, b) => a.name.localeCompare(b.name));
+  for (const entry of entries) {
+    const path = `${contentDir}/${skill}/${entry.name}`;
+    let parsed: { item?: unknown; children?: unknown };
+    try {
+      parsed = JSON.parse(Deno.readTextFileSync(path));
+    } catch (error) {
+      errors.push(`${path}: not valid JSON (${(error as Error).message})`);
+      continue;
+    }
+    const item = { status: "published", sort_order: 200, ...(parsed.item as Row ?? {}) };
+    const result = normalizeStudioItem(skill as StudioServiceKey, item, parsed.children ?? []);
+    if (!result.ok) {
+      for (const problem of result.errors) errors.push(`${path}: ${problem.field}: ${problem.message}`);
+      continue;
+    }
+    const slug = String(result.parent.slug);
+    if (`${skill}/${slug}` !== `${skill}/${entry.name.replace(/\.json$/, "")}`) {
+      errors.push(`${path}: file name must be <slug>.json (slug is "${slug}")`);
+    }
+    if (slugs.has(`${skill}/${slug}`)) errors.push(`${path}: duplicate slug "${slug}"`);
+    slugs.add(`${skill}/${slug}`);
+    counts[`${skill} ${result.parent.level}`] = (counts[`${skill} ${result.parent.level}`] ?? 0) + 1;
+
+    const config = STUDIO_SKILLS[skill as StudioServiceKey];
+    const product = `v_product_${skill}`;
+    const parent = { ...result.parent } as Row;
+    delete parent.id;
+    const childInserts = result.children.map((child) => {
+      const row = { ...child } as Row;
+      delete row.id;
+      return "      " + insertFromJson(config.childTable!, row, { [config.childForeignKey!]: "v_parent_id" });
+    });
+    const registry = { ...result.registry } as Row;
+    // Slugs are validated as [a-z0-9-], so a quoted literal is safe.
+    const slugFilter = config.slugScope === "language"
+      ? `language_id = v_en_id and slug = '${slug}'`
+      : `product_id = ${product} and language_id = v_en_id and slug = '${slug}'`;
+    blocks.push(`  -- ${skill}: ${slug} (${result.parent.level})
+  if exists (select 1 from public.${config.table} where ${slugFilter}) then
+    raise notice 'skipped existing ${skill} item %', '${slug}';
+  else
+    ${insertFromJson(config.table, parent, { product_id: product, language_id: "v_en_id" }, "id into v_parent_id")}
+${childInserts.join("\n")}
+    insert into public.learning_content_registry_items (
+      product_id, language_id, source_record_id, service_key, content_type, source_table, source_ref, title, description,
+      skill_key, subskill_keys, cefr_level, difficulty, estimated_minutes, learning_objective, tags, status, payload_json, metadata
+    )
+    select ${product}, v_en_id, v_parent_id, r.service_key, r.content_type, r.source_table, r.source_ref, r.title, r.description,
+      r.skill_key, r.subskill_keys, r.cefr_level, r.difficulty, r.estimated_minutes, r.learning_objective, r.tags, r.status, r.payload_json,
+      jsonb_build_object('seeded_by', v_seed)
+    from jsonb_populate_record(null::public.learning_content_registry_items, ${literal(registry)}) r
+    on conflict (language_id, service_key, content_type, source_ref) do update set
+      source_table = excluded.source_table, source_record_id = excluded.source_record_id, title = excluded.title,
+      description = excluded.description, subskill_keys = excluded.subskill_keys, cefr_level = excluded.cefr_level,
+      difficulty = excluded.difficulty, estimated_minutes = excluded.estimated_minutes, tags = excluded.tags,
+      status = excluded.status, payload_json = excluded.payload_json,
+      metadata = coalesce(public.learning_content_registry_items.metadata, '{}'::jsonb) || excluded.metadata, updated_at = now();
+  end if;`);
+  }
+}
+
+console.log(Object.entries(counts).sort().map(([key, n]) => `${key}: ${n}`).join("\n") || "no content");
+if (errors.length) {
+  console.error(`\n${errors.length} problem(s):\n${errors.join("\n")}`);
+  Deno.exit(1);
+}
+if (checkOnly) {
+  console.log(`\nAll ${blocks.length} item(s) pass the studio validator.`);
+  Deno.exit(0);
+}
+
+const name = migrationFile.split(/[\\/]/).pop()!.replace(/\.sql$/, "");
+const productDecls = STUDIO_SERVICE_KEYS.map((skill) => `  v_product_${skill} uuid;`).join("\n");
+const productLookups = STUDIO_SERVICE_KEYS.map((skill) => `  select p.id into v_product_${skill} from public.products p
+  where lower(coalesce(p.metadata->>'slug', '')) = 'english-${skill}' order by p.created_at asc limit 1;
+  if v_product_${skill} is null then raise exception 'english-${skill} product not found'; end if;`).join("\n");
+
+const sql = `-- English content library additions: ${blocks.length} items, generated by scripts/english-content/build-seed.ts
+-- from supabase/content/english/. Every item passed the content studio validator. Idempotent: existing slugs are skipped.
+do $$
+declare
+  v_seed text := '${name}';
+  v_en_id uuid;
+  v_parent_id uuid;
+${productDecls}
+begin
+  select id into v_en_id from public.languages where code = 'en' limit 1;
+  if v_en_id is null then raise exception 'English language row not found'; end if;
+${productLookups}
+
+${blocks.join("\n\n")}
+end
+$$;
+`;
+Deno.writeTextFileSync(migrationFile, sql);
+console.log(`\nWrote ${blocks.length} item(s) to ${migrationFile}`);
