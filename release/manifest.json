@@ -1,116 +1,31 @@
 {
   "schemaVersion": 1,
-  "releaseId": "english-learning-product",
+  "releaseId": "assessment-signin-parity",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "english-hub",
-    "english-shared"
+    "assessment-cloud",
+    "exam",
+    "proctor"
   ],
-  "migrations": [
-    "20261023090000_english_onboarding_persistence.sql",
-    "20261023090100_english_activity_questions.sql",
-    "20261023100100_reading_library_a1.sql",
-    "20261023100200_reading_library_a2.sql",
-    "20261023100300_reading_library_b1.sql",
-    "20261023100400_reading_library_b2.sql",
-    "20261023100500_reading_library_c1.sql",
-    "20261023100600_reading_library_c2.sql",
-    "20261023100700_english_listening_library.sql",
-    "20261023100800_english_writing_prompts.sql",
-    "20261023100900_english_speaking_prompts.sql",
-    "20261023101000_english_grammar_library_a1.sql",
-    "20261023101100_english_grammar_library_a2.sql",
-    "20261023101200_english_grammar_library_b1.sql",
-    "20261023101300_english_grammar_library_b2.sql",
-    "20261023101400_english_grammar_library_c1.sql",
-    "20261023101500_english_grammar_library_c2.sql",
-    "20261023101600_english_vocabulary_decks.sql",
-    "20261023101700_english_vocabulary_deck_content.sql",
-    "20261023101800_english_immersion_missions_v2.sql"
-  ],
-  "edgeFunctions": [
-    "grammar-remediation",
-    "hub",
-    "immersion-missions",
-    "listening-content",
-    "reading-articles",
-    "speaking-studio",
-    "vocabulary-notebook",
-    "writing-workbench"
-  ],
+  "migrations": [],
+  "edgeFunctions": [],
   "workers": [],
-  "sharedEdgeConsumers": [
-    "grammar-remediation",
-    "hub",
-    "immersion-missions",
-    "listening-content",
-    "reading-articles",
-    "speaking-studio",
-    "vocabulary-notebook",
-    "writing-workbench"
-  ],
-  "requiredSecrets": [
-    "ENGLISH_AI_DAILY_LIMIT",
-    "ENGLISH_APP_URL"
-  ],
+  "sharedEdgeConsumers": [],
+  "requiredSecrets": [],
   "rolloutOrder": [
-    "pages",
-    "migration:20261023090000_english_onboarding_persistence.sql",
-    "migration:20261023090100_english_activity_questions.sql",
-    "migration:20261023100100_reading_library_a1.sql",
-    "migration:20261023100200_reading_library_a2.sql",
-    "migration:20261023100300_reading_library_b1.sql",
-    "migration:20261023100400_reading_library_b2.sql",
-    "migration:20261023100500_reading_library_c1.sql",
-    "migration:20261023100600_reading_library_c2.sql",
-    "migration:20261023100700_english_listening_library.sql",
-    "migration:20261023100800_english_writing_prompts.sql",
-    "migration:20261023100900_english_speaking_prompts.sql",
-    "migration:20261023101000_english_grammar_library_a1.sql",
-    "migration:20261023101100_english_grammar_library_a2.sql",
-    "migration:20261023101200_english_grammar_library_b1.sql",
-    "migration:20261023101300_english_grammar_library_b2.sql",
-    "migration:20261023101400_english_grammar_library_c1.sql",
-    "migration:20261023101500_english_grammar_library_c2.sql",
-    "migration:20261023101600_english_vocabulary_decks.sql",
-    "migration:20261023101700_english_vocabulary_deck_content.sql",
-    "migration:20261023101800_english_immersion_missions_v2.sql",
-    "secret:ENGLISH_AI_DAILY_LIMIT",
-    "secret:ENGLISH_APP_URL",
-    "function:grammar-remediation",
-    "function:hub",
-    "function:immersion-missions",
-    "function:listening-content",
-    "function:reading-articles",
-    "function:speaking-studio",
-    "function:vocabulary-notebook",
-    "function:writing-workbench"
+    "pages"
   ],
   "manualFollowUps": [
-    "Pages: merging publishes the rebuilt english-hub to schood-english (english.schood.online). apps/english-shared is deleted; it was only imported by the retired english-hub modules and has no Pages project.",
-    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus these 20 English migrations (20261023090000-20261023101800), keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then supabase migration list --linked. All are additive (new columns with defaults, new vocabulary tables with RLS, a widened immersion step-type check) or idempotent content upserts keyed by slug.",
-    "Secrets: supabase secrets set ENGLISH_AI_DAILY_LIMIT= and supabase secrets set ENGLISH_APP_URL= are not run; both fall back to safe defaults in code (30 AI requests per learner per day; https://english.schood.online for links stored in daily plans).",
-    "Edge: supabase functions deploy grammar-remediation --project-ref bbjawctnqrufvnesdsel after the migrations.",
-    "Edge: supabase functions deploy hub --project-ref bbjawctnqrufvnesdsel after the migrations.",
-    "Edge: supabase functions deploy immersion-missions --project-ref bbjawctnqrufvnesdsel after the migrations.",
-    "Edge: supabase functions deploy listening-content --project-ref bbjawctnqrufvnesdsel after the migrations.",
-    "Edge: supabase functions deploy reading-articles --project-ref bbjawctnqrufvnesdsel after the migrations.",
-    "Edge: supabase functions deploy speaking-studio --project-ref bbjawctnqrufvnesdsel after the migrations.",
-    "Edge: supabase functions deploy vocabulary-notebook --project-ref bbjawctnqrufvnesdsel after the migrations.",
-    "Edge: supabase functions deploy writing-workbench --project-ref bbjawctnqrufvnesdsel after the migrations."
+    "None: frontend-only. Merging rebuilds schood-assessment, schood-exam and schood-proctor."
   ],
   "verification": [
-    "supabase migration list --linked shows 20261023090000-20261023101800 applied and the 9 #220 payment migrations still pending.",
-    "english.schood.online returns 200; signed out it shows the landing page, a deep link such as /reading shows the sign-in prompt.",
-    "As a signed-in learner: onboarding saves (learner_language_goals.current_cefr_estimate set), /hub/today returns tasks, a grammar lesson submit records an attempt that appears in /hub/catalog best_scores and on Progress.",
-    "GET /functions/v1/reading-articles/articles/<slug> and /listening-content/items/<slug> responses contain no answer_index or explanation.",
-    "Writing feedback and the tutor return ai_status ok on production (AI could only be tested via fallbacks locally)."
+    "assessment.schood.online, exam.schood.online and proctor.schood.online sign-in pages show the language picker and the Create account / Forgot password links."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-english to the previous deployment.",
-    "migration": "Additive; leave in place. The previous app ignores the new columns and tables, and the content upserts only add or rewrite English learning items.",
-    "edge": "Redeploy the eight functions from the previous main commit (git checkout <prev> -- supabase/functions && supabase functions deploy <name>).",
-    "worker": "Nothing deployed."
+    "pages": "Cloudflare Pages rollback of schood-assessment, schood-exam and schood-proctor.",
+    "migration": "None.",
+    "edge": "None.",
+    "worker": "None."
   }
 }
