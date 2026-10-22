@@ -760,8 +760,8 @@ const buildGrammar = (c: Collector, item: JsonRecord, children: unknown[], commo
       error_correction: { title: "Correct the sentence", instructions: "Find the mistake and write the whole sentence correctly." },
       transformation: { title: "Rewrite the sentence", instructions: "Rewrite the sentence as the task asks." },
     };
-    const title = c.text(`${at}.title`, row.title ?? defaults[drillType]?.title, 220, "Title");
-    const instructions = c.text(`${at}.instructions`, row.instructions ?? defaults[drillType]?.instructions, 900, "Instructions");
+    const title = c.text(`${at}.title`, str(row.title) || defaults[drillType]?.title, 220, "Title");
+    const instructions = c.text(`${at}.instructions`, str(row.instructions) || defaults[drillType]?.instructions, 900, "Instructions");
     const prompt = c.text(`${at}.prompt_text`, row.prompt_text, 900, "Prompt");
     const status = c.oneOf(`${at}.status`, row.status, CONTENT_STATUSES, "Status", "published");
     const expected = isRecord(row.expected_answer_json) ? row.expected_answer_json : {};
