@@ -8,6 +8,7 @@ import { SKILLS, skillByKey } from './lib/skills';
 import { Loading } from './ui/kit';
 import { LandingPage } from './pages/LandingPage';
 import { TodayPage } from './pages/TodayPage';
+import { CheckPage } from './pages/CheckPage';
 
 const PracticePage = lazy(() => import('./pages/PracticePage').then((m) => ({ default: m.PracticePage })));
 const ReviewPage = lazy(() => import('./pages/ReviewPage').then((m) => ({ default: m.ReviewPage })));
@@ -102,6 +103,7 @@ const App = () => {
         <Route path="/progress" element={hub(<ProgressPage />)} />
         <Route path="/tutor" element={hub(<TutorPage />)} />
         <Route path="/settings" element={hub(<SettingsPage />)} />
+        <Route path="/check" element={hub(<CheckPage />)} />
         {SKILLS.map((skill) => {
           const SkillApp = SKILL_APPS[skill.key];
           return (

@@ -118,6 +118,8 @@ export type TodayInput = {
   fixes?: FixCandidate[];
   /** The learner's goals; at the same level, matching topics come first. */
   goalKeys?: string[];
+  /** Cap on activities (free learners get only what today's free allowance covers). */
+  maxActivities?: number;
 };
 
 export type TodayPlan = {
@@ -301,7 +303,7 @@ export const planToday = (input: TodayInput): TodayPlan => {
   }
 
   // A mistake the learner keeps making comes first: it is the most useful practice there is.
-  const fix = available.has("grammar") ? (input.fixes ?? [])[0] : undefined;
+  const fix = available.has("grammar") && (input.maxActivities ?? 1) > 0 ? (input.fixes ?? [])[0] : undefined;
   if (fix) {
     tasks.push({
       id: `fix:${fix.item.id}`,
@@ -330,7 +332,7 @@ export const planToday = (input: TodayInput): TodayPlan => {
 
   let activities = fix ? 1 : 0;
   for (const entry of ranked) {
-    if (activities >= MAX_ACTIVITIES) break;
+    if (activities >= Math.min(MAX_ACTIVITIES, input.maxActivities ?? MAX_ACTIVITIES)) break;
     const target = input.perSkillLevel[entry.skill] ?? input.overallLevel;
     const picked = pickItem(
       input.items.filter((item) => item.skill === entry.skill),
@@ -508,3 +510,90 @@ export const practiceLevel = (level: Cefr | null, status: LevelStatus): Cefr | n
 };
 
 export const nextCefr = (level: Cefr): Cefr | null => CEFR_ORDER[CEFR_ORDER.indexOf(level) + 1] ?? null;
+
+/** Weekly themes. Each skill contributes one activity whose title or tags fit the theme. */
+export const WEEK_TOPICS: Array<{ key: string; keywords: string[] }> = [
+  { key: "travel", keywords: ["travel", "airport", "hotel", "flight", "trip", "holiday", "booking", "transport", "train", "metro", "station", "platform", "tourist", "guest", "check-in"] },
+  { key: "work", keywords: ["work", "workplace", "office", "meeting", "manager", "email", "team", "job", "interview", "project", "colleague", "deadline", "report", "client"] },
+  { key: "study", keywords: ["study", "university", "school", "class", "lecture", "exam", "student", "course", "homework", "library", "research", "academic"] },
+  { key: "health", keywords: ["health", "doctor", "sport", "sleep", "run", "swim", "exercise", "body", "food", "kurash"] },
+  { key: "city", keywords: ["city", "home", "flat", "neighbour", "shop", "market", "bazaar", "park", "café", "street", "guest house"] },
+  { key: "technology", keywords: ["technology", "phone", "online", "ai", "app", "internet", "digital", "screen", "machine", "qr"] },
+  { key: "environment", keywords: ["environment", "water", "green", "climate", "shade", "nature", "weather", "clean-up", "transport"] },
+  { key: "culture", keywords: ["culture", "museum", "festival", "navruz", "tradition", "music", "film", "art", "news", "language"] },
+];
+
+/** ISO-8601 week number, so the theme changes every Monday. */
+export const isoWeek = (date: string): number => {
+  const day = new Date(`${date}T12:00:00Z`);
+  const weekday = (day.getUTCDay() + 6) % 7;
+  day.setUTCDate(day.getUTCDate() - weekday + 3);
+  const firstThursday = new Date(Date.UTC(day.getUTCFullYear(), 0, 4));
+  return 1 + Math.round(((day.getTime() - firstThursday.getTime()) / 86_400_000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7);
+};
+
+const WEEK_ORDER: TodaySkill[] = ["vocabulary", "reading", "listening", "speaking", "writing", "immersion"];
+
+export type TopicWeek = {
+  topic: string;
+  week: number;
+  steps: Array<{ skill: TodaySkill; content_item_id: string; slug: string; title: string; level: Cefr | null; minutes: number; done: boolean }>;
+};
+
+const fitsTopic = (item: CatalogItem, keywords: string[]): boolean => {
+  const haystack = ` ${[item.title, ...(item.tags ?? [])].join(" ").toLowerCase()} `;
+  return keywords.some((word) => new RegExp(`[^a-z]${word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`).test(haystack));
+};
+
+/** Monday (UTC date) of the week that contains `date`. */
+const weekStartOf = (date: string): string => {
+  const day = new Date(`${date}T00:00:00.000Z`);
+  day.setUTCDate(day.getUTCDate() - ((day.getUTCDay() + 6) % 7));
+  return day.toISOString().slice(0, 10);
+};
+
+/**
+ * This week's theme: one activity per skill on the same topic, within one
+ * level of the learner in that skill. An activity finished this week stays
+ * on the card as done, so the list does not shift under the learner. Themes
+ * with fewer than three skills covered are skipped so every week feels like
+ * a real journey.
+ */
+export const topicWeek = (input: {
+  date: string;
+  items: CatalogItem[];
+  attempts: AttemptRow[];
+  levelFor: (skill: TodaySkill) => Cefr | null;
+}): TopicWeek | null => {
+  const week = isoWeek(input.date);
+  const weekStart = weekStartOf(input.date);
+  for (let offset = 0; offset < WEEK_TOPICS.length; offset += 1) {
+    const theme = WEEK_TOPICS[(week + offset) % WEEK_TOPICS.length]!;
+    const steps: TopicWeek["steps"] = [];
+    for (const skill of WEEK_ORDER) {
+      const matches = input.items.filter((item) => item.skill === skill && fitsTopic(item, theme.keywords));
+      const skillAttempts = input.attempts.filter((attempt) => attempt.skill === skill);
+      const finished = skillAttempts
+        .filter((attempt) => attempt.submitted_at.slice(0, 10) >= weekStart)
+        .map((attempt) => matches.find((item) => item.id === attempt.content_item_id))
+        .find((item): item is CatalogItem => Boolean(item));
+      const level = input.levelFor(skill);
+      const inReach = level
+        ? matches.filter((item) => item.level && Math.abs(levelIndex(item.level) - levelIndex(level)) <= 1)
+        : matches;
+      const chosen = finished ?? pickItem(inReach, skillAttempts, level)?.item;
+      if (!chosen) continue;
+      steps.push({
+        skill,
+        content_item_id: chosen.id,
+        slug: chosen.slug,
+        title: chosen.title,
+        level: chosen.level,
+        minutes: chosen.minutes,
+        done: Boolean(finished),
+      });
+    }
+    if (steps.length >= 3) return { topic: theme.key, week, steps };
+  }
+  return null;
+};

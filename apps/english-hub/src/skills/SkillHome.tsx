@@ -43,12 +43,13 @@ export const SkillHome = ({
 }) => {
   const t = useT();
   const { date } = useI18n();
-  const { access, onboarding, pricingHref } = useEnglish();
+  const { access, canPractise, onboarding, pricingHref } = useEnglish();
   const catalog = useResource((signal) => getCatalog(skill, signal), [skill]);
   const history = useResource((signal) => getHistory(skill, signal), [skill]);
   const level = onboarding.value?.perSkill[skill] ?? onboarding.value?.level ?? null;
   const [filter, setFilter] = useState<LevelFilter>('all');
-  const locked = access.status === 'ready' && !access.unlocked.has(skill);
+  const locked = !canPractise(skill);
+  const usingFree = access.status === 'ready' && !access.unlocked.has(skill) && access.freeLeft > 0;
   const skillName = t(`skill.${skill}`);
 
   const items = useMemo(
@@ -72,7 +73,8 @@ export const SkillHome = ({
         actions={level ? <span className="en-row"><span className="hint">{t('skill.yourLevel')}</span><LevelBadge level={level} /></span> : null}
       />
 
-      {locked ? <LockedPanel skillName={skillName} pricingHref={pricingHref(skill)} /> : null}
+      {locked ? <LockedPanel skillName={skillName} pricingHref={pricingHref(skill)} freeUsed={access.freePerDay > 0} /> : null}
+      {usingFree ? <p className="en-notice">{t('free.skillHint', { count: access.freeLeft })}</p> : null}
 
       {!locked && next ? (
         <section className="en-panel en-tone-lime">

@@ -5,39 +5,9 @@ import {
   type PronunciationFeedbackResponse,
 } from '../lib/ecosystemInsightsClient';
 import { canRecognize, listen, type Listener } from '../lib/speech';
+import { useT } from '../i18n';
 import { FeedbackList, Tag } from '../ui/kit';
 import { LevelPicker, ToolError, useLearnerLevel, useToolRequest } from './aiToolShared';
-
-const COPY = {
-  intro: 'Read a sentence out loud. See which words were heard clearly.',
-  levelLabel: 'Level',
-  textLabel: 'Sentence to read',
-  l1Label: 'Your first language (optional)',
-  l1Placeholder: 'For example: Uzbek, Russian',
-  record: 'Start recording',
-  stop: 'Stop',
-  check: 'Check my reading',
-  busy: 'Checking…',
-  reset: 'Try again',
-  heardLabel: 'What we heard',
-  heardEmpty: 'Your words will appear here when you speak.',
-  noMic: "Speech recognition doesn't work in this browser. Try Chrome or Edge on a computer or an Android phone.",
-  micBlocked: 'Please allow the microphone and try again.',
-  noSpeech: "We didn't hear anything. Try again a little louder.",
-  micOther: 'Recording stopped. Please try again.',
-  tooShort: 'Please use a longer sentence (at least 10 characters).',
-  score: (matched: number, total: number) => `${matched} of ${total} words heard clearly`,
-  missedHeading: 'Words to practise',
-  allHeard: 'We heard every word. Well done!',
-  honestNote: 'This check uses what your browser heard, so it is not a perfect test of your pronunciation.',
-  fallbackNote: "Detailed tips aren't available right now.",
-  retryHeading: 'Fix this first',
-  perWordHeading: 'Word tips',
-  heard: 'We heard:',
-  tryThis: 'Try:',
-  prosodyHeading: 'Rhythm and stress',
-  l1Heading: 'Common for speakers of your language',
-};
 
 const SAMPLE_TEXTS: Record<CefrLevel, string> = {
   A1: 'My name is Aziz. I have a small black cat. She likes to sleep on my bed.',
@@ -48,16 +18,18 @@ const SAMPLE_TEXTS: Record<CefrLevel, string> = {
   C2: 'Had we anticipated the delay, we would have rearranged the schedule well in advance.',
 };
 
-const micMessage = (code: string): string => {
-  if (code === 'not-allowed' || code === 'service-not-allowed' || code === 'audio-capture') return COPY.micBlocked;
-  if (code === 'no-speech') return COPY.noSpeech;
-  if (code === 'aborted') return '';
-  return COPY.micOther;
+/** i18n key for a microphone problem, or null when there is nothing to show. */
+const micMessageKey = (code: string): string | null => {
+  if (code === 'not-allowed' || code === 'service-not-allowed' || code === 'audio-capture') return 'ai.pronunciation.micBlocked';
+  if (code === 'no-speech') return 'ai.pronunciation.noSpeech';
+  if (code === 'aborted') return null;
+  return 'ai.pronunciation.micOther';
 };
 
 // === Pronunciation check ===
 
 export const PronunciationDrillCard = ({ accessToken }: { accessToken?: string | null }) => {
+  const t = useT();
   const learnerLevel = useLearnerLevel();
   const [level, setLevel] = useState<CefrLevel>(learnerLevel);
   const [target, setTarget] = useState<string>(SAMPLE_TEXTS[learnerLevel]);
@@ -81,13 +53,13 @@ export const PronunciationDrillCard = ({ accessToken }: { accessToken?: string |
         setRecording(false);
         listenerRef.current = null;
         if (code) {
-          const message = micMessage(code);
-          if (message) setMicError(message);
+          const key = micMessageKey(code);
+          if (key) setMicError(t(key));
         }
       },
     });
     if (!listener) {
-      setMicError(COPY.noMic);
+      setMicError(t('ai.pronunciation.noMic'));
       return;
     }
     listenerRef.current = listener;
@@ -108,7 +80,7 @@ export const PronunciationDrillCard = ({ accessToken }: { accessToken?: string |
 
   const check = () => {
     if (target.trim().length < 10) {
-      setError(COPY.tooShort);
+      setError(t('ai.pronunciation.tooShort'));
       return;
     }
     if (!heard.trim()) return;
@@ -124,35 +96,35 @@ export const PronunciationDrillCard = ({ accessToken }: { accessToken?: string |
 
   return (
     <div className="en-stack">
-      <p className="hint">{COPY.intro}</p>
-      {!recognitionOk ? <p className="en-explain">{COPY.noMic}</p> : null}
-      <LevelPicker label={COPY.levelLabel} value={level} onChange={changeLevel} />
+      <p className="hint">{t('ai.pronunciation.intro')}</p>
+      {!recognitionOk ? <p className="en-explain">{t('ai.pronunciation.noMic')}</p> : null}
+      <LevelPicker label={t('ai.pronunciation.levelLabel')} value={level} onChange={changeLevel} />
       <label className="en-stack" htmlFor="pron-target" style={{ gap: '0.35rem' }}>
-        {COPY.textLabel}
+        {t('ai.pronunciation.textLabel')}
         <textarea id="pron-target" rows={3} maxLength={600} value={target} onChange={(e) => { setTarget(e.target.value); reset(); }} />
       </label>
       <label className="en-stack" htmlFor="pron-l1" style={{ gap: '0.35rem' }}>
-        {COPY.l1Label}
-        <input id="pron-l1" type="text" maxLength={60} value={userL1} onChange={(e) => setUserL1(e.target.value)} placeholder={COPY.l1Placeholder} />
+        {t('ai.pronunciation.l1Label')}
+        <input id="pron-l1" type="text" maxLength={60} value={userL1} onChange={(e) => setUserL1(e.target.value)} placeholder={t('ai.pronunciation.l1Placeholder')} />
       </label>
 
       <div className="en-actions">
         {recording ? (
-          <button type="button" onClick={stop}>{COPY.stop}</button>
+          <button type="button" onClick={stop}>{t('ai.pronunciation.stop')}</button>
         ) : (
-          <button type="button" onClick={start} disabled={!recognitionOk || busy}>{COPY.record}</button>
+          <button type="button" onClick={start} disabled={!recognitionOk || busy}>{t('ai.pronunciation.record')}</button>
         )}
         <button type="button" className="quiet" disabled={!heard.trim() || recording || busy} onClick={check}>
-          {busy ? COPY.busy : COPY.check}
+          {busy ? t('ai.pronunciation.busy') : t('ai.pronunciation.check')}
         </button>
         {heard && !recording ? (
-          <button type="button" className="quiet" onClick={() => { setHeard(''); reset(); }}>{COPY.reset}</button>
+          <button type="button" className="quiet" onClick={() => { setHeard(''); reset(); }}>{t('ai.pronunciation.reset')}</button>
         ) : null}
       </div>
 
       <div className="en-stack">
-        <span className="hint">{COPY.heardLabel}</span>
-        <p className="en-explain">{heard || COPY.heardEmpty}</p>
+        <span className="hint">{t('ai.pronunciation.heardLabel')}</span>
+        <p className="en-explain">{heard || t('ai.pronunciation.heardEmpty')}</p>
       </div>
 
       <div className="en-stack" aria-live="polite">
@@ -161,34 +133,34 @@ export const PronunciationDrillCard = ({ accessToken }: { accessToken?: string |
           <>
             {data.missed_words.length ? (
               <div className="en-feedback is-fix">
-                <h3>{COPY.score(data.words_matched, data.words_total)}</h3>
-                <p className="hint">{COPY.missedHeading}:</p>
+                <h3>{t('ai.pronunciation.score', { matched: data.words_matched, total: data.words_total })}</h3>
+                <p className="hint">{t('ai.pronunciation.missedHeading')}:</p>
                 <div className="en-row">{data.missed_words.map((w) => <Tag key={w}>{w}</Tag>)}</div>
               </div>
             ) : (
-              <p className="en-notice">{COPY.allHeard}</p>
+              <p className="en-notice">{t('ai.pronunciation.allHeard')}</p>
             )}
-            <p className="hint">{COPY.honestNote}</p>
+            <p className="hint">{t('ai.pronunciation.honestNote')}</p>
 
-            {data.fallback ? <p className="en-explain">{COPY.fallbackNote}</p> : null}
+            {data.fallback ? <p className="en-explain">{t('ai.pronunciation.fallbackNote')}</p> : null}
             {!data.fallback && data.retry_priority ? (
               <div className="en-explain">
-                <strong>{COPY.retryHeading}</strong>
+                <strong>{t('ai.pronunciation.retryHeading')}</strong>
                 <br />
                 {data.retry_priority}
               </div>
             ) : null}
             {!data.fallback && data.per_word.length ? (
               <>
-                <h3>{COPY.perWordHeading}</h3>
+                <h3>{t('ai.pronunciation.perWordHeading')}</h3>
                 <ul className="en-list">
                   {data.per_word.map((w, index) => (
                     <li key={index} className="en-explain">
                       <strong>{w.target_word}</strong>
-                      {w.what_was_heard ? <> · {COPY.heard} “{w.what_was_heard}”</> : null}
+                      {w.what_was_heard ? <> · {t('ai.pronunciation.heard')} “{w.what_was_heard}”</> : null}
                       <br />
                       {w.likely_issue}
-                      {w.fix_tip ? <><br /><strong>{COPY.tryThis}</strong> {w.fix_tip}</> : null}
+                      {w.fix_tip ? <><br /><strong>{t('ai.pronunciation.tryThis')}</strong> {w.fix_tip}</> : null}
                     </li>
                   ))}
                 </ul>
@@ -196,8 +168,8 @@ export const PronunciationDrillCard = ({ accessToken }: { accessToken?: string |
             ) : null}
             {!data.fallback ? (
               <>
-                <FeedbackList title={COPY.prosodyHeading} items={data.prosody_notes} tone="good" />
-                <FeedbackList title={COPY.l1Heading} items={data.l1_interference} tone="fix" />
+                <FeedbackList title={t('ai.pronunciation.prosodyHeading')} items={data.prosody_notes} tone="good" />
+                <FeedbackList title={t('ai.pronunciation.l1Heading')} items={data.l1_interference} tone="fix" />
               </>
             ) : null}
           </>

@@ -44,13 +44,19 @@ type EnglishState = {
   session: Session | null;
   accessToken: string | null;
   displayName: string | null;
-  access: { status: Status; unlocked: Set<SkillKey> };
+  /** unlocked: skills in the learner's plan. freeLeft: free activities left today in other skills. */
+  access: { status: Status; unlocked: Set<SkillKey>; freeLeft: number; freePerDay: number; freeToday: Set<string> };
+  /** Whether the learner can do an activity in this skill right now (plan or free allowance). */
+  /** With a slug: also true for today's free activity, so its result stays visible and it can be redone. */
+  canPractise: (skill: SkillKey, slug?: string | null) => boolean;
+  refreshAccess: () => Promise<void>;
   onboarding: { status: Status; value: Onboarding | null };
   refreshOnboarding: () => Promise<void>;
   signOut: () => Promise<void>;
   signInHref: (returnPath?: string) => string;
   pricingHref: (skill?: SkillKey) => string;
   accountHref: string;
+  telegramHref: string;
 };
 
 const EnglishContext = createContext<EnglishState | null>(null);
@@ -104,7 +110,7 @@ const nameFrom = (session: Session | null): string | null => {
 export const EnglishProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [sessionResolved, setSessionResolved] = useState(false);
-  const [access, setAccess] = useState<EnglishState['access']>({ status: 'loading', unlocked: new Set() });
+  const [access, setAccess] = useState<EnglishState['access']>({ status: 'loading', unlocked: new Set(), freeLeft: 0, freePerDay: 0, freeToday: new Set() });
   const [onboarding, setOnboarding] = useState<EnglishState['onboarding']>({ status: 'loading', value: null });
 
   useEffect(() => {
@@ -125,24 +131,39 @@ export const EnglishProvider = ({ children }: { children: ReactNode }) => {
 
   const userId = session?.user.id ?? null;
 
+  const refreshAccess = useCallback(async () => {
+    try {
+      const [me, allowance] = await Promise.all([
+        edge<MeResponse>('me'),
+        edge<{ entitled_skills: string[]; free_left: number; free_per_day: number; free_today?: Array<{ skill: string; slug: string }> }>('hub', '/access', { query: { language_code: 'en' } })
+          .catch(() => null),
+      ]);
+      const fromServer = allowance
+        ? new Set(SKILLS.filter((skill) => allowance.entitled_skills.includes(skill.key)).map((skill) => skill.key))
+        : unlockedSkills(me.entitlements ?? []);
+      setAccess({
+        status: 'ready',
+        unlocked: fromServer,
+        freeLeft: allowance?.free_left ?? 0,
+        freePerDay: allowance?.free_per_day ?? 0,
+        freeToday: new Set((allowance?.free_today ?? []).map((item) => `${item.skill}/${item.slug}`)),
+      });
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
+        return;
+      }
+      setAccess({ status: 'error', unlocked: new Set(), freeLeft: 0, freePerDay: 0, freeToday: new Set() });
+    }
+  }, []);
+
   useEffect(() => {
     if (!userId) {
-      setAccess({ status: 'loading', unlocked: new Set() });
+      setAccess({ status: 'loading', unlocked: new Set(), freeLeft: 0, freePerDay: 0, freeToday: new Set() });
       return;
     }
-    let cancelled = false;
-    edge<MeResponse>('me')
-      .then((me) => { if (!cancelled) setAccess({ status: 'ready', unlocked: unlockedSkills(me.entitlements ?? []) }); })
-      .catch(async (error) => {
-        if (cancelled) return;
-        if (error instanceof ApiError && error.status === 401) {
-          await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
-          return;
-        }
-        setAccess({ status: 'error', unlocked: new Set() });
-      });
-    return () => { cancelled = true; };
-  }, [userId]);
+    void refreshAccess();
+  }, [userId, refreshAccess]);
 
   const refreshOnboarding = useCallback(async () => {
     try {
@@ -169,6 +190,9 @@ export const EnglishProvider = ({ children }: { children: ReactNode }) => {
       accessToken: session?.access_token ?? null,
       displayName: nameFrom(session),
       access,
+      canPractise: (skill, slug) => access.status !== 'ready' || access.unlocked.has(skill) || access.freeLeft > 0
+        || (slug ? access.freeToday.has(`${skill}/${slug}`) : false),
+      refreshAccess,
       onboarding,
       refreshOnboarding,
       signOut: async () => { await supabase.auth.signOut({ scope: 'local' }); },
@@ -180,8 +204,9 @@ export const EnglishProvider = ({ children }: { children: ReactNode }) => {
           returnTo: typeof window === 'undefined' ? null : window.location.href,
         }),
       accountHref: buildPlatformHref(platformUrl, '/student-center'),
+      telegramHref: buildPlatformHref(platformUrl, '/account'),
     };
-  }, [access, onboarding, refreshOnboarding, session, sessionResolved]);
+  }, [access, onboarding, refreshAccess, refreshOnboarding, session, sessionResolved]);
 
   return <EnglishContext.Provider value={value}>{children}</EnglishContext.Provider>;
 };

@@ -7,64 +7,16 @@ import {
   type ShadowingPrepResponse,
 } from '../lib/ecosystemInsightsClient';
 import { canSpeak, speak, stopSpeaking } from '../lib/speech';
+import { useT } from '../i18n';
 import { FeedbackList, Segmented, Tag } from '../ui/kit';
-import { LevelPicker, SHARED_COPY, ToolError, useLearnerLevel, useToolRequest } from './aiToolShared';
-
-const COPY = {
-  content: {
-    intro: 'Find real English books, podcasts and videos about things you like.',
-    interestsLabel: 'What do you like?',
-    interestsPlaceholder: 'For example: football, cooking, technology',
-    formatsLabel: 'Show only (optional)',
-    submit: 'Find ideas',
-    busy: 'Looking…',
-    verifyNote: 'These are ideas to search for. Check that each one is right for you before you start.',
-    find: 'Where to find it:',
-    fit: 'Why it fits your level:',
-    firstStep: 'First step:',
-    tipHeading: 'Tip',
-    types: {
-      book: 'Book',
-      article: 'Article',
-      podcast: 'Podcast',
-      youtube: 'Video',
-      film: 'Film',
-      newsletter: 'Newsletter',
-      tv_show: 'TV show',
-    } as Record<string, string>,
-  },
-  shadow: {
-    intro: 'Paste a short English text. Listen to each part and repeat it out loud.',
-    label: 'English text',
-    placeholder: 'Paste 2–5 sentences from a story, a video or a podcast…',
-    levelLabel: 'Your level',
-    speedLabel: 'Speed',
-    speedNormal: 'Normal',
-    speedSlow: 'Slow',
-    submit: 'Start',
-    again: 'Start again',
-    busy: 'Preparing…',
-    tooShort: 'Please paste a longer text (at least 30 characters).',
-    fallbackNote: "Tips for each part aren't available right now. You can still listen and repeat.",
-    partsLabel: 'Parts',
-    part: (i: number, n: number) => `Part ${i} of ${n}`,
-    focus: 'Focus:',
-    watch: 'Say carefully:',
-    listen: 'Listen',
-    said: 'I said it',
-    saidDone: 'Said ✓',
-    next: 'Next part',
-    progress: (done: number, total: number) => `${done} of ${total} parts practised`,
-    tipsHeading: 'Reminders',
-    noSpeech: "Your browser can't read text aloud. Read each part yourself, slowly, then repeat it faster.",
-  },
-};
+import { LevelPicker, ToolError, optionalLabel, useLearnerLevel, useToolRequest } from './aiToolShared';
 
 const FORMAT_OPTIONS = ['book', 'podcast', 'youtube', 'film', 'article'] as const;
 
 // === Real-world English ideas ===
 
 export const ContentRecommendCard = ({ accessToken }: { accessToken?: string | null }) => {
+  const t = useT();
   const [interests, setInterests] = useState('');
   const [formats, setFormats] = useState<string[]>([]);
   const { data, busy, error, run } = useToolRequest<ContentRecommendResponse>();
@@ -84,22 +36,22 @@ export const ContentRecommendCard = ({ accessToken }: { accessToken?: string | n
 
   return (
     <div className="en-stack">
-      <p className="hint">{COPY.content.intro}</p>
+      <p className="hint">{t('ai.content.intro')}</p>
       <form onSubmit={submit}>
         <label className="en-stack" htmlFor="content-interests" style={{ gap: '0.35rem' }}>
-          {COPY.content.interestsLabel}
+          {t('ai.content.interestsLabel')}
           <input
             id="content-interests"
             type="text"
             maxLength={300}
             value={interests}
             onChange={(e) => setInterests(e.target.value)}
-            placeholder={COPY.content.interestsPlaceholder}
+            placeholder={t('ai.content.interestsPlaceholder')}
           />
         </label>
         <div className="en-row">
-          <span className="hint" aria-hidden="true">{COPY.content.formatsLabel}</span>
-          <div className="en-segmented" role="group" aria-label={COPY.content.formatsLabel}>
+          <span className="hint" aria-hidden="true">{t('ai.content.formatsLabel')}</span>
+          <div className="en-segmented" role="group" aria-label={t('ai.content.formatsLabel')}>
             {FORMAT_OPTIONS.map((format) => (
               <button
                 key={format}
@@ -108,42 +60,42 @@ export const ContentRecommendCard = ({ accessToken }: { accessToken?: string | n
                 className={formats.includes(format) ? 'is-on' : 'quiet'}
                 onClick={() => toggleFormat(format)}
               >
-                {COPY.content.types[format]}
+                {t(`ai.content.type.${format}`)}
               </button>
             ))}
           </div>
         </div>
         <div className="en-actions">
-          <button type="submit" disabled={busy}>{busy ? COPY.content.busy : COPY.content.submit}</button>
+          <button type="submit" disabled={busy}>{busy ? t('ai.content.busy') : t('ai.content.submit')}</button>
         </div>
       </form>
 
       <div className="en-stack" aria-live="polite">
         <ToolError message={error} />
-        {unavailable ? <p className="en-explain">{SHARED_COPY.unavailable}</p> : null}
+        {unavailable ? <p className="en-explain">{t('ai.shared.unavailable')}</p> : null}
         {data && !unavailable ? (
           <>
-            <p className="hint">{COPY.content.verifyNote}</p>
+            <p className="hint">{t('ai.content.verifyNote')}</p>
             <ul className="en-list">
               {data.items.map((item, index) => (
                 <li key={index} className="en-explain">
                   <div className="en-stack" style={{ gap: '0.4rem' }}>
                     <span className="en-row">
-                      {COPY.content.types[item.type] ? <Tag>{COPY.content.types[item.type]}</Tag> : null}
+                      {optionalLabel(t, `ai.content.type.${item.type}`) ? <Tag>{optionalLabel(t, `ai.content.type.${item.type}`)}</Tag> : null}
                       <strong>{item.title}</strong>
                       {item.creator ? <span className="hint">{item.creator}</span> : null}
                     </span>
                     <span>{item.why_for_you}</span>
-                    {item.where_to_find ? <span><strong>{COPY.content.find}</strong> {item.where_to_find}</span> : null}
-                    {item.difficulty_note ? <span><strong>{COPY.content.fit}</strong> {item.difficulty_note}</span> : null}
-                    {item.first_step ? <span><strong>{COPY.content.firstStep}</strong> {item.first_step}</span> : null}
+                    {item.where_to_find ? <span><strong>{t('ai.content.find')}</strong> {item.where_to_find}</span> : null}
+                    {item.difficulty_note ? <span><strong>{t('ai.content.fit')}</strong> {item.difficulty_note}</span> : null}
+                    {item.first_step ? <span><strong>{t('ai.content.firstStep')}</strong> {item.first_step}</span> : null}
                   </div>
                 </li>
               ))}
             </ul>
             {data.immersion_tip ? (
               <div className="en-feedback is-good">
-                <h3>{COPY.content.tipHeading}</h3>
+                <h3>{t('ai.content.tipHeading')}</h3>
                 <p>{data.immersion_tip}</p>
               </div>
             ) : null}
@@ -157,6 +109,7 @@ export const ContentRecommendCard = ({ accessToken }: { accessToken?: string | n
 // === Shadowing (listen and repeat) ===
 
 export const ShadowingPracticeCard = ({ accessToken }: { accessToken?: string | null }) => {
+  const t = useT();
   const learnerLevel = useLearnerLevel();
   const [sourceText, setSourceText] = useState('');
   const [level, setLevel] = useState<CefrLevel>(learnerLevel);
@@ -171,7 +124,7 @@ export const ShadowingPracticeCard = ({ accessToken }: { accessToken?: string | 
   const submit = (event: FormEvent) => {
     event.preventDefault();
     if (sourceText.trim().length < 30) {
-      setError(COPY.shadow.tooShort);
+      setError(t('ai.shadow.tooShort'));
       return;
     }
     stopSpeaking();
@@ -190,36 +143,36 @@ export const ShadowingPracticeCard = ({ accessToken }: { accessToken?: string | 
 
   return (
     <div className="en-stack">
-      <p className="hint">{COPY.shadow.intro}</p>
+      <p className="hint">{t('ai.shadow.intro')}</p>
       <form onSubmit={submit}>
-        <LevelPicker label={COPY.shadow.levelLabel} value={level} onChange={setLevel} />
+        <LevelPicker label={t('ai.shadow.levelLabel')} value={level} onChange={setLevel} />
         <label className="en-stack" htmlFor="shadow-source" style={{ gap: '0.35rem' }}>
-          {COPY.shadow.label}
+          {t('ai.shadow.label')}
           <textarea
             id="shadow-source"
             rows={5}
             maxLength={4000}
             value={sourceText}
             onChange={(e) => setSourceText(e.target.value)}
-            placeholder={COPY.shadow.placeholder}
+            placeholder={t('ai.shadow.placeholder')}
           />
         </label>
         <div className="en-actions">
-          <button type="submit" disabled={busy}>{busy ? COPY.shadow.busy : data ? COPY.shadow.again : COPY.shadow.submit}</button>
+          <button type="submit" disabled={busy}>{busy ? t('ai.shadow.busy') : data ? t('ai.shadow.again') : t('ai.shadow.submit')}</button>
         </div>
       </form>
 
       <div className="en-stack" aria-live="polite">
         <ToolError message={error} />
-        {unavailable ? <p className="en-explain">{SHARED_COPY.unavailable}</p> : null}
+        {unavailable ? <p className="en-explain">{t('ai.shared.unavailable')}</p> : null}
         {data && chunks.length ? (
           <>
-            {data.fallback ? <p className="en-explain">{COPY.shadow.fallbackNote}</p> : null}
+            {data.fallback ? <p className="en-explain">{t('ai.shadow.fallbackNote')}</p> : null}
             {data.warm_up ? <p className="hint">{data.warm_up}</p> : null}
-            {!speechOk ? <p className="en-explain">{COPY.shadow.noSpeech}</p> : null}
+            {!speechOk ? <p className="en-explain">{t('ai.shadow.noSpeech')}</p> : null}
 
             <Segmented
-              label={COPY.shadow.partsLabel}
+              label={t('ai.shadow.partsLabel')}
               value={active}
               onChange={setActive}
               options={chunks.map((_, index) => ({ value: String(index), label: `${index + 1}${said[index] ? ' ✓' : ''}` }))}
@@ -227,23 +180,23 @@ export const ShadowingPracticeCard = ({ accessToken }: { accessToken?: string | 
 
             {chunk ? (
               <div className="en-stack">
-                <p className="hint">{COPY.shadow.part(activeIndex + 1, chunks.length)}</p>
+                <p className="hint">{t('ai.shadow.part', { current: activeIndex + 1, total: chunks.length })}</p>
                 <p className="en-passage">{chunk.text}</p>
                 {chunk.focus_label ? (
                   <p className="en-explain">
-                    <strong>{COPY.shadow.focus}</strong> {chunk.focus_label}
+                    <strong>{t('ai.shadow.focus')}</strong> {chunk.focus_label}
                     {chunk.focus_explanation ? <><br />{chunk.focus_explanation}</> : null}
                   </p>
                 ) : null}
                 {chunk.watch_for.length ? (
                   <div className="en-row">
-                    <span className="hint">{COPY.shadow.watch}</span>
+                    <span className="hint">{t('ai.shadow.watch')}</span>
                     {chunk.watch_for.map((w, i) => <Tag key={`${w}-${i}`}>{w}</Tag>)}
                   </div>
                 ) : null}
                 <div className="en-row">
                   {speechOk ? (
-                    <button type="button" onClick={() => void speak(chunk.text, { rate: speed === 'slow' ? 0.8 : 0.95 })}>{COPY.shadow.listen}</button>
+                    <button type="button" onClick={() => void speak(chunk.text, { rate: speed === 'slow' ? 0.8 : 0.95 })}>{t('ai.shadow.listen')}</button>
                   ) : null}
                   <button
                     type="button"
@@ -251,7 +204,7 @@ export const ShadowingPracticeCard = ({ accessToken }: { accessToken?: string | 
                     aria-pressed={Boolean(said[activeIndex])}
                     onClick={() => setSaid((prev) => ({ ...prev, [activeIndex]: !prev[activeIndex] }))}
                   >
-                    {said[activeIndex] ? COPY.shadow.saidDone : COPY.shadow.said}
+                    {said[activeIndex] ? t('ai.shadow.saidDone') : t('ai.shadow.said')}
                   </button>
                   <button
                     type="button"
@@ -259,25 +212,25 @@ export const ShadowingPracticeCard = ({ accessToken }: { accessToken?: string | 
                     disabled={activeIndex >= chunks.length - 1}
                     onClick={() => setActive(String(Math.min(chunks.length - 1, activeIndex + 1)))}
                   >
-                    {COPY.shadow.next}
+                    {t('ai.shadow.next')}
                   </button>
                 </div>
                 {speechOk ? (
                   <div className="en-row">
-                    <span className="hint" aria-hidden="true">{COPY.shadow.speedLabel}</span>
+                    <span className="hint" aria-hidden="true">{t('ai.shadow.speedLabel')}</span>
                     <Segmented
-                      label={COPY.shadow.speedLabel}
+                      label={t('ai.shadow.speedLabel')}
                       value={speed}
                       onChange={setSpeed}
-                      options={[{ value: 'normal', label: COPY.shadow.speedNormal }, { value: 'slow', label: COPY.shadow.speedSlow }]}
+                      options={[{ value: 'normal', label: t('ai.shadow.speedNormal') }, { value: 'slow', label: t('ai.shadow.speedSlow') }]}
                     />
                   </div>
                 ) : null}
               </div>
             ) : null}
 
-            <p className="hint">{COPY.shadow.progress(saidCount, chunks.length)}</p>
-            <FeedbackList title={COPY.shadow.tipsHeading} items={data.global_tips} tone="good" />
+            <p className="hint">{t('ai.shadow.progress', { done: saidCount, total: chunks.length })}</p>
+            <FeedbackList title={t('ai.shadow.tipsHeading')} items={data.global_tips} tone="good" />
           </>
         ) : null}
       </div>

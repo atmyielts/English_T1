@@ -8,7 +8,7 @@ import { ErrorState, LevelBadge, PageHeader, ProgressBar, SkillDot, Tag } from '
 
 export const PracticePage = () => {
   const t = useT();
-  const { access, onboarding, pricingHref } = useEnglish();
+  const { access, canPractise, onboarding, pricingHref } = useEnglish();
   const catalog = useResource((signal) => getCatalog(undefined, signal), []);
   const level = onboarding.value?.level ?? null;
 
@@ -27,7 +27,8 @@ export const PracticePage = () => {
           const done = items.filter((item) => (catalog.data?.best_scores[item.id] ?? null) !== null).length;
           const skillLevel = onboarding.value?.perSkill[skill.key] ?? level;
           const atLevel = skillLevel ? items.filter((item) => item.level === skillLevel).length : null;
-          const locked = access.status === 'ready' && !access.unlocked.has(skill.key);
+          const owned = access.unlocked.has(skill.key);
+          const locked = !canPractise(skill.key);
           return (
             <Link key={skill.key} to={skill.path} className="en-skill-card">
               <h3><SkillDot skill={skill.key} />{t(`skill.${skill.key}`)}</h3>
@@ -43,7 +44,7 @@ export const PracticePage = () => {
                   {skillLevel ? <LevelBadge level={skillLevel} muted /> : null}
                   {atLevel !== null && catalog.data ? <span>{t('practice.atLevel', { count: atLevel })}</span> : null}
                 </span>
-                {locked ? <Tag>{t('practice.locked')}</Tag> : <span aria-hidden="true">→</span>}
+                {locked ? <Tag>{t('practice.locked')}</Tag> : !owned && access.status === 'ready' ? <Tag>{t('free.tag')}</Tag> : <span aria-hidden="true">→</span>}
               </footer>
             </Link>
           );

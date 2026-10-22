@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { guardActivity } from "../_shared/english-allowance.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   buildFeedbackPayload,
@@ -533,6 +534,11 @@ const handleDeckRoute = async (
   }
 
   const submitMatch = /^\/decks\/([^/]+)\/submit$/.exec(route);
+  if (req.method === "POST" && submitMatch) {
+    // Paid skills, or today's free activity.
+    const blocked = await guardActivity(serviceClient, authedUserId, language.id, "vocabulary", route);
+    if (blocked) return blocked;
+  }
   const deckMatch = /^\/decks\/([^/]+)$/.exec(route);
   const slug = decodeURIComponent((submitMatch ?? deckMatch)?.[1] ?? "").trim().slice(0, 120);
   if (!slug) return respond(404, { error: "Deck not found" });

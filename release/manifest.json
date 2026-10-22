@@ -1,13 +1,14 @@
 {
   "schemaVersion": 1,
-  "releaseId": "english-learning-loop",
+  "releaseId": "english-free-tier-theme-reminders",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
     "english-hub"
   ],
   "migrations": [
-    "20261023110000_english_review_items.sql"
+    "20261023120000_english_telegram_reminders.sql",
+    "20261023130000_english_registry_sync.sql"
   ],
   "edgeFunctions": [
     "grammar-remediation",
@@ -16,22 +17,16 @@
     "listening-content",
     "reading-articles",
     "speaking-studio",
+    "vocabulary-notebook",
     "writing-workbench"
   ],
   "workers": [],
   "sharedEdgeConsumers": [
-    "admin-english-content",
-    "admin-english-ops",
-    "content-registry",
-    "feedback-engine",
     "grammar-remediation",
     "hub",
     "immersion-missions",
-    "learning-attempts",
-    "learning-profile-v3",
     "listening-content",
     "reading-articles",
-    "recommendations",
     "speaking-studio",
     "vocabulary-notebook",
     "writing-workbench"
@@ -42,39 +37,44 @@
   ],
   "rolloutOrder": [
     "pages",
-    "migration:20261023110000_english_review_items.sql",
+    "migration:20261023120000_english_telegram_reminders.sql",
+    "migration:20261023130000_english_registry_sync.sql",
     "secret:ENGLISH_AI_DAILY_LIMIT",
     "secret:ENGLISH_APP_URL",
-    "function:grammar-remediation",
     "function:hub",
+    "function:grammar-remediation",
     "function:immersion-missions",
     "function:listening-content",
     "function:reading-articles",
     "function:speaking-studio",
+    "function:vocabulary-notebook",
     "function:writing-workbench"
   ],
   "manualFollowUps": [
-    "Pages: merging publishes english-hub (Review questions panel, Fix it links, saved-word hints, Move up, tutor memory on the account, listen-and-repeat, read aloud, I can goals). Until the functions below are deployed the new panels show their empty states.",
-    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus 20261023110000_english_review_items.sql, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then supabase migration list --linked. Creates learner_review_items with RLS on and no client grants (answer keys are server-only).",
-    "Secrets: supabase secrets set ENGLISH_AI_DAILY_LIMIT= and supabase secrets set ENGLISH_APP_URL= are not run; both keep their safe code defaults (30 AI requests per learner per day; https://english.schood.online).",
-    "Edge: supabase functions deploy grammar-remediation --project-ref bbjawctnqrufvnesdsel after the migration.",
-    "Edge: supabase functions deploy hub --project-ref bbjawctnqrufvnesdsel after the migration.",
-    "Edge: supabase functions deploy immersion-missions --project-ref bbjawctnqrufvnesdsel after the migration.",
-    "Edge: supabase functions deploy listening-content --project-ref bbjawctnqrufvnesdsel after the migration.",
-    "Edge: supabase functions deploy reading-articles --project-ref bbjawctnqrufvnesdsel after the migration.",
-    "Edge: supabase functions deploy speaking-studio --project-ref bbjawctnqrufvnesdsel after the migration.",
-    "Edge: supabase functions deploy writing-workbench --project-ref bbjawctnqrufvnesdsel after the migration.",
-    "Shared english-learning.ts now reopens a mistake that recurs after it was practised. Other consumers (admin-english-*, content-registry, feedback-engine, learning-attempts, learning-profile-v3, recommendations, vocabulary-notebook) need no redeploy: only grammar-topic mistakes from the seven functions above are ever marked practised."
+    "Pages: merging publishes english-hub (free-today tags, used-for-today state, Theme of the week card, Telegram reminder settings). Until hub is deployed the theme card and reminder panel stay hidden or empty and the free state falls back to the old locked panel.",
+    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus 20261023120000_english_telegram_reminders.sql and 20261023130000_english_registry_sync.sql, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then supabase migration list --linked. Adds a private english_reminder_secret row, invoke_english_reminders() and the hourly cron job english-reminders-v1 (minute 7). Nothing is sent until a learner turns reminders on. The registry sync adds update triggers on the 7 English content tables so admin status/title/level edits reach the learner catalog, and syncs rows edited before it.",
+    "Secrets: supabase secrets set ENGLISH_AI_DAILY_LIMIT= and supabase secrets set ENGLISH_APP_URL= are not run; both keep their safe code defaults (30 AI requests per learner per day; https://english.schood.online, also used for the Telegram reminder link).",
+    "Edge: supabase functions deploy hub --project-ref bbjawctnqrufvnesdsel first, after the migration (adds /access, /week, /reminders, the /internal/reminders worker and free-aware /today).",
+    "Edge: supabase functions deploy grammar-remediation --project-ref bbjawctnqrufvnesdsel (submit routes now enforce the plan or one free activity a day).",
+    "Edge: supabase functions deploy immersion-missions --project-ref bbjawctnqrufvnesdsel (same guard).",
+    "Edge: supabase functions deploy listening-content --project-ref bbjawctnqrufvnesdsel (same guard).",
+    "Edge: supabase functions deploy reading-articles --project-ref bbjawctnqrufvnesdsel (same guard).",
+    "Edge: supabase functions deploy speaking-studio --project-ref bbjawctnqrufvnesdsel (same guard).",
+    "Edge: supabase functions deploy vocabulary-notebook --project-ref bbjawctnqrufvnesdsel (same guard on deck submit).",
+    "Edge: supabase functions deploy writing-workbench --project-ref bbjawctnqrufvnesdsel (same guard)."
   ],
   "verification": [
-    "supabase migration list --linked shows 20261023110000 applied and the 9 #220 payment migrations still pending.",
-    "Without a session GET /functions/v1/hub/review/items and POST /hub/level/up return 401; information_schema shows learner_review_items with no grants to anon or authenticated.",
-    "As a learner: a writing task with a repeated grammar mistake puts the matching grammar lesson first on Today; passing it marks the mistakes practised; a missed grammar question appears in Review the next day."
+    "Without a session GET /functions/v1/hub/access and /hub/week return 401.",
+    "As a learner with no English plan: /hub/access shows free_left 1; the first activity submit returns 200, the second returns 402 english_free_limit_reached; Review stays available.",
+    "As a learner with a plan: /hub/access lists all seven entitled skills and submits are never limited.",
+    "cron.job lists english-reminders-v1 at '7 * * * *'; POST /functions/v1/hub/internal/reminders without the worker secret returns 401.",
+    "net._http_response shows the hourly call returning 200 with considered 0 until learners opt in.",
+    "Archiving a grammar unit in admin removes it from /hub/catalog; publishing it again brings it back."
   ],
   "rollback": {
     "pages": "Cloudflare Pages rollback of schood-english to the previous deployment.",
-    "migration": "Additive table; leave in place.",
-    "edge": "Redeploy the seven functions from the previous main commit; review queueing, fix lessons and saved-word credit stop, nothing else changes.",
+    "migration": "select cron.unschedule('english-reminders-v1'); drop trigger <table>_registry_sync on each of the 7 content tables if needed. Functions and the secret row can stay.",
+    "edge": "Redeploy the eight functions from the previous main commit; the free limit and weekly theme stop, nothing else changes.",
     "worker": "Nothing deployed."
   }
 }

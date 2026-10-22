@@ -33,14 +33,34 @@ type FinalResponse = {
 
 type Step = 'goal' | 'level-choice' | 'test' | 'self' | 'result';
 
-/** First-run flow: goal and daily time, then a placement test or a self-chosen level. */
-export const Onboarding = ({ onDone, retake = false }: { onDone?: () => void; retake?: boolean } = {}) => {
+const LevelChange = ({ before, now }: { before: CefrLevel | null | undefined; now: string }) => {
   const t = useT();
-  const { refreshOnboarding, displayName } = useEnglish();
-  const [step, setStep] = useState<Step>('goal');
-  const [goals, setGoals] = useState<Goal[]>([]);
-  const [target, setTarget] = useState<CefrLevel>('B2');
-  const [minutes, setMinutes] = useState<number>(20);
+  const level = now.toUpperCase();
+  const delta = before && isCefr(level) ? CEFR_LEVELS.indexOf(level as CefrLevel) - CEFR_LEVELS.indexOf(before) : 0;
+  return (
+    <strong className={delta > 0 ? 'en-up' : undefined}>
+      {level}
+      {delta > 0 ? <span> ↑ {t('check.up')}</span> : delta < 0 ? <span className="hint"> {t('check.down')}</span> : null}
+    </strong>
+  );
+};
+
+const LEVEL_SKILLS = ['reading', 'listening', 'writing', 'grammar'] as const;
+
+/**
+ * First-run flow: goal and daily time, then a placement test or a self-chosen level.
+ * `retake` starts from the learner's saved goal; `check` is the monthly level check:
+ * straight to the test, goals untouched, and the result compared with before.
+ */
+export const Onboarding = ({ onDone, retake = false, check = false }: { onDone?: () => void; retake?: boolean; check?: boolean } = {}) => {
+  const t = useT();
+  const { refreshOnboarding, displayName, onboarding } = useEnglish();
+  const saved = retake || check ? onboarding.value : null;
+  const [before] = useState(() => (check ? onboarding.value : null));
+  const [step, setStep] = useState<Step>(check ? 'level-choice' : 'goal');
+  const [goals, setGoals] = useState<Goal[]>(() => (saved?.goalKeys ?? []).filter((goal): goal is Goal => (GOALS as readonly string[]).includes(goal)).slice(-2));
+  const [target, setTarget] = useState<CefrLevel>(saved?.targetLevel ?? 'B2');
+  const [minutes, setMinutes] = useState<number>(saved?.dailyMinutes ?? 20);
 
   const [round, setRound] = useState(0);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -68,10 +88,12 @@ export const Onboarding = ({ onDone, retake = false }: { onDone?: () => void; re
         const value = entry.level?.toUpperCase();
         if (isCefr(value)) per[skill] = { level: value as CefrLevel };
       }
-      await saveOnboarding({
-        goal: { goal_keys: goals.length ? goals : ['everyday'], target_cefr: target, daily_time_minutes: minutes },
-        placement: { overall_level: level, per_skill: per },
-      });
+      await saveOnboarding(check
+        ? { placement: { overall_level: level, per_skill: per }, source: 'check' }
+        : {
+          goal: { goal_keys: goals.length ? goals : ['everyday'], target_cefr: target, daily_time_minutes: minutes },
+          placement: { overall_level: level, per_skill: per },
+        });
       await refreshOnboarding();
       onDone?.();
     } catch (cause) {
@@ -124,17 +146,19 @@ export const Onboarding = ({ onDone, retake = false }: { onDone?: () => void; re
   return (
     <div className="en-stack">
       <PageHeader
-        eyebrow={t('onboarding.eyebrow')}
-        title={retake ? t('onboarding.retakeTitle') : displayName ? t('onboarding.titleNamed', { name: displayName }) : t('onboarding.title')}
-        lead={retake ? t('onboarding.retakeLead') : t('onboarding.lead')}
+        eyebrow={check ? t('check.eyebrow') : t('onboarding.eyebrow')}
+        title={check ? t('check.title') : retake ? t('onboarding.retakeTitle') : displayName ? t('onboarding.titleNamed', { name: displayName }) : t('onboarding.title')}
+        lead={check ? t('check.lead') : retake ? t('onboarding.retakeLead') : t('onboarding.lead')}
       />
-      <ol className="en-steps" aria-label={t('onboarding.progress')}>
-        {[t('onboarding.step.goal'), t('onboarding.step.level'), t('onboarding.step.start')].map((label, index) => (
-          <li key={label} className={index === stepIndex ? 'is-current' : index < stepIndex ? 'is-done' : ''} aria-current={index === stepIndex ? 'step' : undefined}>
-            <span>{index < stepIndex ? '✓' : index + 1}</span>{label}
-          </li>
-        ))}
-      </ol>
+{check ? null : (
+        <ol className="en-steps" aria-label={t('onboarding.progress')}>
+          {[t('onboarding.step.goal'), t('onboarding.step.level'), t('onboarding.step.start')].map((label, index) => (
+            <li key={label} className={index === stepIndex ? 'is-current' : index < stepIndex ? 'is-done' : ''} aria-current={index === stepIndex ? 'step' : undefined}>
+              <span>{index < stepIndex ? '✓' : index + 1}</span>{label}
+            </li>
+          ))}
+        </ol>
+      )}
 
       {step === 'goal' ? (
         <Panel title={t('onboarding.goal.title')}>
@@ -196,9 +220,11 @@ export const Onboarding = ({ onDone, retake = false }: { onDone?: () => void; re
               <button type="button" className="quiet" onClick={() => setStep('self')}>{t('onboarding.self.cta')}</button>
             </div>
           </Panel>
-          <div className="en-actions">
-            <button type="button" className="is-link" onClick={() => setStep('goal')}>← {t('common.back')}</button>
-          </div>
+          {check ? null : (
+            <div className="en-actions">
+              <button type="button" className="is-link" onClick={() => setStep('goal')}>← {t('common.back')}</button>
+            </div>
+          )}
         </div>
       ) : null}
 
@@ -268,7 +294,7 @@ export const Onboarding = ({ onDone, retake = false }: { onDone?: () => void; re
           {error ? <ErrorState error={error} /> : null}
           <div className="en-actions">
             <button type="button" className="is-large" disabled={!selfLevel || busy} onClick={() => selfLevel && void finish(selfLevel, {})}>
-              {busy ? t('common.saving') : t('onboarding.startLearning')}
+              {busy ? t('common.saving') : check ? t('check.save') : t('onboarding.startLearning')}
             </button>
             <button type="button" className="is-link" onClick={() => setStep('level-choice')}>← {t('common.back')}</button>
           </div>
@@ -279,14 +305,36 @@ export const Onboarding = ({ onDone, retake = false }: { onDone?: () => void; re
         <Panel tone="lime" title={t('onboarding.result.title', { level: result.overall_level })}>
           <p>{t(`level.${isCefr(result.overall_level) ? result.overall_level : 'B1'}.can`)}</p>
           {result.narrative ? <p>{result.narrative}</p> : null}
-          <div className="en-stats">
-            {Object.entries(result.per_skill).map(([skill, entry]) => (
-              <div className="en-stat" key={skill}>
-                <small>{t(`skill.${skill}`)}</small>
-                <strong>{entry.level}</strong>
-              </div>
-            ))}
-          </div>
+          {check && before ? (
+            <table className="en-table">
+              <thead>
+                <tr><th>{t('check.skill')}</th><th>{t('check.before')}</th><th>{t('check.now')}</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>{t('check.overall')}</strong></td>
+                  <td>{before.level ?? '—'}</td>
+                  <td><LevelChange before={before.level} now={result.overall_level} /></td>
+                </tr>
+                {LEVEL_SKILLS.filter((skill) => result.per_skill[skill]).map((skill) => (
+                  <tr key={skill}>
+                    <td>{t(`skill.${skill}`)}</td>
+                    <td>{before.perSkill[skill] ?? before.level ?? '—'}</td>
+                    <td><LevelChange before={before.perSkill[skill] ?? before.level} now={result.per_skill[skill]!.level} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="en-stats">
+              {Object.entries(result.per_skill).map(([skill, entry]) => (
+                <div className="en-stat" key={skill}>
+                  <small>{t(`skill.${skill}`)}</small>
+                  <strong>{entry.level}</strong>
+                </div>
+              ))}
+            </div>
+          )}
           {error ? <ErrorState error={error} /> : null}
           <div className="en-actions">
             <button
@@ -298,7 +346,7 @@ export const Onboarding = ({ onDone, retake = false }: { onDone?: () => void; re
                 void finish(isCefr(level) ? (level as CefrLevel) : CEFR_LEVELS[2]!, result.per_skill);
               }}
             >
-              {busy ? t('common.saving') : t('onboarding.startLearning')}
+              {busy ? t('common.saving') : check ? t('check.save') : t('onboarding.startLearning')}
             </button>
           </div>
         </Panel>

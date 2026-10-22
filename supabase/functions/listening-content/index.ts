@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { guardActivity } from "../_shared/english-allowance.ts";
 import { queueReviewItems } from "../_shared/english-review.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
@@ -157,6 +158,9 @@ serve(async (req) => {
     // Submit a whole activity once: questions + dictation, recorded as ONE
     // attempt on the item's registry entry so it shows as done everywhere.
     if (req.method === "POST" && route.startsWith("/items/") && route.endsWith("/submit")) {
+      // Paid skills, or today's free activity.
+      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "listening", route);
+      if (blocked) return blocked;
       const identifier = decodeURIComponent(route.slice("/items/".length, -"/submit".length)).trim();
       const item = identifier ? await loadItem(sb, productId, scope.languageId, identifier) : null;
       if (!item) return json(404, { error: "Listening item not found" });
@@ -356,6 +360,9 @@ serve(async (req) => {
 
     // Older single-clip dictation (whole script typed at once). Kept for old clients.
     if (req.method === "POST" && route === "/practice/submit") {
+      // Paid skills, or today's free activity.
+      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "listening", route);
+      if (blocked) return blocked;
       const identifier = toText(body.item_id ?? body.slug ?? body.source_ref, 120);
       const responseText = toText(body.response_text, 6000);
       if (!identifier || !responseText) return json(422, { error: "item_id (or slug) and response_text are required" });

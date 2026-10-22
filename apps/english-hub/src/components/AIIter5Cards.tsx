@@ -8,62 +8,12 @@ import {
   type ThemedWeekResponse,
 } from '../lib/ecosystemInsightsClient';
 import { CEFR_LEVELS, nextLevel } from '../lib/skills';
+import { useT } from '../i18n';
 import { FeedbackList, Segmented, Tag } from '../ui/kit';
-import { SHARED_COPY, ToolError, skillHref, useLearnerLevel, useToolRequest, wordCount } from './aiToolShared';
+import { ToolError, optionalLabel, skillHref, useLearnerLevel, useToolRequest, wordCount } from './aiToolShared';
 
-const COPY = {
-  rubric: {
-    intro: 'Write a task. See example answers at three levels and what changes between them.',
-    label: 'Writing task',
-    placeholder: 'For example: Some people prefer to live in a big city, others in a small town. What do you think?',
-    lower: 'Lower level',
-    middle: 'Middle level',
-    higher: 'Higher level',
-    submit: 'Show examples',
-    busy: 'Writing examples…',
-    tooShort: 'Please write a longer task (at least 20 characters).',
-    examplesLabel: 'Example answers',
-    example: (level: string) => `${level} example`,
-    words: (n: number) => `${n} words`,
-    teacherNote: "Teacher's note:",
-    changesHeading: 'What changes between levels',
-    axes: {
-      task: 'Task',
-      coherence: 'Organisation',
-      range: 'Words and grammar',
-      accuracy: 'Accuracy',
-      register: 'Style',
-    },
-    practiseHeading: 'Practise this week',
-  },
-  week: {
-    intro: 'Plan a week of practice around one theme. The same words come back every day.',
-    themeLabel: 'Theme (optional)',
-    themePlaceholder: 'For example: food, travel, city life',
-    minutesLabel: 'Minutes a day',
-    minutes: (n: number) => `${n} min`,
-    submit: 'Plan my week',
-    again: 'Plan another week',
-    busy: 'Planning…',
-    todayHint: 'Your Today page always has a plan for you.',
-    todayLink: 'Go to Today',
-    wordsHeading: 'Words for this week',
-    progress: (done: number, total: number) => `${done} of ${total} days done`,
-    useWords: 'Words to use:',
-    open: (skill: string) => `Open ${skill}`,
-    done: 'Done',
-    endHeading: 'By the end of the week',
-    days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-  },
-  skills: {
-    reading: 'Reading',
-    writing: 'Writing',
-    listening: 'Listening',
-    speaking: 'Speaking',
-    grammar: 'Grammar',
-    vocabulary: 'Vocabulary',
-  } as Record<string, string>,
-};
+const RUBRIC_AXES = ['task', 'coherence', 'range', 'accuracy', 'register'] as const;
+const WEEK_DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 
 const LevelSelect = ({ id, label, value, onChange }: { id: string; label: string; value: CefrLevel; onChange: (level: CefrLevel) => void }) => (
   <label className="en-stack" htmlFor={id} style={{ gap: '0.35rem' }}>
@@ -77,6 +27,7 @@ const LevelSelect = ({ id, label, value, onChange }: { id: string; label: string
 // === Level examples (writing rubric calibration) ===
 
 export const RubricCalibrationCard = ({ accessToken }: { accessToken?: string | null }) => {
+  const t = useT();
   const learnerLevel = useLearnerLevel();
   const [prompt, setPrompt] = useState('');
   const [lower, setLower] = useState<CefrLevel>(learnerLevel);
@@ -88,7 +39,7 @@ export const RubricCalibrationCard = ({ accessToken }: { accessToken?: string | 
   const submit = (event: FormEvent) => {
     event.preventDefault();
     if (prompt.trim().length < 20) {
-      setError(COPY.rubric.tooShort);
+      setError(t('ai.rubric.tooShort'));
       return;
     }
     setActive('0');
@@ -102,55 +53,55 @@ export const RubricCalibrationCard = ({ accessToken }: { accessToken?: string | 
 
   return (
     <div className="en-stack">
-      <p className="hint">{COPY.rubric.intro}</p>
+      <p className="hint">{t('ai.rubric.intro')}</p>
       <form onSubmit={submit}>
         <label className="en-stack" htmlFor="rubric-prompt" style={{ gap: '0.35rem' }}>
-          {COPY.rubric.label}
-          <textarea id="rubric-prompt" rows={3} maxLength={800} value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder={COPY.rubric.placeholder} />
+          {t('ai.rubric.label')}
+          <textarea id="rubric-prompt" rows={3} maxLength={800} value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder={t('ai.rubric.placeholder')} />
         </label>
         <div className="en-grid-cards">
-          <LevelSelect id="rubric-lower" label={COPY.rubric.lower} value={lower} onChange={setLower} />
-          <LevelSelect id="rubric-mid" label={COPY.rubric.middle} value={mid} onChange={setMid} />
-          <LevelSelect id="rubric-upper" label={COPY.rubric.higher} value={upper} onChange={setUpper} />
+          <LevelSelect id="rubric-lower" label={t('ai.rubric.lower')} value={lower} onChange={setLower} />
+          <LevelSelect id="rubric-mid" label={t('ai.rubric.middle')} value={mid} onChange={setMid} />
+          <LevelSelect id="rubric-upper" label={t('ai.rubric.higher')} value={upper} onChange={setUpper} />
         </div>
         <div className="en-actions">
-          <button type="submit" disabled={busy}>{busy ? COPY.rubric.busy : COPY.rubric.submit}</button>
+          <button type="submit" disabled={busy}>{busy ? t('ai.rubric.busy') : t('ai.rubric.submit')}</button>
         </div>
       </form>
 
       <div className="en-stack" aria-live="polite">
         <ToolError message={error} />
-        {unavailable ? <p className="en-explain">{SHARED_COPY.unavailable}</p> : null}
+        {unavailable ? <p className="en-explain">{t('ai.shared.unavailable')}</p> : null}
         {data && !unavailable ? (
           <>
             <Segmented
-              label={COPY.rubric.examplesLabel}
+              label={t('ai.rubric.examplesLabel')}
               value={active}
               onChange={setActive}
-              options={data.samples.map((s, index) => ({ value: String(index), label: COPY.rubric.example(s.level) }))}
+              options={data.samples.map((s, index) => ({ value: String(index), label: t('ai.rubric.example', { level: s.level }) }))}
             />
             {sample ? (
               <div className="en-stack">
-                <p className="hint">{COPY.rubric.words(wordCount(sample.text))}</p>
+                <p className="hint">{t('ai.rubric.words', { count: wordCount(sample.text) })}</p>
                 <div className="en-passage">
                   {sample.text.split(/\n+/).filter(Boolean).map((para, index) => <p key={index}>{para}</p>)}
                 </div>
                 {sample.examiner_note ? (
-                  <p className="en-explain"><strong>{COPY.rubric.teacherNote}</strong> {sample.examiner_note}</p>
+                  <p className="en-explain"><strong>{t('ai.rubric.teacherNote')}</strong> {sample.examiner_note}</p>
                 ) : null}
               </div>
             ) : null}
 
             {data.deltas.length ? (
               <>
-                <h3>{COPY.rubric.changesHeading}</h3>
+                <h3>{t('ai.rubric.changesHeading')}</h3>
                 <ul className="en-list">
                   {data.deltas.map((d, index) => (
                     <li key={index} className="en-explain">
                       <strong>{d.from_level} → {d.to_level}</strong>
                       <ul>
-                        {(Object.keys(COPY.rubric.axes) as Array<keyof typeof COPY.rubric.axes>).map((axis) =>
-                          d.axes[axis] ? <li key={axis}><strong>{COPY.rubric.axes[axis]}:</strong> {d.axes[axis]}</li> : null,
+                        {RUBRIC_AXES.map((axis) =>
+                          d.axes[axis] ? <li key={axis}><strong>{t(`ai.rubric.axis.${axis}`)}:</strong> {d.axes[axis]}</li> : null,
                         )}
                       </ul>
                     </li>
@@ -159,7 +110,7 @@ export const RubricCalibrationCard = ({ accessToken }: { accessToken?: string | 
               </>
             ) : null}
 
-            <FeedbackList title={COPY.rubric.practiseHeading} items={data.what_to_practise} tone="good" />
+            <FeedbackList title={t('ai.rubric.practiseHeading')} items={data.what_to_practise} tone="good" />
           </>
         ) : null}
       </div>
@@ -172,6 +123,7 @@ export const RubricCalibrationCard = ({ accessToken }: { accessToken?: string | 
 const WEEK_MINUTES = ['15', '25', '40'] as const;
 
 export const ThemedWeekCard = ({ accessToken }: { accessToken?: string | null }) => {
+  const t = useT();
   const [theme, setTheme] = useState('');
   const [minutes, setMinutes] = useState<(typeof WEEK_MINUTES)[number]>('25');
   const [done, setDone] = useState<Record<number, boolean>>({});
@@ -190,23 +142,23 @@ export const ThemedWeekCard = ({ accessToken }: { accessToken?: string | null })
 
   return (
     <div className="en-stack">
-      <p className="hint">{COPY.week.intro}</p>
+      <p className="hint">{t('ai.week.intro')}</p>
       <form onSubmit={submit}>
         <label className="en-stack" htmlFor="week-theme" style={{ gap: '0.35rem' }}>
-          {COPY.week.themeLabel}
-          <input id="week-theme" type="text" maxLength={120} value={theme} onChange={(e) => setTheme(e.target.value)} placeholder={COPY.week.themePlaceholder} />
+          {t('ai.week.themeLabel')}
+          <input id="week-theme" type="text" maxLength={120} value={theme} onChange={(e) => setTheme(e.target.value)} placeholder={t('ai.week.themePlaceholder')} />
         </label>
         <div className="en-row">
-          <span className="hint" aria-hidden="true">{COPY.week.minutesLabel}</span>
+          <span className="hint" aria-hidden="true">{t('ai.week.minutesLabel')}</span>
           <Segmented
-            label={COPY.week.minutesLabel}
+            label={t('ai.week.minutesLabel')}
             value={minutes}
             onChange={setMinutes}
-            options={WEEK_MINUTES.map((m) => ({ value: m, label: COPY.week.minutes(Number(m)) }))}
+            options={WEEK_MINUTES.map((m) => ({ value: m, label: t('ai.week.minutes', { count: Number(m) }) }))}
           />
         </div>
         <div className="en-actions">
-          <button type="submit" disabled={busy}>{busy ? COPY.week.busy : data ? COPY.week.again : COPY.week.submit}</button>
+          <button type="submit" disabled={busy}>{busy ? t('ai.week.busy') : data ? t('ai.week.again') : t('ai.week.submit')}</button>
         </div>
       </form>
 
@@ -214,8 +166,8 @@ export const ThemedWeekCard = ({ accessToken }: { accessToken?: string | null })
         <ToolError message={error} />
         {unavailable ? (
           <div className="en-empty">
-            <p>{SHARED_COPY.unavailable} {COPY.week.todayHint}</p>
-            <Link className="en-button-quiet" to="/today">{COPY.week.todayLink}</Link>
+            <p>{t('ai.shared.unavailable')} {t('ai.week.todayHint')}</p>
+            <Link className="en-button-quiet" to="/today">{t('ai.week.todayLink')}</Link>
           </div>
         ) : null}
         {data && !unavailable ? (
@@ -226,29 +178,30 @@ export const ThemedWeekCard = ({ accessToken }: { accessToken?: string | null })
             </div>
             {data.anchor_vocabulary.length ? (
               <>
-                <h3>{COPY.week.wordsHeading}</h3>
+                <h3>{t('ai.week.wordsHeading')}</h3>
                 <div className="en-row">{data.anchor_vocabulary.map((w, i) => <Tag key={`${w}-${i}`}>{w}</Tag>)}</div>
               </>
             ) : null}
-            <p className="hint">{COPY.week.progress(doneCount, data.days.length)}</p>
+            <p className="hint">{t('ai.week.progress', { done: doneCount, total: data.days.length })}</p>
             <ol className="en-list">
               {data.days.map((day, index) => {
-                const skillName = COPY.skills[day.skill] ?? '';
+                const skillName = optionalLabel(t, `ai.skills.${day.skill}`);
+                const weekDay = WEEK_DAYS[day.day_index] ?? WEEK_DAYS[index];
                 const href = skillHref(day.skill);
                 return (
                   <li key={index} className="en-explain">
                     <div className="en-stack" style={{ gap: '0.5rem' }}>
                       <span className="en-row">
-                        <strong>{COPY.week.days[day.day_index] ?? COPY.week.days[index] ?? ''}</strong>
+                        <strong>{weekDay ? t(`ai.week.day.${weekDay}`) : ''}</strong>
                         {skillName ? <Tag>{skillName}</Tag> : null}
                       </span>
                       <strong>{day.activity_label}</strong>
                       <span>{day.instruction}</span>
                       {day.recycles_words.length ? (
-                        <span className="hint">{COPY.week.useWords} {day.recycles_words.join(', ')}</span>
+                        <span className="hint">{t('ai.week.useWords')} {day.recycles_words.join(', ')}</span>
                       ) : null}
                       <span className="en-row">
-                        {href && skillName ? <Link className="en-button-quiet" to={href}>{COPY.week.open(skillName)}</Link> : null}
+                        {href && skillName ? <Link className="en-button-quiet" to={href}>{t('ai.week.open', { skill: skillName })}</Link> : null}
                         <label className="en-row">
                           <input
                             type="checkbox"
@@ -256,7 +209,7 @@ export const ThemedWeekCard = ({ accessToken }: { accessToken?: string | null })
                             checked={Boolean(done[index])}
                             onChange={(e) => setDone((prev) => ({ ...prev, [index]: e.target.checked }))}
                           />
-                          {COPY.week.done}
+                          {t('ai.week.done')}
                         </label>
                       </span>
                     </div>
@@ -266,7 +219,7 @@ export const ThemedWeekCard = ({ accessToken }: { accessToken?: string | null })
             </ol>
             {data.weekend_review ? (
               <div className="en-feedback is-good">
-                <h3>{COPY.week.endHeading}</h3>
+                <h3>{t('ai.week.endHeading')}</h3>
                 <p>{data.weekend_review}</p>
               </div>
             ) : null}

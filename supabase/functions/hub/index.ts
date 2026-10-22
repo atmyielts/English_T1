@@ -43,13 +43,18 @@ import {
   planToday,
   skillProgress,
   TODAY_SKILLS,
+  topicWeek,
   type TodaySkill,
   type TodayTask,
   weekStrip,
 } from "../_shared/english-today.ts";
 import { loadPracticeWords } from "../_shared/english-words.ts";
+import { checkActivityAccess } from "../_shared/english-allowance.ts";
 import { checkReviewAnswer, parseReviewPayload, publicReviewPayload, RETIRED_BOX, scheduleAfterAnswer } from "../_shared/english-review.ts";
 import { topicFromSubskill } from "../_shared/english-mistakes.ts";
+import { mergeReminderSettings, readReminderSettings, REMINDER_HOURS } from "../_shared/english-reminders.ts";
+import { isReminderWorker, runReminderCycle } from "./reminders.ts";
+import { appendLevelHistory, levelCheckStatus, perSkillLevels, readLevelHistory } from "../_shared/english-levels.ts";
 
 const routeMarker = "/hub";
 
@@ -239,6 +244,27 @@ serve(async (req) => {
     const supabaseUrl = getEnv("SUPABASE_URL");
     const serviceRoleKey = getEnv("SUPABASE_SERVICE_ROLE_KEY");
     const sb = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
+
+    // === Reminder worker (pg_cron, private secret; no learner session) ===
+    if (req.method === "POST" && extractRoute(new URL(req.url), routeMarker) === "/internal/reminders") {
+      if (!(await isReminderWorker(sb, req))) return json(401, { error: "Unauthorized" });
+      const body = await parseBody(req) as Record<string, unknown>;
+      const workerScope = await resolveLanguageScope(sb, "en");
+      const result = await runReminderCycle({
+        sb,
+        languageId: workerScope.languageId,
+        supabaseUrl,
+        serviceRoleKey,
+        appUrl: Deno.env.get("ENGLISH_APP_URL") ?? "https://english.schood.online",
+        dryRun: body.dry_run === true,
+        // A dry run may pretend it is another time, to preview messages.
+        now: body.dry_run === true && typeof body.now === "string" && Number.isFinite(Date.parse(body.now)) ? new Date(body.now) : undefined,
+        onlyUserIds: Array.isArray(body.user_ids) ? body.user_ids.map(String).slice(0, 20) : undefined,
+      });
+      console.log(JSON.stringify({ event: "english_reminder_cycle", hour: result.hour, considered: result.considered, sent: result.sent.length }));
+      return json(200, { ok: true, ...result });
+    }
+
     const auth = await authUser(sb, req);
     if (!auth) return json(401, { error: "Unauthorized" });
 
@@ -312,7 +338,7 @@ serve(async (req) => {
     // === Today, catalog and history (learner home) ===
     // Built only from the learner's placement, real attempts and due reviews.
 
-    if (req.method === "GET" && (route === "/today" || route === "/catalog" || route === "/history" || route === "/progress")) {
+    if (req.method === "GET" && (route === "/today" || route === "/catalog" || route === "/history" || route === "/progress" || route === "/week")) {
       const skillFilter = toText(url.searchParams.get("skill"), 24).toLowerCase();
       const wantSkill = (TODAY_SKILLS as readonly string[]).includes(skillFilter) ? skillFilter : null;
 
@@ -406,6 +432,39 @@ serve(async (req) => {
         });
       }
 
+      if (route === "/week") {
+        const [items, attemptRows, goalRes] = await Promise.all([
+          loadCatalog(),
+          loadAttempts(120, 800),
+          sb.from("learner_language_goals")
+            .select("current_cefr_estimate, metadata")
+            .eq("user_id", auth.userId)
+            .eq("language_id", scope.languageId)
+            .maybeSingle(),
+        ]);
+        const goal = goalRes.data as Record<string, unknown> | null;
+        const meta = (goal?.metadata && typeof goal.metadata === "object" ? goal.metadata : {}) as Record<string, unknown>;
+        const placement = (meta.placement && typeof meta.placement === "object" ? meta.placement : {}) as Record<string, unknown>;
+        const perSkill = (placement.per_skill && typeof placement.per_skill === "object" ? placement.per_skill : {}) as Record<string, unknown>;
+        const overall = isTodayCefr(goal?.current_cefr_estimate) ? goal!.current_cefr_estimate as Cefr : null;
+        const levelFor = (skill: TodaySkill): Cefr | null => {
+          const entry = perSkill[skill];
+          const level = typeof entry === "string" ? entry : (entry as Record<string, unknown> | undefined)?.level;
+          return isTodayCefr(level) ? level : overall;
+        };
+        const attempts: AttemptRow[] = attemptRows
+          .filter((row) => (TODAY_SKILLS as readonly string[]).includes(String(row.service_key)))
+          .map((row) => ({
+            content_item_id: String(row.content_item_id ?? ""),
+            skill: String(row.service_key) as TodaySkill,
+            score: scoreOf(row),
+            submitted_at: String(row.submitted_at),
+          }));
+        const requestedDate = toText(url.searchParams.get("date"), 10);
+        const date = /^\d{4}-\d{2}-\d{2}$/.test(requestedDate) ? requestedDate : new Date().toISOString().slice(0, 10);
+        return json(200, { ok: true, week: topicWeek({ date, items, attempts, levelFor }) });
+      }
+
       if (route === "/progress") {
         const [items, attemptRows, goalRes, errorsRes, unitsRes] = await Promise.all([
           loadCatalog(),
@@ -451,6 +510,8 @@ serve(async (req) => {
         const days = dailyCounts(attempts, date, 126);
         return json(200, {
           ok: true,
+          level_history: readLevelHistory(meta),
+          level_check: levelCheckStatus(meta),
           streak: { current: currentStreak(attempts, date), longest: longestStreak(attempts) },
           totals: {
             last_7_days: days.slice(-7).reduce((sum, day) => sum + day.count, 0),
@@ -532,12 +593,17 @@ serve(async (req) => {
       }
       const overallLevel = isTodayCefr(goal?.current_cefr_estimate) ? goal!.current_cefr_estimate as Cefr : null;
 
-      const availableSkills = access.admin
+      const ownedSkills = access.admin
         ? [...TODAY_SKILLS]
         : TODAY_SKILLS.filter((skill) => {
           const productId = (products as Record<string, { productId?: string }>)[skill]?.productId;
           return Boolean(productId && access.entitlementProductIds.includes(productId));
         });
+      // Learners without a plan still get today's free activity in any skill.
+      const allowance = ownedSkills.length
+        ? null
+        : await checkActivityAccess(sb, { userId: auth.userId, languageId: scope.languageId, products, skill: null });
+      const availableSkills = ownedSkills.length ? ownedSkills : [...TODAY_SKILLS];
 
       const attempts: AttemptRow[] = attemptRows
         .filter((row) => (TODAY_SKILLS as readonly string[]).includes(String(row.service_key)))
@@ -599,6 +665,8 @@ serve(async (req) => {
         existing,
         fixes,
         goalKeys: Array.isArray(goal?.goal_keys) ? (goal!.goal_keys as unknown[]).map(String) : [],
+        // A free learner's plan holds today's free activity (kept once done) plus review.
+        maxActivities: allowance ? Math.max(allowance.free_left, existing ? 1 : 0) : undefined,
       });
 
       // Persist so the selection stays stable all day and Student Center can show it.
@@ -635,7 +703,9 @@ serve(async (req) => {
         level_status: levelStatuses,
         daily_minutes: dailyMinutes,
         placement_done: Boolean(placement?.completed_at),
+        level_check: levelCheckStatus(meta),
         available_skills: availableSkills,
+        free: allowance ? { left: allowance.free_left, per_day: allowance.free_per_day } : null,
         tasks: plan.tasks,
         minutes_total: plan.minutes_total,
         done_count: plan.done_count,
@@ -646,6 +716,55 @@ serve(async (req) => {
         streak: currentStreak(attempts, planDate),
         week: weekStrip(attempts, planDate),
       });
+    }
+
+    // === What the learner can open: skills in their plan and today's free activities ===
+    if (req.method === "GET" && route === "/access") {
+      const overview = await checkActivityAccess(sb, { userId: auth.userId, languageId: scope.languageId, products, skill: null });
+      // Today's free activities stay open, so the learner can see the result and redo them.
+      const ids = overview.free_item_ids.filter((id) => /^[0-9a-f-]{36}$/i.test(id));
+      const { data: freeRows } = ids.length
+        ? await sb.from("learning_content_registry_items").select("service_key, source_ref").in("id", ids)
+        : { data: [] };
+      return json(200, {
+        ok: true,
+        entitled_skills: overview.entitled_skills,
+        free_left: overview.free_left,
+        free_per_day: overview.free_per_day,
+        free_today: ((freeRows ?? []) as Array<Record<string, unknown>>)
+          .map((row) => ({ skill: String(row.service_key), slug: String(row.source_ref ?? "") }))
+          .filter((row) => row.slug),
+      });
+    }
+
+    // === Telegram reminders: opt-in, only once Telegram is linked ===
+    if (route === "/reminders" && (req.method === "GET" || req.method === "POST")) {
+      const [goalRes, userRes] = await Promise.all([
+        sb.from("learner_language_goals")
+          .select("user_id, metadata")
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId)
+          .maybeSingle(),
+        sb.from("users").select("telegram_chat_id").eq("id", auth.userId).maybeSingle(),
+      ]);
+      const linked = Boolean(userRes.data?.telegram_chat_id);
+      const metadata = (goalRes.data?.metadata && typeof goalRes.data.metadata === "object" ? goalRes.data.metadata : {}) as Record<string, unknown>;
+      let settings = readReminderSettings(metadata);
+      if (req.method === "POST") {
+        if (!goalRes.data) return json(409, { error: "Finish the level test first", code: "english_onboarding_required" });
+        const body = await parseBody(req) as Record<string, unknown>;
+        const next = mergeReminderSettings(settings, body);
+        if (next.enabled && !linked) {
+          return json(409, { error: "Link Telegram on your Schood account first", code: "telegram_not_linked" });
+        }
+        const { error } = await sb.from("learner_language_goals")
+          .update({ metadata: { ...metadata, telegram_reminder: next } })
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId);
+        if (error) throw new Error(`Failed to save reminders: ${error.message}`);
+        settings = next;
+      }
+      return json(200, { ok: true, telegram_linked: linked, ...settings, hours: REMINDER_HOURS });
     }
 
     // === Tutor memory: notes the learner chose to keep, on every device ===
@@ -723,10 +842,17 @@ serve(async (req) => {
         return json(409, { error: "Keep practising at your level first", code: "not_ready" });
       }
 
-      perSkill[skill] = { level: next, moved_up_from: current, moved_up_at: new Date().toISOString() };
+      const movedAt = new Date().toISOString();
+      perSkill[skill] = { level: next, moved_up_from: current, moved_up_at: movedAt };
       placement.per_skill = perSkill;
+      const level_history = appendLevelHistory(meta, {
+        at: movedAt,
+        source: "level_up",
+        overall: isTodayCefr(overall) ? overall : null,
+        per_skill: perSkillLevels({ per_skill: perSkill }),
+      });
       const { error } = await sb.from("learner_language_goals")
-        .update({ metadata: { ...meta, placement } })
+        .update({ metadata: { ...meta, placement, level_history } })
         .eq("user_id", auth.userId)
         .eq("language_id", scope.languageId);
       if (error) throw new Error(`Failed to save level: ${error.message}`);
@@ -870,14 +996,29 @@ serve(async (req) => {
 
       if (placementIn) {
         const overall = toText(placementIn.overall_level, 8).toUpperCase();
-        const perSkill = placementIn.per_skill && typeof placementIn.per_skill === "object" && !Array.isArray(placementIn.per_skill)
-          ? placementIn.per_skill
+        const isCheck = body.source === "check";
+        const tested = placementIn.per_skill && typeof placementIn.per_skill === "object" && !Array.isArray(placementIn.per_skill)
+          ? placementIn.per_skill as Record<string, unknown>
           : {};
+        // A monthly check re-measures the skills it tested and keeps the rest.
+        const previousPerSkill = (meta.placement && typeof meta.placement === "object"
+          ? (meta.placement as Record<string, unknown>).per_skill
+          : null) as Record<string, unknown> | null;
+        const perSkill = isCheck && previousPerSkill && typeof previousPerSkill === "object"
+          ? { ...previousPerSkill, ...tested }
+          : tested;
         if (isCefr(overall)) row.current_cefr_estimate = overall;
+        const completedAt = new Date().toISOString();
+        meta.level_history = appendLevelHistory(meta, {
+          at: completedAt,
+          source: isCheck ? "check" : "placement",
+          overall: isCefr(overall) ? overall as Cefr : null,
+          per_skill: perSkillLevels({ per_skill: perSkill }),
+        });
         meta.placement = {
           overall_level: isCefr(overall) ? overall : null,
           per_skill: perSkill,
-          completed_at: new Date().toISOString(),
+          completed_at: completedAt,
         };
         row.metadata = meta;
       }

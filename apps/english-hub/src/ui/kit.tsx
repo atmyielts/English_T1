@@ -110,6 +110,7 @@ export const useErrorMessage = () => {
     if (error instanceof ApiError) {
       if (error.status === 0) return t('error.offline');
       if (error.status === 401) return t('error.signedOut');
+      if (error.status === 402) return t('free.usedBody');
       if (error.status === 403) return t('error.noAccess');
       if (error.status === 404) return t('error.notFound');
       if (error.status === 429) return t('error.rateLimited');
@@ -131,13 +132,13 @@ export const ErrorState = ({ error, onRetry }: { error: unknown; onRetry?: () =>
 };
 
 /** Shown in place of a paid activity when the learner has no access to that skill. */
-export const LockedPanel = ({ skillName, pricingHref }: { skillName: string; pricingHref: string }) => {
+export const LockedPanel = ({ skillName, pricingHref, freeUsed = false }: { skillName: string; pricingHref: string; freeUsed?: boolean }) => {
   const t = useT();
   return (
     <section className="en-panel en-locked">
-      <p className="eyebrow">{t('locked.eyebrow')}</p>
-      <h2>{t('locked.title', { skill: skillName })}</h2>
-      <p>{t('locked.body')}</p>
+      <p className="eyebrow">{freeUsed ? t('free.usedEyebrow') : t('locked.eyebrow')}</p>
+      <h2>{freeUsed ? t('free.usedTitle') : t('locked.title', { skill: skillName })}</h2>
+      <p>{freeUsed ? t('free.usedBody') : t('locked.body')}</p>
       <div className="en-actions">
         <a className="en-button" href={pricingHref}>{t('locked.cta')}</a>
       </div>

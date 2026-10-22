@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { guardActivity } from "../_shared/english-allowance.ts";
 import { creditUsedWords, loadPracticeWords } from "../_shared/english-words.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
@@ -170,6 +171,9 @@ serve(async (req) => {
     // Submit one spoken (or typed) answer. Legacy `/practice/submit` uses the same path.
     const submitMatch = req.method === "POST" && route.startsWith("/prompts/") && route.endsWith("/submit");
     if (submitMatch || (req.method === "POST" && route === "/practice/submit")) {
+      // Paid skills, or today's free activity.
+      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "speaking", route);
+      if (blocked) return blocked;
       const identifier = submitMatch
         ? decodeURIComponent(route.slice("/prompts/".length, -"/submit".length)).trim()
         : toText(body.prompt_id ?? body.slug ?? body.source_ref, 120);
