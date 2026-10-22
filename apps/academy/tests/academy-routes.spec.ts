@@ -5178,6 +5178,84 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     });
   }
 
+  test("cold Contacts starts its independently authorized read before summary finishes", async ({ page }) => {
+    const actions: string[] = [];
+    let releaseSummary!: () => void;
+    const summaryGate = new Promise<void>((resolve) => { releaseSummary = resolve; });
+    await seedSessionCookie(page, 'cold-contacts-owner');
+    await mockAcademyEdge(page, 'owner', {
+      actionLog: actions,
+      respond: async (body) => {
+        if (body.action === 'summary') await summaryGate;
+        return undefined;
+      },
+    });
+    try {
+      await page.goto(`/academy/admin/contacts?academy_id=${academyId}`);
+      await expect.poll(() => actions.includes('summary')).toBe(true);
+      await expect.poll(() => actions.includes('contacts'), { timeout: 3_000 }).toBe(true);
+      await expect(page.getByRole('button', { name: /Ali Karimov/ })).toHaveCount(0);
+      releaseSummary();
+      await expect(page.getByRole('button', { name: /Ali Karimov/ })).toBeVisible();
+      expect(actions.filter((action) => action === 'contacts')).toHaveLength(1);
+    } finally {
+      releaseSummary();
+    }
+  });
+
+  test("cold Contacts never publishes a speculative read when current summary refuses access", async ({ page }) => {
+    const actions: string[] = [];
+    let releaseSummary!: () => void;
+    const summaryGate = new Promise<void>((resolve) => { releaseSummary = resolve; });
+    await seedSessionCookie(page, 'cold-contacts-revoked-owner');
+    await mockAcademyEdge(page, 'owner', { actionLog: actions });
+    await page.route('**/functions/v1/academy', async (route) => {
+      if (route.request().postDataJSON()?.action !== 'summary') return route.fallback();
+      await summaryGate;
+      return route.fulfill({ status: 403, contentType: 'application/json', body: JSON.stringify({ error: 'Current access was revoked.' }) });
+    });
+    try {
+      await page.goto(`/academy/admin/contacts?academy_id=${academyId}`);
+      await expect.poll(() => actions.includes('contacts'), { timeout: 3_000 }).toBe(true);
+      releaseSummary();
+      await expect(page.getByRole('button', { name: /Ali Karimov/ })).toHaveCount(0);
+      await expect(page.getByRole('heading', { name: 'Students and contacts', exact: true })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Retry', exact: true })).toBeVisible();
+    } finally {
+      releaseSummary();
+    }
+  });
+
+  test("cold Contacts reports an early directory refusal without publishing or retrying it", async ({ page }) => {
+    const actions: string[] = [];
+    let releaseSummary!: () => void;
+    const summaryGate = new Promise<void>((resolve) => { releaseSummary = resolve; });
+    await seedSessionCookie(page, 'cold-contacts-refused-owner');
+    await mockAcademyEdge(page, 'owner', {
+      actionLog: actions,
+      respond: async (body) => {
+        if (body.action === 'summary') await summaryGate;
+        return undefined;
+      },
+    });
+    let refusals = 0;
+    await page.route('**/functions/v1/academy', async (route) => {
+      if (route.request().postDataJSON()?.action !== 'contacts') return route.fallback();
+      refusals += 1;
+      return route.fulfill({ status: 403, contentType: 'application/json', body: JSON.stringify({ error: 'No current directory access.' }) });
+    });
+    try {
+      await page.goto(`/academy/admin/contacts?academy_id=${academyId}`);
+      await expect.poll(() => refusals, { timeout: 3_000 }).toBe(1);
+      releaseSummary();
+      await expect(page.getByRole('button', { name: 'Retry', exact: true })).toBeVisible();
+      await expect(page.getByRole('button', { name: /Ali Karimov/ })).toHaveCount(0);
+      expect(refusals).toBe(1);
+    } finally {
+      releaseSummary();
+    }
+  });
+
   test("workspace navigation renders Contacts immediately while summary and core data refresh in parallel", async ({ page }) => {
     const actionLog: string[] = [];
     const delayActions = { summary: 900, contacts: 1_200 };
