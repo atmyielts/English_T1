@@ -259,7 +259,7 @@ serve(async (req) => {
     // recorded as one attempt on the unit, so the lesson shows as done everywhere.
     if (req.method === "POST" && route.startsWith("/units/") && route.endsWith("/submit")) {
       // Paid skills, or today's free activity.
-      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "grammar");
+      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "grammar", route);
       if (blocked) return blocked;
       const identifier = decodeURIComponent(route.slice("/units/".length, -"/submit".length)).trim();
       const unit = identifier ? await loadUnit(sb, productId, scope.languageId, identifier) : null;
@@ -407,7 +407,7 @@ serve(async (req) => {
 
     if (req.method === "POST" && route === "/drills/submit") {
       // Paid skills, or today's free activity.
-      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "grammar");
+      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "grammar", route);
       if (blocked) return blocked;
       const drillId = toText(body.drill_id, 120);
       const responseText = toText(body.response_text, 6000);

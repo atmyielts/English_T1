@@ -159,7 +159,7 @@ serve(async (req) => {
     // attempt on the item's registry entry so it shows as done everywhere.
     if (req.method === "POST" && route.startsWith("/items/") && route.endsWith("/submit")) {
       // Paid skills, or today's free activity.
-      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "listening");
+      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "listening", route);
       if (blocked) return blocked;
       const identifier = decodeURIComponent(route.slice("/items/".length, -"/submit".length)).trim();
       const item = identifier ? await loadItem(sb, productId, scope.languageId, identifier) : null;
@@ -361,7 +361,7 @@ serve(async (req) => {
     // Older single-clip dictation (whole script typed at once). Kept for old clients.
     if (req.method === "POST" && route === "/practice/submit") {
       // Paid skills, or today's free activity.
-      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "listening");
+      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "listening", route);
       if (blocked) return blocked;
       const identifier = toText(body.item_id ?? body.slug ?? body.source_ref, 120);
       const responseText = toText(body.response_text, 6000);

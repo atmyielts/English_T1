@@ -536,7 +536,7 @@ const handleDeckRoute = async (
   const submitMatch = /^\/decks\/([^/]+)\/submit$/.exec(route);
   if (req.method === "POST" && submitMatch) {
     // Paid skills, or today's free activity.
-    const blocked = await guardActivity(serviceClient, authedUserId, language.id, "vocabulary");
+    const blocked = await guardActivity(serviceClient, authedUserId, language.id, "vocabulary", route);
     if (blocked) return blocked;
   }
   const deckMatch = /^\/decks\/([^/]+)$/.exec(route);

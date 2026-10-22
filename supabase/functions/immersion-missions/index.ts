@@ -183,7 +183,7 @@ serve(async (req) => {
     // Submit a whole mission: every step checked together, one attempt recorded.
     if (req.method === "POST" && route.startsWith("/missions/") && route.endsWith("/submit")) {
       // Paid skills, or today's free activity.
-      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "immersion");
+      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "immersion", route);
       if (blocked) return blocked;
       const identifier = decodeURIComponent(route.slice("/missions/".length, -"/submit".length)).trim();
       const loaded = identifier ? await loadMission(sb, productId, scope.languageId, identifier) : null;

@@ -576,7 +576,7 @@ serve(async (req) => {
       if (req.method === "GET" && !articleMatch[2]) return await getArticleForLearner(serviceClient, scope, slug);
       if (req.method === "POST" && articleMatch[2]) {
         // Paid skills, or today's free activity.
-        const blocked = await guardActivity(serviceClient, authedUserId, scope.languageId, "reading");
+        const blocked = await guardActivity(serviceClient, authedUserId, scope.languageId, "reading", route);
         if (blocked) return blocked;
         return await submitArticle(serviceClient, scope, slug, await parseBody(req), authedUserId);
       }

@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useEnglish } from '../app/EnglishContext';
 import { useT } from '../i18n';
 import { getCatalog } from '../lib/hub';
@@ -32,7 +32,10 @@ export const ActivityFrame = ({
 }) => {
   const t = useT();
   const { access, canPractise, pricingHref } = useEnglish();
-  const locked = !canPractise(skill);
+  // The activity's slug is the last part of /<skill>/<slug>.
+  const { pathname } = useLocation();
+  const slug = decodeURIComponent(pathname.split('/').filter(Boolean)[1] ?? '') || null;
+  const locked = !canPractise(skill, slug);
   const usingFree = access.status === 'ready' && !access.unlocked.has(skill) && access.freeLeft > 0;
   return (
     <>

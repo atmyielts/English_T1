@@ -721,11 +721,19 @@ serve(async (req) => {
     // === What the learner can open: skills in their plan and today's free activities ===
     if (req.method === "GET" && route === "/access") {
       const overview = await checkActivityAccess(sb, { userId: auth.userId, languageId: scope.languageId, products, skill: null });
+      // Today's free activities stay open, so the learner can see the result and redo them.
+      const ids = overview.free_item_ids.filter((id) => /^[0-9a-f-]{36}$/i.test(id));
+      const { data: freeRows } = ids.length
+        ? await sb.from("learning_content_registry_items").select("service_key, source_ref").in("id", ids)
+        : { data: [] };
       return json(200, {
         ok: true,
         entitled_skills: overview.entitled_skills,
         free_left: overview.free_left,
         free_per_day: overview.free_per_day,
+        free_today: ((freeRows ?? []) as Array<Record<string, unknown>>)
+          .map((row) => ({ skill: String(row.service_key), slug: String(row.source_ref ?? "") }))
+          .filter((row) => row.slug),
       });
     }
 

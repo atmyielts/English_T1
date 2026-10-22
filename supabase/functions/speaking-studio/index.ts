@@ -172,7 +172,7 @@ serve(async (req) => {
     const submitMatch = req.method === "POST" && route.startsWith("/prompts/") && route.endsWith("/submit");
     if (submitMatch || (req.method === "POST" && route === "/practice/submit")) {
       // Paid skills, or today's free activity.
-      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "speaking");
+      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "speaking", route);
       if (blocked) return blocked;
       const identifier = submitMatch
         ? decodeURIComponent(route.slice("/prompts/".length, -"/submit".length)).trim()

@@ -368,7 +368,7 @@ serve(async (req) => {
     // Submit a draft for feedback: POST /prompts/:slug/submit { text, time_spent_seconds }
     if (req.method === "POST" && route.startsWith("/prompts/") && route.endsWith("/submit")) {
       // Paid skills, or today's free activity.
-      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "writing");
+      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "writing", route);
       if (blocked) return blocked;
       const identifier = decodeURIComponent(route.slice("/prompts/".length, -"/submit".length)).trim();
       const prompt = identifier ? await loadPrompt(sb, productId, scope.languageId, identifier) : null;
@@ -467,7 +467,7 @@ serve(async (req) => {
 
     if (req.method === "POST" && route === "/drafts/submit") {
       // Paid skills, or today's free activity.
-      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "writing");
+      const blocked = await guardActivity(sb, auth.userId, scope.languageId, "writing", route);
       if (blocked) return blocked;
       const draftId = toText(body.draft_id, 120);
       const text = toText(body.submission_text ?? body.text, MAX_TEXT);
