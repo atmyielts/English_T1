@@ -306,6 +306,7 @@ function App() {
         <div className="brand">
           Schood <span>{t("app.name")}</span>
         </div>
+        <LocaleSwitcher label={t("locale.label")} />
         <h1>{t("signin.title")}</h1>
         <p>
           {t("signin.lead")}
