@@ -1,5 +1,6 @@
 import { buildManifest, ContractError, hash, object, text, uuid, validateDefinition, validateItem, validateKey,type Definition,type Manifest } from "../../../packages/assessment-core/src/mod.ts";
 import {validateRubric} from '../../../packages/assessment-core/src/grading.ts';
+import {compareReviewMaterial,REVIEW_AREAS} from '../../../packages/assessment-core/src/item-diff.ts';
 import {blueprintExample,hasBlueprint} from './blueprint-service.ts';
 import {breakPolicy} from '../../../packages/assessment-core/src/accommodations.ts';
 
@@ -35,9 +36,9 @@ const resourceTables: Record<string, { table: string; capability: string }> = {
 };
 const actionCapabilities: Record<string, string> = {
   "registration.accommodate":"exams.manage",
-  "bank.create": "items.write", "rubric.create": "items.write", "item.create": "items.write", "item.revise": "items.write", "item.submit": "items.write", "item.approve": "items.approve", "assessment.create": "items.write", "assessment.revise": "items.write", "assessment.publish": "assessments.publish", "window.create": "exams.manage", "registration.create": "exams.manage",
+  "bank.create": "items.write", "rubric.create": "items.write", "item.create": "items.write", "item.revise": "items.write", "item.submit": "items.write", "item.approve": "items.approve", "item.request_changes": "items.approve", "assessment.create": "items.write", "assessment.revise": "items.write", "assessment.publish": "assessments.publish", "window.create": "exams.manage", "registration.create": "exams.manage",
 };
-const tablesForItemAction: Record<string, string> = { "item.revise": "assessment_items", "item.submit": "assessment_item_versions", "item.approve": "assessment_item_versions", "assessment.revise": "assessment_definitions", "assessment.publish": "assessment_definitions" };
+const tablesForItemAction: Record<string, string> = { "item.revise": "assessment_items", "item.submit": "assessment_item_versions", "item.approve": "assessment_item_versions", "item.comment": "assessment_item_versions", "item.request_changes": "assessment_item_versions", "assessment.revise": "assessment_definitions", "assessment.publish": "assessment_definitions" };
 function error(status: number, code: string, message: string): never { throw new ContractError(code, message, status); }
 function timestamp(value: unknown, label: string): string {
   const raw = text(value, label, 80);
@@ -100,7 +101,16 @@ export function createHandler({ repository, allowedOrigins, promptMediaEnabled=f
           if (!item || !key) error(404, "not_found", "Question not found");
           const material=await reviewMaterial(tenant,item!,key!);
           const parent=item!.item_id?await repository.get("assessment_items",tenant,uuid(item!.item_id)):null;
-          return json(200, { data: { ...item, ...(parent?{bank_id:parent.bank_id}:{}), key: key!.key, ...('rubric' in material?{rubric:material.rubric}:{}), review_hash: await hash(material) } });
+          // What changed since the previous version, and the review conversation
+          // across all versions of this question.
+          const versions=item!.item_id?await repository.list('assessment_item_versions',tenant,{item_id:String(item!.item_id)}):[];
+          const previous=versions.filter(row=>Number(row.version)<Number(item!.version)).sort((a,b)=>Number(b.version)-Number(a.version))[0];
+          let comparison:Record<string,unknown>|null=null;
+          if(previous){const previousKey=await repository.key(tenant,String(previous.id));if(previousKey){let before:Awaited<ReturnType<typeof reviewMaterial>>;try{before=await reviewMaterial(tenant,previous,previousKey);}catch{before={item:previous.payload,key:previousKey.key};}// Compare meaning, not spelling: keys are normalized so saved defaults are not reported as changes.
+            const normalized=(value:Awaited<ReturnType<typeof reviewMaterial>>)=>{try{return {...value,key:validateKey(validateItem(value.item),value.key)};}catch{return value;}};
+            comparison={base_id:previous.id,base_version:previous.version,base_status:previous.status,...compareReviewMaterial(normalized(before),normalized(material))};}}
+          const comments=item!.item_id?(await repository.list('assessment_item_review_comments',tenant,{item_id:String(item!.item_id)})).map(row=>{const version=versions.find(entry=>entry.id===row.item_version_id);return {id:row.id,item_version_id:row.item_version_id,version:version?.version??null,kind:row.kind,area:row.area,body:row.body,created_at:row.created_at,author:row.author_id===actor?'you':version&&row.author_id===version.created_by?'author':'reviewer'};}).sort((a,b)=>String(a.created_at).localeCompare(String(b.created_at))||String(a.id).localeCompare(String(b.id))):[];
+          return json(200, { data: { ...item, ...(parent?{bank_id:parent.bank_id}:{}), key: key!.key, ...('rubric' in material?{rubric:material.rubric}:{}), review_hash: await hash(material), comparison, comments } });
         }
         if (path === "candidate/registrations") {
           const registrations=await repository.list("assessment_registrations",tenant,{candidate_id:actor!});
@@ -152,9 +162,23 @@ export function createHandler({ repository, allowedOrigins, promptMediaEnabled=f
         case "item.create": case "item.revise": {
           const item = validateItem(data.item);
           if(item.rubric_id){const rubric=await repository.get('assessment_rubrics',tenant,item.rubric_id);if(!rubric)error(422,'invalid_rubric','Rubric not found');validateRubric(rubric);}
-          input = { item, key: validateKey(item, data.key), ...(action === "item.create" ? { bank_id: uuid(data.bank_id, "Bank ID") } : { item_id: uuid(data.item_id, "Item ID") }) }; break;
+          input = { item, key: validateKey(item, data.key), ...(action === "item.create" ? { bank_id: uuid(data.bank_id, "Bank ID") } : { item_id: uuid(data.item_id, "Item ID"), base_version_id: uuid(data.base_version_id, "Base version") }) }; break;
         }
         case "item.submit": input = { id: uuid(data.id) }; break;
+        case "item.comment": case "item.request_changes": {
+          const id = uuid(data.id), area = data.area ?? "general";
+          if (area !== "general" && !(REVIEW_AREAS as readonly string[]).includes(String(area))) error(422, "invalid_review_area", "Choose what the comment is about");
+          input = { id, area, body: text(data.body, "Comment", 5000) };
+          if (action === "item.request_changes") {
+            // Like approval, a change request names the exact material reviewed.
+            const item = await repository.get("assessment_item_versions", tenant, id);
+            const key = await repository.key(tenant, id);
+            if (!item || !key) error(404, "not_found", "Question not found");
+            if (data.review_hash !== await hash(await reviewMaterial(tenant,item!,key!))) error(409, "review_required", "Review the question, scoring key and rubric before requesting changes");
+            input.review_hash = data.review_hash;
+          }
+          break;
+        }
         case "item.approve": {
           const id = uuid(data.id);
           const item = await repository.get("assessment_item_versions", tenant, id);

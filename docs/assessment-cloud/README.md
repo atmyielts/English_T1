@@ -24,7 +24,7 @@ No full-service ledger row is closed. Nothing in these documents authorizes a de
 
 ## Feature documents
 
-- Authoring/delivery: [blueprints](BLUEPRINTS.md), [artifacts](ARTIFACTS.md), [image responses](IMAGE_RESPONSES.md), [media answers](MEDIA_ANSWERS.md), [cohorts](COHORTS.md), [bank files](BANK_IMPORTS.md).
+- Authoring/delivery: [blueprints](BLUEPRINTS.md), [artifacts](ARTIFACTS.md), [image responses](IMAGE_RESPONSES.md), [media answers](MEDIA_ANSWERS.md), [cohorts](COHORTS.md), [question review](ITEM_REVIEW.md), [device takeover](DEVICE_TAKEOVER.md), [bank files](BANK_IMPORTS.md).
 - Interchange: [QTI](QTI.md), [control plane](QTI_CONTROL_PLANE.md), [byte workflow](QTI_BYTE_WORKFLOW.md).
 - Assessment outcomes: [analytics](ANALYTICS.md), [feedback](FEEDBACK.md), [appeals](APPEALS.md), [certificates](CERTIFICATES.md), [certificate documents](CERTIFICATE_DOCUMENTS.md), [credential lifecycle](CERTIFICATE_LIFECYCLE.md).
 - Proctoring: [capture launch](CAPTURE_LAUNCH.md), [recordings](RECORDINGS.md), [live monitoring](LIVE_MONITORING.md), [institution monitoring board](PROCTOR_WORKLOAD.md).

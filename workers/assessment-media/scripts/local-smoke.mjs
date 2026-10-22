@@ -150,7 +150,7 @@ try {
     "supabase/migrations/20261013150000_assessment_grading.sql",
     "supabase/migrations/20261014090000_assessment_staff.sql",
     "supabase/migrations/20261014100000_assessment_design.sql",
-    "supabase/migrations/20261014110000_assessment_artifacts.sql",
+    "supabase/migrations/20261014110500_assessment_artifacts.sql",
     "supabase/tests/assessment-stack.fixture.sql",
   ])
     sql(await readFile(path.join(root, file), "utf8"));

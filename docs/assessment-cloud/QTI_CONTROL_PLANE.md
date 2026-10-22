@@ -4,7 +4,7 @@ Status: **disabled by default**. Connected actual institution browser→producti
 
 ## Implemented behavior
 
-The twenty-fifth additive migration, `20261020150000_assessment_qti_jobs.sql`, adds private source jobs, immutable part receipts, stage-specific processing reports, stable command receipts and adoption provenance. Assessment Cloud's own Edge entry exposes a separate `/qti/` route; it never loads the XML parser. Academy, Platform and Proctor do not acquire QTI feature code.
+The twenty-fifth additive migration, `20261020150500_assessment_qti_jobs.sql`, adds private source jobs, immutable part receipts, stage-specific processing reports, stable command receipts and adoption provenance. Assessment Cloud's own Edge entry exposes a separate `/qti/` route; it never loads the XML parser. Academy, Platform and Proctor do not acquire QTI feature code.
 
 ```text
 uploading -> scan_queued -> scanning -> parse_queued -> parsing -> review_ready

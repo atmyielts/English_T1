@@ -136,10 +136,10 @@ try {
     "20261013150000_assessment_grading",
     "20261014090000_assessment_staff",
     "20261014100000_assessment_design",
-    "20261014110000_assessment_artifacts",
-    "20261014120000_proctor_recordings",
-    "20261014130000_proctor_recording_recovery",
-    "20261014140000_proctor_recording_citations",
+    "20261014110500_assessment_artifacts",
+    "20261014120500_proctor_recordings",
+    "20261014130500_proctor_recording_recovery",
+    "20261014140500_proctor_recording_citations",
   ];
   for (
     const file of [

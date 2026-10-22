@@ -156,3 +156,28 @@ Deno.test('accommodation approval requires exam management and forwards only the
  equal((await handle(true)(req('commands',{action:'registration.accommodate',data:{...data,diagnosis:'never stored',candidate_id:tenant}}))).status,200);
  equal(JSON.stringify(Object.keys(stored!).sort()),JSON.stringify(['break_policy','extra_seconds','reason','registration_id','revision']));
 });
+const same=(actual:unknown,expected:unknown)=>equal(JSON.stringify(actual),JSON.stringify(expected));
+Deno.test('question review shows changes since the previous version and the review conversation',async()=>{
+ const v1='30000000-0000-4000-8000-000000000001',v2='30000000-0000-4000-8000-000000000002',author='00000000-0000-4000-8000-0000000000aa';
+ const base={schema_version:'assessment.item.v1',type:'single_choice',prompt:'2 + 2?',locale:'en',max_score:1,tags:[],options:[{id:'a',text:'4'},{id:'b',text:'5'}]};
+ const versions=[{id:v1,item_id:actor,version:1,status:'changes_requested',payload:base,created_by:author},{id:v2,item_id:actor,version:2,status:'review',payload:{...base,prompt:'Two plus two?'},created_by:author}];
+ const comments=[{id:'c2',item_version_id:v1,author_id:author,kind:'comment',area:'general',body:'Clarified',created_at:'2026-10-22T02:00:00Z'},{id:'c1',item_version_id:v1,author_id:actor,kind:'changes_requested',area:'prompt',body:'Reword',created_at:'2026-10-22T01:00:00Z'}];
+ const handle=createHandler({repository:{...repository,capability:()=>Promise.resolve(true),get:(table,_s,id)=>Promise.resolve(table==='assessment_items'?{id:actor,bank_id:tenant}:versions.find(row=>row.id===id)??null),list:table=>Promise.resolve(table==='assessment_item_versions'?versions:table==='assessment_item_review_comments'?comments:[]),key:(_t,id)=>Promise.resolve({key:{correct:id===v1?'a':'b'}})},allowedOrigins:[]});
+ const value=(await(await handle(req(`item-versions/${v2}/review`))).json()).data;
+ equal(value.comparison.base_version,1);same(value.comparison.areas,['prompt','key']);same(value.comparison.changes.map((row:{path:string})=>row.path),['item.prompt','key.correct']);
+ same(value.comments.map((row:{id:string;author:string;version:number})=>[row.id,row.author,row.version]),[['c1','you',1],['c2','author',1]]);
+ const first=(await(await handle(req(`item-versions/${v1}/review`))).json()).data;equal(first.comparison,null);
+});
+Deno.test('review comments, change requests and revisions carry only bounded fields and a reviewed hash',async()=>{
+ const payload={schema_version:'assessment.item.v1',type:'single_choice',prompt:'Review',locale:'en',max_score:1,tags:[],options:[{id:'a',text:'A'},{id:'b',text:'B'}]},key={correct:'a'};const sent:unknown[][]=[];
+ const handle=createHandler({repository:{...repository,capability:()=>Promise.resolve(true),get:()=>Promise.resolve({id:actor,item_id:actor,payload}),key:()=>Promise.resolve({key}),command:(_a,_t,_k,action,data)=>{sent.push([action,data]);return Promise.resolve({id:actor});}},allowedOrigins:[]});
+ const reviewed=await hash({item:payload,key});
+ equal((await handle(req('commands',{action:'item.comment',data:{id:actor,area:'options',body:' Check option B ',author_id:tenant}}))).status,200);
+ equal((await handle(req('commands',{action:'item.request_changes',data:{id:actor,area:'key',body:'B is defensible',review_hash:reviewed,status:'approved'}}))).status,200);
+ equal((await handle(req('commands',{action:'item.request_changes',data:{id:actor,body:'x',review_hash:'forged'}}))).status,409);
+ equal((await handle(req('commands',{action:'item.comment',data:{id:actor,area:'layout',body:'x'}}))).status,422);
+ equal((await handle(req('commands',{action:'item.comment',data:{id:actor,body:''}}))).status,422);
+ equal((await handle(req('commands',{action:'item.revise',data:{item_id:actor,item:payload,key}}))).status,422);
+ equal((await handle(req('commands',{action:'item.revise',data:{item_id:actor,base_version_id:actor,item:payload,key}}))).status,200);
+ same(sent,[['item.comment',{id:actor,area:'options',body:'Check option B'}],['item.request_changes',{id:actor,area:'key',body:'B is defensible',review_hash:reviewed}],['item.revise',{item:payload,key:{case_sensitive:false,partial_credit:false,correct:'a'},item_id:actor,base_version_id:actor}]]);
+});

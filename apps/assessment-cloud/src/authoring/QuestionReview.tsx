@@ -9,20 +9,29 @@ import { QuestionMedia } from "../../../../packages/assessment-web/src/QuestionM
 import type { Row } from "../../../../packages/assessment-web/src/client";
 import {PrivateTargetOverlay} from './ImageInteractionFields';
 import { useAppT, useItemLabel, type AppKey } from "../i18n/index.ts";
+import { type ReviewComment, type ReviewComparison, ReviewChanges, ReviewConversation } from "./ReviewConversation";
 export function QuestionReview({
   material,
   tenant,
   actor,
   canApprove,
+  canComment = false,
+  canRequestChanges = false,
   busy,
   approve,
+  comment = async () => false,
+  requestChanges = async () => false,
 }: {
   material: Row;
   tenant:string;
   actor:string;
   canApprove: boolean;
+  canComment?: boolean;
+  canRequestChanges?: boolean;
   busy: boolean;
   approve: () => void;
+  comment?: (data: { area: string; body: string }) => Promise<boolean>;
+  requestChanges?: (data: { area: string; body: string }) => Promise<boolean>;
 }) {
   const t = useAppT(), itemLabel = useItemLabel();
   const difficulty = (value: string) => { const key = `difficulty.${value}` as AppKey, text = t(key); return text === key ? value : text; };
@@ -111,6 +120,15 @@ export function QuestionReview({
           </dl>
         </>
       )}
+      <ReviewChanges comparison={(material.comparison as ReviewComparison | null | undefined) ?? null} />
+      <ReviewConversation
+        comments={(material.comments as ReviewComment[] | undefined) ?? []}
+        canComment={canComment}
+        canRequestChanges={canRequestChanges}
+        busy={busy}
+        comment={comment}
+        requestChanges={requestChanges}
+      />
       {canApprove && (
         <>
           <label className="check">

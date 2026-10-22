@@ -311,4 +311,13 @@ export const en = {
   'exam.confirm.keepWorking': "Keep working",
   'exam.confirm.submitNow': "Submit now",
   'exam.confirm.continue': "Continue to next section",
+  'exam.device.choiceHeading': "Continue on this device?",
+  'exam.device.choiceDetail': "This exam is open on another device, or was last used there. If you continue here, the other device stops saving answers straight away. Answers it already saved are kept.",
+  'exam.device.continueHere': "Continue on this device",
+  'exam.device.movedHeading': "This exam moved to another device",
+  'exam.device.movedDetail': "You continued this exam on another device, so this device can no longer save answers. Answers saved from here before then are kept.",
+  'exam.device.unsent': "{count|one:# answer on this device was not sent and was not accepted.|other:# answers on this device were not sent and were not accepted.}",
+  'exam.device.allSent': "Every answer from this device was saved before the exam moved.",
+  'exam.device.takeBack': "Continue on this device instead",
+  'exam.device.tookOver': "You continued this exam on this device. {count|one:# answer saved earlier is kept.|other:# answers saved earlier are kept.}",
 };

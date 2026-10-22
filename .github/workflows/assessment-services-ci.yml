@@ -117,7 +117,7 @@ jobs:
           deno-version: v2.x
       - run: npm ci
       - name: Break policy contract, candidate break intents and approval API authority
-        run: deno test --no-lock packages/assessment-core/src/accommodations.test.ts packages/assessment-web/tests/breaks.test.ts supabase/functions/assessment-cloud/handler.test.ts supabase/functions/assessment-runtime/handler.test.ts
+        run: deno test --no-lock packages/assessment-core/src/accommodations.test.ts packages/assessment-web/tests/breaks.test.ts packages/assessment-web/tests/takeover.test.ts packages/assessment-web/tests/runtime.test.ts supabase/functions/assessment-cloud/handler.test.ts supabase/functions/assessment-runtime/handler.test.ts
       - name: Independent apps, Edge types and service boundaries
         run: |
           npm --workspace apps/assessment-cloud run build
@@ -150,7 +150,7 @@ jobs:
           deno-version: v2.x
       - run: npm ci
       - name: Webhook signing, delivery, billing API, CTT uncertainty and localization contracts
-        run: deno test --no-lock packages/assessment-core/src/webhooks.test.ts packages/assessment-core/src/psychometrics.test.ts packages/assessment-core/src/measurement.test.ts supabase/functions/assessment-cloud/webhook-handler.test.ts supabase/functions/assessment-cloud/billing-handler.test.ts supabase/functions/assessment-cloud/api-handler.test.ts workers/assessment-webhooks/src/deliver.test.ts packages/service-i18n/tests/i18n.test.ts
+        run: deno test --no-lock packages/assessment-core/src/item-diff.test.ts packages/assessment-core/src/webhooks.test.ts packages/assessment-core/src/psychometrics.test.ts packages/assessment-core/src/measurement.test.ts supabase/functions/assessment-cloud/webhook-handler.test.ts supabase/functions/assessment-cloud/billing-handler.test.ts supabase/functions/assessment-cloud/api-handler.test.ts workers/assessment-webhooks/src/deliver.test.ts packages/service-i18n/tests/i18n.test.ts
       - name: Separate webhook delivery Worker build and isolated configuration
         run: |
           npm --workspace workers/assessment-webhooks run build
@@ -535,6 +535,10 @@ jobs:
         run: node scripts/test-assessment-appeals-browser.mjs
       - name: Connected appeal deadlines, assignment and second-stage review
         run: node scripts/test-assessment-appeals-browser.mjs --appeal-workflow
+      - name: Connected question review, change request, revision fence and comparison
+        run: node scripts/test-assessment-appeals-browser.mjs --item-review
+      - name: Connected two-device takeover with late-answer disclosure
+        run: node scripts/test-assessment-appeals-browser.mjs --takeover
       - name: Connected certificate program, rotated issuance recovery and public verification
         run: node scripts/test-assessment-appeals-browser.mjs --certificates
       - name: Connected cohort, bounded roster Worker and explicit coordinator adoption

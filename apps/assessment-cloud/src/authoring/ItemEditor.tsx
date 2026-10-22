@@ -80,7 +80,7 @@ export function ItemEditor({
         await save(
           {
             ...value,
-            ...(revision ? { item_id: revision.itemId } : { bank_id: ready.value.bank }),
+            ...(revision ? { item_id: revision.itemId, base_version_id: revision.versionId } : { bank_id: ready.value.bank }),
             _draft:ready.token,
           },
           !!revision,

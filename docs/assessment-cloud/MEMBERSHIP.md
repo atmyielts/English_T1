@@ -12,7 +12,7 @@ Suspension pauses Assessment staff capabilities, including the legacy grading-ma
 
 ## Authority and isolation
 
-Migration `20261020170000_assessment_memberships.sql` adds private `assessment_memberships`, a server-only merged staff directory, revision/audit guards, staff command extensions and `assessment_workspaces`. Existing function OIDs/RLS dependencies are preserved. Exact source guards extend existing role/delegation/expiry/replay logic instead of replacing its permission rules.
+Migration `20261020170500_assessment_memberships.sql` adds private `assessment_memberships`, a server-only merged staff directory, revision/audit guards, staff command extensions and `assessment_workspaces`. Existing function OIDs/RLS dependencies are preserved. Exact source guards extend existing role/delegation/expiry/replay logic instead of replacing its permission rules.
 
 Assessment-local membership cannot satisfy Proctor membership/permission eligibility. Existing shared organization members retain their existing Proctor authority when their Assessment access is suspended. Neither membership creation nor suspension writes `tenant_memberships` or other Academy-owned data.
 

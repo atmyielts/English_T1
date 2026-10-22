@@ -597,4 +597,7 @@ export const en = {
   'appeal.view.escalateReason': "Why the first decision should be reviewed again",
   'appeal.view.escalateAck': "I understand this is the last review stage for this result.",
   'appeal.view.escalate': "Request second-stage review",
+  'runtime.deviceChoiceRequired': "Choose whether to continue this exam on this device.",
+  'error.device_takeover_required': "This exam was last open on another device. Continue here only if you have stopped using it.",
+  'error.device_lease_superseded': "This exam continued on another device, so this device can no longer save answers.",
 };

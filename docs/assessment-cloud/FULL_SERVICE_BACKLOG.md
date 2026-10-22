@@ -25,6 +25,7 @@ Baseline: immutable item versions and independent approval exist; metadata/revie
 
 - [ ] `BANK-01` Complete metadata, curriculum/topic taxonomy, copyright/source/license ownership and migration of older items. Complete when structured filters and edits preserve immutable published versions and provenance.
 - [ ] `BANK-02` Add reviewer comments, change comparisons, revision requests and collaboration conflict handling. Complete when reviewers can identify all changed prompt/key/rubric/media material before independently approving the exact version.
+  - Progress 2026-10-22: comments, change requests, an item revision fence and a field-level comparison are built and verified locally (SQL test, four-process race, handler and core tests, connected `--item-review` journey; see [ITEM_REVIEW.md](ITEM_REVIEW.md)). Waiting on exact-SHA CI before this is checked.
 - [ ] `BANK-03` Implement licensed bank sharing, permitted use/copy/export and withdrawal/expiry semantics. Complete when recipient rights and source attribution are enforced in publication, delivery and export, including existing publications.
 - [ ] `BANK-04` Add full-bank search, stable pagination and large-bank operations. Complete when tied timestamps/concurrent changes do not skip or expose items and operation limits are measured.
 
@@ -63,6 +64,7 @@ Baseline: canonical leases/epochs/alarms, encrypted journals and connected local
 
 - [ ] `TIME-01` Complete provider-authenticated real-browser/coordinator/Edge/Postgres acceptance. Complete when server clocks, outage/restart and committed-response recovery are proved with actual identity/providers rather than transport adapters.
 - [ ] `TIME-02` Add explicit safe takeover/trusted-device handover and late-response policy. Complete when old epochs cannot write, acknowledged answers are never lost and unacknowledged late work is disclosed rather than silently accepted.
+  - Progress 2026-10-22: explicit confirmed takeover, superseded old devices, released handover and late-answer disclosure are built and verified locally (SQL test, four-process race, client and handler tests, connected `--takeover` journey; see [DEVICE_TAKEOVER.md](DEVICE_TAKEOVER.md)). Waiting on exact-SHA CI before this is checked.
 - [ ] `TIME-03` Finish live state subscriptions and final submission confirmation. Complete when tab/account/section/lease changes tear down stale state, pending work is reconciled and a lost submission reply returns the same result.
 - [ ] `TIME-04` Expand long-session/clock/section/outage tests. Complete when delayed alarms, sitting close, breaks, proctor holds and recovered media cannot grant or remove time outside the pinned policy.
 

@@ -31,7 +31,7 @@ export function createRuntimeHandler(repository:RuntimeRepository,secret:string)
    if(action==='snapshot')return reply(200,{data:{snapshot:await repository.snapshot(tenant,attempt,actor)},request_id:requestId});
    const key=text(req.headers.get('idempotency-key'),'Idempotency key',200);if(key.length<8)throw new ContractError('invalid_key','Use an idempotency key of at least eight characters');
    const data=object(body.data),input:Record<string,unknown>={attempt_id:attempt};
-   if(action==='lease.acquire'){input.device_id=uuid(data.device_id);input.token_hash=hex(data.token_hash);}
+   if(action==='lease.acquire'){input.device_id=uuid(data.device_id);input.token_hash=hex(data.token_hash);if(data.takeover!==undefined&&typeof data.takeover!=='boolean')throw new ContractError('invalid_takeover','Takeover must be true or false');if(data.takeover===true)input.takeover=true;}
    else{
     const lease=object(data.lease);input.lease={device_id:uuid(lease.device_id),token_hash:hex(lease.token_hash),epoch:integer(lease.epoch,'Lease epoch')};
     if(action==='response.append'){

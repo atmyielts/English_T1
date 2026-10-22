@@ -30,6 +30,8 @@ async(page)=>{
  await control('resume');await page.getByRole('heading',{name:'Protected media',exact:true}).waitFor();await play();if(!await page.getByRole('radio',{name:'First response',exact:true}).isChecked())throw new Error('Pause discarded the saved answer');
  // A real canonical lease change, not a mocked ready flag, must stop players.
  await retain();await control('lease-loss');await page.getByText('Question media is unavailable while this sitting is paused or disconnected from its active lease.',{exact:true}).waitFor();await released();
+ // Another device now holds the attempt: this device never takes it back without the candidate (TIME-02).
+ await page.getByRole('heading',{name:'Continue on this device?',exact:true}).waitFor({timeout:90000});await page.getByRole('button',{name:'Continue on this device',exact:true}).click();
  await page.locator('.question-media video').waitFor({timeout:90000});await play();
  // Shared cookies change across different service origins (different ports),
  // where same-origin auth broadcasts alone cannot update the candidate view.

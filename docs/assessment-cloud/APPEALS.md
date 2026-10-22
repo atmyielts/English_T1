@@ -17,7 +17,7 @@ Regrading currently uses the existing pinned scoring inputs and rubrics. Audited
 
 ## Data, recovery and concurrency
 
-Migration `20261014150000_assessment_appeals.sql` adds private appeals, immutable histories and immutable command receipts. Appeals pin the attempt, grading run and score revision. The only transition is `submitted` to `withdrawn`, `upheld` or `regrade_requested`; original concerns and closed appeals cannot be rewritten or deleted through the service.
+Migration `20261014150500_assessment_appeals.sql` adds private appeals, immutable histories and immutable command receipts. Appeals pin the attempt, grading run and score revision. The only transition is `submitted` to `withdrawn`, `upheld` or `regrade_requested`; original concerns and closed appeals cannot be rewritten or deleted through the service.
 
 Commands hold a scoped idempotency lock, then attempt/appeal locks, and the grading run lock when deciding. Current authority is checked before cached replay. The normalized body must match its previous key. Competing reviewers cannot both decide the same revision. History, audit, candidate outbox metadata, regrade job and receipt commit together. Outbox delivery consumers are not connected yet.
 

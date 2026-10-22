@@ -33,12 +33,12 @@ try {
     await new Promise(resolve => setTimeout(resolve, 500));
   }
   if (!ready) throw new Error('Isolated assessment database did not become ready');
-  const files = ['supabase/tests/assessment-cloud.fixture.sql','supabase/migrations/20261013100000_assessment_cloud_core.sql','supabase/migrations/20261013110000_proctor_control_plane.sql','supabase/migrations/20261013120000_proctor_candidate_delivery.sql','supabase/migrations/20261013130000_assessment_runtime.sql','supabase/migrations/20261013140000_assessment_recovery_schedule.sql','supabase/migrations/20261013150000_assessment_grading.sql','supabase/migrations/20261014090000_assessment_staff.sql','supabase/migrations/20261014100000_assessment_design.sql','supabase/migrations/20261014110000_assessment_artifacts.sql','supabase/tests/assessment-cloud.integration.sql','supabase/tests/proctor.integration.sql','supabase/tests/proctor-candidate.integration.sql','supabase/tests/assessment-runtime.integration.sql','supabase/tests/assessment-recovery.integration.sql','supabase/tests/assessment-grading.integration.sql','supabase/tests/assessment-staff.integration.sql','supabase/tests/assessment-design.integration.sql','supabase/tests/assessment-artifacts.integration.sql'];
-  files.splice(files.findIndex(file=>file.endsWith('assessment-cloud.integration.sql')),0,'supabase/migrations/20261014120000_proctor_recordings.sql');
-  files.splice(files.findIndex(file=>file.endsWith('assessment-cloud.integration.sql')),0,'supabase/migrations/20261014130000_proctor_recording_recovery.sql');
-  files.splice(files.findIndex(file=>file.endsWith('assessment-cloud.integration.sql')),0,'supabase/migrations/20261014140000_proctor_recording_citations.sql');
+  const files = ['supabase/tests/assessment-cloud.fixture.sql','supabase/migrations/20261013100000_assessment_cloud_core.sql','supabase/migrations/20261013110000_proctor_control_plane.sql','supabase/migrations/20261013120000_proctor_candidate_delivery.sql','supabase/migrations/20261013130000_assessment_runtime.sql','supabase/migrations/20261013140000_assessment_recovery_schedule.sql','supabase/migrations/20261013150000_assessment_grading.sql','supabase/migrations/20261014090000_assessment_staff.sql','supabase/migrations/20261014100000_assessment_design.sql','supabase/migrations/20261014110500_assessment_artifacts.sql','supabase/tests/assessment-cloud.integration.sql','supabase/tests/proctor.integration.sql','supabase/tests/proctor-candidate.integration.sql','supabase/tests/assessment-runtime.integration.sql','supabase/tests/assessment-recovery.integration.sql','supabase/tests/assessment-grading.integration.sql','supabase/tests/assessment-staff.integration.sql','supabase/tests/assessment-design.integration.sql','supabase/tests/assessment-artifacts.integration.sql'];
+  files.splice(files.findIndex(file=>file.endsWith('assessment-cloud.integration.sql')),0,'supabase/migrations/20261014120500_proctor_recordings.sql');
+  files.splice(files.findIndex(file=>file.endsWith('assessment-cloud.integration.sql')),0,'supabase/migrations/20261014130500_proctor_recording_recovery.sql');
+  files.splice(files.findIndex(file=>file.endsWith('assessment-cloud.integration.sql')),0,'supabase/migrations/20261014140500_proctor_recording_citations.sql');
   files.push('supabase/tests/proctor-recordings.integration.sql');
-  files.splice(files.findIndex(file=>file.endsWith('assessment-cloud.integration.sql')),0,'supabase/migrations/20261014150000_assessment_appeals.sql');
+  files.splice(files.findIndex(file=>file.endsWith('assessment-cloud.integration.sql')),0,'supabase/migrations/20261014150500_assessment_appeals.sql');
   files.push('supabase/tests/assessment-appeals.integration.sql');
   files.splice(files.findIndex(file=>file.endsWith('assessment-cloud.integration.sql')),0,'supabase/migrations/20261014160000_assessment_certificates.sql');
   files.push('supabase/tests/assessment-certificates.integration.sql');
@@ -55,27 +55,29 @@ try {
   files.push('supabase/migrations/20261019130000_proctor_capture_launch.sql','supabase/tests/proctor-capture-launch.integration.sql');
   files.push('supabase/migrations/20261020100000_proctor_capture_watchdog.sql','supabase/tests/proctor-capture-watchdog.integration.sql','supabase/tests/proctor-recordings.integration.sql');
   files.push('supabase/migrations/20261020110000_assessment_image_responses.sql','supabase/tests/assessment-image-responses.integration.sql');
-  files.push('supabase/migrations/20261020120000_assessment_media_answers.sql','supabase/tests/assessment-media-answers.integration.sql');
+  files.push('supabase/migrations/20261020120500_assessment_media_answers.sql','supabase/tests/assessment-media-answers.integration.sql');
   files.push('supabase/migrations/20261020130000_assessment_answer_recovery.sql','supabase/tests/assessment-answer-recovery.integration.sql');
   files.push('supabase/migrations/20261020140000_assessment_native_audio.sql','supabase/tests/assessment-native-audio.integration.sql');
-  files.push('supabase/migrations/20261020150000_assessment_qti_jobs.sql','supabase/tests/assessment-qti.integration.sql');
-  files.push('supabase/migrations/20261020160000_assessment_qti_byte_verification.sql','supabase/tests/assessment-qti-bytes.integration.sql');
-  files.push('supabase/migrations/20261020170000_assessment_memberships.sql','supabase/tests/assessment-memberships.integration.sql');
+  files.push('supabase/migrations/20261020150500_assessment_qti_jobs.sql','supabase/tests/assessment-qti.integration.sql');
+  files.push('supabase/migrations/20261020160500_assessment_qti_byte_verification.sql','supabase/tests/assessment-qti-bytes.integration.sql');
+  files.push('supabase/migrations/20261020170500_assessment_memberships.sql','supabase/tests/assessment-memberships.integration.sql');
   files.push('supabase/migrations/20261020180000_assessment_invitations.sql','supabase/tests/assessment-invitations.integration.sql');
   files.push('supabase/migrations/20261020190000_assessment_invitation_mail.sql','supabase/tests/assessment-invitation-mail.integration.sql');
-  files.push('supabase/migrations/20261020200000_proctor_live_connections.sql','supabase/tests/proctor-live.integration.sql');
-  files.push('supabase/migrations/20261020210000_proctor_live_launch.sql','supabase/tests/proctor-live-launch.integration.sql');
+  files.push('supabase/migrations/20261020200500_proctor_live_connections.sql','supabase/tests/proctor-live.integration.sql');
+  files.push('supabase/migrations/20261020210500_proctor_live_launch.sql','supabase/tests/proctor-live-launch.integration.sql');
   files.push('supabase/tests/proctor-capture-launch.integration.sql','supabase/tests/proctor-capture-watchdog.integration.sql');
-  files.push('supabase/migrations/20261020220000_proctor_workload.sql','supabase/tests/proctor-workload.integration.sql');
-  files.push('supabase/migrations/20261020230000_assessment_certificate_documents.sql','supabase/tests/assessment-certificate-documents.integration.sql');
+  files.push('supabase/migrations/20261020220500_proctor_workload.sql','supabase/tests/proctor-workload.integration.sql');
+  files.push('supabase/migrations/20261020230500_assessment_certificate_documents.sql','supabase/tests/assessment-certificate-documents.integration.sql');
   files.push('supabase/migrations/20261021000000_assessment_certificate_lifecycle.sql','supabase/tests/assessment-certificate-lifecycle.integration.sql');
-  files.push('supabase/migrations/20261021010000_assessment_blueprints.sql','supabase/tests/assessment-blueprints.integration.sql');
+  files.push('supabase/migrations/20261021010500_assessment_blueprints.sql','supabase/tests/assessment-blueprints.integration.sql');
   files.push('supabase/migrations/20261021020000_assessment_accommodations.sql','supabase/tests/assessment-accommodations.integration.sql');
   files.push('supabase/migrations/20261022110000_assessment_entitlements.sql','supabase/tests/assessment-entitlements.integration.sql');
   files.push('supabase/migrations/20261022120000_assessment_webhooks.sql','supabase/tests/assessment-webhooks.integration.sql');
   files.push('supabase/migrations/20261022130000_assessment_api_clients.sql','supabase/tests/assessment-api-clients.integration.sql');
   files.push('supabase/migrations/20261022140000_assessment_blueprint_relations.sql','supabase/tests/assessment-blueprint-relations.integration.sql');
   files.push('supabase/migrations/20261022150000_assessment_appeal_workflow.sql','supabase/tests/assessment-appeal-workflow.integration.sql');
+  files.push('supabase/migrations/20261022160000_assessment_item_review.sql','supabase/tests/assessment-item-review.integration.sql');
+  files.push('supabase/migrations/20261022170000_assessment_device_takeover.sql','supabase/tests/assessment-device-takeover.integration.sql');
   const program=files.map(file=>{
     const protocol=file.endsWith('.integration.sql')?readFileSync('supabase/tests/assessment-runtime.fixture.sql','utf8')+'\n':'';
     const analyticsFixture=file.endsWith('assessment-analytics.integration.sql')?'begin;\n'+readFileSync('supabase/tests/assessment-analytics.fixture.sql','utf8')+'\n':'';
@@ -350,6 +352,12 @@ try {
   const {exposureRace}=await import('./test-assessment-exposure-race.mjs');
   await exposureRace(query=>docker(['exec','-i',container,'psql','-At','-U','postgres','-v','ON_ERROR_STOP=1'],query),parallelSql);
   process.stdout.write('Passed four-process exposure race: one form admitted under a one-form-per-sitting limit, three refused with blueprint_exposure_exhausted\n');
+  const {itemReviewRace}=await import('./test-assessment-item-review-race.mjs');
+  await itemReviewRace(query=>docker(['exec','-i',container,'psql','-At','-U','postgres','-v','ON_ERROR_STOP=1'],query),parallelSql);
+  process.stdout.write('Passed four-process question review races: one revision from a shared base version, three item_revision_conflict refusals, same replay; one approve-or-request-changes decision\n');
+  const {takeoverRace}=await import('./test-assessment-takeover-race.mjs');
+  await takeoverRace(query=>docker(['exec','-i',container,'psql','-At','-U','postgres','-v','ON_ERROR_STOP=1'],query),parallelSql);
+  process.stdout.write('Passed four-process device takeover race: three confirmed takeovers form one epoch chain with one holder; the racing old-device answer is saved before a takeover or refused as superseded\n');
 } finally {
   spawnSync('docker',['stop',container],{encoding:'utf8',timeout:20000});
 }

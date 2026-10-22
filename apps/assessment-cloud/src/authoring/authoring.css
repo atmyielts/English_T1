@@ -106,3 +106,4 @@
     align-self: start;
   }
 }
+.review-changes,.review-conversation{display:grid;gap:.5rem;margin:1rem 0}.review-path{font-family:ui-monospace,monospace;font-size:.85em;overflow-wrap:anywhere}.review-changes p,.review-comment{margin:0;overflow-wrap:anywhere;white-space:pre-wrap}.review-changes del{background:#fde8e8}.review-changes ins{background:#e3f6e8;text-decoration:none}.review-conversation form{display:grid;gap:.5rem}

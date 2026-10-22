@@ -18,8 +18,8 @@ import {seedAssessmentIntegrations,assessmentIntegrationProof} from './assessmen
 import {seedAssessmentAccommodations,bumpAccommodation,setAccommodatedAttemptState,assessmentAccommodationProof} from './assessment-accommodations-fixture.mjs';
 const root = fileURLToPath(new URL("../", import.meta.url)),
   tenant = "10000000-0000-4000-8000-000000000001";
-export async function appealBrowserStack({ certificates = false,documents=false,lifecycle=false,blueprints=false,accommodations=false,integrations=false,cohorts=false,imports=false,analytics=false,feedback=false,capture=false,live=false,workload=false,staff=false,invitations=false,mail=false,appealWorkflow=false } = {}) {
-  if(blueprints||accommodations)capture=true;
+export async function appealBrowserStack({ certificates = false,documents=false,lifecycle=false,blueprints=false,accommodations=false,integrations=false,cohorts=false,imports=false,analytics=false,feedback=false,capture=false,live=false,workload=false,staff=false,invitations=false,mail=false,appealWorkflow=false,itemReview=false,takeover=false } = {}) {
+  if(blueprints||accommodations||takeover)capture=true;
   if(lifecycle)documents=true;
   if(documents)certificates=true;
   if(live)capture=true;
@@ -179,11 +179,11 @@ export async function appealBrowserStack({ certificates = false,documents=false,
       "20261013150000_assessment_grading",
       "20261014090000_assessment_staff",
       "20261014100000_assessment_design",
-      "20261014110000_assessment_artifacts",
-      "20261014120000_proctor_recordings",
-      "20261014130000_proctor_recording_recovery",
-      "20261014140000_proctor_recording_citations",
-      "20261014150000_assessment_appeals",
+      "20261014110500_assessment_artifacts",
+      "20261014120500_proctor_recordings",
+      "20261014130500_proctor_recording_recovery",
+      "20261014140500_proctor_recording_citations",
+      "20261014150500_assessment_appeals",
       "20261014160000_assessment_certificates",
       "20261014170000_assessment_cohorts",
       "20261019100000_assessment_bank_imports",
@@ -192,26 +192,28 @@ export async function appealBrowserStack({ certificates = false,documents=false,
       "20261019130000_proctor_capture_launch",
       "20261020100000_proctor_capture_watchdog",
       "20261020110000_assessment_image_responses",
-      "20261020120000_assessment_media_answers",
+      "20261020120500_assessment_media_answers",
       "20261020130000_assessment_answer_recovery",
       "20261020140000_assessment_native_audio",
-      "20261020150000_assessment_qti_jobs",
-      "20261020160000_assessment_qti_byte_verification",
-      "20261020170000_assessment_memberships",
+      "20261020150500_assessment_qti_jobs",
+      "20261020160500_assessment_qti_byte_verification",
+      "20261020170500_assessment_memberships",
       "20261020180000_assessment_invitations",
       "20261020190000_assessment_invitation_mail",
-      "20261020200000_proctor_live_connections",
-      "20261020210000_proctor_live_launch",
-      "20261020220000_proctor_workload",
-      "20261020230000_assessment_certificate_documents",
+      "20261020200500_proctor_live_connections",
+      "20261020210500_proctor_live_launch",
+      "20261020220500_proctor_workload",
+      "20261020230500_assessment_certificate_documents",
       "20261021000000_assessment_certificate_lifecycle",
-      "20261021010000_assessment_blueprints",
+      "20261021010500_assessment_blueprints",
       "20261021020000_assessment_accommodations",
       "20261022110000_assessment_entitlements",
       "20261022120000_assessment_webhooks",
       "20261022130000_assessment_api_clients",
       "20261022140000_assessment_blueprint_relations",
       "20261022150000_assessment_appeal_workflow",
+      "20261022160000_assessment_item_review",
+      "20261022170000_assessment_device_takeover",
     ];
     sql(
       await readFile(
@@ -262,6 +264,21 @@ export async function appealBrowserStack({ certificates = false,documents=false,
     if(blueprints)blueprintIds=seedAssessmentBlueprints(sql,actors,tenant);
     if(accommodations)accommodationIds=seedAssessmentAccommodations(sql,actors,tenant);
     if(integrations)integrationIds=seedAssessmentIntegrations(sql,actors,tenant);
+    // An unmonitored two-question sitting for the device takeover journey.
+    if(takeover)sql(`do $$declare bank uuid;a uuid;b uuid;d uuid;v uuid;w uuid;q jsonb:='{"schema_version":"assessment.item.v1","type":"single_choice","locale":"en","max_score":1,"tags":[],"options":[{"id":"a","text":"Mars"},{"id":"b","text":"Venus"}]}';begin
+      bank:=(assessment_command('${actors.owner}','${tenant}','takeover-bank','bank.create','{"title":"Takeover bank"}')->>'id')::uuid;
+      a:=(assessment_command('${actors.owner}','${tenant}','takeover-item-a','item.create',jsonb_build_object('bank_id',bank,'item',q||'{"prompt":"Which planet is red?"}','key','{"correct":"a"}'::jsonb))->>'id')::uuid;
+      b:=(assessment_command('${actors.owner}','${tenant}','takeover-item-b','item.create',jsonb_build_object('bank_id',bank,'item',q||'{"prompt":"Which planet is hottest?"}','key','{"correct":"b"}'::jsonb))->>'id')::uuid;
+      perform assessment_command('${actors.owner}','${tenant}','takeover-submit-a','item.submit',jsonb_build_object('id',a));perform assessment_command('${actors.owner}','${tenant}','takeover-submit-b','item.submit',jsonb_build_object('id',b));
+      perform assessment_command('${actors.reviewer}','${tenant}','takeover-approve-a','item.approve',jsonb_build_object('id',a));perform assessment_command('${actors.reviewer}','${tenant}','takeover-approve-b','item.approve',jsonb_build_object('id',b));
+      d:=(assessment_command('${actors.owner}','${tenant}','takeover-definition','assessment.create',jsonb_build_object('definition',jsonb_build_object('schema_version','assessment.definition.v1','title','Two device exam','locale','en','duration_seconds',1800,'shuffle_items',false,'shuffle_options',false,'sections',jsonb_build_array(jsonb_build_object('id','62000000-0000-4000-8000-000000000001','title','Planets','item_version_ids',jsonb_build_array(a,b))))))->>'id')::uuid;
+      v:=(assessment_command('${actors.owner}','${tenant}','takeover-publish','assessment.publish',jsonb_build_object('id',d,'revision',1))->>'id')::uuid;
+      w:=(assessment_command('${actors.owner}','${tenant}','takeover-window','window.create',jsonb_build_object('assessment_version_id',v,'title','Two device sitting','opens_at',clock_timestamp()-interval '1 hour','closes_at',clock_timestamp()+interval '2 hours'))->>'id')::uuid;
+      perform assessment_command('${actors.owner}','${tenant}','takeover-registration','registration.create',jsonb_build_object('window_id',w,'candidate_id','${actors.candidate}'));
+    end;$$;`);
+    // One question version in review, written by the owner, for the reviewer to answer.
+    if(itemReview)sql(`insert into assessment_capability_grants(tenant_id,user_id,capability,granted_by) select '${tenant}','${actors.reviewer}',c,'${actors.owner}' from unnest(array['banks.read','items.approve']) c on conflict do nothing;grant select on assessment_item_banks,assessment_items,assessment_item_versions,assessment_item_keys,assessment_rubrics,assessment_definitions,assessment_definition_revisions,assessment_versions to service_role;`);
+    if(itemReview)sql(`select assessment_command('${actors.owner}','${tenant}','fixture-review-submit','item.submit',jsonb_build_object('id',(assessment_command('${actors.owner}','${tenant}','fixture-review-item','item.create',jsonb_build_object('bank_id',(select id from assessment_item_banks where title='Grading bank'),'item','{"schema_version":"assessment.item.v1","type":"single_choice","locale":"en","prompt":"Which planet is the red planet?","max_score":1,"tags":[],"options":[{"id":"a","text":"Mars"},{"id":"b","text":"Venus"}]}'::jsonb,'key','{"correct":"a"}'::jsonb))->>'id')::uuid));`);
     if(appealWorkflow){loseSubmit=false;loseDecision=false;sql(`insert into users(id,full_name) values('${actors.moderator}','Second Moderator');insert into tenant_memberships(tenant_id,user_id,status,role) values('${tenant}','${actors.moderator}','active','member');insert into assessment_capability_grants(tenant_id,user_id,capability,granted_by) select '${tenant}',u,'grades.moderate','${actors.owner}' from unnest(array['${actors.reviewer}','${actors.moderator}']::uuid[]) u on conflict do nothing;`);}
     if(invitations)invitationIds=seedAssessmentInvitations(sql,actors,tenant);
     if(analytics){sql(runtime+'\n'+await readFile(path.join(root,'supabase/tests/assessment-analytics.fixture.sql'),'utf8'));analyticsIds=JSON.parse(sql('select to_jsonb(t) from assessment_analytics_fixture_ids t;'));scoreSnapshot=sql('select jsonb_agg(to_jsonb(s) order by id) from assessment_score_revisions s;');}
@@ -372,6 +389,8 @@ export async function appealBrowserStack({ certificates = false,documents=false,
             reply(res, 200, {});
             return;
           }
+          if(takeover&&url.pathname==='/test/takeover-proof'){reply(res,200,{...JSON.parse(sql(`select jsonb_build_object('takeovers',(select jsonb_agg(jsonb_build_object('from_epoch',t.from_epoch,'to_epoch',t.to_epoch,'previous_lease_active',t.previous_lease_active,'acknowledged_sequence',t.acknowledged_sequence) order by t.created_at) from assessment_attempt_takeovers t),'answers',(select jsonb_agg(j.response order by j.sequence) from assessment_response_journal j join assessment_attempts x on x.id=j.attempt_id join assessment_registrations r on r.id=x.registration_id join assessment_exam_windows w on w.id=r.window_id where w.title='Two device sitting'),'state',(select x.state from assessment_attempts x join assessment_registrations r on r.id=x.registration_id join assessment_exam_windows w on w.id=r.window_id where w.title='Two device sitting'),'audits',(select count(*) from assessment_audit_events where action='attempt.device_takeover'));`)),scores_unchanged:scoreSnapshot===sql('select jsonb_agg(to_jsonb(s) order by id) from assessment_score_revisions s;')});return;}
+          if(itemReview&&url.pathname==='/test/item-review-proof'){reply(res,200,{...JSON.parse(sql(`select jsonb_build_object('versions',(select jsonb_agg(jsonb_build_object('version',v.version,'status',v.status,'author_is_owner',v.created_by='${actors.owner}','approver_is_reviewer',v.approved_by is not distinct from (case when v.status='approved' then '${actors.reviewer}'::uuid end)) order by v.version) from assessment_item_versions v where v.item_id=(select item_id from assessment_item_versions where payload->>'prompt'='Which planet is the red planet?')),'comments',(select jsonb_agg(jsonb_build_object('kind',kind,'area',area,'by_reviewer',author_id='${actors.reviewer}') order by created_at) from assessment_item_review_comments),'audits',(select count(*) from assessment_audit_events where action in('item.comment','item.request_changes')));`)),scores_unchanged:scoreSnapshot===sql('select jsonb_agg(to_jsonb(s) order by id) from assessment_score_revisions s;')});return;}
           if(appealWorkflow&&url.pathname==='/test/appeal-workflow-proof'){reply(res,200,{...JSON.parse(sql(`select jsonb_build_object('appeals',(select count(*) from assessment_result_appeals),'history',(select string_agg(e.event,',' order by e.revision) from assessment_appeal_events e),'stage',(select max(stage) from assessment_result_appeals),'status',(select max(status) from assessment_result_appeals),'first_decider_is_reviewer',(select bool_and(first_decided_by='${actors.reviewer}') from assessment_result_appeals),'final_decider_is_moderator',(select bool_and(decided_by='${actors.moderator}') from assessment_result_appeals),'policy',(select jsonb_build_object('filing_days',filing_days,'escalation_days',escalation_days,'revision',revision) from assessment_appeal_policies where tenant_id='${tenant}'),'regrade_jobs',(select count(*) from assessment_grading_jobs where generation=3),'audit',(select count(*) from assessment_audit_events where action like 'appeal.%'));`)),scores_unchanged:scoreSnapshot===sql('select jsonb_agg(to_jsonb(s) order by id) from assessment_score_revisions s;')});return;}
           if(integrations&&url.pathname==='/test/integration-proof'){reply(res,200,{...assessmentIntegrationProof(sql,tenant,integrationIds),scores_unchanged:scoreSnapshot===sql('select jsonb_agg(to_jsonb(s) order by id) from assessment_score_revisions s;')});return;}
           if(accommodations&&url.pathname==='/test/accommodation-bump'){reply(res,200,bumpAccommodation(sql,actors,tenant,accommodationIds));return;}
@@ -427,6 +446,7 @@ export async function appealBrowserStack({ certificates = false,documents=false,
           if(integrations&&/\/assessment-cloud\/(?:billing\/|webhooks\/|oauth\/token$|v1\/|api-clients(?:\/|$))/.test(url.pathname)){const handler=url.pathname.includes('/billing/')?billingHandler:url.pathname.includes('/webhooks/')?webhookHandler:apiHandler,response=await handler(new Request(base+req.url,{method:req.method,headers:req.headers,...(body.length?{body}:{})}));res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return;}
           if(integrations&&/\/(workspaces|exam-windows|registrations|commands|assessment-versions|item-banks|item-versions|rubrics|assessments)$/.test(url.pathname)){const response=await assessmentHandler(new Request(base+req.url,{method:req.method,headers:req.headers,...(body.length?{body}:{})}));res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return;}
           if(accommodations&&/\/(workspaces|item-banks|item-versions|rubrics|assessments|assessment-revisions|assessment-versions|exam-windows|registrations|commands)$/.test(url.pathname)){const response=await assessmentHandler(new Request(base+req.url,{method:req.method,headers:req.headers,...(body.length?{body}:{})})),action=body.length?JSON.parse(body).action:null;if(response.ok&&action==='registration.accommodate'&&loseAccommodation){loseAccommodation=false;reply(res,503,{code:'fixture_reply_lost',error:'The approval committed but its reply was lost. Retry the saved request.'});return;}res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return;}
+          if(itemReview&&(/\/(workspaces|item-banks|item-versions|rubrics|assessments|assessment-versions|commands)$/.test(url.pathname)||/\/item-versions\/[^/]+\/review$/.test(url.pathname))){const response=await assessmentHandler(new Request(base+req.url,{method:req.method,headers:req.headers,...(body.length?{body}:{})}));res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return;}
           if(blueprints&&(/\/(workspaces|item-banks|item-versions|rubrics|assessments|assessment-revisions|assessment-versions|exam-windows|registrations|commands|blueprints\/preview)$/.test(url.pathname)||/\/item-versions\/[^/]+\/review$/.test(url.pathname))){const response=await assessmentHandler(new Request(base+req.url,{method:req.method,headers:req.headers,...(body.length?{body}:{})})),action=body.length?JSON.parse(body).action:null;if(response.ok&&((action==='assessment.create'&&loseBlueprintCreate)||(action==='assessment.publish'&&loseBlueprintPublish)||(action==='attempt.start'&&loseBlueprintStart))){if(action==='assessment.create')loseBlueprintCreate=false;else if(action==='assessment.publish')loseBlueprintPublish=false;else loseBlueprintStart=false;reply(res,503,{code:'fixture_reply_lost',error:'The blueprint command committed but its reply was lost. Retry the saved request.'});return;}res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return;}
           if(staff||invitations){
             const endpoint=url.pathname.includes('/invitations/mail/')?mailServices?.handler:url.pathname.includes('/invitations/')?invitationHandler:url.pathname.includes('/staff/')?staffHandler:url.pathname.includes('/grading/')?gradingHandler:assessmentHandler;
@@ -598,7 +618,7 @@ export async function appealBrowserStack({ certificates = false,documents=false,
     if(invitations){const invitationBundle=path.join(directory,'invitation-edge.mjs');await build({stdin:{contents:"export {createInvitationHandler} from './supabase/functions/assessment-cloud/invitation-handler.ts';export {createInvitationRepository} from './supabase/functions/assessment-cloud/invitation-repository.ts';export {InvitationSigner} from './supabase/functions/assessment-cloud/invitation-signer.ts';",resolveDir:root,loader:'ts'},bundle:true,platform:'node',format:'esm',outfile:invitationBundle});const modules=await import(pathToFileURL(invitationBundle).href),keys={one:Buffer.alloc(32,1).toString('base64url'),two:Buffer.alloc(32,2).toString('base64url')};invitationOptions={enabled:true,signer:await modules.InvitationSigner.create('one',keys),appUrl:base+'/assessment/',allowLocalhost:true};rotateInvitation=async()=>{invitationOptions.signer=await modules.InvitationSigner.create('two',keys);};invitationHandler=modules.createInvitationHandler(modules.createInvitationRepository(auth,database),[base],invitationOptions);}
     cohortHandler=modules.createCohortHandler(modules.createCohortRepository(auth,database),[base],rosterSecret);rosterWorker=modules.rosterWorker;
     if(mail)mailServices=await assessmentMailFixture({root,directory,auth,database,base,sql});
-    const tables={...database,from(table){assert.ok(['assessment_definitions','assessment_definition_revisions','assessment_registrations','assessment_exam_windows','assessment_item_banks','assessment_items','assessment_item_versions','assessment_item_keys','assessment_rubrics','assessment_attempts','assessment_forms','assessment_response_journal','assessment_versions','tenant_memberships'].includes(table)||/^proctor_(policies|preparations|identity_checks|sessions|candidate_notices|notice_acknowledgements|assignments|integrity_events|review_cases|case_findings|recording_citations|window_policies)$/.test(table));const filters=[],builder={select(){return builder;},eq(name,value){assert.ok(['tenant_id','candidate_id','id','item_version_id','window_id','attempt_id','session_id','user_id','status','registration_id','notice_id','policy_id','active','case_id','assessment_id','revision'].includes(name));filters.push(`${name}=${literal(value)}`);return builder;},in(name,values){assert.equal(name,'id');filters.push(`id=any(array[${values.map(literal).join(',')}]::uuid[])`);return builder;},then(resolve,reject){return builder.limit(1000).then(resolve,reject);},async maybeSingle(){const result=await builder.limit(1);return{...result,data:result.data[0]??null};},async limit(count){assert.ok(Number.isSafeInteger(count)&&count>=1&&count<=1000);return {data:JSON.parse(await sqlRead(`select coalesce(jsonb_agg(to_jsonb(t)),'[]') from(select * from ${table} ${filters.length?'where '+filters.join(' and '):''} limit ${count})t;`)),error:null};}};return {select:builder.select};}};
+    const tables={...database,from(table){assert.ok(['assessment_item_review_comments','assessment_definitions','assessment_definition_revisions','assessment_registrations','assessment_exam_windows','assessment_item_banks','assessment_items','assessment_item_versions','assessment_item_keys','assessment_rubrics','assessment_attempts','assessment_forms','assessment_response_journal','assessment_versions','tenant_memberships'].includes(table)||/^proctor_(policies|preparations|identity_checks|sessions|candidate_notices|notice_acknowledgements|assignments|integrity_events|review_cases|case_findings|recording_citations|window_policies)$/.test(table));const filters=[],builder={select(){return builder;},eq(name,value){assert.ok(['tenant_id','candidate_id','id','item_version_id','window_id','attempt_id','session_id','user_id','status','registration_id','notice_id','policy_id','active','case_id','assessment_id','revision','item_id'].includes(name));filters.push(`${name}=${literal(value)}`);return builder;},in(name,values){assert.equal(name,'id');filters.push(`id=any(array[${values.map(literal).join(',')}]::uuid[])`);return builder;},then(resolve,reject){return builder.limit(1000).then(resolve,reject);},async maybeSingle(){const result=await builder.limit(1);return{...result,data:result.data[0]??null};},async limit(count){assert.ok(Number.isSafeInteger(count)&&count>=1&&count<=1000);return {data:JSON.parse(await sqlRead(`select coalesce(jsonb_agg(to_jsonb(t)),'[]') from(select * from ${table} ${filters.length?'where '+filters.join(' and '):''} limit ${count})t;`)),error:null};}};return {select:builder.select};}};
     assessmentHandler=modules.createHandler({repository:modules.createAssessmentRepository(auth,tables,{liveLaunchEnabled:live}),allowedOrigins:[base],captureLaunchEnabled:capture});
     if(capture)captureServices=await capturePorts({root,directory,base,auth,database,tables,live,workload});
     if(cohorts){rosterFetch=async(input,init)=>{const url=new URL(typeof input==='string'?input:input.url??input.toString());if(url.hostname!=='canonical-roster.invalid')return originalFetch(input,init);const request=new Request(input,init),body=await request.clone().json(),response=await cohortHandler(new Request(base+url.pathname,{method:request.method,headers:request.headers,body:await request.text()}));if(response.ok&&body.action==='job.step'&&loseStep){loseStep=false;return Response.json({code:'fixture_reply_lost',error:'Committed roster step reply lost'},{status:503});}return response;};globalThis.fetch=rosterFetch;}

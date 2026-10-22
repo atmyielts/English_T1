@@ -550,4 +550,7 @@ export const ru: Record<keyof typeof en, string> = {
   'appeal.view.escalateReason': "Почему первое решение нужно пересмотреть",
   'appeal.view.escalateAck': "Я понимаю, что это последний этап рассмотрения для этого результата.",
   'appeal.view.escalate': "Запросить второй уровень",
+  'runtime.deviceChoiceRequired': "Выберите, продолжать ли экзамен на этом устройстве.",
+  'error.device_takeover_required': "Этот экзамен последним был открыт на другом устройстве. Продолжайте здесь, только если больше им не пользуетесь.",
+  'error.device_lease_superseded': "Экзамен продолжен на другом устройстве, поэтому это устройство больше не может сохранять ответы.",
 };

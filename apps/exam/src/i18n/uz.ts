@@ -295,4 +295,13 @@ export const uz: Record<keyof typeof en, string> = {
   'exam.confirm.keepWorking': "Ishlashda davom etish",
   'exam.confirm.submitNow': "Hozir topshirish",
   'exam.confirm.continue': "Keyingi bo‘limga o‘tish",
+  'exam.device.choiceHeading': "Shu qurilmada davom etasizmi?",
+  'exam.device.choiceDetail': "Bu imtihon boshqa qurilmada ochiq yoki oxirgi marta o‘sha yerda ishlatilgan. Shu yerda davom etsangiz, boshqa qurilma darhol javoblarni saqlashni to‘xtatadi. U allaqachon saqlagan javoblar saqlanib qoladi.",
+  'exam.device.continueHere': "Shu qurilmada davom etish",
+  'exam.device.movedHeading': "Bu imtihon boshqa qurilmaga o‘tdi",
+  'exam.device.movedDetail': "Siz bu imtihonni boshqa qurilmada davom ettirdingiz, shuning uchun bu qurilma endi javoblarni saqlay olmaydi. Bungacha shu yerdan saqlangan javoblar saqlanib qoladi.",
+  'exam.device.unsent': "{count|other:Bu qurilmadagi # ta javob yuborilmagan va qabul qilinmagan.}",
+  'exam.device.allSent': "Imtihon o‘tishidan oldin bu qurilmadagi barcha javoblar saqlangan.",
+  'exam.device.takeBack': "Buning o‘rniga shu qurilmada davom etish",
+  'exam.device.tookOver': "Siz bu imtihonni shu qurilmada davom ettirdingiz. {count|other:Avval saqlangan # ta javob saqlanib qoladi.}",
 };

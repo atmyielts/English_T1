@@ -27,3 +27,11 @@ Deno.test('recovery actions require coordinator secret, bounded claim and scoped
  equal((await handle(req('schedule.reconcile',{revision:1,lease_token:actor},{authorization:''}))).status,200);
  equal((await handle(req('schedule.reconcile',{revision:1,lease_token:'forged'}))).status,422);equal(calls,2);
 });
+Deno.test('a device takeover is forwarded only as an explicit boolean confirmation',async()=>{
+ const handle=createRuntimeHandler(repository,secret);writes=[];const lease={device_id:actor,token_hash:'a'.repeat(64)};
+ equal((await handle(req('lease.acquire',{...lease,takeover:true}))).status,200);
+ equal((await handle(req('lease.acquire',{...lease,takeover:false}))).status,200);
+ equal((await handle(req('lease.acquire',lease))).status,200);
+ equal((await handle(req('lease.acquire',{...lease,takeover:'yes'}))).status,422);
+ equal(writes.map(row=>(row.data as Record<string,unknown>).takeover),[true,undefined,undefined]);
+});

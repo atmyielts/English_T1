@@ -127,12 +127,7 @@ export function ItemWorkspace({
         );
       return true;
     } catch (cause) {
-      if (alive.current)
-        setError(
-          cause instanceof Error
-            ? cause.message
-            : t("items.recordFailed"),
-        );
+      if (alive.current) setError(problem(cause, "items.recordFailed"));
       if(committed&&alive.current)setNotice(t('items.recordedRefresh'));
       return committed;
     } finally {
@@ -195,6 +190,8 @@ export function ItemWorkspace({
       if (alive.current && version === readVersion.current) setBusy(false);
     }
   }
+  const statusText = (status: string) =>
+    status === "draft" ? t("items.statusDraft") : status === "review" ? t("items.statusReview") : status === "approved" ? t("items.statusApproved") : status === "changes_requested" ? t("items.statusChangesRequested") : status;
   const locked = busy || !!pending || !ready,
     versions = (rows["item-versions"] ?? []).filter(
       (row) =>
@@ -250,6 +247,7 @@ export function ItemWorkspace({
               <option value="all">{t("items.statusAll")}</option>
               <option value="draft">{t("items.statusDraft")}</option>
               <option value="review">{t("items.statusReview")}</option>
+              <option value="changes_requested">{t("items.statusChangesRequested")}</option>
               <option value="approved">{t("items.statusApproved")}</option>
             </select>
           </label>
@@ -260,7 +258,7 @@ export function ItemWorkspace({
                   {String((row.payload as { prompt: string }).prompt)}
                 </strong>
                 <span>
-                  {t("items.meta", { version: String(row.version), status: String(row.status), type: itemLabel((row.payload as { type: ItemType }).type) ?? "" })}
+                  {t("items.meta", { version: String(row.version), status: statusText(String(row.status)), type: itemLabel((row.payload as { type: ItemType }).type) ?? "" })}
                 </span>
                 <div className="author-actions">
                   {row.status === "draft" && access.can_write_items && (
@@ -306,6 +304,27 @@ export function ItemWorkspace({
                       void mutate("item.approve", {
                         id: row.id,
                         review_hash: review.review_hash,
+                      })
+                    }
+                    canComment={
+                      (access.can_write_items || access.can_approve_items) &&
+                      ["draft", "review", "changes_requested"].includes(String(row.status))
+                    }
+                    canRequestChanges={
+                      access.can_approve_items &&
+                      row.status === "review" &&
+                      row.created_by !== actor
+                    }
+                    comment={async (data) => {
+                      const done = await mutate("item.comment", { id: row.id, ...data });
+                      if (done) await inspect(row);
+                      return done;
+                    }}
+                    requestChanges={(data) =>
+                      mutate("item.request_changes", {
+                        id: row.id,
+                        review_hash: review.review_hash,
+                        ...data,
                       })
                     }
                   />

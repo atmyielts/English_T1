@@ -550,4 +550,7 @@ export const uz: Record<keyof typeof en, string> = {
   'appeal.view.escalateReason': "Nega birinchi qaror qayta ko‘rib chiqilishi kerak",
   'appeal.view.escalateAck': "Bu natija uchun bu oxirgi ko‘rib chiqish bosqichi ekanini tushunaman.",
   'appeal.view.escalate': "Ikkinchi bosqich ko‘rib chiqishni so‘rash",
+  'runtime.deviceChoiceRequired': "Imtihonni shu qurilmada davom ettirishni tanlang.",
+  'error.device_takeover_required': "Bu imtihon oxirgi marta boshqa qurilmada ochilgan. Undan foydalanishni to‘xtatgan bo‘lsangizgina shu yerda davom eting.",
+  'error.device_lease_superseded': "Bu imtihon boshqa qurilmada davom ettirildi, shuning uchun bu qurilma endi javoblarni saqlay olmaydi.",
 };

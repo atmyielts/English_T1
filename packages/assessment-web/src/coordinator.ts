@@ -31,7 +31,7 @@ export async function openCoordinator(tenant:string,actor:string,attempt:string,
       const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
       try{
         const response=await fetch(url,{method:action?'POST':'GET',signal:controller.signal,cache:'no-store',headers:{Authorization:`Bearer ${auth.session.access_token}`,...(action?{'Content-Type':'application/json','Idempotency-Key':key!}:{})},...(action?{body:JSON.stringify({action,data})}:{})});
-        const payload=await response.json();if(!response.ok)throw payload.error?new Error(payload.error):new LocalizedError('coordinator.unverified');return payload.data as RuntimeResult;
+        const payload=await response.json();if(!response.ok)throw payload.error?Object.assign(new Error(payload.error),{code:typeof payload.code==='string'?payload.code:undefined}):new LocalizedError('coordinator.unverified');return payload.data as RuntimeResult;
       }finally{clearTimeout(timer);}
     }
     const runtime=new AttemptRuntime({state:()=>send(),command:(action,data,key)=>send(action,data,key)},{read:()=>({...initial}),write:value=>sessionStorage.setItem(storageKey,JSON.stringify(value))},changed,status);

@@ -47,6 +47,8 @@ const blueprintMode=process.argv.includes('--blueprints');
 const accommodationMode=process.argv.includes('--accommodations');
 const integrationMode=process.argv.includes('--integrations');
 const workflowMode=process.argv.includes('--appeal-workflow');
+const itemReviewMode=process.argv.includes('--item-review');
+const takeoverMode=process.argv.includes('--takeover');
 const documentMode=process.argv.includes('--certificate-documents')||lifecycleMode;
 const certificateMode = process.argv.includes("--certificates")||documentMode;
 const cohortMode=process.argv.includes('--cohorts');
@@ -69,7 +71,7 @@ try {
   await mkdir(path.join(root,"output/playwright/certificate-lifecycle"),{recursive:true});
   await mkdir(path.join(root,"output/playwright/blueprints"),{recursive:true});
   await mkdir(path.join(root,"output/playwright/accommodations"),{recursive:true});
-  await mkdir(path.join(root,"output/playwright/integrations"),{recursive:true});
+  await mkdir(path.join(root,"output/playwright/integrations"),{recursive:true});await mkdir(path.join(root,"output/playwright/item-review"),{recursive:true});await mkdir(path.join(root,"output/playwright/takeover"),{recursive:true});
   await mkdir(path.join(root,'output/playwright/cohorts'),{recursive:true});
   await mkdir(path.join(root,'output/playwright/imports'),{recursive:true});
   await mkdir(path.join(root,'output/playwright/analytics'),{recursive:true});
@@ -77,19 +79,21 @@ try {
   await mkdir(path.join(root,'output/playwright/capture'),{recursive:true});
   await mkdir(path.join(root,'output/playwright/staff'),{recursive:true});
   await mkdir(path.join(root,'output/playwright/invitations'),{recursive:true});
-  fixture = await appealBrowserStack({ certificates: certificateMode,documents:documentMode,lifecycle:lifecycleMode,blueprints:blueprintMode,accommodations:accommodationMode,integrations:integrationMode,cohorts:cohortMode,imports:importMode,analytics:analyticsMode,feedback:feedbackMode,capture:captureMode,live:liveMode,workload:workloadMode,staff:staffMode,invitations:invitationMode,mail:mailMode,appealWorkflow:workflowMode });
+  fixture = await appealBrowserStack({ certificates: certificateMode,documents:documentMode,lifecycle:lifecycleMode,blueprints:blueprintMode,accommodations:accommodationMode,integrations:integrationMode,cohorts:cohortMode,imports:importMode,analytics:analyticsMode,feedback:feedbackMode,capture:captureMode,live:liveMode,workload:workloadMode,staff:staffMode,invitations:invitationMode,mail:mailMode,appealWorkflow:workflowMode,itemReview:itemReviewMode,takeover:takeoverMode });
   await cli(["open", fixture.base + "/exam/", "--browser", "chrome"]);
   await cli(["snapshot"]);
   const result = await cli([
       "run-code",
       "--filename",
-      workflowMode?'scripts/connected-appeal-workflow-browser.js':integrationMode?'scripts/connected-integrations-browser.js':accommodationMode?'scripts/connected-accommodations-browser.js':blueprintMode?'scripts/connected-blueprints-browser.js':lifecycleMode?'scripts/connected-certificate-lifecycle-browser.js':workloadMode?'scripts/connected-workload-browser.js':liveMode?'scripts/connected-live-launch-browser.js':mailMode?'scripts/connected-invitation-mail-browser.js':invitationMode?'scripts/connected-invitations-browser.js':staffMode?'scripts/connected-staff-browser.js':captureMode?'scripts/connected-capture-browser.js':feedbackMode?'scripts/connected-feedback-browser.js':analyticsMode?'scripts/connected-analytics-browser.js':importMode?'scripts/connected-imports-browser.js':cohortMode?'scripts/connected-cohorts-browser.js':certificateMode
+      takeoverMode?'scripts/connected-takeover-browser.js':itemReviewMode?'scripts/connected-item-review-browser.js':workflowMode?'scripts/connected-appeal-workflow-browser.js':integrationMode?'scripts/connected-integrations-browser.js':accommodationMode?'scripts/connected-accommodations-browser.js':blueprintMode?'scripts/connected-blueprints-browser.js':lifecycleMode?'scripts/connected-certificate-lifecycle-browser.js':workloadMode?'scripts/connected-workload-browser.js':liveMode?'scripts/connected-live-launch-browser.js':mailMode?'scripts/connected-invitation-mail-browser.js':invitationMode?'scripts/connected-invitations-browser.js':staffMode?'scripts/connected-staff-browser.js':captureMode?'scripts/connected-capture-browser.js':feedbackMode?'scripts/connected-feedback-browser.js':analyticsMode?'scripts/connected-analytics-browser.js':importMode?'scripts/connected-imports-browser.js':cohortMode?'scripts/connected-cohorts-browser.js':certificateMode
         ? "scripts/connected-certificates-browser.js"
         : "scripts/connected-appeals-browser.js",
     ]),
     raw = /### Result\r?\n([^\r\n]+)/.exec(result)?.[1];
   assert.ok(raw, result);
   const proof = JSON.parse(raw);
+  if(takeoverMode){for(const key of ['connected_takeover','second_device_asked','took_over_notice','old_device_told','late_answer_disclosed','scores_unchanged'])assert.equal(proof[key],true,key);assert.deepEqual(proof.takeovers,[{from_epoch:1,to_epoch:2,previous_lease_active:true,acknowledged_sequence:1}]);assert.deepEqual(proof.answers,['a','b']);assert.equal(proof.state,'submitted');assert.equal(proof.audits,1);console.log(JSON.stringify({event:'assessment.connected.takeover.acceptance',...proof}));}else
+  if(itemReviewMode){for(const key of ['connected_item_review','first_version_shown','change_request_closed_version','changes_listed','conversation_carried','author_cannot_approve','scores_unchanged'])assert.equal(proof[key],true,key);assert.deepEqual(proof.versions,[{version:1,status:'changes_requested',author_is_owner:true,approver_is_reviewer:true},{version:2,status:'approved',author_is_owner:true,approver_is_reviewer:true}]);assert.deepEqual(proof.comments,[{kind:'changes_requested',area:'prompt',by_reviewer:true},{kind:'comment',area:'general',by_reviewer:false}]);assert.equal(proof.audits,2);console.log(JSON.stringify({event:'assessment.connected.item_review.acceptance',...proof}));}else
   if(workflowMode){for(const key of ['connected_appeal_workflow','policy_saved','assigned_self','first_decider_refused','second_stage_decided','candidate_cannot_escalate_twice','first_decider_is_reviewer','final_decider_is_moderator','scores_unchanged'])assert.equal(proof[key],true,key);assert.equal(proof.history,'submitted,assigned,upheld,escalated,assigned,upheld');assert.deepEqual(proof.policy,{filing_days:30,escalation_days:14,revision:1});for(const[key,value]of Object.entries({appeals:1,stage:2,status:'upheld',regrade_jobs:0}))assert.equal(proof[key],value,key);console.log(JSON.stringify({event:'assessment.connected.appeal_workflow.acceptance',...proof}));}else
   if(integrationMode){for(const key of ['connected_integrations','plan_usage_shown','webhook_secret_once','client_secret_once','token_issued','api_registration_created','api_read_scoped','event_feed_reconciles','delivery_history_shown','revoked_token_refused','scores_unchanged'])assert.equal(proof[key],true,key);for(const[key,value]of Object.entries({endpoints:1,plaintext_secrets:0,registration_deliveries:1,api_registrations:1,integration_audits:1,clients_revoked:1,live_tokens:0}))assert.equal(proof[key],value,key);console.log(JSON.stringify({event:'assessment.connected.integrations.acceptance',...proof}));}else
   if(accommodationMode){for(const key of ['connected_accommodations','approval_receipt_recovered','stale_revision_refused','reason_private','questions_hidden_on_break','break_receipt_recovered','break_survived_reload','early_return_restored_questions','pause_closed_break','running_deadline_unchanged','scores_unchanged'])assert.equal(proof[key],true,key);for(const[key,value]of Object.entries({approval_audits:2,registration_revision:2,attempts:1,pinned_revision:2,pinned_extra_seconds:300,breaks:2,break_commands:3,running_breaks:1,reason_in_candidate_rows:0,attempt_state:'submitted'}))assert.deepEqual(proof[key],value,key);assert.deepEqual(proof.break_reasons,['candidate','proctor_pause']);assert.ok(proof.responses>=1);console.log(JSON.stringify({event:'assessment.connected.accommodations.acceptance',...proof}));}else
