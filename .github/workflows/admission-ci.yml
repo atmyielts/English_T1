@@ -9,6 +9,7 @@ on:
       - 'supabase/tests/admission-*'
       - 'scripts/test-admission-db.mjs'
       - 'scripts/admission-dev-stack.ts'
+      - 'scripts/admission-starter-bank*'
       - 'packages/assessment-core/src/**'
       - '.github/workflows/admission-ci.yml'
   workflow_dispatch:
@@ -45,6 +46,8 @@ jobs:
       - run: npm ci
       - name: Admission API contracts (keys hidden, grading, replay, conflicts, goals, coverage)
         run: deno test --no-lock supabase/functions/admission/handler.test.ts packages/assessment-core/src/core.test.ts
+      - name: Starter question bank imports cleanly, keys score, formulas balanced
+        run: deno test --no-lock scripts/admission-starter-bank.test.ts
       - name: Function and dev stack type checks
         run: deno check --no-lock supabase/functions/admission/index.ts scripts/admission-dev-stack.ts
       - name: Learner state migration on an isolated database

@@ -85,3 +85,11 @@ Build with `VITE_SUPABASE_URL=http://127.0.0.1:4793` and `VITE_SUPABASE_ANON_KEY
 2. Write and approve questions: topic codes and estimated difficulty in the classification, a worked solution in the key, Uzbek and Russian versions as separate questions.
 3. Set `ADMISSION_CONTENT_TENANT_ID`, then `ADMISSION_ENABLED=true`.
 4. Free beta with one or two centres; watch item statistics and retire weak questions.
+
+## Starter question bank
+
+`scripts/admission-starter-bank.ts` writes `output/admission/math-starter-uz.json` and `math-starter-ru.json`: 132 questions per language, 4 per topic across difficulty bands, each with a worked solution. Every answer is computed in code, and `scripts/admission-starter-bank.test.ts` checks that both files import cleanly into Assessment Cloud, that every key scores, and that formulas are balanced. The wording is a machine draft: import into the content workspace, then a reviewer who did not write the questions corrects and approves each one. Tags `admission-math` and `starter-draft` mark them for later replacement by original items.
+
+```bash
+deno run --no-lock --allow-write=output scripts/admission-starter-bank.ts 4
+```
