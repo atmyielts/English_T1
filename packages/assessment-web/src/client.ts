@@ -41,6 +41,10 @@ export class ServiceRequestError extends Error {constructor(public status:number
 export async function request<T>(path: string, tenant?: string, command?: { action: string; data: unknown }, revision?: number, idempotencyKey?: string, expectedActor?:string): Promise<T> {
   return serviceRequest<T>('assessment-cloud', path, tenant, command, revision, idempotencyKey,expectedActor);
 }
+/** A plain JSON POST outside the command envelope (no idempotency key needed). */
+export async function postJson<T>(path: string, body: Record<string, unknown>, expectedActor?: string): Promise<T> {
+  return serviceRequest<T>('assessment-cloud', path, undefined, body as unknown as { action: string; data: unknown }, undefined, undefined, expectedActor);
+}
 export async function proctorRequest<T>(path: string, tenant?: string, command?: { action: string; data: unknown }, idempotencyKey?: string, expectedActor?:string): Promise<T> {
   return serviceRequest<T>('proctor', path, tenant, command, undefined, idempotencyKey,expectedActor);
 }

@@ -53,6 +53,16 @@ export function createAssessmentRepository(
       const { data, error } = await auth.auth.getUser(token);
       return error ? null : (data.user?.id ?? null);
     },
+    async candidateInstitutions(user) {
+      const { data, error } = await service.rpc("assessment_candidate_institutions", { p_actor: user });
+      if (error) dbError(error);
+      return (data ?? []) as Record<string, unknown>[];
+    },
+    async join(user, step, link, code) {
+      const { data, error } = await service.rpc(step === "accept" ? "assessment_join_accept" : "assessment_join_preview", { p_actor: user, p_link: link, p_code: code });
+      if (error) dbError(error);
+      return data as Record<string, unknown>;
+    },
     async workspaces(user) {
       const { data, error } = await service.rpc("assessment_workspaces", { p_actor: user });
       if (error) dbError(error);

@@ -28,7 +28,7 @@ No full-service ledger row is closed. Nothing in these documents authorizes a de
 - Interchange: [QTI](QTI.md), [control plane](QTI_CONTROL_PLANE.md), [byte workflow](QTI_BYTE_WORKFLOW.md).
 - Assessment outcomes: [analytics](ANALYTICS.md), [feedback](FEEDBACK.md), [appeals](APPEALS.md), [certificates](CERTIFICATES.md), [certificate documents](CERTIFICATE_DOCUMENTS.md), [credential lifecycle](CERTIFICATE_LIFECYCLE.md).
 - Proctoring: [capture launch](CAPTURE_LAUNCH.md), [recordings](RECORDINGS.md), [live monitoring](LIVE_MONITORING.md), [institution monitoring board](PROCTOR_WORKLOAD.md).
-- Institution access: [membership](MEMBERSHIP.md), [invitations](INVITATIONS.md), [invitation mail](INVITATION_MAIL.md).
+- Institution access: [self-service join links and institution name](JOIN_LINKS.md), [membership](MEMBERSHIP.md), [invitations](INVITATIONS.md), [invitation mail](INVITATION_MAIL.md).
 - Commercial and integration: [billing and usage](BILLING.md), [webhooks and API clients](INTEGRATIONS.md).
 - Cross-cutting: [accommodations](ACCOMMODATIONS.md), [localization](LOCALIZATION.md), [measurement cores](MEASUREMENT.md).
 

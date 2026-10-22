@@ -32,6 +32,9 @@ const ItemWorkspace = lazy(() =>
     default: module.ItemWorkspace,
   })),
 );
+import { JoinLinkPanel } from "./sittings/JoinLinkPanel";
+import { InstitutionName } from "./staff/InstitutionName";
+import { accountLink } from "../../../packages/assessment-web/src/account-links";
 const StaffWorkspace = lazy(() =>
   import("./staff/StaffWorkspace").then((module) => ({
     default: module.StaffWorkspace,
@@ -205,7 +208,7 @@ function App() {
             "assessment-versions",
           ]
         : []),
-      ...(current.can_manage_exams ? ["exam-windows", "registrations"] : []),
+      ...(current.can_manage_exams ? ["exam-windows", "registrations", "join-links"] : []),
     ];
     // Keep confirmed records through a network-only refresh failure, but drop
     // resources immediately when freshly checked permissions no longer allow them.
@@ -223,7 +226,11 @@ function App() {
               undefined,
               undefined,
               user,
-            ).catch(cause=>{clearDenied(cause);throw cause;}),
+            ).catch(cause=>{
+              // Join links are optional: an older service without them must not
+              // hide the sittings themselves.
+              if(resource==="join-links"&&(cause as {status?:number})?.status===404)return [] as Row[];
+              clearDenied(cause);throw cause;}),
           ] as const,
       ),
     );
@@ -335,6 +342,10 @@ function App() {
           </label>
           <button disabled={busy}>{t("signin.submit")}</button>
         </form>
+        <p className="account-links">
+          <a href={accountLink("signup")}>{t("account.create")}</a>
+          <a href={accountLink("forgot")}>{t("account.forgot")}</a>
+        </p>
         {error && (
           <p role="alert" className="error">
             {error}
@@ -464,7 +475,10 @@ function App() {
               {tab === "billing" && <BillingWorkspace key={scope} tenant={tenant} actor={user}/>}
               {tab === "integrations" && <IntegrationsWorkspace key={scope} tenant={tenant} actor={user}/>}
               {tab === "staff" && (
-                <StaffWorkspace key={scope} tenant={tenant} actor={user} />
+                <>
+                  <InstitutionName key={`name:${scope}`} tenant={tenant} actor={user} current={String(((workspaces.find((row) => String(row.tenant_id) === tenant)?.tenants as Row | undefined)?.name) ?? "")} renamed={() => setInvitationRefresh((value) => value + 1)} />
+                  <StaffWorkspace key={scope} tenant={tenant} actor={user} />
+                </>
               )}
               {tab === "appeals" && <AppealsWorkspace key={scope} tenant={tenant} actor={user}/>}
               {tab === "certificates" && <CertificatesWorkspace key={scope} tenant={tenant} actor={user}/>}
@@ -545,11 +559,12 @@ function App() {
                     <h2>{t("windows.scheduled")}</h2>
                     <ul className="records">
                       {(rows["exam-windows"] ?? []).map((row) => (
-                        <li key={row.id}>
+                        <li key={row.id} className="sitting">
                           <strong>{String(row.title)}</strong>
                           <span>
                             {t("windows.range", { opens: date(String(row.opens_at)), closes: date(String(row.closes_at)) })}
                           </span>
+                          <JoinLinkPanel sitting={row} links={rows["join-links"] ?? []} busy={busy} act={(action, data, message) => void run(async () => { await command(action, data); setNotice(message); })} />
                         </li>
                       ))}
                     </ul>

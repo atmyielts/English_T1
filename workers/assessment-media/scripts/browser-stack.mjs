@@ -171,6 +171,7 @@ try {
       "20261022150000_assessment_appeal_workflow.sql",
       "20261022160000_assessment_item_review.sql",
       "20261022170000_assessment_device_takeover.sql",
+      "20261022180000_assessment_join_links.sql",
     ].map((name) => `supabase/migrations/${name}`),
   ])
     { checkRunning(); sql(await readFile(path.join(root, file), "utf8")); }

@@ -15,6 +15,9 @@ export interface Repository {
   windowRequirements(tenant: string, ids: string[]): Promise<Record<string, unknown>[]>;
   key(tenant: string, itemVersion: string): Promise<Record<string, unknown> | null>;
   command(actor: string, tenant: string, key: string, action: string, data: Record<string, unknown>): Promise<unknown>;
+  /** Institutions where the person has a sitting, and join-link preview/acceptance. */
+  candidateInstitutions?(user: string): Promise<Record<string, unknown>[]>;
+  join?(user: string, step: "preview" | "accept", link: string, code: string): Promise<Record<string, unknown>>;
   /** Question IDs at their exposure limit in the candidate's own sitting. */
   saturated?(tenant: string, actor: string, registration: string): Promise<string[]>;
 }
@@ -32,11 +35,13 @@ const resourceTables: Record<string, { table: string; capability: string }> = {
   "exam-windows": { table: "assessment_exam_windows", capability: "exams.manage" },
   "registrations": { table: "assessment_registrations", capability: "exams.manage" },
   "attempts": { table: "assessment_attempts", capability: "results.read" },
+  "join-links": { table: "assessment_join_links", capability: "exams.manage" },
+  "institution-profile": { table: "assessment_institution_profiles", capability: "team.manage" },
   "audit": { table: "assessment_audit_events", capability: "audit.read" },
 };
 const actionCapabilities: Record<string, string> = {
   "registration.accommodate":"exams.manage",
-  "bank.create": "items.write", "rubric.create": "items.write", "item.create": "items.write", "item.revise": "items.write", "item.submit": "items.write", "item.approve": "items.approve", "item.request_changes": "items.approve", "assessment.create": "items.write", "assessment.revise": "items.write", "assessment.publish": "assessments.publish", "window.create": "exams.manage", "registration.create": "exams.manage",
+  "bank.create": "items.write", "rubric.create": "items.write", "item.create": "items.write", "item.revise": "items.write", "item.submit": "items.write", "item.approve": "items.approve", "item.request_changes": "items.approve", "assessment.create": "items.write", "assessment.revise": "items.write", "assessment.publish": "assessments.publish", "window.create": "exams.manage", "join_link.create": "exams.manage", "join_link.revoke": "exams.manage", "institution.rename": "team.manage", "registration.create": "exams.manage",
 };
 const tablesForItemAction: Record<string, string> = { "item.revise": "assessment_items", "item.submit": "assessment_item_versions", "item.approve": "assessment_item_versions", "item.comment": "assessment_item_versions", "item.request_changes": "assessment_item_versions", "assessment.revise": "assessment_definitions", "assessment.publish": "assessment_definitions" };
 function error(status: number, code: string, message: string): never { throw new ContractError(code, message, status); }
@@ -86,6 +91,21 @@ export function createHandler({ repository, allowedOrigins, promptMediaEnabled=f
       const prefix = "/assessment-cloud";
       const path = url.pathname.slice(url.pathname.indexOf(prefix) + prefix.length).replace(/^\//, "");
       if (req.method === "GET" && path === "workspaces") return json(200, { data: await repository.workspaces(actor!) });
+      if (req.method === "GET" && path === "candidate/institutions") {
+        if (!repository.candidateInstitutions) error(404, "not_found", "Resource not found");
+        return json(200, { data: await repository.candidateInstitutions!(actor!) });
+      }
+      // A join link names its sitting, so the candidate needs no institution link first.
+      if (req.method === "POST" && (path === "candidate/join/preview" || path === "candidate/join/accept")) {
+        if (!repository.join) error(404, "not_found", "Resource not found");
+        const raw = await req.text();
+        if (raw.length > 4000) error(413, "payload_too_large", "Request is too large");
+        let body: Record<string, unknown>;
+        try { body = object(JSON.parse(raw)); } catch { error(400, "invalid_json", "Expected a JSON object"); }
+        const code = text(body!.code, "Join code", 64);
+        if (!/^[a-f0-9]{64}$/.test(code)) error(404, "join_link_invalid", "This join link is not valid");
+        return json(200, { data: await repository.join!(actor!, path.endsWith("accept") ? "accept" : "preview", uuid(body!.link_id, "Join link"), code) });
+      }
       const tenant = uuid(url.searchParams.get("tenant_id"), "Tenant ID");
       if (req.method === "GET") {
         if(path==='candidate/preparation'){
@@ -196,6 +216,9 @@ export function createHandler({ repository, allowedOrigins, promptMediaEnabled=f
           if (opens >= closes) error(422, "invalid_window", "Closing time must follow opening time");
           input = { title: text(data.title, "Window title", 200), assessment_version_id: uuid(data.assessment_version_id), opens_at: opens, closes_at: closes }; break;
         }
+        case "join_link.create": input = { window_id: uuid(data.window_id), ...(data.max_joins === undefined || data.max_joins === null ? {} : { max_joins: integer(data.max_joins, "Join limit", 1, 10000) }) }; break;
+        case "join_link.revoke": input = { id: uuid(data.id) }; break;
+        case "institution.rename": input = { name: text(data.name, "Institution name", 120).trim(), revision: integer(data.revision, "Revision", 0, 1_000_000) }; if (String(input.name).length < 2) error(422, "invalid_institution_name", "Enter the institution name"); break;
         case "registration.create": input = { window_id: uuid(data.window_id), candidate_id: uuid(data.candidate_id), extra_seconds: integer(data.extra_seconds ?? 0, "Extra time", 0, 86400) }; break;
         case "registration.accommodate": input={registration_id:uuid(data.registration_id),revision:integer(data.revision,'Accommodation revision',0,1000000),extra_seconds:integer(data.extra_seconds,'Extra time',0,86400),break_policy:breakPolicy(data.break_policy),reason:text(data.reason,'Approval reason (no medical details)',2000)};break;
         case "attempt.start": {

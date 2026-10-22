@@ -553,4 +553,11 @@ export const uz: Record<keyof typeof en, string> = {
   'runtime.deviceChoiceRequired': "Imtihonni shu qurilmada davom ettirishni tanlang.",
   'error.device_takeover_required': "Bu imtihon oxirgi marta boshqa qurilmada ochilgan. Undan foydalanishni to‘xtatgan bo‘lsangizgina shu yerda davom eting.",
   'error.device_lease_superseded': "Bu imtihon boshqa qurilmada davom ettirildi, shuning uchun bu qurilma endi javoblarni saqlay olmaydi.",
+  'account.create': "Schood hisobini yaratish",
+  'account.forgot': "Parolni unutdingizmi?",
+  'error.join_link_invalid': "Bu qo‘shilish havolasi yaroqsiz. Muassasangizdan yangi havola so‘rang.",
+  'error.join_link_revoked': "Bu qo‘shilish havolasi o‘chirilgan. Muassasangizdan yangi havola so‘rang.",
+  'error.join_link_full': "Bu sessiyada joy qolmagan. Muassasangizga murojaat qiling.",
+  'error.window_closed': "Bu sessiya yopilgan.",
+  'error.invalid_institution_name': "Muassasa nomini 2 dan 120 belgigacha kiriting.",
 };
