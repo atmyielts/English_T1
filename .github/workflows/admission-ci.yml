@@ -1,0 +1,28 @@
+name: Admission CI
+on:
+  pull_request:
+    paths:
+      - 'apps/admission/**'
+      - 'packages/subject-core/**'
+      - 'supabase/functions/admission/**'
+      - 'supabase/migrations/*admission*'
+      - '.github/workflows/admission-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: admission-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  engine:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Exam formats, topic graph, mastery, daily plan and prediction
+        run: deno test --no-lock packages/subject-core/src/
+      - name: Engine type check
+        run: deno check --no-lock packages/subject-core/src/mod.ts
