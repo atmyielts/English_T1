@@ -258,6 +258,8 @@ const handleHelp = async (env: Env, chatId: number, user: LinkedUser | null) => 
     + `/dashboard - Open your student command center\n`
     + `/results - Recent scores\n`
     + `/assignments - Assignments due this week\n`
+    + `/homework - Open homework; send answers here as text, photos, voice or files\n`
+    + `/center - Choose which centre your homework goes to\n`
     + `/schedule - Weekly class timetable\n`
     + `/cert - Latest certificates\n`
     + `/drill - Vocabulary flashcards\n`
@@ -435,7 +437,39 @@ const handleCallback = async (env: Env, query: { id: string; from: { id: number 
   await sendAppEntry(env, chatId, user);
 };
 
+// Homework OS (academy-learning) owns media hand-in, plain-text answers,
+// /homework, /center and hw:/ctr: buttons. It answers {handled:false} when the
+// feature is off or the update is not homework, and the bot carries on as before.
+const HOMEWORK_COMMANDS = new Set(["/homework", "/hw", "/center", "/centre"]);
+const HOMEWORK_MEDIA_KEYS = ["photo", "document", "voice", "audio", "video", "video_note"];
+
+const isHomeworkUpdate = (update: Record<string, unknown>): boolean => {
+  const callback = update.callback_query as { data?: string } | undefined;
+  if (callback) return /^(hw|ctr):/.test(String(callback.data ?? ""));
+  const msg = update.message as Record<string, unknown> | undefined;
+  if (!msg || (msg.chat as any)?.type !== "private") return false;
+  if (HOMEWORK_MEDIA_KEYS.some((key) => msg[key] != null)) return true;
+  const text = String(msg.text ?? "").trim();
+  if (!text) return false;
+  if (!text.startsWith("/")) return true;
+  return HOMEWORK_COMMANDS.has(text.split(/\s+/)[0].replace(/@\w+$/, "").toLowerCase());
+};
+
+const routeHomework = async (env: Env, update: Record<string, unknown>): Promise<boolean> => {
+  if (!isHomeworkUpdate(update)) return false;
+  const result = await sbEdge(env, "academy-learning", { action: "telegram_update", update });
+  if (Number(result.http_status) >= 500) {
+    // A lost photo or voice note matters, so let Telegram retry it; plain text falls back to the old reply.
+    const msg = update.message as Record<string, unknown> | undefined;
+    if (msg && HOMEWORK_MEDIA_KEYS.some((key) => msg[key] != null)) throw new Error("Homework hand-in is temporarily unavailable");
+    return false;
+  }
+  return result.handled === true;
+};
+
 const handleClaimedUpdate = async (env: Env, update: Record<string, unknown>) => {
+  if (await routeHomework(env, update)) return;
+
   if (update.callback_query) {
     await handleCallback(env, update.callback_query as any);
     return;

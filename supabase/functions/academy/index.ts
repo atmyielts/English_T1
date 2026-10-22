@@ -3,6 +3,7 @@ import {openLegacyBoundary,legacyActionMode,LegacyBoundaryError} from './legacy-
 import {currentAcademyAccessProfile,effectiveLegacyMembership} from './legacy-scope-profile.ts';
 import {runTeacherRetentionRead} from './teacher-retention.ts';
 import {gradingActions,runGradingCommand} from './grading-command.ts';
+import {lockedModuleIds} from './module-unlock.ts';
 import {operationalActions,runOperationalCommand} from './operational-command.ts';
 import {runOperationalRead} from './operational-read.ts';
 import {audioActions,audioBucket,readAudioUploadRequest,runAssignmentAudio} from './assignment-audio.ts';
@@ -6944,9 +6945,16 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
           .filter((row) => String(row.status) === "completed")
           .map((row) => String(row.lesson_id)),
       );
+      const lockedModules = lockedModuleIds(
+        (modulesResult.data ?? []) as Array<Record<string, unknown>>,
+        (lessonsResult.data ?? []) as Array<Record<string, unknown>>,
+        completedLessonIds,
+        (attemptsResult.data ?? []) as Array<Record<string, unknown>>,
+      );
       const lessons = ((lessonsResult.data ?? []) as Array<Record<string, unknown>>).map((lesson): Record<string, unknown> & { locked: boolean } => ({
         ...lesson,
         locked: unavailableCourseIds.has(String(lesson.course_id)) ||
+          lockedModules.has(String(lesson.module_id)) ||
           Boolean(lesson.prerequisite_lesson_id && !completedLessonIds.has(String(lesson.prerequisite_lesson_id))) ||
           Boolean(lesson.available_from && new Date(String(lesson.available_from)).getTime() > now),
       }));
@@ -6981,7 +6989,7 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
       return json(200, {
         ...enrollment,
         courses: coursesResult.data ?? [],
-        modules: modulesResult.data ?? [],
+        modules: ((modulesResult.data ?? []) as Array<Record<string, unknown>>).map((module) => ({ ...module, locked: lockedModules.has(String(module.id)) })),
         lessons,
         progress: progressResult.data ?? [],
         quizzes,
@@ -7045,7 +7053,7 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
       if (!lessonId) return json(400, { error: "lesson_id is required" });
       if (!["in_progress", "completed"].includes(nextStatus)) return json(400, { error: "Invalid lesson progress status" });
       const { data: lesson, error: lessonError } = await sb.from("academy_lessons")
-        .select("id, academy_id, course_id, prerequisite_lesson_id, status, available_from")
+        .select("id, academy_id, course_id, module_id, prerequisite_lesson_id, status, available_from")
         .eq("id", lessonId).eq("academy_id", enrollment.academy_id).eq("status", "published").maybeSingle();
       if (lessonError) return json(500, { error: "Failed to load lesson", detail: lessonError.message });
       if (!lesson?.id) return json(404, { error: "Lesson not found" });
@@ -7065,6 +7073,12 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
           .select("id").eq("academy_id", enrollment.academy_id).eq("classroom_id", enrollment.classroom_id)
           .eq("contact_id", enrollment.contact_id).eq("lesson_id", lesson.prerequisite_lesson_id).eq("status", "completed").maybeSingle();
         if (!prerequisite?.id) return json(409, { error: "Complete the prerequisite lesson first" });
+      }
+      if (lesson.module_id) {
+        const { data: moduleOpen } = await sb.rpc("academy_module_unlocked", {
+          p_academy: enrollment.academy_id, p_classroom: enrollment.classroom_id, p_contact: enrollment.contact_id, p_module: lesson.module_id,
+        });
+        if (moduleOpen === false) return json(409, { error: "Pass the module check before starting this module" });
       }
       const nowIso = new Date().toISOString();
       const payload = {
@@ -7117,7 +7131,7 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
       ) return json(409, { error: "Course is outside its classroom availability window" });
       if (quiz.lesson_id) {
         const { data: quizLesson, error: quizLessonError } = await sb.from("academy_lessons")
-          .select("id, prerequisite_lesson_id, available_from, status")
+          .select("id, module_id, prerequisite_lesson_id, available_from, status")
           .eq("academy_id", enrollment.academy_id).eq("course_id", quiz.course_id)
           .eq("id", quiz.lesson_id).eq("status", "published").maybeSingle();
         if (quizLessonError) return json(500, { error: "Failed to load quiz lesson", detail: quizLessonError.message });
@@ -7131,6 +7145,12 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
             .eq("contact_id", enrollment.contact_id).eq("lesson_id", quizLesson.prerequisite_lesson_id)
             .eq("status", "completed").maybeSingle();
           if (!prerequisite?.id) return json(409, { error: "Complete the prerequisite lesson before starting this quiz" });
+        }
+        if (quizLesson.module_id) {
+          const { data: moduleOpen } = await sb.rpc("academy_module_unlocked", {
+            p_academy: enrollment.academy_id, p_classroom: enrollment.classroom_id, p_contact: enrollment.contact_id, p_module: quizLesson.module_id,
+          });
+          if (moduleOpen === false) return json(409, { error: "Pass the module check before starting this quiz" });
         }
       }
       const { data: previousAttempts, error: attemptsError } = await sb.from("academy_quiz_attempts")

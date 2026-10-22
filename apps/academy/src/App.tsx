@@ -193,6 +193,8 @@ const AcademicOperationsView = lazy(loadAcademicOperationsView);
 const RoomTimetableView = lazy(loadRoomTimetableView);
 const GuardianRelationshipsView = lazy(loadGuardianRelationshipsView);
 const TeacherRetentionView = lazy(loadTeacherRetentionView);
+const loadHomeworkView = () => import('./components/office/HomeworkView').then((module) => ({ default: module.HomeworkView }));
+const HomeworkView = lazy(loadHomeworkView);
 const IntelligenceOperationsView = lazy(loadIntelligenceOperationsView);
 const StudentImportView = lazy(loadStudentImportView);
 const BusinessPlatformView = lazy(loadBusinessPlatformView);
@@ -213,6 +215,9 @@ const PaymentsView = lazy(loadPaymentsView);
 const EntitlementsView = lazy(loadEntitlementsView);
 const TeacherDayView = lazy(loadTeacherDayView);
 const academyTeacherFlowV2Enabled = import.meta.env.VITE_ACADEMY_TEACHER_FLOW_V2 === 'true';
+// Homework OS and Courses (docs/product/40-42). Off until the backend release is live.
+const academyHomeworkOsEnabled = import.meta.env.VITE_ACADEMY_HOMEWORK_OS === 'true';
+const HOMEWORK_VIEWS: OfficeView[] = academyHomeworkOsEnabled ? ['homework'] : [];
 
 const WorkspaceSectionSkeleton = () => (
   <section className="workspace-section-skeleton" aria-label={translate("Loading workspace")} aria-busy="true">
@@ -240,7 +245,7 @@ type DirectoryWorkspaceAcademy = {
   student: TeacherStudioStudentDashboard['academies'][number] | null;
 };
 type WorkspaceMode = 'teacher' | 'student';
-type OfficeView = 'imports' | 'rooms' | 'today' | 'academy' | 'platform' | 'services' | 'assessments' | 'business' | 'commercial' | 'academic' | 'relationships' | 'retention' | 'intelligence' | 'operations' | 'os' | 'contacts' | 'inbox' | 'announcements' | 'alerts' | 'classrooms' | 'offers' | 'payments' | 'entitlements';
+type OfficeView = 'homework' | 'imports' | 'rooms' | 'today' | 'academy' | 'platform' | 'services' | 'assessments' | 'business' | 'commercial' | 'academic' | 'relationships' | 'retention' | 'intelligence' | 'operations' | 'os' | 'contacts' | 'inbox' | 'announcements' | 'alerts' | 'classrooms' | 'offers' | 'payments' | 'entitlements';
 type StudentPortalView = 'academy' | 'classrooms' | 'messages' | 'alerts' | 'access' | 'requests' | 'plan' | 'assessments';
 
 const OFFICE_VIEW_PRELOADERS: Partial<Record<OfficeView, () => Promise<unknown>>> = {
@@ -254,6 +259,7 @@ const OFFICE_VIEW_PRELOADERS: Partial<Record<OfficeView, () => Promise<unknown>>
   rooms: loadRoomTimetableView,
   relationships: loadGuardianRelationshipsView,
   retention: loadTeacherRetentionView,
+  homework: loadHomeworkView,
   intelligence: loadIntelligenceOperationsView,
   imports: loadStudentImportView,
   operations: loadOperationsFinanceView,
@@ -301,7 +307,7 @@ type ClassroomResourceFormState = {
 type AcademyLandingSettings = Omit<AcademyLandingFormState, 'name'>;
 type ClassroomLandingSettings = Omit<ClassroomLandingFormState, 'description'>;
 
-const OFFICE_VIEWS: OfficeView[] = ['imports', 'rooms', 'today', 'academy', 'platform', 'services', 'assessments', 'business', 'commercial', 'academic', 'relationships', 'intelligence', 'retention', 'operations', 'classrooms', 'contacts', 'inbox', 'announcements', 'alerts', 'offers', 'payments', 'entitlements', 'os'];
+const OFFICE_VIEWS: OfficeView[] = ['imports', 'rooms', 'today', 'academy', 'platform', 'services', 'assessments', 'business', 'commercial', 'academic', 'relationships', 'intelligence', 'retention', 'operations', 'classrooms', 'contacts', 'inbox', 'announcements', 'alerts', 'offers', 'payments', 'entitlements', 'os', 'homework'];
 const ACADEMY_STAFF_ROLES = new Set(['owner', 'admin', 'center_admin', 'branch_manager', 'manager', 'counselor', 'receptionist', 'salesperson', 'cashier', 'accountant', 'payroll_officer', 'parent_liaison', 'teacher', 'assistant']);
 const STUDENT_PORTAL_VIEWS: StudentPortalView[] = ['academy', 'classrooms', 'messages', 'alerts', 'access', 'requests', 'plan', 'assessments'];
 const CLASSROOM_AUTO_REFRESH_MS = 12000;
@@ -341,6 +347,7 @@ const OFFICE_LABELS: Record<OfficeView, string> = {
   rooms: 'Room timetable',
   relationships: 'Guardians & Parents',
   retention: 'Teacher retention',
+  homework: 'Homework',
   intelligence: 'Follow-ups',
   operations: 'Operations Finance',
   os: 'Daily operations',
@@ -367,6 +374,7 @@ const OFFICE_VIEW_PERMISSIONS: Record<OfficeView, AccessPermissionKey> = {
   rooms: 'viewRoomTimetable',
   relationships: 'manageGuardians',
   retention: 'viewStaffPerformance',
+  homework: 'gradeSubmissions',
   intelligence: 'viewBusinessIntelligence',
   operations: 'viewEconomics',
   os: 'viewEducationOS',
@@ -533,10 +541,10 @@ const officeIntentForAccess = (access: TeacherStudioAccessProfile | null | undef
 };
 
 const OFFICE_ROUTE_VIEW_CAPS: Record<OfficeRouteIntent, OfficeView[]> = {
-  office: ['rooms', 'today', 'contacts', 'imports', 'classrooms', 'assessments', 'services', 'inbox', 'alerts', 'business', 'academic', 'relationships', 'intelligence', 'retention', 'os', 'payments', 'announcements', 'platform', 'commercial', 'operations', 'academy'],
-  admin: ['rooms', 'today', 'contacts', 'imports', 'classrooms', 'assessments', 'services', 'payments', 'os', 'academy', 'business', 'commercial', 'operations', 'offers', 'entitlements', 'relationships', 'intelligence', 'retention', 'platform', 'academic', 'announcements', 'alerts', 'inbox'],
-  teacher: ['today', 'classrooms', 'assessments', 'services', 'os', 'contacts', 'inbox', 'announcements', 'alerts'],
-  center: ['rooms', 'today', 'academy', 'contacts', 'imports', 'classrooms', 'assessments', 'services', 'payments', 'os', 'business', 'commercial', 'operations', 'offers', 'entitlements', 'relationships', 'intelligence', 'retention', 'platform', 'academic', 'inbox', 'alerts', 'announcements'],
+  office: ['rooms', 'today', 'contacts', 'imports', 'classrooms', 'assessments', 'services', 'inbox', 'alerts', 'business', 'academic', 'relationships', 'intelligence', 'retention', 'os', 'payments', 'announcements', 'platform', 'commercial', 'operations', 'academy', ...HOMEWORK_VIEWS],
+  admin: ['rooms', 'today', 'contacts', 'imports', 'classrooms', 'assessments', 'services', 'payments', 'os', 'academy', 'business', 'commercial', 'operations', 'offers', 'entitlements', 'relationships', 'intelligence', 'retention', 'platform', 'academic', 'announcements', 'alerts', 'inbox', ...HOMEWORK_VIEWS],
+  teacher: ['today', 'classrooms', 'assessments', 'services', 'os', 'contacts', 'inbox', 'announcements', 'alerts', ...HOMEWORK_VIEWS],
+  center: ['rooms', 'today', 'academy', 'contacts', 'imports', 'classrooms', 'assessments', 'services', 'payments', 'os', 'business', 'commercial', 'operations', 'offers', 'entitlements', 'relationships', 'intelligence', 'retention', 'platform', 'academic', 'inbox', 'alerts', 'announcements', ...HOMEWORK_VIEWS],
 };
 
 const hasOfficeRoutePermission = (
@@ -1442,6 +1450,7 @@ const App = () => {
       rooms: { title: 'Room timetable', caption: 'Lessons across physical rooms and branch-local dates' },
       relationships: { title: 'Guardians & Parents', caption: 'Consent, secure Telegram linking, visibility, messages, and notification delivery' },
       retention: { title: 'Teacher retention', caption: 'Starting cohorts, teacher transfers and academy departures' },
+      homework: { title: 'Homework', caption: 'Telegram hand-ins, review queue, mistakes and the homework funnel' },
       intelligence: { title: 'Retention & Intelligence', caption: 'Risk, interventions, renewals, owner KPIs, unified actions, search, and governed imports' },
       imports: { title: 'Import students', caption: 'Upload, review and safely import your student spreadsheet' },
       platform: { title: 'Education Business Platform', caption: 'Student lifecycle, branch performance, unit economics, governed automation, and reviewable AI assistance' },
@@ -5273,6 +5282,7 @@ const App = () => {
         },
         todayNav,
         classroomNav,
+        officeNavItem('homework', 'Homework', <GraduationCap size={17} />),
         officeNavItem('rooms', 'Room timetable', <CalendarDays size={17} />),
         officeNavItem('assessments', 'Placement & exams', <ClipboardList size={17} />),
         officeRouteIntent === 'teacher' ? contactsNav : null,
@@ -5505,6 +5515,9 @@ const App = () => {
 
           {officeView === 'retention' && officeCanOpen('retention') && me?.user?.id ? (
             <TeacherRetentionView key={`${academyId}:${me.user.id}`} academyId={academyId} actorId={me.user.id} />
+          ) : null}
+          {officeView === 'homework' && officeCanOpen('homework') && me?.user?.id ? (
+            <HomeworkView key={`${academyId}:${me.user.id}`} academyId={academyId} actorId={me.user.id} />
           ) : null}
           {officeView === 'intelligence' && officeCanOpen('intelligence') ? (
             <IntelligenceOperationsView key={`${academyId}:${me?.user?.id ?? ''}`} academyId={academyId} actorId={me?.user?.id ?? ''} formatDate={formatDate} />

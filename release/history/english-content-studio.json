@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "english-content-studio",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": [
+    "platform"
+  ],
+  "migrations": [],
+  "edgeFunctions": [
+    "admin-english-content"
+  ],
+  "workers": [],
+  "sharedEdgeConsumers": [
+    "admin-english-content"
+  ],
+  "requiredSecrets": [],
+  "rolloutOrder": [
+    "pages",
+    "function:admin-english-content"
+  ],
+  "manualFollowUps": [
+    "Pages: merging publishes platform with the English content studio (New item, Edit content, Duplicate) on /admin/english/content. Until the function is deployed those buttons return an error; listing and the old quick edits keep working.",
+    "Edge: supabase functions deploy admin-english-content --project-ref bbjawctnqrufvnesdsel (needs the registry sync migration 20261023130000, already applied)."
+  ],
+  "verification": [
+    "Without a session GET /functions/v1/admin-english-content/content/item returns 401.",
+    "As an admin: create a draft grammar unit with two drills, publish it, and it appears in /hub/catalog?skill=grammar; archive it and it disappears; duplicate makes a draft '<slug>-copy'."
+  ],
+  "rollback": {
+    "pages": "Cloudflare Pages rollback of schood-platform to the previous deployment.",
+    "migration": "None.",
+    "edge": "Redeploy admin-english-content from the previous main commit; the studio routes stop, the old list and quick edit keep working.",
+    "worker": "Nothing deployed."
+  }
+}

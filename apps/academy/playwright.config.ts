@@ -22,6 +22,7 @@ export default defineConfig({
       VITE_PLATFORM_URL: 'http://127.0.0.1:4177',
       VITE_PLATFORM_PRODUCT_SLUG: 'academy',
       VITE_ACADEMY_TEACHER_FLOW_V2: 'true',
+      VITE_ACADEMY_HOMEWORK_OS: 'true',
     },
   },
 });

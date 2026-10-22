@@ -1,36 +1,72 @@
 {
   "schemaVersion": 1,
-  "releaseId": "english-content-studio",
+  "releaseId": "academy-homework-os-courses",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "platform"
+    "academy"
   ],
-  "migrations": [],
+  "migrations": [
+    "20261024100000_academy_homework_os.sql"
+  ],
   "edgeFunctions": [
-    "admin-english-content"
+    "academy",
+    "academy-learning"
   ],
-  "workers": [],
+  "workers": [
+    "schood-bot"
+  ],
   "sharedEdgeConsumers": [
-    "admin-english-content"
+    "academy-learning"
   ],
-  "requiredSecrets": [],
+  "requiredSecrets": [
+    "ACADEMY_AUDIO_ENCRYPTION_KEY",
+    "ACADEMY_LEARNING_WORKER_SECRET",
+    "GMAIL_SMTP_APP_PASSWORD",
+    "GMAIL_SMTP_EMAIL",
+    "OPENROUTER_API_KEY",
+    "OPENROUTER_BASE_URL",
+    "OPENROUTER_REFERER",
+    "SITE_URL",
+    "TELEGRAM_INTERNAL_SECRET"
+  ],
   "rolloutOrder": [
     "pages",
-    "function:admin-english-content"
+    "migration:20261024100000_academy_homework_os.sql",
+    "secret:ACADEMY_AUDIO_ENCRYPTION_KEY",
+    "secret:GMAIL_SMTP_EMAIL",
+    "secret:GMAIL_SMTP_APP_PASSWORD",
+    "secret:TELEGRAM_INTERNAL_SECRET",
+    "secret:OPENROUTER_API_KEY",
+    "secret:OPENROUTER_BASE_URL",
+    "secret:OPENROUTER_REFERER",
+    "secret:SITE_URL",
+    "secret:ACADEMY_LEARNING_WORKER_SECRET",
+    "function:academy-learning",
+    "function:academy",
+    "worker:schood-bot"
   ],
   "manualFollowUps": [
-    "Pages: merging publishes platform with the English content studio (New item, Edit content, Duplicate) on /admin/english/content. Until the function is deployed those buttons return an error; listing and the old quick edits keep working.",
-    "Edge: supabase functions deploy admin-english-content --project-ref bbjawctnqrufvnesdsel (needs the registry sync migration 20261023130000, already applied)."
+    "Pages: merging publishes academy with the Homework screen behind VITE_ACADEMY_HOMEWORK_OS (repo variable, default false). Nothing changes for staff until that variable is set to true.",
+    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus 20261024100000_academy_homework_os.sql, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then supabase migration list --linked. Adds the Homework OS tables (service-role only), the Schood Teaching product with two inactive placeholder plans, tracking triggers on academy_submissions, unlock gates on academy_lesson_progress and academy_quiz_attempts (no effect while every module keeps its default empty unlock_rule), a publish gate on academy_courses (no effect while billing.enforced is false), and two cron jobs: academy-learning-premark-v1 (every 2 minutes, returns at once while premark.enabled is false) and academy-homework-digest-v1 (Sundays 14:00 UTC, queues nothing while digest.enabled is false). All four academy_learning_config switches start false.",
+    "Secrets: supabase secrets set ACADEMY_AUDIO_ENCRYPTION_KEY=, supabase secrets set GMAIL_SMTP_EMAIL=, supabase secrets set GMAIL_SMTP_APP_PASSWORD=, supabase secrets set TELEGRAM_INTERNAL_SECRET=, supabase secrets set OPENROUTER_API_KEY=, supabase secrets set OPENROUTER_BASE_URL= and supabase secrets set OPENROUTER_REFERER= are not run: they are already configured for academy, send-telegram and the AI tutors. supabase secrets set SITE_URL= is not run (code default https://schood.online). supabase secrets set ACADEMY_LEARNING_WORKER_SECRET= is not run: the cron call authenticates with internal_runtime_secrets.academy_learning_secret created by the migration. academy-learning also reads the existing TELEGRAM_BOT_TOKEN (the @schoodstudentbot token send-telegram uses) and the optional HOMEWORK_AI_MODEL / HOMEWORK_AI_ALLOW_PAID (default: the free OpenRouter model; paid models are refused).",
+    "Edge: supabase functions deploy academy-learning --project-ref bbjawctnqrufvnesdsel after the migration (new function: review queue, decisions, funnel, plan, course checks, Telegram hand-in, AI pre-mark sweep).",
+    "Edge: supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel after the migration (student curriculum marks lessons in locked modules; set_lesson_progress and start_quiz answer 409 before the database gate does). Note: deploy teacher-studio too only if it is redeployed for other reasons; it re-exports academy.",
+    "Worker: cd workers/schood-bot && npx wrangler deploy, after academy-learning is live. The bot forwards media, plain text, /homework, /center and hw:/ctr: buttons to academy-learning, which answers handled:false while telegram_handin.enabled is false, so the bot keeps its current replies until the switch is on.",
+    "Launch (separate, owner decision): update academy_learning_config set value='true' for telegram_handin.enabled, then premark.enabled, then digest.enabled; set the repo variable VITE_ACADEMY_HOMEWORK_OS=true and re-run Pages. Set real Schood Teaching prices and is_active=true before billing.enforced=true."
   ],
   "verification": [
-    "Without a session GET /functions/v1/admin-english-content/content/item returns 401.",
-    "As an admin: create a draft grammar unit with two drills, publish it, and it appears in /hub/catalog?skill=grammar; archive it and it disappears; duplicate makes a draft '<slug>-copy'."
+    "supabase migration list --linked shows 20261024100000 applied; select key, value from academy_learning_config returns four false switches.",
+    "cron.job lists academy-learning-premark-v1 ('*/2 * * * *') and academy-homework-digest-v1 ('0 14 * * 0').",
+    "POST /functions/v1/academy-learning with action worker and no secret returns 401; with action telegram_update and no secret returns 401; a staff call without a session returns 401.",
+    "As an academy owner: action homework_overview returns plan.allowed all true with billing_enforced false; review_queue returns the submitted, ungraded work of the academy.",
+    "With telegram_handin.enabled false, a photo sent to @schoodstudentbot is still ignored and /assignments still answers as before.",
+    "scripts/fixtures/academy-homework-os.sql passes against a dump of the production schema plus this migration."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-platform to the previous deployment.",
-    "migration": "None.",
-    "edge": "Redeploy admin-english-content from the previous main commit; the studio routes stop, the old list and quick edit keep working.",
-    "worker": "Nothing deployed."
+    "pages": "Cloudflare Pages rollback of schood-academy, or leave VITE_ACADEMY_HOMEWORK_OS unset (the default) so the screen stays hidden.",
+    "migration": "Set every academy_learning_config switch to false (stops hand-in, AI and digests). If needed: drop trigger academy_homework_track_submission on academy_submissions; drop trigger academy_lesson_progress_unlock_gate on academy_lesson_progress; drop trigger academy_quiz_attempt_unlock_gate on academy_quiz_attempts; drop trigger academy_courses_publish_gate on academy_courses; select cron.unschedule('academy-learning-premark-v1'); select cron.unschedule('academy-homework-digest-v1'). New tables can stay.",
+    "edge": "Redeploy academy from the previous main commit; academy-learning can stay deployed (it does nothing while the switches are off) or be deleted with supabase functions delete academy-learning.",
+    "worker": "npx wrangler rollback in workers/schood-bot, or redeploy the previous commit; with the hand-in switch off the new forwarding is already inert."
   }
 }
