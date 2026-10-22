@@ -349,9 +349,26 @@ serve(async (req) => {
         products,
       });
 
+      // Passing the lesson marks matching mistakes from writing and speaking as practised.
+      // If the learner makes them again later, recording them reopens them.
+      let practisedMistakes = 0;
+      const focus = toText(unit.focus_area, 80);
+      if (correctnessRatio >= 0.8 && focus) {
+        const { data: improved } = await sb
+          .from("learner_language_errors")
+          .update({ mastery_status: "improving" })
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId)
+          .eq("subskill_key", `grammar.${focus}`)
+          .in("mastery_status", ["open", "reopened"])
+          .select("id");
+        practisedMistakes = Array.isArray(improved) ? improved.length : 0;
+      }
+
       return json(200, {
         ok: true,
         attempt_id: String(recorded.attempt.id ?? ""),
+        practised_mistakes: practisedMistakes,
         score: Math.round(correctnessRatio * 100),
         correct: correctCount,
         total: results.length,

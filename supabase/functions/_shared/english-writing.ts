@@ -1,3 +1,4 @@
+import { GRAMMAR_TOPICS, grammarTopicFor, isGrammarTopic, topicSubskill } from "./english-mistakes.ts";
 // Writing feedback for the English writing skill.
 //
 // One submission = one piece of feedback. The AI path asks for a CEFR-aligned
@@ -35,6 +36,8 @@ export type WritingCorrection = {
   corrected: string;
   explanation: string;
   category: WritingCategory;
+  /** Grammar topic suggested by the model (validated later against the lesson list). */
+  topic?: string | null;
 };
 
 export type WritingCriterion = { key: WritingCriterionKey; score: number; comment: string };
@@ -866,13 +869,14 @@ export const WRITING_SYSTEM_PROMPT = [
   "from the learner's text and be short (one phrase, at most 12 words). 'corrected' is the fixed version of that same phrase.",
   "Do not correct text that is already correct. British and American spelling are both fine.",
   "category is one of grammar, vocabulary, spelling, punctuation, style.",
+  `For grammar corrections, topic is the grammar point it practises, one of: ${GRAMMAR_TOPICS.join(", ")}; otherwise topic is null.`,
   "Write every comment for a learner at about B1 level: short, plain, friendly, concrete, and speak to the learner as 'you'.",
   "Each comment is one sentence of at most 20 words. Do not mention AI, scores or the rubric in comments.",
   "model_sentences: rewrite 1 or 2 key sentences from the text so they show the target level. 'original' must be copied exactly from the text.",
   "checklist_covered: one true/false per task point, in the same order, true only if the text clearly covers that point.",
   "Return strict JSON only, with this shape:",
   '{"overall":0,"criteria":{"task":{"score":0,"comment":""},"organisation":{"score":0,"comment":""},"vocabulary":{"score":0,"comment":""},"grammar":{"score":0,"comment":""}},',
-  '"strengths":["",""],"improvements":["",""],"corrections":[{"original":"","corrected":"","explanation":"","category":"grammar"}],',
+  '"strengths":["",""],"improvements":["",""],"corrections":[{"original":"","corrected":"","explanation":"","category":"grammar","topic":null}],',
   '"next_step":"","model_sentences":[{"original":"","improved":""}],"checklist_covered":[true]}',
 ].join(" ");
 
@@ -959,6 +963,7 @@ export const validateCorrections = (raw: unknown, draft: string, max = MAX_CORRE
       corrected,
       explanation: cleanString(item.explanation, 240) || "Check this part.",
       category: normalizeCategory(item.category),
+      topic: isGrammarTopic(item.topic) ? item.topic : null,
     });
     if (out.length >= max) break;
   }
@@ -1097,14 +1102,20 @@ export const buildWritingFeedback = (
 const SEVERITY: Record<WritingCategory, number> = { grammar: 0.6, vocabulary: 0.5, spelling: 0.4, punctuation: 0.35, style: 0.3 };
 
 export const issuesFromFeedback = (feedback: WritingFeedback, slug: string): Array<Record<string, unknown>> => {
-  const issues: Array<Record<string, unknown>> = feedback.corrections.map((correction) => ({
+  const issues: Array<Record<string, unknown>> = feedback.corrections.map((correction) => {
+    const topic = correction.category === "grammar"
+      ? grammarTopicFor({ original: correction.original, corrected: correction.corrected, explanation: correction.explanation, suggested: correction.topic })
+      : null;
+    return {
     category: correction.category === "grammar" ? "grammar" : correction.category === "vocabulary" ? "vocabulary" : "writing",
-    subskill_key: `writing.${correction.category}`,
+    // A grammar topic links the mistake to the lesson that fixes it.
+    subskill_key: topic ? topicSubskill(topic) : `writing.${correction.category}`,
     location_ref: slug,
     explanation: `${correction.original} → ${correction.corrected}`.slice(0, 240),
     correction_hint: correction.explanation,
     severity: SEVERITY[correction.category],
-  }));
+    };
+  });
   const task = feedback.criteria.find((entry) => entry.key === "task");
   if (task && task.score < 50) {
     issues.push({

@@ -28,11 +28,13 @@ import { parseEnglishClientRecoveryEvent } from "../_shared/english-client-recov
 import {
   type AttemptRow,
   type CatalogItem,
+  CEFR_ORDER,
   type Cefr,
   currentStreak,
   dailyCounts,
   isCefr as isTodayCefr,
   longestStreak,
+  pickFixes,
   planToday,
   skillProgress,
   TODAY_SKILLS,
@@ -40,6 +42,7 @@ import {
   type TodayTask,
   weekStrip,
 } from "../_shared/english-today.ts";
+import { topicFromSubskill } from "../_shared/english-mistakes.ts";
 
 const routeMarker = "/hub";
 
@@ -54,6 +57,53 @@ const PRIMARY_CONTENT_TYPES = [
   "immersion.mission",
   "vocabulary.deck",
 ];
+
+/**
+ * Mistakes for Review. Grammar mistakes are grouped by topic (all the different
+ * sentences where the learner made the same kind of error) and linked to the
+ * lesson that practises it; other mistakes are listed one by one.
+ */
+const groupMistakes = (
+  rows: Array<Record<string, unknown>>,
+  units: Array<Record<string, unknown>>,
+  grammarLevel: string | null,
+) => {
+  const target = CEFR_ORDER.indexOf((grammarLevel ?? "B1") as Cefr);
+  const lessonFor = (topic: string) => {
+    const unit = units
+      .filter((entry) => entry.focus_area === topic)
+      .sort((a, b) => Math.abs(CEFR_ORDER.indexOf(a.level as Cefr) - target) - Math.abs(CEFR_ORDER.indexOf(b.level as Cefr) - target))[0];
+    return unit ? { slug: String(unit.slug), title: String(unit.title ?? "") } : null;
+  };
+  const groups = new Map<string, {
+    key: string; topic: string | null; skill: string; count: number; examples: string[];
+    status: "open" | "improving"; last_seen_at: string; lesson: { slug: string; title: string } | null;
+  }>();
+  for (const row of rows) {
+    const topic = topicFromSubskill(String(row.subskill_key ?? ""));
+    const example = String(row.error_type ?? "").trim();
+    if (!example) continue;
+    const key = topic ? `topic:${topic}` : `one:${String(row.service_key)}:${example}`;
+    const status = row.mastery_status === "improving" ? "improving" : "open";
+    const group = groups.get(key) ?? {
+      key,
+      topic,
+      skill: topic ? "grammar" : String(row.service_key ?? ""),
+      count: 0,
+      examples: [],
+      status,
+      last_seen_at: String(row.last_seen_at ?? ""),
+      lesson: topic ? lessonFor(topic) : null,
+    };
+    group.count += Number(row.error_frequency ?? 1);
+    if (group.examples.length < 3 && !group.examples.includes(example)) group.examples.push(example);
+    if (status === "open") group.status = "open";
+    groups.set(key, group);
+  }
+  return [...groups.values()]
+    .sort((a, b) => (a.status === b.status ? 0 : a.status === "open" ? -1 : 1) || b.count - a.count)
+    .slice(0, 12);
+};
 
 const jsonCached = (status: number, body: unknown, maxAgeSeconds = 60): Response =>
   new Response(JSON.stringify(body), {
@@ -235,7 +285,7 @@ serve(async (req) => {
       }
 
       if (route === "/progress") {
-        const [items, attemptRows, goalRes, errorsRes] = await Promise.all([
+        const [items, attemptRows, goalRes, errorsRes, unitsRes] = await Promise.all([
           loadCatalog(),
           loadAttempts(3650, 2000),
           sb.from("learner_language_goals")
@@ -248,9 +298,12 @@ serve(async (req) => {
             .eq("user_id", auth.userId)
             .eq("language_id", scope.languageId)
             .in("mastery_status", ["open", "reopened", "improving"])
-            .order("error_frequency", { ascending: false })
             .order("last_seen_at", { ascending: false })
-            .limit(10),
+            .limit(300),
+          sb.from("grammar_units")
+            .select("slug, title, focus_area, level")
+            .eq("language_id", scope.languageId)
+            .eq("status", "published"),
         ]);
         const attempts: AttemptRow[] = attemptRows
           .filter((row) => (TODAY_SKILLS as readonly string[]).includes(String(row.service_key)))
@@ -285,13 +338,11 @@ serve(async (req) => {
           days,
           skills: skillProgress(attempts, (id) => levelById.get(id) ?? null, levelFor)
             .map((row) => ({ ...row, level: levelFor(row.skill) })),
-          mistakes: ((errorsRes.data ?? []) as Array<Record<string, unknown>>).map((row) => ({
-            skill: String(row.service_key ?? ""),
-            subskill: String(row.subskill_key ?? ""),
-            pattern: String(row.error_type ?? ""),
-            count: Number(row.error_frequency ?? 1),
-            last_seen_at: String(row.last_seen_at ?? ""),
-          })),
+          mistakes: groupMistakes(
+            (errorsRes.data ?? []) as Array<Record<string, unknown>>,
+            (unitsRes.data ?? []) as Array<Record<string, unknown>>,
+            levelFor("grammar"),
+          ),
         });
       }
 
@@ -302,7 +353,7 @@ serve(async (req) => {
         && Math.abs(Date.parse(requestedDate) - Date.parse(utcToday)) <= 86_400_000;
       const planDate = dateOk ? requestedDate : utcToday;
 
-      const [items, attemptRows, goalRes, notebook, access, existingRes] = await Promise.all([
+      const [items, attemptRows, goalRes, notebook, access, existingRes, mistakesRes, unitsRes] = await Promise.all([
         loadCatalog(),
         loadAttempts(60, 400),
         sb.from("learner_language_goals")
@@ -318,6 +369,18 @@ serve(async (req) => {
           .eq("language_id", scope.languageId)
           .eq("plan_date", planDate)
           .maybeSingle(),
+        sb.from("learner_language_errors")
+          .select("subskill_key, error_type, error_frequency, last_seen_at")
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId)
+          .like("subskill_key", "grammar.%")
+          .in("mastery_status", ["open", "reopened"])
+          .gte("last_seen_at", new Date(Date.now() - 30 * 86_400_000).toISOString())
+          .limit(200),
+        sb.from("grammar_units")
+          .select("slug, focus_area, level")
+          .eq("language_id", scope.languageId)
+          .eq("status", "published"),
       ]);
 
       const goal = goalRes.data as Record<string, unknown> | null;
@@ -358,6 +421,26 @@ serve(async (req) => {
         ? existingSummary.today_tasks as TodayTask[]
         : null;
 
+      const grammarBySlug = new Map(items.filter((entry) => entry.skill === "grammar").map((entry) => [entry.slug, entry]));
+      const lessonFor = (topic: string): CatalogItem | null => {
+        const target = CEFR_ORDER.indexOf(perSkillLevel.grammar ?? overallLevel ?? "B1");
+        const units = ((unitsRes.data ?? []) as Array<Record<string, unknown>>)
+          .filter((unit) => unit.focus_area === topic && grammarBySlug.has(String(unit.slug)))
+          .sort((a, b) =>
+            Math.abs(CEFR_ORDER.indexOf(a.level as Cefr) - target) - Math.abs(CEFR_ORDER.indexOf(b.level as Cefr) - target));
+        return units[0] ? grammarBySlug.get(String(units[0].slug)) ?? null : null;
+      };
+      const fixes = pickFixes({
+        mistakes: ((mistakesRes.data ?? []) as Array<Record<string, unknown>>).flatMap((row) => {
+          const topic = topicFromSubskill(String(row.subskill_key ?? ""));
+          return topic
+            ? [{ topic, count: Number(row.error_frequency ?? 1), example: String(row.error_type ?? ""), last_seen_at: String(row.last_seen_at ?? "") }]
+            : [];
+        }),
+        lessonFor,
+        attempts,
+      });
+
       const plan = planToday({
         date: planDate,
         dailyMinutes,
@@ -368,6 +451,7 @@ serve(async (req) => {
         dueReviews: notebook.dueCount,
         availableSkills,
         existing,
+        fixes,
       });
 
       // Persist so the selection stays stable all day and Student Center can show it.

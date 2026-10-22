@@ -19,7 +19,9 @@ const TaskRow = ({ task, dueReviews, primary }: { task: TodayTask; dueReviews: n
   const title = task.kind === 'review' ? t('today.task.review', { count: dueReviews }) : task.title;
   const reason = task.reason === 'review_due'
     ? t('today.reason.review_due')
-    : t(`today.reason.${task.reason}`, { skill: skillName });
+    : task.reason === 'fix_mistake'
+      ? t('today.reason.fix_mistake', { example: task.detail ?? '' })
+      : t(`today.reason.${task.reason}`, { skill: skillName });
   const kindNote = task.item_kind === 'retry' && task.previous_score !== null
     ? t('today.kind.retry', { score: task.previous_score })
     : task.item_kind && task.item_kind !== 'new' ? t(`today.kind.${task.item_kind}`) : null;

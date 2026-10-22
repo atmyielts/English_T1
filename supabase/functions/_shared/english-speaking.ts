@@ -12,6 +12,7 @@
 // covers cue points (by keyword), length, pace, variety and filler words,
 // and says plainly that the feedback is basic.
 
+import { grammarTopicFor, topicSubskill } from "./english-mistakes.ts";
 export type SpeakingMode = "speech" | "typed";
 
 export type CefrLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
@@ -483,14 +484,18 @@ export const normalizeAIFeedback = (
 // Mistakes for the learner's Review list
 
 export const issuesFromFeedback = (feedback: SpeakingFeedback, slug: string): Array<Record<string, unknown>> => {
-  const issues: Array<Record<string, unknown>> = feedback.corrections.map((correction) => ({
+  const issues: Array<Record<string, unknown>> = feedback.corrections.map((correction) => {
+    const topic = grammarTopicFor({ original: correction.said, corrected: correction.better, explanation: correction.explanation });
+    return {
     category: "grammar",
-    subskill_key: "speaking.accuracy",
+    // A grammar topic links the mistake to the lesson that fixes it.
+    subskill_key: topic ? topicSubskill(topic) : "speaking.accuracy",
     location_ref: slug,
     explanation: `"${correction.said}" → "${correction.better}"`.slice(0, 240),
     correction_hint: correction.explanation || correction.better,
     severity: 0.55,
-  }));
+    };
+  });
   const missing = feedback.cue_points.filter((cue) => !cue.covered);
   if (missing.length) {
     issues.push({

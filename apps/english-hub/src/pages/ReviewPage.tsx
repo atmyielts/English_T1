@@ -77,7 +77,7 @@ export const ReviewPage = () => {
   const progress = useResource((signal) => getProgress(signal), []);
   const [finished, setFinished] = useState<number | null>(null);
   const cards = due.data?.cards ?? [];
-  const mistakes = (progress.data?.mistakes ?? []).filter((mistake) => mistake.pattern).slice(0, 8);
+  const mistakes = (progress.data?.mistakes ?? []).slice(0, 8);
 
   return (
     <>
@@ -116,18 +116,33 @@ export const ReviewPage = () => {
           {progress.data && mistakes.length === 0 ? <p>{t('review.mistakes.empty')}</p> : null}
           {mistakes.length ? (
             <ul className="en-list">
-              {mistakes.map((mistake) => (
-                <li key={`${mistake.skill}-${mistake.pattern}`}>
-                  <Link className="en-item" to={mistake.skill === 'writing' ? '/grammar' : `/${mistake.skill}`}>
-                    <SkillDot skill={mistake.skill} />
-                    <span className="en-item-main">
-                      <strong>{mistake.pattern}</strong>
-                      <span>{t(`skill.${mistake.skill}`)} · {t('review.mistakes.times', { count: mistake.count })}</span>
-                    </span>
-                    <span className="en-item-meta"><span className="en-button-quiet">{t('review.mistakes.practise')}</span></span>
-                  </Link>
-                </li>
-              ))}
+              {mistakes.map((mistake) => {
+                const title = mistake.topic ? t(`topic.${mistake.topic}`) : mistake.examples[0];
+                const target = mistake.lesson ? `/grammar/${encodeURIComponent(mistake.lesson.slug)}` : `/${mistake.skill}`;
+                return (
+                  <li key={mistake.key}>
+                    <div className={`en-item ${mistake.status === 'improving' ? 'is-done' : ''}`.trim()}>
+                      <SkillDot skill={mistake.skill} />
+                      <span className="en-item-main">
+                        <strong>{title}</strong>
+                        {mistake.topic ? (
+                          <span className="en-diff" lang="en">
+                            {mistake.examples.map((example) => <span key={example} style={{ display: 'block' }}>{example}</span>)}
+                          </span>
+                        ) : null}
+                        <span>
+                          {mistake.status === 'improving' ? t('review.mistakes.practised') : t('review.mistakes.times', { count: mistake.count })}
+                        </span>
+                      </span>
+                      <span className="en-item-meta">
+                        <Link className={mistake.status === 'open' && mistake.lesson ? 'en-button' : 'en-button-quiet'} to={target}>
+                          {mistake.lesson ? t('review.mistakes.fix') : t('review.mistakes.practise')}
+                        </Link>
+                      </span>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           ) : null}
         </Panel>

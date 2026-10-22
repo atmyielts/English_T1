@@ -42,6 +42,7 @@ export type AttemptRow = {
 
 export type TodayReason =
   | "review_due"
+  | "fix_mistake"
   | "not_started"
   | "weakest"
   | "keep_fresh"
@@ -62,7 +63,18 @@ export type TodayTask = {
   item_kind: TodayItemKind | null;
   /** Score (0..100) of the learner's best earlier attempt on this item, for retries. */
   previous_score: number | null;
+  /** For fix_mistake tasks: one example of the mistake, as the learner wrote it. */
+  detail?: string | null;
   done: boolean;
+};
+
+/** A grammar lesson that targets a mistake the learner keeps making. */
+export type FixCandidate = {
+  topic: string;
+  /** Times the mistake was recorded recently (all instances of the topic). */
+  count: number;
+  example: string;
+  item: CatalogItem;
 };
 
 export type TodayInput = {
@@ -79,6 +91,8 @@ export type TodayInput = {
   availableSkills: TodaySkill[];
   /** A plan already stored for this date. Its selection is kept so the day stays stable. */
   existing?: TodayTask[] | null;
+  /** Lessons for repeated mistakes, most urgent first. The first one is planned. */
+  fixes?: FixCandidate[];
 };
 
 export type TodayPlan = {
@@ -212,6 +226,26 @@ export const planToday = (input: TodayInput): TodayPlan => {
   // Keep the day's selection stable once made; only refresh completion.
   if (input.existing && input.existing.length) {
     const kept = input.existing.filter((task) => task.kind === "review" || available.has(task.skill));
+    // A mistake that became "repeated" during the day joins today's plan right away.
+    const fresh = available.has("grammar") ? (input.fixes ?? [])[0] : undefined;
+    if (fresh && !kept.some((task) => task.content_item_id === fresh.item.id)) {
+      const at = kept[0]?.kind === "review" ? 1 : 0;
+      kept.splice(at, 0, {
+        id: `fix:${fresh.item.id}`,
+        kind: "activity",
+        skill: "grammar",
+        content_item_id: fresh.item.id,
+        slug: fresh.item.slug,
+        title: fresh.item.title,
+        level: fresh.item.level,
+        minutes: Math.max(3, Math.min(30, fresh.item.minutes)),
+        reason: "fix_mistake",
+        item_kind: null,
+        previous_score: null,
+        detail: fresh.example,
+        done: false,
+      });
+    }
     if (kept.length) return finish(input.date, withDone(kept, input.attempts, input.date, input.dueReviews));
   }
 
@@ -237,13 +271,35 @@ export const planToday = (input: TodayInput): TodayPlan => {
     used += REVIEW_MINUTES;
   }
 
+  // A mistake the learner keeps making comes first: it is the most useful practice there is.
+  const fix = available.has("grammar") ? (input.fixes ?? [])[0] : undefined;
+  if (fix) {
+    tasks.push({
+      id: `fix:${fix.item.id}`,
+      kind: "activity",
+      skill: "grammar",
+      content_item_id: fix.item.id,
+      slug: fix.item.slug,
+      title: fix.item.title,
+      level: fix.item.level,
+      minutes: Math.max(3, Math.min(30, fix.item.minutes)),
+      reason: "fix_mistake",
+      item_kind: null,
+      previous_score: null,
+      detail: fix.example,
+      done: false,
+    });
+    used += tasks[tasks.length - 1]!.minutes;
+  }
+
   const signals = skillSignals(input.attempts, input.date);
   const ranked = TODAY_SKILLS
     .filter((skill) => available.has(skill) && input.items.some((item) => item.skill === skill))
+    .filter((skill) => !(fix && skill === "grammar"))
     .map((skill) => ({ skill, ...skillPriority(signals.get(skill)!, input.date) }))
     .sort((a, b) => b.priority - a.priority);
 
-  let activities = 0;
+  let activities = fix ? 1 : 0;
   for (const entry of ranked) {
     if (activities >= MAX_ACTIVITIES) break;
     const target = input.perSkillLevel[entry.skill] ?? input.overallLevel;
@@ -366,4 +422,35 @@ export const currentStreak = (attempts: AttemptRow[], date: string): number => {
     cursor -= 86_400_000;
   }
   return streak;
+};
+
+/** Keeps topics recorded at least twice whose lesson wasn't passed since, most frequent first. */
+export const pickFixes = (input: {
+  mistakes: Array<{ topic: string; count: number; example: string; last_seen_at: string }>;
+  lessonFor: (topic: string) => CatalogItem | null;
+  attempts: AttemptRow[];
+  minCount?: number;
+}): FixCandidate[] => {
+  const byTopic = new Map<string, { count: number; example: string; last: string }>();
+  for (const mistake of input.mistakes) {
+    const entry = byTopic.get(mistake.topic) ?? { count: 0, example: mistake.example, last: mistake.last_seen_at };
+    entry.count += mistake.count;
+    if (mistake.last_seen_at > entry.last) {
+      entry.last = mistake.last_seen_at;
+      entry.example = mistake.example;
+    }
+    byTopic.set(mistake.topic, entry);
+  }
+  const out: FixCandidate[] = [];
+  for (const [topic, entry] of byTopic) {
+    if (entry.count < (input.minCount ?? 2)) continue;
+    const item = input.lessonFor(topic);
+    if (!item) continue;
+    const passedSince = input.attempts.some((attempt) =>
+      attempt.content_item_id === item.id && (attempt.score ?? 0) >= 0.8 && attempt.submitted_at > entry.last
+    );
+    if (passedSince) continue;
+    out.push({ topic, count: entry.count, example: entry.example, item });
+  }
+  return out.sort((a, b) => b.count - a.count);
 };

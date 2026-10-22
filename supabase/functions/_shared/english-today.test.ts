@@ -5,6 +5,7 @@ import {
   currentStreak,
   dailyCounts,
   longestStreak,
+  pickFixes,
   pickItem,
   planToday,
   skillProgress,
@@ -197,4 +198,49 @@ Deno.test("streak counts consecutive days ending today or yesterday", () => {
   assertEquals(strip.length, 7);
   assertEquals(strip[6], { date: "2026-10-22", count: 0 });
   assertEquals(strip[5], { date: "2026-10-21", count: 1 });
+});
+
+Deno.test("a repeated mistake puts its grammar lesson first, instead of another grammar item", () => {
+  const lesson = item("g-art", "grammar", "A2", 8);
+  const plan = planToday({
+    date: "2026-10-22",
+    dailyMinutes: 20,
+    overallLevel: "B1",
+    perSkillLevel: {},
+    items: [...catalog, lesson],
+    attempts: [],
+    dueReviews: 0,
+    availableSkills: [...TODAY_SKILLS],
+    fixes: [{ topic: "articles", count: 3, example: "She opened door → She opened the door", item: lesson }],
+  });
+  assertEquals(plan.tasks[0]?.reason, "fix_mistake");
+  assertEquals(plan.tasks[0]?.slug, "g-art");
+  assertEquals(plan.tasks[0]?.detail, "She opened door → She opened the door");
+  assertEquals(plan.tasks.filter((task) => task.skill === "grammar").length, 1);
+});
+
+Deno.test("fix candidates need two mistakes and drop topics whose lesson was passed since", () => {
+  const lesson = item("g-art", "grammar", "A2");
+  const lessons: Record<string, CatalogItem> = { articles: lesson, comparatives: item("g-cmp", "grammar", "A2") };
+  const mistakes = [
+    { topic: "articles", count: 1, example: "a umbrella → an umbrella", last_seen_at: "2026-10-20T10:00:00Z" },
+    { topic: "articles", count: 1, example: "She opened door → She opened the door", last_seen_at: "2026-10-21T10:00:00Z" },
+    { topic: "comparatives", count: 1, example: "more better → better", last_seen_at: "2026-10-21T10:00:00Z" },
+  ];
+  const fixes = pickFixes({ mistakes, lessonFor: (topic) => lessons[topic] ?? null, attempts: [] });
+  assertEquals(fixes.map((fix) => fix.topic), ["articles"]);
+  assertEquals(fixes[0]?.count, 2);
+  assertEquals(fixes[0]?.example, "She opened door → She opened the door");
+  const passed = pickFixes({
+    mistakes,
+    lessonFor: (topic) => lessons[topic] ?? null,
+    attempts: [attempt("g-art", "grammar", 0.9, "2026-10-22")],
+  });
+  assertEquals(passed, []);
+  const failedAgain = pickFixes({
+    mistakes,
+    lessonFor: (topic) => lessons[topic] ?? null,
+    attempts: [attempt("g-art", "grammar", 0.5, "2026-10-22")],
+  });
+  assertEquals(failedAgain.map((fix) => fix.topic), ["articles"]);
 });

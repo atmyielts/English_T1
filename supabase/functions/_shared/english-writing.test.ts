@@ -275,12 +275,13 @@ Deno.test("validateCorrections keeps at most the limit and only real quotes", ()
   assertEquals(corrections.length, 1);
 });
 
-Deno.test("issues map correction categories to writing subskills", () => {
+Deno.test("issues map grammar corrections to lesson topics and others to writing subskills", () => {
   const feedback = normalizeAIFeedback(fakeAI, aiDraft, aiPrompt)!;
   const issues = issuesFromFeedback(feedback, "study-alone-or-with-friends");
   assert(issues.length >= 3 && issues.length <= 8);
   const agree = issues.find((issue) => String(issue.explanation).startsWith("I am agree"));
-  assertEquals(agree?.subskill_key, "writing.grammar");
+  // "I am agree" → "I agree" is practised in the verb-patterns lesson.
+  assertEquals(agree?.subskill_key, "grammar.verb-patterns");
   assertEquals(agree?.category, "grammar");
   const vocab = issues.find((issue) => String(issue.explanation).startsWith("informations"));
   assertEquals(vocab?.subskill_key, "writing.vocabulary");

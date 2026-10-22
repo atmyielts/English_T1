@@ -1053,7 +1053,10 @@ export const upsertErrorsFromFeedback = async (
           last_seen_at: new Date().toISOString(),
           error_frequency: nextFrequency,
           severity_score: nextSeverity,
-          mastery_status: nextFrequency >= 3 ? "reopened" : current.mastery_status ?? "open",
+          // A mistake made again after it was practised, or a third time, is open again.
+          mastery_status: nextFrequency >= 3 || current.mastery_status === "improving" || current.mastery_status === "resolved"
+            ? "reopened"
+            : current.mastery_status ?? "open",
         })
         .eq("id", String(current.id));
       if (error) throw new Error(`Failed to update learner error: ${error.message}`);
