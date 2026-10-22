@@ -7,8 +7,10 @@ import {
 import { useI18n } from "../../service-i18n/src/i18n.tsx";
 import { useWebT } from "./i18n/useWebT.ts";
 export function AppealView(
-  { appeal, busy, blocked, send }: {
+  { appeal, actor, busy, blocked, send }: {
     appeal: AppealDetail;
+    /** The signed-in reviewer; needed to take an appeal for review. */
+    actor?: string;
     busy: boolean;
     blocked: boolean;
     send: (action: string, data: Record<string, unknown>) => Promise<boolean>;
@@ -17,7 +19,23 @@ export function AppealView(
   const t = useWebT(), { date } = useI18n();
   const [explanation, setExplanation] = useState(""),
     [outcome, setOutcome] = useState("upheld"),
-    [ack, setAck] = useState(false);
+    [ack, setAck] = useState(false),
+    [reason, setReason] = useState(""),
+    [escalateAck, setEscalateAck] = useState(false);
+  async function escalate(event: FormEvent) {
+    event.preventDefault();
+    if (
+      await send("appeal.escalate", {
+        appeal_id: appeal.id,
+        expected_revision: appeal.revision,
+        reason,
+      })
+    ) {
+      setReason("");
+      setEscalateAck(false);
+    }
+  }
+  const open = appeal.status === "submitted" || appeal.status === "escalated";
   async function submit(event: FormEvent) {
     event.preventDefault();
     const action = appeal.can_withdraw ? "appeal.withdraw" : "appeal.decide";
@@ -60,6 +78,35 @@ export function AppealView(
         {t("appeal.view.reference")}{" "}
         <span className="appeal-reference">{appeal.score_revision_id}</span>
       </p>
+      {appeal.stage === 2 && (
+        <p>
+          <strong>{t("appeal.view.stageTwo")}</strong>
+        </p>
+      )}
+      {open && appeal.assigned_to && (
+        <p role="status">
+          {t(
+            appeal.can_decide
+              ? "appeal.view.assignedToYou"
+              : "appeal.view.assignedReviewer",
+          )}
+        </p>
+      )}
+      {appeal.can_assign_self && actor && (
+        <button
+          type="button"
+          className="quiet"
+          disabled={busy || blocked}
+          onClick={() =>
+            void send("appeal.assign", {
+              appeal_id: appeal.id,
+              expected_revision: appeal.revision,
+              reviewer_id: actor,
+            })}
+        >
+          {t("appeal.view.assignSelf")}
+        </button>
+      )}
       {appeal.events.length > 0 && (
         <ol className="appeal-history" aria-label={t("appeal.view.history")}>
           {appeal.events.map((event) => (
@@ -78,9 +125,49 @@ export function AppealView(
           })}
         </p>
       )}
-      {appeal.status === "submitted" && !appeal.can_decide &&
+      {open && !appeal.can_decide &&
         !appeal.can_withdraw && (
         <p>{t("appeal.view.independent")}</p>
+      )}
+      {appeal.can_escalate && (
+        <form onSubmit={(event) => void escalate(event)}>
+          <h4>{t("appeal.view.escalateTitle")}</h4>
+          <p>
+            {t("appeal.view.escalateLead")}
+            {appeal.escalation_deadline &&
+              " " +
+                t("appeal.view.escalationDeadline", {
+                  date: date(appeal.escalation_deadline),
+                })}
+          </p>
+          <label>
+            {t("appeal.view.escalateReason")}
+            <textarea
+              required
+              maxLength={5000}
+              value={reason}
+              onChange={(event) => {
+                setReason(event.target.value);
+                setEscalateAck(false);
+              }}
+              disabled={busy || blocked}
+            />
+          </label>
+          <label className="check">
+            <input
+              type="checkbox"
+              checked={escalateAck}
+              onChange={(event) => setEscalateAck(event.target.checked)}
+              disabled={busy || blocked}
+            />
+            {t("appeal.view.escalateAck")}
+          </label>
+          <button
+            disabled={busy || blocked || !escalateAck || !reason.trim()}
+          >
+            {t("appeal.view.escalate")}
+          </button>
+        </form>
       )}
       {(appeal.can_withdraw || appeal.can_decide) && (
         <form onSubmit={(event) => void submit(event)}>

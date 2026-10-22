@@ -19,7 +19,11 @@ export function AppealList(
                 ? "appeal.list.pendingSubmission"
                 : state.pending.action === "appeal.withdraw"
                 ? "appeal.list.pendingWithdrawal"
-                : "appeal.list.pendingDecision",
+                : state.pending.action === "appeal.escalate"
+                ? "appeal.list.pendingEscalation"
+                : state.pending.action === "appeal.decide"
+                ? "appeal.list.pendingDecision"
+                : "appeal.list.pendingChange",
             )}
           </p>
           <button disabled={state.busy} onClick={() => void state.send()}>

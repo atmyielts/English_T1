@@ -44,3 +44,4 @@
   flex-shrink: 0;
   margin-top: 0.25rem;
 }
+.appeal-policy{display:grid;gap:.75rem;margin:1rem 0}.appeal-policy form{display:grid;gap:.75rem}.appeal-policy dl{display:grid;gap:.5rem;margin:0}.appeal-policy dd{margin:0}

@@ -1283,4 +1283,11 @@ export const en = {
   'error.blueprint_exposure_exhausted': "Too many questions have reached their exposure limit for this sitting. No requirements were relaxed. Contact your institution.",
   'error.blueprint_enemies_selected': "This form contains questions that must not appear together.",
   'error.blueprint_family_exceeded': "This form contains too many questions from one family.",
+  'appeals.policy.title': "Appeal deadlines",
+  'appeals.policy.filing': "Days to file an appeal after release",
+  'appeals.policy.escalation': "Days to ask for a second-stage review",
+  'appeals.policy.hint': "Leave empty for no deadline.",
+  'appeals.policy.save': "Save appeal deadlines",
+  'appeals.policy.none': "No deadline",
+  'appeals.policy.days': "{count|one:# day|other:# days}",
 };

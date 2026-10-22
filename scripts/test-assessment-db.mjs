@@ -75,6 +75,7 @@ try {
   files.push('supabase/migrations/20261022120000_assessment_webhooks.sql','supabase/tests/assessment-webhooks.integration.sql');
   files.push('supabase/migrations/20261022130000_assessment_api_clients.sql','supabase/tests/assessment-api-clients.integration.sql');
   files.push('supabase/migrations/20261022140000_assessment_blueprint_relations.sql','supabase/tests/assessment-blueprint-relations.integration.sql');
+  files.push('supabase/migrations/20261022150000_assessment_appeal_workflow.sql','supabase/tests/assessment-appeal-workflow.integration.sql');
   const program=files.map(file=>{
     const protocol=file.endsWith('.integration.sql')?readFileSync('supabase/tests/assessment-runtime.fixture.sql','utf8')+'\n':'';
     const analyticsFixture=file.endsWith('assessment-analytics.integration.sql')?'begin;\n'+readFileSync('supabase/tests/assessment-analytics.fixture.sql','utf8')+'\n':'';

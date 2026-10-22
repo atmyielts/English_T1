@@ -22,6 +22,33 @@ export interface AppealRepository {
     data: Record<string, unknown>,
   ): Promise<unknown>;
 }
+// An appeal revision is a small positive integer; the policy starts at revision 0.
+function revision(value: unknown, minimum: number) {
+  if (
+    typeof value !== "number" || !Number.isInteger(value) || value < minimum ||
+    value > 50
+  ) {
+    throw new ContractError(
+      "invalid_appeal_revision",
+      "Use the current appeal revision",
+    );
+  }
+  return value;
+}
+// A day limit is optional: null removes it.
+function days(value: unknown) {
+  if (value === null || value === undefined) return null;
+  if (
+    typeof value !== "number" || !Number.isInteger(value) || value < 1 ||
+    value > 365
+  ) {
+    throw new ContractError(
+      "invalid_appeal_policy",
+      "Use a limit from 1 to 365 days, or none",
+    );
+  }
+  return value;
+}
 export function createAppealHandler(
   repository: AppealRepository,
   allowedOrigins: string[],
@@ -88,6 +115,8 @@ export function createAppealHandler(
             ? "candidate"
             : path === "queue"
             ? "queue"
+            : path === "policy"
+            ? "policy"
             : match
             ? "detail"
             : null;
@@ -161,16 +190,28 @@ export function createAppealHandler(
           category: data.category,
           reason: text(data.reason, "Appeal reason", 5000),
         };
-      } else if (action === "appeal.withdraw" || action === "appeal.decide") {
-        if (data.expected_revision !== 1) {
-          throw new ContractError(
-            "invalid_appeal_revision",
-            "Use the current open appeal revision",
-          );
-        }
+      } else if (action === "appeal.policy.set") {
+        input = {
+          expected_revision: revision(data.expected_revision, 0),
+          filing_days: days(data.filing_days),
+          escalation_days: days(data.escalation_days),
+        };
+      } else if (action === "appeal.assign") {
         input = {
           appeal_id: uuid(data.appeal_id),
-          expected_revision: 1,
+          expected_revision: revision(data.expected_revision, 1),
+          reviewer_id: uuid(data.reviewer_id),
+        };
+      } else if (action === "appeal.escalate") {
+        input = {
+          appeal_id: uuid(data.appeal_id),
+          expected_revision: revision(data.expected_revision, 1),
+          reason: text(data.reason, "Escalation reason", 5000),
+        };
+      } else if (action === "appeal.withdraw" || action === "appeal.decide") {
+        input = {
+          appeal_id: uuid(data.appeal_id),
+          expected_revision: revision(data.expected_revision, 1),
           explanation: text(data.explanation, "Explanation", 5000),
         };
         if (action === "appeal.decide") {

@@ -1283,4 +1283,11 @@ export const uz: Record<keyof typeof en, string> = {
   'error.blueprint_exposure_exhausted': "Ushbu sessiya uchun juda ko‘p savollar foydalanish chegarasiga yetgan. Talablar yumshatilmadi. Muassasangizga murojaat qiling.",
   'error.blueprint_enemies_selected': "Bu variantda birga bo‘lmasligi kerak bo‘lgan savollar bor.",
   'error.blueprint_family_exceeded': "Bu variantda bitta oiladan juda ko‘p savol bor.",
+  'appeals.policy.title': "Shikoyat muddatlari",
+  'appeals.policy.filing': "Natija e’lon qilingandan keyin shikoyat berish uchun kunlar",
+  'appeals.policy.escalation': "Ikkinchi bosqich ko‘rib chiqishni so‘rash uchun kunlar",
+  'appeals.policy.hint': "Muddatsiz qoldirish uchun bo‘sh qoldiring.",
+  'appeals.policy.save': "Shikoyat muddatlarini saqlash",
+  'appeals.policy.none': "Muddatsiz",
+  'appeals.policy.days': "{count|other:# kun}",
 };

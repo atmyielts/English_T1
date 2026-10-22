@@ -231,3 +231,88 @@ Deno.test("appeal repository maps production RPCs and database denial/conflict s
     }
   }
 });
+Deno.test("appeal workflow commands carry only bounded revision, reviewer, reason and policy fields", async () => {
+  const { handle, calls } = fixture();
+  const reviewer = "00000000-0000-4000-8000-000000000002";
+  for (
+    const [action, data] of [
+      ["appeal.assign", {
+        appeal_id: id,
+        expected_revision: 2,
+        reviewer_id: reviewer,
+        status: "upheld",
+      }],
+      ["appeal.escalate", {
+        appeal_id: id,
+        expected_revision: 3,
+        reason: "Part B",
+        stage: 1,
+      }],
+      ["appeal.policy.set", {
+        expected_revision: 0,
+        filing_days: 30,
+        escalation_days: null,
+        tenant_id: id,
+      }],
+      ["appeal.decide", {
+        appeal_id: id,
+        expected_revision: 4,
+        outcome: "upheld",
+        explanation: "Second stage",
+        decided_by: actor,
+      }],
+    ] as const
+  ) {
+    equal(
+      (await handle(request("commands", { action, data }))).status,
+      200,
+    );
+  }
+  equal(calls.map((call) => call[4]), [
+    { appeal_id: id, expected_revision: 2, reviewer_id: reviewer },
+    { appeal_id: id, expected_revision: 3, reason: "Part B" },
+    { expected_revision: 0, filing_days: 30, escalation_days: null },
+    {
+      appeal_id: id,
+      expected_revision: 4,
+      explanation: "Second stage",
+      outcome: "upheld",
+    },
+  ]);
+  for (
+    const [action, data] of [
+      ["appeal.assign", {
+        appeal_id: id,
+        expected_revision: 0,
+        reviewer_id: reviewer,
+      }],
+      ["appeal.assign", {
+        appeal_id: id,
+        expected_revision: 2,
+        reviewer_id: "me",
+      }],
+      ["appeal.escalate", {
+        appeal_id: id,
+        expected_revision: 51,
+        reason: "x",
+      }],
+      ["appeal.escalate", { appeal_id: id, expected_revision: 3 }],
+      ["appeal.policy.set", { expected_revision: 0, filing_days: 0 }],
+      ["appeal.policy.set", { expected_revision: 0, filing_days: 366 }],
+      ["appeal.policy.set", { expected_revision: -1, filing_days: 30 }],
+      ["appeal.withdraw", {
+        appeal_id: id,
+        expected_revision: 1.5,
+        explanation: "x",
+      }],
+    ] as const
+  ) {
+    equal(
+      (await handle(request("commands", { action, data }))).status,
+      422,
+    );
+  }
+  equal(calls.length, 4);
+  equal((await handle(request("policy"))).status, 200);
+  equal(calls[4], [actor, tenant, "policy", null, null, 50]);
+});

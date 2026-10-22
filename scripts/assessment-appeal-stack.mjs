@@ -18,7 +18,7 @@ import {seedAssessmentIntegrations,assessmentIntegrationProof} from './assessmen
 import {seedAssessmentAccommodations,bumpAccommodation,setAccommodatedAttemptState,assessmentAccommodationProof} from './assessment-accommodations-fixture.mjs';
 const root = fileURLToPath(new URL("../", import.meta.url)),
   tenant = "10000000-0000-4000-8000-000000000001";
-export async function appealBrowserStack({ certificates = false,documents=false,lifecycle=false,blueprints=false,accommodations=false,integrations=false,cohorts=false,imports=false,analytics=false,feedback=false,capture=false,live=false,workload=false,staff=false,invitations=false,mail=false } = {}) {
+export async function appealBrowserStack({ certificates = false,documents=false,lifecycle=false,blueprints=false,accommodations=false,integrations=false,cohorts=false,imports=false,analytics=false,feedback=false,capture=false,live=false,workload=false,staff=false,invitations=false,mail=false,appealWorkflow=false } = {}) {
   if(blueprints||accommodations)capture=true;
   if(lifecycle)documents=true;
   if(documents)certificates=true;
@@ -35,6 +35,8 @@ export async function appealBrowserStack({ certificates = false,documents=false,
     observer: "00000000-0000-4000-8000-000000000004",
   };
   if(workload)actors.boardobserver='00000000-0000-4000-8000-000000000071';
+  // A second independent moderator takes the second appeal stage.
+  if(appealWorkflow)actors.moderator='00000000-0000-4000-8000-0000000000d2';
   let server,
     bridge,
     base,
@@ -209,6 +211,7 @@ export async function appealBrowserStack({ certificates = false,documents=false,
       "20261022120000_assessment_webhooks",
       "20261022130000_assessment_api_clients",
       "20261022140000_assessment_blueprint_relations",
+      "20261022150000_assessment_appeal_workflow",
     ];
     sql(
       await readFile(
@@ -259,6 +262,7 @@ export async function appealBrowserStack({ certificates = false,documents=false,
     if(blueprints)blueprintIds=seedAssessmentBlueprints(sql,actors,tenant);
     if(accommodations)accommodationIds=seedAssessmentAccommodations(sql,actors,tenant);
     if(integrations)integrationIds=seedAssessmentIntegrations(sql,actors,tenant);
+    if(appealWorkflow){loseSubmit=false;loseDecision=false;sql(`insert into users(id,full_name) values('${actors.moderator}','Second Moderator');insert into tenant_memberships(tenant_id,user_id,status,role) values('${tenant}','${actors.moderator}','active','member');insert into assessment_capability_grants(tenant_id,user_id,capability,granted_by) select '${tenant}',u,'grades.moderate','${actors.owner}' from unnest(array['${actors.reviewer}','${actors.moderator}']::uuid[]) u on conflict do nothing;`);}
     if(invitations)invitationIds=seedAssessmentInvitations(sql,actors,tenant);
     if(analytics){sql(runtime+'\n'+await readFile(path.join(root,'supabase/tests/assessment-analytics.fixture.sql'),'utf8'));analyticsIds=JSON.parse(sql('select to_jsonb(t) from assessment_analytics_fixture_ids t;'));scoreSnapshot=sql('select jsonb_agg(to_jsonb(s) order by id) from assessment_score_revisions s;');}
     if(feedback){sql(await readFile(path.join(root,'supabase/tests/assessment-feedback.fixture.sql'),'utf8'));feedbackIds=JSON.parse(sql('select to_jsonb(t) from assessment_feedback_fixture_ids t;'));scoreSnapshot=sql('select jsonb_agg(to_jsonb(s) order by id) from assessment_score_revisions s;');}
@@ -368,6 +372,7 @@ export async function appealBrowserStack({ certificates = false,documents=false,
             reply(res, 200, {});
             return;
           }
+          if(appealWorkflow&&url.pathname==='/test/appeal-workflow-proof'){reply(res,200,{...JSON.parse(sql(`select jsonb_build_object('appeals',(select count(*) from assessment_result_appeals),'history',(select string_agg(e.event,',' order by e.revision) from assessment_appeal_events e),'stage',(select max(stage) from assessment_result_appeals),'status',(select max(status) from assessment_result_appeals),'first_decider_is_reviewer',(select bool_and(first_decided_by='${actors.reviewer}') from assessment_result_appeals),'final_decider_is_moderator',(select bool_and(decided_by='${actors.moderator}') from assessment_result_appeals),'policy',(select jsonb_build_object('filing_days',filing_days,'escalation_days',escalation_days,'revision',revision) from assessment_appeal_policies where tenant_id='${tenant}'),'regrade_jobs',(select count(*) from assessment_grading_jobs where generation=3),'audit',(select count(*) from assessment_audit_events where action like 'appeal.%'));`)),scores_unchanged:scoreSnapshot===sql('select jsonb_agg(to_jsonb(s) order by id) from assessment_score_revisions s;')});return;}
           if(integrations&&url.pathname==='/test/integration-proof'){reply(res,200,{...assessmentIntegrationProof(sql,tenant,integrationIds),scores_unchanged:scoreSnapshot===sql('select jsonb_agg(to_jsonb(s) order by id) from assessment_score_revisions s;')});return;}
           if(accommodations&&url.pathname==='/test/accommodation-bump'){reply(res,200,bumpAccommodation(sql,actors,tenant,accommodationIds));return;}
           if(accommodations&&(url.pathname==='/test/accommodation-pause'||url.pathname==='/test/accommodation-resume')){setAccommodatedAttemptState(sql,accommodationIds,url.pathname.endsWith('pause')?'paused':'active');reply(res,200,{});return;}

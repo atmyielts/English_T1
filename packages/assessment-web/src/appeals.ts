@@ -16,6 +16,9 @@ export interface AppealRow {
   status: string;
   revision: number;
   created_at: string;
+  stage?: number;
+  assigned_to?: string | null;
+  assigned_to_me?: boolean;
 }
 export interface AppealDetail extends AppealRow {
   run_id: string;
@@ -26,6 +29,12 @@ export interface AppealDetail extends AppealRow {
   can_decide: boolean;
   can_withdraw: boolean;
   can_regrade: boolean;
+  can_escalate?: boolean;
+  can_assign_self?: boolean;
+  escalated_at?: string | null;
+  escalation_reason?: string | null;
+  filing_deadline?: string | null;
+  escalation_deadline?: string | null;
   released_result: {
     generation: number;
     total: number;
@@ -40,7 +49,14 @@ export interface AppealDetail extends AppealRow {
     created_at: string;
   }[];
 }
-const appealStatusCodes = ["submitted", "withdrawn", "upheld", "regrade_requested"];
+const appealStatusCodes = [
+  "submitted",
+  "withdrawn",
+  "upheld",
+  "regrade_requested",
+  "escalated",
+  "assigned",
+];
 const appealCategoryCodes = ["scoring", "procedure", "accessibility"];
 /** Reader-language appeal status; unknown codes render as nothing, as before. */
 export function appealStatusText(code: string, t: Translate = english) {

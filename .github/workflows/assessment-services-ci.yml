@@ -533,6 +533,8 @@ jobs:
         run: node scripts/test-assessment-media-ui.mjs --candidate
       - name: Connected candidate appeal, independent decision and regrading acceptance
         run: node scripts/test-assessment-appeals-browser.mjs
+      - name: Connected appeal deadlines, assignment and second-stage review
+        run: node scripts/test-assessment-appeals-browser.mjs --appeal-workflow
       - name: Connected certificate program, rotated issuance recovery and public verification
         run: node scripts/test-assessment-appeals-browser.mjs --certificates
       - name: Connected cohort, bounded roster Worker and explicit coordinator adoption

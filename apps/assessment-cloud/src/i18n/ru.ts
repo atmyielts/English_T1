@@ -1283,4 +1283,11 @@ export const ru: Record<keyof typeof en, string> = {
   'error.blueprint_exposure_exhausted': "Слишком много вопросов достигли лимита использования в этой сессии. Требования не ослаблялись. Обратитесь в своё учреждение.",
   'error.blueprint_enemies_selected': "В этом варианте есть вопросы, которые не должны встречаться вместе.",
   'error.blueprint_family_exceeded': "В этом варианте слишком много вопросов из одной группы.",
+  'appeals.policy.title': "Сроки апелляций",
+  'appeals.policy.filing': "Дней на подачу апелляции после публикации",
+  'appeals.policy.escalation': "Дней на запрос второго уровня",
+  'appeals.policy.hint': "Оставьте пустым, чтобы не ограничивать срок.",
+  'appeals.policy.save': "Сохранить сроки апелляций",
+  'appeals.policy.none': "Без срока",
+  'appeals.policy.days': "{count|one:# день|few:# дня|many:# дней|other:# дня}",
 };
