@@ -1,0 +1,168 @@
+{
+  "item": {
+    "slug": "a1-finding-your-way-in-the-metro",
+    "title": "Finding your way in the metro",
+    "level": "A1",
+    "context_text": "You are on holiday in a big city. You are at Central station in the metro. You want to go to the City Museum, and your friend Timur wants to meet you there.",
+    "objective_text": "Read the metro sign, ask for help, understand the answer, and tell your friend the way.",
+    "mission_type": "travel",
+    "target_grammar": "imperatives for directions (Take line 2. Get off at…)",
+    "cultural_note": "Metro workers in big cities are used to tourists. A short question like \"Excuse me, which platform for the museum?\" is enough.",
+    "target_vocabulary": [
+      "line",
+      "platform",
+      "stop",
+      "get off",
+      "ticket"
+    ],
+    "success_conditions": [
+      "Find the right station and the ticket price on the sign",
+      "Ask a metro worker for help",
+      "Tell your friend which line, which platform and where to get off"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the metro sign",
+      "instructions": "Read the sign on the wall. Then answer the questions.",
+      "prompt_text": "METRO — LINE 2 (green)\nCentral → Park Street → River Bridge → Museum Square → Airport\nTrains every 5 minutes.\nTicket: 2 euros.\nBuy tickets at the machines. The machines take cards and coins.",
+      "estimated_minutes": 2,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "Which station is near the museum?",
+          "options": [
+            "Park Street",
+            "Museum Square",
+            "River Bridge"
+          ],
+          "answer_index": 1,
+          "explanation": "The station for the museum is Museum Square."
+        },
+        {
+          "prompt": "How often do the trains come?",
+          "options": [
+            "Every 2 minutes",
+            "Every 5 minutes",
+            "Every 15 minutes"
+          ],
+          "answer_index": 1,
+          "explanation": "The sign says \"Trains every 5 minutes.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Ask a metro worker",
+      "instructions": "You can't find the right platform. A metro worker comes to help. Say where you want to go and ask a question.",
+      "prompt_text": "Metro worker: Hello. Can I help you?",
+      "estimated_minutes": 2,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Say where you want to go and ask which way.",
+      "points": [
+        {
+          "label": "say where you want to go",
+          "any": [
+            "museum"
+          ]
+        },
+        {
+          "label": "ask a question",
+          "any": [
+            "which",
+            "where",
+            "how",
+            "platform",
+            "line",
+            "train"
+          ]
+        }
+      ],
+      "model_answer": "Yes, please. I want to go to the City Museum. Which platform is it?",
+      "min_words": null
+    },
+    {
+      "title": "Listen to the metro worker",
+      "instructions": "Listen to the metro worker. Then answer the questions. You can listen again.",
+      "prompt_text": "The museum? Take the green line, line two. Go down the stairs to platform three. It is three stops: Park Street, River Bridge, then Museum Square. Get off there. The museum is across the road.",
+      "estimated_minutes": 2,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "us",
+      "questions": [
+        {
+          "prompt": "Which platform do you need?",
+          "options": [
+            "Platform 2",
+            "Platform 3",
+            "Platform 5"
+          ],
+          "answer_index": 1,
+          "explanation": "The worker says \"Go down the stairs to platform three.\""
+        },
+        {
+          "prompt": "How many stops is it?",
+          "options": [
+            "Two",
+            "Three",
+            "Four"
+          ],
+          "answer_index": 1,
+          "explanation": "\"It is three stops: Park Street, River Bridge, then Museum Square.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Tell your friend the way",
+      "instructions": "Timur is at Central station too. Write a message. Tell him the line, the platform and where to get off.",
+      "prompt_text": "Timur: I'm at Central station too. How do I get to the museum?",
+      "estimated_minutes": 3,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Tell Timur how to get to the museum by metro.",
+      "points": [
+        {
+          "label": "say the line",
+          "any": [
+            "line 2",
+            "line two",
+            "green"
+          ]
+        },
+        {
+          "label": "say the platform",
+          "any": [
+            "platform 3",
+            "platform three",
+            "platform"
+          ]
+        },
+        {
+          "label": "say where to get off",
+          "any": [
+            "museum square",
+            "three stops",
+            "3 stops",
+            "get off"
+          ]
+        }
+      ],
+      "model_answer": "Hi Timur! Take the green line, line 2, from platform 3. Go three stops and get off at Museum Square. The museum is across the road. See you there!",
+      "min_words": null
+    }
+  ]
+}

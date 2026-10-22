@@ -1,0 +1,125 @@
+{
+  "item": {
+    "slug": "c1-passive-reporting-structures",
+    "title": "It is said that / is thought to have: reporting with the passive",
+    "level": "C1",
+    "focus_area": "passive",
+    "explanation_text": "In formal and news writing we often report what people say or believe without saying who they are. We use a reporting verb (say, think, believe, report, expect, know, consider, claim) in the passive, in one of two patterns. 1) It + passive + that-clause: It is believed that the fire started in the kitchen. 2) Subject + passive + to-infinitive: The fire is believed to have started in the kitchen. In pattern 2, choose the infinitive by time: to + verb for the same time or the future (He is said to live in Paris; Prices are expected to rise), to be + -ing for an action in progress (She is thought to be working on a new novel), and to have + past participle for an earlier action (The thieves are reported to have escaped by car). Use to have been + past participle when the earlier action is passive (The bridge is thought to have been built in the 1800s). When the reporting itself is in the past, change only the reporting verb: It was thought that... / He was thought to be...",
+    "contrast_text": "Compare: It is reported that the director resigned yesterday. The director is reported to have resigned yesterday. Both are correct; the second puts the person at the start of the sentence.",
+    "common_error_pattern": "Using a simple infinitive for an earlier action ('He is said to leave the country last week'), or mixing the two patterns ('He is said that he...').",
+    "tags": [
+      "passive",
+      "reporting verbs",
+      "formal writing"
+    ],
+    "examples": [
+      {
+        "bad": "The fire is thought to start in the kitchen last night.",
+        "good": "The fire is thought to have started in the kitchen last night."
+      },
+      {
+        "bad": "He is said that he speaks six languages.",
+        "good": "He is said to speak six languages."
+      },
+      {
+        "bad": "The new bridge is expected that it will open in May.",
+        "good": "The new bridge is expected to open in May."
+      },
+      {
+        "bad": "It is believed the suspect to be abroad.",
+        "good": "The suspect is believed to be abroad."
+      }
+    ]
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Complete the sentence with the correct passive infinitive of the verb in brackets.",
+      "prompt_text": "The painting is believed ___ in the 16th century. (paint)",
+      "accepted_answers": [
+        "to have been painted"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.passive"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Complete the sentence with the correct form of the verb in brackets.",
+      "prompt_text": "The singer is said ___ on a new album at the moment. (work)",
+      "accepted_answers": [
+        "to be working"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.passive"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Complete the sentence with the correct form of the verb in brackets.",
+      "prompt_text": "Prices are expected ___ again next year. (rise)",
+      "accepted_answers": [
+        "to rise"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.passive"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Complete the sentence with the correct form of the verb in brackets.",
+      "prompt_text": "The two companies are reported ___ a secret deal last month. (sign)",
+      "accepted_answers": [
+        "to have signed"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.passive"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Write one word.",
+      "prompt_text": "___ is widely thought that the delay was caused by bad weather.",
+      "accepted_answers": [
+        "It"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.passive"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Complete the sentence with the correct form of the verb in brackets.",
+      "prompt_text": "At the time, the old fortress was thought ___ empty for centuries. (be)",
+      "accepted_answers": [
+        "to have been"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.passive"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "instructions": "Find the mistake and write the whole sentence correctly.",
+      "prompt_text": "The thieves are believed to escape through a back window last night.",
+      "accepted_answers": [
+        "The thieves are believed to have escaped through a back window last night."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.passive"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "instructions": "Find the mistake and write the whole sentence correctly.",
+      "prompt_text": "Our new manager is said that she is very strict.",
+      "accepted_answers": [
+        "Our new manager is said to be very strict.",
+        "It is said that our new manager is very strict."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.passive"
+    }
+  ]
+}

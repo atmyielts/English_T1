@@ -1,0 +1,215 @@
+{
+  "item": {
+    "slug": "b2-hosting-guests-in-samarkand",
+    "title": "Hosting visiting partners in Samarkand",
+    "level": "B2",
+    "context_text": "Your company in Tashkent is hosting two partners, Lucía and Marco, from a travel company in Spain. You've organised a one-day trip to Samarkand for Thursday, and you are their guide for the day.",
+    "objective_text": "Check the programme, adapt it when plans change, confirm the new plan in writing, and welcome the guests on site.",
+    "mission_type": "travel",
+    "target_grammar": "future forms for arrangements and suggestions (We'll take… How about… I've arranged for…)",
+    "cultural_note": "Visitors to historic mausoleums in Uzbekistan are usually asked to dress modestly. Hosts often mention it in advance so guests are not caught out.",
+    "target_vocabulary": [
+      "itinerary",
+      "madrasa",
+      "mausoleum",
+      "vegetarian",
+      "revised plan"
+    ],
+    "success_conditions": [
+      "Understand the programme and the dress code",
+      "Identify what has changed and the guests' priorities",
+      "Send a revised plan that solves the travel and food problems",
+      "Welcome the guests at Registan and outline the day"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the programme",
+      "instructions": "Read the programme you sent the guests. Then answer the questions.",
+      "prompt_text": "Thursday programme\n08:00 Fast train from Tashkent (arrives 10:10)\n10:45 Registan Square, guided visit (90 min)\n12:30 Lunch: plov at a family restaurant\n14:00 Gur-e-Amir Mausoleum\n15:30 Free time at Siab Bazaar\n17:30 Dinner meeting with local tour operators\n20:30 Train back to Tashkent\nPlease note: when visiting mausoleums, wear clothes that cover your shoulders and knees.",
+      "estimated_minutes": 4,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "How long is the guided visit at Registan?",
+          "options": [
+            "45 minutes",
+            "90 minutes",
+            "Two hours"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Registan Square, guided visit (90 min)\"."
+        },
+        {
+          "prompt": "What should the guests wear for Gur-e-Amir?",
+          "options": [
+            "Formal business clothes",
+            "Clothes that cover shoulders and knees",
+            "Comfortable sports shoes"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Wear clothes that cover your shoulders and knees.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to Lucía",
+      "instructions": "On Tuesday, Lucía leaves you a voice message. Listen and answer the questions.",
+      "prompt_text": "Hi, it's Lucía. Quick message about Thursday. Unfortunately our flight to Tashkent has been changed, so we'll only land at seven fifteen that morning, which is far too tight for the eight o'clock train. Is there a later option? We'd really hate to miss Registan, so if something has to go, maybe drop the bazaar. Oh, and I forgot to mention, Marco is vegetarian, so the plov might be a problem.",
+      "estimated_minutes": 4,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "us",
+      "questions": [
+        {
+          "prompt": "Why might the guests miss the morning train?",
+          "options": [
+            "Their flight now lands too late",
+            "They lost their passports",
+            "The train was cancelled"
+          ],
+          "answer_index": 0,
+          "explanation": "\"We'll only land at seven fifteen that morning, which is far too tight for the eight o'clock train.\""
+        },
+        {
+          "prompt": "What would Lucía prefer to drop?",
+          "options": [
+            "Registan",
+            "The bazaar",
+            "The dinner meeting"
+          ],
+          "answer_index": 1,
+          "explanation": "\"If something has to go, maybe drop the bazaar.\""
+        },
+        {
+          "prompt": "What does she say about Marco?",
+          "options": [
+            "He doesn't eat meat",
+            "He is allergic to rice",
+            "He doesn't like spicy food"
+          ],
+          "answer_index": 0,
+          "explanation": "\"Marco is vegetarian.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Send a revised plan",
+      "instructions": "Write to Lucía with a revised plan: solve the travel-time problem, explain what you've changed in the programme, and say how you've dealt with Marco's diet.",
+      "prompt_text": "To: Lucía\nSubject: Re: Thursday in Samarkand",
+      "estimated_minutes": 10,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Propose a workable new plan that respects the guests' priorities.",
+      "points": [
+        {
+          "label": "solve the travel problem",
+          "any": [
+            "later train",
+            "next train",
+            "car",
+            "driver",
+            "drive",
+            "pick you up",
+            "collect you",
+            "airport"
+          ]
+        },
+        {
+          "label": "explain the change to the programme",
+          "any": [
+            "bazaar",
+            "skip",
+            "drop*",
+            "cancel*",
+            "shorten*",
+            "instead",
+            "moved"
+          ]
+        },
+        {
+          "label": "deal with the diet",
+          "any": [
+            "vegetarian",
+            "meat",
+            "vegetable*",
+            "menu",
+            "dish*"
+          ]
+        },
+        {
+          "label": "confirm Registan is kept",
+          "any": [
+            "registan",
+            "keep",
+            "still"
+          ]
+        }
+      ],
+      "model_answer": "Dear Lucía,\nThank you for letting me know, and no problem at all. I've booked you both on the 9:30 fast train instead, and our driver will pick you up at the airport and take you straight to the station. We'll still have a full guided visit of Registan, starting at 12:15. To make up the time, we'll skip the bazaar and have a later lunch. I've spoken to the restaurant, and they will prepare a vegetarian menu for Marco. The rest of the day stays the same.\nBest wishes,\nMalika",
+      "min_words": null
+    },
+    {
+      "title": "Welcome the guests at Registan",
+      "instructions": "You arrive at Registan with Lucía and Marco. Welcome them, tell them one thing about the place, and outline the rest of the day.",
+      "prompt_text": "Lucía: Wow, so this is it! What's the plan from here?",
+      "estimated_minutes": 4,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Give a warm, informative welcome and a clear outline of the day.",
+      "points": [
+        {
+          "label": "welcome the guests",
+          "any": [
+            "welcome",
+            "glad",
+            "delighted",
+            "pleased"
+          ]
+        },
+        {
+          "label": "say something about the place",
+          "any": [
+            "madrasa*",
+            "madrassa*",
+            "three",
+            "square",
+            "centur*",
+            "tiles",
+            "built",
+            "histor*"
+          ]
+        },
+        {
+          "label": "outline the rest of the day",
+          "any": [
+            "lunch",
+            "then",
+            "after",
+            "afterwards",
+            "later",
+            "mausoleum",
+            "gur e amir",
+            "dinner"
+          ]
+        }
+      ],
+      "model_answer": "Welcome to Registan! These three madrasas were built between the fifteenth and the seventeenth centuries, and they're famous for their blue tiles. We'll spend about an hour and a half here, then have lunch, with a vegetarian menu for Marco, and after that we'll visit the Gur-e-Amir Mausoleum.",
+      "min_words": null
+    }
+  ]
+}

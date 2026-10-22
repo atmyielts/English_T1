@@ -1,0 +1,77 @@
+{
+  "item": {
+    "slug": "b2-a-time-you-had-to-adapt",
+    "title": "A Time You Had to Adapt",
+    "level": "B2",
+    "prompt_text": "Tell the story of a time when you had to adapt to something new, such as a new country, school, job or way of living. Describe the situation, what was difficult, how you dealt with it, and what you learned from the experience.",
+    "prompt_type": "storytelling",
+    "target_duration_seconds": 105,
+    "target_grammar": "narrative tenses: past simple, past continuous, past perfect; used to",
+    "fluency_objective": "Build the story with time phrases like 'at first', 'after a few weeks' and 'by the end'.",
+    "pronunciation_objective": "Vary your speed and tone: slow down at the most difficult moment of the story to create interest.",
+    "target_vocabulary": [
+      "at first",
+      "I'd never",
+      "used to",
+      "homesick",
+      "it took me a while",
+      "get used to",
+      "turning point",
+      "looking back"
+    ],
+    "task_type": "story",
+    "model_answer": "A couple of years ago, I got a six-month internship at a software company in Germany. I'd never lived abroad before, so it was a huge change. At first, almost everything was difficult. I'd studied some German at university, but people spoke much faster than I expected, and I felt embarrassed every time I had to ask them to repeat something. I also really missed my family, especially at weekends, when the city was quiet and I was on my own. The turning point came after about a month. A colleague noticed I was eating lunch alone and invited me to join a group that went running every Saturday. I said yes, even though I was nervous, and slowly I started to make friends. I also decided to speak German in shops, even when I made mistakes, and it took me a while, but I got used to it. Looking back, I learned that adapting isn't about waiting until you feel comfortable. It's about doing small uncomfortable things until they become normal.",
+    "model_opening": "A couple of years ago, I got a six-month internship at a software company in Germany.",
+    "cues": [
+      {
+        "text": "the situation",
+        "keywords": [
+          "ago",
+          "moved",
+          "internship",
+          "started",
+          "new",
+          "abroad",
+          "when i"
+        ]
+      },
+      {
+        "text": "what was difficult",
+        "keywords": [
+          "difficult",
+          "hard",
+          "at first",
+          "missed",
+          "homesick",
+          "nervous",
+          "embarrassed",
+          "struggled"
+        ]
+      },
+      {
+        "text": "how you dealt with it",
+        "keywords": [
+          "decided",
+          "started to",
+          "joined",
+          "invited",
+          "tried",
+          "turning point",
+          "got used to"
+        ]
+      },
+      {
+        "text": "what you learned",
+        "keywords": [
+          "learned",
+          "learnt",
+          "looking back",
+          "taught me",
+          "realised",
+          "realized"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

@@ -1,0 +1,114 @@
+{
+  "item": {
+    "slug": "a1-prepositions-of-place",
+    "title": "In, on, under, next to: where things are",
+    "level": "A1",
+    "focus_area": "prepositions",
+    "explanation_text": "Use a preposition to say where something is. in = inside something: in the bag, in the room, in Tashkent. on = on top of something or touching a surface: on the table, on the wall, on the second floor. under = below something: under the bed. next to = at the side of something, very near: next to the window. between = with one thing on each side: between the bank and the café. Use at for a place where you do something: at home, at school, at work, at the bus stop.",
+    "contrast_text": "Compare: The keys are on the desk (on top of it). The keys are in the desk (inside a drawer). The cat is under the desk (below it).",
+    "common_error_pattern": "Using in for every place, leaving out to after next, or saying 'in home' instead of 'at home'.",
+    "tags": [
+      "prepositions",
+      "place"
+    ],
+    "examples": [
+      {
+        "bad": "My phone is in the table.",
+        "good": "My phone is on the table."
+      },
+      {
+        "bad": "She lives on Tashkent.",
+        "good": "She lives in Tashkent."
+      },
+      {
+        "bad": "I am in home now.",
+        "good": "I am at home now."
+      },
+      {
+        "bad": "The bank is next the park.",
+        "good": "The bank is next to the park."
+      }
+    ]
+  },
+  "children": [
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Type in, on, under, next to or at.",
+      "prompt_text": "The milk is ___ the fridge. (inside)",
+      "accepted_answers": [
+        "in"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Type in, on, under, next to or at.",
+      "prompt_text": "There is a big clock ___ the wall.",
+      "accepted_answers": [
+        "on"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Type in, on, under, next to or at.",
+      "prompt_text": "My shoes are ___ the bed. (below)",
+      "accepted_answers": [
+        "under"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Type in, on, under, next to or at.",
+      "prompt_text": "The pharmacy is ___ the bakery. (at the side, very near)",
+      "accepted_answers": [
+        "next to",
+        "beside"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions"
+    },
+    {
+      "drill_type": "fill",
+      "title": "Complete the sentence",
+      "instructions": "Type in, on, under, next to or at.",
+      "prompt_text": "Dilnoza isn't at home. She is ___ work.",
+      "accepted_answers": [
+        "at"
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "instructions": "Find the mistake and write the whole sentence correctly.",
+      "prompt_text": "My brother lives on Samarkand.",
+      "accepted_answers": [
+        "My brother lives in Samarkand."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions"
+    },
+    {
+      "drill_type": "error_correction",
+      "title": "Correct the sentence",
+      "instructions": "Find the mistake and write the whole sentence correctly.",
+      "prompt_text": "The bus stop is next the bank.",
+      "accepted_answers": [
+        "The bus stop is next to the bank.",
+        "The bus stop is beside the bank."
+      ],
+      "status": "published",
+      "target_skill_key": "grammar.prepositions"
+    }
+  ]
+}

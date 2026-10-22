@@ -1,0 +1,75 @@
+{
+  "item": {
+    "slug": "b1-job-interview-tell-me-about-yourself",
+    "title": "Job Interview: Tell Me About Yourself",
+    "level": "B1",
+    "prompt_text": "You are at an interview for a part-time job as an assistant at an English language centre. The interviewer says: 'So, tell me about yourself.' Talk about your studies or work, your skills and experience, why you want this job, and when you can work.",
+    "prompt_type": "roleplay",
+    "target_duration_seconds": 75,
+    "target_grammar": "present perfect for experience (I've worked…, I've helped…); would like to",
+    "fluency_objective": "Speak in a clear order: who you are, what you can do, why this job, when you are free.",
+    "pronunciation_objective": "Sound confident: keep your voice steady and avoid a rising tone at the end of statements.",
+    "target_vocabulary": [
+      "I'm currently",
+      "I've worked as",
+      "I'm good at",
+      "I'm interested in",
+      "I'd like to",
+      "available",
+      "in the afternoons",
+      "a good fit"
+    ],
+    "task_type": "roleplay",
+    "model_answer": "Sure. My name is Malika, and I'm currently in my third year at a university in Tashkent, where I study English philology. Last summer, I worked as a helper at a children's camp, so I've had some experience with groups of young learners. I'm good at explaining things simply, and I'm quite organised. For example, at the camp I planned the daily activities for a group of twelve children. I'm interested in this job because I want to become a teacher in the future, and I'd like to see how a language centre works from the inside. I'm also a friendly person, so I think I'd be good at helping students and parents at the front desk. My lectures finish at one o'clock, so I'm available every afternoon from two, and all day on Saturdays.",
+    "model_opening": "Sure. My name is Malika, and I'm currently in my third year at a university in Tashkent, where I study English philology.",
+    "cues": [
+      {
+        "text": "your studies or work",
+        "keywords": [
+          "study",
+          "student",
+          "university",
+          "work",
+          "year",
+          "currently"
+        ]
+      },
+      {
+        "text": "your skills and experience",
+        "keywords": [
+          "experience",
+          "worked",
+          "good at",
+          "skills",
+          "i've",
+          "organised",
+          "organized"
+        ]
+      },
+      {
+        "text": "why you want this job",
+        "keywords": [
+          "because",
+          "interested",
+          "i'd like",
+          "want to",
+          "future"
+        ]
+      },
+      {
+        "text": "when you can work",
+        "keywords": [
+          "available",
+          "afternoon",
+          "morning",
+          "evening",
+          "weekend",
+          "saturday",
+          "free",
+          "hours"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

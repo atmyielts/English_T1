@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "b2-crime-and-law",
+    "title": "Crime and the law",
+    "level": "B2",
+    "topic": "crime",
+    "description": "Crimes, courts and punishment."
+  },
+  "children": [
+    {
+      "word": "commit",
+      "part_of_speech": "verb",
+      "definition": "to do something illegal or wrong",
+      "example": "He denied committing the crime.",
+      "translation_ru": "совершать (преступление)",
+      "translation_uz": "(jinoyat) sodir etmoq"
+    },
+    {
+      "word": "witness",
+      "part_of_speech": "noun",
+      "definition": "a person who sees a crime or an accident happen",
+      "example": "Police are asking witnesses to come forward.",
+      "translation_ru": "свидетель",
+      "translation_uz": "guvoh"
+    },
+    {
+      "word": "arrest",
+      "part_of_speech": "verb",
+      "definition": "(of the police) to take someone away because they may have broken the law",
+      "example": "Two men were arrested near the bank.",
+      "translation_ru": "арестовать, задержать",
+      "translation_uz": "hibsga olmoq"
+    },
+    {
+      "word": "suspect",
+      "part_of_speech": "noun",
+      "definition": "a person who the police think may have committed a crime",
+      "example": "The main suspect has left the country.",
+      "translation_ru": "подозреваемый",
+      "translation_uz": "gumondor"
+    },
+    {
+      "word": "evidence",
+      "part_of_speech": "noun",
+      "definition": "facts or objects that show that something is true",
+      "example": "There was not enough evidence to prove that he was guilty.",
+      "translation_ru": "доказательства, улики",
+      "translation_uz": "dalil, ashyoviy dalil"
+    },
+    {
+      "word": "guilty",
+      "part_of_speech": "adjective",
+      "definition": "having done something illegal, according to a court",
+      "example": "The court found her guilty of theft.",
+      "translation_ru": "виновный",
+      "translation_uz": "aybdor"
+    },
+    {
+      "word": "innocent",
+      "part_of_speech": "adjective",
+      "definition": "not having done the crime that someone is accused of",
+      "example": "He insisted that he was innocent.",
+      "translation_ru": "невиновный",
+      "translation_uz": "aybsiz"
+    },
+    {
+      "word": "sentence",
+      "part_of_speech": "noun",
+      "definition": "the punishment that a judge gives someone",
+      "example": "She received a two-year prison sentence.",
+      "translation_ru": "приговор",
+      "translation_uz": "hukm, jazo muddati"
+    },
+    {
+      "word": "fine",
+      "part_of_speech": "noun",
+      "definition": "money that you must pay as a punishment",
+      "example": "I got a fine for parking in the wrong place.",
+      "translation_ru": "штраф",
+      "translation_uz": "jarima"
+    },
+    {
+      "word": "theft",
+      "part_of_speech": "noun",
+      "definition": "the crime of stealing something",
+      "example": "Report any theft to the police immediately.",
+      "translation_ru": "кража",
+      "translation_uz": "oʻgʻirlik"
+    },
+    {
+      "word": "fraud",
+      "part_of_speech": "noun",
+      "definition": "the crime of tricking people in order to get money",
+      "example": "Online fraud often starts with a fake message from a 'bank'.",
+      "translation_ru": "мошенничество",
+      "translation_uz": "firibgarlik"
+    },
+    {
+      "word": "court",
+      "part_of_speech": "noun",
+      "definition": "the place where a judge decides whether someone is guilty",
+      "example": "The case will go to court next month.",
+      "translation_ru": "суд",
+      "translation_uz": "sud"
+    }
+  ]
+}

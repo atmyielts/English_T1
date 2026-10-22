@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "a2-sport-and-exercise",
+    "title": "Sport and exercise",
+    "level": "A2",
+    "topic": "sport",
+    "description": "Playing sports, keeping fit and watching matches."
+  },
+  "children": [
+    {
+      "word": "match",
+      "part_of_speech": "noun",
+      "definition": "a game between two teams or players",
+      "example": "We watched the football match on TV.",
+      "translation_ru": "матч",
+      "translation_uz": "oʻyin, uchrashuv"
+    },
+    {
+      "word": "team",
+      "part_of_speech": "noun",
+      "definition": "a group of people who play a sport together",
+      "example": "Our team plays every Saturday.",
+      "translation_ru": "команда",
+      "translation_uz": "jamoa"
+    },
+    {
+      "word": "win",
+      "part_of_speech": "verb",
+      "definition": "to be the best or the first in a game or competition",
+      "example": "Who won the game last night?",
+      "translation_ru": "выигрывать",
+      "translation_uz": "yutmoq, gʻalaba qozonmoq"
+    },
+    {
+      "word": "lose",
+      "part_of_speech": "verb",
+      "definition": "to not win a game or competition",
+      "example": "We lost 2–1, but we played well.",
+      "translation_ru": "проигрывать",
+      "translation_uz": "yutqazmoq"
+    },
+    {
+      "word": "score",
+      "part_of_speech": "verb",
+      "definition": "to get a goal or a point in a game",
+      "example": "Aziz scored two goals in the second half.",
+      "translation_ru": "забивать (гол), набирать (очки)",
+      "translation_uz": "gol urmoq, ochko olmoq"
+    },
+    {
+      "word": "coach",
+      "part_of_speech": "noun",
+      "definition": "a person who trains a sports team or a player",
+      "example": "Our coach makes us run every morning.",
+      "translation_ru": "тренер",
+      "translation_uz": "murabbiy"
+    },
+    {
+      "word": "gym",
+      "part_of_speech": "noun",
+      "definition": "a room or building with equipment for doing exercise",
+      "example": "I go to the gym three times a week.",
+      "translation_ru": "спортзал",
+      "translation_uz": "sport zali"
+    },
+    {
+      "word": "exercise",
+      "part_of_speech": "noun",
+      "definition": "physical activity that you do to stay healthy and strong",
+      "example": "Swimming is very good exercise.",
+      "translation_ru": "физические упражнения",
+      "translation_uz": "jismoniy mashq"
+    },
+    {
+      "word": "fit",
+      "part_of_speech": "adjective",
+      "definition": "healthy and strong because you do exercise",
+      "example": "My grandfather is seventy, but he is still very fit.",
+      "translation_ru": "в хорошей форме",
+      "translation_uz": "chiniqqan, sogʻlom"
+    },
+    {
+      "word": "player",
+      "part_of_speech": "noun",
+      "definition": "a person who plays a sport or game",
+      "example": "She is the best player in our school team.",
+      "translation_ru": "игрок",
+      "translation_uz": "oʻyinchi"
+    },
+    {
+      "word": "competition",
+      "part_of_speech": "noun",
+      "definition": "an event where people try to win",
+      "example": "Malika entered a chess competition in Samarkand.",
+      "translation_ru": "соревнование",
+      "translation_uz": "musobaqa"
+    },
+    {
+      "word": "stadium",
+      "part_of_speech": "noun",
+      "definition": "a large place with seats all around a field, where people watch sport",
+      "example": "The stadium was full for the final.",
+      "translation_ru": "стадион",
+      "translation_uz": "stadion"
+    }
+  ]
+}

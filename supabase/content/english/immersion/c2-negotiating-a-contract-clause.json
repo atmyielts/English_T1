@@ -1,0 +1,236 @@
+{
+  "item": {
+    "slug": "c2-negotiating-a-contract-clause",
+    "title": "Negotiating an intellectual property clause",
+    "level": "C2",
+    "context_text": "Your Tashkent-based software company is about to sign a two-year development contract with a client in the UK. Their draft includes an intellectual property clause your CEO considers unacceptable. You're leading the negotiation with the client's lawyer, Ms Fletcher.",
+    "objective_text": "Pin down exactly what the clause does, read the other side's underlying interest, respond constructively but firmly, and set out the compromise in precise written terms.",
+    "mission_type": "workplace",
+    "target_grammar": "conditional and qualifying structures (provided that…, save that…, subject to…)",
+    "cultural_note": "In UK commercial negotiations, positions are often softened with understatement (\"we could live with…\", \"that may be a little broad\"). Reading these signals accurately, and answering in kind, matters as much as the legal substance.",
+    "target_vocabulary": [
+      "vest in",
+      "pre-existing IP",
+      "perpetual licence",
+      "royalty-free",
+      "escrow"
+    ],
+    "success_conditions": [
+      "Explain precisely why the clause is unacceptable and what compromise your CEO would accept",
+      "Identify the client's underlying interest and the conditions attached to their offer",
+      "Accept common ground while qualifying at least one term, keeping the tone constructive",
+      "Summarise the proposed revision in precise, unambiguous written language"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the clause and your CEO's note",
+      "instructions": "Read the draft clause and your CEO's note on it. Then answer the questions.",
+      "prompt_text": "Clause 9.2: Intellectual Property\nAll intellectual property created by the Supplier in the course of, or in connection with, this Agreement, including any pre-existing tools, libraries or know-how incorporated into the Deliverables, shall vest in the Client absolutely upon creation, without further consideration.\n\nCEO's note: \"In connection with\" plus \"including pre-existing tools\" would hand them our in-house framework, which we use for every client. Non-negotiable. A licence, yes; ownership, no.",
+      "estimated_minutes": 6,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "What is the CEO's chief objection?",
+          "options": [
+            "The client would own the company's existing framework",
+            "The contract period is too long",
+            "Payment terms are missing"
+          ],
+          "answer_index": 0,
+          "explanation": "The clause covers \"pre-existing tools\", which \"would hand them our in-house framework\"."
+        },
+        {
+          "prompt": "What does \"shall vest in the Client absolutely upon creation\" mean?",
+          "options": [
+            "The client receives a licence once it has paid",
+            "Full ownership passes to the client as soon as the work is created",
+            "The supplier keeps ownership until the contract ends"
+          ],
+          "answer_index": 1,
+          "explanation": "To \"vest absolutely upon creation\" means full ownership transfers at the moment the work exists."
+        },
+        {
+          "prompt": "What compromise does the CEO's note point to?",
+          "options": [
+            "Granting the client a licence to the pre-existing tools",
+            "Removing every IP term from the contract",
+            "Selling the framework to the client"
+          ],
+          "answer_index": 0,
+          "explanation": "\"A licence, yes; ownership, no.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to the client's lawyer",
+      "instructions": "On a video call, Ms Fletcher responds to your objection. Listen and answer the questions.",
+      "prompt_text": "We understand the concern, but do put yourselves in our position. If we don't own the code outright, we're exposed if we ever change supplier: we'd have paid for software we can't fully control. What we could live with is outright ownership of everything bespoke, plus a perpetual, royalty-free licence to whatever pre-existing components are embedded in it, provided that licence is irrevocable and survives termination. And we'd want the source code held in escrow.",
+      "estimated_minutes": 5,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "gb",
+      "questions": [
+        {
+          "prompt": "What is the client's underlying worry?",
+          "options": [
+            "Losing control of the software if they change supplier",
+            "The overall price being too high",
+            "The supplier's security standards"
+          ],
+          "answer_index": 0,
+          "explanation": "\"We're exposed if we ever change supplier: we'd have paid for software we can't fully control.\""
+        },
+        {
+          "prompt": "Which condition does she attach to the licence?",
+          "options": [
+            "It must be irrevocable and survive termination",
+            "It must be renewed every year",
+            "It must exclude the source code"
+          ],
+          "answer_index": 0,
+          "explanation": "\"Provided that licence is irrevocable and survives termination.\""
+        },
+        {
+          "prompt": "What does \"we could live with\" signal?",
+          "options": [
+            "Grudging rejection",
+            "A workable concession, not an ideal outcome",
+            "Enthusiastic agreement"
+          ],
+          "answer_index": 1,
+          "explanation": "It is understatement: an acceptable compromise rather than their preferred position."
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Respond in the negotiation",
+      "instructions": "Respond to Ms Fletcher. Welcome the movement, accept what you can, and qualify at least one element (for example, the scope of the licence or the conditions for releasing the code from escrow). Keep the tone constructive.",
+      "prompt_text": "Ms Fletcher: So, does that work for you?",
+      "estimated_minutes": 5,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Lock in common ground while firmly qualifying at least one term.",
+      "points": [
+        {
+          "label": "acknowledge the movement",
+          "any": [
+            "appreciate",
+            "helpful",
+            "welcome",
+            "constructive",
+            "progress",
+            "common ground",
+            "understand"
+          ]
+        },
+        {
+          "label": "accept the core structure",
+          "any": [
+            "bespoke",
+            "licence",
+            "license",
+            "royalty free",
+            "perpetual",
+            "irrevocable"
+          ]
+        },
+        {
+          "label": "qualify a term",
+          "any": [
+            "escrow",
+            "release",
+            "trigger*",
+            "insolven*",
+            "provided that",
+            "as long as",
+            "subject to",
+            "non exclusive",
+            "limited to",
+            "scope"
+          ]
+        },
+        {
+          "label": "propose a next step",
+          "any": [
+            "redraft",
+            "draft",
+            "wording",
+            "send",
+            "revised",
+            "propose"
+          ]
+        }
+      ],
+      "model_answer": "I appreciate that, and I think we're very close. We're comfortable with you owning everything bespoke outright, and with a perpetual, royalty-free licence to the embedded framework components. Two qualifications, though: the licence would need to be non-exclusive and limited to use within these deliverables, and the source code would only be released from escrow on clearly defined triggers, such as our insolvency. If that works for you, I'll send revised wording tomorrow.",
+      "min_words": null
+    },
+    {
+      "title": "Set out the revised clause",
+      "instructions": "Email Ms Fletcher summarising the proposed revision of Clause 9.2 and the conditions you have agreed, in clear and precise language.",
+      "prompt_text": "To: Ms Fletcher\nSubject: Clause 9.2: proposed revision",
+      "estimated_minutes": 14,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Express the compromise precisely enough to be turned straight into contract wording.",
+      "points": [
+        {
+          "label": "define what the client owns",
+          "any": [
+            "bespoke",
+            "developed specifically",
+            "created specifically",
+            "custom"
+          ]
+        },
+        {
+          "label": "define the licence",
+          "any": [
+            "licence",
+            "license",
+            "royalty free",
+            "perpetual",
+            "irrevocable",
+            "non exclusive"
+          ]
+        },
+        {
+          "label": "confirm the supplier retains its existing IP",
+          "any": [
+            "retain*",
+            "remain*",
+            "pre existing",
+            "framework",
+            "background"
+          ]
+        },
+        {
+          "label": "set out the escrow terms",
+          "any": [
+            "escrow",
+            "release",
+            "insolven*",
+            "cease*",
+            "trigger*"
+          ]
+        }
+      ],
+      "model_answer": "Dear Ms Fletcher,\nThank you for a productive discussion. As agreed in principle, we propose the following revision of Clause 9.2. First, all intellectual property in work developed specifically for the Client under this Agreement shall vest in the Client upon payment. Second, the Supplier shall retain ownership of its pre-existing framework, libraries and know-how. Third, the Supplier grants the Client a perpetual, irrevocable, royalty-free and non-exclusive licence to use those pre-existing components solely as embedded in the Deliverables, and this licence shall survive termination. Finally, the source code shall be held in escrow and released to the Client only if the Supplier becomes insolvent or ceases to support the Deliverables. Our counsel will send formal wording by Friday.\nKind regards,\nJasur Karimov",
+      "min_words": null
+    }
+  ]
+}

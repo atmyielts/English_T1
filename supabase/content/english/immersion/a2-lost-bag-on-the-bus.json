@@ -1,0 +1,201 @@
+{
+  "item": {
+    "slug": "a2-lost-bag-on-the-bus",
+    "title": "A bag left on the bus",
+    "level": "A2",
+    "context_text": "Yesterday evening you took the number 51 bus home from the city centre. When you got home, you saw that your blue backpack wasn't with you. You left it on the bus.",
+    "objective_text": "Find out how lost property works, report your bag, and collect it from the office.",
+    "mission_type": "problem_solving",
+    "target_grammar": "past simple (I left it on the bus. It had two books in it.)",
+    "cultural_note": "Lost property offices usually ask you to describe the item before they give it back: colour, size and what was inside. Details help them find the right bag.",
+    "target_vocabulary": [
+      "lost property",
+      "leave / left",
+      "describe",
+      "inside",
+      "collect"
+    ],
+    "success_conditions": [
+      "Understand the office rules: how long, when it is open, what to bring",
+      "Describe your bag, what was in it, and when you lost it",
+      "Explain at the office why you are there"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the lost property notice",
+      "instructions": "You find this notice on the city transport website. Read it and answer the questions.",
+      "prompt_text": "LOST PROPERTY\nDid you lose something on a bus? We keep lost items for 30 days at the Lost Property Office, Station Square (next to the ticket office).\nOpen: Monday to Friday, 9 am – 5 pm. Closed at weekends.\nPlease bring an ID card or passport.\nYou can report your item online before you visit.",
+      "estimated_minutes": 3,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "How long does the office keep lost items?",
+          "options": [
+            "One week",
+            "30 days",
+            "Three months"
+          ],
+          "answer_index": 1,
+          "explanation": "\"We keep lost items for 30 days.\""
+        },
+        {
+          "prompt": "When can you visit the office?",
+          "options": [
+            "Every day",
+            "On weekdays",
+            "Only at weekends"
+          ],
+          "answer_index": 1,
+          "explanation": "It is open Monday to Friday and \"Closed at weekends\"."
+        },
+        {
+          "prompt": "What must you bring?",
+          "options": [
+            "Your bus ticket",
+            "An ID card or passport",
+            "A photo of the item"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Please bring an ID card or passport.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Fill in the online report",
+      "instructions": "Fill in the online report. Describe your bag, say what was in it, and say when and where you lost it.",
+      "prompt_text": "Lost Property — online report\nWhat did you lose?\nPlease describe it.\nWhen and where did you lose it?",
+      "estimated_minutes": 5,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Describe the bag, its contents, and when and where you left it.",
+      "points": [
+        {
+          "label": "describe the bag",
+          "any": [
+            "blue",
+            "backpack",
+            "rucksack",
+            "big",
+            "small",
+            "colour",
+            "color"
+          ]
+        },
+        {
+          "label": "say what was inside",
+          "any": [
+            "laptop",
+            "book*",
+            "notebook*",
+            "wallet",
+            "keys",
+            "charger",
+            "pen*",
+            "glasses"
+          ]
+        },
+        {
+          "label": "say when and where",
+          "any": [
+            "yesterday",
+            "evening",
+            "51",
+            "bus",
+            "centre",
+            "center"
+          ]
+        }
+      ],
+      "model_answer": "I lost a blue backpack yesterday evening on the number 51 bus from the city centre. It is quite big and has a small red key ring. Inside there were two English books, a black notebook and my laptop charger.",
+      "min_words": null
+    },
+    {
+      "title": "Listen to the phone call",
+      "instructions": "The next morning, someone from the office calls you. Listen and answer the questions. You can listen again.",
+      "prompt_text": "Hello, this is Rustam from the Lost Property Office. Thank you for your online report. We have a blue backpack from the number 51 bus. There are two books and a notebook in it, but I'm sorry, there is no charger. You can collect it today or tomorrow before five. Please bring your passport.",
+      "estimated_minutes": 3,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "gb",
+      "questions": [
+        {
+          "prompt": "What is NOT in the backpack now?",
+          "options": [
+            "The books",
+            "The notebook",
+            "The charger"
+          ],
+          "answer_index": 2,
+          "explanation": "Rustam says \"there is no charger\"."
+        },
+        {
+          "prompt": "When can you collect the bag?",
+          "options": [
+            "Only today",
+            "Today or tomorrow before five",
+            "On Saturday"
+          ],
+          "answer_index": 1,
+          "explanation": "\"You can collect it today or tomorrow before five.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "At the office",
+      "instructions": "You are at the Lost Property Office. Tell the worker why you are there and describe your bag.",
+      "prompt_text": "Office worker: Good morning. How can I help you?",
+      "estimated_minutes": 3,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Explain why you came and describe your bag.",
+      "points": [
+        {
+          "label": "say what you lost",
+          "any": [
+            "backpack",
+            "bag",
+            "rucksack"
+          ]
+        },
+        {
+          "label": "explain why you are here",
+          "any": [
+            "lost",
+            "left",
+            "forgot",
+            "collect",
+            "pick up",
+            "called",
+            "phoned"
+          ]
+        },
+        {
+          "label": "describe the bag",
+          "any": [
+            "blue",
+            "books",
+            "notebook",
+            "51"
+          ]
+        }
+      ],
+      "model_answer": "Good morning. I left my backpack on the number 51 bus yesterday. Rustam called me this morning. It's blue and there are two books in it.",
+      "min_words": null
+    }
+  ]
+}

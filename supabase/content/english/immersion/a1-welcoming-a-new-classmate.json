@@ -1,0 +1,188 @@
+{
+  "item": {
+    "slug": "a1-welcoming-a-new-classmate",
+    "title": "Welcoming a new classmate",
+    "level": "A1",
+    "context_text": "A new student, Lena, joins your English course in Tashkent. She is from Germany. The teacher adds her to the class group chat.",
+    "objective_text": "Read about Lena, understand her message, write a welcome, and introduce yourself in class.",
+    "mission_type": "social",
+    "target_grammar": "present simple: be, like, live (I live in… I like…)",
+    "cultural_note": "When you meet someone new in English, it is normal to say your name, where you are from and one thing you like.",
+    "target_vocabulary": [
+      "new student",
+      "welcome",
+      "live",
+      "like",
+      "near"
+    ],
+    "success_conditions": [
+      "Understand the key facts about Lena",
+      "Write a friendly welcome and answer her question",
+      "Say your name, where you are from and one thing you like"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read about Lena",
+      "instructions": "Read the teacher's message in the group chat. Then answer the questions.",
+      "prompt_text": "New student!\nName: Lena\nFrom: Hamburg, Germany\nAge: 19\nShe likes: music, football and cooking.\nShe is in Tashkent for six months. She speaks German and English. She wants to learn Uzbek.",
+      "estimated_minutes": 2,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "Where is Lena from?",
+          "options": [
+            "Germany",
+            "Canada",
+            "Spain"
+          ],
+          "answer_index": 0,
+          "explanation": "The message says \"From: Hamburg, Germany\"."
+        },
+        {
+          "prompt": "What does Lena want to learn?",
+          "options": [
+            "English",
+            "Uzbek",
+            "Cooking"
+          ],
+          "answer_index": 1,
+          "explanation": "\"She wants to learn Uzbek.\""
+        },
+        {
+          "prompt": "How long is she in Tashkent?",
+          "options": [
+            "Six weeks",
+            "Six months",
+            "One year"
+          ],
+          "answer_index": 1,
+          "explanation": "\"She is in Tashkent for six months.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to Lena",
+      "instructions": "Lena sends a voice message to the group. Listen. Then answer the question. You can listen again.",
+      "prompt_text": "Hi everyone, I'm Lena. Thank you for adding me to the group! I don't know the city yet. Is there a good place for plov near the school? Please write to me!",
+      "estimated_minutes": 2,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "gb",
+      "questions": [
+        {
+          "prompt": "What does Lena ask about?",
+          "options": [
+            "A good place for plov",
+            "A football club",
+            "The bus to school"
+          ],
+          "answer_index": 0,
+          "explanation": "Lena asks \"Is there a good place for plov near the school?\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Write a welcome",
+      "instructions": "Write to Lena in the group chat. Say welcome, say your name and one thing you like, and answer her question.",
+      "prompt_text": "Lena: Hi, I'm Lena! Is there a good place for plov near the school?",
+      "estimated_minutes": 3,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Welcome Lena, introduce yourself and answer her question.",
+      "points": [
+        {
+          "label": "say welcome",
+          "any": [
+            "welcome",
+            "nice to meet",
+            "hello"
+          ]
+        },
+        {
+          "label": "say your name",
+          "any": [
+            "my name",
+            "name is",
+            "i am",
+            "call me"
+          ]
+        },
+        {
+          "label": "answer her question",
+          "any": [
+            "yes",
+            "caf*",
+            "restaurant",
+            "street",
+            "metro",
+            "let's go",
+            "come with"
+          ]
+        }
+      ],
+      "model_answer": "Hi Lena, welcome to our class! My name is Aziz. I like football too. Yes, there is a very good plov café on our street. Let's go on Friday!",
+      "min_words": null
+    },
+    {
+      "title": "Introduce yourself in class",
+      "instructions": "In the next lesson, the teacher asks you to say hello to Lena. Say your name, where you are from and one thing you like.",
+      "prompt_text": "Teacher: Please say hello to Lena and tell her about you.",
+      "estimated_minutes": 2,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Introduce yourself: name, home town and one thing you like.",
+      "points": [
+        {
+          "label": "say your name",
+          "any": [
+            "my name",
+            "name is",
+            "i'm",
+            "i am",
+            "call me"
+          ]
+        },
+        {
+          "label": "say where you are from",
+          "any": [
+            "from",
+            "live in",
+            "tashkent",
+            "samarkand",
+            "bukhara",
+            "uzbekistan",
+            "born"
+          ]
+        },
+        {
+          "label": "say one thing you like",
+          "any": [
+            "like",
+            "love",
+            "enjoy",
+            "favourite",
+            "favorite",
+            "hobby"
+          ]
+        }
+      ],
+      "model_answer": "Hello Lena! My name is Dilnoza. I am from Samarkand, but I live in Tashkent now. I like music and cooking.",
+      "min_words": null
+    }
+  ]
+}

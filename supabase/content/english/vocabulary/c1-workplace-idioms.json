@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "c1-workplace-idioms",
+    "title": "Idioms at work",
+    "level": "C1",
+    "topic": "workplace",
+    "description": "Common idioms for meetings, projects and office life."
+  },
+  "children": [
+    {
+      "word": "get the ball rolling",
+      "part_of_speech": "idiom",
+      "definition": "to start an activity or process",
+      "example": "Let's get the ball rolling with a quick update from each team.",
+      "translation_ru": "начать (дело), сдвинуть с места",
+      "translation_uz": "ishni boshlab yubormoq"
+    },
+    {
+      "word": "on the same page",
+      "part_of_speech": "idiom",
+      "definition": "agreeing about what to do, or understanding something in the same way",
+      "example": "Before we email the client, let's make sure we're all on the same page.",
+      "translation_ru": "одинаково понимать ситуацию",
+      "translation_uz": "bir xil fikrda boʻlmoq"
+    },
+    {
+      "word": "cut corners",
+      "part_of_speech": "idiom",
+      "definition": "to do something badly or cheaply in order to save time or money",
+      "example": "If we cut corners on testing, the app will crash later.",
+      "translation_ru": "халтурить, экономить на качестве",
+      "translation_uz": "ishni chala-chulpa qilmoq"
+    },
+    {
+      "word": "back to the drawing board",
+      "part_of_speech": "idiom",
+      "definition": "used when a plan has failed and you must start planning again",
+      "example": "The client rejected the design, so it's back to the drawing board.",
+      "translation_ru": "начинать всё заново",
+      "translation_uz": "ishni boshidan boshlash"
+    },
+    {
+      "word": "ballpark figure",
+      "part_of_speech": "idiom",
+      "definition": "a number that is a rough estimate, not an exact amount",
+      "example": "Can you give me a ballpark figure for the cost?",
+      "translation_ru": "приблизительная цифра",
+      "translation_uz": "taxminiy raqam"
+    },
+    {
+      "word": "touch base",
+      "part_of_speech": "idiom",
+      "definition": "to contact someone briefly to share news or check progress",
+      "example": "I'll touch base with you on Friday about the schedule.",
+      "translation_ru": "связаться, сверить информацию",
+      "translation_uz": "qisqa bogʻlanib olmoq"
+    },
+    {
+      "word": "pull your weight",
+      "part_of_speech": "idiom",
+      "definition": "to do your fair share of the work",
+      "example": "Everyone on the team needs to pull their weight if we want to finish on time.",
+      "translation_ru": "вносить свою долю в работу",
+      "translation_uz": "oʻz ulushini qoʻshmoq"
+    },
+    {
+      "word": "call it a day",
+      "part_of_speech": "idiom",
+      "definition": "to stop working for the rest of the day",
+      "example": "It's nearly eight o'clock. Let's call it a day.",
+      "translation_ru": "закончить на сегодня",
+      "translation_uz": "bugungi ishni tugatmoq"
+    },
+    {
+      "word": "up in the air",
+      "part_of_speech": "idiom",
+      "definition": "not yet decided",
+      "example": "Our plans for the new office are still up in the air.",
+      "translation_ru": "ещё не решено",
+      "translation_uz": "hali hal boʻlmagan"
+    },
+    {
+      "word": "learning curve",
+      "part_of_speech": "noun",
+      "definition": "the process of learning something new and difficult, and how quickly it happens",
+      "example": "The new accounting software has a steep learning curve.",
+      "translation_ru": "процесс освоения",
+      "translation_uz": "oʻrganish jarayoni"
+    },
+    {
+      "word": "the bottom line",
+      "part_of_speech": "idiom",
+      "definition": "the most important fact in a situation",
+      "example": "The bottom line is that we can't finish by Monday.",
+      "translation_ru": "суть дела, главное",
+      "translation_uz": "asosiy gap, xulosa"
+    },
+    {
+      "word": "in the loop",
+      "part_of_speech": "idiom",
+      "definition": "informed about what is happening",
+      "example": "Please keep me in the loop about any changes to the contract.",
+      "translation_ru": "в курсе",
+      "translation_uz": "xabardor"
+    }
+  ]
+}

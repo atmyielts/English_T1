@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "b1-commuting",
+    "title": "Getting around: transport",
+    "level": "B1",
+    "topic": "transport",
+    "description": "Commuting, public transport and travel problems in the city."
+  },
+  "children": [
+    {
+      "word": "commute",
+      "part_of_speech": "verb",
+      "definition": "to travel regularly between your home and your work or school",
+      "example": "I commute to the university by metro.",
+      "translation_ru": "ездить на работу или учёбу",
+      "translation_uz": "(ishga yoki oʻqishga) qatnamoq"
+    },
+    {
+      "word": "rush hour",
+      "part_of_speech": "noun",
+      "definition": "the busy time when most people travel to or from work",
+      "example": "The metro is very crowded during rush hour.",
+      "translation_ru": "час пик",
+      "translation_uz": "tigʻiz soatlar"
+    },
+    {
+      "word": "traffic jam",
+      "part_of_speech": "noun",
+      "definition": "a long line of cars that cannot move or move very slowly",
+      "example": "We were stuck in a traffic jam for an hour.",
+      "translation_ru": "пробка",
+      "translation_uz": "tirbandlik"
+    },
+    {
+      "word": "crowded",
+      "part_of_speech": "adjective",
+      "definition": "full of people",
+      "example": "The bus was so crowded that I had to stand.",
+      "translation_ru": "переполненный",
+      "translation_uz": "gavjum, tiqilinch"
+    },
+    {
+      "word": "fare",
+      "part_of_speech": "noun",
+      "definition": "the money you pay for a journey by bus, train or taxi",
+      "example": "How much is the taxi fare to the airport?",
+      "translation_ru": "плата за проезд",
+      "translation_uz": "yoʻl haqi"
+    },
+    {
+      "word": "route",
+      "part_of_speech": "noun",
+      "definition": "the way that a bus, train or person goes from one place to another",
+      "example": "This bus route goes past the Chorsu Bazaar.",
+      "translation_ru": "маршрут",
+      "translation_uz": "yoʻnalish"
+    },
+    {
+      "word": "delay",
+      "part_of_speech": "noun",
+      "definition": "a time when something happens later than planned",
+      "example": "There was a thirty-minute delay because of the snow.",
+      "translation_ru": "задержка",
+      "translation_uz": "kechikish"
+    },
+    {
+      "word": "miss",
+      "part_of_speech": "verb",
+      "definition": "to be too late to get on a bus, train or plane",
+      "example": "Hurry up or we'll miss the train!",
+      "translation_ru": "опоздать (на поезд, автобус)",
+      "translation_uz": "(poyezddan, avtobusdan) qolib ketmoq"
+    },
+    {
+      "word": "platform",
+      "part_of_speech": "noun",
+      "definition": "the place in a station where you get on and off trains",
+      "example": "The train to Samarkand leaves from platform 2.",
+      "translation_ru": "платформа, перрон",
+      "translation_uz": "platforma, perron"
+    },
+    {
+      "word": "passenger",
+      "part_of_speech": "noun",
+      "definition": "a person who is travelling in a car, bus, train or plane but is not driving it",
+      "example": "Passengers must show their tickets before they get on.",
+      "translation_ru": "пассажир",
+      "translation_uz": "yoʻlovchi"
+    },
+    {
+      "word": "get off",
+      "part_of_speech": "phrasal verb",
+      "definition": "to leave a bus, train or plane",
+      "example": "Get off at the next stop for the museum.",
+      "translation_ru": "выходить (из транспорта)",
+      "translation_uz": "tushmoq"
+    },
+    {
+      "word": "on foot",
+      "part_of_speech": "phrase",
+      "definition": "walking, not using any transport",
+      "example": "The office is close, so I usually go on foot.",
+      "translation_ru": "пешком",
+      "translation_uz": "piyoda"
+    }
+  ]
+}

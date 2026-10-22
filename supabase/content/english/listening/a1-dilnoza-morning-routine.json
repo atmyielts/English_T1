@@ -1,0 +1,129 @@
+{
+  "item": {
+    "slug": "a1-dilnoza-morning-routine",
+    "title": "Dilnoza's Morning",
+    "level": "A1",
+    "summary": "A student describes what she does every morning before her classes.",
+    "transcript_text": "Hello, my name is Dilnoza. I am a student, and I live in Tashkent with my family. I get up at half past six every day. First, I wash my face and get dressed. Then I have breakfast with my brother. We eat bread, eggs and cheese, and we drink green tea. At half past seven, I walk to the bus stop. The bus is often full, so I sometimes stand. My classes start at eight o'clock. I like my mornings because they are quiet and calm.",
+    "category": "Daily Life",
+    "accent": "general",
+    "speed_label": "slow",
+    "speed_wpm": 110,
+    "duration_seconds": 47,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "routine",
+      "morning",
+      "family"
+    ],
+    "questions": [
+      {
+        "prompt": "What time does Dilnoza get up?",
+        "options": [
+          "At six o'clock",
+          "At half past six",
+          "At half past seven",
+          "At eight o'clock"
+        ],
+        "answer_index": 1,
+        "explanation": "\"I get up at half past six every day.\""
+      },
+      {
+        "prompt": "Who does she have breakfast with?",
+        "options": [
+          "Her mother",
+          "Her friend",
+          "Her brother",
+          "Her sister"
+        ],
+        "answer_index": 2,
+        "explanation": "\"Then I have breakfast with my brother.\""
+      },
+      {
+        "prompt": "What does she drink at breakfast?",
+        "options": [
+          "Coffee",
+          "Milk",
+          "Juice",
+          "Green tea"
+        ],
+        "answer_index": 3,
+        "explanation": "\"We eat bread, eggs and cheese, and we drink green tea.\""
+      },
+      {
+        "prompt": "How does she get to her classes?",
+        "options": [
+          "By metro",
+          "By bus",
+          "By car",
+          "By bike"
+        ],
+        "answer_index": 1,
+        "explanation": "She walks to the bus stop and takes the bus. \"The bus is often full, so I sometimes stand.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Hello, my name is Dilnoza.",
+      "focus_phrase": "my name is",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I am a student, and I live in Tashkent with my family.",
+      "focus_phrase": "with my family",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I get up at half past six every day.",
+      "focus_phrase": "half past six",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "First, I wash my face and get dressed.",
+      "focus_phrase": "get dressed",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Then I have breakfast with my brother.",
+      "focus_phrase": "with my brother",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "We eat bread, eggs and cheese, and we drink green tea.",
+      "focus_phrase": "green tea",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "At half past seven, I walk to the bus stop.",
+      "focus_phrase": "bus stop",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The bus is often full, so I sometimes stand.",
+      "focus_phrase": "often full",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "My classes start at eight o'clock.",
+      "focus_phrase": "eight o'clock",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I like my mornings because they are quiet and calm.",
+      "focus_phrase": "quiet and calm",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

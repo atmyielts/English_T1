@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "b1-films-and-books",
+    "title": "Films and books",
+    "level": "B1",
+    "topic": "entertainment",
+    "description": "Talking about stories, characters and reviews."
+  },
+  "children": [
+    {
+      "word": "plot",
+      "part_of_speech": "noun",
+      "definition": "the series of events that make up a story",
+      "example": "The plot was hard to follow, but the acting was great.",
+      "translation_ru": "сюжет",
+      "translation_uz": "syujet"
+    },
+    {
+      "word": "character",
+      "part_of_speech": "noun",
+      "definition": "a person in a book, film or play",
+      "example": "The main character is a young doctor in Bukhara.",
+      "translation_ru": "персонаж",
+      "translation_uz": "qahramon, personaj"
+    },
+    {
+      "word": "review",
+      "part_of_speech": "noun",
+      "definition": "an article that gives an opinion about a new film, book or show",
+      "example": "The film got very good reviews.",
+      "translation_ru": "рецензия, отзыв",
+      "translation_uz": "taqriz, sharh"
+    },
+    {
+      "word": "ending",
+      "part_of_speech": "noun",
+      "definition": "the way that a story finishes",
+      "example": "I didn't expect the ending at all.",
+      "translation_ru": "концовка",
+      "translation_uz": "yakun, oxiri"
+    },
+    {
+      "word": "scene",
+      "part_of_speech": "noun",
+      "definition": "a part of a film or play that happens in one place",
+      "example": "The first scene takes place at a railway station.",
+      "translation_ru": "сцена",
+      "translation_uz": "sahna, epizod"
+    },
+    {
+      "word": "director",
+      "part_of_speech": "noun",
+      "definition": "the person who controls how a film is made and tells the actors what to do",
+      "example": "The director also wrote the script.",
+      "translation_ru": "режиссёр",
+      "translation_uz": "rejissyor"
+    },
+    {
+      "word": "release",
+      "part_of_speech": "verb",
+      "definition": "to make a film, song or book available for people to see or buy",
+      "example": "Their new album will be released in May.",
+      "translation_ru": "выпускать",
+      "translation_uz": "chiqarmoq (ekranga, sotuvga)"
+    },
+    {
+      "word": "based on",
+      "part_of_speech": "phrase",
+      "definition": "using a real event or another story as the starting point",
+      "example": "The series is based on a true story.",
+      "translation_ru": "основанный на",
+      "translation_uz": "...ga asoslangan"
+    },
+    {
+      "word": "recommend",
+      "part_of_speech": "verb",
+      "definition": "to say that something is good and that someone should try it",
+      "example": "Can you recommend a good book for the summer?",
+      "translation_ru": "рекомендовать, советовать",
+      "translation_uz": "tavsiya qilmoq"
+    },
+    {
+      "word": "subtitles",
+      "part_of_speech": "noun",
+      "definition": "words at the bottom of the screen that show or translate what people are saying",
+      "example": "I watch English films with English subtitles.",
+      "translation_ru": "субтитры",
+      "translation_uz": "subtitrlar"
+    },
+    {
+      "word": "series",
+      "part_of_speech": "noun",
+      "definition": "a set of TV programmes with the same characters or subject",
+      "example": "We watched the whole series in one weekend.",
+      "translation_ru": "сериал",
+      "translation_uz": "serial"
+    },
+    {
+      "word": "audience",
+      "part_of_speech": "noun",
+      "definition": "the people who watch or listen to a film, play or concert",
+      "example": "The audience laughed all through the play.",
+      "translation_ru": "зрители, публика",
+      "translation_uz": "tomoshabinlar"
+    }
+  ]
+}

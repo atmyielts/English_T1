@@ -31,7 +31,7 @@ export const PracticePage = () => {
           const locked = !canPractise(skill.key);
           return (
             <Link key={skill.key} to={skill.path} className="en-skill-card">
-              <h3><SkillDot skill={skill.key} />{t(`skill.${skill.key}`)}</h3>
+              <h2><SkillDot skill={skill.key} />{t(`skill.${skill.key}`)}</h2>
               <p>{t(`skill.${skill.key}.what`)}</p>
               {catalog.data && items.length ? (
                 <div className="en-stack" style={{ gap: '.4rem' }}>

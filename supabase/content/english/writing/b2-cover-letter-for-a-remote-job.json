@@ -1,0 +1,90 @@
+{
+  "item": {
+    "slug": "b2-cover-letter-for-a-remote-job",
+    "title": "Cover Letter for a Remote Job",
+    "level": "B2",
+    "prompt_text": "An international online education company is hiring English-speaking customer support agents who can work remotely from Uzbekistan. Write a cover letter to the hiring manager to apply for the position.",
+    "genre": "cover letter",
+    "target_grammar": "present perfect for experience; formal modal phrases (I would welcome…, I am confident that…)",
+    "target_structure": "formal greeting + position applied for + relevant experience + skills + suitability for remote work + availability + formal closing",
+    "expected_length_min": 170,
+    "expected_length_max": 230,
+    "target_vocabulary": [
+      "position",
+      "apply",
+      "experience",
+      "customer",
+      "communication",
+      "time management",
+      "reliable",
+      "remote",
+      "I am confident",
+      "interview"
+    ],
+    "audience": "The hiring manager",
+    "checklist": [
+      {
+        "point": "Open formally and state the position you are applying for",
+        "keywords": [
+          "dear",
+          "position",
+          "apply",
+          "role",
+          "vacancy",
+          "advertised"
+        ]
+      },
+      {
+        "point": "Describe relevant experience",
+        "keywords": [
+          "experience",
+          "have worked",
+          "i've worked",
+          "previous",
+          "customers",
+          "clients",
+          "support"
+        ]
+      },
+      {
+        "point": "Highlight key skills with examples",
+        "keywords": [
+          "skills",
+          "communication",
+          "patient",
+          "problem",
+          "solve",
+          "organised",
+          "organized",
+          "for example"
+        ]
+      },
+      {
+        "point": "Show you are ready to work remotely",
+        "keywords": [
+          "remote",
+          "from home",
+          "internet",
+          "laptop",
+          "independently",
+          "time zone",
+          "schedule",
+          "quiet"
+        ]
+      },
+      {
+        "point": "Give your availability and close formally",
+        "keywords": [
+          "available",
+          "interview",
+          "start",
+          "look forward",
+          "yours sincerely",
+          "yours faithfully",
+          "kind regards"
+        ]
+      }
+    ]
+  },
+  "children": []
+}

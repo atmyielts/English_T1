@@ -1,0 +1,184 @@
+{
+  "item": {
+    "slug": "a2-train-tickets-to-samarkand",
+    "title": "Buying train tickets to Samarkand",
+    "level": "A2",
+    "context_text": "You and your friend Daniel from the UK want to visit Samarkand on Saturday. You go to the train station in Tashkent to buy tickets. Daniel is with you, so you all speak English. Your friend Nodira lives in Samarkand.",
+    "objective_text": "Read the timetable, understand the ticket clerk, buy tickets, and tell Nodira when you arrive.",
+    "mission_type": "travel",
+    "target_grammar": "be going to and present continuous for plans (We're taking the 8 o'clock train.)",
+    "cultural_note": "Trains between Tashkent and Samarkand are popular, especially at weekends and holidays. People often buy tickets several days early and need a passport to buy them.",
+    "target_vocabulary": [
+      "timetable",
+      "economy",
+      "return ticket",
+      "arrive",
+      "full"
+    ],
+    "success_conditions": [
+      "Compare the trains on the timetable",
+      "Understand which seats are still free",
+      "Choose a train, a class and a return day",
+      "Tell your friend in Samarkand when you arrive"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the timetable",
+      "instructions": "Read the timetable at the station. Then answer the questions.",
+      "prompt_text": "TASHKENT → SAMARKAND (Saturday)\n07:28 Fast train — arrives 09:40 — Economy / Business\n08:00 Regular train — arrives 11:45 — Economy only\n18:30 Fast train — arrives 20:42 — Economy / Business\nBuy your return ticket at the same time and save 10%.\nPlease have your passport ready.",
+      "estimated_minutes": 3,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "Which train takes the longest?",
+          "options": [
+            "The 07:28",
+            "The 08:00",
+            "The 18:30"
+          ],
+          "answer_index": 1,
+          "explanation": "The 08:00 leaves at 08:00 and arrives at 11:45, almost four hours."
+        },
+        {
+          "prompt": "How can you save money?",
+          "options": [
+            "Buy tickets online",
+            "Buy your return ticket at the same time",
+            "Travel in the evening"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Buy your return ticket at the same time and save 10%.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to the ticket clerk",
+      "instructions": "Listen to the ticket clerk. Then answer the questions. You can listen again.",
+      "prompt_text": "Good morning. Two tickets to Samarkand for Saturday? OK. The 7:28 is full in economy, I'm sorry. There are still seats in business class on that train. The 8 o'clock is slower, but it has economy seats. Or you can take the 6:30 in the evening. And when do you want to come back?",
+      "estimated_minutes": 3,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "us",
+      "questions": [
+        {
+          "prompt": "What is the problem with the 7:28 train?",
+          "options": [
+            "It is cancelled",
+            "Economy class is full",
+            "It is late"
+          ],
+          "answer_index": 1,
+          "explanation": "\"The 7:28 is full in economy.\""
+        },
+        {
+          "prompt": "What does the clerk ask at the end?",
+          "options": [
+            "When you want to come back",
+            "How you want to pay",
+            "How old you are"
+          ],
+          "answer_index": 0,
+          "explanation": "\"And when do you want to come back?\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Buy your tickets",
+      "instructions": "Answer the clerk out loud. Choose a train with free seats, say which class, and say when you want to come back.",
+      "prompt_text": "Clerk: So, which one would you like?",
+      "estimated_minutes": 3,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Choose a train and class, and give your return day.",
+      "points": [
+        {
+          "label": "choose a train",
+          "any": [
+            "eight",
+            "8",
+            "7 28",
+            "6 30",
+            "18 30",
+            "evening",
+            "morning"
+          ]
+        },
+        {
+          "label": "say the class",
+          "any": [
+            "economy",
+            "business"
+          ]
+        },
+        {
+          "label": "say when you come back",
+          "any": [
+            "sunday",
+            "come back",
+            "return",
+            "monday"
+          ]
+        }
+      ],
+      "model_answer": "We'd like two economy tickets on the eight o'clock train, please. And two return tickets for Sunday evening.",
+      "min_words": null
+    },
+    {
+      "title": "Message your friend in Samarkand",
+      "instructions": "Write to Nodira. Tell her which train you are taking and when it arrives, and ask her to meet you.",
+      "prompt_text": "Nodira: Are you coming on Saturday? What time is your train?",
+      "estimated_minutes": 4,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Tell Nodira your train and arrival time, and ask her to meet you.",
+      "points": [
+        {
+          "label": "say which train",
+          "any": [
+            "8",
+            "eight",
+            "regular",
+            "slow",
+            "morning"
+          ]
+        },
+        {
+          "label": "say when it arrives",
+          "any": [
+            "11 45",
+            "quarter to twelve",
+            "eleven",
+            "arriv*"
+          ]
+        },
+        {
+          "label": "ask her to meet you",
+          "any": [
+            "meet",
+            "pick us up",
+            "station",
+            "can you",
+            "could you"
+          ]
+        }
+      ],
+      "model_answer": "Hi Nodira! Yes, we are coming on Saturday. We are taking the 8 o'clock train, and it arrives at 11:45. Can you meet us at the station? Thanks!",
+      "min_words": null
+    }
+  ]
+}
