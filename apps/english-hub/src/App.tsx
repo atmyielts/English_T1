@@ -1,7 +1,6 @@
 import { lazy, Suspense, useEffect, type ReactNode } from 'react';
-import { Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
-import { ServiceHeader } from '../../../packages/service-design/src/ServiceHeader';
-import { LocaleSwitcher } from '../../../packages/service-i18n/src/i18n.tsx';
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { HubFrame, SkillWorkspace } from './app/Chrome';
 import { useEnglish } from './app/EnglishContext';
 import { OfflineBanner } from './components/OfflineBanner';
 import { useT } from './i18n';
@@ -26,23 +25,8 @@ const SKILL_APPS = {
   immersion: lazy(() => import('./skills/immersion')),
 } as const;
 
-const NAV = [
-  { id: 'today', path: '/today' },
-  { id: 'practice', path: '/practice' },
-  { id: 'review', path: '/review' },
-  { id: 'progress', path: '/progress' },
-  { id: 'tutor', path: '/tutor' },
-] as const;
-
-/** Which top-level section a path belongs to; skill pages live under Practice. */
-const sectionFor = (pathname: string): string => {
-  const first = pathname.split('/')[1] ?? '';
-  if (skillByKey(first)) return 'practice';
-  return first || 'today';
-};
-
 const Page = ({ children }: { children: ReactNode }) => (
-  <Suspense fallback={<Loading lines={6} />}>{children}</Suspense>
+  <Suspense fallback={<section className="en-panel"><Loading lines={6} /></section>}>{children}</Suspense>
 );
 
 const Footer = () => {
@@ -65,7 +49,7 @@ const SignedOutGate = () => {
   const location = useLocation();
   const skill = skillByKey(location.pathname.split('/')[1]);
   return (
-    <section className="en-panel" style={{ maxWidth: '40rem', margin: '2rem auto' }}>
+    <section className="en-panel" style={{ maxWidth: '44rem', width: '100%', margin: '2rem auto' }}>
       <p className="eyebrow">{t('gate.eyebrow')}</p>
       <h1>{skill ? t('gate.titleSkill', { skill: t(`skill.${skill.key}`) }) : t('gate.title')}</h1>
       <p>{t('gate.body')}</p>
@@ -79,71 +63,64 @@ const SignedOutGate = () => {
 
 const App = () => {
   const t = useT();
-  const navigate = useNavigate();
   const location = useLocation();
-  const { sessionResolved, session, signInHref, signOut } = useEnglish();
+  const { sessionResolved, session } = useEnglish();
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
   }, [location.pathname]);
 
-  const signedIn = Boolean(session);
-  const active = sectionFor(location.pathname);
-  const nav = signedIn
-    ? NAV.map((item) => ({ id: item.id, label: t(`nav.${item.id}`), active: active === item.id, onClick: () => navigate(item.path) }))
-    : [];
+  if (!sessionResolved) {
+    return <HubFrame><section className="en-panel"><Loading lines={6} label={t('app.restoring')} /></section></HubFrame>;
+  }
 
-  return (
-    <>
-      <OfflineBanner />
-      <ServiceHeader
-        service={t('app.service')}
-        nav={nav}
-        labels={{ skip: t('nav.skip'), home: t('nav.home'), menu: t('nav.menu'), workspace: t('nav.workspace') }}
-      >
-        <LocaleSwitcher label={t('settings.language.title')} />
-        {signedIn ? (
-          <>
-            <Link className="en-account" to="/settings">{t('nav.settings')}</Link>
-            <button type="button" className="quiet" onClick={() => void signOut()}>{t('nav.signOut')}</button>
-          </>
-        ) : (
-          <a className="en-button" href={signInHref(location.pathname === '/' ? '/today' : location.pathname)}>{t('nav.signIn')}</a>
-        )}
-      </ServiceHeader>
-
-      <main id="workspace-main" className="en-main">
-        {!sessionResolved ? (
-          <Loading lines={6} label={t('app.restoring')} />
-        ) : !signedIn ? (
+  if (!session) {
+    return (
+      <>
+        <OfflineBanner />
+        <HubFrame>
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="*" element={<SignedOutGate />} />
           </Routes>
-        ) : (
-          <Routes>
-            <Route path="/" element={<Navigate to="/today" replace />} />
-            <Route path="/today" element={<TodayPage />} />
-            <Route path="/practice" element={<Page><PracticePage /></Page>} />
-            <Route path="/review" element={<Page><ReviewPage /></Page>} />
-            <Route path="/progress" element={<Page><ProgressPage /></Page>} />
-            <Route path="/tutor" element={<Page><TutorPage /></Page>} />
-            <Route path="/settings" element={<Page><SettingsPage /></Page>} />
-            {SKILLS.map((skill) => {
-              const SkillApp = SKILL_APPS[skill.key];
-              return <Route key={skill.key} path={`${skill.path}/*`} element={<Page><SkillApp /></Page>} />;
-            })}
-            {/* Addresses from the previous version of the hub. */}
-            <Route path="/dashboard" element={<Navigate to="/today" replace />} />
-            <Route path="/plan" element={<Navigate to="/today" replace />} />
-            <Route path="/week" element={<Navigate to="/progress" replace />} />
-            <Route path="/weaknesses" element={<Navigate to="/progress" replace />} />
-            <Route path="/studio" element={<Navigate to="/tutor" replace />} />
-            <Route path="*" element={<Navigate to="/today" replace />} />
-          </Routes>
-        )}
-      </main>
-      <Footer />
+        </HubFrame>
+        <Footer />
+      </>
+    );
+  }
+
+  const hub = (element: ReactNode) => <HubFrame><Page>{element}</Page></HubFrame>;
+
+  return (
+    <>
+      <OfflineBanner />
+      <Routes>
+        <Route path="/" element={<Navigate to="/today" replace />} />
+        <Route path="/today" element={<HubFrame><TodayPage /></HubFrame>} />
+        <Route path="/practice" element={hub(<PracticePage />)} />
+        <Route path="/review" element={hub(<ReviewPage />)} />
+        <Route path="/progress" element={hub(<ProgressPage />)} />
+        <Route path="/tutor" element={hub(<TutorPage />)} />
+        <Route path="/settings" element={hub(<SettingsPage />)} />
+        {SKILLS.map((skill) => {
+          const SkillApp = SKILL_APPS[skill.key];
+          return (
+            <Route
+              key={skill.key}
+              path={`${skill.path}/*`}
+              element={<SkillWorkspace skill={skill.key}><Page><SkillApp /></Page></SkillWorkspace>}
+            />
+          );
+        })}
+        {/* Addresses from the previous version of the hub. */}
+        <Route path="/dashboard" element={<Navigate to="/today" replace />} />
+        <Route path="/plan" element={<Navigate to="/today" replace />} />
+        <Route path="/week" element={<Navigate to="/progress" replace />} />
+        <Route path="/weaknesses" element={<Navigate to="/progress" replace />} />
+        <Route path="/studio" element={<Navigate to="/tutor" replace />} />
+        <Route path="*" element={<Navigate to="/today" replace />} />
+      </Routes>
+      {skillByKey(location.pathname.split('/')[1]) ? null : <Footer />}
     </>
   );
 };

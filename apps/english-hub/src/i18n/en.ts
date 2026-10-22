@@ -2,6 +2,14 @@
 export const en: Record<string, string> = {
   'app.service': 'English',
   'app.restoring': 'Restoring your session…',
+  'app.tagline': 'Practise every skill, every day',
+  'nav.close': 'Close',
+  'rail.label': '{skill} menu',
+  'rail.menu': 'Menu',
+  'rail.skillHome': '{skill} home',
+  'rail.switch': 'Other skills',
+  'rail.topbar': 'English {skill}',
+  'rail.backToToday': 'Back to today',
 
   'nav.today': 'Today',
   'nav.practice': 'Practice',

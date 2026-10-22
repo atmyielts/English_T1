@@ -1,0 +1,17 @@
+/* Speaking activity: cue checklist, timers, transcript and score row. */
+.sp-cues { border: 1px solid var(--soft-line); border-radius: 14px; padding: .75rem 1rem; margin: 0; display: grid; gap: .5rem; }
+.sp-cues legend { font-weight: 700; font-size: .95rem; padding: 0 .35rem; }
+.sp-cue { display: flex; align-items: flex-start; gap: .6rem; font-size: .95rem; cursor: pointer; }
+.sp-cue input { width: 1.15rem; height: 1.15rem; margin-top: .2rem; flex-shrink: 0; accent-color: var(--skill-speaking); }
+.sp-timer { display: grid; gap: .35rem; justify-items: start; padding: 1rem 1.25rem; border-radius: 16px; background: #f8f6f1; border: 1px solid var(--soft-line); }
+.sp-timer strong { font-family: Sora, Manrope, sans-serif; font-size: 2.25rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.sp-timer.is-live { border-color: var(--skill-speaking); }
+.sp-dot { display: inline-block; width: .6rem; height: .6rem; border-radius: 50%; background: #dc2626; margin-right: .4rem; vertical-align: middle; animation: sp-pulse 1.2s ease-in-out infinite; }
+@keyframes sp-pulse { 50% { opacity: .3; } }
+@media (prefers-reduced-motion: reduce) { .sp-dot { animation: none; } }
+.sp-bar { width: 100%; height: .4rem; border-radius: 999px; background: #e5ded1; overflow: hidden; }
+.sp-bar span { display: block; height: 100%; background: var(--skill-speaking); transition: width .25s linear; }
+.sp-transcript { background: #fff; border: 1px solid var(--soft-line); border-radius: 12px; padding: .75rem 1rem; margin: 0; max-width: none; overflow-wrap: anywhere; }
+.sp-audio { width: 100%; max-width: 28rem; }
+.sp-scores { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); padding: .75rem 0; border-top: 1px solid var(--soft-line); border-bottom: 1px solid var(--soft-line); }
+button.sp-link { justify-self: start; text-align: left; }

@@ -1,12 +1,32 @@
+import { lazy } from 'react';
 import { Route, Routes } from 'react-router-dom';
+import { useEnglish } from '../../app/EnglishContext';
+import { useT } from '../../i18n';
 import { SkillHome } from '../SkillHome';
+import { VocabularyDeckActivity } from './Deck';
+import { MyWordsPanel } from './MyWords';
+import './vocabulary.css';
 
-// Placeholder until the vocabulary activity player lands.
-const App = () => (
-  <Routes>
-    <Route index element={<SkillHome skill="vocabulary" />} />
-    <Route path="*" element={<SkillHome skill="vocabulary" />} />
-  </Routes>
-);
+const VocabInContextCard = lazy(() => import('../../components/AIFeatureCards').then((m) => ({ default: m.VocabInContextCard })));
 
-export default App;
+const VocabularyApp = () => {
+  const t = useT();
+  const { accessToken } = useEnglish();
+  return (
+    <Routes>
+      <Route
+        index
+        element={(
+          <SkillHome
+            skill="vocabulary"
+            extra={<MyWordsPanel />}
+            tools={[{ id: 'story', title: t('vocabulary.tool.story'), hint: t('vocabulary.tool.storyHint'), render: () => <VocabInContextCard accessToken={accessToken} /> }]}
+          />
+        )}
+      />
+      <Route path=":slug" element={<VocabularyDeckActivity />} />
+    </Routes>
+  );
+};
+
+export default VocabularyApp;

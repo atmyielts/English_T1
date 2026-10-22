@@ -27,21 +27,27 @@ const filesUnder = async (dir: URL): Promise<string[]> => {
 
 Deno.test("every English skill renders inside the single app shell", async () => {
   const app = await read("../src/App.tsx");
-  assertStringIncludes(app, "<ServiceHeader");
-  assert(app.split("<ServiceHeader").length === 2, "the app must render exactly one header");
+  const chrome = await read("../src/app/Chrome.tsx");
+  // Hub pages get the framed header; skill pages get the workspace rail instead, never both.
+  assertStringIncludes(chrome, "export const HubFrame");
+  assertStringIncludes(chrome, "export const SkillWorkspace");
+  assertStringIncludes(app, "<SkillWorkspace skill={skill.key}>");
+  assert(!chrome.slice(chrome.indexOf("export const SkillWorkspace")).includes("<HubHeader"), "skill pages must not add the hub header");
   for (const skill of skills) {
     assertStringIncludes(app, `import('./skills/${skill}')`, `${skill} must be mounted from src/skills`);
     const index = await read(`../src/skills/${skill}/index.tsx`);
     assert(!index.includes("EnglishSkillWorkspace"), `${skill} must not render a second workspace shell`);
-    assert(!index.includes("<ServiceHeader"), `${skill} must not render its own header`);
+    assert(!index.includes("<HubFrame") && !index.includes("<SkillWorkspace"), `${skill} must not render its own shell`);
   }
   assert(!app.includes("./modules/"), "the app must not mount the retired per-skill modules");
 });
 
 Deno.test("signed-in navigation covers the daily loop and keeps old addresses working", async () => {
   const app = await read("../src/App.tsx");
+  const chrome = await read("../src/app/Chrome.tsx");
+  assertStringIncludes(chrome, "['today', 'practice', 'review', 'progress', 'tutor']");
   for (const path of ["/today", "/practice", "/review", "/progress", "/tutor"]) {
-    assertStringIncludes(app, `path: '${path}'`);
+    assertStringIncludes(app, `path="${path}"`);
   }
   for (const legacy of ["/dashboard", "/plan", "/week", "/weaknesses", "/studio"]) {
     assertStringIncludes(app, `path="${legacy}" element={<Navigate`);

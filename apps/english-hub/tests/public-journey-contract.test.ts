@@ -46,16 +46,13 @@ Deno.test("the public English journey speaks to learners and preserves a context
   assertStringIncludes(discovery, "Build every English skill without losing sight of what comes next.");
 });
 
-Deno.test("the English app uses the shared responsive Schood design system", async () => {
+Deno.test("the English app keeps its own responsive, accessible look", async () => {
   const styles = await Deno.readTextFile(new URL("../src/english.css", import.meta.url));
-  const shared = await Deno.readTextFile(
-    new URL("../../../packages/service-design/src/platform.css", import.meta.url),
-  );
-
-  assertStringIncludes(styles, "@import '../../../packages/service-design/src/platform.css';");
+  assertStringIncludes(styles, "family=Outfit");
+  assertStringIncludes(styles, ".en-rail");
   assertStringIncludes(styles, "@media (max-width: 720px)");
   assertStringIncludes(styles, "prefers-reduced-motion");
-  assertStringIncludes(shared, "a:focus-visible");
+  assertStringIncludes(styles, "a:focus-visible");
 });
 
 Deno.test("the platform homepage leads with three user goals without hiding the service catalog", async () => {
