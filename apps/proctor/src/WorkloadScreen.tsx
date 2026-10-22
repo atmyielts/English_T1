@@ -7,7 +7,7 @@ import type {
   WorkloadStaff,
 } from "../../../packages/assessment-core/src/proctor-workload";
 import { LivePanel } from "./LivePanel";
-import { dateTime, label } from "./types";
+import { useAppT, useCodeText, useDateTime, useErrorText } from "./i18n/index.ts";
 const sources = ["camera", "screen"] as const;
 type StaffPage = { rows: WorkloadStaff[]; next: string | null };
 type Review = {
@@ -30,6 +30,7 @@ export function WorkloadScreen(
     openSession: (id: string) => void;
   },
 ) {
+  const t = useAppT(), code = useCodeText(), dateTime = useDateTime(), problem = useErrorText();
   const [page, setPage] = useState<WorkloadPage | null>(null),
     [loading, setLoading] = useState(true),
     [error, setError] = useState(""),
@@ -100,11 +101,7 @@ export function WorkloadScreen(
           setPage(null);
           setSelected([]);
           setWatching([]);
-          setError(
-            cause instanceof Error
-              ? cause.message
-              : "Could not confirm current session access.",
-          );
+          setError(problem(cause, "workload.loadFailed"));
         }
       } finally {
         flight = false;
@@ -148,9 +145,7 @@ export function WorkloadScreen(
       if (active) setStaff(value);
     }).catch((cause) => {
       if (active) {
-        setStaffError(
-          cause instanceof Error ? cause.message : "Could not load staff.",
-        );
+        setStaffError(problem(cause, "workload.staffFailed"));
       }
     }).finally(() => {
       if (active) setStaffLoading(false);
@@ -211,14 +206,10 @@ export function WorkloadScreen(
       setSelected([]);
       setWatching([]);
       setReason("");
-      setNotice("The reviewed assignment change was saved.");
+      setNotice(t("workload.saved"));
       setRefresh((value) => value + 1);
     } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : "Could not confirm this change. Retry the same reviewed request.",
-      );
+      setError(problem(cause, "workload.saveFailed"));
     } finally {
       inFlight.current = false;
       setSaving(false);
@@ -231,15 +222,12 @@ export function WorkloadScreen(
     <>
       <div className="page-heading">
         <div>
-          <p className="eyebrow">Institution monitoring</p>
-          <h1>Monitoring board</h1>
-          <p>
-            Review session coverage, distribute work and open only the live
-            feeds you need.
-          </p>
+          <p className="eyebrow">{t("sessions.eyebrow")}</p>
+          <h1>{t("nav.workload")}</h1>
+          <p>{t("workload.lead")}</p>
         </div>
       </div>
-      <section aria-label="Session filters">
+      <section aria-label={t("workload.filters")}>
         <form
           className="workload-filters"
           onSubmit={(event) => {
@@ -249,7 +237,7 @@ export function WorkloadScreen(
           }}
         >
           <label>
-            Session state<select
+            {t("workload.state")}<select
               disabled={saving || !!review}
               value={state}
               onChange={(event) => {
@@ -260,14 +248,14 @@ export function WorkloadScreen(
               {["all", "preparing", "active", "paused", "completed"].map(
                 (value) => (
                   <option key={value} value={value}>
-                    {value === "all" ? "All states" : label(value)}
+                    {value === "all" ? t("workload.allStates") : code("state", value)}
                   </option>
                 ),
               )}
             </select>
           </label>
           <label>
-            Coverage<select
+            {t("workload.coverage")}<select
               disabled={saving || !!review}
               value={assignment}
               onChange={(event) => {
@@ -275,22 +263,22 @@ export function WorkloadScreen(
                 setAssignment(event.target.value);
               }}
             >
-              <option value="all">All authorized sessions</option>
-              <option value="mine">Assigned to me</option>
+              <option value="all">{t("workload.coverage.all")}</option>
+              <option value="mine">{t("workload.coverage.mine")}</option>
               {effectiveManager && (
-                <option value="unassigned">No eligible observer</option>
+                <option value="unassigned">{t("workload.noObserver")}</option>
               )}
             </select>
           </label>
           <label>
-            Candidate reference<input
+            {t("workload.candidate")}<input
               disabled={saving || !!review}
               value={candidate}
               onChange={(event) => setCandidate(event.target.value)}
-              placeholder="Optional account reference"
+              placeholder={t("workload.candidatePlaceholder")}
             />
           </label>
-          <button disabled={saving || !!review}>Apply filters</button>
+          <button disabled={saving || !!review}>{t("workload.apply")}</button>
           <button
             type="button"
             className="quiet"
@@ -299,65 +287,61 @@ export function WorkloadScreen(
               setRefresh((value) => value + 1);
             }}
           >
-            Refresh board
+            {t("workload.refresh")}
           </button>
         </form>
-        <p className="hint">
-          Pages contain up to 25 sessions. A connection interruption is not a
-          finding of misconduct. Refresh starts a new view; session states and
-          assignments may change while paging.
-        </p>
+        <p className="hint">{t("workload.pageHint")}</p>
       </section>
       {error && (
         <p className="error" role="alert">
           {error}
-          {review &&
-            " Your reviewed request is retained in this tab. Refresh to confirm access if needed, then retry the same review to recover its receipt. Cancelling a review does not undo a saved change."}
+          {review && " " + t("workload.retained")}
         </p>
       )}
       {notice && <p className="notice" role="status">{notice}</p>}
       {effectiveManager && !!selectedRows.length && !review && (
         <div className="workload-selection">
-          <span role="status">{selectedRows.length} sessions selected</span>
+          <span role="status">{t("workload.selected", { count: selectedRows.length })}</span>
           <button
             className="quiet"
             onClick={() => assignmentHeading.current?.focus()}
           >
-            Distribute selected sessions
+            {t("workload.distributeSelected")}
           </button>
         </div>
       )}
       {loading
-        ? <p role="status">Loading authorized sessions…</p>
+        ? <p role="status">{t("workload.loading")}</p>
         : (
-          <section className="workload-sessions" aria-label="Session coverage">
+          <section className="workload-sessions" aria-label={t("workload.coverageTitle")}>
             <div className="record-heading">
-              <h2>Session coverage</h2>
-              <span className="state-badge">{rows.length} on this page</span>
+              <h2>{t("workload.coverageTitle")}</h2>
+              <span className="state-badge">{t("workload.onPage", { count: rows.length })}</span>
             </div>
-            {!rows.length && <p>No authorized sessions match these filters.</p>}
+            {!rows.length && <p>{t("workload.empty")}</p>}
             <ul className="records">
               {rows.map((row) => (
                 <li key={row.id} className="workload-row">
                   <div>
                     <div className="record-heading">
                       <strong>{row.candidate_name}</strong>
-                      <span className="state-badge">{label(row.state)}</span>
+                      <span className="state-badge">{code("state", row.state)}</span>
                     </div>
                     <p className="hint">
-                      {row.window_title} · {label(row.monitoring_mode)}
+                      {row.window_title} · {code("mode", row.monitoring_mode)}
                     </p>
                     <p className="hint">
-                      Observers: {row.observers.length
-                        ? row.observers.map((person) => person.name).join(", ")
-                        : "No eligible observer"}
+                      {t("workload.observers", {
+                        names: row.observers.length
+                          ? row.observers.map((person) => person.name).join(", ")
+                          : t("workload.noObserver"),
+                      })}
                       {row.loss_since
-                        ? " · Required source interrupted since " +
-                          dateTime(row.loss_since)
+                        ? " · " + t("workload.interrupted", { time: dateTime(row.loss_since) })
                         : ""}
                     </p>
                     <p className="hint">
-                      Candidate heartbeat: {dateTime(row.last_heartbeat_at)}
+                      {t("workload.heartbeat", { time: dateTime(row.last_heartbeat_at) })}
                     </p>
                   </div>
                   <div className="action-row">
@@ -365,8 +349,7 @@ export function WorkloadScreen(
                       <label className="check">
                         <input
                           type="checkbox"
-                          aria-label={"Select " + row.candidate_name + " " +
-                            row.id}
+                          aria-label={t("workload.selectSession", { name: row.candidate_name, id: row.id })}
                           checked={selected.includes(row.id)}
                           disabled={saving || !!review}
                           onChange={(event) =>
@@ -375,7 +358,7 @@ export function WorkloadScreen(
                                 ? [...current, row.id]
                                 : current.filter((id) => id !== row.id)
                             )}
-                        />Select
+                        />{t("workload.select")}
                       </label>
                     )}
                     <button
@@ -383,7 +366,7 @@ export function WorkloadScreen(
                       disabled={saving || !!review}
                       onClick={() => openSession(row.id)}
                     >
-                      Open session
+                      {t("sessions.open")}
                     </button>
                     {row.monitoring_mode === "live" &&
                       row.state !== "completed" && row.can_observe && (
@@ -402,8 +385,8 @@ export function WorkloadScreen(
                           )}
                       >
                         {watching.includes(row.id)
-                          ? "Remove from live board"
-                          : "Add to live board"}
+                          ? t("workload.removeLive")
+                          : t("workload.addLive")}
                       </button>
                     )}
                   </div>
@@ -419,7 +402,7 @@ export function WorkloadScreen(
                   setHistory((current) => current.slice(0, -1));
                 }}
               >
-                Previous sessions
+                {t("workload.previous")}
               </button>
               <button
                 className="quiet"
@@ -429,31 +412,25 @@ export function WorkloadScreen(
                   setAfter(page!.next);
                 }}
               >
-                Next sessions
+                {t("workload.next")}
               </button>
             </div>
             <p className="hint">
-              Last confirmed:{" "}
-              {dateTime(page?.server_time)}. Only current-page candidates can
-              remain on the live board.
+              {t("workload.lastConfirmed", { time: dateTime(page?.server_time) })}
             </p>
           </section>
         )}
       {effectiveManager && (
         <section
           className="workload-assignment"
-          aria-label="Distribute proctor work"
+          aria-label={t("workload.distribute")}
         >
-          <h2 ref={assignmentHeading} tabIndex={-1}>Distribute proctor work</h2>
-          <p>
-            {selectedRows.length}{" "}
-            sessions selected. Assignment changes do not change exam time,
-            responses or grades.
-          </p>
+          <h2 ref={assignmentHeading} tabIndex={-1}>{t("workload.distribute")}</h2>
+          <p>{t("workload.distributeLead", { count: selectedRows.length })}</p>
           <form onSubmit={prepare}>
             <div className="form-pair">
               <label>
-                Change<select
+                {t("workload.change")}<select
                   disabled={saving || !!review}
                   value={action}
                   onChange={(event) => {
@@ -461,14 +438,14 @@ export function WorkloadScreen(
                     setUser("");
                   }}
                 >
-                  <option value="assignment.set">Assign staff member</option>
+                  <option value="assignment.set">{t("workload.change.set")}</option>
                   <option value="assignment.remove">
-                    Remove staff assignment
+                    {t("workload.change.remove")}
                   </option>
                 </select>
               </label>
               <label>
-                Session role<select
+                {t("team.role")}<select
                   disabled={saving || !!review}
                   value={role}
                   onChange={(event) => {
@@ -477,35 +454,34 @@ export function WorkloadScreen(
                     setStaffHistory([]);
                   }}
                 >
-                  <option value="observer">Observer</option>
-                  <option value="reviewer">Reviewer</option>
+                  <option value="observer">{t("team.role.observer")}</option>
+                  <option value="reviewer">{t("team.role.reviewer")}</option>
                 </select>
               </label>
             </div>
             <label>
-              Staff member<select
+              {t("workload.staff")}<select
                 required
                 disabled={staffLoading || saving || !!review}
                 value={user}
                 onChange={(event) => setUser(event.target.value)}
               >
-                <option value="">Choose a staff member</option>
+                <option value="">{t("workload.chooseStaff")}</option>
                 {staff.rows.map((person) => (
                   <option
                     key={person.user_id}
                     value={person.user_id}
                     disabled={action === "assignment.set" && !person.eligible}
                   >
-                    {person.name} · {person.active_assignments} active {role}
-                    {" "}
-                    assignments{person.eligible
+                    {t("workload.staffOption", { name: person.name, count: person.active_assignments, role: code("role", role) })}
+                    {person.eligible
                       ? ""
-                      : " · no current capability"}
+                      : " · " + t("workload.noCapability")}
                   </option>
                 ))}
               </select>
             </label>
-            {staffLoading && <p role="status">Loading staff workloads…</p>}
+            {staffLoading && <p role="status">{t("workload.loadingStaff")}</p>}
             {staffError && <p role="alert" className="error">{staffError}</p>}
             <div className="action-row">
               <button
@@ -517,7 +493,7 @@ export function WorkloadScreen(
                   setStaffHistory((current) => current.slice(0, -1));
                 }}
               >
-                Previous staff
+                {t("workload.previousStaff")}
               </button>
               <button
                 type="button"
@@ -528,11 +504,11 @@ export function WorkloadScreen(
                   setStaffAfter(staff.next);
                 }}
               >
-                Next staff
+                {t("workload.nextStaff")}
               </button>
             </div>
             <label>
-              Reason for assignment change<textarea
+              {t("workload.reason")}<textarea
                 className="prose-input"
                 required
                 minLength={10}
@@ -545,21 +521,20 @@ export function WorkloadScreen(
             <button
               disabled={!selectedRows.length || !user || saving || !!review}
             >
-              Review assignment change
+              {t("workload.review")}
             </button>
           </form>
           {review && (
             <div
               className="workload-review"
               role="region"
-              aria-label="Reviewed assignment change"
+              aria-label={t("workload.reviewRegion")}
             >
               <h3 tabIndex={-1} ref={reviewHeading}>
-                Confirm assignment change
+                {t("workload.confirmTitle")}
               </h3>
               <p>
-                {review.action === "assignment.set" ? "Assign" : "Remove"}{" "}
-                {review.staff} as {review.data.role} for:
+                {t(review.action === "assignment.set" ? "workload.confirmAssign" : "workload.confirmRemove", { staff: review.staff, role: code("role", review.data.role) })}
               </p>
               <ul>
                 {review.names.map((name, index) => (
@@ -567,16 +542,12 @@ export function WorkloadScreen(
                 ))}
               </ul>
               <p>{review.data.reason}</p>
-              <p className="hint">
-                This request uses the assignment revisions you reviewed. If
-                another supervisor changed them, refresh and review again.
-                Retrying this request recovers its original receipt.
-              </p>
+              <p className="hint">{t("workload.reviewHint")}</p>
               <div className="action-row">
                 <button disabled={saving} onClick={() => void save()}>
                   {saving
-                    ? "Saving reviewed change…"
-                    : "Confirm reviewed change"}
+                    ? t("workload.saving")
+                    : t("workload.confirm")}
                 </button>
                 <button
                   className="quiet"
@@ -586,7 +557,7 @@ export function WorkloadScreen(
                     setRefresh((value) => value + 1);
                   }}
                 >
-                  Cancel review & refresh
+                  {t("workload.cancel")}
                 </button>
               </div>
             </div>
@@ -594,22 +565,18 @@ export function WorkloadScreen(
         </section>
       )}
       {!!watching.length && (
-        <section aria-label="Live candidate board" className="workload-live">
+        <section aria-label={t("workload.liveBoard")} className="workload-live">
           <div className="record-heading">
-            <h2>Live candidate board · {watching.length}/4</h2>
+            <h2>{t("workload.liveTitle", { count: watching.length })}</h2>
             <button
               className="quiet"
               onClick={() =>
                 setWatching([])}
             >
-              Close live board
+              {t("workload.closeLive")}
             </button>
           </div>
-          <p className="hint">
-            At most four candidates and one camera or screen feed per candidate.
-            Audio is available in the individual session. Changing pages, hiding
-            this tab or losing access closes these feeds.
-          </p>
+          <p className="hint">{t("workload.liveHint")}</p>
           <div className="workload-live-grid">
             {watching.map((id) => {
               const row = rows.find((row) =>
@@ -619,7 +586,7 @@ export function WorkloadScreen(
                 ? (
                   <article
                     key={row.id + ":" + row.assignment_revision}
-                    aria-label={"Live candidate " + row.candidate_name}
+                    aria-label={t("workload.liveCandidate", { name: row.candidate_name })}
                   >
                     <h3>{row.candidate_name}</h3>
                     <p className="hint">{row.window_title}</p>

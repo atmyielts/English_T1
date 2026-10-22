@@ -118,7 +118,7 @@ export function createAssessmentRepository(
       for (let index = 0; index < ids.length; index += 100) {
         const { data, error } = await service
           .from("assessment_exam_windows")
-          .select("id,title,required_services")
+          .select("id,title,required_services,closes_at")
           .eq("tenant_id", tenant)
           .in("id", ids.slice(index, index + 100));
         if (error) dbError(error);

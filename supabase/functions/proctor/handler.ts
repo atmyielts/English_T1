@@ -9,8 +9,11 @@ export interface ProctorRepository {
   get(table: string, tenant: string, id: string): Promise<Record<string, unknown> | null>;
   command(actor: string, tenant: string, key: string, action: string, data: Record<string, unknown>): Promise<unknown>;
   access(tenant: string, session: string, user: string, assignment?: string): Promise<boolean>;
+  /** Senior decision and candidate explanation of a case; the candidate's own disclosed outcomes. */
+  outcome?(actor: string, tenant: string, caseId: string): Promise<unknown>;
+  candidateOutcomes?(actor: string, tenant: string): Promise<unknown>;
 }
-export const BROWSER_EVENTS = ["focus_loss","focus_return","tab_hidden","tab_visible","fullscreen_enter","fullscreen_exit","copy","paste","cut","context_menu","online","offline","client_loaded"] as const;
+export const BROWSER_EVENTS = ["focus_loss","focus_return","tab_hidden","tab_visible","fullscreen_enter","fullscreen_exit","copy","paste","cut","context_menu","online","offline","client_loaded","camera_lost","camera_restored"] as const;
 const CAPABILITIES = ['banks.read','items.write','items.approve','assessments.publish','exams.manage','grades.manage','results.read','audit.read','proctor.manage','proctor.observe','proctor.review'];
 const reject = (status: number, code: string, message: string): never => { throw new ContractError(code, message, status); };
 function integer(value: unknown, label: string, min: number, max: number): number {
@@ -54,6 +57,10 @@ export function createProctorHandler(repository: ProctorRepository, allowedOrigi
           const runtimeReady=(rules.mode==='browser'&&!hasSources&&!rules.second_camera&&rules.identity_level!==2)||captureEnabled;
           return json(200,{data:{required:true,policy_id:policy!.id,title:policy!.title,policy:rules,consented:preparation.some(p=>p.policy_id===policy!.id),identity_verified:identityVerified,runtime_ready:runtimeReady,consent_version:'proctor.consent.v1',capture_required:captureRequired,capture_enabled:captureEnabled,capture_protocol:'proctor.capture.v1'}});
         }
+        if(path==='candidate/outcomes'){
+          if(!repository.candidateOutcomes)reject(404,'not_found','Resource not found');
+          return json(200,{data:await repository.candidateOutcomes!(actor!,tenant)});
+        }
         if(path==='candidate/session') {
           const attempt=await repository.get('assessment_attempts',tenant,uuid(url.searchParams.get('attempt_id')));
           if(!attempt || attempt.candidate_id!==actor)reject(404,'not_found','Attempt not found');
@@ -74,7 +81,8 @@ export function createProctorHandler(repository: ProctorRepository, allowedOrigi
           const canReview=await repository.capability(tenant,actor!,'proctor.review') && await repository.access(tenant,sessionId,actor!,'reviewer');
           const findings=canReview?(await Promise.all(cases.map(c=>repository.list('proctor_case_findings',tenant,{case_id:String(c.id)})))).flat():[];
           const recording_citations=canReview?(await Promise.all(cases.map(c=>repository.list('proctor_recording_citations',tenant,{case_id:String(c.id)})))).flat():[];
-          return json(200,{data:{session,events:events.sort((a,b)=>String(a.received_at).localeCompare(String(b.received_at))),cases,findings,recording_citations,permissions:{observe:canObserve,review:canReview}}});
+          const outcomes=repository.outcome?Object.fromEntries(await Promise.all(cases.map(async c=>[String(c.id),await repository.outcome!(actor!,tenant,String(c.id))]))):{};
+          return json(200,{data:{session,events:events.sort((a,b)=>String(a.received_at).localeCompare(String(b.received_at))),cases,findings,recording_citations,outcomes,permissions:{observe:canObserve,review:canReview,decide:manager}}});
         }
         if(path==='sessions'||path==='cases') {
           const table=path==='sessions'?'proctor_sessions':'proctor_review_cases';
@@ -97,7 +105,7 @@ export function createProctorHandler(repository: ProctorRepository, allowedOrigi
       if(new TextEncoder().encode(content).length>200000)reject(413,'payload_too_large','Request exceeds 200 KB');
       let body:Record<string,unknown>;try{body=object(JSON.parse(content));}catch{reject(400,'invalid_json','Expected a JSON object');}
       const action=text(body!.action,'Action',80),data=object(body!.data);
-      const supervisorActions=['policy.create','policy.attach','session.assign','identity.verify','capability.grant','capability.revoke'];
+      const supervisorActions=['policy.create','policy.attach','session.assign','identity.verify','capability.grant','capability.revoke','case.adjudicate','case.disclose'];
       if(supervisorActions.includes(action)&&!manager)reject(403,'forbidden','A proctor supervisor manages this action');
       let input:Record<string,unknown>;
       switch(action) {
@@ -129,6 +137,10 @@ export function createProctorHandler(repository: ProctorRepository, allowedOrigi
           const references=recordingReferences(data.evidence_recording_refs);
           input={case_id:uuid(data.case_id),disposition:data.disposition,rationale:text(data.rationale,'Finding rationale',10000),evidence_event_ids:[...new Set(evidence)],...(references.length?{evidence_recording_refs:references}:{})};break;
         }
+        case 'case.adjudicate':
+          if(!['clear','confirmed','insufficient_evidence'].includes(String(data.disposition)))reject(422,'invalid_disposition','Choose a review disposition');
+          input={case_id:uuid(data.case_id),disposition:data.disposition,rationale:text(data.rationale,'Decision rationale',10000)};break;
+        case 'case.disclose':input={case_id:uuid(data.case_id),summary:text(data.summary,'Candidate explanation',4000)};break;
         case 'events.append': {
           if(!Array.isArray(data.events)||!data.events.length||data.events.length>100)reject(422,'invalid_events','Send 1–100 events per batch');
           const events=await Promise.all((data.events as unknown[]).map(async value=>{

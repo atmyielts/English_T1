@@ -26,5 +26,5 @@ export function useProctor(tenant:string,user:string,attemptId:string,initial:Ca
     const online=()=>void instance?.tick().catch(cause=>{if(active)setStatus(current=>({...current,problem:cause.message}));});window.addEventListener('online',online);
     return()=>{active=false;detach?.();if(timer)clearInterval(timer);window.removeEventListener('online',online);if(runtime.current===instance)runtime.current=null;void instance?.close();};
   },[tenant,user,attemptId,sessionId]);
-  return {status,notices,enabled:Boolean(sessionId),acknowledge:async(id:string)=>{if(runtime.current)await runtime.current.acknowledge(id);},sync:async()=>{if(runtime.current)await runtime.current.tick();}};
+  return {status,notices,enabled:Boolean(sessionId),emit:(kind:'camera_lost'|'camera_restored')=>{void runtime.current?.emit(kind);},acknowledge:async(id:string)=>{if(runtime.current)await runtime.current.acknowledge(id);},sync:async()=>{if(runtime.current)await runtime.current.tick();}};
 }

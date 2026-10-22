@@ -62,7 +62,7 @@ Deno.test('session controls and reviewer findings follow session-specific assign
  },[]);
  const response=await handle(new Request(`https://test.invalid/proctor/sessions/${actor}?tenant_id=${tenant}`,{headers:{authorization:'Bearer fixture'}}));
  equal(response.status,200);const body=await response.json();
- equal(body.data.permissions,{observe:true,review:false});equal(body.data.findings,[]);
+ equal(body.data.permissions,{observe:true,review:false,decide:false});equal(body.data.findings,[]);
 });
 Deno.test('candidate preflight exposes requirements without private attended identity notes',async()=>{
  const policy={schema_version:'proctor.policy.v1',mode:'browser',identity_level:1,camera:false,microphone:false,screen:false,second_camera:false};
@@ -84,4 +84,22 @@ Deno.test('candidate notices exclude staff identity and expose only owning ackno
  const body=await(await handle(new Request(`https://test.invalid/proctor/candidate/session?tenant_id=${tenant}&attempt_id=${actor}`,{headers:{authorization:'Bearer fixture'}}))).json();
  equal(body.data.notices[0].acknowledged,true);equal(JSON.stringify(body).includes('private-staff-id'),false);
  equal(body.data.notices[0].issuer_kind,'user');equal(body.data.notices[1].issuer_kind,'system');equal(body.data.notices[1].acknowledged,false);
+});
+Deno.test('senior decisions and candidate explanations need a proctor manager and carry only bounded fields',async()=>{
+ writes=[];
+ const staff=(manager:boolean)=>createProctorHandler({...repository,capability:async(_t,_u,name)=>manager&&name==='proctor.manage'},[]);
+ equal((await staff(false)(req('case.adjudicate',{case_id:actor,disposition:'clear',rationale:'Breaks explain every absence.'}))).status,403);
+ equal((await staff(false)(req('case.disclose',{case_id:actor,summary:'Your test was reviewed and no concern was found.'}))).status,403);
+ equal((await staff(true)(req('case.adjudicate',{case_id:actor,disposition:'guilty',rationale:'Not a valid outcome at all.'}))).status,422);
+ equal(writes.length,0);
+ equal((await staff(true)(req('case.adjudicate',{case_id:actor,disposition:'clear',rationale:'Breaks explain every absence.',score:0,state:'resolved'}))).status,200);
+ equal(writes[0],{action:'case.adjudicate',case_id:actor,disposition:'clear',rationale:'Breaks explain every absence.'});
+ equal((await staff(true)(req('case.disclose',{case_id:actor,summary:'Your test was reviewed and no concern was found.',disposition:'confirmed'}))).status,200);
+ equal(writes[1],{action:'case.disclose',case_id:actor,summary:'Your test was reviewed and no concern was found.'});
+});
+Deno.test('candidates read only their own disclosed outcomes',async()=>{
+ let asked:unknown[]=[];
+ const handle=createProctorHandler({...repository,candidateOutcomes:async(user,t)=>{asked=[user,t];return[{disposition:'clear',summary:'No concern was recorded.'}];}},[]);
+ const response=await handle(new Request(`https://test.invalid/proctor/candidate/outcomes?tenant_id=${tenant}`,{headers:{authorization:'Bearer fixture'}}));
+ equal(response.status,200);equal(asked,[actor,tenant]);equal((await response.json()).data,[{disposition:'clear',summary:'No concern was recorded.'}]);
 });

@@ -11,7 +11,7 @@ import { I18nProvider, LocaleSwitcher, useI18n } from "../../../packages/service
 import { catalogs, useAppT, useErrorText, type AppKey } from "./i18n/index.ts";
 import { configured, request, supabase, observeAccount, type Row } from "./client";
 import { ServiceHeader } from "../../../packages/service-design/src/ServiceHeader"
-import { WorkspaceNavigation } from "../../../packages/service-design/src/WorkspaceNavigation";
+import { WorkspaceNavigation, type WorkspaceNavSection } from "../../../packages/service-design/src/WorkspaceNavigation";
 import { type Definition } from "../../../packages/assessment-core/src/mod.ts";
 import {invitationFromFragment,type InvitationLink} from '../../../packages/assessment-web/src/invitations';
 import {AcceptInvitation} from './staff/AcceptInvitation';
@@ -34,7 +34,8 @@ const ItemWorkspace = lazy(() =>
 );
 import { JoinLinkPanel } from "./sittings/JoinLinkPanel";
 import { InstitutionName } from "./staff/InstitutionName";
-import { accountLink } from "../../../packages/assessment-web/src/account-links";
+import { accountLink, proctorLink } from "../../../packages/assessment-web/src/account-links";
+import { MonitoringStatus } from "./sittings/MonitoringStatus";
 const StaffWorkspace = lazy(() =>
   import("./staff/StaffWorkspace").then((module) => ({
     default: module.StaffWorkspace,
@@ -389,7 +390,7 @@ function App() {
       <WorkspaceNavigation
         label={t("header.workspace").replace("{service}", t("app.name"))}
         menuLabel={t("nav.menu")}
-        sections={sections.map((section) => ({
+        sections={sections.map((section): WorkspaceNavSection => ({
           id: section.id,
           label: t(section.label),
           items: (access ? availableTabs(access) : [])
@@ -403,7 +404,12 @@ function App() {
                 setTitle("");
               },
             })),
-        }))}
+        })).concat(access?.can_manage_exams ? [{
+          // Monitoring lives in the separate Proctor service; this opens it on the same institution.
+          id: "services",
+          label: t("nav.group.services"),
+          items: [{ id: "proctor", label: t("nav.proctor"), active: false, onClick: () => location.assign(proctorLink(tenant, "workload")) }],
+        }] : [])}
       />
       <main id="workspace-main" tabIndex={-1}>
         <div className="page-heading">
@@ -564,6 +570,7 @@ function App() {
                           <span>
                             {t("windows.range", { opens: date(String(row.opens_at)), closes: date(String(row.closes_at)) })}
                           </span>
+                          <MonitoringStatus sitting={row} tenant={tenant} />
                           <JoinLinkPanel sitting={row} links={rows["join-links"] ?? []} busy={busy} act={(action, data, message) => void run(async () => { await command(action, data); setNotice(message); })} />
                         </li>
                       ))}

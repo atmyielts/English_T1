@@ -21,3 +21,9 @@ export function parseJoin(hash: string): { id: string; code: string } | null {
   const match = /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.([a-f0-9]{64})$/.exec(value);
   return match ? { id: match[1], code: match[2] } : null;
 }
+
+/** The Proctor staff app, opened on an institution and optionally a screen. */
+export function proctorLink(tenant: string, tab?: 'policies' | 'sessions' | 'workload'): string {
+  const origin = String(import.meta.env.VITE_PROCTOR_URL || 'https://proctor.schood.online').replace(/\/+$/, '');
+  return `${origin}/?tenant_id=${encodeURIComponent(tenant)}${tab ? `&tab=${tab}` : ''}`;
+}

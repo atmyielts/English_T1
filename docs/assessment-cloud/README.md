@@ -27,12 +27,12 @@ No full-service ledger row is closed. Nothing in these documents authorizes a de
 - Authoring/delivery: [blueprints](BLUEPRINTS.md), [artifacts](ARTIFACTS.md), [image responses](IMAGE_RESPONSES.md), [media answers](MEDIA_ANSWERS.md), [cohorts](COHORTS.md), [question review](ITEM_REVIEW.md), [device takeover](DEVICE_TAKEOVER.md), [bank files](BANK_IMPORTS.md).
 - Interchange: [QTI](QTI.md), [control plane](QTI_CONTROL_PLANE.md), [byte workflow](QTI_BYTE_WORKFLOW.md).
 - Assessment outcomes: [analytics](ANALYTICS.md), [feedback](FEEDBACK.md), [appeals](APPEALS.md), [certificates](CERTIFICATES.md), [certificate documents](CERTIFICATE_DOCUMENTS.md), [credential lifecycle](CERTIFICATE_LIFECYCLE.md).
-- Proctoring: [capture launch](CAPTURE_LAUNCH.md), [recordings](RECORDINGS.md), [live monitoring](LIVE_MONITORING.md), [institution monitoring board](PROCTOR_WORKLOAD.md).
+- Proctoring: [Proctor Lite (no paid infrastructure)](PROCTOR_LITE.md), [capture launch](CAPTURE_LAUNCH.md), [recordings](RECORDINGS.md), [live monitoring](LIVE_MONITORING.md), [institution monitoring board](PROCTOR_WORKLOAD.md).
 - Institution access: [self-service join links and institution name](JOIN_LINKS.md), [membership](MEMBERSHIP.md), [invitations](INVITATIONS.md), [invitation mail](INVITATION_MAIL.md).
 - Commercial and integration: [billing and usage](BILLING.md), [webhooks and API clients](INTEGRATIONS.md).
 - Cross-cutting: [accommodations](ACCOMMODATIONS.md), [localization](LOCALIZATION.md), [measurement cores](MEASUREMENT.md).
 
-Proctor product work is **paused by the owner (2026-10-22)**; its existing code is kept building and tested, but Proctor-only backlog rows are not being advanced.
+Proctor was paused on 2026-10-22 and resumed the same day as **Proctor Lite** (see [PROCTOR_LITE.md](PROCTOR_LITE.md)): browser signals, webcam snapshots, a status board and human review, with live video, identity vendors and native clients deferred.
 
 ## Updating these records
 

@@ -85,6 +85,16 @@ export function createProctorRepository(
       if (error) dbError(error);
       return data;
     },
+    async outcome(actor, tenant, caseId) {
+      const { data, error } = await service.rpc("proctor_case_outcome", { p_actor: actor, p_tenant: tenant, p_case: caseId });
+      if (error) dbError(error);
+      return data;
+    },
+    async candidateOutcomes(actor, tenant) {
+      const { data, error } = await service.rpc("proctor_candidate_outcomes", { p_actor: actor, p_tenant: tenant });
+      if (error) dbError(error);
+      return data ?? [];
+    },
     async command(actor, tenant, key, action, data) {
       const { data: result, error } = await service.rpc("proctor_command", {
         p_actor: actor,
