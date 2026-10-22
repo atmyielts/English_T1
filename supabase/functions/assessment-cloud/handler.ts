@@ -136,7 +136,7 @@ export function createHandler({ repository, allowedOrigins, promptMediaEnabled=f
           const registrations=await repository.list("assessment_registrations",tenant,{candidate_id:actor!});
           const windows=await repository.windowRequirements(tenant,[...new Set(registrations.map(row=>String(row.window_id)))]);
           const byId=new Map(windows.map(row=>[String(row.id),row]));
-          return json(200,{data:registrations.map(row=>({...row,required_services:byId.get(String(row.window_id))?.required_services??[],title:byId.get(String(row.window_id))?.title??'Assessment registration'}))});
+          return json(200,{data:registrations.map(row=>({...row,required_services:byId.get(String(row.window_id))?.required_services??[],title:byId.get(String(row.window_id))?.title??'Assessment registration',closes_at:byId.get(String(row.window_id))?.closes_at??null}))});
         }
         if (path.startsWith("candidate/attempts/")) {
           const id = uuid(path.split("/")[2], "Attempt ID");

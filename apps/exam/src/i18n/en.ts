@@ -46,6 +46,7 @@ export const en = {
   'exam.noTenant': 'Open the assessment link provided by your institution.',
   'exam.sittings.title': 'Your exam sittings',
   'exam.sittings.untitled': 'Assessment registration',
+  'exam.sittings.closes': 'Open until {time}',
   'exam.sittings.start': 'Start or resume',
   'exam.sittings.empty': 'No assessments are assigned to this account.',
   'exam.state.paused': 'Assessment paused',

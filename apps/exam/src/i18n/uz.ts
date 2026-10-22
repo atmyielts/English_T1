@@ -45,6 +45,7 @@ export const uz: Record<keyof typeof en, string> = {
   'exam.noTenant': 'Muassasangiz bergan test havolasini oching.',
   'exam.sittings.title': 'Imtihon sessiyalaringiz',
   'exam.sittings.untitled': 'Testga ro‘yxatdan o‘tish',
+  'exam.sittings.closes': '{time} gacha ochiq',
   'exam.sittings.start': 'Boshlash yoki davom ettirish',
   'exam.sittings.empty': 'Bu hisobga hech qanday test biriktirilmagan.',
   'exam.state.paused': 'Test to‘xtatilgan',

@@ -45,6 +45,7 @@ export const ru: Record<keyof typeof en, string> = {
   'exam.noTenant': 'Откройте ссылку на тест, полученную от вашего учреждения.',
   'exam.sittings.title': 'Ваши экзаменационные сессии',
   'exam.sittings.untitled': 'Регистрация на тест',
+  'exam.sittings.closes': 'Открыто до {time}',
   'exam.sittings.start': 'Начать или продолжить',
   'exam.sittings.empty': 'К этой учётной записи не привязано ни одного теста.',
   'exam.state.paused': 'Тест приостановлен',

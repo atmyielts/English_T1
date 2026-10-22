@@ -13,6 +13,7 @@
     "20261022200000_proctor_adjudication.sql"
   ],
   "edgeFunctions": [
+    "assessment-cloud",
     "proctor"
   ],
   "workers": [
@@ -40,6 +41,7 @@
     "secret:PROCTOR_LIVE_ENABLED",
     "secret:PROCTOR_LIVE_LAUNCH",
     "secret:PROCTOR_RECORDING_INGEST",
+    "function:assessment-cloud",
     "function:proctor",
     "worker:assessment-media",
     "worker:proctor-evidence"
@@ -49,6 +51,7 @@
     "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus these two Proctor migrations, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then supabase migration list --linked. The snapshot migration creates the private Storage bucket proctor-snapshots.",
     "Secrets: supabase secrets set PROCTOR_SNAPSHOT_SWEEP_SECRET=<random 64 hex, generated locally> and the same value as the GitHub repository secret PROCTOR_SNAPSHOT_SWEEP_SECRET for the hourly retention workflow. PROCTOR_ALLOWED_ORIGINS is already set to https://proctor.schood.online,https://exam.schood.online.",
     "Left unset in this release (Proctor Lite needs no paid infrastructure): supabase secrets set PROCTOR_CAPTURE_LAUNCH=, supabase secrets set PROCTOR_EVIDENCE_SECRET=, supabase secrets set PROCTOR_LIVE_BROKER_SECRET=, supabase secrets set PROCTOR_LIVE_ENABLED=, supabase secrets set PROCTOR_LIVE_LAUNCH= and supabase secrets set PROCTOR_RECORDING_INGEST= are not run; recordings, capture and live video stay off.",
+    "Edge: supabase functions deploy assessment-cloud --project-ref bbjawctnqrufvnesdsel (candidate sittings now include the window closing time, shown in Exam instead of the registration ID).",
     "Edge: supabase functions deploy proctor --project-ref bbjawctnqrufvnesdsel after the migrations.",
     "Workers: assessment-media and proctor-evidence change only their local browser-test fixtures; nothing is deployed for them."
   ],
@@ -60,7 +63,7 @@
   "rollback": {
     "pages": "Cloudflare Pages rollback of schood-assessment and schood-exam; schood-proctor can be rolled back or its domain unbound.",
     "migration": "Additive tables and RPCs; leave in place. proctor_command delegates every earlier action unchanged to proctor_command_before_adjudication.",
-    "edge": "Redeploy the previous proctor function; snapshot and decision routes disappear.",
+    "edge": "Redeploy the previous proctor and assessment-cloud functions; snapshot and decision routes disappear and Exam simply omits the closing time.",
     "worker": "Nothing deployed."
   }
 }
