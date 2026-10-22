@@ -256,6 +256,10 @@ section { min-width: 0; }
 .en-stack { display: grid; gap: 14px; min-width: 0; }
 .en-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; min-width: 0; }
 .en-spacer { flex: 1; }
+.en-toggle { display: flex; align-items: center; gap: 0.6rem; cursor: pointer; }
+.en-toggle input[type='checkbox'] { width: 1.1rem; height: 1.1rem; flex: 0 0 auto; margin: 0; padding: 0; accent-color: var(--accent); }
+.en-field-inline { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
+.en-field-inline select { width: auto; min-width: 7rem; }
 .en-footer { position: relative; z-index: 1; width: min(1360px, 100%); margin: 0 auto; padding: 1rem clamp(10px, 2vw, 24px) 1.5rem; display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; color: var(--muted); font-size: 0.8rem; }
 .en-footer a { color: var(--muted); }
 .en-footer a:hover { color: var(--ink); }

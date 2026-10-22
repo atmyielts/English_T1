@@ -495,4 +495,13 @@ export const ru: Partial<Record<string, string>> = {
   "week.topic.technology": "Технологии",
   "week.topic.environment": "Окружающая среда",
   "week.topic.culture": "Культура",
+  "reminders.title": "Напоминания в Telegram",
+  "reminders.linkFirst": "Привяжите Telegram к аккаунту Schood, и мы будем напоминать о занятиях в дни, когда вы ещё не занимались.",
+  "reminders.link": "Привязать Telegram",
+  "reminders.lead": "Одно короткое сообщение — только в дни, когда вы ещё не занимались.",
+  "reminders.daily": "Напоминать о занятиях",
+  "reminders.hour": "Время (Ташкент)",
+  "reminders.weekly": "Итоги недели по воскресеньям",
+  "reminders.note": "Сообщения приходят на языке интерфейса, который вы выбрали здесь.",
+  "reminders.error": "Не удалось сохранить настройки напоминаний. Попробуйте ещё раз.",
 };

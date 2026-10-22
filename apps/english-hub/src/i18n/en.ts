@@ -495,4 +495,13 @@ export const en: Record<string, string> = {
   "week.topic.technology": "Technology",
   "week.topic.environment": "Environment",
   "week.topic.culture": "Culture",
+  "reminders.title": "Reminders on Telegram",
+  "reminders.linkFirst": "Link Telegram to your Schood account and we can remind you on days you haven't practised yet.",
+  "reminders.link": "Link Telegram",
+  "reminders.lead": "One short message, only on days you haven't practised yet. Nothing else.",
+  "reminders.daily": "Remind me to practise",
+  "reminders.hour": "Time (Tashkent)",
+  "reminders.weekly": "Sunday summary of my week",
+  "reminders.note": "Messages come in the interface language you use here.",
+  "reminders.error": "Couldn't save your reminder settings. Try again.",
 };

@@ -55,6 +55,7 @@ type EnglishState = {
   signInHref: (returnPath?: string) => string;
   pricingHref: (skill?: SkillKey) => string;
   accountHref: string;
+  telegramHref: string;
 };
 
 const EnglishContext = createContext<EnglishState | null>(null);
@@ -200,6 +201,7 @@ export const EnglishProvider = ({ children }: { children: ReactNode }) => {
           returnTo: typeof window === 'undefined' ? null : window.location.href,
         }),
       accountHref: buildPlatformHref(platformUrl, '/student-center'),
+      telegramHref: buildPlatformHref(platformUrl, '/account'),
     };
   }, [access, onboarding, refreshAccess, refreshOnboarding, session, sessionResolved]);
 

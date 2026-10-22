@@ -495,4 +495,13 @@ export const uz: Partial<Record<string, string>> = {
   "week.topic.technology": "Texnologiya",
   "week.topic.environment": "Atrof-muhit",
   "week.topic.culture": "Madaniyat",
+  "reminders.title": "Telegramdagi eslatmalar",
+  "reminders.linkFirst": "Telegramni Schood hisobingizga ulang — mashq qilmagan kunlaringizda eslatib turamiz.",
+  "reminders.link": "Telegramni ulash",
+  "reminders.lead": "Faqat mashq qilmagan kunlaringizda bitta qisqa xabar.",
+  "reminders.daily": "Mashq haqida eslatish",
+  "reminders.hour": "Vaqt (Toshkent)",
+  "reminders.weekly": "Yakshanba kuni hafta yakuni",
+  "reminders.note": "Xabarlar shu yerda tanlagan interfeys tilida keladi.",
+  "reminders.error": "Eslatma sozlamalari saqlanmadi. Qayta urinib koʻring.",
 };

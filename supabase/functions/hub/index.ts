@@ -52,6 +52,8 @@ import { loadPracticeWords } from "../_shared/english-words.ts";
 import { checkActivityAccess } from "../_shared/english-allowance.ts";
 import { checkReviewAnswer, parseReviewPayload, publicReviewPayload, RETIRED_BOX, scheduleAfterAnswer } from "../_shared/english-review.ts";
 import { topicFromSubskill } from "../_shared/english-mistakes.ts";
+import { mergeReminderSettings, readReminderSettings, REMINDER_HOURS } from "../_shared/english-reminders.ts";
+import { isReminderWorker, runReminderCycle } from "./reminders.ts";
 
 const routeMarker = "/hub";
 
@@ -241,6 +243,27 @@ serve(async (req) => {
     const supabaseUrl = getEnv("SUPABASE_URL");
     const serviceRoleKey = getEnv("SUPABASE_SERVICE_ROLE_KEY");
     const sb = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
+
+    // === Reminder worker (pg_cron, private secret; no learner session) ===
+    if (req.method === "POST" && extractRoute(new URL(req.url), routeMarker) === "/internal/reminders") {
+      if (!(await isReminderWorker(sb, req))) return json(401, { error: "Unauthorized" });
+      const body = await parseBody(req) as Record<string, unknown>;
+      const workerScope = await resolveLanguageScope(sb, "en");
+      const result = await runReminderCycle({
+        sb,
+        languageId: workerScope.languageId,
+        supabaseUrl,
+        serviceRoleKey,
+        appUrl: Deno.env.get("ENGLISH_APP_URL") ?? "https://english.schood.online",
+        dryRun: body.dry_run === true,
+        // A dry run may pretend it is another time, to preview messages.
+        now: body.dry_run === true && typeof body.now === "string" && Number.isFinite(Date.parse(body.now)) ? new Date(body.now) : undefined,
+        onlyUserIds: Array.isArray(body.user_ids) ? body.user_ids.map(String).slice(0, 20) : undefined,
+      });
+      console.log(JSON.stringify({ event: "english_reminder_cycle", hour: result.hour, considered: result.considered, sent: result.sent.length }));
+      return json(200, { ok: true, ...result });
+    }
+
     const auth = await authUser(sb, req);
     if (!auth) return json(401, { error: "Unauthorized" });
 
@@ -700,6 +723,36 @@ serve(async (req) => {
         free_left: overview.free_left,
         free_per_day: overview.free_per_day,
       });
+    }
+
+    // === Telegram reminders: opt-in, only once Telegram is linked ===
+    if (route === "/reminders" && (req.method === "GET" || req.method === "POST")) {
+      const [goalRes, userRes] = await Promise.all([
+        sb.from("learner_language_goals")
+          .select("user_id, metadata")
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId)
+          .maybeSingle(),
+        sb.from("users").select("telegram_chat_id").eq("id", auth.userId).maybeSingle(),
+      ]);
+      const linked = Boolean(userRes.data?.telegram_chat_id);
+      const metadata = (goalRes.data?.metadata && typeof goalRes.data.metadata === "object" ? goalRes.data.metadata : {}) as Record<string, unknown>;
+      let settings = readReminderSettings(metadata);
+      if (req.method === "POST") {
+        if (!goalRes.data) return json(409, { error: "Finish the level test first", code: "english_onboarding_required" });
+        const body = await parseBody(req) as Record<string, unknown>;
+        const next = mergeReminderSettings(settings, body);
+        if (next.enabled && !linked) {
+          return json(409, { error: "Link Telegram on your Schood account first", code: "telegram_not_linked" });
+        }
+        const { error } = await sb.from("learner_language_goals")
+          .update({ metadata: { ...metadata, telegram_reminder: next } })
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId);
+        if (error) throw new Error(`Failed to save reminders: ${error.message}`);
+        settings = next;
+      }
+      return json(200, { ok: true, telegram_linked: linked, ...settings, hours: REMINDER_HOURS });
     }
 
     // === Tutor memory: notes the learner chose to keep, on every device ===

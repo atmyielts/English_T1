@@ -133,6 +133,21 @@ export type TopicWeek = {
 export const getTopicWeek = (signal?: AbortSignal) =>
   edge<{ week: TopicWeek | null }>('hub', '/week', { query: { language_code: 'en', date: localDate() }, signal });
 
+export type ReminderSettings = {
+  telegram_linked: boolean;
+  enabled: boolean;
+  hour: number;
+  weekly: boolean;
+  locale: 'en' | 'ru' | 'uz';
+  hours: { min: number; max: number };
+};
+
+export const getReminders = (signal?: AbortSignal) =>
+  edge<ReminderSettings>('hub', '/reminders', { query: { language_code: 'en' }, signal });
+
+export const saveReminders = (body: Partial<Pick<ReminderSettings, 'enabled' | 'hour' | 'weekly' | 'locale'>>) =>
+  edge<ReminderSettings>('hub', '/reminders', { query: { language_code: 'en' }, body });
+
 export type SaveOnboardingBody = {
   placement?: { overall_level: CefrLevel; per_skill: Partial<Record<SkillKey, { level: CefrLevel }>> };
   goal?: { goal_keys: string[]; target_cefr?: CefrLevel; daily_time_minutes?: number };
