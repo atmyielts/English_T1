@@ -30,6 +30,29 @@ export type CatalogItem = {
   level: Cefr | null;
   minutes: number;
   difficulty: number;
+  /** Topic words (tags) used to match the learner's goals. */
+  tags?: string[];
+};
+
+/** Topic words that suit each learning goal (matched against item titles and tags). */
+export const GOAL_KEYWORDS: Record<string, string[]> = {
+  everyday: ["home", "family", "food", "shopping", "weather", "health", "daily", "routine", "friend", "neighbour", "cafe", "café", "market", "bazaar", "city", "sport", "hobby"],
+  work: ["work", "workplace", "office", "meeting", "manager", "email", "team", "job", "interview", "business", "project", "career", "colleague", "client", "report", "deadline"],
+  study_abroad: ["study", "university", "academic", "lecture", "essay", "campus", "student", "course", "abroad", "library", "research", "dormitory"],
+  exam: ["academic", "essay", "argument", "opinion", "report", "lecture", "science", "research", "proposal", "society", "environment"],
+  travel: ["travel", "airport", "hotel", "flight", "trip", "holiday", "booking", "restaurant", "transport", "train", "metro", "directions", "tourist", "guest"],
+  school: ["school", "homework", "class", "teacher", "student", "exam", "lesson", "study", "sport", "friend"],
+  // Older goal keys from the earlier goal picker.
+  exam_prep: ["academic", "essay", "argument", "opinion", "report", "lecture", "science"],
+  career: ["work", "workplace", "office", "meeting", "email", "team", "job", "interview", "business"],
+};
+
+/** True when an item's title or tags mention a topic that suits the learner's goals. */
+export const matchesGoals = (item: Pick<CatalogItem, "title" | "tags">, goalKeys: string[]): boolean => {
+  const words = goalKeys.flatMap((key) => GOAL_KEYWORDS[key] ?? []);
+  if (!words.length) return false;
+  const haystack = ` ${[item.title, ...(item.tags ?? [])].join(" ").toLowerCase()} `;
+  return words.some((word) => new RegExp(`[^a-z]${word}`).test(haystack));
 };
 
 export type AttemptRow = {
@@ -93,6 +116,8 @@ export type TodayInput = {
   existing?: TodayTask[] | null;
   /** Lessons for repeated mistakes, most urgent first. The first one is planned. */
   fixes?: FixCandidate[];
+  /** The learner's goals; at the same level, matching topics come first. */
+  goalKeys?: string[];
 };
 
 export type TodayPlan = {
@@ -176,6 +201,7 @@ export const pickItem = (
   items: CatalogItem[],
   attempts: AttemptRow[],
   target: Cefr | null,
+  goalKeys: string[] = [],
 ): { item: CatalogItem; kind: TodayItemKind; previousScore: number | null } | null => {
   if (!items.length) return null;
   const best = new Map<string, number>();
@@ -189,8 +215,11 @@ export const pickItem = (
     const da = Math.abs(levelIndex(a.level) - targetIndex);
     const db = Math.abs(levelIndex(b.level) - targetIndex);
     if (da !== db) return da - db;
-    // At equal distance prefer the easier side for a learner, then lower difficulty.
+    // At equal distance prefer the easier side for a learner, then topics that suit their goals.
     if (levelIndex(a.level) !== levelIndex(b.level)) return levelIndex(a.level) - levelIndex(b.level);
+    const goalA = matchesGoals(a, goalKeys) ? 0 : 1;
+    const goalB = matchesGoals(b, goalKeys) ? 0 : 1;
+    if (goalA !== goalB) return goalA - goalB;
     return a.difficulty - b.difficulty || a.slug.localeCompare(b.slug);
   };
   if (unseen.length) {
@@ -307,6 +336,7 @@ export const planToday = (input: TodayInput): TodayPlan => {
       input.items.filter((item) => item.skill === entry.skill),
       input.attempts.filter((attempt) => attempt.skill === entry.skill),
       target,
+      input.goalKeys ?? [],
     );
     if (!picked) continue;
     const minutes = Math.max(3, Math.min(30, picked.item.minutes));

@@ -36,6 +36,7 @@ import {
   type LevelStatus,
   levelStatus,
   longestStreak,
+  matchesGoals,
   nextCefr,
   pickFixes,
   practiceLevel,
@@ -318,7 +319,7 @@ serve(async (req) => {
       const loadCatalog = async (): Promise<CatalogItem[]> => {
         let query = sb
           .from("learning_content_registry_items")
-          .select("id, service_key, source_ref, title, cefr_level, estimated_minutes, difficulty")
+          .select("id, service_key, source_ref, title, cefr_level, estimated_minutes, difficulty, tags")
           .eq("language_id", scope.languageId)
           .eq("status", "published")
           .in("content_type", PRIMARY_CONTENT_TYPES)
@@ -336,6 +337,7 @@ serve(async (req) => {
             level: isTodayCefr(row.cefr_level) ? row.cefr_level : null,
             minutes: Math.max(1, Number(row.estimated_minutes ?? 10)),
             difficulty: Number(row.difficulty ?? 0.5),
+            tags: Array.isArray(row.tags) ? (row.tags as unknown[]).map(String).slice(0, 12) : [],
           }));
       };
 
@@ -365,7 +367,13 @@ serve(async (req) => {
       };
 
       if (route === "/catalog") {
-        const [items, attempts] = await Promise.all([loadCatalog(), loadAttempts(3650, 2000)]);
+        const [catalogItems, attempts, goalRes] = await Promise.all([
+          loadCatalog(),
+          loadAttempts(3650, 2000),
+          sb.from("learner_language_goals").select("goal_keys").eq("user_id", auth.userId).eq("language_id", scope.languageId).maybeSingle(),
+        ]);
+        const goalKeys = Array.isArray(goalRes.data?.goal_keys) ? (goalRes.data!.goal_keys as unknown[]).map(String) : [];
+        const items = catalogItems.map((entry) => ({ ...entry, goal_match: matchesGoals(entry, goalKeys) }));
         const best: Record<string, number> = {};
         for (const row of attempts) {
           const id = String(row.content_item_id ?? "");
@@ -590,6 +598,7 @@ serve(async (req) => {
         availableSkills,
         existing,
         fixes,
+        goalKeys: Array.isArray(goal?.goal_keys) ? (goal!.goal_keys as unknown[]).map(String) : [],
       });
 
       // Persist so the selection stays stable all day and Student Center can show it.

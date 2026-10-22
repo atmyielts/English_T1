@@ -6,6 +6,7 @@ import {
   dailyCounts,
   levelStatus,
   longestStreak,
+  matchesGoals,
   nextCefr,
   practiceLevel,
   pickFixes,
@@ -258,4 +259,15 @@ Deno.test("level status needs three results and moves up at 85, down under 50", 
   assertEquals(practiceLevel("B1", "ready"), "B1");
   assertEquals(nextCefr("B1"), "B2");
   assertEquals(nextCefr("C2"), null);
+});
+
+Deno.test("at the same level, items that suit the learner's goal come first", () => {
+  const items: CatalogItem[] = [
+    { ...item("r-museum", "reading", "B1"), title: "Museum captions", tags: ["Culture", "museums"] },
+    { ...item("r-airport", "reading", "B1"), title: "Airport guides", tags: ["Travel", "airport"] },
+  ];
+  assertEquals(pickItem(items, [], "B1", ["travel"])?.item.id, "r-airport");
+  assertEquals(pickItem(items, [], "B1", [])?.item.id, "r-airport".localeCompare("r-museum") < 0 ? "r-airport" : "r-museum");
+  assertEquals(matchesGoals({ title: "Team update after a delay", tags: ["workplace"] }, ["work"]), true);
+  assertEquals(matchesGoals({ title: "Networking", tags: ["homework"] }, ["work"]), false);
 });

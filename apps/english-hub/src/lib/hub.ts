@@ -47,6 +47,8 @@ export type CatalogEntry = {
   level: CefrLevel | null;
   minutes: number;
   difficulty: number;
+  /** The item's topic suits the learner's goals. */
+  goal_match?: boolean;
 };
 
 export type CatalogResponse = { items: CatalogEntry[]; best_scores: Record<string, number> };
