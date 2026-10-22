@@ -1,1 +1,51 @@
-{"schemaVersion":1,"releaseId":"academy-homework-launch","status":"code_ready","backwardCompatible":true,"frontends":[],"migrations":[],"edgeFunctions":[],"workers":[],"requiredSecrets":[],"rolloutOrder":[],"manualFollowUps":[],"verification":["x"],"rollback":{}}
+{
+  "schemaVersion": 1,
+  "releaseId": "academy-homework-launch",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": [
+    "academy",
+    "platform"
+  ],
+  "migrations": [
+    "20261024105000_academy_course_listings.sql",
+    "20261024110000_academy_homework_launch.sql"
+  ],
+  "edgeFunctions": [
+    "academy-learning"
+  ],
+  "workers": [],
+  "requiredSecrets": [
+    "ACADEMY_LEARNING_WORKER_SECRET",
+    "SITE_URL",
+    "TELEGRAM_INTERNAL_SECRET"
+  ],
+  "rolloutOrder": [
+    "pages",
+    "migration:20261024105000_academy_course_listings.sql",
+    "migration:20261024110000_academy_homework_launch.sql",
+    "secret:TELEGRAM_INTERNAL_SECRET",
+    "secret:SITE_URL",
+    "secret:ACADEMY_LEARNING_WORKER_SECRET",
+    "function:academy-learning"
+  ],
+  "manualFollowUps": [
+    "Pages: set the repo variable VITE_ACADEMY_HOMEWORK_OS=true before merging, so the Academy build shows the Homework screen and the learner My mistakes screen. Platform publishes schood.online/courses and the Mini App homework card; both stay quiet until academy-learning is deployed (the card hides itself, the catalogue shows its error state).",
+    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus 20261024105000_academy_course_listings.sql and 20261024110000_academy_homework_launch.sql, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first. The listings migration adds academy_course_listings (service role only), academy_course_completion() and academy_public_course_catalog(). The launch migration sets telegram_handin.enabled, premark.enabled and digest.enabled to true; billing.enforced stays false.",
+    "Secrets: supabase secrets set TELEGRAM_INTERNAL_SECRET= is not run (already set). supabase secrets set SITE_URL= is not run (code default https://schood.online). supabase secrets set ACADEMY_LEARNING_WORKER_SECRET= is not run (cron uses internal_runtime_secrets.academy_learning_secret).",
+    "Edge: supabase functions deploy academy-learning --project-ref bbjawctnqrufvnesdsel immediately after the migrations (adds miniapp_*, public_course*, course_listing_*, the bot_commands worker cycle and the shared hand-in save path). On the first handled bot update it adds /homework and /center to the @schoodstudentbot menu."
+  ],
+  "verification": [
+    "select key, value from academy_learning_config shows telegram_handin, premark and digest true and billing.enforced false.",
+    "POST /functions/v1/academy-learning {\"action\":\"public_courses\"} returns 200 with a courses array (empty until a course is listed).",
+    "POST /functions/v1/academy-learning {\"action\":\"miniapp_homework\",\"initData\":\"bad\"} returns 401; {\"action\":\"worker\"} without the secret returns 401.",
+    "https://schood.online/courses renders; https://academy.schood.online shows Homework in staff navigation.",
+    "A photo sent to @schoodstudentbot by a linked student with open homework is filed (receipt message) and appears in the Homework review queue."
+  ],
+  "rollback": {
+    "pages": "Unset VITE_ACADEMY_HOMEWORK_OS (or set false) and re-run Pages; Cloudflare Pages rollback of schood-platform for the catalogue and Mini App card.",
+    "migration": "update academy_learning_config set value='false' where key in ('telegram_handin.enabled','premark.enabled','digest.enabled'); update academy_course_listings set status='hidden' where status='listed'. Tables can stay.",
+    "edge": "Redeploy academy-learning from 2f541af (release academy-homework-os-courses).",
+    "worker": "Nothing deployed."
+  }
+}
