@@ -28,6 +28,13 @@ const declaredPublicTables = collectSqlNames(
 const rlsEnabledPublicTables = collectSqlNames(
   /alter\s+table\s+(?:if\s+exists\s+)?public\.([a-zA-Z0-9_]+)\s+enable\s+row\s+level\s+security/gi,
 );
+// PL/pgSQL loops count only when the loop's unconditional first statement enables RLS on the loop variable.
+for (const match of migrationSql.matchAll(
+  /foreach\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+in\s+array\s+array\[\s*((?:'[a-zA-Z0-9_]+'\s*,\s*)*'[a-zA-Z0-9_]+')\s*\]\s+loop\s+execute\s+format\(\s*'alter\s+table\s+public\.%I\s+enable\s+row\s+level\s+security'\s*,\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\)\s*;/gi,
+)) {
+  if (match[1].toLowerCase() !== match[3].toLowerCase()) continue;
+  for (const [, table] of match[2].matchAll(/'([a-zA-Z0-9_]+)'/g)) rlsEnabledPublicTables.add(table.toLowerCase());
+}
 for (const table of [...declaredPublicTables].sort()) {
   if (!rlsEnabledPublicTables.has(table)) {
     errors.push(`Public table is declared without enabling RLS: public.${table}`);
@@ -94,6 +101,17 @@ for (const file of productionExampleFiles) {
   if (/(localhost|127\.0\.0\.1)/i.test(content)) {
     errors.push(`Localhost reference found in production example file: ${file}`);
   }
+}
+
+// Supabase records migrations by their version prefix: two files with one
+// version cannot both be applied to production.
+const migrationVersions = new Map();
+for (const file of trackedFiles.filter((file) => /^supabase\/migrations\/[^/]+\.sql$/.test(file))) {
+  const version = file.split('/').pop().split('_')[0];
+  migrationVersions.set(version, [...(migrationVersions.get(version) ?? []), file]);
+}
+for (const [version, files] of migrationVersions) {
+  if (files.length > 1) errors.push(`Migration version ${version} is used by ${files.length} files: ${files.join(', ')}`);
 }
 
 if (errors.length) {

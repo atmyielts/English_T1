@@ -18,7 +18,9 @@ import {
   validateClickWebhookEnvelope,
 } from "./webhook-security.ts";
 import {
+  canPurchaseForInstitution,
   inspectClickConfiguration,
+  isInstitutionServiceProduct,
   isTrustedClickPaymentUrl,
   normalizeCheckoutIdempotencyKey,
   normalizeSchoodReturnUrl,
@@ -1921,6 +1923,8 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
 
       const purchaseType = normalizePurchaseType(body.purchase_type);
       let plan: PlanRow | null = null;
+      // Product attributes read with the plan; kept out of the stored plan snapshot.
+      let planProduct: { metadata?: unknown } | null | undefined = null;
       let experience: ExperiencePriceRow | null = null;
       let quantity = 1;
       let expiresInDays: number | null = null;
@@ -2013,7 +2017,7 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
         const { data: planRow, error: planError } = await supabase
           .from("plans")
           .select(
-            "id, product_id, name, amount, currency, duration_days, metadata",
+            "id, product_id, name, amount, currency, duration_days, metadata, product:products(metadata)",
           )
           .eq("id", body.plan_id)
           .eq("is_active", true)
@@ -2022,12 +2026,12 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
         if (planError || !planRow) {
           return checkoutInvalid({ error: "Invalid plan_id" });
         }
-        plan = planRow as PlanRow;
+        ({ product: planProduct, ...plan } = planRow as PlanRow & { product?: { metadata?: unknown } | null });
       } else if (body.plan_id) {
         const { data: planRow, error: planError } = await supabase
           .from("plans")
           .select(
-            "id, product_id, name, amount, currency, duration_days, metadata",
+            "id, product_id, name, amount, currency, duration_days, metadata, product:products(metadata)",
           )
           .eq("id", body.plan_id)
           .eq("is_active", true)
@@ -2036,12 +2040,12 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
         if (planError || !planRow) {
           return checkoutInvalid({ error: "Invalid plan_id" });
         }
-        plan = planRow as PlanRow;
+        ({ product: planProduct, ...plan } = planRow as PlanRow & { product?: { metadata?: unknown } | null });
       } else if (body.product_id) {
         const { data: planRow, error: planError } = await supabase
           .from("plans")
           .select(
-            "id, product_id, name, amount, currency, duration_days, metadata",
+            "id, product_id, name, amount, currency, duration_days, metadata, product:products(metadata)",
           )
           .eq("product_id", body.product_id)
           .eq("is_active", true)
@@ -2054,7 +2058,7 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
             error: "No active plan for product",
           });
         }
-        plan = planRow as PlanRow;
+        ({ product: planProduct, ...plan } = planRow as PlanRow & { product?: { metadata?: unknown } | null });
       } else {
         return checkoutInvalid({
           error: "plan_id or product_id is required",
@@ -2065,6 +2069,29 @@ export const handleClickRequest = async (req: Request, clientOverride?: any): Pr
       let currency = "UZS";
       const productId = plan?.product_id ?? experience?.product_id ?? null;
       const planId = plan?.id ?? null;
+
+      // Institution-wide services are bought for the institution, so only its
+      // owner or administrator may purchase them. Other purchases are unchanged.
+      if (plan && purchaseType !== "center_wallet_topup") {
+        if (isInstitutionServiceProduct(planProduct?.metadata)) {
+          const { data: buyer, error: buyerError } = await supabase
+            .from("tenant_memberships")
+            .select("role")
+            .eq("tenant_id", tenantId)
+            .eq("user_id", authedUserId)
+            .eq("status", "active")
+            .maybeSingle();
+          if (buyerError) {
+            return jsonResponse(500, { error: "Failed to load membership" });
+          }
+          if (!canPurchaseForInstitution(buyer?.role)) {
+            return checkoutInvalid({
+              error: "Only an institution owner or administrator can purchase this service",
+              error_code: "institution_admin_required",
+            });
+          }
+        }
+      }
 
       if (purchaseType === "center_wallet_topup") {
         originalAmount = directAmount ?? 0;

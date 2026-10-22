@@ -1,0 +1,7 @@
+.submission-rules { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+.submission-rules label.check { min-height: 44px; }
+.submission-rules input[type="checkbox"] { accent-color: var(--navy); }
+.submission-rules dl { display: grid; gap: .75rem; margin: .75rem 0; }
+.submission-rules dt { font-weight: 700; }
+.submission-rules dd { margin: .25rem 0 0; }
+.answer-asset { min-width: 0; overflow-wrap: anywhere; }

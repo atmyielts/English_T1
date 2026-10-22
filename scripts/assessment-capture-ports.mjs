@@ -1,0 +1,36 @@
+import {build} from 'esbuild';
+import {Miniflare} from 'miniflare';
+import {pathToFileURL} from 'node:url';
+import {randomUUID} from 'node:crypto';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+/** Real production API/Worker ports for the isolated Exam capture fixture.
+ * Only identity/network transport are adapters; all mutations reach PostgreSQL. */
+export async function capturePorts({root,directory,base,auth,database,tables,live=false,workload=false}){
+ const secret='synthetic-capture-'+randomUUID(),file=path.join(directory,'capture-edge.mjs');
+ await build({stdin:{contents:"export {createProctorHandler} from './supabase/functions/proctor/handler.ts';export {createProctorRepository} from './supabase/functions/proctor/repository.ts';export {createCaptureHandler} from './supabase/functions/proctor/capture-handler.ts';export {createCaptureRepository} from './supabase/functions/proctor/capture-repository.ts';export {createRecordingHandler} from './supabase/functions/proctor/recording-handler.ts';export {createRecordingRepository} from './supabase/functions/proctor/recording-repository.ts';export {createRuntimeHandler} from './supabase/functions/assessment-runtime/handler.ts';export {createRuntimeRepository} from './supabase/functions/assessment-runtime/repository.ts';",resolveDir:root,loader:'ts'},bundle:true,platform:'node',format:'esm',outfile:file});
+ const modules=await import(pathToFileURL(file).href),user=async token=>{const result=await auth.auth.getUser(token);return result.error?null:result.data.user?.id??null;};
+ const capture=modules.createCaptureHandler(modules.createCaptureRepository(user,database,{liveLaunchEnabled:live}),[base],true),main=modules.createProctorHandler(modules.createProctorRepository(user,tables),[base],{captureLaunchEnabled:true,liveLaunchEnabled:live}),recordings=modules.createRecordingHandler(modules.createRecordingRepository(user,database),[base],{enabled:true,transportSecret:secret});
+ const runtime=modules.createRuntimeHandler(modules.createRuntimeRepository(auth,database),secret);
+ const workloadFile=path.join(directory,'workload-edge.mjs');await build({stdin:{contents:"export {createWorkloadHandler} from './supabase/functions/proctor/workload-handler.ts';export {createWorkloadRepository} from './supabase/functions/proctor/workload-repository.ts';",resolveDir:root,loader:'ts'},bundle:true,platform:'node',format:'esm',outfile:workloadFile});const workloadModules=await import(pathToFileURL(workloadFile).href),workloadHandler=workloadModules.createWorkloadHandler(workloadModules.createWorkloadRepository(user,database),[base]);let loseWorkloadReply=workload;
+ const evidenceFile=path.join(directory,'capture-evidence-worker.mjs'),coordinatorFile=path.join(directory,'capture-coordinator-worker.mjs');
+ await Promise.all([build({entryPoints:[path.join(root,'workers/proctor-evidence/src/index.ts')],bundle:true,platform:'browser',format:'esm',target:'es2022',outfile:evidenceFile}),build({entryPoints:[path.join(root,'workers/assessment-coordinator/src/index.ts')],bundle:true,platform:'browser',format:'esm',target:'es2022',external:['cloudflare:workers'],outfile:coordinatorFile})]);
+ let evidence,coordinator,liveService,loseOpen=true,loseReceipt=true,loseComplete=true,loseClose=true;
+ async function dispose(){await Promise.all([evidence?.dispose(),coordinator?.dispose(),liveService?.dispose()]);}
+ try{
+  evidence=new Miniflare({modules:true,modulesRoot:directory,scriptPath:evidenceFile,compatibilityDate:'2026-07-30',r2Buckets:['EVIDENCE'],r2Persist:path.join(directory,'capture-r2'),bindings:{SUPABASE_URL:'https://canonical-capture.invalid',SUPABASE_ANON_KEY:'synthetic-anon',PROCTOR_EVIDENCE_SECRET:secret,EVIDENCE_ACTIVE_KEY_ID:'fixture-k1',EVIDENCE_KEYRING:JSON.stringify({'fixture-k1':'c'.repeat(64)}),ALLOWED_ORIGINS:base},outboundService:async req=>{
+   assert.equal(new URL(req.url).hostname,'canonical-capture.invalid');const body=await req.clone().json(),response=await recordings(req);
+   if(response.ok&&((body.action==='part.receipt'&&loseReceipt)||(body.action==='segment.complete'&&loseComplete))){if(body.action==='part.receipt')loseReceipt=false;else loseComplete=false;return Response.json({code:'fixture_lost_reply',error:'Committed evidence reply lost'},{status:503});}return response;
+  }});
+  coordinator=new Miniflare({modules:true,modulesRoot:directory,scriptPath:coordinatorFile,compatibilityDate:'2026-07-30',durableObjects:{ATTEMPTS:{className:'AttemptCoordinator',useSQLite:true}},durableObjectsPersist:path.join(directory,'capture-coordinator'),bindings:{SUPABASE_URL:'https://canonical-capture.invalid',SUPABASE_ANON_KEY:'synthetic-anon',ASSESSMENT_COORDINATOR_SECRET:secret,ALLOWED_ORIGINS:base},outboundService:async req=>{
+   const url=new URL(req.url);assert.equal(url.hostname,'canonical-capture.invalid');if(url.pathname==='/auth/v1/user'){const result=await auth.auth.getUser((req.headers.get('authorization')??'').replace(/^Bearer /,''));return Response.json(result.data.user??{},{status:result.data.user?200:401});}assert.equal(url.pathname,'/functions/v1/assessment-runtime');return runtime(req);
+  }});
+  await Promise.all([evidence.ready,coordinator.ready]);
+  if(live){const{connectedLive}=await import(pathToFileURL(path.join(root,'services/proctor-live-runtime/connected.mjs')).href);liveService=await connectedLive({root,directory,base,auth,database});}
+  return{dispose,live:req=>liveService.dispatch(req),liveControl:req=>liveService.control(req),liveProof:()=>liveService.proof(),async proctor(req){const url=new URL(req.url);if(url.pathname.includes('/proctor/workload/')){const response=await workloadHandler(req);if(response.ok&&req.method==='POST'&&loseWorkloadReply){loseWorkloadReply=false;return Response.json({code:'fixture_lost_reply',error:'Committed assignment change reply lost'},{status:503});}return response;}if(url.pathname.includes('/proctor/live/'))return liveService.authority(req);if(url.pathname.includes('/recordings/')){const body=req.method==='POST'?await req.clone().json():null,response=await recordings(req);if(response.ok&&body?.action==='recording.close'&&loseClose){loseClose=false;return Response.json({code:'fixture_lost_reply',error:'Committed recording closure reply lost'},{status:503});}return response;}
+   if(url.pathname.includes('/capture/')){const body=req.method==='POST'?await req.clone().json():null,response=await capture(req);if(response.ok&&body?.action==='capture.open'&&loseOpen){loseOpen=false;return Response.json({code:'fixture_lost_reply',error:'Committed capture preparation reply lost'},{status:503});}return response;}return main(req);},
+   async coordinator(req){const url=new URL(req.url);url.pathname=url.pathname.slice('/coordinator'.length);return coordinator.dispatchFetch(url.toString(),{method:req.method,headers:req.headers,...(req.method==='POST'?{body:await req.arrayBuffer()}:{})});},
+   evidence:async req=>evidence.dispatchFetch(req.url,{method:req.method,headers:req.headers,...(req.method==='PUT'?{body:await req.arrayBuffer()}:{})}),
+  };
+ }catch(cause){await dispose();throw cause;}
+}

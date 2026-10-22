@@ -1,0 +1,13 @@
+.feedback-workspace h4 {
+  overflow-wrap: anywhere;
+}
+.feedback-workspace fieldset {
+  min-width: 0;
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+}
+.feedback-workspace section {
+  margin-top: 1.5rem;
+}

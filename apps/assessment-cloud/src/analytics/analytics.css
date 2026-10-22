@@ -1,0 +1,58 @@
+.analytics-workspace {
+  display: grid;
+  gap: 1.5rem;
+  min-width: 0;
+}
+.analytics-workspace section, .analytics-workspace fieldset {
+  min-width: 0;
+}
+.analytics-workspace fieldset {
+  border: 0;
+  padding: 0;
+}
+.analytics-workspace .records > li {
+  display: block;
+}
+.analytics-workspace .records > li > strong,
+.analytics-workspace .records > li > span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.analytics-workspace .records > li > button {
+  margin-top: 0.75rem;
+}
+.analytics-workspace table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.analytics-workspace th, .analytics-workspace td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--line, #d6d0c7);
+  overflow-wrap: anywhere;
+}
+.analytics-workspace caption {
+  text-align: left;
+  margin: 0.75rem 0;
+}
+.analytics-workspace summary {
+  cursor: pointer;
+  min-height: 2.75rem;
+  display: list-item;
+}
+.analytics-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  gap: 1rem;
+}
+.analytics-workspace dd {
+  margin: 0.25rem 0 1rem;
+  font-weight: 700;
+}
+.analytics-items > li {
+  margin-bottom: 1.5rem;
+}
+.analytics-hash, .analytics-items h3 {
+  overflow-wrap: anywhere;
+}

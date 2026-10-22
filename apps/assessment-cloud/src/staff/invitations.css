@@ -1,0 +1,28 @@
+.invitations-workspace {
+  margin-block-start: 1.5rem;
+  min-width: 0;
+}
+.invitations-workspace form {
+  margin-block: 1.25rem;
+}
+.invitations-workspace input,
+.invitations-workspace select,
+.invitations-workspace textarea {
+  min-width: 0;
+  max-width: 100%;
+}
+.invitation-accept section {
+  margin-block: 1rem;
+}
+.invitation-accept > button {
+  margin-block-start: 0.75rem;
+}
+.invitation-accept h2,
+.invitation-accept h3,
+.invitation-accept p,
+.invitation-accept li {
+  overflow-wrap: anywhere;
+}
+.invitation-accept button {
+  min-height: 44px;
+}

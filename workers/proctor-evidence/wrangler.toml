@@ -1,0 +1,28 @@
+name = "schood-proctor-evidence-dev"
+main = "src/index.ts"
+compatibility_date = "2026-07-30"
+workers_dev = false
+[vars]
+EVIDENCE_ACTIVE_KEY_ID = "dev-k1"
+[[r2_buckets]]
+binding = "EVIDENCE"
+bucket_name = "schood-proctor-evidence-dev"
+[env.staging]
+name = "schood-proctor-evidence-staging"
+workers_dev = false
+[env.staging.vars]
+EVIDENCE_ACTIVE_KEY_ID = "staging-k1"
+[[env.staging.r2_buckets]]
+binding = "EVIDENCE"
+bucket_name = "schood-proctor-evidence-staging"
+[env.production]
+name = "schood-proctor-evidence"
+workers_dev = false
+[env.production.vars]
+EVIDENCE_ACTIVE_KEY_ID = "production-k1"
+[[env.production.r2_buckets]]
+binding = "EVIDENCE"
+bucket_name = "schood-proctor-evidence"
+# Configure exact ALLOWED_ORIGINS, SUPABASE_URL, SUPABASE_ANON_KEY,
+# PROCTOR_EVIDENCE_SECRET and EVIDENCE_KEYRING independently per environment.
+# Nothing is created/deployed by this configuration. No public bucket routes.

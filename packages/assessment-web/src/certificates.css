@@ -1,0 +1,57 @@
+.certificates-panel {
+  display: grid;
+  gap: 1rem;
+  margin-block: 1.5rem;
+}
+.certificate-card {
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  overflow-wrap: anywhere;
+}
+.certificate-card p {
+  white-space: pre-wrap;
+}
+.certificate-reference {
+  overflow-wrap: anywhere;
+  font-size: 0.85rem;
+}
+.certificate-pdf-controls {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 30rem;
+  margin-block: 1rem;
+}
+.certificate-pdf-controls button {
+  justify-self: start;
+}
+.certificate-pdf-controls .hint {
+  margin: 0;
+}
+.certificates-panel .check {
+  display: flex;
+  gap: 0.75rem;
+  align-items: start;
+}
+.certificates-panel .check input {
+  width: auto;
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+}
+.certificates-panel form {
+  display: grid;
+  gap: 1rem;
+}
+.certificate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.certificate-verify-result {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .certificate-card {
+    padding: 1rem;
+  }
+}

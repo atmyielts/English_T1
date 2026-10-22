@@ -1,0 +1,3 @@
+# Build/QA only; never installed into the production document runtime.
+fonttools==4.67.0
+pypdf==6.10.0

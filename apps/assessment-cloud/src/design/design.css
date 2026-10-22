@@ -1,0 +1,61 @@
+.assessment-editor {
+  grid-column: 1/-1;
+}
+.design-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: var(--space-4, 1rem);
+}
+.design-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2, 0.5rem);
+  margin-block: 0.5rem;
+}
+.design-section {
+  margin-block: 1.5rem;
+  min-width: 0;
+}
+.design-selected li {
+  margin-block: 0.75rem;
+  overflow-wrap: anywhere;
+}
+.design-pool {
+  max-height: 20rem;
+  overflow: auto;
+}
+.design-question-choice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.75rem;
+}
+@media (max-width: 600px) {
+  .design-question-choice {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+.design-pool .check {
+  align-items: flex-start;
+}
+.design-pool span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.design-pool small,
+.design-selected small {
+  display: block;
+}
+.definition-summary {
+  overflow-wrap: anywhere;
+}
+.design-section button,
+.assessment-editor button,
+.assessment-library button {
+  min-height: 44px;
+}
+.assessment-library details {
+  margin-block: 1rem;
+}

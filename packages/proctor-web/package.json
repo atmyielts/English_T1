@@ -1,0 +1,6 @@
+{
+  "name": "@schood/proctor-web",
+  "private": true,
+  "type": "module",
+  "exports": { "./runtime": "./src/runtime.ts", "./journal": "./src/journal.ts", "./types": "./src/types.ts", "./capture":"./src/capture.ts", "./capture-journal":"./src/capture-journal.ts", "./capture-upload":"./src/capture-upload.ts", "./capture-runtime":"./src/capture-runtime.ts", "./recording-types":"./src/recording-types.ts", "./recording-pages":"./src/recording-pages.ts" }
+}

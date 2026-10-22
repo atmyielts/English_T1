@@ -1,0 +1,7 @@
+{
+  "name": "@schood/service-design",
+  "private": true,
+  "type": "module",
+  "exports": { "./header": "./src/ServiceHeader.tsx", "./theme": "./src/platform.css" },
+  "peerDependencies": { "react": "^19.2.0" }
+}

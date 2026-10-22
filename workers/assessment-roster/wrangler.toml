@@ -1,0 +1,52 @@
+name = "schood-assessment-roster-dev"
+main = "src/index.ts"
+compatibility_date = "2026-07-30"
+workers_dev = false
+[vars]
+ROSTER_BATCH_LIMIT = "20"
+[triggers]
+crons = ["* * * * *"]
+[[queues.producers]]
+binding = "ROSTER_QUEUE"
+queue = "schood-assessment-roster-dev"
+[[queues.consumers]]
+queue = "schood-assessment-roster-dev"
+max_batch_size = 25
+max_batch_timeout = 1
+max_retries = 5
+max_concurrency = 5
+dead_letter_queue = "schood-assessment-roster-dlq-dev"
+[env.staging]
+name = "schood-assessment-roster-staging"
+workers_dev = false
+[env.staging.vars]
+ROSTER_BATCH_LIMIT = "20"
+[env.staging.triggers]
+crons = ["* * * * *"]
+[[env.staging.queues.producers]]
+binding = "ROSTER_QUEUE"
+queue = "schood-assessment-roster-staging"
+[[env.staging.queues.consumers]]
+queue = "schood-assessment-roster-staging"
+max_batch_size = 25
+max_batch_timeout = 1
+max_retries = 5
+max_concurrency = 5
+dead_letter_queue = "schood-assessment-roster-dlq-staging"
+[env.production]
+name = "schood-assessment-roster"
+workers_dev = false
+[env.production.vars]
+ROSTER_BATCH_LIMIT = "20"
+[env.production.triggers]
+crons = ["* * * * *"]
+[[env.production.queues.producers]]
+binding = "ROSTER_QUEUE"
+queue = "schood-assessment-roster"
+[[env.production.queues.consumers]]
+queue = "schood-assessment-roster"
+max_batch_size = 25
+max_batch_timeout = 1
+max_retries = 5
+max_concurrency = 5
+dead_letter_queue = "schood-assessment-roster-dlq"

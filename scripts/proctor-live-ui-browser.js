@@ -1,0 +1,57 @@
+async (page) => {
+ await page.getByRole('button',{name:'Start generated sources'}).click();
+ await page.locator('[data-fixture-state="ready"]').waitFor({timeout:30000});
+ const capture=page.getByRole('region',{name:'Required exam recording'});
+ await page.getByRole('button',{name:'Allow camera & record',exact:true}).click();
+ await page.getByText('Camera live feed',{exact:true}).waitFor();
+ await page.getByRole('button',{name:'Allow microphone & record',exact:true}).click();
+ await page.waitForFunction(()=>document.querySelectorAll('.capture-live [role="status"]').length===2&&[...document.querySelectorAll('.capture-live [role="status"]')].every(el=>el.textContent==='Live media is being sent'));
+ await page.evaluate(()=>window.liveFixture.failCameraPublisher());
+ const candidateCamera=page.locator('.capture-live li').filter({hasText:'Camera live feed'});
+ await candidateCamera.getByText('Live connection failed',{exact:true}).waitFor({timeout:8000});
+ if(!await page.evaluate(()=>window.liveFixture.recording()&&!window.liveFixture.captureReady()))throw Error('Publisher denial stopped recording or left exam readiness true');
+ await page.evaluate(()=>window.liveFixture.restoreCameraPublisher());
+ await candidateCamera.getByRole('button',{name:'Reconnect camera live feed',exact:true}).click();
+ await candidateCamera.getByText('Live media is being sent',{exact:true}).waitFor({timeout:15000});
+ await page.getByRole('button',{name:'Refresh live sources',exact:true}).click();
+ await page.getByRole('button',{name:'Open camera',exact:true}).waitFor();
+ if(await page.evaluate(()=>window.liveFixture.counts.subscribe)!==0)throw Error('Opening the session subscribed without observer choice');
+ await page.getByRole('button',{name:'Open camera',exact:true}).click();
+ const camera=page.getByRole('article',{name:'Camera live feed'}),microphone=page.getByRole('article',{name:'Microphone live feed'});
+ await camera.getByText('Live media received',{exact:true}).waitFor({timeout:20000});
+ await page.waitForFunction(()=>{const el=document.querySelector('video[aria-label="Camera stream"]');return el&&!el.hidden&&el.videoWidth===320;});
+ await page.getByRole('button',{name:'Open microphone',exact:true}).click();
+ await microphone.getByText('Live media received',{exact:true}).waitFor({timeout:20000});
+ if(!await microphone.locator('video').evaluate(el=>el.muted))throw Error('Microphone started unmuted');
+ await microphone.getByRole('button',{name:'Listen',exact:true}).click();
+ await page.waitForFunction(()=>document.querySelector('video[aria-label="Microphone stream"]')?.muted===false);
+ await microphone.getByRole('button',{name:'Mute',exact:true}).click();
+ for(const width of [1440,1024,768,390,320]){
+  await page.setViewportSize({width,height:1000});
+  if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1))throw Error('Horizontal overflow at '+width);
+  await page.screenshot({path:'output/playwright/live-monitoring-'+width+'.png',fullPage:true});
+ }
+ await page.evaluate(()=>window.liveFixture.stall());
+ await camera.getByText('Interrupted · last frame hidden',{exact:true}).waitFor({timeout:10000});
+ if(!await camera.locator('video').evaluate(el=>el.hidden&&el.srcObject===null))throw Error('Stalled UI retained a stale frame');
+ await page.evaluate(()=>window.liveFixture.resume());
+ await camera.getByText('Live media received',{exact:true}).waitFor({timeout:10000});
+ await page.evaluate(()=>window.liveFixture.replaceCatalogCamera());
+ await camera.waitFor({state:'detached',timeout:8000});
+ if(await page.evaluate(()=>window.liveFixture.counts.subscribe)!==2)throw Error('A replacement publication was subscribed without explicit observer choice');
+ await page.getByRole('button',{name:'Open camera',exact:true}).click();
+ await camera.getByText('Live media received',{exact:true}).waitFor({timeout:20000});
+ await camera.getByRole('button',{name:'Stop camera feed',exact:true}).click();
+ await camera.waitFor({state:'detached'});
+ if(!await page.evaluate(()=>window.liveFixture.recording()))throw Error('Viewer stop interrupted original recording');
+ const chunksBefore=await page.evaluate(()=>window.liveFixture.chunks.length);
+ await page.waitForFunction(before=>window.liveFixture.chunks.length>before,chunksBefore,{timeout:8000});
+ await page.evaluate(()=>window.liveFixture.withdraw());
+ await page.getByRole('button',{name:'Refresh live sources',exact:true}).click();
+ await page.getByRole('alert').filter({hasText:'Live source access could not be confirmed'}).waitFor();
+ await microphone.waitFor({state:'detached'});
+ await page.waitForFunction(()=>window.liveFixture.counts.viewerClosed===3);
+ const proof=await page.evaluate(()=>({candidate_capture_controls:true,publisher_failure_preserves_recording:true,publisher_reconnected_explicitly:true,explicit_subscriptions:true,replacement_requires_choice:true,native_camera_dimensions:[320,180],microphone_muted_until_choice:true,stalled_frame_hidden:true,temporary_stall_recovered:true,withdrawal_unmounted_feeds:!document.querySelector('.live-feed'),recording_preserved:window.liveFixture.recording(),...window.liveFixture.counts,recording_chunks:window.liveFixture.chunks.length,widths:[1440,1024,768,390,320],fixture_identity_and_sfu:true,hosted_acceptance:false}));
+ await page.evaluate(()=>window.liveFixture.close());
+ return proof;
+}

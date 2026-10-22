@@ -1,0 +1,52 @@
+name = "schood-assessment-grading-dev"
+main = "src/index.ts"
+compatibility_date = "2026-07-30"
+workers_dev = false
+[vars]
+GRADING_BATCH_LIMIT = "200"
+[triggers]
+crons = ["* * * * *"]
+[[queues.producers]]
+binding = "GRADING_QUEUE"
+queue = "schood-assessment-grading-dev"
+[[queues.consumers]]
+queue = "schood-assessment-grading-dev"
+max_batch_size = 25
+max_batch_timeout = 1
+max_retries = 5
+max_concurrency = 8
+dead_letter_queue = "schood-assessment-grading-dlq-dev"
+[env.staging]
+name = "schood-assessment-grading-staging"
+workers_dev = false
+[env.staging.vars]
+GRADING_BATCH_LIMIT = "200"
+[env.staging.triggers]
+crons = ["* * * * *"]
+[[env.staging.queues.producers]]
+binding = "GRADING_QUEUE"
+queue = "schood-assessment-grading-staging"
+[[env.staging.queues.consumers]]
+queue = "schood-assessment-grading-staging"
+max_batch_size = 25
+max_batch_timeout = 1
+max_retries = 5
+max_concurrency = 8
+dead_letter_queue = "schood-assessment-grading-dlq-staging"
+[env.production]
+name = "schood-assessment-grading"
+workers_dev = false
+[env.production.vars]
+GRADING_BATCH_LIMIT = "200"
+[env.production.triggers]
+crons = ["* * * * *"]
+[[env.production.queues.producers]]
+binding = "GRADING_QUEUE"
+queue = "schood-assessment-grading"
+[[env.production.queues.consumers]]
+queue = "schood-assessment-grading"
+max_batch_size = 25
+max_batch_timeout = 1
+max_retries = 5
+max_concurrency = 8
+dead_letter_queue = "schood-assessment-grading-dlq"

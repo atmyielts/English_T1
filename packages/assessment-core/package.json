@@ -1,0 +1,7 @@
+{
+  "name": "@schood/assessment-core",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/mod.ts" },
+  "scripts": { "test": "deno test src/core.test.ts", "check": "deno check src/mod.ts" }
+}
