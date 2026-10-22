@@ -483,7 +483,7 @@ export const en: Record<string, string> = {
   "free.usedBody": "Come back tomorrow for your next free activity, or choose a plan to practise as much as you like. Your words in Review are always free.",
   "free.todayTitle": "Your free activity for today",
   "free.todayBody": "Without a plan you get one activity a day, plus Review. A plan unlocks the full daily session in every skill.",
-  "week.title": "This week: {topic}",
+  "week.title": "Theme of the week: {topic}",
   "week.lead": "One activity in each skill on the same theme. The words and ideas carry over from one to the next.",
   "week.progress": "{done}/{total} done",
   "week.progressLabel": "Theme progress",
