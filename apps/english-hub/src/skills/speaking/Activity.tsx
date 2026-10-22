@@ -4,6 +4,7 @@ import { useT } from '../../i18n';
 import { canSpeak, speak, stopSpeaking } from '../../lib/speech';
 import { useElapsedSeconds, useResource } from '../../lib/useResource';
 import { Panel, Tag, useErrorMessage } from '../../ui/kit';
+import { YourWordsHint, YourWordsResult } from '../YourWords';
 import { ActivityFrame, ResultPanel } from '../ActivityKit';
 import { getPrompt, submitAnswer, type SpeakingMode, type SpeakingPrompt, type SpeakingSubmitResponse } from './api';
 import { useSpeakingCapture, type CaptureProblem } from './capture';
@@ -128,6 +129,7 @@ export const SpeakingActivity = () => {
   const resource = useResource((signal) => getPrompt(slug, signal), [slug]);
   const elapsed = useElapsedSeconds();
   const prompt = resource.data?.prompt ?? null;
+  const yourWords = resource.data?.your_words ?? [];
   const target = prompt?.target_duration_seconds ?? 60;
   const capture = useSpeakingCapture(Math.min(600, target * 2 + 60));
   const [stage, setStage] = useState<Stage>('brief');
@@ -154,6 +156,7 @@ export const SpeakingActivity = () => {
         mode,
         speakingSeconds: mode === 'speech' ? capture.speakingSeconds() : null,
         timeSpentSeconds: elapsed(),
+        yourWordIds: yourWords.map((entry) => entry.id),
       });
       setResult(response);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -195,12 +198,16 @@ export const SpeakingActivity = () => {
       onRetry={resource.reload}
     >
       {result && prompt ? (
-        <SpeakingResult prompt={prompt} result={result} audioUrl={result.mode === 'speech' ? capture.audioUrl : null} onRetry={retry} />
+        <>
+          <YourWordsResult suggested={yourWords} used={result.your_words_used ?? []} />
+          <SpeakingResult prompt={prompt} result={result} audioUrl={result.mode === 'speech' ? capture.audioUrl : null} onRetry={retry} />
+        </>
       ) : prompt ? (
         <>
           <TaskCard prompt={prompt} />
 
           <Panel title={t('speaking.answer.title')}>
+            <YourWordsHint words={yourWords} />
             {stage === 'brief' ? (
               <div className="en-stack">
                 {speechAvailable ? (

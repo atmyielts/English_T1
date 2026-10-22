@@ -397,4 +397,8 @@ export const en: Record<string, string> = {
   "today.reason.fix_mistake": "You keep making this mistake: {example}",
   "review.mistakes.fix": "Fix it",
   "review.mistakes.practised": "Practised. We'll check it in your next writing and speaking.",
+  "words.hint.title": "Use your words:",
+  "words.hint.body": "try to use some of the words you saved. Each one you use counts as review.",
+  "words.result.used": "You used your saved {count|one:word|other:words}: {words}. Using a word is the best way to remember it.",
+  "words.result.none": "Next time, try to use one of your saved words.",
 };

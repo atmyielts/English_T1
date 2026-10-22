@@ -1,3 +1,4 @@
+import type { YourWord } from '../YourWords';
 import { edge } from '../../lib/api';
 
 export type SpeakingTaskType = 'describe' | 'explain' | 'opinion' | 'story' | 'roleplay' | 'presentation';
@@ -52,17 +53,18 @@ export type SpeakingSubmitResponse = {
   mode: SpeakingMode;
   transcript: string;
   feedback: SpeakingFeedback;
+  your_words_used?: string[];
 };
 
 export const getPrompt = (slug: string, signal?: AbortSignal) =>
-  edge<{ prompt: SpeakingPrompt }>('speaking-studio', `/prompts/${encodeURIComponent(slug)}`, {
+  edge<{ prompt: SpeakingPrompt; your_words?: YourWord[] }>('speaking-studio', `/prompts/${encodeURIComponent(slug)}`, {
     query: { language_code: 'en' },
     signal,
   });
 
 export const submitAnswer = (
   slug: string,
-  input: { transcript: string; mode: SpeakingMode; speakingSeconds: number | null; timeSpentSeconds: number },
+  input: { transcript: string; mode: SpeakingMode; speakingSeconds: number | null; timeSpentSeconds: number; yourWordIds?: string[] },
 ) =>
   edge<SpeakingSubmitResponse>('speaking-studio', `/prompts/${encodeURIComponent(slug)}/submit`, {
     query: { language_code: 'en' },
@@ -71,5 +73,6 @@ export const submitAnswer = (
       mode: input.mode,
       speaking_seconds: input.speakingSeconds,
       time_spent_seconds: input.timeSpentSeconds,
+      your_word_ids: input.yourWordIds ?? [],
     },
   });

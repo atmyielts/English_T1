@@ -397,4 +397,8 @@ export const uz: Partial<Record<string, string>> = {
   "today.reason.fix_mistake": "Bu xatoni takrorlayapsiz: {example}",
   "review.mistakes.fix": "Tuzatish",
   "review.mistakes.practised": "Mashq qilindi. Keyingi yozish va gapirishda tekshiramiz.",
+  "words.hint.title": "Soʻzlaringizni ishlating:",
+  "words.hint.body": "saqlagan soʻzlaringizdan foydalanishga harakat qiling. Har biri takrorlash sifatida hisoblanadi.",
+  "words.result.used": "Saqlangan soʻzlaringizni ishlatdingiz: {words}. Soʻzni ishlatish uni eslab qolishning eng yaxshi yoʻli.",
+  "words.result.none": "Keyingi safar saqlangan soʻzlaringizdan birini ishlatib koʻring.",
 };
