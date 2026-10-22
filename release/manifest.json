@@ -1,36 +1,32 @@
 {
   "schemaVersion": 1,
-  "releaseId": "english-content-studio",
+  "releaseId": "admission-math-foundation",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "platform"
+    "assessment-cloud",
+    "exam",
+    "proctor"
   ],
   "migrations": [],
-  "edgeFunctions": [
-    "admin-english-content"
-  ],
+  "edgeFunctions": [],
   "workers": [],
-  "sharedEdgeConsumers": [
-    "admin-english-content"
-  ],
+  "sharedEdgeConsumers": [],
   "requiredSecrets": [],
   "rolloutOrder": [
-    "pages",
-    "function:admin-english-content"
+    "pages"
   ],
   "manualFollowUps": [
-    "Pages: merging publishes platform with the English content studio (New item, Edit content, Duplicate) on /admin/english/content. Until the function is deployed those buttons return an error; listing and the old quick edits keep working.",
-    "Edge: supabase functions deploy admin-english-content --project-ref bbjawctnqrufvnesdsel (needs the registry sync migration 20261023130000, already applied)."
+    "None: frontend-only. Merging rebuilds schood-assessment, schood-exam and schood-proctor. KaTeX loads only for questions that contain \( \) or \[ \] formulas, so existing questions render as before."
   ],
   "verification": [
-    "Without a session GET /functions/v1/admin-english-content/content/item returns 401.",
-    "As an admin: create a draft grammar unit with two drills, publish it, and it appears in /hub/catalog?skill=grammar; archive it and it disappears; duplicate makes a draft '<slug>-copy'."
+    "assessment.schood.online, exam.schood.online and proctor.schood.online load and sign in as before.",
+    "An Assessment Cloud question preview with \(x^2\) shows a rendered formula."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-platform to the previous deployment.",
+    "pages": "Cloudflare Pages rollback of schood-assessment, schood-exam and schood-proctor.",
     "migration": "None.",
-    "edge": "Redeploy admin-english-content from the previous main commit; the studio routes stop, the old list and quick edit keep working.",
-    "worker": "Nothing deployed."
+    "edge": "None.",
+    "worker": "None."
   }
 }

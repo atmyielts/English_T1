@@ -6,6 +6,7 @@ import {
 } from "../../../../packages/assessment-core/src/authoring.ts";
 import { QuestionResponse } from "../../../../packages/assessment-web/src/QuestionResponse";
 import { QuestionMedia } from "../../../../packages/assessment-web/src/QuestionMedia";
+import { MathText } from "../../../../packages/assessment-web/src/MathText";
 import { MediaPicker } from "../media/MediaPicker";
 import type { Row } from "../../../../packages/assessment-web/src/client";
 import { ItemFields } from "./ItemFields";
@@ -168,7 +169,7 @@ export function ItemEditor({
           aria-labelledby="question-preview-heading"
         >
           <h3 id="question-preview-heading">{t("editor.previewTitle")}</h3>
-          <p>{built.item.prompt}</p>
+          <p><MathText text={built.item.prompt} /></p>
           <QuestionMedia item={built.item} tenant={tenant} actor={actor}/>
           <QuestionResponse
             entry={{

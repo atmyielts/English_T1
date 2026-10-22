@@ -6,6 +6,7 @@ import type {
 import type { validateRubric } from "../../../../packages/assessment-core/src/grading.ts";
 import { QuestionResponse } from "../../../../packages/assessment-web/src/QuestionResponse";
 import { QuestionMedia } from "../../../../packages/assessment-web/src/QuestionMedia";
+import { MathText } from "../../../../packages/assessment-web/src/MathText";
 import type { Row } from "../../../../packages/assessment-web/src/client";
 import {PrivateTargetOverlay} from './ImageInteractionFields';
 import { useAppT, useItemLabel, type AppKey } from "../i18n/index.ts";
@@ -54,7 +55,7 @@ export function QuestionReview({
       <p>
         {t("questionReview.meta", { type: itemLabel(item.type) ?? "", locale: item.locale.toUpperCase(), score: String(item.max_score) })}
       </p>
-      <h4>{item.prompt}</h4>
+      <h4><MathText text={item.prompt} /></h4>
       <QuestionMedia item={item} tenant={tenant} actor={actor}/>
       <QuestionResponse
         entry={{
