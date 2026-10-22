@@ -243,6 +243,10 @@ verify_jwt = false
 [functions.proctor]
 verify_jwt = false
 
+# Schood Admission validates user sessions inside its request handler.
+[functions.admission]
+verify_jwt = false
+
 [functions.assessment-runtime]
 verify_jwt = false
 

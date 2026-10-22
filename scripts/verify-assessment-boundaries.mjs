@@ -4,7 +4,7 @@ import path from 'node:path';
 import ts from 'typescript';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const services = ['assessment-cloud', 'exam', 'proctor'];
+const services = ['assessment-cloud', 'exam', 'proctor', 'admission'];
 const protectedApps = ['platform', 'academy'];
 const violations = [];
 const normalize = value => value.replaceAll('\\', '/');
@@ -47,14 +47,16 @@ async function inspect(directory, rule) {
 }
 let checked = 0;
 for (const app of services) checked += await inspect(`apps/${app}/src`, (ref, resolved, targetApp) => interchange(ref,resolved) ? 'The isolated XML/package runtime must not enter browser applications' : targetApp && targetApp !== app ? 'A service must not import another application' : null);
-for (const app of protectedApps) checked += await inspect(`apps/${app}/src`, (ref, resolved, targetApp) => interchange(ref,resolved) || services.includes(targetApp) || /^packages\/(assessment|proctor)-/.test(resolved) || /^@schood\/(assessment|proctor)-/.test(ref) ? 'Assessment/Proctor feature code must not enter the mother platform or Academy' : null);
+for (const app of protectedApps) checked += await inspect(`apps/${app}/src`, (ref, resolved, targetApp) => interchange(ref,resolved) || services.includes(targetApp) || /^packages\/(assessment|proctor|subject)-/.test(resolved) || /^@schood\/(assessment|proctor|subject)-/.test(ref) ? 'Assessment, Proctor and Admission feature code must not enter the mother platform or Academy' : null);
 for(const library of ['assessment-core','assessment-web','proctor-web'])checked+=await inspect(`packages/${library}/src`,(ref,resolved,targetApp)=>interchange(ref,resolved)||targetApp||resolved.startsWith('supabase/functions/')||resolved.startsWith('workers/')?'Shared Assessment/Proctor libraries must not import an application or server implementation':null);
 checked += await inspect('packages/service-design/src', (ref, resolved) => {
   const visualOnly = /^react(?:\/jsx(?:-dev)?-runtime)?$/.test(ref) || resolved.startsWith('packages/service-design/') || (resolved.startsWith('brand-materials/') && /\.(svg|png|jpg|webp|ttf|woff2?)$/.test(resolved));
   return visualOnly ? null : 'The shared design package may import only React, its own design primitives or brand assets, not service logic or APIs';
 });
+// The subject engine is pure: no React, API, account or application code.
+checked += await inspect('packages/subject-core/src', (ref, resolved) => resolved.startsWith('packages/subject-core/') ? null : 'The subject engine may import only itself');
 checked += await inspect('packages/service-i18n/src', (ref, resolved) => /^react(?:\/jsx(?:-dev)?-runtime)?$/.test(ref) || resolved.startsWith('packages/service-i18n/') ? null : 'The shared localization package may import only React and itself, not service logic, accounts or APIs');
-for (const service of ['assessment-cloud','assessment-runtime','proctor']) checked += await inspect(`supabase/functions/${service}`, (ref, resolved) => interchange(ref,resolved) || /^supabase\/functions\//.test(resolved) && !resolved.startsWith(`supabase/functions/${service}/`) && !resolved.startsWith('supabase/functions/_shared/') ? 'APIs must not import another service implementation or isolated parser' : null);
+for (const service of ['assessment-cloud','assessment-runtime','proctor','admission']) checked += await inspect(`supabase/functions/${service}`, (ref, resolved) => interchange(ref,resolved) || /^supabase\/functions\//.test(resolved) && !resolved.startsWith(`supabase/functions/${service}/`) && !resolved.startsWith('supabase/functions/_shared/') ? 'APIs must not import another service implementation or isolated parser' : null);
 for(const worker of ['assessment-coordinator','assessment-grading','assessment-webhooks','assessment-media','assessment-roster','assessment-qti','proctor-evidence','proctor-live'])checked += await inspect(`workers/${worker}/src`,(ref,resolved,targetApp)=>interchange(ref,resolved)||targetApp||resolved.startsWith('supabase/functions/')||(resolved.startsWith('workers/')&&!resolved.startsWith(`workers/${worker}/`))?'Workers must not import an application, Edge implementation, isolated parser or another Worker implementation':null);
 checked += await inspect('packages/assessment-worker/src',(ref,resolved,targetApp)=>interchange(ref,resolved)||targetApp||resolved.startsWith('workers/')||resolved.startsWith('supabase/functions/')?'Shared Worker transport must remain independent of service implementations':null);
 checked += await inspect('services/assessment-interchange/src',(ref,resolved)=>resolved.startsWith('services/assessment-interchange/')||resolved.startsWith('packages/assessment-core/src/')||['@xmldom/xmldom','fflate'].includes(ref)||ref.startsWith('node:')?null:'The isolated interchange runtime may import only its own code, provider-free assessment contracts and its locked parser dependencies');

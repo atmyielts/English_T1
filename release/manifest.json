@@ -1,32 +1,51 @@
 {
   "schemaVersion": 1,
-  "releaseId": "admission-math-foundation",
+  "releaseId": "admission-service",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "assessment-cloud",
-    "exam",
-    "proctor"
+    "admission",
+    "assessment-cloud"
   ],
-  "migrations": [],
-  "edgeFunctions": [],
+  "migrations": [
+    "20261024200000_admission_learner_state.sql"
+  ],
+  "edgeFunctions": [
+    "admission"
+  ],
   "workers": [],
   "sharedEdgeConsumers": [],
-  "requiredSecrets": [],
+  "requiredSecrets": [
+    "ADMISSION_ALLOWED_ORIGINS",
+    "ADMISSION_CONTENT_TENANT_ID",
+    "ADMISSION_ENABLED"
+  ],
   "rolloutOrder": [
-    "pages"
+    "pages",
+    "migration:20261024200000_admission_learner_state.sql",
+    "secret:ADMISSION_ALLOWED_ORIGINS",
+    "secret:ADMISSION_CONTENT_TENANT_ID",
+    "secret:ADMISSION_ENABLED",
+    "function:admission",
+    "function:assessment-cloud"
   ],
   "manualFollowUps": [
-    "None: frontend-only. Merging rebuilds schood-assessment, schood-exam and schood-proctor. KaTeX loads only for questions that contain \( \) or \[ \] formulas, so existing questions render as before."
+    "Before merging: create the free Pages project schood-admission (Cloudflare API or wrangler pages project create), so the first deploy-pages run can publish it.",
+    "Pages: merging publishes schood-admission and rebuilds schood-assessment (worked-solution field in the question editor). Then run the 'Configure Schood Admission Domain' workflow to bind admission.schood.online.",
+    "Database: supabase db push --linked from an isolated migrations folder containing only 20261024200000_admission_learner_state.sql. Codex's nine #220 payment migrations stay pending.",
+    "Secrets: supabase secrets set ADMISSION_ALLOWED_ORIGINS=https://admission.schood.online --project-ref bbjawctnqrufvnesdsel. Later, when the Schood content workspace has approved questions: supabase secrets set ADMISSION_CONTENT_TENANT_ID=<workspace tenant id> and supabase secrets set ADMISSION_ENABLED=true. Until both are set the function answers 503.",
+    "Edge: deployment of admission with supabase functions deploy admission --project-ref bbjawctnqrufvnesdsel, then redeploy assessment-cloud so worked solutions saved in the editor are kept in the private key."
   ],
   "verification": [
-    "assessment.schood.online, exam.schood.online and proctor.schood.online load and sign in as before.",
-    "An Assessment Cloud question preview with \(x^2\) shows a rendered formula."
+    "admission.schood.online loads the sign-in page in uz, ru and en.",
+    "Without a session GET /functions/v1/admission/state returns 503 not_enabled while the flag is off.",
+    "supabase migration list --linked shows 20261024200000 applied; the four learner_subject_* tables have RLS on and no browser grants.",
+    "In Assessment Cloud a question saved with a worked solution keeps it after reopening the editor."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-assessment, schood-exam and schood-proctor.",
-    "migration": "None.",
-    "edge": "None.",
+    "pages": "Cloudflare Pages rollback of schood-assessment; schood-admission can be left on its previous deployment or unbound.",
+    "migration": "Additive only: four new tables and one function. Leave them in place; nothing else reads them.",
+    "edge": "Unset ADMISSION_ENABLED (the function answers 503) or redeploy the previous assessment-cloud version.",
     "worker": "None."
   }
 }

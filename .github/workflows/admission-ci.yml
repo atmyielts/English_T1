@@ -6,6 +6,11 @@ on:
       - 'packages/subject-core/**'
       - 'supabase/functions/admission/**'
       - 'supabase/migrations/*admission*'
+      - 'supabase/tests/admission-*'
+      - 'scripts/test-admission-db.mjs'
+      - 'scripts/admission-dev-stack.ts'
+      - 'scripts/admission-starter-bank*'
+      - 'packages/assessment-core/src/**'
       - '.github/workflows/admission-ci.yml'
   workflow_dispatch:
 permissions:
@@ -26,3 +31,28 @@ jobs:
         run: deno test --no-lock packages/subject-core/src/
       - name: Engine type check
         run: deno check --no-lock packages/subject-core/src/mod.ts
+  service:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: npm ci
+      - name: Admission API contracts (keys hidden, grading, replay, conflicts, goals, coverage)
+        run: deno test --no-lock supabase/functions/admission/handler.test.ts packages/assessment-core/src/core.test.ts
+      - name: Starter question bank imports cleanly, keys score, formulas balanced
+        run: deno test --no-lock scripts/admission-starter-bank.test.ts
+      - name: Function and dev stack type checks
+        run: deno check --no-lock supabase/functions/admission/index.ts scripts/admission-dev-stack.ts
+      - name: Learner state migration on an isolated database
+        run: node scripts/test-admission-db.mjs
+      - name: Service boundaries
+        run: node scripts/verify-assessment-boundaries.mjs
+      - name: App build
+        run: npm --workspace apps/admission run build

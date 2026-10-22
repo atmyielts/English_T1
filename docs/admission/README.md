@@ -10,11 +10,12 @@ Product thesis and feature list: `docs/product/11_NATIONAL_ADMISSION.md` (strate
 |---|---|---|
 | Engine: exam formats, topic graph, mastery, daily plan, prediction | `packages/subject-core` | Phase 1, built |
 | Formula rendering, `\( … \)` inline and `\[ … \]` display | `packages/assessment-web/src/MathText.tsx` (KaTeX 0.19.0, loaded only when a question has a formula) | Phase 1, built; used in Exam and Assessment Cloud previews |
-| Question bank, review and item statistics | Assessment Cloud, in a Schood content workspace; items tagged `topic:<code>` and `difficulty:<easy\|medium\|hard>` | Phase 2 |
-| Learner state (goal, mastery, answers, daily plans) | New `learner_subject_*` tables, separate from the English `learner_language_*` tables | Phase 2 |
-| Server API | `supabase/functions/admission` | Phase 2 |
-| Learner app and centre view | `apps/admission`, Pages project `schood-admission`, working domain `admission.schood.online` | Phase 2 |
-| Full mocks for centre groups | Assessment Cloud sittings delivered in Exam | Phase 2 |
+| Question bank, review and item statistics | Assessment Cloud, in a Schood content workspace; each question's `classification` holds its topic codes and estimated difficulty, and the private key holds the worked solution (new editor field) | Phase 2, built; the workspace and questions are still to be created |
+| Learner state (goal, mastery, answers, daily plans) | `learner_subject_*` tables (migration `20261024200000`), separate from the English `learner_language_*` tables; server-only, with replay-safe and lost-update-safe answer recording | Phase 2, built |
+| Server API | `supabase/functions/admission`: `GET state`, `PUT goal`, `GET question`, `POST answer`; off until `ADMISSION_ENABLED` and `ADMISSION_CONTENT_TENANT_ID` are set | Phase 2, built |
+| Learner app | `apps/admission` (Today, diagnostic, practice with worked solutions, Progress heat-map, goal), Pages project `schood-admission`, working domain `admission.schood.online`; brand descriptor Abituriyent / Абитуриент / Admission | Phase 2, built |
+| Centre view and full mocks for groups | Assessment Cloud sittings delivered in Exam; a centre dashboard in this service | Next |
+| AI step-by-step hints | OpenRouter, never revealing the answer | Next |
 | Parent report | Telegram, through the existing bots | Phase 3 |
 | Season pass and centre seats | `products` and `entitlements` through Click | Phase 3; blocked on the Click static IP and the pending payment release |
 
@@ -60,3 +61,35 @@ Both formats are `draft` until then. The topic list (`packages/subject-core/src/
 ## Content rules
 
 Original items only, each in Uzbek (Latin) and Russian with a worked solution, approved by someone other than the author (Assessment Cloud enforces this). AI may draft; a human approves before anything is published.
+
+## How the learner loop works
+
+1. **Goal:** the learner picks where they sit Maths (compulsory block, first or second specialised subject), the language of the questions (uz or ru), minutes a day, and optionally the exam date and a target.
+2. **Diagnostic:** one medium question for each topic in their block that has approved questions. Topics without questions are skipped, so the diagnostic never gets stuck while content is being written.
+3. **Today:** once the diagnostic is done, the day's plan is built from the results and stored, so it stays stable until midnight in Tashkent. Only practice and review answers count towards it.
+4. **Practice:** questions come near the learner's level, avoiding the last 60 seen. After each answer the learner sees right or wrong, whether it looks like a slip or a gap, the correct answer, the worked solution and how the topic's mastery moved.
+5. **Progress:** every topic with its mastery, grouped by strand. Topics without questions say so instead of offering practice.
+
+## Trying it locally
+
+```bash
+npm --workspace apps/admission exec -- vite build --outDir /tmp/admission-dist
+deno run --no-lock --allow-net=127.0.0.1 --allow-read scripts/admission-dev-stack.ts /tmp/admission-dist 4793
+```
+
+Build with `VITE_SUPABASE_URL=http://127.0.0.1:4793` and `VITE_SUPABASE_ANON_KEY=fixture-anon`. The stack runs the real handler over an in-memory store with eleven sample questions; sign in with any email and the password `synthetic`.
+
+## Launch checklist (in order)
+
+1. Create the Schood content workspace (a tenant) in Assessment Cloud and invite the writers and reviewers.
+2. Write and approve questions: topic codes and estimated difficulty in the classification, a worked solution in the key, Uzbek and Russian versions as separate questions.
+3. Set `ADMISSION_CONTENT_TENANT_ID`, then `ADMISSION_ENABLED=true`.
+4. Free beta with one or two centres; watch item statistics and retire weak questions.
+
+## Starter question bank
+
+`scripts/admission-starter-bank.ts` writes `output/admission/math-starter-uz.json` and `math-starter-ru.json`: 132 questions per language, 4 per topic across difficulty bands, each with a worked solution. Every answer is computed in code, and `scripts/admission-starter-bank.test.ts` checks that both files import cleanly into Assessment Cloud, that every key scores, and that formulas are balanced. The wording is a machine draft: import into the content workspace, then a reviewer who did not write the questions corrects and approves each one. Tags `admission-math` and `starter-draft` mark them for later replacement by original items.
+
+```bash
+deno run --no-lock --allow-write=output scripts/admission-starter-bank.ts 4
+```

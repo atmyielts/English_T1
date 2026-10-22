@@ -1,8 +1,8 @@
 import type { Names } from './format.ts';
 
 // PE-03 topic graph: topics, prerequisites and the exam blocks each topic appears in.
-// Assessment Cloud items carry the topic code in their tags, so practice, mocks and
-// item statistics all join on it.
+// Assessment Cloud items carry topic codes in `classification.topics`, so practice,
+// mocks and item statistics all join on them.
 
 export interface Topic {
   code: string;
@@ -24,15 +24,10 @@ export interface Taxonomy {
   topics: Topic[];
 }
 
-export const TOPIC_TAG_PREFIX = 'topic:';
-
-export function topicTag(code: string): string {
-  return TOPIC_TAG_PREFIX + code;
-}
-
-/** The topic codes in an Assessment Cloud item's tags. */
-export function topicsFromTags(tags: readonly string[]): string[] {
-  return tags.filter((tag) => tag.startsWith(TOPIC_TAG_PREFIX)).map((tag) => tag.slice(TOPIC_TAG_PREFIX.length));
+/** The taxonomy's topics among an item's classification topics, in taxonomy order. */
+export function knownTopics(taxonomy: Taxonomy, codes: readonly string[]): string[] {
+  const wanted = new Set(codes);
+  return taxonomy.topics.filter((topic) => wanted.has(topic.code)).map((topic) => topic.code);
 }
 
 export function taxonomyProblems(taxonomy: Taxonomy): string[] {

@@ -117,6 +117,8 @@ export interface ItemDraft {
   accepted: string;
   numericValue: string;
   tolerance: string;
+  /** Worked solution kept with the private key. */
+  solution?: string;
   caseSensitive: boolean;
   partialCredit: boolean;
   rubricId: string;
@@ -226,6 +228,7 @@ export function buildItemDraft(
   else {key.correct = draft.type === "short_answer"
       ? alternatives(draft.accepted)
       : draft.accepted.trim();}
+  if (draft.solution?.trim()) key.solution = draft.solution.trim();
   return { item, key: validateKey(item, key) };
 }
 export function editItemDraft(item: Item, key: AnswerKey): ItemDraft {
@@ -236,6 +239,7 @@ export function editItemDraft(item: Item, key: AnswerKey): ItemDraft {
     prompt: item.prompt,
     maxScore: String(item.max_score),
     tags: item.tags.join(", "),
+    solution: key.solution ?? "",
     topics:[...(item.classification?.topics??[])],estimatedDifficulty:item.classification?.estimated_difficulty??"",
     options: structuredClone(item.options ?? base.options),
     slots: (item.response_ids ?? base.slots.map((row) => row.id)).map((id) => {
@@ -357,6 +361,7 @@ export function restoreItemDraft(value: unknown): ItemDraft {
   }
   const result = { ...blankItemDraft(raw.type as ItemType), ...raw };
   if(!Array.isArray(result.topics)||result.topics.length>20||result.topics.some(value=>!str(value,80))||typeof result.estimatedDifficulty!=='string'||!['','easy','medium','hard'].includes(result.estimatedDifficulty))throw new Error("Saved question classification is invalid.");
+  if (result.solution !== undefined && !str(result.solution, 20000)) throw new Error("The saved worked solution is invalid.");
   const responsePolicy = result.responsePolicy as ItemDraft["responsePolicy"];
   if (!responsePolicy || !str(responsePolicy.maxBytes, 40) || !Array.isArray(responsePolicy.mimes) || responsePolicy.mimes.length > 10 || responsePolicy.mimes.some(mime => !Object.hasOwn(ARTIFACT_MIMES, mime)) || !Array.isArray(responsePolicy.sources) || responsePolicy.sources.length > 2 || responsePolicy.sources.some(source => !["upload", "capture"].includes(source))) throw new Error("Saved submission rules are invalid.");
   if (

@@ -1,0 +1,38 @@
+/* Admission layouts; all brand elements come from service-design/platform.css. */
+.admission .admission-main{max-width:760px}
+.admission-card{background:#fffdf9;border:1px solid var(--control);border-radius:1.25rem;padding:1.25rem 1.5rem;margin:0 0 1.25rem}
+.admission-card h1,.admission-card h2{font-family:Sora,sans-serif;margin:0 0 .5rem}.admission-card h2{font-size:1.1rem}
+.admission-card progress{width:100%;height:.5rem;accent-color:var(--navy);margin:.5rem 0}
+.diagnostic-card{border-color:var(--navy)}.diagnostic-card button{margin-top:.5rem}
+.prediction-range{font-family:Sora,sans-serif;font-size:1.75rem;font-weight:700;margin:.25rem 0 .75rem}
+.prediction-bar{position:relative;height:.75rem;border-radius:999px;background:var(--header);margin:0 0 .75rem}
+.prediction-band{position:absolute;top:0;bottom:0;border-radius:999px;background:#94a3b8}
+.prediction-mark,.prediction-target{position:absolute;top:-.25rem;width:3px;height:1.25rem;margin-left:-1px;background:var(--navy);border-radius:2px}
+.prediction-target{background:#b45309}
+.plan-tasks{list-style:none;padding:0;margin:.5rem 0 0;display:grid;gap:.75rem}
+.plan-tasks li{display:flex;align-items:center;justify-content:space-between;gap:1rem;border:1px solid var(--control);border-radius:1rem;padding:.75rem 1rem}
+.plan-tasks li>div{display:grid;gap:.15rem;min-width:0;flex:1}.plan-tasks li span{font-size:.85rem;color:var(--muted)}.plan-tasks li .eyebrow{margin:0}
+.plan-tasks li.task-done{opacity:.75}
+.practice-prompt{font-family:Manrope,sans-serif;font-size:1.15rem;font-weight:600;line-height:1.55;outline:none}
+.practice form{display:grid;gap:1rem}.practice fieldset{border:0;padding:0;margin:0}.practice .check{display:flex;gap:.6rem;align-items:center;padding:.65rem .75rem;border:1px solid var(--control);border-radius:.75rem;margin:.4rem 0;background:#fff}
+.practice-feedback{border-radius:1rem;padding:1rem 1.25rem;margin:1rem 0}.practice-feedback h2{margin:0 0 .25rem}
+.practice-feedback.is-correct{background:#f0fdf4;border:1px solid #bbf7d0}.practice-feedback.is-wrong{background:#fef2f2;border:1px solid #fecaca}
+.practice-solution{border-top:1px solid var(--control);margin-top:.75rem;padding-top:.5rem}.practice-solution h3{font-size:.95rem;margin:.25rem 0}
+.action-row{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1rem}
+.goal-form{display:grid;gap:1.25rem}.goal-form fieldset{border:0;padding:0;margin:0}.goal-form legend{font-weight:700;margin-bottom:.4rem}
+.goal-form .check{display:flex;gap:.6rem;align-items:center;margin:.35rem 0}.goal-fields{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}.goal-fields label{display:grid;gap:.35rem;align-content:start}
+.goal-form button{justify-self:start}
+.topic-list{list-style:none;padding:0;margin:0;display:grid;gap:.5rem}
+.topic-list li{display:grid;grid-template-columns:minmax(0,1fr) 7rem 2.75rem auto;align-items:center;gap:.75rem;padding:.5rem 0;border-bottom:1px solid var(--header)}
+.topic-name{display:grid;gap:.1rem;min-width:0}.topic-name span{font-size:.8rem;color:var(--muted)}.topic-name em{color:#b45309;font-style:normal;font-weight:600}
+.topic-meter{height:.6rem;border-radius:999px;background:var(--header);overflow:hidden}.topic-meter span{display:block;height:100%}
+.topic-meter .weak{background:#dc2626}.topic-meter .middle{background:#d97706}.topic-meter .strong{background:#15803d}.topic-meter .unknown{background:transparent}
+.topic-soon{font-size:.8rem;color:var(--muted);text-align:right}
+.topic-percent{font-variant-numeric:tabular-nums;font-size:.85rem;text-align:right}
+@media(max-width:600px){
+ .admission-card{padding:1rem;border-radius:1rem}
+ .goal-fields{grid-template-columns:1fr}
+ .plan-tasks li{flex-direction:column;align-items:stretch}.plan-tasks li button{width:100%}
+ .topic-list li{grid-template-columns:minmax(0,1fr) 2.75rem;row-gap:.35rem}.topic-meter{grid-column:1/-1;grid-row:2}.topic-list li button,.topic-soon{grid-column:1/-1}.topic-soon{text-align:left}
+ .action-row button{flex:1 1 100%}
+}

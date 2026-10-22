@@ -28,6 +28,8 @@ export interface AnswerKey {
   case_sensitive?: boolean;
   partial_credit?: boolean;
   hotspot?:{regions:ImageRegion[]};
+  /** Worked solution. Private like the rest of the key; shown to a learner only after they answer in practice. */
+  solution?: string;
 }
 export interface Definition {
   schema_version: "assessment.definition.v1" | "assessment.definition.v2";
@@ -115,6 +117,11 @@ export function validateItem(value: unknown): Item {
   return item;
 }
 export function validateKey(item: Item, value: unknown): AnswerKey {
+  const key = validateKeyFields(item, value), solution = object(value).solution;
+  if (solution !== undefined && solution !== null && !(typeof solution === "string" && !solution.trim())) key.solution = text(solution, "Worked solution", 20000);
+  return key;
+}
+function validateKeyFields(item: Item, value: unknown): AnswerKey {
   const raw = object(value);
   if(item.type==='hotspot'){
     try{return {hotspot:hotspotKey(raw.hotspot),case_sensitive:false,partial_credit:false};}catch(cause){return fail((cause as Error).message);}

@@ -257,6 +257,8 @@ export const en = {
   'fields.rubricHint': 'Human marking is required. The selected rubric is pinned to this question version.',
   'fields.privateKey': 'Private scoring key',
   'fields.privateKeyHint': 'Only authorized authors and reviewers can read this key. It is not part of the candidate preview.',
+  'fields.solution': 'Worked solution',
+  'fields.solutionHint': 'Optional. Shown to a learner only after they answer in practice, never during an exam. Write formulas as \\( … \\) inside a line or \\[ … \\] on their own line.',
   'fields.correctOption': 'Correct option {number}: {text}',
   'fields.enterOptionText': 'Enter option text',
   'fields.moveUpLabel': 'Move correct answer {number} up',
