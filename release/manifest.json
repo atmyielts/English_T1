@@ -31,11 +31,16 @@
     "vocabulary-notebook",
     "writing-workbench"
   ],
-  "requiredSecrets": [],
+  "requiredSecrets": [
+    "ENGLISH_AI_DAILY_LIMIT",
+    "ENGLISH_APP_URL"
+  ],
   "rolloutOrder": [
     "pages",
     "migration:20261023120000_english_telegram_reminders.sql",
     "migration:20261023130000_english_registry_sync.sql",
+    "secret:ENGLISH_AI_DAILY_LIMIT",
+    "secret:ENGLISH_APP_URL",
     "function:hub",
     "function:grammar-remediation",
     "function:immersion-missions",
@@ -48,6 +53,7 @@
   "manualFollowUps": [
     "Pages: merging publishes english-hub (free-today tags, used-for-today state, Theme of the week card, Telegram reminder settings). Until hub is deployed the theme card and reminder panel stay hidden or empty and the free state falls back to the old locked panel.",
     "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus 20261023120000_english_telegram_reminders.sql and 20261023130000_english_registry_sync.sql, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then supabase migration list --linked. Adds a private english_reminder_secret row, invoke_english_reminders() and the hourly cron job english-reminders-v1 (minute 7). Nothing is sent until a learner turns reminders on. The registry sync adds update triggers on the 7 English content tables so admin status/title/level edits reach the learner catalog, and syncs rows edited before it.",
+    "Secrets: supabase secrets set ENGLISH_AI_DAILY_LIMIT= and supabase secrets set ENGLISH_APP_URL= are not run; both keep their safe code defaults (30 AI requests per learner per day; https://english.schood.online, also used for the Telegram reminder link).",
     "Edge: supabase functions deploy hub --project-ref bbjawctnqrufvnesdsel first, after the migration (adds /access, /week, /reminders, the /internal/reminders worker and free-aware /today).",
     "Edge: supabase functions deploy grammar-remediation --project-ref bbjawctnqrufvnesdsel (submit routes now enforce the plan or one free activity a day).",
     "Edge: supabase functions deploy immersion-missions --project-ref bbjawctnqrufvnesdsel (same guard).",
