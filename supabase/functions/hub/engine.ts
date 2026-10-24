@@ -5,7 +5,8 @@
 //                             learner_language_goals.metadata.skill_ratings
 //   GET  /next                the single best next step across all skills
 //                             (?date=&skill=&slug= of the activity just
-//                             finished, ?from_skill= the skill open now)
+//                             finished, ?from_skill= the skill open now,
+//                             ?locale= for the title of a role-play to continue)
 //   GET  /streak              streak with freezes and "Win it back"
 //   POST /ai/progress-check   the monthly check: a 2-round placement test
 //
@@ -46,6 +47,7 @@ import {
   type TodayTask,
 } from "../_shared/english-today.ts";
 import { learnerDate } from "../_shared/english-xp.ts";
+import { loadResumeItems } from "./resume.ts";
 
 type Row = Record<string, unknown>;
 type Ctx = { sb: any; userId: string; languageId: string };
@@ -238,7 +240,7 @@ const loadCatalog = async (ctx: Ctx): Promise<CatalogItem[]> => {
 
 const getNext = async (ctx: Ctx, url: URL, products: Record<string, { productId?: string | null }>): Promise<Response> => {
   const date = planDateFrom(url);
-  const [goal, items, attempts, mistakesRes, unitsRes, notebook, reviewDueRes, access, planRes] = await Promise.all([
+  const [goal, items, attempts, mistakesRes, unitsRes, notebook, reviewDueRes, access, planRes, resume] = await Promise.all([
     loadGoal(ctx),
     loadCatalog(ctx),
     loadRecentAttempts(ctx, RATING_LOOKBACK_DAYS, RATING_ATTEMPT_LIMIT),
@@ -268,6 +270,8 @@ const getNext = async (ctx: Ctx, url: URL, products: Record<string, { productId?
       .eq("language_id", ctx.languageId)
       .eq("plan_date", date)
       .maybeSingle(),
+    // Something started on any device and not finished comes first ("Continue").
+    loadResumeItems(ctx.sb, ctx.userId, ctx.languageId, url.searchParams.get("locale")),
   ]);
 
   const stored = levelsFrom(goal);
@@ -322,6 +326,7 @@ const getNext = async (ctx: Ctx, url: URL, products: Record<string, { productId?
     excludeItemId: finished?.id ?? null,
     fromSkill: isSkill(fromSkill) ? fromSkill : null,
     goalKeys: Array.isArray(goal?.goal_keys) ? (goal!.goal_keys as unknown[]).map(String) : [],
+    resume,
   });
   return json(200, { ok: true, date, ...result });
 };
