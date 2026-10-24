@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "c2-human-behaviour",
+    "title": "Human behaviour",
+    "level": "C2",
+    "topic": "psychology",
+    "description": "Precise words for describing how and why people think, feel and act as they do."
+  },
+  "children": [
+    {
+      "word": "procrastinate",
+      "part_of_speech": "verb",
+      "definition": "to keep delaying a task you should do, often doing easier things instead",
+      "example": "I procrastinated for a week and then wrote the whole essay in one night.",
+      "translation_ru": "откладывать на потом",
+      "translation_uz": "ishni paysalga solmoq"
+    },
+    {
+      "word": "conformity",
+      "part_of_speech": "noun",
+      "definition": "behaving in the same way as most people in a group",
+      "example": "Teenagers often feel strong pressure towards conformity.",
+      "translation_ru": "конформизм, подчинение большинству",
+      "translation_uz": "koʻpchilikka moslashish"
+    },
+    {
+      "word": "complacent",
+      "part_of_speech": "adjective",
+      "definition": "too satisfied with yourself, so you stop trying to improve or notice risks",
+      "example": "After passing the first round, the team became complacent and lost.",
+      "translation_ru": "самодовольный, беспечный",
+      "translation_uz": "oʻzidan haddan tashqari mamnun, beparvo"
+    },
+    {
+      "word": "introspection",
+      "part_of_speech": "noun",
+      "definition": "the careful examination of your own thoughts and feelings",
+      "example": "A year abroad led to a lot of introspection about what she really wanted.",
+      "translation_ru": "самоанализ",
+      "translation_uz": "oʻz-oʻzini tahlil qilish"
+    },
+    {
+      "word": "rationalise",
+      "part_of_speech": "verb",
+      "definition": "to invent sensible-sounding reasons for behaviour whose real causes are different",
+      "example": "He rationalised the expensive purchase by calling it an investment.",
+      "translation_ru": "находить оправдание, рационализировать",
+      "translation_uz": "oʻzini oqlash uchun sabab topmoq"
+    },
+    {
+      "word": "inhibition",
+      "part_of_speech": "noun",
+      "definition": "a feeling of shyness or worry that stops you from acting naturally",
+      "example": "Speaking in a club with friendly people helped him lose his inhibitions.",
+      "translation_ru": "скованность, сдержанность",
+      "translation_uz": "tortinchoqlik, oʻzini tutib turish"
+    },
+    {
+      "word": "gullible",
+      "part_of_speech": "adjective",
+      "definition": "easily tricked because you believe whatever people tell you",
+      "example": "Scammers target gullible users with fake prize messages.",
+      "translation_ru": "легковерный",
+      "translation_uz": "ishonuvchan, aldanuvchan"
+    },
+    {
+      "word": "ambivalent",
+      "part_of_speech": "adjective",
+      "definition": "having mixed or opposite feelings about something at the same time",
+      "example": "She's ambivalent about the job offer: the pay is good, but it means leaving home.",
+      "translation_ru": "испытывающий противоречивые чувства",
+      "translation_uz": "ikkilangan, qarama-qarshi hislarga ega"
+    },
+    {
+      "word": "herd mentality",
+      "part_of_speech": "noun",
+      "definition": "the habit of following what a crowd does without thinking for yourself",
+      "example": "Panic buying is a clear example of herd mentality.",
+      "translation_ru": "стадный инстинкт",
+      "translation_uz": "toʻda ruhiyati, koʻr-koʻrona ergashish"
+    },
+    {
+      "word": "self-sabotage",
+      "part_of_speech": "noun",
+      "definition": "behaviour that damages your own chances of success, often without your realising it",
+      "example": "Staying up late before every exam is a form of self-sabotage.",
+      "translation_ru": "самосаботаж",
+      "translation_uz": "oʻz-oʻziga zarar yetkazish"
+    },
+    {
+      "word": "empathise",
+      "part_of_speech": "verb",
+      "definition": "to understand and share another person's feelings",
+      "example": "Having moved schools often, she could empathise with the new student.",
+      "translation_ru": "сопереживать",
+      "translation_uz": "hamdardlik qilmoq"
+    },
+    {
+      "word": "cognitive dissonance",
+      "part_of_speech": "noun",
+      "definition": "the uncomfortable feeling of holding two beliefs, or a belief and an action, that contradict each other",
+      "example": "Caring about the planet while flying every month can create cognitive dissonance.",
+      "translation_ru": "когнитивный диссонанс",
+      "translation_uz": "kognitiv dissonans, ichki ziddiyat"
+    }
+  ]
+}

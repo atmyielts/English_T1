@@ -1,0 +1,227 @@
+{
+  "item": {
+    "slug": "b2-student-visa-interview",
+    "title": "A student visa interview",
+    "level": "B2",
+    "context_text": "You have been accepted onto a one-year master's programme abroad, and your student visa application requires an interview at the embassy. Your appointment is next Thursday. You want to be well prepared and answer the officer's questions clearly and honestly.",
+    "objective_text": "Check the documents you must bring, understand the officer's questions, prepare your study plan in writing and answer confidently in the interview.",
+    "mission_type": "study",
+    "target_grammar": "future forms and purpose clauses (I'm going to study…, I plan to return in order to…, so that I can…)",
+    "cultural_note": "Visa officers usually want three things: that you are a genuine student, that you can pay for your studies, and that you have a clear plan. Short, honest, specific answers work far better than long memorised speeches. Rules differ by country, so always check the official embassy website.",
+    "target_vocabulary": [
+      "acceptance letter",
+      "proof of funds",
+      "bank statement",
+      "sponsor",
+      "accommodation",
+      "ties to home",
+      "intend to"
+    ],
+    "success_conditions": [
+      "Identify the documents needed and the common mistakes",
+      "Understand what the officer asks and why",
+      "Write a short, specific study plan",
+      "Answer interview questions clearly and honestly"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the appointment notice",
+      "instructions": "Read the notice that came with your appointment confirmation. Then answer the questions.",
+      "prompt_text": "YOUR VISA INTERVIEW\nPlease arrive 20 minutes before your appointment. Bring the ORIGINAL documents and one copy of each:\n- valid passport\n- letter of acceptance from your university\n- proof of funds for tuition and living costs (for example, bank statements for the last three months, or a letter from your sponsor with their bank statements)\n- proof of accommodation, if available\nApplicants who arrive late or without the original documents may have to book a new appointment. Phones must be switched off in the waiting area.",
+      "estimated_minutes": 4,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "What must you bring for each document?",
+          "options": [
+            "Two copies",
+            "The original and one copy",
+            "A translated copy only"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Bring the ORIGINAL documents and one copy of each.\""
+        },
+        {
+          "prompt": "If your parents pay for your studies, what do you need?",
+          "options": [
+            "A letter from them with their bank statements",
+            "Their passports",
+            "Nothing extra"
+          ],
+          "answer_index": 0,
+          "explanation": "\"A letter from your sponsor with their bank statements.\""
+        },
+        {
+          "prompt": "Which document is only needed if you have it?",
+          "options": [
+            "The acceptance letter",
+            "Proof of funds",
+            "Proof of accommodation"
+          ],
+          "answer_index": 2,
+          "explanation": "\"Proof of accommodation, if available.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to a practice interview",
+      "instructions": "Your university's international office runs a practice interview. Listen to the adviser playing the officer. Then answer the questions.",
+      "prompt_text": "Officer: Good morning. Why did you choose this university rather than one in your own country?\nOfficer: And how is your course connected to what you studied before?\nOfficer: Who is paying for your tuition and your living costs?\nOfficer: What are your plans after you graduate?\nAdviser: OK, let's stop there. Remember, the officer isn't trying to trick you. Each question checks one thing: that your choice makes sense, that you can afford it, and that you have a realistic plan. Keep your answers short and specific, and never guess at a number you don't know. It's fine to say, 'Let me check the document.'",
+      "estimated_minutes": 4,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "us",
+      "questions": [
+        {
+          "prompt": "According to the adviser, what is the officer checking?",
+          "options": [
+            "Your English accent",
+            "That your choice makes sense, you can afford it, and your plan is realistic",
+            "How many universities you applied to"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Each question checks one thing: that your choice makes sense, that you can afford it, and that you have a realistic plan.\""
+        },
+        {
+          "prompt": "What should you do if you don't know an exact number?",
+          "options": [
+            "Give your best guess",
+            "Change the subject",
+            "Say you will check the document"
+          ],
+          "answer_index": 2,
+          "explanation": "\"Never guess at a number you don't know. It's fine to say, 'Let me check the document.'\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Write your study plan",
+      "instructions": "The application asks for a short study plan. Write about why you chose this course, how it connects to your past studies or work, how you will pay for it, and what you plan to do afterwards.",
+      "prompt_text": "Study plan (please write in English):",
+      "estimated_minutes": 9,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Write a clear, specific and honest study plan.",
+      "points": [
+        {
+          "label": "explain why this course",
+          "any": [
+            "chose",
+            "choose",
+            "because",
+            "programme",
+            "program",
+            "course",
+            "module*",
+            "specialis*",
+            "speciali*"
+          ]
+        },
+        {
+          "label": "connect it to past studies or work",
+          "any": [
+            "bachelor",
+            "degree",
+            "previous*",
+            "worked",
+            "experience",
+            "studied",
+            "background"
+          ]
+        },
+        {
+          "label": "say how you will pay",
+          "any": [
+            "scholarship",
+            "sponsor*",
+            "parents",
+            "savings",
+            "pay",
+            "fund*",
+            "tuition"
+          ]
+        },
+        {
+          "label": "describe plans after graduation",
+          "any": [
+            "after",
+            "return",
+            "go back",
+            "plan to",
+            "intend to",
+            "career",
+            "home",
+            "graduat*"
+          ]
+        }
+      ],
+      "model_answer": "I have chosen the one-year master's in Data Analytics because its modules on public health data match the work I want to do. I studied mathematics for my bachelor's degree in Tashkent and then worked for two years as a junior analyst at a clinic network, where I saw how much better data could improve patient care. My tuition is covered by a university scholarship, and my parents will pay my living costs; their letter and bank statements are attached. After graduating, I plan to return to Uzbekistan and work in healthcare analytics.",
+      "min_words": 80
+    },
+    {
+      "title": "Answer the officer",
+      "instructions": "It's the real interview. Answer the officer's question in four or five sentences: who is paying, and what you will do after the course.",
+      "prompt_text": "Officer: Who will pay for your studies, and what do you plan to do when you finish?",
+      "estimated_minutes": 3,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Answer clearly, specifically and honestly.",
+      "points": [
+        {
+          "label": "say who is paying",
+          "any": [
+            "scholarship",
+            "my parents",
+            "my father",
+            "my mother",
+            "sponsor*",
+            "savings",
+            "pay*",
+            "cover*"
+          ]
+        },
+        {
+          "label": "mention a document",
+          "any": [
+            "letter",
+            "statement*",
+            "document*",
+            "here is",
+            "i have",
+            "copy"
+          ]
+        },
+        {
+          "label": "describe your plan after the course",
+          "any": [
+            "return",
+            "go back",
+            "after",
+            "plan to",
+            "work",
+            "job",
+            "career",
+            "home"
+          ]
+        }
+      ],
+      "model_answer": "My tuition is covered by a scholarship from the university, and my parents will pay for my living costs. I have their sponsor letter and their bank statements for the last three months here. When I finish the course, I plan to go back to Tashkent and work as a data analyst in healthcare.",
+      "min_words": null
+    }
+  ]
+}

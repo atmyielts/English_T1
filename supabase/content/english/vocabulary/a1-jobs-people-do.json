@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "a1-jobs-people-do",
+    "title": "Jobs people do",
+    "level": "A1",
+    "topic": "jobs",
+    "description": "Common jobs and the people you meet at work every day."
+  },
+  "children": [
+    {
+      "word": "teacher",
+      "part_of_speech": "noun",
+      "definition": "a person whose job is to help students learn",
+      "example": "My aunt is an English teacher at a school in Namangan.",
+      "translation_ru": "учитель",
+      "translation_uz": "oʻqituvchi"
+    },
+    {
+      "word": "doctor",
+      "part_of_speech": "noun",
+      "definition": "a person whose job is to help ill people get better",
+      "example": "The doctor says I need to rest.",
+      "translation_ru": "врач",
+      "translation_uz": "shifokor"
+    },
+    {
+      "word": "nurse",
+      "part_of_speech": "noun",
+      "definition": "a person who looks after ill people in a hospital",
+      "example": "The nurse gave me some water.",
+      "translation_ru": "медсестра, медбрат",
+      "translation_uz": "hamshira"
+    },
+    {
+      "word": "driver",
+      "part_of_speech": "noun",
+      "definition": "a person whose job is to drive a bus, taxi or car",
+      "example": "The taxi driver knows every street in Tashkent.",
+      "translation_ru": "водитель",
+      "translation_uz": "haydovchi"
+    },
+    {
+      "word": "farmer",
+      "part_of_speech": "noun",
+      "definition": "a person who grows fruit and vegetables or keeps animals",
+      "example": "My grandfather is a farmer. He grows melons.",
+      "translation_ru": "фермер",
+      "translation_uz": "fermer, dehqon"
+    },
+    {
+      "word": "shop assistant",
+      "part_of_speech": "noun",
+      "definition": "a person who helps customers in a shop",
+      "example": "The shop assistant found the right size for me.",
+      "translation_ru": "продавец-консультант",
+      "translation_uz": "sotuvchi"
+    },
+    {
+      "word": "police officer",
+      "part_of_speech": "noun",
+      "definition": "a person whose job is to keep people safe and stop crime",
+      "example": "A police officer helped the old man cross the road.",
+      "translation_ru": "полицейский",
+      "translation_uz": "politsiya xodimi"
+    },
+    {
+      "word": "engineer",
+      "part_of_speech": "noun",
+      "definition": "a person who designs and builds machines, roads or computer systems",
+      "example": "He works as an engineer at a factory.",
+      "translation_ru": "инженер",
+      "translation_uz": "muhandis"
+    },
+    {
+      "word": "builder",
+      "part_of_speech": "noun",
+      "definition": "a person whose job is to make houses and other buildings",
+      "example": "The builders are working on a new school near our house.",
+      "translation_ru": "строитель",
+      "translation_uz": "quruvchi"
+    },
+    {
+      "word": "hairdresser",
+      "part_of_speech": "noun",
+      "definition": "a person whose job is to cut and style hair",
+      "example": "I go to the hairdresser once a month.",
+      "translation_ru": "парикмахер",
+      "translation_uz": "sartarosh"
+    },
+    {
+      "word": "pilot",
+      "part_of_speech": "noun",
+      "definition": "a person who flies a plane",
+      "example": "The pilot said, \"Welcome to Istanbul.\"",
+      "translation_ru": "пилот, лётчик",
+      "translation_uz": "uchuvchi"
+    },
+    {
+      "word": "uniform",
+      "part_of_speech": "noun",
+      "definition": "special clothes that people wear for their job or school",
+      "example": "Nurses at this hospital wear a blue uniform.",
+      "translation_ru": "форма (одежда)",
+      "translation_uz": "forma (kiyim)"
+    }
+  ]
+}

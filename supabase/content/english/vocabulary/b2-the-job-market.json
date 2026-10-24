@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "b2-the-job-market",
+    "title": "The job market",
+    "level": "B2",
+    "topic": "careers",
+    "description": "Language for job hunting, applications, contracts and career moves."
+  },
+  "children": [
+    {
+      "word": "vacancy",
+      "part_of_speech": "noun",
+      "definition": "a job that is available for someone to do",
+      "example": "The company has two vacancies for junior developers.",
+      "translation_ru": "вакансия",
+      "translation_uz": "boʻsh ish oʻrni"
+    },
+    {
+      "word": "applicant",
+      "part_of_speech": "noun",
+      "definition": "a person who formally asks for a job or a place on a course",
+      "example": "Over a hundred applicants applied for the internship.",
+      "translation_ru": "кандидат, соискатель",
+      "translation_uz": "nomzod, ariza beruvchi"
+    },
+    {
+      "word": "shortlist",
+      "part_of_speech": "verb",
+      "definition": "to choose a small group of the best people from everyone who applied",
+      "example": "I was shortlisted and invited to a final interview.",
+      "translation_ru": "включить в финальный список",
+      "translation_uz": "saralangan roʻyxatga kiritmoq"
+    },
+    {
+      "word": "internship",
+      "part_of_speech": "noun",
+      "definition": "a short period of work, often for students, to gain experience in a job",
+      "example": "Her summer internship at an IT company turned into a full-time offer.",
+      "translation_ru": "стажировка",
+      "translation_uz": "amaliyot, stajirovka"
+    },
+    {
+      "word": "track record",
+      "part_of_speech": "noun",
+      "definition": "the things a person or company has achieved in the past",
+      "example": "She has a strong track record of delivering projects on time.",
+      "translation_ru": "послужной список, опыт достижений",
+      "translation_uz": "erishilgan natijalar tarixi"
+    },
+    {
+      "word": "probation",
+      "part_of_speech": "noun",
+      "definition": "a first period in a new job when your employer checks that you are suitable",
+      "example": "There is a three-month probation before the contract becomes permanent.",
+      "translation_ru": "испытательный срок",
+      "translation_uz": "sinov muddati"
+    },
+    {
+      "word": "freelance",
+      "part_of_speech": "adjective",
+      "definition": "working for several clients on separate projects, not for one employer",
+      "example": "He works as a freelance designer for clients in Europe.",
+      "translation_ru": "внештатный, фриланс",
+      "translation_uz": "frilans, mustaqil (ishlovchi)"
+    },
+    {
+      "word": "headhunt",
+      "part_of_speech": "verb",
+      "definition": "to find a person working for another company and offer them a job",
+      "example": "She was headhunted by an international bank last year.",
+      "translation_ru": "переманивать (специалиста)",
+      "translation_uz": "malakali xodimni ogʻdirib olmoq"
+    },
+    {
+      "word": "perks",
+      "part_of_speech": "noun",
+      "definition": "extra things you get from a job in addition to your pay",
+      "example": "The perks include free lunch and English lessons.",
+      "translation_ru": "льготы, бонусы",
+      "translation_uz": "qoʻshimcha imtiyozlar"
+    },
+    {
+      "word": "transferable skills",
+      "part_of_speech": "noun",
+      "definition": "abilities that are useful in many different kinds of work",
+      "example": "Teaching gave me transferable skills like planning and public speaking.",
+      "translation_ru": "универсальные навыки",
+      "translation_uz": "universal koʻnikmalar"
+    },
+    {
+      "word": "career ladder",
+      "part_of_speech": "noun",
+      "definition": "the series of jobs from lower to higher positions in a profession",
+      "example": "He moved up the career ladder quickly and now leads a team.",
+      "translation_ru": "карьерная лестница",
+      "translation_uz": "martaba zinapoyasi"
+    },
+    {
+      "word": "notice period",
+      "part_of_speech": "noun",
+      "definition": "the time you must keep working after you say you are leaving a job",
+      "example": "My notice period is one month, so I can start in March.",
+      "translation_ru": "срок предупреждения об увольнении",
+      "translation_uz": "ishdan ketishdan oldingi ogohlantirish muddati"
+    }
+  ]
+}

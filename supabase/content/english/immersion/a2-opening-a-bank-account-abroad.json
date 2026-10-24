@@ -1,0 +1,159 @@
+{
+  "item": {
+    "slug": "a2-opening-a-bank-account-abroad",
+    "title": "Opening a bank account abroad",
+    "level": "A2",
+    "context_text": "You started a master's course in Germany last week. Your university needs a local bank account for your scholarship payments, so you go to a bank near the campus.",
+    "objective_text": "Find out what documents you need, understand the bank assistant, and write a short message to book an appointment.",
+    "mission_type": "service",
+    "target_grammar": "need to / have to + verb (I need to bring my passport.)",
+    "cultural_note": "In many European banks you need an appointment to open an account. Bring all your documents the first time; if one is missing, you usually have to come back another day.",
+    "target_vocabulary": [
+      "bank account",
+      "appointment",
+      "proof of address",
+      "passport",
+      "debit card",
+      "PIN"
+    ],
+    "success_conditions": [
+      "Know which three documents to bring",
+      "Understand when the card and the PIN arrive",
+      "Write a clear message to book an appointment"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the bank's web page",
+      "instructions": "Read the information for new students. Then answer the questions.",
+      "prompt_text": "STUDENT ACCOUNTS\nOpen a free student account in 20 minutes.\nPlease bring:\n1. your passport\n2. your student card or letter from the university\n3. proof of address (for example, your rental contract)\nAppointments: Monday to Friday, 9:00–16:00. Book online or by email. We do not open accounts without an appointment.",
+      "estimated_minutes": 3,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "Which document is NOT on the list?",
+          "options": [
+            "A passport",
+            "A rental contract",
+            "A driving licence"
+          ],
+          "answer_index": 2,
+          "explanation": "The list has a passport, a student card or letter, and proof of address. A driving licence is not on it."
+        },
+        {
+          "prompt": "Can you open an account without an appointment?",
+          "options": [
+            "Yes, any time",
+            "No, you need an appointment",
+            "Only on Fridays"
+          ],
+          "answer_index": 1,
+          "explanation": "\"We do not open accounts without an appointment.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to the bank assistant",
+      "instructions": "You call the bank with a question. Listen to the assistant. Then answer the questions.",
+      "prompt_text": "Good morning, thanks for calling. Yes, you can open the account at your appointment, and it only takes about twenty minutes. Your debit card arrives by post after five to seven working days. The PIN comes in a separate letter, a day or two after the card. Please don't throw that letter away! You can use the mobile app on the same day, after we open the account.",
+      "estimated_minutes": 3,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "gb",
+      "questions": [
+        {
+          "prompt": "How does the debit card arrive?",
+          "options": [
+            "By post",
+            "At the appointment",
+            "By email"
+          ],
+          "answer_index": 0,
+          "explanation": "\"Your debit card arrives by post after five to seven working days.\""
+        },
+        {
+          "prompt": "When does the PIN arrive?",
+          "options": [
+            "With the card",
+            "A day or two after the card",
+            "On the same day"
+          ],
+          "answer_index": 1,
+          "explanation": "\"The PIN comes in a separate letter, a day or two after the card.\""
+        },
+        {
+          "prompt": "What can you use on the first day?",
+          "options": [
+            "The debit card",
+            "The mobile app",
+            "A cheque book"
+          ],
+          "answer_index": 1,
+          "explanation": "\"You can use the mobile app on the same day.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Book an appointment",
+      "instructions": "Write a short email to the bank. Say who you are, ask for an appointment and give a day and time that is good for you.",
+      "prompt_text": "To: students@bank.example\nSubject: Appointment for a student account",
+      "estimated_minutes": 6,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Book an appointment to open a student account.",
+      "points": [
+        {
+          "label": "say who you are",
+          "any": [
+            "student",
+            "my name",
+            "i am",
+            "i'm",
+            "university",
+            "master's",
+            "masters"
+          ]
+        },
+        {
+          "label": "ask for an appointment",
+          "any": [
+            "appointment",
+            "book",
+            "meeting",
+            "open an account",
+            "open a student account",
+            "account"
+          ]
+        },
+        {
+          "label": "give a day and time",
+          "any": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "morning",
+            "afternoon",
+            "o'clock",
+            "am"
+          ]
+        }
+      ],
+      "model_answer": "Dear Sir or Madam,\nMy name is Dilnoza Karimova. I am a new master's student at the university. I would like to open a student account. Can I have an appointment on Tuesday or Wednesday morning, at 10:00? I have my passport, my student card and my rental contract.\nThank you,\nDilnoza",
+      "min_words": null
+    }
+  ]
+}
