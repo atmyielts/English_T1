@@ -6,6 +6,8 @@ import { getCatalog } from '../lib/hub';
 import type { SkillKey } from '../lib/skills';
 import { useResource } from '../lib/useResource';
 import { ErrorState, FeedbackList, LevelBadge, Loading, LockedPanel, PageHeader, ScoreBadge, SkillDot, Tag } from '../ui/kit';
+import { NewBadges } from '../components/Badges';
+import { XpEarned } from '../components/XpWidgets';
 import { pickNext } from './SkillHome';
 
 /** Frame for one activity: back link, title, level and time, then the exercise. */
@@ -110,6 +112,7 @@ export const ResultPanel = ({
         <div className="en-stack" style={{ gap: '.5rem' }}>
           <h2 style={{ margin: 0 }}>{t('activity.result.title')}</h2>
           {summary ? <p style={{ margin: 0 }}>{summary}</p> : null}
+          <XpEarned skill={skill} slug={slug} />
           {savedWords ? <p className="en-notice">{t('activity.result.savedWords', { count: savedWords })}</p> : null}
         </div>
       </div>
@@ -117,6 +120,7 @@ export const ResultPanel = ({
         <FeedbackList title={t('activity.result.good')} items={good} tone="good" />
         <FeedbackList title={t('activity.result.fix')} items={fix} tone="fix" />
       </div>
+      <NewBadges showLink />
       {children}
       <div className="en-actions">
         <Link className="en-button" to="/today">{t('activity.result.today')}</Link>

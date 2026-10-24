@@ -480,8 +480,9 @@ textarea.en-writing { font-size: 1rem; line-height: 1.7; min-height: 14rem; }
 .en-tools-body textarea, .en-tools-body input { max-width: 100%; }
 
 /* ---------- Responsive ---------- */
-/* Mid widths (and longer Russian/Uzbek labels): navigation gets its own row under the brand. */
-@media (max-width: 1240px) and (min-width: 961px) {
+/* Mid widths (and longer Russian/Uzbek labels): navigation gets its own row under the brand.
+   Six links and the account controls fit on one row only at the full hub width. */
+@media (max-width: 1360px) and (min-width: 961px) {
   .en-hubnav { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'brand controls' 'links links'; row-gap: 10px; }
   .en-hubnav .en-brand { grid-area: brand; }
   .en-hubnav .en-hubcontrols { grid-area: controls; }

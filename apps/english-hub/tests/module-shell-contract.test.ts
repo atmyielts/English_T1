@@ -45,8 +45,8 @@ Deno.test("every English skill renders inside the single app shell", async () =>
 Deno.test("signed-in navigation covers the daily loop and keeps old addresses working", async () => {
   const app = await read("../src/App.tsx");
   const chrome = await read("../src/app/Chrome.tsx");
-  assertStringIncludes(chrome, "['today', 'practice', 'review', 'progress', 'tutor']");
-  for (const path of ["/today", "/practice", "/review", "/progress", "/tutor"]) {
+  assertStringIncludes(chrome, "['today', 'practice', 'review', 'progress', 'tutor', 'league']");
+  for (const path of ["/today", "/practice", "/review", "/progress", "/tutor", "/league"]) {
     assertStringIncludes(app, `path="${path}"`);
   }
   for (const legacy of ["/dashboard", "/plan", "/week", "/weaknesses", "/studio"]) {

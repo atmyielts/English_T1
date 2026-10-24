@@ -14,6 +14,7 @@ const PracticePage = lazy(() => import('./pages/PracticePage').then((m) => ({ de
 const ReviewPage = lazy(() => import('./pages/ReviewPage').then((m) => ({ default: m.ReviewPage })));
 const ProgressPage = lazy(() => import('./pages/ProgressPage').then((m) => ({ default: m.ProgressPage })));
 const TutorPage = lazy(() => import('./pages/TutorPage').then((m) => ({ default: m.TutorPage })));
+const LeaguePage = lazy(() => import('./pages/LeaguePage').then((m) => ({ default: m.LeaguePage })));
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage })));
 
 const SKILL_APPS = {
@@ -102,6 +103,7 @@ const App = () => {
         <Route path="/review" element={hub(<ReviewPage />)} />
         <Route path="/progress" element={hub(<ProgressPage />)} />
         <Route path="/tutor" element={hub(<TutorPage />)} />
+        <Route path="/league" element={hub(<LeaguePage />)} />
         <Route path="/settings" element={hub(<SettingsPage />)} />
         <Route path="/check" element={hub(<CheckPage />)} />
         {SKILLS.map((skill) => {

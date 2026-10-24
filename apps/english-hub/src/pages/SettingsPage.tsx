@@ -6,6 +6,7 @@ import { useT } from '../i18n';
 import { LevelBadge, PageHeader, Panel } from '../ui/kit';
 import { Onboarding } from './Onboarding';
 import { RemindersPanel } from './RemindersPanel';
+import { LeagueSettingsPanel } from '../components/LeagueSettingsPanel';
 
 export const SettingsPage = () => {
   const t = useT();
@@ -37,6 +38,7 @@ export const SettingsPage = () => {
             <LocaleSwitcher label={t('settings.language.title')} />
           </Panel>
           <RemindersPanel />
+          <LeagueSettingsPanel />
           <Panel title={t('settings.account.title')}>
             <div className="en-actions">
               <a className="en-button-quiet" href={accountHref}>{t('settings.account.open')}</a>

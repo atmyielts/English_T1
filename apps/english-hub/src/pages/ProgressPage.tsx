@@ -7,6 +7,7 @@ import { nextLevel, SKILLS, type SkillKey } from '../lib/skills';
 import { useResource } from '../lib/useResource';
 import { CanDoPanel } from './CanDoPanel';
 import { LevelJourneyPanel } from './LevelJourneyPanel';
+import { BadgesPanel } from '../components/Badges';
 import { EmptyState, ErrorState, LevelBadge, Loading, PageHeader, Panel, ProgressBar, SkillDot, Stat, Tag } from '../ui/kit';
 
 const Heatmap = ({ days }: { days: ProgressResponse['days'] }) => {
@@ -158,6 +159,8 @@ export const ProgressPage = () => {
           ) : null}
         </Panel>
       </div>
+
+      <BadgesPanel />
 
       {history.data ? <CanDoPanel level={placement?.level ?? null} history={history.data.attempts} /> : null}
 

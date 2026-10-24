@@ -54,6 +54,7 @@ import { checkReviewAnswer, parseReviewPayload, publicReviewPayload, RETIRED_BOX
 import { topicFromSubskill } from "../_shared/english-mistakes.ts";
 import { mergeReminderSettings, readReminderSettings, REMINDER_HOURS } from "../_shared/english-reminders.ts";
 import { isReminderWorker, runReminderCycle } from "./reminders.ts";
+import { handleXpRoute, logReviewAnswer } from "./xp.ts";
 import { appendLevelHistory, levelCheckStatus, perSkillLevels, readLevelHistory } from "../_shared/english-levels.ts";
 
 const routeMarker = "/hub";
@@ -334,6 +335,10 @@ serve(async (req) => {
         }
       }
     }
+
+    // === XP, weekly leagues and badges (./xp.ts) ===
+    const xpResponse = await handleXpRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId });
+    if (xpResponse) return xpResponse;
 
     // === Today, catalog and history (learner home) ===
     // Built only from the learner's placement, real attempts and due reviews.
@@ -893,7 +898,7 @@ serve(async (req) => {
       const id = toText(body.id, 64);
       if (!id) return json(422, { error: "id is required" });
       const { data: row, error } = await sb.from("learner_review_items")
-        .select("id, payload, box, times_reviewed")
+        .select("id, payload, box, times_reviewed, next_due_at")
         .eq("id", id)
         .eq("user_id", auth.userId)
         .maybeSingle();
@@ -912,6 +917,14 @@ serve(async (req) => {
         .eq("id", id)
         .eq("user_id", auth.userId);
       if (updateError) throw new Error(`Failed to save review answer: ${updateError.message}`);
+      await logReviewAnswer(sb, {
+        userId: auth.userId,
+        languageId: scope.languageId,
+        itemId: id,
+        correct: checked.correct,
+        box: Number((row as Record<string, unknown>).box ?? 1),
+        nextDueAt: (row as Record<string, unknown>).next_due_at,
+      });
       return json(200, { ok: true, ...checked, retired: next.box >= RETIRED_BOX, next_due_at: next.next_due_at });
     }
 

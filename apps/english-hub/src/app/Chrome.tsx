@@ -5,7 +5,7 @@ import { useT } from '../i18n';
 import { SKILLS, type SkillKey } from '../lib/skills';
 import { useEnglish } from './EnglishContext';
 
-export const HUB_NAV = ['today', 'practice', 'review', 'progress', 'tutor'] as const;
+export const HUB_NAV = ['today', 'practice', 'review', 'progress', 'tutor', 'league'] as const;
 
 /** The original Schood English header: logo, pill navigation, account controls. */
 export const HubHeader = () => {
@@ -94,6 +94,7 @@ export const SkillWorkspace = ({ skill, children }: { skill: SkillKey; children:
     { to: '/review', label: t('nav.review'), active: false },
     { to: '/progress', label: t('nav.progress'), active: false },
     { to: '/tutor', label: t('nav.tutor'), active: false },
+    { to: '/league', label: t('nav.league'), active: false },
   ];
 
   return (
