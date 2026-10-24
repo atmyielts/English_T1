@@ -1,101 +1,31 @@
 {
   "schemaVersion": 1,
-  "releaseId": "english-unified-oct25",
+  "releaseId": "toefl-playbook-public-modules-2026",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [
-    "english-hub",
-    "platform"
-  ],
+  "frontends": [],
   "migrations": [
-    "20261025100000_english_ops_settings_ai_ledger.sql",
-    "20261025110000_english_skill_app_urls.sql",
-    "20261025120000_english_tg_checks.sql",
-    "20261025130000_english_goal_metadata_key.sql",
-    "20261025140000_english_roleplay_sessions.sql",
-    "20261025140100_english_speaking_mocks.sql",
-    "20261025150000_english_content_library_more.sql"
+    "20261026170000_toefl_playbook_public_modules.sql"
   ],
-  "edgeFunctions": [
-    "admin-english-content",
-    "admin-english-ops",
-    "hub",
-    "immersion-missions",
-    "speaking-studio",
-    "telegram-app",
-    "telegram-public",
-    "writing-workbench"
-  ],
-  "workers": [
-    "schood-bot",
-    "schood-online-bot"
-  ],
-  "sharedEdgeConsumers": [
-    "grammar-remediation",
-    "listening-content",
-    "reading-articles",
-    "vocabulary-notebook"
-  ],
-  "requiredSecrets": [
-    "ENGLISH_AI_DAILY_LIMIT",
-    "ENGLISH_APP_URL",
-    "ENGLISH_TG_CHECK_DAILY_LIMIT",
-    "SITE_URL",
-    "TELEGRAM_BOT_TOKEN",
-    "TELEGRAM_INTERNAL_SECRET",
-    "TELEGRAM_PUBLIC_BOT_TOKEN",
-    "TELEGRAM_RATE_LIMIT_SECRET"
-  ],
+  "edgeFunctions": [],
+  "sharedEdgeConsumers": [],
+  "workers": [],
+  "requiredSecrets": [],
   "rolloutOrder": [
-    "pages",
-    "migration:20261025100000_english_ops_settings_ai_ledger.sql",
-    "migration:20261025110000_english_skill_app_urls.sql",
-    "migration:20261025120000_english_tg_checks.sql",
-    "migration:20261025130000_english_goal_metadata_key.sql",
-    "migration:20261025140000_english_roleplay_sessions.sql",
-    "migration:20261025140100_english_speaking_mocks.sql",
-    "migration:20261025150000_english_content_library_more.sql",
-    "secret:ENGLISH_AI_DAILY_LIMIT",
-    "secret:ENGLISH_APP_URL",
-    "secret:ENGLISH_TG_CHECK_DAILY_LIMIT",
-    "secret:SITE_URL",
-    "secret:TELEGRAM_BOT_TOKEN",
-    "secret:TELEGRAM_INTERNAL_SECRET",
-    "secret:TELEGRAM_PUBLIC_BOT_TOKEN",
-    "secret:TELEGRAM_RATE_LIMIT_SECRET",
-    "function:hub",
-    "function:speaking-studio",
-    "function:writing-workbench",
-    "function:immersion-missions",
-    "function:grammar-remediation",
-    "function:listening-content",
-    "function:reading-articles",
-    "function:vocabulary-notebook",
-    "function:admin-english-content",
-    "function:admin-english-ops",
-    "function:telegram-app",
-    "function:telegram-public",
-    "worker:schood-bot",
-    "worker:schood-online-bot"
+    "migration:20261026170000_toefl_playbook_public_modules.sql"
   ],
   "manualFollowUps": [
-    "Pages: merging publishes english-hub (one workspace for every signed-in page with Ctrl+K switcher and phone tab bar; installable app and per-skill apps; Up next, ratings, streak freezes, progress check, IELTS estimate; role-plays, IELTS-style speaking mock, Russian/Uzbek mistake notes; paused-service states; refreshed landing) and platform (English control center at /admin/english/control; English tab in the Telegram Mini App). Until the functions are deployed the new panels show their error/empty states.",
-    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus the seven 20261025100000-20261025150000 English migrations, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first. Adds service-role-only tables english_service_settings (seeded to today's behaviour), english_ai_calls (with a 120-day pg_cron prune), english_tg_checks, english_roleplay_sessions, english_speaking_mocks; RPCs refund_english_ai_daily_quota, english_ai_usage_summary, english_tg_check_reserve, english_set_goal_metadata_key; skill product app_urls point at english.schood.online/<skill>; 72 new lessons.",
-    "Secrets: none are changed. supabase secrets set ENGLISH_AI_DAILY_LIMIT=, supabase secrets set ENGLISH_APP_URL=, supabase secrets set ENGLISH_TG_CHECK_DAILY_LIMIT= and supabase secrets set SITE_URL= are not run: the code defaults apply (30 AI calls a day, now editable in the control center; https://english.schood.online; 300 checks a day; https://schood.online). supabase secrets set TELEGRAM_BOT_TOKEN=, supabase secrets set TELEGRAM_INTERNAL_SECRET=, supabase secrets set TELEGRAM_PUBLIC_BOT_TOKEN= and supabase secrets set TELEGRAM_RATE_LIMIT_SECRET= are already configured in production and are only read by the new Telegram code.",
-    "Edge, after the migrations (--project-ref bbjawctnqrufvnesdsel): supabase functions deploy hub; supabase functions deploy speaking-studio; supabase functions deploy writing-workbench; supabase functions deploy immersion-missions; supabase functions deploy admin-english-content; supabase functions deploy admin-english-ops; supabase functions deploy telegram-app; supabase functions deploy telegram-public. Also redeploy grammar-remediation, listening-content, reading-articles and vocabulary-notebook, which share the new settings loader and free-allowance code. The settings loader and AI gateway fall back to today's behaviour if the settings table is unreadable.",
-    "Workers: cd workers/schood-bot && npx wrangler deploy; cd workers/schood-online-bot && npx wrangler deploy && npm run setup-commands (adds /check to the public bot's command list). Before deploying, confirm the live worker versions came from main (wrangler deployments list) so no unmerged worker code is overwritten."
+    "Content-only release: 13 public TOEFL Playbook modules (370 sections, about 62,000 words) and 24 official ETS sources, generated by scripts/content/toefl-pb-modules.mjs from content/toefl-playbook/. No frontend, Edge Function, worker or secret changes.",
+    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus 20261026170000_toefl_playbook_public_modules.sql, keeping the 9 pending #220 payment migrations and any other agent's unreleased migrations excluded. Dry run first. The migration only inserts into toefl_playbook_sources, toefl_playbook_pages, toefl_playbook_page_sections and toefl_playbook_page_sources with deterministic ids and on conflict do nothing; it aborts if the TOEFL Playbook product f9512c15-ec1c-4fcb-a5ec-a2c6ac3a020e is missing.",
+    "Order: independent of the playbooks-engine release. The live toefl-playbook function already serves /catalog and /pages/<slug> for published public modules, so pages appear as soon as the migration is applied."
   ],
   "verification": [
-    "supabase migration list --linked shows the seven migrations applied and the 9 #220 payment migrations still pending.",
-    "Without a session: GET /functions/v1/hub/next, /hub/ratings, /hub/streak, /hub/roleplay/scenarios, /hub/speaking-mock return 401; GET /admin-english-ops/control returns 401.",
-    "english.schood.online signed out shows the refreshed landing; signed in, every page shows the same sidebar; /speaking offers Install Schood Speaking in a supporting browser.",
-    "As admin: /admin/english/control loads services, free tier, AI switches and AI usage.",
-    "@schoodonlinebot /check answers a short sentence; @schoodstudentbot /english replies with status and buttons."
+    "supabase migration list --linked shows 20261026170000 applied and the #220 payment migrations still pending.",
+    "GET /functions/v1/toefl-playbook/catalog with the anon key returns 13 modules in sort order 1-13, starting with toefl-essentials and ending with retake-and-mybest-strategy.",
+    "GET /functions/v1/toefl-playbook/pages/score-scale-2026 returns 26 sections and its ETS sources; https://playbook.toefl.schood.online/score-scale-2026 renders the band, CEFR and 0-120 tables.",
+    "Locally verified before release: generator validation (3,000-6,000 words and 20+ sections per module), PGlite apply of the TOEFL Playbook schema plus this migration twice (idempotent; 13 pages, 370 sections, 24 sources, 74 links; ids match md5 contract), and a render pass of every section through react-markdown with the renderer's Markdown heuristic."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-english and schood-platform to the previous deployment.",
-    "migration": "Additive tables, RPCs and content; leave in place. The app_url change only replaced old-subdomain or empty values.",
-    "edge": "Redeploy the twelve functions from the previous main commit (74f68af0); new routes stop, existing behaviour returns.",
-    "worker": "npx wrangler rollback in workers/schood-bot and workers/schood-online-bot; /english and /check then go unanswered."
+    "migration": "Content only. To withdraw, set status = 'archived' on toefl_playbook_pages where metadata->>'seeded_by' = '20261026170000_toefl_playbook_public_modules' (sections and source links follow the page). Do not delete rows learners may have bookmarked or events reference."
   }
 }
