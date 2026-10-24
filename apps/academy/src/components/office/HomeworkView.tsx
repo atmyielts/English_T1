@@ -250,7 +250,7 @@ function PlanTab({academyId,actorId,overview,onSaved}:Props&{overview:HomeworkOv
    {!plan.billing_enforced&&<p className="muted">{t('Everything is open during the launch period. Plans apply once Schood switches billing on.')}</p>}
    {plan.audience==='center'?<p className="muted">{t('Centre-owned academies use the centre tier: Growth includes homework and courses, Premium and Exclusive add AI pre-marking.')}</p>
     :<div className="homework-teaching-plans">{overview.teaching_plans.map(p=><div key={p.id} className="homework-plan-option"><strong>{t(p.name)}</strong>
-     <span>{p.is_active&&!p.metadata?.placeholder_price?new Intl.NumberFormat(getLocaleTag()).format(p.amount)+' '+p.currency+' / '+t('{n} days',{n:p.duration_days??30}):t('Price coming soon')}</span>
+     <span>{p.is_active&&!p.metadata?.placeholder_price?new Intl.NumberFormat(getLocaleTag()).format(p.amount)+' '+p.currency+' / '+(p.metadata?.billing_period==='annual'?t('year'):p.metadata?.billing_period==='monthly'?t('month'):t('{n} days',{n:p.duration_days??30})):t('Price coming soon')}</span>
      <ul>{(p.metadata?.features??[]).map(f=><li key={f}>{t(f)}</li>)}</ul></div>)}
      <p className="muted">{t('Independent teachers can build courses and use homework tools with a Schood Teaching plan. Contact Schood support to activate it.')}</p></div>}
   </div>

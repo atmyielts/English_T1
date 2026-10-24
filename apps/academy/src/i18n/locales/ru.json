@@ -3125,5 +3125,11 @@
   "Headline": "Заголовок",
   "City": "Город",
   "Price (as you want it shown)": "Цена (как её показать)",
-  "Seats": "Мест"
+  "Seats": "Мест",
+  "month": "мес.",
+  "year": "год",
+  "Teacher (yearly)": "Преподаватель (год)",
+  "Teacher Pro (yearly)": "Преподаватель Pro (год)",
+  "Everything in Teacher Pro": "Всё из тарифа «Преподаватель Pro»",
+  "Two months free": "Два месяца бесплатно"
 }

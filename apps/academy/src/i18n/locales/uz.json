@@ -3125,5 +3125,11 @@
   "Headline": "Sarlavha",
   "City": "Shahar",
   "Price (as you want it shown)": "Narx (qanday ko‘rinishini xohlasangiz)",
-  "Seats": "O‘rinlar"
+  "Seats": "O‘rinlar",
+  "month": "oy",
+  "year": "yil",
+  "Teacher (yearly)": "O‘qituvchi (yillik)",
+  "Teacher Pro (yearly)": "O‘qituvchi Pro (yillik)",
+  "Everything in Teacher Pro": "O‘qituvchi Pro tarifidagi hamma narsa",
+  "Two months free": "Ikki oy bepul"
 }
