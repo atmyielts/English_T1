@@ -55,6 +55,10 @@ export const KNOWN_ENGLISH_AI_FEATURES = [
   "content-draft",
   "exam-writing",
   "exam-speaking",
+  "writing-model-answer",
+  "writing-free-check",
+  "tutor-lesson",
+  "immersion-project-judge",
 ] as const;
 
 export type EnglishSettings = {

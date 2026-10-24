@@ -1,65 +1,24 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { useT } from '../../i18n';
-import { handbookTopicHref } from '../../lib/handbookSearch';
-import { L1Why } from '../../components/L1Why';
 import { useElapsedSeconds, useResource } from '../../lib/useResource';
-import { Panel, ProgressBar, useErrorMessage } from '../../ui/kit';
+import { Panel, useErrorMessage } from '../../ui/kit';
 import { YourWordsHint, YourWordsResult } from '../YourWords';
 import { ActivityFrame, ResultPanel } from '../ActivityKit';
-import { getResumePoint, saveResume } from '../../lib/glue';
+import { saveResume } from '../../lib/glue';
 import {
   countWords,
   getWritingTask,
   submitWriting,
   usedWords,
-  type WritingCorrection,
+  type PreviousRevision,
   type WritingFeedback,
   type WritingPrompt,
   type WritingSubmitResponse,
 } from './api';
-
-const storageKey = (slug: string) => `schood.english.writing.draft.${slug}`;
-
-const readDraft = (slug: string): string => {
-  try {
-    return window.localStorage.getItem(storageKey(slug)) ?? '';
-  } catch {
-    return '';
-  }
-};
-
-const writeDraft = (slug: string, text: string): boolean => {
-  try {
-    if (text.trim()) window.localStorage.setItem(storageKey(slug), text);
-    else window.localStorage.removeItem(storageKey(slug));
-    return true;
-  } catch {
-    return false;
-  }
-};
-
-/** The learner's text with the corrected parts highlighted. */
-const highlight = (text: string, corrections: WritingCorrection[]): ReactNode[] => {
-  const spans: Array<{ start: number; end: number }> = [];
-  for (const correction of corrections) {
-    const start = text.indexOf(correction.original);
-    if (start < 0) continue;
-    const end = start + correction.original.length;
-    if (spans.some((span) => start < span.end && span.start < end)) continue;
-    spans.push({ start, end });
-  }
-  spans.sort((a, b) => a.start - b.start);
-  const out: ReactNode[] = [];
-  let cursor = 0;
-  spans.forEach((span, index) => {
-    if (span.start > cursor) out.push(text.slice(cursor, span.start));
-    out.push(<mark key={index}>{text.slice(span.start, span.end)}</mark>);
-    cursor = span.end;
-  });
-  if (cursor < text.length) out.push(text.slice(cursor));
-  return out;
-};
+import { CorrectionList, FeedbackDetail } from './Feedback';
+import { ModelAnswer, RevisionCompare, RevisionStrip, RubricHistory } from './Depth';
+import { useDraftSync, type DraftSaveState } from './useDraftSync';
 
 const Brief = ({ prompt, text }: { prompt: WritingPrompt; text: string }) => {
   const t = useT();
@@ -104,109 +63,15 @@ const Brief = ({ prompt, text }: { prompt: WritingPrompt; text: string }) => {
   );
 };
 
-const CorrectionList = ({ corrections }: { corrections: WritingCorrection[] }) => {
+const SaveState = ({ state }: { state: DraftSaveState }) => {
   const t = useT();
-  return (
-    <ul className="wr-corrections">
-      {corrections.map((correction, index) => (
-        <li key={`${correction.original}-${index}`}>
-          <span className="en-diff" lang="en">
-            <del>{correction.original}</del>
-            <span className="wr-arrow" aria-hidden="true">→</span>
-            <ins>{correction.corrected}</ins>
-          </span>
-          <small>
-            <strong>{t(`writing.category.${correction.category}`)}:</strong> {correction.explanation}
-            {correction.category === 'grammar' && correction.topic ? (
-              <> <Link to={handbookTopicHref(correction.topic)}>{t('handbook.readRule')}</Link></>
-            ) : null}
-          </small>
-          <L1Why original={correction.original} corrected={correction.corrected} explanation={correction.explanation} topic={correction.topic ?? null} />
-        </li>
-      ))}
-    </ul>
-  );
-};
-
-const FeedbackDetail = ({ feedback, text }: { feedback: WritingFeedback; text: string }) => {
-  const t = useT();
-  return (
-    <>
-      {feedback.source === 'basic' ? <p className="en-explain">{t('writing.result.basic')}</p> : null}
-
-      <div className="wr-section">
-        <h3>{t('writing.criteria.title')}</h3>
-        <div className="wr-criteria">
-          {feedback.criteria.map((criterion) => (
-            <div key={criterion.key} className="wr-criterion">
-              <div className="wr-criterion-head">
-                <strong>{t(`writing.criteria.${criterion.key}`)}</strong>
-                <span>{t('writing.criteria.score', { score: criterion.score })}</span>
-              </div>
-              <ProgressBar value={criterion.score} label={t(`writing.criteria.${criterion.key}`)} skill="writing" />
-              {criterion.comment ? <p>{criterion.comment}</p> : null}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {feedback.checklist.length ? (
-        <div className="wr-section">
-          <h3>{t('writing.checklist.title')}</h3>
-          <ul className="wr-checklist">
-            {feedback.checklist.map((item) => {
-              const state = item.covered === true ? 'yes' : item.covered === false ? 'no' : 'unknown';
-              const label = state === 'yes' ? t('writing.checklist.done') : state === 'no' ? t('writing.checklist.missing') : t('writing.checklist.unknown');
-              return (
-                <li key={item.point}>
-                  <span className={`wr-mark is-${state}`} aria-hidden="true">{state === 'yes' ? '✓' : state === 'no' ? '!' : '?'}</span>
-                  <span><span lang="en">{item.point}</span><small>{label}</small></span>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ) : null}
-
-      {feedback.next_step ? (
-        <div className="wr-section">
-          <h3>{t('writing.next.title')}</h3>
-          <p className="en-notice" style={{ margin: 0 }}>{feedback.next_step}</p>
-        </div>
-      ) : null}
-
-      <div className="wr-section">
-        <h3>{t('writing.corrections.title')}</h3>
-        {feedback.corrections.length ? (
-          <>
-            <p className="hint" style={{ margin: 0 }}>{t('writing.corrections.lead')}</p>
-            <CorrectionList corrections={feedback.corrections} />
-          </>
-        ) : <p style={{ margin: 0 }}>{t('writing.corrections.none')}</p>}
-      </div>
-
-      {feedback.model_sentences.length ? (
-        <div className="wr-section">
-          <h3>{t('writing.model.title')}</h3>
-          <ul className="en-list">
-            {feedback.model_sentences.map((model, index) => (
-              <li key={index} className="en-explain" lang="en">
-                <span className="hint">{t('writing.model.yours')}</span> {model.original}
-                <br />
-                <span className="hint">{t('writing.model.better')}</span> <strong>{model.improved}</strong>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-
-      <div className="wr-section">
-        <h3>{t('writing.text.title')}</h3>
-        {feedback.corrections.length ? <p className="hint" style={{ margin: 0 }}>{t('writing.text.lead')}</p> : null}
-        <p className="en-passage wr-text" lang="en" style={{ margin: 0 }}>{highlight(text, feedback.corrections)}</p>
-      </div>
-    </>
-  );
+  if (state === 'idle') return null;
+  const label = state === 'account' ? t('depth.draft.account')
+    : state === 'device' ? t('depth.draft.device')
+      : state === 'saving' ? t('depth.draft.saving')
+        : state === 'error' ? t('depth.draft.device')
+          : t('depth.draft.pending');
+  return <span className={`dp-save-state is-${state}`}>{label}</span>;
 };
 
 export const WritingTask = () => {
@@ -214,54 +79,34 @@ export const WritingTask = () => {
   const errorText = useErrorMessage();
   const { slug = '' } = useParams();
   const task = useResource((signal) => getWritingTask(slug, signal), [slug]);
-  // A draft saved on another device (phone, installed app), if any.
-  const remote = useResource((signal) => getResumePoint('writing', slug, signal), [slug]);
-  const remoteSaved = useRef('');
+  const resumeMarked = useRef('');
   const elapsed = useElapsedSeconds();
   const lastSubmitAt = useRef(0);
   const editorRef = useRef<HTMLTextAreaElement | null>(null);
-  const loadedFor = useRef<string | null>(null);
 
-  const [text, setText] = useState('');
-  const [restored, setRestored] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const draft = useDraftSync(slug, task.data?.draft ?? null, Boolean(task.data));
+  const { text, setText } = draft;
   const [result, setResult] = useState<WritingSubmitResponse | null>(null);
   const [submittedText, setSubmittedText] = useState('');
+  // Kept in the page too, for the editor note while revising (the server comparison is in the result).
   const [previous, setPrevious] = useState<{ score: number; feedback: WritingFeedback } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>(null);
 
   const prompt = task.data?.prompt;
   const yourWords = task.data?.your_words ?? [];
+  const revisions = task.data?.revisions ?? [];
 
-  // Start from the draft saved on this device, else one saved on another device, else the last text sent.
+  // Tell "Continue" (Today, Up next) that this task is in progress on this account.
+  // The draft itself is kept on the account by useDraftSync.
   useEffect(() => {
-    if (!task.data || remote.loading || loadedFor.current === slug) return;
-    loadedFor.current = slug;
-    const local = readDraft(slug);
-    const elsewhere = remote.data?.position?.draft ?? '';
-    remoteSaved.current = elsewhere;
-    const initial = local || elsewhere || task.data.draft?.text || '';
-    setText(initial);
-    setRestored(Boolean(initial.trim()));
-  }, [task.data, remote.loading, remote.data, slug]);
-
-  // Keep the draft on the server too, less often, so it can be finished on any device.
-  useEffect(() => {
-    if (loadedFor.current !== slug || result || !text.trim() || text === remoteSaved.current) return;
+    if (!task.data || result || !text.trim() || resumeMarked.current === slug) return;
     const timer = window.setTimeout(() => {
-      remoteSaved.current = text;
-      void saveResume({ skill: 'writing', slug, position: { draft: text } });
+      resumeMarked.current = slug;
+      void saveResume({ skill: 'writing', slug, position: {} });
     }, 4000);
     return () => window.clearTimeout(timer);
-  }, [text, slug, result]);
-
-  // Autosave while typing.
-  useEffect(() => {
-    if (loadedFor.current !== slug) return;
-    const timer = window.setTimeout(() => setSaved(writeDraft(slug, text) && Boolean(text.trim())), 600);
-    return () => window.clearTimeout(timer);
-  }, [text, slug]);
+  }, [task.data, text, slug, result]);
 
   const words = useMemo(() => countWords(text), [text]);
   const min = prompt?.expected_length_min ?? 0;
@@ -276,6 +121,7 @@ export const WritingTask = () => {
       const now = elapsed();
       const response = await submitWriting(slug, text, Math.max(1, now - lastSubmitAt.current), yourWords.map((entry) => entry.id));
       lastSubmitAt.current = now;
+      draft.markSubmitted(text);
       setSubmittedText(text);
       setResult(response);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -289,14 +135,18 @@ export const WritingTask = () => {
   const revise = () => {
     if (result) setPrevious({ score: result.score, feedback: result.feedback });
     setResult(null);
+    // Refresh the list of drafts and their scores.
+    task.reload();
     window.setTimeout(() => {
       editorRef.current?.focus();
       editorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 50);
   };
 
+  // The server's previous revision (works across devices and reloads); a page-only score as a fallback.
+  const serverPrevious: PreviousRevision | null = result?.previous_revision ?? null;
   const comparison = (() => {
-    if (!result) return null;
+    if (!result || serverPrevious) return null;
     if (previous) {
       const diff = result.score - previous.score;
       return (
@@ -340,8 +190,11 @@ export const WritingTask = () => {
           title={prompt?.title}
         >
           {comparison ? <div className="en-stack" style={{ gap: '.4rem' }}>{comparison}</div> : null}
+          {serverPrevious ? <RevisionCompare previous={serverPrevious} text={submittedText} feedback={result.feedback} revision={result.revision} /> : null}
           <YourWordsResult suggested={yourWords} used={result.your_words_used ?? []} />
-          <FeedbackDetail feedback={result.feedback} text={submittedText} />
+          <FeedbackDetail feedback={result.feedback} text={submittedText} saveLabel={prompt?.title ?? null} />
+          <ModelAnswer slug={slug} />
+          <RubricHistory compact />
           <div className="en-actions">
             <button type="button" className="is-large" onClick={revise}>{t('writing.revise')}</button>
             <span className="hint">{t('writing.revise.hint')}</span>
@@ -354,17 +207,20 @@ export const WritingTask = () => {
       {prompt && !result ? (
         <Panel title={t('writing.editor.title')}>
           <YourWordsHint words={yourWords} />
+          <RevisionStrip revisions={revisions} />
           {previous ? (
             <div className="en-stack" style={{ gap: '.5rem' }}>
               <p className="en-notice" style={{ margin: 0 }}>{t('writing.editor.revising', { score: previous.score })}</p>
               {previous.feedback.corrections.length ? (
                 <details>
                   <summary>{t('writing.editor.lastFeedback')}</summary>
-                  <CorrectionList corrections={previous.feedback.corrections} />
+                  <CorrectionList corrections={previous.feedback.corrections} saveLabel={prompt.title} />
                 </details>
               ) : null}
             </div>
-          ) : restored ? <p className="hint" style={{ margin: 0 }}>{t('writing.editor.restored')}</p> : null}
+          ) : draft.restored ? (
+            <p className="hint" style={{ margin: 0 }}>{draft.restored === 'server' ? t('depth.draft.restoredAccount') : t('writing.editor.restored')}</p>
+          ) : null}
           <label htmlFor="writing-editor" className="visually-hidden">{t('writing.editor.label')}</label>
           <textarea
             id="writing-editor"
@@ -376,10 +232,7 @@ export const WritingTask = () => {
             placeholder={t('writing.editor.placeholder')}
             value={text}
             disabled={busy}
-            onChange={(event) => {
-              setText(event.target.value);
-              setSaved(false);
-            }}
+            onChange={(event) => setText(event.target.value)}
             aria-describedby="writing-meter"
           />
           <div className="en-meter" id="writing-meter" aria-live="polite">
@@ -388,7 +241,7 @@ export const WritingTask = () => {
             <span className={`wr-meter-state is-${lengthState}`}>
               {lengthState === 'short' ? t('writing.editor.short') : lengthState === 'long' ? t('writing.editor.long') : t('writing.editor.inRange')}
             </span>
-            {saved ? <span>{t('writing.editor.saved')}</span> : null}
+            <SaveState state={draft.state} />
           </div>
           {error ? <div className="error" role="alert">{errorText(error)}</div> : null}
           <div className="en-actions">
