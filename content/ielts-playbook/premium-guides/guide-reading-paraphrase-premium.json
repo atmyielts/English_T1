@@ -1,0 +1,201 @@
+{
+  "slug": "guide-reading-paraphrase-premium",
+  "sections": [
+    {
+      "block_type": "rich_text",
+      "heading": "Advanced Lab: How to Use This Section",
+      "content": {
+        "markdown": "The sections above explain how paraphrase works and why keyword hunting fails. This Advanced Lab trains the decisions that still cost marks once you understand those ideas: boundary cases in True/False/Not Given, headings that all look plausible, summaries with and without a word box, and the time decisions that decide whether you finish Passage 3.\n\nThe format facts you should hold in mind throughout: IELTS Reading lasts **60 minutes**, contains **three passages** and **40 questions**, and there is no extra transfer time in the paper test, so answers must reach the answer sheet within the hour. On computer, answers are entered directly as you go.\n\nThe Lab has four layers:\n\n1. **Precision techniques** with step-by-step methods.\n2. **Worked examples** using short original passages, showing the evidence, the reasoning and why each tempting wrong answer fails.\n3. **Timed drills** with stated time limits and a separate Answers section.\n4. **Decision rules, an error-diagnosis table and a 14-day repair schedule.**\n\nDo every drill before reading its answers. Reading answers first trains recognition, not judgement, and the exam rewards judgement."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Where Band 7 and Band 8 Readers Actually Lose Marks",
+      "content": {
+        "markdown": "At around band 6, candidates lose marks because they cannot locate information or do not understand it. Around band 7 to 8, location and understanding are mostly reliable, and lost marks come from **precision** errors:\n\n- treating a partial match as a full match in True/False/Not Given;\n- choosing a heading that describes one example in the paragraph rather than the paragraph's main purpose;\n- picking a summary word that means the right thing but does not fit the grammar of the gap;\n- reading a cautious statement (\"may\", \"some researchers suggest\") as a definite claim;\n- spending too long on one stubborn question and rushing the final passage.\n\nThe pattern is that high-band errors are **judgement errors under time pressure**. That is good news: judgement can be trained with clear rules and repeated feedback."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Technique 1: Statement Dissection for TFNG and YNNG",
+      "content": {
+        "markdown": "Before looking at the passage, break each statement into its **claim components**. Most statements contain more than one testable element.\n\n### The dissection method\n\n1. **Subject** – who or what is the statement about?\n2. **Claim** – what does it say about the subject?\n3. **Qualifiers** – words that narrow the claim: *all*, *only*, *always*, *first*, *most*, *never*, *some*, *increasingly*.\n4. **Comparison or time** – *more than*, *earlier*, *since*, *before*, *after*.\n\nExample statement: *\"The museum was the first in the region to charge no entry fee.\"*\n\n- Subject: the museum\n- Claim: charged no entry fee\n- Qualifier: first in the region\n\nTo be **True**, the passage must support every component, including *first in the region*. If the passage says only that the museum charged no fee, the statement is **Not Given**, because the \"first\" component has no evidence. If the passage says another museum had done so earlier, it is **False**.\n\n### Why this matters\n\nMost TFNG errors at higher bands happen because one qualifier was not checked. Dissection forces you to check each part separately."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Technique 2: Boundary Cases Between False and Not Given",
+      "content": {
+        "markdown": "The hardest TFNG decisions sit on the boundary between False and Not Given. Use this test:\n\n> **Does the passage say something that cannot be true at the same time as the statement?**\n\n- If **yes**, the answer is **False**. The passage contradicts the statement.\n- If the passage is **silent** on the point, or says something related but compatible, the answer is **Not Given**.\n\n### Common boundary patterns\n\n| Statement says | Passage says | Answer |\n|---|---|---|\n| X increased | X stayed the same | False |\n| X increased | X was measured | Not Given |\n| Most people preferred A | People preferred B | False |\n| Most people preferred A | Some people preferred A | Not Given |\n| X was invented in Italy | X was first sold in Italy | Not Given |\n| X always happens | X happens in some cases | False (if \"some\" implies \"not always\" in context), otherwise Not Given |\n\nThe last row is the classic trap. \"Some\" does not automatically contradict \"always\". Ask whether the passage clearly signals exceptions (\"but not in every case\", \"only occasionally\"). If it does, False; if it does not, Not Given.\n\n### YNNG: the writer's view\n\nFor Yes/No/Not Given, replace \"the passage says\" with \"the writer believes\". A fact reported by the writer is not the same as the writer's opinion. If the writer quotes someone else's view without agreeing or disagreeing, the writer's own position is usually **Not Given**."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Technique 3: Headings by Function, Not Topic",
+      "content": {
+        "markdown": "Paragraph headings fail when candidates match **topic** words. Many headings share the paragraph's topic; only one matches its **function**.\n\n### The function-first method\n\n1. Read the paragraph's first two sentences and its last sentence.\n2. Ask: what is the paragraph **doing**? Explaining a cause, describing a problem, comparing two views, giving a solution, describing a process, predicting the future?\n3. Write a three-word function label in the margin: *cause of decline*, *proposed solution*, *limits of evidence*.\n4. Only now look at the headings, and match the label to the heading.\n\n### Example-heading trap\n\nA paragraph about water shortages that mentions one city as an example should not be matched with a heading about that city. The example supports the paragraph's point; it is not the point.\n\n### Two-heading conflict\n\nIf two headings fit, check which one covers **the whole paragraph**. The correct heading is usually the one that would still be true if you deleted the paragraph's examples."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Technique 4: Summary Completion With and Without a Word Box",
+      "content": {
+        "markdown": "Summary completion has two forms, and they need different methods.\n\n### Without a word box (words from the passage)\n\n- Read the instruction limit literally, for example \"NO MORE THAN TWO WORDS from the passage\".\n- Locate the paragraph that the summary covers; summaries usually follow the order of the passage within the relevant section.\n- Copy the words **exactly as spelled in the passage**. Do not change word forms.\n- Check grammar: the word must fit the gap as written in the passage.\n\n### With a word box (choose from a list)\n\n- The box words are often **paraphrases** of passage words, so the exact passage word may not appear.\n- First, predict the **type** of word each gap needs (noun, adjective, plural noun).\n- Eliminate box words that do not fit the grammar. This often removes half the options before you read the passage again.\n- Then choose by meaning. Beware of box words that are **opposites** of the correct answer; they are deliberately included.\n\n### Shared check\n\nRead the completed summary sentence aloud in your head. If it sounds ungrammatical, at least one answer is wrong."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Technique 5: Matching Features and Sentence Endings",
+      "content": {
+        "markdown": "### Matching features (for example, researchers to findings)\n\n- Find every occurrence of each name **before** matching. Names are easy to scan for, and they may appear in more than one paragraph.\n- Underline the claim attached to each name.\n- Check whether options may be used more than once; read the instruction.\n- A name followed by \"however, critics argue\" means the finding after \"critics\" does not belong to that name.\n\n### Matching sentence endings\n\n- Treat each beginning and ending as one sentence; the combined sentence must be **true according to the passage** and **grammatically complete**.\n- First eliminate endings that do not fit grammatically with the beginning. This is fast and reliable.\n- Then check meaning in the passage. There are more endings than beginnings, so several endings are distractors that are true of something else in the passage.\n- Questions usually follow the order of the passage, which helps you locate each beginning."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Technique 6: Inference vs Paraphrase",
+      "content": {
+        "markdown": "Most IELTS Reading answers are **paraphrases**: the passage says the same thing in different words. Some questions, especially in multiple choice and YNNG, require a small **inference**: a conclusion that follows directly from what is stated.\n\n### Safe inference\n\nThe passage says: *\"Applications rose sharply after the fees were removed.\"*\nA safe inference: *Removing fees was followed by an increase in applications.*\n\n### Unsafe inference\n\nAn unsafe inference: *Fees were the main reason people did not apply before.* The passage does not state the cause; it states a sequence.\n\n### The rule\n\nAccept an inference only if a careful reader would say \"the passage clearly means this\". Reject any option that requires you to add **a cause, a motive, a comparison or a generalisation** that the passage does not provide. In the exam, unsafe inference is one of the most common ways that strong readers talk themselves into wrong answers."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Technique 7: Time-Boxing the Three Passages",
+      "content": {
+        "markdown": "Passages generally become more demanding as the test progresses, so equal time is rarely the best split. A practical starting plan:\n\n| Passage | Suggested time | Purpose |\n|---|---|---|\n| Passage 1 | about 17 minutes | Bank marks quickly and accurately |\n| Passage 2 | about 20 minutes | Steady pace; protect accuracy |\n| Passage 3 | about 23 minutes | Most demanding; needs the extra time |\n\nAdjust this split after a few timed tests, based on your own data.\n\n### Hard stops\n\nSet a **hard stop** for each passage. When it arrives, write your best answer for every remaining question in that passage and move on. A stubborn question is worth one mark, exactly the same as an easy question in Passage 3 that you might never reach.\n\n### The two-minute rule\n\nIf you have spent about two minutes on a single question without progress, guess sensibly, mark it, and move on. Return only if time remains at the end.\n\n### Paper test reminder\n\nOn paper there is no separate transfer time for Reading. Either write answers directly on the answer sheet as you go or transfer after each passage. Never leave all transfers to the last minutes."
+      }
+    },
+    {
+      "block_type": "callout",
+      "heading": "The Evidence Rule",
+      "content": {
+        "label": "Rule to keep",
+        "body": "Every answer must rest on a specific line of the passage that you could point to. If you cannot point to the line, you are answering from memory or from general knowledge, and general knowledge is exactly what IELTS Reading tests you to set aside."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Worked Example 1: A TFNG Boundary Case",
+      "content": {
+        "markdown": "**Original passage excerpt:**\n\n> When the town of Elmsworth introduced a weekly farmers' market in 2015, local shopkeepers feared the competition. Within two years, however, several shops on the high street reported more customers on market days than on any other day of the week.\n\n**Statements:**\n\n1. Shopkeepers in Elmsworth were initially worried about the market.\n2. All shops on the high street benefited from the market.\n3. The market was the first of its kind in the region.\n\n**Reasoning and answers:**\n\n1. **True** – \"feared the competition\" paraphrases \"were worried\"; \"initially\" matches the time contrast created by \"however\" and \"within two years\".\n2. **Not Given** – the passage says \"several shops\" reported more customers. \"Several\" does not tell us about all shops, and the passage does not say that any shop did badly. Nothing contradicts \"all\", but nothing supports it either. Candidates often choose False here because \"several\" feels smaller than \"all\", but the passage never states that some shops failed to benefit.\n3. **Not Given** – the region and any other markets are never mentioned. The date 2015 tempts candidates to infer novelty, but a date is not a claim of being first."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Worked Example 2: Choosing a Heading by Function",
+      "content": {
+        "markdown": "**Original paragraph:**\n\n> For decades, engineers assumed that taller sea walls were the only realistic defence against coastal flooding. Yet in several low-lying areas, restored salt marshes have absorbed storm surges more effectively than concrete, and at lower long-term cost. A pilot scheme on one estuary, for instance, recorded less damage to nearby farmland after the marsh was allowed to return.\n\n**Heading options:**\n\n- i The cost of building sea walls\n- ii A pilot scheme on an estuary\n- iii Natural defences challenging an old assumption\n- iv Why farmland floods\n\n**Reasoning:** The function of the paragraph is to present an alternative that challenges a long-held belief. The first sentence states the assumption; \"Yet\" introduces the challenge; the last sentence is an example.\n\n**Answer: iii.**\n\n**Why the tempting wrong answers fail:**\n\n- **i** – cost is mentioned only as a supporting detail (\"at lower long-term cost\").\n- **ii** – the pilot scheme is the example, introduced by \"for instance\". Matching the example is the most common heading error.\n- **iv** – farmland appears, but the paragraph does not explain causes of flooding."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Worked Example 3: Summary Completion With a Word Box",
+      "content": {
+        "markdown": "**Original passage excerpt:**\n\n> Early clockmakers struggled with the effect of temperature on their mechanisms. Metal parts expanded in warm weather and contracted in the cold, so a clock that kept perfect time in winter might run slow by summer. The eventual solution combined two metals that expanded at different rates, so that their changes cancelled each other out.\n\n**Summary:** Clocks were once affected by changes in (1) ______. Warm conditions made metal parts (2) ______, which altered timekeeping. The answer was to use two metals whose changes (3) ______ each other.\n\n**Word box:** A humidity B temperature C shrink D enlarge E balanced F reinforced\n\n**Reasoning and answers:**\n\n1. **B temperature** – stated directly. *Humidity* (A) is a related weather word but is never mentioned.\n2. **D enlarge** – \"expanded\" is paraphrased by \"enlarge\". *Shrink* (C) is the deliberate opposite: it describes cold conditions, not warm ones.\n3. **E balanced** – \"cancelled each other out\" means the effects balanced each other. *Reinforced* (F) means the opposite: strengthened each other. Grammar check: \"whose changes balanced each other\" reads correctly."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Timed Drill A: TFNG Precision (Time Limit: 5 Minutes)",
+      "content": {
+        "markdown": "**Instructions:** Read the passage and decide whether each statement is TRUE, FALSE or NOT GIVEN. Allow **5 minutes** in total.\n\n**Original passage:**\n\n> The Harlow Botanical Collection began as a private garden in the 1880s. Its founder, a retired sea captain, brought back seeds from voyages across the Pacific, although many failed to grow in the cooler climate. In 1923 the garden was handed to the city, which opened it to the public free of charge. Visitor numbers fell during the 1970s, when much of the glasshouse fell into disrepair, but a restoration completed in 2009 has made the tropical house the collection's most visited area. Today the gardens employ a team of botanists who exchange seeds with institutions in several countries.\n\n**Statements:**\n\n1. The founder's seeds all grew successfully.\n2. The city has always charged an entry fee.\n3. The glasshouse was damaged by a storm in the 1970s.\n4. The tropical house is currently the most popular part of the collection.\n5. The gardens exchange seeds with more countries than any other botanical collection.\n\nCheck the Answers section before reading on."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Timed Drill B: Matching Headings (Time Limit: 6 Minutes)",
+      "content": {
+        "markdown": "**Instructions:** Choose the correct heading for each paragraph. There are more headings than paragraphs. Allow **6 minutes**.\n\n**Headings:** i An unexpected side effect ii How the scheme was funded iii Reasons for the original decision iv Plans to extend the idea v A comparison with older methods\n\n**Original paragraphs:**\n\n**Paragraph A:** City planners closed the central square to cars in 2018 after years of complaints about congestion and air quality. Businesses had argued that drivers were deterred from shopping in the centre by the difficulty of finding parking near the square.\n\n**Paragraph B:** What nobody predicted was the effect on the square's pigeons. With traffic gone, outdoor cafés multiplied, and the birds, attracted by dropped food, became so numerous that the council had to launch a cleaning campaign.\n\n**Paragraph C:** Encouraged by the overall results, the council is now consulting residents about closing two further streets, and a cycle route linking the square with the railway station is being designed.\n\nCheck the Answers section before reading on."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Timed Drill C: Sentence Endings and Summary Without a Word Box (Time Limit: 6 Minutes)",
+      "content": {
+        "markdown": "**Instructions:** Allow **6 minutes** in total.\n\n**Original passage:**\n\n> Researchers studying honeybees have found that colonies make collective decisions about new nest sites through a process resembling a vote. Scout bees inspect possible sites and return to perform a dance that advertises their choice; the better the site, the longer the dance. Over time, more scouts visit the most advertised site, and once enough of them gather there, the swarm departs. Interestingly, scouts gradually reduce the length of their dances, which prevents the colony from becoming stuck on an early but inferior option.\n\n**Questions 6–7: Complete each sentence with the correct ending.**\n\n6. The length of a scout's dance\n7. The gradual shortening of dances\n\nEndings: A allows the colony to change its mind. B depends on the quality of the site. C is decided by the queen. D causes the swarm to leave immediately.\n\n**Questions 8–9: Complete the summary. Write NO MORE THAN TWO WORDS from the passage.**\n\nScouts advertise a site by performing a (8) ______. The swarm leaves once enough scouts have gathered at the most (9) ______ site.\n\nCheck the Answers section before reading on."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Answers: Timed Drills A, B and C",
+      "content": {
+        "markdown": "### Drill A\n\n1. **False** – \"many failed to grow\" contradicts \"all grew successfully\".\n2. **False** – the city opened the garden \"free of charge\" in 1923, which contradicts \"always charged\".\n3. **Not Given** – the glasshouse \"fell into disrepair\", but no cause is given. A storm is an unsafe inference.\n4. **True** – \"has made the tropical house the collection's most visited area\" plus \"Today\".\n5. **Not Given** – \"several countries\" is stated, but there is no comparison with other collections.\n\n### Drill B\n\n- **A – iii** – the paragraph explains why the square was closed (congestion, air quality). The business argument is part of the background, not a heading on its own.\n- **B – i** – \"What nobody predicted\" signals an unexpected side effect.\n- **C – iv** – closing more streets and a new cycle route are plans to extend the idea.\n- Headings **ii** and **v** are distractors: funding and older methods are never discussed.\n\n### Drill C\n\n6. **B** – \"the better the site, the longer the dance\".\n7. **A** – shortening dances \"prevents the colony from becoming stuck on an early but inferior option\", that is, it allows a change of mind. **D** is tempting but the swarm leaves when enough scouts gather, not because of shortening dances. **C** is never mentioned.\n8. **dance** – copy the passage word exactly; \"waggle dance\" or other additions are not in this passage.\n9. **advertised** – the passage says \"the most advertised site\". *Popular* would be a paraphrase and is not allowed when the instruction says \"from the passage\".\n\n### Scoring yourself honestly\n\nMark any answer with a spelling error, a changed word form or an extra word as wrong. If Drill A cost you marks, return to statement dissection; if Drill B, practise function labels; if Drill C, practise grammar-first elimination."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Decision Rules for the Live Test",
+      "content": {
+        "markdown": "- **If** a statement contains *all*, *only*, *first*, *always* or *never*, **then** check that qualifier first; it is usually the deciding component.\n- **If** the passage could be true at the same time as the statement but does not confirm it, **then** the answer is Not Given, not False.\n- **If** the passage reports someone else's opinion, **then** do not treat it as the writer's view in YNNG.\n- **If** two headings both fit, **then** choose the one that remains true without the paragraph's examples.\n- **If** a summary has a word box, **then** eliminate by grammar before reading for meaning.\n- **If** a summary says \"from the passage\", **then** copy the exact form and spelling from the passage.\n- **If** a multiple-choice option needs a cause, motive or comparison not stated, **then** reject it.\n- **If** you have spent about two minutes on one question, **then** guess, mark it and move on.\n- **If** a passage's hard stop arrives, **then** fill every remaining answer for that passage before moving on."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Error-Diagnosis Table",
+      "content": {
+        "markdown": "| Symptom | Likely cause | Fix |\n|---|---|---|\n| Many False answers that should be Not Given | Treating \"not confirmed\" as \"contradicted\" | Apply the \"both true at once?\" test |\n| Many Not Given answers that should be False | Missing a contradiction hidden in a qualifier | Dissect statements; check qualifiers first |\n| Headings wrong despite good understanding | Matching topic words or examples | Function labels from first, second and last sentences |\n| Summary answers right in meaning, marked wrong | Changed word form or exceeded limit | Copy exactly; read the instruction limit literally |\n| Word-box answers often opposites | Reading too fast for direction of meaning | Check positive/negative direction before choosing |\n| Passage 3 unfinished | No hard stops; stuck on single questions | Time-box passages; two-minute rule |\n| Multiple choice errors on \"the writer suggests\" | Unsafe inference | Accept only what the passage clearly means |\n| Answers correct on question paper, wrong on sheet | Late or careless transfer (paper) | Transfer after each passage; check numbering |"
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "The 14-Day Advanced Repair Schedule",
+      "content": {
+        "markdown": "About 45 to 60 minutes a day, using reliable IELTS practice passages.\n\n| Day | Focus | Task |\n|---|---|---|\n| 1 | Baseline | One full timed test; classify every error by question type and cause |\n| 2 | Dissection | Dissect twenty TFNG statements before reading the passages |\n| 3 | Boundaries | Fifteen False vs Not Given decisions; write the line of evidence for each |\n| 4 | Headings | Function labels for two passages before looking at the heading list |\n| 5 | Summaries | Two summaries with word boxes; grammar elimination first |\n| 6 | Summaries | Two summaries from the passage; exact copying and limits |\n| 7 | Review | One timed passage of each difficulty; compare errors with Day 1 |\n| 8 | Matching | Matching features and sentence endings on two passages |\n| 9 | Inference | Ten \"writer suggests\" questions; reject unsafe inferences in writing |\n| 10 | YNNG | One opinion-heavy passage; separate reported views from the writer's view |\n| 11 | Timing | Full test with hard stops; record time spent per passage |\n| 12 | Repair | Re-do the two weakest question types from Day 11 |\n| 13 | Pressure | Full timed test in exam conditions, including answer transfer if on paper |\n| 14 | Consolidation | Review the error log; write five personal rules |\n\n### Judging progress\n\nTrack your errors by **cause**, not only your total. A falling number of qualifier and inference errors shows the method is working, even if one test's total moves the other way. Practice scores naturally vary."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Your Evidence Log",
+      "content": {
+        "markdown": "For one week, write the evidence line for every answer you give in practice, not just the wrong ones. It slows you down at first, but it builds the habit that matters most at the higher bands: answering from the text, not from impression.\n\nA simple format:\n\n| Q | Answer | Evidence line (first few words) | Confident? |\n|---|---|---|---|\n| 14 | NG | \"several shops reported...\" | Medium |\n\nAfter a week, look at the answers you marked \"Medium\" or \"Low\". Patterns appear quickly, for example, uncertainty clustered around qualifiers, or around headings in Passage 3. Those patterns tell you exactly where to aim the next week of practice."
+      }
+    },
+    {
+      "block_type": "faq",
+      "heading": "Advanced Lab FAQ",
+      "content": {
+        "items": [
+          {
+            "question": "Should I read the whole passage before the questions?",
+            "answer": "For most strong readers, a fast skim of the passage structure (first sentences of paragraphs) followed by the questions works best. A full careful read before the questions often costs too much time, especially in Passage 3."
+          },
+          {
+            "question": "Do questions always follow the order of the passage?",
+            "answer": "Many question types usually follow passage order, such as TFNG and sentence completion, but headings and some matching tasks do not. Read the instructions and use order as a helpful pattern, not a guarantee."
+          },
+          {
+            "question": "Is it acceptable to write T, F and NG instead of full words?",
+            "answer": "Abbreviations are commonly accepted, but follow the instructions printed on your test and check the current guidance from official IELTS sources. Be careful never to write Yes/No answers for a True/False question or the reverse."
+          },
+          {
+            "question": "How do I stop overthinking Not Given?",
+            "answer": "Use one test only: can the statement and the passage both be true at the same time? If the passage is silent or compatible, it is Not Given. Stop there and move on."
+          },
+          {
+            "question": "Does Academic or General Training change these methods?",
+            "answer": "The question types and decision rules are the same. The texts differ in source and style, so General Training candidates should also practise everyday and workplace texts, but the techniques in this Lab apply to both."
+          }
+        ]
+      }
+    },
+    {
+      "block_type": "checklist",
+      "heading": "Advanced Lab Final Checklist",
+      "content": {
+        "items": [
+          "I dissect statements into subject, claim, qualifiers and comparisons before reading.",
+          "I use the \"both true at once?\" test to separate False from Not Given.",
+          "I separate the writer's view from reported views in Yes/No/Not Given.",
+          "I write a function label for a paragraph before reading the heading list.",
+          "I never match a heading to a paragraph's example.",
+          "I eliminate word-box options by grammar first, then meaning.",
+          "I copy passage words exactly when the instruction says \"from the passage\".",
+          "I reject inferences that add a cause, motive, comparison or generalisation.",
+          "I time-box all three passages and respect my hard stops.",
+          "I use the two-minute rule on stubborn questions.",
+          "On paper, I transfer answers within the 60 minutes, passage by passage.",
+          "I keep an error log by cause and update my personal rules every week."
+        ]
+      }
+    }
+  ]
+}
