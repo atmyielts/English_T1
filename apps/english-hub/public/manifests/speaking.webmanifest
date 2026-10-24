@@ -1,0 +1,97 @@
+{
+  "id": "/speaking",
+  "name": "Schood Speaking",
+  "short_name": "Schood Speaking",
+  "description": "Answer spoken prompts out loud and get feedback on what you said. Part of Schood English: one account, one review and one progress record.",
+  "start_url": "/speaking",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
+  "background_color": "#f4f7f2",
+  "theme_color": "#7a2531",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": [
+    "education",
+    "productivity"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/icons/speaking-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/speaking-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/speaking-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Speaking",
+      "short_name": "Speaking",
+      "description": "Speaking home",
+      "url": "/speaking",
+      "icons": [
+        {
+          "src": "/icons/speaking-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Today",
+      "short_name": "Today",
+      "description": "Today's plan",
+      "url": "/today",
+      "icons": [
+        {
+          "src": "/icons/speaking-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Review",
+      "short_name": "Review",
+      "description": "Words and mistakes due for review",
+      "url": "/review",
+      "icons": [
+        {
+          "src": "/icons/speaking-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Tutor",
+      "short_name": "Tutor",
+      "description": "Ask the AI tutor",
+      "url": "/tutor",
+      "icons": [
+        {
+          "src": "/icons/speaking-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

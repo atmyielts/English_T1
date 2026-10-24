@@ -1,0 +1,97 @@
+{
+  "id": "/writing",
+  "name": "Schood Writing",
+  "short_name": "Schood Writing",
+  "description": "Write to a real brief, get feedback, then improve your draft. Part of Schood English: one account, one review and one progress record.",
+  "start_url": "/writing",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
+  "background_color": "#f4f7f2",
+  "theme_color": "#8a4f1d",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": [
+    "education",
+    "productivity"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/icons/writing-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/writing-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/writing-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Writing",
+      "short_name": "Writing",
+      "description": "Writing home",
+      "url": "/writing",
+      "icons": [
+        {
+          "src": "/icons/writing-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Today",
+      "short_name": "Today",
+      "description": "Today's plan",
+      "url": "/today",
+      "icons": [
+        {
+          "src": "/icons/writing-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Review",
+      "short_name": "Review",
+      "description": "Words and mistakes due for review",
+      "url": "/review",
+      "icons": [
+        {
+          "src": "/icons/writing-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Tutor",
+      "short_name": "Tutor",
+      "description": "Ask the AI tutor",
+      "url": "/tutor",
+      "icons": [
+        {
+          "src": "/icons/writing-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

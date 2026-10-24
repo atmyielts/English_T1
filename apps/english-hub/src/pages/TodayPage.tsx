@@ -10,6 +10,8 @@ import { TopicWeekPanel } from './TopicWeekPanel';
 import { GoalCard } from './goal/GoalCard';
 import { NewBadges } from '../components/Badges';
 import { TodayXpPanel } from '../components/XpWidgets';
+import { FocusSkillCard } from '../components/FocusSkillCard';
+import { InstallCard } from '../components/InstallApp';
 
 const greetingKey = (): string => {
   const hour = new Date().getHours();
@@ -189,6 +191,7 @@ export const TodayPage = () => {
         </section>
 
         <div className="en-stack">
+          <FocusSkillCard />
           <GoalCard />
 
           <Panel title={t('today.week.title')} aside={data ? <span>{t('today.week.streak', { count: data.streak })}</span> : null}>
@@ -216,6 +219,8 @@ export const TodayPage = () => {
               )
             ) : <Loading lines={2} />}
           </Panel>
+
+          <InstallCard />
 
           <Panel title={t('today.tutor.title')} tone="teal">
             <p>{t('today.tutor.body')}</p>

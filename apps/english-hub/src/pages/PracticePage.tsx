@@ -4,6 +4,7 @@ import { useT } from '../i18n';
 import { getCatalog } from '../lib/hub';
 import { HandbookTeaser } from '../skills/grammar/HandbookTeaser';
 import { SKILLS } from '../lib/skills';
+import { focusSkillOf, orderSkills } from '../lib/focusSkill';
 import { useResource } from '../lib/useResource';
 import { ErrorState, LevelBadge, PageHeader, ProgressBar, SkillDot, Tag } from '../ui/kit';
 
@@ -23,7 +24,7 @@ export const PracticePage = () => {
       />
       {catalog.error ? <ErrorState error={catalog.error} onRetry={catalog.reload} /> : null}
       <div className="en-grid-cards">
-        {SKILLS.map((skill) => {
+        {orderSkills(SKILLS, focusSkillOf(access)).map((skill) => {
           const items = (catalog.data?.items ?? []).filter((item) => item.skill === skill.key);
           const done = items.filter((item) => (catalog.data?.best_scores[item.id] ?? null) !== null).length;
           const skillLevel = onboarding.value?.perSkill[skill.key] ?? level;
