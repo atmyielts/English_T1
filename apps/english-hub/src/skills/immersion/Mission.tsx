@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useParams } from 'react-router-dom';
+import { TapScope, TapText, TapWords } from '../../components/WordLookup';
 import { useT } from '../../i18n';
 import { canRecognize, canSpeak, listen, speak, stopSpeaking, type Listener } from '../../lib/speech';
 import { useElapsedSeconds, useResource } from '../../lib/useResource';
 import { Panel, Tag, useErrorMessage } from '../../ui/kit';
 import { ActivityFrame, ResultPanel } from '../ActivityKit';
+import type { TapSource } from '../../lib/wordLookup';
 import {
   getMission,
   submitMission,
@@ -17,6 +19,14 @@ import {
 
 type Draft = { answers: Record<string, number>; text: string; mode: 'voice' | 'typed' };
 const emptyDraft: Draft = { answers: {}, text: '', mode: 'typed' };
+
+/** Where words saved from this mission come from (My words shows the mission title). */
+const MissionSource = createContext<TapSource>({ type: 'english-immersion' });
+
+/** Mission English that the learner can tap for word meanings. */
+const MissionText = ({ text, className, style }: { text: string; className: string; style?: CSSProperties }) => (
+  <TapText as="p" className={className} style={style} text={text} source={useContext(MissionSource)} />
+);
 
 const wordCount = (text: string) => text.trim().split(/\s+/).filter(Boolean).length;
 
@@ -96,7 +106,7 @@ const ListenPlayer = ({ text, accent }: { text: string; accent: 'gb' | 'us' | nu
     return (
       <div className="en-stack" style={{ gap: '.5rem' }}>
         <p className="hint">{t('immersion.listen.noAudio')}</p>
-        <p className="en-passage im-text" lang="en">{text}</p>
+        <MissionText className="en-passage im-text" text={text} />
       </div>
     );
   }
@@ -252,7 +262,7 @@ const StepBody = ({
   if (step.kind === 'read') {
     return (
       <>
-        <p className="en-passage im-text" lang="en">{step.text}</p>
+        <MissionText className="en-passage im-text" text={step.text} />
         <Questions scope={step.id} questions={step.questions} chosen={draft.answers} onChoose={busy ? undefined : choose} />
       </>
     );
@@ -269,7 +279,7 @@ const StepBody = ({
     const words = wordCount(draft.text);
     return (
       <>
-        <p className="im-cue" lang="en">{step.text}</p>
+        <MissionText className="im-cue" text={step.text} />
         <label htmlFor={`reply-${step.id}`} style={{ fontWeight: 600 }}>{t('immersion.reply.label')}</label>
         <textarea
           id={`reply-${step.id}`}
@@ -290,7 +300,7 @@ const StepBody = ({
   }
   return (
     <>
-      <p className="im-cue" lang="en">{step.text}</p>
+      <MissionText className="im-cue" text={step.text} />
       <SpeakInput
         key={step.id}
         stepId={step.id}
@@ -319,7 +329,7 @@ const StepOutcome = ({ step, result }: { step: MissionStep; result: StepResult }
           {result.kind === 'listen' && result.transcript ? (
             <details>
               <summary>{t('immersion.listen.heard')}</summary>
-              <p className="en-passage im-text" lang="en" style={{ fontSize: '.95rem' }}>{result.transcript}</p>
+              <MissionText className="en-passage im-text" style={{ fontSize: '.95rem' }} text={result.transcript} />
             </details>
           ) : null}
           <Questions scope={`r-${step.id}`} questions={step.questions} chosen={{}} results={result.questions} />
@@ -367,7 +377,7 @@ const StepOutcome = ({ step, result }: { step: MissionStep; result: StepResult }
           {result.model_answer ? (
             <details>
               <summary>{t('immersion.result.example')}</summary>
-              <p className="en-passage im-text" lang="en" style={{ fontSize: '.95rem' }}>{result.model_answer}</p>
+              <MissionText className="en-passage im-text" style={{ fontSize: '.95rem' }} text={result.model_answer} />
             </details>
           ) : null}
         </>
@@ -392,6 +402,7 @@ export const MissionPlayer = () => {
   const steps = (resource.data?.steps ?? []).filter((step): step is MissionStep & { kind: StepKind } => step.kind !== null);
   const step = steps[Math.min(current, Math.max(0, steps.length - 1))];
   const doneCount = steps.filter((entry) => isDone(entry, drafts[entry.id])).length;
+  const tapSource = useMemo<TapSource>(() => ({ type: 'english-immersion', label: mission?.title ?? null, ref: slug }), [mission?.title, slug]);
 
   const update = useCallback((stepId: string, patch: Partial<Draft> | ((draft: Draft) => Partial<Draft>)) => {
     setDrafts((all) => {
@@ -453,7 +464,7 @@ export const MissionPlayer = () => {
   }
   const finished = result ? result.steps.filter((entry) => (entry.questions.some((question) => question.chosen !== null)) || entry.response?.trim()).length : 0;
 
-  return (
+  const frame = (
     <ActivityFrame
       skill="immersion"
       title={mission?.title}
@@ -494,7 +505,11 @@ export const MissionPlayer = () => {
       ) : (
         <>
           <Panel title={t('immersion.situation.title')}>
-            {mission?.objective_text ? <p style={{ margin: 0 }}><strong>{t('immersion.situation.goal')}:</strong> {mission.objective_text}</p> : null}
+            {mission?.objective_text ? (
+              <TapScope as="p" style={{ margin: 0 }} lang={null} source={tapSource}>
+                <strong>{t('immersion.situation.goal')}:</strong> <span lang="en"><TapWords text={mission.objective_text} /></span>
+              </TapScope>
+            ) : null}
             {mission?.success_conditions.length ? (
               <div className="en-stack" style={{ gap: '.35rem' }}>
                 <strong style={{ fontSize: '.9rem' }}>{t('immersion.situation.success')}</strong>
@@ -550,4 +565,5 @@ export const MissionPlayer = () => {
       )}
     </ActivityFrame>
   );
+  return <MissionSource.Provider value={tapSource}>{frame}</MissionSource.Provider>;
 };

@@ -1,4 +1,6 @@
 import { Fragment, type ReactNode } from 'react';
+import { TapScope, TapWords } from '../../components/WordLookup';
+import type { TapSource } from '../../lib/wordLookup';
 import { runsText, sentenceAt, WORD_PATTERN, type InlineRun, type PassageBlock } from './markdown';
 
 export type PickedWord = { key: string; word: string; sentence: string };
@@ -10,6 +12,9 @@ type Props = {
   selectedKey: string | null;
   savedWords: Set<string>;
   onPick: (picked: PickedWord) => void;
+  /** Outside word mode, words can be tapped for their meaning. */
+  tapSource: TapSource;
+  onTapSaved?: (word: string, sentence: string) => void;
 };
 
 const styled = (run: InlineRun, content: ReactNode, key: number | string) => {
@@ -20,8 +25,10 @@ const styled = (run: InlineRun, content: ReactNode, key: number | string) => {
 };
 
 /** Renders one block's text, with words as buttons in word mode. */
-const Runs = ({ runs, unitKey, ...props }: Omit<Props, 'blocks'> & { runs: InlineRun[]; unitKey: string }) => {
-  if (!props.wordMode) return <>{runs.map((run, index) => styled(run, run.text, index))}</>;
+type RunsProps = Omit<Props, 'blocks' | 'tapSource' | 'onTapSaved'> & { runs: InlineRun[]; unitKey: string };
+
+const Runs = ({ runs, unitKey, ...props }: RunsProps) => {
+  if (!props.wordMode) return <>{runs.map((run, index) => styled(run, <TapWords text={run.text} />, index))}</>;
   const text = runsText(runs);
   let offset = 0;
   return (
@@ -57,8 +64,8 @@ const Runs = ({ runs, unitKey, ...props }: Omit<Props, 'blocks'> & { runs: Inlin
   );
 };
 
-export const Passage = ({ blocks, ...props }: Props) => (
-  <div className={`en-passage rd-passage${props.wordMode ? ' is-picking' : ''}`} lang="en">
+const Blocks = ({ blocks, ...props }: Omit<Props, 'tapSource' | 'onTapSaved'>) => (
+  <>
     {blocks.map((block, index) => {
       const key = String(index);
       if (block.type === 'heading') {
@@ -80,5 +87,17 @@ export const Passage = ({ blocks, ...props }: Props) => (
       }
       return <p key={key}><Runs runs={block.runs} unitKey={key} {...props} /></p>;
     })}
-  </div>
+  </>
+);
+
+export const Passage = ({ tapSource, onTapSaved, ...props }: Props) => (
+  props.wordMode ? (
+    <div className="en-passage rd-passage is-picking" lang="en">
+      <Blocks {...props} />
+    </div>
+  ) : (
+    <TapScope className="en-passage rd-passage" source={tapSource} onSaved={onTapSaved}>
+      <Blocks {...props} />
+    </TapScope>
+  )
 );

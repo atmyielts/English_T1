@@ -57,6 +57,7 @@ import { isReminderWorker, runReminderCycle } from "./reminders.ts";
 import { answerTelegramQuiz, isQuizWorker } from "./telegram-quiz.ts";
 import { handleGoalRoute } from "./goal.ts";
 import { handleXpRoute, logReviewAnswer } from "./xp.ts";
+import { handleWordLookup } from "./word-lookup.ts";
 import { appendLevelHistory, levelCheckStatus, perSkillLevels, readLevelHistory } from "../_shared/english-levels.ts";
 import { handleCertificateRoute, handlePublicCertificate, isPublicCertificateRoute } from "./certificate.ts";
 import { measurementMethod, testResultRecord } from "../_shared/english-certificate.ts";
@@ -321,6 +322,11 @@ serve(async (req) => {
 
     const certificateResponse = await handleCertificateRoute({ sb, req, route, userId: auth.userId, languageId: scope.languageId });
     if (certificateResponse) return certificateResponse;
+
+    // === Tap-to-translate: one word's meaning, for every signed-in learner ===
+    if (req.method === "GET" && route === "/word") {
+      return await handleWordLookup({ sb, userId: auth.userId, languageId: scope.languageId, url });
+    }
 
     const products = await resolveEnglishProducts(sb);
 

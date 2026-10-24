@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { TapScope, TapWords } from '../../components/WordLookup';
 import { useT } from '../../i18n';
 import { useElapsedSeconds, useResource } from '../../lib/useResource';
 import { Panel, useErrorMessage } from '../../ui/kit';
@@ -77,14 +78,15 @@ export const GrammarLesson = () => {
         {examples.length ? (
           <div className="en-stack" style={{ gap: '.5rem' }}>
             <h3 style={{ margin: 0, fontSize: '.95rem' }}>{t('grammar.rule.examples')}</h3>
-            <ul className="en-list">
+            {/* Correct examples can be tapped for word meanings; the wrong versions cannot. */}
+            <TapScope as="ul" className="en-list" source={{ type: 'english-grammar', label: unit?.title ?? null, ref: slug }}>
               {examples.map((example, index) => (
                 <li key={index} className="en-diff" style={{ fontSize: '.95rem' }}>
                   {example.bad ? <><del>{example.bad}</del><br /></> : null}
-                  <ins>{example.good}</ins>
+                  <ins><TapWords text={example.good ?? ''} /></ins>
                 </li>
               ))}
-            </ul>
+            </TapScope>
           </div>
         ) : null}
         {unit?.common_error_pattern ? (
