@@ -4,6 +4,8 @@
 // that were missed are queued in learner_review_items. They return after
 // 1 day, then 3, then 7; a wrong answer starts the item again. Three correct
 // reviews retire it. Answer keys stay in `payload` on the server.
+// Homework mistakes a learner chose to share from their centre (D4) arrive as
+// grammar items keyed `homework:<mistake id>`, with the teacher's explanation.
 
 import { checkGrammarAnswer } from "./english-grammar.ts";
 import { scoreDictation } from "./english-listening.ts";
@@ -15,6 +17,8 @@ export type GrammarReviewPayload = {
   prompt: string;
   instructions: string;
   accepted: string[];
+  /** Shown after answering; set for homework mistakes. */
+  explanation?: string;
   source_title: string;
   source_slug: string;
 };
@@ -67,7 +71,7 @@ export type ReviewCheck = { correct: boolean; expected: string; explanation: str
 export const checkReviewAnswer = (payload: ReviewPayload, answer: unknown): ReviewCheck => {
   if (payload.type === "grammar") {
     const result = checkGrammarAnswer({ prompt: payload.prompt, accepted: payload.accepted, response: String(answer ?? "") });
-    return { correct: result.correct, expected: result.expected, explanation: null };
+    return { correct: result.correct, expected: result.expected, explanation: payload.explanation || null };
   }
   if (payload.type === "choice") {
     const chosen = Number(answer);
@@ -88,7 +92,14 @@ export const parseReviewPayload = (raw: unknown): ReviewPayload | null => {
   const text = (key: string) => (typeof value[key] === "string" ? String(value[key]) : "");
   const base = { source_title: text("source_title"), source_slug: text("source_slug") };
   if (value.type === "grammar" && text("prompt") && Array.isArray(value.accepted)) {
-    return { type: "grammar", prompt: text("prompt"), instructions: text("instructions"), accepted: (value.accepted as unknown[]).map(String), ...base };
+    return {
+      type: "grammar",
+      prompt: text("prompt"),
+      instructions: text("instructions"),
+      accepted: (value.accepted as unknown[]).map(String),
+      ...(text("explanation") ? { explanation: text("explanation") } : {}),
+      ...base,
+    };
   }
   if (value.type === "choice" && text("prompt") && Array.isArray(value.options) && Number.isInteger(value.answer_index)) {
     return {

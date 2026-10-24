@@ -181,6 +181,13 @@ const statusesByLevel = (
   return out;
 };
 
+/**
+ * The English skill a mistake belongs to. Homework mistakes shared from a
+ * centre (service `academy_homework`, D4) carry it in skill_key.
+ */
+const mistakeSkill = (row: Record<string, unknown>): string =>
+  row.service_key === "academy_homework" ? String(row.skill_key ?? "grammar") : String(row.service_key ?? "");
+
 const groupMistakes = (
   rows: Array<Record<string, unknown>>,
   units: Array<Record<string, unknown>>,
@@ -201,12 +208,13 @@ const groupMistakes = (
     const topic = topicFromSubskill(String(row.subskill_key ?? ""));
     const example = String(row.error_type ?? "").trim();
     if (!example) continue;
-    const key = topic ? `topic:${topic}` : `one:${String(row.service_key)}:${example}`;
+    const skill = mistakeSkill(row);
+    const key = topic ? `topic:${topic}` : `one:${skill}:${example}`;
     const status = row.mastery_status === "improving" ? "improving" : "open";
     const group = groups.get(key) ?? {
       key,
       topic,
-      skill: topic ? "grammar" : String(row.service_key ?? ""),
+      skill: topic ? "grammar" : skill,
       count: 0,
       examples: [],
       status,
@@ -475,7 +483,7 @@ serve(async (req) => {
             .eq("language_id", scope.languageId)
             .maybeSingle(),
           sb.from("learner_language_errors")
-            .select("service_key, subskill_key, error_type, error_frequency, last_seen_at, mastery_status")
+            .select("service_key, skill_key, subskill_key, error_type, error_frequency, last_seen_at, mastery_status")
             .eq("user_id", auth.userId)
             .eq("language_id", scope.languageId)
             .in("mastery_status", ["open", "reopened", "improving"])
