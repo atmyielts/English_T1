@@ -54,6 +54,7 @@ import { checkReviewAnswer, parseReviewPayload, publicReviewPayload, RETIRED_BOX
 import { topicFromSubskill } from "../_shared/english-mistakes.ts";
 import { mergeReminderSettings, readReminderSettings, REMINDER_HOURS } from "../_shared/english-reminders.ts";
 import { isReminderWorker, runReminderCycle } from "./reminders.ts";
+import { handleWordLookup } from "./word-lookup.ts";
 import { appendLevelHistory, levelCheckStatus, perSkillLevels, readLevelHistory } from "../_shared/english-levels.ts";
 
 const routeMarker = "/hub";
@@ -302,6 +303,12 @@ serve(async (req) => {
     }
 
     const scope = await resolveLanguageScope(sb, toText(url.searchParams.get("language_code"), 16) || "en");
+
+    // === Tap-to-translate: one word's meaning, for every signed-in learner ===
+    if (req.method === "GET" && route === "/word") {
+      return await handleWordLookup({ sb, userId: auth.userId, languageId: scope.languageId, url });
+    }
+
     const products = await resolveEnglishProducts(sb);
 
     const isEnglishAiRequest = (req.method === "GET" && route === "/insights/coach-summary")
