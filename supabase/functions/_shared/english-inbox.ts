@@ -24,7 +24,7 @@
 //     whether a new row was added. Pushing the same key again does nothing.
 //     For an operator message use kind "system" with `title` and `body`.
 //     To show a new kind, add it to INBOX_KINDS and give it text in the
-//     app (apps/english-hub/src/i18n/glue.*.ts, keys inbox.kind.<kind>.*).
+//     app (apps/english-hub/src/i18n/glue.*.ts, keys glue.inbox.<kind>.title / .body).
 
 import { type Cefr, CEFR_ORDER } from "./english-today.ts";
 import type { LevelEntry } from "./english-levels.ts";

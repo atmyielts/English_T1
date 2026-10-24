@@ -9,6 +9,7 @@ import { Onboarding } from './Onboarding';
 import { TopicWeekPanel } from './TopicWeekPanel';
 import { GoalCard } from './goal/GoalCard';
 import { NewBadges } from '../components/Badges';
+import { ContinueCard } from '../components/ContinueCard';
 import { TodayXpPanel } from '../components/XpWidgets';
 import { FocusSkillCard } from '../components/FocusSkillCard';
 import { InstallCard } from '../components/InstallApp';
@@ -112,6 +113,8 @@ export const TodayPage = () => {
           </p>
         </div>
       </div>
+
+      <ContinueCard />
 
       <NewBadges />
 

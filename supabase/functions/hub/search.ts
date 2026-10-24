@@ -93,7 +93,8 @@ const search = async (ctx: Ctx): Promise<Response> => {
 
   const [content, access, goalRes, wordsRes, mistakesRes] = await Promise.all([
     loadContent(sb, languageId),
-    checkActivityAccess(sb, { userId, languageId, products: ctx.products, skill: null }),
+    // Without access facts every lesson is labelled "not in your plan"; search itself still works.
+    checkActivityAccess(sb, { userId, languageId, products: ctx.products, skill: null }).catch(() => null),
     sb.from("learner_language_goals").select("current_cefr_estimate").eq("user_id", userId).eq("language_id", languageId).maybeSingle(),
     wordPattern
       ? sb.from("user_vocabulary_notebook_entries")
@@ -137,7 +138,7 @@ const search = async (ctx: Ctx): Promise<Response> => {
   });
 
   const results = rankSearch(raw, { lessons: content.lessons, words, mistakes, rules: content.rules }, {
-    access: { owned: access.admin ? [...TODAY_SKILLS] : access.entitled_skills, freeLeft: access.free_left },
+    access: { owned: access?.admin ? [...TODAY_SKILLS] : access?.entitled_skills ?? [], freeLeft: access?.free_left ?? 0 },
     learnerLevel,
   });
   return new Response(JSON.stringify({ ok: true, results }), {

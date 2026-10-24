@@ -2,6 +2,7 @@
 //
 //   GET  /resume            ?locale=en|ru|uz  what can be continued now, newest first
 //   POST /resume            { skill, slug, position? }  where the learner is in an activity
+//                           (without a position, an earlier place in the same activity is kept)
 //   POST /resume/clear      { skill }  forget a skill's point (finished, or dismissed)
 //   GET  /resume/roleplay   ?id=<session id>  an active role-play's lines, to continue it on another device
 //
@@ -125,6 +126,19 @@ const saveResume = async (ctx: Ctx): Promise<Response> => {
     .maybeSingle();
   if (itemError) throw new Error(`Failed to check the activity: ${itemError.message}`);
   if (!item) return json(404, { error: "Activity not found", code: "resume_unknown_activity" });
+  const nowIso = new Date().toISOString();
+  if (!input.position) {
+    // Just opened: keep a place saved earlier in the same activity (perhaps on another device).
+    const { data: touched, error: touchError } = await ctx.sb.from("english_resume_points")
+      .update({ updated_at: nowIso })
+      .eq("user_id", ctx.userId)
+      .eq("language_id", ctx.languageId)
+      .eq("skill", input.skill)
+      .eq("slug", input.slug)
+      .select("skill");
+    if (touchError) throw new Error(`Failed to save the resume point: ${touchError.message}`);
+    if ((touched ?? []).length) return json(200, { ok: true });
+  }
   const { error } = await ctx.sb.from("english_resume_points").upsert({
     user_id: ctx.userId,
     language_id: ctx.languageId,
@@ -132,7 +146,7 @@ const saveResume = async (ctx: Ctx): Promise<Response> => {
     slug: input.slug,
     title: typeof item.title === "string" ? item.title.slice(0, 220) : input.title,
     position: input.position,
-    updated_at: new Date().toISOString(),
+    updated_at: nowIso,
   }, { onConflict: "user_id,language_id,skill" });
   if (error) throw new Error(`Failed to save the resume point: ${error.message}`);
   return json(200, { ok: true });

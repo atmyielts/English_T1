@@ -9,6 +9,7 @@ import { CEFR_LEVELS, isCefr, type CefrLevel } from '../lib/skills';
 import { speak, canSpeak } from '../lib/speech';
 import { ErrorState, Loading, PageHeader, Panel } from '../ui/kit';
 import { GoalDateStep } from './goal/GoalDateStep';
+import { ResultSummary } from '../components/ResultSummary';
 
 const GOALS = ['everyday', 'work', 'study_abroad', 'exam', 'travel', 'school'] as const;
 type Goal = (typeof GOALS)[number];
@@ -366,6 +367,7 @@ export const Onboarding = ({ onDone, retake = false, check = false }: { onDone?:
               ))}
             </div>
           )}
+          {check ? <ResultSummary headless share={{ kind: 'check', level: result.overall_level.toUpperCase() }} upNext={false} /> : null}
           {error ? <ErrorState error={error} /> : null}
           <div className="en-actions">
             <button

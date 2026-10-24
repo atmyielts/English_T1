@@ -148,7 +148,13 @@ const WordQuestion: React.FC<{ card: WordCard; saving: boolean; onGrade: (correc
   );
 };
 
-export const TelegramEnglishReview: React.FC<{ call: TelegramAppCall; onExit: (changed: boolean) => void }> = ({ call, onExit }) => {
+export const TelegramEnglishReview: React.FC<{
+  call: TelegramAppCall;
+  onExit: (changed: boolean) => void;
+  /** The English app, for "what next" and the journey on the summary. */
+  appUrl?: string | null;
+  openLink?: (url: string) => void;
+}> = ({ call, onExit, appUrl, openLink }) => {
   const { t } = useTgEnglishT();
   const [cards, setCards] = useState<ReviewCard[] | null>(null);
   const [index, setIndex] = useState(0);
@@ -158,6 +164,7 @@ export const TelegramEnglishReview: React.FC<{ call: TelegramAppCall; onExit: (c
   const [verdict, setVerdict] = useState<Verdict | null>(null);
   const [answered, setAnswered] = useState(0);
   const [correct, setCorrect] = useState(0);
+  const [xp, setXp] = useState(0);
   // Cards answered or skipped in this session never come back in it.
   const passed = useRef(new Set<string>());
 
@@ -203,6 +210,7 @@ export const TelegramEnglishReview: React.FC<{ call: TelegramAppCall; onExit: (c
       setVerdict({ correct: result.correct, expected: result.expected, explanation: result.explanation, accuracy: result.accuracy });
       setAnswered((n) => n + 1);
       if (result.correct) setCorrect((n) => n + 1);
+      if (typeof result.xp_earned === 'number' && result.xp_earned > 0) setXp((n) => n + result.xp_earned!);
     } catch {
       setSaveError(true);
     } finally {
@@ -262,10 +270,27 @@ export const TelegramEnglishReview: React.FC<{ call: TelegramAppCall; onExit: (c
     return (
       <section className="rounded-2xl border border-gray-900 bg-white p-4 shadow-[0_2px_0_#111827]">
         {header}
-        <div className="mt-4 rounded-xl bg-gray-50 px-4 py-6 text-center">
+        {/* The same summary as every result in the English app: score, XP, what was saved, then what next. */}
+        <div className="mt-4 rounded-xl bg-gray-50 px-4 py-6 text-center" aria-live="polite">
           <div className="font-black">{answered > 0 ? t('rv.done.title') : t('rv.done.empty')}</div>
-          {answered > 0 ? <div className="mt-1 text-sm text-gray-600">{t('rv.done.body', { correct, total: answered })}</div> : null}
+          {answered > 0 ? (
+            <>
+              <div className="mt-3 flex items-center justify-center gap-3">
+                <span className="text-xs font-semibold uppercase text-gray-500">{t('rv.done.score')}</span>
+                <span className="text-2xl font-black">{Math.round((correct / answered) * 100)}%</span>
+                {xp > 0 ? <span className="rounded-full bg-amber-100 px-3 py-1 text-sm font-bold text-amber-900">{t('rv.done.xp', { xp })}</span> : null}
+              </div>
+              <div className="mt-2 text-sm text-gray-600">{t('rv.done.body', { correct, total: answered })}</div>
+              {correct < answered ? <div className="mt-1 text-sm text-gray-600">{t('rv.done.saved')}</div> : null}
+            </>
+          ) : null}
         </div>
+        {appUrl && openLink ? (
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <button type="button" onClick={() => openLink(`${appUrl}/today`)} className={quiet}>{t('rv.done.next')}</button>
+            <button type="button" onClick={() => openLink(`${appUrl}/journey`)} className={quiet}>{t('rv.done.journey')}</button>
+          </div>
+        ) : null}
         <button type="button" onClick={() => onExit(answered > 0)} className={`${primary} mt-4 w-full`}>{t('rv.done.back')}</button>
       </section>
     );

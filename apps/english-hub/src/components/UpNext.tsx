@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useEnglish } from '../app/EnglishContext';
-import { useT } from '../i18n';
+import { useI18n, useT } from '../i18n';
 import { getNext, invalidateNext, nextHref, type NextStep } from '../lib/engine';
 import type { SkillKey } from '../lib/skills';
 import { useResource } from '../lib/useResource';
@@ -10,12 +10,19 @@ import '../engine.css';
 type T = ReturnType<typeof useT>;
 
 const stepTitle = (step: NextStep, t: T) =>
-  step.kind === 'review' ? t('engine.next.reviewTitle', { count: step.due ?? 1 }) : step.title;
+  step.kind === 'review' ? t('engine.next.reviewTitle', { count: step.due ?? 1 })
+    : step.reason === 'continue' && step.detail === 'mock' ? t('glue.resume.mock')
+      : step.title;
 
 /** One honest line: why this is the best next step. */
 export const stepReason = (step: NextStep, t: T): string => {
   const skill = step.skill ? t(`skill.${step.skill}`) : '';
   switch (step.reason) {
+    case 'continue':
+      return step.detail === 'roleplay' ? t('glue.next.continueRoleplay')
+        : step.detail === 'mock' ? t('glue.next.continueMock')
+          : step.detail && /^\d+$/.test(step.detail) ? t('glue.next.continueProgress', { progress: step.detail })
+            : t('glue.next.continue');
     case 'review_due':
       return t('engine.next.reason.review_due');
     case 'fix_mistake':
@@ -55,12 +62,13 @@ const LockedHint = ({ step }: { step: NextStep }) => {
  */
 export const UpNextCard = ({ skill, slug }: { skill: SkillKey; slug?: string | null }) => {
   const t = useT();
+  const { locale } = useI18n();
   const next = useResource(
     (signal) => {
       invalidateNext();
-      return getNext({ from: skill, after: slug ? { skill, slug } : null }, signal);
+      return getNext({ from: skill, after: slug ? { skill, slug } : null, locale }, signal);
     },
-    [skill, slug],
+    [skill, slug, locale],
   );
   if (next.loading && !next.data) return <p className="hint" aria-live="polite">{t('engine.next.loading')}</p>;
   // The result screen still works without it; the same-skill link stays.
@@ -102,8 +110,9 @@ export const UpNextStrip = ({ skill }: { skill: SkillKey }) => {
   const t = useT();
   const location = useLocation();
   const { onboarding } = useEnglish();
+  const { locale } = useI18n();
   const placed = onboarding.value?.placementDone ?? false;
-  const next = useResource((signal) => getNext({ from: skill }, signal), [skill, location.pathname], placed);
+  const next = useResource((signal) => getNext({ from: skill, locale }, signal), [skill, location.pathname, locale], placed);
   const step = next.data?.step;
   if (!placed || !step) return null;
   const href = nextHref(step);
