@@ -1,0 +1,199 @@
+{
+  "item": {
+    "slug": "c2-podcast-the-art-of-the-apology",
+    "title": "Podcast: The Art of the Apology",
+    "level": "C2",
+    "summary": "A podcast host explains why non-apologies fail and sets out four steps of a genuine apology, from naming what you did to not demanding forgiveness.",
+    "transcript_text": "Hello, and welcome to the last episode of the season. Today I want to talk about something we all do badly at some point: apologising. We've all heard the non-apology. 'I'm sorry if anyone was offended.' 'Mistakes were made.' Notice the grammar there. The 'if' turns the hurt into a hypothetical, and the passive voice quietly removes the person who made the mistake from the sentence altogether. So what does a genuine apology involve? I'd suggest four things, and the order matters. First, name what you did, specifically and without softening it. Not 'things got a bit out of hand', but 'I shouted at you in front of your colleagues'. Second, acknowledge the effect it had, and resist the urge to explain your intentions too soon. The moment you say 'but I was really stressed', the apology starts to become a defence. Third, say what you'll do differently, and make it concrete enough that the other person could actually check. And fourth, which is by far the hardest part, don't demand forgiveness. An apology that comes with a deadline, 'so, are we fine now?', is really a request for the apologiser's own discomfort to end. Forgiveness is something the other person may offer in their own time, or not at all. Interestingly, in many families and communities, an apology is shown through actions as much as words: a visit, a shared meal, help offered without being asked. I think there's real wisdom in that, because in the end an apology is judged less by how well it's phrased than by what happens next.",
+    "category": "Society",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 170,
+    "duration_seconds": 93,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "relationships",
+      "communication",
+      "podcast",
+      "language"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "podcast"
+    },
+    "questions": [
+      {
+        "prompt": "What does the host say about the sentence 'Mistakes were made'?",
+        "options": [
+          "It is the most polite form of apology.",
+          "Its grammar hides who made the mistake.",
+          "It is too direct.",
+          "It is only used in business."
+        ],
+        "answer_index": 1,
+        "explanation": "\"The passive voice quietly removes the person who made the mistake from the sentence altogether.\""
+      },
+      {
+        "prompt": "Why does the host warn against explaining your intentions too soon?",
+        "options": [
+          "It takes too much time.",
+          "The other person will not believe you.",
+          "It makes the apology too short.",
+          "It can turn the apology into a defence."
+        ],
+        "answer_index": 3,
+        "explanation": "\"The moment you say 'but I was really stressed', the apology starts to become a defence.\""
+      },
+      {
+        "prompt": "What should a promise to change be like?",
+        "options": [
+          "Specific enough to be checked",
+          "As general as possible",
+          "Made in writing",
+          "Made in front of other people"
+        ],
+        "answer_index": 0,
+        "explanation": "\"Make it concrete enough that the other person could actually check.\""
+      },
+      {
+        "prompt": "What is the host's view of asking 'so, are we fine now?'",
+        "options": [
+          "It shows real respect.",
+          "It is the best way to end an apology.",
+          "It puts the apologiser's comfort first.",
+          "It is necessary in most cultures."
+        ],
+        "answer_index": 2,
+        "explanation": "It \"is really a request for the apologiser's own discomfort to end.\""
+      },
+      {
+        "prompt": "What is the host's overall message?",
+        "options": [
+          "Apologies should be as short as possible.",
+          "Good grammar is the key to a good apology.",
+          "Forgiveness should be asked for quickly.",
+          "An apology is judged mainly by what the person does afterwards."
+        ],
+        "answer_index": 3,
+        "explanation": "\"An apology is judged less by how well it's phrased than by what happens next.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Hello, and welcome to the last episode of the season.",
+      "focus_phrase": "last episode of the season",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Today I want to talk about something we all do badly at some point: apologising.",
+      "focus_phrase": "do badly at some point",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "We've all heard the non-apology.",
+      "focus_phrase": "the non-apology",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "'I'm sorry if anyone was offended.'",
+      "focus_phrase": "if anyone was offended",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "'Mistakes were made.'",
+      "focus_phrase": "mistakes were made",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Notice the grammar there.",
+      "focus_phrase": "notice the grammar",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The 'if' turns the hurt into a hypothetical, and the passive voice quietly removes the person who made the mistake from the sentence altogether.",
+      "focus_phrase": "the passive voice",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "So what does a genuine apology involve?",
+      "focus_phrase": "a genuine apology",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I'd suggest four things, and the order matters.",
+      "focus_phrase": "the order matters",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "First, name what you did, specifically and without softening it.",
+      "focus_phrase": "without softening it",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Not 'things got a bit out of hand', but 'I shouted at you in front of your colleagues'.",
+      "focus_phrase": "out of hand",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Second, acknowledge the effect it had, and resist the urge to explain your intentions too soon.",
+      "focus_phrase": "resist the urge",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The moment you say 'but I was really stressed', the apology starts to become a defence.",
+      "focus_phrase": "starts to become a defence",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Third, say what you'll do differently, and make it concrete enough that the other person could actually check.",
+      "focus_phrase": "concrete enough",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "And fourth, which is by far the hardest part, don't demand forgiveness.",
+      "focus_phrase": "don't demand forgiveness",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "An apology that comes with a deadline, 'so, are we fine now?', is really a request for the apologiser's own discomfort to end.",
+      "focus_phrase": "comes with a deadline",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Forgiveness is something the other person may offer in their own time, or not at all.",
+      "focus_phrase": "in their own time",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Interestingly, in many families and communities, an apology is shown through actions as much as words: a visit, a shared meal, help offered without being asked.",
+      "focus_phrase": "as much as words",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I think there's real wisdom in that, because in the end an apology is judged less by how well it's phrased than by what happens next.",
+      "focus_phrase": "what happens next",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

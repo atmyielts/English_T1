@@ -1,0 +1,187 @@
+{
+  "item": {
+    "slug": "b2-podcast-money-myths-for-students",
+    "title": "Podcast: Three Money Myths Students Believe",
+    "level": "B2",
+    "summary": "A student money podcast takes apart three common beliefs about budgeting, small purchases and saving.",
+    "transcript_text": "Hi everyone, and welcome back to Pocket Money, the podcast about managing money when you don't have much of it. Today I want to bust three money myths that I hear from students all the time. Myth number one: budgeting is only for people with a lot of money. Actually, it's the opposite. When your income is small, every decision matters more, so knowing where your money goes is even more important. Myth number two: small purchases don't count. A coffee here, a taxi there, it doesn't feel like much. But if you write down everything you spend for just one week, you'll probably be surprised by how quickly those little things add up. Now, I'm not saying never buy coffee. I'm saying make it a choice, not a habit. Myth number three: you can start saving later, once you have a proper job. The amount you save as a student might be tiny, and that's completely fine. What you're really building is the habit. One simple trick is to move a small, fixed amount into a separate account on the day your stipend or salary arrives, before you have time to spend it. Pay yourself first, as people say. So, here's this week's challenge: track every single purchase for seven days, and then send me your biggest surprise. See you next time!",
+    "category": "Daily Life",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 150,
+    "duration_seconds": 89,
+    "audio_url": null,
+    "focus_skill": "gist",
+    "tags": [
+      "money",
+      "budgeting",
+      "students",
+      "podcast"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "podcast"
+    },
+    "questions": [
+      {
+        "prompt": "What is the main purpose of this episode?",
+        "options": [
+          "To advertise a new bank account",
+          "To correct some common beliefs about money",
+          "To explain how to find a part-time job",
+          "To compare prices in different cafés"
+        ],
+        "answer_index": 1,
+        "explanation": "The host says: \"Today I want to bust three money myths that I hear from students all the time.\""
+      },
+      {
+        "prompt": "Why is budgeting important when your income is small, according to the speaker?",
+        "options": [
+          "Banks will not open an account without it.",
+          "It is the only way to get a stipend.",
+          "It helps you earn more money.",
+          "Every decision matters more."
+        ],
+        "answer_index": 3,
+        "explanation": "\"When your income is small, every decision matters more.\""
+      },
+      {
+        "prompt": "What does the speaker say about buying coffee?",
+        "options": [
+          "It should be a conscious choice, not a habit.",
+          "Students should stop buying it completely.",
+          "It is always cheaper to make it at home.",
+          "It is the biggest cost for most students."
+        ],
+        "answer_index": 0,
+        "explanation": "\"I'm not saying never buy coffee. I'm saying make it a choice, not a habit.\""
+      },
+      {
+        "prompt": "When does the speaker suggest moving money into savings?",
+        "options": [
+          "At the end of each month",
+          "When you get a proper job",
+          "On the day your stipend or salary arrives",
+          "Only when there is money left over"
+        ],
+        "answer_index": 2,
+        "explanation": "\"...on the day your stipend or salary arrives, before you have time to spend it.\""
+      },
+      {
+        "prompt": "What is the listeners' challenge for the week?",
+        "options": [
+          "Open a savings account",
+          "Stop taking taxis for a week",
+          "Save half of their stipend",
+          "Record everything they buy for seven days"
+        ],
+        "answer_index": 3,
+        "explanation": "\"Track every single purchase for seven days.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Hi everyone, and welcome back to Pocket Money, the podcast about managing money when you don't have much of it.",
+      "focus_phrase": "managing money",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Today I want to bust three money myths that I hear from students all the time.",
+      "focus_phrase": "bust three money myths",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Myth number one: budgeting is only for people with a lot of money.",
+      "focus_phrase": "a lot of money",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Actually, it's the opposite.",
+      "focus_phrase": "it's the opposite",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "When your income is small, every decision matters more, so knowing where your money goes is even more important.",
+      "focus_phrase": "where your money goes",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Myth number two: small purchases don't count.",
+      "focus_phrase": "small purchases",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "A coffee here, a taxi there, it doesn't feel like much.",
+      "focus_phrase": "doesn't feel like much",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "But if you write down everything you spend for just one week, you'll probably be surprised by how quickly those little things add up.",
+      "focus_phrase": "add up",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Now, I'm not saying never buy coffee.",
+      "focus_phrase": "I'm not saying",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I'm saying make it a choice, not a habit.",
+      "focus_phrase": "a choice, not a habit",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Myth number three: you can start saving later, once you have a proper job.",
+      "focus_phrase": "start saving later",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The amount you save as a student might be tiny, and that's completely fine.",
+      "focus_phrase": "might be tiny",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "What you're really building is the habit.",
+      "focus_phrase": "building is the habit",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "One simple trick is to move a small, fixed amount into a separate account on the day your stipend or salary arrives, before you have time to spend it.",
+      "focus_phrase": "a separate account",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Pay yourself first, as people say.",
+      "focus_phrase": "pay yourself first",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "So, here's this week's challenge: track every single purchase for seven days, and then send me your biggest surprise.",
+      "focus_phrase": "track every single purchase",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "See you next time!",
+      "focus_phrase": "see you next time",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

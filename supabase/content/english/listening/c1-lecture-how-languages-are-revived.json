@@ -1,0 +1,193 @@
+{
+  "item": {
+    "slug": "c1-lecture-how-languages-are-revived",
+    "title": "Lecture: Can a Fading Language Come Back?",
+    "level": "C1",
+    "summary": "A linguistics lecture on what makes a language endangered and what successful revival efforts, such as those for Hebrew and Welsh, tend to have in common.",
+    "transcript_text": "Good afternoon, everyone. Last week we discussed why languages become endangered, so today I want to turn to the more hopeful question: can a language that's fading be brought back? The short answer is yes, sometimes, but it's never easy, and it never happens by accident. Let's start with a distinction. A language is generally considered endangered when children stop learning it at home, even if many adults still speak it. Once that chain between generations breaks, the number of speakers tends to fall steadily, because each generation of speakers is smaller than the last. Revival, then, is essentially about repairing that chain. The most frequently cited example is Hebrew, which for centuries was used mainly in religious and written contexts, and then became an everyday spoken language again, with children growing up speaking it as their first language. Welsh is a rather different kind of case. It never stopped being spoken, but it was under considerable pressure, and its position has been strengthened through schools, broadcasting and its use in public life. So what do successful efforts tend to have in common? Broadly speaking, three things. First, education, and particularly immersion schooling, where children learn other subjects through the language. Second, visibility: the language appears on signs, on television and, increasingly, online. And third, and perhaps most importantly, prestige. If young people associate a language only with the past, or with their grandparents' village, they're unlikely to choose it. If they see it as useful and, frankly, a bit cool, the picture changes. Next week, we'll look at the role of technology in all of this, from keyboards to voice assistants.",
+    "category": "Language",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 160,
+    "duration_seconds": 102,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "linguistics",
+      "lecture",
+      "language revival",
+      "culture"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "lecture"
+    },
+    "questions": [
+      {
+        "prompt": "According to the lecturer, when is a language generally considered endangered?",
+        "options": [
+          "When it has no written form",
+          "When adults stop using it at work",
+          "When children stop learning it at home",
+          "When it borrows many foreign words"
+        ],
+        "answer_index": 2,
+        "explanation": "\"A language is generally considered endangered when children stop learning it at home, even if many adults still speak it.\""
+      },
+      {
+        "prompt": "Why does the number of speakers tend to fall steadily?",
+        "options": [
+          "Each generation of speakers is smaller than the one before.",
+          "Older speakers forget the language.",
+          "Governments ban the language.",
+          "The language becomes too difficult to learn."
+        ],
+        "answer_index": 0,
+        "explanation": "\"Each generation of speakers is smaller than the last.\""
+      },
+      {
+        "prompt": "How is the Welsh case different from the Hebrew case?",
+        "options": [
+          "Welsh was revived without any schools.",
+          "Welsh was only a written language.",
+          "Welsh has no young speakers.",
+          "Welsh never stopped being spoken."
+        ],
+        "answer_index": 3,
+        "explanation": "\"It never stopped being spoken, but it was under considerable pressure.\""
+      },
+      {
+        "prompt": "Which factor does the lecturer suggest may matter most?",
+        "options": [
+          "Dictionaries",
+          "Prestige among young people",
+          "Laws about signs",
+          "The number of older speakers"
+        ],
+        "answer_index": 1,
+        "explanation": "\"And third, and perhaps most importantly, prestige.\""
+      },
+      {
+        "prompt": "What is the lecturer's attitude to language revival?",
+        "options": [
+          "It is impossible.",
+          "It happens naturally over time.",
+          "It is possible, but only with deliberate effort.",
+          "Technology alone can save languages."
+        ],
+        "answer_index": 2,
+        "explanation": "\"The short answer is yes, sometimes, but it's never easy, and it never happens by accident.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Good afternoon, everyone.",
+      "focus_phrase": "good afternoon",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Last week we discussed why languages become endangered, so today I want to turn to the more hopeful question: can a language that's fading be brought back?",
+      "focus_phrase": "be brought back",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The short answer is yes, sometimes, but it's never easy, and it never happens by accident.",
+      "focus_phrase": "never happens by accident",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Let's start with a distinction.",
+      "focus_phrase": "start with a distinction",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "A language is generally considered endangered when children stop learning it at home, even if many adults still speak it.",
+      "focus_phrase": "stop learning it at home",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Once that chain between generations breaks, the number of speakers tends to fall steadily, because each generation of speakers is smaller than the last.",
+      "focus_phrase": "chain between generations",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Revival, then, is essentially about repairing that chain.",
+      "focus_phrase": "repairing that chain",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The most frequently cited example is Hebrew, which for centuries was used mainly in religious and written contexts, and then became an everyday spoken language again, with children growing up speaking it as their first language.",
+      "focus_phrase": "an everyday spoken language",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Welsh is a rather different kind of case.",
+      "focus_phrase": "different kind of case",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "It never stopped being spoken, but it was under considerable pressure, and its position has been strengthened through schools, broadcasting and its use in public life.",
+      "focus_phrase": "under considerable pressure",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "So what do successful efforts tend to have in common?",
+      "focus_phrase": "have in common",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Broadly speaking, three things.",
+      "focus_phrase": "broadly speaking",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "First, education, and particularly immersion schooling, where children learn other subjects through the language.",
+      "focus_phrase": "immersion schooling",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Second, visibility: the language appears on signs, on television and, increasingly, online.",
+      "focus_phrase": "on signs, on television",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "And third, and perhaps most importantly, prestige.",
+      "focus_phrase": "perhaps most importantly, prestige",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "If young people associate a language only with the past, or with their grandparents' village, they're unlikely to choose it.",
+      "focus_phrase": "unlikely to choose it",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "If they see it as useful and, frankly, a bit cool, the picture changes.",
+      "focus_phrase": "the picture changes",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Next week, we'll look at the role of technology in all of this, from keyboards to voice assistants.",
+      "focus_phrase": "the role of technology",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

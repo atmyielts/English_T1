@@ -1,0 +1,163 @@
+{
+  "item": {
+    "slug": "b2-news-new-cycle-lanes-debate",
+    "title": "Local News: The Cycle Lane Debate",
+    "level": "B2",
+    "summary": "A local radio news report on a city plan to replace car lanes with cycle lanes, and the different reactions of shop owners and cyclists.",
+    "transcript_text": "Good evening, and this is the evening news on City Radio. Our top story tonight: the city council's plan to build cycle lanes along Central Avenue has divided local residents. Under the plan, one lane for cars on each side of the avenue would be replaced by a protected lane for bicycles and scooters. Council officials say the change would make the street safer and encourage more people to leave their cars at home. However, several shop owners on the avenue are worried. Farida, who runs a small bakery near the main square, told us that many of her customers drive in and park outside for just a few minutes. 'If they can't stop, they'll simply go somewhere else,' she said. Cyclists, on the other hand, have welcomed the proposal. Timur, a university student who cycles to his classes every day, said that riding next to fast traffic feels dangerous at the moment. 'A proper lane would change everything,' he told us. The council has promised to look at alternatives, including loading zones for deliveries and short-stay parking on side streets. A public meeting will be held at the city library next Thursday at six p.m., and residents can also send their comments online until the end of the month. We'll bring you more on this story as it develops.",
+    "category": "Society",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 150,
+    "duration_seconds": 88,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "news",
+      "city",
+      "transport",
+      "radio"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "news"
+    },
+    "questions": [
+      {
+        "prompt": "What is the news story mainly about?",
+        "options": [
+          "A new bakery on Central Avenue",
+          "Different reactions to a plan for cycle lanes",
+          "An accident involving a cyclist",
+          "The opening of a new library"
+        ],
+        "answer_index": 1,
+        "explanation": "The plan to build cycle lanes \"has divided local residents.\""
+      },
+      {
+        "prompt": "What would change under the plan?",
+        "options": [
+          "Cars would be banned from the avenue.",
+          "Parking would become free.",
+          "One car lane on each side would become a protected bike lane.",
+          "Buses would use the cycle lanes."
+        ],
+        "answer_index": 2,
+        "explanation": "\"One lane for cars on each side of the avenue would be replaced by a protected lane for bicycles and scooters.\""
+      },
+      {
+        "prompt": "Why is Farida worried?",
+        "options": [
+          "Her customers may not be able to stop near her bakery.",
+          "She cannot ride a bicycle.",
+          "Her bakery will have to move.",
+          "Deliveries will become more expensive."
+        ],
+        "answer_index": 0,
+        "explanation": "\"Many of her customers drive in and park outside... 'If they can't stop, they'll simply go somewhere else.'\""
+      },
+      {
+        "prompt": "How does Timur feel about cycling on the avenue now?",
+        "options": [
+          "He enjoys it.",
+          "He thinks it is too slow.",
+          "He prefers to take the bus.",
+          "He feels it is dangerous."
+        ],
+        "answer_index": 3,
+        "explanation": "\"Riding next to fast traffic feels dangerous at the moment.\""
+      },
+      {
+        "prompt": "Which of these is true about what happens next?",
+        "options": [
+          "The lanes will be built next Thursday.",
+          "Residents can give their views at a meeting or online.",
+          "The council has cancelled the plan.",
+          "Shops will move to the side streets."
+        ],
+        "answer_index": 1,
+        "explanation": "\"A public meeting will be held... and residents can also send their comments online.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Good evening, and this is the evening news on City Radio.",
+      "focus_phrase": "the evening news",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Our top story tonight: the city council's plan to build cycle lanes along Central Avenue has divided local residents.",
+      "focus_phrase": "divided local residents",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Under the plan, one lane for cars on each side of the avenue would be replaced by a protected lane for bicycles and scooters.",
+      "focus_phrase": "would be replaced by",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Council officials say the change would make the street safer and encourage more people to leave their cars at home.",
+      "focus_phrase": "leave their cars at home",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "However, several shop owners on the avenue are worried.",
+      "focus_phrase": "shop owners",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Farida, who runs a small bakery near the main square, told us that many of her customers drive in and park outside for just a few minutes.",
+      "focus_phrase": "park outside",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "'If they can't stop, they'll simply go somewhere else,' she said.",
+      "focus_phrase": "go somewhere else",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Cyclists, on the other hand, have welcomed the proposal.",
+      "focus_phrase": "on the other hand",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Timur, a university student who cycles to his classes every day, said that riding next to fast traffic feels dangerous at the moment.",
+      "focus_phrase": "next to fast traffic",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "'A proper lane would change everything,' he told us.",
+      "focus_phrase": "change everything",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The council has promised to look at alternatives, including loading zones for deliveries and short-stay parking on side streets.",
+      "focus_phrase": "loading zones",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "A public meeting will be held at the city library next Thursday at six p.m., and residents can also send their comments online until the end of the month.",
+      "focus_phrase": "a public meeting",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "We'll bring you more on this story as it develops.",
+      "focus_phrase": "as it develops",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

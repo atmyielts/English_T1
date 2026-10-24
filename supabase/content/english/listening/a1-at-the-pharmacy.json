@@ -1,0 +1,155 @@
+{
+  "item": {
+    "slug": "a1-at-the-pharmacy",
+    "title": "At the Pharmacy",
+    "level": "A1",
+    "summary": "Madina asks a pharmacist for something for a headache and learns how often to take the tablets.",
+    "transcript_text": "Pharmacist: Good morning. How can I help you?\nMadina: Hi. I have a bad headache. Do you have something for it?\nPharmacist: Yes, these tablets are good for headaches. Do you have a temperature?\nMadina: No, I don't. I'm just very tired.\nPharmacist: OK. Take one tablet after a meal, with some water. You can take one every six hours, but not more than four a day.\nMadina: Every six hours. OK. How much is it?\nPharmacist: It's twelve thousand som.\nMadina: Here you are. Thank you!\nPharmacist: You're welcome. Drink lots of water and get some sleep.",
+    "category": "Health",
+    "accent": "general",
+    "speed_label": "slow",
+    "speed_wpm": 110,
+    "duration_seconds": 49,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "health",
+      "pharmacy",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Pharmacist",
+        "Madina"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "What is Madina's problem?",
+        "options": [
+          "She has a temperature.",
+          "She can't sleep.",
+          "She has a bad headache.",
+          "She has a sore throat."
+        ],
+        "answer_index": 2,
+        "explanation": "Madina says: \"I have a bad headache.\""
+      },
+      {
+        "prompt": "How often can she take a tablet?",
+        "options": [
+          "Every four hours",
+          "Every six hours",
+          "Once a day",
+          "Every two hours"
+        ],
+        "answer_index": 1,
+        "explanation": "\"You can take one every six hours, but not more than four a day.\""
+      },
+      {
+        "prompt": "How much are the tablets?",
+        "options": [
+          "Twelve thousand som",
+          "Ten thousand som",
+          "Twenty thousand som",
+          "Two thousand som"
+        ],
+        "answer_index": 0,
+        "explanation": "\"It's twelve thousand som.\""
+      },
+      {
+        "prompt": "What does the pharmacist tell her to do?",
+        "options": [
+          "Go to a doctor",
+          "Eat nothing today",
+          "Take two tablets at once",
+          "Drink lots of water and get some sleep"
+        ],
+        "answer_index": 3,
+        "explanation": "\"Drink lots of water and get some sleep.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Good morning.",
+      "focus_phrase": "Good morning",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "How can I help you?",
+      "focus_phrase": "help you",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Hi. I have a bad headache.",
+      "focus_phrase": "a bad headache",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Do you have something for it?",
+      "focus_phrase": "something for it",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Yes, these tablets are good for headaches.",
+      "focus_phrase": "these tablets",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Do you have a temperature?",
+      "focus_phrase": "a temperature",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "No, I don't. I'm just very tired.",
+      "focus_phrase": "very tired",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "OK. Take one tablet after a meal, with some water.",
+      "focus_phrase": "after a meal",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "You can take one every six hours, but not more than four a day.",
+      "focus_phrase": "every six hours",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Every six hours. OK. How much is it?",
+      "focus_phrase": "How much is it",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "It's twelve thousand som.",
+      "focus_phrase": "twelve thousand som",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Here you are. Thank you!",
+      "focus_phrase": "Here you are",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "You're welcome. Drink lots of water and get some sleep.",
+      "focus_phrase": "get some sleep",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

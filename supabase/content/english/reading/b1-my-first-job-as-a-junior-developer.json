@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "b1-my-first-job-as-a-junior-developer",
+    "title": "My First Job as a Junior Developer",
+    "level": "B1",
+    "summary": "A young developer in Tashkent looks back on his first months at work, a serious mistake and what his mentor taught him.",
+    "content_markdown": "Six months ago, I started my first job as a junior developer at a small software company in Tashkent. I had studied programming online for two years, and I thought I was ready. I wasn't, at least not completely.\n\nIn my first week, I was given a simple task: fix a bug on the login page of a delivery app. I found the problem quickly and felt very proud. But I didn't test my change properly, and when it went live, nobody on Android could log in for almost an hour. I wanted to disappear.\n\nMy team lead, Dilshod, called me into a meeting room. I was sure he was going to fire me. Instead, he asked me to explain exactly what had happened. Then he said something I have never forgotten: \"Everyone breaks something in their first month. The important thing is what you learn from it.\" Together, we wrote a checklist that I still use before every update.\n\nSince then, Dilshod has become my mentor. Every Friday, we spend thirty minutes looking at my code. He doesn't just tell me what is wrong; he asks questions until I find the answer myself. It's slower, but I remember the lessons much better.\n\nIf I could give one piece of advice to new developers, it would be this: don't be afraid to ask questions. In my first weeks, I wasted hours because I didn't want to look stupid. Now I know that a good team would rather answer ten questions than fix one big mistake.",
+    "category": "Work",
+    "theme": "first job in IT",
+    "tone": "lavender",
+    "is_hot": false,
+    "metadata": { "genre": "blog post", "writing_tone": "reflective", "word_count": 255 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "What is the writer's main purpose?",
+        "options": [
+          "To explain how to fix bugs on a login page",
+          "To complain about his team lead",
+          "To advertise his company's delivery app",
+          "To share what he learned in his first months at work"
+        ],
+        "answer_index": 3,
+        "explanation": "He describes his mistake, his mentor and finishes with \"one piece of advice to new developers\"."
+      },
+      {
+        "id": "q2",
+        "skill": "reading.detail",
+        "prompt": "What went wrong after his first update?",
+        "options": [
+          "The delivery app was deleted.",
+          "Android users couldn't log in for almost an hour.",
+          "He lost all his code.",
+          "The company lost a customer."
+        ],
+        "answer_index": 1,
+        "explanation": "\"Nobody on Android could log in for almost an hour.\""
+      },
+      {
+        "id": "q3",
+        "skill": "reading.inference",
+        "prompt": "How did the writer probably feel when Dilshod called him into the meeting room?",
+        "options": [
+          "Worried",
+          "Bored",
+          "Excited",
+          "Proud"
+        ],
+        "answer_index": 0,
+        "explanation": "\"I was sure he was going to fire me.\""
+      },
+      {
+        "id": "q4",
+        "skill": "reading.detail",
+        "prompt": "What does Dilshod do in their Friday sessions?",
+        "options": [
+          "He rewrites the writer's code for him.",
+          "He gives the writer a test.",
+          "He asks questions until the writer finds the answer.",
+          "He checks the delivery app with customers."
+        ],
+        "answer_index": 2,
+        "explanation": "\"He asks questions until I find the answer myself.\""
+      },
+      {
+        "id": "q5",
+        "skill": "reading.vocabulary",
+        "prompt": "In the text, a \"mentor\" is…",
+        "options": [
+          "a new customer",
+          "a computer program",
+          "a person who is learning to code",
+          "an experienced person who helps and advises someone"
+        ],
+        "answer_index": 3,
+        "explanation": "Dilshod \"has become my mentor\": he regularly helps the writer and looks at his code."
+      }
+    ]
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "c1-the-myth-of-the-natural-polyglot",
+    "title": "The Myth of the Natural Polyglot",
+    "level": "C1",
+    "summary": "An opinion piece arguing that people who speak many languages owe far more to habits and circumstances than to a mysterious gift.",
+    "content_markdown": "Every language classroom seems to have one: the student who appears to absorb new words effortlessly, who imitates accents on the first attempt and who, by the end of the term, is chatting confidently while everyone else is still struggling with the past tense. We tend to explain such people with a single word, *talent*, and the explanation is as convenient as it is unhelpful. Convenient, because it lets the rest of us off the hook. Unhelpful, because it hides almost everything that actually matters.\n\nI do not mean that people are identical. Some learners clearly have a better ear for sounds, or a memory that holds on to vocabulary more stubbornly. But when you look closely at those who end up speaking four or five languages well, the striking thing is rarely their raw ability. It is their circumstances and, above all, their habits.\n\n## The power of circumstances\n\nConsider a child who grows up in Tashkent hearing Uzbek at home, Russian from neighbours and English from video games and, later, from university. By the age of twenty, she may be comfortable in all three, and outsiders may call her gifted. Yet nobody would describe her as having *studied* three languages in the classroom sense. She simply had thousands of hours of meaningful contact with each of them, often without noticing. Talent did not create those hours; her environment did.\n\nAdults rarely have that luxury, which is precisely why their results vary so widely. Those who succeed usually find ways to recreate some of it: a job that requires the language, a partner or friends who speak it, a daily routine of listening and reading that becomes as automatic as making tea.\n\n## Habits beat inspiration\n\nThe second ingredient is consistency. In my experience, learners who reach a high level are not the ones who study with the most enthusiasm in January. They are the ones who are still doing something, however small, in October. They tolerate the long, unglamorous middle stage, when progress becomes almost invisible and motivation drains away. They also tolerate embarrassment, speaking before they feel ready and accepting that mistakes are the price of admission.\n\nNone of this sounds especially romantic, and perhaps that is why the myth of talent persists. It is more flattering to believe that the successful have been touched by something special than to accept that they turned up, again and again, when it was boring.\n\n## Why the myth matters\n\nThe danger of the talent story is that it becomes self-fulfilling. A learner who decides early that she is \"bad at languages\" gives up at the first difficulty, and her failure then seems to confirm the diagnosis. Teachers, too, may give less attention to students they consider ungifted.\n\nIf we replaced the question \"Is she talented?\" with \"What does she do every day?\", we would have a far more accurate picture, and a far more hopeful one. Talent may give some people a head start. Habits decide who finishes the race.",
+    "category": "Study",
+    "theme": "language learning",
+    "tone": "mint",
+    "is_hot": false,
+    "metadata": { "genre": "opinion", "writing_tone": "persuasive", "word_count": 501 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "Which statement best summarises the writer's opinion?",
+        "options": [
+          "Talent is the only real explanation for success with languages.",
+          "Circumstances and consistent habits matter far more than natural talent.",
+          "Adults cannot learn languages as well as children.",
+          "Language classrooms are the best place to become a polyglot."
+        ],
+        "answer_index": 1,
+        "explanation": "The writer says the striking thing \"is their circumstances and, above all, their habits\" and ends: \"Habits decide who finishes the race.\""
+      },
+      {
+        "id": "q2",
+        "skill": "reading.inference",
+        "prompt": "What does the writer mean by saying the talent explanation \"lets the rest of us off the hook\"?",
+        "options": [
+          "It frees less successful learners from responsibility for their own progress.",
+          "It helps teachers to plan better lessons.",
+          "It makes gifted students feel guilty.",
+          "It encourages everyone to study harder."
+        ],
+        "answer_index": 0,
+        "explanation": "If success is just \"talent\", others need not examine their own effort or habits; that is why the writer calls it \"convenient\"."
+      },
+      {
+        "id": "q3",
+        "skill": "reading.detail",
+        "prompt": "Why does the writer describe the girl from Tashkent?",
+        "options": [
+          "To prove that she is unusually gifted",
+          "To show that she learned three languages mainly through classroom study",
+          "To show that her environment gave her thousands of hours of contact with each language",
+          "To criticise schools in Tashkent"
+        ],
+        "answer_index": 2,
+        "explanation": "\"She simply had thousands of hours of meaningful contact with each of them... Talent did not create those hours; her environment did.\""
+      },
+      {
+        "id": "q4",
+        "skill": "reading.vocabulary",
+        "prompt": "\"Accepting that mistakes are the price of admission\" means accepting that mistakes are:",
+        "options": [
+          "Something learners should pay a teacher to correct",
+          "An unavoidable part of taking part and making progress",
+          "A sign that a learner should give up",
+          "Too expensive for most learners"
+        ],
+        "answer_index": 1,
+        "explanation": "The \"price of admission\" is what you must pay to enter; here, mistakes are what you must accept in order to speak and improve."
+      },
+      {
+        "id": "q5",
+        "skill": "reading.inference",
+        "prompt": "Why does the writer think the talent myth is harmful?",
+        "options": [
+          "It makes successful learners lazy.",
+          "It causes teachers to spend too much time on weaker students.",
+          "It can make learners give up early, which then seems to prove the myth right.",
+          "It makes language courses more expensive."
+        ],
+        "answer_index": 2,
+        "explanation": "\"A learner who decides early that she is 'bad at languages' gives up at the first difficulty, and her failure then seems to confirm the diagnosis.\""
+      }
+    ]
+  }
+}

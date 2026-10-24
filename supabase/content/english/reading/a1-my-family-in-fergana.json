@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "a1-my-family-in-fergana",
+    "title": "My Family in Fergana",
+    "level": "A1",
+    "summary": "Madina introduces her family and their house with a garden in Fergana.",
+    "content_markdown": "Hello! My name is Madina, and I am fifteen years old. I live in Fergana with my family. There are six people in my family: my mother, my father, my grandmother, my two brothers and me.\n\nMy father is a driver, and my mother is a teacher at a school near our house. My grandmother doesn't work. She cooks very good plov! My big brother, Sardor, is a student in Tashkent. He comes home every month. My little brother, Ali, is seven.\n\nOur house is not big, but it has a garden. There are apple trees and a grape vine in the garden. In summer, we sit outside and drink tea in the evening. I love my family and our home.",
+    "category": "Everyday",
+    "theme": "family",
+    "tone": "peach",
+    "is_hot": false,
+    "metadata": { "genre": "personal text", "writing_tone": "friendly", "word_count": 121 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "What is the text mainly about?",
+        "options": [
+          "Madina's school in Fergana",
+          "Madina's family and home",
+          "A trip to Tashkent",
+          "How to cook plov"
+        ],
+        "answer_index": 1,
+        "explanation": "Madina writes about the people in her family and says \"I love my family and our home.\""
+      },
+      {
+        "id": "q2",
+        "skill": "reading.detail",
+        "prompt": "What is Madina's mother's job?",
+        "options": [
+          "She is a driver.",
+          "She is a cook.",
+          "She is a student.",
+          "She is a teacher."
+        ],
+        "answer_index": 3,
+        "explanation": "\"My mother is a teacher at a school near our house.\""
+      },
+      {
+        "id": "q3",
+        "skill": "reading.detail",
+        "prompt": "Where does Sardor study?",
+        "options": [
+          "In Tashkent",
+          "In Fergana",
+          "At his mother's school",
+          "He doesn't study."
+        ],
+        "answer_index": 0,
+        "explanation": "\"My big brother, Sardor, is a student in Tashkent.\""
+      },
+      {
+        "id": "q4",
+        "skill": "reading.inference",
+        "prompt": "Why is Sardor not at home every day?",
+        "options": [
+          "He works in the garden.",
+          "He lives with his grandmother.",
+          "He studies in another city.",
+          "He is only seven."
+        ],
+        "answer_index": 2,
+        "explanation": "He is \"a student in Tashkent\" and \"comes home every month\", so he lives in another city."
+      },
+      {
+        "id": "q5",
+        "skill": "reading.vocabulary",
+        "prompt": "In the text, a \"grape vine\" is…",
+        "options": [
+          "a kind of tea",
+          "a plant in the garden",
+          "a room in the house",
+          "a kind of bread"
+        ],
+        "answer_index": 1,
+        "explanation": "\"There are apple trees and a grape vine in the garden.\" It grows in the garden with the trees."
+      }
+    ]
+  }
+}

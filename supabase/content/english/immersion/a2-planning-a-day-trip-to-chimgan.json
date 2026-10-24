@@ -1,0 +1,149 @@
+{
+  "item": {
+    "slug": "a2-planning-a-day-trip-to-chimgan",
+    "title": "Planning a day trip to Chimgan",
+    "level": "A2",
+    "context_text": "You and three friends from your English course want to go to the Chimgan mountains near Tashkent on Saturday. One friend, Tom, is a teacher from Canada. You are making the plan in a group chat.",
+    "objective_text": "Read the tour advert, understand your friend's voice message, and write the plan in the group chat.",
+    "mission_type": "social",
+    "target_grammar": "going to and will for plans and decisions (We're going to leave at 7. I'll bring water.)",
+    "cultural_note": "In the mountains the weather can change quickly, even in summer. Friends usually share food on a trip like this, so it is polite to say what you will bring.",
+    "target_vocabulary": [
+      "day trip",
+      "meeting point",
+      "cable car",
+      "warm jacket",
+      "snacks",
+      "come back"
+    ],
+    "success_conditions": [
+      "Find the price, the time and what is included",
+      "Understand what your friend can and can't do",
+      "Write the plan: time, place and what to bring"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the tour advert",
+      "instructions": "Your friend sends this advert to the group. Read it. Then answer the questions.",
+      "prompt_text": "MOUNTAIN DAY TRIP – EVERY SATURDAY\nLeave: 7:30 am from the car park near Buyuk Ipak Yoli metro station\nBack in Tashkent: about 7 pm\nPrice: 250,000 sum per person (bus and guide)\nThe cable car ticket is not in the price.\nBring: water, snacks, comfortable shoes and a warm jacket.",
+      "estimated_minutes": 3,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "Where does the bus leave from?",
+          "options": [
+            "The train station",
+            "A car park near a metro station",
+            "The city centre hotel"
+          ],
+          "answer_index": 1,
+          "explanation": "\"from the car park near Buyuk Ipak Yoli metro station\"."
+        },
+        {
+          "prompt": "What is not in the price?",
+          "options": [
+            "The bus",
+            "The guide",
+            "The cable car ticket"
+          ],
+          "answer_index": 2,
+          "explanation": "\"The cable car ticket is not in the price.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to Tom's voice message",
+      "instructions": "Tom sends a voice message to the group. Listen. Then answer the questions.",
+      "prompt_text": "Hey everyone, it's Tom. Saturday sounds great! But 7:30 is a bit early for me, because I don't live near that metro station. Can we meet at seven at the station, and walk to the car park together? Oh, and I'm going to bring a big bag of apples and some bread. Can someone bring tea? It's going to be cold at the top.",
+      "estimated_minutes": 3,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "us",
+      "questions": [
+        {
+          "prompt": "What does Tom want to do?",
+          "options": [
+            "Meet at seven at the metro station",
+            "Go on Sunday",
+            "Take a taxi to the mountains"
+          ],
+          "answer_index": 0,
+          "explanation": "\"Can we meet at seven at the station, and walk to the car park together?\""
+        },
+        {
+          "prompt": "What is Tom going to bring?",
+          "options": [
+            "Tea",
+            "Apples and bread",
+            "Warm jackets"
+          ],
+          "answer_index": 1,
+          "explanation": "\"I'm going to bring a big bag of apples and some bread.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Write the plan",
+      "instructions": "Write a message to the group. Agree a time and meeting place, say what you will bring, and remind everyone about one thing from the advert.",
+      "prompt_text": "Group chat: Saturday trip to the mountains",
+      "estimated_minutes": 5,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Write a clear plan for the trip.",
+      "points": [
+        {
+          "label": "give the time and meeting place",
+          "any": [
+            "seven",
+            "7",
+            "7:00",
+            "station",
+            "metro",
+            "meet"
+          ]
+        },
+        {
+          "label": "say what you will bring",
+          "any": [
+            "i'll bring",
+            "i will bring",
+            "i'm going to bring",
+            "bring",
+            "tea",
+            "thermos",
+            "water",
+            "snacks"
+          ]
+        },
+        {
+          "label": "remind about something from the advert",
+          "any": [
+            "jacket",
+            "warm",
+            "shoes",
+            "cable car",
+            "money",
+            "250",
+            "water",
+            "snacks"
+          ]
+        }
+      ],
+      "model_answer": "Hi all! OK, let's meet at 7:00 at Buyuk Ipak Yoli metro station, like Tom said. Then we'll walk to the car park together. I'll bring a big thermos of tea. Don't forget a warm jacket and comfortable shoes, and bring some money for the cable car!",
+      "min_words": null
+    }
+  ]
+}

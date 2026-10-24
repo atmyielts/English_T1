@@ -1,0 +1,233 @@
+{
+  "item": {
+    "slug": "c1-presenting-a-project-update-to-stakeholders",
+    "title": "Presenting a delayed project to stakeholders",
+    "level": "C1",
+    "context_text": "You manage the development of a new online appointment system for a group of private clinics. The launch was planned for the start of next month, but a data migration problem means it will be late. Tomorrow you present a project update to the clinic directors, who have already advertised the new system to patients.",
+    "objective_text": "Grasp the real cause and impact of the delay, understand the directors' priorities, prepare a written summary with options, and present the update with candour and control.",
+    "mission_type": "workplace",
+    "target_grammar": "hedging and signposting (It's likely that…, The main risk lies in…, That brings me to…, On balance, I'd recommend…)",
+    "cultural_note": "Senior stakeholders generally prefer bad news early, stated plainly, with options attached. Over-apologising or burying the delay in technical detail tends to reduce trust more than the delay itself.",
+    "target_vocabulary": [
+      "milestone",
+      "data migration",
+      "phased launch",
+      "contingency",
+      "trade-off",
+      "sign-off",
+      "go-live"
+    ],
+    "success_conditions": [
+      "Identify the cause, the scale of the delay and the options",
+      "Understand what matters most to the directors",
+      "Write a concise update with a recommendation",
+      "Present the delay calmly and handle a challenging question"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the technical lead's report",
+      "instructions": "Read the message from your technical lead. Then answer the questions.",
+      "prompt_text": "Quick summary before tomorrow. The new booking system itself is ready and passed testing. The problem is the patient records: about a fifth of the old records have inconsistent formats (duplicate patients, missing phone numbers), and the migration script keeps rejecting them. Fixing them properly means manual checks, which we estimate at four to five extra weeks. Two options I can see: (1) delay the whole launch until all records are clean, or (2) launch on time at the two clinics whose data is already clean, and bring the other three clinics in once their records are fixed. Option 2 is more work for support, but patients would see something on the promised date.",
+      "estimated_minutes": 5,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "What is the actual cause of the delay?",
+          "options": [
+            "The booking system failed testing",
+            "Part of the old patient data is inconsistent",
+            "The clinics changed their requirements"
+          ],
+          "answer_index": 1,
+          "explanation": "\"The new booking system itself is ready... The problem is the patient records.\""
+        },
+        {
+          "prompt": "What does option 2 involve?",
+          "options": [
+            "Launching everywhere with incomplete data",
+            "Launching at two clinics first and adding the others later",
+            "Cancelling the migration altogether"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Launch on time at the two clinics whose data is already clean, and bring the other three clinics in once their records are fixed.\""
+        },
+        {
+          "prompt": "What is the downside of option 2, according to the lead?",
+          "options": [
+            "It increases the workload for support",
+            "It costs more licences",
+            "Patients would see nothing on the promised date"
+          ],
+          "answer_index": 0,
+          "explanation": "\"Option 2 is more work for support.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to the operations director",
+      "instructions": "Before the meeting, the operations director calls you. Listen. Then answer the questions.",
+      "prompt_text": "Look, I'll be straight with you. A few weeks' delay isn't the end of the world. What I really can't have is a launch that goes wrong in front of patients: wrong names, double bookings, that kind of thing. That would do far more damage than a late date. The other thing is that my receptionists need at least a week's notice and some training before anything changes. Last time we rolled out software, they found out on the Monday morning, and it was chaos. So whatever you propose tomorrow, please build that in.",
+      "estimated_minutes": 4,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "gb",
+      "questions": [
+        {
+          "prompt": "What is the director's biggest concern?",
+          "options": [
+            "Any delay at all",
+            "Errors that patients would see",
+            "The cost of the project"
+          ],
+          "answer_index": 1,
+          "explanation": "\"What I really can't have is a launch that goes wrong in front of patients.\""
+        },
+        {
+          "prompt": "What does the director ask you to include in your proposal?",
+          "options": [
+            "Notice and training for receptionists",
+            "A discount for patients",
+            "A new technical lead"
+          ],
+          "answer_index": 0,
+          "explanation": "\"My receptionists need at least a week's notice and some training... please build that in.\""
+        },
+        {
+          "prompt": "What can you infer about the previous software roll-out?",
+          "options": [
+            "It was well planned",
+            "Staff were not prepared in advance",
+            "It was cancelled"
+          ],
+          "answer_index": 1,
+          "explanation": "\"They found out on the Monday morning, and it was chaos.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Write the update summary",
+      "instructions": "Write the short summary the directors will receive before the meeting. State the delay and its cause plainly, set out the options and their trade-offs, give your recommendation, and address the operations director's concerns.",
+      "prompt_text": "Project update: online appointment system",
+      "estimated_minutes": 10,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Write a concise, candid update with options and a recommendation.",
+      "points": [
+        {
+          "label": "state the delay and its cause",
+          "any": [
+            "delay*",
+            "patient records",
+            "data",
+            "migration",
+            "inconsistent",
+            "weeks",
+            "late"
+          ]
+        },
+        {
+          "label": "set out the options",
+          "any": [
+            "option*",
+            "alternatively",
+            "either",
+            "phased",
+            "two clinics",
+            "full launch",
+            "postpone"
+          ]
+        },
+        {
+          "label": "give a recommendation",
+          "any": [
+            "recommend*",
+            "on balance",
+            "propose",
+            "suggest",
+            "my advice",
+            "preferred"
+          ]
+        },
+        {
+          "label": "address patient safety and staff training",
+          "any": [
+            "training",
+            "receptionist*",
+            "notice",
+            "staff",
+            "patients",
+            "errors",
+            "double booking*"
+          ]
+        }
+      ],
+      "model_answer": "The booking system itself is complete and has passed testing; however, the go-live date is at risk. Roughly a fifth of the existing patient records contain inconsistencies, and cleaning them reliably will take an estimated four to five additional weeks.\nWe see two options. We could postpone the launch at all five clinics until every record is clean, which is the simplest approach but means missing the advertised date. Alternatively, we could launch on time at the two clinics whose data is already clean and add the remaining three in a second phase.\nOn balance, I recommend the phased launch, provided reception staff at the first two clinics receive training at least a week beforehand. No clinic would go live until its records had been checked, so patients would not see incorrect data.",
+      "min_words": 120
+    },
+    {
+      "title": "Handle the challenge in the meeting",
+      "instructions": "During your presentation, the finance director interrupts with a sharp question. Respond calmly: acknowledge the concern, explain what changed and why it was not visible earlier, and bring the discussion back to the options.",
+      "prompt_text": "Finance director: Hang on. We were told a month ago that everything was on track. Why are we only hearing about this now?",
+      "estimated_minutes": 4,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Acknowledge the concern honestly and refocus on the decision.",
+      "points": [
+        {
+          "label": "acknowledge the concern",
+          "any": [
+            "fair question",
+            "understand",
+            "you're right",
+            "i appreciate",
+            "valid",
+            "frustrat*",
+            "fair point"
+          ]
+        },
+        {
+          "label": "explain what changed",
+          "any": [
+            "migration",
+            "records",
+            "data",
+            "only became clear",
+            "discovered",
+            "found",
+            "testing",
+            "last week"
+          ]
+        },
+        {
+          "label": "refocus on the options",
+          "any": [
+            "option*",
+            "decision",
+            "recommend*",
+            "phased",
+            "way forward",
+            "what we need",
+            "today"
+          ]
+        }
+      ],
+      "model_answer": "That's a fair question, and I understand the frustration. A month ago the system itself was on track, and it still is. What we couldn't see then was the state of the old patient records; that only became clear when we ran the full migration last week. I'd rather flag it now than launch with errors. So what I'd like to do today is agree on one of the two options, and I'd recommend the phased launch.",
+      "min_words": null
+    }
+  ]
+}

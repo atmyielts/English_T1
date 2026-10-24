@@ -1,0 +1,186 @@
+{
+  "item": {
+    "slug": "b1-roommates-sharing-chores",
+    "title": "Sharing the Housework",
+    "level": "B1",
+    "summary": "Two flatmates studying abroad talk politely about a messy kitchen and agree on a cleaning rota.",
+    "transcript_text": "Malika: Sophie, have you got a minute? I wanted to talk about the flat.\nSophie: Sure. Is everything OK?\nMalika: Mostly, yes. It's just that the kitchen's been really messy lately, and I feel like I'm always the one cleaning it.\nSophie: Oh, sorry. I didn't realise. I've had so many deadlines this month.\nMalika: I know, me too. So I was thinking, maybe we could make a rota, you know, a list of who does what each week?\nSophie: That's a good idea. What jobs are we talking about?\nMalika: Washing up, taking out the rubbish, cleaning the bathroom and vacuuming.\nSophie: OK. Honestly, I hate cleaning the bathroom. Could I do the washing up every day instead?\nMalika: Every day? That's quite a lot.\nSophie: It's fine, really. I cook most evenings anyway, so it makes sense for me to wash up.\nMalika: All right, then I'll do the bathroom, and we can take turns with the rubbish and the vacuuming, one week each.\nSophie: Deal. Shall we put the rota on the fridge so we don't forget?\nMalika: Perfect. I'll make it tonight.",
+    "category": "Daily Life",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 140,
+    "duration_seconds": 74,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "flatmates",
+      "housework",
+      "study abroad",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Malika",
+        "Sophie"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "Why does Malika want to talk to Sophie?",
+        "options": [
+          "Sophie is too noisy at night.",
+          "She feels she always cleans the messy kitchen.",
+          "She wants to move out.",
+          "The rent is going up."
+        ],
+        "answer_index": 1,
+        "explanation": "\"The kitchen's been really messy lately, and I feel like I'm always the one cleaning it.\""
+      },
+      {
+        "prompt": "How does Sophie react at first?",
+        "options": [
+          "She gets angry.",
+          "She says it isn't her fault.",
+          "She apologises and explains she has been busy.",
+          "She ignores the problem."
+        ],
+        "answer_index": 2,
+        "explanation": "\"Oh, sorry. I didn't realise. I've had so many deadlines this month.\""
+      },
+      {
+        "prompt": "Why does Sophie offer to wash up every day?",
+        "options": [
+          "She cooks most evenings anyway.",
+          "She likes washing up.",
+          "Malika asks her to.",
+          "She has a dishwasher."
+        ],
+        "answer_index": 0,
+        "explanation": "\"I cook most evenings anyway, so it makes sense.\" She also says she hates cleaning the bathroom."
+      },
+      {
+        "prompt": "What do they decide about the rubbish and the vacuuming?",
+        "options": [
+          "Malika will do both.",
+          "Sophie will do both.",
+          "They will pay a cleaner.",
+          "They will take turns, one week each."
+        ],
+        "answer_index": 3,
+        "explanation": "\"We can take turns with the rubbish and the vacuuming, one week each.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Sophie, have you got a minute?",
+      "focus_phrase": "have you got a minute",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I wanted to talk about the flat.",
+      "focus_phrase": "talk about the flat",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Sure. Is everything OK?",
+      "focus_phrase": "Is everything OK",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Mostly, yes.",
+      "focus_phrase": "Mostly, yes",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "It's just that the kitchen's been really messy lately, and I feel like I'm always the one cleaning it.",
+      "focus_phrase": "always the one",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Oh, sorry. I didn't realise.",
+      "focus_phrase": "I didn't realise",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I've had so many deadlines this month.",
+      "focus_phrase": "so many deadlines",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I know, me too.",
+      "focus_phrase": "me too",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "So I was thinking, maybe we could make a rota, you know, a list of who does what each week?",
+      "focus_phrase": "who does what",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "That's a good idea. What jobs are we talking about?",
+      "focus_phrase": "a good idea",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Washing up, taking out the rubbish, cleaning the bathroom and vacuuming.",
+      "focus_phrase": "taking out the rubbish",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "OK. Honestly, I hate cleaning the bathroom.",
+      "focus_phrase": "I hate cleaning",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Could I do the washing up every day instead?",
+      "focus_phrase": "the washing up",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Every day? That's quite a lot.",
+      "focus_phrase": "quite a lot",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "It's fine, really. I cook most evenings anyway, so it makes sense for me to wash up.",
+      "focus_phrase": "it makes sense",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "All right, then I'll do the bathroom, and we can take turns with the rubbish and the vacuuming, one week each.",
+      "focus_phrase": "take turns",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Deal. Shall we put the rota on the fridge so we don't forget?",
+      "focus_phrase": "on the fridge",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Perfect. I'll make it tonight.",
+      "focus_phrase": "I'll make it tonight",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

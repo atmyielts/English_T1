@@ -1,0 +1,167 @@
+{
+  "item": {
+    "slug": "a2-joining-a-gym",
+    "title": "Joining a Gym",
+    "level": "A2",
+    "summary": "Nilufar compares two gym memberships, asks about classes and chooses the one that fits her working hours.",
+    "transcript_text": "Timur: Hi there, welcome to City Fit. Are you interested in joining?\nNilufar: Yes, I am. Can you tell me about the memberships?\nTimur: Sure. We have two options. The basic one is two hundred thousand som a month, and you can come from seven in the morning until four in the afternoon.\nNilufar: Hmm, I work until five, so that's no good for me.\nTimur: Then the full membership is better. It's three hundred thousand a month, and you can come any time from six in the morning to eleven at night. It also includes group classes.\nNilufar: What kind of classes do you have?\nTimur: Yoga on Monday and Wednesday evenings, and a dance class on Saturday mornings.\nNilufar: Oh, I'd love to try yoga. Do I need to bring anything?\nTimur: Just comfortable clothes and a towel. We have mats here.\nNilufar: Great. I'll take the full membership, please.",
+    "category": "Health",
+    "accent": "general",
+    "speed_label": "slow",
+    "speed_wpm": 125,
+    "duration_seconds": 68,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "sport",
+      "gym",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Timur",
+        "Nilufar"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "Why is the basic membership no good for Nilufar?",
+        "options": [
+          "It's too expensive.",
+          "She works until five.",
+          "It has no classes on Saturday.",
+          "It's only for students."
+        ],
+        "answer_index": 1,
+        "explanation": "\"The basic one ... until four in the afternoon.\" Nilufar: \"I work until five, so that's no good for me.\""
+      },
+      {
+        "prompt": "How much is the full membership?",
+        "options": [
+          "200,000 som a month",
+          "250,000 som a month",
+          "300,000 som a month",
+          "300,000 som a year"
+        ],
+        "answer_index": 2,
+        "explanation": "\"It's three hundred thousand a month.\""
+      },
+      {
+        "prompt": "When are the yoga classes?",
+        "options": [
+          "Monday and Wednesday evenings",
+          "Saturday mornings",
+          "Every morning at six",
+          "Tuesday and Thursday evenings"
+        ],
+        "answer_index": 0,
+        "explanation": "\"Yoga on Monday and Wednesday evenings, and a dance class on Saturday mornings.\""
+      },
+      {
+        "prompt": "What does she need to bring?",
+        "options": [
+          "A yoga mat",
+          "A photo and her passport",
+          "Nothing at all",
+          "Comfortable clothes and a towel"
+        ],
+        "answer_index": 3,
+        "explanation": "\"Just comfortable clothes and a towel. We have mats here.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Hi there, welcome to City Fit.",
+      "focus_phrase": "welcome to City Fit",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Are you interested in joining?",
+      "focus_phrase": "interested in joining",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Yes, I am. Can you tell me about the memberships?",
+      "focus_phrase": "the memberships",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Sure. We have two options.",
+      "focus_phrase": "two options",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The basic one is two hundred thousand som a month, and you can come from seven in the morning until four in the afternoon.",
+      "focus_phrase": "until four in the afternoon",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Hmm, I work until five, so that's no good for me.",
+      "focus_phrase": "I work until five",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Then the full membership is better.",
+      "focus_phrase": "the full membership",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "It's three hundred thousand a month, and you can come any time from six in the morning to eleven at night.",
+      "focus_phrase": "any time",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "It also includes group classes.",
+      "focus_phrase": "group classes",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "What kind of classes do you have?",
+      "focus_phrase": "What kind of classes",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Yoga on Monday and Wednesday evenings, and a dance class on Saturday mornings.",
+      "focus_phrase": "Saturday mornings",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Oh, I'd love to try yoga.",
+      "focus_phrase": "try yoga",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Do I need to bring anything?",
+      "focus_phrase": "bring anything",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Just comfortable clothes and a towel. We have mats here.",
+      "focus_phrase": "comfortable clothes",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Great. I'll take the full membership, please.",
+      "focus_phrase": "I'll take",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

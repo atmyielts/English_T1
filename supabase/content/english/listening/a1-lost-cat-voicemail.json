@@ -1,0 +1,126 @@
+{
+  "item": {
+    "slug": "a1-lost-cat-voicemail",
+    "title": "Have You Seen My Cat?",
+    "level": "A1",
+    "summary": "A neighbour leaves a voicemail about her lost cat: what the cat looks like and what to do if you see her.",
+    "transcript_text": "Hi, this is Dilya from flat twelve. Sorry to call so late. My cat is lost. Her name is Mosh, and she's small and grey with white feet. She has a red collar. She went out this morning, and she isn't home now. Can you look in your garden and near the garages, please? If you see her, please call me back or knock on my door. Thank you so much. Bye!",
+    "category": "Community",
+    "accent": "general",
+    "speed_label": "slow",
+    "speed_wpm": 110,
+    "duration_seconds": 39,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "voicemail",
+      "neighbours",
+      "animals"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "voicemail"
+    },
+    "questions": [
+      {
+        "prompt": "Where does Dilya live?",
+        "options": [
+          "In flat two",
+          "In flat twelve",
+          "In flat twenty",
+          "In a house"
+        ],
+        "answer_index": 1,
+        "explanation": "\"Hi, this is Dilya from flat twelve.\""
+      },
+      {
+        "prompt": "What does the cat look like?",
+        "options": [
+          "Big and black",
+          "Small and white",
+          "Small and grey with white feet"
+        ],
+        "answer_index": 2,
+        "explanation": "\"She's small and grey with white feet.\""
+      },
+      {
+        "prompt": "What colour is the cat's collar?",
+        "options": [
+          "Red",
+          "Blue",
+          "Green",
+          "Yellow"
+        ],
+        "answer_index": 0,
+        "explanation": "\"She has a red collar.\""
+      },
+      {
+        "prompt": "What does Dilya want you to do if you see the cat?",
+        "options": [
+          "Take it to a vet",
+          "Give it some food",
+          "Send a photo",
+          "Call her back or knock on her door"
+        ],
+        "answer_index": 3,
+        "explanation": "\"If you see her, please call me back or knock on my door.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Hi, this is Dilya from flat twelve.",
+      "focus_phrase": "flat twelve",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Sorry to call so late.",
+      "focus_phrase": "so late",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "My cat is lost.",
+      "focus_phrase": "My cat is lost",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Her name is Mosh, and she's small and grey with white feet.",
+      "focus_phrase": "white feet",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "She has a red collar.",
+      "focus_phrase": "a red collar",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "She went out this morning, and she isn't home now.",
+      "focus_phrase": "this morning",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Can you look in your garden and near the garages, please?",
+      "focus_phrase": "near the garages",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "If you see her, please call me back or knock on my door.",
+      "focus_phrase": "call me back",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Thank you so much. Bye!",
+      "focus_phrase": "Thank you so much",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "a2-places-and-directions",
+    "title": "Places and directions",
+    "level": "A2",
+    "topic": "directions",
+    "description": "Words for asking the way and explaining where a place is."
+  },
+  "children": [
+    {
+      "word": "turn left",
+      "part_of_speech": "phrase",
+      "definition": "to change direction and go to the left",
+      "example": "Turn left at the bank and walk for two minutes.",
+      "translation_ru": "повернуть налево",
+      "translation_uz": "chapga burilmoq"
+    },
+    {
+      "word": "go straight on",
+      "part_of_speech": "phrase",
+      "definition": "to continue in the same direction without turning",
+      "example": "Go straight on until you see the metro station.",
+      "translation_ru": "идти прямо",
+      "translation_uz": "toʻgʻriga yurmoq"
+    },
+    {
+      "word": "corner",
+      "part_of_speech": "noun",
+      "definition": "the place where two streets meet",
+      "example": "The pharmacy is on the corner of the street.",
+      "translation_ru": "угол",
+      "translation_uz": "burchak, muyulish"
+    },
+    {
+      "word": "opposite",
+      "part_of_speech": "preposition",
+      "definition": "on the other side of a street or room, facing something",
+      "example": "The café is opposite the cinema.",
+      "translation_ru": "напротив",
+      "translation_uz": "qarshisida"
+    },
+    {
+      "word": "between",
+      "part_of_speech": "preposition",
+      "definition": "in the space with one thing on each side",
+      "example": "The bank is between the bakery and the post office.",
+      "translation_ru": "между",
+      "translation_uz": "oʻrtasida, orasida"
+    },
+    {
+      "word": "behind",
+      "part_of_speech": "preposition",
+      "definition": "at the back of something",
+      "example": "There's a small car park behind the hotel.",
+      "translation_ru": "за, позади",
+      "translation_uz": "orqasida"
+    },
+    {
+      "word": "crossroads",
+      "part_of_speech": "noun",
+      "definition": "a place where two roads cross each other",
+      "example": "At the crossroads, turn right.",
+      "translation_ru": "перекрёсток",
+      "translation_uz": "chorraha"
+    },
+    {
+      "word": "traffic lights",
+      "part_of_speech": "noun",
+      "definition": "red, yellow and green lights that tell cars when to stop and go",
+      "example": "Cross the road at the traffic lights.",
+      "translation_ru": "светофор",
+      "translation_uz": "svetofor"
+    },
+    {
+      "word": "along",
+      "part_of_speech": "preposition",
+      "definition": "from one part of a road or river towards the other end",
+      "example": "Walk along this street for about five hundred metres.",
+      "translation_ru": "вдоль, по",
+      "translation_uz": "boʻylab"
+    },
+    {
+      "word": "far",
+      "part_of_speech": "adjective",
+      "definition": "a long distance away",
+      "example": "Is the railway station far from here?",
+      "translation_ru": "далеко, далёкий",
+      "translation_uz": "uzoq"
+    },
+    {
+      "word": "get lost",
+      "part_of_speech": "phrase",
+      "definition": "to not know where you are or how to find the right way",
+      "example": "I got lost in the old city of Bukhara, but a kind man helped me.",
+      "translation_ru": "заблудиться",
+      "translation_uz": "adashib qolmoq"
+    },
+    {
+      "word": "entrance",
+      "part_of_speech": "noun",
+      "definition": "the door or gate where you go into a building or place",
+      "example": "Meet me at the main entrance of the park.",
+      "translation_ru": "вход",
+      "translation_uz": "kirish joyi"
+    }
+  ]
+}

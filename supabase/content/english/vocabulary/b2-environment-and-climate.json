@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "b2-environment-and-climate",
+    "title": "Environment and climate",
+    "level": "B2",
+    "topic": "environment",
+    "description": "Words for talking about climate change, pollution and protecting nature."
+  },
+  "children": [
+    {
+      "word": "emissions",
+      "part_of_speech": "noun",
+      "definition": "gases that are sent into the air, for example from cars and factories",
+      "example": "Electric buses can help cut emissions in the city centre.",
+      "translation_ru": "выбросы",
+      "translation_uz": "chiqindi gazlar, chiqindilar"
+    },
+    {
+      "word": "water scarcity",
+      "part_of_speech": "noun",
+      "definition": "a situation where there is not enough clean water for people's needs",
+      "example": "Water scarcity is a serious concern for farmers in dry regions.",
+      "translation_ru": "нехватка воды",
+      "translation_uz": "suv tanqisligi"
+    },
+    {
+      "word": "renewable",
+      "part_of_speech": "adjective",
+      "definition": "(of energy) coming from sources that do not run out, like the sun or wind",
+      "example": "The country plans to produce more renewable energy from solar farms.",
+      "translation_ru": "возобновляемый",
+      "translation_uz": "qayta tiklanadigan"
+    },
+    {
+      "word": "fossil fuels",
+      "part_of_speech": "noun",
+      "definition": "coal, oil and gas, which were formed in the ground over millions of years",
+      "example": "Burning fossil fuels is the main cause of rising carbon dioxide levels.",
+      "translation_ru": "ископаемое топливо",
+      "translation_uz": "qazilma yoqilgʻi"
+    },
+    {
+      "word": "carbon footprint",
+      "part_of_speech": "noun",
+      "definition": "the amount of harmful gas your activities produce",
+      "example": "Taking the train instead of flying reduces your carbon footprint.",
+      "translation_ru": "углеродный след",
+      "translation_uz": "uglerod izi"
+    },
+    {
+      "word": "endangered",
+      "part_of_speech": "adjective",
+      "definition": "(of an animal or plant) at risk of disappearing completely",
+      "example": "Some endangered animals now live only in a few protected areas.",
+      "translation_ru": "находящийся под угрозой исчезновения",
+      "translation_uz": "yoʻqolib ketish xavfi ostidagi"
+    },
+    {
+      "word": "conservation",
+      "part_of_speech": "noun",
+      "definition": "the protection of nature, animals and natural resources",
+      "example": "She works for a water conservation project in Karakalpakstan.",
+      "translation_ru": "охрана природы, сбережение",
+      "translation_uz": "tabiatni muhofaza qilish"
+    },
+    {
+      "word": "biodiversity",
+      "part_of_speech": "noun",
+      "definition": "the variety of plants and animals living in a particular area",
+      "example": "Wetlands support a rich biodiversity of birds and fish.",
+      "translation_ru": "биоразнообразие",
+      "translation_uz": "biologik xilma-xillik"
+    },
+    {
+      "word": "deforestation",
+      "part_of_speech": "noun",
+      "definition": "the cutting down of trees over a large area",
+      "example": "Deforestation makes floods and landslides more likely.",
+      "translation_ru": "вырубка лесов",
+      "translation_uz": "oʻrmonlarni kesish"
+    },
+    {
+      "word": "sustainable",
+      "part_of_speech": "adjective",
+      "definition": "able to continue for a long time without damaging the environment",
+      "example": "Drip irrigation is a more sustainable way to water cotton fields.",
+      "translation_ru": "устойчивый, экологичный",
+      "translation_uz": "barqaror, ekologik toza"
+    },
+    {
+      "word": "heatwave",
+      "part_of_speech": "noun",
+      "definition": "a period of unusually hot weather",
+      "example": "During the heatwave, it was over 40 degrees for a whole week.",
+      "translation_ru": "сильная жара, волна жары",
+      "translation_uz": "jazirama, issiq toʻlqini"
+    },
+    {
+      "word": "landfill",
+      "part_of_speech": "noun",
+      "definition": "a large area where rubbish is buried under the ground",
+      "example": "Most of the city's rubbish still ends up in landfill.",
+      "translation_ru": "свалка, полигон отходов",
+      "translation_uz": "chiqindi poligoni"
+    }
+  ]
+}

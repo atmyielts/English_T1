@@ -1,0 +1,167 @@
+{
+  "item": {
+    "slug": "a1-meeting-your-new-roommate",
+    "title": "Meeting your new roommate",
+    "level": "A1",
+    "context_text": "You are a new student at a university in Malaysia. Today you move into your room in the student dormitory. Your roommate is from another country.",
+    "objective_text": "Read the dorm rules, understand your roommate, and introduce yourself.",
+    "mission_type": "social",
+    "target_grammar": "present simple for facts about you (I'm from…, I study…, I get up at…)",
+    "cultural_note": "Roommates often talk about small rules on the first day: quiet times, cleaning and guests. A friendly question like \"Is that OK with you?\" helps you start well.",
+    "target_vocabulary": [
+      "roommate",
+      "dormitory",
+      "quiet",
+      "guests",
+      "kitchen",
+      "clean"
+    ],
+    "success_conditions": [
+      "Understand the main dorm rules",
+      "Learn three facts about your roommate",
+      "Say your name, where you are from and what you study"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the dorm rules",
+      "instructions": "This paper is on the door of your room. Read it. Then answer the questions.",
+      "prompt_text": "WELCOME TO BLOCK C\n- Quiet time is from 11 pm to 7 am.\n- Guests can visit from 10 am to 9 pm.\n- The kitchen is on the first floor. Please clean it after you cook.\n- The laundry room is open every day.",
+      "estimated_minutes": 2,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "When does quiet time start?",
+          "options": [
+            "At 9 pm",
+            "At 10 pm",
+            "At 11 pm"
+          ],
+          "answer_index": 2,
+          "explanation": "\"Quiet time is from 11 pm to 7 am.\""
+        },
+        {
+          "prompt": "Where is the kitchen?",
+          "options": [
+            "On the first floor",
+            "In every room",
+            "Next to the laundry room"
+          ],
+          "answer_index": 0,
+          "explanation": "\"The kitchen is on the first floor.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to your roommate",
+      "instructions": "Your roommate comes in. Listen. Then answer the questions. You can listen again.",
+      "prompt_text": "Oh, hi! You're my new roommate! I'm Lina. I'm from Indonesia, from a city called Bandung. I study computer science, it's my second year here. I get up very early, at six, because I go to the gym. Sorry! I'm very quiet in the morning, I promise. Do you want to have dinner in the kitchen later?",
+      "estimated_minutes": 2,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "us",
+      "questions": [
+        {
+          "prompt": "Where is Lina from?",
+          "options": [
+            "Malaysia",
+            "Indonesia",
+            "Thailand"
+          ],
+          "answer_index": 1,
+          "explanation": "\"I'm from Indonesia, from a city called Bandung.\""
+        },
+        {
+          "prompt": "What does she study?",
+          "options": [
+            "Computer science",
+            "Medicine",
+            "Business"
+          ],
+          "answer_index": 0,
+          "explanation": "\"I study computer science.\""
+        },
+        {
+          "prompt": "Why does she get up early?",
+          "options": [
+            "She has early classes",
+            "She works in a café",
+            "She goes to the gym"
+          ],
+          "answer_index": 2,
+          "explanation": "\"I get up very early, at six, because I go to the gym.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Introduce yourself",
+      "instructions": "Answer Lina. Say your name, where you are from and what you study. Then answer her question about dinner.",
+      "prompt_text": "Lina: So, tell me about you!",
+      "estimated_minutes": 2,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Introduce yourself and answer the dinner question.",
+      "points": [
+        {
+          "label": "say your name",
+          "any": [
+            "my name is",
+            "my name's",
+            "i'm",
+            "i am",
+            "call me"
+          ]
+        },
+        {
+          "label": "say where you are from",
+          "any": [
+            "from",
+            "uzbekistan",
+            "tashkent",
+            "samarkand",
+            "bukhara",
+            "live in"
+          ]
+        },
+        {
+          "label": "say what you study",
+          "any": [
+            "study",
+            "studying",
+            "student",
+            "major",
+            "course",
+            "year"
+          ]
+        },
+        {
+          "label": "answer about dinner",
+          "any": [
+            "dinner",
+            "yes",
+            "sure",
+            "great",
+            "sorry",
+            "later",
+            "ok",
+            "okay"
+          ]
+        }
+      ],
+      "model_answer": "Hi, Lina! Nice to meet you. My name is Aziz. I'm from Uzbekistan, from Tashkent. I study economics, it's my first year. Yes, dinner is a great idea!",
+      "min_words": null
+    }
+  ]
+}

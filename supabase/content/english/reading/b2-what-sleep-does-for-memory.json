@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "b2-what-sleep-does-for-memory",
+    "title": "What Sleep Does for Your Memory",
+    "level": "B2",
+    "summary": "An explainer on how sleep helps the brain keep what we learn, and why staying up all night before an exam often backfires.",
+    "content_markdown": "It is two in the morning before an important exam, and Madina is still at her desk, surrounded by notes and empty cups of tea. Like many students, she believes that every extra hour of revision will earn her extra marks. Sleep, in her view, is time she simply cannot afford. Scientists who study memory would probably tell her that she has it the wrong way round.\n\n## Learning happens twice\n\nWhen we learn something new, the brain forms a memory that is still fragile. Over the following hours, that memory has to be stabilised, a process researchers call consolidation. A large body of research suggests that much of this work takes place while we sleep. In other words, learning seems to happen twice: once when we read or practise, and again at night, when the brain quietly sorts and strengthens what it has taken in.\n\nDuring deep sleep, the brain appears to replay recent experiences, helping to move important information into longer-term storage. Other stages of sleep are thought to help us connect new knowledge with what we already know, which may be why a problem that seemed impossible in the evening sometimes looks simpler in the morning.\n\n## The cost of an all-nighter\n\nIf sleep helps to fix memories, then skipping it has a price. After a night without sleep, most people find it harder to concentrate, slower to react and more likely to make careless mistakes. The material Madina studies at two in the morning may never be properly stored, and the tiredness she carries into the exam room can make it harder to recall even the things she learned weeks ago.\n\nThis does not mean that sleep can replace studying. A brain cannot consolidate information that was never learned in the first place. The point is that the two work together.\n\n## Practical lessons\n\nWhat can learners do with this knowledge? First, it is usually more effective to spread revision over several days, so that each night of sleep has something to work on. Second, a short review of key points before bed may help, as long as it does not turn into a stressful late-night session. Finally, a regular sleep routine, going to bed and getting up at roughly the same time, makes good-quality sleep more likely.\n\nNone of this is a magic formula, and scientists are still debating many of the details. But the general message is clear enough: if you want to remember what you learn, the hours you spend asleep may be among the most productive of your day.",
+    "category": "Health",
+    "theme": "sleep and learning",
+    "tone": "lavender",
+    "is_hot": false,
+    "metadata": { "genre": "explainer", "writing_tone": "informative", "word_count": 427 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "What is the main idea of the article?",
+        "options": [
+          "Students should study only in the morning.",
+          "Sleep plays an important role in helping us remember what we learn.",
+          "Drinking tea at night improves concentration.",
+          "Scientists have proved that sleep can replace studying."
+        ],
+        "answer_index": 1,
+        "explanation": "The article explains consolidation during sleep and ends: \"if you want to remember what you learn, the hours you spend asleep may be among the most productive of your day.\""
+      },
+      {
+        "id": "q2",
+        "skill": "reading.vocabulary",
+        "prompt": "What does \"consolidation\" refer to in the article?",
+        "options": [
+          "Making a new memory stable and stronger",
+          "Forgetting unimportant information",
+          "Reading the same notes many times",
+          "Falling asleep very quickly"
+        ],
+        "answer_index": 0,
+        "explanation": "A fragile memory \"has to be stabilised, a process researchers call consolidation\"."
+      },
+      {
+        "id": "q3",
+        "skill": "reading.detail",
+        "prompt": "According to the article, what may some stages of sleep help us do?",
+        "options": [
+          "Learn completely new languages",
+          "Wake up earlier",
+          "Connect new knowledge with what we already know",
+          "Study without feeling tired"
+        ],
+        "answer_index": 2,
+        "explanation": "\"Other stages of sleep are thought to help us connect new knowledge with what we already know.\""
+      },
+      {
+        "id": "q4",
+        "skill": "reading.inference",
+        "prompt": "Why does the writer say that sleep cannot replace studying?",
+        "options": [
+          "Because sleep has no effect on memory",
+          "Because exams test only what you learn the night before",
+          "Because scientists disagree about sleep",
+          "Because the brain can only strengthen information that was learned first"
+        ],
+        "answer_index": 3,
+        "explanation": "\"A brain cannot consolidate information that was never learned in the first place.\""
+      },
+      {
+        "id": "q5",
+        "skill": "reading.inference",
+        "prompt": "How does the writer present the scientific evidence?",
+        "options": [
+          "As complete and certain in every detail",
+          "As strong in general, but with details still being debated",
+          "As too weak to be useful for students",
+          "As based on a single famous experiment"
+        ],
+        "answer_index": 1,
+        "explanation": "The writer uses \"suggests\", \"appears\" and \"is thought to\", and says \"scientists are still debating many of the details\" while \"the general message is clear enough\"."
+      }
+    ]
+  }
+}

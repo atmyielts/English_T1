@@ -1,0 +1,160 @@
+{
+  "item": {
+    "slug": "a1-at-the-pharmacy-abroad",
+    "title": "At a pharmacy abroad",
+    "level": "A1",
+    "context_text": "You are on holiday in Dublin. You have a cold: your throat hurts and your nose is running. You go into a small pharmacy near your hotel.",
+    "objective_text": "Read the sign, understand the pharmacist, and ask for something for your cold.",
+    "mission_type": "travel",
+    "target_grammar": "I have a… / Do you have something for…?",
+    "cultural_note": "In many countries the person in a pharmacy can give advice about small problems like a cold. It is normal to say what is wrong and ask, \"What do you recommend?\"",
+    "target_vocabulary": [
+      "pharmacy",
+      "cold",
+      "sore throat",
+      "tablets",
+      "cough syrup",
+      "twice a day"
+    ],
+    "success_conditions": [
+      "Find the opening times and the pharmacist's desk",
+      "Understand how often to take the medicine",
+      "Say what is wrong and ask for help politely"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the pharmacy sign",
+      "instructions": "Read the sign in the window. Then answer the questions.",
+      "prompt_text": "CITY PHARMACY\nOpen: Monday to Saturday, 9 am to 7 pm\nSunday: closed\nQuestions about medicine? Please ask at the pharmacist's desk at the back of the shop.\nWe also sell water, tissues and snacks.",
+      "estimated_minutes": 2,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "When is the pharmacy closed?",
+          "options": [
+            "On Saturday",
+            "On Sunday",
+            "On Monday"
+          ],
+          "answer_index": 1,
+          "explanation": "The sign says \"Sunday: closed\"."
+        },
+        {
+          "prompt": "Where can you ask about medicine?",
+          "options": [
+            "At the door",
+            "At the snack shelf",
+            "At the desk at the back"
+          ],
+          "answer_index": 2,
+          "explanation": "\"Please ask at the pharmacist's desk at the back of the shop.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to the pharmacist",
+      "instructions": "The pharmacist gives you some tablets. Listen. Then answer the questions. You can listen again.",
+      "prompt_text": "OK, so these tablets are for your sore throat. Take one tablet twice a day, in the morning and in the evening. Take them after food, not before. And drink a lot of water and hot tea. If you feel worse in three days, please see a doctor. That's five euros, please.",
+      "estimated_minutes": 2,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "gb",
+      "questions": [
+        {
+          "prompt": "How often do you take the tablets?",
+          "options": [
+            "Once a day",
+            "Twice a day",
+            "Three times a day"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Take one tablet twice a day, in the morning and in the evening.\""
+        },
+        {
+          "prompt": "When do you take them?",
+          "options": [
+            "After food",
+            "Before food",
+            "At night only"
+          ],
+          "answer_index": 0,
+          "explanation": "\"Take them after food, not before.\""
+        },
+        {
+          "prompt": "How much are the tablets?",
+          "options": [
+            "Three euros",
+            "Five euros",
+            "Nine euros"
+          ],
+          "answer_index": 1,
+          "explanation": "\"That's five euros, please.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Ask for help",
+      "instructions": "Speak to the pharmacist. Say what is wrong (two problems) and ask for something for your cold.",
+      "prompt_text": "Pharmacist: Hello! How can I help you?",
+      "estimated_minutes": 2,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Say what is wrong and ask for medicine politely.",
+      "points": [
+        {
+          "label": "say what is wrong",
+          "any": [
+            "cold",
+            "sore throat",
+            "throat",
+            "nose",
+            "cough",
+            "headache",
+            "hurts",
+            "sick"
+          ]
+        },
+        {
+          "label": "ask for something",
+          "any": [
+            "do you have",
+            "can i have",
+            "something for",
+            "i need",
+            "i'd like",
+            "i would like",
+            "medicine",
+            "tablets",
+            "recommend"
+          ]
+        },
+        {
+          "label": "be polite",
+          "any": [
+            "please",
+            "thank you",
+            "thanks",
+            "excuse me",
+            "hello",
+            "hi"
+          ]
+        }
+      ],
+      "model_answer": "Hello. I have a cold. My throat hurts and my nose is running. Do you have something for a sore throat, please?",
+      "min_words": null
+    }
+  ]
+}

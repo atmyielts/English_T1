@@ -1,0 +1,246 @@
+{
+  "item": {
+    "slug": "c2-moderating-a-panel-discussion",
+    "title": "Moderating a panel discussion",
+    "level": "C2",
+    "context_text": "You are moderating a sixty-minute panel at a regional education technology conference, titled \"Will AI tutors widen or narrow the learning gap?\". The panel has three speakers: a school headteacher, a start-up founder and a university researcher. At rehearsal, one panellist spoke for twice his allotted time, and the organisers have asked you to keep things balanced and on schedule.",
+    "objective_text": "Absorb the brief and the panellists' positions, understand the organisers' concerns, draft your opening framing, and steer the live discussion when one speaker dominates.",
+    "mission_type": "workplace",
+    "target_grammar": "diplomatic interruption and redirection (If I could just bring in…, I'm conscious of time, so…, Let me press you on that…, Before we move on…)",
+    "cultural_note": "A good moderator protects the audience's time, not the speakers' egos. Interrupting is expected and accepted when it is done briefly, with a reason and a handover; what audiences resent is a moderator who lets one voice take over.",
+    "target_vocabulary": [
+      "moderator",
+      "run of show",
+      "allotted time",
+      "dominate",
+      "bring in",
+      "press on",
+      "wrap up"
+    ],
+    "success_conditions": [
+      "Understand the format, timings and each speaker's stance",
+      "Grasp the organisers' concerns and the agreed signals",
+      "Write an opening that frames the question and sets the rules",
+      "Interrupt a dominating speaker gracefully and redistribute the floor"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the run of show",
+      "instructions": "Read the organisers' brief. Then answer the questions.",
+      "prompt_text": "RUN OF SHOW – Panel 3, Main Hall\n00:00 Moderator opening (max. 3 min): frame the question, introduce speakers by name and role only; full bios are in the app.\n00:03 Opening statements: 3 min each, strict. Order: researcher, headteacher, founder.\n00:12 Moderated discussion (30 min).\n00:42 Audience Q&A via the app (15 min). Prioritise questions from teachers.\n00:57 One-sentence closing from each speaker.\nNotes: Dr Haydarova cautions that most evidence so far comes from well-resourced schools. Mr Laine (founder) will argue AI tutors can reach students without access to private tutoring. Ms Okafor (headteacher) is broadly supportive but worried about teacher workload. Mr Laine overran by four minutes at rehearsal.",
+      "estimated_minutes": 5,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "How should the moderator introduce the speakers?",
+          "options": [
+            "With their full biographies",
+            "By name and role only",
+            "By letting them introduce themselves"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Introduce speakers by name and role only; full bios are in the app.\""
+        },
+        {
+          "prompt": "Which panellist's caution concerns the evidence base?",
+          "options": [
+            "Dr Haydarova",
+            "Ms Okafor",
+            "Mr Laine"
+          ],
+          "answer_index": 0,
+          "explanation": "\"Dr Haydarova cautions that most evidence so far comes from well-resourced schools.\""
+        },
+        {
+          "prompt": "What can be inferred from the final note?",
+          "options": [
+            "Mr Laine may need to be kept to time",
+            "Mr Laine will not attend",
+            "The panel will finish early"
+          ],
+          "answer_index": 0,
+          "explanation": "He \"overran by four minutes at rehearsal\", so the moderator should expect to manage his time."
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to the organiser's briefing",
+      "instructions": "Ten minutes before the session, the organiser speaks to you backstage. Listen. Then answer the questions.",
+      "prompt_text": "Right, two things. First, the feedback from yesterday's sessions was blunt: people felt the panels turned into sales pitches. So if anyone, and I think we both know who I mean, starts listing product features, please don't let it run. Second, the timekeeper in the front row will hold up a yellow card at one minute left and a red card at time. Speakers have been told, so you've got cover; you won't look rude cutting someone off at red. Oh, and the researcher is quite softly spoken, so make a point of bringing her in, otherwise she'll just wait politely and never get the floor.",
+      "estimated_minutes": 4,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "gb",
+      "questions": [
+        {
+          "prompt": "What was the main complaint about yesterday's panels?",
+          "options": [
+            "They started late",
+            "They felt like sales pitches",
+            "The moderators were too strict"
+          ],
+          "answer_index": 1,
+          "explanation": "\"People felt the panels turned into sales pitches.\""
+        },
+        {
+          "prompt": "What does the red card mean?",
+          "options": [
+            "One minute left",
+            "The speaker's time is up",
+            "Audience questions can begin"
+          ],
+          "answer_index": 1,
+          "explanation": "\"A yellow card at one minute left and a red card at time.\""
+        },
+        {
+          "prompt": "Why does the organiser mention the researcher?",
+          "options": [
+            "She tends to overrun",
+            "She is unlikely to claim the floor herself",
+            "She has cancelled"
+          ],
+          "answer_index": 1,
+          "explanation": "\"She'll just wait politely and never get the floor\", so the moderator must bring her in."
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Write your opening",
+      "instructions": "Draft the words you will say in your three-minute opening. Frame the question so that it feels genuinely open, introduce the three speakers briefly, explain the format and the timing signals, and invite the audience to submit questions.",
+      "prompt_text": "Moderator's opening – script draft",
+      "estimated_minutes": 10,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Write a crisp, balanced opening that frames the debate and sets expectations.",
+      "points": [
+        {
+          "label": "frame the question as genuinely open",
+          "any": [
+            "widen",
+            "narrow",
+            "gap",
+            "question",
+            "both",
+            "promise",
+            "risk*",
+            "evidence"
+          ]
+        },
+        {
+          "label": "introduce the speakers briefly",
+          "any": [
+            "haydarova",
+            "okafor",
+            "laine",
+            "researcher",
+            "headteacher",
+            "founder",
+            "joined by"
+          ]
+        },
+        {
+          "label": "explain the format and timing",
+          "any": [
+            "three minutes",
+            "3 minutes",
+            "opening statement*",
+            "card*",
+            "timekeeper",
+            "strict",
+            "discussion"
+          ]
+        },
+        {
+          "label": "invite audience questions",
+          "any": [
+            "app",
+            "question*",
+            "q&a",
+            "submit",
+            "send in",
+            "audience"
+          ]
+        }
+      ],
+      "model_answer": "Good afternoon, and welcome. The promise of AI tutors is easy to state: personalised help for every learner, at almost no cost. Whether that promise narrows the learning gap, or quietly widens it, is a much harder question, and it's the one we're here to test. I'm joined by Dr Haydarova, an education researcher; Ms Okafor, a secondary headteacher; and Mr Laine, the founder of an AI tutoring start-up. Each will make a three-minute opening statement, and our timekeeper in the front row will help us all stay honest: yellow means one minute, red means time. After that we'll open the discussion, and in the final fifteen minutes I'll put your questions to the panel, so please send them in through the app now, especially if you teach.",
+      "min_words": 120
+    },
+    {
+      "title": "Rein in the dominating speaker",
+      "instructions": "Twenty minutes into the discussion, Mr Laine has been talking for three minutes and has started describing his product's features. Interrupt gracefully, acknowledge his point, redirect the conversation away from the pitch, and bring in Dr Haydarova with a specific question.",
+      "prompt_text": "Mr Laine: ...and the new version also includes adaptive quizzes, a parent dashboard, voice support in twelve languages, and we're about to launch a...",
+      "estimated_minutes": 4,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Interrupt diplomatically, steer away from the pitch and rebalance the panel.",
+      "points": [
+        {
+          "label": "interrupt politely",
+          "any": [
+            "if i could",
+            "let me stop you",
+            "can i just",
+            "sorry to interrupt",
+            "i'm going to jump in",
+            "conscious of time",
+            "pause you there"
+          ]
+        },
+        {
+          "label": "acknowledge his point",
+          "any": [
+            "access",
+            "you've made",
+            "your point",
+            "thank you",
+            "clearly",
+            "reach",
+            "fair"
+          ]
+        },
+        {
+          "label": "steer away from product detail",
+          "any": [
+            "rather than",
+            "not about",
+            "bigger question",
+            "step back",
+            "beyond",
+            "features",
+            "product",
+            "specific tool"
+          ]
+        },
+        {
+          "label": "bring in the researcher with a question",
+          "any": [
+            "dr haydarova",
+            "haydarova",
+            "bring in",
+            "evidence",
+            "research",
+            "what does",
+            "does the evidence"
+          ]
+        }
+      ],
+      "model_answer": "If I could just pause you there, Mr Laine, because I'm conscious of time. You've made the access argument very clearly: students who can't afford a private tutor could suddenly have one. Let's step back from any particular product, though, and test that claim. Dr Haydarova, you've warned that most of the evidence comes from well-resourced schools. Does the research tell us anything yet about the students Mr Laine is describing?",
+      "min_words": null
+    }
+  ]
+}

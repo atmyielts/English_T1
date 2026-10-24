@@ -1,0 +1,237 @@
+{
+  "item": {
+    "slug": "c2-breaking-bad-news-to-a-client",
+    "title": "Breaking bad news to a client",
+    "level": "C2",
+    "context_text": "You are the account director at a small digital agency in Tashkent. For six months your team has been building a customer loyalty app for a regional chain of bakeries. Yesterday an independent security review found serious flaws in how the app stores customer data. The launch, scheduled for next week and already announced to the client's customers, cannot go ahead.",
+    "objective_text": "Understand exactly what went wrong and who is responsible, anticipate the client's reaction, put the news in writing with genuine accountability, and handle the first difficult conversation.",
+    "mission_type": "workplace",
+    "target_grammar": "accountability without over-apology (We should have…, That was our responsibility, What we're doing now is…, I won't pretend that…)",
+    "cultural_note": "When delivering bad news to a client, credibility comes from owning the failure precisely, neither minimising it nor dramatising it, and from arriving with a concrete plan. Blaming a junior colleague or a third party, even when partly justified, almost always damages the relationship further.",
+    "target_vocabulary": [
+      "security review",
+      "vulnerability",
+      "remediation",
+      "accountability",
+      "revised timeline",
+      "at our expense",
+      "mitigate"
+    ],
+    "success_conditions": [
+      "Pinpoint the cause of the failure and the agency's responsibility",
+      "Anticipate the client's priorities and likely reaction",
+      "Write a candid message that owns the problem and offers a plan",
+      "Stay composed and constructive when the client reacts angrily"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the review summary",
+      "instructions": "Read the summary from the independent security reviewer. Then answer the questions.",
+      "prompt_text": "Summary of findings\nThe application stores customers' phone numbers and purchase histories in a way that could, under certain conditions, be accessed by other users. No evidence was found that any real customer data has been exposed, as the app has only been used with test accounts. The flaw stems from a shortcut taken in the account system during an earlier sprint, which was not revisited before final testing. We do not recommend launching until this is fixed and re-tested. Estimated remediation: three weeks, plus one week of re-testing.",
+      "estimated_minutes": 5,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "Has any real customer data been exposed?",
+          "options": [
+            "Yes, phone numbers were leaked",
+            "No evidence of that, as only test accounts were used",
+            "It is impossible to say"
+          ],
+          "answer_index": 1,
+          "explanation": "\"No evidence was found that any real customer data has been exposed, as the app has only been used with test accounts.\""
+        },
+        {
+          "prompt": "What does the report suggest about responsibility?",
+          "options": [
+            "The client's requirements were unclear",
+            "A shortcut by the development team was never revisited",
+            "The reviewer missed it earlier"
+          ],
+          "answer_index": 1,
+          "explanation": "\"The flaw stems from a shortcut taken... which was not revisited before final testing.\""
+        },
+        {
+          "prompt": "How long is the delay likely to be?",
+          "options": [
+            "About one week",
+            "About four weeks",
+            "About three months"
+          ],
+          "answer_index": 1,
+          "explanation": "Three weeks of remediation plus one week of re-testing."
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to your colleague's warning",
+      "instructions": "Your project manager, who knows the client well, leaves you a voice message. Listen. Then answer the questions.",
+      "prompt_text": "Hi, it's Kamila. Just before you speak to Rustam: he's going to be furious, and some of it will be about face, not just the app. He told his whole board the launch date himself, and there are posters in every shop. So whatever you do, don't lead with the technical detail; he'll hear it as excuses. He respects people who are straight with him. And be careful with promises. If we give him a new date and miss that one too, we've lost the account. I'd rather we under-promise and he's pleasantly surprised.",
+      "estimated_minutes": 4,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "us",
+      "questions": [
+        {
+          "prompt": "Why, according to Kamila, will Rustam be especially upset?",
+          "options": [
+            "He has already lost money",
+            "He announced the date publicly and personally",
+            "He dislikes the agency"
+          ],
+          "answer_index": 1,
+          "explanation": "\"He told his whole board the launch date himself, and there are posters in every shop.\""
+        },
+        {
+          "prompt": "What does she advise you NOT to do?",
+          "options": [
+            "Be honest about the delay",
+            "Begin with the technical explanation",
+            "Offer a new date at all"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Don't lead with the technical detail; he'll hear it as excuses.\""
+        },
+        {
+          "prompt": "What is her view on the new launch date?",
+          "options": [
+            "Give the earliest possible date",
+            "Choose a cautious date you are sure you can meet",
+            "Let the client choose"
+          ],
+          "answer_index": 1,
+          "explanation": "\"I'd rather we under-promise and he's pleasantly surprised.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Write to the client",
+      "instructions": "Write to Rustam before your call. Lead with the decision, take clear responsibility, reassure him about customer data without minimising the issue, and set out a realistic plan, including what the agency will do at its own cost.",
+      "prompt_text": "To: Rustam (Managing Director)\nSubject: Loyalty app launch: an important update",
+      "estimated_minutes": 10,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Deliver the news candidly, own the failure and present a credible plan.",
+      "points": [
+        {
+          "label": "lead with the decision",
+          "any": [
+            "cannot launch",
+            "can't launch",
+            "will not launch",
+            "won't launch",
+            "postpone*",
+            "delay*",
+            "not go ahead"
+          ]
+        },
+        {
+          "label": "take clear responsibility",
+          "any": [
+            "our responsibility",
+            "our fault",
+            "we should have",
+            "our mistake",
+            "we take full",
+            "accountab*",
+            "we failed",
+            "our error"
+          ]
+        },
+        {
+          "label": "reassure about customer data",
+          "any": [
+            "no customer data",
+            "no real customer",
+            "test accounts",
+            "not exposed",
+            "no evidence",
+            "safe"
+          ]
+        },
+        {
+          "label": "set out the plan and cost",
+          "any": [
+            "at our expense",
+            "at our own cost",
+            "no extra cost",
+            "free of charge",
+            "plan",
+            "re-test*",
+            "weeks",
+            "new date",
+            "revised"
+          ]
+        }
+      ],
+      "model_answer": "Dear Rustam,\nI'm writing with difficult news, and I'd rather you heard it plainly: we cannot launch the loyalty app next week.\nAn independent security review found a serious flaw in how the app stores customer information. No real customer data has been exposed, because the app has only been used with test accounts, but launching in its current state would put your customers at risk. The flaw comes from a shortcut our team took months ago and should have caught before final testing. That was our responsibility, not yours.\nWe will fix and fully re-test the app at our own expense. Our realistic estimate is four to five weeks, and I would rather give you a date we will certainly meet than one we might miss. We will also cover the cost of updating the launch materials in your shops.\nI'd value the chance to talk this through with you today.\nWith apologies and respect,\nMadina",
+      "min_words": 140
+    },
+    {
+      "title": "Handle the client's anger",
+      "instructions": "Rustam calls you, clearly angry. Respond: let him finish, acknowledge the damage to him personally, restate your responsibility without grovelling, and move the conversation towards one concrete next step.",
+      "prompt_text": "Rustam: I've just read your email. I stood in front of my board and gave them that date. Do you have any idea how this makes me look? Six months, and you tell me a week before launch?",
+      "estimated_minutes": 4,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "De-escalate with empathy and accountability, then agree a next step.",
+      "points": [
+        {
+          "label": "acknowledge the personal impact",
+          "any": [
+            "board",
+            "position",
+            "i understand",
+            "you're right",
+            "put you",
+            "embarrass*",
+            "how it looks"
+          ]
+        },
+        {
+          "label": "restate responsibility",
+          "any": [
+            "our fault",
+            "our responsibility",
+            "we should have",
+            "on us",
+            "our mistake",
+            "i take",
+            "we let you down"
+          ]
+        },
+        {
+          "label": "propose a concrete next step",
+          "any": [
+            "meet",
+            "tomorrow",
+            "come to",
+            "board",
+            "explain",
+            "plan",
+            "timeline",
+            "this afternoon",
+            "in person"
+          ]
+        }
+      ],
+      "model_answer": "You're right, and I won't pretend otherwise. You put your name to that date in front of your board, and we've put you in a very difficult position. We should have caught this flaw months ago, and that's on us. What I'd like to do is come to your office tomorrow with our technical lead and a detailed plan, and if it would help, I'll explain the situation to your board myself, so that the responsibility sits where it belongs.",
+      "min_words": null
+    }
+  ]
+}

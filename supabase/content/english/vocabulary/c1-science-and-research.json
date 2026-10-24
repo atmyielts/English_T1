@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "c1-science-and-research",
+    "title": "Science and research",
+    "level": "C1",
+    "topic": "research",
+    "description": "Words for describing experiments, findings and how research is done."
+  },
+  "children": [
+    {
+      "word": "hypothesis",
+      "part_of_speech": "noun",
+      "definition": "an idea that is suggested as an explanation and can then be tested",
+      "example": "Their hypothesis was that students who sleep more remember more vocabulary.",
+      "translation_ru": "гипотеза",
+      "translation_uz": "gipoteza, faraz"
+    },
+    {
+      "word": "sample",
+      "part_of_speech": "noun",
+      "definition": "a small group chosen from a larger population to be studied",
+      "example": "With a sample of only twenty people, the results are hard to generalise.",
+      "translation_ru": "выборка",
+      "translation_uz": "tanlanma"
+    },
+    {
+      "word": "variable",
+      "part_of_speech": "noun",
+      "definition": "a factor in an experiment that can change or be changed",
+      "example": "Temperature was the only variable they changed during the test.",
+      "translation_ru": "переменная",
+      "translation_uz": "oʻzgaruvchi"
+    },
+    {
+      "word": "control group",
+      "part_of_speech": "noun",
+      "definition": "the people in a study who do not receive the treatment, used for comparison",
+      "example": "The control group took a pill with no active ingredient.",
+      "translation_ru": "контрольная группа",
+      "translation_uz": "nazorat guruhi"
+    },
+    {
+      "word": "peer review",
+      "part_of_speech": "noun",
+      "definition": "the checking of a study by other experts before it is published",
+      "example": "The paper is still going through peer review.",
+      "translation_ru": "рецензирование",
+      "translation_uz": "ekspertlar taqrizi"
+    },
+    {
+      "word": "replicate",
+      "part_of_speech": "verb",
+      "definition": "to repeat a study to see if you get the same results",
+      "example": "Other labs failed to replicate the original findings.",
+      "translation_ru": "воспроизводить (результаты)",
+      "translation_uz": "takrorlab tasdiqlamoq"
+    },
+    {
+      "word": "findings",
+      "part_of_speech": "noun",
+      "definition": "the information that a study discovers",
+      "example": "The findings suggest that short daily practice works better than long sessions.",
+      "translation_ru": "результаты, выводы (исследования)",
+      "translation_uz": "tadqiqot natijalari"
+    },
+    {
+      "word": "breakthrough",
+      "part_of_speech": "noun",
+      "definition": "an important discovery that suddenly makes progress possible",
+      "example": "The new battery design could be a breakthrough for electric cars.",
+      "translation_ru": "прорыв",
+      "translation_uz": "kashfiyot, keskin yutuq"
+    },
+    {
+      "word": "correlation",
+      "part_of_speech": "noun",
+      "definition": "a connection between two things that change together, which may not mean one causes the other",
+      "example": "There is a correlation between ice cream sales and sunburn, but ice cream doesn't cause sunburn.",
+      "translation_ru": "корреляция, взаимосвязь",
+      "translation_uz": "korrelyatsiya, oʻzaro bogʻliqlik"
+    },
+    {
+      "word": "funding",
+      "part_of_speech": "noun",
+      "definition": "money given by an organisation for a particular project",
+      "example": "The team applied for funding to study water quality in the Fergana Valley.",
+      "translation_ru": "финансирование",
+      "translation_uz": "moliyalashtirish"
+    },
+    {
+      "word": "bias",
+      "part_of_speech": "noun",
+      "definition": "a tendency that makes results unfair or not accurate",
+      "example": "Asking only your friends to fill in the survey introduces bias.",
+      "translation_ru": "предвзятость, смещение",
+      "translation_uz": "xolis boʻlmaslik, ogʻish"
+    },
+    {
+      "word": "conclusive",
+      "part_of_speech": "adjective",
+      "definition": "proving something so that there is no more doubt",
+      "example": "So far there is no conclusive evidence that the supplement works.",
+      "translation_ru": "убедительный, окончательный",
+      "translation_uz": "qatʼiy, shubhasiz"
+    }
+  ]
+}

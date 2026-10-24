@@ -1,0 +1,169 @@
+{
+  "item": {
+    "slug": "b1-podcast-learning-english-with-series",
+    "title": "Learning English with TV Series",
+    "level": "B1",
+    "summary": "A podcast host shares practical tips for learning English from TV series, including how to use subtitles.",
+    "transcript_text": "Hi everyone, and welcome back to Learn on the Go. Today I want to talk about something lots of you asked about: learning English with TV series. I watched a lot of series when I was learning, and honestly, it helped me more than most of my textbooks. But there's a right way and a wrong way to do it. First, choose something you'd actually enjoy, not just something people say is good for learners. If you're bored, you'll stop after two episodes. Second, think about subtitles. At the beginning, it's fine to use subtitles in your own language. But after a few weeks, try switching to English subtitles, so you start to connect the sounds with the words. And when you feel ready, turn them off completely for short parts, maybe five minutes at a time. Third, don't try to understand every single word, because that's really tiring. Instead, pick one or two useful phrases from each episode and write them down. So, here's my challenge for this week: watch one episode with English subtitles and note three new phrases. See you next time!",
+    "category": "Language",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 140,
+    "duration_seconds": 79,
+    "audio_url": null,
+    "focus_skill": "gist",
+    "tags": [
+      "podcast",
+      "study tips",
+      "subtitles",
+      "series"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "podcast"
+    },
+    "questions": [
+      {
+        "prompt": "What is the main topic of the episode?",
+        "options": [
+          "Why textbooks are better than TV",
+          "How to learn English well with TV series",
+          "The best series to watch this year",
+          "How to become a TV presenter"
+        ],
+        "answer_index": 1,
+        "explanation": "\"Today I want to talk about ... learning English with TV series.\""
+      },
+      {
+        "prompt": "Why should you choose a series you enjoy?",
+        "options": [
+          "It will be easier to understand.",
+          "It will have better subtitles.",
+          "You'll stop watching if you're bored.",
+          "Your teacher will ask about it."
+        ],
+        "answer_index": 2,
+        "explanation": "\"If you're bored, you'll stop after two episodes.\""
+      },
+      {
+        "prompt": "What does the host suggest after a few weeks?",
+        "options": [
+          "Switching to English subtitles",
+          "Turning off subtitles completely",
+          "Watching only comedies",
+          "Watching two episodes a day"
+        ],
+        "answer_index": 0,
+        "explanation": "\"After a few weeks, try switching to English subtitles.\""
+      },
+      {
+        "prompt": "What does the host say about understanding every word?",
+        "options": [
+          "It's the most important thing.",
+          "It's only possible with subtitles.",
+          "It's easy with practice.",
+          "You shouldn't try, because it's tiring."
+        ],
+        "answer_index": 3,
+        "explanation": "\"Don't try to understand every single word, because that's really tiring.\""
+      },
+      {
+        "prompt": "What is the challenge for this week?",
+        "options": [
+          "Watch a whole series",
+          "Watch one episode with English subtitles and note three phrases",
+          "Write a review of a series",
+          "Watch without any subtitles"
+        ],
+        "answer_index": 1,
+        "explanation": "\"Watch one episode with English subtitles and note three new phrases.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Hi everyone, and welcome back to Learn on the Go.",
+      "focus_phrase": "welcome back",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Today I want to talk about something lots of you asked about: learning English with TV series.",
+      "focus_phrase": "lots of you asked about",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I watched a lot of series when I was learning, and honestly, it helped me more than most of my textbooks.",
+      "focus_phrase": "more than most of",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "But there's a right way and a wrong way to do it.",
+      "focus_phrase": "a right way",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "First, choose something you'd actually enjoy, not just something people say is good for learners.",
+      "focus_phrase": "actually enjoy",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "If you're bored, you'll stop after two episodes.",
+      "focus_phrase": "after two episodes",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Second, think about subtitles.",
+      "focus_phrase": "think about subtitles",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "At the beginning, it's fine to use subtitles in your own language.",
+      "focus_phrase": "in your own language",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "But after a few weeks, try switching to English subtitles, so you start to connect the sounds with the words.",
+      "focus_phrase": "connect the sounds",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "And when you feel ready, turn them off completely for short parts, maybe five minutes at a time.",
+      "focus_phrase": "turn them off",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Third, don't try to understand every single word, because that's really tiring.",
+      "focus_phrase": "every single word",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Instead, pick one or two useful phrases from each episode and write them down.",
+      "focus_phrase": "write them down",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "So, here's my challenge for this week: watch one episode with English subtitles and note three new phrases.",
+      "focus_phrase": "my challenge for this week",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "See you next time!",
+      "focus_phrase": "See you next time",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

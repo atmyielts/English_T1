@@ -1,0 +1,225 @@
+{
+  "item": {
+    "slug": "b1-starting-an-online-study-group",
+    "title": "Starting an online study group",
+    "level": "B1",
+    "context_text": "You are preparing for an international English exam with an online course. The final test is in six weeks. You want to start a small online study group with three classmates who live in different cities and time zones.",
+    "objective_text": "Understand the course rules for group work, agree a time that suits everyone, invite your classmates in writing and explain the plan in the first call.",
+    "mission_type": "study",
+    "target_grammar": "suggestions and making plans (How about…? Why don't we…? Let's…, We could…)",
+    "cultural_note": "In online groups across time zones, always give times with the city or time zone (\"8 pm Tashkent time\"). Giving everyone a clear role from the start stops one person from doing all the work.",
+    "target_vocabulary": [
+      "study group",
+      "time zone",
+      "schedule",
+      "take turns",
+      "shared document",
+      "deadline"
+    ],
+    "success_conditions": [
+      "Understand what the course allows in group work",
+      "Find a time that works for every member",
+      "Write a clear invitation with time, time zone and roles",
+      "Explain the plan and check everyone agrees"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the course forum post",
+      "instructions": "Read this post from your course tutor. Then answer the questions.",
+      "prompt_text": "Study groups – a few rules\nWe really encourage you to practise together! You may share notes, practise speaking and check each other's essays. However, the weekly graded tasks must be your own work: please don't share answers to these.\nGroups of three to five work best. If you start a group, post the day and time in this forum so other students can join.",
+      "estimated_minutes": 3,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "What must students NOT do in study groups?",
+          "options": [
+            "Practise speaking together",
+            "Share answers to the graded tasks",
+            "Check each other's essays"
+          ],
+          "answer_index": 1,
+          "explanation": "\"The weekly graded tasks must be your own work: please don't share answers to these.\""
+        },
+        {
+          "prompt": "What does the tutor ask group organisers to do?",
+          "options": [
+            "Post the day and time in the forum",
+            "Send the tutor a list of members",
+            "Keep the group to two people"
+          ],
+          "answer_index": 0,
+          "explanation": "\"Post the day and time in this forum so other students can join.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to your classmates",
+      "instructions": "You ask your three classmates when they are free. Listen to their voice messages. Then answer the questions.",
+      "prompt_text": "Maya: Hi! I'm in Berlin, so I'm four hours behind Tashkent. Weekday evenings are fine for me after six, my time.\nKenji: Hello from Seoul! I'm four hours ahead of Tashkent. I go to bed early, so anything after eleven at night, my time, is too late. Weekends are easier.\nOmar: Hi, it's Omar in Cairo. I work on Saturdays, but Sunday is completely free for me.",
+      "estimated_minutes": 4,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "us",
+      "questions": [
+        {
+          "prompt": "When can Omar NOT meet?",
+          "options": [
+            "On Saturdays",
+            "On Sundays",
+            "In the evenings"
+          ],
+          "answer_index": 0,
+          "explanation": "\"I work on Saturdays, but Sunday is completely free for me.\""
+        },
+        {
+          "prompt": "What is Kenji's problem with late meetings?",
+          "options": [
+            "He works at night",
+            "He goes to bed early",
+            "His internet is slow"
+          ],
+          "answer_index": 1,
+          "explanation": "\"I go to bed early, so anything after eleven at night, my time, is too late.\""
+        },
+        {
+          "prompt": "Which day seems best for everyone?",
+          "options": [
+            "Saturday",
+            "Sunday",
+            "Monday"
+          ],
+          "answer_index": 1,
+          "explanation": "Kenji prefers weekends and Omar works on Saturdays, so Sunday works for all."
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Write the invitation",
+      "instructions": "Write a message to the three classmates. Suggest a day and time (with a time zone), say what you will do in each session, and suggest a role for each person.",
+      "prompt_text": "Group chat: Exam study group",
+      "estimated_minutes": 7,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Invite the group with a clear time, plan and roles.",
+      "points": [
+        {
+          "label": "suggest a day",
+          "any": [
+            "sunday",
+            "weekend",
+            "every week",
+            "weekly"
+          ]
+        },
+        {
+          "label": "give a time with a time zone",
+          "any": [
+            "tashkent time",
+            "your time",
+            "berlin",
+            "seoul",
+            "cairo",
+            "time zone",
+            "pm",
+            "am",
+            "o'clock"
+          ]
+        },
+        {
+          "label": "say what you will do",
+          "any": [
+            "speaking",
+            "essay*",
+            "notes",
+            "practise",
+            "practice",
+            "vocabulary",
+            "listening",
+            "reading"
+          ]
+        },
+        {
+          "label": "suggest roles",
+          "any": [
+            "role",
+            "take turns",
+            "could you",
+            "can you",
+            "be responsible",
+            "in charge",
+            "organise",
+            "timekeeper",
+            "share the"
+          ]
+        }
+      ],
+      "model_answer": "Hi Maya, Kenji and Omar! Thanks for your messages. Sunday seems best for everyone, so how about every Sunday at 3 pm Tashkent time? That's 11 am in Berlin, noon in Cairo and 7 pm in Seoul. Let's spend the first half on speaking practice and the second half checking each other's essays. Maya, could you keep the time? Kenji, could you share a document for notes? Omar and I can take turns choosing the speaking topics. What do you think?",
+      "min_words": null
+    },
+    {
+      "title": "Explain the plan in the first call",
+      "instructions": "The first video call starts. Welcome everyone, explain the plan in a few sentences, mention the tutor's rule about graded tasks, and check that everyone agrees.",
+      "prompt_text": "Maya: Hi everyone! So, what's the plan?",
+      "estimated_minutes": 3,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Explain the plan clearly and check agreement.",
+      "points": [
+        {
+          "label": "explain the plan",
+          "any": [
+            "speaking",
+            "essay*",
+            "first",
+            "then",
+            "every sunday",
+            "each week",
+            "plan"
+          ]
+        },
+        {
+          "label": "mention the rule about graded tasks",
+          "any": [
+            "graded",
+            "own work",
+            "answers",
+            "don't share",
+            "not share",
+            "rule",
+            "tutor"
+          ]
+        },
+        {
+          "label": "check that everyone agrees",
+          "any": [
+            "is that ok",
+            "is that okay",
+            "does that work",
+            "what do you think",
+            "agree",
+            "happy with",
+            "any questions",
+            "sound good"
+          ]
+        }
+      ],
+      "model_answer": "Hi everyone, welcome! So, the plan is to meet every Sunday for an hour. First we'll do thirty minutes of speaking practice, then we'll check each other's essays. Just remember the tutor's rule: we can't share answers to the graded tasks, they must be our own work. Does that work for everyone?",
+      "min_words": null
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "a2-how-to-top-up-your-transport-card",
+    "title": "How to Top Up Your Transport Card",
+    "level": "A2",
+    "summary": "A short guide explains three ways to put money on a city transport card and what to do if you lose it.",
+    "content_markdown": "With a transport card, you can travel on the metro, buses and city trains. When your card is empty, you need to top it up: this means you put more money on it. Here are three easy ways.\n\n## At a machine\n\n1. Find a ticket machine at any metro station.\n2. Choose your language and touch \"Top up card\".\n3. Put your card on the reader.\n4. Choose how much money you want to add.\n5. Pay by bank card or cash, and keep your card on the reader until you see \"Done\".\n\n## In the app\n\nDownload the city transport app and add your card number. Then you can top up from your phone at any time, even at night. It is faster than the machine, but the money sometimes arrives after ten or fifteen minutes.\n\n## At the ticket office\n\nIf you have a problem, go to the ticket office. The staff are usually very helpful.\n\n**Lost your card?** Tell the ticket office or block it in the app. If your card is registered, you can get your money back on a new card.",
+    "category": "Travel",
+    "theme": "public transport",
+    "tone": "lime",
+    "is_hot": false,
+    "metadata": { "genre": "guide", "writing_tone": "practical", "word_count": 179 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "What is the main purpose of this guide?",
+        "options": [
+          "To explain how to put money on your transport card",
+          "To show a map of the metro",
+          "To sell a new phone app",
+          "To give the prices of tickets"
+        ],
+        "answer_index": 0,
+        "explanation": "\"When your card is empty, you need to top it up… Here are three easy ways.\""
+      },
+      {
+        "id": "q2",
+        "skill": "reading.vocabulary",
+        "prompt": "In this text, \"top up\" a card means…",
+        "options": [
+          "throw it away",
+          "buy a new card",
+          "put more money on it",
+          "put it on the top shelf"
+        ],
+        "answer_index": 2,
+        "explanation": "\"You need to top it up: this means you put more money on it.\""
+      },
+      {
+        "id": "q3",
+        "skill": "reading.detail",
+        "prompt": "At the machine, what should you do at the end?",
+        "options": [
+          "Take your card away quickly",
+          "Call the ticket office",
+          "Choose your language",
+          "Keep your card on the reader until you see \"Done\""
+        ],
+        "answer_index": 3,
+        "explanation": "Step 5: \"keep your card on the reader until you see 'Done'\"."
+      },
+      {
+        "id": "q4",
+        "skill": "reading.inference",
+        "prompt": "Bekzod topped up his card in the app one minute ago, but the balance hasn't changed. What is the best thing to do?",
+        "options": [
+          "Pay again in the app",
+          "Wait a few more minutes",
+          "Throw the card away",
+          "Block the card"
+        ],
+        "answer_index": 1,
+        "explanation": "The guide says \"the money sometimes arrives after ten or fifteen minutes\", so he should wait."
+      },
+      {
+        "id": "q5",
+        "skill": "reading.detail",
+        "prompt": "When can you get your money back after you lose your card?",
+        "options": [
+          "If the card is registered",
+          "If you lose it at night",
+          "If you find it again",
+          "Never"
+        ],
+        "answer_index": 0,
+        "explanation": "\"If your card is registered, you can get your money back on a new card.\""
+      }
+    ]
+  }
+}

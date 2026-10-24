@@ -1,0 +1,227 @@
+{
+  "item": {
+    "slug": "c2-debate-should-ai-write-our-emails",
+    "title": "Debate: Should AI Write Our Emails?",
+    "level": "C2",
+    "summary": "Two commentators argue about using AI assistants to write emails: efficiency against authenticity, and what happens to trust when any message might be generated.",
+    "transcript_text": "Sophie: Let me put my cards on the table. I use an AI assistant for most of my work emails now, and I don't feel the slightest bit guilty about it.\nRustam: I'm not asking you to feel guilty. I'm asking what we lose when nobody actually writes to anybody any more.\nSophie: Oh, come on, most emails aren't heartfelt letters. They're 'please find attached' and 'just following up'. If a machine can draft those in seconds, I've got more time for the work that matters.\nRustam: For routine messages, fine, I'll grant you that. But the line isn't nearly as clear as you're making it sound. A colleague who's just lost their job, a client who's upset, a thank-you to someone who went out of their way: those are emails too.\nSophie: And I'd write those myself. Nobody's suggesting we outsource sympathy.\nRustam: Aren't they, though? Once the tool is open and the draft is sitting there, looking perfectly reasonable, the temptation is just to hit send. Habits creep.\nSophie: That's a fair worry, but it's an argument for using the tool thoughtfully, not for refusing it altogether.\nRustam: My other concern is that people will start to discount everything they receive. If any message might have been generated, a kind word means less, because you can't be sure anyone actually meant it.\nSophie: Hmm, that's more persuasive, I'll admit. I've had messages from friends recently that were so smooth I found myself wondering whether they'd written a single word of them. And honestly, it took some of the warmth out. Maybe the answer is simply honesty, being open about when we've used it.\nRustam: Now that I could live with.",
+    "category": "Technology",
+    "accent": "general",
+    "speed_label": "fast",
+    "speed_wpm": 170,
+    "duration_seconds": 96,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "AI",
+      "debate",
+      "communication",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Sophie",
+        "Rustam"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "What is Sophie's position at the start of the debate?",
+        "options": [
+          "She sees nothing wrong with using AI for her work emails.",
+          "She uses AI only for personal messages.",
+          "She feels guilty about using AI.",
+          "She thinks AI emails are badly written."
+        ],
+        "answer_index": 0,
+        "explanation": "\"I use an AI assistant for most of my work emails now, and I don't feel the slightest bit guilty about it.\""
+      },
+      {
+        "prompt": "Which emails does Rustam think need a personal touch?",
+        "options": [
+          "Emails with attachments",
+          "Follow-up reminders",
+          "Messages involving feelings, such as sympathy or thanks",
+          "Messages to large groups"
+        ],
+        "answer_index": 2,
+        "explanation": "\"A colleague who's just lost their job, a client who's upset, a thank-you to someone who went out of their way: those are emails too.\""
+      },
+      {
+        "prompt": "What does Rustam mean by 'habits creep'?",
+        "options": [
+          "People get tired of writing emails.",
+          "The tool slowly gets better.",
+          "Companies will ban AI tools.",
+          "People gradually use the tool even where they meant not to."
+        ],
+        "answer_index": 3,
+        "explanation": "\"Once the tool is open and the draft is sitting there... the temptation is just to hit send. Habits creep.\""
+      },
+      {
+        "prompt": "Which of Rustam's arguments does Sophie find most convincing?",
+        "options": [
+          "That AI emails take too long to check",
+          "That kind words may mean less if any message could be generated",
+          "That routine emails are important",
+          "That AI makes grammar mistakes"
+        ],
+        "answer_index": 1,
+        "explanation": "After Rustam says \"a kind word means less\", Sophie answers: \"That's more persuasive, I'll admit.\""
+      },
+      {
+        "prompt": "How does the debate end?",
+        "options": [
+          "Sophie promises to stop using AI.",
+          "Rustam agrees that AI should write all emails.",
+          "They reach partial agreement about being open when AI is used.",
+          "They decide the question cannot be answered."
+        ],
+        "answer_index": 2,
+        "explanation": "Sophie: \"Maybe the answer is simply honesty, being open about when we've used it.\" Rustam: \"Now that I could live with.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Let me put my cards on the table.",
+      "focus_phrase": "my cards on the table",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I use an AI assistant for most of my work emails now, and I don't feel the slightest bit guilty about it.",
+      "focus_phrase": "the slightest bit guilty",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I'm not asking you to feel guilty.",
+      "focus_phrase": "asking you to feel guilty",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I'm asking what we lose when nobody actually writes to anybody any more.",
+      "focus_phrase": "what we lose",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Oh, come on, most emails aren't heartfelt letters.",
+      "focus_phrase": "heartfelt letters",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "They're 'please find attached' and 'just following up'.",
+      "focus_phrase": "just following up",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "If a machine can draft those in seconds, I've got more time for the work that matters.",
+      "focus_phrase": "the work that matters",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "For routine messages, fine, I'll grant you that.",
+      "focus_phrase": "I'll grant you that",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "But the line isn't nearly as clear as you're making it sound.",
+      "focus_phrase": "making it sound",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "A colleague who's just lost their job, a client who's upset, a thank-you to someone who went out of their way: those are emails too.",
+      "focus_phrase": "went out of their way",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "And I'd write those myself.",
+      "focus_phrase": "write those myself",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Nobody's suggesting we outsource sympathy.",
+      "focus_phrase": "outsource sympathy",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Aren't they, though?",
+      "focus_phrase": "aren't they, though",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Once the tool is open and the draft is sitting there, looking perfectly reasonable, the temptation is just to hit send.",
+      "focus_phrase": "just to hit send",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Habits creep.",
+      "focus_phrase": "habits creep",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "That's a fair worry, but it's an argument for using the tool thoughtfully, not for refusing it altogether.",
+      "focus_phrase": "refusing it altogether",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "My other concern is that people will start to discount everything they receive.",
+      "focus_phrase": "discount everything they receive",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "If any message might have been generated, a kind word means less, because you can't be sure anyone actually meant it.",
+      "focus_phrase": "actually meant it",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Hmm, that's more persuasive, I'll admit.",
+      "focus_phrase": "more persuasive",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I've had messages from friends recently that were so smooth I found myself wondering whether they'd written a single word of them.",
+      "focus_phrase": "a single word of them",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "And honestly, it took some of the warmth out.",
+      "focus_phrase": "some of the warmth",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Maybe the answer is simply honesty, being open about when we've used it.",
+      "focus_phrase": "being open about",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Now that I could live with.",
+      "focus_phrase": "could live with",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

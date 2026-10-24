@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "c2-the-maps-we-carry-in-our-heads",
+    "title": "The Maps We Carry in Our Heads",
+    "level": "C2",
+    "summary": "An essay on the private mental maps through which we know a city, and on what may change when a phone does the remembering for us.",
+    "content_markdown": "Ask a long-time resident of any large city for directions and you will rarely receive anything resembling a map. You will be told to walk past the bakery that used to be a cinema, turn left where the old plane tree leans over the road, and keep going until you smell the bread from the tandir oven on the corner. If you object that the bakery is now a phone shop and the tree was cut down last year, the resident will look at you with mild pity, as though you had failed to see the obvious. In her head, the bakery and the tree are still there, and they will remain so long after the city has moved on.\n\nThis is the first thing worth noticing about the maps we carry in our heads: they are not maps in any cartographic sense. They are layered, personal and stubbornly out of date. They record not where things are but where things happened to us. A particular street corner is not merely a junction of two roads; it is where we waited for a friend who never came, or where we first realised we were lost in a new country. Psychologists who study spatial memory have long observed that people do not store their surroundings as neat diagrams, and anyone who has tried to sketch their own neighbourhood from memory will have discovered how distorted, and how revealing, the result can be.\n\n## The outsourced sense of direction\n\nFor most of human history, these private maps were indispensable. To get anywhere, one had to build them, slowly and often painfully, through repetition and error. The arrival of navigation apps has changed that bargain profoundly. A visitor can now arrive in an unfamiliar city and move through it with uncanny precision, following a blue dot from the station to a café to a museum, without ever forming a coherent picture of how these places relate to one another.\n\nIt would be easy, and slightly lazy, to lament this as a straightforward loss. Navigation apps have opened cities to people who might otherwise have been too anxious to explore them, and they have spared countless travellers from wrong turns at midnight. But it seems reasonable to ask what happens to a skill that is never exercised. If the phone remembers the route, there is little reason for us to do so, and a route never learned leaves no trace. One can walk the same streets for months and still feel, in some subtle sense, a stranger to them.\n\n## Knowing a place\n\nThe deeper question concerns what it means to know a place at all. The app offers one kind of knowledge: efficient, accurate and entirely impersonal. It knows the shortest path between any two points and nothing whatsoever about why one might prefer the longer one. The resident's mental map offers the opposite: inefficient, unreliable as to facts, but saturated with meaning. It knows that the quiet street behind the mosque is pleasant at dusk, that one café is friendlier than another, and that the shortcut across the park is best avoided after rain.\n\nThese are not competing technologies so much as different relationships with space. The first treats the city as a problem to be solved; the second treats it as a place to be inhabited. Most of us, now, live with both, switching between them without much thought. The risk is not that the blue dot will abolish our inner maps overnight, but that, by never needing them, we will stop drawing new ones.\n\n## Getting lost on purpose\n\nThere is a modest remedy, and it is almost embarrassingly simple: occasionally switch the phone off and walk. Get lost, within reason. Notice the bakery, the tree, the smell of bread. Ask a stranger for directions and accept whatever idiosyncratic landmarks she offers. The route will take longer, and it may well be wrong. But at the end of it, you will possess something the app cannot give you: a small, private, inaccurate map that is entirely your own, and the beginning of a sense that the city, in some small way, belongs to you.",
+    "category": "Technology",
+    "theme": "cities and navigation",
+    "tone": "sand",
+    "is_hot": false,
+    "metadata": { "genre": "essay", "writing_tone": "reflective", "word_count": 694 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "Which statement best captures the essay's main idea?",
+        "options": [
+          "Navigation apps should be banned in historic cities.",
+          "Mental maps are more accurate than digital maps.",
+          "Personal mental maps give us a meaningful relationship with places, which may weaken if we rely entirely on navigation apps.",
+          "Psychologists have proved that apps damage the brain."
+        ],
+        "answer_index": 2,
+        "explanation": "The writer contrasts the app's \"impersonal\" knowledge with mental maps \"saturated with meaning\" and warns that \"by never needing them, we will stop drawing new ones\"."
+      },
+      {
+        "id": "q2",
+        "skill": "reading.inference",
+        "prompt": "Why does the resident look at the visitor \"with mild pity\" in the first paragraph?",
+        "options": [
+          "Because the visitor is clearly lost and tired",
+          "Because, for her, the old landmarks still exist in her mental map, and she finds the objection beside the point",
+          "Because the visitor does not speak the local language",
+          "Because she knows the bakery will reopen soon"
+        ],
+        "answer_index": 1,
+        "explanation": "\"In her head, the bakery and the tree are still there, and they will remain so long after the city has moved on.\""
+      },
+      {
+        "id": "q3",
+        "skill": "reading.detail",
+        "prompt": "What, according to the writer, do mental maps mainly record?",
+        "options": [
+          "Where things happened to us",
+          "The exact distances between buildings",
+          "Official street names",
+          "The shortest route between two points"
+        ],
+        "answer_index": 0,
+        "explanation": "\"They record not where things are but where things happened to us.\""
+      },
+      {
+        "id": "q4",
+        "skill": "reading.inference",
+        "prompt": "How does the writer treat the benefits of navigation apps?",
+        "options": [
+          "The writer dismisses them as unimportant.",
+          "The writer ignores them completely.",
+          "The writer claims they outweigh every disadvantage.",
+          "The writer acknowledges them fairly before raising concerns, calling pure lament \"slightly lazy\"."
+        ],
+        "answer_index": 3,
+        "explanation": "\"It would be easy, and slightly lazy, to lament this as a straightforward loss. Navigation apps have opened cities to people...\""
+      },
+      {
+        "id": "q5",
+        "skill": "reading.vocabulary",
+        "prompt": "In the final paragraph, \"idiosyncratic landmarks\" are landmarks that are:",
+        "options": [
+          "Officially recognised by the city",
+          "Peculiar to the individual who describes them",
+          "Too far away to be useful",
+          "Shown on every tourist map"
+        ],
+        "answer_index": 1,
+        "explanation": "The stranger offers her own personal reference points, like \"the bakery, the tree, the smell of bread\", which are particular to her."
+      }
+    ]
+  }
+}
