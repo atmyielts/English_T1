@@ -8,6 +8,7 @@ import { useElapsedSeconds, useResource } from '../../lib/useResource';
 import { Panel, ProgressBar, Segmented, Tag, useErrorMessage } from '../../ui/kit';
 import { ActivityFrame, ResultPanel } from '../ActivityKit';
 import { RepeatAfterMe } from '../RepeatAfterMe';
+import { ShadowButton } from '../../components/shadow/ShadowButton';
 import { getItem, submitItem, type DiffToken, type ListeningSubmitResponse } from './api';
 import { parseScript, speakersOf, speechChunks, type ScriptLine } from './script';
 import { usePlayer } from './usePlayer';
@@ -16,14 +17,22 @@ type Speed = 'normal' | 'slow';
 const RATE: Record<Speed, number> = { normal: 1, slow: 0.75 };
 const letter = (index: number) => String.fromCharCode(65 + index);
 
-/** The script, line by line, with speaker names for dialogues. Words can be tapped for their meaning. */
-const Transcript = ({ lines, title, slug }: { lines: ScriptLine[]; title: string | null; slug: string }) => (
+/**
+ * The script, line by line, with speaker names for dialogues. Words can be
+ * tapped for their meaning; with `shadow`, each line can be shadowed.
+ */
+const Transcript = ({ lines, title, slug, shadow = false }: { lines: ScriptLine[]; title: string | null; slug: string; shadow?: boolean }) => (
   <TapScope className="en-passage" source={{ type: 'english-listening', label: title, ref: slug }}>
     {lines.map((line, index) => (
-      <p key={index}>
-        {line.speaker ? <strong>{line.speaker}: </strong> : null}
-        <TapWords text={line.text} />
-      </p>
+      <Fragment key={index}>
+        <p>
+          {line.speaker ? <strong>{line.speaker}: </strong> : null}
+          <TapWords text={line.text} />
+        </p>
+        {shadow && line.text.split(/\s+/).length >= 3 ? (
+          <div className="sh-paragraph-action"><ShadowButton text={line.text} source="listening" /></div>
+        ) : null}
+      </Fragment>
     ))}
   </TapScope>
 );
@@ -250,7 +259,7 @@ export const ListeningActivity = () => {
 
       {result ? (
         <Panel title={t('listening.transcript.title')}>
-          <Transcript lines={lines} title={item?.title ?? null} slug={slug} />
+          <Transcript lines={lines} title={item?.title ?? null} slug={slug} shadow />
         </Panel>
       ) : null}
 
@@ -261,7 +270,7 @@ export const ListeningActivity = () => {
               <p className="en-notice" style={{ margin: 0 }}>
                 {canSpeak() ? t('listening.reading.chosen') : t('listening.reading.noAudio')}
               </p>
-              <Transcript lines={lines} title={item?.title ?? null} slug={slug} />
+              <Transcript lines={lines} title={item?.title ?? null} slug={slug} shadow />
             </>
           ) : (
             <>

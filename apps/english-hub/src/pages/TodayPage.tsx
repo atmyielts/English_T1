@@ -12,6 +12,7 @@ import { NewBadges } from '../components/Badges';
 import { TodayXpPanel } from '../components/XpWidgets';
 import { FocusSkillCard } from '../components/FocusSkillCard';
 import { InstallCard } from '../components/InstallApp';
+import { OfflineDownloadCard } from '../components/offline/OfflineDownloadCard';
 import { ComebackCard, StreakFreezes } from '../components/StreakGuard';
 import { getStreak } from '../lib/engine';
 
@@ -231,6 +232,7 @@ export const TodayPage = () => {
           </Panel>
 
           <InstallCard />
+          <OfflineDownloadCard />
 
           <Panel title={t('today.tutor.title')} tone="teal">
             <p>{t('today.tutor.body')}</p>

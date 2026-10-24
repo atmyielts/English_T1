@@ -15,6 +15,8 @@ type Props = {
   /** Outside word mode, words can be tapped for their meaning. */
   tapSource: TapSource;
   onTapSaved?: (word: string, sentence: string) => void;
+  /** Outside word mode: something shown under each paragraph (Read aloud). */
+  paragraphAction?: (text: string, key: string) => ReactNode;
 };
 
 const styled = (run: InlineRun, content: ReactNode, key: number | string) => {
@@ -25,7 +27,7 @@ const styled = (run: InlineRun, content: ReactNode, key: number | string) => {
 };
 
 /** Renders one block's text, with words as buttons in word mode. */
-type RunsProps = Omit<Props, 'blocks' | 'tapSource' | 'onTapSaved'> & { runs: InlineRun[]; unitKey: string };
+type RunsProps = Omit<Props, 'blocks' | 'tapSource' | 'onTapSaved' | 'paragraphAction'> & { runs: InlineRun[]; unitKey: string };
 
 const Runs = ({ runs, unitKey, ...props }: RunsProps) => {
   if (!props.wordMode) return <>{runs.map((run, index) => styled(run, <TapWords text={run.text} />, index))}</>;
@@ -64,7 +66,7 @@ const Runs = ({ runs, unitKey, ...props }: RunsProps) => {
   );
 };
 
-const Blocks = ({ blocks, ...props }: Omit<Props, 'tapSource' | 'onTapSaved'>) => (
+const Blocks = ({ blocks, paragraphAction, ...props }: Omit<Props, 'tapSource' | 'onTapSaved'>) => (
   <>
     {blocks.map((block, index) => {
       const key = String(index);
@@ -85,7 +87,13 @@ const Blocks = ({ blocks, ...props }: Omit<Props, 'tapSource' | 'onTapSaved'>) =
           </List>
         );
       }
-      return <p key={key}><Runs runs={block.runs} unitKey={key} {...props} /></p>;
+      const action = paragraphAction && !props.wordMode ? paragraphAction(runsText(block.runs), key) : null;
+      return (
+        <Fragment key={key}>
+          <p><Runs runs={block.runs} unitKey={key} {...props} /></p>
+          {action ? <div className="sh-paragraph-action">{action}</div> : null}
+        </Fragment>
+      );
     })}
   </>
 );
