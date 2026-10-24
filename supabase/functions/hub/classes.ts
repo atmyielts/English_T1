@@ -21,6 +21,7 @@
 //   POST /classes/:id/assignments         new assignment (see parseAssignmentInput)
 //   POST /classes/:id/assignments/:aid/cancel
 // Worker (reminder cron, see index.ts): runClassReminders.
+import { pushInbox } from "../_shared/english-inbox.ts";
 import { ENGLISH_BUNDLE_PRODUCT_ID, expandBundleEntitlements, isActiveAccessWindow } from "../_shared/english-access.ts";
 import { json, parseBody, toText } from "../_shared/english-learning.ts";
 import { readReminderSettings } from "../_shared/english-reminders.ts";
@@ -801,6 +802,16 @@ const createAssignment = async (ctx: Ctx, cls: Row, req: Request) => {
     .select("id")
     .maybeSingle();
   if (error || !data?.id) throw new Error(`Failed to create assignment: ${describe(error)}`);
+  // Each learner in the class sees it in their inbox until it is due (pushInbox never throws).
+  const dueAt = dueAtFor(input.due_date);
+  const members = await activeMembers(ctx.sb, [String(cls.id)]).catch(() => [] as Row[]);
+  await Promise.all(members.map((row) => pushInbox(ctx.sb, String(row.user_id), {
+    kind: "assignment_due",
+    key: `assignment:${data.id}`,
+    params: { title: input.title, due: input.due_date },
+    link: "/classes",
+    expiresAt: dueAt,
+  })));
   return json(200, { ok: true, id: String(data.id) });
 };
 
