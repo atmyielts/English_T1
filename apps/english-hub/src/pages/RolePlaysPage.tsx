@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { Fragment, useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useEnglish } from '../app/EnglishContext';
 import { L1Why } from '../components/L1Why';
+import { ShadowButton } from '../components/shadow/ShadowButton';
 import { SpeakOrType } from '../components/SpeakOrType';
 import { useI18n, useT } from '../i18n';
 import { ApiError } from '../lib/api';
@@ -399,10 +400,15 @@ export const RolePlayPage = () => {
               </div>
               <div className="en-chat" aria-live="polite">
                 {lines.map((line, index) => (
-                  <div key={index} className={`en-bubble ${line.role === 'learner' ? 'is-me' : 'is-tutor'}`} lang="en">
-                    <span className="visually-hidden">{line.role === 'learner' ? t('roleplay.you') : scenario.partner}: </span>
-                    {line.text}
-                  </div>
+                  <Fragment key={index}>
+                    <div className={`en-bubble ${line.role === 'learner' ? 'is-me' : 'is-tutor'}`} lang="en">
+                      <span className="visually-hidden">{line.role === 'learner' ? t('roleplay.you') : scenario.partner}: </span>
+                      {line.text}
+                    </div>
+                    {line.role === 'partner' ? (
+                      <div className="sh-bubble-actions"><ShadowButton text={line.text} source="roleplay" /></div>
+                    ) : null}
+                  </Fragment>
                 ))}
                 {busy === 'send' ? <p className="hint">{t('roleplay.replying', { name: scenario.partner })}</p> : null}
                 <div ref={endRef} />

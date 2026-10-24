@@ -42,6 +42,7 @@ export const YOU_ENTRIES: NavEntry[] = [
 /** A skill's own pages beyond its home, shown under the skill while you are in it. */
 export const SKILL_PAGES: Partial<Record<SkillKey, NavEntry[]>> = {
   grammar: [{ to: '/grammar/handbook', labelKey: 'ws.handbook', group: 'skills', skill: 'grammar', keywords: 'rules handbook explanations russian uzbek' }],
+  speaking: [{ to: '/speaking/shadowing', labelKey: 'shadow.nav', group: 'skills', skill: 'speaking', keywords: 'shadowing repeat pronunciation rhythm read aloud' }],
 };
 
 export const skillEntries = (): NavEntry[] =>

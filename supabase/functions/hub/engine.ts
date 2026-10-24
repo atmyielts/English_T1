@@ -61,6 +61,9 @@ const PRIMARY_CONTENT_TYPES = [
   "immersion.mission",
   "vocabulary.deck",
 ];
+// Days with any practice keep the streak: primary activities plus finished
+// role-plays, speaking mocks and shadowing takes (they are not rated).
+const STREAK_CONTENT_TYPES = [...PRIMARY_CONTENT_TYPES, "speaking.roleplay", "speaking.mock", "speaking.shadowing"];
 const DONE_STATUSES = ["submitted", "scored", "failed"];
 const DAY_MS = 86_400_000;
 const RATING_LOOKBACK_DAYS = 120;
@@ -341,7 +344,7 @@ const getStreak = async (ctx: Ctx): Promise<Response> => {
       .eq("language_id", ctx.languageId)
       .in("status", DONE_STATUSES)
       .gte("submitted_at", since)
-      .in("learning_content_registry_items.content_type", PRIMARY_CONTENT_TYPES)
+      .in("learning_content_registry_items.content_type", STREAK_CONTENT_TYPES)
       .order("submitted_at", { ascending: false })
       .order("id", { ascending: true })
       .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);

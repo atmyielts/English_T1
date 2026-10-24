@@ -62,6 +62,7 @@ import { handleCertificateRoute, handlePublicCertificate, isPublicCertificateRou
 import { measurementMethod, testResultRecord } from "../_shared/english-certificate.ts";
 import { handlePracticeRoute } from "./practice.ts";
 import { handleClassesRoute, runClassReminders } from "./classes.ts";
+import { handleShadowingRoute } from "./shadowing.ts";
 
 const routeMarker = "/hub";
 
@@ -414,6 +415,10 @@ serve(async (req) => {
     // === Classes for teachers and learning centres (./classes.ts) ===
     const classesResponse = await handleClassesRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId, products });
     if (classesResponse) return classesResponse;
+
+    // === Shadowing sentence sets and light speaking logs (./shadowing.ts) ===
+    const shadowingResponse = await handleShadowingRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId, products });
+    if (shadowingResponse) return shadowingResponse;
 
     // === Today, catalog and history (learner home) ===
     // Built only from the learner's placement, real attempts and due reviews.

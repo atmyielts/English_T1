@@ -87,6 +87,8 @@ export const checkActivityAccess = async (
       .eq("user_id", input.userId)
       .eq("language_id", input.languageId)
       .in("service_key", notOwned)
+      // Shadowing takes are free practice (hub/shadowing.ts), never today's free activity.
+      .neq("attempt_type", "speaking.shadowing")
       .gte("created_at", learnerDayStart())
       .limit(200);
     for (const row of (data ?? []) as Array<{ content_item_id: string | null }>) {

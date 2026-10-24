@@ -1,20 +1,18 @@
-import { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { useEnglish } from '../app/EnglishContext';
+import { useT } from '../i18n';
+import { useOfflineState, useOnline } from '../lib/offline/useOffline';
 
 export const OfflineBanner = () => {
-  const [online, setOnline] = useState(() => (typeof navigator !== 'undefined' ? navigator.onLine : true));
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const update = () => setOnline(navigator.onLine);
-    window.addEventListener('online', update);
-    window.addEventListener('offline', update);
-    return () => {
-      window.removeEventListener('online', update);
-      window.removeEventListener('offline', update);
-    };
-  }, []);
+  const t = useT();
+  const online = useOnline();
+  const { session } = useEnglish();
+  const location = useLocation();
+  // Only look for a saved session while offline.
+  const saved = useOfflineState(session?.user.id ?? null, !online);
 
   if (online) return null;
+  const showLink = Boolean(saved.pack) && location.pathname !== '/offline';
 
   return (
     <div
@@ -35,7 +33,13 @@ export const OfflineBanner = () => {
         boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
       }}
     >
-      You're offline. Cached pages still load, but AI features and progress sync need a connection.
+      {t('offline.banner')}
+      {showLink ? (
+        <>
+          {' '}
+          <Link to="/offline" style={{ color: '#fff', textDecoration: 'underline' }}>{t('offline.banner.open')}</Link>
+        </>
+      ) : null}
     </div>
   );
 };

@@ -3,6 +3,7 @@ import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { HubFrame, SkillWorkspace } from './app/Chrome';
 import { useEnglish } from './app/EnglishContext';
 import { OfflineBanner } from './components/OfflineBanner';
+import { OfflineSync } from './components/offline/OfflineSync';
 import { UpdatePrompt } from './components/InstallApp';
 import { applyManifest } from './lib/pwa';
 import { useT } from './i18n';
@@ -25,6 +26,7 @@ const RolePlayPage = lazy(() => import('./pages/RolePlaysPage').then((m) => ({ d
 const ClassesPage = lazy(() => import('./pages/ClassesPage').then((m) => ({ default: m.ClassesPage })));
 const ClassDashboardPage = lazy(() => import('./pages/ClassDashboardPage').then((m) => ({ default: m.ClassDashboardPage })));
 const SpeakingMockPage = lazy(() => import('./pages/SpeakingMockPage').then((m) => ({ default: m.SpeakingMockPage })));
+const OfflineSessionPage = lazy(() => import('./pages/OfflineSessionPage').then((m) => ({ default: m.OfflineSessionPage })));
 
 const SKILL_APPS = {
   reading: lazy(() => import('./skills/reading')),
@@ -100,6 +102,8 @@ const App = () => {
             <Route path="/" element={<LandingPage />} />
             {/* A shared certificate link works for anyone. */}
             <Route path="/c/:code" element={<Page><PublicCertificatePage /></Page>} />
+            {/* Offline, an expired session cannot be refreshed: saved activities still open. */}
+            <Route path="/offline" element={<Page><OfflineSessionPage /></Page>} />
             <Route path="*" element={<SignedOutGate />} />
           </Routes>
         </HubFrame>
@@ -113,6 +117,7 @@ const App = () => {
   return (
     <>
       <OfflineBanner />
+      <OfflineSync />
       <UpdatePrompt />
       <Routes>
         <Route path="/" element={<Navigate to="/today" replace />} />
@@ -131,6 +136,7 @@ const App = () => {
         <Route path="/speaking-mock" element={hub(<SpeakingMockPage />)} />
         <Route path="/classes" element={hub(<ClassesPage />)} />
         <Route path="/classes/:id" element={hub(<ClassDashboardPage />)} />
+        <Route path="/offline" element={hub(<OfflineSessionPage />)} />
         {SKILLS.map((skill) => {
           const SkillApp = SKILL_APPS[skill.key];
           return (

@@ -6,6 +6,7 @@ import { useElapsedSeconds, useResource } from '../../lib/useResource';
 import { EmptyState, Panel, useErrorMessage } from '../../ui/kit';
 import { ActivityFrame, ResultPanel } from '../ActivityKit';
 import { RepeatAfterMe } from '../RepeatAfterMe';
+import { ShadowButton } from '../../components/shadow/ShadowButton';
 import { getArticle, submitArticle, type ReadingSkillKey, type ReadingSubmitResponse } from './api';
 import { findSentenceWithWord, parsePassage, savedForm, type PassageBlock } from './markdown';
 import { Passage, type PickedWord } from './Passage';
@@ -207,6 +208,7 @@ export const ReadingArticle = () => {
               onPick={pick}
               tapSource={{ type: 'english-reading', label: article?.title ?? null, ref: article?.slug ?? null }}
               onTapSaved={rememberSaved}
+              paragraphAction={(text) => (text.split(/\s+/).length >= 4 ? <ShadowButton text={text} source="read-aloud" readAloud /> : null)}
             />
           </>
         ) : (

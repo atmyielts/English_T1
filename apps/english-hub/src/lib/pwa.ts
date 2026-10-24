@@ -167,6 +167,12 @@ export const installPwa = () => {
   });
   recordVisit();
   applyManifest(window.location.pathname);
+  // "Download for offline" reads the build files this page loaded from resource timing; keep room for them.
+  try {
+    performance.setResourceTimingBufferSize?.(1000);
+  } catch {
+    // Not supported: the entry script and styles are still found from the document.
+  }
 
   window.addEventListener('beforeinstallprompt', (event) => {
     event.preventDefault();
@@ -193,6 +199,42 @@ export const installPwa = () => {
       })
       .catch(() => undefined);
   });
+};
+
+/**
+ * Asks the service worker to keep the app shell and every script and style this
+ * page has loaded so far (including lazy pages already opened), so the app can
+ * start offline. Used by "Download for offline". Same-origin build files only;
+ * the worker ignores anything else and never caches API responses.
+ */
+export const warmAppShell = async (): Promise<boolean> => {
+  if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return false;
+  const origin = window.location.origin;
+  const urls = new Set<string>(['/']);
+  const add = (raw: string | null | undefined) => {
+    if (!raw) return;
+    try {
+      const url = new URL(raw, origin);
+      if (url.origin === origin && (url.pathname.startsWith('/assets/') || url.pathname.startsWith('/icons/'))) urls.add(url.pathname);
+    } catch {
+      // Not a URL.
+    }
+  };
+  document.querySelectorAll<HTMLScriptElement>('script[src]').forEach((element) => add(element.getAttribute('src')));
+  document.querySelectorAll<HTMLLinkElement>('link[href]').forEach((element) => add(element.getAttribute('href')));
+  try {
+    performance.getEntriesByType('resource').forEach((entry) => add(entry.name));
+  } catch {
+    // Older browsers: the entry script and styles above still go in.
+  }
+  const ready = await Promise.race([
+    navigator.serviceWorker.ready,
+    new Promise<null>((resolve) => window.setTimeout(() => resolve(null), 4000)),
+  ]).catch(() => null);
+  const worker = ready?.active ?? navigator.serviceWorker.controller;
+  if (!worker) return false;
+  worker.postMessage({ type: 'warm-cache', urls: [...urls].slice(0, 300) });
+  return true;
 };
 
 /** Reload into the newest build (page loads are network-first, so this always fetches it). */

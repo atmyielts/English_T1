@@ -1,9 +1,10 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { Fragment, lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useEnglish } from '../app/EnglishContext';
 import { useT } from '../i18n';
 import { edge } from '../lib/api';
 import { ServicePaused } from '../components/ServicePaused';
+import { ShadowButton } from '../components/shadow/ShadowButton';
 import { LockedPanel, Loading, PageHeader, Panel, Segmented, useErrorMessage } from '../ui/kit';
 import { PracticeLinks } from '../components/PracticeLinks';
 
@@ -152,7 +153,12 @@ const ChatTutor = () => {
             </div>
           ) : null}
           {messages.map((message, index) => (
-            <div key={index} className={`en-bubble ${message.role === 'user' ? 'is-me' : 'is-tutor'}`}>{message.content}</div>
+            <Fragment key={index}>
+              <div className={`en-bubble ${message.role === 'user' ? 'is-me' : 'is-tutor'}`}>{message.content}</div>
+              {message.role === 'assistant' ? (
+                <div className="sh-bubble-actions"><ShadowButton text={message.content} source="tutor" /></div>
+              ) : null}
+            </Fragment>
           ))}
           {busy ? <div className="en-bubble is-tutor" aria-label={t('tutor.chat.thinking')}>…</div> : null}
           <div ref={endRef} />

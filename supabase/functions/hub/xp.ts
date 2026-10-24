@@ -50,6 +50,8 @@ const PRIMARY_CONTENT_TYPES = [
   // Finished role-plays and speaking mocks (./practice.ts).
   "speaking.roleplay",
   "speaking.mock",
+  // Shadowing takes (./shadowing.ts): one registry item, so at most one activity's XP a day.
+  "speaking.shadowing",
   "grammar.unit",
   "immersion.mission",
   "vocabulary.deck",
