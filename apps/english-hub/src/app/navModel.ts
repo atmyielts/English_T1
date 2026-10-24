@@ -28,6 +28,7 @@ export const DAY_ENTRIES: NavEntry[] = [
   { to: '/roleplay', labelKey: 'ws.roleplay', group: 'day', keywords: 'roleplay scenario interview visa conversation speaking' },
   { to: '/speaking-mock', labelKey: 'ws.mock', group: 'day', keywords: 'ielts mock exam test band speaking' },
   { to: '/duel', labelKey: 'social.nav.duel', group: 'day', keywords: 'duel battle friend challenge words vocabulary game' },
+  { to: '/exam', labelKey: 'exam.nav', group: 'day', keywords: 'multilevel national exam cefr certificate mock test milliy sertifikat' },
   { to: '/practice', labelKey: 'nav.practice', group: 'day', keywords: 'skills catalog library lessons' },
 ];
 

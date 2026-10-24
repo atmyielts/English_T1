@@ -1,0 +1,180 @@
+{
+  "id": "multilevel-practice-2",
+  "title": "Practice paper 2",
+  "level_focus": "B2",
+  "reading": {
+    "parts": [
+      {
+        "id": "r1",
+        "type": "gap_fill",
+        "level": "B1",
+        "title": "Part 1. Complete the text. Each missing word appears somewhere else in the text.",
+        "text": "Every Sunday morning, a small market appears in the square in front of the old mosque. Farmers from nearby villages arrive early with their vegetables, fruit and fresh bread. By eight o'clock the square is full of people, and the smell of bread fills the air. Many families come to the {{1}} not only to shop but also to meet friends. Prices are usually lower than in the supermarket, and the {{2}} are often happy to give a better price if you buy a lot. One of the most popular stalls belongs to an old farmer who sells honey from his own bees. He lets visitors taste the {{3}} before they buy it. Children love the stall next to his, where a young woman sells hot {{4}} with cheese. In autumn there is even more {{5}}: melons, grapes and apples cover every table. For many people in the town, a Sunday without a short walk to the market is not a real Sunday, and they {{6}} their friends there every week.",
+        "answers": { "1": "market", "2": "farmers", "3": "honey", "4": "bread", "5": "fruit", "6": "meet" }
+      },
+      {
+        "id": "r2",
+        "type": "mcq",
+        "level": "B1",
+        "title": "Part 2. Read the article and choose the correct answer.",
+        "text": "At nineteen, Jasur Rakhimov has already built an app used by more than fifty thousand people. The idea came from a problem in his own family. His grandmother, who lives alone in a village near Samarkand, often forgot to take her medicine, and Jasur's mother worried about her constantly. 'There were reminder apps already,' Jasur explains, 'but they were all in English or Russian, and the buttons were too small for older people.'\n\nJasur taught himself programming from free online videos while he was still at school. His first version of the app was, in his words, 'terrible'. It crashed often, and the reminders sometimes came at the wrong time. Instead of giving up, he asked his grandmother and her neighbours to test each new version and tell him exactly what confused them. 'They were the best teachers I ever had,' he says. 'They didn't care about clever features. They wanted large letters, a loud sound and instructions in Uzbek.'\n\nThe app is free to download. Jasur earns a small income from a version for pharmacies, which can send messages to customers when their medicine is ready. He admits that the business is not making him rich, and that he has turned down an offer from a larger company to buy it. 'If I sell it, they might add advertising or make people pay,' he says. 'My grandmother's friends would stop using it.'\n\nNext year Jasur plans to study computer science abroad, but he intends to keep improving the app. 'My grandmother still sends me her ideas,' he laughs. 'Some of them are actually very good.'",
+        "questions": [
+          { "id": "1", "prompt": "Why did Jasur create the app?", "options": [{ "id": "A", "text": "To win a programming competition." }, { "id": "B", "text": "To earn money for university." }, { "id": "C", "text": "Because his school asked him to." }, { "id": "D", "text": "To solve a problem in his family." }], "answer": "D" },
+          { "id": "2", "prompt": "What was wrong with the existing reminder apps, according to Jasur?", "options": [{ "id": "A", "text": "They were not suitable for older Uzbek speakers." }, { "id": "B", "text": "They were too expensive." }, { "id": "C", "text": "They did not work without the internet." }, { "id": "D", "text": "They had too much advertising." }], "answer": "A" },
+          { "id": "3", "prompt": "How did Jasur improve the app?", "options": [{ "id": "A", "text": "By taking a paid course." }, { "id": "B", "text": "By listening to older users' comments." }, { "id": "C", "text": "By copying other apps." }, { "id": "D", "text": "By hiring a designer." }], "answer": "B" },
+          { "id": "4", "prompt": "What did the older users care about most?", "options": [{ "id": "A", "text": "Many clever features." }, { "id": "B", "text": "A modern look." }, { "id": "C", "text": "A simple, clear design." }, { "id": "D", "text": "A low price." }], "answer": "C" },
+          { "id": "5", "prompt": "Why has Jasur refused to sell the app?", "options": [{ "id": "A", "text": "The offer was too low." }, { "id": "B", "text": "He wants to sell it later." }, { "id": "C", "text": "His family asked him not to." }, { "id": "D", "text": "He fears it would become worse for its users." }], "answer": "D" },
+          { "id": "6", "prompt": "How does Jasur feel about his grandmother's ideas?", "options": [{ "id": "A", "text": "He thinks some of them are useful." }, { "id": "B", "text": "He finds them annoying." }, { "id": "C", "text": "He ignores them." }, { "id": "D", "text": "He doesn't understand them." }], "answer": "A" }
+        ]
+      },
+      {
+        "id": "r3",
+        "type": "headings",
+        "level": "B2",
+        "title": "Part 3. Choose the best heading for each paragraph. There are two headings you do not need.",
+        "headings": [
+          { "id": "i", "text": "Research the organisation" },
+          { "id": "ii", "text": "Practise your answers out loud" },
+          { "id": "iii", "text": "Plan your journey" },
+          { "id": "iv", "text": "Prepare questions of your own" },
+          { "id": "v", "text": "Dress for the role" },
+          { "id": "vi", "text": "Say thank you afterwards" },
+          { "id": "vii", "text": "Ask for a higher salary straight away" },
+          { "id": "viii", "text": "Learn from rejection" }
+        ],
+        "paragraphs": [
+          { "id": "1", "text": "Interviewers are rarely impressed by candidates who know nothing about them. Spend an hour on the company's website and recent news. Find out what it sells, who its customers are and what problems it might be facing. You can then link your experience to the company's real needs rather than speaking in general terms.", "answer": "i" },
+          { "id": "2", "text": "Knowing what you want to say is not the same as being able to say it clearly under pressure. Ask a friend to play the interviewer and answer common questions aloud, such as why you want the job. You will quickly notice which answers are too long and which words you keep repeating.", "answer": "ii" },
+          { "id": "3", "text": "There is no single correct outfit. A bank may expect a suit, while a design studio might find one strange. Look at photos of staff on the company's social media and choose clothes that are slightly smarter than what they wear every day. Whatever you choose, make sure it is clean and comfortable.", "answer": "v" },
+          { "id": "4", "text": "Arriving late and out of breath is a terrible way to begin. Check the address the day before, find out how long the trip takes at that time of day and leave extra time for traffic. If possible, aim to be near the building fifteen minutes early, and use the time to calm down.", "answer": "iii" },
+          { "id": "5", "text": "Most interviews end with the words 'Do you have any questions for us?' Saying no can suggest a lack of interest. Have two or three questions ready, for example about training or what a typical week looks like. Avoid anything you could easily have found out by reading the website.", "answer": "iv" },
+          { "id": "6", "text": "Within a day of the interview, send a short, polite email to the people you met. Mention one thing from the conversation that made you more interested in the job. It takes five minutes, but many candidates forget, so it can help you stand out.", "answer": "vi" }
+        ]
+      },
+      {
+        "id": "r4",
+        "type": "mcq",
+        "level": "C1",
+        "title": "Part 4. Read the text and choose the correct answer.",
+        "text": "Few people today are ever truly bored. A spare minute in a queue or on a bus is filled almost automatically by a phone, and the feeling of having nothing to do has become something to be eliminated as quickly as possible. Yet a growing number of psychologists argue that in getting rid of boredom we may be losing something valuable.\n\nTheir argument rests on what boredom actually does. Far from being a passive state, boredom is an uncomfortable signal that our current activity is not meeting our needs. Like hunger, it pushes us to search for something better. In a well-known experiment, participants who first completed a deliberately dull task, copying numbers from a telephone directory, later produced more creative ideas than a group who had gone straight to the creative task. The researchers suggested that boredom had encouraged the participants' minds to wander, and that mind-wandering allowed unexpected connections to form.\n\nIt would be a mistake, however, to conclude that more boredom is always better. Chronic boredom, the kind experienced by people trapped in meaningless jobs or with no control over their days, is associated with poorer mental health rather than with creativity. The benefit seems to depend on the boredom being temporary and on the person having the freedom to act on the restlessness it produces.\n\nThis is where smartphones change the picture. The problem is not that phones are entertaining, but that they offer relief so quickly that the restlessness never has time to do its work. The mind is pulled back into a stream of content before it has wandered anywhere interesting. Some writers recommend 'boredom breaks': short periods, perhaps on a walk or a bus journey, when the phone stays in the bag and the mind is left to its own devices.\n\nWhether such advice will be widely followed is doubtful. Most people find boredom unpleasant, and technology companies are very good at offering alternatives. But for anyone who struggles to find new ideas, the occasional empty moment may be worth more than it seems.",
+        "questions": [
+          { "id": "1", "prompt": "What is the main point of the first paragraph?", "options": [{ "id": "A", "text": "Phones are harmful to health." }, { "id": "B", "text": "Psychologists disagree about boredom." }, { "id": "C", "text": "People now avoid boredom almost completely." }, { "id": "D", "text": "Queues have become longer." }], "answer": "C" },
+          { "id": "2", "prompt": "Why does the writer compare boredom to hunger?", "options": [{ "id": "A", "text": "Both are signals that push us to look for something." }, { "id": "B", "text": "Both are unpleasant physical feelings." }, { "id": "C", "text": "Both can be ignored safely." }, { "id": "D", "text": "Both are signs of illness." }], "answer": "A" },
+          { "id": "3", "prompt": "What did the experiment suggest?", "options": [{ "id": "A", "text": "Dull tasks make people tired." }, { "id": "B", "text": "Copying numbers improves memory." }, { "id": "C", "text": "Creative people are rarely bored." }, { "id": "D", "text": "A boring task can lead to more creative thinking." }], "answer": "D" },
+          { "id": "4", "prompt": "According to the writer, when is boredom NOT helpful?", "options": [{ "id": "A", "text": "When it lasts only a short time." }, { "id": "B", "text": "When it is long-term and people have little control." }, { "id": "C", "text": "When people are at work." }, { "id": "D", "text": "When people are outdoors." }], "answer": "B" },
+          { "id": "5", "prompt": "What is the writer's main concern about smartphones?", "options": [{ "id": "A", "text": "They contain too much advertising." }, { "id": "B", "text": "They make people feel lonely." }, { "id": "C", "text": "They end restlessness before it can be useful." }, { "id": "D", "text": "They are too expensive for students." }], "answer": "C" },
+          { "id": "6", "prompt": "How does the writer see the chances of 'boredom breaks' becoming popular?", "options": [{ "id": "A", "text": "Very likely." }, { "id": "B", "text": "Unlikely, although the idea has value." }, { "id": "C", "text": "Impossible to judge." }, { "id": "D", "text": "They are already common." }], "answer": "B" }
+        ]
+      }
+    ]
+  },
+  "listening": {
+    "parts": [
+      {
+        "id": "l1",
+        "type": "dialogues",
+        "level": "B1",
+        "title": "Part 1. Listen to six short conversations. Choose the correct answer for each.",
+        "items": [
+          { "id": "1", "script": "Woman: Hi, I'd like to book a table for four for tomorrow evening.\nMan: Certainly. We have tables at seven or at nine.\nWoman: Seven is a bit early for us. We'll take the later one.\nMan: Nine o'clock, then. Can I have your name, please?", "prompt": "What time is the table booked for?", "options": [{ "id": "A", "text": "Seven o'clock" }, { "id": "B", "text": "Eight o'clock" }, { "id": "C", "text": "Nine o'clock" }], "answer": "C" },
+          { "id": "2", "script": "Man: Is it true you're moving to Bukhara?\nWoman: Yes, my company is opening an office there and I'll be the manager. I'm a bit nervous, but it's a great opportunity.\nMan: Congratulations!", "prompt": "Why is the woman moving?", "options": [{ "id": "A", "text": "To study at a university." }, { "id": "B", "text": "To take a new role at work." }, { "id": "C", "text": "To live near her family." }], "answer": "B" },
+          { "id": "3", "script": "Woman: The printer isn't working again.\nMan: Did you check the paper?\nWoman: There's plenty of paper. I think it's out of ink.\nMan: There's a new cartridge in the cupboard.", "prompt": "What is the problem with the printer?", "options": [{ "id": "A", "text": "It has no ink." }, { "id": "B", "text": "It has no paper." }, { "id": "C", "text": "It is broken." }], "answer": "A" },
+          { "id": "4", "script": "Man: How did you get here so fast?\nWoman: I usually take the metro, but today I borrowed my brother's bike. It's much quicker in the morning traffic.", "prompt": "How did the woman travel today?", "options": [{ "id": "A", "text": "By bicycle" }, { "id": "B", "text": "By metro" }, { "id": "C", "text": "By car" }], "answer": "A" },
+          { "id": "5", "script": "Woman: Which of these two phones would you recommend?\nMan: This one has a better camera, but the other one has a much longer battery life.\nWoman: I travel a lot, so the battery matters more to me.\nMan: Then the second one is right for you.", "prompt": "Why does the woman choose the second phone?", "options": [{ "id": "A", "text": "It has a better camera." }, { "id": "B", "text": "It is cheaper." }, { "id": "C", "text": "Its battery lasts longer." }], "answer": "C" },
+          { "id": "6", "script": "Man: Have you finished the report for Monday?\nWoman: Almost. I just need to add the charts, and Aziza promised to send me the sales figures tonight.", "prompt": "What is the woman waiting for?", "options": [{ "id": "A", "text": "Charts from her manager." }, { "id": "B", "text": "Sales figures from a colleague." }, { "id": "C", "text": "The time of Monday's meeting." }], "answer": "B" }
+        ]
+      },
+      {
+        "id": "l2",
+        "type": "notes",
+        "level": "B1",
+        "title": "Part 2. Listen to a museum guide. Complete the notes with ONE word or a number.",
+        "script": "Good morning and welcome to the Museum of Applied Arts. My name is Nilufar and I'll be your guide today. Before we start, a few practical points. The tour lasts about ninety minutes and we'll visit three halls. The building itself was built in the nineteenth century as the home of a wealthy diplomat, so please look up at the ceilings: they're decorated with traditional painted patterns. In the first hall you'll see embroidery called suzani, mostly from Bukhara and Nurata. The second hall is dedicated to ceramics, and the third to jewellery and wood carving. You are welcome to take photographs, but please don't use the flash, because strong light can damage the old fabrics. Halfway through the tour we'll stop for ten minutes in the courtyard, where there's a small cafe. At the end, the museum shop sells copies of some items, and all the money goes to restoration work. If you get lost, the exit is always signed in green. Right, please follow me.",
+        "notes": [
+          { "id": "1", "before": "Tour length: about", "after": "minutes", "answers": ["ninety", "90"] },
+          { "id": "2", "before": "The building was once the home of a", "after": "", "answers": ["diplomat"] },
+          { "id": "3", "before": "Hall 1: embroidery called", "after": "", "answers": ["suzani"] },
+          { "id": "4", "before": "Hall 2:", "after": "", "answers": ["ceramics"] },
+          { "id": "5", "before": "Photos are allowed, but no", "after": "", "answers": ["flash"] },
+          { "id": "6", "before": "Money from the shop pays for", "after": "work", "answers": ["restoration"] }
+        ]
+      },
+      {
+        "id": "l3",
+        "type": "mcq",
+        "level": "B2",
+        "title": "Part 3. Listen to a radio interview. Choose the correct answer.",
+        "script": "Presenter: My guest today is Malika Yusupova, who started a free running group in Tashkent three years ago. Malika, how did it begin?\nMalika: Quite by accident. I used to run alone in the park every Saturday, and a neighbour asked if she could join me. The next week she brought two friends, and it grew from there. Now we have around two hundred people on a good day.\nPresenter: That's a lot of people. Do you need to be fit to join?\nMalika: Not at all. That's the main thing I want people to understand. We have groups for every speed, including walkers. Some of our members couldn't run for one minute when they started.\nPresenter: What keeps people coming back?\nMalika: Honestly, it's less about the running than the company. People make friends, they have breakfast together afterwards. For some older members, it's the only time in the week they meet new people.\nPresenter: Has it been difficult to organise?\nMalika: The hardest part was safety. When we got bigger, we had to agree with the park managers on a route that doesn't cross any roads, and we trained volunteers in first aid.\nPresenter: And what's next for the group?\nMalika: We'd like to start a similar group in Samarkand. A few people there have already contacted us. But we don't want to grow too fast; the friendly atmosphere is what makes it work.",
+        "questions": [
+          { "id": "1", "prompt": "How did the running group start?", "options": [{ "id": "A", "text": "Malika advertised it online." }, { "id": "B", "text": "A park manager suggested it." }, { "id": "C", "text": "A neighbour asked to run with Malika." }], "answer": "C" },
+          { "id": "2", "prompt": "What does Malika most want people to know?", "options": [{ "id": "A", "text": "The group suits all fitness levels." }, { "id": "B", "text": "The group meets every day." }, { "id": "C", "text": "Members must run fast." }], "answer": "A" },
+          { "id": "3", "prompt": "According to Malika, why do people keep coming?", "options": [{ "id": "A", "text": "To win races." }, { "id": "B", "text": "For the social side." }, { "id": "C", "text": "To lose weight." }], "answer": "B" },
+          { "id": "4", "prompt": "What was the biggest challenge?", "options": [{ "id": "A", "text": "Finding volunteers." }, { "id": "B", "text": "Paying for the park." }, { "id": "C", "text": "Making the runs safe." }], "answer": "C" },
+          { "id": "5", "prompt": "What did the group do because of it?", "options": [{ "id": "A", "text": "They chose a route that crosses no roads." }, { "id": "B", "text": "They moved to another park." }, { "id": "C", "text": "They limited the size of the group." }], "answer": "A" },
+          { "id": "6", "prompt": "What is Malika's attitude to growth?", "options": [{ "id": "A", "text": "She wants to grow as fast as possible." }, { "id": "B", "text": "She is careful not to grow too quickly." }, { "id": "C", "text": "She wants to stop accepting new members." }], "answer": "B" }
+        ]
+      },
+      {
+        "id": "l4",
+        "type": "mcq",
+        "level": "C1",
+        "title": "Part 4. Listen to a short talk. Choose the correct answer.",
+        "script": "In this short talk I'd like to consider why languages borrow words from one another, and why people often feel so strongly about it. Every language does it. English took thousands of words from French after the eleventh century, and Uzbek contains layers of Persian, Arabic and Russian vocabulary. More recently, almost every language has absorbed English words connected with technology.\nThe most obvious reason for borrowing is necessity. When a new object or idea arrives, it often brings its name with it, and it is simply easier to adopt that name than to invent a new one. But necessity alone doesn't explain everything. Many borrowed words replace perfectly good existing ones. Here the motive is usually prestige: speakers associate the source language with something desirable, such as modernity, education or wealth, and using its words lends them a little of that status.\nThis is precisely what tends to upset language purists. Their objection is rarely that the new words are hard to understand; it's that borrowing seems to signal a loss of confidence in one's own culture. Some governments have tried to respond by creating official native alternatives. The results are mixed. A replacement succeeds when it is short, easy to say and introduced early, before the borrowed word becomes established. Once a borrowing is in everyday use, official alternatives usually end up in dictionaries but not in people's mouths.\nIt's worth remembering, though, that borrowed words don't stay foreign for long. They are adapted to the sounds and grammar of the new language, often change their meaning, and within a generation or two most speakers no longer think of them as borrowed at all. From a historical point of view, borrowing is less a sign of a language's weakness than of its contact with the world.",
+        "questions": [
+          { "id": "1", "prompt": "What is the main purpose of the first part of the talk?", "options": [{ "id": "A", "text": "To criticise English." }, { "id": "B", "text": "To show that all languages borrow words." }, { "id": "C", "text": "To compare French and Uzbek." }], "answer": "B" },
+          { "id": "2", "prompt": "What usually explains borrowing that replaces existing words?", "options": [{ "id": "A", "text": "Prestige." }, { "id": "B", "text": "Necessity." }, { "id": "C", "text": "Government policy." }], "answer": "A" },
+          { "id": "3", "prompt": "What do purists mainly object to?", "options": [{ "id": "A", "text": "Borrowed words are hard to understand." }, { "id": "B", "text": "Borrowed words are too long." }, { "id": "C", "text": "What borrowing seems to say about cultural confidence." }], "answer": "C" },
+          { "id": "4", "prompt": "When are official alternatives most likely to succeed?", "options": [{ "id": "A", "text": "When they appear in dictionaries." }, { "id": "B", "text": "When they are introduced before the borrowed word spreads." }, { "id": "C", "text": "When they are longer and more formal." }], "answer": "B" },
+          { "id": "5", "prompt": "What happens to borrowed words over time?", "options": [{ "id": "A", "text": "They become a normal part of the language." }, { "id": "B", "text": "They disappear." }, { "id": "C", "text": "They keep their original meaning." }], "answer": "A" },
+          { "id": "6", "prompt": "What is the speaker's overall view?", "options": [{ "id": "A", "text": "Borrowing weakens languages." }, { "id": "B", "text": "Borrowing should be controlled by law." }, { "id": "C", "text": "Borrowing reflects contact with other cultures." }], "answer": "C" }
+        ]
+      }
+    ]
+  },
+  "writing": {
+    "input": {
+      "from": "Gulnora Saidova, Events Coordinator, City Youth Centre",
+      "subject": "Language exchange evenings: new arrangements",
+      "body": "Dear volunteers,\n\nBecause of building repairs, our Thursday language exchange evenings will move to the second floor of the central library for the next three months. The sessions will be shorter, ninety minutes instead of two hours, and we can only accept thirty participants each time. Please let us know how you feel about these changes and whether you have any suggestions to help us organise the evenings.\n\nGulnora Saidova"
+    },
+    "task11": "Write an email to a friend who also volunteers at the evenings. Tell your friend how you feel about the changes and what you plan to do. Write about 50 words.",
+    "task12": "Write an email to the events coordinator. Explain how the changes affect you and suggest how the evenings could be organised. Write 120-150 words.",
+    "part2": "You are writing an article for an online magazine for young people. The topic is: 'Learning a foreign language is more useful today than ever before, even with translation apps.' Do you agree? Give your opinion and support it with examples. Write 180-200 words."
+  },
+  "speaking": {
+    "part11": [
+      "Where do you live, and what do you like about it?",
+      "How do you usually spend your evenings?",
+      "What is your favourite season, and why?"
+    ],
+    "part12": {
+      "scene": "Picture A: a group of students studying together around a table in a library. Picture B: a student studying alone at home with headphones on.",
+      "questions": [
+        "Describe and compare the two pictures.",
+        "Why do some students prefer to study in groups?",
+        "What helps you to concentrate when you study?"
+      ]
+    },
+    "part2": {
+      "scene": "A picture of a young person looking at several job offers on a laptop.",
+      "questions": [
+        "Tell me about an important choice you have made about your studies or work.",
+        "What do people think about when they choose a job?",
+        "Is it better to have a job you love or a job that pays well? Why?"
+      ]
+    },
+    "part3": {
+      "statement": "Tourism does more good than harm to historic cities.",
+      "for": [
+        "It brings money and jobs to local people",
+        "It pays for the protection of old buildings",
+        "It helps people learn about other cultures"
+      ],
+      "against": [
+        "It makes housing more expensive for residents",
+        "Crowds can damage historic sites",
+        "Local traditions can become shows for tourists"
+      ]
+    }
+  }
+}

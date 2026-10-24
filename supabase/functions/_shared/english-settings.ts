@@ -24,6 +24,7 @@ export const ENGLISH_SERVICES = [
   "classes",
   // Vocabulary duels (english-duel.ts): pausing stops new duels and new starts.
   "duels",
+  "exam",
 ] as const;
 export type EnglishService = (typeof ENGLISH_SERVICES)[number];
 
@@ -52,6 +53,8 @@ export const KNOWN_ENGLISH_AI_FEATURES = [
   "writing-feedback",
   "immersion-judge",
   "content-draft",
+  "exam-writing",
+  "exam-speaking",
 ] as const;
 
 export type EnglishSettings = {

@@ -20,6 +20,7 @@ import { testResultRecord } from "../_shared/english-certificate.ts";
 import { perSkillLevels, readLevelHistory } from "../_shared/english-levels.ts";
 import { topicFromSubskill } from "../_shared/english-mistakes.ts";
 import { pickNextStep } from "../_shared/english-next.ts";
+import { examNextContext } from "../_shared/english-exam-next.ts";
 import {
   CHECK_FINAL_PROMPT,
   CHECK_ROUND_PROMPT,
@@ -88,7 +89,7 @@ const relation = (row: Row): Row => {
   return (Array.isArray(value) ? value[0] : value) as Row ?? {};
 };
 
-const loadGoal = async (ctx: Ctx): Promise<Row | null> => {
+export const loadGoal = async (ctx: Ctx): Promise<Row | null> => {
   const { data, error } = await ctx.sb.from("learner_language_goals")
     .select("current_cefr_estimate, target_cefr, goal_keys, metadata")
     .eq("user_id", ctx.userId)
@@ -103,7 +104,7 @@ const loadGoal = async (ctx: Ctx): Promise<Row | null> => {
  * there; until that migration is applied, falls back to re-reading the row
  * just before writing, which keeps the window for overwriting other keys tiny.
  */
-const setMetaKey = async (ctx: Ctx, key: string, value: unknown): Promise<void> => {
+export const setMetaKey = async (ctx: Ctx, key: string, value: unknown): Promise<void> => {
   const { error } = await ctx.sb.rpc("english_set_goal_metadata_key", {
     p_user_id: ctx.userId,
     p_language_id: ctx.languageId,
@@ -167,7 +168,7 @@ const lastLevelChangeAt = (meta: Row): string | null => readLevelHistory(meta).a
  * Ratings from the cache while nothing changed, otherwise recomputed and
  * cached. Pass `attempts` when they are already loaded.
  */
-const ratingsFor = async (ctx: Ctx, goal: Row | null, attempts?: EngineAttempt[]): Promise<RatingSummary> => {
+export const ratingsFor = async (ctx: Ctx, goal: Row | null, attempts?: EngineAttempt[]): Promise<RatingSummary> => {
   const meta = metaOf(goal);
   const cached = readRatingSummary(meta.skill_ratings);
   let latestAt = attempts ? attempts[0]?.submitted_at ?? null : null;
@@ -335,6 +336,7 @@ const getNext = async (ctx: Ctx, url: URL, products: Record<string, { productId?
     goalKeys: Array.isArray(goal?.goal_keys) ? (goal!.goal_keys as unknown[]).map(String) : [],
     assignments,
     resume,
+    exam: examNextContext(goal?.metadata, ratings.skills),
   });
   return json(200, { ok: true, date, ...result });
 };

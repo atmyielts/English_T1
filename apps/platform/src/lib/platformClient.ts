@@ -1018,7 +1018,7 @@ export const adminEnglishRulesPatch = async (
 
 // --- English control center (admin-english-ops /control, /ai-usage, /learner) ---
 
-export type EnglishControlService = 'reading' | 'writing' | 'listening' | 'speaking' | 'grammar' | 'vocabulary' | 'immersion' | 'tutor' | 'classes' | 'duels';
+export type EnglishControlService = 'reading' | 'writing' | 'listening' | 'speaking' | 'grammar' | 'vocabulary' | 'immersion' | 'tutor' | 'classes' | 'duels' | 'exam';
 
 export type EnglishControlSettings = {
   services: Record<EnglishControlService, boolean>;

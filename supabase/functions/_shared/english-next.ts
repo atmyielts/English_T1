@@ -8,6 +8,7 @@
 //   1. due reviews (words and missed questions; always free)
 //   1b. any other open class assignment
 //   2. a lesson for a mistake the learner keeps making
+//      (then, with an exam date set, this week's exam focus section)
 //   3. the weakest skill against the goal level (by the per-skill rating)
 //   4. the next unfinished task in today's plan
 //   5. anything else worth doing, weakest skill first
@@ -18,8 +19,9 @@
 
 import { type AttemptRow, type CatalogItem, CEFR_ORDER, type Cefr, type FixCandidate, pickItem, TODAY_SKILLS, type TodaySkill, type TodayTask } from "./english-today.ts";
 import type { SkillRating } from "./english-rating.ts";
+import { examPrepCandidates, type ExamNextContext } from "./english-exam-next.ts";
 
-export type NextReason = "continue" | "review_due" | "class_assignment" | "fix_mistake" | "weakest_skill" | "today_plan" | "keep_going";
+export type NextReason = "continue" | "review_due" | "class_assignment" | "fix_mistake" | "weakest_skill" | "today_plan" | "keep_going" | "exam_prep";
 
 export type NextStep = {
   /** practice: a role-play or the speaking mock, opened by `href` (those pages apply their own allowance). */
@@ -78,6 +80,8 @@ export type NextInput = {
   now?: Date;
   /** Unfinished activities, newest first; the newest one comes before everything else. */
   resume?: NextResume[];
+  /** National exam track: days left and this week's focus section (english-exam-next.ts). */
+  exam?: ExamNextContext | null;
 };
 
 export type NextResult = { step: NextStep | null; locked: NextStep | null };
@@ -223,6 +227,9 @@ export const pickNextStep = (input: NextInput): NextResult => {
       input.goalKeys ?? [],
     )?.item ?? null;
   };
+  // 2b. An upcoming national exam: this week's focus section.
+  if (input.exam) candidates.push(...examPrepCandidates(input.exam, itemFor, activityStep));
+
   const ranked = rankWeakest({ items, ratings: input.ratings, targetLevel: input.targetLevel, levelFor: input.levelFor });
   const weakest = input.fromSkill && ranked.length > 1
     ? [...ranked.filter((skill) => skill !== input.fromSkill), input.fromSkill].filter((skill) => ranked.includes(skill))

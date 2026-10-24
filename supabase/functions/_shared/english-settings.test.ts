@@ -12,7 +12,8 @@ const defaults = defaultEnglishSettings({});
 
 Deno.test("defaults match behaviour before the settings table existed", () => {
   assertEquals(Object.values(defaults.services).every(Boolean), true);
-  assertEquals(Object.keys(defaults.services).length, 10);
+  // Seven skills, the AI tutor, classes, duels and the national exam track.
+  assertEquals(Object.keys(defaults.services).length, 11);
   assertEquals(defaults.free_activities_per_day, 1);
   assertEquals(defaults.ai, { enabled: true, daily_limit: 30, word_lookup_daily_limit: 60, features: {} });
 });

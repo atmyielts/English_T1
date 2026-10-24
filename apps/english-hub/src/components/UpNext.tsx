@@ -35,6 +35,8 @@ export const stepReason = (step: NextStep, t: T): string => {
         ? t('engine.next.reason.weakest_skill', { skill, level: rating.level, progress: rating.progress, target: step.target_level })
         : t('engine.next.reason.weakest_skill.noGoal', { skill, level: rating.level, progress: rating.progress });
     }
+    case 'exam_prep':
+      return t('exam.next.reason', { count: Number(step.detail) || 0, skill });
     case 'today_plan':
       return t('engine.next.reason.today_plan');
     case 'class_assignment':

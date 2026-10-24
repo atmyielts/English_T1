@@ -69,6 +69,7 @@ import { sweepDuels } from "../_shared/english-duel-service.ts";
 import { handleProgressLinkRoute, handlePublicProgress, isPublicProgressRoute } from "./progress-link.ts";
 import { handleSocialBotUpdate } from "./social-bot.ts";
 import { runWeeklyReportCycle } from "./weekly-report.ts";
+import { handleExamRoute } from "./exam.ts";
 
 const routeMarker = "/hub";
 
@@ -463,6 +464,9 @@ serve(async (req) => {
     // === Journey, inbox, content search, continue anywhere (./glue.ts) ===
     const glueResponse = await handleGlueRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId, products });
     if (glueResponse) return glueResponse;
+    // === National exam track: readiness, exam date, timed mocks (./exam.ts) ===
+    const examResponse = await handleExamRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId, products });
+    if (examResponse) return examResponse;
 
     // === Today, catalog and history (learner home) ===
     // Built only from the learner's placement, real attempts and due reviews.
