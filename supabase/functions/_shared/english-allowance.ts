@@ -1,27 +1,33 @@
 // Who may submit an English activity.
 //
 // A learner with the skill in their plan (or an admin) always may. Everyone
-// else signed in gets a small free allowance: FREE_ACTIVITIES_PER_DAY
-// activities a day across the skills they haven't bought. The day follows
-// Uzbekistan time (UTC+5, no daylight saving), where most learners are.
+// else signed in gets a small free allowance: free_activities_per_day
+// (english_service_settings, default FREE_ACTIVITIES_PER_DAY) activities a day
+// across the skills they haven't bought. The day follows Uzbekistan time
+// (UTC+5, no daylight saving), where most learners are. A service the owner
+// has paused refuses new activities for everyone except admins.
 // Review of saved words and the placement test are always free and never
 // pass through here.
 
 import { requireEnglishSuiteAccess } from "./english-access.ts";
 import { json, resolveEnglishProducts } from "./english-learning.ts";
+import { type EnglishService, isServicePaused, loadEnglishSettings, pausedServices, servicePausedBody } from "./english-settings.ts";
 
 export const FREE_ACTIVITIES_PER_DAY = 1;
 const LEARNER_UTC_OFFSET_HOURS = 5;
 
 export type ActivityAccess = {
   allowed: boolean;
-  /** entitled: the skill is in the learner's plan; free: uses today's free activity. */
-  basis: "entitled" | "admin" | "free" | "free_used";
+  /** entitled: the skill is in the learner's plan; free: uses today's free activity; paused: the owner paused this skill. */
+  basis: "entitled" | "admin" | "free" | "free_used" | "paused";
   free_left: number;
   free_per_day: number;
   entitled_skills: string[];
   /** Registry ids of activities done today on the free allowance (they may be redone). */
   free_item_ids: string[];
+  /** Services the owner has paused right now (admins may still use them). */
+  paused_services: EnglishService[];
+  admin: boolean;
 };
 
 /** Start of the learner's current day, as an ISO timestamp in UTC. */
@@ -37,10 +43,12 @@ export const decideAccess = (input: {
   entitled: boolean;
   usedFreeToday: number;
   perDay?: number;
+  paused?: boolean;
 }): Pick<ActivityAccess, "allowed" | "basis" | "free_left"> => {
   const perDay = input.perDay ?? FREE_ACTIVITIES_PER_DAY;
   const freeLeft = Math.max(0, perDay - input.usedFreeToday);
   if (input.admin) return { allowed: true, basis: "admin", free_left: freeLeft };
+  if (input.paused) return { allowed: false, basis: "paused", free_left: freeLeft };
   if (input.entitled) return { allowed: true, basis: "entitled", free_left: freeLeft };
   return freeLeft > 0 ? { allowed: true, basis: "free", free_left: freeLeft } : { allowed: false, basis: "free_used", free_left: 0 };
 };
@@ -61,7 +69,13 @@ export const checkActivityAccess = async (
   sb: any,
   input: { userId: string; languageId: string; products: ProductMap; skill: string | null; sourceRef?: string | null },
 ): Promise<ActivityAccess> => {
-  const suite = await requireEnglishSuiteAccess(sb, input.userId, input.products);
+  const [suite, settings] = await Promise.all([
+    requireEnglishSuiteAccess(sb, input.userId, input.products),
+    loadEnglishSettings(sb),
+  ]);
+  const perDay = settings.free_activities_per_day;
+  const paused = pausedServices(settings);
+  const common = { free_per_day: perDay, paused_services: paused, admin: suite.admin };
   const owned = suite.admin ? Object.keys(input.products) : entitledSkills(input.products, suite.entitlementProductIds);
   const notOwned = Object.keys(input.products).filter((skill) => !owned.includes(skill));
   // Distinct activities, so finishing and then retrying the same one counts once.
@@ -84,8 +98,10 @@ export const checkActivityAccess = async (
     admin: suite.admin,
     entitled: input.skill !== null && owned.includes(input.skill),
     usedFreeToday: used,
+    perDay,
+    paused: input.skill !== null && isServicePaused(settings, input.skill),
   });
-  if (!decision.allowed && input.skill && input.sourceRef && usedItems.size) {
+  if (!decision.allowed && decision.basis === "free_used" && input.skill && input.sourceRef && usedItems.size) {
     // Redoing today's free activity is always allowed.
     const { data } = await sb
       .from("learning_content_registry_items")
@@ -95,10 +111,10 @@ export const checkActivityAccess = async (
       .eq("source_ref", input.sourceRef)
       .limit(5);
     if (((data ?? []) as Array<{ id: string }>).some((row) => usedItems.has(String(row.id)))) {
-      return { allowed: true, basis: "free", free_left: 0, free_per_day: FREE_ACTIVITIES_PER_DAY, entitled_skills: owned, free_item_ids: [...usedItems] };
+      return { allowed: true, basis: "free", free_left: 0, ...common, entitled_skills: owned, free_item_ids: [...usedItems] };
     }
   }
-  return { ...decision, free_per_day: FREE_ACTIVITIES_PER_DAY, entitled_skills: owned, free_item_ids: [...usedItems] };
+  return { ...decision, ...common, entitled_skills: owned, free_item_ids: [...usedItems] };
 };
 
 /** Standard refusal when today's free activity is used and the skill isn't in the learner's plan. */
@@ -121,7 +137,8 @@ export const submitSlug = (route: string | undefined): string | null => {
 
 /**
  * One-call guard for submit routes: resolves the product list itself and
- * returns a 402 response when the learner can't submit, or null when they can.
+ * returns a 503 `service_paused` response when the owner paused the skill, a
+ * 402 response when the learner can't submit, or null when they can.
  * Pass the route so a retry of today's free activity is recognised.
  */
 export const guardActivity = async (
@@ -133,5 +150,6 @@ export const guardActivity = async (
 ): Promise<Response | null> => {
   const products = await resolveEnglishProducts(sb) as ProductMap;
   const access = await checkActivityAccess(sb, { userId, languageId, products, skill, sourceRef: submitSlug(route) });
-  return access.allowed ? null : json(402, freeLimitBody(access));
+  if (access.allowed) return null;
+  return access.basis === "paused" ? json(503, servicePausedBody(skill)) : json(402, freeLimitBody(access));
 };

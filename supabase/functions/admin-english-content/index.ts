@@ -20,7 +20,7 @@ import {
   STUDIO_SKILLS,
   type StudioServiceKey,
 } from "../_shared/english-content-studio.ts";
-import { callEnglishAIWithStatus, isEnglishAIConfigured } from "../_shared/english-ai.ts";
+import { callEnglishAIWithStatus, englishAIAvailable } from "../_shared/english-ai.ts";
 import {
   cleanDraft,
   DRAFT_SYSTEM_PROMPT,
@@ -559,7 +559,10 @@ const draftStudioItem = async (ctx: StudioContext, key: StudioServiceKey, body: 
   const notes = toText(body.notes, 600);
   if (topic.length < 3) return json(422, { error: "Describe the topic in a few words.", errors: [{ field: "topic", message: "Describe the topic in a few words." }] });
   if (!/^(A1|A2|B1|B2|C1|C2)$/.test(level)) return json(422, { error: "Choose a level.", errors: [{ field: "level", message: "Choose a level." }] });
-  if (!isEnglishAIConfigured()) return json(503, { error: "AI drafting is not configured on this server.", code: "ai_unconfigured" });
+  // Admin drafting uses no learner credits, but the AI switches still apply.
+  if (!(await englishAIAvailable("content-draft"))) {
+    return json(503, { error: "AI drafting is not configured or is switched off.", code: "ai_unconfigured" });
+  }
 
   // One real published item of this skill, nearest the requested level, shows the model the shape.
   const config = STUDIO_SKILLS[key];
@@ -579,7 +582,7 @@ const draftStudioItem = async (ctx: StudioContext, key: StudioServiceKey, body: 
 
   const request = { serviceKey: key, topic, level, notes };
   const first = await callEnglishAIWithStatus<unknown>(
-    { systemPrompt: DRAFT_SYSTEM_PROMPT, userPayload: draftUserPayload(request, example), temperature: 0.7 },
+    { systemPrompt: DRAFT_SYSTEM_PROMPT, userPayload: draftUserPayload(request, example), temperature: 0.7, feature: "content-draft", userId: ctx.userId },
     null,
   );
   let draft = first.status === "ok" ? cleanDraft(first.data, request) : null;
@@ -594,7 +597,7 @@ const draftStudioItem = async (ctx: StudioContext, key: StudioServiceKey, body: 
   let check = normalizeStudioItem(key, draft.item, draft.children);
   if (!check.ok) {
     const repair = await callEnglishAIWithStatus<unknown>(
-      { systemPrompt: DRAFT_SYSTEM_PROMPT, userPayload: repairUserPayload(request, draft, check.errors), temperature: 0.2 },
+      { systemPrompt: DRAFT_SYSTEM_PROMPT, userPayload: repairUserPayload(request, draft, check.errors), temperature: 0.2, feature: "content-draft", userId: ctx.userId },
       null,
     );
     const repaired = repair.status === "ok" ? cleanDraft(repair.data, request) : null;

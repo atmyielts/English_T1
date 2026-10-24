@@ -1016,6 +1016,122 @@ export const adminEnglishRulesPatch = async (
   };
 };
 
+// --- English control center (admin-english-ops /control, /ai-usage, /learner) ---
+
+export type EnglishControlService = 'reading' | 'writing' | 'listening' | 'speaking' | 'grammar' | 'vocabulary' | 'immersion' | 'tutor';
+
+export type EnglishControlSettings = {
+  services: Record<EnglishControlService, boolean>;
+  free_activities_per_day: number;
+  ai: { enabled: boolean; daily_limit: number; word_lookup_daily_limit: number; features: Record<string, boolean> };
+};
+
+export type EnglishControlState = {
+  settings: EnglishControlSettings;
+  defaults: EnglishControlSettings;
+  services: EnglishControlService[];
+  features: string[];
+  table_ready: boolean;
+  updated: Array<{ key: string; updated_at: string | null; updated_by: string | null }>;
+  runtime: {
+    provider: string;
+    model: string;
+    fallback: string;
+    configured: boolean;
+    primary_key_set: boolean;
+    env_daily_limit: number | null;
+  };
+};
+
+export type EnglishControlPatch = {
+  services?: Partial<Record<EnglishControlService, boolean>>;
+  free_activities_per_day?: number;
+  ai?: Partial<Omit<EnglishControlSettings['ai'], 'features'>> & { features?: Record<string, boolean> };
+};
+
+type AiCounts = { calls: number; ok: number; failed: number; refused: number };
+
+export type EnglishAiUsage = {
+  days: number;
+  since?: string;
+  totals?: {
+    calls: number;
+    ok: number;
+    failed: number;
+    disabled: number;
+    unconfigured: number;
+    over_limit: number;
+    learners: number;
+    avg_latency_ms: number | null;
+    prompt_tokens: number;
+    completion_tokens: number;
+  };
+  by_day?: Array<AiCounts & { day: string; tokens: number }>;
+  by_feature?: Array<AiCounts & { feature: string; avg_latency_ms: number | null; prompt_tokens: number; completion_tokens: number }>;
+  by_status?: Record<string, number>;
+  by_model?: Array<{ provider: string; model: string; calls: number; avg_latency_ms: number | null; prompt_tokens: number; completion_tokens: number }>;
+  top_learners?: Array<{ user_id: string; calls: number; ok: number; over_limit: number }>;
+  recent_errors?: Array<{ created_at: string; feature: string; provider: string | null; model: string | null; error: string | null }>;
+};
+
+export type EnglishLearnerSupport = {
+  learner: { user_id: string; role: string; created_at: string | null; telegram_linked: boolean; tenant_id: string | null };
+  entitlements: Array<{ skill: string; active: boolean; starts_at: string | null; ends_at: string | null }>;
+  free: { left_today: number | null; per_day: number; day_started_at: string };
+  level: { current: string | null; target: string | null; placement_done: boolean; daily_minutes: number | null };
+  streak: number;
+  recent_attempts: Array<{ id: string; skill: string; status: string; score_percent: number | null; title: string | null; at: string | null }>;
+  ai_today: { credits_used: number; calls: number; ok: number; failed: number; over_limit: number };
+};
+
+/** Error with the server's own message (validation reasons included), for the control center. */
+export class AdminEnglishControlError extends Error {
+  readonly status: number;
+  readonly reasons: string[];
+
+  constructor(message: string, status: number, reasons: string[] = []) {
+    super(message);
+    this.status = status;
+    this.reasons = reasons;
+  }
+}
+
+const callEnglishControl = async (accessToken: string, pathname: string, init: RequestInit = {}): Promise<unknown> => {
+  const res = await fetch(`${edgeBase}${pathname}`, {
+    ...init,
+    headers: { ...apiHeaders(accessToken), 'Content-Type': 'application/json', ...(init.headers ?? {}) },
+  });
+  const payload = await readJsonOrText(res);
+  if (!res.ok) {
+    const record = payload && typeof payload === 'object' ? (payload as Record<string, unknown>) : {};
+    const message = typeof record.error === 'string' ? record.error : `Request failed (${res.status})`;
+    const reasons = Array.isArray(record.errors) ? record.errors.filter((entry): entry is string => typeof entry === 'string') : [];
+    throw new AdminEnglishControlError(`${message} (${res.status})`, res.status, reasons);
+  }
+  return payload;
+};
+
+export const adminEnglishControlGet = async (accessToken: string): Promise<EnglishControlState> =>
+  (await callEnglishControl(accessToken, '/admin-english-ops/control?language_code=en', { method: 'GET' })) as EnglishControlState;
+
+export const adminEnglishControlUpdate = async (accessToken: string, patch: EnglishControlPatch): Promise<EnglishControlState> =>
+  (await callEnglishControl(accessToken, '/admin-english-ops/control', {
+    method: 'PATCH',
+    body: JSON.stringify({ language_code: 'en', ...patch }),
+  })) as EnglishControlState;
+
+export const adminEnglishAiUsage = async (accessToken: string, days: number): Promise<EnglishAiUsage> =>
+  (await callEnglishControl(accessToken, `/admin-english-ops/ai-usage?language_code=en&days=${encodeURIComponent(String(days))}`, {
+    method: 'GET',
+  })) as EnglishAiUsage;
+
+export const adminEnglishLearnerLookup = async (accessToken: string, email: string): Promise<EnglishLearnerSupport> =>
+  // POST keeps the email out of URLs (and so out of request logs).
+  (await callEnglishControl(accessToken, '/admin-english-ops/learner', {
+    method: 'POST',
+    body: JSON.stringify({ language_code: 'en', email: email.trim() }),
+  })) as EnglishLearnerSupport;
+
 export const adminBillingPlansList = async (
   accessToken: string,
   productId: string,

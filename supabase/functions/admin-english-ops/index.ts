@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { authorizeAdminRequest } from "../_shared/admin-access.ts";
+import { CONTROL_ROUTES, handleControlRoute } from "./control.ts";
 import {
   DEFAULT_ENGLISH_RULE_CONFIGS,
   asRecord,
@@ -23,7 +24,7 @@ const routeMarker = "/admin-english-ops";
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "GET, PATCH, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
 };
 
 const getEnv = (key: string): string => {
@@ -94,21 +95,39 @@ serve(async (req) => {
     const url = new URL(req.url);
     const route = extractRoute(url, routeMarker);
     const needsSettingsPermission = req.method === "PATCH";
+    const isControlRoute = CONTROL_ROUTES.includes(route);
 
     const sb = createClient(getEnv("SUPABASE_URL"), getEnv("SUPABASE_SERVICE_ROLE_KEY"), {
       auth: { persistSession: false },
     });
     const authz = await authorizeAdminRequest(sb, req, corsHeaders, {
       requiredPermission: needsSettingsPermission ? "admin.settings.manage" : "admin.analytics.view",
-      action: needsSettingsPermission ? "admin.english_ops.settings" : "admin.english_ops.analytics",
+      action: isControlRoute
+        ? (needsSettingsPermission ? "admin.english_ops.control.update" : "admin.english_ops.control.view")
+        : (needsSettingsPermission ? "admin.english_ops.settings" : "admin.english_ops.analytics"),
     });
     if (!authz.ok) return authz.response;
 
-    const body = req.method === "PATCH" ? await parseBody(req) : {};
+    const body = req.method === "PATCH" || req.method === "POST" ? await parseBody(req) : {};
     const scope = await resolveLanguageScope(
       sb,
       toText(url.searchParams.get("language_code") ?? body.language_code, 16) || "en",
     );
+
+    // === English control center: switches, AI usage, learner support view (./control.ts) ===
+    if (isControlRoute) {
+      const controlResponse = await handleControlRoute({
+        sb,
+        req,
+        url,
+        route,
+        body,
+        adminUserId: authz.context.userId,
+        languageId: scope.languageId,
+        json,
+      });
+      if (controlResponse) return controlResponse;
+    }
 
     if (req.method === "GET" && (route === "" || route === "/" || route === "/rules")) {
       const rules = await loadEnglishRuleConfigs(sb, scope.languageId);

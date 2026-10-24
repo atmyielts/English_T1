@@ -20,8 +20,8 @@ import {
   toNumber,
   toText,
 } from "../_shared/english-learning.ts";
-import { callEnglishAIWithStatus, isEnglishAIConfigured } from "../_shared/english-ai.ts";
-import { consumeEnglishAiDailyQuota, parseEnglishAiDailyLimit, requireEnglishSuiteAccess } from "../_shared/english-access.ts";
+import { requireEnglishSuiteAccess } from "../_shared/english-access.ts";
+import { callEnglishAIWithCredit, defaultAICreditDeps } from "../_shared/english-ai-quota.ts";
 import {
   buildWritingAIRequest,
   buildWritingFeedback,
@@ -157,13 +157,17 @@ const latestDraft = async (sb: any, userId: string, languageId: string, promptId
 
 /** Calls the AI only for learners with access and AI quota left; otherwise returns null (basic feedback). */
 const askAI = async (sb: any, userId: string, products: Record<EnglishServiceKey, EnglishProductInfo>, text: string, spec: WritingPromptSpec) => {
-  if (!isEnglishAIConfigured()) return null;
   try {
     const access = await requireEnglishSuiteAccess(sb, userId, products);
     if (!access.allowed) return null;
-    const quota = await consumeEnglishAiDailyQuota(sb, userId, parseEnglishAiDailyLimit(Deno.env.get("ENGLISH_AI_DAILY_LIMIT")));
-    if (!quota.allowed) return null;
-    const result = await callEnglishAIWithStatus<unknown>(buildWritingAIRequest(text, spec), null);
+    // One AI credit; refunded if the call fails. AI that is off or unconfigured takes no credit.
+    const result = await callEnglishAIWithCredit<unknown>(
+      defaultAICreditDeps(sb),
+      userId,
+      { ...buildWritingAIRequest(text, spec), feature: "writing-feedback", userId },
+      null,
+    );
+    if (result.over_limit) return null;
     if (result.status !== "ok") console.warn("writing-workbench: AI feedback unavailable", result.status, result.error ?? "");
     return { status: result.status, data: result.data };
   } catch (error) {

@@ -17,12 +17,10 @@ import {
   buildCrossSkillActivity,
   buildUnifiedMistakeNotebook,
 } from "../_shared/english-insights.ts";
-import { callEnglishAIWithStatus, isEnglishAIConfigured } from "../_shared/english-ai.ts";
-import {
-  consumeEnglishAiDailyQuota,
-  parseEnglishAiDailyLimit,
-  requireEnglishSuiteAccess,
-} from "../_shared/english-access.ts";
+import { aiFeatureForRoute, isEnglishAIConfigured } from "../_shared/english-ai.ts";
+import { requireEnglishSuiteAccess } from "../_shared/english-access.ts";
+import { createAICreditSession, defaultAICreditDeps } from "../_shared/english-ai-quota.ts";
+import { isServicePaused, loadEnglishSettings, servicePausedBody } from "../_shared/english-settings.ts";
 import { parseBody } from "../_shared/english-learning.ts";
 import { parseEnglishClientRecoveryEvent } from "../_shared/english-client-recovery.ts";
 import {
@@ -338,6 +336,11 @@ serve(async (req) => {
 
     const products = await resolveEnglishProducts(sb);
 
+    // Every AI call below goes through this: tagged with the route's feature and
+    // the learner for the usage ledger, and the credit is refunded if it fails.
+    const aiCredit = createAICreditSession({ userId: auth.userId, feature: aiFeatureForRoute(route), deps: defaultAICreditDeps(sb) });
+    const callEnglishAIWithStatus = aiCredit.call;
+
     const isEnglishAiRequest = (req.method === "GET" && route === "/insights/coach-summary")
       || (req.method === "POST" && route.startsWith("/ai/"));
     if (isEnglishAiRequest) {
@@ -352,20 +355,24 @@ serve(async (req) => {
         });
       }
 
-      if (isEnglishAIConfigured()) {
-        const quota = await consumeEnglishAiDailyQuota(
-          sb,
-          auth.userId,
-          parseEnglishAiDailyLimit(Deno.env.get("ENGLISH_AI_DAILY_LIMIT")),
-        );
-        if (!quota.allowed) {
-          return json(429, {
-            error: "Daily English AI limit reached. Try again tomorrow.",
-            code: "english_ai_daily_limit_reached",
-            remaining: quota.remaining,
-            total: quota.total,
-          });
-        }
+      // The AI tutor (chat and voice) can be paused by the owner; admins still get in.
+      if (
+        (aiCredit.feature === "tutor-chat" || aiCredit.feature === "voice-conversation-turn")
+        && !("admin" in access && access.admin)
+        && isServicePaused(await loadEnglishSettings(sb), "tutor")
+      ) {
+        return json(503, servicePausedBody("tutor"));
+      }
+
+      // No credit is taken when AI is off or unconfigured.
+      const quota = await aiCredit.charge();
+      if (quota && !quota.allowed) {
+        return json(429, {
+          error: "Daily English AI limit reached. Try again tomorrow.",
+          code: "english_ai_daily_limit_reached",
+          remaining: quota.remaining,
+          total: quota.total,
+        });
       }
     }
 
@@ -641,7 +648,10 @@ serve(async (req) => {
       const allowance = ownedSkills.length
         ? null
         : await checkActivityAccess(sb, { userId: auth.userId, languageId: scope.languageId, products, skill: null });
-      const availableSkills = ownedSkills.length ? ownedSkills : [...TODAY_SKILLS];
+      // Skills the owner has paused stay out of today's plan (admins still see them).
+      const settings = access.admin ? null : await loadEnglishSettings(sb);
+      const availableSkills = (ownedSkills.length ? ownedSkills : [...TODAY_SKILLS])
+        .filter((skill) => !settings || !isServicePaused(settings, skill));
 
       const attempts: AttemptRow[] = attemptRows
         .filter((row) => (TODAY_SKILLS as readonly string[]).includes(String(row.service_key)))
@@ -769,6 +779,8 @@ serve(async (req) => {
         entitled_skills: overview.entitled_skills,
         free_left: overview.free_left,
         free_per_day: overview.free_per_day,
+        paused_services: overview.paused_services,
+        paused_bypass: overview.admin,
         free_today: ((freeRows ?? []) as Array<Record<string, unknown>>)
           .map((row) => ({ skill: String(row.service_key), slug: String(row.source_ref ?? "") }))
           .filter((row) => row.slug),
