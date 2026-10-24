@@ -67,7 +67,9 @@ if (import.meta.main) {
   if (flags.includes("--check")) {
     let current = "";
     try {
-      current = Deno.readTextFileSync(target);
+      current = Deno.readTextFileSync(target).replace(/
+/g, "
+");
     } catch {
       // missing file: out of date
     }

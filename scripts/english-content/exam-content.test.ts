@@ -8,6 +8,9 @@ Deno.test("exam practice papers validate and the seed migration is up to date", 
   const { sql, problems, count } = buildExamSeedSql(path("supabase/content/english/exam"));
   assertEquals(problems, []);
   assertEquals(count >= 3, true);
-  const migration = Deno.readTextFileSync(path("supabase/migrations/20261026100100_english_exam_papers_seed.sql"));
+  // Line endings may be CRLF in a Windows checkout.
+  const migration = Deno.readTextFileSync(path("supabase/migrations/20261026100100_english_exam_papers_seed.sql")).replace(/
+/g, "
+");
   assertEquals(migration === sql, true, "run scripts/english-content/build-exam-seed.ts to rebuild the seed");
 });
