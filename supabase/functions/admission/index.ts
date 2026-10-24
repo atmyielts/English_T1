@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.89.0';
 import { createAdmissionHandler } from './handler.ts';
 import { createAdmissionRepository, type AdmissionDatabase } from './repository.ts';
+import { createAccessCheck } from './access.ts';
 
 const required = (name: string) => {
   const value = Deno.env.get(name);
@@ -18,4 +19,9 @@ const repository = createAdmissionRepository(async (token) => {
   return error ? null : data.user?.id ?? null;
 }, service as unknown as AdmissionDatabase, contentTenant);
 
-Deno.serve(createAdmissionHandler(repository, origins, { enabled }));
+// Paid plan: set ADMISSION_PRODUCT_ID to the subscription product; unset means open beta.
+const productId = Deno.env.get('ADMISSION_PRODUCT_ID') ?? '';
+const access = /^[0-9a-f-]{36}$/i.test(productId) ? createAccessCheck(required('SUPABASE_URL'), required('SUPABASE_ANON_KEY'), productId) : undefined;
+const freeDailyQuestions = Number(Deno.env.get('ADMISSION_FREE_DAILY_QUESTIONS') ?? '10');
+
+Deno.serve(createAdmissionHandler(repository, origins, { enabled, access, freeDailyQuestions: Number.isInteger(freeDailyQuestions) && freeDailyQuestions >= 0 ? freeDailyQuestions : 10 }));

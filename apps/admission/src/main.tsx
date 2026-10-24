@@ -4,16 +4,18 @@ import { configured, observeAccount, supabase } from '../../../packages/assessme
 import { accountLink } from '../../../packages/assessment-web/src/account-links';
 import { ServiceHeader } from '../../../packages/service-design/src/ServiceHeader';
 import { I18nProvider, LocaleSwitcher } from '../../../packages/service-i18n/src/i18n.tsx';
-import { admission, type Goal, type LearnerState, type Mode } from './api.ts';
+import { admission, type Goal, type Journey as JourneyState, type LearnerState, type Mode } from './api.ts';
 import { catalogs, useAppT, useErrorText } from './i18n/index.ts';
 import { GoalForm } from './GoalForm';
+import { Journey } from './Journey';
+import { Mock } from './Mock';
 import { Practice } from './Practice';
 import { Progress } from './Progress';
 import { Today } from './Today';
 import '../../../packages/service-design/src/platform.css';
 import './style.css';
 
-type View = { name: 'today' | 'progress' | 'goal' } | { name: 'practice'; mode: Mode; topic?: string };
+type View = { name: 'today' | 'journey' | 'progress' | 'goal' | 'mock' } | { name: 'practice'; mode: Mode; topic?: string };
 
 function App() {
   const t = useAppT(), problem = useErrorText();
@@ -62,7 +64,7 @@ function App() {
   </main>;
 
   const needsGoal = state !== null && state.goal === null;
-  const nav = state && !needsGoal ? ([['today', 'nav.today'], ['progress', 'nav.progress'], ['goal', 'nav.goal']] as const).map(([name, label]) => ({
+  const nav = state && !needsGoal ? ([['today', 'nav.today'], ['journey', 'nav.path'], ['progress', 'nav.progress'], ['goal', 'nav.goal']] as const).map(([name, label]) => ({
     id: name, label: t(label), active: view.name === name, onClick: () => { setNotice(''); setView({ name }); if (name === 'today') void refresh(user); },
   })) : [];
   return <div className="workspace admission">
@@ -76,8 +78,10 @@ function App() {
       {!state ? !error && <p role="status">{t('app.loading')}</p>
         : needsGoal || view.name === 'goal' ? <GoalForm goal={state.goal} busy={busy} onSave={(goal) => void saveGoal(goal)}/>
         : view.name === 'practice' ? <Practice key={`${view.mode}:${view.topic ?? ''}`} mode={view.mode} topic={view.topic} actor={user} onExit={() => { setView({ name: 'today' }); void refresh(user); }}/>
+        : view.name === 'mock' ? <Mock actor={user} onExit={() => { setView({ name: 'today' }); void refresh(user); }}/>
+        : view.name === 'journey' ? <Journey journey={state.journey} actor={user} onChange={(journey: JourneyState, message: string) => { setNotice(message); setState({ ...state, journey }); void refresh(user); }}/>
         : view.name === 'progress' ? <Progress state={state} start={start}/>
-        : <Today state={state} start={start}/>}
+        : <Today state={state} start={start} go={(name) => { setNotice(''); setView({ name }); scrollTo(0, 0); }}/>}
     </main>
     <footer>{t('app.footer')}</footer>
   </div>;
