@@ -22,6 +22,8 @@ export const ENGLISH_SERVICES = [
   "tutor",
   // Teacher classes (/classes): off hides joining, dashboards and class reminders.
   "classes",
+  // Vocabulary duels (english-duel.ts): pausing stops new duels and new starts.
+  "duels",
 ] as const;
 export type EnglishService = (typeof ENGLISH_SERVICES)[number];
 

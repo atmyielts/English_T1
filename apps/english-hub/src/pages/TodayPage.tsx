@@ -17,6 +17,10 @@ import { OfflineDownloadCard } from '../components/offline/OfflineDownloadCard';
 import { ComebackCard, StreakFreezes } from '../components/StreakGuard';
 import { getStreak } from '../lib/engine';
 import { ClassAssignmentsCard } from '../components/ClassAssignmentsCard';
+import { ShareCardButton } from '../components/ShareCardButton';
+
+/** Streak lengths worth a share card on the day they are reached. */
+const STREAK_MILESTONES = [7, 30, 100];
 
 const greetingKey = (): string => {
   const hour = new Date().getHours();
@@ -213,6 +217,7 @@ export const TodayPage = () => {
           <Panel title={t('today.week.title')} aside={data ? <span>{t('today.week.streak', { count: streakCount })}</span> : null}>
             {data ? <WeekStrip week={data.week} /> : <Loading lines={1} />}
             <p className="hint">{data && streakCount > 0 ? t('today.week.keepGoing') : t('today.week.start')}</p>
+            {STREAK_MILESTONES.includes(streakCount) ? <ShareCardButton card={{ kind: 'streak', label: t('social.card.streak.label'), big: String(streakCount), headline: t('social.card.streak.headline', { count: streakCount }), detail: t('social.card.streak.detail') }} /> : null}
             {guard.data ? <StreakFreezes streak={guard.data} /> : null}
           </Panel>
 

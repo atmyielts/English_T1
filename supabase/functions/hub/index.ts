@@ -64,6 +64,11 @@ import { handlePracticeRoute } from "./practice.ts";
 import { handleClassesRoute, runClassReminders } from "./classes.ts";
 import { handleShadowingRoute } from "./shadowing.ts";
 import { handleGlueRoute } from "./glue.ts";
+import { duelContext, handleDuelRoute } from "./duel.ts";
+import { sweepDuels } from "../_shared/english-duel-service.ts";
+import { handleProgressLinkRoute, handlePublicProgress, isPublicProgressRoute } from "./progress-link.ts";
+import { handleSocialBotUpdate } from "./social-bot.ts";
+import { runWeeklyReportCycle } from "./weekly-report.ts";
 
 const routeMarker = "/hub";
 
@@ -298,7 +303,23 @@ serve(async (req) => {
           return { status: response.status };
         },
       }).catch((error) => ({ error: error instanceof Error ? error.message.slice(0, 200) : "unknown" }));
-      return json(200, { ok: true, ...result, classes });
+      // === Sunday weekly report, same cron (./weekly-report.ts) ===
+      const weekly = await runWeeklyReportCycle({
+        sb,
+        languageId: workerScope.languageId,
+        supabaseUrl,
+        serviceRoleKey,
+        appUrl: Deno.env.get("ENGLISH_APP_URL") ?? "https://english.schood.online",
+        dryRun: body.dry_run === true,
+        now: body.dry_run === true && typeof body.now === "string" && Number.isFinite(Date.parse(body.now)) ? new Date(body.now) : undefined,
+        onlyUserIds: body.weekly_report === true && Array.isArray(body.user_ids) ? body.user_ids.map(String).slice(0, 20) : undefined,
+      }).catch((error) => ({ ran: false, considered: 0, sent: [], error: error instanceof Error ? error.message : "unknown" }));
+      if (weekly.ran) console.log(JSON.stringify({ event: "english_weekly_report_cycle", considered: weekly.considered, sent: weekly.sent.length }));
+      // === Duels nobody is looking at: results for players who stopped tapping (./duel.ts) ===
+      const duels = body.dry_run === true
+        ? { checked: 0 }
+        : await sweepDuels(duelContext({ sb, languageId: workerScope.languageId, supabaseUrl, serviceRoleKey })).catch(() => ({ checked: 0 }));
+      return json(200, { ok: true, ...result, classes, weekly_report: weekly, duels });
     }
 
     // === Telegram review quiz answers (student bot Worker; no learner session) ===
@@ -306,6 +327,18 @@ serve(async (req) => {
       if (!(await isQuizWorker(req, serviceRoleKey))) return json(401, { error: "Unauthorized" });
       const workerScope = await resolveLanguageScope(sb, "en");
       return json(200, await answerTelegramQuiz({ sb, languageId: workerScope.languageId, body: await parseBody(req) as Record<string, unknown> }));
+    }
+
+    // === Duels and parent progress links from the student bot Worker (./social-bot.ts) ===
+    if (req.method === "POST" && extractRoute(new URL(req.url), routeMarker) === "/internal/telegram-social") {
+      if (!(await isQuizWorker(req, serviceRoleKey))) return json(401, { error: "Unauthorized" });
+      const workerScope = await resolveLanguageScope(sb, "en");
+      return json(200, await handleSocialBotUpdate({ sb, languageId: workerScope.languageId, supabaseUrl, serviceRoleKey, body: await parseBody(req) as Record<string, unknown> }));
+    }
+
+    // === Public progress page for parents and teachers (/p/:token; no learner session) ===
+    if (isPublicProgressRoute(req.method, extractRoute(new URL(req.url), routeMarker))) {
+      return await handlePublicProgress(sb, extractRoute(new URL(req.url), routeMarker));
     }
 
     // === Public certificate lookup (anyone with the link; no learner session) ===
@@ -352,6 +385,12 @@ serve(async (req) => {
 
     const certificateResponse = await handleCertificateRoute({ sb, req, route, userId: auth.userId, languageId: scope.languageId });
     if (certificateResponse) return certificateResponse;
+
+    // === Vocabulary duels (./duel.ts) and parent progress links (./progress-link.ts) ===
+    const duelResponse = await handleDuelRoute({ sb, req, route, userId: auth.userId, languageId: scope.languageId, supabaseUrl, serviceRoleKey });
+    if (duelResponse) return duelResponse;
+    const progressLinkResponse = await handleProgressLinkRoute({ sb, req, route, userId: auth.userId, languageId: scope.languageId });
+    if (progressLinkResponse) return progressLinkResponse;
 
     // === Tap-to-translate: one word's meaning, for every signed-in learner ===
     if (req.method === "GET" && route === "/word") {
@@ -849,7 +888,7 @@ serve(async (req) => {
         if (!goalRes.data) return json(409, { error: "Finish the level test first", code: "english_onboarding_required" });
         const body = await parseBody(req) as Record<string, unknown>;
         const next = mergeReminderSettings(settings, body);
-        if ((next.enabled || next.quiz) && !linked) {
+        if ((next.enabled || next.quiz || next.report) && !linked) {
           return json(409, { error: "Link Telegram on your Schood account first", code: "telegram_not_linked" });
         }
         const { error } = await sb.from("learner_language_goals")

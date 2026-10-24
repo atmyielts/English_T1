@@ -76,7 +76,7 @@ const loadToday = async (sb: any, userId: string, languageId: string, now = new 
   const nowIso = now.toISOString();
   const utcToday = nowIso.slice(0, 10);
   const localToday = learnerDate(now);
-  const [goalRes, attemptsRes, reviewLogRes, itemsDueRes, wordsDueRes, plansRes] = await Promise.all([
+  const [goalRes, attemptsRes, reviewLogRes, itemsDueRes, wordsDueRes, plansRes, duelsRes] = await Promise.all([
     sb.from("learner_language_goals")
       .select("current_cefr_estimate, target_cefr, metadata")
       .eq("user_id", userId)
@@ -116,6 +116,14 @@ const loadToday = async (sb: any, userId: string, languageId: string, now = new 
       .eq("user_id", userId)
       .eq("language_id", languageId)
       .in("plan_date", [...new Set([localToday, utcToday])]),
+    // Today's XP from finished vocabulary duels (capped in xpByDay).
+    sb.from("english_duel_players")
+      .select("xp, xp_at")
+      .eq("user_id", userId)
+      .eq("language_id", languageId)
+      .gt("xp", 0)
+      .gte("xp_at", learnerDayStart(now))
+      .limit(50),
   ]);
   if (goalRes.error) throw new Error(`Failed to load English profile: ${goalRes.error.message}`);
   if (attemptsRes.error) throw new Error(`Failed to load attempts: ${attemptsRes.error.message}`);
@@ -142,6 +150,7 @@ const loadToday = async (sb: any, userId: string, languageId: string, now = new 
       item_id: String(row.review_item_id), correct: true, was_due: true, answered_at: String(row.answered_at),
     })),
     goalDates: plans.filter((row) => row.status === "completed").map((row) => String(row.plan_date)),
+    duels: duelsRes.error ? [] : ((duelsRes.data ?? []) as Row[]).map((row) => ({ xp: Number(row.xp ?? 0) || 0, at: String(row.xp_at) })),
   });
 
   const dueItems = countOf(itemsDueRes, "review items");

@@ -10,6 +10,7 @@ import { speak, canSpeak } from '../lib/speech';
 import { ErrorState, Loading, PageHeader, Panel } from '../ui/kit';
 import { GoalDateStep } from './goal/GoalDateStep';
 import { ResultSummary } from '../components/ResultSummary';
+import { ShareCardButton } from '../components/ShareCardButton';
 
 const GOALS = ['everyday', 'work', 'study_abroad', 'exam', 'travel', 'school'] as const;
 type Goal = (typeof GOALS)[number];
@@ -381,6 +382,7 @@ export const Onboarding = ({ onDone, retake = false, check = false }: { onDone?:
             >
               {busy ? t('common.saving') : check ? t('check.save') : asksDateFor(result.overall_level) ? t('common.continue') : t('onboarding.startLearning')}
             </button>
+            {check ? <ShareCardButton card={{ kind: 'exam', label: t('social.card.exam.label'), big: result.overall_level.toUpperCase(), headline: t('social.card.check.headline', { level: result.overall_level.toUpperCase() }), detail: t('social.card.exam.detail') }} /> : null}
             {check ? (
               <button
                 type="button"

@@ -25,6 +25,7 @@ const SERVICE_LABELS: Record<EnglishControlService, string> = {
   immersion: 'Immersion',
   tutor: 'AI tutor (chat + voice)',
   classes: 'Classes (teachers and their learners)',
+  duels: 'Vocabulary duels (web + Telegram)',
 };
 
 const card = 'rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm';

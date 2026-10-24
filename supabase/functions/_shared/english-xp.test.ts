@@ -194,3 +194,19 @@ Deno.test("attempt facts: streaks, skills in one week, distinct perfect scores",
   assertEquals(facts.perfect_scores, 2);
   assertEquals(attemptFacts([]).best_week_skills, 0);
 });
+
+Deno.test("finished duels add a little XP, capped per learner day, never the goal bonus", () => {
+  const days = xpByDay({
+    attempts: [],
+    goalDates: ["2026-10-26"],
+    duels: [
+      { xp: 10, at: "2026-10-26T06:00:00Z" },
+      { xp: 10, at: "2026-10-26T07:00:00Z" },
+      { xp: 10, at: "2026-10-26T08:00:00Z" },
+      // 21:00 UTC is already the next day in Tashkent.
+      { xp: 5, at: "2026-10-26T21:00:00Z" },
+    ],
+  });
+  assertEquals(days.get("2026-10-26"), { date: "2026-10-26", activity: 0, review: 0, bonus: 0, duel: 20, total: 20 });
+  assertEquals(days.get("2026-10-27")?.total, 5);
+});
