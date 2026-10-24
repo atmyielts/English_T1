@@ -1,60 +1,116 @@
-// Schood English Hub service worker — offline-capable shell with strict
-// network-first for API calls so users never see stale auth or stale data.
+// Schood English service worker: an installable, offline-tolerant shell that
+// never caches learner data.
 //
 // Strategy:
-//   - SHELL_ASSETS (manifest, logo): cache-first.
-//   - Vite-built JS / CSS in /assets/: cache-first (these are content-hashed,
-//     so a new deploy emits new filenames; the cache for the OLD names stays
-//     warm so a user mid-session offline still boots).
-//   - HTML navigation requests: network-first with cache fallback so users
-//     can still open the app while offline (they'll see the last-good
-//     index.html, which boots the SPA).
-//   - Everything else (API to *.supabase.co, third-party): pass through to
-//     network. Never cached.
+//   - API hosts (*.supabase.co / *.supabase.in) and any other origin: never
+//     touched, never cached. Auth and freshness matter more than offline.
+//   - Page loads (navigations): network-first. The fresh index.html is kept
+//     as the offline copy; when offline we serve that copy, then the static
+//     /offline.html page. A deploy is therefore picked up on the next online
+//     load, and an old index.html can never be served while online.
+//   - /assets/* (content-hashed Vite output) and /icons/*: cache-first.
+//   - Manifests: network-first, so a changed name or icon reaches installs.
 //
-// Cache versioning: bump CACHE_NAME when you change SW logic. A new worker is
-// deliberately allowed to wait until existing tabs close, so it cannot delete
-// chunks that an active learner still needs.
+// Updates: a new worker installs in the background and WAITS until every tab
+// of the old one is closed (no skipWaiting / clients.claim), so an open lesson
+// never loses chunks it still needs. A new deploy does not depend on that: page
+// loads are network-first, and the page itself (src/lib/pwa.ts) notices a new
+// build and offers a reload.
+//
+// Bump VERSION whenever this file's behaviour or the precache list changes.
 
+const VERSION = 'v4';
 const CACHE_PREFIX = 'schood-english-hub-shell-';
-const CACHE_NAME = `${CACHE_PREFIX}v3`;
-const SHELL_ASSETS = ['/manifest.webmanifest', '/schood-logo.png'];
+const CACHE_NAME = `${CACHE_PREFIX}${VERSION}`;
+const OFFLINE_URL = '/offline.html';
+const PRECACHE = [OFFLINE_URL, '/manifest.webmanifest', '/icons/icon-192.png', '/icons/favicon-32.png'];
 
-const isApiOrigin = (url) => {
-  // Supabase Edge Functions and any other dynamic backend host. We never
-  // cache these — auth + freshness matter more than offline.
-  return url.hostname.endsWith('.supabase.co') || url.hostname.endsWith('.supabase.in');
-};
-
-const isHashedAsset = (url) => {
-  // Vite emits /assets/index-<hash>.js etc. Treat the whole /assets/ dir as
-  // immutable cacheable content.
-  return url.origin === self.location.origin && url.pathname.startsWith('/assets/');
-};
-
+const isApiOrigin = (url) => url.hostname.endsWith('.supabase.co') || url.hostname.endsWith('.supabase.in');
+const isHashedAsset = (url) => url.pathname.startsWith('/assets/');
+const isIcon = (url) => url.pathname.startsWith('/icons/') || url.pathname === '/schood-logo.png';
+const isManifest = (url) => url.pathname === '/manifest.webmanifest' || url.pathname.startsWith('/manifests/');
 const isNavigationRequest = (request) =>
-  request.mode === 'navigate' || (request.method === 'GET' && request.headers.get('accept')?.includes('text/html'));
+  request.mode === 'navigate' || (request.method === 'GET' && (request.headers.get('accept') || '').includes('text/html'));
+
+// Hosts can answer /offline.html with a redirect to /offline. A redirected
+// response cannot answer a navigation, so store a clean copy of the body.
+const cleanCopy = async (response) => {
+  if (!response.redirected) return response;
+  const body = await response.blob();
+  return new Response(body, { status: response.status, statusText: response.statusText, headers: response.headers });
+};
+
+const precache = async () => {
+  const cache = await caches.open(CACHE_NAME);
+  await Promise.all(PRECACHE.map(async (path) => {
+    try {
+      const response = await fetch(path, { cache: 'no-cache' });
+      if (response.ok) await cache.put(path, await cleanCopy(response));
+    } catch {
+      // Offline during install: the page still works online; the fallback text below covers the rest.
+    }
+  }));
+};
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) => cache.addAll(SHELL_ASSETS))
-      .catch(() => undefined),
-  );
+  event.waitUntil(precache());
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches
-      .keys()
-      .then((keys) => Promise.all(
-        keys
-          .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
-          .map((key) => caches.delete(key)),
-      )),
+    caches.keys().then((keys) => Promise.all(
+      keys.filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME).map((key) => caches.delete(key)),
+    )),
   );
 });
+
+const put = (key, response) => {
+  if (!response || !response.ok || response.type !== 'basic') return;
+  const copy = response.clone();
+  cleanCopy(copy)
+    .then((clean) => caches.open(CACHE_NAME).then((cache) => cache.put(key, clean)))
+    .catch(() => undefined);
+};
+
+const cacheFirst = async (request) => {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+  try {
+    const response = await fetch(request);
+    // A missing old chunk comes back as the SPA's index.html; never keep that under a script's name.
+    if (!(response.headers.get('content-type') || '').includes('text/html')) put(request, response);
+    return response;
+  } catch {
+    return new Response('', { status: 504 });
+  }
+};
+
+const networkFirst = async (request) => {
+  try {
+    const response = await fetch(request);
+    put(request, response);
+    return response;
+  } catch {
+    return (await caches.match(request)) || new Response('', { status: 504 });
+  }
+};
+
+const offlineText = () => new Response('You are offline and no saved page is available.', {
+  status: 503,
+  headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+});
+
+const navigate = async (request) => {
+  try {
+    const response = await fetch(request);
+    const html = (response.headers.get('content-type') || '').includes('text/html');
+    // Every route serves the same index.html; keep the newest one as the offline copy.
+    if (response.ok && html) put('/', response);
+    return response;
+  } catch {
+    return (await caches.match('/')) || (await caches.match(OFFLINE_URL)) || offlineText();
+  }
+};
 
 self.addEventListener('fetch', (event) => {
   const req = event.request;
@@ -67,52 +123,18 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Pass-through for APIs and any cross-origin request we don't own.
-  if (isApiOrigin(url)) return;
-  if (url.origin !== self.location.origin) return;
+  if (isApiOrigin(url) || url.origin !== self.location.origin) return;
 
-  // Cache-first for the static shell + content-hashed Vite assets.
-  if (SHELL_ASSETS.includes(url.pathname) || isHashedAsset(url)) {
-    event.respondWith(
-      caches.match(req).then((cached) => {
-        if (cached) return cached;
-        return fetch(req)
-          .then((res) => {
-            if (res && res.ok && res.type === 'basic') {
-              const copy = res.clone();
-              caches.open(CACHE_NAME).then((cache) => cache.put(req, copy)).catch(() => undefined);
-            }
-            return res;
-          })
-          .catch(() => cached || new Response('', { status: 504 }));
-      }),
-    );
+  if (isNavigationRequest(req)) {
+    event.respondWith(navigate(req));
     return;
   }
-
-  // Network-first for HTML navigation so a fresh deploy is picked up
-  // immediately when online. Falls back to the last-cached index.html when
-  // offline so the SPA can still boot.
-  if (isNavigationRequest(req)) {
-    event.respondWith(
-      fetch(req)
-        .then((res) => {
-          if (res && res.ok) {
-            const copy = res.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put('/', copy)).catch(() => undefined);
-          }
-          return res;
-        })
-        .catch(async () => {
-          const cached = await caches.match('/');
-          if (cached) return cached;
-          const fallback = await caches.match(req);
-          return fallback || new Response('You are offline and no cached page is available.', {
-            status: 503,
-            headers: { 'Content-Type': 'text/plain' },
-          });
-        }),
-    );
+  if (isHashedAsset(url) || isIcon(url)) {
+    event.respondWith(cacheFirst(req));
+    return;
   }
-  // Anything else we don't own (favicons, etc.): default network behaviour.
+  if (isManifest(url)) {
+    event.respondWith(networkFirst(req));
+  }
+  // Anything else on our origin: default network behaviour.
 });

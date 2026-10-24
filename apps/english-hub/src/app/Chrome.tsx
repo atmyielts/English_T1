@@ -1,8 +1,10 @@
-import { useEffect, useId, useState, type ReactNode } from 'react';
+import { Fragment, useEffect, useId, useState, type ReactNode } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { LocaleSwitcher } from '../../../../packages/service-i18n/src/i18n.tsx';
 import { useT } from '../i18n';
-import { SKILLS, type SkillKey } from '../lib/skills';
+import { SKILLS, skillByKey, type SkillKey } from '../lib/skills';
+import { focusSkillOf, orderSkills } from '../lib/focusSkill';
+import { RailInstallButton } from '../components/InstallApp';
 import { useEnglish } from './EnglishContext';
 
 export const HUB_NAV = ['today', 'practice', 'review', 'progress', 'tutor', 'league'] as const;
@@ -11,9 +13,11 @@ export const HUB_NAV = ['today', 'practice', 'review', 'progress', 'tutor', 'lea
 export const HubHeader = () => {
   const t = useT();
   const location = useLocation();
-  const { session, signInHref, signOut, pricingHref } = useEnglish();
+  const { session, signInHref, signOut, pricingHref, access } = useEnglish();
   const [open, setOpen] = useState(false);
   const panelId = useId();
+  // A learner with exactly one skill gets it right after Today.
+  const focus = skillByKey(focusSkillOf(access));
 
   useEffect(() => setOpen(false), [location.pathname]);
 
@@ -41,9 +45,12 @@ export const HubHeader = () => {
       {session ? (
         <nav id={panelId} className="en-hublinks" aria-label={t('nav.workspace')}>
           {HUB_NAV.map((id) => (
-            <NavLink key={id} to={`/${id}`} aria-current={location.pathname.startsWith(`/${id}`) ? 'page' : undefined}>
-              {t(`nav.${id}`)}
-            </NavLink>
+            <Fragment key={id}>
+              <NavLink to={`/${id}`} aria-current={location.pathname.startsWith(`/${id}`) ? 'page' : undefined}>
+                {t(`nav.${id}`)}
+              </NavLink>
+              {id === 'today' && focus ? <NavLink to={focus.path}>{t(`skill.${focus.key}`)}</NavLink> : null}
+            </Fragment>
           ))}
         </nav>
       ) : <span className="en-hublinks" id={panelId} />}
@@ -120,7 +127,7 @@ export const SkillWorkspace = ({ skill, children }: { skill: SkillKey; children:
           <div className="en-rail-section">
             <p className="en-rail-heading"><span>{t('rail.switch')}</span><Link to="/practice">{t('nav.practice')}</Link></p>
             <div className="en-rail-switch">
-              {SKILLS.filter((entry) => entry.key !== skill).map((entry) => (
+              {orderSkills(SKILLS, focusSkillOf(access)).filter((entry) => entry.key !== skill).map((entry) => (
                 <Link key={entry.key} to={entry.path}>{t(`skill.${entry.key}`)}</Link>
               ))}
             </div>
@@ -133,6 +140,7 @@ export const SkillWorkspace = ({ skill, children }: { skill: SkillKey; children:
                 <a href={pricingHref(skill)}>{t('locked.cta')}</a>
               </div>
             ) : null}
+            <RailInstallButton skill={skill} />
             <LocaleSwitcher label={t('settings.language.title')} />
             <Link to="/settings">{t('nav.settings')}</Link>
             <button type="button" className="is-link" onClick={() => void signOut()}>{t('nav.signOut')}</button>

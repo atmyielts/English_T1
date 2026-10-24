@@ -3,6 +3,8 @@ import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { HubFrame, SkillWorkspace } from './app/Chrome';
 import { useEnglish } from './app/EnglishContext';
 import { OfflineBanner } from './components/OfflineBanner';
+import { UpdatePrompt } from './components/InstallApp';
+import { applyManifest } from './lib/pwa';
 import { useT } from './i18n';
 import { SKILLS, skillByKey } from './lib/skills';
 import { Loading } from './ui/kit';
@@ -74,6 +76,11 @@ const App = () => {
     window.scrollTo({ top: 0 });
   }, [location.pathname]);
 
+  // Inside /<skill> the browser offers that skill's own app; elsewhere, Schood English.
+  useEffect(() => {
+    applyManifest(location.pathname);
+  }, [location.pathname]);
+
   if (!sessionResolved) {
     return <HubFrame><section className="en-panel"><Loading lines={6} label={t('app.restoring')} /></section></HubFrame>;
   }
@@ -82,6 +89,7 @@ const App = () => {
     return (
       <>
         <OfflineBanner />
+        <UpdatePrompt />
         <HubFrame>
           <Routes>
             <Route path="/" element={<LandingPage />} />
@@ -100,6 +108,7 @@ const App = () => {
   return (
     <>
       <OfflineBanner />
+      <UpdatePrompt />
       <Routes>
         <Route path="/" element={<Navigate to="/today" replace />} />
         <Route path="/today" element={<HubFrame><TodayPage /></HubFrame>} />

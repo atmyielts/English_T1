@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#0e4955" />
+    <link rel="icon" type="image/png" href="/icons/favicon-32.png" />
+    <title>Schood English · Offline</title>
+    <style>
+      :root { color-scheme: light; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        display: grid; place-items: center; min-height: 100vh; padding: 16px; box-sizing: border-box;
+        background: linear-gradient(168deg, #f4eee2 0%, #f8f3ea 58%, #efe8dc 100%);
+        font-family: "Manrope", "Outfit", ui-sans-serif, system-ui, sans-serif; color: #1e1a16;
+      }
+      main {
+        width: 100%; max-width: 30rem; box-sizing: border-box; padding: 28px 24px; border-radius: 18px;
+        background: #fffdf8; border: 1px solid #e6dccb; box-shadow: 0 12px 30px rgba(30, 26, 22, 0.06);
+      }
+      img { display: block; width: 56px; height: 56px; margin-bottom: 14px; }
+      h1 { margin: 0 0 8px; font-size: 1.35rem; line-height: 1.25; }
+      p { margin: 0 0 6px; line-height: 1.5; }
+      .alt { color: #5b5249; font-size: 0.92rem; }
+      button {
+        margin-top: 16px; min-height: 44px; padding: 10px 20px; border: 0; border-radius: 999px;
+        background: #c43a22; color: #fff; font: inherit; font-weight: 700; cursor: pointer;
+      }
+      button:focus-visible { outline: 3px solid rgba(196, 58, 34, 0.45); outline-offset: 2px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="/icons/icon-192.png" alt="" width="56" height="56" />
+      <h1>You're offline</h1>
+      <p>Schood English needs the internet to load your plan. Your progress is saved on your account.</p>
+      <p class="alt" lang="ru">Нет подключения к интернету. Ваш прогресс сохранён в аккаунте.</p>
+      <p class="alt" lang="uz">Internetga ulanish yoʻq. Natijalaringiz akkauntingizda saqlangan.</p>
+      <button type="button" onclick="location.reload()">Try again · Повторить · Qayta urinish</button>
+    </main>
+  </body>
+</html>

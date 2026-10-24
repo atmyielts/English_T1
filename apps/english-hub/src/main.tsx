@@ -8,9 +8,12 @@ import { EnglishProvider } from './app/EnglishContext';
 import { AppErrorBoundary } from './components/AppErrorBoundary';
 import { catalogs } from './i18n';
 import { installEnglishGlobalRecoveryReporting } from './lib/clientRecovery';
+import { installPwa } from './lib/pwa';
 import './english.css';
 
 installEnglishGlobalRecoveryReporting();
+// Before render: catches an early install prompt, picks the right app manifest, registers the service worker.
+installPwa();
 
 createRoot(document.getElementById('root')!, recoveryRootOptions).render(
   <StrictMode>
@@ -26,11 +29,6 @@ createRoot(document.getElementById('root')!, recoveryRootOptions).render(
   </StrictMode>,
 );
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => undefined);
-  });
-}
 import { observeGuideArrival } from '../../../packages/journey-analytics/src/guide-arrival';
 
 observeGuideArrival(

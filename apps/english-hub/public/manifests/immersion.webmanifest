@@ -1,0 +1,97 @@
+{
+  "id": "/immersion",
+  "name": "Schood Immersion",
+  "short_name": "Schood Immersion",
+  "description": "Handle everyday situations step by step: messages, calls and requests. Part of Schood English: one account, one review and one progress record.",
+  "start_url": "/immersion",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
+  "background_color": "#f4f7f2",
+  "theme_color": "#7a5a1f",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": [
+    "education",
+    "productivity"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/icons/immersion-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/immersion-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/immersion-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Immersion",
+      "short_name": "Immersion",
+      "description": "Immersion home",
+      "url": "/immersion",
+      "icons": [
+        {
+          "src": "/icons/immersion-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Today",
+      "short_name": "Today",
+      "description": "Today's plan",
+      "url": "/today",
+      "icons": [
+        {
+          "src": "/icons/immersion-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Review",
+      "short_name": "Review",
+      "description": "Words and mistakes due for review",
+      "url": "/review",
+      "icons": [
+        {
+          "src": "/icons/immersion-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Tutor",
+      "short_name": "Tutor",
+      "description": "Ask the AI tutor",
+      "url": "/tutor",
+      "icons": [
+        {
+          "src": "/icons/immersion-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}
