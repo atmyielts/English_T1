@@ -115,7 +115,7 @@ function build() {
 const sql = build();
 const target = path.join(root, MIGRATION);
 if (process.argv.includes('--check')) {
-  if (!existsSync(target) || readFileSync(target, 'utf8') !== sql) fail(`${MIGRATION} is stale; run node scripts/content/sat-math-a.mjs`);
+  if (!existsSync(target) || readFileSync(target, 'utf8').replace(/\r\n/g, '\n') !== sql) fail(`${MIGRATION} is stale; run node scripts/content/sat-math-a.mjs`);
   console.log(`${MIGRATION} is up to date (${seen_count(sql)} questions).`);
 } else {
   writeFileSync(target, sql, 'utf8');
