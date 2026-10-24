@@ -93,6 +93,9 @@ const AdminEnglishOverviewPage = lazyWithChunkRetry(() =>
 const AdminEnglishContentPage = lazyWithChunkRetry(() =>
   import('./pages/admin/AdminEnglishContentPage').then((m) => ({ default: m.AdminEnglishContentPage })),
 );
+const AdminEnglishControlPage = lazyWithChunkRetry(() =>
+  import('./pages/admin/AdminEnglishControlPage').then((m) => ({ default: m.AdminEnglishControlPage })),
+);
 const AdminEnglishOpsPage = lazyWithChunkRetry(() =>
   import('./pages/admin/AdminEnglishOpsPage').then((m) => ({ default: m.AdminEnglishOpsPage })),
 );
@@ -232,6 +235,14 @@ function App() {
               element={
                 <RequireAdminPermission permission="admin.analytics.view" title="English Ops">
                   <AdminEnglishOpsPage />
+                </RequireAdminPermission>
+              }
+            />
+            <Route
+              path="/admin/english/control"
+              element={
+                <RequireAdminPermission permission="admin.analytics.view" title="English Control Center">
+                  <AdminEnglishControlPage />
                 </RequireAdminPermission>
               }
             />

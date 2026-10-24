@@ -18,12 +18,8 @@ import {
   toNumber,
   toText,
 } from "../_shared/english-learning.ts";
-import { callEnglishAIWithStatus, isEnglishAIConfigured } from "../_shared/english-ai.ts";
-import {
-  consumeEnglishAiDailyQuota,
-  parseEnglishAiDailyLimit,
-  requireEnglishSuiteAccess,
-} from "../_shared/english-access.ts";
+import { requireEnglishSuiteAccess } from "../_shared/english-access.ts";
+import { callEnglishAIWithCredit, defaultAICreditDeps } from "../_shared/english-ai-quota.ts";
 import {
   asLevel,
   buildSpeakingAIRequest,
@@ -109,14 +105,17 @@ const evaluate = async (
   speakingSeconds: number | null,
 ): Promise<SpeakingFeedback> => {
   const basic = () => ruleBasedFeedback(prompt, transcript, mode, speakingSeconds);
-  if (!isEnglishAIConfigured()) return basic();
   try {
     const access = await requireEnglishSuiteAccess(sb, userId, products);
     if (!access.allowed) return basic();
-    const quota = await consumeEnglishAiDailyQuota(sb, userId, parseEnglishAiDailyLimit(Deno.env.get("ENGLISH_AI_DAILY_LIMIT")));
-    if (!quota.allowed) return basic();
     const stats = buildStats(prompt, transcript, mode, speakingSeconds);
-    const result = await callEnglishAIWithStatus<unknown>(buildSpeakingAIRequest(prompt, transcript, mode, stats), null);
+    // One AI credit; refunded if the call fails. AI that is off or unconfigured takes no credit.
+    const result = await callEnglishAIWithCredit<unknown>(
+      defaultAICreditDeps(sb),
+      userId,
+      { ...buildSpeakingAIRequest(prompt, transcript, mode, stats), feature: "speaking-feedback", userId },
+      null,
+    );
     if (result.status !== "ok") {
       console.warn(JSON.stringify({ event: "speaking_ai_unavailable", status: result.status, error: result.error?.slice(0, 200) ?? null }));
       return basic();

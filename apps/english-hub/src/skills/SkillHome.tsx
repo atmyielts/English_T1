@@ -5,6 +5,7 @@ import { useI18n, useT } from '../i18n';
 import { getCatalog, getHistory, type CatalogEntry } from '../lib/hub';
 import { CEFR_LEVELS, type CefrLevel, type SkillKey } from '../lib/skills';
 import { useResource } from '../lib/useResource';
+import { ServicePaused } from '../components/ServicePaused';
 import { EmptyState, ErrorState, LevelBadge, Loading, LockedPanel, PageHeader, Panel, Segmented, SkillDot, Tag } from '../ui/kit';
 
 export type SkillTool = { id: string; title: string; hint: string; render: () => ReactNode };
@@ -43,13 +44,14 @@ export const SkillHome = ({
 }) => {
   const t = useT();
   const { date } = useI18n();
-  const { access, canPractise, onboarding, pricingHref } = useEnglish();
+  const { access, canPractise, isPaused, onboarding, pricingHref } = useEnglish();
   const catalog = useResource((signal) => getCatalog(skill, signal), [skill]);
   const history = useResource((signal) => getHistory(skill, signal), [skill]);
   const level = onboarding.value?.perSkill[skill] ?? onboarding.value?.level ?? null;
   const [filter, setFilter] = useState<LevelFilter>('all');
-  const locked = !canPractise(skill);
-  const usingFree = access.status === 'ready' && !access.unlocked.has(skill) && access.freeLeft > 0;
+  const paused = isPaused(skill);
+  const locked = !paused && !canPractise(skill);
+  const usingFree = !paused && access.status === 'ready' && !access.unlocked.has(skill) && access.freeLeft > 0;
   const skillName = t(`skill.${skill}`);
 
   const items = useMemo(
@@ -73,10 +75,11 @@ export const SkillHome = ({
         actions={level ? <span className="en-row"><span className="hint">{t('skill.yourLevel')}</span><LevelBadge level={level} /></span> : null}
       />
 
+      {paused ? <ServicePaused service={skill} /> : null}
       {locked ? <LockedPanel skillName={skillName} pricingHref={pricingHref(skill)} freeUsed={access.freePerDay > 0} /> : null}
       {usingFree ? <p className="en-notice">{t('free.skillHint', { count: access.freeLeft })}</p> : null}
 
-      {!locked && next ? (
+      {!locked && !paused && next ? (
         <section className="en-panel en-tone-lime">
           <div className="en-panel-head">
             <div>

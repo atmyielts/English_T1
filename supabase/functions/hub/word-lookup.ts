@@ -6,7 +6,9 @@
 // the learner's daily cap; cached words are free. The sentence only helps the
 // AI recognise the word: it is never part of the cache key or stored.
 import { json } from "../_shared/english-learning.ts";
-import { callEnglishAIWithStatus, isEnglishAIConfigured } from "../_shared/english-ai.ts";
+import { callEnglishAIWithStatus, englishAIAvailable } from "../_shared/english-ai.ts";
+import { recordEnglishAICall } from "../_shared/english-ai-ledger.ts";
+import { loadEnglishSettings } from "../_shared/english-settings.ts";
 import { learnerDayStart } from "../_shared/english-allowance.ts";
 import {
   buildWordLookupPayload,
@@ -130,7 +132,7 @@ export const handleWordLookup = async (input: {
       })
       : json(503, { error: "Word meanings are not available right now.", code: "english_word_lookup_unavailable" }));
   };
-  if (!isEnglishAIConfigured()) return await fallback("unavailable");
+  if (!(await englishAIAvailable("word-lookup"))) return await fallback("unavailable");
 
   const { count: usedToday, error: countError } = await sb
     .from("english_word_glosses")
@@ -138,13 +140,19 @@ export const handleWordLookup = async (input: {
     .eq("created_by", userId)
     .gte("created_at", learnerDayStart());
   if (countError) throw new Error(`Failed to count word lookups: ${countError.message}`);
-  if (!decideAiLookup(usedToday ?? 0).allowed) return await fallback("limit");
+  const { ai: aiSettings } = await loadEnglishSettings(sb);
+  if (!decideAiLookup(usedToday ?? 0, aiSettings.word_lookup_daily_limit).allowed) {
+    recordEnglishAICall({ feature: "word-lookup", userId, status: "over_limit" }, sb);
+    return await fallback("limit");
+  }
 
   const ai = await callEnglishAIWithStatus<unknown>(
     {
       systemPrompt: WORD_LOOKUP_SYSTEM_PROMPT,
       userPayload: buildWordLookupPayload(word, context, existing?.gloss ?? null),
       temperature: 0.2,
+      feature: "word-lookup",
+      userId,
     },
     null,
   );

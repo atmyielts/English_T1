@@ -55,12 +55,13 @@ export const useAdminAccessToken = () => {
   return { accessToken, withFreshToken };
 };
 
-export const EnglishAdminSubnav: React.FC<{ active: 'overview' | 'content' | 'ops' | 'rules' }> = ({ active }) => {
+export const EnglishAdminSubnav: React.FC<{ active: 'overview' | 'content' | 'ops' | 'rules' | 'control' }> = ({ active }) => {
   const links = [
     { key: 'overview', label: 'Overview', href: '/admin/english' },
     { key: 'content', label: 'Content', href: '/admin/english/content' },
     { key: 'ops', label: 'Ops', href: '/admin/english/ops' },
     { key: 'rules', label: 'Rules', href: '/admin/english/rules' },
+    { key: 'control', label: 'Control center', href: '/admin/english/control' },
   ] as const;
 
   return (
