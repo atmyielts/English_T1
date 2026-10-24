@@ -24,6 +24,7 @@ export type NavEntry = {
 export const DAY_ENTRIES: NavEntry[] = [
   { to: '/today', labelKey: 'nav.today', group: 'day', keywords: 'home plan daily' },
   { to: '/review', labelKey: 'nav.review', group: 'day', keywords: 'flashcards words mistakes spaced' },
+  { to: '/stories', labelKey: 'depth.nav.stories', group: 'day', keywords: 'daily story reading new text level listen' },
   { to: '/tutor', labelKey: 'nav.tutor', group: 'day', keywords: 'ai chat coach conversation voice' },
   { to: '/roleplay', labelKey: 'ws.roleplay', group: 'day', keywords: 'roleplay scenario interview visa conversation speaking' },
   { to: '/speaking-mock', labelKey: 'ws.mock', group: 'day', keywords: 'ielts mock exam test band speaking' },

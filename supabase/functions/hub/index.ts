@@ -61,6 +61,7 @@ import { appendLevelHistory, levelCheckStatus, perSkillLevels, readLevelHistory 
 import { handleCertificateRoute, handlePublicCertificate, isPublicCertificateRoute } from "./certificate.ts";
 import { measurementMethod, testResultRecord } from "../_shared/english-certificate.ts";
 import { handlePracticeRoute } from "./practice.ts";
+import { handleDailyStoryRoute } from "./daily-story.ts";
 
 const routeMarker = "/hub";
 
@@ -335,6 +336,10 @@ serve(async (req) => {
     if (req.method === "GET" && route === "/word") {
       return await handleWordLookup({ sb, userId: auth.userId, languageId: scope.languageId, url });
     }
+
+    // === Story of the day at the learner's level (./daily-story.ts) ===
+    const storyResponse = await handleDailyStoryRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId });
+    if (storyResponse) return storyResponse;
 
     const products = await resolveEnglishProducts(sb);
 

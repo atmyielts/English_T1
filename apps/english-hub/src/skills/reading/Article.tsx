@@ -9,6 +9,7 @@ import { RepeatAfterMe } from '../RepeatAfterMe';
 import { getArticle, submitArticle, type ReadingAnswer, type ReadingSkillKey, type ReadingSubmitResponse } from './api';
 import { NextReadCard, ReadingSpeedLine, WordHarvest } from './After';
 import { isAnswered, ReadingQuestionBlock } from './Questions';
+import { savedWordsStyle } from './highlight';
 import { findSentenceWithWord, parsePassage, savedForm, type PassageBlock } from './markdown';
 import { Passage, type PickedWord } from './Passage';
 
@@ -18,12 +19,7 @@ type SavedWord = { word: string; sentence: string };
 
 const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.round(seconds % 60)).padStart(2, '0')}`;
 
-/** Highlights the learner's saved words in tap mode: one CSS rule on the words' data attribute. */
-const savedWordsStyle = (forms: string[]): string => {
-  const safe = forms.filter((form) => /^[a-z]+(?:['-][a-z]+)*$/.test(form)).slice(0, 300);
-  if (!safe.length) return '';
-  return `${safe.map((form) => `.rd-passage .tt-w[data-tt="${form}"]`).join(',')}{background:#ecfccb;box-shadow:inset 0 -2px 0 #84cc16;border-radius:3px}`;
-};
+
 
 /** Shows the sentence with the chosen word highlighted. */
 const SentenceWithWord = ({ sentence, word }: { sentence: string; word: string }) => {
@@ -95,7 +91,7 @@ export const ReadingArticle = () => {
     () => new Set([...savedSet, ...(resource.data?.saved_words ?? []).map((entry) => entry.word.toLowerCase())]),
     [savedSet, resource.data],
   );
-  const highlightCss = useMemo(() => savedWordsStyle([...savedSet]), [savedSet]);
+  const highlightCss = useMemo(() => savedWordsStyle(savedSet), [savedSet]);
   const hasHeadings = questions.some((question) => question.type === 'headings');
   const pickedForm = picked ? savedForm(picked.word, picked.sentence) : '';
   const pickedSaved = Boolean(picked) && savedSet.has(pickedForm.toLowerCase());
