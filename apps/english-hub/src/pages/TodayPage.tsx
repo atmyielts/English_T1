@@ -8,6 +8,8 @@ import { EmptyState, ErrorState, LevelBadge, Loading, Panel, ProgressBar, SkillD
 import { Onboarding } from './Onboarding';
 import { TopicWeekPanel } from './TopicWeekPanel';
 import { GoalCard } from './goal/GoalCard';
+import { NewBadges } from '../components/Badges';
+import { TodayXpPanel } from '../components/XpWidgets';
 
 const greetingKey = (): string => {
   const hour = new Date().getHours();
@@ -102,6 +104,8 @@ export const TodayPage = () => {
         </div>
       </div>
 
+      <NewBadges />
+
       {data?.level_check?.due ? (
         <section className="en-panel en-tone-lime">
           <div className="en-panel-head">
@@ -191,6 +195,8 @@ export const TodayPage = () => {
             {data ? <WeekStrip week={data.week} /> : <Loading lines={1} />}
             <p className="hint">{data && data.streak > 0 ? t('today.week.keepGoing') : t('today.week.start')}</p>
           </Panel>
+
+          <TodayXpPanel enabled={Boolean(data)} reloadKey={data ? `${data.date}:${data.done_count}` : ''} />
 
           <TopicWeekPanel />
 
