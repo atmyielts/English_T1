@@ -9,7 +9,11 @@
     "theme": "sleep and learning",
     "tone": "lavender",
     "is_hot": false,
-    "metadata": { "genre": "explainer", "writing_tone": "informative", "word_count": 427 },
+    "metadata": {
+      "genre": "explainer",
+      "writing_tone": "informative",
+      "word_count": 427
+    },
     "questions": [
       {
         "id": "q1",
@@ -75,6 +79,60 @@
         ],
         "answer_index": 1,
         "explanation": "The writer uses \"suggests\", \"appears\" and \"is thought to\", and says \"scientists are still debating many of the details\" while \"the general message is clear enough\"."
+      },
+      {
+        "id": "t1",
+        "type": "tfng",
+        "prompt": "Researchers use the word \"consolidation\" for the process that makes new memories stable.",
+        "answer": "true",
+        "explanation": "\"…that memory has to be stabilised, a process researchers call consolidation.\"",
+        "skill": "reading.detail"
+      },
+      {
+        "id": "t2",
+        "type": "tfng",
+        "prompt": "According to the text, enough sleep can replace studying.",
+        "answer": "false",
+        "explanation": "\"This does not mean that sleep can replace studying.\"",
+        "skill": "reading.detail"
+      },
+      {
+        "id": "t3",
+        "type": "tfng",
+        "prompt": "Madina did badly in her exam.",
+        "answer": "not_given",
+        "explanation": "The text describes Madina the night before the exam. It never says how she did.",
+        "skill": "reading.detail"
+      },
+      {
+        "id": "t4",
+        "type": "tfng",
+        "prompt": "Scientists agree about every detail of how sleep helps memory.",
+        "answer": "false",
+        "explanation": "\"Scientists are still debating many of the details.\"",
+        "skill": "reading.detail"
+      },
+      {
+        "id": "g1",
+        "type": "gap",
+        "prompt": "Complete the summary. Use ONE word from the text in each gap.",
+        "text": "A new memory is ___ at first. Much of the work that makes it stable happens at night, especially during ___ sleep, when the brain seems to replay recent experiences. So learners should ___ their revision over several days and keep a regular sleep ___.",
+        "answers": [
+          [
+            "fragile"
+          ],
+          [
+            "deep"
+          ],
+          [
+            "spread"
+          ],
+          [
+            "routine"
+          ]
+        ],
+        "explanation": "\"A memory that is still fragile\"; \"During deep sleep, the brain appears to replay recent experiences\"; \"spread revision over several days\"; \"a regular sleep routine\".",
+        "skill": "reading.detail"
       }
     ]
   }

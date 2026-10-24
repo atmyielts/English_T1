@@ -15,6 +15,8 @@ type Props = {
   /** Outside word mode, words can be tapped for their meaning. */
   tapSource: TapSource;
   onTapSaved?: (word: string, sentence: string) => void;
+  /** Number the paragraphs (for matching-headings questions). */
+  numbered?: boolean;
 };
 
 const styled = (run: InlineRun, content: ReactNode, key: number | string) => {
@@ -25,7 +27,7 @@ const styled = (run: InlineRun, content: ReactNode, key: number | string) => {
 };
 
 /** Renders one block's text, with words as buttons in word mode. */
-type RunsProps = Omit<Props, 'blocks' | 'tapSource' | 'onTapSaved'> & { runs: InlineRun[]; unitKey: string };
+type RunsProps = Omit<Props, 'blocks' | 'tapSource' | 'onTapSaved' | 'numbered'> & { runs: InlineRun[]; unitKey: string };
 
 const Runs = ({ runs, unitKey, ...props }: RunsProps) => {
   if (!props.wordMode) return <>{runs.map((run, index) => styled(run, <TapWords text={run.text} />, index))}</>;
@@ -64,7 +66,7 @@ const Runs = ({ runs, unitKey, ...props }: RunsProps) => {
   );
 };
 
-const Blocks = ({ blocks, ...props }: Omit<Props, 'tapSource' | 'onTapSaved'>) => (
+const Blocks = ({ blocks, ...props }: Omit<Props, 'tapSource' | 'onTapSaved' | 'numbered'>) => (
   <>
     {blocks.map((block, index) => {
       const key = String(index);
@@ -90,13 +92,13 @@ const Blocks = ({ blocks, ...props }: Omit<Props, 'tapSource' | 'onTapSaved'>) =
   </>
 );
 
-export const Passage = ({ tapSource, onTapSaved, ...props }: Props) => (
+export const Passage = ({ tapSource, onTapSaved, numbered = false, ...props }: Props) => (
   props.wordMode ? (
-    <div className="en-passage rd-passage is-picking" lang="en">
+    <div className={`en-passage rd-passage is-picking${numbered ? ' is-numbered' : ''}`} lang="en">
       <Blocks {...props} />
     </div>
   ) : (
-    <TapScope className="en-passage rd-passage" source={tapSource} onSaved={onTapSaved}>
+    <TapScope className={`en-passage rd-passage${numbered ? ' is-numbered' : ''}`} source={tapSource} onSaved={onTapSaved}>
       <Blocks {...props} />
     </TapScope>
   )

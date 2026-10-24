@@ -9,7 +9,11 @@
     "theme": "community",
     "tone": "peach",
     "is_hot": false,
-    "metadata": { "genre": "story", "writing_tone": "warm", "word_count": 176 },
+    "metadata": {
+      "genre": "story",
+      "writing_tone": "warm",
+      "word_count": 176
+    },
     "questions": [
       {
         "id": "q1",
@@ -75,6 +79,30 @@
         ],
         "answer_index": 0,
         "explanation": "People cheered because \"The electricity came back\": they shouted because they were happy."
+      },
+      {
+        "id": "t1",
+        "type": "tfng",
+        "prompt": "The lights went out on a summer evening.",
+        "answer": "false",
+        "explanation": "\"Last winter, on a cold evening in January\".",
+        "skill": "reading.detail"
+      },
+      {
+        "id": "t2",
+        "type": "tfng",
+        "prompt": "The writer's phone battery was almost empty.",
+        "answer": "true",
+        "explanation": "\"My phone had only ten per cent battery.\"",
+        "skill": "reading.detail"
+      },
+      {
+        "id": "t3",
+        "type": "tfng",
+        "prompt": "Uncle Rustam repaired the electricity.",
+        "answer": "not_given",
+        "explanation": "Uncle Rustam had a torch and checked on everyone. The text does not say who repaired the electricity.",
+        "skill": "reading.detail"
       }
     ]
   }

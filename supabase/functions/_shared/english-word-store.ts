@@ -28,6 +28,7 @@ import {
   starterDueAt,
   stateFromSm2,
 } from "./english-srs.ts";
+import { withContext } from "./english-vocabulary.ts";
 
 type Row = Record<string, unknown>;
 
@@ -368,4 +369,61 @@ export const addDrillWords = async (
     .select("id");
   if (error) throw new Error(error.message);
   return (data ?? []).length;
+};
+
+// ---------------------------------------------------------------------------
+// Meeting saved words again in reading and listening
+// ---------------------------------------------------------------------------
+
+export type SavedWordRow = { id: string; word: string; context_text: string | null; metadata: Row };
+
+/** The learner's saved words (not archived), enough to find them in a text. */
+export const loadSavedWords = async (sb: any, userId: string, languageId: string, limit = 1500): Promise<SavedWordRow[]> => {
+  const { data, error } = await sb
+    .from("user_vocabulary_notebook_entries")
+    .select("id, word, context_text, metadata")
+    .eq("user_id", userId)
+    .eq("language_id", languageId)
+    .eq("is_archived", false)
+    .order("updated_at", { ascending: false })
+    .limit(limit);
+  if (error || !Array.isArray(data)) return [];
+  return (data as Row[]).map((row) => ({
+    id: String(row.id),
+    word: text(row.word, 200),
+    context_text: text(row.context_text, 600) || null,
+    metadata: asRecord(row.metadata),
+  })).filter((row) => row.word);
+};
+
+/**
+ * Keeps the sentence where the learner met a saved word again (newest first,
+ * five at most), so review can show their own examples. At most `max` words
+ * are updated per text. Never throws.
+ */
+export const recordEncounters = async (
+  sb: any,
+  userId: string,
+  rows: SavedWordRow[],
+  matches: Array<{ id: string; sentence: string }>,
+  source: string | null,
+  max = 12,
+): Promise<number> => {
+  const byId = new Map(rows.map((row) => [row.id, row]));
+  const at = new Date().toISOString();
+  let updated = 0;
+  for (const match of matches) {
+    if (updated >= max) break;
+    const row = byId.get(match.id);
+    if (!row) continue;
+    const next = withContext(row.metadata, { sentence: match.sentence, source, at, savedFrom: row.context_text });
+    if (!next) continue;
+    try {
+      const { error } = await sb.from("user_vocabulary_notebook_entries").update({ metadata: next }).eq("id", row.id).eq("user_id", userId);
+      if (!error) updated += 1;
+    } catch {
+      // an encounter is a nice-to-have; never fail the activity for it
+    }
+  }
+  return updated;
 };

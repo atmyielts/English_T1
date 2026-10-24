@@ -438,14 +438,14 @@ const readChoiceQuestions = (
   c: Collector,
   field: string,
   value: unknown,
-  opts: { maxQuestions: number; answerKey: "answer_index" | "answer"; withSkill: boolean },
+  opts: { maxQuestions: number; answerKey: "answer_index" | "answer"; withSkill: boolean; paths?: number[] },
 ): ChoiceInput[] => {
   const raw = c.array(field, value, "Questions");
   if (raw.length > opts.maxQuestions) c.add(field, `At most ${opts.maxQuestions} questions (now ${raw.length}).`);
   const seen = new Set<string>();
   const out: ChoiceInput[] = [];
   raw.slice(0, opts.maxQuestions).forEach((entry, index) => {
-    const at = `${field}[${index}]`;
+    const at = `${field}[${opts.paths?.[index] ?? index}]`;
     if (!isRecord(entry)) {
       c.add(at, "Question must be an object.");
       return;
@@ -492,6 +492,61 @@ const readChoiceQuestions = (
 
 type Built = { parent: JsonRecord; children: JsonRecord[] };
 
+const READING_TYPE_HELP: Record<string, string> = {
+  tfng: "A True/False/Not given question needs a statement (prompt) and answer true, false or not_given.",
+  headings: "A matching-headings question needs 2–12 headings (options) and items, each with a paragraph number and the right heading (answer_index); give at least as many headings as items.",
+  gap: "A gap-fill question needs a summary text with ___ for each gap and one list of accepted answers per gap (every answer must be in the word bank, if there is one).",
+};
+
+/**
+ * Reading questions of every type. Multiple choice goes through the shared
+ * choice reader (field-level messages); True/False/Not given, matching
+ * headings and gap fills must parse as the reading activity grades them.
+ */
+const readReadingQuestions = (c: Collector, value: unknown): JsonRecord[] => {
+  const raw = c.array("questions", value, "Questions");
+  if (raw.length > 15) c.add("questions", `At most 15 questions (now ${raw.length}).`);
+  const list = raw.slice(0, 15);
+  const kindOf = (entry: unknown) => (isRecord(entry) ? str(entry.type).toLowerCase() || "mcq" : "mcq");
+  const mcqIndexes = list.map((entry, index) => (kindOf(entry) === "mcq" ? index : -1)).filter((index) => index >= 0);
+  const choices = readChoiceQuestions(c, "questions", mcqIndexes.map((index) => list[index]), {
+    maxQuestions: 15,
+    answerKey: "answer_index",
+    withSkill: true,
+    paths: mcqIndexes,
+  });
+  const byIndex = new Map<number, JsonRecord>();
+  mcqIndexes.forEach((index, position) => {
+    const q = choices[position];
+    if (q) {
+      byIndex.set(index, {
+        id: q.id,
+        type: "mcq",
+        prompt: q.prompt,
+        options: q.options,
+        answer_index: q.answer_index,
+        explanation: q.explanation,
+        skill: q.skill ?? "reading.detail",
+      });
+    }
+  });
+  list.forEach((entry, index) => {
+    const kind = kindOf(entry);
+    if (kind === "mcq") return;
+    const at = `questions[${index}]`;
+    if (!READING_TYPE_HELP[kind]) {
+      c.add(`${at}.type`, "Question type must be mcq, tfng, headings or gap.");
+      return;
+    }
+    const row = isRecord(entry) ? { ...entry } : {};
+    if (!str(row.id)) row.id = `q${index + 1}`;
+    const [parsed] = normalizeReadingQuestions([row]);
+    if (!parsed) c.add(at, READING_TYPE_HELP[kind]!);
+    else byIndex.set(index, parsed as unknown as JsonRecord);
+  });
+  return list.map((_, index) => byIndex.get(index)).filter((q): q is JsonRecord => Boolean(q));
+};
+
 const buildReading = (c: Collector, item: JsonRecord, common: Common): Built => {
   const summary = c.text("summary", item.summary, 900, "Summary");
   const content = c.text("content_markdown", item.content_markdown, 120000, "Article text");
@@ -500,7 +555,7 @@ const buildReading = (c: Collector, item: JsonRecord, common: Common): Built => 
   const tone = c.oneOf("tone", item.tone, READING_TONES, "Tone", "mint");
   const words = content ? content.split(/\s+/).filter(Boolean).length : 0;
   const readTime = c.int("read_time_minutes", item.read_time_minutes, 1, 60, "Read time", clampInt(Math.ceil(words / 120) || 1, 1, 60));
-  const questions = readChoiceQuestions(c, "questions", item.questions, { maxQuestions: 15, answerKey: "answer_index", withSkill: true });
+  const questions = readReadingQuestions(c, item.questions);
   if (c.errors.length === 0 && normalizeReadingQuestions(questions).length !== questions.length) {
     c.add("questions", "Some questions cannot be graded by the reading activity; check prompts, options and answers.");
   }
@@ -514,15 +569,7 @@ const buildReading = (c: Collector, item: JsonRecord, common: Common): Built => 
       tone,
       read_time_minutes: readTime,
       is_hot: item.is_hot === true,
-      questions: questions.map((q) => ({
-        id: q.id,
-        type: "mcq",
-        prompt: q.prompt,
-        options: q.options,
-        answer_index: q.answer_index,
-        explanation: q.explanation,
-        skill: q.skill ?? "reading.detail",
-      })),
+      questions,
     },
     children: [],
   };
@@ -1144,7 +1191,7 @@ const zipKeywords = (texts: string[], keywords: unknown, textKey: string): Array
   }));
 
 const editorQuestions = (value: unknown, answerKey: "answer_index" | "answer", withSkill: boolean): JsonRecord[] =>
-  (Array.isArray(value) ? value : []).filter(isRecord).map((q) => ({
+  (Array.isArray(value) ? value : []).filter(isRecord).map((q) => (withSkill && q.type && q.type !== "mcq" ? { ...q } : {
     id: q.id ?? null,
     prompt: q.prompt ?? "",
     options: Array.isArray(q.options) ? q.options : [],
