@@ -3,7 +3,8 @@
 //
 // Callers:
 //   * Academy staff (JWT): review queue, decisions, mistakes, funnel, plan, settings, course unlock rules.
-//   * Learners (JWT): their own mistake bank.
+//   * Learners (JWT): their own mistake bank and whether it feeds Schood English (D4).
+//   * Guardians (JWT): that same setting for their child.
 //   * The student bot Worker (x-worker-secret = TELEGRAM_INTERNAL_SECRET): telegram_update.
 //   * pg_cron (x-worker-secret = internal_runtime_secrets.academy_learning_secret): worker cycles.
 
@@ -14,6 +15,7 @@ import {
 import { isUuid, type Row } from "./lib.ts";
 import { runPremarkSweep } from "./premark.ts";
 import * as catalog from "./catalog.ts";
+import * as consent from "./consent.ts";
 import * as miniapp from "./miniapp.ts";
 import * as staff from "./staff.ts";
 import { handleTelegramUpdate } from "./telegram.ts";
@@ -142,6 +144,8 @@ export const handleAcademyLearningRequest = async (req: Request): Promise<Respon
     if (action === "miniapp_homework") return json(200, await miniapp.miniAppHomework({ sb }, body));
     if (action === "miniapp_center") return json(200, await miniapp.miniAppSetCentre({ sb }, body));
     if (action === "miniapp_mistakes") return json(200, await miniapp.miniAppMistakes({ sb }, body));
+    if (action === "miniapp_mistake_feed") return json(200, await miniapp.miniAppFeedConsent({ sb }, body));
+    if (action === "miniapp_mistake_feed_set") return json(200, await miniapp.miniAppSetFeedConsent({ sb }, body));
 
     if (action === "public_courses") return json(200, await catalog.publicCourses(sb, body));
     if (action === "public_course") return json(200, await catalog.publicCourse(sb, body));
@@ -170,6 +174,10 @@ export const handleAcademyLearningRequest = async (req: Request): Promise<Respon
     }
 
     if (action === "student_mistakes") return json(200, await studentMistakes(sb, userId, isUuid(body.academy_id) ? String(body.academy_id) : null));
+    if (action === "student_mistake_feed") return json(200, await consent.learnerConsents(sb, userId, isUuid(body.academy_id) ? String(body.academy_id) : null));
+    if (action === "student_mistake_feed_set") return json(200, await consent.setLearnerConsent(sb, userId, body, "academy_web"));
+    if (action === "guardian_mistake_feed") return json(200, await consent.guardianConsent(sb, userId, body));
+    if (action === "guardian_mistake_feed_set") return json(200, await consent.setGuardianConsent(sb, userId, body));
 
     const handler = STAFF_ACTIONS[action];
     if (!handler) return json(400, { error: "Unknown action" });

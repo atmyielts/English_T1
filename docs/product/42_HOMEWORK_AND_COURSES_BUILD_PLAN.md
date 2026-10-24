@@ -1,6 +1,6 @@
 # 42 — How to build Homework OS and Schood Courses
 
-Updated 2026-10-22. Status: **building**. The first release (`release/manifest.json`, id `academy-homework-os-courses`) is in code; see §11 for what it contains and what is left.
+Updated 2026-10-24. Status: **building**. The first release (`release/manifest.json`, id `academy-homework-os-courses`) is in code; see §11 for what it contains and what is left.
 
 [40_HOMEWORK_OS](40_HOMEWORK_OS.md) and [41_SCHOOD_COURSES](41_SCHOOD_COURSES.md) say what to build and why. This doc says how, starting from the code that exists today. It covers what we already have, the decisions to make first, the data model, each subsystem and the phased order of work.
 
@@ -26,7 +26,7 @@ The first version of this section was written against an older Academy branch. `
 | D1 | Where homework lives | **Academy** (`academy_classrooms`, `academy_assignments`, `academy_submissions`). `[DECIDED]` | Center-owned academies are billed through their parent center's tier. Folding `partner_center_review_items` into the one queue is later work |
 | D2 | Extend Academy tables or a separate `homework_*` set | **Add new tables next to Academy's.** `[DECIDED]` | Existing tables are untouched apart from triggers; `academy_submissions` stays the current-state row |
 | D3 | Which bot | **One Schood bot: @schoodstudentbot** (`workers/schood-bot`), the bot already linked to Academy students. `[DECIDED]` | Learners who attend several centers switch with `/center` or a "Switch centre" button; the choice is remembered per learner (`telegram_student_preferences`). With no choice made, every centre's open work is offered, labelled by centre |
-| D4 | Homework mistakes may feed the learner's own Schood Daily plan | **Yes, with consent.** `[DECIDED]` | Not wired yet: needs the consent capture and a mapping into `learner_language_errors` |
+| D4 | Homework mistakes may feed the learner's own Schood Daily plan | **Yes, with consent.** `[DECIDED]` | Built (§12, release `academy-homework-mistake-feed`): off by default, per centre. A learner who confirms they are 18 or older turns it on in "My mistakes" or the Mini App; for under-18s a guardian with homework access turns it on from the parent page. Either can turn it off, which deletes the copies |
 | D5 | Course content delivery | **Least expensive first.** `[DECIDED]` | Telegram hosts files for free; S3 egress is the paid path. AI uses free OpenRouter models only (paid models are refused unless `HOMEWORK_AI_ALLOW_PAID=true`); voice notes are left to the teacher because there is no free speech-to-text path |
 | D6 | Pricing | **Fit onto the existing center tiers.** `[DECIDED]` | Growth = homework and courses; Premium and Exclusive add AI pre-marking. Independent teachers (no parent center) buy the new **Schood Teaching** product: "Teacher" 149 000 UZS/month or 1 490 000/year (homework and courses) and "Teacher Pro" 249 000/month or 2 490 000/year (adds AI). Priced 2026-10-24 by delegation from the owner, anchored on learner plans (39-119k) and Growth (490k); only academy owners or admins can buy |
 | D7 | Who may sell courses | **Education centers and independent teachers, as long as they pay Schood.** `[DECIDED]` 2026-10-22 | Publishing a course is gated on the Schood Teaching plan or a center tier once billing is enforced; drafts are always free |
@@ -50,6 +50,8 @@ Migration `20261024100000_academy_homework_os.sql`. Every new table has RLS enab
 | `academy_module_unlocked()` and two triggers | Unlock-by-check enforcement on lesson progress and quiz attempts |
 | `academy_courses_publish_gate` trigger | Publishing needs a plan once billing is enforced |
 | `academy_homework_queue_guardian_digest()` | Weekly parent summary into the existing guardian outbox (consent, visibility and quiet hours are re-checked at delivery) |
+| `academy_homework_feed_consents`, `academy_homework_feed_consent_events` | D4 consent per centre and learner (migration `20261025210000_academy_homework_mistake_feed.sql`): who granted it (learner 18+ or guardian), when, and when and by whom it was revoked, plus the full history |
+| `academy_homework_mistake_feed` | Which `learner_language_errors` and `learner_review_items` rows each consented mistake created, so revoking or fixing removes exactly those |
 
 Not built yet (still proposals): course versions pinned by a run, three-phase lesson blocks, the Assessment Cloud bridge (§6).
 
@@ -270,9 +272,25 @@ Owner go-ahead on 2026-10-22: "do them all, make it perfectly ready for use".
   - Listing needs a centre tier or a Schood Teaching plan once billing is enforced.
 
 **Left for later releases**
-- D4: feed consented homework mistakes into the learner's own Daily plan.
 - Course versions pinned per run, three-phase lesson blocks, Telegram delivery of lesson audio and PDFs, Course Studio AI structuring.
 - The Assessment Cloud bridge (§6) for module checks and signed certificates.
 - Collecting course fees through Schood (41 F12/F13: instalments, payouts, fiscal receipts).
 - Math OCR quality checks, centre-calibrated marking (V-HW-F11), churn warnings to parents (V-HW-F10).
 - Schood Teaching prices are set (D6). Turn on `billing.enforced` only after Click checkout is confirmed working for tenant plans; until then Schood support activates plans manually.
+
+### D4: homework mistakes in the learner's Schood English (release `academy-homework-mistake-feed`, code ready 2026-10-24)
+
+**Consent**
+- Off by default, one setting per centre. Stored in `academy_homework_feed_consents` with `granted_at`, who granted it and the policy version; `academy_homework_feed_consent_events` keeps every grant and revoke, and the centre's audit log records them.
+- **Learners** turn it on in Academy → My mistakes or in the Mini App's "My mistakes", and must tick "I am 18 or older". Schood holds no date of birth, so this is a self-declaration `[VERIFY]` with legal (LG-02).
+- **Under-18s:** a guardian with current, consented parent access that includes homework turns it on from the parent page (Grades & homework). The child needs a Schood account linked to the centre.
+- **Revoking** is always allowed, by the learner or the guardian. It deletes every copied row from that centre and stops new ones. If the centre re-links the learner record to a different Schood account, the consent ends on its own.
+
+**What flows, and where**
+- Only open mistakes tagged `grammar.*`, `vocabulary.*`, `spelling` or `punctuation`, written in Latin script. Maths, task and structure comments, and work in other scripts, stay in the centre.
+- Copied fields: excerpt, correction, explanation, tag and the centre's name. Assignment titles, submissions, scores and teacher names never leave the centre, and nothing flows back from Schood English to the centre.
+- `learner_language_errors` (service `academy_homework`): `grammar.<topic>` rows feed Today's "fix this" lessons, using the same topics as `_shared/english-mistakes.ts` (a test keeps the two lists equal). All rows appear under Review → Mistakes.
+- `learner_review_items` (`homework:<mistake id>`, due at once): Review asks the learner to correct the excerpt, then shows the teacher's explanation.
+- Copying runs in database triggers on `academy_homework_mistakes`, so the web, Mini App and Telegram paths behave the same. A mistake that is fixed, dismissed or deleted removes its copies. A copy practised in Schood English and then made again at the centre is reopened.
+
+**Code:** `supabase/functions/academy-learning/consent.ts` (actions `student_mistake_feed[_set]`, `miniapp_mistake_feed[_set]`, `guardian_mistake_feed[_set]`), `StudentMistakesView.tsx`, `GuardianMistakeFeed.tsx`, `TelegramHomeworkPanel.tsx`, and in `hub` the skill shown for homework rows. Tests: `npm run test:academy-learning:edge`, `_shared/english-review.test.ts`, and `scripts/fixtures/academy-homework-mistake-feed.sql` (consent, copying, tenant boundary, revoke, guardian path and browser grants, checked against the production schema).
