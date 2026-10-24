@@ -38,7 +38,27 @@ Settings are cached ~60 s per function instance, so a change reaches everyone wi
 - Every English AI call goes through `_shared/english-ai.ts` (`callEnglishAIWithStatus`) with a `feature` name and `userId`. Switched off → callers get status `unconfigured` and show their basic (non-AI) feedback.
 - Every call (and every refusal) is logged to `english_ai_calls`: feature, learner id, provider, model, status (`ok`/`failed`/`unconfigured`/`disabled`/`over_limit`), latency, sizes, token counts. No prompt or answer text. Rows older than 120 days are pruned daily (pg_cron `english-ai-calls-prune-v1`).
 - Learner credits: `_shared/english-ai-quota.ts`. One credit per AI answer from `english_ai_usage_daily`; taken before the call and refunded when the call fails or AI is off. Used by hub `/ai/*`, speaking, writing and immersion feedback. Word lookup has its own cap (cached words are free). Admin drafting uses no learner credits.
-- Feature names: `coach-summary`, `placement-test`, `tutor-chat`, `voice-conversation-turn`, `pronunciation-feedback`, `vocab-in-context`, `grammar-decode`, `essay-grade`, `translation-compare`, `idiom-extract`, `dictation-generate`, `daily-challenge`, `cultural-notes`, `goal-templates`, `rubric-calibrate`, `themed-week`, `content-recommend`, `shadowing-prep`, `word-lookup`, `speaking-feedback`, `writing-feedback`, `immersion-judge`, `content-draft`. New features appear in the control center once they make a call.
+- Feature names: `coach-summary`, `placement-test`, `tutor-chat`, `voice-conversation-turn`, `pronunciation-feedback`, `vocab-in-context`, `grammar-decode`, `essay-grade`, `translation-compare`, `idiom-extract`, `dictation-generate`, `daily-challenge`, `cultural-notes`, `goal-templates`, `rubric-calibrate`, `themed-week`, `content-recommend`, `shadowing-prep`, `word-lookup`, `speaking-feedback`, `writing-feedback`, `immersion-judge`, `content-draft`, `writing-model-answer`, `writing-free-check`, `tutor-lesson`, `immersion-project-judge`. New features appear in the control center once they make a call.
+
+## Output skills: drafts, history, projects, tutor threads
+
+Audit and design notes: `docs/english/DEPTH_AUDIT_OUTPUT.md`. Migration `20261026150000_english_output_depth.sql`.
+
+| What | Where | Limits / cost |
+|---|---|---|
+| Writing drafts on the account (autosave, resume on any device) | `writing_drafts.current_text` via `writing-workbench POST /prompts/:slug/draft` | one row per learner and prompt; no AI |
+| Draft-vs-draft comparison and criteria per revision | `writing_revision_cycles.metadata.criteria` (older rows: read from the attempt) | no AI |
+| Criteria history chart | `writing-workbench GET /rubric-history` (last 30 submissions) | no AI |
+| Model answer at the learner's level + 1 | `english_writing_model_answers` (one per prompt and level, shared) | one `writing-model-answer` call per prompt/level, then free; only after a first submit |
+| "Check any text" (Writing tools) | `writing-workbench POST /free/check` | one `writing-free-check` credit; not recorded as an attempt |
+| Speaking retries and fluency | `learning_attempts.response_json.fluency` (pauses from browser timing) and `GET /speaking-studio/prompts/:slug/attempts` | no AI |
+| Personal targets in missions | saved words (credited as reviews when used) and 2 recent mistakes from `learner_language_errors` | no AI |
+| Three-day projects | definitions in `_shared/english-immersion-depth.ts`; progress in `english_immersion_project_runs`; each checked day is one `immersion.project` attempt | one `immersion-project-judge` credit per checked day; pausing Real-life tasks pauses projects |
+| Tutor conversations | `english_tutor_threads` / `english_tutor_messages` (hub `/tutor/threads`) | 200 messages per thread, 20 threads per learner, threads idle 180 days deleted daily (pg_cron `english-tutor-threads-prune-v1`) |
+| Tutor context | hub `GET /tutor/context`: ratings, goal, top mistakes, words due, active project, class assignments | each turn sends a rolling summary + last 6 messages (≤ 500 chars each), not the raw history |
+| Tutor mini-lessons | hub `POST /tutor/lesson`; `english_tutor_lesson_cache` (one per grammar topic and level, shared); answers checked without AI | one `tutor-lesson` call per topic/level, then free; pausing the AI tutor pauses lessons |
+
+Legacy paths kept working: hub `/ai/essay-grade` (no longer mounted in the app; older cached clients only), hub `/ai/tutor-chat` with a `messages` array (older apps; answered without saving). Class assignments are read from `english_class_members` + `english_class_assignments` only if those tables exist (see `loadAssignments` in `hub/tutor.ts`).
 
 ## Deploy order
 

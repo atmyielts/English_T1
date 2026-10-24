@@ -7,9 +7,14 @@ import { useElapsedSeconds, useResource } from '../../lib/useResource';
 import { Panel, Tag, useErrorMessage } from '../../ui/kit';
 import { ActivityFrame, ResultPanel } from '../ActivityKit';
 import type { TapSource } from '../../lib/wordLookup';
+import { PersonalSummary, PersonalTargetsPanel, WordsInText } from './Personal';
+import { L1Why } from '../../components/L1Why';
+import { SavePhrase } from '../../components/SavePhrase';
+import { changedPhrase } from '../../../../../supabase/functions/_shared/english-text-diff.ts';
 import {
   getMission,
   submitMission,
+  type PersonalTargets,
   type MissionQuestion,
   type MissionStep,
   type MissionSubmitResponse,
@@ -17,7 +22,7 @@ import {
   type StepResult,
 } from './api';
 
-type Draft = { answers: Record<string, number>; text: string; mode: 'voice' | 'typed' };
+export type Draft = { answers: Record<string, number>; text: string; mode: 'voice' | 'typed' };
 const emptyDraft: Draft = { answers: {}, text: '', mode: 'typed' };
 
 /** Where words saved from this mission come from (My words shows the mission title). */
@@ -139,7 +144,7 @@ const ListenPlayer = ({ text, accent }: { text: string; accent: 'gb' | 'us' | nu
 };
 
 /** A spoken answer via speech recognition, with a clearly labelled typed fallback. */
-const SpeakInput = ({
+export const SpeakInput = ({
   stepId,
   draft,
   onChange,
@@ -249,11 +254,13 @@ const StepBody = ({
   draft,
   update,
   busy,
+  personalWords,
 }: {
   step: MissionStep;
   draft: Draft;
   update: (stepId: string, patch: Partial<Draft> | ((draft: Draft) => Partial<Draft>)) => void;
   busy: boolean;
+  personalWords: PersonalTargets['words'];
 }) => {
   const t = useT();
   const choose = (questionId: string, option: number) =>
@@ -295,6 +302,7 @@ const StepBody = ({
           <span><strong>{t('immersion.reply.words', { count: words })}</strong></span>
           {step.min_words ? <span>{t('immersion.reply.aim', { count: step.min_words })}</span> : null}
         </p>
+        <WordsInText words={personalWords} text={draft.text} />
       </>
     );
   }
@@ -309,6 +317,7 @@ const StepBody = ({
         onChange={(text, mode) => update(step.id, { text, mode })}
       />
       {step.min_words ? <p className="hint">{t('immersion.reply.aim', { count: step.min_words })}</p> : null}
+      <WordsInText words={personalWords} text={draft.text} />
     </>
   );
 };
@@ -366,9 +375,11 @@ const StepOutcome = ({ step, result }: { step: MissionStep; result: StepResult }
               <strong style={{ fontSize: '.9rem' }}>{t('immersion.result.corrections')}</strong>
               <ul className="en-list">
                 {feedback.corrections.map((correction, index) => (
-                  <li key={index} className="en-diff" style={{ fontSize: '.95rem' }}>
-                    <del>{correction.original}</del> → <ins>{correction.better}</ins>
-                    {correction.explanation ? <><br /><span className="hint">{correction.explanation}</span></> : null}
+                  <li key={index} className="en-stack" style={{ gap: '.2rem', fontSize: '.95rem' }}>
+                    <span className="en-diff"><del>{correction.original}</del> → <ins>{correction.better}</ins></span>
+                    {correction.explanation ? <span className="hint">{correction.explanation}</span> : null}
+                    <span><SavePhrase phrase={changedPhrase(correction.original, correction.better)} context={correction.better} source="immersion-feedback" label={result.title} /></span>
+                    <L1Why original={correction.original} corrected={correction.better} explanation={correction.explanation} />
                   </li>
                 ))}
               </ul>
@@ -386,6 +397,34 @@ const StepOutcome = ({ step, result }: { step: MissionStep; result: StepResult }
   );
 };
 
+/** Completion summary: every step with its score, and the one thing to do next. */
+const MissionSummary = ({ result }: { result: MissionSubmitResponse }) => {
+  const t = useT();
+  const firstMissed = result.steps.flatMap((entry) => (entry.feedback?.points ?? []).filter((point) => !point.met).map((point) => point.label))[0];
+  const weakest = [...result.steps].sort((a, b) => a.score - b.score)[0];
+  return (
+    <div className="en-stack" style={{ gap: '.4rem' }}>
+      <h3 style={{ margin: 0, fontSize: '.95rem' }}>{t('depth.mission.summary')}</h3>
+      <ul className="dp-step-scores">
+        {result.steps.map((entry) => (
+          <li key={entry.step_id}>
+            <span>{t(`immersion.step.kind.${entry.kind}`)} · {entry.title}</span>
+            <span className="dp-step-bar" aria-hidden="true"><span style={{ width: `${Math.max(0, Math.min(100, entry.score))}%` }} /></span>
+            <strong>{entry.score}%</strong>
+          </li>
+        ))}
+      </ul>
+      {firstMissed ? (
+        <p className="en-explain" style={{ margin: 0 }}>{t('depth.mission.next', { label: firstMissed })}</p>
+      ) : weakest && weakest.score < 70 ? (
+        <p className="en-explain" style={{ margin: 0 }}>{t('depth.mission.nextStep', { title: weakest.title })}</p>
+      ) : (
+        <p className="en-notice" style={{ margin: 0 }}>{t('depth.mission.allGood')}</p>
+      )}
+    </div>
+  );
+};
+
 export const MissionPlayer = () => {
   const t = useT();
   const errorText = useErrorMessage();
@@ -399,6 +438,7 @@ export const MissionPlayer = () => {
   const [error, setError] = useState<unknown>(null);
 
   const mission = resource.data?.mission;
+  const personal = resource.data?.personal ?? null;
   const steps = (resource.data?.steps ?? []).filter((step): step is MissionStep & { kind: StepKind } => step.kind !== null);
   const step = steps[Math.min(current, Math.max(0, steps.length - 1))];
   const doneCount = steps.filter((entry) => isDone(entry, drafts[entry.id])).length;
@@ -429,7 +469,7 @@ export const MissionPlayer = () => {
           ? { step_id: entry.id, answers: draft.answers }
           : { step_id: entry.id, text: draft.text, mode: entry.kind === 'speak' ? draft.mode : 'typed' as const };
       });
-      setResult(await submitMission(slug, payload, elapsed()));
+      setResult(await submitMission(slug, payload, elapsed(), (personal?.words ?? []).map((word) => word.id)));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (cause) {
       setError(cause);
@@ -487,6 +527,8 @@ export const MissionPlayer = () => {
             onRetry={retry}
           >
             {result.feedback_mode === 'basic' ? <p className="en-explain">{t('immersion.result.basic')}</p> : null}
+            <MissionSummary result={result} />
+            <PersonalSummary personal={result.personal} />
           </ResultPanel>
 
           {result.cultural_note ? (
@@ -520,6 +562,8 @@ export const MissionPlayer = () => {
             ) : null}
           </Panel>
 
+          <PersonalTargetsPanel personal={personal} />
+
           {step ? (
             <section className="en-panel">
               <ol className="en-steps" aria-label={t('immersion.steps.label')}>
@@ -542,7 +586,7 @@ export const MissionPlayer = () => {
                 <Tag>{t('common.minutesShort', { count: step.estimated_minutes })}</Tag>
               </div>
               <p style={{ margin: 0 }}>{step.instructions}</p>
-              <StepBody step={step} draft={drafts[step.id] ?? emptyDraft} update={update} busy={busy} />
+              <StepBody step={step} draft={drafts[step.id] ?? emptyDraft} update={update} busy={busy} personalWords={personal?.words ?? []} />
 
               {error ? <div className="error" role="alert">{errorText(error)}</div> : null}
               <div className="en-actions">

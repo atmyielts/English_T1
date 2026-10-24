@@ -23,7 +23,6 @@ import {
 import { requireEnglishSuiteAccess } from "../_shared/english-access.ts";
 import { callEnglishAIWithCredit, defaultAICreditDeps } from "../_shared/english-ai-quota.ts";
 import {
-  buildWritingAIRequest,
   buildWritingFeedback,
   countWords,
   issuesFromFeedback,
@@ -32,6 +31,15 @@ import {
   type WritingFeedback,
   type WritingPromptSpec,
 } from "../_shared/english-writing.ts";
+import { compactCriteria } from "../_shared/english-writing-depth.ts";
+import {
+  handleWritingDepthRoute,
+  loadPreviousRevision,
+  loadRevisionList,
+  loadWordTexts,
+  type PreviousRevision,
+  writingRequestWithWords,
+} from "./depth.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -156,7 +164,14 @@ const latestDraft = async (sb: any, userId: string, languageId: string, promptId
 };
 
 /** Calls the AI only for learners with access and AI quota left; otherwise returns null (basic feedback). */
-const askAI = async (sb: any, userId: string, products: Record<EnglishServiceKey, EnglishProductInfo>, text: string, spec: WritingPromptSpec) => {
+const askAI = async (
+  sb: any,
+  userId: string,
+  products: Record<EnglishServiceKey, EnglishProductInfo>,
+  text: string,
+  spec: WritingPromptSpec,
+  practiceWords: string[] = [],
+) => {
   try {
     const access = await requireEnglishSuiteAccess(sb, userId, products);
     if (!access.allowed) return null;
@@ -164,7 +179,7 @@ const askAI = async (sb: any, userId: string, products: Record<EnglishServiceKey
     const result = await callEnglishAIWithCredit<unknown>(
       defaultAICreditDeps(sb),
       userId,
-      { ...buildWritingAIRequest(text, spec), feature: "writing-feedback", userId },
+      { ...writingRequestWithWords(text, spec, practiceWords), feature: "writing-feedback", userId },
       null,
     );
     if (result.over_limit) return null;
@@ -203,7 +218,8 @@ const evaluateSubmission = async (
     return json(422, { error: `Write at least ${minWords} words before asking for feedback.`, code: "too_short", min_words: minWords });
   }
 
-  const ai = await askAI(sb, input.userId, input.products, text, spec);
+  const practiceWords = await loadWordTexts(sb, input.userId, input.yourWordIds ?? []).catch(() => [] as string[]);
+  const ai = await askAI(sb, input.userId, input.products, text, spec, practiceWords);
   const feedback: WritingFeedback = buildWritingFeedback(text, spec, ai);
 
   const minutes = minutesFor(prompt.level);
@@ -250,6 +266,8 @@ const evaluateSubmission = async (
     revision = Number(existing.revision_count ?? 0) + 1;
     draftId = String(existing.id);
   }
+  // The draft the learner is improving, for the side-by-side comparison.
+  const previousRevision: PreviousRevision | null = await loadPreviousRevision(sb, draftId).catch(() => null);
 
   const recorded = await recordEvaluatedAttempt(sb, {
     userId: input.userId,
@@ -259,7 +277,7 @@ const evaluateSubmission = async (
     contentItem,
     attemptType: "writing.submission",
     responseJson: { prompt_id: String(prompt.id), text, word_count: wordCount, feedback },
-    metadata: { prompt_slug: slug, feedback_source: feedback.source, revision, overall: feedback.overall },
+    metadata: { prompt_slug: slug, feedback_source: feedback.source, revision, overall: feedback.overall, criteria: compactCriteria(feedback.criteria) },
     hintUsageCount: 0,
     retryCount: 0,
     timeSpentSeconds: input.timeSpentSeconds,
@@ -303,7 +321,7 @@ const evaluateSubmission = async (
         improvement_ratio: Number.isFinite(previousOverall) && previousOverall < 100
           ? Math.max(0, Math.min(1, (feedback.overall - previousOverall) / (100 - previousOverall)))
           : null,
-        metadata: { overall: feedback.overall, source: feedback.source },
+        metadata: { overall: feedback.overall, source: feedback.source, criteria: compactCriteria(feedback.criteria) },
       });
     }
   } catch (error) {
@@ -325,6 +343,7 @@ const evaluateSubmission = async (
     revision,
     feedback,
     your_words_used: yourWordsUsed,
+    previous_revision: previousRevision,
   });
 };
 
@@ -350,6 +369,22 @@ serve(async (req) => {
       const value = toNumber(body.time_spent_seconds);
       return value === null ? null : Math.max(1, Math.min(4 * 3600, Math.round(value)));
     })();
+
+    // Autosave, model answer, criteria history and the free check (./depth.ts).
+    const depthResponse = await handleWritingDepthRoute({
+      sb,
+      req,
+      route,
+      url,
+      body,
+      userId: auth.userId,
+      languageId: scope.languageId,
+      productId,
+      products,
+      loadPrompt: (identifier) => loadPrompt(sb, productId, scope.languageId, identifier),
+      publicPrompt,
+    });
+    if (depthResponse) return depthResponse;
 
     // Library list (the skill home uses /hub/catalog; kept for older clients).
     if (req.method === "GET" && (route === "" || route === "/" || route === "/prompts")) {
@@ -391,7 +426,7 @@ serve(async (req) => {
     }
 
     // One task with the learner's saved draft and best score.
-    if (req.method === "GET" && route.startsWith("/prompts/")) {
+    if (req.method === "GET" && route.startsWith("/prompts/") && !route.slice("/prompts/".length).includes("/")) {
       const identifier = decodeURIComponent(route.slice("/prompts/".length)).trim();
       const prompt = identifier ? await loadPrompt(sb, productId, scope.languageId, identifier) : null;
       if (!prompt) return json(404, { error: "Writing task not found" });
@@ -400,7 +435,10 @@ serve(async (req) => {
         latestDraft(sb, auth.userId, scope.languageId, String(prompt.id)),
         loadPracticeWords(sb, auth.userId, scope.languageId, 3),
       ]);
-      const best = await bestScore(sb, auth.userId, itemId);
+      const [best, revisions] = await Promise.all([
+        bestScore(sb, auth.userId, itemId),
+        loadRevisionList(sb, draft?.id ? String(draft.id) : null).catch(() => []),
+      ]);
       return json(200, {
         prompt: publicPrompt(prompt),
         best_score: best,
@@ -410,8 +448,10 @@ serve(async (req) => {
             text: toText(draft.current_text, MAX_TEXT),
             revision_count: Number(draft.revision_count ?? 0),
             updated_at: draft.updated_at ?? null,
+            status: toText(draft.status, 20) || null,
           }
           : null,
+        revisions,
       });
     }
 

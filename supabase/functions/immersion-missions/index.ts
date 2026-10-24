@@ -37,6 +37,8 @@ import {
   type ReplyCheck,
   type StepKind,
 } from "../_shared/english-immersion.ts";
+import { loadPersonalTargets, personalResult } from "./personal.ts";
+import { handleProjectRoute } from "./projects.ts";
 
 type JsonRecord = Record<string, unknown>;
 type Row = Record<string, unknown>;
@@ -152,6 +154,19 @@ serve(async (req) => {
     const productId = products.immersion?.productId;
     if (!productId) return json(500, { error: "Real-life tasks are not available right now" });
 
+    // Multi-day projects (./projects.ts).
+    const projectResponse = await handleProjectRoute({
+      sb,
+      req,
+      route,
+      body,
+      userId: auth.userId,
+      languageId: scope.languageId,
+      productId,
+      products,
+    });
+    if (projectResponse) return projectResponse;
+
     // List of missions (summaries only).
     if (req.method === "GET" && (route === "" || route === "/" || route === "/missions")) {
       const level = toText(url.searchParams.get("level"), 8).toUpperCase();
@@ -253,6 +268,14 @@ serve(async (req) => {
       }));
 
       const correctnessRatio = missionScore(outcomes.map((outcome) => outcome.score));
+
+      // Saved words used (counted as reviews) and watched mistakes, before this attempt adds new ones.
+      const personal = await personalResult(sb, {
+        userId: auth.userId,
+        languageId: scope.languageId,
+        wordIds: Array.isArray(body.your_word_ids) ? (body.your_word_ids as unknown[]).map(String).slice(0, 5) : [],
+        texts: outcomes.map((outcome) => outcome.response ?? "").filter(Boolean),
+      }).catch(() => null);
       const replySteps = outcomes.filter((outcome) => outcome.check);
       const feedbackMode = replySteps.length === 0
         ? null
@@ -415,6 +438,7 @@ serve(async (req) => {
         feedback_mode: feedbackMode,
         cultural_note: toText(mission.cultural_note, 1200) || null,
         success_conditions: stringList(mission.success_conditions_json),
+        personal,
         steps: outcomes.map((outcome) => ({
           step_id: outcome.step_id,
           kind: outcome.kind,
@@ -449,9 +473,15 @@ serve(async (req) => {
       const loaded = identifier ? await loadMission(sb, productId, scope.languageId, identifier) : null;
       if (!loaded) return json(404, { error: "Task not found" });
       const level = toText(loaded.mission.level, 8) || null;
+      const hasReplies = loaded.steps.some((step) => {
+        const kind = stepKind(step.step_type);
+        return kind === "reply" || kind === "speak";
+      });
       return json(200, {
         mission: publicMission(loaded.mission, loaded.steps),
         steps: loaded.steps.map((step) => publicStep(step, level)),
+        // Saved words to use and recent mistakes to watch, for missions where the learner writes or speaks.
+        personal: hasReplies ? await loadPersonalTargets(sb, auth.userId, scope.languageId).catch(() => null) : null,
       });
     }
 
