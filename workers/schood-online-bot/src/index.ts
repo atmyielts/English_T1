@@ -1,4 +1,6 @@
 /** @schoodonlinebot: focused student and academy acquisition journeys. */
+import { englishCheckMenuRow, routeEnglishCheck } from "./english-check.ts";
+
 export interface Env {
   TELEGRAM_BOT_TOKEN: string;
   WEBHOOK_SECRET: string;
@@ -60,6 +62,7 @@ const authUrl = (env: Env, mode: 'signin' | 'signup'): string => {
 const choiceRows = (): Button[][] => [
   [{ text: "Estimate my IELTS level", callback_data: "student_begin" }],
   [{ text: "I run an academy", callback_data: "academy_begin" }],
+  englishCheckMenuRow(),
 ];
 const focusedStart = (name?: string) => `<b>${name ? `${escapeHtml(name)}, choose your first result.` : "Choose your first result."}</b>\n\nStudents get a short, real vocabulary check and a personalized 7-day starter plan.\n\nAcademies get a focused operations consultation.`;
 
@@ -152,7 +155,7 @@ const handleMessage = async (env: Env, updateId: number, message: Message) => {
     const result = await edge(env, { action: "journey_step", bot_name: "schoodonlinebot", telegram_user_id: telegramUserId, step_action: "cancel", update_id: updateId });
     return renderStep(env, chatId, result);
   }
-  if (command === "/help") return send(env, chatId, "<b>Schood Telegram</b>\n\n/login — sign in with Telegram\n/signup — create an email-recoverable account\n/ielts — get a starter study plan\n/academy — academy operations consultation\n/student — open private student work\n/cancel — stop the current journey", [[{ text: "Sign in to Schood", url: authUrl(env, 'signin') }], [{ text: "Private student bot", url: env.STUDENT_BOT_URL }]]);
+  if (command === "/help") return send(env, chatId, "<b>Schood Telegram</b>\n\n/login — sign in with Telegram\n/signup — create an email-recoverable account\n/ielts — get a starter study plan\n/check — check my English (rough level and fixes)\n/academy — academy operations consultation\n/student — open private student work\n/cancel — stop the current journey", [[{ text: "Sign in to Schood", url: authUrl(env, 'signin') }], [{ text: "Private student bot", url: env.STUDENT_BOT_URL }]]);
   if (command === "/student") return send(env, chatId, "Open your private student command center.", [[{ text: "Open student bot", url: env.STUDENT_BOT_URL }]]);
   if (!raw) return;
   try {
@@ -190,7 +193,10 @@ const processUpdate = async (env: Env, update: Record<string, any>): Promise<"co
   const claimToken = String(claim.claim_token ?? "");
   if (!claimToken) throw new Error("Telegram update claim token missing");
   try {
-    if (update.callback_query) await handleCallback(env, updateId, update.callback_query as Callback);
+    // === "Check my English" (./english-check.ts) runs first; other updates are untouched ===
+    const englishCheck = { edge: (body: Record<string, unknown>) => edge(env, body), tg: (method: string, body: unknown) => tg(env, method, body) };
+    if (await routeEnglishCheck(englishCheck, updateId, update)) { /* answered */ }
+    else if (update.callback_query) await handleCallback(env, updateId, update.callback_query as Callback);
     else if (update.message) await handleMessage(env, updateId, update.message as Message);
     const completed = await edge(env, { action: "complete_update", bot_name: "schoodonlinebot", update_id: updateId, claim_token: claimToken });
     if (!completed.ok) throw new Error("Telegram update completion was rejected");

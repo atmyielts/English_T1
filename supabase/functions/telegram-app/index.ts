@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { validateTelegramInitData, type TelegramIdentity } from "../_shared/telegram-init-data.ts";
+import { ENGLISH_APP_ACTIONS, handleEnglishAppAction, handleEnglishWorkerAction } from "./english.ts";
 
 type Json = Record<string, unknown>;
 type SupabaseClientLike = ReturnType<typeof createClient<any>>;
@@ -559,6 +560,9 @@ serve(async (req) => {
   try {
     const body = (await req.json().catch(() => ({}))) as Json;
     action = normalizeText(body.action, 80).toLowerCase() || "bootstrap";
+    // === English for the student bot Worker (./english.ts; x-worker-secret, no initData) ===
+    const englishWorker = await handleEnglishWorkerAction(sb, req, action, body, getEnv("SUPABASE_SERVICE_ROLE_KEY"));
+    if (englishWorker) return json(englishWorker.status, englishWorker.body);
     const initData = normalizeText(body.initData ?? body.init_data, 12000);
     if (!initData) {
       await logEvent(sb, { action, status: "unauthorized" });
@@ -630,6 +634,13 @@ serve(async (req) => {
       const result = await reviewVocabCard(sb, ctx.user.id, normalizeText(body.card_id, 64), body.quality);
       await logEvent(sb, { userId: ctx.user.id, telegramUserId: telegramId, action, status: (result as any).error ? "error" : "ok" });
       return json((result as any).error ? 400 : 200, result);
+    }
+
+    // === Schood English section (./english.ts) ===
+    if (ENGLISH_APP_ACTIONS.has(action)) {
+      const result = await handleEnglishAppAction(sb, ctx.user.id, action, body);
+      await logEvent(sb, { userId: ctx.user.id, telegramUserId: telegramId, action, status: result.status === 200 ? "ok" : "error" });
+      return json(result.status, result.body);
     }
 
     if (action === "notification_preferences") {

@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { isInternalRequest } from "../_shared/internal-auth.ts";
 import { advanceTelegramJourney, parseTelegramStartPayload } from "../_shared/telegram-growth.ts";
 import { validateTelegramInitData } from "../_shared/telegram-init-data.ts";
+import { runEnglishCheck } from "./english-check.ts";
 
 type Json = Record<string, any>;
 type DbClient = ReturnType<typeof createClient<any>>;
@@ -369,6 +370,11 @@ serve(async (req) => {
     const action = normalize(body.action, 80).toLowerCase() || "bootstrap";
     const serviceRole = env("SUPABASE_SERVICE_ROLE_KEY");
     const sb = createClient(env("SUPABASE_URL"), serviceRole, { auth: { persistSession: false } });
+    // === "Check my English" (./english-check.ts; @schoodonlinebot Worker only) ===
+    if (action === "english_check") {
+      if (!(await isInternalRequest(req, serviceRole, Deno.env.get("TELEGRAM_INTERNAL_SECRET")))) return json(401, { error: "Unauthorized" });
+      const result = await runEnglishCheck(sb, body); return json(result.status, result.body);
+    }
     if (["claim_update", "complete_update", "session_start", "journey_step"].includes(action)) {
       if (!(await isInternalRequest(req, serviceRole, Deno.env.get("TELEGRAM_INTERNAL_SECRET")))) return json(401, { error: "Unauthorized" });
       if (action === "claim_update") { const result = await claimUpdate(sb, body); return json(result.status, result.body); }
