@@ -51,6 +51,8 @@
 .en-rail-sub { display: grid; gap: 2px; margin: 2px 0 4px 21px; }
 .en-rail-sub a { min-height: 34px; padding: 6px 12px; font-size: 0.85rem; }
 
+.en-rail-paused { margin-left: auto; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(242, 249, 244, 0.6); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 999px; padding: 1px 7px; }
+
 /* Phone tab bar */
 .en-tabbar { display: none; }
 

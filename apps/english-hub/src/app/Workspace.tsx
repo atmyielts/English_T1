@@ -132,7 +132,8 @@ export const Workspace = ({ skill, children }: { skill?: SkillKey; children: Rea
                     <Link to={entry.path} aria-current={here && location.pathname === entry.path ? 'page' : undefined}>
                       <span className="en-rail-dot" aria-hidden="true" />
                       <span className="en-rail-skill-name">{t(`skill.${entry.key}`)}</span>
-                      {owned ? null : <span className="en-rail-lock" title={t('ws.locked')}><LockIcon /><span className="visually-hidden">{t('ws.locked')}</span></span>}
+                      {access.paused.has(entry.key) ? <span className="en-rail-paused">{t('ws.paused')}</span>
+                        : owned ? null : <span className="en-rail-lock" title={t('ws.locked')}><LockIcon /><span className="visually-hidden">{t('ws.locked')}</span></span>}
                     </Link>
                     {here && pages.length ? <div className="en-rail-sub">{pages.map(link)}</div> : null}
                   </div>

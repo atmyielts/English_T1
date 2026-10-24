@@ -39,6 +39,9 @@ import { engineUz } from './engine.uz';
 import { pausedEn } from './paused.en';
 import { pausedRu } from './paused.ru';
 import { pausedUz } from './paused.uz';
+import { showcaseEn } from './showcase.en';
+import { showcaseRu } from './showcase.ru';
+import { showcaseUz } from './showcase.uz';
 import { skillCatalogs } from '../skills/catalogs';
 
 type Partial3 = { en: Record<string, string>; ru: Partial<Record<string, string>>; uz: Partial<Record<string, string>> };
@@ -50,7 +53,7 @@ const merge = (parts: Partial3[]): Catalogs<string> => ({
 });
 
 /** Every UI string. Russian and Uzbek fall back to English for any missing key. */
-export const catalogs = merge([{ en, ru, uz }, { en: aiEn, ru: aiRu, uz: aiUz }, { en: tgreviewEn, ru: tgreviewRu, uz: tgreviewUz }, { en: handbookEn, ru: handbookRu, uz: handbookUz }, { en: certificateEn, ru: certificateRu, uz: certificateUz }, { en: goalEn, ru: goalRu, uz: goalUz }, { en: xpEn, ru: xpRu, uz: xpUz }, { en: translateEn, ru: translateRu, uz: translateUz }, { en: bundleEn, ru: bundleRu, uz: bundleUz }, { en: pwaEn, ru: pwaRu, uz: pwaUz }, { en: workspaceEn, ru: workspaceRu, uz: workspaceUz }, { en: engineEn, ru: engineRu, uz: engineUz }, { en: pausedEn, ru: pausedRu, uz: pausedUz }, ...skillCatalogs]);
+export const catalogs = merge([{ en, ru, uz }, { en: aiEn, ru: aiRu, uz: aiUz }, { en: tgreviewEn, ru: tgreviewRu, uz: tgreviewUz }, { en: handbookEn, ru: handbookRu, uz: handbookUz }, { en: certificateEn, ru: certificateRu, uz: certificateUz }, { en: goalEn, ru: goalRu, uz: goalUz }, { en: xpEn, ru: xpRu, uz: xpUz }, { en: translateEn, ru: translateRu, uz: translateUz }, { en: bundleEn, ru: bundleRu, uz: bundleUz }, { en: pwaEn, ru: pwaRu, uz: pwaUz }, { en: workspaceEn, ru: workspaceRu, uz: workspaceUz }, { en: engineEn, ru: engineRu, uz: engineUz }, { en: pausedEn, ru: pausedRu, uz: pausedUz }, { en: showcaseEn, ru: showcaseRu, uz: showcaseUz }, ...skillCatalogs]);
 
 /** Translator for the English app. Keys live in i18n/en.ts and skills/<skill>/i18n.ts. */
 export const useT = () => useI18n().t;

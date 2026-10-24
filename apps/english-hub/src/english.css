@@ -530,3 +530,14 @@ textarea.en-writing { font-size: 1rem; line-height: 1.7; min-height: 14rem; }
   .en-skeleton { animation: none; }
   .en-progress > span { transition: none; }
 }
+
+/* ---------- Landing: features, plans, closing call ---------- */
+.en-showcase { display: grid; gap: 1rem; }
+.en-showcase > h2, .en-showcase > .en-lead { margin: 0; }
+.en-show-card { display: grid; gap: 0.4rem; align-content: start; padding: 1rem 1.1rem; border-radius: var(--radius-inner); border: 1px solid var(--soft-line); background: rgba(255, 255, 255, 0.65); min-width: 0; }
+.en-show-card h3, .en-show-card p { margin: 0; }
+.en-plan .en-button, .en-plan .en-button-quiet { justify-self: start; }
+.en-plan-price { font-family: var(--heading-font); font-size: 1.35rem; color: var(--ink); }
+.en-plan.is-best { border-color: rgba(156, 44, 26, 0.45); box-shadow: 0 0 0 2px rgba(196, 58, 34, 0.12), var(--card-shadow); }
+.en-final { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.en-final h2, .en-final p { margin: 0; }
