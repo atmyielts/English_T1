@@ -23,6 +23,9 @@ export const SKILLS: Skill[] = [
   { key: 'immersion', path: '/immersion', productSlug: 'english-immersion', productId: '7ce43052-2f35-42ca-b305-0d9c358f73f0' },
 ];
 
+/** "All of English": one plan that unlocks every skill. Same id as the server's ENGLISH_BUNDLE_PRODUCT_ID. */
+export const ENGLISH_BUNDLE = { productSlug: 'english-all', productId: '3a7bd983-58c5-4c75-b5f8-5ac46c94a0fa' } as const;
+
 export const skillByKey = (key: string | null | undefined): Skill | null =>
   SKILLS.find((skill) => skill.key === key) ?? null;
 

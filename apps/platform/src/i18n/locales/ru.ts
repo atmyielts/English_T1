@@ -246,6 +246,9 @@ export const ru: Partial<Record<TranslationKey, string>> = {
   'pricing.subtitle':
     'Выберите сервис и план, чтобы открыть доступ. Бандлы дают доступ к нескольким сервисам за одну покупку.',
   'pricing.serviceLabel': 'Сервис: {name}',
+  'pricing.englishBundle.title': 'Учите больше одного навыка?',
+  'pricing.englishBundle.body': 'English All Skills открывает все семь навыков английского, ИИ-репетитора и ролевые диалоги в одном тарифе — дешевле трёх отдельных навыков.',
+  'pricing.englishBundle.cta': 'Смотреть All Skills',
   'pricing.accessActiveTitle': 'Доступ активен.',
   'pricing.activePlan': 'Активный план: {plan}',
   'pricing.endsAt': 'До: {date}',

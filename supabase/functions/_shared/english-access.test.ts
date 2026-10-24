@@ -1,6 +1,8 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
   consumeEnglishAiDailyQuota,
+  ENGLISH_BUNDLE_PRODUCT_ID,
+  expandBundleEntitlements,
   isActiveAccessWindow,
   parseEnglishAiDailyLimit,
   requireEnglishSuiteAccess,
@@ -37,7 +39,7 @@ Deno.test("English entitlement windows fail closed outside their active range", 
 });
 
 const accessClient = (
-  options: { role?: string; entitlementEndsAt?: string | null },
+  options: { role?: string; entitlementEndsAt?: string | null; resourceId?: string },
 ) => ({
   from: (table: string) => {
     if (table === "users") {
@@ -76,7 +78,7 @@ const accessClient = (
               eq: () => ({
                 in: async () => ({
                   data: [{
-                    resource_id: "product-1",
+                    resource_id: options.resourceId ?? "product-1",
                     is_active: true,
                     starts_at: "2026-01-01T00:00:00Z",
                     ends_at: options.entitlementEndsAt ??
@@ -110,6 +112,25 @@ Deno.test("English suite access accepts a current product entitlement and reject
   assertEquals(active.allowed, true);
   assertEquals(active.entitlementProductIds, ["product-1"]);
   assertEquals(expired.allowed, false);
+});
+
+Deno.test("The All of English bundle unlocks every skill product", async () => {
+  const products = { reading: { productId: "product-1" }, speaking: { productId: "product-2" } };
+  const access = await requireEnglishSuiteAccess(
+    accessClient({ resourceId: ENGLISH_BUNDLE_PRODUCT_ID }),
+    "user-1",
+    products,
+  );
+  assertEquals(access.allowed, true);
+  assertEquals(access.entitlementProductIds.sort(), [ENGLISH_BUNDLE_PRODUCT_ID, "product-1", "product-2"].sort());
+
+  const expired = await requireEnglishSuiteAccess(
+    accessClient({ resourceId: ENGLISH_BUNDLE_PRODUCT_ID, entitlementEndsAt: "2026-01-02T00:00:00Z" }),
+    "user-1",
+    products,
+  );
+  assertEquals(expired.allowed, false);
+  assertEquals(expandBundleEntitlements(["product-1"], ["product-1", "product-2"]), ["product-1"]);
 });
 
 Deno.test("English suite access permits platform admins without tenant lookup", async () => {

@@ -220,6 +220,7 @@ section { min-width: 0; }
 .en-rail-upgrade strong { font-family: 'Sora', sans-serif; font-size: 0.95rem; }
 .en-rail-upgrade p { margin: 0; font-size: 0.82rem; color: rgba(238, 247, 241, 0.72); }
 .en-rail-upgrade a { min-height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; background: var(--lime); color: #17372d; font-weight: 800; font-size: 0.85rem; }
+.en-rail-upgrade a + a { background: transparent; color: var(--lime); border: 1px solid rgba(255, 255, 255, 0.22); font-weight: 700; }
 
 .en-ws-main { min-width: 0; width: 100%; max-width: 1540px; margin: 0 auto; padding: 28px clamp(20px, 3vw, 48px) 64px; display: grid; gap: 20px; align-content: start; }
 .en-ws-topbar { min-height: 56px; padding-bottom: 16px; border-bottom: 1px solid var(--soft-line); display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }

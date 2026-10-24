@@ -3,7 +3,7 @@ import type { Session } from '@supabase/supabase-js';
 import { supabase, platformUrl } from '../lib/supabase';
 import { edge, ApiError } from '../lib/api';
 import { buildPlatformHref } from '../lib/navigation';
-import { SKILLS, isCefr, type CefrLevel, type SkillKey } from '../lib/skills';
+import { ENGLISH_BUNDLE, SKILLS, isCefr, type CefrLevel, type SkillKey } from '../lib/skills';
 
 type Entitlement = {
   resource_type: string;
@@ -54,6 +54,7 @@ type EnglishState = {
   refreshOnboarding: () => Promise<void>;
   signOut: () => Promise<void>;
   signInHref: (returnPath?: string) => string;
+  /** Pricing for one skill, or for "All of English" when no skill is given. */
   pricingHref: (skill?: SkillKey) => string;
   accountHref: string;
   telegramHref: string;
@@ -74,6 +75,9 @@ const isActive = (entry: Entitlement, now: number): boolean => {
 const unlockedSkills = (entitlements: Entitlement[]): Set<SkillKey> => {
   const now = Date.now();
   const active = entitlements.filter((entry) => entry.resource_type === 'product' && isActive(entry, now));
+  if (active.some((entry) => entry.resource_id === ENGLISH_BUNDLE.productId || entry.resource_id === ENGLISH_BUNDLE.productSlug)) {
+    return new Set(SKILLS.map((skill) => skill.key));
+  }
   return new Set(
     SKILLS.filter((skill) => active.some((entry) => entry.resource_id === skill.productId || entry.resource_id === skill.productSlug))
       .map((skill) => skill.key),
@@ -200,7 +204,7 @@ export const EnglishProvider = ({ children }: { children: ReactNode }) => {
         buildPlatformHref(platformUrl, '/auth', { mode: 'signin', returnTo: `${origin}${returnPath}` }),
       pricingHref: (skill) =>
         buildPlatformHref(platformUrl, '/pricing', {
-          product: skill ? `english-${skill}` : null,
+          product: skill ? `english-${skill}` : ENGLISH_BUNDLE.productSlug,
           returnTo: typeof window === 'undefined' ? null : window.location.href,
         }),
       accountHref: buildPlatformHref(platformUrl, '/student-center'),
