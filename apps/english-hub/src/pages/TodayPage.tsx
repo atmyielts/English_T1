@@ -12,6 +12,8 @@ import { NewBadges } from '../components/Badges';
 import { TodayXpPanel } from '../components/XpWidgets';
 import { FocusSkillCard } from '../components/FocusSkillCard';
 import { InstallCard } from '../components/InstallApp';
+import { ComebackCard, StreakFreezes } from '../components/StreakGuard';
+import { getStreak } from '../lib/engine';
 
 const greetingKey = (): string => {
   const hour = new Date().getHours();
@@ -75,6 +77,9 @@ export const TodayPage = () => {
   const { onboarding, displayName, pricingHref } = useEnglish();
   const placed = onboarding.value?.placementDone ?? false;
   const today = useResource((signal) => getToday(signal), [placed], placed);
+  // Streak with freezes and Win it back; reloads when today's progress changes.
+  const streakKey = today.data ? `${today.data.date}:${today.data.done_count}` : '';
+  const guard = useResource((signal) => getStreak(signal), [streakKey], Boolean(today.data));
 
   if (onboarding.status === 'loading') return <Loading lines={4} />;
   if (onboarding.status === 'error' && !onboarding.value) {
@@ -88,6 +93,8 @@ export const TodayPage = () => {
   const allDone = tasks.length > 0 && nextIndex === -1;
   const level = data?.level ?? onboarding.value?.level ?? null;
   const target = data?.target_level ?? onboarding.value?.targetLevel ?? null;
+  // The protected streak (freezes, won-back streaks) once it loads; the plain one until then.
+  const streakCount = guard.data?.current ?? data?.streak ?? 0;
   const readySkills = Object.entries(data?.level_status ?? {})
     .filter(([skill, status]) => status === 'ready' && (data?.available_skills ?? []).includes(skill as SkillKey))
     .map(([skill]) => skill as SkillKey);
@@ -108,12 +115,14 @@ export const TodayPage = () => {
 
       <NewBadges />
 
+      {guard.data ? <ComebackCard streak={guard.data} /> : null}
+
       {data?.level_check?.due ? (
         <section className="en-panel en-tone-lime">
           <div className="en-panel-head">
             <div>
-              <h2>{t('levels.todayTitle')}</h2>
-              <p style={{ margin: 0 }}>{t('levels.dueBody')}</p>
+              <h2>{t('engine.check.readyTitle')}</h2>
+              <p style={{ margin: 0 }}>{t('engine.check.readyBody')}</p>
             </div>
             <Link className="en-button" to="/check">{t('levels.dueCta')}</Link>
           </div>
@@ -194,9 +203,10 @@ export const TodayPage = () => {
           <FocusSkillCard />
           <GoalCard />
 
-          <Panel title={t('today.week.title')} aside={data ? <span>{t('today.week.streak', { count: data.streak })}</span> : null}>
+          <Panel title={t('today.week.title')} aside={data ? <span>{t('today.week.streak', { count: streakCount })}</span> : null}>
             {data ? <WeekStrip week={data.week} /> : <Loading lines={1} />}
-            <p className="hint">{data && data.streak > 0 ? t('today.week.keepGoing') : t('today.week.start')}</p>
+            <p className="hint">{data && streakCount > 0 ? t('today.week.keepGoing') : t('today.week.start')}</p>
+            {guard.data ? <StreakFreezes streak={guard.data} /> : null}
           </Panel>
 
           <TodayXpPanel enabled={Boolean(data)} reloadKey={data ? `${data.date}:${data.done_count}` : ''} />

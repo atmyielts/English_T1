@@ -4452,6 +4452,32 @@
           ]
         }
       },
+      "apps/admission": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@supabase/supabase-js@^2.89.0",
+            "npm:@types/react-dom@^19.2.3",
+            "npm:@types/react@^19.2.5",
+            "npm:react-dom@^19.2.0",
+            "npm:react@^19.2.0",
+            "npm:typescript@~5.9.3",
+            "npm:vite@^7.2.4"
+          ]
+        }
+      },
+      "apps/assessment-cloud": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@supabase/supabase-js@^2.89.0",
+            "npm:@types/react-dom@^19.2.3",
+            "npm:@types/react@^19.2.5",
+            "npm:react-dom@^19.2.0",
+            "npm:react@^19.2.0",
+            "npm:typescript@~5.9.3",
+            "npm:vite@^7.2.4"
+          ]
+        }
+      },
       "apps/english-hub": {
         "packageJson": {
           "dependencies": [
@@ -4463,6 +4489,19 @@
             "npm:@vitejs/plugin-react@^5.1.1",
             "npm:react-dom@^19.2.0",
             "npm:react-router-dom@7.18.2",
+            "npm:react@^19.2.0",
+            "npm:typescript@~5.9.3",
+            "npm:vite@^7.2.4"
+          ]
+        }
+      },
+      "apps/exam": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@supabase/supabase-js@^2.89.0",
+            "npm:@types/react-dom@^19.2.3",
+            "npm:@types/react@^19.2.5",
+            "npm:react-dom@^19.2.0",
             "npm:react@^19.2.0",
             "npm:typescript@~5.9.3",
             "npm:vite@^7.2.4"
@@ -4586,6 +4625,19 @@
           ]
         }
       },
+      "apps/proctor": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@supabase/supabase-js@^2.89.0",
+            "npm:@types/react-dom@^19.2.3",
+            "npm:@types/react@^19.2.5",
+            "npm:react-dom@^19.2.0",
+            "npm:react@^19.2.0",
+            "npm:typescript@~5.9.3",
+            "npm:vite@^7.2.4"
+          ]
+        }
+      },
       "apps/sat-playbook": {
         "packageJson": {
           "dependencies": [
@@ -4690,6 +4742,80 @@
             "npm:remark-gfm@^4.0.1",
             "npm:typescript@~5.9.3",
             "npm:vite@^7.2.4"
+          ]
+        }
+      },
+      "packages/assessment-web": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@supabase/supabase-js@^2.89.0",
+            "npm:katex@0.19.0"
+          ]
+        }
+      },
+      "workers/assessment-coordinator": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@cloudflare/workers-types@5.20261013.1",
+            "npm:esbuild@~0.25.12",
+            "npm:miniflare@4.20260730.0",
+            "npm:typescript@~5.9.3",
+            "npm:wrangler@4.150.0"
+          ]
+        }
+      },
+      "workers/assessment-grading": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@cloudflare/workers-types@5.20261013.1",
+            "npm:esbuild@~0.25.12",
+            "npm:miniflare@4.20260730.0",
+            "npm:typescript@~5.9.3",
+            "npm:wrangler@4.150.0"
+          ]
+        }
+      },
+      "workers/assessment-media": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@cloudflare/workers-types@5.20261013.1",
+            "npm:esbuild@~0.25.12",
+            "npm:miniflare@4.20260730.0",
+            "npm:typescript@~5.9.3",
+            "npm:wrangler@4.150.0"
+          ]
+        }
+      },
+      "workers/assessment-roster": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@cloudflare/workers-types@5.20261013.1",
+            "npm:esbuild@~0.25.12",
+            "npm:miniflare@4.20260730.0",
+            "npm:typescript@~5.9.3",
+            "npm:wrangler@4.150.0"
+          ]
+        }
+      },
+      "workers/assessment-webhooks": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@cloudflare/workers-types@5.20261013.1",
+            "npm:esbuild@~0.25.12",
+            "npm:miniflare@4.20260730.0",
+            "npm:typescript@~5.9.3",
+            "npm:wrangler@4.150.0"
+          ]
+        }
+      },
+      "workers/proctor-evidence": {
+        "packageJson": {
+          "dependencies": [
+            "npm:@cloudflare/workers-types@5.20261013.1",
+            "npm:esbuild@~0.25.12",
+            "npm:miniflare@4.20260730.0",
+            "npm:typescript@~5.9.3",
+            "npm:wrangler@4.150.0"
           ]
         }
       },

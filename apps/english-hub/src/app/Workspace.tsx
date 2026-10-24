@@ -9,6 +9,7 @@ import { RailInstallButton } from '../components/InstallApp';
 import { useEnglish } from './EnglishContext';
 import { DAY_ENTRIES, SKILL_PAGES, YOU_ENTRIES, activeEntry, allEntries, type NavEntry } from './navModel';
 import { QuickSwitcher } from './QuickSwitcher';
+import { UpNextStrip } from '../components/UpNext';
 import './workspace.css';
 
 // XP for the top bar, shared across page changes so moving around doesn't refetch every time.
@@ -188,6 +189,7 @@ export const Workspace = ({ skill, children }: { skill?: SkillKey; children: Rea
             </button>
           </div>
         </div>
+        {skill ? <UpNextStrip skill={skill} /> : null}
         {skill ? children : <div className="en-hub">{children}</div>}
       </main>
 

@@ -1,0 +1,47 @@
+/* Learning engine: up next, per-skill ratings, IELTS estimate, streak freezes. Uses the tokens from english.css. */
+
+/* ---------- Up next ---------- */
+.en-upnext { display: grid; gap: 0.5rem; padding: 0.9rem 1rem; border: 1px solid var(--highlight-line); border-radius: var(--radius-inner); background: var(--highlight-bg); }
+.en-upnext-label { margin: 0; font-family: var(--heading-font); font-size: 0.75rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-strong); }
+.en-upnext-row { display: flex; gap: 0.75rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.en-upnext-main { display: grid; gap: 0.2rem; min-width: 0; flex: 1 1 16rem; color: inherit; text-decoration: none; }
+.en-upnext-main small { font-weight: 700; color: var(--muted); font-size: 0.75rem; }
+.en-upnext-main strong { overflow-wrap: anywhere; }
+.en-upnext-main > span:last-child { color: var(--ink-700); font-size: 0.88rem; overflow-wrap: anywhere; }
+.en-upnext-main:hover strong, .en-upnext-main:focus-visible strong { text-decoration: underline; }
+.en-upnext-locked { margin: 0; font-size: 0.85rem; color: var(--muted); }
+
+.en-upnext-strip {
+  display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin: 0 0 1rem; padding: 0.55rem 0.8rem;
+  border: 1px solid var(--highlight-line); border-radius: var(--radius-inner); background: var(--highlight-bg);
+}
+.en-upnext-strip-copy { display: grid; min-width: 0; flex: 1 1 12rem; }
+.en-upnext-strip-copy strong { font-size: 0.92rem; overflow-wrap: anywhere; }
+.en-upnext-strip-copy small { font-size: 0.78rem; color: var(--ink-700); overflow-wrap: anywhere; }
+
+/* ---------- Ratings ---------- */
+.en-ratings { display: grid; gap: 0.75rem; }
+.en-rating-row { display: grid; grid-template-columns: minmax(6.5rem, 9rem) minmax(0, 1fr) auto; gap: 0.75rem; align-items: center; }
+.en-rating-row > a { display: flex; gap: 0.5rem; align-items: center; font-weight: 700; font-size: 0.9rem; min-width: 0; }
+.en-rating-row small { color: var(--muted); font-size: 0.78rem; }
+.en-rating-value { font-family: var(--heading-font); font-weight: 800; white-space: nowrap; }
+.en-rating-overall { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; padding-bottom: 0.6rem; border-bottom: 1px solid var(--soft-line); }
+.en-rating-overall strong { font-family: var(--heading-font); font-size: 1.6rem; }
+@media (max-width: 520px) {
+  .en-rating-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .en-rating-row > div { grid-column: 1 / -1; grid-row: 2; }
+}
+
+/* ---------- IELTS estimate ---------- */
+.en-ielts-bands { display: grid; gap: 0.6rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 7.5rem), 1fr)); margin: 0; padding: 0; list-style: none; }
+.en-ielts-bands li { display: grid; gap: 0.15rem; padding: 0.7rem 0.8rem; border: 1px solid var(--soft-line); border-radius: var(--radius-inner); background: var(--card); }
+.en-ielts-bands small { color: var(--muted); font-size: 0.78rem; font-weight: 700; }
+.en-ielts-bands strong { font-family: var(--heading-font); font-size: 1.4rem; }
+.en-ielts-bands .is-overall { border-color: var(--highlight-line); background: var(--highlight-bg); }
+.en-estimate-tag { display: inline-flex; align-items: center; min-height: 1.5rem; padding: 0 0.55rem; border-radius: 999px; border: 1px dashed var(--highlight-line); color: var(--accent-strong); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ---------- Streak freezes ---------- */
+.en-freezes { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin: 0.25rem 0 0; }
+.en-freeze { display: inline-grid; place-items: center; width: 1.8rem; height: 1.8rem; border-radius: 50%; border: 1px dashed var(--line); color: var(--muted); font-size: 0.95rem; }
+.en-freeze.is-held { border: 0; background: #1f537a; color: #fff; }
+.en-comeback .en-progress { margin: 0.25rem 0; }

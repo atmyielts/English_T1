@@ -1,0 +1,68 @@
+/** English strings for the learning engine: up next, ratings, IELTS estimate, streak freezes, progress check. Russian and Uzbek use the same keys. */
+export const engineEn: Record<string, string> = {
+  // Up next (one step across all skills)
+  'engine.next.label': 'Up next',
+  'engine.next.start': 'Start',
+  'engine.next.go': 'Go',
+  'engine.next.loading': 'Finding your next step…',
+  'engine.next.reviewTitle': '{count|one:Review # item|other:Review # items}',
+  'engine.next.reason.review_due': 'Due for review now. A few minutes keeps them in memory.',
+  'engine.next.reason.fix_mistake': 'Fixes a mistake you keep making: {example}',
+  'engine.next.reason.fix_mistake.plain': 'Fixes a mistake you keep making.',
+  'engine.next.reason.weakest_skill': '{skill} is furthest from your goal ({level} · {progress}%, goal {target}).',
+  'engine.next.reason.weakest_skill.noGoal': '{skill} is your lowest-rated skill right now ({level} · {progress}%).',
+  'engine.next.reason.weakest_skill.plain': '{skill} needs the most practice right now.',
+  'engine.next.reason.today_plan': "Next in today's plan.",
+  'engine.next.reason.keep_going': 'Good next practice in {skill}.',
+  'engine.next.usesFree': "Uses today's free activity.",
+  'engine.next.locked': 'Also recommended: {title} ({skill}).',
+  'engine.next.lockedCta': 'Unlock {skill}',
+  'engine.next.none': "You're all caught up. Pick anything you like from Practice.",
+
+  // Per-skill rating (Progress)
+  'engine.rating.title': 'Your level in each skill',
+  'engine.rating.lead': 'From your recent results, weighted by how hard each activity was and how recent it is.',
+  'engine.rating.overall': 'Overall',
+  'engine.rating.value': '{level} · {progress}%',
+  'engine.rating.toward': '{progress}% of the way to {level}',
+  'engine.rating.top': 'Top level',
+  'engine.rating.barLabel': '{skill}: progress toward the next level',
+  'engine.rating.basis.none': 'From your level test only. Finish a few activities to refine it.',
+  'engine.rating.basis.some': '{count|one:Based on # recent result|other:Based on # recent results}',
+  'engine.rating.noData': 'Not rated yet',
+  'engine.rating.error': "Your ratings couldn't load.",
+  'engine.rating.empty': 'Finish your level test or a few scored activities to see a rating here.',
+
+  // IELTS bridge (Progress)
+  'engine.ielts.title': 'IELTS band estimate',
+  'engine.ielts.label': 'Estimate',
+  'engine.ielts.lead': "A rough guide from your Schood English ratings, using the usual CEFR to IELTS alignment. It is not an official IELTS score.",
+  'engine.ielts.overall': 'Overall (estimate)',
+  'engine.ielts.basedOn': '{count|one:Overall from # skill|other:Overall from # skills}; the rest are not rated yet.',
+  'engine.ielts.tentative': 'Some skills have only a few results, so the estimate may move.',
+  'engine.ielts.empty': 'Rate at least one of listening, reading, writing or speaking to see an estimate.',
+  'engine.ielts.practice': 'Practise IELTS tasks',
+  'engine.ielts.mock': 'Take a full IELTS mock test',
+  'engine.ielts.mockHint': 'For a real band score, take a timed mock test with examiner-style marking.',
+
+  // Streak freezes and Win it back (Today)
+  'engine.streak.freezes': '{count|one:# streak freeze|other:# streak freezes}',
+  'engine.streak.freezesLabel': 'Streak freezes held: {count} of {max}',
+  'engine.streak.nextFreeze': '{count|one:# more practice day earns a freeze.|other:# more practice days earn a freeze.}',
+  'engine.streak.maxFreezes': "You're holding the most freezes you can (2).",
+  'engine.streak.how': 'Every 7 days in a row earns a freeze. A freeze covers one missed day automatically.',
+  'engine.streak.frozen': 'A freeze saved your streak on {date}.',
+  'engine.streak.atRisk': 'Do one activity today to keep your streak.',
+  'engine.comeback.title': 'Win it back',
+  'engine.comeback.body': '{count|one:Your # day streak broke.|other:Your # day streak broke.} Finish {needed} activities by {date} and it comes back.',
+  'engine.comeback.progress': '{done} of {needed} done',
+  'engine.comeback.progressLabel': 'Win it back progress',
+  'engine.comeback.cta': 'Start an activity',
+  'engine.comeback.wonTitle': 'Streak won back!',
+  'engine.comeback.wonBody': '{count|one:Your # day streak is back.|other:Your # day streak is back.} Keep it going.',
+
+  // Monthly progress check
+  'engine.check.readyTitle': 'Progress check is ready',
+  'engine.check.readyBody': "It's been four weeks. A short mixed check, about 8–10 minutes, shows what changed in each skill and updates your levels.",
+  'engine.check.lead': 'Eight short questions across reading, listening, writing and grammar, starting at your current levels. We compare the result with last time and update your levels.',
+};
