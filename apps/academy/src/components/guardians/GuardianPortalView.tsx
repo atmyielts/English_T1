@@ -1,6 +1,7 @@
 import { formatLocaleDateTime, getLocaleTag, translate } from '../../i18n';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { UpdatesButton } from '../UpdatesButton';
+import { GuardianMistakeFeed } from './GuardianMistakeFeed';
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   BellRing,
@@ -441,6 +442,9 @@ export function GuardianPortalView({ actorId,onSignOut }: Props) {
                 ))}
               </div>
             </article>
+            {child?.permissions.homework ? (
+              <GuardianMistakeFeed academyId={child.academy_id} relationshipId={child.relationship_id} actorId={actorId} studentName={child.student.name} />
+            ) : null}
           </section>
         ) : null}
         {tab === 'schedule' ? (

@@ -6236,3 +6236,31 @@ test('homework review approves the AI draft through academy-learning and shows t
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await mkdir(resolve('test-results'),{recursive:true});await page.screenshot({path:resolve('test-results/homework-funnel-phone.png'),fullPage:true});
 });
+
+test('a learner of 18 or older sends homework mistakes to Schood English and can turn it off again',async({page})=>{
+ const sets:Record<string,unknown>[]=[];let feed={academy_id:academyId,center_name:'Route Academy',status:'off',granted_at:null,granted_by_role:null,revoked_at:null,copied:0};
+ await seedSessionCookie(page,'student-user');await mockAcademyEdge(page,'student');
+ await page.route('**/functions/v1/academy-learning',async route=>{const body=route.request().postDataJSON() as Record<string,unknown>;
+  if(body.action==='student_mistakes')return route.fulfill({json:{mistakes:[{id:'m1',assignment_id:'hw1',assignment_title:'Unit 5 essay',tag:'grammar.articles',excerpt:'I have car',correction:'I have a car',explanation:'Use a before a singular noun.',status:'open',created_at:'2026-10-24T08:00:00Z'}]}});
+  if(body.action==='student_mistake_feed')return route.fulfill({json:{consents:[feed],practice_url:'https://english.schood.online/review'}});
+  if(body.action==='student_mistake_feed_set'){sets.push(body);feed=body.enabled?{...feed,status:'granted',granted_at:'2026-10-24T09:00:00Z',granted_by_role:'learner',copied:1}:{...feed,status:'revoked',granted_at:null,granted_by_role:null,revoked_at:'2026-10-24T10:00:00Z',copied:0};return route.fulfill({json:{consent:feed,practice_url:'https://english.schood.online/review'}});}
+  return route.fulfill({status:400,json:{error:'Unknown action'}});});
+ await page.setViewportSize({width:390,height:1000});
+ await page.goto('/academy/student/mistakes?academy_id='+academyId);
+ await expect(page.getByRole('heading',{name:'Practise these in Schood English'})).toBeVisible();
+ await expect(page.getByText(/^Off\. Turn this on/)).toBeVisible();
+ const turnOn=page.getByRole('button',{name:'Turn on',exact:true});
+ await expect(turnOn).toBeDisabled();
+ await page.getByLabel('I am 18 or older').check();
+ await turnOn.click();
+ await expect.poll(()=>sets.length).toBe(1);
+ expect(sets[0]).toMatchObject({action:'student_mistake_feed_set',academy_id:academyId,enabled:true,confirmed_adult:true,source:'academy_web',_expected_actor:'student-user'});
+ await expect(page.getByText('Mistakes in your practice: 1.',{exact:false})).toBeVisible();
+ await expect(page.getByRole('link',{name:'Open Schood English Review'})).toHaveAttribute('href','https://english.schood.online/review');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await mkdir(resolve('test-results'),{recursive:true});await page.screenshot({path:resolve('test-results/mistake-feed-phone.png'),fullPage:true});
+ await page.getByRole('button',{name:'Turn off',exact:true}).click();
+ await expect.poll(()=>sets.length).toBe(2);
+ expect(sets[1]).toMatchObject({enabled:false,confirmed_adult:false});
+ await expect(page.getByText(/^Off\. Turn this on/)).toBeVisible();
+});

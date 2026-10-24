@@ -23,6 +23,9 @@ const uiMetadataKeys = new Set([
   'subheadline',
 ]);
 const runtimeKeys = [
+  "If you are under 18, a parent or guardian turns this on from the parent page.",
+  "You are not a learner at this centre.",
+  "Your parent access does not include homework.",
   "Refresh the workspace before saving this lesson.",
   "Review attendance and its retry key.",
   "Review the lesson and retry key.",

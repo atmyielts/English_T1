@@ -75,3 +75,31 @@ Deno.test("stored payloads are validated", () => {
   assertEquals(parseReviewPayload(null), null);
   assertEquals(parseReviewPayload({ type: "nope" }), null);
 });
+
+Deno.test("homework mistakes shared from a centre are corrected in Review and show the teacher's explanation afterwards", () => {
+  // The shape written by academy_homework_feed_mistake (20261025210000).
+  const stored = {
+    type: "grammar",
+    prompt: "I have car",
+    instructions: "Write this correctly.",
+    accepted: ["I have a car"],
+    explanation: "Use a before a singular noun.",
+    source_title: "Homework · Alpha Centre",
+    source_slug: "",
+  };
+  const payload = parseReviewPayload(stored);
+  assert(payload);
+  const shown = publicReviewPayload(payload);
+  assertEquals("explanation" in shown, false);
+  assertEquals("accepted" in shown, false);
+  assertEquals(shown.source_title, "Homework · Alpha Centre");
+  const right = checkReviewAnswer(payload, "I have a car.");
+  assertEquals(right.correct, true);
+  assertEquals(right.explanation, "Use a before a singular noun.");
+  assertEquals(checkReviewAnswer(payload, "I have car").correct, false);
+  // Items without an explanation behave as before.
+  const plain = parseReviewPayload({ ...stored, explanation: "" });
+  assert(plain);
+  assertEquals("explanation" in plain, false);
+  assertEquals(checkReviewAnswer(plain, "I have a car").explanation, null);
+});
