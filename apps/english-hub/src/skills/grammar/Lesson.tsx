@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useT } from '../../i18n';
 import { useElapsedSeconds, useResource } from '../../lib/useResource';
 import { Panel, useErrorMessage } from '../../ui/kit';
@@ -68,7 +68,10 @@ export const GrammarLesson = () => {
         />
       ) : null}
 
-      <Panel title={t('grammar.rule.title')}>
+      <Panel
+        title={t('grammar.rule.title')}
+        aside={unit ? <Link to={`/grammar/handbook#${encodeURIComponent(unit.slug)}`}>{t('handbook.openLesson')}</Link> : null}
+      >
         {unit?.explanation_text ? <p className="en-passage" style={{ fontSize: '1rem' }}>{unit.explanation_text}</p> : null}
         {unit?.contrast_text ? <p className="en-explain">{unit.contrast_text}</p> : null}
         {examples.length ? (

@@ -1,0 +1,23 @@
+/* Grammar handbook: small additions on top of english.css (rules reuse the .en-tools drawer look). */
+.hb-controls { display: grid; gap: 1rem; min-width: 0; }
+.hb-search { display: flex; gap: .5rem; align-items: center; min-width: 0; }
+.hb-search input { flex: 1 1 auto; min-width: 0; }
+.hb-search button { flex: 0 0 auto; }
+
+.hb-rule { scroll-margin-top: 1rem; }
+.hb-rule:target, .hb-rule[open] { border-color: var(--highlight-line); }
+.en-tools .hb-rule > summary { align-items: center; }
+.en-tools .hb-rule > summary:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: var(--radius-inner); }
+.hb-rule-head { display: grid; gap: .15rem; min-width: 0; flex: 1 1 auto; overflow-wrap: anywhere; }
+.hb-rule-head small { display: block; font-weight: 500; color: var(--muted); font-size: .82rem; }
+.hb-rule > summary .en-level { flex: 0 0 auto; }
+.hb-rule-body { gap: .85rem; }
+.hb-explanation { font-size: 1rem; margin: 0; }
+
+/* "Read it in English": a plain disclosure, not another drawer card. */
+.en-tools .hb-english { border: none; background: transparent; }
+.en-tools .hb-english > summary { padding: 0; font-weight: 600; font-size: .88rem; color: var(--accent-strong); justify-content: flex-start; }
+.en-tools .hb-english > summary::after { content: none; }
+.en-tools .hb-english > summary::before { content: '▸ '; }
+.en-tools .hb-english[open] > summary::before { content: '▾ '; }
+.en-tools .hb-english > p { margin-top: .5rem; }

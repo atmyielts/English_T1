@@ -19,6 +19,7 @@ import {
 } from "../_shared/english-learning.ts";
 import { queueReviewItems } from "../_shared/english-review.ts";
 import { checkGrammarAnswer } from "../_shared/english-grammar.ts";
+import { buildHandbook, HANDBOOK_COLUMNS } from "../_shared/english-handbook.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -190,6 +191,22 @@ serve(async (req) => {
     const products = await resolveEnglishProducts(sb);
     const productId = products.grammar?.productId;
     if (!productId) return json(500, { error: "english-grammar product is not configured" });
+
+    // Grammar handbook: reference for every signed-in learner, so no activity guard.
+    // The same for everyone, so the browser may keep it for a while.
+    if (req.method === "GET" && route === "/handbook") {
+      const { data, error } = await sb
+        .from("grammar_units")
+        .select(HANDBOOK_COLUMNS)
+        .eq("product_id", productId)
+        .eq("language_id", scope.languageId)
+        .eq("status", "published");
+      if (error) return json(500, { error: "Could not load the grammar handbook" });
+      return new Response(JSON.stringify({ entries: buildHandbook((data ?? []) as Array<Record<string, unknown>>) }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", "Cache-Control": "private, max-age=600", ...corsHeaders },
+      });
+    }
 
     if (req.method === "GET" && (route === "" || route === "/" || route === "/dashboard")) {
       const shouldRebuild = url.searchParams.get("rebuild") === "1";
