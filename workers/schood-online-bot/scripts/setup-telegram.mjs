@@ -22,6 +22,7 @@ const commands = [
   { command: 'login', description: 'Sign in to Schood with Telegram' },
   { command: 'signup', description: 'Create a recoverable Schood account' },
   { command: 'ielts', description: 'Get an IELTS starter study plan' },
+  { command: 'check', description: 'Check my English: rough level and fixes' },
   { command: 'academy', description: 'Academy OS and classroom tools' },
   { command: 'student', description: 'Open the linked student bot' },
   { command: 'cancel', description: 'Stop the current journey' },
