@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "academy-homework-mistake-feed",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": [
+    "academy",
+    "platform"
+  ],
+  "migrations": [
+    "20261025210000_academy_homework_mistake_feed.sql"
+  ],
+  "edgeFunctions": [
+    "academy-learning",
+    "hub"
+  ],
+  "workers": [],
+  "sharedEdgeConsumers": [
+    "hub"
+  ],
+  "requiredSecrets": [
+    "ACADEMY_LEARNING_WORKER_SECRET",
+    "ENGLISH_AI_DAILY_LIMIT",
+    "ENGLISH_APP_URL",
+    "SITE_URL",
+    "TELEGRAM_INTERNAL_SECRET"
+  ],
+  "rolloutOrder": [
+    "pages",
+    "migration:20261025210000_academy_homework_mistake_feed.sql",
+    "secret:ACADEMY_LEARNING_WORKER_SECRET",
+    "secret:ENGLISH_AI_DAILY_LIMIT",
+    "secret:ENGLISH_APP_URL",
+    "secret:SITE_URL",
+    "secret:TELEGRAM_INTERNAL_SECRET",
+    "function:academy-learning",
+    "function:hub"
+  ],
+  "manualFollowUps": [
+    "Pages: merging publishes schood-academy (consent card in learner My mistakes and in the parent page) and schood-platform (consent in the Telegram Mini App homework card). Until the migration and academy-learning are deployed the cards fail to load and stay hidden; nothing else changes.",
+    "Database: supabase db push --linked from an isolated migrations folder containing only 20261025210000_academy_homework_mistake_feed.sql. Codex's nine #220 payment migrations stay pending. Dry run first, then supabase migration list --linked. Adds three service-role-only tables, triggers on academy_homework_mistakes and academy_contacts, and the consent commands. Every consent starts off, so no learner data is copied until someone turns it on.",
+    "Secrets: none are new. supabase secrets set ACADEMY_LEARNING_WORKER_SECRET=, supabase secrets set TELEGRAM_INTERNAL_SECRET=, supabase secrets set SITE_URL=, supabase secrets set ENGLISH_APP_URL= and supabase secrets set ENGLISH_AI_DAILY_LIMIT= are not run: the lookups already exist in academy-learning and hub and are unchanged (optional or already configured).",
+    "Edge: supabase functions deploy academy-learning --project-ref bbjawctnqrufvnesdsel after the migration (new actions student_mistake_feed[_set], miniapp_mistake_feed[_set], guardian_mistake_feed[_set]).",
+    "Edge: supabase functions deploy hub --project-ref bbjawctnqrufvnesdsel (Review shows the teacher's explanation after a homework item; Progress and Review list homework mistakes under their English skill). _shared/english-review.ts only gains an optional field, so grammar-remediation, reading-articles and listening-content need no redeploy."
+  ],
+  "verification": [
+    "supabase migration list --linked shows 20261025210000 applied; academy_homework_feed_consents, academy_homework_feed_consent_events and academy_homework_mistake_feed have RLS on and no anon/authenticated grants; select count(*) from academy_homework_feed_consents returns 0.",
+    "POST /functions/v1/academy-learning with action student_mistake_feed and no session returns 401; miniapp_mistake_feed with forged initData returns 401.",
+    "As a test learner in Academy → My mistakes: the card says Off; Turn on stays disabled until 'I am 18 or older' is ticked; after turning on, english.schood.online/review lists the open homework mistakes and Today offers the matching grammar lesson once a topic has two mistakes; Turn off removes them again.",
+    "scripts/fixtures/academy-homework-mistake-feed.sql passes against a dump of the production schema plus this migration (it did on 2026-10-24 against supabase/postgres 17.6.1.063)."
+  ],
+  "rollback": {
+    "pages": "Cloudflare Pages rollback of schood-academy and schood-platform; the cards disappear and nothing else changes.",
+    "migration": "To stop copying: drop trigger academy_homework_mistake_feed on academy_homework_mistakes; drop trigger academy_homework_mistake_unfeed on academy_homework_mistakes; drop trigger academy_homework_feed_contact_account on academy_contacts. To remove copies already made: select public.academy_homework_unfeed_contact(academy_id, contact_id) from academy_homework_feed_consents. The tables can stay.",
+    "edge": "Redeploy academy-learning and hub from the previous main commit; without the new actions the cards fail to load and stay hidden.",
+    "worker": "None."
+  }
+}

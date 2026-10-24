@@ -4,6 +4,7 @@ import {currentAcademyAccessProfile,effectiveLegacyMembership} from './legacy-sc
 import {runTeacherRetentionRead} from './teacher-retention.ts';
 import {gradingActions,runGradingCommand} from './grading-command.ts';
 import {lockedModuleIds} from './module-unlock.ts';
+import {loadCourseVersions,loadRunVersion,pinnedVersionId,snapshotLesson,snapshotQuestions,snapshotQuiz,versionCurriculum,type CourseVersion} from './course-version.ts';
 import {operationalActions,runOperationalCommand} from './operational-command.ts';
 import {runOperationalRead} from './operational-read.ts';
 import {audioActions,audioBucket,readAudioUploadRequest,runAssignmentAudio} from './assignment-audio.ts';
@@ -1371,6 +1372,7 @@ export const ACADEMY_ACTION_PERMISSIONS = {
   upsert_course: "manageAssignments",
   publish_course: "manageAssignments",
   assign_course: "manageAssignments",
+  move_course_version: "manageAssignments",
   upsert_module: "manageAssignments",
   upsert_lesson: "manageAssignments",
   upsert_quiz: "manageAssignments",
@@ -3015,11 +3017,31 @@ const handleReadAction = async (
     if (modulesResult.error) return json(500, { error: "Failed to load course modules", detail: modulesResult.error.message });
     if (lessonsResult.error) return json(500, { error: "Failed to load lessons", detail: lessonsResult.error.message });
     if (classroomCoursesResult.error) return json(500, { error: "Failed to load classroom courses", detail: classroomCoursesResult.error.message });
+    // Version labels only: which version each group runs and the newest one.
+    const runRows = (classroomCoursesResult.data ?? []) as Array<Record<string, unknown>>;
+    const { data: versionData, error: versionError } = await sb.rpc("academy_course_version_summaries", {
+      p_academy: academyId, p_course_ids: courseIds, p_run_ids: runRows.map((row) => String(row.id)),
+    });
+    if (versionError) return json(500, { error: "Failed to load course versions", detail: versionError.message });
+    const versionSummary = (versionData ?? {}) as { latest?: Array<Record<string, unknown>>; runs?: Array<Record<string, unknown>> };
+    const latestByCourse = new Map((versionSummary.latest ?? []).map((row) => [String(row.course_id), row]));
+    const pinByRun = new Map((versionSummary.runs ?? []).map((row) => [String(row.id), row]));
     return json(200, {
-      courses: coursesResult.data ?? [],
+      courses: ((coursesResult.data ?? []) as Array<Record<string, unknown>>).map((course) => ({
+        ...course,
+        latest_version: latestByCourse.get(String(course.id))?.version ?? null,
+      })),
       modules: modulesResult.data ?? [],
       lessons: lessonsResult.data ?? [],
-      classroom_courses: classroomCoursesResult.data ?? [],
+      classroom_courses: runRows.map((row) => {
+        const pin = pinByRun.get(String(row.id));
+        return {
+          ...row,
+          version_mode: pin?.version_mode ?? "live",
+          course_version: pin?.version ?? null,
+          latest_version: latestByCourse.get(String(row.course_id))?.version ?? null,
+        };
+      }),
     });
   }
 
@@ -6881,7 +6903,7 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
         body?.classroom_id ?? url.searchParams.get("classroom_id"),
       );
       const { data: classroomCourses, error: classroomCoursesError } = await sb.from("academy_classroom_courses")
-        .select("id, academy_id, classroom_id, course_id, status, starts_at, ends_at, assigned_at")
+        .select("id, academy_id, classroom_id, course_id, status, starts_at, ends_at, assigned_at, version_mode, course_version_id")
         .eq("academy_id", enrollment.academy_id)
         .eq("classroom_id", enrollment.classroom_id)
         .in("status", ["scheduled", "active", "completed"])
@@ -6889,6 +6911,21 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
         .limit(100);
       if (classroomCoursesError) return json(500, { error: "Failed to load classroom curriculum", detail: classroomCoursesError.message });
       const courseIds = ((classroomCourses ?? []) as Array<{ course_id: string }>).map((row) => String(row.course_id));
+      // Pinned runs read their published snapshot; live runs read the course rows.
+      let pinnedVersions: Map<string, CourseVersion>;
+      try {
+        pinnedVersions = await loadCourseVersions(sb, enrollment.academy_id,
+          ((classroomCourses ?? []) as Array<Record<string, unknown>>).map((row) => pinnedVersionId(row) ?? ""));
+      } catch (error) {
+        return json(500, { error: "Failed to load course versions", detail: error instanceof Error ? error.message : String(error) });
+      }
+      const pinnedByCourse = new Map<string, CourseVersion>();
+      for (const row of (classroomCourses ?? []) as Array<Record<string, unknown>>) {
+        const version = pinnedVersions.get(pinnedVersionId(row) ?? "");
+        if (version) pinnedByCourse.set(String(row.course_id), version);
+      }
+      const liveCourseIds = courseIds.filter((courseId) => !pinnedByCourse.has(courseId));
+      const pinnedCurricula = [...pinnedByCourse.values()].map((version) => versionCurriculum(enrollment.academy_id, version));
       const now = Date.now();
       const unavailableCourseIds = new Set(
         ((classroomCourses ?? []) as Array<Record<string, unknown>>)
@@ -6903,34 +6940,40 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
         return json(200, { ...enrollment, courses: [], modules: [], lessons: [], progress: [], quizzes: [], questions: [], attempts: [], media: [] });
       }
 
+      const noRows = Promise.resolve({ data: [], error: null });
       const [coursesResult, modulesResult, lessonsResult, progressResult, quizzesResult] = await Promise.all([
-        sb.from("academy_courses")
+        liveCourseIds.length === 0 ? noRows : sb.from("academy_courses")
           .select("id, academy_id, code, title, description, level, estimated_minutes, status, published_at, metadata")
-          .eq("academy_id", enrollment.academy_id).in("id", courseIds).eq("status", "published").limit(100),
-        sb.from("academy_course_modules")
+          .eq("academy_id", enrollment.academy_id).in("id", liveCourseIds).eq("status", "published").limit(100),
+        liveCourseIds.length === 0 ? noRows : sb.from("academy_course_modules")
           .select("id, academy_id, course_id, title, description, position, status, unlock_rule, metadata")
-          .eq("academy_id", enrollment.academy_id).in("course_id", courseIds).eq("status", "published")
+          .eq("academy_id", enrollment.academy_id).in("course_id", liveCourseIds).eq("status", "published")
           .order("position", { ascending: true }).limit(1000),
-        sb.from("academy_lessons")
+        liveCourseIds.length === 0 ? noRows : sb.from("academy_lessons")
           .select("id, academy_id, course_id, module_id, prerequisite_lesson_id, title, summary, content, position, estimated_minutes, status, available_from, completion_rule, metadata")
-          .eq("academy_id", enrollment.academy_id).in("course_id", courseIds).eq("status", "published")
+          .eq("academy_id", enrollment.academy_id).in("course_id", liveCourseIds).eq("status", "published")
           .order("position", { ascending: true }).limit(5000),
         sb.from("academy_lesson_progress")
           .select("id, classroom_id, course_id, lesson_id, contact_id, status, started_at, completed_at, time_spent_seconds, updated_at")
           .eq("academy_id", enrollment.academy_id).eq("classroom_id", enrollment.classroom_id).eq("contact_id", enrollment.contact_id).limit(5000),
-        sb.from("academy_quizzes")
+        liveCourseIds.length === 0 ? noRows : sb.from("academy_quizzes")
           .select("id, academy_id, course_id, lesson_id, title, instructions, status, passing_score, attempts_allowed, time_limit_seconds, shuffle_questions, show_answers_after, metadata")
-          .eq("academy_id", enrollment.academy_id).in("course_id", courseIds).eq("status", "published").limit(1000),
+          .eq("academy_id", enrollment.academy_id).in("course_id", liveCourseIds).eq("status", "published").limit(1000),
       ]);
       const firstError = coursesResult.error ?? modulesResult.error ?? lessonsResult.error ?? progressResult.error ?? quizzesResult.error;
       if (firstError) return json(500, { error: "Failed to load student curriculum", detail: firstError.message });
+      const courseRows = [...(coursesResult.data ?? []), ...pinnedCurricula.map((curriculum) => curriculum.course)] as Array<Record<string, unknown>>;
+      const moduleRows = [...(modulesResult.data ?? []), ...pinnedCurricula.flatMap((curriculum) => curriculum.modules)] as Array<Record<string, unknown>>;
+      const lessonRows = [...(lessonsResult.data ?? []), ...pinnedCurricula.flatMap((curriculum) => curriculum.lessons)] as Array<Record<string, unknown>>;
+      const quizRows = [...(quizzesResult.data ?? []), ...pinnedCurricula.flatMap((curriculum) => curriculum.quizzes)] as Array<Record<string, unknown>>;
 
-      const quizIds = ((quizzesResult.data ?? []) as Array<{ id: string }>).map((row) => String(row.id));
+      const liveQuizIds = ((quizzesResult.data ?? []) as Array<{ id: string }>).map((row) => String(row.id));
+      const quizIds = quizRows.map((row) => String(row.id));
       const [questionsResult, attemptsResult] = quizIds.length > 0
         ? await Promise.all([
-          sb.from("academy_quiz_questions")
+          liveQuizIds.length === 0 ? noRows : sb.from("academy_quiz_questions")
             .select("id, quiz_id, question_type, prompt, options, points, position, metadata")
-            .eq("academy_id", enrollment.academy_id).in("quiz_id", quizIds).order("position", { ascending: true }).limit(10000),
+            .eq("academy_id", enrollment.academy_id).in("quiz_id", liveQuizIds).order("position", { ascending: true }).limit(10000),
           sb.from("academy_quiz_attempts")
             .select("id, classroom_id, course_id, quiz_id, contact_id, attempt_number, status, score, max_score, percentage, passed, feedback, started_at, submitted_at, graded_at, result")
             .eq("academy_id", enrollment.academy_id).eq("classroom_id", enrollment.classroom_id).eq("contact_id", enrollment.contact_id)
@@ -6946,12 +6989,12 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
           .map((row) => String(row.lesson_id)),
       );
       const lockedModules = lockedModuleIds(
-        (modulesResult.data ?? []) as Array<Record<string, unknown>>,
-        (lessonsResult.data ?? []) as Array<Record<string, unknown>>,
+        moduleRows,
+        lessonRows,
         completedLessonIds,
         (attemptsResult.data ?? []) as Array<Record<string, unknown>>,
       );
-      const lessons = ((lessonsResult.data ?? []) as Array<Record<string, unknown>>).map((lesson): Record<string, unknown> & { locked: boolean } => ({
+      const lessons = lessonRows.map((lesson): Record<string, unknown> & { locked: boolean } => ({
         ...lesson,
         locked: unavailableCourseIds.has(String(lesson.course_id)) ||
           lockedModules.has(String(lesson.module_id)) ||
@@ -6961,7 +7004,7 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
       const lockedLessonIds = new Set(
         lessons.filter((lesson) => lesson.locked).map((lesson) => String(lesson.id)),
       );
-      const quizzes = ((quizzesResult.data ?? []) as Array<Record<string, unknown>>).map((quiz) => ({
+      const quizzes = quizRows.map((quiz) => ({
         ...quiz,
         locked: Boolean(quiz.lesson_id && lockedLessonIds.has(String(quiz.lesson_id))),
       }));
@@ -6988,15 +7031,18 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
       }
       return json(200, {
         ...enrollment,
-        courses: coursesResult.data ?? [],
-        modules: ((modulesResult.data ?? []) as Array<Record<string, unknown>>).map((module) => ({ ...module, locked: lockedModules.has(String(module.id)) })),
+        courses: courseRows,
+        modules: moduleRows.map((module) => ({ ...module, locked: lockedModules.has(String(module.id)) })),
         lessons,
         progress: progressResult.data ?? [],
         quizzes,
-        questions: questionsResult.data ?? [],
+        questions: [...(questionsResult.data ?? []), ...pinnedCurricula.flatMap((curriculum) => curriculum.questions)],
         attempts: attemptsResult.data ?? [],
         media,
-        classroom_courses: classroomCourses ?? [],
+        classroom_courses: ((classroomCourses ?? []) as Array<Record<string, unknown>>).map((row) => ({
+          ...row,
+          course_version: pinnedByCourse.get(String(row.course_id))?.version ?? null,
+        })),
       });
     }
 
@@ -7052,15 +7098,23 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
       const nextStatus = normalizeText(body?.status, 30).toLowerCase() || "completed";
       if (!lessonId) return json(400, { error: "lesson_id is required" });
       if (!["in_progress", "completed"].includes(nextStatus)) return json(400, { error: "Invalid lesson progress status" });
-      const { data: lesson, error: lessonError } = await sb.from("academy_lessons")
+      const { data: liveLesson, error: lessonError } = await sb.from("academy_lessons")
         .select("id, academy_id, course_id, module_id, prerequisite_lesson_id, status, available_from")
-        .eq("id", lessonId).eq("academy_id", enrollment.academy_id).eq("status", "published").maybeSingle();
+        .eq("id", lessonId).eq("academy_id", enrollment.academy_id).maybeSingle();
       if (lessonError) return json(500, { error: "Failed to load lesson", detail: lessonError.message });
-      if (!lesson?.id) return json(404, { error: "Lesson not found" });
-      const { data: classroomCourse } = await sb.from("academy_classroom_courses")
-        .select("id, status, starts_at, ends_at").eq("academy_id", enrollment.academy_id).eq("classroom_id", enrollment.classroom_id)
-        .eq("course_id", lesson.course_id).in("status", ["scheduled", "active", "completed"]).maybeSingle();
+      if (!liveLesson?.id) return json(404, { error: "Lesson not found" });
+      let classroomRun: Awaited<ReturnType<typeof loadRunVersion>>;
+      try {
+        classroomRun = await loadRunVersion(sb, enrollment.academy_id, enrollment.classroom_id, String(liveLesson.course_id));
+      } catch (error) {
+        return json(500, { error: "Failed to load classroom course", detail: error instanceof Error ? error.message : String(error) });
+      }
+      const classroomCourse = classroomRun.run;
       if (!classroomCourse?.id) return json(403, { error: "Course is not assigned to this classroom" });
+      // A pinned group follows the lesson as it was published to its version.
+      const pinnedLesson = classroomRun.version ? snapshotLesson(classroomRun.version, lessonId) : null;
+      if (classroomRun.version ? !pinnedLesson : liveLesson.status !== "published") return json(404, { error: "Lesson not found" });
+      const lesson: Record<string, any> = pinnedLesson ? { ...pinnedLesson, course_id: liveLesson.course_id } : liveLesson;
       if (
         (classroomCourse.starts_at && new Date(String(classroomCourse.starts_at)).getTime() > Date.now()) ||
         (classroomCourse.ends_at && new Date(String(classroomCourse.ends_at)).getTime() < Date.now())
@@ -7116,25 +7170,40 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
       const enrollment = await loadStudentClassroomEnrollment(sb, userId, userEmail, body?.academy_id, body?.classroom_id);
       const quizId = normalizeText(body?.quiz_id, 64);
       if (!quizId) return json(400, { error: "quiz_id is required" });
-      const { data: quiz, error: quizError } = await sb.from("academy_quizzes")
+      const { data: liveQuiz, error: quizError } = await sb.from("academy_quizzes")
         .select("id, academy_id, course_id, lesson_id, title, instructions, passing_score, attempts_allowed, time_limit_seconds, shuffle_questions, show_answers_after, status")
-        .eq("id", quizId).eq("academy_id", enrollment.academy_id).eq("status", "published").maybeSingle();
+        .eq("id", quizId).eq("academy_id", enrollment.academy_id).maybeSingle();
       if (quizError) return json(500, { error: "Failed to load quiz", detail: quizError.message });
-      if (!quiz?.id) return json(404, { error: "Quiz not found" });
-      const { data: classroomCourse } = await sb.from("academy_classroom_courses")
-        .select("id, status, starts_at, ends_at").eq("academy_id", enrollment.academy_id).eq("classroom_id", enrollment.classroom_id)
-        .eq("course_id", quiz.course_id).in("status", ["scheduled", "active", "completed"]).maybeSingle();
+      if (!liveQuiz?.id) return json(404, { error: "Quiz not found" });
+      let classroomRun: Awaited<ReturnType<typeof loadRunVersion>>;
+      try {
+        classroomRun = await loadRunVersion(sb, enrollment.academy_id, enrollment.classroom_id, String(liveQuiz.course_id));
+      } catch (error) {
+        return json(500, { error: "Failed to load classroom course", detail: error instanceof Error ? error.message : String(error) });
+      }
+      const classroomCourse = classroomRun.run;
       if (!classroomCourse?.id) return json(403, { error: "Quiz course is not assigned to this classroom" });
+      const pinnedQuiz = classroomRun.version ? snapshotQuiz(classroomRun.version, quizId) : null;
+      if (classroomRun.version ? !pinnedQuiz : liveQuiz.status !== "published") return json(404, { error: "Quiz not found" });
+      const quiz: Record<string, any> = pinnedQuiz
+        ? { ...pinnedQuiz, academy_id: liveQuiz.academy_id, course_id: liveQuiz.course_id, status: "published" }
+        : liveQuiz;
       if (
         (classroomCourse.starts_at && new Date(String(classroomCourse.starts_at)).getTime() > Date.now()) ||
         (classroomCourse.ends_at && new Date(String(classroomCourse.ends_at)).getTime() < Date.now())
       ) return json(409, { error: "Course is outside its classroom availability window" });
       if (quiz.lesson_id) {
-        const { data: quizLesson, error: quizLessonError } = await sb.from("academy_lessons")
-          .select("id, module_id, prerequisite_lesson_id, available_from, status")
-          .eq("academy_id", enrollment.academy_id).eq("course_id", quiz.course_id)
-          .eq("id", quiz.lesson_id).eq("status", "published").maybeSingle();
-        if (quizLessonError) return json(500, { error: "Failed to load quiz lesson", detail: quizLessonError.message });
+        let quizLesson: Record<string, unknown> | null = null;
+        if (classroomRun.version) {
+          quizLesson = snapshotLesson(classroomRun.version, String(quiz.lesson_id));
+        } else {
+          const { data, error: quizLessonError } = await sb.from("academy_lessons")
+            .select("id, module_id, prerequisite_lesson_id, available_from, status")
+            .eq("academy_id", enrollment.academy_id).eq("course_id", quiz.course_id)
+            .eq("id", quiz.lesson_id).eq("status", "published").maybeSingle();
+          if (quizLessonError) return json(500, { error: "Failed to load quiz lesson", detail: quizLessonError.message });
+          quizLesson = data as Record<string, unknown> | null;
+        }
         if (!quizLesson?.id) return json(409, { error: "Quiz lesson is not published" });
         if (quizLesson.available_from && new Date(String(quizLesson.available_from)).getTime() > Date.now()) {
           return json(409, { error: "Complete the available lessons before starting this quiz" });
@@ -7175,6 +7244,7 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
         user_id: userId,
         attempt_number: nextAttempt,
         status: "in_progress",
+        metadata: classroomRun.version ? { course_version_id: classroomRun.version.id, course_version: classroomRun.version.version } : {},
       }).select("id, classroom_id, course_id, quiz_id, contact_id, attempt_number, status, started_at").maybeSingle();
       if (error) return json(500, { error: "Failed to start quiz", detail: error.message });
       await logAcademyAuditEvent(sb, {
@@ -7197,16 +7267,33 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
       if (!attemptId) return json(400, { error: "attempt_id is required" });
       if (!isJsonObject(body?.answers)) return json(400, { error: "answers object is required" });
       const { data: attempt, error: attemptError } = await sb.from("academy_quiz_attempts")
-        .select("id, academy_id, classroom_id, course_id, quiz_id, contact_id, status, started_at")
+        .select("id, academy_id, classroom_id, course_id, quiz_id, contact_id, status, started_at, metadata")
         .eq("id", attemptId).eq("academy_id", enrollment.academy_id).eq("classroom_id", enrollment.classroom_id)
         .eq("contact_id", enrollment.contact_id).eq("user_id", userId).maybeSingle();
       if (attemptError) return json(500, { error: "Failed to load quiz attempt", detail: attemptError.message });
       if (!attempt?.id) return json(404, { error: "Quiz attempt not found" });
       if (attempt.status !== "in_progress") return json(409, { error: "Quiz attempt has already been submitted" });
-      const { data: quiz, error: quizError } = await sb.from("academy_quizzes")
-        .select("id, passing_score, time_limit_seconds, show_answers_after")
-        .eq("id", attempt.quiz_id).eq("academy_id", enrollment.academy_id).maybeSingle();
-      if (quizError || !quiz?.id) return json(500, { error: "Failed to load quiz configuration", detail: quizError?.message });
+      // An attempt is graded against the version it was started on, even if
+      // the group has moved to a newer version since.
+      const attemptVersionId = typeof attempt.metadata?.course_version_id === "string" ? attempt.metadata.course_version_id : "";
+      let attemptVersion: CourseVersion | null = null;
+      try {
+        attemptVersion = attemptVersionId
+          ? (await loadCourseVersions(sb, enrollment.academy_id, [attemptVersionId])).get(attemptVersionId) ?? null
+          : null;
+      } catch (error) {
+        return json(500, { error: "Failed to load course version", detail: error instanceof Error ? error.message : String(error) });
+      }
+      const pinnedQuiz = attemptVersion ? snapshotQuiz(attemptVersion, String(attempt.quiz_id)) : null;
+      let liveQuiz: Record<string, unknown> | null = null;
+      if (!pinnedQuiz) {
+        const { data, error: quizError } = await sb.from("academy_quizzes")
+          .select("id, passing_score, time_limit_seconds, show_answers_after")
+          .eq("id", attempt.quiz_id).eq("academy_id", enrollment.academy_id).maybeSingle();
+        if (quizError || !data?.id) return json(500, { error: "Failed to load quiz configuration", detail: quizError?.message });
+        liveQuiz = data as Record<string, unknown>;
+      }
+      const quiz = (pinnedQuiz ?? liveQuiz) as Record<string, unknown>;
       if (quiz.time_limit_seconds) {
         const elapsedSeconds = Math.floor((Date.now() - new Date(String(attempt.started_at)).getTime()) / 1000);
         if (elapsedSeconds > Number(quiz.time_limit_seconds) + 30) {
@@ -7214,11 +7301,17 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
           return json(409, { error: "Quiz time limit has expired" });
         }
       }
-      const { data: questions, error: questionsError } = await sb.from("academy_quiz_questions")
-        .select("id, question_type, correct_answer, points, explanation")
-        .eq("academy_id", enrollment.academy_id).eq("quiz_id", attempt.quiz_id).order("position", { ascending: true }).limit(1000);
-      if (questionsError) return json(500, { error: "Failed to load quiz questions", detail: questionsError.message });
-      if (!questions?.length) return json(409, { error: "Quiz has no questions" });
+      let questions: Array<Record<string, unknown>> = [];
+      if (attemptVersion && pinnedQuiz) {
+        questions = snapshotQuestions(attemptVersion, String(attempt.quiz_id));
+      } else {
+        const { data, error: questionsError } = await sb.from("academy_quiz_questions")
+          .select("id, question_type, correct_answer, points, explanation")
+          .eq("academy_id", enrollment.academy_id).eq("quiz_id", attempt.quiz_id).order("position", { ascending: true }).limit(1000);
+        if (questionsError) return json(500, { error: "Failed to load quiz questions", detail: questionsError.message });
+        questions = (data ?? []) as Array<Record<string, unknown>>;
+      }
+      if (!questions.length) return json(409, { error: "Quiz has no questions" });
       const grade = gradeAcademyQuiz(
         (questions as Array<Record<string, unknown>>).map((question) => ({
           id: String(question.id),
@@ -10345,6 +10438,40 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
         return json(200, { classroom_course: data });
       }
 
+      // Pinned groups keep their version until staff move them explicitly.
+      if (actionBody === "move_course_version") {
+        const courseId = normalizeText(body?.course_id, 64);
+        const classroomId = normalizeText(body?.classroom_id, 64);
+        if (!courseId) return json(400, { error: "course_id is required" });
+        if (!classroomId) return json(400, { error: "classroom_id is required" });
+        if (!accessCanUseClassroom(access, classroomId)) return json(403, { error: "Forbidden" });
+        const expectedVersion = typeof body?.expected_version === "undefined" || body?.expected_version === null
+          ? null
+          : toIntOrNull(body.expected_version);
+        const { data: run } = await sb.from("academy_classroom_courses").select("id")
+          .eq("academy_id", academyId).eq("classroom_id", classroomId).eq("course_id", courseId).maybeSingle();
+        if (!run?.id) return json(404, { error: "This course is not assigned to the classroom" });
+        const { data, error } = await sb.rpc("academy_classroom_course_move_version", {
+          p_academy: academyId, p_run: run.id, p_actor: userId, p_expected_version: expectedVersion,
+        });
+        if (error) {
+          if (error.code === "55000") return json(409, { error: error.message });
+          if (error.code === "P0002") return json(404, { error: error.message });
+          return json(500, { error: "Failed to move the group to the latest version", detail: error.message });
+        }
+        await logAcademyAuditEvent(sb, {
+          academyId,
+          actorUserId: userId,
+          actorRole: access.role,
+          action: "course.version_moved",
+          targetType: "academy_classroom_course",
+          targetId: String(run.id),
+          classroomId,
+          metadata: { course_id: courseId, from_mode: data?.from_mode ?? null, from_version: data?.from_version ?? null, to_version: data?.to_version ?? null },
+        });
+        return json(200, { move: data });
+      }
+
       if (actionBody === "publish_course") {
         const courseId = normalizeText(body?.course_id ?? body?.id, 64);
         const classroomId = normalizeText(body?.classroom_id, 64);
@@ -10356,14 +10483,19 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
         ]);
         if (!moduleCount || !lessonCount) return json(409, { error: "A course needs at least one module and one lesson before publishing" });
         const nowIso = new Date().toISOString();
-        const [modulesUpdate, lessonsUpdate, courseUpdate] = await Promise.all([
+        // Modules and lessons first: updating the course row takes the version
+        // snapshot (academy_courses_version_on_publish), so it must see them.
+        const [modulesUpdate, lessonsUpdate] = await Promise.all([
           sb.from("academy_course_modules").update({ status: "published" }).eq("academy_id", academyId).eq("course_id", courseId).neq("status", "archived"),
           sb.from("academy_lessons").update({ status: "published" }).eq("academy_id", academyId).eq("course_id", courseId).neq("status", "archived"),
-          sb.from("academy_courses").update({ status: "published", published_at: nowIso }).eq("academy_id", academyId).eq("id", courseId)
-            .select("id, academy_id, code, title, description, level, estimated_minutes, status, published_at, metadata, created_by, created_at, updated_at").maybeSingle(),
         ]);
-        const publishError = modulesUpdate.error ?? lessonsUpdate.error ?? courseUpdate.error;
-        if (publishError) return json(500, { error: "Failed to publish course", detail: publishError.message });
+        const contentError = modulesUpdate.error ?? lessonsUpdate.error;
+        if (contentError) return json(500, { error: "Failed to publish course", detail: contentError.message });
+        const courseUpdate = await sb.from("academy_courses").update({ status: "published", published_at: nowIso }).eq("academy_id", academyId).eq("id", courseId)
+          .select("id, academy_id, code, title, description, level, estimated_minutes, status, published_at, metadata, created_by, created_at, updated_at").maybeSingle();
+        if (courseUpdate.error) return json(500, { error: "Failed to publish course", detail: courseUpdate.error.message });
+        const { data: version, error: versionError } = await sb.rpc("academy_course_publish_version", { p_academy: academyId, p_course: courseId, p_actor: userId });
+        if (versionError) return json(500, { error: "Course published, but its version was not recorded", detail: versionError.message });
         await logAcademyAuditEvent(sb, {
           academyId,
           actorUserId: userId,
@@ -10372,9 +10504,12 @@ const handleAcademyRequestCore = async (req: Request, setBoundaryCheck: (check: 
           targetType: "academy_course",
           targetId: courseId,
           classroomId: classroomId || null,
-          metadata: { modules: moduleCount, lessons: lessonCount },
+          metadata: { modules: moduleCount, lessons: lessonCount, version: version?.version ?? null, course_version_id: version?.id ?? null },
         });
-        return json(200, { course: courseUpdate.data });
+        return json(200, {
+          course: courseUpdate.data,
+          version: version ? { id: version.id, version: version.version, published_at: version.published_at } : null,
+        });
       }
 
       if (actionBody === "upsert_module") {

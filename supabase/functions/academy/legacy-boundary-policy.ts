@@ -415,6 +415,9 @@ export const legacyBoundaryPolicy = {
     "assign_course": [
       "manageAssignments"
     ],
+    "move_course_version": [
+      "manageAssignments"
+    ],
     "upsert_module": [
       "manageAssignments"
     ],

@@ -4,6 +4,7 @@ import {
   teacherStudioCurriculum,
   teacherStudioGradeCategories,
   teacherStudioGradeQuizAttempt,
+  teacherStudioMoveCourseVersion,
   teacherStudioPublishCourse,
   teacherStudioQuizAttempts,
   teacherStudioQuizzes,
@@ -89,6 +90,15 @@ export const CurriculumView = ({ academyId, classroomId, canManage, canGrade }: 
     () => curriculum.courses.find((course) => course.id === selectedCourseId) ?? null,
     [curriculum.courses, selectedCourseId],
   );
+  const selectedRun = useMemo(
+    () => curriculum.classroom_courses.find((run) => run.course_id === selectedCourseId && run.classroom_id === classroomId) ?? null,
+    [curriculum.classroom_courses, selectedCourseId, classroomId],
+  );
+  const latestVersion = selectedRun?.latest_version ?? selectedCourse?.latest_version ?? null;
+  // A group stays on its version until staff move it; a 'live' group (assigned
+  // before versions existed) follows every edit until it is pinned once.
+  const runIsLive = selectedRun?.version_mode === 'live';
+  const canMoveRun = Boolean(selectedRun && latestVersion && (runIsLive || (selectedRun.course_version ?? 0) < latestVersion));
   const courseModules = useMemo(
     () => curriculum.modules.filter((module) => module.course_id === selectedCourseId),
     [curriculum.modules, selectedCourseId],
@@ -330,8 +340,33 @@ export const CurriculumView = ({ academyId, classroomId, canManage, canGrade }: 
               <div className="row wrap">
                 <span className="status">{selectedCourse.level || 'Open level'}</span>
                 <span className="status">{selectedCourse.estimated_minutes} {translate("min")}</span>
-                <button className="small-btn" type="button" disabled={busy || selectedCourse.status === 'published'} onClick={() => void run(() => teacherStudioPublishCourse(academyId, { course_id: selectedCourse.id, classroom_id: classroomId }), 'Course and lessons published.')}>{translate("Publish course")}</button>
+                <button className="small-btn" type="button" disabled={busy} onClick={() => void run(() => teacherStudioPublishCourse(academyId, { course_id: selectedCourse.id, classroom_id: classroomId }), 'Course and lessons published.')}>{selectedCourse.status === 'published' ? translate("Publish new version") : translate("Publish course")}</button>
               </div>
+              {selectedRun ? (
+                <div className="row wrap">
+                  <span className="small muted">
+                    {runIsLive
+                      ? translate("This group follows every edit to the course.")
+                      : selectedRun.course_version
+                      ? translate("This group runs version {version}.", { version: selectedRun.course_version })
+                      : translate("This group starts on the first published version.")}
+                    {latestVersion && (runIsLive || latestVersion !== selectedRun.course_version) ? ` ${translate("Latest version: {version}.", { version: latestVersion })}` : ''}
+                  </span>
+                  {canMoveRun && latestVersion ? (
+                    <button
+                      className="small-btn"
+                      type="button"
+                      disabled={busy}
+                      onClick={() => void run(
+                        () => teacherStudioMoveCourseVersion(academyId, { course_id: selectedCourse.id, classroom_id: classroomId, expected_version: latestVersion }),
+                        translate("This group now runs version {version}.", { version: latestVersion }),
+                      )}
+                    >
+                      {translate("Move this group to version {version}", { version: latestVersion })}
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           ) : <div className="empty-state">{translate("Create the first course to start authoring.")}</div>}
         </div>

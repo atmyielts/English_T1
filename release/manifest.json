@@ -1,58 +1,52 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-homework-mistake-feed",
+  "releaseId": "academy-course-versions",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "academy",
-    "platform"
+    "academy"
   ],
   "migrations": [
-    "20261025210000_academy_homework_mistake_feed.sql"
+    "20261024231500_academy_course_versions.sql"
   ],
   "edgeFunctions": [
-    "academy-learning",
-    "hub"
+    "academy"
   ],
   "workers": [],
-  "sharedEdgeConsumers": [
-    "hub"
-  ],
+  "sharedEdgeConsumers": [],
   "requiredSecrets": [
-    "ACADEMY_LEARNING_WORKER_SECRET",
-    "ENGLISH_AI_DAILY_LIMIT",
-    "ENGLISH_APP_URL",
-    "SITE_URL",
-    "TELEGRAM_INTERNAL_SECRET"
+    "ACADEMY_AUDIO_ENCRYPTION_KEY",
+    "GMAIL_SMTP_APP_PASSWORD",
+    "GMAIL_SMTP_EMAIL",
+    "SITE_URL"
   ],
   "rolloutOrder": [
     "pages",
-    "migration:20261025210000_academy_homework_mistake_feed.sql",
-    "secret:ACADEMY_LEARNING_WORKER_SECRET",
-    "secret:ENGLISH_AI_DAILY_LIMIT",
-    "secret:ENGLISH_APP_URL",
+    "migration:20261024231500_academy_course_versions.sql",
+    "secret:ACADEMY_AUDIO_ENCRYPTION_KEY",
+    "secret:GMAIL_SMTP_EMAIL",
+    "secret:GMAIL_SMTP_APP_PASSWORD",
     "secret:SITE_URL",
-    "secret:TELEGRAM_INTERNAL_SECRET",
-    "function:academy-learning",
-    "function:hub"
+    "function:academy"
   ],
   "manualFollowUps": [
-    "Pages: merging publishes schood-academy (consent card in learner My mistakes and in the parent page) and schood-platform (consent in the Telegram Mini App homework card). Until the migration and academy-learning are deployed the cards fail to load and stay hidden; nothing else changes.",
-    "Database: supabase db push --linked from an isolated migrations folder containing only 20261025210000_academy_homework_mistake_feed.sql. Codex's nine #220 payment migrations stay pending. Dry run first, then supabase migration list --linked. Adds three service-role-only tables, triggers on academy_homework_mistakes and academy_contacts, and the consent commands. Every consent starts off, so no learner data is copied until someone turns it on.",
-    "Secrets: none are new. supabase secrets set ACADEMY_LEARNING_WORKER_SECRET=, supabase secrets set TELEGRAM_INTERNAL_SECRET=, supabase secrets set SITE_URL=, supabase secrets set ENGLISH_APP_URL= and supabase secrets set ENGLISH_AI_DAILY_LIMIT= are not run: the lookups already exist in academy-learning and hub and are unchanged (optional or already configured).",
-    "Edge: supabase functions deploy academy-learning --project-ref bbjawctnqrufvnesdsel after the migration (new actions student_mistake_feed[_set], miniapp_mistake_feed[_set], guardian_mistake_feed[_set]).",
-    "Edge: supabase functions deploy hub --project-ref bbjawctnqrufvnesdsel (Review shows the teacher's explanation after a homework item; Progress and Review list homework mistakes under their English skill). _shared/english-review.ts only gains an optional field, so grammar-remediation, reading-articles and listening-content need no redeploy."
+    "Pages: merging publishes academy. The curriculum screen reads the new version fields only when the academy function returns them, so it is safe before the migration: until then it shows no version line and 'Publish new version' re-publishes as before. 'Move this group to version N' appears only once versions exist.",
+    "Database: supabase db push --linked only from an isolated copy of the installed migrations plus 20261024231500_academy_course_versions.sql, keeping Codex's 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then supabase migration list --linked. The migration adds academy_course_versions (service role only) and four columns on academy_classroom_courses. Every existing run is filled with version_mode 'live' and keeps reading live rows. Every already-published course gets version 1. It also replaces academy_module_unlocked, the two unlock gates, academy_course_completion and academy_public_course_catalog with version-aware bodies, which behave as before for live runs. It registers move_course_version as a legacy boundary write action.",
+    "Secrets: supabase secrets set ACADEMY_AUDIO_ENCRYPTION_KEY=, supabase secrets set GMAIL_SMTP_EMAIL=, supabase secrets set GMAIL_SMTP_APP_PASSWORD= and supabase secrets set SITE_URL= are not run. The first three are already configured for academy, and SITE_URL uses the code default https://schood.online. This release adds no secret.",
+    "Edge: supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel after the migration (student_curriculum, set_lesson_progress, start_quiz and submit_quiz read a pinned run's version; publish_course records the version; new move_course_version action; the curriculum read returns version labels). Deploy it right after the migration. In between, existing groups are unaffected (they stay live), but a group assigned in that window is already pinned in the database while the old function still shows it live rows. Note: deploy teacher-studio too only if it is redeployed for other reasons; it re-exports academy."
   ],
   "verification": [
-    "supabase migration list --linked shows 20261025210000 applied; academy_homework_feed_consents, academy_homework_feed_consent_events and academy_homework_mistake_feed have RLS on and no anon/authenticated grants; select count(*) from academy_homework_feed_consents returns 0.",
-    "POST /functions/v1/academy-learning with action student_mistake_feed and no session returns 401; miniapp_mistake_feed with forged initData returns 401.",
-    "As a test learner in Academy → My mistakes: the card says Off; Turn on stays disabled until 'I am 18 or older' is ticked; after turning on, english.schood.online/review lists the open homework mistakes and Today offers the matching grammar lesson once a topic has two mistakes; Turn off removes them again.",
-    "scripts/fixtures/academy-homework-mistake-feed.sql passes against a dump of the production schema plus this migration (it did on 2026-10-24 against supabase/postgres 17.6.1.063)."
+    "supabase migration list --linked shows 20261024231500 applied.",
+    "select count(*) from academy_classroom_courses where version_mode <> 'live' returns 0 right after the push. The number of published courses equals select count(distinct course_id) from academy_course_versions.",
+    "has_table_privilege('authenticated', 'public.academy_course_versions', 'SELECT') is false.",
+    "As staff, publish a course and assign it to a test group, then edit a lesson title. The learner still sees the old title. 'Publish new version' creates version 2, and the group is unchanged until 'Move this group to version 2'.",
+    "scripts/fixtures/academy-course-versions.sql and scripts/fixtures/academy-homework-os.sql pass against a dump of the production schema plus this migration.",
+    "POST /functions/v1/academy-learning with action public_courses still lists the listed courses, now with course.version set."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-academy and schood-platform; the cards disappear and nothing else changes.",
-    "migration": "To stop copying: drop trigger academy_homework_mistake_feed on academy_homework_mistakes; drop trigger academy_homework_mistake_unfeed on academy_homework_mistakes; drop trigger academy_homework_feed_contact_account on academy_contacts. To remove copies already made: select public.academy_homework_unfeed_contact(academy_id, contact_id) from academy_homework_feed_consents. The tables can stay.",
-    "edge": "Redeploy academy-learning and hub from the previous main commit; without the new actions the cards fail to load and stay hidden.",
+    "pages": "Cloudflare Pages rollback of schood-academy. The previous screen ignores the new fields.",
+    "migration": "Additive. To return every group to live reading without data loss, run: update academy_classroom_courses set version_mode = 'live'. If needed: drop trigger academy_courses_version_on_publish on academy_courses; drop trigger academy_classroom_courses_pin_version on academy_classroom_courses. Restore the earlier academy_module_unlocked, unlock gates, academy_course_completion and academy_public_course_catalog bodies from 20261024100000 and 20261024105000. academy_course_versions and the new columns can stay.",
+    "edge": "Redeploy academy from the previous main commit. With every run set to 'live' it behaves exactly as before.",
     "worker": "None."
   }
 }

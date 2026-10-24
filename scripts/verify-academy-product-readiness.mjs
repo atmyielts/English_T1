@@ -296,6 +296,7 @@ const requiredWriteActions = [
   'upsert_course',
   'publish_course',
   'assign_course',
+  'move_course_version',
   'upsert_module',
   'upsert_lesson',
   'upsert_quiz',

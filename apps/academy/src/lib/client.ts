@@ -553,6 +553,8 @@ export type TeacherStudioCourse = {
   metadata: Json;
   created_at?: string;
   updated_at?: string;
+  /** Newest published version; null until the course is first published. */
+  latest_version?: number | null;
 };
 
 export type TeacherStudioCourseModule = {
@@ -595,6 +597,20 @@ export type TeacherStudioClassroomCourse = {
   ends_at: string | null;
   assigned_at: string;
   metadata?: Json;
+  /** 'pinned' groups keep their version; 'live' groups (assigned before versions) follow every edit. */
+  version_mode?: 'live' | 'pinned' | string;
+  course_version?: number | null;
+  latest_version?: number | null;
+};
+
+export type TeacherStudioCourseVersionMove = {
+  classroom_course_id: string;
+  classroom_id: string;
+  course_id: string;
+  from_mode: string;
+  from_version: number | null;
+  to_version: number;
+  changed: boolean;
 };
 
 export type TeacherStudioCurriculum = {
@@ -2746,6 +2762,15 @@ export const teacherStudioAssignCourse = async (
 ): Promise<TeacherStudioClassroomCourse> => {
   const data = await callTeacherStudio<{ classroom_course: TeacherStudioClassroomCourse }>({ method: 'POST', action: 'assign_course', academyId, body });
   return data.classroom_course;
+};
+
+/** Moves one group to the newest published version of its course. */
+export const teacherStudioMoveCourseVersion = async (
+  academyId: string,
+  body: { course_id: string; classroom_id: string; expected_version?: number | null },
+): Promise<TeacherStudioCourseVersionMove> => {
+  const data = await callTeacherStudio<{ move: TeacherStudioCourseVersionMove }>({ method: 'POST', action: 'move_course_version', academyId, body });
+  return data.move;
 };
 
 export const teacherStudioUpsertModule = async (

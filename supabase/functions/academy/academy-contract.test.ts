@@ -114,6 +114,7 @@ Deno.test("Academy critical write actions require the intended permissions", () 
   assertEquals(ACADEMY_ACTION_PERMISSIONS.upsert_course, "manageAssignments");
   assertEquals(ACADEMY_ACTION_PERMISSIONS.publish_course, "manageAssignments");
   assertEquals(ACADEMY_ACTION_PERMISSIONS.assign_course, "manageAssignments");
+  assertEquals(ACADEMY_ACTION_PERMISSIONS.move_course_version, "manageAssignments");
   assertEquals(ACADEMY_ACTION_PERMISSIONS.upsert_module, "manageAssignments");
   assertEquals(ACADEMY_ACTION_PERMISSIONS.upsert_lesson, "manageAssignments");
   assertEquals(ACADEMY_ACTION_PERMISSIONS.upsert_quiz, "manageAssignments");
