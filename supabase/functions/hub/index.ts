@@ -61,6 +61,7 @@ import { appendLevelHistory, levelCheckStatus, perSkillLevels, readLevelHistory 
 import { handleCertificateRoute, handlePublicCertificate, isPublicCertificateRoute } from "./certificate.ts";
 import { measurementMethod, testResultRecord } from "../_shared/english-certificate.ts";
 import { handlePracticeRoute } from "./practice.ts";
+import { handleClassesRoute, runClassReminders } from "./classes.ts";
 
 const routeMarker = "/hub";
 
@@ -276,7 +277,26 @@ serve(async (req) => {
         onlyUserIds: Array.isArray(body.user_ids) ? body.user_ids.map(String).slice(0, 20) : undefined,
       });
       console.log(JSON.stringify({ event: "english_reminder_cycle", hour: result.hour, considered: result.considered, sent: result.sent.length }));
-      return json(200, { ok: true, ...result });
+      // Class assignment reminders and teachers' Monday digests (./classes.ts); never fails the cycle.
+      const classes = await runClassReminders({
+        sb,
+        languageId: workerScope.languageId,
+        appUrl: Deno.env.get("ENGLISH_APP_URL") ?? "https://english.schood.online",
+        dryRun: body.dry_run === true,
+        now: body.dry_run === true && typeof body.now === "string" && Number.isFinite(Date.parse(body.now)) ? new Date(body.now) : undefined,
+        onlyUserIds: Array.isArray(body.user_ids) ? body.user_ids.map(String).slice(0, 20) : undefined,
+        forceDigest: body.dry_run === true && body.force_digest === true,
+        send: async (message) => {
+          const response = await fetch(`${supabaseUrl}/functions/v1/send-telegram`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${serviceRoleKey}` },
+            body: JSON.stringify(message),
+          });
+          await response.body?.cancel();
+          return { status: response.status };
+        },
+      }).catch((error) => ({ error: error instanceof Error ? error.message.slice(0, 200) : "unknown" }));
+      return json(200, { ok: true, ...result, classes });
     }
 
     // === Telegram review quiz answers (student bot Worker; no learner session) ===
@@ -390,6 +410,10 @@ serve(async (req) => {
     // === Role-plays, speaking mock, first-language traps (./practice.ts) ===
     const practiceResponse = await handlePracticeRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId, products });
     if (practiceResponse) return practiceResponse;
+
+    // === Classes for teachers and learning centres (./classes.ts) ===
+    const classesResponse = await handleClassesRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId, products });
+    if (classesResponse) return classesResponse;
 
     // === Today, catalog and history (learner home) ===
     // Built only from the learner's placement, real attempts and due reviews.

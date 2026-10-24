@@ -35,6 +35,7 @@ export const YOU_ENTRIES: NavEntry[] = [
   { to: '/progress', labelKey: 'nav.progress', group: 'you', keywords: 'level stats goal history' },
   { to: '/league', labelKey: 'nav.league', group: 'you', keywords: 'xp ranking leaderboard badges' },
   { to: '/certificate', labelKey: 'ws.certificate', group: 'you', keywords: 'certificate cefr share' },
+  { to: '/classes', labelKey: 'classes.nav', group: 'you', keywords: 'class teacher school group homework assignments join code' },
   { to: '/settings', labelKey: 'nav.settings', group: 'you', keywords: 'account language reminders telegram install' },
 ];
 

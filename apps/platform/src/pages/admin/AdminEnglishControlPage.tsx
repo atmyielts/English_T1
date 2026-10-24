@@ -24,6 +24,7 @@ const SERVICE_LABELS: Record<EnglishControlService, string> = {
   vocabulary: 'Vocabulary',
   immersion: 'Immersion',
   tutor: 'AI tutor (chat + voice)',
+  classes: 'Classes (teachers and their learners)',
 };
 
 const card = 'rounded-[28px] border border-gray-200 bg-white p-6 shadow-sm';
@@ -303,6 +304,36 @@ export const AdminEnglishControlPage: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {settings.classes ? (
+              <div className={`${card} xl:col-span-2`}>
+                <h2 className="text-xl font-bold text-gray-900">Classes</h2>
+                <p className="mt-1 text-sm text-gray-600">
+                  Any signed-in user can open a class in Schood English (/classes) and set work; learners join with a code after consenting.
+                  Switch the whole feature on or off under Services. Classes never unlock skills.
+                </p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <NumberField
+                    label="Open classes per teacher"
+                    hint={`Archived classes do not count. Default: ${control?.defaults.classes?.max_classes_per_teacher ?? 10}.`}
+                    value={settings.classes.max_classes_per_teacher}
+                    min={1}
+                    max={50}
+                    disabled={locked}
+                    onSave={(value) => void save({ classes: { max_classes_per_teacher: value } }, `Teachers can now run ${value} classes.`)}
+                  />
+                  <NumberField
+                    label="Learners per class"
+                    hint={`Joining stops when a class is full. Default: ${control?.defaults.classes?.max_students_per_class ?? 60}.`}
+                    value={settings.classes.max_students_per_class}
+                    min={2}
+                    max={300}
+                    disabled={locked}
+                    onSave={(value) => void save({ classes: { max_students_per_class: value } }, `Classes now hold up to ${value} learners.`)}
+                  />
+                </div>
+              </div>
+            ) : null}
 
             <div className={`${card} xl:col-span-2`}>
               <h2 className="text-xl font-bold text-gray-900">AI features</h2>

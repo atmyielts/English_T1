@@ -10,7 +10,9 @@ import '../engine.css';
 type T = ReturnType<typeof useT>;
 
 const stepTitle = (step: NextStep, t: T) =>
-  step.kind === 'review' ? t('engine.next.reviewTitle', { count: step.due ?? 1 }) : step.title;
+  step.kind === 'review'
+    ? t('engine.next.reviewTitle', { count: step.due ?? 1 })
+    : step.kind === 'practice' && step.href === '/speaking-mock' ? t('ws.mock') : step.title;
 
 /** One honest line: why this is the best next step. */
 export const stepReason = (step: NextStep, t: T): string => {
@@ -29,6 +31,10 @@ export const stepReason = (step: NextStep, t: T): string => {
     }
     case 'today_plan':
       return t('engine.next.reason.today_plan');
+    case 'class_assignment':
+      return step.assignment
+        ? t('classes.next.reason', { className: step.assignment.class_name, done: step.assignment.done, required: step.assignment.required })
+        : t('classes.next.reasonPlain');
     default:
       return t('engine.next.reason.keep_going', { skill });
   }

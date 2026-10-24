@@ -1018,12 +1018,14 @@ export const adminEnglishRulesPatch = async (
 
 // --- English control center (admin-english-ops /control, /ai-usage, /learner) ---
 
-export type EnglishControlService = 'reading' | 'writing' | 'listening' | 'speaking' | 'grammar' | 'vocabulary' | 'immersion' | 'tutor';
+export type EnglishControlService = 'reading' | 'writing' | 'listening' | 'speaking' | 'grammar' | 'vocabulary' | 'immersion' | 'tutor' | 'classes';
 
 export type EnglishControlSettings = {
   services: Record<EnglishControlService, boolean>;
   free_activities_per_day: number;
   ai: { enabled: boolean; daily_limit: number; word_lookup_daily_limit: number; features: Record<string, boolean> };
+  /** Teacher classes caps (on/off is services.classes). Missing on functions deployed before classes. */
+  classes?: { max_classes_per_teacher: number; max_students_per_class: number };
 };
 
 export type EnglishControlState = {
@@ -1047,6 +1049,7 @@ export type EnglishControlPatch = {
   services?: Partial<Record<EnglishControlService, boolean>>;
   free_activities_per_day?: number;
   ai?: Partial<Omit<EnglishControlSettings['ai'], 'features'>> & { features?: Record<string, boolean> };
+  classes?: Partial<NonNullable<EnglishControlSettings['classes']>>;
 };
 
 type AiCounts = { calls: number; ok: number; failed: number; refused: number };

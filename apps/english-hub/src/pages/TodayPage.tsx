@@ -14,6 +14,7 @@ import { FocusSkillCard } from '../components/FocusSkillCard';
 import { InstallCard } from '../components/InstallApp';
 import { ComebackCard, StreakFreezes } from '../components/StreakGuard';
 import { getStreak } from '../lib/engine';
+import { ClassAssignmentsCard } from '../components/ClassAssignmentsCard';
 
 const greetingKey = (): string => {
   const hour = new Date().getHours();
@@ -116,6 +117,8 @@ export const TodayPage = () => {
       <NewBadges />
 
       {guard.data ? <ComebackCard streak={guard.data} /> : null}
+
+      <ClassAssignmentsCard />
 
       {data?.level_check?.due ? (
         <section className="en-panel en-tone-lime">

@@ -1,0 +1,59 @@
+/* Classes for teachers and learning centres (/classes, /classes/:id, Today card). */
+
+.en-class-meta { font-weight: 700; color: var(--muted); font-size: 0.75rem; }
+.en-tag.is-warn { background: var(--bad-bg); border-color: #fecaca; color: var(--bad); }
+
+.en-class-join { gap: 0.5rem; }
+.en-class-join-row { display: flex; gap: 0.5rem; align-items: stretch; flex-wrap: wrap; }
+.en-class-join-row input { flex: 1 1 10rem; min-width: 0; letter-spacing: 0.08em; }
+.en-class-join-row button { flex: 0 0 auto; }
+
+.en-class-consent { display: grid; gap: 0.75rem; }
+.en-class-consent h3 { margin: 0; font-size: 1.25rem; overflow-wrap: anywhere; }
+.en-class-consent ul { margin: 0.4rem 0 0; padding-left: 1.1rem; display: grid; gap: 0.25rem; }
+
+.en-class-form { gap: 0.75rem; margin-top: 1rem; }
+.en-class-form h3 { margin: 0; }
+.en-class-form label { display: grid; gap: 0.35rem; }
+.en-class-form-row { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr)); }
+
+.en-class-done { margin-top: 0.75rem; }
+.en-class-done summary { cursor: pointer; font-weight: 700; font-size: 0.9rem; color: var(--ink-700); margin-bottom: 0.6rem; }
+
+.en-class-code-tag { font-family: var(--heading-font); letter-spacing: 0.08em; }
+.en-class-code {
+  font-family: var(--heading-font);
+  font-size: clamp(2rem, 7vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: var(--accent-strong);
+  margin: 0.4rem 0 0.2rem;
+  overflow-wrap: anywhere;
+}
+.en-class-link { margin: 0 0 0.6rem; font-size: 0.85rem; color: var(--muted); overflow-wrap: anywhere; }
+
+.en-class-tabs { margin: 0.25rem 0 0.25rem; overflow-x: auto; max-width: 100%; }
+
+.en-class-table-wrap { overflow-x: auto; max-width: 100%; -webkit-overflow-scrolling: touch; }
+.en-class-table { min-width: 44rem; }
+.en-class-table th[scope='row'] { font-weight: 700; white-space: nowrap; }
+.en-class-table td { white-space: nowrap; }
+.en-class-levels { display: inline-flex; gap: 0.35rem; flex-wrap: wrap; max-width: 17rem; white-space: normal; }
+.en-class-level { display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.75rem; font-weight: 700; color: var(--ink-700); }
+
+.en-class-bars { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+.en-class-bars li { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; padding-bottom: 0.45rem; border-bottom: 1px solid var(--soft-line); }
+.en-class-bars li:last-child { border-bottom: 0; padding-bottom: 0; }
+
+.en-class-assignment { display: grid; gap: 0.5rem; padding: 0.9rem 1rem; border: 1px solid var(--soft-line); border-radius: var(--radius-inner); background: var(--card); }
+.en-class-assignment .en-item-main { min-width: 0; flex: 1 1 14rem; }
+
+.en-class-results { max-height: 22rem; overflow-y: auto; }
+.en-class-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.en-class-chips li { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.2rem 0.4rem 0.2rem 0.7rem; border-radius: 999px; border: 1px solid var(--soft-line); background: rgba(255, 255, 255, 0.8); font-size: 0.82rem; max-width: 100%; }
+.en-class-chips li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.en-class-chips button { min-height: 1.6rem; padding: 0 0.4rem; font-size: 1rem; text-decoration: none; }
+
+@media (max-width: 520px) {
+  .en-class-join-row button { flex: 1 1 100%; }
+}

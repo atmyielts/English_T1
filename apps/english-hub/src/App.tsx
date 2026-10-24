@@ -22,6 +22,8 @@ const CertificatePage = lazy(() => import('./pages/CertificatePage').then((m) =>
 const PublicCertificatePage = lazy(() => import('./pages/PublicCertificatePage').then((m) => ({ default: m.PublicCertificatePage })));
 const RolePlaysPage = lazy(() => import('./pages/RolePlaysPage').then((m) => ({ default: m.RolePlaysPage })));
 const RolePlayPage = lazy(() => import('./pages/RolePlaysPage').then((m) => ({ default: m.RolePlayPage })));
+const ClassesPage = lazy(() => import('./pages/ClassesPage').then((m) => ({ default: m.ClassesPage })));
+const ClassDashboardPage = lazy(() => import('./pages/ClassDashboardPage').then((m) => ({ default: m.ClassDashboardPage })));
 const SpeakingMockPage = lazy(() => import('./pages/SpeakingMockPage').then((m) => ({ default: m.SpeakingMockPage })));
 
 const SKILL_APPS = {
@@ -127,6 +129,8 @@ const App = () => {
         <Route path="/roleplay" element={hub(<RolePlaysPage />)} />
         <Route path="/roleplay/:id" element={hub(<RolePlayPage />)} />
         <Route path="/speaking-mock" element={hub(<SpeakingMockPage />)} />
+        <Route path="/classes" element={hub(<ClassesPage />)} />
+        <Route path="/classes/:id" element={hub(<ClassDashboardPage />)} />
         {SKILLS.map((skill) => {
           const SkillApp = SKILL_APPS[skill.key];
           return (

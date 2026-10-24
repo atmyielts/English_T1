@@ -34,10 +34,11 @@ export const IELTS_MOCK_URL = 'https://ielts.schood.online';
 
 // === One next step across all skills (GET /hub/next) ===
 
-export type NextReason = 'review_due' | 'fix_mistake' | 'weakest_skill' | 'today_plan' | 'keep_going';
+export type NextReason = 'review_due' | 'class_assignment' | 'fix_mistake' | 'weakest_skill' | 'today_plan' | 'keep_going';
 
 export type NextStep = {
-  kind: 'review' | 'activity';
+  /** practice: a role-play or the speaking mock, opened by `href`. */
+  kind: 'review' | 'activity' | 'practice';
   skill: SkillKey | null;
   content_item_id: string | null;
   slug: string | null;
@@ -50,12 +51,17 @@ export type NextStep = {
   rating?: { level: CefrLevel | null; progress: number | null } | null;
   target_level?: CefrLevel | null;
   uses_free: boolean;
+  href?: string | null;
+  /** class_assignment: the assignment, its class and the learner's progress. */
+  assignment?: { id: string; class_name: string; due_at: string; done: number; required: number } | null;
 };
 
 export type NextResponse = { date: string; step: NextStep | null; locked: NextStep | null };
 
-export const nextHref = (step: Pick<NextStep, 'kind' | 'skill' | 'slug'>): string =>
-  step.kind === 'review' || !step.skill ? '/review' : `/${step.skill}/${encodeURIComponent(step.slug ?? '')}`;
+export const nextHref = (step: Pick<NextStep, 'kind' | 'skill' | 'slug' | 'href'>): string =>
+  step.kind === 'practice' && step.href?.startsWith('/')
+    ? step.href
+    : step.kind === 'review' || !step.skill ? '/review' : `/${step.skill}/${encodeURIComponent(step.slug ?? '')}`;
 
 const NEXT_TTL_MS = 60_000;
 let nextCache: { key: string; at: number; value: Promise<NextResponse> } | null = null;

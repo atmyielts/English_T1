@@ -22,6 +22,8 @@ One page for running Schood English alone. Learner app: `apps/english-hub` at ht
 | Switch | Where | Default |
 |---|---|---|
 | Pause a skill or the AI tutor | Control center → Services (`english_service_settings.services`) | all on |
+| Classes on/off (teachers, joining, class reminders) | Control center → Services → Classes (`services.classes`) | on |
+| Open classes per teacher / learners per class | Control center → Classes (`english_service_settings.classes`) | 10 / 60 |
 | Free activities per day (learners without the skill) | Control center → Free tier (`free_activities_per_day`) | 1 |
 | All English AI on/off | Control center → AI (`ai.enabled`) | on |
 | One AI feature on/off | Control center → AI features (`ai.features["<feature>"]`) | on |
@@ -39,6 +41,18 @@ Settings are cached ~60 s per function instance, so a change reaches everyone wi
 - Every call (and every refusal) is logged to `english_ai_calls`: feature, learner id, provider, model, status (`ok`/`failed`/`unconfigured`/`disabled`/`over_limit`), latency, sizes, token counts. No prompt or answer text. Rows older than 120 days are pruned daily (pg_cron `english-ai-calls-prune-v1`).
 - Learner credits: `_shared/english-ai-quota.ts`. One credit per AI answer from `english_ai_usage_daily`; taken before the call and refunded when the call fails or AI is off. Used by hub `/ai/*`, speaking, writing and immersion feedback. Word lookup has its own cap (cached words are free). Admin drafting uses no learner credits.
 - Feature names: `coach-summary`, `placement-test`, `tutor-chat`, `voice-conversation-turn`, `pronunciation-feedback`, `vocab-in-context`, `grammar-decode`, `essay-grade`, `translation-compare`, `idiom-extract`, `dictation-generate`, `daily-challenge`, `cultural-notes`, `goal-templates`, `rubric-calibrate`, `themed-week`, `content-recommend`, `shadowing-prep`, `word-lookup`, `speaking-feedback`, `writing-feedback`, `immersion-judge`, `content-draft`. New features appear in the control center once they make a call.
+
+## Classes (teachers and learning centres)
+
+Any signed-in user can open a class at `/classes` and becomes its teacher; learners join with a 6-character code (no 0/O/1/I/L) or the link `english.schood.online/classes?join=CODE`, after a consent screen ("your teacher will see your level, activity and scores in this class", plus whether they are on the free tier). Teacher dashboard: `/classes/:id` (roster with first name + last initial, level per skill, streak, minutes this week, last active, assignment completion, free-tier flag; class weak skills and grammar mistakes by topic only; CSV export; weekly digest; settings).
+
+- **Not the Academy LMS.** Academy (`academy_*` tables, `academy` functions) is tenant software for learning centres (staff, schedules, payments). Classes are personal and light, live only in Schood English, and share no tables or code with Academy.
+- **Tables** (migration `20261026130000_english_classes.sql`, service-role only): `english_classes`, `english_class_members` (status active/left/removed; `removed_code` stops a removed learner rejoining with the same code: "New code" lets them back), `english_class_assignments`, and the function `english_class_join` (serialised join, enforces the class cap).
+- **Routes**: hub `/classes*` (`supabase/functions/hub/classes.ts`; rules in `_shared/english-classes.ts`). Every teacher route checks `teacher_id` on the server; members only reach their own list, join and leave.
+- **Assignments**: lessons (up to 10), "N activities in a skill (at a level)", a role-play (any or one scenario) or the speaking mock, with a due date (end of that day, Tashkent time). Completion is computed from `learning_attempts` submitted after the assignment was set; nothing is ticked by hand. They show on Today, on `/classes`, and in `/hub/next` (due within 48 h: before reviews; otherwise right after).
+- **Access**: a class never unlocks anything. Each learner keeps their own plan or free activity; a locked assignment is offered as optional in Up next. No payment changes.
+- **Telegram**: from the hourly reminder cron (`/hub/internal/reminders`): learners with reminders on get one message at their reminder hour for each unfinished assignment due tomorrow (`english_class_assignment_due`, category `academic_required`, dedupe per assignment); teachers who switched on the Telegram digest get it on Monday at 09:00 (`english_class_digest`, dedupe per class and week). Dry run with `{"dry_run": true, "force_digest": true}` previews both.
+- **No AI** is used by classes.
 
 ## Deploy order
 

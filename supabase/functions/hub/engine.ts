@@ -46,6 +46,7 @@ import {
   type TodayTask,
 } from "../_shared/english-today.ts";
 import { learnerDate } from "../_shared/english-xp.ts";
+import { loadAssignmentNextSteps } from "./classes.ts";
 
 type Row = Record<string, unknown>;
 type Ctx = { sb: any; userId: string; languageId: string };
@@ -307,7 +308,10 @@ const getNext = async (ctx: Ctx, url: URL, products: Record<string, { productId?
   const slug = toText(url.searchParams.get("slug"), 160);
   const finished = slug && isSkill(fromSkill) ? items.find((item) => item.skill === fromSkill && item.slug === slug) : undefined;
 
-  const ratings = await ratingsFor(ctx, goal, attempts);
+  const [ratings, assignments] = await Promise.all([
+    ratingsFor(ctx, goal, attempts),
+    loadAssignmentNextSteps({ ...ctx, items, attempts, levelFor }),
+  ]);
   const owned = access.entitled_skills.filter(isSkill);
   const result = pickNextStep({
     items,
@@ -322,6 +326,7 @@ const getNext = async (ctx: Ctx, url: URL, products: Record<string, { productId?
     excludeItemId: finished?.id ?? null,
     fromSkill: isSkill(fromSkill) ? fromSkill : null,
     goalKeys: Array.isArray(goal?.goal_keys) ? (goal!.goal_keys as unknown[]).map(String) : [],
+    assignments,
   });
   return json(200, { ok: true, date, ...result });
 };

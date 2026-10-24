@@ -2,7 +2,10 @@
 // "which app now". Pure: the hub loads the rows and passes them in.
 //
 // Order of preference:
+//   0. a class assignment due within two days (or overdue) from the learner's
+//      teacher (english-classes.ts builds these steps)
 //   1. due reviews (words and missed questions; always free)
+//   1b. any other open class assignment
 //   2. a lesson for a mistake the learner keeps making
 //   3. the weakest skill against the goal level (by the per-skill rating)
 //   4. the next unfinished task in today's plan
@@ -15,10 +18,11 @@
 import { type AttemptRow, type CatalogItem, CEFR_ORDER, type Cefr, type FixCandidate, pickItem, TODAY_SKILLS, type TodaySkill, type TodayTask } from "./english-today.ts";
 import type { SkillRating } from "./english-rating.ts";
 
-export type NextReason = "review_due" | "fix_mistake" | "weakest_skill" | "today_plan" | "keep_going";
+export type NextReason = "review_due" | "class_assignment" | "fix_mistake" | "weakest_skill" | "today_plan" | "keep_going";
 
 export type NextStep = {
-  kind: "review" | "activity";
+  /** practice: a role-play or the speaking mock, opened by `href` (those pages apply their own allowance). */
+  kind: "review" | "activity" | "practice";
   skill: TodaySkill | null;
   content_item_id: string | null;
   slug: string | null;
@@ -34,6 +38,10 @@ export type NextStep = {
   target_level?: Cefr | null;
   /** Opening it uses today's free activity. */
   uses_free: boolean;
+  /** practice steps: the page to open. */
+  href?: string | null;
+  /** class_assignment: which assignment, its class and how far the learner is. */
+  assignment?: { id: string; class_name: string; due_at: string; done: number; required: number } | null;
 };
 
 export type NextInput = {
@@ -54,6 +62,9 @@ export type NextInput = {
   /** The skill the learner is in now; the weakest-skill step prefers another one, to keep the week balanced. */
   fromSkill?: TodaySkill | null;
   goalKeys?: string[];
+  /** Open class assignments as ready-made steps (reason "class_assignment"), soonest due first. */
+  assignments?: NextStep[];
+  now?: Date;
 };
 
 export type NextResult = { step: NextStep | null; locked: NextStep | null };
@@ -62,6 +73,8 @@ const MINUTES_MIN = 3;
 const MINUTES_MAX = 30;
 const REVIEW_MINUTES = 5;
 const WEAKEST_CANDIDATES = 2;
+/** A class assignment due within this window (or overdue) goes before reviews. */
+export const ASSIGNMENT_URGENT_MS = 48 * 3_600_000;
 
 const levelValue = (level: Cefr | null): number | null => (level ? CEFR_ORDER.indexOf(level) : null);
 
@@ -117,13 +130,22 @@ export const pickNextStep = (input: NextInput): NextResult => {
 
   /** Whether the learner may open this now, and whether it uses the free activity. */
   const openable = (step: NextStep): { ok: boolean; usesFree: boolean } => {
-    if (step.kind === "review" || !step.skill) return { ok: true, usesFree: false };
+    if (step.kind === "review" || step.kind === "practice" || !step.skill) return { ok: true, usesFree: false };
     if (owned.has(step.skill)) return { ok: true, usesFree: false };
     if (step.content_item_id && freeToday.has(step.content_item_id)) return { ok: true, usesFree: false };
     return input.access.freeLeft > 0 ? { ok: true, usesFree: true } : { ok: false, usesFree: false };
   };
 
   const candidates: NextStep[] = [];
+
+  // 0. Class assignments due soon. Entitlements still apply (openable below):
+  // a class never unlocks a skill the learner has not bought.
+  const nowMs = (input.now ?? new Date()).getTime();
+  const assignmentSteps = (input.assignments ?? [])
+    .filter((step) => step.assignment && !(exclude && step.content_item_id === exclude))
+    .sort((a, b) => Date.parse(a.assignment!.due_at) - Date.parse(b.assignment!.due_at));
+  const urgent = (step: NextStep) => Date.parse(step.assignment!.due_at) - nowMs <= ASSIGNMENT_URGENT_MS;
+  candidates.push(...assignmentSteps.filter(urgent));
 
   // 1. Reviews.
   if (input.dueReviews > 0) {
@@ -141,6 +163,9 @@ export const pickNextStep = (input: NextInput): NextResult => {
       uses_free: false,
     });
   }
+
+  // 1b. Other open class assignments.
+  candidates.push(...assignmentSteps.filter((step) => !urgent(step)));
 
   // 2. Repeated mistakes.
   for (const fix of input.fixes) {
