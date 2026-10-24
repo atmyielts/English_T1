@@ -20,12 +20,15 @@ export type NotebookSnapshot = { summary: { due_count: number; total_count: numb
 
 export type CaptureWord = {
   word: string;
+  part_of_speech?: string | null;
   definition?: string | null;
   example?: string | null;
   context_text?: string | null;
   source_type?: string | null;
   source_label?: string | null;
   source_ref?: string | null;
+  /** Extra details kept with the saved word (e.g. translations). */
+  metadata?: Record<string, unknown> | null;
 };
 
 /** `due` returns cards whose review time has come; `recent` returns the newest saved words. */

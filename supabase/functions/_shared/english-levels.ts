@@ -10,6 +10,8 @@ export type LevelEntry = {
   source: LevelSource;
   overall: Cefr | null;
   per_skill: Record<string, Cefr>;
+  /** How a placement or check was made: the test, or a level the learner chose. Absent on older entries. */
+  method?: "test" | "self";
 };
 
 export const CHECK_INTERVAL_DAYS = 28;
@@ -40,6 +42,7 @@ export const readLevelHistory = (meta: Meta): LevelEntry[] => {
       source: (["placement", "check", "level_up"].includes(String(entry.source)) ? entry.source : "placement") as LevelSource,
       overall: isCefr(entry.overall) ? entry.overall : null,
       per_skill: perSkillLevels({ per_skill: entry.per_skill }),
+      ...(entry.method === "test" || entry.method === "self" ? { method: entry.method as "test" | "self" } : {}),
     }));
   if (history.length) return history;
   // Learners placed before history existed: their placement is the first entry.
@@ -50,6 +53,7 @@ export const readLevelHistory = (meta: Meta): LevelEntry[] => {
     source: "placement",
     overall: isCefr(placement.overall_level) ? placement.overall_level : null,
     per_skill: perSkillLevels(placement),
+    ...(placement.method === "test" || placement.method === "self" ? { method: placement.method as "test" | "self" } : {}),
   }];
 };
 

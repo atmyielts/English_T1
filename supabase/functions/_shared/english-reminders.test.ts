@@ -8,12 +8,14 @@ import {
 } from "./english-reminders.ts";
 
 Deno.test("reminders are off until the learner turns them on, and hours stay in range", () => {
-  assertEquals(readReminderSettings(null), { enabled: false, hour: 19, weekly: true, locale: "en" });
+  assertEquals(readReminderSettings(null), { enabled: false, hour: 19, weekly: true, quiz: false, locale: "en" });
   assertEquals(readReminderSettings({ telegram_reminder: { enabled: "yes", hour: 3 } }).enabled, false);
   assertEquals(readReminderSettings({ telegram_reminder: { enabled: true, hour: 3 } }).hour, 7);
   const next = mergeReminderSettings(readReminderSettings({}), { enabled: true, hour: 30, locale: "ru", weekly: false });
-  assertEquals(next, { enabled: true, hour: 22, weekly: false, locale: "ru" });
+  assertEquals(next, { enabled: true, hour: 22, weekly: false, quiz: false, locale: "ru" });
   assertEquals(mergeReminderSettings(next, { locale: "fr" }).locale, "ru");
+  assertEquals(readReminderSettings({ telegram_reminder: { quiz: "true" } }).quiz, false);
+  assertEquals(mergeReminderSettings(next, { quiz: true }).quiz, true);
 });
 
 Deno.test("the learner clock is Tashkent time", () => {

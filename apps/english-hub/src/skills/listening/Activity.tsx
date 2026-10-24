@@ -1,5 +1,6 @@
 import { Fragment, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { TapScope, TapWords } from '../../components/WordLookup';
 import { useT } from '../../i18n';
 import { saveWords } from '../../lib/notebook';
 import { canSpeak } from '../../lib/speech';
@@ -15,16 +16,16 @@ type Speed = 'normal' | 'slow';
 const RATE: Record<Speed, number> = { normal: 1, slow: 0.75 };
 const letter = (index: number) => String.fromCharCode(65 + index);
 
-/** The script, line by line, with speaker names for dialogues. */
-const Transcript = ({ lines }: { lines: ScriptLine[] }) => (
-  <div className="en-passage" lang="en">
+/** The script, line by line, with speaker names for dialogues. Words can be tapped for their meaning. */
+const Transcript = ({ lines, title, slug }: { lines: ScriptLine[]; title: string | null; slug: string }) => (
+  <TapScope className="en-passage" source={{ type: 'english-listening', label: title, ref: slug }}>
     {lines.map((line, index) => (
       <p key={index}>
         {line.speaker ? <strong>{line.speaker}: </strong> : null}
-        {line.text}
+        <TapWords text={line.text} />
       </p>
     ))}
-  </div>
+  </TapScope>
 );
 
 /** What the learner wrote compared with the sentence: green = missing or correct spelling, crossed out = wrong or extra. */
@@ -249,7 +250,7 @@ export const ListeningActivity = () => {
 
       {result ? (
         <Panel title={t('listening.transcript.title')}>
-          <Transcript lines={lines} />
+          <Transcript lines={lines} title={item?.title ?? null} slug={slug} />
         </Panel>
       ) : null}
 
@@ -260,7 +261,7 @@ export const ListeningActivity = () => {
               <p className="en-notice" style={{ margin: 0 }}>
                 {canSpeak() ? t('listening.reading.chosen') : t('listening.reading.noAudio')}
               </p>
-              <Transcript lines={lines} />
+              <Transcript lines={lines} title={item?.title ?? null} slug={slug} />
             </>
           ) : (
             <>

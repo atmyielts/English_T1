@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useT } from '../../i18n';
+import { handbookTopicHref } from '../../lib/handbookSearch';
 import { useElapsedSeconds, useResource } from '../../lib/useResource';
 import { Panel, ProgressBar, useErrorMessage } from '../../ui/kit';
 import { YourWordsHint, YourWordsResult } from '../YourWords';
@@ -112,7 +113,12 @@ const CorrectionList = ({ corrections }: { corrections: WritingCorrection[] }) =
             <span className="wr-arrow" aria-hidden="true">→</span>
             <ins>{correction.corrected}</ins>
           </span>
-          <small><strong>{t(`writing.category.${correction.category}`)}:</strong> {correction.explanation}</small>
+          <small>
+            <strong>{t(`writing.category.${correction.category}`)}:</strong> {correction.explanation}
+            {correction.category === 'grammar' && correction.topic ? (
+              <> <Link to={handbookTopicHref(correction.topic)}>{t('handbook.readRule')}</Link></>
+            ) : null}
+          </small>
         </li>
       ))}
     </ul>

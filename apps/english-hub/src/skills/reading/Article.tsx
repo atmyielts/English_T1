@@ -88,6 +88,11 @@ export const ReadingArticle = () => {
     setLookup('');
   };
 
+  const rememberSaved = (word: string, sentence: string) =>
+    setSaved((current) => (current.some((entry) => entry.word.toLowerCase() === word.toLowerCase())
+      ? current
+      : [...current, { word, sentence }]));
+
   const save = async () => {
     if (!picked || !article) return;
     setSaving(true);
@@ -100,9 +105,7 @@ export const ReadingArticle = () => {
         source_label: article.title,
         source_ref: article.slug,
       }]);
-      setSaved((current) => (current.some((entry) => entry.word.toLowerCase() === pickedForm.toLowerCase())
-        ? current
-        : [...current, { word: pickedForm, sentence: picked.sentence }]));
+      rememberSaved(pickedForm, picked.sentence);
     } catch (cause) {
       setSaveError(cause);
     } finally {
@@ -195,8 +198,16 @@ export const ReadingArticle = () => {
       >
         {blocks.length ? (
           <>
-            {wordMode ? <p className="hint" style={{ margin: 0 }}>{t('reading.words.pickHint')}</p> : null}
-            <Passage blocks={blocks} wordMode={wordMode} selectedKey={picked?.key ?? null} savedWords={savedSet} onPick={pick} />
+            <p className="hint" style={{ margin: 0 }}>{wordMode ? t('reading.words.pickHint') : t('translate.tapHint')}</p>
+            <Passage
+              blocks={blocks}
+              wordMode={wordMode}
+              selectedKey={picked?.key ?? null}
+              savedWords={savedSet}
+              onPick={pick}
+              tapSource={{ type: 'english-reading', label: article?.title ?? null, ref: article?.slug ?? null }}
+              onTapSaved={rememberSaved}
+            />
           </>
         ) : (
           <EmptyState title={t('reading.text.empty')} />

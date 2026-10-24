@@ -1,52 +1,62 @@
 {
   "schemaVersion": 1,
-  "releaseId": "academy-course-versions",
+  "releaseId": "english-features-oct24",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "academy"
+    "english-hub"
   ],
   "migrations": [
-    "20261024231500_academy_course_versions.sql"
+    "20261024120000_english_word_glosses.sql",
+    "20261024121000_english_xp_leagues_badges.sql",
+    "20261024122000_english_telegram_quiz.sql",
+    "20261024123000_english_grammar_handbook.sql",
+    "20261024124000_english_certificates.sql"
   ],
   "edgeFunctions": [
-    "academy"
+    "grammar-remediation",
+    "hub"
   ],
-  "workers": [],
+  "workers": [
+    "schood-bot"
+  ],
   "sharedEdgeConsumers": [],
   "requiredSecrets": [
-    "ACADEMY_AUDIO_ENCRYPTION_KEY",
-    "GMAIL_SMTP_APP_PASSWORD",
-    "GMAIL_SMTP_EMAIL",
-    "SITE_URL"
+    "ENGLISH_AI_DAILY_LIMIT",
+    "ENGLISH_APP_URL",
+    "TELEGRAM_INTERNAL_SECRET"
   ],
   "rolloutOrder": [
     "pages",
-    "migration:20261024231500_academy_course_versions.sql",
-    "secret:ACADEMY_AUDIO_ENCRYPTION_KEY",
-    "secret:GMAIL_SMTP_EMAIL",
-    "secret:GMAIL_SMTP_APP_PASSWORD",
-    "secret:SITE_URL",
-    "function:academy"
+    "migration:20261024120000_english_word_glosses.sql",
+    "migration:20261024121000_english_xp_leagues_badges.sql",
+    "migration:20261024122000_english_telegram_quiz.sql",
+    "migration:20261024123000_english_grammar_handbook.sql",
+    "migration:20261024124000_english_certificates.sql",
+    "secret:ENGLISH_AI_DAILY_LIMIT",
+    "secret:ENGLISH_APP_URL",
+    "secret:TELEGRAM_INTERNAL_SECRET",
+    "function:hub",
+    "function:grammar-remediation",
+    "worker:schood-bot"
   ],
   "manualFollowUps": [
-    "Pages: merging publishes academy. The curriculum screen reads the new version fields only when the academy function returns them, so it is safe before the migration: until then it shows no version line and 'Publish new version' re-publishes as before. 'Move this group to version N' appears only once versions exist.",
-    "Database: supabase db push --linked only from an isolated copy of the installed migrations plus 20261024231500_academy_course_versions.sql, keeping Codex's 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then supabase migration list --linked. The migration adds academy_course_versions (service role only) and four columns on academy_classroom_courses. Every existing run is filled with version_mode 'live' and keeps reading live rows. Every already-published course gets version 1. It also replaces academy_module_unlocked, the two unlock gates, academy_course_completion and academy_public_course_catalog with version-aware bodies, which behave as before for live runs. It registers move_course_version as a legacy boundary write action.",
-    "Secrets: supabase secrets set ACADEMY_AUDIO_ENCRYPTION_KEY=, supabase secrets set GMAIL_SMTP_EMAIL=, supabase secrets set GMAIL_SMTP_APP_PASSWORD= and supabase secrets set SITE_URL= are not run. The first three are already configured for academy, and SITE_URL uses the code default https://schood.online. This release adds no secret.",
-    "Edge: supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel after the migration (student_curriculum, set_lesson_progress, start_quiz and submit_quiz read a pinned run's version; publish_course records the version; new move_course_version action; the curriculum read returns version labels). Deploy it right after the migration. In between, existing groups are unaffected (they stay live), but a group assigned in that window is already pinned in the database while the old function still shows it live rows. Note: deploy teacher-studio too only if it is redeployed for other reasons; it re-exports academy."
+    "Pages: merging publishes english-hub with tap-to-translate, XP/leagues/badges, the goal date plan, the grammar handbook, certificates and the Telegram quiz toggle. Until hub is deployed the new panels show their error/empty states.",
+    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus the five 20261024120000-20261024124000 English migrations, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then supabase migration list --linked. Adds service-role-only tables english_word_glosses, english_league_groups, english_league_members, learner_badges, learner_review_answer_log, english_telegram_quiz_questions, english_certificates (RLS on, no client grants) and Russian/Uzbek handbook explanations on the 43 grammar units.",
+    "Secrets: supabase secrets set ENGLISH_AI_DAILY_LIMIT=, supabase secrets set ENGLISH_APP_URL= and supabase secrets set TELEGRAM_INTERNAL_SECRET= are not run: the first two keep their code defaults, and TELEGRAM_INTERNAL_SECRET is already configured for send-telegram and the schood-bot Worker; hub now reads it to authenticate the bot's enq: quiz callbacks.",
+    "Edge: supabase functions deploy hub --project-ref bbjawctnqrufvnesdsel after the migrations (/word, /xp, /league, /achievements, /goal, /certificate(s), public certificate, /internal/telegram-quiz).",
+    "Edge: supabase functions deploy grammar-remediation --project-ref bbjawctnqrufvnesdsel (GET /handbook).",
+    "Worker: cd workers/schood-bot && npx wrangler deploy, after hub is live. The bot only adds handling for callback data starting with enq: and reuses its existing TELEGRAM_INTERNAL_SECRET; everything else is unchanged."
   ],
   "verification": [
-    "supabase migration list --linked shows 20261024231500 applied.",
-    "select count(*) from academy_classroom_courses where version_mode <> 'live' returns 0 right after the push. The number of published courses equals select count(distinct course_id) from academy_course_versions.",
-    "has_table_privilege('authenticated', 'public.academy_course_versions', 'SELECT') is false.",
-    "As staff, publish a course and assign it to a test group, then edit a lesson title. The learner still sees the old title. 'Publish new version' creates version 2, and the group is unchanged until 'Move this group to version 2'.",
-    "scripts/fixtures/academy-course-versions.sql and scripts/fixtures/academy-homework-os.sql pass against a dump of the production schema plus this migration.",
-    "POST /functions/v1/academy-learning with action public_courses still lists the listed courses, now with course.version set."
+    "supabase migration list --linked shows the five migrations applied and the 9 #220 payment migrations still pending.",
+    "Without a session GET /functions/v1/hub/word, /hub/xp, /hub/league, /hub/goal, /hub/certificates and GET /grammar-remediation/handbook return 401; POST /hub/internal/telegram-quiz without the worker secret returns 401; GET /hub/public/certificate/UNKNOWN returns 404.",
+    "As a learner: tapping a word in a reading article opens its meaning; finishing an activity shows +XP and the league page lists the learner; Settings shows Goal date and the Telegram quiz toggle."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-academy. The previous screen ignores the new fields.",
-    "migration": "Additive. To return every group to live reading without data loss, run: update academy_classroom_courses set version_mode = 'live'. If needed: drop trigger academy_courses_version_on_publish on academy_courses; drop trigger academy_classroom_courses_pin_version on academy_classroom_courses. Restore the earlier academy_module_unlocked, unlock gates, academy_course_completion and academy_public_course_catalog bodies from 20261024100000 and 20261024105000. academy_course_versions and the new columns can stay.",
-    "edge": "Redeploy academy from the previous main commit. With every run set to 'live' it behaves exactly as before.",
-    "worker": "None."
+    "pages": "Cloudflare Pages rollback of schood-english to the previous deployment.",
+    "migration": "Additive tables and metadata keys; leave in place.",
+    "edge": "Redeploy hub and grammar-remediation from the previous main commit; the new routes stop, existing routes are unchanged.",
+    "worker": "npx wrangler rollback in workers/schood-bot; enq: callbacks then go unanswered, nothing else changes."
   }
 }

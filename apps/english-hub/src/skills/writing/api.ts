@@ -23,7 +23,14 @@ export type WritingPrompt = {
 export type WritingCategory = 'grammar' | 'vocabulary' | 'spelling' | 'punctuation' | 'style';
 export type WritingCriterionKey = 'task' | 'organisation' | 'vocabulary' | 'grammar';
 
-export type WritingCorrection = { original: string; corrected: string; explanation: string; category: WritingCategory };
+export type WritingCorrection = {
+  original: string;
+  corrected: string;
+  explanation: string;
+  category: WritingCategory;
+  /** Grammar topic of a grammar correction, when known (links to the handbook). */
+  topic?: string | null;
+};
 
 export type WritingFeedback = {
   source: 'ai' | 'basic';

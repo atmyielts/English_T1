@@ -498,7 +498,7 @@ export const ru: Partial<Record<string, string>> = {
   "reminders.title": "Напоминания в Telegram",
   "reminders.linkFirst": "Привяжите Telegram к аккаунту Schood, и мы будем напоминать о занятиях в дни, когда вы ещё не занимались.",
   "reminders.link": "Привязать Telegram",
-  "reminders.lead": "Одно короткое сообщение — только в дни, когда вы ещё не занимались.",
+  "reminders.lead": "Выберите, что Schood присылает в Telegram: короткое напоминание в дни без занятий и быстрый тест на повторение.",
   "reminders.daily": "Напоминать о занятиях",
   "reminders.hour": "Время (Ташкент)",
   "reminders.weekly": "Итоги недели по воскресеньям",

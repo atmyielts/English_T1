@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useEnglish } from '../app/EnglishContext';
 import { useT } from '../i18n';
 import { edge } from '../lib/api';
+import { saveGoal } from '../lib/goal';
 import { saveOnboarding } from '../lib/hub';
 import { CEFR_LEVELS, isCefr, type CefrLevel } from '../lib/skills';
 import { speak, canSpeak } from '../lib/speech';
 import { ErrorState, Loading, PageHeader, Panel } from '../ui/kit';
+import { GoalDateStep } from './goal/GoalDateStep';
 
 const GOALS = ['everyday', 'work', 'study_abroad', 'exam', 'travel', 'school'] as const;
 type Goal = (typeof GOALS)[number];
@@ -31,7 +34,7 @@ type FinalResponse = {
   next_steps: string[];
 };
 
-type Step = 'goal' | 'level-choice' | 'test' | 'self' | 'result';
+type Step = 'goal' | 'level-choice' | 'test' | 'self' | 'result' | 'date';
 
 const LevelChange = ({ before, now }: { before: CefrLevel | null | undefined; now: string }) => {
   const t = useT();
@@ -54,6 +57,7 @@ const LEVEL_SKILLS = ['reading', 'listening', 'writing', 'grammar'] as const;
  */
 export const Onboarding = ({ onDone, retake = false, check = false }: { onDone?: () => void; retake?: boolean; check?: boolean } = {}) => {
   const t = useT();
+  const navigate = useNavigate();
   const { refreshOnboarding, displayName, onboarding } = useEnglish();
   const saved = retake || check ? onboarding.value : null;
   const [before] = useState(() => (check ? onboarding.value : null));
@@ -71,6 +75,9 @@ export const Onboarding = ({ onDone, retake = false, check = false }: { onDone?:
   const [testUnavailable, setTestUnavailable] = useState(false);
   const [result, setResult] = useState<FinalResponse | null>(null);
   const [selfLevel, setSelfLevel] = useState<CefrLevel | null>(null);
+  // First run ends with an optional goal date; retakes and checks finish straight away.
+  const askDate = !retake && !check;
+  const [pending, setPending] = useState<{ level: CefrLevel; perSkill: Record<string, { level: string }> } | null>(null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -79,7 +86,12 @@ export const Onboarding = ({ onDone, retake = false, check = false }: { onDone?:
   const toggleGoal = (goal: Goal) =>
     setGoals((current) => (current.includes(goal) ? current.filter((entry) => entry !== goal) : [...current, goal].slice(-2)));
 
-  const finish = async (level: CefrLevel, perSkill: Record<string, { level: string }>) => {
+  /** `then`: where to go after saving instead of `onDone` (e.g. the certificate page); `targetDate`: optional goal date. */
+  const finish = async (
+    level: CefrLevel,
+    perSkill: Record<string, { level: string }>,
+    { then, targetDate = null }: { then?: string; targetDate?: string | null } = {},
+  ) => {
     setBusy(true);
     setError(null);
     try {
@@ -94,8 +106,11 @@ export const Onboarding = ({ onDone, retake = false, check = false }: { onDone?:
           goal: { goal_keys: goals.length ? goals : ['everyday'], target_cefr: target, daily_time_minutes: minutes },
           placement: { overall_level: level, per_skill: per },
         });
+      // The date is optional; if it fails to save, the learner can set it in Settings.
+      if (targetDate) await saveGoal({ target_date: targetDate }).catch(() => undefined);
       await refreshOnboarding();
-      onDone?.();
+      if (then) navigate(then);
+      else onDone?.();
     } catch (cause) {
       setError(cause);
       setBusy(false);
@@ -141,7 +156,20 @@ export const Onboarding = ({ onDone, retake = false, check = false }: { onDone?:
     void loadRound(round + 1, nextHistory);
   };
 
-  const stepIndex = step === 'goal' ? 0 : step === 'result' ? 2 : 1;
+  // No date to ask for when the placement already meets the target.
+  const asksDateFor = (level: string | null | undefined) =>
+    askDate && !(isCefr(level) && CEFR_LEVELS.indexOf(level.toUpperCase() as CefrLevel) >= CEFR_LEVELS.indexOf(target));
+
+  const complete = (level: CefrLevel, perSkill: Record<string, { level: string }>) => {
+    if (!asksDateFor(level)) {
+      void finish(level, perSkill);
+      return;
+    }
+    setPending({ level, perSkill });
+    setStep('date');
+  };
+
+  const stepIndex = step === 'goal' ? 0 : step === 'result' || step === 'date' ? 2 : 1;
 
   return (
     <div className="en-stack">
@@ -293,8 +321,8 @@ export const Onboarding = ({ onDone, retake = false, check = false }: { onDone?:
           </div>
           {error ? <ErrorState error={error} /> : null}
           <div className="en-actions">
-            <button type="button" className="is-large" disabled={!selfLevel || busy} onClick={() => selfLevel && void finish(selfLevel, {})}>
-              {busy ? t('common.saving') : check ? t('check.save') : t('onboarding.startLearning')}
+            <button type="button" className="is-large" disabled={!selfLevel || busy} onClick={() => selfLevel && complete(selfLevel, {})}>
+              {busy ? t('common.saving') : check ? t('check.save') : asksDateFor(selfLevel) ? t('common.continue') : t('onboarding.startLearning')}
             </button>
             <button type="button" className="is-link" onClick={() => setStep('level-choice')}>← {t('common.back')}</button>
           </div>
@@ -343,13 +371,30 @@ export const Onboarding = ({ onDone, retake = false, check = false }: { onDone?:
               disabled={busy}
               onClick={() => {
                 const level = result.overall_level.toUpperCase();
-                void finish(isCefr(level) ? (level as CefrLevel) : CEFR_LEVELS[2]!, result.per_skill);
+                complete(isCefr(level) ? (level as CefrLevel) : CEFR_LEVELS[2]!, result.per_skill);
               }}
             >
-              {busy ? t('common.saving') : check ? t('check.save') : t('onboarding.startLearning')}
+              {busy ? t('common.saving') : check ? t('check.save') : asksDateFor(result.overall_level) ? t('common.continue') : t('onboarding.startLearning')}
             </button>
+            {check ? (
+              <button
+                type="button"
+                className="quiet is-large"
+                disabled={busy}
+                onClick={() => {
+                  const level = result.overall_level.toUpperCase();
+                  void finish(isCefr(level) ? (level as CefrLevel) : CEFR_LEVELS[2]!, result.per_skill, { then: '/certificate' });
+                }}
+              >
+                {t('certificate.ctaCheck')}
+              </button>
+            ) : null}
           </div>
         </Panel>
+      ) : null}
+
+      {step === 'date' && pending ? (
+        <GoalDateStep target={target} busy={busy} error={error} onFinish={(date) => void finish(pending.level, pending.perSkill, { targetDate: date })} />
       ) : null}
     </div>
   );

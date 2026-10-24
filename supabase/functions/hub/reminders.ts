@@ -19,6 +19,7 @@ import {
   weeklySummaryText,
 } from "../_shared/english-reminders.ts";
 import { RETIRED_BOX } from "../_shared/english-review.ts";
+import { startDailyQuiz } from "./telegram-quiz.ts";
 
 const MAX_LEARNERS_PER_RUN = 300;
 
@@ -141,19 +142,25 @@ const send = async (options: CycleOptions, body: Record<string, unknown>) => {
 export const runReminderCycle = async (options: CycleOptions) => {
   const { sb, languageId } = options;
   const clock = learnerClock(options.now);
-  let query = sb
-    .from("learner_language_goals")
-    .select("user_id, current_cefr_estimate, metadata")
-    .eq("language_id", languageId)
-    .eq("metadata->telegram_reminder->>enabled", "true")
-    .limit(MAX_LEARNERS_PER_RUN);
-  if (options.onlyUserIds?.length) query = query.in("user_id", options.onlyUserIds);
-  const { data: goals, error } = await query;
-  if (error) throw new Error(`Failed to load reminder settings: ${error.message}`);
+  // Learners with the nudge on, plus learners who only want the review quiz.
+  const optedIn = async (flag: "enabled" | "quiz") => {
+    let query = sb
+      .from("learner_language_goals")
+      .select("user_id, current_cefr_estimate, metadata")
+      .eq("language_id", languageId)
+      .eq(`metadata->telegram_reminder->>${flag}`, "true")
+      .limit(MAX_LEARNERS_PER_RUN);
+    if (options.onlyUserIds?.length) query = query.in("user_id", options.onlyUserIds);
+    const { data, error } = await query;
+    if (error) throw new Error(`Failed to load reminder settings: ${error.message}`);
+    return (data ?? []) as Array<Record<string, unknown>>;
+  };
+  const [nudgeGoals, quizGoals] = await Promise.all([optedIn("enabled"), optedIn("quiz")]);
+  const goals = [...new Map([...nudgeGoals, ...quizGoals].map((goal) => [String(goal.user_id), goal])).values()];
 
-  const due = ((goals ?? []) as Array<Record<string, unknown>>)
+  const due = goals
     .map((goal) => ({ goal, settings: readReminderSettings(goal.metadata) }))
-    .filter(({ settings }) => settings.enabled && (options.onlyUserIds?.length || settings.hour === clock.hour));
+    .filter(({ settings }) => (settings.enabled || settings.quiz) && (options.onlyUserIds?.length || settings.hour === clock.hour));
   if (!due.length) return { hour: clock.hour, considered: 0, sent: [] as unknown[] };
 
   const userIds = due.map(({ goal }) => String(goal.user_id));
@@ -185,15 +192,38 @@ export const runReminderCycle = async (options: CycleOptions) => {
     const dayStart = new Date(Date.parse(`${clock.date}T00:00:00.000Z`) - 5 * 3_600_000).toISOString();
     const messages: Array<{ kind: string; text: string; dedupe: string }> = [];
 
-    const daily = dailyReminderText(settings.locale, {
+    const daily = settings.enabled && dailyReminderText(settings.locale, {
       practisedToday: attempts.some((attempt) => attempt.submitted_at >= dayStart),
       streak: currentStreak(attempts, clock.date),
       dueReviews: notebook.dueCount + (Number(reviewDue.count ?? 0) || 0),
       topic: theme?.topic ?? null,
     });
-    if (daily) messages.push({ kind: "english_daily_reminder", text: daily, dedupe: `english-daily:${clock.date}` });
 
-    if (clock.sunday && settings.weekly) {
+    // With the quiz on, the nudge rides on the first question: one study-habit
+    // message a day instead of two, so the gateway's 24-hour cap is not used up.
+    let dailyCarried = false;
+    if (settings.quiz) {
+      try {
+        const quiz = await startDailyQuiz({
+          sb,
+          userId,
+          languageId,
+          locale: settings.locale,
+          date: clock.date,
+          appUrl: options.appUrl,
+          intro: daily || null,
+          dryRun: options.dryRun,
+          send: (body) => send(options, body),
+        });
+        dailyCarried = quiz.carried;
+        sent.push(quiz.report);
+      } catch (error) {
+        sent.push({ user_id: userId, kind: "english_review_quiz", error: error instanceof Error ? error.message : "unknown" });
+      }
+    }
+    if (daily && !dailyCarried) messages.push({ kind: "english_daily_reminder", text: daily, dedupe: `english-daily:${clock.date}` });
+
+    if (settings.enabled && clock.sunday && settings.weekly) {
       const weekAgo = new Date(Date.parse(dayStart) - 6 * 86_400_000).toISOString();
       const thisWeek = attempts.filter((attempt) => attempt.submitted_at >= weekAgo);
       messages.push({

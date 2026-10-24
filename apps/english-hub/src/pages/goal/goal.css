@@ -1,0 +1,63 @@
+/* Goal date plan: status pill, Today card, Progress week bars. Uses the hub tokens. */
+
+.en-goal-anchor { scroll-margin-top: 5rem; }
+
+.en-goal-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.6rem;
+  padding: 0 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--soft-line);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--ink-700);
+  font-size: 0.75rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.en-goal-status.is-good { background: var(--good-bg); color: var(--good); border-color: #bbf7d0; }
+.en-goal-status.is-warn { background: var(--warn-bg); color: var(--warn); border-color: #fed7aa; }
+.en-goal-status.is-bad { background: var(--bad-bg); color: var(--bad); border-color: #fecaca; }
+
+.en-goal-card { display: grid; gap: 0.6rem; }
+.en-goal-target { font-family: var(--heading-font); font-size: 1.15rem; line-height: 1.25; overflow-wrap: anywhere; }
+.en-goal-advice { margin: 0; font-size: 0.92rem; color: var(--ink-700); overflow-wrap: anywhere; }
+.en-goal-stat-text { font-size: 1.05rem; line-height: 1.25; overflow-wrap: anywhere; }
+.en-goal-date { max-width: 14rem; }
+
+/* Eight weekly bars; the dashed line is the weekly target. */
+.en-goal-chart { --goal-track: 7.5rem; position: relative; padding-top: 0.5rem; }
+.en-goal-line-zone { position: absolute; left: 0; right: 0; top: 0.5rem; height: var(--goal-track); pointer-events: none; z-index: 1; }
+.en-goal-line { position: absolute; left: 0; right: 0; border-top: 2px dashed var(--accent); opacity: 0.6; }
+.en-goal-bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 0.35rem;
+  align-items: end;
+}
+.en-goal-bars li { display: grid; justify-items: center; gap: 0.2rem; min-width: 0; }
+.en-goal-bar-track {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  max-width: 2.6rem;
+  height: var(--goal-track);
+  border-radius: 10px;
+  background: rgba(52, 38, 27, 0.06);
+  overflow: hidden;
+}
+.en-goal-bar { display: block; width: 100%; border-radius: 10px 10px 0 0; background: #e07a5f; min-height: 0; }
+.en-goal-bar.is-met { background: var(--accent); }
+.en-goal-bars li.is-current .en-goal-bar-track { outline: 2px solid var(--highlight-line); outline-offset: 1px; }
+.en-goal-bar-value { font-size: 0.72rem; font-weight: 800; color: var(--ink); }
+.en-goal-bar-label { font-size: 0.68rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+
+@media (max-width: 420px) {
+  .en-goal-bars { gap: 0.2rem; }
+  .en-goal-chart { --goal-track: 6rem; }
+  .en-goal-bar-label { font-size: 0.6rem; }
+}

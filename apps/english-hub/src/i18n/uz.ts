@@ -498,7 +498,7 @@ export const uz: Partial<Record<string, string>> = {
   "reminders.title": "Telegramdagi eslatmalar",
   "reminders.linkFirst": "Telegramni Schood hisobingizga ulang — mashq qilmagan kunlaringizda eslatib turamiz.",
   "reminders.link": "Telegramni ulash",
-  "reminders.lead": "Faqat mashq qilmagan kunlaringizda bitta qisqa xabar.",
+  "reminders.lead": "Schood Telegramga nima yuborishini tanlang: mashq qilmagan kunlari qisqa eslatma va tezkor takrorlash testi.",
   "reminders.daily": "Mashq haqida eslatish",
   "reminders.hour": "Vaqt (Toshkent)",
   "reminders.weekly": "Yakshanba kuni hafta yakuni",

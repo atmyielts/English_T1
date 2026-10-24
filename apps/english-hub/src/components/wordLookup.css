@@ -1,0 +1,77 @@
+/* Tap-to-translate: tappable words and the meaning card (components/WordLookup.tsx). */
+
+.tt-scope:focus { outline: none; }
+.tt-scope:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; border-radius: 6px; }
+
+/* Words read like normal text; they only show they are tappable on hover or focus. */
+.tt-w {
+  cursor: pointer;
+  border-radius: 3px;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.12s ease;
+}
+@media (hover: hover) {
+  .tt-w:hover { background: var(--highlight-bg); box-shadow: inset 0 -1px 0 var(--highlight-line); }
+}
+.tt-w:focus { outline: none; }
+.tt-w:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; background: var(--highlight-bg); }
+.tt-w[data-tt-open] { background: var(--highlight-bg); box-shadow: inset 0 -2px 0 var(--accent); }
+
+.tt-card {
+  position: absolute;
+  z-index: 60;
+  box-sizing: border-box;
+  display: grid;
+  gap: 0.55rem;
+  max-height: min(70vh, 28rem);
+  overflow-y: auto;
+  padding: 0.75rem 0.9rem 0.9rem;
+  border: 1px solid var(--soft-line);
+  border-radius: 16px;
+  background: var(--card, #fffdf9);
+  color: var(--ink);
+  box-shadow: 0 14px 34px rgba(31, 21, 14, 0.18);
+  font-family: 'Manrope', sans-serif;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.tt-card:focus { outline: none; }
+.tt-card:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.tt-card p { margin: 0; }
+
+.tt-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }
+.tt-card-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.15rem 0.5rem; padding-top: 0.3rem; min-width: 0; }
+.tt-card-word { font-family: 'Sora', 'Manrope', sans-serif; font-size: 1.15rem; color: var(--ink); }
+.tt-card-pos { font-size: 0.8rem; font-style: italic; color: var(--muted); }
+.tt-card-close { flex-shrink: 0; min-height: 36px; min-width: 36px; padding: 0; font-size: 1.25rem; line-height: 1; }
+
+.tt-card-form { font-size: 0.8rem; color: var(--muted); }
+.tt-card-def { font-size: 0.95rem; line-height: 1.5; color: var(--ink); }
+
+.tt-card-tr { margin: 0; display: grid; gap: 0.3rem; }
+.tt-card-tr > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.1rem 0.5rem; }
+.tt-card-tr dt { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.tt-card-tr dd { margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--ink); }
+
+.tt-card-example {
+  padding-left: 0.6rem;
+  border-left: 3px solid var(--highlight-line);
+  font-size: 0.9rem;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--ink-700);
+}
+.tt-card-note { font-size: 0.85rem; line-height: 1.5; color: var(--ink-700); }
+.tt-card-note.is-error { color: var(--bad, #b91c1c); }
+
+.tt-card-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.tt-card-actions button { min-height: 38px; }
+
+.tt-card-loading { display: grid; gap: 0.45rem; padding: 0.2rem 0 0.1rem; }
+.tt-skeleton { display: block; height: 0.8rem; border-radius: 999px; background: var(--soft-line); animation: tt-pulse 1.1s ease-in-out infinite alternate; }
+.tt-skeleton.is-short { width: 60%; }
+@keyframes tt-pulse { from { opacity: 0.55; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .tt-skeleton { animation: none; }
+  .tt-w { transition: none; }
+}

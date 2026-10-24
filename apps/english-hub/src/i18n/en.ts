@@ -498,7 +498,7 @@ export const en: Record<string, string> = {
   "reminders.title": "Reminders on Telegram",
   "reminders.linkFirst": "Link Telegram to your Schood account and we can remind you on days you haven't practised yet.",
   "reminders.link": "Link Telegram",
-  "reminders.lead": "One short message, only on days you haven't practised yet. Nothing else.",
+  "reminders.lead": "Choose what Schood sends you on Telegram: a short nudge on days you haven't practised, and a quick review quiz.",
   "reminders.daily": "Remind me to practise",
   "reminders.hour": "Time (Tashkent)",
   "reminders.weekly": "Sunday summary of my week",

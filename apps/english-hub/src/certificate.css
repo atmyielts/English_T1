@@ -1,0 +1,140 @@
+/* Level certificate: the hub's warm paper, red accent and Outfit headings, framed like a
+   printed record. On screen it flows to any width (375px and up); in print only the
+   certificate is shown, on one A4 landscape page. */
+
+.en-cert {
+  --cert-ink: #241a13;
+  --cert-muted: #6b5e52;
+  --cert-accent: #9c2c1a;
+  --cert-line: rgba(156, 44, 26, 0.28);
+  position: relative;
+  background: #fffdf9;
+  border-radius: var(--radius-card, 28px);
+  box-shadow: var(--card-shadow, 0 10px 26px rgba(31, 21, 14, 0.06));
+  padding: clamp(10px, 1.8vw, 18px);
+  color: var(--cert-ink);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.en-cert-frame {
+  display: grid;
+  gap: clamp(14px, 2.2vw, 22px);
+  padding: clamp(18px, 4vw, 44px);
+  border: 2px solid var(--cert-accent);
+  border-radius: calc(var(--radius-card, 28px) - 10px);
+  outline: 1px solid var(--cert-line);
+  outline-offset: -8px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(196, 58, 34, 0.07), transparent 42%),
+    radial-gradient(circle at 0% 100%, rgba(185, 227, 111, 0.16), transparent 40%);
+  min-width: 0;
+}
+.en-cert-head { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.en-cert-head img { width: 52px; height: 52px; flex: 0 0 auto; }
+.en-cert-brand { display: grid; line-height: 1.2; }
+.en-cert-brand strong { font-family: var(--heading-font, 'Outfit', 'Manrope', sans-serif); font-size: 1.15rem; }
+.en-cert-brand span { font-size: 0.8rem; color: var(--cert-muted); }
+.en-cert-number { margin-left: auto; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; color: var(--cert-muted); }
+
+.en-cert-title {
+  margin: 0;
+  font-family: var(--heading-font, 'Outfit', 'Manrope', sans-serif);
+  font-size: clamp(0.85rem, 1.6vw, 1rem);
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--cert-accent);
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--cert-line);
+}
+.en-cert-label { display: block; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cert-muted); margin-bottom: 0.35rem; }
+.en-cert-name {
+  display: block;
+  font-family: 'Outfit', 'Manrope', sans-serif;
+  font-size: clamp(1.8rem, 5.5vw, 3rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+html:lang(ru) .en-cert-name { font-family: 'Manrope', sans-serif; font-weight: 800; }
+
+.en-cert-level-row { display: flex; align-items: center; gap: clamp(12px, 2.4vw, 22px); min-width: 0; }
+.en-cert-cefr {
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  width: clamp(72px, 14vw, 104px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c94329 0%, #a62f1d 100%);
+  color: #fff;
+  font-family: 'Outfit', 'Manrope', sans-serif;
+  font-size: clamp(1.7rem, 5vw, 2.6rem);
+  font-weight: 800;
+  box-shadow: 0 0 0 4px #fffdf9, 0 0 0 6px var(--cert-line);
+}
+.en-cert-level-copy { display: grid; gap: 0.2rem; min-width: 0; }
+.en-cert-level-copy strong { font-family: var(--heading-font, 'Outfit', 'Manrope', sans-serif); font-size: clamp(1.1rem, 2.6vw, 1.4rem); }
+.en-cert-level-copy span { color: var(--cert-muted); font-size: 0.92rem; line-height: 1.5; }
+
+.en-cert-skills, .en-cert-facts { margin: 0; display: grid; gap: 10px; }
+.en-cert-skills { grid-template-columns: repeat(auto-fit, minmax(min(120px, 100%), 1fr)); }
+.en-cert-facts { grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr)); }
+.en-cert-skills div, .en-cert-facts div { min-width: 0; }
+.en-cert-skills div { border: 1px solid var(--cert-line); border-radius: 14px; padding: 0.55rem 0.75rem; background: rgba(255, 255, 255, 0.7); display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
+.en-cert-skills dt { font-size: 0.85rem; color: var(--cert-muted); font-weight: 600; }
+.en-cert-skills dd { margin: 0; font-family: 'Outfit', 'Manrope', sans-serif; font-weight: 800; font-size: 1.15rem; color: var(--cert-accent); }
+.en-cert-facts dt { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cert-muted); }
+.en-cert-facts dd { margin: 0.2rem 0 0; font-weight: 700; font-size: 0.95rem; }
+
+.en-cert-foot { display: grid; gap: 0.5rem; padding-top: 0.8rem; border-top: 1px solid var(--cert-line); }
+.en-cert-verify { margin: 0; display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; font-size: 0.85rem; color: var(--cert-ink); }
+.en-cert-verify strong { letter-spacing: 0.08em; }
+.en-cert-url { font-weight: 700; overflow-wrap: anywhere; }
+.en-cert-disclaimer { margin: 0; font-size: 0.72rem; line-height: 1.45; color: var(--cert-muted); max-width: 62rem; }
+
+.en-cert-verified { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.en-cert-verified-mark { display: inline-grid; place-items: center; width: 1.8rem; height: 1.8rem; border-radius: 50%; background: var(--good, #166534); color: #fff; font-weight: 800; flex: 0 0 auto; }
+
+/* Print-only copy (rendered into <body> by CertificateSheet). */
+.en-cert-print { display: none; }
+
+@media print {
+  @page { size: A4 landscape; margin: 0; }
+  html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
+  body > *:not(.en-cert-print) { display: none !important; }
+  .en-cert-print { display: block !important; }
+  .en-cert-print .en-cert {
+    width: 297mm;
+    height: 209mm; /* a hair under A4 so no browser spills onto a second page */
+    overflow: hidden;
+    padding: 9mm;
+    border-radius: 0;
+    box-shadow: none;
+    break-inside: avoid;
+  }
+  .en-cert-print .en-cert-frame {
+    height: 100%;
+    padding: 11mm 15mm 9mm;
+    gap: 5mm;
+    border-radius: 6mm;
+    align-content: space-between;
+  }
+  .en-cert-print .en-cert-head img { width: 15mm; height: 15mm; }
+  .en-cert-print .en-cert-brand strong { font-size: 15pt; }
+  .en-cert-print .en-cert-brand span, .en-cert-print .en-cert-number { font-size: 9pt; }
+  .en-cert-print .en-cert-title { font-size: 11pt; }
+  .en-cert-print .en-cert-label, .en-cert-print .en-cert-facts dt { font-size: 7.5pt; }
+  .en-cert-print .en-cert-name { font-size: 32pt; }
+  .en-cert-print .en-cert-cefr { width: 27mm; font-size: 28pt; }
+  .en-cert-print .en-cert-level-copy strong { font-size: 16pt; }
+  .en-cert-print .en-cert-level-copy span { font-size: 10.5pt; }
+  .en-cert-print .en-cert-skills { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .en-cert-print .en-cert-skills dt { font-size: 10pt; }
+  .en-cert-print .en-cert-skills dd { font-size: 14pt; }
+  .en-cert-print .en-cert-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .en-cert-print .en-cert-facts dd { font-size: 10.5pt; }
+  .en-cert-print .en-cert-verify { font-size: 9.5pt; }
+  .en-cert-print .en-cert-disclaimer { font-size: 7.5pt; }
+}
