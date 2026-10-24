@@ -7,7 +7,7 @@
 import { isInternalRequest } from "../_shared/internal-auth.ts";
 import { learnerClock } from "../_shared/english-reminders.ts";
 import { RETIRED_BOX, scheduleAfterAnswer } from "../_shared/english-review.ts";
-import { intervalDaysForBox } from "../_shared/english-words.ts";
+import { gradeFromOutcome, notebookReviewPatch } from "../_shared/english-srs.ts";
 import {
   alreadyAnsweredToast,
   answeredText,
@@ -242,21 +242,16 @@ const recordAnswer = async (sb: any, userId: string, row: Row, correct: boolean)
     return;
   }
   const { data: entry } = await sb.from("user_vocabulary_notebook_entries")
-    .select("id, leitner_box, next_review_at, review_count, correct_count, incorrect_count")
+    .select("id, leitner_box, next_review_at, last_reviewed_at, review_count, correct_count, incorrect_count, metadata")
     .eq("id", sourceId)
     .eq("user_id", userId)
     .eq("is_archived", false)
     .maybeSingle();
   if (!entry || reviewedSince(entry.next_review_at)) return;
-  const box = correct ? Math.min(5, Math.max(1, Number(entry.leitner_box ?? 1)) + 1) : 1;
-  const { error } = await sb.from("user_vocabulary_notebook_entries").update({
-    leitner_box: box,
-    next_review_at: new Date(now.getTime() + intervalDaysForBox(box) * 86_400_000).toISOString(),
-    last_reviewed_at: now.toISOString(),
-    review_count: Number(entry.review_count ?? 0) + 1,
-    correct_count: Number(entry.correct_count ?? 0) + (correct ? 1 : 0),
-    incorrect_count: Number(entry.incorrect_count ?? 0) + (correct ? 0 : 1),
-  }).eq("id", sourceId).eq("user_id", userId);
+  // The same FSRS schedule as every other place a word is reviewed.
+  const { error } = await sb.from("user_vocabulary_notebook_entries")
+    .update(notebookReviewPatch(entry, gradeFromOutcome(correct), now))
+    .eq("id", sourceId).eq("user_id", userId);
   if (error) throw new Error(error.message);
 };
 

@@ -7,7 +7,8 @@
 //      teacher (english-classes.ts builds these steps)
 //   1. due reviews (words and missed questions; always free)
 //   1b. any other open class assignment
-//   2. a lesson for a mistake the learner keeps making
+//   2. a lesson for a mistake the learner keeps making, then a grammar unit due
+//      for its spaced re-check (english-grammar-mastery.ts)
 //      (then, with an exam date set, this week's exam focus section)
 //   3. the weakest skill against the goal level (by the per-skill rating)
 //   4. the next unfinished task in today's plan
@@ -21,7 +22,7 @@ import { type AttemptRow, type CatalogItem, CEFR_ORDER, type Cefr, type FixCandi
 import type { SkillRating } from "./english-rating.ts";
 import { examPrepCandidates, type ExamNextContext } from "./english-exam-next.ts";
 
-export type NextReason = "continue" | "review_due" | "class_assignment" | "fix_mistake" | "weakest_skill" | "today_plan" | "keep_going" | "exam_prep";
+export type NextReason = "continue" | "review_due" | "class_assignment" | "fix_mistake" | "weakest_skill" | "today_plan" | "keep_going" | "exam_prep" | "grammar_recheck";
 
 export type NextStep = {
   /** practice: a role-play or the speaking mock, opened by `href` (those pages apply their own allowance). */
@@ -63,6 +64,8 @@ export type NextInput = {
   attempts: AttemptRow[];
   dueReviews: number;
   fixes: FixCandidate[];
+  /** Grammar units due for a re-check, most overdue first. */
+  rechecks?: CatalogItem[];
   ratings: Partial<Record<TodaySkill, Pick<SkillRating, "value" | "level" | "progress" | "attempts">>>;
   targetLevel: Cefr | null;
   /** Level to practise each skill at (placement, stepped down while struggling). */
@@ -212,6 +215,12 @@ export const pickNextStep = (input: NextInput): NextResult => {
   for (const fix of input.fixes) {
     if (fix.item.id === exclude) continue;
     candidates.push(activityStep(fix.item, "fix_mistake", { detail: fix.example || null }));
+  }
+
+  // 2b. A grammar unit due for its spaced re-check (one at a time).
+  for (const item of (input.rechecks ?? []).slice(0, 1)) {
+    if (item.id === exclude) continue;
+    candidates.push(activityStep(item, "grammar_recheck"));
   }
 
   // 3. The weakest skills against the goal, preferring an unfinished plan task in that skill.

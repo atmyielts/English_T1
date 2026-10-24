@@ -70,6 +70,7 @@ import { handleSocialBotUpdate } from "./social-bot.ts";
 import { runWeeklyReportCycle } from "./weekly-report.ts";
 import { handleExamRoute } from "./exam.ts";
 import { handleTutorRoute } from "./tutor.ts";
+import { handleDailyStoryRoute } from "./daily-story.ts";
 
 const routeMarker = "/hub";
 
@@ -308,6 +309,10 @@ serve(async (req) => {
     if (req.method === "GET" && route === "/word") {
       return await handleWordLookup({ sb, userId: auth.userId, languageId: scope.languageId, url });
     }
+
+    // === Story of the day at the learner's level (./daily-story.ts) ===
+    const storyResponse = await handleDailyStoryRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId });
+    if (storyResponse) return storyResponse;
 
     const products = await resolveEnglishProducts(sb);
 

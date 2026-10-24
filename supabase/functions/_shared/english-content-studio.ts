@@ -14,9 +14,9 @@
 
 import { normalizeQuestions as normalizeReadingQuestions, READING_SUBSKILLS } from "./english-reading.ts";
 import { parseQuestions as parseListeningQuestions } from "./english-listening.ts";
-import { blankFills, normalizeAnswer } from "./english-grammar.ts";
+import { blankFills, normalizeAnswer, usesAllTiles, wordOrderTiles } from "./english-grammar.ts";
 import { parsePoints, parseQuestions as parseImmersionQuestions } from "./english-immersion.ts";
-import { normalizeChoice } from "./english-vocabulary.ts";
+import { normalizeChoice, parseCollocations, parseWordFamily } from "./english-vocabulary.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -176,7 +176,7 @@ export const READING_TONES = ["lime", "mint", "sky", "peach", "lavender", "sand"
 export const LISTENING_SPEEDS = ["slow", "natural", "fast"] as const;
 export const SPEAKING_PROMPT_TYPES = ["guided_response", "roleplay", "storytelling", "shadowing", "read_aloud"] as const;
 export const SPEAKING_TASK_TYPES = ["describe", "explain", "opinion", "story", "roleplay", "presentation"] as const;
-export const GRAMMAR_DRILL_TYPES = ["fill", "error_correction", "transformation"] as const;
+export const GRAMMAR_DRILL_TYPES = ["fill", "error_correction", "transformation", "word_order"] as const;
 export const MISSION_TYPES = ["travel", "workplace", "study", "service", "social", "problem_solving"] as const;
 export const STEP_KINDS = ["read", "listen", "reply", "speak"] as const;
 
@@ -438,14 +438,14 @@ const readChoiceQuestions = (
   c: Collector,
   field: string,
   value: unknown,
-  opts: { maxQuestions: number; answerKey: "answer_index" | "answer"; withSkill: boolean },
+  opts: { maxQuestions: number; answerKey: "answer_index" | "answer"; withSkill: boolean; paths?: number[] },
 ): ChoiceInput[] => {
   const raw = c.array(field, value, "Questions");
   if (raw.length > opts.maxQuestions) c.add(field, `At most ${opts.maxQuestions} questions (now ${raw.length}).`);
   const seen = new Set<string>();
   const out: ChoiceInput[] = [];
   raw.slice(0, opts.maxQuestions).forEach((entry, index) => {
-    const at = `${field}[${index}]`;
+    const at = `${field}[${opts.paths?.[index] ?? index}]`;
     if (!isRecord(entry)) {
       c.add(at, "Question must be an object.");
       return;
@@ -492,6 +492,61 @@ const readChoiceQuestions = (
 
 type Built = { parent: JsonRecord; children: JsonRecord[] };
 
+const READING_TYPE_HELP: Record<string, string> = {
+  tfng: "A True/False/Not given question needs a statement (prompt) and answer true, false or not_given.",
+  headings: "A matching-headings question needs 2–12 headings (options) and items, each with a paragraph number and the right heading (answer_index); give at least as many headings as items.",
+  gap: "A gap-fill question needs a summary text with ___ for each gap and one list of accepted answers per gap (every answer must be in the word bank, if there is one).",
+};
+
+/**
+ * Reading questions of every type. Multiple choice goes through the shared
+ * choice reader (field-level messages); True/False/Not given, matching
+ * headings and gap fills must parse as the reading activity grades them.
+ */
+const readReadingQuestions = (c: Collector, value: unknown): JsonRecord[] => {
+  const raw = c.array("questions", value, "Questions");
+  if (raw.length > 15) c.add("questions", `At most 15 questions (now ${raw.length}).`);
+  const list = raw.slice(0, 15);
+  const kindOf = (entry: unknown) => (isRecord(entry) ? str(entry.type).toLowerCase() || "mcq" : "mcq");
+  const mcqIndexes = list.map((entry, index) => (kindOf(entry) === "mcq" ? index : -1)).filter((index) => index >= 0);
+  const choices = readChoiceQuestions(c, "questions", mcqIndexes.map((index) => list[index]), {
+    maxQuestions: 15,
+    answerKey: "answer_index",
+    withSkill: true,
+    paths: mcqIndexes,
+  });
+  const byIndex = new Map<number, JsonRecord>();
+  mcqIndexes.forEach((index, position) => {
+    const q = choices[position];
+    if (q) {
+      byIndex.set(index, {
+        id: q.id,
+        type: "mcq",
+        prompt: q.prompt,
+        options: q.options,
+        answer_index: q.answer_index,
+        explanation: q.explanation,
+        skill: q.skill ?? "reading.detail",
+      });
+    }
+  });
+  list.forEach((entry, index) => {
+    const kind = kindOf(entry);
+    if (kind === "mcq") return;
+    const at = `questions[${index}]`;
+    if (!READING_TYPE_HELP[kind]) {
+      c.add(`${at}.type`, "Question type must be mcq, tfng, headings or gap.");
+      return;
+    }
+    const row = isRecord(entry) ? { ...entry } : {};
+    if (!str(row.id)) row.id = `q${index + 1}`;
+    const [parsed] = normalizeReadingQuestions([row]);
+    if (!parsed) c.add(at, READING_TYPE_HELP[kind]!);
+    else byIndex.set(index, parsed as unknown as JsonRecord);
+  });
+  return list.map((_, index) => byIndex.get(index)).filter((q): q is JsonRecord => Boolean(q));
+};
+
 const buildReading = (c: Collector, item: JsonRecord, common: Common): Built => {
   const summary = c.text("summary", item.summary, 900, "Summary");
   const content = c.text("content_markdown", item.content_markdown, 120000, "Article text");
@@ -500,7 +555,7 @@ const buildReading = (c: Collector, item: JsonRecord, common: Common): Built => 
   const tone = c.oneOf("tone", item.tone, READING_TONES, "Tone", "mint");
   const words = content ? content.split(/\s+/).filter(Boolean).length : 0;
   const readTime = c.int("read_time_minutes", item.read_time_minutes, 1, 60, "Read time", clampInt(Math.ceil(words / 120) || 1, 1, 60));
-  const questions = readChoiceQuestions(c, "questions", item.questions, { maxQuestions: 15, answerKey: "answer_index", withSkill: true });
+  const questions = readReadingQuestions(c, item.questions);
   if (c.errors.length === 0 && normalizeReadingQuestions(questions).length !== questions.length) {
     c.add("questions", "Some questions cannot be graded by the reading activity; check prompts, options and answers.");
   }
@@ -514,15 +569,7 @@ const buildReading = (c: Collector, item: JsonRecord, common: Common): Built => 
       tone,
       read_time_minutes: readTime,
       is_hot: item.is_hot === true,
-      questions: questions.map((q) => ({
-        id: q.id,
-        type: "mcq",
-        prompt: q.prompt,
-        options: q.options,
-        answer_index: q.answer_index,
-        explanation: q.explanation,
-        skill: q.skill ?? "reading.detail",
-      })),
+      questions,
     },
     children: [],
   };
@@ -601,14 +648,20 @@ const buildListening = (c: Collector, item: JsonRecord, children: unknown[], com
       audio_url: audioUrl,
       focus_skill: focusSkill,
       tags,
-      questions: questions.map((q) => ({
-        id: q.id,
-        type: "mcq",
-        prompt: q.prompt,
-        options: q.options,
-        answer_index: q.answer_index,
-        explanation: q.explanation,
-      })),
+      questions: questions.map((q, index) => {
+        // "gist" questions are asked after the first listen (english-listening.ts).
+        const raw = Array.isArray(item.questions) ? item.questions[index] : null;
+        const focus = isRecord(raw) ? str(raw.focus).toLowerCase() : "";
+        return {
+          id: q.id,
+          type: "mcq",
+          prompt: q.prompt,
+          options: q.options,
+          answer_index: q.answer_index,
+          explanation: q.explanation,
+          ...(focus === "gist" || focus === "detail" ? { focus } : {}),
+        };
+      }),
     },
     children: segments,
   };
@@ -759,6 +812,7 @@ const buildGrammar = (c: Collector, item: JsonRecord, children: unknown[], commo
       fill: { title: "Fill the gap", instructions: "Write the missing words." },
       error_correction: { title: "Correct the sentence", instructions: "Find the mistake and write the whole sentence correctly." },
       transformation: { title: "Rewrite the sentence", instructions: "Rewrite the sentence as the task asks." },
+      word_order: { title: "Put the words in order", instructions: "Put the words in the right order to make a sentence." },
     };
     const title = c.text(`${at}.title`, str(row.title) || defaults[drillType]?.title, 220, "Title");
     const instructions = c.text(`${at}.instructions`, str(row.instructions) || defaults[drillType]?.instructions, 900, "Instructions");
@@ -775,6 +829,13 @@ const buildGrammar = (c: Collector, item: JsonRecord, children: unknown[], commo
       }
     }
     if (drillType !== "fill" && hasBlank) c.add(`${at}.prompt_text`, "Only fill-the-gap prompts use ___.");
+    if (drillType === "word_order" && prompt) {
+      // Tiles are written with slashes; every accepted answer must use all of them, once.
+      if (wordOrderTiles(prompt).length < 2) c.add(`${at}.prompt_text`, "Write the words to order separated by / (for example: always / she / late / is).");
+      else if (accepted.some((answer) => !usesAllTiles(prompt, answer))) {
+        c.add(`${at}.accepted_answers`, "Every accepted answer must use all the words in the prompt, each once.");
+      }
+    }
     if (drillType === "error_correction" && prompt) {
       const wrong = normalizeAnswer(prompt);
       if (accepted.some((answer) => normalizeAnswer(answer) === wrong)) {
@@ -924,6 +985,24 @@ const buildImmersion = (c: Collector, item: JsonRecord, children: unknown[], com
   };
 };
 
+/** Collocations ("make a decision") and word family members, validated; empty lists are left out. */
+const wordKnowledgeColumns = (c: Collector, at: string, row: JsonRecord): JsonRecord => {
+  const out: JsonRecord = {};
+  if (row.collocations !== undefined && row.collocations !== null) {
+    if (!Array.isArray(row.collocations)) c.add(`${at}.collocations`, "Collocations must be a list of short phrases.");
+    else if (row.collocations.length > 8) c.add(`${at}.collocations`, "At most 8 collocations.");
+    const list = parseCollocations(row.collocations);
+    if (list.length) out.collocations = list;
+  }
+  if (row.word_family !== undefined && row.word_family !== null) {
+    if (!Array.isArray(row.word_family)) c.add(`${at}.word_family`, "Word family must be a list of { word, part_of_speech }.");
+    else if (row.word_family.length > 6) c.add(`${at}.word_family`, "At most 6 word family members.");
+    const family = parseWordFamily(row.word_family);
+    if (family.length) out.word_family = family;
+  }
+  return out;
+};
+
 const buildVocabulary = (c: Collector, item: JsonRecord, children: unknown[], common: Common): Built => {
   const topic = c.text("topic", item.topic, 80, "Topic");
   const description = c.text("description", item.description, 900, "Description");
@@ -948,6 +1027,8 @@ const buildVocabulary = (c: Collector, item: JsonRecord, children: unknown[], co
       translation_ru: c.optionalText(`${at}.translation_ru`, row.translation_ru, 200, "Russian translation"),
       translation_uz: c.optionalText(`${at}.translation_uz`, row.translation_uz, 200, "Uzbek translation"),
       sort_order: index + 1,
+      // Optional word knowledge; only written when given, so sets without it never need the columns.
+      ...wordKnowledgeColumns(c, at, row),
     };
   });
   if (common.status === "published" && words.length < 4) {
@@ -1124,13 +1205,14 @@ const zipKeywords = (texts: string[], keywords: unknown, textKey: string): Array
   }));
 
 const editorQuestions = (value: unknown, answerKey: "answer_index" | "answer", withSkill: boolean): JsonRecord[] =>
-  (Array.isArray(value) ? value : []).filter(isRecord).map((q) => ({
+  (Array.isArray(value) ? value : []).filter(isRecord).map((q) => (withSkill && q.type && q.type !== "mcq" ? { ...q } : {
     id: q.id ?? null,
     prompt: q.prompt ?? "",
     options: Array.isArray(q.options) ? q.options : [],
     answer_index: typeof q[answerKey] === "number" ? q[answerKey] : null,
     explanation: q.explanation ?? "",
     ...(withSkill ? { skill: q.skill ?? "reading.detail" } : {}),
+    ...(!withSkill && (q.focus === "gist" || q.focus === "detail") ? { focus: q.focus } : {}),
   }));
 
 /**
@@ -1269,7 +1351,7 @@ export const rowToStudioPayload = (
       return {
         item: { ...item, ...pick(row, ["topic", "description"]) },
         children: childRows.map((w) =>
-          pick(w, ["id", "word", "part_of_speech", "definition", "example", "translation_ru", "translation_uz"])
+          pick(w, ["id", "word", "part_of_speech", "definition", "example", "translation_ru", "translation_uz", "collocations", "word_family"])
         ),
       };
   }

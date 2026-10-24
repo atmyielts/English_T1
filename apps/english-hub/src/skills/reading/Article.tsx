@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useParams } from 'react-router-dom';
 import { useT } from '../../i18n';
 import { saveWords } from '../../lib/notebook';
@@ -7,15 +7,20 @@ import { EmptyState, Panel, useErrorMessage } from '../../ui/kit';
 import { ActivityFrame, ResultPanel } from '../ActivityKit';
 import { RepeatAfterMe } from '../RepeatAfterMe';
 import { ShadowButton } from '../../components/shadow/ShadowButton';
-import { getArticle, submitArticle, type ReadingSkillKey, type ReadingSubmitResponse } from './api';
+import { getArticle, submitArticle, type ReadingAnswer, type ReadingSkillKey, type ReadingSubmitResponse } from './api';
+import { NextReadCard, ReadingSpeedLine, WordHarvest } from './After';
+import { isAnswered, ReadingQuestionBlock } from './Questions';
+import { savedWordsStyle } from './highlight';
 import { findSentenceWithWord, parsePassage, savedForm, type PassageBlock } from './markdown';
 import { Passage, type PickedWord } from './Passage';
 
-const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
-const letter = (index: number) => LETTERS[index] ?? String(index + 1);
 const skillShort = (skill: ReadingSkillKey) => skill.replace(/^reading\./, '');
 
 type SavedWord = { word: string; sentence: string };
+
+const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.round(seconds % 60)).padStart(2, '0')}`;
+
+
 
 /** Shows the sentence with the chosen word highlighted. */
 const SentenceWithWord = ({ sentence, word }: { sentence: string; word: string }) => {
@@ -51,7 +56,20 @@ export const ReadingArticle = () => {
   const blocks = useMemo(() => parsePassage(article?.content_markdown ?? ''), [article?.content_markdown]);
   const questions = article?.questions ?? [];
 
-  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [answers, setAnswers] = useState<Record<string, ReadingAnswer>>({});
+  // Reading time: from when the text appears until "Done reading" or the first answer.
+  const readStart = useRef<number | null>(null);
+  const [readingSeconds, setReadingSeconds] = useState<number | null>(null);
+  useEffect(() => {
+    if (article && readStart.current === null) readStart.current = Date.now();
+  }, [article]);
+  const stopReading = (): number | null => {
+    if (readingSeconds !== null) return readingSeconds;
+    if (readStart.current === null) return null;
+    const seconds = Math.max(1, Math.round((Date.now() - readStart.current) / 1000));
+    setReadingSeconds(seconds);
+    return seconds;
+  };
   const [result, setResult] = useState<ReadingSubmitResponse | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>(null);
@@ -64,10 +82,25 @@ export const ReadingArticle = () => {
   const [lookup, setLookup] = useState('');
   const [notFound, setNotFound] = useState<string | null>(null);
 
-  const savedSet = useMemo(() => new Set(saved.map((entry) => entry.word.toLowerCase())), [saved]);
+  // Words saved before (any form found in this text) and words saved now.
+  const notebookForms = useMemo(() => (resource.data?.saved_words ?? []).flatMap((entry) => entry.forms), [resource.data]);
+  const savedSet = useMemo(
+    () => new Set([...notebookForms, ...saved.map((entry) => entry.word.toLowerCase())]),
+    [notebookForms, saved],
+  );
+  const knownWords = useMemo(
+    () => new Set([...savedSet, ...(resource.data?.saved_words ?? []).map((entry) => entry.word.toLowerCase())]),
+    [savedSet, resource.data],
+  );
+  const highlightCss = useMemo(() => savedWordsStyle(savedSet), [savedSet]);
+  const hasHeadings = questions.some((question) => question.type === 'headings');
   const pickedForm = picked ? savedForm(picked.word, picked.sentence) : '';
   const pickedSaved = Boolean(picked) && savedSet.has(pickedForm.toLowerCase());
-  const answered = questions.filter((question) => answers[question.id] !== undefined).length;
+  const answered = questions.filter((question) => isAnswered(question, answers[question.id])).length;
+  const setAnswer = (questionId: string, answer: ReadingAnswer) => {
+    stopReading();
+    setAnswers((current) => ({ ...current, [questionId]: answer }));
+  };
 
   const pick = (next: PickedWord) => {
     setSaveError(null);
@@ -120,9 +153,10 @@ export const ReadingArticle = () => {
     try {
       const response = await submitArticle(
         slug,
-        questions.filter((question) => answers[question.id] !== undefined)
-          .map((question) => ({ question_id: question.id, option_index: answers[question.id]! })),
+        questions.filter((question) => isAnswered(question, answers[question.id]))
+          .map((question) => ({ question_id: question.id, ...answers[question.id]! })),
         elapsed(),
+        stopReading(),
       );
       setResult(response);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -137,6 +171,10 @@ export const ReadingArticle = () => {
     setAnswers({});
     setResult(null);
     setError(null);
+    // A re-read is timed again.
+    readStart.current = Date.now();
+    setReadingSeconds(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const resultFor = (questionId: string) => result?.results.find((entry) => entry.question_id === questionId) ?? null;
@@ -146,8 +184,8 @@ export const ReadingArticle = () => {
     const groups = new Map<ReadingSkillKey, { right: number; total: number }>();
     for (const entry of result?.results ?? []) {
       const group = groups.get(entry.skill) ?? { right: 0, total: 0 };
-      group.total += 1;
-      if (entry.correct) group.right += 1;
+      group.total += entry.points ?? 1;
+      group.right += entry.earned ?? (entry.correct ? 1 : 0);
       groups.set(entry.skill, group);
     }
     return [...groups.entries()];
@@ -187,6 +225,14 @@ export const ReadingArticle = () => {
           title={article?.title}
           onRetry={result.no_questions ? undefined : retry}
         >
+          <ReadingSpeedLine reading={result.reading} level={article?.level ?? null} />
+          <NextReadCard next={result.next_read} slug={slug} onReread={result.no_questions ? undefined : retry} />
+          <WordHarvest
+            markdown={article?.content_markdown ?? ''}
+            known={knownWords}
+            source={{ type: 'english-reading', label: article?.title ?? null, ref: article?.slug ?? null }}
+            onSaved={(words) => words.forEach((entry) => rememberSaved(entry.word, entry.sentence))}
+          />
           <RepeatAfterMe title={t('repeat.reading.title')} lead={t('repeat.reading.lead')} sentences={readAloudSentences(blocks)} />
         </ResultPanel>
       ) : null}
@@ -202,7 +248,10 @@ export const ReadingArticle = () => {
         {blocks.length ? (
           <>
             <p className="hint" style={{ margin: 0 }}>{wordMode ? t('reading.words.pickHint') : t('translate.tapHint')}</p>
+            {notebookForms.length ? <p className="hint rd-saved-hint" style={{ margin: 0 }}>{t('depth.reading.savedHighlighted', { count: resource.data?.saved_words?.length ?? 0 })}</p> : null}
+            {highlightCss ? <style>{highlightCss}</style> : null}
             <Passage
+              numbered={hasHeadings}
               blocks={blocks}
               wordMode={wordMode}
               selectedKey={picked?.key ?? null}
@@ -269,48 +318,29 @@ export const ReadingArticle = () => {
 
       {questions.length ? (
         <Panel title={t('reading.questions.title')} aside={!result ? <span>{t('reading.questions.answered', { done: answered, total: questions.length })}</span> : null}>
-          {questions.map((question, index) => {
-            const checked = resultFor(question.id);
-            return (
-              <div key={question.id} className="en-question" role="group" aria-labelledby={`rd-q-${question.id}`}>
-                <p className="eyebrow" style={{ margin: 0 }}>{t('reading.questions.item', { number: index + 1 })}</p>
-                <p className="en-question-prompt" id={`rd-q-${question.id}`} lang="en">{question.prompt}</p>
-                <div className="en-options">
-                  {question.options.map((option, optionIndex) => {
-                    const chosen = answers[question.id] === optionIndex;
-                    const state = checked
-                      ? optionIndex === checked.answer_index ? 'is-correct' : chosen ? 'is-wrong' : ''
-                      : '';
-                    return (
-                      <button
-                        key={optionIndex}
-                        type="button"
-                        className={`en-option ${state}`.trim()}
-                        aria-pressed={chosen}
-                        disabled={Boolean(result) || busy}
-                        onClick={() => setAnswers((current) => ({ ...current, [question.id]: optionIndex }))}
-                      >
-                        <span className="en-option-key" aria-hidden="true">{letter(optionIndex)}</span>
-                        <span lang="en">{option}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-                {checked ? (
-                  <>
-                    <p className={checked.correct ? 'en-notice' : 'error'} style={{ margin: 0 }}>
-                      {checked.correct
-                        ? t('reading.questions.correct')
-                        : checked.chosen_index === null
-                          ? t('reading.questions.skipped', { letter: letter(checked.answer_index) })
-                          : t('reading.questions.wrong', { letter: letter(checked.answer_index) })}
-                    </p>
-                    {checked.explanation ? <p className="en-explain" lang="en">{checked.explanation}</p> : null}
-                  </>
-                ) : null}
-              </div>
-            );
-          })}
+          {!result ? (
+            <div className="rd-timer" aria-live="polite">
+              {readingSeconds === null ? (
+                <>
+                  <span className="hint">{t('depth.reading.timerRunning')}</span>
+                  <button type="button" className="quiet" onClick={() => stopReading()}>{t('depth.reading.doneReading')}</button>
+                </>
+              ) : (
+                <span className="hint">{t('depth.reading.timerDone', { time: clock(readingSeconds) })}</span>
+              )}
+            </div>
+          ) : null}
+          {questions.map((question, index) => (
+            <ReadingQuestionBlock
+              key={question.id}
+              question={question}
+              index={index}
+              answer={answers[question.id]}
+              result={resultFor(question.id)}
+              disabled={Boolean(result) || busy}
+              onAnswer={(answer) => setAnswer(question.id, answer)}
+            />
+          ))}
           {error ? <div className="error" role="alert">{errorText(error)}</div> : null}
           {!result ? (
             <div className="en-actions">

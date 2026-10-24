@@ -5,11 +5,11 @@
 -- keep the installed registry and append only what is missing and exists.
 -- Each appended table also gets the closed-account guard trigger the
 -- registry's installer gives its original tables.
--- Not personal (left out): english_word_glosses, english_league_groups,
+-- Not personal (left out): english_word_glosses, english_daily_stories, english_league_groups,
 -- english_service_settings, english_tg_checks (hashed chat ids only),
 -- english_exam_papers, english_duels (players are erased),
 -- english_classes / english_class_assignments (a teacher's class content),
--- english_writing_model_answers, english_tutor_lesson_cache, english_daily_stories.
+-- english_writing_model_answers, english_tutor_lesson_cache.
 -- english_progress_link_watchers rows go with their link (on delete cascade).
 
 do $$
@@ -32,7 +32,8 @@ declare
     'english_client_attempts',
     'english_class_members',
     'english_inbox',
-    'english_resume_points'
+    'english_resume_points',
+    'english_daily_story_reads'
   ];
   relation_name text;
   guard_installed boolean := to_regprocedure('public.guard_closed_personal_record()') is not null;

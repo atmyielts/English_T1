@@ -34,7 +34,7 @@ export const IELTS_MOCK_URL = 'https://ielts.schood.online';
 
 // === One next step across all skills (GET /hub/next) ===
 
-export type NextReason = 'continue' | 'review_due' | 'class_assignment' | 'fix_mistake' | 'weakest_skill' | 'today_plan' | 'keep_going' | 'exam_prep';
+export type NextReason = 'continue' | 'review_due' | 'class_assignment' | 'fix_mistake' | 'weakest_skill' | 'today_plan' | 'keep_going' | 'exam_prep' | 'grammar_recheck';
 
 export type NextStep = {
   /** practice: a role-play or the speaking mock, opened by `href`. */

@@ -3,7 +3,9 @@
 // A word the learner saved while reading or listening is only half learned
 // until they use it. Writing and speaking tasks suggest up to three saved
 // words; when the learner uses one, it counts as a successful review and moves
-// up the same Leitner boxes as a flashcard answered correctly.
+// forward in the same FSRS schedule as a flashcard answered "good" (english-srs.ts).
+
+import { notebookReviewPatch } from "./english-srs.ts";
 
 export type NotebookWord = {
   id: string;
@@ -14,7 +16,7 @@ export type NotebookWord = {
   correct_count: number;
 };
 
-/** Same spacing as flashcard review in vocabulary-notebook. */
+/** The old Leitner spacing; kept for callers that still read boxes (reviews now use english-srs.ts). */
 export const intervalDaysForBox = (box: number): number => {
   if (box <= 1) return 1;
   if (box === 2) return 2;
@@ -114,7 +116,7 @@ export const creditUsedWords = async (
   if (!ids.length || !input.text.trim()) return [];
   const { data, error } = await sb
     .from("user_vocabulary_notebook_entries")
-    .select(`${WORD_COLUMNS}, review_count`)
+    .select(`${WORD_COLUMNS}, review_count, incorrect_count, last_reviewed_at`)
     .eq("user_id", input.userId)
     .eq("language_id", input.languageId)
     .in("id", ids);
@@ -125,16 +127,10 @@ export const creditUsedWords = async (
   const out: string[] = [];
   for (const row of rows) {
     if (!used.has(String(row.id))) continue;
-    const box = Math.min(5, (Number(row.leitner_box ?? 1) || 1) + 1);
+    // Using a word in a task counts as a "good" review in the shared FSRS schedule.
     await sb
       .from("user_vocabulary_notebook_entries")
-      .update({
-        leitner_box: box,
-        next_review_at: new Date(now.getTime() + intervalDaysForBox(box) * 86_400_000).toISOString(),
-        last_reviewed_at: now.toISOString(),
-        review_count: (Number(row.review_count ?? 0) || 0) + 1,
-        correct_count: (Number(row.correct_count ?? 0) || 0) + 1,
-      })
+      .update(notebookReviewPatch(row, 3, now))
       .eq("id", String(row.id))
       .eq("user_id", input.userId);
     out.push(String(row.word ?? ""));

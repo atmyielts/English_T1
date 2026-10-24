@@ -12,6 +12,7 @@ import { NewBadges } from '../components/Badges';
 import { ContinueCard } from '../components/ContinueCard';
 import { TodayXpPanel } from '../components/XpWidgets';
 import { FocusSkillCard } from '../components/FocusSkillCard';
+import { DailyStoryCard } from '../components/DailyStoryCard';
 import { InstallCard } from '../components/InstallApp';
 import { OfflineDownloadCard } from '../components/offline/OfflineDownloadCard';
 import { ComebackCard, StreakFreezes } from '../components/StreakGuard';
@@ -213,6 +214,7 @@ export const TodayPage = () => {
         <div className="en-stack">
           <FocusSkillCard />
           <GoalCard />
+          <DailyStoryCard />
 
           <Panel title={t('today.week.title')} aside={data ? <span>{t('today.week.streak', { count: streakCount })}</span> : null}>
             {data ? <WeekStrip week={data.week} /> : <Loading lines={1} />}

@@ -24,6 +24,7 @@ export type NavEntry = {
 export const DAY_ENTRIES: NavEntry[] = [
   { to: '/today', labelKey: 'nav.today', group: 'day', keywords: 'home plan daily' },
   { to: '/review', labelKey: 'nav.review', group: 'day', keywords: 'flashcards words mistakes spaced' },
+  { to: '/stories', labelKey: 'depth.nav.stories', group: 'day', keywords: 'daily story reading new text level listen' },
   { to: '/tutor', labelKey: 'nav.tutor', group: 'day', keywords: 'ai chat coach conversation voice' },
   { to: '/roleplay', labelKey: 'ws.roleplay', group: 'day', keywords: 'roleplay scenario interview visa conversation speaking' },
   { to: '/speaking-mock', labelKey: 'ws.mock', group: 'day', keywords: 'ielts mock exam test band speaking' },
@@ -47,6 +48,7 @@ export const YOU_ENTRIES: NavEntry[] = [
 export const SKILL_PAGES: Partial<Record<SkillKey, NavEntry[]>> = {
   grammar: [{ to: '/grammar/handbook', labelKey: 'ws.handbook', group: 'skills', skill: 'grammar', keywords: 'rules handbook explanations russian uzbek' }],
   speaking: [{ to: '/speaking/shadowing', labelKey: 'shadow.nav', group: 'skills', skill: 'speaking', keywords: 'shadowing repeat pronunciation rhythm read aloud' }],
+  vocabulary: [{ to: '/vocabulary/practice', labelKey: 'depth.nav.wordPractice', group: 'skills', skill: 'vocabulary', keywords: 'flashcards spelling typing listen recall words practice' }],
 };
 
 export const skillEntries = (): NavEntry[] =>

@@ -21,6 +21,7 @@ import { perSkillLevels, readLevelHistory } from "../_shared/english-levels.ts";
 import { topicFromSubskill } from "../_shared/english-mistakes.ts";
 import { pickNextStep } from "../_shared/english-next.ts";
 import { examNextContext } from "../_shared/english-exam-next.ts";
+import { dueRechecks, unitMastery } from "../_shared/english-grammar-mastery.ts";
 import {
   CHECK_FINAL_PROMPT,
   CHECK_ROUND_PROMPT,
@@ -307,6 +308,13 @@ const getNext = async (ctx: Ctx, url: URL, products: Record<string, { productId?
     attempts,
   });
 
+  // Grammar units due for a spaced re-check, from the learner's lesson results.
+  const grammarItems = items.filter((item) => item.skill === "grammar");
+  const rechecks = dueRechecks(grammarItems.map((item) => ({
+    item,
+    mastery: unitMastery(attempts.filter((attempt) => attempt.content_item_id === item.id).map((attempt) => ({ score: attempt.score, submitted_at: attempt.submitted_at }))),
+  }))).map((entry) => entry.item);
+
   const summary = (planRes.data?.summary ?? {}) as Row;
   const doneToday = new Set(attempts.filter((attempt) => attempt.submitted_at.slice(0, 10) === date).map((attempt) => attempt.content_item_id));
   const planTasks = (summary.generated_by === "hub.today.v1" && Array.isArray(summary.today_tasks) ? summary.today_tasks as TodayTask[] : [])
@@ -326,6 +334,7 @@ const getNext = async (ctx: Ctx, url: URL, products: Record<string, { productId?
     attempts,
     dueReviews: (Number(notebook.dueCount ?? 0) || 0) + (Number(reviewDueRes.count ?? 0) || 0),
     fixes,
+    rechecks,
     ratings: ratings.skills,
     targetLevel: isCefr(goal?.target_cefr) ? goal!.target_cefr as Cefr : null,
     levelFor,

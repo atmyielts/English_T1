@@ -413,6 +413,68 @@ function RowList<T extends Rec>({
   );
 }
 
+/** Templates for the reading question types beyond multiple choice (english-reading.ts). */
+const READING_TYPE_TEMPLATES: Record<string, Rec> = {
+  tfng: { type: 'tfng', prompt: 'A statement about the text.', answer: 'not_given', explanation: '', skill: 'reading.detail' },
+  headings: {
+    type: 'headings',
+    prompt: 'Choose the best heading for each paragraph. There are more headings than paragraphs.',
+    options: ['Heading A', 'Heading B', 'Heading C'],
+    items: [{ paragraph: 1, answer_index: 0 }, { paragraph: 2, answer_index: 1 }],
+    explanation: '',
+    skill: 'reading.main_idea',
+  },
+  gap: {
+    type: 'gap',
+    prompt: 'Complete the summary. Use ONE word from the text in each gap.',
+    text: 'The writer ___ to work and finds it ___.',
+    answers: [['walks'], ['relaxing']],
+    word_bank: [],
+    explanation: '',
+    skill: 'reading.detail',
+  },
+};
+
+/**
+ * True/False/Not given, matching headings and gap-fill questions are edited
+ * as JSON; the server checks them exactly as the reading activity grades them.
+ */
+const JsonQuestion: React.FC<{ question: Rec; path: string; onReplace: (next: Rec) => void }> = ({ question, path, onReplace }) => {
+  const [text, setText] = useState(() => JSON.stringify(question, null, 2));
+  const [invalid, setInvalid] = useState(false);
+  const label = question.type === 'tfng'
+    ? (question.variant === 'yes_no' ? 'Yes / No / Not given' : 'True / False / Not given')
+    : question.type === 'headings' ? 'Matching headings' : question.type === 'gap' ? 'Gap fill (summary completion)' : String(question.type);
+  return (
+    <div className="space-y-2">
+      <span className="text-sm font-medium text-gray-700">{label} (edited as JSON)</span>
+      <textarea
+        value={text}
+        rows={Math.min(18, text.split('\n').length + 1)}
+        spellCheck={false}
+        onChange={(event) => setText(event.target.value)}
+        onBlur={() => {
+          try {
+            const parsed = JSON.parse(text) as unknown;
+            if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('not an object');
+            setInvalid(false);
+            onReplace(parsed as Rec);
+          } catch {
+            setInvalid(true);
+          }
+        }}
+        className="w-full rounded-2xl border border-gray-200 px-3 py-2 font-mono text-xs"
+      />
+      {invalid ? <p className="text-xs text-red-600">This is not valid JSON yet; the last valid version is kept.</p> : null}
+      <p className="text-xs text-gray-500">
+        tfng: answer true | false | not_given (variant "yes_no" for opinions). headings: options = headings, items = [{'{'} paragraph, answer_index {'}'}].
+        gap: text with ___ per gap, answers = one list of accepted answers per gap, optional word_bank.
+      </p>
+      <FieldMessages path={path} />
+    </div>
+  );
+};
+
 /** Multiple-choice questions: prompt, options with the correct one marked, explanation. */
 const QuestionsEditor: React.FC<{ value: unknown; onChange: (value: Rec[]) => void; path: string; withSkill?: boolean }> = ({
   value,
@@ -428,6 +490,15 @@ const QuestionsEditor: React.FC<{ value: unknown; onChange: (value: Rec[]) => vo
     makeRow={() => ({ prompt: '', options: ['', '', ''], answer_index: 0, explanation: '', ...(withSkill ? { skill: 'reading.detail' } : {}) })}
     render={(question, index, update) => {
       const at = `${path}[${index}]`;
+      if (withSkill && typeof question.type === 'string' && question.type !== 'mcq') {
+        return (
+          <JsonQuestion
+            question={question}
+            path={at}
+            onReplace={(next) => onChange(asArray(value).map((entry, position) => (position === index ? next : entry)))}
+          />
+        );
+      }
       const options = Array.isArray(question.options) ? (question.options as unknown[]).map((option) => asText(option)) : [];
       return (
         <div className="space-y-3">
@@ -450,7 +521,14 @@ const QuestionsEditor: React.FC<{ value: unknown; onChange: (value: Rec[]) => vo
                 value={question.skill}
                 onChange={(next) => update({ skill: next })}
               />
-            ) : null}
+            ) : (
+              <Field
+                spec={{ key: 'focus', label: 'Asked (gist = after the first listen)', kind: 'select', options: ['', 'gist', 'detail'] }}
+                path={`${at}.focus`}
+                value={question.focus ?? ''}
+                onChange={(next) => update({ focus: next || undefined })}
+              />
+            )}
           </div>
           <div className="space-y-2">
             <span className="text-sm font-medium text-gray-700">Options (select the correct one)</span>
@@ -571,7 +649,7 @@ const ChildFields: React.FC<{ serviceKey: StudioServiceKey; row: Rec; index: num
         record={row}
         onChange={set}
         specs={[
-          { key: 'drill_type', label: 'Type', kind: 'select', options: ['fill', 'error_correction', 'transformation'] },
+          { key: 'drill_type', label: 'Type', kind: 'select', options: ['fill', 'error_correction', 'transformation', 'word_order'] },
           { key: 'status', label: 'Status', kind: 'select', options: STATUSES },
           { key: 'title', label: 'Title (optional)', kind: 'text' },
           { key: 'instructions', label: 'Instructions (optional)', kind: 'text' },
@@ -582,7 +660,7 @@ const ChildFields: React.FC<{ serviceKey: StudioServiceKey; row: Rec; index: num
             kind: 'list',
             rows: 3,
             wide: true,
-            hint: 'For gaps give the words that go in the gap; for corrections give the whole correct sentence.',
+            hint: 'For gaps give the words that go in the gap; for corrections and rewrites give the whole sentence. Word order: write the prompt as words separated by / (always / she / late / is) and give the full sentence.',
           },
         ]}
       />
@@ -946,6 +1024,20 @@ export const AdminEnglishStudioEditor: React.FC<{
           <div className="space-y-3">
             <h3 className="text-lg font-bold text-gray-900">Questions</h3>
             <QuestionsEditor value={item.questions} path="questions" withSkill={serviceKey === 'reading'} onChange={(next) => set('questions', next)} />
+            {serviceKey === 'reading' ? (
+              <div className="flex flex-wrap gap-2">
+                {[['tfng', '+ True / False / Not given'], ['headings', '+ Matching headings'], ['gap', '+ Gap fill']].map(([type, label]) => (
+                  <button
+                    key={type}
+                    type="button"
+                    className={smallButton}
+                    onClick={() => set('questions', [...asArray(item.questions), { id: `${type}${asArray(item.questions).length + 1}`, ...READING_TYPE_TEMPLATES[type!] }])}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </div>
         ) : null}
 

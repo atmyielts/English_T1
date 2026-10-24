@@ -72,7 +72,8 @@
           "Small companies cannot afford designers."
         ],
         "answer_index": 1,
-        "explanation": "\"A client who says your price is too high isn't always saying no.\""
+        "explanation": "\"A client who says your price is too high isn't always saying no.\"",
+        "focus": "gist"
       }
     ]
   },

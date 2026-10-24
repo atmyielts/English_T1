@@ -33,6 +33,7 @@ const DuelsPage = lazy(() => import('./pages/DuelPage').then((m) => ({ default: 
 const DuelPage = lazy(() => import('./pages/DuelPage').then((m) => ({ default: m.DuelPage })));
 const PublicProgressPage = lazy(() => import('./pages/PublicProgressPage').then((m) => ({ default: m.PublicProgressPage })));
 const ExamPage = lazy(() => import('./pages/ExamPage').then((m) => ({ default: m.ExamPage })));
+const DailyStoryPage = lazy(() => import('./pages/DailyStoryPage').then((m) => ({ default: m.DailyStoryPage })));
 
 const SKILL_APPS = {
   reading: lazy(() => import('./skills/reading')),
@@ -151,6 +152,8 @@ const App = () => {
         <Route path="/duel/:code" element={hub(<DuelPage />)} />
         <Route path="/p/:token" element={hub(<PublicProgressPage />)} />
         <Route path="/exam" element={hub(<ExamPage />)} />
+        <Route path="/stories" element={hub(<DailyStoryPage />)} />
+        <Route path="/stories/:id" element={hub(<DailyStoryPage />)} />
         {SKILLS.map((skill) => {
           const SkillApp = SKILL_APPS[skill.key];
           return (

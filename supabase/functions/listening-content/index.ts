@@ -21,12 +21,15 @@ import {
 } from "../_shared/english-learning.ts";
 import {
   combineDictation,
+  dictationFeedback,
   gradeQuestions,
   listeningCorrectness,
   parseQuestions,
   publicQuestions,
   scoreDictation,
 } from "../_shared/english-listening.ts";
+import { savedWordsInText } from "../_shared/english-reading-depth.ts";
+import { loadSavedWords, recordEncounters } from "../_shared/english-word-store.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -348,6 +351,16 @@ serve(dedupeSubmits({
         });
       }
 
+      // Saved words heard here keep this sentence as one of their examples.
+      if (mode === "listening") {
+        try {
+          const saved = await loadSavedWords(sb, auth.userId, scope.languageId);
+          if (saved.length) await recordEncounters(sb, auth.userId, saved, savedWordsInText(transcript, saved), toText(item.title, 120));
+        } catch {
+          // examples are a nice-to-have
+        }
+      }
+
       return json(200, {
         ok: true,
         mode,
@@ -358,6 +371,8 @@ serve(dedupeSubmits({
         dictation: {
           score: dictationAccuracy === null ? null : Math.round(dictationAccuracy * 100),
           results: dictationResults,
+          // What kind of thing was lost: small words, endings, numbers, spelling…
+          feedback: dictationFeedback(scored.map((entry) => entry.result)),
         },
         review_words: reviewWords,
         transcript,

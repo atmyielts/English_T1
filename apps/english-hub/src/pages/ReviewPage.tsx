@@ -8,74 +8,10 @@ import { ReviewQuestions } from './ReviewQuestions';
 import { L1Why } from '../components/L1Why';
 import { ResultSummary } from '../components/ResultSummary';
 import { XP_PER_REVIEW_CORRECT } from '../lib/glue';
-import { getNotebook, reviewCard, type NotebookCard } from '../lib/notebook';
-import { speak, canSpeak } from '../lib/speech';
+import { getNotebook } from '../lib/notebook';
+import { WordReview } from '../components/WordReview';
 import { useResource } from '../lib/useResource';
-import { EmptyState, ErrorState, Loading, PageHeader, Panel, ProgressBar, SkillDot, useErrorMessage } from '../ui/kit';
-
-/** One-card-at-a-time recall: see the word, try to recall, then reveal and grade. */
-const Flashcards = ({ cards, onFinished }: { cards: NotebookCard[]; onFinished: (remembered: number) => void }) => {
-  const t = useT();
-  const errorText = useErrorMessage();
-  const [index, setIndex] = useState(0);
-  const [revealed, setRevealed] = useState(false);
-  const [remembered, setRemembered] = useState(0);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<unknown>(null);
-  const card = cards[index];
-  if (!card) return null;
-
-  const grade = async (outcome: 'correct' | 'incorrect') => {
-    setSaving(true);
-    setError(null);
-    try {
-      await reviewCard(card.id, outcome);
-      const nextRemembered = remembered + (outcome === 'correct' ? 1 : 0);
-      setRemembered(nextRemembered);
-      if (index + 1 >= cards.length) onFinished(nextRemembered);
-      else {
-        setIndex(index + 1);
-        setRevealed(false);
-      }
-    } catch (cause) {
-      setError(cause);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="en-stack">
-      <div className="en-row">
-        <span className="hint">{t('review.cardOf', { current: index + 1, total: cards.length })}</span>
-        <span className="en-spacer" />
-        <div style={{ flex: '0 1 14rem' }}><ProgressBar value={(index / cards.length) * 100} label={t('review.progress')} skill="vocabulary" /></div>
-      </div>
-      <div className="en-flashcard">
-        <p className="eyebrow">{card.source_label ?? t('review.yourWord')}</p>
-        <h2 lang="en">{card.word}</h2>
-        {canSpeak() ? <button type="button" className="quiet" onClick={() => void speak(card.word)}>▶ {t('review.listen')}</button> : null}
-        {!revealed ? (
-          <>
-            <p>{t('review.recallPrompt')}</p>
-            <div className="en-actions"><button type="button" className="is-large" onClick={() => setRevealed(true)}>{t('review.reveal')}</button></div>
-          </>
-        ) : (
-          <>
-            {card.definition ? <p><strong>{card.definition}</strong></p> : null}
-            {card.example || card.context_text ? <p lang="en"><em>“{card.example ?? card.context_text}”</em></p> : null}
-            {!card.definition && !card.example && !card.context_text ? <p>{t('review.noDefinition')}</p> : null}
-            <div className="en-actions">
-              <button type="button" className="quiet is-large" disabled={saving} onClick={() => void grade('incorrect')}>{t('review.again')}</button>
-              <button type="button" className="is-large" disabled={saving} onClick={() => void grade('correct')}>{t('review.gotIt')}</button>
-            </div>
-          </>
-        )}
-      </div>
-      {error ? <div className="error" role="alert">{errorText(error)}</div> : null}
-    </div>
-  );
-};
+import { EmptyState, ErrorState, Loading, PageHeader, Panel, SkillDot } from '../ui/kit';
 
 export const ReviewPage = () => {
   const t = useT();
@@ -120,7 +56,7 @@ export const ReviewPage = () => {
               action={<Link className="en-button-quiet" to="/vocabulary">{t('review.openNotebook')}</Link>}
             />
           ) : cards.length ? (
-            <Flashcards key={cards[0]?.id} cards={cards} onFinished={setFinished} />
+            <WordReview key={cards[0]?.id} cards={cards} onFinished={(remembered) => setFinished(remembered)} />
           ) : null}
         </Panel>
 

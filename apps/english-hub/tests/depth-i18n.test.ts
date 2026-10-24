@@ -2,6 +2,7 @@ import { assert, assertEquals } from "https://deno.land/std@0.224.0/assert/mod.t
 import { depthEn } from "../src/i18n/depth.en.ts";
 import { depthRu } from "../src/i18n/depth.ru.ts";
 import { depthUz } from "../src/i18n/depth.uz.ts";
+import { depthInEn } from "../src/i18n/depthin.en.ts";
 
 Deno.test("depth strings have the same keys in English, Russian and Uzbek", () => {
   const en = Object.keys(depthEn).sort();
@@ -46,6 +47,7 @@ Deno.test("every depth.* key used in the app exists in English", async () => {
   for (const verdict of ["better", "worse", "same"]) used.add(`depth.compare.verdict.${verdict}`);
   for (const type of ["fill", "fix", "choose"]) used.add(`depth.lesson.type.${type}`);
   for (const status of ["done", "open", "tomorrow", "locked"]) used.add(`depth.project.status.${status}`);
-  const missing = [...used].filter((key) => !key.endsWith(".") && !(key in depthEn));
+  // The input-skills work keeps its depth.* keys in depthin.*.ts; both are merged into one catalog.
+  const missing = [...used].filter((key) => !key.endsWith(".") && !(key in depthEn) && !(key in depthInEn));
   assertEquals(missing, []);
 });

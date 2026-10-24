@@ -62,7 +62,7 @@ Deno.test("scoring is accuracy; skipped and out-of-range answers are wrong", () 
 
 Deno.test("all correct scores 100 and produces no issues", () => {
   const questions = normalizeQuestions(raw);
-  const score = scoreReadingAnswers(questions, questions.map((question) => ({ question_id: question.id, option_index: question.answer_index })));
+  const score = scoreReadingAnswers(questions, questions.map((question) => ({ question_id: question.id, option_index: question.type === "mcq" ? question.answer_index : 0 })));
   assertEquals(score.score, 100);
   assertEquals(buildReadingIssues(questions, score, "slug"), []);
 });

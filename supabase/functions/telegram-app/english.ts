@@ -286,7 +286,7 @@ const answerItem = async (sb: any, userId: string, languageId: string, id: strin
 const answerWord = async (sb: any, userId: string, languageId: string, id: string, outcome: unknown): Promise<Result> => {
   if (outcome !== "correct" && outcome !== "incorrect") return { status: 422, body: { error: "outcome must be correct or incorrect" } };
   const { data: entry, error } = await sb.from("user_vocabulary_notebook_entries")
-    .select("id, leitner_box, review_count, correct_count, incorrect_count")
+    .select("id, leitner_box, review_count, correct_count, incorrect_count, last_reviewed_at, metadata")
     .eq("id", id)
     .eq("user_id", userId)
     .eq("language_id", languageId)
