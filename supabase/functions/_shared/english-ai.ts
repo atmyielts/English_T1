@@ -28,6 +28,10 @@ export interface EnglishAIRequest {
   temperature?: number;
   /** Optional override for the model id. */
   modelOverride?: string | null;
+  /** Which feature is calling (e.g. "tutor", "word-lookup", "roleplay"); used for usage logging and per-feature switches. */
+  feature?: string;
+  /** The learner the call is made for, when there is one; used for usage logging. */
+  userId?: string | null;
 }
 
 const PROVIDER_DEFAULTS: Record<EnglishAIPrimaryProvider, { model: string; endpoint: string }> = {
