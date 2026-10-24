@@ -51,7 +51,7 @@ Migration `20261024100000_academy_homework_os.sql`. Every new table has RLS enab
 | `academy_courses_publish_gate` trigger | Publishing needs a plan once billing is enforced |
 | `academy_homework_queue_guardian_digest()` | Weekly parent summary into the existing guardian outbox (consent, visibility and quiet hours are re-checked at delivery) |
 
-Not built yet (still proposals): course versions pinned by a run, three-phase lesson blocks, the Assessment Cloud bridge (§6).
+Course versions pinned by a run are built (§12). Not built yet (still proposals): three-phase lesson blocks, the Assessment Cloud bridge (§6).
 
 ## 4. Homework OS, subsystem by subsystem
 
@@ -269,9 +269,25 @@ Owner go-ahead on 2026-10-22: "do them all, make it perfectly ready for use".
   - Completion appears only once at least 15 learners have taken the course.
   - Listing needs a centre tier or a Schood Teaching plan once billing is enforced.
 
+**Course versions pinned per run (release `academy-course-versions`, code ready 2026-10-24)**
+
+Editing a course never changes a group that is already running it.
+- **Migration** `20261024231500_academy_course_versions.sql`:
+  - `academy_course_versions` holds one immutable snapshot per publish: course fields, published modules with their `unlock_rule`, published lessons, published quizzes and their questions (with answer keys, so the table is service-role only). A publish whose content matches the latest snapshot does not create a new version.
+  - `academy_classroom_courses` gains `version_mode` (`live` or `pinned`), `course_version_id`, `version_pinned_at` and `version_pinned_by`.
+  - Publishing snapshots the course: a trigger on `academy_courses` fires on every publish, whichever path published it, and `publish_course` records the publisher. `publish_course` now publishes modules and lessons before the course row, so the snapshot sees them.
+  - A new run starts on the latest version. A run assigned while the course is still a draft starts on the first version when it is published. Re-assigning an existing run (the `assign_course` upsert) keeps its version.
+  - `academy_module_unlocked` and the lesson-progress and quiz-attempt gates read the run's version, so a rule changed on the live course does not lock or unlock modules for a group on an older version.
+  - `academy_public_course_catalog` shows the latest version: what a new group would get, not unpublished edits. `academy_course_completion` counts each group against the lessons of its own version.
+- **Backward compatible:** every run that existed before the migration is `live` and reads the live rows exactly as before. Courses that were already published get version 1, but no existing run is pinned to it.
+- **Learners** (`supabase/functions/academy/`): `student_curriculum` serves a pinned run from its snapshot, in the same row shape as live rows and without answer keys. `set_lesson_progress` and `start_quiz` check the lesson or quiz against the run's version. `submit_quiz` grades against the version the attempt started on, which is stored in the attempt's metadata.
+- **Staff:** the curriculum screen shows which version a group runs and the latest one. Staff use **Move this group to version N** (`move_course_version` → `academy_classroom_course_move_version`) to move a group. The move needs `manageAssignments` on the group, and it is refused if a newer version was published since the screen loaded. Moving a `live` group pins it. Learner progress is keyed by lesson, so lessons that exist in both versions keep their progress. **Publish new version** is available on published courses.
+- **Not versioned yet:** lesson video attachments (`academy_lesson_media`) and video playback (`academy-video`) still read live rows. So does the teacher lesson flow (`_shared/academy-teacher-flow.ts`). Hard-deleting a lesson still cascades through progress; there is no delete action in Academy today.
+- **Tests:** `supabase/functions/academy/course-version.test.ts` covers the edge function side. `scripts/fixtures/academy-course-versions.sql` covers the rules at database level. `scripts/test-academy-course-versions.mjs` runs that fixture in an in-memory PostgreSQL (PGlite), using the real curriculum, unlock-gate and listing migrations. All of these run in `npm run test:academy:edge`. The fixture can also be run against a copy of the production schema inside a rolled-back transaction.
+
 **Left for later releases**
 - D4: feed consented homework mistakes into the learner's own Daily plan.
-- Course versions pinned per run, three-phase lesson blocks, Telegram delivery of lesson audio and PDFs, Course Studio AI structuring.
+- Three-phase lesson blocks, Telegram delivery of lesson audio and PDFs, Course Studio AI structuring. Versioning of lesson videos and the teacher lesson flow.
 - The Assessment Cloud bridge (§6) for module checks and signed certificates.
 - Collecting course fees through Schood (41 F12/F13: instalments, payouts, fiscal receipts).
 - Math OCR quality checks, centre-calibrated marking (V-HW-F11), churn warnings to parents (V-HW-F10).

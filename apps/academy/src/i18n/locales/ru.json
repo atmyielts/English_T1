@@ -3131,5 +3131,12 @@
   "Teacher (yearly)": "Преподаватель (год)",
   "Teacher Pro (yearly)": "Преподаватель Pro (год)",
   "Everything in Teacher Pro": "Всё из тарифа «Преподаватель Pro»",
-  "Two months free": "Два месяца бесплатно"
+  "Two months free": "Два месяца бесплатно",
+  "Publish new version": "Опубликовать новую версию",
+  "This group follows every edit to the course.": "Эта группа сразу видит каждое изменение курса.",
+  "This group runs version {version}.": "Эта группа занимается по версии {version}.",
+  "This group starts on the first published version.": "Эта группа начнёт с первой опубликованной версии.",
+  "Latest version: {version}.": "Последняя версия: {version}.",
+  "This group now runs version {version}.": "Теперь эта группа занимается по версии {version}.",
+  "Move this group to version {version}": "Перевести группу на версию {version}"
 }

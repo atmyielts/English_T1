@@ -3131,5 +3131,12 @@
   "Teacher (yearly)": "O‘qituvchi (yillik)",
   "Teacher Pro (yearly)": "O‘qituvchi Pro (yillik)",
   "Everything in Teacher Pro": "O‘qituvchi Pro tarifidagi hamma narsa",
-  "Two months free": "Ikki oy bepul"
+  "Two months free": "Ikki oy bepul",
+  "Publish new version": "Yangi versiyani chop etish",
+  "This group follows every edit to the course.": "Bu guruh kursdagi har bir o‘zgarishni darhol ko‘radi.",
+  "This group runs version {version}.": "Bu guruh {version}-versiya bo‘yicha o‘qiydi.",
+  "This group starts on the first published version.": "Bu guruh birinchi chop etilgan versiyadan boshlaydi.",
+  "Latest version: {version}.": "So‘nggi versiya: {version}.",
+  "This group now runs version {version}.": "Endi bu guruh {version}-versiya bo‘yicha o‘qiydi.",
+  "Move this group to version {version}": "Guruhni {version}-versiyaga o‘tkazish"
 }

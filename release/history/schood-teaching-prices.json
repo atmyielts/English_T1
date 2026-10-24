@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "schood-teaching-prices",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": [
+    "academy"
+  ],
+  "migrations": [
+    "20261024210000_schood_teaching_prices.sql"
+  ],
+  "edgeFunctions": [],
+  "workers": [],
+  "requiredSecrets": [],
+  "rolloutOrder": [
+    "pages",
+    "migration:20261024210000_schood_teaching_prices.sql"
+  ],
+  "manualFollowUps": [
+    "Pages: merging publishes academy, where Homework → Plan and settings shows plan prices as per month / per year.",
+    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus 20261024210000_schood_teaching_prices.sql, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) and any other session's unreleased migrations excluded. Dry run first. Sets Teacher 149 000 and Teacher Pro 249 000 UZS a month, adds yearly plans at 1 490 000 and 2 490 000, activates them, and marks Schood Teaching hidden and institution-only. billing.enforced stays false, so no academy loses access."
+  ],
+  "verification": [
+    "select name, amount, is_active from plans where product_id = '00000000-0000-4000-8000-000000000801' returns four active plans at 149 000, 249 000, 1 490 000 and 2 490 000.",
+    "The Schood Teaching product does not appear on the schood.online home page product list.",
+    "Academy → Homework → Plan and settings for an independent academy lists the four plans with prices."
+  ],
+  "rollback": {
+    "pages": "Cloudflare Pages rollback of schood-academy.",
+    "migration": "update plans set is_active = false where product_id = '00000000-0000-4000-8000-000000000801'; billing is not enforced, so nothing else changes.",
+    "edge": "Nothing deployed.",
+    "worker": "Nothing deployed."
+  }
+}
