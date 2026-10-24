@@ -1,0 +1,235 @@
+{
+  "item": {
+    "slug": "b2-discussing-salary-for-your-first-it-job",
+    "title": "Discussing the salary for your first IT job",
+    "level": "B2",
+    "context_text": "You have just finished a two-year software development course in Tashkent, and an international company with an office in the city has offered you a junior developer position. You are excited, but the salary is a little lower than you expected, and the offer letter leaves some questions open.",
+    "objective_text": "Understand the offer, find out how flexible the recruiter is, reply professionally with a counter-proposal, and discuss it on a call without damaging the relationship.",
+    "mission_type": "workplace",
+    "target_grammar": "polite, tentative language (I was wondering whether…, Would there be any flexibility on…?, I'd hoped for something closer to…)",
+    "cultural_note": "Asking about salary politely is normal in many international companies and rarely makes an offer disappear. What matters is the tone: thank them first, give a reason for your request, and show you still want the job.",
+    "target_vocabulary": [
+      "offer letter",
+      "gross salary",
+      "probation period",
+      "benefits",
+      "flexibility",
+      "counter-offer",
+      "performance review"
+    ],
+    "success_conditions": [
+      "Identify the key terms and the unclear points in the offer",
+      "Understand what the recruiter can and cannot change",
+      "Write a polite counter-proposal with a clear reason",
+      "Negotiate on the call and confirm what was agreed"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the offer letter",
+      "instructions": "Read the main part of the offer letter. Then answer the questions.",
+      "prompt_text": "Dear Sardor,\nWe are delighted to offer you the position of Junior Backend Developer.\n- Start date: 1 March\n- Gross monthly salary: as discussed in your final interview\n- Probation period: three months, after which your salary will be reviewed\n- Benefits: private health insurance, a learning budget for courses and conferences, two remote days per week\nPlease let us know your decision within five working days. If you have any questions about the offer, Nilufar from our recruitment team will be happy to discuss them.",
+      "estimated_minutes": 4,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "What happens at the end of the probation period?",
+          "options": [
+            "The contract ends automatically",
+            "The salary is reviewed",
+            "The remote days are removed"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Probation period: three months, after which your salary will be reviewed.\""
+        },
+        {
+          "prompt": "Which benefit could help Sardor's career development?",
+          "options": [
+            "Health insurance",
+            "The learning budget",
+            "The start date"
+          ],
+          "answer_index": 1,
+          "explanation": "\"A learning budget for courses and conferences\" supports professional development."
+        },
+        {
+          "prompt": "What is the deadline for his decision?",
+          "options": [
+            "Five working days",
+            "Three months",
+            "1 March"
+          ],
+          "answer_index": 0,
+          "explanation": "\"Please let us know your decision within five working days.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to a friend's advice",
+      "instructions": "Your friend Jamshid has worked at the same company for two years. Listen to his advice. Then answer the questions.",
+      "prompt_text": "Honestly, you should definitely ask. They expect it. From what I've seen, the base salary for juniors is set in bands, so they can usually move a little, but not a lot. Where they're much more flexible is the probation review. When I joined, I asked them to write down in the contract that my salary would go up after three months if my review went well, and they agreed straight away. The other thing people forget is the learning budget. If there's a certification you want, ask them to confirm it's covered. Just don't make it sound like an ultimatum.",
+      "estimated_minutes": 4,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "gb",
+      "questions": [
+        {
+          "prompt": "According to Jamshid, how flexible is the base salary?",
+          "options": [
+            "Not at all",
+            "A little, but not a lot",
+            "Completely flexible"
+          ],
+          "answer_index": 1,
+          "explanation": "\"They can usually move a little, but not a lot.\""
+        },
+        {
+          "prompt": "What did Jamshid get written into his contract?",
+          "options": [
+            "A raise after a good three-month review",
+            "Four remote days a week",
+            "A higher starting salary"
+          ],
+          "answer_index": 0,
+          "explanation": "\"My salary would go up after three months if my review went well, and they agreed.\""
+        },
+        {
+          "prompt": "What does he warn against?",
+          "options": [
+            "Asking about the learning budget",
+            "Sounding as if you are giving an ultimatum",
+            "Replying too slowly"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Just don't make it sound like an ultimatum.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Reply to the recruiter",
+      "instructions": "Write an email to Nilufar. Thank her for the offer, show you are keen, ask politely about flexibility on the salary with a reason, and suggest an alternative such as a written review after probation.",
+      "prompt_text": "To: Nilufar (Recruitment)\nSubject: Re: Offer – Junior Backend Developer",
+      "estimated_minutes": 8,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Make a polite, reasoned counter-proposal while showing commitment.",
+      "points": [
+        {
+          "label": "thank them and show enthusiasm",
+          "any": [
+            "thank*",
+            "delighted",
+            "excited",
+            "pleased",
+            "keen",
+            "look forward",
+            "happy to"
+          ]
+        },
+        {
+          "label": "ask about salary flexibility",
+          "any": [
+            "flexib*",
+            "salary",
+            "closer to",
+            "slightly higher",
+            "reconsider",
+            "was wondering",
+            "possible to"
+          ]
+        },
+        {
+          "label": "give a reason",
+          "any": [
+            "because",
+            "since",
+            "as i",
+            "experience",
+            "project*",
+            "skills",
+            "market",
+            "course"
+          ]
+        },
+        {
+          "label": "suggest an alternative",
+          "any": [
+            "review",
+            "probation",
+            "three months",
+            "in writing",
+            "contract",
+            "alternatively",
+            "learning budget",
+            "certification"
+          ]
+        }
+      ],
+      "model_answer": "Dear Nilufar,\nThank you very much for the offer. I'm genuinely excited about joining the backend team and I'd like to accept. Before I confirm, I was wondering whether there might be some flexibility on the starting salary. During my course I built two complete projects with the same technology your team uses, so I had hoped for something slightly closer to the upper end of the junior range. If the base salary can't change, would it be possible to state in the contract that my salary will be increased after a successful probation review?\nKind regards,\nSardor",
+      "min_words": 80
+    },
+    {
+      "title": "Negotiate on the call",
+      "instructions": "Nilufar calls you. She says the base salary can only go up slightly. Respond: accept or discuss the small increase, ask for the review to be written in the contract, and confirm the next step.",
+      "prompt_text": "Nilufar: Thanks for your email, Sardor. I've spoken to the team lead. We can raise the base salary a little, but not to the level you mentioned. How do you feel about that?",
+      "estimated_minutes": 4,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Reach a fair agreement politely and confirm the next step.",
+      "points": [
+        {
+          "label": "respond positively to the increase",
+          "any": [
+            "thank*",
+            "appreciate",
+            "that's fair",
+            "sounds good",
+            "i understand",
+            "that works",
+            "happy with"
+          ]
+        },
+        {
+          "label": "ask for the review in the contract",
+          "any": [
+            "review",
+            "probation",
+            "in writing",
+            "contract",
+            "written",
+            "three months"
+          ]
+        },
+        {
+          "label": "confirm the next step",
+          "any": [
+            "send",
+            "updated",
+            "sign",
+            "confirm",
+            "next step",
+            "look forward",
+            "new offer",
+            "revised"
+          ]
+        }
+      ],
+      "model_answer": "Thank you, I really appreciate you checking with the team lead. I understand the base salary has limits. I'd be happy to accept the increase if we could also put in writing that my salary will be reviewed after the three-month probation. If that's possible, could you send me the updated offer, and I'll sign it this week?",
+      "min_words": null
+    }
+  ]
+}

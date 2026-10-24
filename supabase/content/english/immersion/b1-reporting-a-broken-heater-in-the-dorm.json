@@ -1,0 +1,223 @@
+{
+  "item": {
+    "slug": "b1-reporting-a-broken-heater-in-the-dorm",
+    "title": "Reporting a broken heater in the dorm",
+    "level": "B1",
+    "context_text": "It is November and you are studying in Poland. The heater in your dormitory room stopped working three days ago, and the room is very cold at night. You reported it at reception on Monday, but nothing has happened.",
+    "objective_text": "Understand the maintenance rules, find out why nobody came, report the problem properly in writing, and follow it up by phone.",
+    "mission_type": "problem_solving",
+    "target_grammar": "present perfect with since / for and already / yet (It hasn't worked since Monday. Nobody has come yet.)",
+    "cultural_note": "Many housing offices only act on requests that are written down with a reference number. A spoken complaint at reception is often forgotten, so it is normal to put it in writing and politely mention the dates.",
+    "target_vocabulary": [
+      "maintenance request",
+      "reference number",
+      "urgent",
+      "technician",
+      "temporary heater",
+      "follow up"
+    ],
+    "success_conditions": [
+      "Understand how and when to report a repair",
+      "Find out why the first report did not work",
+      "Write a complete maintenance request with dates and the room number",
+      "Follow up by phone and ask for a temporary solution"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the housing office notice",
+      "instructions": "Read the notice in the corridor. Then answer the questions.",
+      "prompt_text": "REPAIRS IN YOUR ROOM\nAll repairs must be reported using the online maintenance form. Reception cannot create requests.\nAfter you send the form, you will receive a reference number by email.\nUrgent problems (no water, no heating in winter, electrical danger) are dealt with within 48 hours. Other problems: within 7 working days.\nPlease say when a technician can enter your room.",
+      "estimated_minutes": 4,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "How must students report repairs?",
+          "options": [
+            "At reception",
+            "With the online form",
+            "By calling a technician"
+          ],
+          "answer_index": 1,
+          "explanation": "\"All repairs must be reported using the online maintenance form. Reception cannot create requests.\""
+        },
+        {
+          "prompt": "Why is your problem urgent?",
+          "options": [
+            "There is no heating in winter",
+            "There is no water",
+            "It is an electrical danger"
+          ],
+          "answer_index": 0,
+          "explanation": "\"No heating in winter\" is listed as an urgent problem."
+        },
+        {
+          "prompt": "What should you include in the form?",
+          "options": [
+            "Your bank details",
+            "When a technician can come in",
+            "A photo of your student card"
+          ],
+          "answer_index": 1,
+          "explanation": "\"Please say when a technician can enter your room.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to the receptionist",
+      "instructions": "You go back to reception to ask what happened. Listen to the receptionist. Then answer the questions.",
+      "prompt_text": "Oh, I'm really sorry about that. I remember you, but I'm afraid I can't send repair requests from here any more. They changed the system last month, so everything goes through the online form now. If you fill it in today and tick 'urgent', someone should come within two days. And listen, if it's really cold tonight, we have a few small electric heaters in the storage room. You can borrow one if you leave your student card with us.",
+      "estimated_minutes": 4,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "gb",
+      "questions": [
+        {
+          "prompt": "Why did nothing happen after your first report?",
+          "options": [
+            "The technician was ill",
+            "Reception can't send repair requests any more",
+            "Your room number was wrong"
+          ],
+          "answer_index": 1,
+          "explanation": "\"I can't send repair requests from here any more. They changed the system last month.\""
+        },
+        {
+          "prompt": "What can you do tonight?",
+          "options": [
+            "Sleep in another room",
+            "Borrow a small electric heater",
+            "Get a refund for the night"
+          ],
+          "answer_index": 1,
+          "explanation": "\"We have a few small electric heaters... You can borrow one.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Fill in the maintenance form",
+      "instructions": "Write the description for the online form. Give your room number, describe the problem and since when, say it is urgent, and say when a technician can come in.",
+      "prompt_text": "Maintenance request – Description of the problem:",
+      "estimated_minutes": 7,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Write a complete, clear maintenance request.",
+      "points": [
+        {
+          "label": "give the room number",
+          "any": [
+            "room",
+            "block",
+            "flat",
+            "number"
+          ]
+        },
+        {
+          "label": "describe the problem and since when",
+          "any": [
+            "heater",
+            "heating",
+            "radiator",
+            "since",
+            "for three days",
+            "monday",
+            "not working",
+            "doesn't work",
+            "broken",
+            "stopped"
+          ]
+        },
+        {
+          "label": "say it is urgent",
+          "any": [
+            "urgent",
+            "cold",
+            "freezing",
+            "as soon as possible",
+            "asap",
+            "quickly"
+          ]
+        },
+        {
+          "label": "say when the technician can come in",
+          "any": [
+            "can enter",
+            "can come",
+            "any time",
+            "anytime",
+            "morning",
+            "afternoon",
+            "after",
+            "between",
+            "available",
+            "i'm in"
+          ]
+        }
+      ],
+      "model_answer": "Room 214, Block C. The heater in my room has not worked since Monday, so for three days now. It doesn't get warm at all, and the room is very cold at night. I reported it at reception on Monday, but I have now learned that I must use this form. This is urgent because there is no heating. A technician can enter my room any time, even when I am not there.",
+      "min_words": null
+    },
+    {
+      "title": "Follow up by phone",
+      "instructions": "Two days later, nobody has come. Call the housing office. Give your reference number, explain the situation briefly and ask what will happen next.",
+      "prompt_text": "Housing office: Good morning, student housing. How can I help?",
+      "estimated_minutes": 3,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Follow up politely and get a clear next step.",
+      "points": [
+        {
+          "label": "give the reference number",
+          "any": [
+            "reference",
+            "number",
+            "request",
+            "form"
+          ]
+        },
+        {
+          "label": "say nobody has come yet",
+          "any": [
+            "nobody",
+            "no one",
+            "hasn't come",
+            "has not come",
+            "haven't heard",
+            "yet",
+            "still",
+            "two days"
+          ]
+        },
+        {
+          "label": "ask what happens next",
+          "any": [
+            "when",
+            "what will happen",
+            "next",
+            "can someone",
+            "could someone",
+            "today",
+            "tomorrow",
+            "how long"
+          ]
+        }
+      ],
+      "model_answer": "Good morning. I'm calling about my maintenance request. The reference number is 5512. I sent the form two days ago and marked it urgent, because the heater in my room doesn't work, but nobody has come yet. Could you tell me when a technician will come, please?",
+      "min_words": null
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "c2-persuasion-and-rhetoric",
+    "title": "Persuasion and rhetoric",
+    "level": "C2",
+    "topic": "rhetoric",
+    "description": "Words for describing how speakers and writers try to convince an audience."
+  },
+  "children": [
+    {
+      "word": "eloquent",
+      "part_of_speech": "adjective",
+      "definition": "able to express ideas clearly, beautifully and convincingly",
+      "example": "Her eloquent speech persuaded the committee to keep the library open.",
+      "translation_ru": "красноречивый",
+      "translation_uz": "notiq, soʻzga chechan"
+    },
+    {
+      "word": "rhetorical question",
+      "part_of_speech": "noun",
+      "definition": "a question asked for effect, not because an answer is expected",
+      "example": "\"Who doesn't want cleaner air?\" was clearly a rhetorical question.",
+      "translation_ru": "риторический вопрос",
+      "translation_uz": "ritorik savol"
+    },
+    {
+      "word": "sway",
+      "part_of_speech": "verb",
+      "definition": "to influence someone so that they change their opinion",
+      "example": "Undecided voters can be swayed by a single strong debate performance.",
+      "translation_ru": "склонить, повлиять",
+      "translation_uz": "fikriga taʼsir qilmoq, ogʻdirmoq"
+    },
+    {
+      "word": "hyperbole",
+      "part_of_speech": "noun",
+      "definition": "deliberate exaggeration used for effect, not meant to be taken literally",
+      "example": "Calling the new rule \"the end of education\" is pure hyperbole.",
+      "translation_ru": "гипербола, преувеличение",
+      "translation_uz": "mubolagʻa"
+    },
+    {
+      "word": "rebuttal",
+      "part_of_speech": "noun",
+      "definition": "a reply that tries to prove an argument or claim wrong",
+      "example": "Each team has two minutes for its rebuttal.",
+      "translation_ru": "опровержение",
+      "translation_uz": "raddiya, inkor javobi"
+    },
+    {
+      "word": "straw man",
+      "part_of_speech": "noun",
+      "definition": "a weaker, distorted version of an opponent's view, set up so it is easy to attack",
+      "example": "Nobody suggested banning cars; that's a straw man.",
+      "translation_ru": "подмена тезиса, «соломенное чучело»",
+      "translation_uz": "fikrni buzib koʻrsatish (soxta raqib)"
+    },
+    {
+      "word": "emotive",
+      "part_of_speech": "adjective",
+      "definition": "intended to produce strong feelings rather than careful thought",
+      "example": "The article used emotive language to describe the new tax.",
+      "translation_ru": "эмоционально окрашенный",
+      "translation_uz": "hissiyotga taʼsir qiluvchi"
+    },
+    {
+      "word": "spin",
+      "part_of_speech": "noun",
+      "definition": "a way of presenting information so that it gives a favourable impression",
+      "example": "The press release put a positive spin on the disappointing results.",
+      "translation_ru": "подача информации в выгодном свете",
+      "translation_uz": "faktlarni foydali tomondan koʻrsatish"
+    },
+    {
+      "word": "demagogue",
+      "part_of_speech": "noun",
+      "definition": "a leader who wins support by exploiting people's fears and prejudices rather than by reasoned argument",
+      "example": "History offers many examples of demagogues who promised simple answers to complex problems.",
+      "translation_ru": "демагог",
+      "translation_uz": "demagog, xalqni aldab ergashtiruvchi"
+    },
+    {
+      "word": "appeal to authority",
+      "part_of_speech": "noun",
+      "definition": "using the opinion of a famous or powerful person as proof that a claim is true",
+      "example": "\"A celebrity uses this cream\" is an appeal to authority, not evidence.",
+      "translation_ru": "апелляция к авторитету",
+      "translation_uz": "nufuzga tayanish (dalil oʻrniga)"
+    },
+    {
+      "word": "sound bite",
+      "part_of_speech": "noun",
+      "definition": "a short, memorable phrase from a speech, chosen to be repeated in the media",
+      "example": "Politicians often prepare a sound bite before an interview.",
+      "translation_ru": "яркая цитата, броская фраза",
+      "translation_uz": "esda qoladigan qisqa ibora"
+    },
+    {
+      "word": "preach to the converted",
+      "part_of_speech": "idiom",
+      "definition": "to try to persuade people who already agree with you",
+      "example": "Posting only in our own group is just preaching to the converted.",
+      "translation_ru": "убеждать уже убеждённых",
+      "translation_uz": "allaqachon rozi boʻlganlarni ishontirishga urinmoq"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+/* Install the app, iOS steps and the "new version" prompt. */
+.en-pwa-ios { display: grid; gap: 0.35rem; font-size: 0.9rem; }
+.en-pwa-steps { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.25rem; color: var(--ink-700, var(--ink)); }
+
+.en-pwa-update {
+  position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 8000;
+  width: max-content; max-width: calc(100vw - 32px); box-sizing: border-box;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem 0.9rem;
+  padding: 10px 12px 10px 16px; border-radius: 14px;
+  background: #17372d; color: #f4faf6; font-size: 0.9rem; font-weight: 600;
+  box-shadow: 0 12px 30px rgba(23, 55, 45, 0.25);
+}
+.en-pwa-update-actions { display: inline-flex; align-items: center; gap: 0.75rem; }
+.en-pwa-update button.is-lime { min-height: 38px; padding: 0 16px; }
+.en-pwa-update button.is-link { color: rgba(244, 250, 246, 0.85); }
+.en-pwa-update button.is-link:hover { color: #fff; }
+
+@media (max-width: 520px) {
+  .en-pwa-update { left: 16px; right: 16px; transform: none; width: auto; }
+}
+@media print {
+  .en-pwa-update { display: none; }
+}

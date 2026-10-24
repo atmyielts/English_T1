@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "a2-the-evening-the-lights-went-out",
+    "title": "The Evening the Lights Went Out",
+    "level": "A2",
+    "summary": "During a power cut in a mahalla, neighbours share light, tea and food, and a boy sees his street differently.",
+    "content_markdown": "Last winter, on a cold evening in January, the lights in our mahalla suddenly went out. I was doing my maths homework, and my mother was cooking soup. Everything was dark and very quiet. The fridge stopped, the TV stopped, and my phone had only ten per cent battery.\n\nAt first, I was a bit scared. Then I heard voices outside. Our neighbour, Uncle Rustam, was in the street with a big torch. \"Is everyone OK?\" he asked. His wife brought candles for the old woman who lives alone at the end of the street.\n\nOur gas cooker still worked, so my mother finished the soup and invited three families to eat with us. We sat together in the kitchen with candles on the table. The adults told stories about their childhood, and the children played word games.\n\nThe electricity came back after three hours. Everyone cheered, but I felt a little sad. It was a better evening than most evenings with the TV. Now, I know the names of all the children on our street.",
+    "category": "Society",
+    "theme": "community",
+    "tone": "peach",
+    "is_hot": false,
+    "metadata": { "genre": "story", "writing_tone": "warm", "word_count": 176 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "What is the main idea of the story?",
+        "options": [
+          "Power cuts are dangerous in winter.",
+          "The writer couldn't finish his homework.",
+          "A power cut brought the neighbours together.",
+          "The writer's mother is a good cook."
+        ],
+        "answer_index": 2,
+        "explanation": "The neighbours helped each other and ate together, and the writer says \"It was a better evening than most evenings with the TV.\""
+      },
+      {
+        "id": "q2",
+        "skill": "reading.detail",
+        "prompt": "What was the writer doing when the lights went out?",
+        "options": [
+          "Watching TV",
+          "Cooking soup",
+          "Playing word games",
+          "Doing his maths homework"
+        ],
+        "answer_index": 3,
+        "explanation": "\"I was doing my maths homework, and my mother was cooking soup.\""
+      },
+      {
+        "id": "q3",
+        "skill": "reading.detail",
+        "prompt": "Why could his mother finish the soup?",
+        "options": [
+          "The gas cooker still worked.",
+          "Uncle Rustam had a torch.",
+          "The electricity came back quickly.",
+          "She cooked it with candles."
+        ],
+        "answer_index": 0,
+        "explanation": "\"Our gas cooker still worked, so my mother finished the soup.\""
+      },
+      {
+        "id": "q4",
+        "skill": "reading.inference",
+        "prompt": "Why did the writer feel \"a little sad\" when the electricity came back?",
+        "options": [
+          "His phone was broken.",
+          "He enjoyed the evening with the neighbours.",
+          "He was still scared of the dark.",
+          "The soup was cold."
+        ],
+        "answer_index": 1,
+        "explanation": "He says \"It was a better evening than most evenings with the TV\", so he didn't want it to end."
+      },
+      {
+        "id": "q5",
+        "skill": "reading.vocabulary",
+        "prompt": "\"Everyone cheered.\" When people cheer, they…",
+        "options": [
+          "shout happily",
+          "go to sleep",
+          "feel angry",
+          "start to cry"
+        ],
+        "answer_index": 0,
+        "explanation": "People cheered because \"The electricity came back\": they shouted because they were happy."
+      }
+    ]
+  }
+}

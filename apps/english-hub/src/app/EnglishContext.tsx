@@ -39,13 +39,20 @@ type OnboardingResponse = {
 
 type Status = 'loading' | 'ready' | 'error';
 
+/** What the owner can pause from the admin control center: a skill or the AI tutor. */
+export type PausableService = SkillKey | 'tutor';
+const PAUSABLE: readonly string[] = [...SKILLS.map((skill) => skill.key), 'tutor'];
+
 type EnglishState = {
   sessionResolved: boolean;
   session: Session | null;
   accessToken: string | null;
   displayName: string | null;
   /** unlocked: skills in the learner's plan. freeLeft: free activities left today in other skills. */
-  access: { status: Status; unlocked: Set<SkillKey>; freeLeft: number; freePerDay: number; freeToday: Set<string> };
+  /** paused: services the owner has paused for a while (skills, or "tutor"); empty for admins. */
+  access: { status: Status; unlocked: Set<SkillKey>; freeLeft: number; freePerDay: number; freeToday: Set<string>; paused: Set<PausableService> };
+  /** Whether the owner has paused this service (a skill key or "tutor"). */
+  isPaused: (service: PausableService) => boolean;
   /** Whether the learner can do an activity in this skill right now (plan or free allowance). */
   /** With a slug: also true for today's free activity, so its result stays visible and it can be redone. */
   canPractise: (skill: SkillKey, slug?: string | null) => boolean;
@@ -114,7 +121,7 @@ const nameFrom = (session: Session | null): string | null => {
 export const EnglishProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [sessionResolved, setSessionResolved] = useState(false);
-  const [access, setAccess] = useState<EnglishState['access']>({ status: 'loading', unlocked: new Set(), freeLeft: 0, freePerDay: 0, freeToday: new Set() });
+  const [access, setAccess] = useState<EnglishState['access']>({ status: 'loading', unlocked: new Set(), freeLeft: 0, freePerDay: 0, freeToday: new Set(), paused: new Set() });
   const [onboarding, setOnboarding] = useState<EnglishState['onboarding']>({ status: 'loading', value: null });
 
   useEffect(() => {
@@ -139,7 +146,14 @@ export const EnglishProvider = ({ children }: { children: ReactNode }) => {
     try {
       const [me, allowance] = await Promise.all([
         edge<MeResponse>('me'),
-        edge<{ entitled_skills: string[]; free_left: number; free_per_day: number; free_today?: Array<{ skill: string; slug: string }> }>('hub', '/access', { query: { language_code: 'en' } })
+        edge<{
+          entitled_skills: string[];
+          free_left: number;
+          free_per_day: number;
+          free_today?: Array<{ skill: string; slug: string }>;
+          paused_services?: string[];
+          paused_bypass?: boolean;
+        }>('hub', '/access', { query: { language_code: 'en' } })
           .catch(() => null),
       ]);
       const fromServer = allowance
@@ -151,19 +165,21 @@ export const EnglishProvider = ({ children }: { children: ReactNode }) => {
         freeLeft: allowance?.free_left ?? 0,
         freePerDay: allowance?.free_per_day ?? 0,
         freeToday: new Set((allowance?.free_today ?? []).map((item) => `${item.skill}/${item.slug}`)),
+        paused: new Set((allowance?.paused_bypass ? [] : allowance?.paused_services ?? [])
+          .filter((service): service is PausableService => PAUSABLE.includes(service))),
       });
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
         await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
         return;
       }
-      setAccess({ status: 'error', unlocked: new Set(), freeLeft: 0, freePerDay: 0, freeToday: new Set() });
+      setAccess({ status: 'error', unlocked: new Set(), freeLeft: 0, freePerDay: 0, freeToday: new Set(), paused: new Set() });
     }
   }, []);
 
   useEffect(() => {
     if (!userId) {
-      setAccess({ status: 'loading', unlocked: new Set(), freeLeft: 0, freePerDay: 0, freeToday: new Set() });
+      setAccess({ status: 'loading', unlocked: new Set(), freeLeft: 0, freePerDay: 0, freeToday: new Set(), paused: new Set() });
       return;
     }
     void refreshAccess();
@@ -196,6 +212,7 @@ export const EnglishProvider = ({ children }: { children: ReactNode }) => {
       access,
       canPractise: (skill, slug) => access.status !== 'ready' || access.unlocked.has(skill) || access.freeLeft > 0
         || (slug ? access.freeToday.has(`${skill}/${slug}`) : false),
+      isPaused: (service) => access.paused.has(service),
       refreshAccess,
       onboarding,
       refreshOnboarding,

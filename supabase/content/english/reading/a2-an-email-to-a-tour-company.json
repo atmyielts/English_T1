@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "a2-an-email-to-a-tour-company",
+    "title": "An Email to a Tour Company",
+    "level": "A2",
+    "summary": "A student writes to a tour company with questions about a day trip to the Chimgan mountains.",
+    "content_markdown": "**To:** info@mountaindaytours.example\n\n**Subject:** Questions about the Chimgan day trip\n\nDear Sir or Madam,\n\nI saw your advert for a day trip to the Chimgan mountains, and I am interested in it. I am a university student in Tashkent, and I would like to go with three friends from my English class on Saturday, 14 June.\n\nI have a few questions.\n\n- What time does the bus leave, and where does it leave from? We live near the Chilonzor metro station.\n- Is lunch included in the price, or do we need to bring our own food?\n- One of my friends can't walk very far. Are there easy walks for beginners?\n- Do students get a discount? We can show our student cards.\n\nWe would also like to try the cable car. Is it open in June, and do we need to buy tickets before the trip?\n\nThank you for your help. I am going to book the tour after I get your answer.\n\nBest wishes,\n\nShahzoda Karimova",
+    "category": "Travel",
+    "theme": "day trips",
+    "tone": "sand",
+    "is_hot": false,
+    "metadata": { "genre": "email", "writing_tone": "polite", "word_count": 164 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "Why is Shahzoda writing this email?",
+        "options": [
+          "To complain about a trip",
+          "To ask questions before she books a trip",
+          "To cancel her booking",
+          "To invite her friends to the mountains"
+        ],
+        "answer_index": 1,
+        "explanation": "She writes \"I have a few questions\" and \"I am going to book the tour after I get your answer.\""
+      },
+      {
+        "id": "q2",
+        "skill": "reading.detail",
+        "prompt": "How many people want to go on the trip?",
+        "options": [
+          "Two",
+          "Three",
+          "Fourteen",
+          "Four"
+        ],
+        "answer_index": 3,
+        "explanation": "She wants to go \"with three friends\", so there are four people."
+      },
+      {
+        "id": "q3",
+        "skill": "reading.detail",
+        "prompt": "What does she want to know about lunch?",
+        "options": [
+          "If it is in the price or they need to bring food",
+          "What time it is",
+          "If there is plov",
+          "How much it costs at the restaurant"
+        ],
+        "answer_index": 0,
+        "explanation": "\"Is lunch included in the price, or do we need to bring our own food?\""
+      },
+      {
+        "id": "q4",
+        "skill": "reading.inference",
+        "prompt": "Why does she ask about easy walks?",
+        "options": [
+          "She is a mountain guide.",
+          "She wants a very long walk.",
+          "One friend can't walk far.",
+          "The cable car is closed."
+        ],
+        "answer_index": 2,
+        "explanation": "\"One of my friends can't walk very far. Are there easy walks for beginners?\""
+      },
+      {
+        "id": "q5",
+        "skill": "reading.vocabulary",
+        "prompt": "\"Do students get a discount?\" A discount is…",
+        "options": [
+          "a lower price",
+          "a free lunch",
+          "a student card",
+          "an extra ticket"
+        ],
+        "answer_index": 0,
+        "explanation": "She offers to \"show our student cards\" because she hopes students pay a lower price."
+      }
+    ]
+  }
+}

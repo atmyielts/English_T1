@@ -1,0 +1,158 @@
+{
+  "item": {
+    "slug": "b1-radio-weekend-events-in-the-city",
+    "title": "What's On This Weekend",
+    "level": "B1",
+    "summary": "A local radio guide to the weekend: a book fair, a street food festival, an open-air concert and the weather.",
+    "transcript_text": "And now it's time for our weekend guide. There's plenty going on around the city, so here are our top picks. On Saturday morning, Green Park is holding a family book fair from ten until two. Local writers will read from their new books, and there's a free drawing workshop for children. Bring some old books if you'd like to swap them. If food is more your thing, don't miss the street food festival on the new boulevard. It runs all weekend, from noon until late, with dishes from somsa and shashlik to Korean and Turkish food. Entry is free, but it gets very busy in the evenings, so go early if you can. For music fans, there's an open-air jazz concert on Sunday evening at seven in the City Garden. Tickets cost fifty thousand som and you can buy them online. And finally, the weather. It's going to be sunny and warm on Saturday, but there's a chance of rain on Sunday afternoon. So keep an umbrella handy if you're going to the concert. Have a great weekend!",
+    "category": "Culture",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 140,
+    "duration_seconds": 77,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "radio",
+      "events",
+      "weekend",
+      "city"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "radio"
+    },
+    "questions": [
+      {
+        "prompt": "What can children do at the book fair?",
+        "options": [
+          "Meet famous actors",
+          "Join a free drawing workshop",
+          "Buy books for half price",
+          "Write their own stories"
+        ],
+        "answer_index": 1,
+        "explanation": "\"There's a free drawing workshop for children.\""
+      },
+      {
+        "prompt": "Why should people bring old books?",
+        "options": [
+          "To sell them",
+          "To give them to a library",
+          "To swap them",
+          "To get a free ticket"
+        ],
+        "answer_index": 2,
+        "explanation": "\"Bring some old books if you'd like to swap them.\""
+      },
+      {
+        "prompt": "What advice does the presenter give about the food festival?",
+        "options": [
+          "Go early, because it's busy in the evenings.",
+          "Buy tickets online.",
+          "Bring your own food.",
+          "Only go on Sunday."
+        ],
+        "answer_index": 0,
+        "explanation": "\"It gets very busy in the evenings, so go early if you can.\""
+      },
+      {
+        "prompt": "Why might concert-goers need an umbrella?",
+        "options": [
+          "The concert is next to a lake.",
+          "It will be very sunny on Saturday.",
+          "The garden has no trees.",
+          "It may rain on Sunday afternoon."
+        ],
+        "answer_index": 3,
+        "explanation": "\"There's a chance of rain on Sunday afternoon. So keep an umbrella handy if you're going to the concert.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "And now it's time for our weekend guide.",
+      "focus_phrase": "our weekend guide",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "There's plenty going on around the city, so here are our top picks.",
+      "focus_phrase": "plenty going on",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "On Saturday morning, Green Park is holding a family book fair from ten until two.",
+      "focus_phrase": "a family book fair",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Local writers will read from their new books, and there's a free drawing workshop for children.",
+      "focus_phrase": "a free drawing workshop",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Bring some old books if you'd like to swap them.",
+      "focus_phrase": "swap them",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "If food is more your thing, don't miss the street food festival on the new boulevard.",
+      "focus_phrase": "more your thing",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "It runs all weekend, from noon until late, with dishes from somsa and shashlik to Korean and Turkish food.",
+      "focus_phrase": "all weekend",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Entry is free, but it gets very busy in the evenings, so go early if you can.",
+      "focus_phrase": "Entry is free",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "For music fans, there's an open-air jazz concert on Sunday evening at seven in the City Garden.",
+      "focus_phrase": "an open-air jazz concert",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Tickets cost fifty thousand som and you can buy them online.",
+      "focus_phrase": "buy them online",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "And finally, the weather.",
+      "focus_phrase": "And finally",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "It's going to be sunny and warm on Saturday, but there's a chance of rain on Sunday afternoon.",
+      "focus_phrase": "a chance of rain",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "So keep an umbrella handy if you're going to the concert.",
+      "focus_phrase": "keep an umbrella handy",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Have a great weekend!",
+      "focus_phrase": "Have a great weekend",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

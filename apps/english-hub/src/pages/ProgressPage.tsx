@@ -9,6 +9,8 @@ import { CanDoPanel } from './CanDoPanel';
 import { LevelJourneyPanel } from './LevelJourneyPanel';
 import { GoalPlanPanel } from './goal/GoalPlanPanel';
 import { BadgesPanel } from '../components/Badges';
+import { SkillRatingsPanel } from './SkillRatingsPanel';
+import { TrapsPanel } from './TrapsPanel';
 import { EmptyState, ErrorState, LevelBadge, Loading, PageHeader, Panel, ProgressBar, SkillDot, Stat, Tag } from '../ui/kit';
 
 const Heatmap = ({ days }: { days: ProgressResponse['days'] }) => {
@@ -91,6 +93,8 @@ export const ProgressPage = () => {
 
       <GoalPlanPanel />
 
+      <SkillRatingsPanel reloadKey={moved ? `${moved.skill}:${moved.level}` : ''} />
+
       <div className="en-grid-2">
         <Panel title={t('progress.skills.title')}>
           <p className="hint">{t('progress.skills.lead')}</p>
@@ -162,6 +166,8 @@ export const ProgressPage = () => {
           ) : null}
         </Panel>
       </div>
+
+      <TrapsPanel />
 
       <BadgesPanel />
 

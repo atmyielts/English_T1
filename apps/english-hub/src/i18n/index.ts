@@ -27,6 +27,24 @@ import { translateUz } from './translate.uz';
 import { bundleEn } from './bundle.en';
 import { bundleRu } from './bundle.ru';
 import { bundleUz } from './bundle.uz';
+import { pwaEn } from './pwa.en';
+import { pwaRu } from './pwa.ru';
+import { pwaUz } from './pwa.uz';
+import { workspaceEn } from './workspace.en';
+import { workspaceRu } from './workspace.ru';
+import { workspaceUz } from './workspace.uz';
+import { engineEn } from './engine.en';
+import { engineRu } from './engine.ru';
+import { engineUz } from './engine.uz';
+import { pausedEn } from './paused.en';
+import { pausedRu } from './paused.ru';
+import { pausedUz } from './paused.uz';
+import { showcaseEn } from './showcase.en';
+import { showcaseRu } from './showcase.ru';
+import { showcaseUz } from './showcase.uz';
+import { practiceEn } from './practice.en';
+import { practiceRu } from './practice.ru';
+import { practiceUz } from './practice.uz';
 import { skillCatalogs } from '../skills/catalogs';
 
 type Partial3 = { en: Record<string, string>; ru: Partial<Record<string, string>>; uz: Partial<Record<string, string>> };
@@ -38,7 +56,7 @@ const merge = (parts: Partial3[]): Catalogs<string> => ({
 });
 
 /** Every UI string. Russian and Uzbek fall back to English for any missing key. */
-export const catalogs = merge([{ en, ru, uz }, { en: aiEn, ru: aiRu, uz: aiUz }, { en: tgreviewEn, ru: tgreviewRu, uz: tgreviewUz }, { en: handbookEn, ru: handbookRu, uz: handbookUz }, { en: certificateEn, ru: certificateRu, uz: certificateUz }, { en: goalEn, ru: goalRu, uz: goalUz }, { en: xpEn, ru: xpRu, uz: xpUz }, { en: translateEn, ru: translateRu, uz: translateUz }, { en: bundleEn, ru: bundleRu, uz: bundleUz }, ...skillCatalogs]);
+export const catalogs = merge([{ en, ru, uz }, { en: aiEn, ru: aiRu, uz: aiUz }, { en: tgreviewEn, ru: tgreviewRu, uz: tgreviewUz }, { en: handbookEn, ru: handbookRu, uz: handbookUz }, { en: certificateEn, ru: certificateRu, uz: certificateUz }, { en: goalEn, ru: goalRu, uz: goalUz }, { en: xpEn, ru: xpRu, uz: xpUz }, { en: translateEn, ru: translateRu, uz: translateUz }, { en: bundleEn, ru: bundleRu, uz: bundleUz }, { en: pwaEn, ru: pwaRu, uz: pwaUz }, { en: workspaceEn, ru: workspaceRu, uz: workspaceUz }, { en: engineEn, ru: engineRu, uz: engineUz }, { en: pausedEn, ru: pausedRu, uz: pausedUz }, { en: showcaseEn, ru: showcaseRu, uz: showcaseUz }, { en: practiceEn, ru: practiceRu, uz: practiceUz }, ...skillCatalogs]);
 
 /** Translator for the English app. Keys live in i18n/en.ts and skills/<skill>/i18n.ts. */
 export const useT = () => useI18n().t;

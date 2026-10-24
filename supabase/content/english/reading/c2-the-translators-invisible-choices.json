@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "c2-the-translators-invisible-choices",
+    "title": "The Translator's Invisible Choices",
+    "level": "C2",
+    "summary": "An essay arguing that every translation is a series of judgements, and that what we call loss in translation is often inseparable from what is gained.",
+    "content_markdown": "We tend to praise a translation in a curious way: by saying that we did not notice it. A good translation, the reviewers tell us, \"reads as though it were written in English\", as if the highest achievement of the translator were to vanish without trace. It is a peculiar compliment. We do not congratulate architects on buildings that look as though nobody designed them. Yet with translators, invisibility is treated as the summit of the craft, and the countless decisions that made the text possible are quietly written out of the story.\n\nThose decisions begin with the very first sentence. Take a phrase as ordinary as a host's greeting to a guest arriving for dinner. In one language it may carry overtones of honour and obligation that have no tidy equivalent elsewhere; rendered literally, it sounds stilted or faintly comic, while rendered idiomatically, it loses the weight that made it worth saying. The translator must choose, and either choice is a kind of interpretation. There is no neutral option, no setting on the dial marked \"accurate\" that relieves her of the need to judge.\n\n## The arithmetic of loss\n\nThe familiar complaint that something is always \"lost in translation\" assumes a simple arithmetic: the original contains a fixed quantity of meaning, and every transfer into another language subtracts a little of it. On this view, the best a translator can hope for is to minimise the damage. It is an understandable picture, and in individual cases it is often true. A pun rarely survives the journey; a line of verse may keep its sense and lose its music, or keep its music and lose its sense.\n\nBut the arithmetic is misleading in a deeper way, because meaning is not a substance stored inside a text. It arises between a text and its readers, and readers in a new language bring different associations, different histories and different blind spots. A novel set in a provincial town may strike its original readers as unremarkable and its foreign readers as exotic, or the reverse. In such cases the translation has not merely lost something; it has acquired a new life that the original could never have had.\n\n## Fidelity to what?\n\nThis is why the endless debate about \"faithful\" versus \"free\" translation is, at bottom, a debate about the object of fidelity. Is the translator faithful to the words, to the syntax, to the tone, to the effect the text had on its first readers, or to the author's intentions, insofar as these can be known? These loyalties frequently pull in opposite directions. A translator who reproduces every grammatical quirk of a sentence may betray its ease; one who smooths everything into fluent prose may betray its strangeness, which was perhaps the very thing the author cared about.\n\nThe point is not that every choice is equally defensible. Some translations are careless, and some are simply wrong. The point is that the good ones are good because the translator has made her choices consciously and consistently, not because she has avoided making any.\n\n## Making the invisible visible\n\nIf this is true, our habit of praising invisibility starts to look less like a compliment and more like a misunderstanding. It encourages readers to imagine that they are encountering the author directly, and it encourages publishers to treat translators as technicians rather than as writers in their own right. It is telling that, until relatively recently, many translators' names appeared in small print on the inside page, if at all.\n\nNone of this requires translators to become intrusive, scattering footnotes across every page or reminding us of their presence at every turn. The aim is rather a change in how we read. To read a translation well is to keep two things in mind at once: that we are in contact with a work from elsewhere, and that this contact has been made possible by someone who stood between two languages and decided, sentence by sentence, what each of them could bear.\n\nIn a world where more and more texts pass between languages, often through software that hides its choices even more completely, that awareness is worth cultivating. The translator's decisions were never truly invisible. We simply had not learned to see them.",
+    "category": "Culture",
+    "theme": "translation",
+    "tone": "lavender",
+    "is_hot": false,
+    "metadata": { "genre": "essay", "writing_tone": "argumentative", "word_count": 710 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "What is the central claim of the essay?",
+        "options": [
+          "Translation inevitably destroys the meaning of literary works.",
+          "Translators should add footnotes to explain every difficult phrase.",
+          "Translation consists of unavoidable, conscious judgements, and praising translators for being invisible misunderstands their work.",
+          "Software will soon replace human translators."
+        ],
+        "answer_index": 2,
+        "explanation": "The writer argues \"there is no neutral option\" and that praising invisibility \"starts to look less like a compliment and more like a misunderstanding\"."
+      },
+      {
+        "id": "q2",
+        "skill": "reading.inference",
+        "prompt": "Why does the writer mention architects in the first paragraph?",
+        "options": [
+          "To show that translation is easier than architecture",
+          "To highlight how strange it is to praise a creative professional for leaving no visible sign of their work",
+          "To argue that translators should design books",
+          "To criticise modern buildings"
+        ],
+        "answer_index": 1,
+        "explanation": "\"We do not congratulate architects on buildings that look as though nobody designed them\", yet translators are praised for invisibility, which the writer calls \"a peculiar compliment\"."
+      },
+      {
+        "id": "q3",
+        "skill": "reading.detail",
+        "prompt": "What does the writer find misleading about the \"arithmetic of loss\"?",
+        "options": [
+          "It treats meaning as a fixed quantity inside the text, whereas meaning arises between a text and its readers.",
+          "It exaggerates how often puns are lost.",
+          "It ignores the cost of publishing translations.",
+          "It assumes translators are always careless."
+        ],
+        "answer_index": 0,
+        "explanation": "\"Meaning is not a substance stored inside a text. It arises between a text and its readers.\""
+      },
+      {
+        "id": "q4",
+        "skill": "reading.vocabulary",
+        "prompt": "In the section \"Fidelity to what?\", the word \"quirk\" most nearly means:",
+        "options": [
+          "A serious grammatical error",
+          "A typical feature shared by all languages",
+          "A peculiar or unusual feature",
+          "A hidden meaning"
+        ],
+        "answer_index": 2,
+        "explanation": "Reproducing \"every grammatical quirk\" means copying every unusual, idiosyncratic feature of the sentence."
+      },
+      {
+        "id": "q5",
+        "skill": "reading.inference",
+        "prompt": "What is the writer's attitude to the idea that all translation choices are equally valid?",
+        "options": [
+          "The writer fully accepts it.",
+          "The writer has no opinion on it.",
+          "The writer thinks only literal translations are valid.",
+          "The writer rejects it, insisting that some translations are careless or simply wrong."
+        ],
+        "answer_index": 3,
+        "explanation": "\"The point is not that every choice is equally defensible. Some translations are careless, and some are simply wrong.\""
+      }
+    ]
+  }
+}

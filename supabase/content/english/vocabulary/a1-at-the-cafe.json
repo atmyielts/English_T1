@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "a1-at-the-cafe",
+    "title": "At the café",
+    "level": "A1",
+    "topic": "café",
+    "description": "Words you need to order food and drinks and pay in a café."
+  },
+  "children": [
+    {
+      "word": "menu",
+      "part_of_speech": "noun",
+      "definition": "a list of the food and drinks in a café or restaurant",
+      "example": "Can I see the menu, please?",
+      "translation_ru": "меню",
+      "translation_uz": "menyu"
+    },
+    {
+      "word": "order",
+      "part_of_speech": "verb",
+      "definition": "to ask for food or drink in a café or restaurant",
+      "example": "I'd like to order a coffee and a sandwich.",
+      "translation_ru": "заказывать",
+      "translation_uz": "buyurtma bermoq"
+    },
+    {
+      "word": "waiter",
+      "part_of_speech": "noun",
+      "definition": "a person who brings food and drinks to your table",
+      "example": "The waiter brought our soup very quickly.",
+      "translation_ru": "официант",
+      "translation_uz": "ofitsiant"
+    },
+    {
+      "word": "spoon",
+      "part_of_speech": "noun",
+      "definition": "a small tool with a round end that you use to eat soup or stir tea",
+      "example": "Can I have a spoon for my soup, please?",
+      "translation_ru": "ложка",
+      "translation_uz": "qoshiq"
+    },
+    {
+      "word": "cup",
+      "part_of_speech": "noun",
+      "definition": "a small round container with a handle, for hot drinks",
+      "example": "A cup of black tea, please.",
+      "translation_ru": "чашка",
+      "translation_uz": "piyola, chashka"
+    },
+    {
+      "word": "glass",
+      "part_of_speech": "noun",
+      "definition": "a container you can see through, for cold drinks",
+      "example": "Can I have a glass of water?",
+      "translation_ru": "стакан",
+      "translation_uz": "stakan"
+    },
+    {
+      "word": "plate",
+      "part_of_speech": "noun",
+      "definition": "a flat round dish that you put food on",
+      "example": "There are two somsa on my plate.",
+      "translation_ru": "тарелка",
+      "translation_uz": "likopcha, tarelka"
+    },
+    {
+      "word": "sugar",
+      "part_of_speech": "noun",
+      "definition": "a sweet white or brown food that you put in drinks",
+      "example": "Do you take sugar in your coffee?",
+      "translation_ru": "сахар",
+      "translation_uz": "shakar"
+    },
+    {
+      "word": "coffee",
+      "part_of_speech": "noun",
+      "definition": "a hot brown drink made from roasted beans",
+      "example": "I drink coffee every morning before work.",
+      "translation_ru": "кофе",
+      "translation_uz": "qahva"
+    },
+    {
+      "word": "soup",
+      "part_of_speech": "noun",
+      "definition": "a hot liquid food made with vegetables or meat",
+      "example": "The lentil soup here is very good.",
+      "translation_ru": "суп",
+      "translation_uz": "shoʻrva"
+    },
+    {
+      "word": "salad",
+      "part_of_speech": "noun",
+      "definition": "a cold dish of mixed vegetables, for example tomatoes and cucumbers",
+      "example": "I'll have a salad and some bread, please.",
+      "translation_ru": "салат",
+      "translation_uz": "salat"
+    },
+    {
+      "word": "sandwich",
+      "part_of_speech": "noun",
+      "definition": "two pieces of bread with cheese, meat or vegetables between them",
+      "example": "She eats a chicken sandwich for lunch.",
+      "translation_ru": "бутерброд, сэндвич",
+      "translation_uz": "sendvich, buterbrod"
+    }
+  ]
+}

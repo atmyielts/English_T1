@@ -3,6 +3,8 @@ import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { HubFrame, SkillWorkspace } from './app/Chrome';
 import { useEnglish } from './app/EnglishContext';
 import { OfflineBanner } from './components/OfflineBanner';
+import { UpdatePrompt } from './components/InstallApp';
+import { applyManifest } from './lib/pwa';
 import { useT } from './i18n';
 import { SKILLS, skillByKey } from './lib/skills';
 import { Loading } from './ui/kit';
@@ -18,6 +20,9 @@ const LeaguePage = lazy(() => import('./pages/LeaguePage').then((m) => ({ defaul
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage })));
 const CertificatePage = lazy(() => import('./pages/CertificatePage').then((m) => ({ default: m.CertificatePage })));
 const PublicCertificatePage = lazy(() => import('./pages/PublicCertificatePage').then((m) => ({ default: m.PublicCertificatePage })));
+const RolePlaysPage = lazy(() => import('./pages/RolePlaysPage').then((m) => ({ default: m.RolePlaysPage })));
+const RolePlayPage = lazy(() => import('./pages/RolePlaysPage').then((m) => ({ default: m.RolePlayPage })));
+const SpeakingMockPage = lazy(() => import('./pages/SpeakingMockPage').then((m) => ({ default: m.SpeakingMockPage })));
 
 const SKILL_APPS = {
   reading: lazy(() => import('./skills/reading')),
@@ -74,6 +79,11 @@ const App = () => {
     window.scrollTo({ top: 0 });
   }, [location.pathname]);
 
+  // Inside /<skill> the browser offers that skill's own app; elsewhere, Schood English.
+  useEffect(() => {
+    applyManifest(location.pathname);
+  }, [location.pathname]);
+
   if (!sessionResolved) {
     return <HubFrame><section className="en-panel"><Loading lines={6} label={t('app.restoring')} /></section></HubFrame>;
   }
@@ -82,6 +92,7 @@ const App = () => {
     return (
       <>
         <OfflineBanner />
+        <UpdatePrompt />
         <HubFrame>
           <Routes>
             <Route path="/" element={<LandingPage />} />
@@ -100,6 +111,7 @@ const App = () => {
   return (
     <>
       <OfflineBanner />
+      <UpdatePrompt />
       <Routes>
         <Route path="/" element={<Navigate to="/today" replace />} />
         <Route path="/today" element={<HubFrame><TodayPage /></HubFrame>} />
@@ -112,6 +124,9 @@ const App = () => {
         <Route path="/check" element={hub(<CheckPage />)} />
         <Route path="/certificate" element={hub(<CertificatePage />)} />
         <Route path="/c/:code" element={hub(<PublicCertificatePage />)} />
+        <Route path="/roleplay" element={hub(<RolePlaysPage />)} />
+        <Route path="/roleplay/:id" element={hub(<RolePlayPage />)} />
+        <Route path="/speaking-mock" element={hub(<SpeakingMockPage />)} />
         {SKILLS.map((skill) => {
           const SkillApp = SKILL_APPS[skill.key];
           return (
@@ -130,7 +145,6 @@ const App = () => {
         <Route path="/studio" element={<Navigate to="/tutor" replace />} />
         <Route path="*" element={<Navigate to="/today" replace />} />
       </Routes>
-      {skillByKey(location.pathname.split('/')[1]) ? null : <Footer />}
     </>
   );
 };

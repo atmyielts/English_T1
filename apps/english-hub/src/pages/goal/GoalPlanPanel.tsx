@@ -21,7 +21,7 @@ const WeekBars = ({ plan }: { plan: GoalPlan }) => {
       <div className="en-goal-chart">
         {target > 0 ? (
           <span className="en-goal-line-zone" aria-hidden="true">
-            <span className="en-goal-line" style={{ bottom: `${(target / scale) * 100}%` }} />
+            <span className="en-goal-target-line" style={{ bottom: `${(target / scale) * 100}%` }} />
           </span>
         ) : null}
         <ol className="en-goal-bars" aria-label={t('goalPlan.panel.weeksLabel')}>

@@ -9,6 +9,7 @@ import {
   GraduationCap,
   Headphones,
   Home,
+  Languages,
   MessageCircle,
   Send,
   Settings,
@@ -16,6 +17,7 @@ import {
 } from 'lucide-react';
 import { edgeBase } from '../lib/supabase';
 import { TelegramHomeworkPanel } from '../components/telegram/TelegramHomeworkPanel';
+import { TelegramEnglishSection } from '../components/telegram/english/TelegramEnglishSection';
 
 declare global {
   interface Window {
@@ -33,7 +35,7 @@ declare global {
   }
 }
 
-type Tab = 'today' | 'academy' | 'practice' | 'payments' | 'support' | 'profile';
+type Tab = 'today' | 'english' | 'academy' | 'practice' | 'payments' | 'support' | 'profile';
 type Json = Record<string, unknown>;
 
 type Assignment = {
@@ -232,6 +234,8 @@ export const TelegramAppPage: React.FC = () => {
   const [supportSent, setSupportSent] = useState(false);
   const [vocabReveal, setVocabReveal] = useState(false);
   const [vocabCard, setVocabCard] = useState<Json | null>(null);
+  // The bot's "Review now" button opens English straight into review, once.
+  const [englishLaunchReview, setEnglishLaunchReview] = useState(() => launchParams.get('view') === 'english' && launchParams.get('section') === 'review');
 
   const callTelegramApp = useCallback(
     async (action: string, body: Json = {}) => {
@@ -290,6 +294,7 @@ export const TelegramAppPage: React.FC = () => {
   useEffect(() => {
     const view = launchParams.get('view');
     if (view === 'academy') setTab('academy');
+    else if (view === 'english') setTab('english');
     else if (view === 'practice') setTab('practice');
     else if (view === 'payments') setTab('payments');
   }, [launchParams]);
@@ -425,6 +430,7 @@ export const TelegramAppPage: React.FC = () => {
 
   const tabs: Array<{ id: Tab; label: string; icon: React.ReactNode; badge?: number }> = [
     { id: 'today', label: 'Today', icon: <Home size={18} />, badge: pendingAssignments.length || undefined },
+    { id: 'english', label: 'English', icon: <Languages size={18} /> },
     { id: 'academy', label: 'Academy', icon: <GraduationCap size={18} /> },
     { id: 'practice', label: 'Practice', icon: <BookOpen size={18} />, badge: dashboard?.vocab.due || undefined },
     { id: 'payments', label: 'Pay', icon: <CreditCard size={18} /> },
@@ -510,6 +516,14 @@ export const TelegramAppPage: React.FC = () => {
               )}
             </Card>
           </div>
+        )}
+
+        {tab === 'english' && (
+          <TelegramEnglishSection
+            call={callTelegramApp}
+            openLink={openExternal}
+            startInReview={englishLaunchReview}
+          />
         )}
 
         {tab === 'academy' && (
@@ -712,12 +726,15 @@ export const TelegramAppPage: React.FC = () => {
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 px-2 pb-3 pt-2 backdrop-blur">
-        <div className="mx-auto grid max-w-md grid-cols-6 gap-1">
+        <div className="mx-auto grid max-w-md grid-cols-7 gap-1">
           {tabs.map((item) => (
             <button
               key={item.id}
               type="button"
-              onClick={() => setTab(item.id)}
+              onClick={() => {
+                setTab(item.id);
+                setEnglishLaunchReview(false);
+              }}
               className={`relative flex h-14 flex-col items-center justify-center rounded-xl text-[10px] font-bold ${tab === item.id ? 'bg-gray-950 text-white' : 'text-gray-500'}`}
             >
               {item.icon}

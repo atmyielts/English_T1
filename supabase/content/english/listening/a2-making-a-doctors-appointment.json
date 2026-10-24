@@ -1,0 +1,180 @@
+{
+  "item": {
+    "slug": "a2-making-a-doctors-appointment",
+    "title": "Making a Doctor's Appointment",
+    "level": "A2",
+    "summary": "A student abroad phones a clinic about a sore throat and changes the first appointment time he is offered.",
+    "transcript_text": "Receptionist: Good morning, Riverside Medical Centre. How can I help?\nJasur: Hello. I'd like to make an appointment with a doctor, please.\nReceptionist: Of course. Are you registered with us?\nJasur: Yes, I registered last month. I'm a student at the university.\nReceptionist: Can I have your name and date of birth?\nJasur: It's Jasur Aliyev, and I was born on the fifth of March, two thousand and four.\nReceptionist: Thank you. And what's the problem?\nJasur: I've had a sore throat for a week, and now I have a cough too.\nReceptionist: I see. The first appointment is on Thursday at a quarter past eleven. Is that OK?\nJasur: Thursday's difficult, I have an exam. Is there anything earlier?\nReceptionist: Let me check. Yes, there's one tomorrow at twenty to nine with Dr Patel.\nJasur: That's perfect, thank you.\nReceptionist: Please come ten minutes early. See you tomorrow.",
+    "category": "Health",
+    "accent": "general",
+    "speed_label": "slow",
+    "speed_wpm": 125,
+    "duration_seconds": 65,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "health",
+      "phone call",
+      "study abroad",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Receptionist",
+        "Jasur"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "How long has Jasur had a sore throat?",
+        "options": [
+          "Since yesterday",
+          "For three days",
+          "For a week",
+          "For a month"
+        ],
+        "answer_index": 2,
+        "explanation": "\"I've had a sore throat for a week, and now I have a cough too.\""
+      },
+      {
+        "prompt": "Why can't he go on Thursday?",
+        "options": [
+          "He has an exam.",
+          "He works on Thursdays.",
+          "He is travelling.",
+          "The doctor is busy."
+        ],
+        "answer_index": 0,
+        "explanation": "\"Thursday's difficult, I have an exam.\""
+      },
+      {
+        "prompt": "When is his appointment?",
+        "options": [
+          "Thursday at a quarter past eleven",
+          "Tomorrow at twenty to nine",
+          "Tomorrow at nine o'clock",
+          "Today at twenty to nine"
+        ],
+        "answer_index": 1,
+        "explanation": "\"There's one tomorrow at twenty to nine with Dr Patel.\" \"That's perfect.\""
+      },
+      {
+        "prompt": "What does the receptionist ask him to do?",
+        "options": [
+          "Bring his passport",
+          "Call again tomorrow",
+          "Pay before he comes",
+          "Come ten minutes early"
+        ],
+        "answer_index": 3,
+        "explanation": "\"Please come ten minutes early.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Good morning, Riverside Medical Centre.",
+      "focus_phrase": "Medical Centre",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "How can I help?",
+      "focus_phrase": "How can I help",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Hello. I'd like to make an appointment with a doctor, please.",
+      "focus_phrase": "make an appointment",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Of course. Are you registered with us?",
+      "focus_phrase": "registered with us",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Yes, I registered last month.",
+      "focus_phrase": "last month",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I'm a student at the university.",
+      "focus_phrase": "at the university",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Can I have your name and date of birth?",
+      "focus_phrase": "date of birth",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "It's Jasur Aliyev, and I was born on the fifth of March, two thousand and four.",
+      "focus_phrase": "the fifth of March",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Thank you. And what's the problem?",
+      "focus_phrase": "what's the problem",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I've had a sore throat for a week, and now I have a cough too.",
+      "focus_phrase": "a sore throat",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I see. The first appointment is on Thursday at a quarter past eleven.",
+      "focus_phrase": "on Thursday",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Is that OK?",
+      "focus_phrase": "Is that OK",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Thursday's difficult, I have an exam.",
+      "focus_phrase": "I have an exam",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Is there anything earlier?",
+      "focus_phrase": "anything earlier",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Let me check. Yes, there's one tomorrow at twenty to nine with Dr Patel.",
+      "focus_phrase": "twenty to nine",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "That's perfect, thank you.",
+      "focus_phrase": "That's perfect",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Please come ten minutes early. See you tomorrow.",
+      "focus_phrase": "ten minutes early",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

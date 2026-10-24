@@ -5,6 +5,9 @@ import { englishJourney } from '../lib/journeyAnalytics';
 import { SKILLS } from '../lib/skills';
 import { SkillDot } from '../ui/kit';
 
+const FEATURES = ['roleplay', 'mock', 'l1', 'telegram', 'app', 'cert'] as const;
+const PLANS = ['free', 'one', 'all'] as const;
+
 /** Signed-out home. Describes what learners actually do; shows no invented results. */
 export const LandingPage = () => {
   const t = useT();
@@ -64,6 +67,50 @@ export const LandingPage = () => {
           ))}
         </div>
       </div>
+
+      <section className="en-panel en-showcase">
+        <h2>{t('show.features.title')}</h2>
+        <p className="en-lead">{t('show.features.lead')}</p>
+        <div className="en-grid-cards">
+          {FEATURES.map((key) => (
+            <div key={key} className="en-show-card">
+              <h3>{t(`show.f.${key}.title`)}</h3>
+              <p>{t(`show.f.${key}.body`)}</p>
+            </div>
+          ))}
+        </div>
+        <div className="en-actions">
+          <a className="en-button-quiet" href="https://t.me/schoodonlinebot" target="_blank" rel="noopener noreferrer">{t('show.telegram.cta')}</a>
+        </div>
+      </section>
+
+      <div className="en-stack">
+        <h2 style={{ margin: 0 }}>{t('show.plans.title')}</h2>
+        <div className="en-grid-cards">
+          {PLANS.map((key) => (
+            <div key={key} className={`en-skill-card en-plan ${key === 'all' ? 'is-best' : ''}`.trim()}>
+              <h3>{t(`show.plan.${key}.name`)}</h3>
+              <strong className="en-plan-price">{t(`show.plan.${key}.price`)}</strong>
+              <p>{t(`show.plan.${key}.body`)}</p>
+              {key === 'free' ? (
+                <a className="en-button is-lime" href={signInHref('/today')}>{t('landing.cta')}</a>
+              ) : (
+                <a className={key === 'all' ? 'en-button' : 'en-button-quiet'} href={pricingHref()}>{t('show.plan.cta')}</a>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <section className="en-panel en-final">
+        <div>
+          <h2>{t('show.final.title')}</h2>
+          <p>{t('show.final.body')}</p>
+        </div>
+        <a className="en-button is-large is-lime" href={signInHref('/today')} onClick={() => englishJourney.track('signin_started', { target: 'english_plan_final' })}>
+          {t('landing.cta')}
+        </a>
+      </section>
     </>
   );
 };

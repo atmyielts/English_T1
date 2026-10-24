@@ -837,13 +837,13 @@ const pages: DiscoveryPageConfig[] = [
       },
       {
         label: 'English reading service',
-        href: 'https://reading.english.schood.online',
+        href: 'https://english.schood.online/reading',
         description: 'Go directly to English Reading.',
         external: true,
       },
       {
         label: 'English writing service',
-        href: 'https://writing.english.schood.online',
+        href: 'https://english.schood.online/writing',
         description: 'Go directly to English Writing.',
         external: true,
       },

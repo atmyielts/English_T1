@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "a2-housework",
+    "title": "Housework",
+    "level": "A2",
+    "topic": "housework",
+    "description": "Words for jobs around the house and sharing them with your family or flatmates."
+  },
+  "children": [
+    {
+      "word": "tidy",
+      "part_of_speech": "verb",
+      "definition": "to put things back in the right place so a room looks nice",
+      "example": "Please tidy your room before the guests arrive.",
+      "translation_ru": "наводить порядок",
+      "translation_uz": "yigʻishtirmoq, tartibga keltirmoq"
+    },
+    {
+      "word": "do the washing-up",
+      "part_of_speech": "phrase",
+      "definition": "to wash the plates, cups and pots after a meal",
+      "example": "I cook, and my brother does the washing-up.",
+      "translation_ru": "мыть посуду",
+      "translation_uz": "idish yuvmoq"
+    },
+    {
+      "word": "laundry",
+      "part_of_speech": "noun",
+      "definition": "clothes and sheets that need washing or have just been washed",
+      "example": "I do my laundry on Sunday evening.",
+      "translation_ru": "стирка, бельё для стирки",
+      "translation_uz": "kir (yuviladigan kiyimlar)"
+    },
+    {
+      "word": "iron",
+      "part_of_speech": "verb",
+      "definition": "to make clothes smooth with a hot electric tool",
+      "example": "He irons his shirt every morning before work.",
+      "translation_ru": "гладить (утюгом)",
+      "translation_uz": "dazmollamoq"
+    },
+    {
+      "word": "vacuum",
+      "part_of_speech": "verb",
+      "definition": "to clean the floor with an electric machine that sucks up dust",
+      "example": "Can you vacuum the carpet in the living room?",
+      "translation_ru": "пылесосить",
+      "translation_uz": "changyutgich bilan tozalamoq"
+    },
+    {
+      "word": "sweep",
+      "part_of_speech": "verb",
+      "definition": "to clean the floor or yard with a brush",
+      "example": "My grandmother sweeps the yard every morning.",
+      "translation_ru": "подметать",
+      "translation_uz": "supurmoq"
+    },
+    {
+      "word": "dust",
+      "part_of_speech": "verb",
+      "definition": "to clean the very small pieces of dirt off furniture with a cloth",
+      "example": "I dust the shelves once a week.",
+      "translation_ru": "вытирать пыль",
+      "translation_uz": "chang artmoq"
+    },
+    {
+      "word": "make the bed",
+      "part_of_speech": "phrase",
+      "definition": "to put the sheets and blanket neatly on the bed after you get up",
+      "example": "My mother always tells me to make the bed.",
+      "translation_ru": "заправлять кровать",
+      "translation_uz": "oʻrinni yigʻishtirmoq"
+    },
+    {
+      "word": "take out the rubbish",
+      "part_of_speech": "phrase",
+      "definition": "to carry the bags of things you throw away out of the house",
+      "example": "Whose turn is it to take out the rubbish?",
+      "translation_ru": "выносить мусор",
+      "translation_uz": "axlatni chiqarmoq"
+    },
+    {
+      "word": "water the plants",
+      "part_of_speech": "phrase",
+      "definition": "to give flowers and other plants water so they grow",
+      "example": "Could you water the plants while I'm away?",
+      "translation_ru": "поливать цветы",
+      "translation_uz": "gullarga suv quymoq"
+    },
+    {
+      "word": "messy",
+      "part_of_speech": "adjective",
+      "definition": "not tidy; with things everywhere",
+      "example": "The kitchen is really messy after the party.",
+      "translation_ru": "неубранный, грязный",
+      "translation_uz": "betartib, sochilgan"
+    },
+    {
+      "word": "share",
+      "part_of_speech": "verb",
+      "definition": "to divide jobs or things between two or more people",
+      "example": "My flatmates and I share the housework.",
+      "translation_ru": "делить, разделять",
+      "translation_uz": "boʻlishmoq"
+    }
+  ]
+}

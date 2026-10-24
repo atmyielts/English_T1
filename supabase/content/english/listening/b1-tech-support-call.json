@@ -1,0 +1,209 @@
+{
+  "item": {
+    "slug": "b1-tech-support-call",
+    "title": "My Laptop Won't Charge",
+    "level": "B1",
+    "summary": "A customer calls tech support because his laptop isn't charging, and together they find the cause step by step.",
+    "transcript_text": "Sam: Hello, you're through to TechHelp support. My name's Sam. How can I help you today?\nRustam: Hi, Sam. My laptop isn't charging. I plugged it in last night, and this morning the battery was still at five percent.\nSam: OK, let's try to sort it out. First, when you plug the charger in, does the little light on the side come on?\nRustam: No, nothing happens at all.\nSam: Right. Have you tried a different socket? Sometimes the problem is the socket, not the laptop.\nRustam: Oh, I haven't. Hold on. No, still nothing.\nSam: OK. Could you check the cable for any damage, especially near the ends?\nRustam: Actually, yes. It's a bit bent near the plug. My cat likes chewing cables, so...\nSam: That's probably the cause, then. The good news is that your laptop is likely fine. You just need a new charger.\nRustam: Phew. Is it covered by the warranty?\nSam: I'm afraid the warranty doesn't cover damage to cables. But I can order a new one for you, and delivery is free. It should arrive in two or three working days.\nRustam: That's fine. Thanks for your help.",
+    "category": "Work and Study",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 140,
+    "duration_seconds": 78,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "technology",
+      "phone call",
+      "problem solving",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Sam",
+        "Rustam"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "What did Rustam notice this morning?",
+        "options": [
+          "The laptop screen was broken.",
+          "The battery was still at five percent.",
+          "The laptop was very hot.",
+          "The charger light was red."
+        ],
+        "answer_index": 1,
+        "explanation": "\"This morning the battery was still at five percent.\""
+      },
+      {
+        "prompt": "What does Sam ask Rustam to try first?",
+        "options": [
+          "To restart the laptop",
+          "To buy a new battery",
+          "To check if the light on the side comes on",
+          "To call back later"
+        ],
+        "answer_index": 2,
+        "explanation": "\"Does the little light on the side come on?\""
+      },
+      {
+        "prompt": "What is probably causing the problem?",
+        "options": [
+          "A damaged cable",
+          "A broken socket",
+          "An old battery",
+          "A software problem"
+        ],
+        "answer_index": 0,
+        "explanation": "The cable is \"a bit bent near the plug\" and Sam says \"That's probably the cause\"."
+      },
+      {
+        "prompt": "Why does Rustam say \"Phew\"?",
+        "options": [
+          "He has to pay a lot of money.",
+          "The call is very long.",
+          "His cat is safe.",
+          "He is relieved that the laptop itself is probably fine."
+        ],
+        "answer_index": 3,
+        "explanation": "Sam says \"your laptop is likely fine. You just need a new charger\", so Rustam feels relieved."
+      },
+      {
+        "prompt": "What does Sam say about the warranty?",
+        "options": [
+          "It covers everything.",
+          "It doesn't cover damage to cables.",
+          "It finished last year.",
+          "It only covers the screen."
+        ],
+        "answer_index": 1,
+        "explanation": "\"I'm afraid the warranty doesn't cover damage to cables.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Hello, you're through to TechHelp support. My name's Sam.",
+      "focus_phrase": "you're through to",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "How can I help you today?",
+      "focus_phrase": "help you today",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Hi, Sam. My laptop isn't charging.",
+      "focus_phrase": "isn't charging",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I plugged it in last night, and this morning the battery was still at five percent.",
+      "focus_phrase": "plugged it in",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "OK, let's try to sort it out.",
+      "focus_phrase": "sort it out",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "First, when you plug the charger in, does the little light on the side come on?",
+      "focus_phrase": "come on",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "No, nothing happens at all.",
+      "focus_phrase": "nothing happens at all",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Right. Have you tried a different socket?",
+      "focus_phrase": "a different socket",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Sometimes the problem is the socket, not the laptop.",
+      "focus_phrase": "not the laptop",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Oh, I haven't. Hold on. No, still nothing.",
+      "focus_phrase": "Hold on",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "OK. Could you check the cable for any damage, especially near the ends?",
+      "focus_phrase": "check the cable",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Actually, yes. It's a bit bent near the plug.",
+      "focus_phrase": "near the plug",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "My cat likes chewing cables, so...",
+      "focus_phrase": "chewing cables",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "That's probably the cause, then.",
+      "focus_phrase": "probably the cause",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The good news is that your laptop is likely fine. You just need a new charger.",
+      "focus_phrase": "a new charger",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Phew. Is it covered by the warranty?",
+      "focus_phrase": "covered by the warranty",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I'm afraid the warranty doesn't cover damage to cables.",
+      "focus_phrase": "I'm afraid",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "But I can order a new one for you, and delivery is free.",
+      "focus_phrase": "delivery is free",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "It should arrive in two or three working days.",
+      "focus_phrase": "working days",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "That's fine. Thanks for your help.",
+      "focus_phrase": "Thanks for your help",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

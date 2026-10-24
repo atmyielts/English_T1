@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "b1-technology-and-apps",
+    "title": "Technology and apps",
+    "level": "B1",
+    "topic": "technology",
+    "description": "Everyday words for phones, apps, accounts and staying safe online."
+  },
+  "children": [
+    {
+      "word": "subscription",
+      "part_of_speech": "noun",
+      "definition": "money you pay regularly, often every month, to use a service",
+      "example": "I cancelled my music subscription because I rarely used it.",
+      "translation_ru": "подписка",
+      "translation_uz": "obuna"
+    },
+    {
+      "word": "swipe",
+      "part_of_speech": "verb",
+      "definition": "to move your finger quickly across a touch screen",
+      "example": "Swipe left to see the next photo.",
+      "translation_ru": "провести пальцем (по экрану)",
+      "translation_uz": "ekranni barmoq bilan surmoq"
+    },
+    {
+      "word": "log in",
+      "part_of_speech": "phrasal verb",
+      "definition": "to enter your name and password so you can use an account",
+      "example": "I can't log in because I forgot my password.",
+      "translation_ru": "войти (в аккаунт)",
+      "translation_uz": "tizimga kirmoq"
+    },
+    {
+      "word": "verification code",
+      "part_of_speech": "noun",
+      "definition": "a short number sent to your phone to prove it is really you",
+      "example": "Never tell anyone the verification code from your bank.",
+      "translation_ru": "код подтверждения",
+      "translation_uz": "tasdiqlash kodi"
+    },
+    {
+      "word": "notification",
+      "part_of_speech": "noun",
+      "definition": "a short message an app shows on your screen to tell you about something",
+      "example": "I turn off notifications when I'm studying.",
+      "translation_ru": "уведомление",
+      "translation_uz": "bildirishnoma"
+    },
+    {
+      "word": "browser",
+      "part_of_speech": "noun",
+      "definition": "a program you use to look at websites on the internet",
+      "example": "Try opening the page in a different browser.",
+      "translation_ru": "браузер",
+      "translation_uz": "brauzer"
+    },
+    {
+      "word": "storage",
+      "part_of_speech": "noun",
+      "definition": "the space on a device for keeping photos, files and apps",
+      "example": "I can't take more photos because my storage is full.",
+      "translation_ru": "память (устройства)",
+      "translation_uz": "xotira (qurilmada)"
+    },
+    {
+      "word": "screenshot",
+      "part_of_speech": "noun",
+      "definition": "a picture of what is on your screen at one moment",
+      "example": "Send me a screenshot of the error message.",
+      "translation_ru": "скриншот, снимок экрана",
+      "translation_uz": "skrinshot, ekran surati"
+    },
+    {
+      "word": "crash",
+      "part_of_speech": "verb",
+      "definition": "(of a program) to stop working suddenly",
+      "example": "The game crashes every time I open the map.",
+      "translation_ru": "зависать, вылетать (о программе)",
+      "translation_uz": "ishdan chiqmoq, osilib qolmoq"
+    },
+    {
+      "word": "settings",
+      "part_of_speech": "noun",
+      "definition": "the part of a phone or app where you choose how it works",
+      "example": "You can change the language in the settings.",
+      "translation_ru": "настройки",
+      "translation_uz": "sozlamalar"
+    },
+    {
+      "word": "privacy",
+      "part_of_speech": "noun",
+      "definition": "the right to keep your personal information to yourself",
+      "example": "Check who can see your photos in the privacy options.",
+      "translation_ru": "конфиденциальность",
+      "translation_uz": "maxfiylik"
+    },
+    {
+      "word": "scam",
+      "part_of_speech": "noun",
+      "definition": "a dishonest plan to trick people and take their money",
+      "example": "A message saying you've won a prize is usually a scam.",
+      "translation_ru": "мошенничество, развод",
+      "translation_uz": "firibgarlik"
+    }
+  ]
+}

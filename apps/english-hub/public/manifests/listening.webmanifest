@@ -1,0 +1,97 @@
+{
+  "id": "/listening",
+  "name": "Schood Listening",
+  "short_name": "Schood Listening",
+  "description": "Listen, write what you hear, and see exactly which words you missed. Part of Schood English: one account, one review and one progress record.",
+  "start_url": "/listening",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
+  "background_color": "#f4f7f2",
+  "theme_color": "#1f537a",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": [
+    "education",
+    "productivity"
+  ],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/icons/listening-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/listening-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/listening-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Listening",
+      "short_name": "Listening",
+      "description": "Listening home",
+      "url": "/listening",
+      "icons": [
+        {
+          "src": "/icons/listening-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Today",
+      "short_name": "Today",
+      "description": "Today's plan",
+      "url": "/today",
+      "icons": [
+        {
+          "src": "/icons/listening-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Review",
+      "short_name": "Review",
+      "description": "Words and mistakes due for review",
+      "url": "/review",
+      "icons": [
+        {
+          "src": "/icons/listening-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Tutor",
+      "short_name": "Tutor",
+      "description": "Ask the AI tutor",
+      "url": "/tutor",
+      "icons": [
+        {
+          "src": "/icons/listening-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

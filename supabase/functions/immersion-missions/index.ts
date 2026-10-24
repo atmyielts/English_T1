@@ -21,7 +21,7 @@ import {
   toText,
   type EnglishServiceKey,
 } from "../_shared/english-learning.ts";
-import { callEnglishAIWithStatus } from "../_shared/english-ai.ts";
+import { callEnglishAIWithCredit, defaultAICreditDeps } from "../_shared/english-ai-quota.ts";
 import {
   applyJudgement,
   basicReplyCheck,
@@ -220,18 +220,22 @@ serve(async (req) => {
         const basic = basicReplyCheck({ kind: replyKind, level, prompt: promptText, response, expected });
         let check: ReplyCheck = basic;
         // Only ask the AI about a real attempt in the learner's own words.
+        // Each AI check uses one of the learner's daily AI credits (refunded if it fails).
         if (ownWordCount(promptText, response) >= 3) {
-          const ai = await callEnglishAIWithStatus<unknown>(
-            buildJudgeRequest({
-              kind: replyKind,
-              level,
-              situation,
-              stepTitle: toText(step.title, 220),
-              instructions: toText(step.instructions, 900),
-              prompt: promptText,
-              response,
-              expected,
-            }),
+          const judge = buildJudgeRequest({
+            kind: replyKind,
+            level,
+            situation,
+            stepTitle: toText(step.title, 220),
+            instructions: toText(step.instructions, 900),
+            prompt: promptText,
+            response,
+            expected,
+          });
+          const ai = await callEnglishAIWithCredit<unknown>(
+            defaultAICreditDeps(sb),
+            auth.userId,
+            { ...judge, feature: "immersion-judge", userId: auth.userId },
             null,
           );
           if (ai.status === "ok") {

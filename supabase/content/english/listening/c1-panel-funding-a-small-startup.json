@@ -1,0 +1,215 @@
+{
+  "item": {
+    "slug": "c1-panel-funding-a-small-startup",
+    "title": "Panel: Bootstrap or Find Investors?",
+    "level": "C1",
+    "summary": "A founder of a delivery app and an investor discuss funding a startup from your own revenue versus taking investment early.",
+    "transcript_text": "Nilufar: When I started my delivery app, everyone told me the first step was to find investors. I decided to bootstrap instead, and fund it from my own savings and our first customers.\nMark: And as an investor, I'd say that was probably the right call, at least at the beginning.\nNilufar: Really? I expected you to disagree.\nMark: Not at all, because taking money too early can be a trap. You give away part of your company before you really know what it's worth, and you start answering to people who want fast growth.\nNilufar: That's exactly what worried me. Bootstrapping meant we grew slowly, but every decision was ours. We had to make money from day one, which forced us to focus on what customers would actually pay for.\nMark: That kind of discipline is valuable. The risk, though, is that a competitor with more funding moves faster and takes the market while you're still being careful.\nNilufar: We certainly felt that pressure last year. A much bigger company launched in our city with huge discounts.\nMark: So what happened?\nNilufar: We lost some customers at first, but a lot of them came back when the discounts ended. Our service was simply more reliable.\nMark: Which, to be honest, is exactly the kind of story that makes me want to invest. When I look at a startup, I'm not only looking for a good idea. I want proof that people will pay for it, and a team that knows how to spend money carefully.\nNilufar: So bootstrapping first actually makes us more attractive to investors later?\nMark: In many cases, yes, because you negotiate from a position of strength rather than desperation.",
+    "category": "Work and Study",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 160,
+    "duration_seconds": 102,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "startup",
+      "business",
+      "investment",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Nilufar",
+        "Mark"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "Why did Nilufar decide to bootstrap?",
+        "options": [
+          "No investors were interested.",
+          "Her savings were very large.",
+          "She wanted to keep control of her decisions.",
+          "A competitor told her to."
+        ],
+        "answer_index": 2,
+        "explanation": "\"Bootstrapping meant we grew slowly, but every decision was ours.\" Taking money early was \"exactly what worried me\"."
+      },
+      {
+        "prompt": "What surprised Nilufar about Mark's reaction?",
+        "options": [
+          "He wanted to buy her company.",
+          "He criticised her app.",
+          "He had never heard of bootstrapping.",
+          "He agreed with her choice."
+        ],
+        "answer_index": 3,
+        "explanation": "Mark: \"That was probably the right call.\" Nilufar: \"Really? I expected you to disagree.\""
+      },
+      {
+        "prompt": "According to Mark, what is a risk of bootstrapping?",
+        "options": [
+          "A better-funded competitor may grow faster and take the market.",
+          "Customers do not trust small companies.",
+          "Founders lose control of decisions.",
+          "The company gives away too much of itself."
+        ],
+        "answer_index": 0,
+        "explanation": "\"A competitor with more funding moves faster and takes the market while you're still being careful.\""
+      },
+      {
+        "prompt": "What happened when a bigger company arrived in the city?",
+        "options": [
+          "Nilufar's company closed.",
+          "Nilufar lowered her prices.",
+          "Some customers left, but many returned later.",
+          "The two companies joined together."
+        ],
+        "answer_index": 2,
+        "explanation": "\"We lost some customers at first, but a lot of them came back when the discounts ended.\""
+      },
+      {
+        "prompt": "What does Mark imply about founders who look for investment too early?",
+        "options": [
+          "They usually have better ideas.",
+          "They may end up negotiating from a weak position.",
+          "They always grow more slowly.",
+          "They never find customers."
+        ],
+        "answer_index": 1,
+        "explanation": "Bootstrapping first lets you \"negotiate from a position of strength rather than desperation\", implying early fundraising can mean weaker terms."
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "When I started my delivery app, everyone told me the first step was to find investors.",
+      "focus_phrase": "find investors",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I decided to bootstrap instead, and fund it from my own savings and our first customers.",
+      "focus_phrase": "bootstrap instead",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "And as an investor, I'd say that was probably the right call, at least at the beginning.",
+      "focus_phrase": "the right call",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Really? I expected you to disagree.",
+      "focus_phrase": "expected you to disagree",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Not at all, because taking money too early can be a trap.",
+      "focus_phrase": "can be a trap",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "You give away part of your company before you really know what it's worth, and you start answering to people who want fast growth.",
+      "focus_phrase": "answering to people",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "That's exactly what worried me.",
+      "focus_phrase": "exactly what worried me",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Bootstrapping meant we grew slowly, but every decision was ours.",
+      "focus_phrase": "every decision was ours",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "We had to make money from day one, which forced us to focus on what customers would actually pay for.",
+      "focus_phrase": "from day one",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "That kind of discipline is valuable.",
+      "focus_phrase": "discipline is valuable",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The risk, though, is that a competitor with more funding moves faster and takes the market while you're still being careful.",
+      "focus_phrase": "takes the market",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "We certainly felt that pressure last year.",
+      "focus_phrase": "felt that pressure",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "A much bigger company launched in our city with huge discounts.",
+      "focus_phrase": "huge discounts",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "So what happened?",
+      "focus_phrase": "what happened",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "We lost some customers at first, but a lot of them came back when the discounts ended.",
+      "focus_phrase": "came back",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Our service was simply more reliable.",
+      "focus_phrase": "more reliable",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Which, to be honest, is exactly the kind of story that makes me want to invest.",
+      "focus_phrase": "makes me want to invest",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "When I look at a startup, I'm not only looking for a good idea.",
+      "focus_phrase": "a good idea",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I want proof that people will pay for it, and a team that knows how to spend money carefully.",
+      "focus_phrase": "spend money carefully",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "So bootstrapping first actually makes us more attractive to investors later?",
+      "focus_phrase": "more attractive to investors",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "In many cases, yes, because you negotiate from a position of strength rather than desperation.",
+      "focus_phrase": "a position of strength",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

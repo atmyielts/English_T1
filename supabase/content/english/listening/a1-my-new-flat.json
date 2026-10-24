@@ -1,0 +1,133 @@
+{
+  "item": {
+    "slug": "a1-my-new-flat",
+    "title": "My New Flat",
+    "level": "A1",
+    "summary": "A student describes her small new flat, her quiet street and the places near her building.",
+    "transcript_text": "Hi, I'm Kamola. I'm a student, and last month I moved into a new flat. It's small, but I love it. There's one bedroom, a living room and a little kitchen. My bedroom has a big window, so it's very light in the morning. My flat is on the third floor. There's no lift, so I walk up the stairs every day. My street is quiet, and there are lots of trees. There's a bakery next to my building. And the metro station is only five minutes away.",
+    "category": "Daily Life",
+    "accent": "general",
+    "speed_label": "slow",
+    "speed_wpm": 110,
+    "duration_seconds": 48,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "home",
+      "flat",
+      "neighbourhood"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "story"
+    },
+    "questions": [
+      {
+        "prompt": "When did Kamola move into her flat?",
+        "options": [
+          "Last week",
+          "Last month",
+          "Last year",
+          "Yesterday"
+        ],
+        "answer_index": 1,
+        "explanation": "\"Last month I moved into a new flat.\""
+      },
+      {
+        "prompt": "Why is her bedroom light in the morning?",
+        "options": [
+          "It has a big window.",
+          "It has white walls.",
+          "It's on the top floor.",
+          "It has a lot of lamps."
+        ],
+        "answer_index": 0,
+        "explanation": "\"My bedroom has a big window, so it's very light in the morning.\""
+      },
+      {
+        "prompt": "How does she get to her flat?",
+        "options": [
+          "By lift",
+          "By car",
+          "She walks up the stairs.",
+          "By bike"
+        ],
+        "answer_index": 2,
+        "explanation": "\"There's no lift, so I walk up the stairs every day.\""
+      },
+      {
+        "prompt": "What is next to her building?",
+        "options": [
+          "A metro station",
+          "A park",
+          "A school",
+          "A bakery"
+        ],
+        "answer_index": 3,
+        "explanation": "\"There's a bakery next to my building.\" The metro is five minutes away."
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Hi, I'm Kamola.",
+      "focus_phrase": "I'm Kamola",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I'm a student, and last month I moved into a new flat.",
+      "focus_phrase": "a new flat",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "It's small, but I love it.",
+      "focus_phrase": "I love it",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "There's one bedroom, a living room and a little kitchen.",
+      "focus_phrase": "a living room",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "My bedroom has a big window, so it's very light in the morning.",
+      "focus_phrase": "a big window",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "My flat is on the third floor.",
+      "focus_phrase": "the third floor",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "There's no lift, so I walk up the stairs every day.",
+      "focus_phrase": "up the stairs",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "My street is quiet, and there are lots of trees.",
+      "focus_phrase": "lots of trees",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "There's a bakery next to my building.",
+      "focus_phrase": "next to my building",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "And the metro station is only five minutes away.",
+      "focus_phrase": "five minutes away",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

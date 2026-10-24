@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "b1-learning-on-your-own",
+    "title": "Learning on your own",
+    "level": "B1",
+    "topic": "self-study",
+    "description": "Words for studying by yourself, building habits and tracking your progress."
+  },
+  "children": [
+    {
+      "word": "motivation",
+      "part_of_speech": "noun",
+      "definition": "the feeling of wanting to do something and the energy to do it",
+      "example": "Having a clear goal gives me motivation to study every day.",
+      "translation_ru": "мотивация",
+      "translation_uz": "motivatsiya, gʻayrat"
+    },
+    {
+      "word": "progress",
+      "part_of_speech": "noun",
+      "definition": "the process of getting better at something over time",
+      "example": "I can see real progress in my listening since January.",
+      "translation_ru": "прогресс, успехи",
+      "translation_uz": "rivojlanish, yutuq"
+    },
+    {
+      "word": "habit",
+      "part_of_speech": "noun",
+      "definition": "something you do often and regularly, almost without thinking",
+      "example": "Reading ten pages before bed has become a good habit.",
+      "translation_ru": "привычка",
+      "translation_uz": "odat"
+    },
+    {
+      "word": "distraction",
+      "part_of_speech": "noun",
+      "definition": "something that takes your attention away from what you are doing",
+      "example": "My phone is my biggest distraction when I study.",
+      "translation_ru": "то, что отвлекает",
+      "translation_uz": "chalgʻituvchi narsa"
+    },
+    {
+      "word": "focus",
+      "part_of_speech": "verb",
+      "definition": "to give all your attention to one thing",
+      "example": "I find it easier to focus in the library than at home.",
+      "translation_ru": "сосредоточиться",
+      "translation_uz": "diqqatni jamlamoq"
+    },
+    {
+      "word": "set a goal",
+      "part_of_speech": "phrase",
+      "definition": "to decide on something you want to achieve",
+      "example": "I set a goal to learn twenty new words every week.",
+      "translation_ru": "поставить цель",
+      "translation_uz": "maqsad qoʻymoq"
+    },
+    {
+      "word": "flashcard",
+      "part_of_speech": "noun",
+      "definition": "a small card with a word on one side and its meaning on the other",
+      "example": "I use flashcards on the bus to review vocabulary.",
+      "translation_ru": "карточка (для запоминания)",
+      "translation_uz": "kartochka (soʻz yodlash uchun)"
+    },
+    {
+      "word": "fluent",
+      "part_of_speech": "adjective",
+      "definition": "able to speak a language easily and well",
+      "example": "After a year in Germany, she became fluent in German.",
+      "translation_ru": "свободно говорящий",
+      "translation_uz": "erkin gapiradigan"
+    },
+    {
+      "word": "practise",
+      "part_of_speech": "verb",
+      "definition": "to do something again and again so you get better at it",
+      "example": "I practise speaking with a friend on video calls.",
+      "translation_ru": "практиковаться, тренироваться",
+      "translation_uz": "mashq qilmoq"
+    },
+    {
+      "word": "give up",
+      "part_of_speech": "phrasal verb",
+      "definition": "to stop trying to do something because it is difficult",
+      "example": "Don't give up just because the first month is hard.",
+      "translation_ru": "сдаваться, бросать",
+      "translation_uz": "taslim boʻlmoq, tashlab qoʻymoq"
+    },
+    {
+      "word": "keep track of",
+      "part_of_speech": "phrase",
+      "definition": "to make sure you know what is happening or how much you have done",
+      "example": "I keep track of my study time in a small notebook.",
+      "translation_ru": "отслеживать",
+      "translation_uz": "kuzatib bormoq, hisobini yuritmoq"
+    },
+    {
+      "word": "self-taught",
+      "part_of_speech": "adjective",
+      "definition": "having learned a skill by yourself, without a teacher",
+      "example": "He's a self-taught programmer who learned from free online courses.",
+      "translation_ru": "самоучка, самостоятельно обученный",
+      "translation_uz": "mustaqil oʻrgangan"
+    }
+  ]
+}

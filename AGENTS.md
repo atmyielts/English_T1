@@ -55,13 +55,13 @@ Source of truth for what's live (full list also in `.github/workflows/deploy-pag
 | `apps/academy` | https://academy.schood.online | `schood-academy` |
 | `apps/academy-docs` | https://docs.academy.schood.online | `schood-academy-docs` |
 | `apps/english-hub` | https://english.schood.online | `schood-english` |
-| `apps/english-reading` | https://reading.english.schood.online | `schood-reading` |
-| `apps/english-writing` | https://writing.english.schood.online | `schood-writing` |
-| `apps/english-listening` | https://listening.english.schood.online | `schood-listening` |
-| `apps/english-speaking` | https://speaking.english.schood.online | `schood-speaking` |
-| `apps/english-grammar` | https://grammar.english.schood.online | `schood-grammar` |
-| `apps/english-vocabulary` | https://vocabulary.english.schood.online | `schood-vocabulary` |
-| `apps/english-immersion` | https://immersion.english.schood.online | `schood-immersion` |
+| `apps/english-hub` (skill: reading) | https://english.schood.online/reading (old https://reading.english.schood.online 301s here via `cloudflare/english-legacy-redirects.js`) | `schood-english` |
+| `apps/english-hub` (skill: writing) | https://english.schood.online/writing (old https://writing.english.schood.online 301s here via `cloudflare/english-legacy-redirects.js`) | `schood-english` |
+| `apps/english-hub` (skill: listening) | https://english.schood.online/listening (old https://listening.english.schood.online 301s here via `cloudflare/english-legacy-redirects.js`) | `schood-english` |
+| `apps/english-hub` (skill: speaking) | https://english.schood.online/speaking (old https://speaking.english.schood.online 301s here via `cloudflare/english-legacy-redirects.js`) | `schood-english` |
+| `apps/english-hub` (skill: grammar) | https://english.schood.online/grammar (old https://grammar.english.schood.online 301s here via `cloudflare/english-legacy-redirects.js`) | `schood-english` |
+| `apps/english-hub` (skill: vocabulary) | https://english.schood.online/vocabulary (old https://vocabulary.english.schood.online 301s here via `cloudflare/english-legacy-redirects.js`) | `schood-english` |
+| `apps/english-hub` (skill: immersion) | https://english.schood.online/immersion (old https://immersion.english.schood.online 301s here via `cloudflare/english-legacy-redirects.js`) | `schood-english` |
 
 Apps share auth via the `.schood.online` cookie domain (`VITE_AUTH_COOKIE_DOMAIN`).
 

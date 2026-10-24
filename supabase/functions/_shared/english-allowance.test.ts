@@ -26,3 +26,17 @@ Deno.test("submit routes name the activity so today's free one can be redone", (
   assertEquals(submitSlug("/units/%E0%A4/submit"), null);
   assertEquals(submitSlug(undefined), null);
 });
+
+Deno.test("the free allowance follows the configured daily number", () => {
+  assertEquals(decideAccess({ admin: false, entitled: false, usedFreeToday: 2, perDay: 3 }), { allowed: true, basis: "free", free_left: 1 });
+  assertEquals(decideAccess({ admin: false, entitled: false, usedFreeToday: 3, perDay: 3 }).allowed, false);
+  // 0 switches the free tier off: only learners with the skill may practise.
+  assertEquals(decideAccess({ admin: false, entitled: false, usedFreeToday: 0, perDay: 0 }), { allowed: false, basis: "free_used", free_left: 0 });
+  assertEquals(decideAccess({ admin: false, entitled: true, usedFreeToday: 0, perDay: 0 }).allowed, true);
+});
+
+Deno.test("a paused service refuses everyone except admins", () => {
+  assertEquals(decideAccess({ admin: false, entitled: true, usedFreeToday: 0, paused: true }).basis, "paused");
+  assertEquals(decideAccess({ admin: false, entitled: false, usedFreeToday: 0, paused: true }).allowed, false);
+  assertEquals(decideAccess({ admin: true, entitled: false, usedFreeToday: 0, paused: true }), { allowed: true, basis: "admin", free_left: 1 });
+});

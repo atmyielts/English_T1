@@ -21,7 +21,13 @@ Deno.test("English AI routes enforce entitlement and quota before handlers", asy
     source,
     "requireEnglishSuiteAccess(sb, auth.userId, products)",
   );
-  assertStringIncludes(source, "consumeEnglishAiDailyQuota(");
+  // The credit is taken through the shared AI credit session (refunded on failure).
+  const chargeAt = source.indexOf("await aiCredit.charge()");
+  assert(chargeAt > guardAt && chargeAt < firstAiHandlerAt, "the AI credit must be charged before the first AI handler");
+  const quotaModule = await Deno.readTextFile(
+    new URL("../_shared/english-ai-quota.ts", import.meta.url),
+  );
+  assertStringIncludes(quotaModule, "consumeEnglishAiDailyQuota(");
   assertStringIncludes(source, 'code: "english_ai_daily_limit_reached"');
 });
 

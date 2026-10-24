@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom';
 import { useEnglish } from '../app/EnglishContext';
 import { useT } from '../i18n';
 import { edge } from '../lib/api';
+import { ServicePaused } from '../components/ServicePaused';
 import { LockedPanel, Loading, PageHeader, Panel, Segmented, useErrorMessage } from '../ui/kit';
+import { PracticeLinks } from '../components/PracticeLinks';
 
 const VoiceConversationCard = lazy(() => import('../components/AIIter8Cards').then((module) => ({ default: module.VoiceConversationCard })));
 
@@ -219,9 +221,10 @@ const ChatTutor = () => {
 
 export const TutorPage = () => {
   const t = useT();
-  const { access, accessToken, pricingHref } = useEnglish();
+  const { access, accessToken, isPaused, pricingHref } = useEnglish();
   const [mode, setMode] = useState<'chat' | 'voice'>('chat');
-  const locked = access.status === 'ready' && access.unlocked.size === 0;
+  const paused = isPaused('tutor');
+  const locked = paused || (access.status === 'ready' && access.unlocked.size === 0);
 
   return (
     <>
@@ -232,7 +235,8 @@ export const TutorPage = () => {
         actions={!locked ? <Segmented label={t('tutor.mode')} value={mode} onChange={setMode} options={[{ value: 'chat', label: t('tutor.mode.chat') }, { value: 'voice', label: t('tutor.mode.voice') }]} /> : null}
       />
       {access.status === 'loading' ? <Loading lines={4} /> : null}
-      {locked ? <LockedPanel skillName={t('tutor.title')} pricingHref={pricingHref()} /> : null}
+      {paused ? <ServicePaused service="tutor" /> : null}
+      {locked && !paused ? <LockedPanel skillName={t('tutor.title')} pricingHref={pricingHref()} /> : null}
       {access.status !== 'loading' && !locked && mode === 'chat' ? <ChatTutor /> : null}
       {access.status !== 'loading' && !locked && mode === 'voice' ? (
         <section className="en-panel en-tools-body">
@@ -241,6 +245,7 @@ export const TutorPage = () => {
           </Suspense>
         </section>
       ) : null}
+      {access.status !== 'loading' ? <PracticeLinks /> : null}
     </>
   );
 };

@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "b1-should-schools-ban-phones-in-class",
+    "title": "Should Schools Ban Phones in Class?",
+    "level": "B1",
+    "summary": "A teacher weighs the arguments for and against banning phones in lessons and suggests a middle way.",
+    "content_markdown": "In many countries, schools have started to ban mobile phones during lessons. Some parents welcome the idea; others think it is old-fashioned. As a secondary school teacher, I have seen both sides, and I don't think the answer is simple.\n\nLet's start with the case for a ban. Phones are designed to get our attention, and teenagers find it very hard to ignore a message or a notification. When a phone is on the desk, even if it is silent, many students check it every few minutes. Their concentration suffers, and so do their marks. A ban also protects students from problems such as cheating in tests or taking photos of classmates without permission.\n\nHowever, phones can also be useful learning tools. My students use dictionary apps, record their speaking practice and take photos of the board instead of copying everything by hand. For some families, a phone is the only computer in the house. If we take phones away completely, we might make life harder for the students who already have the fewest resources.\n\nSo what would I do if I were the head teacher? I would ask students to keep phones in their bags, switched to silent, and teachers would decide when they can be used for a specific task. This way, the phone becomes a tool, not a distraction.\n\nPerhaps the most important thing is to teach young people how to manage their phones themselves. After all, they won't have a teacher next to them at university or at work.",
+    "category": "Study",
+    "theme": "phones at school",
+    "tone": "sand",
+    "is_hot": false,
+    "metadata": { "genre": "opinion", "writing_tone": "balanced", "word_count": 253 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "What is the writer's overall opinion?",
+        "options": [
+          "Phones should be banned completely in schools.",
+          "Students should use phones whenever they want.",
+          "Phones should be allowed only when teachers decide they help a task.",
+          "Parents should decide about phones, not teachers."
+        ],
+        "answer_index": 2,
+        "explanation": "\"Teachers would decide when they can be used for a specific task. This way, the phone becomes a tool, not a distraction.\""
+      },
+      {
+        "id": "q2",
+        "skill": "reading.detail",
+        "prompt": "According to the writer, what happens when a phone is on the desk?",
+        "options": [
+          "Many students check it every few minutes.",
+          "Students forget about it.",
+          "Teachers take it away.",
+          "Students get better marks."
+        ],
+        "answer_index": 0,
+        "explanation": "\"When a phone is on the desk, even if it is silent, many students check it every few minutes.\""
+      },
+      {
+        "id": "q3",
+        "skill": "reading.detail",
+        "prompt": "Which of these is NOT mentioned as a way students use phones for learning?",
+        "options": [
+          "Dictionary apps",
+          "Recording speaking practice",
+          "Taking photos of the board",
+          "Watching films in English"
+        ],
+        "answer_index": 3,
+        "explanation": "The writer mentions \"dictionary apps\", recording \"speaking practice\" and \"photos of the board\", but not films."
+      },
+      {
+        "id": "q4",
+        "skill": "reading.inference",
+        "prompt": "Why does the writer think a complete ban could be unfair?",
+        "options": [
+          "Rich students would not follow the rules.",
+          "Some students have no other computer at home.",
+          "Phones are cheaper than books.",
+          "Teachers also need their phones."
+        ],
+        "answer_index": 1,
+        "explanation": "\"For some families, a phone is the only computer in the house.\""
+      },
+      {
+        "id": "q5",
+        "skill": "reading.vocabulary",
+        "prompt": "\"Their concentration suffers.\" Here, \"suffers\" means…",
+        "options": [
+          "becomes worse",
+          "feels pain",
+          "becomes stronger",
+          "stays the same"
+        ],
+        "answer_index": 0,
+        "explanation": "Students keep checking their phones, so their concentration gets worse, \"and so do their marks\"."
+      }
+    ]
+  }
+}

@@ -7,7 +7,9 @@ import type { SkillKey } from '../lib/skills';
 import { useResource } from '../lib/useResource';
 import { ErrorState, FeedbackList, LevelBadge, Loading, LockedPanel, PageHeader, ScoreBadge, SkillDot, Tag } from '../ui/kit';
 import { NewBadges } from '../components/Badges';
+import { ServicePaused } from '../components/ServicePaused';
 import { XpEarned } from '../components/XpWidgets';
+import { UpNextCard } from '../components/UpNext';
 import { pickNext } from './SkillHome';
 
 /** Frame for one activity: back link, title, level and time, then the exercise. */
@@ -33,12 +35,14 @@ export const ActivityFrame = ({
   children?: ReactNode;
 }) => {
   const t = useT();
-  const { access, canPractise, pricingHref } = useEnglish();
+  const { access, canPractise, isPaused, pricingHref } = useEnglish();
   // The activity's slug is the last part of /<skill>/<slug>.
   const { pathname } = useLocation();
   const slug = decodeURIComponent(pathname.split('/').filter(Boolean)[1] ?? '') || null;
-  const locked = !canPractise(skill, slug);
-  const usingFree = access.status === 'ready' && !access.unlocked.has(skill) && access.freeLeft > 0;
+  const paused = isPaused(skill);
+  // A paused skill shows a calm notice instead of the activity (submitting would be refused).
+  const locked = paused || !canPractise(skill, slug);
+  const usingFree = !paused && access.status === 'ready' && !access.unlocked.has(skill) && access.freeLeft > 0;
   return (
     <>
       <PageHeader
@@ -53,7 +57,8 @@ export const ActivityFrame = ({
           </span>
         )}
       />
-      {locked ? <LockedPanel skillName={t(`skill.${skill}`)} pricingHref={pricingHref(skill)} freeUsed={access.freePerDay > 0} /> : null}
+      {paused ? <ServicePaused service={skill} /> : null}
+      {locked && !paused ? <LockedPanel skillName={t(`skill.${skill}`)} pricingHref={pricingHref(skill)} freeUsed={access.freePerDay > 0} /> : null}
       {usingFree && !loading ? (
         <p className="en-notice">{t('free.usingToday', { count: access.freeLeft })} <a href={pricingHref(skill)}>{t('free.seePlans')}</a></p>
       ) : null}
@@ -122,8 +127,9 @@ export const ResultPanel = ({
       </div>
       <NewBadges showLink />
       {children}
+      <UpNextCard skill={skill} slug={slug} />
       <div className="en-actions">
-        <Link className="en-button" to="/today">{t('activity.result.today')}</Link>
+        <Link className="en-button-quiet" to="/today">{t('activity.result.today')}</Link>
         <NextLink skill={skill} currentSlug={slug} />
         {onRetry ? <button type="button" className="quiet" onClick={onRetry}>{t('activity.result.retry')}</button> : null}
       </div>

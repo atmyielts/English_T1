@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "b2-the-hidden-life-of-a-bazaar",
+    "title": "The Hidden Life of a Bazaar",
+    "level": "B2",
+    "summary": "A day at a Central Asian bazaar reveals that it runs on trust, relationships and conversation as much as on money.",
+    "content_markdown": "At six in the morning, the bazaar is still half asleep. Trucks from the countryside are being unloaded, metal shutters rattle open, and the first loaves of round bread are stacked on wooden boards. By eight, the aisles are full. To a visitor, it can look like chaos. To the people who work here, it is a carefully balanced community with its own rules.\n\n## More than a price\n\nTake Gulnora, who has sold dried fruit and nuts from the same stall for many years. She does not have a price list. When a customer asks how much the apricots cost, her answer depends on many things: whether the customer is a regular, how much they want to buy, and even what time of day it is. Late in the afternoon, when she wants to go home, the price is often a little lower.\n\nBargaining, she explains, is not a fight. \"It's a conversation,\" she says. \"If someone just pays the first price without saying anything, I feel we haven't really met.\" For many visitors from abroad, this is the hardest thing to get used to. They worry about being rude or being cheated. In reality, a friendly exchange, a smile and a reasonable offer are usually welcomed.\n\n## The value of regulars\n\nWhat keeps Gulnora's business going is not tourists but regular customers. Some families have bought from her for years. She knows which grandmother prefers the softer raisins and which young father always forgets his bag. Regulars are given the best quality, a small extra handful, or the chance to pay later if they are short of cash that day. In return, they keep coming back, and they recommend her to their neighbours.\n\nThis kind of trust is built slowly and can be lost quickly. A seller who hides bad fruit under good fruit may make some extra money once, but the story will travel along the aisles faster than any advertisement.\n\n## A changing market\n\nThe bazaar is changing, of course. Many stalls now accept payment by QR code, and some sellers take orders through messaging apps and deliver to customers' homes. Supermarkets offer fixed prices and air conditioning. Yet the bazaar remains busy, perhaps because it offers something a supermarket cannot: the feeling of being known.\n\nBy evening, the shutters come down again, and the aisles are swept clean. Tomorrow, the conversations will start all over again.",
+    "category": "Culture",
+    "theme": "markets",
+    "tone": "peach",
+    "is_hot": false,
+    "metadata": { "genre": "feature", "writing_tone": "descriptive", "word_count": 401 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "What is the writer's main point about the bazaar?",
+        "options": [
+          "It is too chaotic for visitors to enjoy.",
+          "It will soon be replaced by supermarkets.",
+          "It is a community built on relationships and trust, not only on buying and selling.",
+          "It is mainly a place for tourists."
+        ],
+        "answer_index": 2,
+        "explanation": "The writer calls it \"a carefully balanced community with its own rules\" and stresses regulars, trust and \"the feeling of being known\"."
+      },
+      {
+        "id": "q2",
+        "skill": "reading.detail",
+        "prompt": "Why might Gulnora's prices be lower late in the afternoon?",
+        "options": [
+          "Because she wants to go home",
+          "Because the fruit is old",
+          "Because there are more tourists",
+          "Because the bazaar sets lower prices after lunch"
+        ],
+        "answer_index": 0,
+        "explanation": "\"Late in the afternoon, when she wants to go home, the price is often a little lower.\""
+      },
+      {
+        "id": "q3",
+        "skill": "reading.inference",
+        "prompt": "How does Gulnora feel when a customer pays the first price without bargaining?",
+        "options": [
+          "Pleased, because she earns more money",
+          "Slightly disappointed, because there was no real contact",
+          "Angry, because it is against the rules",
+          "Worried that the customer is a thief"
+        ],
+        "answer_index": 1,
+        "explanation": "She says: \"If someone just pays the first price without saying anything, I feel we haven't really met.\""
+      },
+      {
+        "id": "q4",
+        "skill": "reading.detail",
+        "prompt": "Which of these is NOT mentioned as something regulars may receive?",
+        "options": [
+          "The best quality",
+          "A small extra handful",
+          "Free home delivery every week",
+          "The chance to pay later"
+        ],
+        "answer_index": 2,
+        "explanation": "Regulars get \"the best quality, a small extra handful, or the chance to pay later\". Delivery is mentioned only as something some sellers offer."
+      },
+      {
+        "id": "q5",
+        "skill": "reading.vocabulary",
+        "prompt": "\"The story will travel along the aisles faster than any advertisement.\" What does this suggest?",
+        "options": [
+          "Sellers advertise by walking around the market.",
+          "News about a dishonest seller spreads quickly among people at the bazaar.",
+          "The bazaar has very long aisles.",
+          "Customers prefer stories to advertisements."
+        ],
+        "answer_index": 1,
+        "explanation": "The sentence follows the example of a seller who hides bad fruit: word of dishonesty spreads fast and damages trust."
+      }
+    ]
+  }
+}

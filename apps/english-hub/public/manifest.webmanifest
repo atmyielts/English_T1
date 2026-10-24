@@ -1,33 +1,59 @@
 {
-  "name": "Schood English Hub",
+  "id": "/",
+  "name": "Schood English",
   "short_name": "Schood English",
-  "description": "Unified English learning hub — reading, writing, listening, speaking, grammar, vocabulary, immersion.",
+  "description": "Your daily English plan: reading, writing, listening, speaking, grammar, vocabulary and immersion, with one review and one progress record.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait-primary",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
   "background_color": "#f4eee2",
   "theme_color": "#0e4955",
   "lang": "en",
+  "dir": "ltr",
   "categories": ["education", "productivity"],
+  "prefer_related_applications": false,
   "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
     {
-      "src": "/schood-logo.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
+      "name": "Today",
+      "short_name": "Today",
+      "description": "Today's plan",
+      "url": "/today",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
-      "src": "/schood-logo.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
+      "name": "Review",
+      "short_name": "Review",
+      "description": "Words and mistakes due for review",
+      "url": "/review",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
-      "src": "/schood-logo.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
+      "name": "Tutor",
+      "short_name": "Tutor",
+      "description": "Ask the AI tutor",
+      "url": "/tutor",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Speaking",
+      "short_name": "Speaking",
+      "description": "Practise speaking",
+      "url": "/speaking",
+      "icons": [{ "src": "/icons/speaking-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Practice",
+      "short_name": "Practice",
+      "description": "All seven skills",
+      "url": "/practice",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }

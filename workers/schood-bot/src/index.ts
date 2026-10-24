@@ -4,6 +4,7 @@
  * Handles Telegram webhook updates and points linked learners into the
  * Schood Telegram Mini App.
  */
+import { routeEnglish } from "./english.ts";
 
 export interface Env {
   TELEGRAM_BOT_TOKEN: string;
@@ -263,6 +264,7 @@ const handleHelp = async (env: Env, chatId: number, user: LinkedUser | null) => 
     + `/schedule - Weekly class timetable\n`
     + `/cert - Latest certificates\n`
     + `/drill - Vocabulary flashcards\n`
+    + `/english - English: today, review and the daily quiz\n`
     + `/me - Profile and active plans\n`
     + `/unlink - Disconnect Telegram\n`
     + `/help - This message`;
@@ -529,6 +531,12 @@ const routeEnglishQuiz = async (env: Env, update: Record<string, unknown>): Prom
 
 const handleClaimedUpdate = async (env: Env, update: Record<string, unknown>) => {
   if (await routeEnglishQuiz(env, update)) return;
+  // === /english and eng:* buttons (./english.ts) ===
+  if (await routeEnglish({
+    edge: (fn, body) => sbEdge(env, fn, body),
+    tg: (method, body) => tg(env.TELEGRAM_BOT_TOKEN, method, body),
+    webAppUrl: (route) => webAppUrl(env, route),
+  }, update)) return;
   if (await routeHomework(env, update)) return;
 
   if (update.callback_query) {

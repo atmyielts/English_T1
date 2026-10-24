@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "b1-how-to-prepare-for-a-video-interview",
+    "title": "How to Prepare for a Video Interview",
+    "level": "B1",
+    "summary": "A practical guide to the technology, the setting and the answers you need for a job or university interview online.",
+    "content_markdown": "More and more companies and universities now interview people online, especially for the first round. A video interview can feel easier than a face-to-face one, because you don't have to travel. But it brings its own problems. Here is how to get ready.\n\n## Check your technology the day before\n\nDon't wait until five minutes before the interview. Install the app the interviewer has chosen, and test your camera, microphone and internet connection. If your home Wi-Fi is unreliable, find a quieter place with a better connection, or ask a friend if you can use theirs. Charge your laptop and keep the charger nearby.\n\n## Choose the right place\n\nSit facing a window or a lamp so the interviewer can see your face clearly. A plain wall behind you is better than a messy room. Tell your family when the interview starts, so nobody walks in or turns on the TV.\n\n## Prepare your answers, not a script\n\nWrite down the main points you want to make, but don't read from the screen. Interviewers can usually tell when you are reading, and it makes you sound less natural. Practise answering common questions out loud, such as \"Tell me about yourself\" or \"Why do you want this position?\"\n\n## During the interview\n\nLook at the camera, not at your own picture, when you speak. Nod and smile to show you are listening. If the connection drops, stay calm: reconnect, apologise briefly and continue.\n\nFinally, have one or two questions ready for the end. Asking about the team or the next steps shows that you are really interested.",
+    "category": "Work",
+    "theme": "job interviews",
+    "tone": "mint",
+    "is_hot": false,
+    "metadata": { "genre": "guide", "writing_tone": "practical", "word_count": 262 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "What is the guide mainly about?",
+        "options": [
+          "Why video interviews are better than face-to-face ones",
+          "How to get ready for an online interview",
+          "Which app is best for video calls",
+          "How to write a good CV"
+        ],
+        "answer_index": 1,
+        "explanation": "\"A video interview… brings its own problems. Here is how to get ready.\""
+      },
+      {
+        "id": "q2",
+        "skill": "reading.detail",
+        "prompt": "When should you test your camera and microphone?",
+        "options": [
+          "The day before",
+          "Five minutes before",
+          "During the interview",
+          "After the first question"
+        ],
+        "answer_index": 0,
+        "explanation": "The heading says \"Check your technology the day before\"."
+      },
+      {
+        "id": "q3",
+        "skill": "reading.inference",
+        "prompt": "Why does the writer advise against reading a script?",
+        "options": [
+          "Scripts are not allowed in interviews.",
+          "The interviewer will ask different questions.",
+          "You will sound less natural.",
+          "Your screen will be too small."
+        ],
+        "answer_index": 2,
+        "explanation": "\"Interviewers can usually tell when you are reading, and it makes you sound less natural.\""
+      },
+      {
+        "id": "q4",
+        "skill": "reading.detail",
+        "prompt": "What should you do if the connection drops?",
+        "options": [
+          "Send an email and wait for a new date",
+          "Start the interview again from the beginning",
+          "Turn off your camera",
+          "Reconnect, apologise briefly and continue"
+        ],
+        "answer_index": 3,
+        "explanation": "\"Stay calm: reconnect, apologise briefly and continue.\""
+      },
+      {
+        "id": "q5",
+        "skill": "reading.vocabulary",
+        "prompt": "\"If your home Wi-Fi is unreliable…\" Unreliable means…",
+        "options": [
+          "very fast",
+          "you cannot be sure it will work well",
+          "too expensive",
+          "new and modern"
+        ],
+        "answer_index": 1,
+        "explanation": "The writer suggests finding \"a better connection\", so unreliable Wi-Fi is Wi-Fi that may not work well."
+      }
+    ]
+  }
+}

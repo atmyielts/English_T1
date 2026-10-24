@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "c2-against-optimising-everything",
+    "title": "Against Optimising Everything",
+    "level": "C2",
+    "summary": "An opinion essay questioning the habit of treating every hour, meal and friendship as something to be measured and improved.",
+    "content_markdown": "Somewhere along the way, the word *optimise* escaped from the engineering department and moved into our private lives. It used to describe what one did to an engine, a supply chain or a piece of code: adjust the variables until the output is as large, or the waste as small, as possible. Now it describes what people do to their mornings, their diets, their reading lists and, increasingly, their friendships. There are apps that score your sleep, apps that rank your productivity by the hour, and an entire genre of advice promising that the right routine will unlock a better, more efficient version of you. I would like to put in a word for the inefficient version.\n\nLet me concede the obvious first. Some optimisation is plainly sensible. If a commute can be shortened by twenty minutes, or a recurring task automated, it would be perverse to insist on doing things the slow way out of principle. Measuring what we do can reveal habits we would rather not have, and the person who discovers that she spends three hours a day scrolling is better off for knowing it. My quarrel is not with improvement as such. It is with the quiet assumption that every part of life is the kind of thing that *can* be improved by the same method.\n\n## What resists measurement\n\nOptimisation depends on a target. To make something better, you must first decide what \"better\" means, and then you must be able to measure it. For an engine, this is straightforward. For a conversation with an old friend, it is absurd. What would an optimised friendship look like? Shorter meetings with higher emotional yield? Fewer friends, selected for maximum return on time invested? The very vocabulary turns faintly sinister when applied to things whose value lies precisely in not being instrumental.\n\nThe danger is not that people will literally schedule their friends by algorithm, although some apparently try. It is subtler. When the habit of measurement becomes second nature, we start to favour the things that are easy to count over the things that matter. Steps are counted; wandering is not. Books finished are counted; books savoured are not. Hours of focused work are logged, while the unstructured afternoon in which an idea slowly took shape leaves no trace in the spreadsheet and therefore seems, in retrospect, to have been wasted.\n\n## The uses of slack\n\nEngineers themselves know something that the lifestyle gurus tend to forget: a system optimised too tightly for one condition becomes fragile when conditions change. A supply chain with no spare capacity runs beautifully until a single delay brings it to a halt. Human lives are no different. The diary with no empty space cannot absorb a sick child, a friend in crisis or a sudden opportunity. Slack, the margin of time and energy that is not assigned to any purpose, looks like waste right up to the moment it becomes essential.\n\nThere is also the matter of pleasure. Much of what makes a life feel worth living is done for its own sake, with no outcome in view: cooking a dish your grandmother used to make, lingering over tea after the meal is finished, walking home the long way because the evening is warm. To ask what these activities are *for* is already to misunderstand them. Subject them to the logic of efficiency and they do not become better; they simply become something else.\n\n## A modest proposal\n\nI am not suggesting that we throw away our calendars or delete every app on our phones. The proposal is more modest: that we reserve the language of optimisation for the things it suits and protect a few areas of life from it deliberately. Keep one evening a week unplanned. Read a book you will not review, summarise or post about. Meet a friend without a reason.\n\nIt is a strange sign of the times that such advice needs to be given at all. But if the most optimised life turns out to be one in which nothing is ever done simply because we wanted to do it, then it is worth asking what, exactly, all that efficiency was meant to achieve.",
+    "category": "Society",
+    "theme": "productivity culture",
+    "tone": "mint",
+    "is_hot": false,
+    "metadata": { "genre": "opinion", "writing_tone": "ironic", "word_count": 700 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "What is the writer arguing?",
+        "options": [
+          "All forms of measurement and improvement should be rejected.",
+          "Optimisation has its uses, but applying it to every area of life distorts what makes those areas valuable.",
+          "People should use more apps to manage their friendships.",
+          "Engineers are responsible for modern productivity culture."
+        ],
+        "answer_index": 1,
+        "explanation": "\"My quarrel is not with improvement as such. It is with the quiet assumption that every part of life is the kind of thing that can be improved by the same method.\""
+      },
+      {
+        "id": "q2",
+        "skill": "reading.inference",
+        "prompt": "What is the function of the second paragraph?",
+        "options": [
+          "To acknowledge the reasonable side of optimisation before presenting the main objection",
+          "To describe the writer's own daily routine",
+          "To prove that commuting is a waste of time",
+          "To argue that scrolling on phones is harmless"
+        ],
+        "answer_index": 0,
+        "explanation": "It opens with \"Let me concede the obvious first\" and admits that \"some optimisation is plainly sensible\" before stating the writer's \"quarrel\"."
+      },
+      {
+        "id": "q3",
+        "skill": "reading.detail",
+        "prompt": "According to the writer, what subtler danger does constant measurement create?",
+        "options": [
+          "People literally schedule their friends using algorithms.",
+          "People stop using calendars.",
+          "People begin to value what is easy to count over what really matters.",
+          "People spend too much money on productivity apps."
+        ],
+        "answer_index": 2,
+        "explanation": "\"When the habit of measurement becomes second nature, we start to favour the things that are easy to count over the things that matter.\""
+      },
+      {
+        "id": "q4",
+        "skill": "reading.vocabulary",
+        "prompt": "In \"The uses of slack\", what does \"slack\" mean?",
+        "options": [
+          "Laziness that should be avoided",
+          "A popular messaging app",
+          "Loose clothing worn at home",
+          "Spare time and energy that is not committed to any task"
+        ],
+        "answer_index": 3,
+        "explanation": "The writer defines it: \"Slack, the margin of time and energy that is not assigned to any purpose\"."
+      },
+      {
+        "id": "q5",
+        "skill": "reading.inference",
+        "prompt": "What is the tone of the closing paragraph?",
+        "options": [
+          "Pointedly questioning, suggesting that efficiency pursued for its own sake may be empty",
+          "Angry and accusing towards app developers",
+          "Neutral and purely factual",
+          "Enthusiastic about a new productivity method"
+        ],
+        "answer_index": 0,
+        "explanation": "The writer calls it \"a strange sign of the times\" and asks \"what, exactly, all that efficiency was meant to achieve\", a pointed, ironic question."
+      }
+    ]
+  }
+}

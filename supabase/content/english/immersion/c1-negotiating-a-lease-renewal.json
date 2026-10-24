@@ -1,0 +1,224 @@
+{
+  "item": {
+    "slug": "c1-negotiating-a-lease-renewal",
+    "title": "Negotiating a lease renewal",
+    "level": "C1",
+    "context_text": "You have rented a one-bedroom flat in Istanbul for two years while working for a software company. You have always paid on time and looked after the flat. Your landlord has just sent a notice proposing a significant rent increase for the next year, and you would like to stay, but not at that price.",
+    "objective_text": "Understand the notice and your options, learn the landlord's real position, write a reasoned counter-offer, and negotiate a compromise on the phone.",
+    "mission_type": "problem_solving",
+    "target_grammar": "conditionals and concessions for negotiation (If you were willing to…, I'd be prepared to…; While I understand…, …)",
+    "cultural_note": "Landlords often value a reliable long-term tenant more than a slightly higher rent, because an empty flat and a new tenant both cost money. Framing your offer around reliability and commitment is usually more persuasive than simply saying the increase is unfair. Tenancy rules differ by country, so check the local regulations before you negotiate.",
+    "target_vocabulary": [
+      "lease",
+      "renewal",
+      "rent increase",
+      "notice period",
+      "counter-offer",
+      "fixed term",
+      "reliable tenant"
+    ],
+    "success_conditions": [
+      "Identify the proposed terms and the response deadline",
+      "Understand the landlord's underlying motivation",
+      "Write a polite, reasoned counter-offer",
+      "Negotiate on the phone and agree clear terms"
+    ]
+  },
+  "children": [
+    {
+      "title": "Read the renewal notice",
+      "instructions": "Read the notice from your landlord. Then answer the questions.",
+      "prompt_text": "Dear Tenant,\nYour current lease ends on 31 May. I would be happy to renew it for a further twelve months. Due to rising maintenance and property costs, the new monthly rent would be increased by 25%, payable from 1 June.\nPlease confirm by 30 April whether you wish to renew on these terms. If I do not hear from you by then, I will assume you intend to leave at the end of the current lease and will begin advertising the flat.\nKind regards,\nMr Demir",
+      "estimated_minutes": 4,
+      "target_skill_key": "reading.detail",
+      "kind": "read",
+      "accent": null,
+      "questions": [
+        {
+          "prompt": "What reason does the landlord give for the increase?",
+          "options": [
+            "Rising maintenance and property costs",
+            "A new tenant has offered more",
+            "Repairs you caused"
+          ],
+          "answer_index": 0,
+          "explanation": "\"Due to rising maintenance and property costs.\""
+        },
+        {
+          "prompt": "What happens if you don't reply by 30 April?",
+          "options": [
+            "The lease renews automatically at the old rent",
+            "The landlord will assume you are leaving",
+            "The increase is cancelled"
+          ],
+          "answer_index": 1,
+          "explanation": "\"I will assume you intend to leave at the end of the current lease and will begin advertising the flat.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Listen to the landlord",
+      "instructions": "You meet Mr Demir on the stairs and he talks to you briefly. Listen. Then answer the questions.",
+      "prompt_text": "Ah, hello! You got my letter? I know, I know, it's a big jump. To be honest with you, it's not really about the money from you. The building needs a new roof next year, and the bank wants me to show steady income from the flats. The last thing I want is the flat empty for two months while I look for someone new. You've never been late once. If you could commit for a longer period, maybe we could talk about the number.",
+      "estimated_minutes": 4,
+      "target_skill_key": "listening.detail",
+      "kind": "listen",
+      "accent": "gb",
+      "questions": [
+        {
+          "prompt": "What does the landlord most want to avoid?",
+          "options": [
+            "Paying for a new roof",
+            "The flat being empty",
+            "Talking to the bank"
+          ],
+          "answer_index": 1,
+          "explanation": "\"The last thing I want is the flat empty for two months while I look for someone new.\""
+        },
+        {
+          "prompt": "What does he hint he would accept in exchange for a lower increase?",
+          "options": [
+            "A longer commitment from you",
+            "Payment in cash",
+            "You doing repairs yourself"
+          ],
+          "answer_index": 0,
+          "explanation": "\"If you could commit for a longer period, maybe we could talk about the number.\""
+        },
+        {
+          "prompt": "Why does he need steady income?",
+          "options": [
+            "He is selling the building",
+            "The bank wants to see it before the roof work",
+            "He is moving abroad"
+          ],
+          "answer_index": 1,
+          "explanation": "\"The building needs a new roof next year, and the bank wants me to show steady income.\""
+        }
+      ],
+      "goal": "",
+      "points": [],
+      "model_answer": null,
+      "min_words": null
+    },
+    {
+      "title": "Write your counter-offer",
+      "instructions": "Reply to Mr Demir in writing before the deadline. Acknowledge his situation, remind him of your record as a tenant, and make a specific counter-offer that uses what you learned on the stairs.",
+      "prompt_text": "To: Mr Demir\nSubject: Lease renewal – flat 7",
+      "estimated_minutes": 9,
+      "target_skill_key": "writing.task_completion",
+      "kind": "reply",
+      "accent": null,
+      "questions": [],
+      "goal": "Make a reasoned, specific counter-offer that meets both sides' interests.",
+      "points": [
+        {
+          "label": "acknowledge his situation",
+          "any": [
+            "understand",
+            "appreciate",
+            "costs",
+            "roof",
+            "while i",
+            "i realise",
+            "i realize"
+          ]
+        },
+        {
+          "label": "mention your record as a tenant",
+          "any": [
+            "on time",
+            "never late",
+            "two years",
+            "reliable",
+            "looked after",
+            "good condition",
+            "careful"
+          ]
+        },
+        {
+          "label": "make a specific counter-offer",
+          "any": [
+            "per cent",
+            "percent",
+            "increase of",
+            "prepared to",
+            "willing to",
+            "offer"
+          ]
+        },
+        {
+          "label": "offer a longer commitment",
+          "any": [
+            "two-year",
+            "two years",
+            "24 months",
+            "longer",
+            "eighteen months",
+            "18 months",
+            "commit*",
+            "fixed term"
+          ]
+        }
+      ],
+      "model_answer": "Dear Mr Demir,\nThank you for your letter and for explaining the situation with the roof when we spoke. I'd very much like to stay in the flat. While I understand that your costs have risen, a 25% increase is more than I can manage. Over the past two years I have always paid on time and kept the flat in good condition, and I would be happy to offer you more stability: if you were willing to limit the increase to 10%, I would be prepared to sign a two-year fixed-term lease. That would guarantee your income for the bank and avoid any empty months.\nBest regards,\nAnvar Rashidov",
+      "min_words": 100
+    },
+    {
+      "title": "Agree terms on the phone",
+      "instructions": "Mr Demir calls. He proposes a middle figure. Respond: weigh up his offer, propose or accept a final compromise, and confirm the terms clearly so there is no misunderstanding.",
+      "prompt_text": "Mr Demir: I read your email. Ten per cent is too low for me, but I like the idea of two years. What would you say to fifteen?",
+      "estimated_minutes": 4,
+      "target_skill_key": "speaking.task_completion",
+      "kind": "speak",
+      "accent": null,
+      "questions": [],
+      "goal": "Reach a compromise and confirm the terms precisely.",
+      "points": [
+        {
+          "label": "respond to his offer",
+          "any": [
+            "fifteen",
+            "15",
+            "twelve",
+            "12",
+            "meet halfway",
+            "middle",
+            "that's fair",
+            "i could accept"
+          ]
+        },
+        {
+          "label": "link it to the longer lease",
+          "any": [
+            "two years",
+            "two-year",
+            "24 months",
+            "fixed",
+            "lease",
+            "commit*"
+          ]
+        },
+        {
+          "label": "confirm the terms clearly",
+          "any": [
+            "so just to confirm",
+            "to confirm",
+            "in writing",
+            "from 1 june",
+            "send me",
+            "new contract",
+            "agreed",
+            "sign"
+          ]
+        }
+      ],
+      "model_answer": "Thank you for considering it. Fifteen is still quite a stretch for me, but I'd like to find a middle ground. Could we meet at twelve per cent for a two-year fixed lease? If that works for you, then just to confirm: twelve per cent from the first of June, fixed for twenty-four months. Could you send me the new contract in writing so I can sign it this week?",
+      "min_words": null
+    }
+  ]
+}

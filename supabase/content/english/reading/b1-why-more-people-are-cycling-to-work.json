@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "b1-why-more-people-are-cycling-to-work",
+    "title": "Why More People Are Cycling to Work",
+    "level": "B1",
+    "summary": "An explainer on why cycling to work has become more popular in many cities, and what still stops people.",
+    "content_markdown": "In many cities around the world, bicycles have become a more common sight on the morning roads. Office workers in suits, students with backpacks and delivery riders now share the same lanes. So why are more people choosing two wheels instead of four?\n\n## Cheaper and often faster\n\nFor short journeys, a bike can be the quickest way to get across a busy city. While cars wait in traffic jams, cyclists can often move past them, especially where there are special bike lanes. Cycling is also cheap. Once you have bought a bike, you don't have to pay for fuel or parking, and repairs are usually simple.\n\n## Health without a gym\n\nDoctors generally agree that regular physical activity is good for the heart and for mental health. Many people say they find it hard to make time for exercise. Cycling to work solves this problem, because the exercise becomes part of the daily routine.\n\n## Better cities\n\nSome city governments have built new bike lanes and introduced bike-sharing schemes, where you can rent a bike with a phone app for a short trip. Electric bikes have also made longer or hillier journeys possible for people who aren't very fit.\n\n## What still stops people\n\nHowever, cycling isn't for everyone. In very hot or very cold weather, it can be unpleasant. Many people feel unsafe riding next to fast cars, and some offices have nowhere to park a bike or take a shower. Experts say that if cities want more cyclists, safe and separate lanes matter more than anything else.",
+    "category": "Environment",
+    "theme": "urban transport",
+    "tone": "lime",
+    "is_hot": false,
+    "metadata": { "genre": "explainer", "writing_tone": "informative", "word_count": 256 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "What does the article mainly explain?",
+        "options": [
+          "How to repair a bicycle",
+          "The reasons why cycling to work is growing, and its problems",
+          "Why cars are dangerous",
+          "How bike-sharing apps make money"
+        ],
+        "answer_index": 1,
+        "explanation": "The article asks \"why are more people choosing two wheels\" and also covers \"What still stops people\"."
+      },
+      {
+        "id": "q2",
+        "skill": "reading.detail",
+        "prompt": "Why can a bike be faster than a car in a city?",
+        "options": [
+          "Bikes don't need to stop at traffic lights.",
+          "Cars are not allowed in city centres.",
+          "Cyclists can move past cars in traffic jams.",
+          "Bikes have electric motors."
+        ],
+        "answer_index": 2,
+        "explanation": "\"While cars wait in traffic jams, cyclists can often move past them.\""
+      },
+      {
+        "id": "q3",
+        "skill": "reading.inference",
+        "prompt": "Who would probably find an electric bike most useful?",
+        "options": [
+          "Someone with a long or hilly journey who isn't very fit",
+          "A professional racing cyclist",
+          "Someone who lives next to their office",
+          "A person who wants to save electricity"
+        ],
+        "answer_index": 0,
+        "explanation": "\"Electric bikes have also made longer or hillier journeys possible for people who aren't very fit.\""
+      },
+      {
+        "id": "q4",
+        "skill": "reading.vocabulary",
+        "prompt": "In a \"bike-sharing scheme\", you…",
+        "options": [
+          "buy a bike with a friend",
+          "teach other people to ride",
+          "repair other people's bikes",
+          "rent a bike with an app for a short trip"
+        ],
+        "answer_index": 3,
+        "explanation": "The text explains it: \"where you can rent a bike with a phone app for a short trip\"."
+      },
+      {
+        "id": "q5",
+        "skill": "reading.detail",
+        "prompt": "According to experts, what matters most to get more people cycling?",
+        "options": [
+          "Cheaper bikes",
+          "Safe and separate lanes",
+          "Showers in every office",
+          "Better weather"
+        ],
+        "answer_index": 1,
+        "explanation": "\"Safe and separate lanes matter more than anything else.\""
+      }
+    ]
+  }
+}

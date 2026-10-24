@@ -1,0 +1,107 @@
+{
+  "item": {
+    "slug": "c1-personal-finance",
+    "title": "Personal finance",
+    "level": "C1",
+    "topic": "finance",
+    "description": "Language for budgeting, borrowing, saving and investing your own money."
+  },
+  "children": [
+    {
+      "word": "credit history",
+      "part_of_speech": "noun",
+      "definition": "a record of how reliably a person has borrowed and paid back money",
+      "example": "Newcomers abroad often struggle to rent a flat because they have no credit history there.",
+      "translation_ru": "кредитная история",
+      "translation_uz": "kredit tarixi"
+    },
+    {
+      "word": "disposable income",
+      "part_of_speech": "noun",
+      "definition": "the money left after paying tax and essential bills",
+      "example": "Once the loan is paid off, our disposable income will rise noticeably.",
+      "translation_ru": "располагаемый доход",
+      "translation_uz": "erkin foydalaniladigan daromad"
+    },
+    {
+      "word": "instalment",
+      "part_of_speech": "noun",
+      "definition": "one of several regular payments that together pay for something",
+      "example": "She is paying for the laptop in twelve monthly instalments.",
+      "translation_ru": "взнос (при рассрочке)",
+      "translation_uz": "boʻlib toʻlash qismi"
+    },
+    {
+      "word": "overdraft",
+      "part_of_speech": "noun",
+      "definition": "an arrangement that lets you take more money from your bank account than you have in it",
+      "example": "Using an overdraft every month can become very expensive.",
+      "translation_ru": "овердрафт",
+      "translation_uz": "overdraft (hisobdagidan ortiq yechish)"
+    },
+    {
+      "word": "collateral",
+      "part_of_speech": "noun",
+      "definition": "property you promise to a lender, which they can take if you do not repay",
+      "example": "The bank asked him to use his car as collateral.",
+      "translation_ru": "залог, обеспечение",
+      "translation_uz": "garov"
+    },
+    {
+      "word": "in the red",
+      "part_of_speech": "idiom",
+      "definition": "owing money because you have spent more than you have",
+      "example": "My account was in the red by the end of the holiday.",
+      "translation_ru": "в минусе",
+      "translation_uz": "qarzga botgan, minusda"
+    },
+    {
+      "word": "emergency fund",
+      "part_of_speech": "noun",
+      "definition": "money kept aside for unexpected costs such as losing a job or a medical bill",
+      "example": "Financial advisers often suggest an emergency fund that covers several months of expenses.",
+      "translation_ru": "резервный фонд, подушка безопасности",
+      "translation_uz": "favqulodda holatlar uchun jamgʻarma"
+    },
+    {
+      "word": "diversify",
+      "part_of_speech": "verb",
+      "definition": "to spread your money across different types of investment to reduce risk",
+      "example": "Rather than buying shares in one company, she diversified across several funds.",
+      "translation_ru": "диверсифицировать",
+      "translation_uz": "diversifikatsiya qilmoq, tarmoqlarga taqsimlamoq"
+    },
+    {
+      "word": "inflation",
+      "part_of_speech": "noun",
+      "definition": "a general rise in prices that makes money worth less over time",
+      "example": "If your savings earn less than inflation, they are effectively shrinking.",
+      "translation_ru": "инфляция",
+      "translation_uz": "inflyatsiya"
+    },
+    {
+      "word": "remittance",
+      "part_of_speech": "noun",
+      "definition": "money that someone working abroad sends home to their family",
+      "example": "He sends a remittance to his parents in Andijan every month.",
+      "translation_ru": "денежный перевод (на родину)",
+      "translation_uz": "pul oʻtkazmasi (oilaga)"
+    },
+    {
+      "word": "impulse buy",
+      "part_of_speech": "noun",
+      "definition": "something you buy suddenly without planning or thinking carefully",
+      "example": "The smartwatch was an impulse buy that I hardly use.",
+      "translation_ru": "спонтанная покупка",
+      "translation_uz": "oʻylamay qilingan xarid"
+    },
+    {
+      "word": "make ends meet",
+      "part_of_speech": "idiom",
+      "definition": "to have just enough money to pay for the things you need",
+      "example": "As a student abroad, she took a part-time job to make ends meet.",
+      "translation_ru": "сводить концы с концами",
+      "translation_uz": "kun koʻrishga zoʻrgʻa yetkazmoq"
+    }
+  ]
+}

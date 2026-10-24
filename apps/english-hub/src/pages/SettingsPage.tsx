@@ -8,6 +8,7 @@ import { Onboarding } from './Onboarding';
 import { RemindersPanel } from './RemindersPanel';
 import { GoalSettingsPanel } from './goal/GoalSettingsPanel';
 import { LeagueSettingsPanel } from '../components/LeagueSettingsPanel';
+import { InstallPanel } from '../components/InstallApp';
 
 export const SettingsPage = () => {
   const t = useT();
@@ -38,6 +39,7 @@ export const SettingsPage = () => {
             <p className="hint">{t('settings.language.lead')}</p>
             <LocaleSwitcher label={t('settings.language.title')} />
           </Panel>
+          <InstallPanel />
           <GoalSettingsPanel />
           <RemindersPanel />
           <LeagueSettingsPanel />
