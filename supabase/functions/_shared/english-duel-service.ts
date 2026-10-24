@@ -7,6 +7,7 @@ import {
   buildDuelQuestions,
   buildDuelView,
   DUEL_CREATE_DAILY_LIMIT,
+  DUEL_GRACE_MS,
   DUEL_INVITE_HOURS,
   DUEL_PLAY_HOURS,
   type DuelOutcome,
@@ -614,6 +615,42 @@ export const rematchDuel = async (ctx: DuelContext, userId: string, code: unknow
       .catch((cause) => console.warn(JSON.stringify({ event: "english_duel_notify_failed", message: String((cause as Error)?.message ?? cause) })));
   }
   return { code: String(row.code), created: true };
+};
+
+/**
+ * Settles duels nobody is looking at (hourly, from the reminder cron): clocks
+ * that ran out in a Telegram chat, invites nobody accepted and play windows
+ * that closed. This is what sends a waiting player their result when the
+ * other player simply stopped tapping.
+ */
+export const sweepDuels = async (ctx: DuelContext, limit = 100): Promise<{ checked: number }> => {
+  const now = nowOf(ctx);
+  const nowIso = now.toISOString();
+  const [timedOut, invites, windows] = await Promise.all([
+    ctx.sb.from("english_duel_players").select("duel_id")
+      .eq("language_id", ctx.languageId)
+      .is("finished_at", null)
+      .not("deadline_at", "is", null)
+      .lt("deadline_at", new Date(now.getTime() - DUEL_GRACE_MS - 1_000).toISOString())
+      .limit(limit),
+    ctx.sb.from("english_duels").select("id").eq("language_id", ctx.languageId).eq("status", "open").lt("invite_expires_at", nowIso).limit(limit),
+    ctx.sb.from("english_duels").select("id").eq("language_id", ctx.languageId).eq("status", "active").lt("play_expires_at", nowIso).limit(limit),
+  ]);
+  const ids = [...new Set([
+    ...((timedOut.data ?? []) as Row[]).map((row) => String(row.duel_id)),
+    ...((invites.data ?? []) as Row[]).map((row) => String(row.id)),
+    ...((windows.data ?? []) as Row[]).map((row) => String(row.id)),
+  ])].slice(0, limit);
+  if (!ids.length) return { checked: 0 };
+  const { data: codes } = await ctx.sb.from("english_duels").select("code").in("id", ids);
+  for (const row of (codes ?? []) as Row[]) {
+    try {
+      await persistSettlement(ctx, await loadByCode(ctx, row.code), now, null);
+    } catch (error) {
+      console.warn(JSON.stringify({ event: "english_duel_sweep_failed", message: error instanceof Error ? error.message : "unknown" }));
+    }
+  }
+  return { checked: ids.length };
 };
 
 /**

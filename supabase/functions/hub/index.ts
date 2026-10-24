@@ -61,7 +61,8 @@ import { appendLevelHistory, levelCheckStatus, perSkillLevels, readLevelHistory 
 import { handleCertificateRoute, handlePublicCertificate, isPublicCertificateRoute } from "./certificate.ts";
 import { measurementMethod, testResultRecord } from "../_shared/english-certificate.ts";
 import { handlePracticeRoute } from "./practice.ts";
-import { handleDuelRoute } from "./duel.ts";
+import { duelContext, handleDuelRoute } from "./duel.ts";
+import { sweepDuels } from "../_shared/english-duel-service.ts";
 import { handleProgressLinkRoute, handlePublicProgress, isPublicProgressRoute } from "./progress-link.ts";
 import { handleSocialBotUpdate } from "./social-bot.ts";
 import { runWeeklyReportCycle } from "./weekly-report.ts";
@@ -292,7 +293,11 @@ serve(async (req) => {
         onlyUserIds: body.weekly_report === true && Array.isArray(body.user_ids) ? body.user_ids.map(String).slice(0, 20) : undefined,
       }).catch((error) => ({ ran: false, considered: 0, sent: [], error: error instanceof Error ? error.message : "unknown" }));
       if (weekly.ran) console.log(JSON.stringify({ event: "english_weekly_report_cycle", considered: weekly.considered, sent: weekly.sent.length }));
-      return json(200, { ok: true, ...result, weekly_report: weekly });
+      // === Duels nobody is looking at: results for players who stopped tapping (./duel.ts) ===
+      const duels = body.dry_run === true
+        ? { checked: 0 }
+        : await sweepDuels(duelContext({ sb, languageId: workerScope.languageId, supabaseUrl, serviceRoleKey })).catch(() => ({ checked: 0 }));
+      return json(200, { ok: true, ...result, weekly_report: weekly, duels });
     }
 
     // === Telegram review quiz answers (student bot Worker; no learner session) ===

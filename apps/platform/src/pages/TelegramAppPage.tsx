@@ -236,6 +236,8 @@ export const TelegramAppPage: React.FC = () => {
   const [vocabCard, setVocabCard] = useState<Json | null>(null);
   // The bot's "Review now" button opens English straight into review, once.
   const [englishLaunchReview, setEnglishLaunchReview] = useState(() => launchParams.get('view') === 'english' && launchParams.get('section') === 'review');
+  // A bot duel button opens English straight into that duel.
+  const [englishLaunchDuel] = useState(() => (launchParams.get('view') === 'english' ? launchParams.get('duel') : null));
 
   const callTelegramApp = useCallback(
     async (action: string, body: Json = {}) => {
@@ -523,6 +525,8 @@ export const TelegramAppPage: React.FC = () => {
             call={callTelegramApp}
             openLink={openExternal}
             startInReview={englishLaunchReview}
+            startDuel={englishLaunchDuel}
+            openTelegramLink={openTelegram}
           />
         )}
 

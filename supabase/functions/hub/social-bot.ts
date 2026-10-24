@@ -135,8 +135,15 @@ export const handleSocialBotUpdate = async (input: Input): Promise<SocialBotResu
       const result = await answerDuel(ctx, userId, callback.code, { index: callback.index, choice: callback.choice });
       const links = duelLinks(ctx, result.view.code);
       if (result.accepted && result.answered && result.correct !== null && result.correct_index !== null) {
+        const toast = socialPlain(locale, result.correct ? "rightToast" : "wrongToast");
+        if (result.view.question) {
+          // One message for the whole run: the verdict on top, the next question and its buttons below.
+          const next = duelQuestionReply(locale, result.view.code, result.view.question, result.view.me.seconds_left);
+          const verdict = socialText(locale, result.correct ? "right" : "wrong", { word: result.answered.options[result.correct_index] ?? "" });
+          return reply([], { toast, edit: { text: `${verdict}\n\n${next.text}`, buttons: next.buttons } });
+        }
         return reply([stateReply(locale, result.view, links)], {
-          toast: socialPlain(locale, result.correct ? "rightToast" : "wrongToast"),
+          toast,
           edit: { text: duelAnsweredText(locale, result.answered, result.correct, result.correct_index), buttons: [] },
         });
       }
