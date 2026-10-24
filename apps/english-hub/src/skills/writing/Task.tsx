@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useT } from '../../i18n';
 import { handbookTopicHref } from '../../lib/handbookSearch';
+import { L1Why } from '../../components/L1Why';
 import { useElapsedSeconds, useResource } from '../../lib/useResource';
 import { Panel, ProgressBar, useErrorMessage } from '../../ui/kit';
 import { YourWordsHint, YourWordsResult } from '../YourWords';
@@ -119,6 +120,7 @@ const CorrectionList = ({ corrections }: { corrections: WritingCorrection[] }) =
               <> <Link to={handbookTopicHref(correction.topic)}>{t('handbook.readRule')}</Link></>
             ) : null}
           </small>
+          <L1Why original={correction.original} corrected={correction.corrected} explanation={correction.explanation} topic={correction.topic ?? null} />
         </li>
       ))}
     </ul>

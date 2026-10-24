@@ -9,6 +9,7 @@ import { CanDoPanel } from './CanDoPanel';
 import { LevelJourneyPanel } from './LevelJourneyPanel';
 import { GoalPlanPanel } from './goal/GoalPlanPanel';
 import { BadgesPanel } from '../components/Badges';
+import { TrapsPanel } from './TrapsPanel';
 import { EmptyState, ErrorState, LevelBadge, Loading, PageHeader, Panel, ProgressBar, SkillDot, Stat, Tag } from '../ui/kit';
 
 const Heatmap = ({ days }: { days: ProgressResponse['days'] }) => {
@@ -162,6 +163,8 @@ export const ProgressPage = () => {
           ) : null}
         </Panel>
       </div>
+
+      <TrapsPanel />
 
       <BadgesPanel />
 

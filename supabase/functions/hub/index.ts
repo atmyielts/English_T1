@@ -61,6 +61,7 @@ import { handleWordLookup } from "./word-lookup.ts";
 import { appendLevelHistory, levelCheckStatus, perSkillLevels, readLevelHistory } from "../_shared/english-levels.ts";
 import { handleCertificateRoute, handlePublicCertificate, isPublicCertificateRoute } from "./certificate.ts";
 import { measurementMethod, testResultRecord } from "../_shared/english-certificate.ts";
+import { handlePracticeRoute } from "./practice.ts";
 
 const routeMarker = "/hub";
 
@@ -372,6 +373,10 @@ serve(async (req) => {
     // === XP, weekly leagues and badges (./xp.ts) ===
     const xpResponse = await handleXpRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId });
     if (xpResponse) return xpResponse;
+
+    // === Role-plays, speaking mock, first-language traps (./practice.ts) ===
+    const practiceResponse = await handlePracticeRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId, products });
+    if (practiceResponse) return practiceResponse;
 
     // === Today, catalog and history (learner home) ===
     // Built only from the learner's placement, real attempts and due reviews.

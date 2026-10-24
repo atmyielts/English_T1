@@ -5,6 +5,7 @@ import { getProgress } from '../lib/hub';
 import { handbookTopicHref } from '../lib/handbookSearch';
 import { getReviewItems } from '../lib/review';
 import { ReviewQuestions } from './ReviewQuestions';
+import { L1Why } from '../components/L1Why';
 import { getNotebook, reviewCard, type NotebookCard } from '../lib/notebook';
 import { speak, canSpeak } from '../lib/speech';
 import { useResource } from '../lib/useResource';
@@ -161,6 +162,7 @@ export const ReviewPage = () => {
                         <span>
                           {mistake.status === 'improving' ? t('review.mistakes.practised') : t('review.mistakes.times', { count: mistake.count })}
                         </span>
+                        <L1Why mistake={mistake.examples.find((example) => example.includes('→')) ?? null} topic={mistake.topic} />
                       </span>
                       <span className="en-item-meta">
                         {mistake.topic ? (

@@ -4,6 +4,7 @@ import { useEnglish } from '../app/EnglishContext';
 import { useT } from '../i18n';
 import { edge } from '../lib/api';
 import { LockedPanel, Loading, PageHeader, Panel, Segmented, useErrorMessage } from '../ui/kit';
+import { PracticeLinks } from '../components/PracticeLinks';
 
 const VoiceConversationCard = lazy(() => import('../components/AIIter8Cards').then((module) => ({ default: module.VoiceConversationCard })));
 
@@ -241,6 +242,7 @@ export const TutorPage = () => {
           </Suspense>
         </section>
       ) : null}
+      {access.status !== 'loading' ? <PracticeLinks /> : null}
     </>
   );
 };
