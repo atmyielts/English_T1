@@ -1,34 +1,62 @@
 {
   "schemaVersion": 1,
-  "releaseId": "schood-teaching-prices",
+  "releaseId": "english-features-oct24",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "academy"
+    "english-hub"
   ],
   "migrations": [
-    "20261024210000_schood_teaching_prices.sql"
+    "20261024120000_english_word_glosses.sql",
+    "20261024121000_english_xp_leagues_badges.sql",
+    "20261024122000_english_telegram_quiz.sql",
+    "20261024123000_english_grammar_handbook.sql",
+    "20261024124000_english_certificates.sql"
   ],
-  "edgeFunctions": [],
-  "workers": [],
-  "requiredSecrets": [],
+  "edgeFunctions": [
+    "grammar-remediation",
+    "hub"
+  ],
+  "workers": [
+    "schood-bot"
+  ],
+  "sharedEdgeConsumers": [],
+  "requiredSecrets": [
+    "ENGLISH_AI_DAILY_LIMIT",
+    "ENGLISH_APP_URL",
+    "TELEGRAM_INTERNAL_SECRET"
+  ],
   "rolloutOrder": [
     "pages",
-    "migration:20261024210000_schood_teaching_prices.sql"
+    "migration:20261024120000_english_word_glosses.sql",
+    "migration:20261024121000_english_xp_leagues_badges.sql",
+    "migration:20261024122000_english_telegram_quiz.sql",
+    "migration:20261024123000_english_grammar_handbook.sql",
+    "migration:20261024124000_english_certificates.sql",
+    "secret:ENGLISH_AI_DAILY_LIMIT",
+    "secret:ENGLISH_APP_URL",
+    "secret:TELEGRAM_INTERNAL_SECRET",
+    "function:hub",
+    "function:grammar-remediation",
+    "worker:schood-bot"
   ],
   "manualFollowUps": [
-    "Pages: merging publishes academy, where Homework → Plan and settings shows plan prices as per month / per year.",
-    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus 20261024210000_schood_teaching_prices.sql, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) and any other session's unreleased migrations excluded. Dry run first. Sets Teacher 149 000 and Teacher Pro 249 000 UZS a month, adds yearly plans at 1 490 000 and 2 490 000, activates them, and marks Schood Teaching hidden and institution-only. billing.enforced stays false, so no academy loses access."
+    "Pages: merging publishes english-hub with tap-to-translate, XP/leagues/badges, the goal date plan, the grammar handbook, certificates and the Telegram quiz toggle. Until hub is deployed the new panels show their error/empty states.",
+    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus the five 20261024120000-20261024124000 English migrations, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then supabase migration list --linked. Adds service-role-only tables english_word_glosses, english_league_groups, english_league_members, learner_badges, learner_review_answer_log, english_telegram_quiz_questions, english_certificates (RLS on, no client grants) and Russian/Uzbek handbook explanations on the 43 grammar units.",
+    "Secrets: supabase secrets set ENGLISH_AI_DAILY_LIMIT=, supabase secrets set ENGLISH_APP_URL= and supabase secrets set TELEGRAM_INTERNAL_SECRET= are not run: the first two keep their code defaults, and TELEGRAM_INTERNAL_SECRET is already configured for send-telegram and the schood-bot Worker; hub now reads it to authenticate the bot's enq: quiz callbacks.",
+    "Edge: supabase functions deploy hub --project-ref bbjawctnqrufvnesdsel after the migrations (/word, /xp, /league, /achievements, /goal, /certificate(s), public certificate, /internal/telegram-quiz).",
+    "Edge: supabase functions deploy grammar-remediation --project-ref bbjawctnqrufvnesdsel (GET /handbook).",
+    "Worker: cd workers/schood-bot && npx wrangler deploy, after hub is live. The bot only adds handling for callback data starting with enq: and reuses its existing TELEGRAM_INTERNAL_SECRET; everything else is unchanged."
   ],
   "verification": [
-    "select name, amount, is_active from plans where product_id = '00000000-0000-4000-8000-000000000801' returns four active plans at 149 000, 249 000, 1 490 000 and 2 490 000.",
-    "The Schood Teaching product does not appear on the schood.online home page product list.",
-    "Academy → Homework → Plan and settings for an independent academy lists the four plans with prices."
+    "supabase migration list --linked shows the five migrations applied and the 9 #220 payment migrations still pending.",
+    "Without a session GET /functions/v1/hub/word, /hub/xp, /hub/league, /hub/goal, /hub/certificates and GET /grammar-remediation/handbook return 401; POST /hub/internal/telegram-quiz without the worker secret returns 401; GET /hub/public/certificate/UNKNOWN returns 404.",
+    "As a learner: tapping a word in a reading article opens its meaning; finishing an activity shows +XP and the league page lists the learner; Settings shows Goal date and the Telegram quiz toggle."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-academy.",
-    "migration": "update plans set is_active = false where product_id = '00000000-0000-4000-8000-000000000801'; billing is not enforced, so nothing else changes.",
-    "edge": "Nothing deployed.",
-    "worker": "Nothing deployed."
+    "pages": "Cloudflare Pages rollback of schood-english to the previous deployment.",
+    "migration": "Additive tables and metadata keys; leave in place.",
+    "edge": "Redeploy hub and grammar-remediation from the previous main commit; the new routes stop, existing routes are unchanged.",
+    "worker": "npx wrangler rollback in workers/schood-bot; enq: callbacks then go unanswered, nothing else changes."
   }
 }
