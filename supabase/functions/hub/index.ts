@@ -54,6 +54,7 @@ import { checkReviewAnswer, parseReviewPayload, publicReviewPayload, RETIRED_BOX
 import { topicFromSubskill } from "../_shared/english-mistakes.ts";
 import { mergeReminderSettings, readReminderSettings, REMINDER_HOURS } from "../_shared/english-reminders.ts";
 import { isReminderWorker, runReminderCycle } from "./reminders.ts";
+import { handleGoalRoute } from "./goal.ts";
 import { appendLevelHistory, levelCheckStatus, perSkillLevels, readLevelHistory } from "../_shared/english-levels.ts";
 
 const routeMarker = "/hub";
@@ -765,6 +766,11 @@ serve(async (req) => {
         settings = next;
       }
       return json(200, { ok: true, telegram_linked: linked, ...settings, hours: REMINDER_HOURS });
+    }
+
+    // === Goal date plan: target level by a date, paced from real practice time ===
+    if (route === "/goal" && (req.method === "GET" || req.method === "POST")) {
+      return await handleGoalRoute(req, { sb, userId: auth.userId, languageId: scope.languageId });
     }
 
     // === Tutor memory: notes the learner chose to keep, on every device ===
