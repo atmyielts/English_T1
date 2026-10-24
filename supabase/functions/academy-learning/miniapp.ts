@@ -1,9 +1,11 @@
 // Homework inside the Telegram Mini App (schood.online/telegram): open work
 // across centres, file upload for longer work, centre switching and the
-// learner's own mistakes. Authenticated by Telegram's signed initData.
+// learner's own mistakes, and whether they feed Schood English (D4).
+// Authenticated by Telegram's signed initData.
 
 import { uploadFileToS3 } from "../_shared/media-storage.ts";
 import { validateTelegramInitData } from "../_shared/telegram-init-data.ts";
+import { learnerConsents, setLearnerConsent } from "./consent.ts";
 import { configFlag, type Db, HttpError, requiredEnv } from "./core.ts";
 import { isUuid, type Row, text } from "./lib.ts";
 import {
@@ -75,6 +77,17 @@ export const miniAppMistakes = async (deps: MiniAppDeps, body: Row) => {
     .in("contact_id", contactIds).neq("status", "dismissed").order("created_at", { ascending: false }).limit(200);
   const names = new Map(centres.map((c) => [c.academy_id, c.name]));
   return { mistakes: ((data ?? []) as Row[]).map((m) => ({ ...m, center_name: names.get(String(m.academy_id)) ?? "" })) };
+};
+
+/** Per centre: do this centre's homework mistakes feed the learner's Schood English practice? */
+export const miniAppFeedConsent = async (deps: MiniAppDeps, body: Row) => {
+  const user = await miniAppUser(deps, body.initData ?? body.init_data);
+  return learnerConsents(deps.sb, user.id, null);
+};
+
+export const miniAppSetFeedConsent = async (deps: MiniAppDeps, body: Row) => {
+  const user = await miniAppUser(deps, body.initData ?? body.init_data);
+  return setLearnerConsent(deps.sb, user.id, body, "telegram_app");
 };
 
 const fileKind = (mime: string): string =>

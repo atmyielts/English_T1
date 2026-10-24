@@ -2,8 +2,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { edgeBase } from '../../lib/supabase';
 
 // Homework OS inside the Telegram Mini App: open work across centres, file and
-// text hand-in, centre switching and the learner's own mistakes. Backed by the
-// academy-learning edge function; hidden when hand-in is switched off.
+// text hand-in, centre switching and the learner's own mistakes, which the
+// learner (18+) may send to their Schood English practice per centre (D4).
+// Backed by the academy-learning edge function; hidden when hand-in is off.
 
 type Work = {
   type: 'assignment' | 'correction';
@@ -16,6 +17,7 @@ type Work = {
 };
 type Homework = { enabled: boolean; centres: { academy_id: string; name: string }[]; active_academy_id: string | null; work: Work[]; open_mistakes: number };
 type Mistake = { id: string; tag: string; excerpt: string | null; correction: string | null; explanation: string | null; status: string; center_name: string };
+type Feed = { academy_id: string; center_name: string; status: 'off' | 'granted' | 'revoked'; granted_at: string | null; granted_by_role: 'learner' | 'guardian' | null; copied: number };
 
 const MAX_FILES = 6;
 const FILE_LIMIT = 20 * 1024 * 1024;
@@ -43,6 +45,11 @@ export const TelegramHomeworkPanel: React.FC<{ initData: string; onSubmitted?: (
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null);
   const [mistakes, setMistakes] = useState<Mistake[] | null>(null);
+  const [feeds, setFeeds] = useState<Feed[] | null>(null);
+  const [practiceUrl, setPracticeUrl] = useState('https://english.schood.online/review');
+  const [adult, setAdult] = useState(false);
+  const [feedBusy, setFeedBusy] = useState('');
+  const [feedError, setFeedError] = useState('');
 
   const load = useCallback(async () => {
     if (!initData) return;
@@ -100,8 +107,27 @@ export const TelegramHomeworkPanel: React.FC<{ initData: string; onSubmitted?: (
 
   const openMistakes = async () => {
     if (mistakes) return setMistakes(null);
-    const payload = await post<{ mistakes: Mistake[] }>('miniapp_mistakes', initData).catch(() => ({ mistakes: [] }));
+    const [payload, feed] = await Promise.all([
+      post<{ mistakes: Mistake[] }>('miniapp_mistakes', initData).catch(() => ({ mistakes: [] })),
+      post<{ consents: Feed[]; practice_url: string }>('miniapp_mistake_feed', initData).catch(() => null),
+    ]);
     setMistakes(payload.mistakes);
+    setFeeds(feed?.consents ?? null);
+    if (feed?.practice_url) setPracticeUrl(feed.practice_url);
+  };
+
+  const setFeed = async (academyId: string, enabled: boolean) => {
+    setFeedBusy(academyId);
+    setFeedError('');
+    try {
+      const out = await post<{ consent: Feed }>('miniapp_mistake_feed_set', initData, { academy_id: academyId, enabled, confirmed_adult: enabled && adult });
+      setFeeds((list) => (list ?? []).map((f) => (f.academy_id === academyId ? { ...out.consent, center_name: f.center_name } : f)));
+      setAdult(false);
+    } catch (e) {
+      setFeedError(e instanceof Error ? e.message : 'Your practice setting was not saved. Try again.');
+    } finally {
+      setFeedBusy('');
+    }
   };
 
   return (
@@ -153,6 +179,45 @@ export const TelegramHomeworkPanel: React.FC<{ initData: string; onSubmitted?: (
             </li>
           ))}
         </ul>
+      ) : null}
+      {mistakes && feeds?.length ? (
+        <div className="mt-3 rounded-xl border border-gray-200 p-3">
+          <div className="text-sm font-black">Practise these in Schood English</div>
+          <p className="mt-1 text-xs text-gray-600">
+            Add your open homework mistakes to your Schood English Today plan and Review. Only the mistake, its correction, the explanation and the
+            centre name are copied. Turn it off any time and the copies are deleted.
+          </p>
+          {feeds.some((f) => f.status !== 'granted') ? (
+            <label className="mt-2 flex items-start gap-2 text-xs font-semibold">
+              <input type="checkbox" checked={adult} onChange={(e) => setAdult(e.target.checked)} className="mt-0.5" />
+              <span>I am 18 or older. (Under 18? Ask your parent or guardian to turn it on from their parent page.)</span>
+            </label>
+          ) : null}
+          <ul className="mt-2 space-y-2">
+            {feeds.map((f) => (
+              <li key={f.academy_id} className="flex items-center justify-between gap-3 text-sm">
+                <div className="min-w-0">
+                  <div className="truncate font-bold">{f.center_name}</div>
+                  <div className="text-xs text-gray-500">
+                    {f.status === 'granted' ? `On${f.granted_by_role === 'guardian' ? ' (by your parent)' : ''} · ${f.copied} in your practice` : 'Off'}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  disabled={feedBusy !== '' || (f.status !== 'granted' && !adult)}
+                  onClick={() => void setFeed(f.academy_id, f.status !== 'granted')}
+                  className={`shrink-0 rounded-lg px-3 py-2 text-xs font-bold disabled:opacity-50 ${f.status === 'granted' ? 'border border-gray-300' : 'bg-gray-950 text-white'}`}
+                >
+                  {feedBusy === f.academy_id ? 'Saving…' : f.status === 'granted' ? 'Turn off' : 'Turn on'}
+                </button>
+              </li>
+            ))}
+          </ul>
+          {feedError ? <div className="mt-2 rounded-xl bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">{feedError}</div> : null}
+          {feeds.some((f) => f.status === 'granted') ? (
+            <a href={practiceUrl} target="_blank" rel="noreferrer" className="mt-2 block text-center text-xs font-bold underline">Open Schood English Review</a>
+          ) : null}
+        </div>
       ) : null}
 
       {target ? (
