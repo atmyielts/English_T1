@@ -1,0 +1,3412 @@
+[
+  {
+    "slug": "sec-bd-001",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "In 1928, Scottish scientist Alexander Fleming noticed something unusual in his laboratory. Mold growing on one of his culture plates had killed the bacteria around ______ observation eventually led to the development of penicillin, one of the first widely used antibiotics.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "it, this"
+      },
+      {
+        "id": "B",
+        "label": "it this"
+      },
+      {
+        "id": "C",
+        "label": "it and, this"
+      },
+      {
+        "id": "D",
+        "label": "it; this"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because “Mold growing on one of his culture plates had killed the bacteria around it” and “this observation eventually led to the development of penicillin” are both independent clauses, and a semicolon can join two independent clauses. Choice A is incorrect because a comma alone between two independent clauses creates a comma splice. Choice B is incorrect because joining the clauses with no punctuation creates a run-on sentence. Choice C is incorrect because a comma placed after a coordinating conjunction, rather than before it, does not correctly join the clauses."
+  },
+  {
+    "slug": "sec-bd-002",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "The Hawaiian honeycreepers are a group of birds that descended from a single ancestral species of finch. Many honeycreeper species have disappeared since humans arrived in ______ conservation groups are now working to protect the species that remain.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Hawaii, and"
+      },
+      {
+        "id": "B",
+        "label": "Hawaii and,"
+      },
+      {
+        "id": "C",
+        "label": "Hawaii,"
+      },
+      {
+        "id": "D",
+        "label": "Hawaii, and,"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because two independent clauses can be joined by a comma followed by a coordinating conjunction such as “and.” Choice B is incorrect because the comma must come before the conjunction, not after it. Choice C is incorrect because a comma alone between two independent clauses creates a comma splice. Choice D is incorrect because no comma should follow “and” here; the extra comma separates the conjunction from the clause it introduces."
+  },
+  {
+    "slug": "sec-bd-003",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Redwood National Park in northern California protects some of the tallest trees on Earth. The coast redwood nicknamed ______ about 116 meters tall, making it the tallest known living tree in the world.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Hyperion, stands"
+      },
+      {
+        "id": "B",
+        "label": "Hyperion: stands"
+      },
+      {
+        "id": "C",
+        "label": "Hyperion stands"
+      },
+      {
+        "id": "D",
+        "label": "Hyperion; stands"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because no punctuation should separate a subject (“The coast redwood nicknamed Hyperion”) from its verb (“stands”). The name “Hyperion” is essential to identifying which redwood is meant, so it is not set off with punctuation either. Choice A is incorrect because a single comma between the subject and the verb is not standard. Choice B is incorrect because a colon must follow an independent clause, and “The coast redwood nicknamed Hyperion” is not one. Choice D is incorrect because a semicolon separates independent clauses, not a subject from its verb."
+  },
+  {
+    "slug": "sec-bd-004",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Petra, an ancient city in present-day Jordan, is famous for monuments carved directly into rose-colored sandstone cliffs. Visitors to the site usually make a point of seeing three of its best-known ______ the Treasury, the Monastery, and the Royal Tombs.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "monuments;"
+      },
+      {
+        "id": "B",
+        "label": "monuments, including:"
+      },
+      {
+        "id": "C",
+        "label": "monuments"
+      },
+      {
+        "id": "D",
+        "label": "monuments:"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because a colon can follow an independent clause (“Visitors to the site usually make a point of seeing three of its best-known monuments”) to introduce a list that specifies what the clause refers to. Choice A is incorrect because a semicolon must join two independent clauses, and the list is not an independent clause. Choice B is incorrect because a colon should not separate “including” from the items it introduces. Choice C is incorrect because without punctuation the list runs directly into “monuments,” making the sentence unclear and ungrammatical."
+  },
+  {
+    "slug": "sec-bd-005",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Mexican painter Frida Kahlo often explored questions of identity in her work. The Two Fridas, a double self-portrait completed in ______ two versions of the artist seated side by side and holding hands.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "1939 shows"
+      },
+      {
+        "id": "B",
+        "label": "1939, shows"
+      },
+      {
+        "id": "C",
+        "label": "1939; shows"
+      },
+      {
+        "id": "D",
+        "label": "1939—shows"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the phrase “a double self-portrait completed in 1939” is a nonessential appositive that begins with a comma, so it must end with a comma before the verb “shows.” Choice A is incorrect because without a closing comma the appositive is not properly set off from the rest of the sentence. Choice C is incorrect because a semicolon cannot separate a subject from its verb. Choice D is incorrect because a nonessential element that opens with a comma must close with a comma, not a dash."
+  },
+  {
+    "slug": "sec-bd-006",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Saturn is the second-largest planet in the solar system, but it is mostly made of hydrogen and helium. Its average density is lower than that of ______ the planet would, in theory, float in a sufficiently large body of water.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "water, therefore,"
+      },
+      {
+        "id": "B",
+        "label": "water therefore"
+      },
+      {
+        "id": "C",
+        "label": "water; therefore,"
+      },
+      {
+        "id": "D",
+        "label": "water, therefore"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because “Its average density is lower than that of water” and “the planet would, in theory, float in a sufficiently large body of water” are independent clauses, and when a conjunctive adverb such as “therefore” joins them, it should be preceded by a semicolon and followed by a comma. Choice A is incorrect because placing commas around “therefore” creates a comma splice. Choice B is incorrect because it leaves the clauses joined with no punctuation, creating a run-on. Choice D is incorrect because a comma before “therefore” cannot join two independent clauses."
+  },
+  {
+    "slug": "sec-bd-007",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Invisible Man, which follows an unnamed narrator who feels unseen by society, won the National Book Award for Fiction in 1953. The American ______ published the novel in 1952 after working on it for about seven years.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "novelist, Ralph Ellison,"
+      },
+      {
+        "id": "B",
+        "label": "novelist Ralph Ellison"
+      },
+      {
+        "id": "C",
+        "label": "novelist, Ralph Ellison"
+      },
+      {
+        "id": "D",
+        "label": "novelist Ralph Ellison,"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the name “Ralph Ellison” is essential: “The American novelist” alone does not identify which novelist is meant, so the name should not be set off with commas. Choice A is incorrect because setting off the name with commas treats it as nonessential information. Choice C is incorrect because it places a comma between the title and the name and also leaves the phrase unclosed. Choice D is incorrect because it places an unnecessary comma between the subject and the verb “published.”"
+  },
+  {
+    "slug": "sec-bd-008",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "The Dead Sea, which borders Jordan, Israel, and the West Bank, attracts visitors from around the world. Most come to experience three of its unusual ______ extremely salty water, a shoreline more than 400 meters below sea level, and mineral-rich mud.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "features:"
+      },
+      {
+        "id": "B",
+        "label": "features;"
+      },
+      {
+        "id": "C",
+        "label": "features, such as:"
+      },
+      {
+        "id": "D",
+        "label": "features"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the colon follows an independent clause (“Most come to experience three of its unusual features”) and introduces a list that names the features. Choice B is incorrect because a semicolon must be followed by an independent clause, and the list is not one. Choice C is incorrect because a colon should not come between “such as” and the items it introduces. Choice D is incorrect because without punctuation the list runs into the clause, making the sentence ungrammatical."
+  },
+  {
+    "slug": "sec-bd-009",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Each fall, millions of monarch butterflies travel from Canada and the United States to forests in central Mexico. Studies have shown ______ the insects use the position of the sun, along with an internal clock, to stay on course.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": ", that"
+      },
+      {
+        "id": "B",
+        "label": "that,"
+      },
+      {
+        "id": "C",
+        "label": ": that"
+      },
+      {
+        "id": "D",
+        "label": "that"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because no punctuation is needed between a verb (“have shown”) and the clause that serves as its object (“that the insects use ...”). Choice A is incorrect because a comma should not separate a verb from its object. Choice B is incorrect because a comma should not separate “that” from the subject of the clause it introduces. Choice C is incorrect because a colon must follow an independent clause, and “Studies have shown” is incomplete without its object."
+  },
+  {
+    "slug": "sec-bd-010",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Krakatoa is a volcanic island in Indonesia, between the islands of Java and Sumatra. When the volcano erupted in ______ explosion was heard thousands of kilometers away, and ash in the atmosphere produced vividly colored sunsets around the world for months.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "1883; the"
+      },
+      {
+        "id": "B",
+        "label": "1883, the"
+      },
+      {
+        "id": "C",
+        "label": "1883: the"
+      },
+      {
+        "id": "D",
+        "label": "1883. The"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because a comma correctly separates the introductory dependent clause (“When the volcano erupted in 1883”) from the main clause. Choice A is incorrect because a semicolon must join two independent clauses, and the introductory clause is dependent. Choice C is incorrect because a colon must follow an independent clause. Choice D is incorrect because a period would leave “When the volcano erupted in 1883” as a sentence fragment."
+  },
+  {
+    "slug": "sec-bd-011",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Many biologists consider the axolotl—a salamander native to lakes near Mexico ______ an ideal subject for studying regeneration, because it can regrow lost limbs and even parts of its heart.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "City,"
+      },
+      {
+        "id": "B",
+        "label": "City"
+      },
+      {
+        "id": "C",
+        "label": "City—"
+      },
+      {
+        "id": "D",
+        "label": "City;"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the nonessential phrase “a salamander native to lakes near Mexico City” begins with a dash, so it must end with a dash. Choice A is incorrect because a nonessential element that opens with a dash cannot close with a comma. Choice B is incorrect because without closing punctuation the phrase is not set off from the rest of the sentence. Choice D is incorrect because a semicolon cannot close a phrase that interrupts a clause."
+  },
+  {
+    "slug": "sec-bd-012",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Established in 1800, the Library of Congress in Washington, D.C., holds more than 170 million ______ collections include books, maps, photographs, sound recordings, and manuscripts in hundreds of languages.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "items, its"
+      },
+      {
+        "id": "B",
+        "label": "items its"
+      },
+      {
+        "id": "C",
+        "label": "items. Its"
+      },
+      {
+        "id": "D",
+        "label": "items, and, its"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the passage contains two independent clauses, and a period correctly separates them into two sentences. Choice A is incorrect because a comma alone between two independent clauses creates a comma splice. Choice B is incorrect because joining the clauses without punctuation creates a run-on sentence. Choice D is incorrect because no comma should follow the coordinating conjunction “and.”"
+  },
+  {
+    "slug": "sec-bd-013",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "When the first preserved platypus specimens reached Britain in the late 1700s, the animal’s duck-like bill and furry body seemed impossible to many observers. Some of the European ______ first examined the specimens suspected that they were hoaxes stitched together from different animals.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "scientists, who"
+      },
+      {
+        "id": "B",
+        "label": "scientists who"
+      },
+      {
+        "id": "C",
+        "label": "scientists who,"
+      },
+      {
+        "id": "D",
+        "label": "scientists; who"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the clause “who first examined the specimens” is essential: it identifies which scientists suspected a hoax, so it should not be set off with commas. Choice A is incorrect because a comma would treat the clause as nonessential, leaving the sentence to claim, illogically, that some European scientists in general suspected a hoax and that they all first examined the specimens. Choice C is incorrect because a comma should not separate “who” from the verb it governs. Choice D is incorrect because a semicolon must join independent clauses."
+  },
+  {
+    "slug": "sec-bd-014",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "The Silk Road was not a single road but a network of trade routes linking China with the Mediterranean ______ merchants carried silk, spices, paper, and ideas along its many branches for more than a thousand years.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "world, merchants"
+      },
+      {
+        "id": "B",
+        "label": "world merchants"
+      },
+      {
+        "id": "C",
+        "label": "world, and, merchants"
+      },
+      {
+        "id": "D",
+        "label": "world; merchants"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the sentence contains two independent clauses, and a semicolon correctly joins them. Choice A is incorrect because a comma alone between the clauses creates a comma splice. Choice B is incorrect because no punctuation between the clauses creates a run-on sentence. Choice C is incorrect because a comma should not follow the coordinating conjunction “and.”"
+  },
+  {
+    "slug": "sec-bd-015",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Washi, a traditional Japanese paper, is prized for its strength and texture. The ingredients used to make it ______ the inner bark of the kozo shrub, water, and a sticky plant extract that helps disperse the fibers evenly.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "include"
+      },
+      {
+        "id": "B",
+        "label": "include:"
+      },
+      {
+        "id": "C",
+        "label": "include;"
+      },
+      {
+        "id": "D",
+        "label": "include,"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because no punctuation should separate a verb (“include”) from its objects (the list of ingredients). Choice B is incorrect because a colon must follow an independent clause, and “The ingredients used to make it include” is incomplete without its objects. Choice C is incorrect because a semicolon must join independent clauses. Choice D is incorrect because a comma should not separate a verb from its objects."
+  },
+  {
+    "slug": "sec-bd-016",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Born in Texas in 1892, Bessie Coleman dreamed of flying at a time when few women were allowed to train as pilots. Coleman, the first African American woman to earn a pilot’s ______ to travel to France for her training because no flight school in the United States would admit her.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "license had"
+      },
+      {
+        "id": "B",
+        "label": "license; had"
+      },
+      {
+        "id": "C",
+        "label": "license, had"
+      },
+      {
+        "id": "D",
+        "label": "license—had"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the appositive “the first African American woman to earn a pilot’s license” begins with a comma and must end with one before the verb “had.” Choice A is incorrect because the appositive is not closed. Choice B is incorrect because a semicolon cannot separate a subject from its verb. Choice D is incorrect because an appositive that opens with a comma cannot close with a dash."
+  },
+  {
+    "slug": "sec-bd-017",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Built over roughly two decades in the seventeenth ______ Taj Mahal in Agra, India, was commissioned by the Mughal emperor Shah Jahan as a tomb for the empress Mumtaz Mahal.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "century; the"
+      },
+      {
+        "id": "B",
+        "label": "century. The"
+      },
+      {
+        "id": "C",
+        "label": "century: the"
+      },
+      {
+        "id": "D",
+        "label": "century, the"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because a comma correctly separates the introductory participial phrase (“Built over roughly two decades in the seventeenth century”) from the main clause. Choice A is incorrect because a semicolon must join independent clauses, and the introductory phrase is not one. Choice B is incorrect because a period would leave the introductory phrase as a fragment. Choice C is incorrect because a colon must follow an independent clause."
+  },
+  {
+    "slug": "sec-bd-018",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "The Svalbard Global ______ secure storage facility built inside a mountain on a remote Norwegian island in the Arctic—holds backup copies of seeds from gene banks around the world.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Seed Vault, a"
+      },
+      {
+        "id": "B",
+        "label": "Seed Vault—a"
+      },
+      {
+        "id": "C",
+        "label": "Seed Vault a"
+      },
+      {
+        "id": "D",
+        "label": "Seed Vault; a"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the nonessential phrase describing the vault ends with a dash after “Arctic,” so it must also begin with a dash. Choice A is incorrect because a nonessential element cannot open with a comma and close with a dash. Choice C is incorrect because without opening punctuation the phrase is not set off from the subject it describes. Choice D is incorrect because a semicolon cannot separate a subject from the phrase that describes it."
+  },
+  {
+    "slug": "sec-bd-019",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Most people picture deserts as hot, sandy places such as the Sahara. Antarctica, ______ is also classified as a desert because it receives very little precipitation each year.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "however,"
+      },
+      {
+        "id": "B",
+        "label": "however"
+      },
+      {
+        "id": "C",
+        "label": "however;"
+      },
+      {
+        "id": "D",
+        "label": "however:"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because “however” interrupts the clause between the subject “Antarctica” and the verb “is,” so it must be set off by a pair of commas; the first comma is already in place. Choice B is incorrect because it leaves “however” without its closing comma. Choice C is incorrect because a semicolon cannot separate a subject from its verb. Choice D is incorrect because a colon cannot separate a subject from its verb."
+  },
+  {
+    "slug": "sec-bd-020",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Early telescopes produced images with blurry colored fringes because their glass lenses bent different colors of light by different ______ Isaac Newton designed a telescope that gathered light with a curved mirror instead of a lens.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "amounts; to avoid this problem,"
+      },
+      {
+        "id": "B",
+        "label": "amounts, to avoid this problem,"
+      },
+      {
+        "id": "C",
+        "label": "amounts to avoid this problem,"
+      },
+      {
+        "id": "D",
+        "label": "amounts, to avoid this problem;"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the sentence contains two independent clauses, and a semicolon correctly separates them; the comma after the introductory phrase “to avoid this problem” is also appropriate. Choice B is incorrect because a comma alone between the clauses creates a comma splice. Choice C is incorrect because it creates a run-on sentence and wrongly attaches “to avoid this problem” to the first clause, as if the lenses bent light in order to avoid a problem. Choice D is incorrect because the semicolon cuts off the introductory phrase from the clause it modifies and leaves the first clause joined to that phrase illogically."
+  },
+  {
+    "slug": "sec-bd-021",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Each modern Summer Olympic Games is assigned to a single host city. The Summer Games of 1992, 1996, and 2000 were held in Barcelona, ______ Atlanta, United States; and Sydney, Australia.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Spain,"
+      },
+      {
+        "id": "B",
+        "label": "Spain;"
+      },
+      {
+        "id": "C",
+        "label": "Spain:"
+      },
+      {
+        "id": "D",
+        "label": "Spain"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the items in this list already contain commas (city, country), so semicolons are needed to separate the items, as they are between “United States” and “and Sydney.” Choice A is incorrect because a comma here would make it unclear where one item ends and the next begins. Choice C is incorrect because a colon does not separate items in a list. Choice D is incorrect because omitting punctuation runs the first two items together."
+  },
+  {
+    "slug": "sec-bd-022",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Computer and television screens create images by mixing light. The three primary colors of ______ green, and blue—can be combined in different proportions to produce nearly any color a viewer can see on a screen.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "light, red,"
+      },
+      {
+        "id": "B",
+        "label": "light: red,"
+      },
+      {
+        "id": "C",
+        "label": "light—red,"
+      },
+      {
+        "id": "D",
+        "label": "light red,"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the list “red, green, and blue” is a nonessential interruption between the subject and the verb that ends with a dash, so it must also begin with a dash. Choice A is incorrect because a comma here, together with the commas inside the list, makes the sentence’s structure unclear and fails to match the closing dash. Choice B is incorrect because a colon must follow an independent clause, and “The three primary colors of light” is not one. Choice D is incorrect because without punctuation “light red” reads as a single color rather than the start of a list."
+  },
+  {
+    "slug": "sec-bd-023",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Ancient Egyptian builders faced a daunting challenge in constructing the pyramids at ______ moving limestone and granite blocks, some weighing several tons, across long distances and lifting them into place without iron tools or pulleys.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Giza;"
+      },
+      {
+        "id": "B",
+        "label": "Giza, and"
+      },
+      {
+        "id": "C",
+        "label": "Giza"
+      },
+      {
+        "id": "D",
+        "label": "Giza:"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because a colon can follow an independent clause (“Ancient Egyptian builders faced a daunting challenge in constructing the pyramids at Giza”) to introduce an explanation of what the challenge was. Choice A is incorrect because a semicolon must be followed by an independent clause, and the phrase beginning “moving limestone” is not one. Choice B is incorrect because “and” wrongly joins the clause to a phrase that has no verb of its own. Choice C is incorrect because without punctuation the explanation runs into the clause, suggesting nonsensically that Giza was moving the blocks."
+  },
+  {
+    "slug": "sec-bd-024",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "A hummingbird’s heart can beat more than 1,000 times per minute during flight. Hummingbirds have some of the highest metabolic rates of any ______ they must feed frequently throughout the day, sometimes visiting hundreds of flowers.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "animals, consequently,"
+      },
+      {
+        "id": "B",
+        "label": "animals; consequently,"
+      },
+      {
+        "id": "C",
+        "label": "animals consequently,"
+      },
+      {
+        "id": "D",
+        "label": "animals, consequently;"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because two independent clauses joined by the conjunctive adverb “consequently” require a semicolon before the adverb and a comma after it. Choice A is incorrect because commas alone create a comma splice. Choice C is incorrect because it joins the clauses with no punctuation before “consequently,” creating a run-on. Choice D is incorrect because it places the semicolon after “consequently,” attaching the adverb to the wrong clause and leaving a comma splice before it."
+  },
+  {
+    "slug": "sec-bd-025",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "In June 1963, Soviet cosmonaut Valentina Tereshkova became the first woman to travel to space. Her ______ orbited Earth 48 times over nearly three days before returning safely to the ground.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "spacecraft, Vostok 6,"
+      },
+      {
+        "id": "B",
+        "label": "spacecraft Vostok 6,"
+      },
+      {
+        "id": "C",
+        "label": "spacecraft, Vostok 6"
+      },
+      {
+        "id": "D",
+        "label": "spacecraft; Vostok 6,"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because Tereshkova flew in only one spacecraft on this mission, so its name, “Vostok 6,” is nonessential information about “Her spacecraft” and must be set off by a pair of commas. Choice B is incorrect because it places a comma between the subject and the verb without an opening comma. Choice C is incorrect because it opens the appositive with a comma but does not close it. Choice D is incorrect because a semicolon cannot separate a noun from its appositive."
+  },
+  {
+    "slug": "sec-bd-026",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Some of the oldest evidence of humans in the Americas may come from an ancient lakebed in the southwestern United States. The fossilized footprints that researchers discovered at White Sands National Park in New ______ that humans were present in North America more than 21,000 years ago.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Mexico, suggest"
+      },
+      {
+        "id": "B",
+        "label": "Mexico; suggest"
+      },
+      {
+        "id": "C",
+        "label": "Mexico suggest"
+      },
+      {
+        "id": "D",
+        "label": "Mexico—suggest"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because no punctuation should separate the long subject (“The fossilized footprints that researchers discovered at White Sands National Park in New Mexico”) from its verb, “suggest.” Choice A is incorrect because a single comma between a subject and its verb is not standard. Choice B is incorrect because a semicolon cannot separate a subject from its verb. Choice D is incorrect because a dash cannot separate a subject from its verb here."
+  },
+  {
+    "slug": "sec-bd-027",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "The Hope Diamond, now housed at the Smithsonian Institution, appears deep blue in ordinary light. Under ultraviolet ______ the gem glows a vivid orange-red for several seconds after the ultraviolet source is switched off.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "light; however,"
+      },
+      {
+        "id": "B",
+        "label": "light, however,"
+      },
+      {
+        "id": "C",
+        "label": "light however,"
+      },
+      {
+        "id": "D",
+        "label": "light, however;"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the second sentence is a single independent clause in which “however” follows the introductory phrase “Under ultraviolet light”; commas correctly set the word off. Choice A is incorrect because a semicolon must separate independent clauses, and “Under ultraviolet light” is only a phrase. Choice C is incorrect because “however” must be set off by commas on both sides. Choice D is incorrect because the semicolon splits the introductory phrase from the clause it belongs to."
+  },
+  {
+    "slug": "sec-bd-028",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "The bar-tailed godwit, a shorebird, makes one of the longest nonstop migrations of any land ______ 2022, a tagged juvenile flew from Alaska to Tasmania without stopping, covering more than 13,000 kilometers in about eleven days.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "bird, in"
+      },
+      {
+        "id": "B",
+        "label": "bird: in"
+      },
+      {
+        "id": "C",
+        "label": "bird in"
+      },
+      {
+        "id": "D",
+        "label": "bird, which in"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because a colon can join two independent clauses when the second illustrates or explains the first; the record-setting flight illustrates the godwit’s long migrations. Choice A is incorrect because a comma alone between the two independent clauses creates a comma splice. Choice C is incorrect because without punctuation the clauses run together. Choice D is incorrect because “which” turns the second clause into a relative clause that has no logical place for its pronoun, producing an ungrammatical sentence."
+  },
+  {
+    "slug": "sec-bd-029",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "From the thirteenth to the fifteenth century, much of northern Europe’s trade passed through a small number of port cities. The Hanseatic ______ commercial alliance of merchant guilds and market towns, dominated trade on the Baltic Sea during this period.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "League, a"
+      },
+      {
+        "id": "B",
+        "label": "League—a"
+      },
+      {
+        "id": "C",
+        "label": "League; a"
+      },
+      {
+        "id": "D",
+        "label": "League a"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the appositive “a commercial alliance of merchant guilds and market towns” ends with a comma before the verb “dominated,” so it must also begin with a comma. Choice B is incorrect because an appositive that closes with a comma cannot open with a dash. Choice C is incorrect because a semicolon cannot separate a noun from its appositive. Choice D is incorrect because the appositive must be set off from the noun it renames."
+  },
+  {
+    "slug": "sec-bd-030",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Mount Everest, at about 8,849 meters, is the highest mountain above sea ______ is not the tallest mountain measured from base to peak; that distinction belongs to Mauna Kea in Hawaii, much of which lies beneath the ocean.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "level, it"
+      },
+      {
+        "id": "B",
+        "label": "level it"
+      },
+      {
+        "id": "C",
+        "label": "level, yet, it"
+      },
+      {
+        "id": "D",
+        "label": "level, yet it"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because two independent clauses can be joined by a comma followed by a coordinating conjunction, here “yet,” which also signals the contrast. Choice A is incorrect because a comma alone between independent clauses creates a comma splice. Choice B is incorrect because no punctuation creates a run-on. Choice C is incorrect because a comma should not follow the coordinating conjunction “yet.”"
+  },
+  {
+    "slug": "sec-bd-031",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "The Japanese artist Katsushika Hokusai produced thousands of works over a career lasting about seventy years. Hokusai’s ______ depicts three boats beneath an enormous wave, with Mount Fuji visible in the distance.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "woodblock print, The Great Wave off Kanagawa,"
+      },
+      {
+        "id": "B",
+        "label": "woodblock print, The Great Wave off Kanagawa"
+      },
+      {
+        "id": "C",
+        "label": "woodblock print The Great Wave off Kanagawa"
+      },
+      {
+        "id": "D",
+        "label": "woodblock print The Great Wave off Kanagawa,"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because Hokusai made many woodblock prints, so the title is essential to identify which print is meant and should not be set off with commas. Choice A is incorrect because commas around the title would wrongly suggest that Hokusai made only one woodblock print. Choice B is incorrect because it opens with a comma that is never closed. Choice D is incorrect because it places a comma between the subject and the verb “depicts.”"
+  },
+  {
+    "slug": "sec-bd-032",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Mammals that lay eggs rather than giving birth to live young are called monotremes. The platypus and the four species of ______ the only living monotremes, and all of them live in Australia or New Guinea.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "echidna, are"
+      },
+      {
+        "id": "B",
+        "label": "echidna: are"
+      },
+      {
+        "id": "C",
+        "label": "echidna; are"
+      },
+      {
+        "id": "D",
+        "label": "echidna are"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because no punctuation should separate the compound subject (“The platypus and the four species of echidna”) from its verb, “are.” Choice A is incorrect because a comma between the subject and the verb is not standard. Choice B is incorrect because a colon must follow an independent clause. Choice C is incorrect because a semicolon cannot separate a subject from its verb."
+  },
+  {
+    "slug": "sec-bd-033",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Some of the world’s oldest known musical instruments are flutes carved from materials such ______ bird bone and mammoth ivory; examples found in caves in southern Germany are more than 35,000 years old.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "as:"
+      },
+      {
+        "id": "B",
+        "label": "as,"
+      },
+      {
+        "id": "C",
+        "label": "as;"
+      },
+      {
+        "id": "D",
+        "label": "as"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because no punctuation should separate “such as” from the examples it introduces. Choice A is incorrect because a colon must follow an independent clause and should not come after “such as.” Choice B is incorrect because a comma should not separate “such as” from its examples. Choice C is incorrect because a semicolon must join independent clauses, and “as” does not end one."
+  },
+  {
+    "slug": "sec-bd-034",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "In her 1962 book Silent Spring, the biologist Rachel Carson described ______ widespread use of the pesticide DDT was harming birds, fish, and other wildlife. The book helped inspire the modern environmental movement.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "how, the"
+      },
+      {
+        "id": "B",
+        "label": "how the"
+      },
+      {
+        "id": "C",
+        "label": ", how the"
+      },
+      {
+        "id": "D",
+        "label": "how: the"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the clause beginning with “how” is the object of the verb “described,” and no punctuation should separate a verb from its object or split the clause after “how.” Choice A is incorrect because a comma should not separate “how” from the rest of its clause. Choice C is incorrect because a comma should not separate a verb from its object. Choice D is incorrect because a colon should not separate “how” from the rest of its clause."
+  },
+  {
+    "slug": "sec-bd-035",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Some plants respond to touch with surprising speed. The leaves of the sensitive plant, Mimosa pudica, fold inward within seconds when brushed by an insect or a human ______ the leaves of the Venus flytrap snap shut in less than a second when an insect touches the trigger hairs inside them.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "hand, similarly,"
+      },
+      {
+        "id": "B",
+        "label": "hand similarly,"
+      },
+      {
+        "id": "C",
+        "label": "hand, similarly"
+      },
+      {
+        "id": "D",
+        "label": "hand; similarly,"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the two independent clauses are joined by the conjunctive adverb “similarly,” which requires a semicolon before it and a comma after it. Choice A is incorrect because a comma before “similarly” creates a comma splice. Choice B is incorrect because it joins the clauses without punctuation, creating a run-on. Choice C is incorrect because it creates a comma splice: a comma alone cannot join two independent clauses."
+  },
+  {
+    "slug": "sec-bd-036",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Medieval scribes sometimes reused old parchment, which was expensive to produce, by scraping off the original ______ recycled manuscript of this kind is called a palimpsest, and traces of the earlier text can often be recovered with special imaging.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "writing; a"
+      },
+      {
+        "id": "B",
+        "label": "writing, a"
+      },
+      {
+        "id": "C",
+        "label": "writing a"
+      },
+      {
+        "id": "D",
+        "label": "writing, and, a"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because a semicolon correctly joins the two independent clauses. Choice B is incorrect because a comma alone between the clauses creates a comma splice. Choice C is incorrect because no punctuation creates a run-on sentence. Choice D is incorrect because no comma should follow the coordinating conjunction “and.”"
+  },
+  {
+    "slug": "sec-bd-037",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "The active ingredient in aspirin is related to a compound found in willow bark, which people used for centuries to relieve ______ chemists did not produce a stable synthetic form of the drug until 1897.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "pain but,"
+      },
+      {
+        "id": "B",
+        "label": "pain, but,"
+      },
+      {
+        "id": "C",
+        "label": "pain, but"
+      },
+      {
+        "id": "D",
+        "label": "pain; but,"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because two independent clauses can be joined by a comma followed by the coordinating conjunction “but.” Choice A is incorrect because the comma must precede “but,” not follow it. Choice B is incorrect because no comma should follow “but.” Choice D is incorrect because no comma should follow “but.”"
+  },
+  {
+    "slug": "sec-bd-038",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Astronomers measure the abundance of chemical elements by analyzing the light given off by stars and clouds of gas. Hydrogen, helium, and ______ the three most abundant elements in the Milky Way by mass.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "oxygen are"
+      },
+      {
+        "id": "B",
+        "label": "oxygen, are"
+      },
+      {
+        "id": "C",
+        "label": "oxygen; are"
+      },
+      {
+        "id": "D",
+        "label": "oxygen: are"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because no punctuation should separate the subject (“Hydrogen, helium, and oxygen”) from its verb, “are.” Choice B is incorrect because a comma should not follow the final item of a list that serves as the subject. Choice C is incorrect because a semicolon cannot separate a subject from its verb. Choice D is incorrect because a colon must follow an independent clause."
+  },
+  {
+    "slug": "sec-bd-039",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Long before the magnetic compass reached the Pacific, Polynesian navigators sailed thousands of kilometers across open ocean using only natural ______ the positions of rising and setting stars, the patterns of ocean swells, and the flight paths of seabirds.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "clues; such as"
+      },
+      {
+        "id": "B",
+        "label": "clues, these were"
+      },
+      {
+        "id": "C",
+        "label": "clues—"
+      },
+      {
+        "id": "D",
+        "label": "clues, such as:"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because a dash can follow an independent clause to introduce a list that explains it, here the clues the navigators used. Choice A is incorrect because a semicolon must be followed by an independent clause. Choice B is incorrect because it creates a comma splice by joining two independent clauses with only a comma. Choice D is incorrect because a colon should not come between “such as” and its examples."
+  },
+  {
+    "slug": "sec-bd-040",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "The Wright brothers’ first powered flight, on December 17, 1903, lasted only 12 seconds and covered about 37 ______ made three more flights that same day, the longest of which lasted 59 seconds.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "meters, they"
+      },
+      {
+        "id": "B",
+        "label": "meters they"
+      },
+      {
+        "id": "C",
+        "label": "meters, and, they"
+      },
+      {
+        "id": "D",
+        "label": "meters; they"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because a semicolon correctly joins the two independent clauses. Choice A is incorrect because a comma alone between the clauses creates a comma splice. Choice B is incorrect because no punctuation creates a run-on sentence. Choice C is incorrect because no comma should follow the coordinating conjunction “and.”"
+  },
+  {
+    "slug": "sec-bd-041",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Although the Rosetta Stone is often associated with the era of the great ______ was inscribed in 196 BCE, more than two thousand years after the pyramids at Giza were built.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "pyramids, it"
+      },
+      {
+        "id": "B",
+        "label": "pyramids. It"
+      },
+      {
+        "id": "C",
+        "label": "pyramids; it"
+      },
+      {
+        "id": "D",
+        "label": "pyramids: it"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because a comma correctly separates the introductory dependent clause (“Although the Rosetta Stone is often associated with the era of the great pyramids”) from the main clause. Choice B is incorrect because a period would leave the dependent clause as a fragment. Choice C is incorrect because a semicolon must join independent clauses, and the “Although” clause is dependent. Choice D is incorrect because a colon must follow an independent clause, and the “Although” clause is dependent."
+  },
+  {
+    "slug": "sec-bd-042",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Most of the energy that powers Earth’s weather comes from sunlight absorbed by the oceans, land, and atmosphere. The energy that drives plate ______ comes largely from heat inside the planet, some of it left over from Earth’s formation and some produced by the decay of radioactive elements.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "tectonics; however,"
+      },
+      {
+        "id": "B",
+        "label": "tectonics, however,"
+      },
+      {
+        "id": "C",
+        "label": "tectonics however,"
+      },
+      {
+        "id": "D",
+        "label": "tectonics, however"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because “however” interrupts a single independent clause, falling between the subject (“The energy that drives plate tectonics”) and the verb (“comes”), so it must be set off by a pair of commas. Choice A is incorrect because a semicolon must separate two independent clauses, and “The energy that drives plate tectonics” is not one. Choice C is incorrect because “however” needs a comma before it as well as after it. Choice D is incorrect because it leaves “however” without a closing comma, so the interruption is not fully set off from the verb."
+  },
+  {
+    "slug": "sec-bd-043",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "The exhibition brings together works by three artists who transformed twentieth-century printmaking: Käthe Kollwitz, a German artist known for her powerful images of grief and ______ Elizabeth Catlett, an American-born sculptor and printmaker who spent much of her career in Mexico; and M. C. Escher, a Dutch artist famous for his mathematically inspired designs.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "poverty,"
+      },
+      {
+        "id": "B",
+        "label": "poverty:"
+      },
+      {
+        "id": "C",
+        "label": "poverty;"
+      },
+      {
+        "id": "D",
+        "label": "poverty—"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because each item in this list contains internal commas (a name followed by a descriptive phrase), so the items must be separated by semicolons, matching the semicolon after “Mexico.” Choice A is incorrect because a comma would make it impossible to tell where the first artist’s description ends and the next item begins. Choice B is incorrect because a colon does not separate items in a list. Choice D is incorrect because a dash does not separate items in a list and does not match the semicolon used later."
+  },
+  {
+    "slug": "sec-bd-044",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "The octopus has an unusual nervous system: of its roughly 500 million neurons, about two-thirds are located not in its brain but in its ______ allows each arm to respond to touch and taste with a surprising degree of independence.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "arms; an arrangement that"
+      },
+      {
+        "id": "B",
+        "label": "arms, this arrangement"
+      },
+      {
+        "id": "C",
+        "label": "arms an arrangement that"
+      },
+      {
+        "id": "D",
+        "label": "arms, an arrangement that"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because “an arrangement that allows each arm to respond ...” is a phrase that renames and comments on the preceding clause, and a comma correctly sets it off. Choice A is incorrect because a semicolon must be followed by an independent clause, and “an arrangement that allows ...” lacks a main verb of its own. Choice B is incorrect because “this arrangement allows ...” is an independent clause, so joining it to the preceding clause with only a comma creates a comma splice. Choice C is incorrect because without a comma the phrase runs into the clause, blurring the sentence’s structure."
+  },
+  {
+    "slug": "sec-bd-045",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Concern about the effects of certain pesticides on pollinators has grown in recent decades. The question that the research team, led by ecologists at two universities, hoped to ______ whether bees exposed to a common pesticide could still find their way back to their hives.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "answer, was"
+      },
+      {
+        "id": "B",
+        "label": "answer: was"
+      },
+      {
+        "id": "C",
+        "label": "answer was"
+      },
+      {
+        "id": "D",
+        "label": "answer—was"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the subject (“The question that the research team ... hoped to answer”) must not be separated from its verb, “was”; the interrupting phrase “led by ecologists at two universities” is already set off by its own pair of commas. Choice A is incorrect because the comma would separate the subject from its verb. Choice B is incorrect because a colon must follow an independent clause, and the long subject is not one. Choice D is incorrect because a dash would also separate the subject from its verb."
+  },
+  {
+    "slug": "sec-bd-046",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Early photographic processes required exposure times of several minutes, during which subjects had to remain perfectly ______ the 1850s, improved chemistry had shortened exposures to a few seconds, making portrait studios far more practical.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "still, by"
+      },
+      {
+        "id": "B",
+        "label": "still. By"
+      },
+      {
+        "id": "C",
+        "label": "still by"
+      },
+      {
+        "id": "D",
+        "label": "still, and, by"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the passage contains two independent clauses, and a period correctly separates them; “By the 1850s” then begins the second sentence as an introductory phrase. Choice A is incorrect because a comma alone between the clauses creates a comma splice. Choice C is incorrect because without punctuation “by the 1850s” seems to attach to the first clause, and the two clauses run together. Choice D is incorrect because no comma should follow the coordinating conjunction “and.”"
+  },
+  {
+    "slug": "sec-bd-047",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Paintings ______ the Dutch artist Johannes Vermeer number only about 35, a remarkably small output for a career that lasted roughly two decades. That scarcity has made each work enormously valuable.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "attributed to"
+      },
+      {
+        "id": "B",
+        "label": ", attributed to"
+      },
+      {
+        "id": "C",
+        "label": ", attributed to,"
+      },
+      {
+        "id": "D",
+        "label": "attributed to,"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the phrase “attributed to the Dutch artist Johannes Vermeer” is essential: it identifies which paintings number only about 35, so it should not be set off with punctuation. Choice B is incorrect because it separates the subject “Paintings” from the essential phrase that defines it, and the comma is never closed. Choice C is incorrect because it places a comma between “attributed to” and its object. Choice D is incorrect because a comma should not separate a preposition from its object."
+  },
+  {
+    "slug": "sec-bd-048",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "The Code of Hammurabi—a set of nearly 300 laws issued by the Babylonian king Hammurabi around 1750 BCE and inscribed on a basalt stele that is now housed in the Louvre ______ one of the earliest and most complete written legal codes known to historians.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Museum—is"
+      },
+      {
+        "id": "B",
+        "label": "Museum, is"
+      },
+      {
+        "id": "C",
+        "label": "Museum is"
+      },
+      {
+        "id": "D",
+        "label": "Museum; is"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the long nonessential phrase that describes the Code of Hammurabi begins with a dash after “Hammurabi,” so it must end with a dash before the verb “is.” Choice B is incorrect because a nonessential element that opens with a dash cannot close with a comma. Choice C is incorrect because the interruption is never closed, so the verb is not separated from the descriptive phrase. Choice D is incorrect because a semicolon cannot separate a subject from its verb."
+  },
+  {
+    "slug": "sec-bd-049",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Glass appears to be a solid, and in everyday terms it is ______ its atoms lack the orderly, repeating arrangement found in crystalline solids such as quartz, which is why scientists classify it as an amorphous solid.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "one, at the molecular level, however,"
+      },
+      {
+        "id": "B",
+        "label": "one; at the molecular level, however,"
+      },
+      {
+        "id": "C",
+        "label": "one; at the molecular level however,"
+      },
+      {
+        "id": "D",
+        "label": "one at the molecular level, however,"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because a semicolon correctly separates the two independent clauses, and the interrupting word “however” is set off by commas within the second clause. Choice A is incorrect because the commas create a comma splice between the two independent clauses. Choice C is incorrect because “however” interrupts the clause and must be set off by commas on both sides. Choice D is incorrect because it attaches “at the molecular level” to the first clause, which contradicts the point that glass differs from crystalline solids at the molecular level, and it joins the clauses with only commas, creating a comma splice."
+  },
+  {
+    "slug": "sec-bd-050",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Languages that have no demonstrable relationship to any other living or recorded language, such as Basque in southwestern Europe and Burushaski in northern ______ called language isolates.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Pakistan are"
+      },
+      {
+        "id": "B",
+        "label": "Pakistan; are"
+      },
+      {
+        "id": "C",
+        "label": "Pakistan, are"
+      },
+      {
+        "id": "D",
+        "label": "Pakistan—are"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the nonessential phrase “such as Basque in southwestern Europe and Burushaski in northern Pakistan” begins with a comma and must end with a comma before the verb “are.” Choice A is incorrect because the nonessential phrase is not closed. Choice B is incorrect because a semicolon cannot separate a subject from its verb. Choice D is incorrect because a phrase that opens with a comma cannot close with a dash."
+  },
+  {
+    "slug": "sec-bd-051",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "The Atacama Large Millimeter/submillimeter Array, a group of 66 radio antennas that engineers can move across a high plateau in northern Chile to change the array’s ______ researchers to study the cold gas and dust from which stars and planets form.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "resolution allows"
+      },
+      {
+        "id": "B",
+        "label": "resolution; allows"
+      },
+      {
+        "id": "C",
+        "label": "resolution—allows"
+      },
+      {
+        "id": "D",
+        "label": "resolution, allows"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the long appositive describing the array begins with a comma after “Array” and must end with a comma before the verb “allows.” Choice A is incorrect because the appositive is not closed, so it runs into the verb. Choice B is incorrect because a semicolon cannot separate a subject from its verb. Choice C is incorrect because an appositive that opens with a comma cannot close with a dash."
+  },
+  {
+    "slug": "sec-bd-052",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Many of the workers in the textile mills of Lowell, Massachusetts, in the 1840s were young women recruited from farms across rural New ______ some of these workers wrote and published a literary magazine, the Lowell Offering, featuring their own essays, poems, and stories.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "England, remarkably,"
+      },
+      {
+        "id": "B",
+        "label": "England remarkably,"
+      },
+      {
+        "id": "C",
+        "label": "England. Remarkably,"
+      },
+      {
+        "id": "D",
+        "label": "England, remarkably"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the passage contains two independent clauses, and a period correctly separates them; “Remarkably” then introduces the second sentence and is followed by a comma. Choice A is incorrect because the comma before “remarkably” creates a comma splice. Choice B is incorrect because without punctuation before “remarkably” the clauses run together. Choice D is incorrect because it creates a comma splice and leaves “remarkably” unclear about which clause it modifies."
+  },
+  {
+    "slug": "sec-bd-053",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Ada Lovelace was born in London in December 1815, and her parents separated only weeks later. Lovelace’s ______ left England when she was an infant and never saw her again.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "father the poet Lord Byron"
+      },
+      {
+        "id": "B",
+        "label": "father, the poet Lord Byron,"
+      },
+      {
+        "id": "C",
+        "label": "father, the poet, Lord Byron,"
+      },
+      {
+        "id": "D",
+        "label": "father the poet, Lord Byron,"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because Lovelace had only one father, so “the poet Lord Byron” is nonessential information that must be set off by a pair of commas; within that phrase, “Lord Byron” is essential to identify which poet is meant, so no comma separates “the poet” from the name. Choice A is incorrect because it treats the nonessential appositive as essential. Choice C is incorrect because the comma between “the poet” and “Lord Byron” wrongly separates the title from the name it identifies. Choice D is incorrect because it lacks a comma after “father” and wrongly places one after “the poet.”"
+  },
+  {
+    "slug": "sec-bd-054",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "In the third century BCE, the Greek scholar Eratosthenes estimated Earth’s circumference using a clever ______ noon on the summer solstice, the Sun shone straight down a well in the city of Syene but cast shadows in Alexandria, and from the angle of those shadows and the distance between the cities, he calculated the planet’s size.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "observation, at"
+      },
+      {
+        "id": "B",
+        "label": "observation at"
+      },
+      {
+        "id": "C",
+        "label": "observation, which at"
+      },
+      {
+        "id": "D",
+        "label": "observation: at"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because a colon can follow an independent clause (“Eratosthenes estimated Earth’s circumference using a clever observation”) to introduce an explanation of that observation, which here is itself a series of independent clauses. Choice A is incorrect because a comma alone between independent clauses creates a comma splice. Choice B is incorrect because without punctuation “at noon” seems to modify “observation,” and the clauses run together. Choice C is incorrect because “which” begins a relative clause that cannot grammatically include the independent clauses that follow."
+  },
+  {
+    "slug": "sec-bd-055",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "boundaries",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Among the most celebrated achievements of the Abbasid-era House of Wisdom in ______ the translation of Greek, Persian, and Indian scientific and philosophical works into Arabic, a project that preserved many texts that might otherwise have been lost.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Baghdad was"
+      },
+      {
+        "id": "B",
+        "label": "Baghdad was:"
+      },
+      {
+        "id": "C",
+        "label": "Baghdad was,"
+      },
+      {
+        "id": "D",
+        "label": "Baghdad—was"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because in this inverted sentence the verb “was” is followed directly by its subject, “the translation,” and no punctuation should separate a verb from its subject. Choice B is incorrect because a colon must follow an independent clause, and the words before the colon do not form one. Choice C is incorrect because a comma should not separate the verb from its subject. Choice D is incorrect because a dash would separate the introductory phrase from the verb for no reason and does not pair with any other dash."
+  },
+  {
+    "slug": "sec-fss-001",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Farmers plowing a field near the village uncovered a clay jar filled with silver coins from the twelfth century. The collection of ancient coins ______ now on display at the regional museum, where visitors can examine the coins under magnifying lenses.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "is"
+      },
+      {
+        "id": "B",
+        "label": "are"
+      },
+      {
+        "id": "C",
+        "label": "were"
+      },
+      {
+        "id": "D",
+        "label": "have been"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the subject of the sentence is the singular noun “collection,” so the singular verb “is” agrees with it; “of ancient coins” is a prepositional phrase that does not change the subject. Choice B is incorrect because the plural verb “are” does not agree with the singular subject. Choice C is incorrect because “were” is plural and also shifts to the past tense, which conflicts with “now.” Choice D is incorrect because “have been” is plural."
+  },
+  {
+    "slug": "sec-fss-002",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "The giant panda spends as many as 14 hours a day eating bamboo, which makes up almost all of its diet. Because bamboo provides little nutrition, the panda must eat large quantities of it to meet ______ energy needs.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "their"
+      },
+      {
+        "id": "B",
+        "label": "it’s"
+      },
+      {
+        "id": "C",
+        "label": "its"
+      },
+      {
+        "id": "D",
+        "label": "theirs"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the possessive pronoun must refer to the singular noun “the panda,” and “its” is the singular possessive form. Choice A is incorrect because “their” is plural and does not agree with “the panda.” Choice B is incorrect because “it’s” is a contraction of “it is,” not a possessive. Choice D is incorrect because “theirs” is a plural pronoun that stands alone and cannot come before a noun."
+  },
+  {
+    "slug": "sec-fss-003",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "In July 1969, the Apollo 11 mission ______ the first humans on the Moon. Astronauts Neil Armstrong and Buzz Aldrin spent about two and a half hours walking on the lunar surface while Michael Collins orbited overhead.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "lands"
+      },
+      {
+        "id": "B",
+        "label": "landed"
+      },
+      {
+        "id": "C",
+        "label": "will land"
+      },
+      {
+        "id": "D",
+        "label": "has landed"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the sentence describes a completed event at a specific past time, “In July 1969,” so the simple past “landed” is correct; it also matches the past-tense verbs in the next sentence. Choice A is incorrect because the present tense “lands” does not fit a past event. Choice C is incorrect because the future tense is illogical for an event in 1969. Choice D is incorrect because the present perfect “has landed” is not used with a specific past time."
+  },
+  {
+    "slug": "sec-fss-004",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Giraffes are the tallest living land animals, with adult males reaching heights of more than five meters. The ______ long necks allow them to browse on leaves high in acacia trees, beyond the reach of most other plant-eating animals.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "animals"
+      },
+      {
+        "id": "B",
+        "label": "animal’s"
+      },
+      {
+        "id": "C",
+        "label": "animals’"
+      },
+      {
+        "id": "D",
+        "label": "animals’s"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the necks belong to more than one animal, as the plural pronoun “them” shows, so the plural possessive “animals’” is needed. Choice A is incorrect because “animals” is a plural noun without possession. Choice B is incorrect because “animal’s” is singular possessive and does not agree with “them.” Choice D is incorrect because “animals’s” is not a standard possessive form; a plural noun ending in s takes only an apostrophe."
+  },
+  {
+    "slug": "sec-fss-005",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Sodium is a soft metal that reacts violently with water, and chlorine is a poisonous gas. Sodium and chlorine ______ hazardous on their own, but when they combine chemically, they form sodium chloride, better known as ordinary table salt.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "is"
+      },
+      {
+        "id": "B",
+        "label": "are"
+      },
+      {
+        "id": "C",
+        "label": "was"
+      },
+      {
+        "id": "D",
+        "label": "has been"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the compound subject “Sodium and chlorine” is plural, and the plural present-tense verb “are” agrees with it and matches the present tense of the passage. Choice A is incorrect because “is” is singular. Choice C is incorrect because “was” is singular and in the past tense. Choice D is incorrect because “has been” is singular."
+  },
+  {
+    "slug": "sec-fss-006",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Lascaux Cave in southwestern France contains about 600 paintings of animals made roughly 17,000 years ago. Exploring the woods near the town of Montignac in September 1940, ______",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "the entrance to the cave was discovered by four teenagers."
+      },
+      {
+        "id": "B",
+        "label": "the cave’s entrance was found by four teenagers."
+      },
+      {
+        "id": "C",
+        "label": "the discovery of the cave’s entrance was made by four teenagers."
+      },
+      {
+        "id": "D",
+        "label": "four teenagers discovered the entrance to the cave."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the introductory phrase “Exploring the woods near the town of Montignac in September 1940” must be followed by the people who did the exploring, and “four teenagers” is the subject of the main clause. Choice A is incorrect because it places “the entrance” right after the phrase, illogically suggesting that the entrance was exploring the woods. Choice B is incorrect because it suggests that the cave’s entrance was exploring. Choice C is incorrect because it suggests that “the discovery” was exploring the woods."
+  },
+  {
+    "slug": "sec-fss-007",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Comets are small bodies of ice and dust that orbit the Sun. The Rosetta spacecraft, launched by the European Space Agency in 2004, ______ in orbit around Comet 67P/Churyumov–Gerasimenko in 2014, after a journey of more than ten years.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "arriving"
+      },
+      {
+        "id": "B",
+        "label": "to arrive"
+      },
+      {
+        "id": "C",
+        "label": "arrived"
+      },
+      {
+        "id": "D",
+        "label": "having arrived"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the sentence needs a main verb for its subject, “The Rosetta spacecraft,” and the finite past-tense verb “arrived” supplies one. Choice A is incorrect because the participle “arriving” cannot serve as a main verb, leaving a fragment. Choice B is incorrect because the infinitive “to arrive” cannot serve as a main verb. Choice D is incorrect because “having arrived” is also a nonfinite form that leaves the sentence without a main verb."
+  },
+  {
+    "slug": "sec-fss-008",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "In most orchestras, the principal oboist plays a single note, usually an A, before a performance begins. The other musicians then tune ______ instruments to that note so that the whole ensemble plays in tune.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "its"
+      },
+      {
+        "id": "B",
+        "label": "there"
+      },
+      {
+        "id": "C",
+        "label": "they’re"
+      },
+      {
+        "id": "D",
+        "label": "their"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the possessive pronoun refers to the plural noun “musicians,” and “their” is the plural possessive form. Choice A is incorrect because “its” is singular. Choice B is incorrect because “there” refers to a place and is not possessive. Choice C is incorrect because “they’re” is a contraction of “they are,” not a possessive."
+  },
+  {
+    "slug": "sec-fss-009",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "The Great Pyramid of Giza is the only one of the Seven Wonders of the Ancient World that is still largely standing. Each of the seven wonders ______ described by ancient Greek writers, whose lists of remarkable monuments date back more than two thousand years.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "were"
+      },
+      {
+        "id": "B",
+        "label": "was"
+      },
+      {
+        "id": "C",
+        "label": "are"
+      },
+      {
+        "id": "D",
+        "label": "have been"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the subject “Each” is singular, so it requires the singular verb “was”; the past tense fits writers who lived long ago. Choice A is incorrect because “were” is plural; the plural noun “wonders” is part of a prepositional phrase, not the subject. Choice C is incorrect because “are” is plural. Choice D is incorrect because “have been” is plural."
+  },
+  {
+    "slug": "sec-fss-010",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "The Library of Alexandria in Egypt became one of the most famous centers of learning in the ancient world. When the library was founded in the third century BCE, its scholars ______ to collect copies of every book they could find.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "sought"
+      },
+      {
+        "id": "B",
+        "label": "seek"
+      },
+      {
+        "id": "C",
+        "label": "will seek"
+      },
+      {
+        "id": "D",
+        "label": "are seeking"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the sentence describes events in the third century BCE, and the past-tense verb “sought” matches the past-tense verbs “was founded” and “could find.” Choice B is incorrect because the present tense “seek” does not fit a past event. Choice C is incorrect because the future tense is illogical for events in the distant past. Choice D is incorrect because the present progressive “are seeking” does not fit a past event."
+  },
+  {
+    "slug": "sec-fss-011",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Unlike most birds, a hummingbird can hover in midair, and it can even fly backward. The bird accomplishes this by rotating ______ wings in a figure-eight pattern, producing lift on both the forward stroke and the backward stroke.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "its"
+      },
+      {
+        "id": "B",
+        "label": "it’s"
+      },
+      {
+        "id": "C",
+        "label": "their"
+      },
+      {
+        "id": "D",
+        "label": "its’"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the possessive pronoun refers to the singular noun “The bird,” and “its” is the correct singular possessive form. Choice B is incorrect because “it’s” means “it is.” Choice C is incorrect because “their” is plural and does not agree with “The bird.” Choice D is incorrect because “its’” is not a word in Standard English."
+  },
+  {
+    "slug": "sec-fss-012",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Muscles make movement possible, from blinking to running. In the human body, there ______ more than 600 skeletal muscles, which together account for roughly 40 percent of an adult’s body weight.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "is"
+      },
+      {
+        "id": "B",
+        "label": "has been"
+      },
+      {
+        "id": "C",
+        "label": "was"
+      },
+      {
+        "id": "D",
+        "label": "are"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because in a sentence beginning with “there,” the verb agrees with the noun that follows it; the subject here is the plural “more than 600 skeletal muscles,” so the plural “are” is correct, and the present tense matches “account.” Choice A is incorrect because “is” is singular. Choice B is incorrect because “has been” is singular. Choice C is incorrect because “was” is singular and in the past tense."
+  },
+  {
+    "slug": "sec-fss-013",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Marie Curie is best known for her pioneering research on radioactivity, work that earned her Nobel Prizes in both physics and chemistry. Born in Warsaw in 1867, ______",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Paris was where Curie later moved to study physics and mathematics."
+      },
+      {
+        "id": "B",
+        "label": "Curie later moved to Paris to study physics and mathematics at the Sorbonne."
+      },
+      {
+        "id": "C",
+        "label": "the Sorbonne in Paris was where Curie later studied physics and mathematics."
+      },
+      {
+        "id": "D",
+        "label": "physics and mathematics were the subjects Curie later studied in Paris."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the person who was born in Warsaw in 1867 is Curie, and placing “Curie” immediately after the introductory phrase makes clear who is being described. Choice A is incorrect because it suggests that Paris was born in Warsaw. Choice C is incorrect because it suggests that the Sorbonne was born in Warsaw. Choice D is incorrect because it suggests that physics and mathematics were born in Warsaw."
+  },
+  {
+    "slug": "sec-fss-014",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Astronauts have lived aboard the International Space Station continuously since November 2000. Today, the station ______ Earth about every 90 minutes at an altitude of roughly 400 kilometers, so its crew sees about 16 sunrises a day.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "orbited"
+      },
+      {
+        "id": "B",
+        "label": "had orbited"
+      },
+      {
+        "id": "C",
+        "label": "will have orbited"
+      },
+      {
+        "id": "D",
+        "label": "orbits"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because “Today” signals a current, repeated action, which calls for the present tense “orbits”; it also matches the present-tense verb “sees.” Choice A is incorrect because the past tense “orbited” conflicts with “Today.” Choice B is incorrect because the past perfect refers to an action completed before another past action. Choice C is incorrect because the future perfect refers to an action that will be complete at a future time."
+  },
+  {
+    "slug": "sec-fss-015",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "No two zebras have exactly the same pattern of stripes. Researchers can therefore identify individual animals in a herd by photographing each ______ stripes and comparing the images with a database of earlier photographs.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "zebras’"
+      },
+      {
+        "id": "B",
+        "label": "zebras"
+      },
+      {
+        "id": "C",
+        "label": "zebra’s"
+      },
+      {
+        "id": "D",
+        "label": "zebras’s"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because “each” refers to one zebra at a time, so the singular possessive “zebra’s” correctly shows that the stripes belong to a single animal. Choice A is incorrect because “zebras’” is plural possessive, which does not fit “each.” Choice B is incorrect because “zebras” is a plural noun without possession. Choice D is incorrect because “zebras’s” is not a standard possessive form."
+  },
+  {
+    "slug": "sec-fss-016",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Excavating an archaeological site is slow, careful work. The tool that archaeologists use most often to remove soil from around delicate finds ______ not a shovel but a small pointed trowel.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "are"
+      },
+      {
+        "id": "B",
+        "label": "were"
+      },
+      {
+        "id": "C",
+        "label": "have been"
+      },
+      {
+        "id": "D",
+        "label": "is"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the subject is the singular noun “The tool,” so the singular verb “is” agrees with it; the plural nouns “archaeologists” and “finds” are within a clause and a phrase that modify the subject. The present tense also matches “use.” Choice A is incorrect because “are” is plural. Choice B is incorrect because “were” is plural. Choice C is incorrect because “have been” is plural."
+  },
+  {
+    "slug": "sec-fss-017",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "The city of Venice is built on more than 100 small islands in a shallow lagoon, and high tides regularly flood its streets. To protect ______ historic buildings, the city has installed a system of movable barriers at the lagoon’s inlets.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "their"
+      },
+      {
+        "id": "B",
+        "label": "its"
+      },
+      {
+        "id": "C",
+        "label": "it’s"
+      },
+      {
+        "id": "D",
+        "label": "there"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the pronoun refers to the singular noun “the city,” and “its” is the singular possessive form. Choice A is incorrect because “their” is plural and does not agree with “the city.” Choice C is incorrect because “it’s” is a contraction of “it is.” Choice D is incorrect because “there” refers to a place and is not possessive."
+  },
+  {
+    "slug": "sec-fss-018",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Archaeological evidence shows that people have lived on the islands of Haida Gwaii, off the coast of present-day British Columbia, for a very long time. By the time the first European ships reached the area in the 1770s, the Haida people ______ there for thousands of years.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "live"
+      },
+      {
+        "id": "B",
+        "label": "will live"
+      },
+      {
+        "id": "C",
+        "label": "had lived"
+      },
+      {
+        "id": "D",
+        "label": "are living"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because “By the time ... reached” sets a point in the past, and the past perfect “had lived” describes an action that continued up to that point. Choice A is incorrect because the present tense “live” does not fit an action completed before a past event. Choice B is incorrect because the future tense is illogical here. Choice D is incorrect because the present progressive describes an action happening now, not one that had continued until the 1770s."
+  },
+  {
+    "slug": "sec-fss-019",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Many of Claude Monet’s most famous works show the garden he created at his home in Giverny, France. The French artist ______ about 250 paintings of water lilies, many of them depicting the pond in that garden.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "painted"
+      },
+      {
+        "id": "B",
+        "label": "painting"
+      },
+      {
+        "id": "C",
+        "label": "to paint"
+      },
+      {
+        "id": "D",
+        "label": "having painted"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the sentence needs a main verb for the subject “The French artist,” and the finite past-tense verb “painted” provides one. Choice B is incorrect because the participle “painting” cannot serve as the main verb, leaving a fragment. Choice C is incorrect because the infinitive “to paint” cannot serve as the main verb. Choice D is incorrect because “having painted” is a nonfinite form that also leaves the sentence without a main verb."
+  },
+  {
+    "slug": "sec-fss-020",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Australia’s Great Barrier Reef supports an extraordinary range of marine life. The reef, along with the many species of fish, turtles, and seabirds that depend on it, ______ protected as part of a marine park that covers more than 340,000 square kilometers.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "are"
+      },
+      {
+        "id": "B",
+        "label": "is"
+      },
+      {
+        "id": "C",
+        "label": "were"
+      },
+      {
+        "id": "D",
+        "label": "have been"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the subject is the singular noun “The reef”; a phrase beginning with “along with” does not make a subject plural, so the singular verb “is” is correct. Choice A is incorrect because “are” is plural and agrees with the nouns in the interrupting phrase rather than with the subject. Choice C is incorrect because “were” is plural and shifts to the past tense. Choice D is incorrect because “have been” is plural."
+  },
+  {
+    "slug": "sec-fss-021",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Ratites are a group of large birds that includes the ostrich of Africa and the emu of Australia. Neither the ostrich nor the emu ______ able to fly, but both birds can run at speeds of more than 45 kilometers per hour.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "are"
+      },
+      {
+        "id": "B",
+        "label": "were"
+      },
+      {
+        "id": "C",
+        "label": "is"
+      },
+      {
+        "id": "D",
+        "label": "have been"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because when two singular subjects are joined by “neither ... nor,” the verb agrees with the nearer subject, “the emu,” which is singular, so “is” is correct; the present tense matches “can run.” Choice A is incorrect because “are” is plural. Choice B is incorrect because “were” is plural and in the past tense. Choice D is incorrect because “have been” is plural."
+  },
+  {
+    "slug": "sec-fss-022",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Honeybee colonies keep the temperature inside the hive within a narrow range so that developing young bees can survive. When the hive becomes too hot, worker bees stand near the entrance and fan ______ wings to draw cooler air inside.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "their"
+      },
+      {
+        "id": "B",
+        "label": "its"
+      },
+      {
+        "id": "C",
+        "label": "his or her"
+      },
+      {
+        "id": "D",
+        "label": "it’s"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the pronoun refers to the plural noun “worker bees,” and “their” is the plural possessive form. Choice B is incorrect because “its” is singular; although “the hive” appears nearby, the hive does not have wings. Choice C is incorrect because “his or her” is singular. Choice D is incorrect because “it’s” is a contraction of “it is.”"
+  },
+  {
+    "slug": "sec-fss-023",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "The first planet orbiting a Sun-like star outside our solar system was confirmed in 1995. Since then, astronomers ______ more than 5,000 exoplanets, using telescopes on the ground and in space.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "confirm"
+      },
+      {
+        "id": "B",
+        "label": "had confirmed"
+      },
+      {
+        "id": "C",
+        "label": "will confirm"
+      },
+      {
+        "id": "D",
+        "label": "have confirmed"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because “Since then” describes a period that began in the past and continues to the present, which calls for the present perfect “have confirmed.” Choice A is incorrect because the simple present “confirm” does not express an action continuing from a past point to now. Choice B is incorrect because the past perfect would require a later past reference point. Choice C is incorrect because the future tense is illogical with “Since then.”"
+  },
+  {
+    "slug": "sec-fss-024",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Pottery made from clay dug at one site has a slightly different chemical makeup from pottery made with clay from another. Studying the chemical composition of ancient pottery ______ archaeologists to trace the trade routes along which the vessels traveled.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "allow"
+      },
+      {
+        "id": "B",
+        "label": "allows"
+      },
+      {
+        "id": "C",
+        "label": "have allowed"
+      },
+      {
+        "id": "D",
+        "label": "are allowing"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the subject is the gerund phrase “Studying the chemical composition of ancient pottery,” which is singular, so the singular verb “allows” agrees with it. Choice A is incorrect because “allow” is a plural verb, which does not agree with the singular gerund phrase that serves as the subject. Choice C is incorrect because “have allowed” is plural. Choice D is incorrect because “are allowing” is plural."
+  },
+  {
+    "slug": "sec-fss-025",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "The fossil remains of early human relatives are rarely found intact, which makes nearly complete skeletons especially valuable to researchers. Discovered in 1974 in the Afar region of Ethiopia, ______",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "researchers named the partial skeleton Lucy after a popular song."
+      },
+      {
+        "id": "B",
+        "label": "scientists identified the species of the partial skeleton called Lucy as Australopithecus afarensis."
+      },
+      {
+        "id": "C",
+        "label": "the partial skeleton known as Lucy belongs to the species Australopithecus afarensis."
+      },
+      {
+        "id": "D",
+        "label": "Australopithecus afarensis is the species to which the partial skeleton known as Lucy belongs."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the thing that was discovered in 1974 is the skeleton, and “the partial skeleton known as Lucy” comes immediately after the introductory phrase. Choice A is incorrect because it suggests that the researchers were discovered in Ethiopia. Choice B is incorrect because it suggests that the scientists were discovered. Choice D is incorrect because it suggests that the species as a whole, rather than the skeleton, was discovered in 1974."
+  },
+  {
+    "slug": "sec-fss-026",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "In 1804, Meriwether Lewis and William Clark set out to explore the lands west of the Mississippi River. The two ______ journals describe hundreds of plants and animals that were new to American scientists at the time.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "explorer’s"
+      },
+      {
+        "id": "B",
+        "label": "explorers"
+      },
+      {
+        "id": "C",
+        "label": "explorers’s"
+      },
+      {
+        "id": "D",
+        "label": "explorers’"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the journals belong to two explorers, so the plural possessive “explorers’” is needed. Choice A is incorrect because “explorer’s” is singular possessive, which conflicts with “two.” Choice B is incorrect because “explorers” is plural but not possessive. Choice C is incorrect because “explorers’s” is not a standard possessive form."
+  },
+  {
+    "slug": "sec-fss-027",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Astronomers spent decades tracking the orbits of stars near the center of our galaxy. At the center of the Milky Way ______ a supermassive black hole called Sagittarius A*, which has a mass about four million times that of the Sun.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "lies"
+      },
+      {
+        "id": "B",
+        "label": "lie"
+      },
+      {
+        "id": "C",
+        "label": "are lying"
+      },
+      {
+        "id": "D",
+        "label": "have lain"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because in this inverted sentence the subject, “a supermassive black hole,” comes after the verb and is singular, so the singular “lies” is correct. Choice B is incorrect because “lie” is plural. Choice C is incorrect because “are lying” is plural. Choice D is incorrect because “have lain” is plural."
+  },
+  {
+    "slug": "sec-fss-028",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "The tomb of the young pharaoh Tutankhamun is famous for the treasures found inside it. When the archaeologist Howard Carter entered the tomb in 1922, he found evidence that robbers ______ it in ancient times but had left most of its contents behind.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "enter"
+      },
+      {
+        "id": "B",
+        "label": "will enter"
+      },
+      {
+        "id": "C",
+        "label": "had entered"
+      },
+      {
+        "id": "D",
+        "label": "are entering"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the robbers entered the tomb before Carter did in 1922, and the past perfect “had entered” shows an action completed before another past action; it also parallels “had left.” Choice A is incorrect because the present tense does not fit a past event. Choice B is incorrect because the future tense is illogical. Choice D is incorrect because the present progressive does not fit an action in ancient times."
+  },
+  {
+    "slug": "sec-fss-029",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "The Bauhaus, which was founded in Weimar, Germany, in 1919 and later moved to Dessau and then Berlin, required ______ students to complete a preliminary course in materials, color, and form before specializing.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "their"
+      },
+      {
+        "id": "B",
+        "label": "it’s"
+      },
+      {
+        "id": "C",
+        "label": "there"
+      },
+      {
+        "id": "D",
+        "label": "its"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the pronoun refers to the singular noun “The Bauhaus,” a school, and “its” is the singular possessive form. Choice A is incorrect because “their” is plural and may seem to agree with the cities named nearby, but the school is the antecedent. Choice B is incorrect because “it’s” means “it is.” Choice C is incorrect because “there” refers to a place and is not possessive."
+  },
+  {
+    "slug": "sec-fss-030",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Ice cores drilled from the Antarctic ice sheet, some of which contain air bubbles trapped more than 800,000 years ago, ______ scientists with a record of how the composition of Earth’s atmosphere has changed over time.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "providing"
+      },
+      {
+        "id": "B",
+        "label": "provide"
+      },
+      {
+        "id": "C",
+        "label": "to provide"
+      },
+      {
+        "id": "D",
+        "label": "having provided"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the sentence needs a main verb for its plural subject, “Ice cores,” and “provide” is a finite plural verb. Choice A is incorrect because the participle “providing” cannot serve as a main verb, leaving a fragment. Choice C is incorrect because the infinitive “to provide” cannot serve as a main verb. Choice D is incorrect because “having provided” is also nonfinite and leaves the sentence without a main verb."
+  },
+  {
+    "slug": "sec-fss-031",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Linguists disagree about exactly how to distinguish a language from a dialect. Even so, the number of languages spoken worldwide ______ commonly estimated at about 7,000, and many of those languages have only a few thousand speakers.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "are"
+      },
+      {
+        "id": "B",
+        "label": "were"
+      },
+      {
+        "id": "C",
+        "label": "is"
+      },
+      {
+        "id": "D",
+        "label": "have been"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the subject is “the number,” which is singular, so the singular verb “is” is correct; “of languages spoken worldwide” does not change the subject, and the present tense matches “have.” Choice A is incorrect because “are” is plural. Choice B is incorrect because “were” is plural and in the past tense. Choice D is incorrect because “have been” is plural."
+  },
+  {
+    "slug": "sec-fss-032",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Kimchi, a fermented vegetable dish, is served with almost every meal in Korea. To make a traditional version, cooks salt napa cabbage, rinse it, and ______ it with a paste of chili, garlic, and ginger before leaving it to ferment.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "coat"
+      },
+      {
+        "id": "B",
+        "label": "coating"
+      },
+      {
+        "id": "C",
+        "label": "to coat"
+      },
+      {
+        "id": "D",
+        "label": "coated"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because items in a series should share the same grammatical form; “coat” is a present-tense verb like “salt” and “rinse.” Choice B is incorrect because the participle “coating” breaks the parallel structure. Choice C is incorrect because the infinitive “to coat” breaks the parallel structure. Choice D is incorrect because the past-tense “coated” does not match the present-tense verbs in the series."
+  },
+  {
+    "slug": "sec-fss-033",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "In the early nineteenth century, few women were able to join Britain’s formal scientific societies or study at its universities. A largely self-taught fossil collector, ______",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "the first complete plesiosaur skeleton was found by Mary Anning in 1823 on the coast near Lyme Regis, England."
+      },
+      {
+        "id": "B",
+        "label": "Mary Anning found the first complete plesiosaur skeleton in 1823 on the coast near Lyme Regis, England."
+      },
+      {
+        "id": "C",
+        "label": "the coast near Lyme Regis, England, was where Mary Anning found the first complete plesiosaur skeleton in 1823."
+      },
+      {
+        "id": "D",
+        "label": "Mary Anning’s discovery of the first complete plesiosaur skeleton came in 1823 on the coast near Lyme Regis, England."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the fossil collector described by the introductory phrase is Mary Anning, and her name immediately follows the phrase. Choice A is incorrect because it suggests that the skeleton was a self-taught fossil collector. Choice C is incorrect because it suggests that the coast was the fossil collector. Choice D is incorrect because the subject is “discovery,” not Anning; the possessive “Mary Anning’s” is not the noun the phrase can modify."
+  },
+  {
+    "slug": "sec-fss-034",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Chinua Achebe’s 1958 novel Things Fall Apart is set in a fictional Igbo village during the late nineteenth century. In the novel, the protagonist, Okonkwo, ______ to become a respected leader of Umuofia, in part because he fears being seen as weak like his father.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "strove"
+      },
+      {
+        "id": "B",
+        "label": "had striven"
+      },
+      {
+        "id": "C",
+        "label": "will strive"
+      },
+      {
+        "id": "D",
+        "label": "strives"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the sentence discusses the novel in the present tense, as “he fears” shows, and the present-tense “strives” keeps the verbs consistent, following the convention for describing the events of a literary work. Choice A is incorrect because the past-tense “strove” conflicts with the present-tense “fears.” Choice B is incorrect because the past perfect also conflicts with “fears.” Choice C is incorrect because the future tense is illogical for an action already under way."
+  },
+  {
+    "slug": "sec-fss-035",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Coral bleaching occurs when stressed corals expel the algae that live in their tissues. A team of marine biologists studying reefs off the coast of Belize ______ that some coral colonies recover from bleaching much faster than others growing nearby.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "has found"
+      },
+      {
+        "id": "B",
+        "label": "have found"
+      },
+      {
+        "id": "C",
+        "label": "are finding"
+      },
+      {
+        "id": "D",
+        "label": "find"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the subject is the singular noun “A team,” so the singular verb “has found” agrees with it. Choice B is incorrect because “have found” is plural and seems to agree with “biologists” or “reefs,” which are not the subject. Choice C is incorrect because “are finding” is plural. Choice D is incorrect because “find” is plural."
+  },
+  {
+    "slug": "sec-fss-036",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Most frogs begin life as tadpoles that hatch from eggs laid in water. Unlike most frogs, which lay ______ eggs in ponds or streams, the coquí frog of Puerto Rico lays its eggs on land, and the young hatch as tiny, fully formed frogs.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "its"
+      },
+      {
+        "id": "B",
+        "label": "it’s"
+      },
+      {
+        "id": "C",
+        "label": "their"
+      },
+      {
+        "id": "D",
+        "label": "they’re"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the pronoun refers to the plural noun “most frogs,” and “their” is the plural possessive form. Choice A is incorrect because “its” is singular; it agrees with “the coquí frog,” but that noun is not the antecedent here. Choice B is incorrect because “it’s” means “it is.” Choice D is incorrect because “they’re” means “they are.”"
+  },
+  {
+    "slug": "sec-fss-037",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Signed in 1959, the Antarctic Treaty set aside the continent for peaceful scientific research. The treaty also froze the seven claimant ______ territorial claims, meaning that no new claims could be made while the treaty remained in force.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "nation’s"
+      },
+      {
+        "id": "B",
+        "label": "nations’"
+      },
+      {
+        "id": "C",
+        "label": "nations"
+      },
+      {
+        "id": "D",
+        "label": "nations’s"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the claims belong to seven nations, so the plural possessive “nations’” is required. Choice A is incorrect because “nation’s” is singular possessive, which conflicts with “seven.” Choice C is incorrect because “nations” is plural but not possessive. Choice D is incorrect because “nations’s” is not a standard possessive form."
+  },
+  {
+    "slug": "sec-fss-038",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Jacob Lawrence’s Migration Series, a sequence of 60 panels depicting the movement of African Americans from the rural South to cities in the North, ______ divided between two museums: the Phillips Collection in Washington, D.C., and the Museum of Modern Art in New York.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "is"
+      },
+      {
+        "id": "B",
+        "label": "are"
+      },
+      {
+        "id": "C",
+        "label": "were"
+      },
+      {
+        "id": "D",
+        "label": "have been"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the subject is “Migration Series,” the title of a single work, which is singular, so “is” agrees with it. Choice B is incorrect because “are” is plural and seems to agree with “panels” or “African Americans,” which are in the appositive, not the subject. Choice C is incorrect because “were” is plural and past tense. Choice D is incorrect because “have been” is plural."
+  },
+  {
+    "slug": "sec-fss-039",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Reindeer living in the far north face long, dark winters with little food. The Svalbard reindeer, a subspecies that lives only on a remote group of Norwegian islands, ______ shorter legs and a smaller head than most other reindeer, features that help it conserve heat.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "having"
+      },
+      {
+        "id": "B",
+        "label": "to have"
+      },
+      {
+        "id": "C",
+        "label": "which has"
+      },
+      {
+        "id": "D",
+        "label": "has"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the sentence needs a main verb for the subject “The Svalbard reindeer,” and the finite verb “has” provides one. Choice A is incorrect because the participle “having” cannot serve as a main verb. Choice B is incorrect because the infinitive “to have” cannot serve as a main verb. Choice C is incorrect because “which has” turns the rest of the sentence into a relative clause, leaving the subject without a main verb."
+  },
+  {
+    "slug": "sec-fss-040",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Neptune, the most distant major planet from the Sun, has been visited by only one spacecraft. The Voyager 2 probe ______ past Neptune in 1989, sending back the first close-up images of the planet’s blue clouds and its largest moon, Triton.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "has flown"
+      },
+      {
+        "id": "B",
+        "label": "flies"
+      },
+      {
+        "id": "C",
+        "label": "flew"
+      },
+      {
+        "id": "D",
+        "label": "will fly"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the flyby happened at a specific past time, “in 1989,” so the simple past “flew” is correct. Choice A is incorrect because the present perfect “has flown” is not used with a specific past time such as “in 1989.” Choice B is incorrect because the present tense does not fit a past event. Choice D is incorrect because the future tense is illogical for an event in 1989."
+  },
+  {
+    "slug": "sec-fss-041",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "In 1610, the Italian astronomer Galileo Galilei published a short book describing what he had seen through his telescope. Using a telescope he had built himself, ______",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "four moons were observed orbiting Jupiter by Galileo."
+      },
+      {
+        "id": "B",
+        "label": "Jupiter’s four largest moons were discovered by Galileo."
+      },
+      {
+        "id": "C",
+        "label": "Galileo’s observations revealed four moons orbiting Jupiter."
+      },
+      {
+        "id": "D",
+        "label": "Galileo observed four moons orbiting Jupiter."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the person who used the telescope is Galileo, and his name immediately follows the introductory phrase. Choice A is incorrect because it suggests that the moons used a telescope. Choice B is incorrect because it also suggests that the moons used a telescope. Choice C is incorrect because the subject is “observations,” not Galileo; the possessive “Galileo’s” cannot be what the phrase modifies."
+  },
+  {
+    "slug": "sec-fss-042",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Excavations at Tell Mardikh, in present-day Syria, revealed the ancient city of Ebla in the 1960s and 1970s. The discovery of thousands of clay tablets and fragments in the city’s royal archive, many of them written in a previously unknown Semitic language, ______ historians a detailed view of Ebla’s trade and administration more than 4,000 years ago.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "has given"
+      },
+      {
+        "id": "B",
+        "label": "have given"
+      },
+      {
+        "id": "C",
+        "label": "giving"
+      },
+      {
+        "id": "D",
+        "label": "were giving"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the subject of the sentence is the singular noun “discovery,” so the singular verb “has given” agrees with it; the plural nouns “tablets,” “fragments,” and “them” appear in modifying phrases. Choice B is incorrect because “have given” is plural. Choice C is incorrect because the participle “giving” cannot serve as the main verb, leaving a fragment. Choice D is incorrect because “were giving” is plural."
+  },
+  {
+    "slug": "sec-fss-043",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Every year, the larvae of the European eel drift on ocean currents from the Atlantic to rivers across Europe, where they grow for many years before returning to sea. Researchers studying the European eel, a species that migrates thousands of kilometers to spawn in the Sargasso Sea, have long struggled to observe ______ spawning directly, since no one has seen the species reproducing in the wild.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "their"
+      },
+      {
+        "id": "B",
+        "label": "it’s"
+      },
+      {
+        "id": "C",
+        "label": "its"
+      },
+      {
+        "id": "D",
+        "label": "they’re"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the pronoun refers to “the European eel,” a singular noun naming the species, so the singular possessive “its” is correct. Choice A is incorrect because “their” is plural, and the only plural noun it could refer to is “Researchers,” which would illogically suggest that the researchers spawn. Choice B is incorrect because “it’s” means “it is.” Choice D is incorrect because “they’re” means “they are.”"
+  },
+  {
+    "slug": "sec-fss-044",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Dmitri Mendeleev was not the only chemist of his era to look for patterns among the elements, but his table proved the most influential. By the time Mendeleev published his periodic table in 1869, chemists ______ about 63 elements, which he arranged by atomic weight while leaving gaps for elements he predicted would later be found.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "have identified"
+      },
+      {
+        "id": "B",
+        "label": "had identified"
+      },
+      {
+        "id": "C",
+        "label": "identify"
+      },
+      {
+        "id": "D",
+        "label": "identified"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because “By the time Mendeleev published ... in 1869” establishes a past reference point, and the past perfect “had identified” describes identifications completed before that point. Choice A is incorrect because the present perfect connects the past to the present, not to an earlier past moment. Choice C is incorrect because the present tense does not fit events in 1869. Choice D is incorrect because the simple past “identified” does not show that the identifications were already complete at the 1869 reference point that “By the time” establishes; that relationship requires the past perfect."
+  },
+  {
+    "slug": "sec-fss-045",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Miguel de Cervantes’s novel about an aging gentleman who imagines himself a knight has been translated into more than 140 languages. First published in two parts, in 1605 and 1615, ______",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Cervantes wrote Don Quixote, a novel that many critics consider the first modern novel."
+      },
+      {
+        "id": "B",
+        "label": "many critics have described Cervantes’s Don Quixote as the first modern novel."
+      },
+      {
+        "id": "C",
+        "label": "critics’ descriptions of Cervantes’s Don Quixote often call it the first modern novel."
+      },
+      {
+        "id": "D",
+        "label": "Don Quixote is often described by critics as the first modern novel."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because what was “first published in two parts, in 1605 and 1615” is the novel, and “Don Quixote” is the subject that immediately follows the introductory phrase. Choice A is incorrect because it suggests that Cervantes himself was published in two parts. Choice B is incorrect because it suggests that the critics were published in 1605 and 1615; “Don Quixote” appears only as an object. Choice C is incorrect because the subject is “descriptions,” not the novel."
+  },
+  {
+    "slug": "sec-fss-046",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "The Alhambra, a palace and fortress complex in Granada, Spain, was largely built by rulers of the Nasrid dynasty in the thirteenth and fourteenth centuries. The intricate geometric tilework of the Alhambra’s palaces and the carved stucco inscriptions that cover many of its walls ______ visitors a vivid sense of the artistry of Nasrid-era Granada.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "give"
+      },
+      {
+        "id": "B",
+        "label": "gives"
+      },
+      {
+        "id": "C",
+        "label": "has given"
+      },
+      {
+        "id": "D",
+        "label": "is giving"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the subject is compound—“The intricate geometric tilework ... and the carved stucco inscriptions”—so it requires the plural verb “give.” Choice B is incorrect because “gives” is singular; it may seem to agree with “tilework” or “Granada,” but the two parts of the subject joined by “and” make it plural. Choice C is incorrect because “has given” is singular. Choice D is incorrect because “is giving” is singular."
+  },
+  {
+    "slug": "sec-fss-047",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "The Nazca Lines, enormous designs etched into the desert of southern Peru between about 500 BCE and 500 CE, some of which depict animals such as a hummingbird, a monkey, and a spider, ______ best viewed from the air or from the surrounding foothills.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "are"
+      },
+      {
+        "id": "B",
+        "label": "being"
+      },
+      {
+        "id": "C",
+        "label": "which are"
+      },
+      {
+        "id": "D",
+        "label": "that are"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the sentence needs a main verb for its plural subject, “The Nazca Lines,” and the finite verb “are” provides one after the long appositive and relative clause. Choice B is incorrect because “being” is a participle and cannot serve as the main verb. Choice C is incorrect because “which are” begins another relative clause, leaving the subject without a main verb. Choice D is incorrect because “that are” also creates a relative clause and leaves the sentence a fragment."
+  },
+  {
+    "slug": "sec-fss-048",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Founded in Geneva in 1863, the International Committee of the Red Cross, whose delegates have visited prisoners of war in conflicts around the world for more than a century, bases ______ work on the Geneva Conventions, a set of treaties that define protections for people in wartime.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "their"
+      },
+      {
+        "id": "B",
+        "label": "it’s"
+      },
+      {
+        "id": "C",
+        "label": "they’re"
+      },
+      {
+        "id": "D",
+        "label": "its"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the pronoun refers to the singular noun “the International Committee of the Red Cross,” the subject of “bases,” so the singular possessive “its” is correct. Choice A is incorrect because “their” is plural; it may seem to refer to “delegates,” but the delegates are in a relative clause, and the committee is the one that “bases” its work. Choice B is incorrect because “it’s” means “it is.” Choice C is incorrect because “they’re” means “they are.”"
+  },
+  {
+    "slug": "sec-fss-049",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Over the past century, many of the world’s coastal ______ have grown rapidly as people moved to seaside cities in search of work, increasing pressure on the wetlands and estuaries that surround them.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "city’s populations"
+      },
+      {
+        "id": "B",
+        "label": "cities populations"
+      },
+      {
+        "id": "C",
+        "label": "cities’ populations"
+      },
+      {
+        "id": "D",
+        "label": "cities’ population’s"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the sentence refers to the populations belonging to many cities, so the plural possessive “cities’” is needed, and “populations” must be a plain plural noun serving as the subject of “have grown.” Choice A is incorrect because “city’s” is singular possessive, which conflicts with “many of the world’s coastal.” Choice B is incorrect because “cities” lacks the apostrophe needed to show possession. Choice D is incorrect because “population’s” is a possessive form, but the populations do not possess anything in this sentence."
+  },
+  {
+    "slug": "sec-fss-050",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Linear B, a script used to write an early form of Greek, was deciphered in 1952 by the architect and amateur scholar Michael Ventris. Since then, scholars ______ thousands of clay tablets inscribed with the script, most of them records of goods such as grain, livestock, and textiles.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "translate"
+      },
+      {
+        "id": "B",
+        "label": "had translated"
+      },
+      {
+        "id": "C",
+        "label": "translated"
+      },
+      {
+        "id": "D",
+        "label": "have translated"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because “Since then” refers to a period that began in 1952 and continues to the present, which requires the present perfect “have translated.” Choice A is incorrect because the simple present does not express an action extending from a past point to now. Choice B is incorrect because the past perfect would require a later past reference point. Choice C is incorrect because the simple past “translated” presents the work as finished at some past time, whereas “Since then” describes a period that runs from 1952 up to the present."
+  },
+  {
+    "slug": "sec-fss-051",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Sudan, Egypt’s southern neighbor, is home to more than 200 ancient pyramids, more than are found in Egypt itself. Like those built by the ancient Egyptians, ______",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "the rulers of the Kingdom of Kush built pyramids that served as royal tombs."
+      },
+      {
+        "id": "B",
+        "label": "the pyramids of the Kingdom of Kush served as royal tombs."
+      },
+      {
+        "id": "C",
+        "label": "the Kushite kings were buried in pyramids."
+      },
+      {
+        "id": "D",
+        "label": "present-day Sudan contains pyramids that served as royal tombs."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because “those built by the ancient Egyptians” refers to pyramids, so the subject that follows the introductory phrase must also be pyramids; “the pyramids of the Kingdom of Kush” creates a logical comparison of pyramids with pyramids. Choice A is incorrect because it compares Egyptian pyramids with the rulers of Kush. Choice C is incorrect because it compares pyramids with Kushite kings. Choice D is incorrect because it compares pyramids with a country, present-day Sudan."
+  },
+  {
+    "slug": "sec-fss-052",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "In 1972, a diver swimming off the coast of Calabria in southern Italy spotted an arm protruding from the sand of the seabed. Each of the two ancient Greek bronze statues that were then recovered from the site near the town of Riace ______ nearly two meters tall.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "stand"
+      },
+      {
+        "id": "B",
+        "label": "are standing"
+      },
+      {
+        "id": "C",
+        "label": "stands"
+      },
+      {
+        "id": "D",
+        "label": "have stood"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the subject is “Each,” which is singular, so the singular verb “stands” agrees with it; the plural noun “statues” is in a prepositional phrase and relative clause that modify “Each.” Choice A is incorrect because “stand” is plural. Choice B is incorrect because “are standing” is plural. Choice D is incorrect because “have stood” is plural."
+  },
+  {
+    "slug": "sec-fss-053",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "In July 2015, NASA’s New Horizons spacecraft flew past Pluto, capturing the first close-up images of the dwarf planet. The spacecraft ______ since then to explore the Kuiper Belt, and on January 1, 2019, it flew past Arrokoth, the most distant object ever visited by a spacecraft.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "continues"
+      },
+      {
+        "id": "B",
+        "label": "has continued"
+      },
+      {
+        "id": "C",
+        "label": "had continued"
+      },
+      {
+        "id": "D",
+        "label": "continued"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because “since then” describes an action that began in the past (after 2015) and continues to the present, which calls for the present perfect “has continued.” Choice A is incorrect because the simple present does not combine with “since then” to show continuation from a past point. Choice C is incorrect because the past perfect requires a later past reference point, which the sentence does not provide. Choice D is incorrect because the simple past presents the action as finished, which conflicts with “since then.”"
+  },
+  {
+    "slug": "sec-fss-054",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Mammoth tusks grow in layers, and each layer preserves chemical traces of the place where the animal was living when that layer formed. Having analyzed these traces along the full length of a tusk from a woolly mammoth that lived in Alaska about 17,000 years ago, ______",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "the mammoth was found to have walked a distance equal to circling Earth almost twice during its life."
+      },
+      {
+        "id": "B",
+        "label": "it was concluded that the mammoth had walked a distance equal to circling Earth almost twice during its life."
+      },
+      {
+        "id": "C",
+        "label": "the researchers’ conclusion was that the mammoth had walked a distance equal to circling Earth almost twice during its life."
+      },
+      {
+        "id": "D",
+        "label": "researchers concluded that the mammoth had walked a distance equal to circling Earth almost twice during its life."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the people who analyzed the traces were the researchers, and “researchers” is the subject immediately following the introductory phrase. Choice A is incorrect because it suggests that the mammoth analyzed the traces in its own tusk. Choice B is incorrect because the subject “it” is not anyone who could have analyzed the traces, so the modifier dangles. Choice C is incorrect because the subject is “conclusion,” not the researchers; the possessive “researchers’” cannot be what the phrase modifies."
+  },
+  {
+    "slug": "sec-fss-055",
+    "section": "reading_writing",
+    "official_domain": "standard_english_conventions",
+    "skill": "form_structure_and_sense",
+    "sat_domain": "grammar",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Antarctica’s ice sheet is, on average, about two kilometers thick. Hidden beneath it ______ more than 400 lakes of liquid water, the largest of which, Lake Vostok, is comparable in size to Lake Ontario.",
+    "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+    "options": [
+      {
+        "id": "A",
+        "label": "lies"
+      },
+      {
+        "id": "B",
+        "label": "is lying"
+      },
+      {
+        "id": "C",
+        "label": "lie"
+      },
+      {
+        "id": "D",
+        "label": "has lain"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because in this inverted sentence the subject, “more than 400 lakes,” follows the verb and is plural, so the plural verb “lie” is required. Choice A is incorrect because “lies” is singular; it may seem to agree with “it” or with “Lake Vostok,” but neither is the subject of this verb. Choice B is incorrect because “is lying” is singular. Choice D is incorrect because “has lain” is singular."
+  }
+]
