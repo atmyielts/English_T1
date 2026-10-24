@@ -2,8 +2,10 @@
 // Dialogue scripts have one "Name: line" per line; each speaker gets their own
 // accent (US for the first speaker, UK for the second) when the browser has both.
 
+import type { Accent } from '../../lib/speech';
+
 export type ScriptLine = { speaker: string | null; text: string };
-export type SpeechChunk = { text: string; accent: 'us' | 'gb' };
+export type SpeechChunk = { text: string; accent: Accent };
 
 const LABEL = /^([A-Z][A-Za-z .']{0,30}):\s+(.+)$/;
 
@@ -20,7 +22,7 @@ export const speakersOf = (lines: ScriptLine[]): string[] =>
   Array.from(new Set(lines.map((line) => line.speaker).filter((name): name is string => Boolean(name))));
 
 /** Sentences, so long scripts are spoken in short pieces (some browsers stop long utterances). */
-const sentences = (text: string): string[] =>
+export const sentences = (text: string): string[] =>
   text.split(/(?<=[.!?])\s+(?=["'A-Z0-9])/).map((part) => part.trim()).filter(Boolean);
 
 export const speechChunks = (lines: ScriptLine[]): SpeechChunk[] => {

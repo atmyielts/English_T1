@@ -648,14 +648,20 @@ const buildListening = (c: Collector, item: JsonRecord, children: unknown[], com
       audio_url: audioUrl,
       focus_skill: focusSkill,
       tags,
-      questions: questions.map((q) => ({
-        id: q.id,
-        type: "mcq",
-        prompt: q.prompt,
-        options: q.options,
-        answer_index: q.answer_index,
-        explanation: q.explanation,
-      })),
+      questions: questions.map((q, index) => {
+        // "gist" questions are asked after the first listen (english-listening.ts).
+        const raw = Array.isArray(item.questions) ? item.questions[index] : null;
+        const focus = isRecord(raw) ? str(raw.focus).toLowerCase() : "";
+        return {
+          id: q.id,
+          type: "mcq",
+          prompt: q.prompt,
+          options: q.options,
+          answer_index: q.answer_index,
+          explanation: q.explanation,
+          ...(focus === "gist" || focus === "detail" ? { focus } : {}),
+        };
+      }),
     },
     children: segments,
   };
@@ -1198,6 +1204,7 @@ const editorQuestions = (value: unknown, answerKey: "answer_index" | "answer", w
     answer_index: typeof q[answerKey] === "number" ? q[answerKey] : null,
     explanation: q.explanation ?? "",
     ...(withSkill ? { skill: q.skill ?? "reading.detail" } : {}),
+    ...(!withSkill && (q.focus === "gist" || q.focus === "detail") ? { focus: q.focus } : {}),
   }));
 
 /**

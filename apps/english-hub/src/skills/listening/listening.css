@@ -1,0 +1,17 @@
+/* Listening depth: speed and accent controls, gist first, sentence replay, dictation advice. */
+
+.ls-controls { display: flex; flex-wrap: wrap; gap: .5rem .75rem; align-items: center; }
+.ls-controls .en-segmented { flex-wrap: wrap; }
+.ls-gist-toggle { display: inline-flex; gap: .5rem; align-items: center; font-size: .9rem; cursor: pointer; }
+.ls-gist-toggle input { width: 1.1rem; height: 1.1rem; margin: 0; }
+
+.ls-segments { list-style: none; margin: 0; padding: 0; display: grid; gap: .35rem; }
+.ls-segments li { display: flex; flex-wrap: wrap; gap: .4rem .75rem; align-items: baseline; padding: .35rem .5rem; border-radius: 10px; }
+.ls-segments li.is-playing { background: #eef6f9; }
+.ls-segment-buttons { display: inline-flex; gap: .4rem; align-items: center; flex: none; }
+.ls-segment-buttons .quiet { padding: .2rem .65rem; min-width: 3.2rem; }
+.ls-segment-text { flex: 1 1 16rem; min-width: 0; line-height: 1.6; }
+.ls-replay summary { cursor: pointer; font-weight: 700; margin: .5rem 0; }
+
+.ls-advice { display: grid; gap: .5rem; }
+.ls-advice li { line-height: 1.5; }

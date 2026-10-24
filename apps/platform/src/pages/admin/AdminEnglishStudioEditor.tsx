@@ -521,7 +521,14 @@ const QuestionsEditor: React.FC<{ value: unknown; onChange: (value: Rec[]) => vo
                 value={question.skill}
                 onChange={(next) => update({ skill: next })}
               />
-            ) : null}
+            ) : (
+              <Field
+                spec={{ key: 'focus', label: 'Asked (gist = after the first listen)', kind: 'select', options: ['', 'gist', 'detail'] }}
+                path={`${at}.focus`}
+                value={question.focus ?? ''}
+                onChange={(next) => update({ focus: next || undefined })}
+              />
+            )}
           </div>
           <div className="space-y-2">
             <span className="text-sm font-medium text-gray-700">Options (select the correct one)</span>

@@ -4,18 +4,36 @@
 
 export const canSpeak = (): boolean => typeof window !== 'undefined' && 'speechSynthesis' in window;
 
-const pickVoice = (accent: 'us' | 'gb' | 'any'): SpeechSynthesisVoice | null => {
+/** English accents the browser may have voices for. */
+export type Accent = 'us' | 'gb' | 'au' | 'in';
+export const ACCENTS: readonly Accent[] = ['us', 'gb', 'au', 'in'];
+const ACCENT_LANG: Record<Accent, string> = { us: 'en-us', gb: 'en-gb', au: 'en-au', in: 'en-in' };
+const ACCENT_TAG: Record<Accent, string> = { us: 'en-US', gb: 'en-GB', au: 'en-AU', in: 'en-IN' };
+
+const normaliseLang = (lang: string) => lang.toLowerCase().replace('_', '-');
+
+const pickVoice = (accent: Accent | 'any'): SpeechSynthesisVoice | null => {
   if (!canSpeak()) return null;
-  const voices = window.speechSynthesis.getVoices().filter((voice) => voice.lang.toLowerCase().startsWith('en'));
-  const wanted = accent === 'gb' ? 'en-gb' : accent === 'us' ? 'en-us' : null;
-  return (wanted && voices.find((voice) => voice.lang.toLowerCase() === wanted))
+  const voices = window.speechSynthesis.getVoices().filter((voice) => normaliseLang(voice.lang).startsWith('en'));
+  const wanted = accent === 'any' ? null : ACCENT_LANG[accent];
+  return (wanted ? voices.find((voice) => normaliseLang(voice.lang) === wanted) : undefined)
     ?? voices.find((voice) => voice.localService)
     ?? voices[0]
     ?? null;
 };
 
+/**
+ * Accents this browser can really speak (it has a voice for them). Voices load
+ * lazily in some browsers, so call again after the "voiceschanged" event.
+ */
+export const availableAccents = (): Accent[] => {
+  if (!canSpeak()) return [];
+  const langs = new Set(window.speechSynthesis.getVoices().map((voice) => normaliseLang(voice.lang)));
+  return ACCENTS.filter((accent) => langs.has(ACCENT_LANG[accent]));
+};
+
 /** Speaks text in English. Resolves when speech ends (or immediately if unsupported). */
-export const speak = (text: string, options: { rate?: number; accent?: 'us' | 'gb' | 'any' } = {}): Promise<void> =>
+export const speak = (text: string, options: { rate?: number; accent?: Accent | 'any' } = {}): Promise<void> =>
   new Promise((resolve) => {
     if (!canSpeak() || !text.trim()) {
       resolve();
@@ -23,8 +41,9 @@ export const speak = (text: string, options: { rate?: number; accent?: 'us' | 'g
     }
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = options.accent === 'gb' ? 'en-GB' : 'en-US';
-    const voice = pickVoice(options.accent ?? 'any');
+    const accent = options.accent ?? 'any';
+    utterance.lang = accent === 'any' ? 'en-US' : ACCENT_TAG[accent];
+    const voice = pickVoice(accent);
     if (voice) utterance.voice = voice;
     utterance.rate = options.rate ?? 1;
     utterance.onend = () => resolve();

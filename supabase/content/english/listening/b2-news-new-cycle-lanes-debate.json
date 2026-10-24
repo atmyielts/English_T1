@@ -32,7 +32,8 @@
           "The opening of a new library"
         ],
         "answer_index": 1,
-        "explanation": "The plan to build cycle lanes \"has divided local residents.\""
+        "explanation": "The plan to build cycle lanes \"has divided local residents.\"",
+        "focus": "gist"
       },
       {
         "prompt": "What would change under the plan?",

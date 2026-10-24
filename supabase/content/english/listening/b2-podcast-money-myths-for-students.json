@@ -32,7 +32,8 @@
           "To compare prices in different cafés"
         ],
         "answer_index": 1,
-        "explanation": "The host says: \"Today I want to bust three money myths that I hear from students all the time.\""
+        "explanation": "The host says: \"Today I want to bust three money myths that I hear from students all the time.\"",
+        "focus": "gist"
       },
       {
         "prompt": "Why is budgeting important when your income is small, according to the speaker?",
