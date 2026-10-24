@@ -7,6 +7,7 @@ import { nextLevel, SKILLS, type SkillKey } from '../lib/skills';
 import { useResource } from '../lib/useResource';
 import { CanDoPanel } from './CanDoPanel';
 import { LevelJourneyPanel } from './LevelJourneyPanel';
+import { GoalPlanPanel } from './goal/GoalPlanPanel';
 import { EmptyState, ErrorState, LevelBadge, Loading, PageHeader, Panel, ProgressBar, SkillDot, Stat, Tag } from '../ui/kit';
 
 const Heatmap = ({ days }: { days: ProgressResponse['days'] }) => {
@@ -86,6 +87,8 @@ export const ProgressPage = () => {
         </div>
         {data ? <Heatmap days={data.days} /> : <Loading lines={2} />}
       </section>
+
+      <GoalPlanPanel />
 
       <div className="en-grid-2">
         <Panel title={t('progress.skills.title')}>

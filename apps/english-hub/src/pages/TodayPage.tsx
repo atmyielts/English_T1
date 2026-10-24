@@ -7,6 +7,7 @@ import { useResource } from '../lib/useResource';
 import { EmptyState, ErrorState, LevelBadge, Loading, Panel, ProgressBar, SkillDot, Tag } from '../ui/kit';
 import { Onboarding } from './Onboarding';
 import { TopicWeekPanel } from './TopicWeekPanel';
+import { GoalCard } from './goal/GoalCard';
 
 const greetingKey = (): string => {
   const hour = new Date().getHours();
@@ -184,6 +185,8 @@ export const TodayPage = () => {
         </section>
 
         <div className="en-stack">
+          <GoalCard />
+
           <Panel title={t('today.week.title')} aside={data ? <span>{t('today.week.streak', { count: data.streak })}</span> : null}>
             {data ? <WeekStrip week={data.week} /> : <Loading lines={1} />}
             <p className="hint">{data && data.streak > 0 ? t('today.week.keepGoing') : t('today.week.start')}</p>
