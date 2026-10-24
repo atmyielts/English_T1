@@ -93,3 +93,28 @@ Build with `VITE_SUPABASE_URL=http://127.0.0.1:4793` and `VITE_SUPABASE_ANON_KEY
 ```bash
 deno run --no-lock --allow-write=output scripts/admission-starter-bank.ts 4
 ```
+
+## Who it is for and why learners stay
+
+Schood Admission is a Schood service sold directly to test takers (and their parents). It is a subscription, not a one-exam purchase, because the real path has several exams:
+
+- **Maths national certificate:** held several times a year, can be retaken to raise the grade, valid three years. An A gives full Maths points at admission (93 as the first specialised subject, 63 as the second, 11 in the compulsory block).
+- **National admission test:** once a year, in summer.
+- **In between:** daily practice, reviews and mocks so nothing fades.
+
+What keeps a learner busy every week:
+
+| Feature | What the learner sees | Where |
+|---|---|---|
+| Exam path | Every exam they aim for, with dates and targets; a countdown to the next one; after each exam they enter the result and get the next step (retake to raise the grade, the admission test, keep reviewing). Results are stored with the prediction shown at the time, to calibrate predictions later. | `Journey.tsx`, `learner_subject_milestones`, `subject-core/journey.ts` |
+| Weekly mock | One timed mock per week in the official question count and topic weights (2 minutes a question until the official duration is verified), autosaved, with points, rank against other Schood learners that week, a topic breakdown and worked solutions. Mock answers move mastery like practice. | `Mock.tsx`, `learner_subject_mocks`, `subject-core/mock.ts` |
+| Daily habit | Streak (kept until the end of today), minutes against the daily target, the day's plan. | `Today.tsx`, answers history |
+| My mistakes | Every question whose latest answer was wrong comes back (not within ten minutes) until answered correctly; mock misses included, diagnostic misses not. | `question?mode=mistakes` |
+| Score trend | The predicted range is saved daily and drawn as a line with its range. | `learner_subject_prediction_snapshots`, `Trend.tsx` |
+
+### Subscription structure
+
+- **Open beta (now):** `ADMISSION_PRODUCT_ID` unset, everyone has full access.
+- **Free plan:** goal, diagnostic, exam path, progress and `ADMISSION_FREE_DAILY_QUESTIONS` practice or review questions a day (default 10).
+- **Full plan:** unlimited practice and mistakes, and the weekly mock. Granted by the existing Click → `entitlements` path and read through `access-effective`, like SAT Practice. If the access check is down, learners keep access rather than being locked out.
+- Prices are not set in code; create the product and set `ADMISSION_PRODUCT_ID` when they are decided.

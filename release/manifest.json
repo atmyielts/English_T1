@@ -1,34 +1,51 @@
 {
   "schemaVersion": 1,
-  "releaseId": "schood-teaching-prices",
+  "releaseId": "admission-journey",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "academy"
+    "admission"
   ],
   "migrations": [
-    "20261024210000_schood_teaching_prices.sql"
+    "20261025200000_admission_journey.sql"
   ],
-  "edgeFunctions": [],
+  "edgeFunctions": [
+    "admission"
+  ],
   "workers": [],
-  "requiredSecrets": [],
+  "sharedEdgeConsumers": [],
+  "requiredSecrets": [
+    "ADMISSION_ALLOWED_ORIGINS",
+    "ADMISSION_CONTENT_TENANT_ID",
+    "ADMISSION_ENABLED",
+    "ADMISSION_FREE_DAILY_QUESTIONS",
+    "ADMISSION_PRODUCT_ID"
+  ],
   "rolloutOrder": [
     "pages",
-    "migration:20261024210000_schood_teaching_prices.sql"
+    "migration:20261025200000_admission_journey.sql",
+    "secret:ADMISSION_ALLOWED_ORIGINS",
+    "secret:ADMISSION_CONTENT_TENANT_ID",
+    "secret:ADMISSION_ENABLED",
+    "secret:ADMISSION_PRODUCT_ID",
+    "secret:ADMISSION_FREE_DAILY_QUESTIONS",
+    "function:admission"
   ],
   "manualFollowUps": [
-    "Pages: merging publishes academy, where Homework → Plan and settings shows plan prices as per month / per year.",
-    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus 20261024210000_schood_teaching_prices.sql, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) and any other session's unreleased migrations excluded. Dry run first. Sets Teacher 149 000 and Teacher Pro 249 000 UZS a month, adds yearly plans at 1 490 000 and 2 490 000, activates them, and marks Schood Teaching hidden and institution-only. billing.enforced stays false, so no academy loses access."
+    "Pages: merging publishes schood-admission with the exam path, weekly mock, mistakes, streak and prediction trend. The service stays closed (ADMISSION_ENABLED unset), so nobody sees it yet.",
+    "Database: supabase db push --linked from an isolated migrations folder containing only 20261025200000_admission_journey.sql. Codex's nine #220 payment migrations stay pending.",
+    "Edge: supabase functions deploy admission --project-ref bbjawctnqrufvnesdsel.",
+    "Secrets: no change now. Already set: supabase secrets set ADMISSION_ALLOWED_ORIGINS=https://admission.schood.online. Still unset on purpose: supabase secrets set ADMISSION_CONTENT_TENANT_ID=<content workspace> and supabase secrets set ADMISSION_ENABLED=true once questions are approved; supabase secrets set ADMISSION_PRODUCT_ID=<product id> and supabase secrets set ADMISSION_FREE_DAILY_QUESTIONS=<n> once prices exist (unset means everyone has full access)."
   ],
   "verification": [
-    "select name, amount, is_active from plans where product_id = '00000000-0000-4000-8000-000000000801' returns four active plans at 149 000, 249 000, 1 490 000 and 2 490 000.",
-    "The Schood Teaching product does not appear on the schood.online home page product list.",
-    "Academy → Homework → Plan and settings for an independent academy lists the four plans with prices."
+    "supabase migration list --linked shows 20261025200000 applied; learner_subject_milestones, learner_subject_mocks and learner_subject_prediction_snapshots return 401 to the anon key.",
+    "GET /functions/v1/admission/state still answers 503 not_enabled.",
+    "admission.schood.online loads and signs in as before."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-academy.",
-    "migration": "update plans set is_active = false where product_id = '00000000-0000-4000-8000-000000000801'; billing is not enforced, so nothing else changes.",
-    "edge": "Nothing deployed.",
-    "worker": "Nothing deployed."
+    "pages": "Cloudflare Pages rollback of schood-admission.",
+    "migration": "Additive: three new tables and a widened mode check. Leave in place.",
+    "edge": "Redeploy the previous admission function version; the service is closed either way.",
+    "worker": "None."
   }
 }
