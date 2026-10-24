@@ -82,7 +82,8 @@ export const WordReview = ({
     [cards, mode, locale],
   );
   const card = queue[index];
-  const preview = useMemo(() => (card ? previewIntervals(stateOfRow(card, now), now) : null), [card, now]);
+  // The card carries its FSRS state as `srs` (the notebook API lifts it out of metadata).
+  const preview = useMemo(() => (card ? previewIntervals(stateOfRow({ ...card, metadata: { srs: card.srs } }, now), now) : null), [card, now]);
 
   const reset = () => {
     setRevealed(false);
