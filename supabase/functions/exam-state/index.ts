@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { signStorageRef } from "../_shared/media-storage.ts";
+import { scoreToefl2026Unit } from "../_shared/toefl-2026.ts";
 
 type Json = Record<string, unknown>;
 
@@ -94,6 +95,8 @@ const deriveSectionDurationSeconds = (section: SectionRow, units: Array<Pick<Uni
   const metadata = isObject(section.metadata) ? (section.metadata as Record<string, unknown>) : {};
   const configuredDuration = toPositiveNumber((metadata as any).duration_seconds) ?? 0;
   if (sectionType(section) !== "listening") return configuredDuration;
+  // TOEFL 2026 listening modules use the ETS blueprint time, not audio length + review.
+  if (String((metadata as any).duration_mode ?? "") === "fixed") return configuredDuration;
 
   const audioTotal = units.reduce((sum, unit) => sum + (audioDurationSeconds(unit) ?? 0), 0);
   if (audioTotal <= 0) return configuredDuration;
@@ -144,6 +147,10 @@ const arraysEqualAsSets = (a: string[], b: string[]): boolean => {
 
 const scoreUnit = (unitType: string, correct: any, responseData: any): { score: number; max: number } => {
   if (!correct) return { score: 0, max: 0 };
+
+  // TOEFL 2026 unit types only (router accuracy for Complete the Words); null for every other type.
+  const toefl2026Score = scoreToefl2026Unit(unitType, correct, responseData);
+  if (toefl2026Score) return toefl2026Score;
 
   if (unitType === "question_single_choice") {
     const expected = normalizeChoiceToken(String((correct as any).option_id ?? ""));
@@ -736,7 +743,12 @@ serve(async (req) => {
     }
 
     // Per-section deadline stored in session.metadata.deadlines[section_id]
-    const durationSeconds = deriveSectionDurationSeconds(currentSection, visibleUnits);
+    const tierDurations = isObject((currentSection.metadata as any)?.duration_seconds_by_tier)
+      ? ((currentSection.metadata as any).duration_seconds_by_tier as Record<string, unknown>)
+      : null;
+    // TOEFL 2026: lower and upper listening modules have different ETS times.
+    const tierDuration = adaptiveTier && tierDurations ? toPositiveNumber(tierDurations[adaptiveTier]) : null;
+    const durationSeconds = tierDuration ?? deriveSectionDurationSeconds(currentSection, visibleUnits);
     const deadlines =
       currentMetadata.deadlines && typeof currentMetadata.deadlines === "object" ? (currentMetadata.deadlines as Json) : {};
     const existingDeadline = deadlines[sectionId];

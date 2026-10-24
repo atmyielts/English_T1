@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { signStorageRef } from "../_shared/media-storage.ts";
+import { scoreToefl2026Unit } from "../_shared/toefl-2026.ts";
+import { toefl2026TierFilterFor } from "../_shared/toefl-2026-session.ts";
 
 type Json = Record<string, unknown>;
 
@@ -263,6 +265,10 @@ const scoreUnit = (unitType: string, correct: any, responseData: any): UnitScore
     return scoreTokenMap(expected, actual, normalizeChoiceToken);
   }
 
+  // TOEFL 2026 unit types only; null for every other type.
+  const toefl2026Score = scoreToefl2026Unit(unitType, correct, responseData);
+  if (toefl2026Score) return toefl2026Score;
+
   return { score: 0, max: 0 };
 };
 
@@ -353,7 +359,7 @@ serve(async (req) => {
     const experienceId = sessionRow.experience_id as string;
     const { data: experienceRow, error: experienceError } = await supabase
       .from("experiences")
-      .select("id, name, product_id")
+      .select("id, name, product_id, metadata")
       .eq("id", experienceId)
       .maybeSingle();
 
@@ -492,7 +498,9 @@ serve(async (req) => {
       });
     }
 
-    const unitRows = (units ?? []) as UnitRow[];
+    // TOEFL 2026 adaptive tests: hide the second-module tier the learner did not take.
+    const toefl2026Visible = await toefl2026TierFilterFor(supabase, String(sessionRow.id), (experienceRow as any).metadata);
+    const unitRows = ((units ?? []) as UnitRow[]).filter((u) => toefl2026Visible(u, partToSectionId.get(u.part_id)));
     unitRows.sort((a, b) => {
       const pa = partOrder.get(a.part_id) ?? 0;
       const pb = partOrder.get(b.part_id) ?? 0;

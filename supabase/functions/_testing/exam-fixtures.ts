@@ -157,3 +157,58 @@ export const TOEFL_LEGACY: SessionSpec = {
 };
 
 export const LEGACY_SPECS: SessionSpec[] = [IELTS, SAT, ITEP, TOEFL_LEGACY];
+
+// ---------------------------------------------------------------------------
+// TOEFL iBT 2026 (router + second module, writing, speaking)
+
+const cw = (blanks: Record<string, string>, answers: Record<string, string>, tier?: string): UnitSpec => ({
+  type: "question_complete_words",
+  data: { prompt: "Fill in the missing letters.", text: Object.keys(blanks).map((k) => `{{${k}}}`).join(" "), blanks: Object.keys(blanks).map((id) => ({ id, stem: "x", length: blanks[id].length })) },
+  metadata: { toefl_task: "complete_the_words", ...(tier ? { difficulty_tier: tier } : {}) },
+  correct: { blanks, stems: Object.fromEntries(Object.keys(blanks).map((k) => [k, "x"])) },
+  response: { blanks: answers },
+});
+const mc = (task: string, correct: string, answer: string, tier?: string): UnitSpec => ({
+  ...sc(correct, answer),
+  metadata: { toefl_task: task, ...(tier ? { difficulty_tier: tier } : {}) },
+});
+
+export const TOEFL_2026: SessionSpec = {
+  key: "toefl-2026",
+  productId: "b262ffa8-9912-4eba-93d7-58af3164d1cc",
+  productSlug: "toefl-ibt-simulator",
+  experienceMetadata: { format: "toefl-2026", catalog: "full_test" },
+  sessionMetadata: { route_decisions: { "toefl-2026-sec-0002": { tier: "advanced", ratio: 0.9 } } },
+  sections: [
+    {
+      type: "reading", metadata: { toefl_module: "router" },
+      parts: [[cw({ a: "ght", b: "at", c: "ple", d: "ly" }, { a: "ght", b: "at", c: "ple", d: "xx" })], [mc("read_daily_life", "A", "A")]],
+    },
+    {
+      type: "reading", metadata: { toefl_module: "second", adaptive_source_section_id: "toefl-2026-sec-0001", adaptive_threshold: 0.6 },
+      parts: [
+        [cw({ a: "ab" }, { a: "ab" }, "standard"), mc("read_academic_passage", "B", "B", "standard")],
+        [cw({ a: "cd", b: "ef" }, { a: "cd", b: "zz" }, "advanced"), mc("read_academic_passage", "C", "C", "advanced")],
+      ],
+    },
+    { type: "listening", metadata: { toefl_module: "router" }, parts: [[{ type: "audio", data: { url: "/media/a.mp3" } }, mc("listen_choose_response", "A", "B"), mc("listen_choose_response", "B", "C")]] },
+    { type: "listening", metadata: { toefl_module: "second", adaptive_source_section_id: "toefl-2026-sec-0003" }, parts: [[mc("listen_conversation", "A", "A", "standard"), mc("listen_conversation", "D", "D", "advanced")]] },
+    {
+      type: "writing",
+      parts: [
+        [{ type: "question_build_sentence", metadata: { toefl_task: "build_sentence" }, correct: { order: ["a", "b"], tiles: { a: "we", b: "agree", c: "agrees" } }, response: { order: ["a", "b"] } },
+          { type: "question_build_sentence", metadata: { toefl_task: "build_sentence" }, correct: { order: ["a", "b"], tiles: { a: "we", b: "agree", c: "agrees" } }, response: { order: ["a", "c"] } }],
+        [{ type: "question_text", data: { prompt: "Email", task_type: "toefl_email" }, metadata: { toefl_task: "write_email" }, response: { text: "Dear Professor ..." } }],
+        [{ type: "question_text", data: { prompt: "Discussion", task_type: "toefl_academic_discussion" }, metadata: { toefl_task: "write_academic_discussion" }, response: { text: "I agree ..." } }],
+      ],
+    },
+    {
+      type: "speaking",
+      parts: [
+        [{ type: "question_speaking_repeat", metadata: { toefl_task: "listen_repeat" }, correct: { text: "The library opens at nine." }, response: { transcript: "The library opens at nine", stt: "browser" } },
+          { type: "question_speaking_repeat", metadata: { toefl_task: "listen_repeat" }, correct: { text: "Please sign in at the front desk." }, response: { transcript: "", stt: "unsupported" } }],
+        [{ type: "question_speaking_interview", metadata: { toefl_task: "take_interview" }, correct: { question_text: "Tell me about a city you visited." }, response: { transcript: "I visited Samarkand last summer because my cousin lives there and the old city is beautiful", stt: "browser" } }],
+      ],
+    },
+  ],
+};

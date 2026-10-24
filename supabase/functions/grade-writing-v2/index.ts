@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { signStorageRef } from "../_shared/media-storage.ts";
+import { isToefl2026Experience } from "../_shared/toefl-2026-session.ts";
+import { normalizeToefl2026WritingResult, TOEFL_2026_WRITING_PROFILE, toefl2026WritingModels } from "../_shared/toefl-2026-writing.ts";
 
 type Json = Record<string, unknown>;
 
@@ -756,7 +758,7 @@ serve(async (req) => {
     const experienceId = sessionRow.experience_id as string;
     const { data: experienceRow, error: expErr } = await sb
       .from("experiences")
-      .select("id, product_id")
+      .select("id, product_id, metadata")
       .eq("id", experienceId)
       .maybeSingle();
 
@@ -784,7 +786,12 @@ serve(async (req) => {
     const productSlug = String((productRow as any)?.metadata?.slug ?? "")
       .trim()
       .toLowerCase();
-    const writingProfile = resolveWritingEvaluationProfile(productSlug);
+    // TOEFL iBT 2026 tests use the 0-5 Email / Academic Discussion rubric and the free model by default.
+    const isToefl2026Writing =
+      productSlug === "toefl-ibt-simulator" && isToefl2026Experience((experienceRow as any)?.metadata);
+    const writingProfile = isToefl2026Writing
+      ? (TOEFL_2026_WRITING_PROFILE as unknown as WritingEvaluationProfile)
+      : resolveWritingEvaluationProfile(productSlug);
 
     const tokenId = String((sessionRow as any)?.token_id ?? "");
     let tokenMode = false;
@@ -1022,7 +1029,9 @@ serve(async (req) => {
     const fallbackModels = parseModelList(
       getEnv("OPENROUTER_FALLBACK_MODELS") ?? "openrouter/auto,google/gemma-3-27b-it:free",
     );
-    const modelCandidates = Array.from(new Set([primaryModel, ...fallbackModels]));
+    const modelCandidates = isToefl2026Writing
+      ? toefl2026WritingModels(getEnv)
+      : Array.from(new Set([primaryModel, ...fallbackModels]));
     const openRouterBaseUrl = getEnv("OPENROUTER_BASE_URL") ?? "https://openrouter.ai/api/v1";
     const openRouterReferer = getEnv("OPENROUTER_REFERER");
     const openRouterAppName = getEnv("OPENROUTER_APP_NAME") ?? writingProfile.defaultAppName;
@@ -1060,7 +1069,9 @@ serve(async (req) => {
       throw error;
     }
 
-    const aiResult = normalizeWritingEvaluationResult(aiCallResult.result, writingProfile.key);
+    const aiResult = isToefl2026Writing
+      ? normalizeToefl2026WritingResult(aiCallResult.result, tasks)
+      : normalizeWritingEvaluationResult(aiCallResult.result, writingProfile.key);
     const usedModel = aiCallResult.model;
 
     const nowIso = new Date().toISOString();

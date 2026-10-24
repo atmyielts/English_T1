@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { emitOpsAlert, logOpsEvent, requestIdFrom, withRequestIdHeader } from "../_shared/ops-observability.ts";
+import { scoreToefl2026Unit } from "../_shared/toefl-2026.ts";
+import { applyToefl2026ToSections, computeToefl2026Session, isToefl2026Experience, toefl2026Summary } from "../_shared/toefl-2026-session.ts";
 
 type Json = Record<string, unknown>;
 
@@ -430,6 +432,10 @@ const scoreUnit = (unitType: string, correct: any, responseData: any): UnitScore
     if (!expected) return { score: 0, max: 0 };
     return scoreTokenMap(expected, actual, normalizeChoiceToken);
   }
+
+  // TOEFL 2026 unit types only (Complete the Words, Build a Sentence); null for every other type.
+  const toefl2026Score = scoreToefl2026Unit(unitType, correct, responseData);
+  if (toefl2026Score) return toefl2026Score;
 
   return { score: 0, max: 0 };
 };
@@ -958,6 +964,28 @@ serve(async (req) => {
         }
       : null;
 
+    // TOEFL iBT 2026 format (experience metadata format "toefl-2026"): 1-6 bands,
+    // adaptive module filtering and constructed-response scores. Other exams and
+    // pre-2026 TOEFL tests never enter this branch, so `toeflOut === toefl` for them.
+    let toeflOut: Record<string, unknown> | null = toefl;
+    if (isToeflProduct && isToefl2026Experience(experienceMetadata)) {
+      const toefl2026 = await computeToefl2026Session(supabase, {
+        sessionId,
+        sessionMetadata: ((sessionRow as any)?.metadata ?? {}) as Json,
+        experienceMetadata,
+        sectionRows,
+        unitRows,
+        partIdToSectionId,
+        keyByUnitId,
+        latestResponseByUnitId,
+        scoreUnit,
+        writingEvaluationResult: preferredWritingEval?.result ?? null,
+      });
+      applyToefl2026ToSections(sectionScores, toefl2026);
+      overallBand = toefl2026.result.overall_band;
+      toeflOut = toefl2026Summary(toefl2026.result);
+    }
+
     let itep: {
       reading_score: number | null;
       listening_score: number | null;
@@ -1029,7 +1057,7 @@ serve(async (req) => {
     const skillBreakdown = buildSkillBreakdown(sectionScores);
     const overallScore = isItepProduct
       ? (itep?.composite_score ?? overallBand)
-      : computeOverallScore(sectionValues, overallBand, sat, toefl);
+      : computeOverallScore(sectionValues, overallBand, sat, toeflOut as { rlw_composite_score: number | null } | null);
     const schemaVersion = "exam.result.v1";
     const computedAtIso = new Date().toISOString();
 
@@ -1040,7 +1068,7 @@ serve(async (req) => {
       overall_score: overallScore,
       sections: sectionScores,
       sat,
-      toefl,
+      toefl: toeflOut,
       itep,
     };
 
@@ -1146,7 +1174,7 @@ serve(async (req) => {
           score: overallScore,
           band: overallBand,
           sat_total: sat?.total_score ?? null,
-          toefl_rlw_composite: toefl?.rlw_composite_score ?? null,
+          toefl_rlw_composite: (toeflOut as { rlw_composite_score?: number | null } | null)?.rlw_composite_score ?? null,
         },
         skill_breakdown: skillBreakdown,
         sections: sectionScores,
