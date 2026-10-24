@@ -1,62 +1,53 @@
 {
   "schemaVersion": 1,
-  "releaseId": "english-features-oct24",
+  "releaseId": "english-all-skills-bundle",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "english-hub"
+    "english-hub",
+    "platform"
   ],
   "migrations": [
-    "20261024120000_english_word_glosses.sql",
-    "20261024121000_english_xp_leagues_badges.sql",
-    "20261024122000_english_telegram_quiz.sql",
-    "20261024123000_english_grammar_handbook.sql",
-    "20261024124000_english_certificates.sql"
+    "20261025160000_english_all_skills_bundle.sql"
   ],
-  "edgeFunctions": [
+  "edgeFunctions": [],
+  "workers": [],
+  "sharedEdgeConsumers": [
     "grammar-remediation",
-    "hub"
+    "hub",
+    "immersion-missions",
+    "listening-content",
+    "reading-articles",
+    "speaking-studio",
+    "vocabulary-notebook",
+    "writing-workbench"
   ],
-  "workers": [
-    "schood-bot"
-  ],
-  "sharedEdgeConsumers": [],
-  "requiredSecrets": [
-    "ENGLISH_AI_DAILY_LIMIT",
-    "ENGLISH_APP_URL",
-    "TELEGRAM_INTERNAL_SECRET"
-  ],
+  "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "migration:20261024120000_english_word_glosses.sql",
-    "migration:20261024121000_english_xp_leagues_badges.sql",
-    "migration:20261024122000_english_telegram_quiz.sql",
-    "migration:20261024123000_english_grammar_handbook.sql",
-    "migration:20261024124000_english_certificates.sql",
-    "secret:ENGLISH_AI_DAILY_LIMIT",
-    "secret:ENGLISH_APP_URL",
-    "secret:TELEGRAM_INTERNAL_SECRET",
+    "migration:20261025160000_english_all_skills_bundle.sql",
     "function:hub",
     "function:grammar-remediation",
-    "worker:schood-bot"
+    "function:immersion-missions",
+    "function:listening-content",
+    "function:reading-articles",
+    "function:speaking-studio",
+    "function:vocabulary-notebook",
+    "function:writing-workbench"
   ],
   "manualFollowUps": [
-    "Pages: merging publishes english-hub with tap-to-translate, XP/leagues/badges, the goal date plan, the grammar handbook, certificates and the Telegram quiz toggle. Until hub is deployed the new panels show their error/empty states.",
-    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus the five 20261024120000-20261024124000 English migrations, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then supabase migration list --linked. Adds service-role-only tables english_word_glosses, english_league_groups, english_league_members, learner_badges, learner_review_answer_log, english_telegram_quiz_questions, english_certificates (RLS on, no client grants) and Russian/Uzbek handbook explanations on the 43 grammar units.",
-    "Secrets: supabase secrets set ENGLISH_AI_DAILY_LIMIT=, supabase secrets set ENGLISH_APP_URL= and supabase secrets set TELEGRAM_INTERNAL_SECRET= are not run: the first two keep their code defaults, and TELEGRAM_INTERNAL_SECRET is already configured for send-telegram and the schood-bot Worker; hub now reads it to authenticate the bot's enq: quiz callbacks.",
-    "Edge: supabase functions deploy hub --project-ref bbjawctnqrufvnesdsel after the migrations (/word, /xp, /league, /achievements, /goal, /certificate(s), public certificate, /internal/telegram-quiz).",
-    "Edge: supabase functions deploy grammar-remediation --project-ref bbjawctnqrufvnesdsel (GET /handbook).",
-    "Worker: cd workers/schood-bot && npx wrangler deploy, after hub is live. The bot only adds handling for callback data starting with enq: and reuses its existing TELEGRAM_INTERNAL_SECRET; everything else is unchanged."
+    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus 20261025160000_english_all_skills_bundle.sql, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first. Adds the active product English All Skills (slug english-all, id 3a7bd983-58c5-4c75-b5f8-5ac46c94a0fa) with one 30-day plan at 199,000 UZS, mapped to the English shared profile.",
+    "Edge: supabase functions deploy for hub, grammar-remediation, immersion-missions, listening-content, reading-articles, speaking-studio, vocabulary-notebook and writing-workbench (--project-ref bbjawctnqrufvnesdsel). They share _shared/english-access.ts, which now treats an active All Skills entitlement as owning every skill.",
+    "Pages: merging publishes english-hub (bundle offer on locked panels and the skill rail; generic plan links open All Skills) and platform (pricing page suggests All Skills to someone viewing one English skill). Run the migration and function deploys right after, so the product exists and bundle buyers are recognised everywhere."
   ],
   "verification": [
-    "supabase migration list --linked shows the five migrations applied and the 9 #220 payment migrations still pending.",
-    "Without a session GET /functions/v1/hub/word, /hub/xp, /hub/league, /hub/goal, /hub/certificates and GET /grammar-remediation/handbook return 401; POST /hub/internal/telegram-quiz without the worker secret returns 401; GET /hub/public/certificate/UNKNOWN returns 404.",
-    "As a learner: tapping a word in a reading article opens its meaning; finishing an activity shows +XP and the league page lists the learner; Settings shows Goal date and the Telegram quiz toggle."
+    "supabase migration list --linked shows 20261025160000 applied and the 9 #220 payment migrations still pending.",
+    "schood.online/pricing?product=english-all shows English All Skills with the 199,000 UZS monthly plan; /pricing?product=english-speaking shows the All Skills suggestion.",
+    "A learner holding only the All Skills entitlement sees every skill unlocked in english.schood.online and is not limited by the daily free activity."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-english to the previous deployment.",
-    "migration": "Additive tables and metadata keys; leave in place.",
-    "edge": "Redeploy hub and grammar-remediation from the previous main commit; the new routes stop, existing routes are unchanged.",
-    "worker": "npx wrangler rollback in workers/schood-bot; enq: callbacks then go unanswered, nothing else changes."
+    "pages": "Cloudflare Pages rollback of schood-english and schood-platform to the previous deployment.",
+    "migration": "Set the product status to archived (update public.products set status = 'archived' where id = '3a7bd983-58c5-4c75-b5f8-5ac46c94a0fa'); existing entitlements keep working until they expire.",
+    "edge": "Redeploy the eight functions from the previous main commit; bundle holders then lose skill access until redeployed, so archive the product first."
   }
 }
