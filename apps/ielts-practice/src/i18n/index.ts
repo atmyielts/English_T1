@@ -14,12 +14,13 @@ import { lab } from './parts/lab';
 import { results } from './parts/results';
 import { extras } from './parts/extras';
 import { pages } from './parts/pages';
+import { experience } from './parts/experience';
 
 // UI chrome only. Learning content (passages, questions, prompts, model
 // answers) stays in English; AI coaching prose follows the chosen locale.
 // Each part file holds one area's en/uz/ru messages; uz and ru are typed
 // against en so a missing key fails the build.
-const parts = [common, shell, today, reviews, generator, speaking, onboarding, dashboard, insights, lab, results, extras, pages] as const;
+const parts = [common, shell, today, reviews, generator, speaking, onboarding, dashboard, insights, lab, results, extras, pages, experience] as const;
 
 type PartKeys<P> = P extends { en: infer E } ? keyof E : never;
 export type AppKey = PartKeys<(typeof parts)[number]> & string;
@@ -30,6 +31,9 @@ const merge = (locale: Locale): Record<AppKey, string> =>
 export const catalogs: Catalogs<AppKey> = { en: merge('en'), uz: merge('uz'), ru: merge('ru') };
 
 export type AppTranslate = (key: AppKey, params?: Params) => string;
+
+/** English formatter for code that runs outside React (and as a default). */
+export const translateEn: AppTranslate = (key, params) => format(catalogs as Catalogs<string>, 'en', key, params);
 
 export function useAppT(): AppTranslate {
   const { locale } = useI18n();
