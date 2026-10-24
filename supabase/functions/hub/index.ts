@@ -61,6 +61,7 @@ import { appendLevelHistory, levelCheckStatus, perSkillLevels, readLevelHistory 
 import { handleCertificateRoute, handlePublicCertificate, isPublicCertificateRoute } from "./certificate.ts";
 import { measurementMethod, testResultRecord } from "../_shared/english-certificate.ts";
 import { handlePracticeRoute } from "./practice.ts";
+import { handleExamRoute } from "./exam.ts";
 
 const routeMarker = "/hub";
 
@@ -390,6 +391,10 @@ serve(async (req) => {
     // === Role-plays, speaking mock, first-language traps (./practice.ts) ===
     const practiceResponse = await handlePracticeRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId, products });
     if (practiceResponse) return practiceResponse;
+
+    // === National exam track: readiness, exam date, timed mocks (./exam.ts) ===
+    const examResponse = await handleExamRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId, products });
+    if (examResponse) return examResponse;
 
     // === Today, catalog and history (learner home) ===
     // Built only from the learner's placement, real attempts and due reviews.

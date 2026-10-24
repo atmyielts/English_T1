@@ -20,6 +20,7 @@ export const ENGLISH_SERVICES = [
   "vocabulary",
   "immersion",
   "tutor",
+  "exam",
 ] as const;
 export type EnglishService = (typeof ENGLISH_SERVICES)[number];
 
@@ -48,6 +49,8 @@ export const KNOWN_ENGLISH_AI_FEATURES = [
   "writing-feedback",
   "immersion-judge",
   "content-draft",
+  "exam-writing",
+  "exam-speaking",
 ] as const;
 
 export type EnglishSettings = {

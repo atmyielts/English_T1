@@ -1,0 +1,180 @@
+{
+  "id": "multilevel-practice-1",
+  "title": "Practice paper 1",
+  "level_focus": "B1",
+  "reading": {
+    "parts": [
+      {
+        "id": "r1",
+        "type": "gap_fill",
+        "level": "B1",
+        "title": "Part 1. Complete the text. Each missing word appears somewhere else in the text.",
+        "text": "Last month a new library opened in our town. The library is in the old cinema building near the bus station. Inside, there are more than ten thousand books and a quiet room for students who want to study. Many young people now go to the {{1}} after school because the study room has fast internet. On Saturdays there is a free English {{2}}. In the club, members read short stories and talk about them in English. You do not need to pay anything; you only need a library card. To get a {{3}}, bring your passport and a photo to the {{4}} on the first floor. The staff at the front desk are friendly and can help you find books. Some people say the old cinema was more fun, but most people {{5}} the library is better for the town. One student told me, 'I come here every day now. It is my favourite place to {{6}}.'",
+        "answers": { "1": "library", "2": "club", "3": "card", "4": "desk", "5": "say", "6": "study" }
+      },
+      {
+        "id": "r2",
+        "type": "mcq",
+        "level": "B1",
+        "title": "Part 2. Read the article and choose the correct answer.",
+        "text": "When Dilnoza finished school, she was not sure what to study at university. Her parents wanted her to become a doctor, but she was more interested in animals. Instead of choosing a course immediately, she decided to spend a year as a volunteer at the animal shelter in her city.\n\nThe shelter looks after around eighty dogs and cats that have lost their homes. Volunteers clean the rooms, prepare food and take the dogs for walks twice a day. At first, Dilnoza found the work tiring. 'I went home every evening with dirty clothes and sore feet,' she says. 'But after a few weeks I started to feel stronger, and I loved seeing the animals get healthier.'\n\nThe most difficult part of the job, she says, was not the physical work but saying goodbye. When a family adopts an animal, the volunteers are happy, but they also miss the animal they have cared for. Dilnoza remembers an old dog called Bars who waited almost a year for a new home. 'Everyone thought nobody would take him because of his age. Then a retired teacher came in and chose him immediately. I cried, but they were tears of joy.'\n\nThe year at the shelter helped Dilnoza make her decision. She has now started a degree in veterinary medicine. She still visits the shelter at weekends and encourages other young people to try volunteering before they choose a career. 'You learn what you really enjoy,' she says, 'and that is worth more than any test result.'",
+        "questions": [
+          { "id": "1", "prompt": "Why did Dilnoza start volunteering?", "options": [{ "id": "A", "text": "Her parents asked her to." }, { "id": "B", "text": "She needed money for university." }, { "id": "C", "text": "She wanted time to decide what to study." }, { "id": "D", "text": "Her school required it." }], "answer": "C" },
+          { "id": "2", "prompt": "How did Dilnoza feel about the work at first?", "options": [{ "id": "A", "text": "It was physically hard." }, { "id": "B", "text": "It was boring." }, { "id": "C", "text": "It was dangerous." }, { "id": "D", "text": "It was easy." }], "answer": "A" },
+          { "id": "3", "prompt": "What does Dilnoza say was the hardest part of the job?", "options": [{ "id": "A", "text": "Cleaning the rooms." }, { "id": "B", "text": "Walking the dogs." }, { "id": "C", "text": "Working long hours." }, { "id": "D", "text": "Seeing animals leave." }], "answer": "D" },
+          { "id": "4", "prompt": "What was special about Bars?", "options": [{ "id": "A", "text": "He was very young." }, { "id": "B", "text": "He had waited a long time for a home." }, { "id": "C", "text": "He belonged to a teacher before." }, { "id": "D", "text": "He was ill." }], "answer": "B" },
+          { "id": "5", "prompt": "Why did Dilnoza cry?", "options": [{ "id": "A", "text": "She was sad that Bars was leaving her." }, { "id": "B", "text": "She was tired after a long day." }, { "id": "C", "text": "She was happy that Bars had found a home." }, { "id": "D", "text": "The teacher was rude to her." }], "answer": "C" },
+          { "id": "6", "prompt": "What advice does Dilnoza give young people?", "options": [{ "id": "A", "text": "Try volunteering before choosing a career." }, { "id": "B", "text": "Choose the career your parents prefer." }, { "id": "C", "text": "Focus on your test results." }, { "id": "D", "text": "Study medicine." }], "answer": "A" }
+        ]
+      },
+      {
+        "id": "r3",
+        "type": "headings",
+        "level": "B2",
+        "title": "Part 3. Choose the best heading for each paragraph. There are two headings you do not need.",
+        "headings": [
+          { "id": "i", "text": "Plan your money from the start" },
+          { "id": "ii", "text": "Make friends outside your course" },
+          { "id": "iii", "text": "Ask for help early" },
+          { "id": "iv", "text": "Look after your sleep" },
+          { "id": "v", "text": "Choose clubs carefully" },
+          { "id": "vi", "text": "Keep in touch with home" },
+          { "id": "vii", "text": "Learn to manage your time" },
+          { "id": "viii", "text": "Why grades matter most" }
+        ],
+        "paragraphs": [
+          { "id": "1", "text": "At school, teachers tell you what to do and when. At university, you may have only fifteen hours of classes a week and a lot of free time. That freedom can be a trap. Successful students write a weekly timetable that includes reading, assignments and rest, and they treat study hours as seriously as lectures.", "answer": "vii" },
+          { "id": "2", "text": "Many students receive their grant, or money from their parents, at the start of the month and have nothing left by the third week. Before you spend anything, write down your fixed costs: rent, transport and your phone. What is left is what you can really spend, and dividing it by four gives you a simple weekly limit.", "answer": "i" },
+          { "id": "3", "text": "Feeling lost in a difficult subject is normal, but waiting until the exam to admit it is not. Tutors have office hours exactly for this reason, and most universities also offer free writing or maths support. Students who use these services in the first months usually avoid much bigger problems later.", "answer": "iii" },
+          { "id": "4", "text": "Late-night conversations and online series are part of student life, yet research shows that students who regularly get less than six hours a night remember less of what they study. Try to go to bed at roughly the same time each night, especially in the weeks before exams.", "answer": "iv" },
+          { "id": "5", "text": "It is natural to spend time with people from your own group, because you see them every day. However, your neighbours in the dormitory or students from other faculties can introduce you to new ideas and even future job opportunities. A wider circle also helps when the people you study with are busy.", "answer": "ii" },
+          { "id": "6", "text": "Moving to a new city can make even confident students homesick. A short call to your family every few days keeps you connected without stopping you from building a new life. Some students also find it helps to bring a few familiar things, such as photos or a favourite blanket.", "answer": "vi" }
+        ]
+      },
+      {
+        "id": "r4",
+        "type": "mcq",
+        "level": "C1",
+        "title": "Part 4. Read the text and choose the correct answer.",
+        "text": "Teachers have long suspected that a good story sticks in the mind far longer than a list of facts, and cognitive scientists now have a fairly clear account of why. When we read a list, each item is stored more or less on its own, with few connections to anything else. A story, by contrast, links events through cause and effect: this happened because of that, and therefore something else followed. Each link acts as a retrieval cue, so that recalling one event tends to pull the next one with it.\n\nStories also engage emotion, and emotionally charged information is given priority by the brain. This is not simply a matter of excitement. Even mild curiosity, wanting to know what happens next, appears to prepare the brain to store new information, which may explain why students remember facts better when they are presented as answers to a question they have already started to wonder about.\n\nNone of this means that every lesson should be turned into a narrative. Critics point out that stories can be misleading precisely because they are memorable. A vivid anecdote about one patient who recovered after an unusual treatment may stay with us longer than the dull statistics showing that the treatment rarely works. In other words, the very features that make stories effective teaching tools also make them effective tools for spreading errors.\n\nThe practical lesson for learners is therefore a balanced one. Turning material into a story, by explaining to yourself why one event led to another or imagining how a historical figure might have felt, is a powerful way to remember it. But it should be combined with a habit of checking: asking whether the story fits the evidence, and whether a more boring explanation might be closer to the truth. Memorable and accurate are not the same thing, and good learners look for both.",
+        "questions": [
+          { "id": "1", "prompt": "According to the text, why are lists hard to remember?", "options": [{ "id": "A", "text": "They are usually too long." }, { "id": "B", "text": "Their items have few links to each other." }, { "id": "C", "text": "They contain unfamiliar words." }, { "id": "D", "text": "They are rarely used in schools." }], "answer": "B" },
+          { "id": "2", "prompt": "In paragraph 1, a 'retrieval cue' is something that", "options": [{ "id": "A", "text": "makes a story more exciting." }, { "id": "B", "text": "shows that an event is important." }, { "id": "C", "text": "replaces facts with emotions." }, { "id": "D", "text": "helps you bring back a related memory." }], "answer": "D" },
+          { "id": "3", "prompt": "What does the writer say about curiosity?", "options": [{ "id": "A", "text": "It may help the brain prepare to remember." }, { "id": "B", "text": "It distracts students from facts." }, { "id": "C", "text": "It only matters in exciting stories." }, { "id": "D", "text": "It is stronger than other emotions." }], "answer": "A" },
+          { "id": "4", "prompt": "The example of the patient is used to show that", "options": [{ "id": "A", "text": "doctors should tell more stories." }, { "id": "B", "text": "statistics are usually wrong." }, { "id": "C", "text": "a memorable story can give a false impression." }, { "id": "D", "text": "unusual treatments are often successful." }], "answer": "C" },
+          { "id": "5", "prompt": "What is the writer's attitude to using stories in lessons?", "options": [{ "id": "A", "text": "Enthusiastic, without any doubts." }, { "id": "B", "text": "Positive, but with a warning." }, { "id": "C", "text": "Completely opposed." }, { "id": "D", "text": "Not interested." }], "answer": "B" },
+          { "id": "6", "prompt": "What does the writer advise learners to do?", "options": [{ "id": "A", "text": "Avoid stories when studying history." }, { "id": "B", "text": "Memorise statistics instead of stories." }, { "id": "C", "text": "Only trust boring explanations." }, { "id": "D", "text": "Check whether a story matches the evidence." }], "answer": "D" }
+        ]
+      }
+    ]
+  },
+  "listening": {
+    "parts": [
+      {
+        "id": "l1",
+        "type": "dialogues",
+        "level": "B1",
+        "title": "Part 1. Listen to six short conversations. Choose the correct answer for each.",
+        "items": [
+          { "id": "1", "script": "Woman: Excuse me, does this bus go to the railway station?\nMan: No, you need the number twelve. It stops right across the road, next to the bank.\nWoman: Thanks. How often does it come?\nMan: About every ten minutes.", "prompt": "Which bus should the woman take?", "options": [{ "id": "A", "text": "Number two" }, { "id": "B", "text": "Number twelve" }, { "id": "C", "text": "Number twenty" }], "answer": "B" },
+          { "id": "2", "script": "Man: Shall we meet at six for the film?\nWoman: The film starts at half past six, but I finish work at six. Let's say a quarter past six, outside the cinema.\nMan: Fine, see you then.", "prompt": "What time will they meet?", "options": [{ "id": "A", "text": "At a quarter past six" }, { "id": "B", "text": "At six o'clock" }, { "id": "C", "text": "At half past six" }], "answer": "A" },
+          { "id": "3", "script": "Woman: How was your weekend in the mountains?\nMan: The views were amazing, but it rained all Sunday, so we came back early. The hotel was nice, though.\nWoman: What a shame about the weather.", "prompt": "What was the problem with the weekend?", "options": [{ "id": "A", "text": "The hotel" }, { "id": "B", "text": "The views" }, { "id": "C", "text": "The weather" }], "answer": "C" },
+          { "id": "4", "script": "Man: I'd like to return this jacket. It's too small.\nWoman: Would you like a bigger size or your money back?\nMan: Do you have it in large?\nWoman: Let me check. Yes, here you are.", "prompt": "What does the man do in the end?", "options": [{ "id": "A", "text": "He gets his money back." }, { "id": "B", "text": "He changes the jacket for a bigger one." }, { "id": "C", "text": "He buys a second jacket." }], "answer": "B" },
+          { "id": "5", "script": "Woman: Are you coming to Aziz's birthday party on Friday?\nMan: I'd love to, but I have an exam on Saturday morning. I'll call him to say happy birthday instead.\nWoman: Good luck with the exam!", "prompt": "Why won't the man go to the party?", "options": [{ "id": "A", "text": "He has to prepare for an exam." }, { "id": "B", "text": "He is ill." }, { "id": "C", "text": "He wasn't invited." }], "answer": "A" },
+          { "id": "6", "script": "Man: Did you buy the vegetables for dinner?\nWoman: I got tomatoes and onions, but the shop had no potatoes, so I bought some rice instead.\nMan: Rice is fine.", "prompt": "What did the woman NOT buy?", "options": [{ "id": "A", "text": "Tomatoes" }, { "id": "B", "text": "Rice" }, { "id": "C", "text": "Potatoes" }], "answer": "C" }
+        ]
+      },
+      {
+        "id": "l2",
+        "type": "notes",
+        "level": "B1",
+        "title": "Part 2. Listen to a talk about a summer camp. Complete the notes with ONE word or a number.",
+        "script": "Hello everyone, and welcome to this information session about our summer English camp. The camp takes place in the Chimgan mountains, about ninety kilometres from Tashkent. This year it runs from the fifth of July to the eighteenth of July, so that's two weeks in total. Students between fourteen and seventeen can apply. Every morning there are four hours of lessons, and in the afternoons students choose activities such as hiking, photography or drama. On the last evening, each group performs a short play in English for the parents. The price includes accommodation, all meals and transport by bus from the city centre. Students sleep in wooden cabins, with six students in each cabin. Please remember that phones are allowed only in the evening, between seven and nine. To apply, fill in the form on our website and send a short video introducing yourself. The deadline for applications is the first of June. If you have any questions, you can call the office or speak to me after this session.",
+        "notes": [
+          { "id": "1", "before": "Location: the", "after": "mountains", "answers": ["chimgan"] },
+          { "id": "2", "before": "Dates: 5 July to", "after": "July", "answers": ["eighteenth", "18", "18th", "the eighteenth"] },
+          { "id": "3", "before": "Afternoon activities: hiking, photography or", "after": "", "answers": ["drama"] },
+          { "id": "4", "before": "Students sleep in wooden", "after": "(six in each)", "answers": ["cabins"] },
+          { "id": "5", "before": "Phones allowed only in the", "after": "(7 to 9)", "answers": ["evening"] },
+          { "id": "6", "before": "To apply: fill in the form and send a short", "after": "", "answers": ["video"] }
+        ]
+      },
+      {
+        "id": "l3",
+        "type": "mcq",
+        "level": "B2",
+        "title": "Part 3. Listen to two students planning a presentation. Choose the correct answer.",
+        "script": "Kamola: So, have you looked at the topic for our presentation? Renewable energy in Central Asia.\nTimur: I have. I think we should focus on solar power. Uzbekistan has more than three hundred sunny days a year, so it's the obvious example.\nKamola: That's true, but the teacher said she wanted us to compare at least two sources of energy. If we only talk about solar, we'll lose marks.\nTimur: Fair point. What about wind, then? I read that there are big wind farm projects in Karakalpakstan.\nKamola: Good, that gives us a contrast. I can find the figures on wind if you take solar.\nTimur: Deal. How long does it need to be?\nKamola: Ten minutes, plus five minutes for questions. Honestly, it's the questions I'm worried about. Last time, the teacher asked about costs and nobody could answer.\nTimur: Then let's prepare a slide on costs, even if we don't show it. If someone asks, we'll have the numbers ready.\nKamola: Smart. And who's going to speak first?\nTimur: You should. You're more confident in front of people. I'll do the second half and the conclusion.\nKamola: All right, but you have to promise to practise. Last time you read everything from your notes.\nTimur: I know, I know. Let's rehearse together on Thursday evening in the library.\nKamola: Thursday doesn't work for me, I've got my part-time job. What about Wednesday?\nTimur: Wednesday's fine. Six o'clock?\nKamola: Perfect.",
+        "questions": [
+          { "id": "1", "prompt": "Why does Timur first suggest solar power?", "options": [{ "id": "A", "text": "It is cheaper than other sources." }, { "id": "B", "text": "The country has a lot of sunshine." }, { "id": "C", "text": "The teacher recommended it." }], "answer": "B" },
+          { "id": "2", "prompt": "Why does Kamola not want to discuss only solar power?", "options": [{ "id": "A", "text": "The task asks for a comparison." }, { "id": "B", "text": "She prefers wind power." }, { "id": "C", "text": "Solar power is too complicated." }], "answer": "A" },
+          { "id": "3", "prompt": "What is Kamola worried about?", "options": [{ "id": "A", "text": "The length of the talk." }, { "id": "B", "text": "Finding the figures." }, { "id": "C", "text": "Answering questions." }], "answer": "C" },
+          { "id": "4", "prompt": "What does Timur suggest about costs?", "options": [{ "id": "A", "text": "Leave them out completely." }, { "id": "B", "text": "Prepare the information in case it is needed." }, { "id": "C", "text": "Ask the teacher about them." }], "answer": "B" },
+          { "id": "5", "prompt": "Why should Kamola speak first?", "options": [{ "id": "A", "text": "She knows more about the topic." }, { "id": "B", "text": "She has a part-time job." }, { "id": "C", "text": "She is more confident in front of people." }], "answer": "C" },
+          { "id": "6", "prompt": "When will they practise?", "options": [{ "id": "A", "text": "On Wednesday evening." }, { "id": "B", "text": "On Thursday evening." }, { "id": "C", "text": "On Thursday afternoon." }], "answer": "A" }
+        ]
+      },
+      {
+        "id": "l4",
+        "type": "mcq",
+        "level": "C1",
+        "title": "Part 4. Listen to part of a lecture. Choose the correct answer.",
+        "script": "Good afternoon. Today I want to look at a problem that most city dwellers have felt but few can name: the urban heat island. On a summer night, the centre of a large city can be several degrees warmer than the surrounding countryside. The reasons are fairly well understood. Asphalt and concrete absorb heat during the day and release it slowly after sunset, while buildings trap warm air and reduce the wind that would otherwise carry it away. Add the heat produced by cars and air conditioners, and you have a city that never really cools down.\nWhy does this matter? The obvious answer is comfort, but the more serious answer is health. Heat waves kill more people than most other kinds of extreme weather, and the victims are disproportionately elderly people living alone in top-floor flats. A city that stays hot at night denies their bodies the chance to recover.\nThe most popular solution is to plant trees, and trees certainly help, both by providing shade and by releasing moisture into the air. But I want to warn against seeing trees as a complete answer. A young tree takes years to grow a useful canopy, and in a dry climate it needs water that may be scarce. Some of the quickest gains, in fact, come from much less romantic measures: painting roofs in light colours so that they reflect sunlight, and replacing dark car parks with surfaces that let rain through.\nFinally, there is a question of fairness. Research from several cities shows that wealthier districts tend to have more green space and are therefore cooler. Any serious plan has to start with the neighbourhoods that are hottest, not those whose residents complain the loudest. That, I would argue, is the real test of whether a city takes the problem seriously.",
+        "questions": [
+          { "id": "1", "prompt": "What does the speaker mainly explain in the first part?", "options": [{ "id": "A", "text": "Why city centres stay warmer than the countryside." }, { "id": "B", "text": "How air conditioners work." }, { "id": "C", "text": "The history of city planning." }], "answer": "A" },
+          { "id": "2", "prompt": "Why does the speaker mention elderly people in top-floor flats?", "options": [{ "id": "A", "text": "To criticise building design." }, { "id": "B", "text": "To show who suffers most from the heat." }, { "id": "C", "text": "To explain why people move to the countryside." }], "answer": "B" },
+          { "id": "3", "prompt": "What is the speaker's view of planting trees?", "options": [{ "id": "A", "text": "It is the only real solution." }, { "id": "B", "text": "It does more harm than good." }, { "id": "C", "text": "It helps, but it has limitations." }], "answer": "C" },
+          { "id": "4", "prompt": "Which measure does the speaker say can bring quick results?", "options": [{ "id": "A", "text": "Growing large trees." }, { "id": "B", "text": "Light-coloured roofs." }, { "id": "C", "text": "Reducing traffic." }], "answer": "B" },
+          { "id": "5", "prompt": "What does 'much less romantic measures' suggest?", "options": [{ "id": "A", "text": "They are practical rather than attractive." }, { "id": "B", "text": "They are very expensive." }, { "id": "C", "text": "Residents dislike them." }], "answer": "A" },
+          { "id": "6", "prompt": "According to the speaker, where should cooling plans start?", "options": [{ "id": "A", "text": "In wealthy districts." }, { "id": "B", "text": "Where people complain the most." }, { "id": "C", "text": "In the hottest neighbourhoods." }], "answer": "C" }
+        ]
+      }
+    ]
+  },
+  "writing": {
+    "input": {
+      "from": "Sardor Karimov, Club Manager",
+      "subject": "Changes to the Sunday football club",
+      "body": "Dear members,\n\nFrom next month, our Sunday football sessions will move from the city stadium to a new pitch on the edge of the city, and they will start at 8 a.m. instead of 10 a.m. The monthly membership fee will also rise slightly. We would like to hear what you think about these changes, and any ideas you have for the club.\n\nSardor Karimov, Club Manager"
+    },
+    "task11": "Write an email to your friend, who is also a member of the club. Tell your friend how you feel about the changes and what you are going to do. Write about 50 words.",
+    "task12": "Write an email to the club manager. Say how you feel about the changes and suggest what the club could do. Write 120-150 words.",
+    "part2": "You are writing a post for a popular education blog. The topic is: 'Schools should spend more time on sport, even if it means fewer hours for academic subjects.' Give your opinion and support your ideas with examples. Write 180-200 words."
+  },
+  "speaking": {
+    "part11": [
+      "What do you usually do at the weekend?",
+      "Tell me about your favourite teacher.",
+      "What kind of food do you like to eat at home?"
+    ],
+    "part12": {
+      "scene": "Picture A: a family eating dinner together at a table at home. Picture B: a young man eating a sandwich alone at his desk while working on a laptop.",
+      "questions": [
+        "Describe and compare the two pictures. What do you see?",
+        "Why do some people prefer to eat with their family?",
+        "What are the disadvantages of eating while working?"
+      ]
+    },
+    "part2": {
+      "scene": "A picture of an online lesson on a laptop screen, with many students in small video windows.",
+      "questions": [
+        "Tell me about a time when you learned something online.",
+        "What are the advantages and disadvantages of online learning?",
+        "Will online learning replace traditional schools in the future? Why or why not?"
+      ]
+    },
+    "part3": {
+      "statement": "Young people should be allowed to vote from the age of 16.",
+      "for": [
+        "Many of them already work and pay taxes",
+        "Political decisions affect their future",
+        "It encourages an early interest in politics"
+      ],
+      "against": [
+        "They may lack life experience",
+        "They can be easily influenced by others",
+        "Most of them still depend on their parents"
+      ]
+    }
+  }
+}

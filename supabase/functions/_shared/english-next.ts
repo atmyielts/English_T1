@@ -4,6 +4,7 @@
 // Order of preference:
 //   1. due reviews (words and missed questions; always free)
 //   2. a lesson for a mistake the learner keeps making
+//      (then, with an exam date set, this week's exam focus section)
 //   3. the weakest skill against the goal level (by the per-skill rating)
 //   4. the next unfinished task in today's plan
 //   5. anything else worth doing, weakest skill first
@@ -14,8 +15,9 @@
 
 import { type AttemptRow, type CatalogItem, CEFR_ORDER, type Cefr, type FixCandidate, pickItem, TODAY_SKILLS, type TodaySkill, type TodayTask } from "./english-today.ts";
 import type { SkillRating } from "./english-rating.ts";
+import { examPrepCandidates, type ExamNextContext } from "./english-exam-next.ts";
 
-export type NextReason = "review_due" | "fix_mistake" | "weakest_skill" | "today_plan" | "keep_going";
+export type NextReason = "review_due" | "fix_mistake" | "exam_prep" | "weakest_skill" | "today_plan" | "keep_going";
 
 export type NextStep = {
   kind: "review" | "activity";
@@ -54,6 +56,8 @@ export type NextInput = {
   /** The skill the learner is in now; the weakest-skill step prefers another one, to keep the week balanced. */
   fromSkill?: TodaySkill | null;
   goalKeys?: string[];
+  /** National exam track: days left and this week's focus section (english-exam-next.ts). */
+  exam?: ExamNextContext | null;
 };
 
 export type NextResult = { step: NextStep | null; locked: NextStep | null };
@@ -161,6 +165,9 @@ export const pickNextStep = (input: NextInput): NextResult => {
       input.goalKeys ?? [],
     )?.item ?? null;
   };
+  // 2b. An upcoming national exam: this week's focus section.
+  if (input.exam) candidates.push(...examPrepCandidates(input.exam, itemFor, activityStep));
+
   const ranked = rankWeakest({ items, ratings: input.ratings, targetLevel: input.targetLevel, levelFor: input.levelFor });
   const weakest = input.fromSkill && ranked.length > 1
     ? [...ranked.filter((skill) => skill !== input.fromSkill), input.fromSkill].filter((skill) => ranked.includes(skill))

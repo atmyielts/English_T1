@@ -57,3 +57,15 @@ Settings are cached ~60 s per function instance, so a change reaches everyone wi
 - **Help a learner who says "it's locked"?** Control center → Learner lookup by email: products and end dates, free activities left, AI credits used, Telegram link.
 - **Change the AI model or provider?** `supabase secrets set ENGLISH_AI_MODEL=... --project-ref <prod>`; the control center shows the new value after the next function start.
 - **Find why an AI answer failed?** AI usage → Latest failures (provider error text, keys scrubbed).
+
+## National exam track (`/exam`)
+
+Practice for Uzbekistan's national Multilevel (CEFR) English exam: readiness per section, an exam date with a week-by-week plan, and timed mocks (full or one section). Verified format, sources and what is only "in the style of": `docs/english/MULTILEVEL_FORMAT.md`.
+
+- **Routes** (hub): `GET /exam`, `POST /exam/date`, `POST /exam/mock/start`, `GET /exam/mock/section`, `POST /exam/mock/submit`. Code: `hub/exam.ts`, rules in `_shared/english-exam-format.ts` (official 0-75 tables), `_shared/english-exam.ts` (papers, scoring, limits, AI marking), `_shared/english-exam-plan.ts` (date, plan), `_shared/english-exam-next.ts` (one `/hub/next` candidate, reason `exam_prep`).
+- **Tables**: `english_exam_papers` (practice papers with answer keys; never sent to browsers) and `english_exam_mocks` (one row per started mock; sections, answers, results). Migrations `20261026100000_english_exam_track.sql` (tables) and `20261026100100_english_exam_papers_seed.sql` (3 original papers). Exam date: `learner_language_goals.metadata.exam_track`.
+- **Content**: `supabase/content/english/exam/<id>.json`; rebuild the seed with `deno run --no-lock --allow-read --allow-write scripts/english-content/build-exam-seed.ts supabase/content/english/exam supabase/migrations/20261026100100_english_exam_papers_seed.sql` (a test fails if it is out of date). To retire a paper set `status = 'draft'`.
+- **Limits** (server-side, UTC+5 day/week): learners without any English product: 1 full mock per week and 1 section mock per day. Learners holding any English product (or admins): 2 full and 8 section mocks per day. Starting counts; an unfinished mock is resumed for 4 hours.
+- **AI**: writing and speaking are marked through the gateway as `exam-writing` and `exam-speaking` (one shared AI credit each, refunded on failure). Switch them off in Control center → AI features; listening and reading keep working. With AI off, full/writing/speaking mocks cannot start.
+- **Pause**: Control center → Services → "National exam track" (`services.exam`) stops new mocks; started ones can still be handed in.
+- Each scored section is also recorded as a learning attempt in its skill (`<skill>.exam`), so XP, streaks and mistakes see it. For free learners that also uses the day's free activity in that skill, as the speaking mock does.
