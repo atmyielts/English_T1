@@ -1,0 +1,26 @@
+/* Word review modes and word knowledge (collocations, family, encounters). */
+
+.wr-grades { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .5rem; width: 100%; max-width: 32rem; }
+.wr-grade { display: grid; gap: .1rem; justify-items: center; padding: .6rem .4rem; min-width: 0; }
+.wr-grade small { font-size: .72rem; font-weight: 600; opacity: .8; }
+.wr-grade.is-1 { border-color: #dc2626; color: #b91c1c; }
+.wr-grade.is-4 { border-color: var(--good, #15803d); color: var(--good, #15803d); }
+@media (max-width: 420px) {
+  .wr-grades { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.wr-cue { font-style: italic; color: #374151; }
+.wr-type { display: grid; gap: .6rem; width: 100%; max-width: 24rem; }
+.wr-type input { width: 100%; min-width: 0; text-align: center; font-size: 1.15rem; }
+.wr-type .en-actions { justify-content: center; }
+
+.wk { display: grid; gap: .6rem; width: 100%; max-width: 40rem; text-align: left; }
+.wk-group { display: grid; gap: .3rem; }
+.wk-label { margin: 0; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.wk-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .35rem; }
+.wk-chips li { padding: .15rem .6rem; border-radius: 999px; border: 1px solid var(--soft-line, #e5e7eb); background: #fff; font-size: .85rem; }
+.wk-chips.is-family li { background: #f8fafc; }
+.wk-chips small { color: var(--muted); }
+.wk-contexts { list-style: none; margin: 0; padding: 0; display: grid; gap: .3rem; font-size: .88rem; color: #374151; }
+.wk-contexts small { color: var(--muted); }
+.wk-translation { margin: 0; color: #374151; }

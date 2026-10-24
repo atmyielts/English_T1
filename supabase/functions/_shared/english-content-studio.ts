@@ -16,7 +16,7 @@ import { normalizeQuestions as normalizeReadingQuestions, READING_SUBSKILLS } fr
 import { parseQuestions as parseListeningQuestions } from "./english-listening.ts";
 import { blankFills, normalizeAnswer } from "./english-grammar.ts";
 import { parsePoints, parseQuestions as parseImmersionQuestions } from "./english-immersion.ts";
-import { normalizeChoice } from "./english-vocabulary.ts";
+import { normalizeChoice, parseCollocations, parseWordFamily } from "./english-vocabulary.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -924,6 +924,24 @@ const buildImmersion = (c: Collector, item: JsonRecord, children: unknown[], com
   };
 };
 
+/** Collocations ("make a decision") and word family members, validated; empty lists are left out. */
+const wordKnowledgeColumns = (c: Collector, at: string, row: JsonRecord): JsonRecord => {
+  const out: JsonRecord = {};
+  if (row.collocations !== undefined && row.collocations !== null) {
+    if (!Array.isArray(row.collocations)) c.add(`${at}.collocations`, "Collocations must be a list of short phrases.");
+    else if (row.collocations.length > 8) c.add(`${at}.collocations`, "At most 8 collocations.");
+    const list = parseCollocations(row.collocations);
+    if (list.length) out.collocations = list;
+  }
+  if (row.word_family !== undefined && row.word_family !== null) {
+    if (!Array.isArray(row.word_family)) c.add(`${at}.word_family`, "Word family must be a list of { word, part_of_speech }.");
+    else if (row.word_family.length > 6) c.add(`${at}.word_family`, "At most 6 word family members.");
+    const family = parseWordFamily(row.word_family);
+    if (family.length) out.word_family = family;
+  }
+  return out;
+};
+
 const buildVocabulary = (c: Collector, item: JsonRecord, children: unknown[], common: Common): Built => {
   const topic = c.text("topic", item.topic, 80, "Topic");
   const description = c.text("description", item.description, 900, "Description");
@@ -948,6 +966,8 @@ const buildVocabulary = (c: Collector, item: JsonRecord, children: unknown[], co
       translation_ru: c.optionalText(`${at}.translation_ru`, row.translation_ru, 200, "Russian translation"),
       translation_uz: c.optionalText(`${at}.translation_uz`, row.translation_uz, 200, "Uzbek translation"),
       sort_order: index + 1,
+      // Optional word knowledge; only written when given, so sets without it never need the columns.
+      ...wordKnowledgeColumns(c, at, row),
     };
   });
   if (common.status === "published" && words.length < 4) {
@@ -1269,7 +1289,7 @@ export const rowToStudioPayload = (
       return {
         item: { ...item, ...pick(row, ["topic", "description"]) },
         children: childRows.map((w) =>
-          pick(w, ["id", "word", "part_of_speech", "definition", "example", "translation_ru", "translation_uz"])
+          pick(w, ["id", "word", "part_of_speech", "definition", "example", "translation_ru", "translation_uz", "collocations", "word_family"])
         ),
       };
   }

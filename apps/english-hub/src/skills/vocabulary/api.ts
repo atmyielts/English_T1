@@ -19,6 +19,9 @@ export type DeckWord = {
   translation_ru: string | null;
   translation_uz: string | null;
   sort_order: number;
+  /** Words it often goes with and other forms, where the deck has them. */
+  collocations?: string[];
+  word_family?: Array<{ word: string; part_of_speech: string | null }>;
 };
 
 export type DeckResult = {

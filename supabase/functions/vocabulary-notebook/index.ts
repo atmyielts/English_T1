@@ -10,7 +10,9 @@ import {
   resolveOrCreateContentItem,
   toNumber,
 } from "../_shared/english-learning.ts";
-import { firstReviewAt, missedFirst, parseDeckAnswers, scoreDeckQuiz } from "../_shared/english-vocabulary.ts";
+import { firstReviewAt, missedFirst, parseDeckAnswers, scoreDeckQuiz, parseCollocations, parseWordFamily, wordExtras } from "../_shared/english-vocabulary.ts";
+import { gradeFromOutcome, notebookReviewPatch, parseGrade } from "../_shared/english-srs.ts";
+import { importDrillCards } from "../_shared/english-word-store.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -20,7 +22,6 @@ const NOTEBOOK_COLUMNS =
   "id, word, normalized_word, context_text, source_type, source_label, source_ref, notes, leitner_box, next_review_at, last_reviewed_at, review_count, correct_count, incorrect_count, metadata, lexicon_entry_id, updated_at";
 
 const DECK_COLUMNS = "id, product_id, slug, title, level, topic, description, sort_order";
-const DECK_WORD_COLUMNS = "id, word, part_of_speech, definition, example, translation_ru, translation_uz, sort_order";
 const DECK_MINUTES = 6;
 const DECK_SOURCE_TYPE = "english-vocabulary-deck";
 
@@ -103,13 +104,6 @@ const normalizeWord = (raw: string): string => {
   return compact.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, "");
 };
 
-const intervalDaysForBox = (box: number): number => {
-  if (box <= 1) return 1;
-  if (box === 2) return 2;
-  if (box === 3) return 4;
-  if (box === 4) return 8;
-  return 16;
-};
 
 const asJsonRecord = (value: unknown): JsonRecord => (value && typeof value === "object" && !Array.isArray(value))
   ? (value as JsonRecord)
@@ -204,6 +198,7 @@ const enrichRows = async (
       updated_at: row.updated_at,
       activation_targets: activationTargets,
       pronunciation_hint: pronunciationHint || null,
+      ...wordExtras(meta),
     };
   });
 };
@@ -406,6 +401,9 @@ type DeckWordRow = {
   translation_ru: string | null;
   translation_uz: string | null;
   sort_order: number;
+  /** Word partners and other forms, where the deck content has them. */
+  collocations: string[];
+  word_family: Array<{ word: string; part_of_speech: string | null }>;
 };
 
 const loadDeck = async (serviceClient: any, languageId: string, slug: string): Promise<DeckRow | null> => {
@@ -421,13 +419,25 @@ const loadDeck = async (serviceClient: any, languageId: string, slug: string): P
 };
 
 const loadDeckWords = async (serviceClient: any, deckId: string): Promise<DeckWordRow[]> => {
+  // "*" so this works before and after the collocations / word_family columns exist.
   const { data, error } = await serviceClient
     .from("vocabulary_deck_words")
-    .select(DECK_WORD_COLUMNS)
+    .select("*")
     .eq("deck_id", deckId)
     .order("sort_order", { ascending: true });
   if (error) throw new Error(`Failed to load deck words: ${error.message}`);
-  return (data ?? []) as DeckWordRow[];
+  return ((data ?? []) as JsonRecord[]).map((row) => ({
+    id: String(row.id),
+    word: String(row.word ?? ""),
+    part_of_speech: typeof row.part_of_speech === "string" ? row.part_of_speech : null,
+    definition: String(row.definition ?? ""),
+    example: typeof row.example === "string" ? row.example : null,
+    translation_ru: typeof row.translation_ru === "string" ? row.translation_ru : null,
+    translation_uz: typeof row.translation_uz === "string" ? row.translation_uz : null,
+    sort_order: Number(row.sort_order ?? 0),
+    collocations: parseCollocations(row.collocations),
+    word_family: parseWordFamily(row.word_family),
+  }));
 };
 
 /**
@@ -477,8 +487,11 @@ const saveDeckWords = async (
           source_ref: deck.slug,
           metadata: {
             deck_slug: deck.slug,
+            part_of_speech: word.part_of_speech,
             translation_ru: word.translation_ru,
             translation_uz: word.translation_uz,
+            ...(word.collocations.length ? { collocations: word.collocations } : {}),
+            ...(word.word_family.length ? { word_family: word.word_family } : {}),
           },
         } satisfies CaptureItem;
       }),
@@ -721,7 +734,9 @@ serve(async (req) => {
     }
 
     if (req.method === "GET") {
-      const mode =toText(url.searchParams.get("mode")).toLowerCase() || "daily";
+      // Words practised in the platform drill or the Telegram Mini App by older code join this list.
+      await importDrillCards(serviceClient, authedUserId, language.id);
+      const mode = toText(url.searchParams.get("mode")).toLowerCase() || "daily";
       const requestedLimit = Number(url.searchParams.get("limit") ?? (mode === "recent" ? 12 : 10));
       const limit = clamp(Number.isFinite(requestedLimit) ? Math.floor(requestedLimit) : 10, 1, 50);
       const nowIso = new Date().toISOString();
@@ -837,8 +852,10 @@ serve(async (req) => {
 
     const entryId = toText(body.entry_id);
     const outcome = toText(body.outcome).toLowerCase();
-    if (!entryId || (outcome !== "correct" && outcome !== "incorrect")) {
-      return new Response(JSON.stringify({ error: "entry_id and outcome(correct|incorrect) are required" }), {
+    // grade 1 again / 2 hard / 3 good / 4 easy; older clients send outcome correct|incorrect.
+    const grade = parseGrade(body.grade) ?? (outcome === "correct" || outcome === "incorrect" ? gradeFromOutcome(outcome === "correct") : null);
+    if (!entryId || !grade) {
+      return new Response(JSON.stringify({ error: "entry_id and grade (1-4) or outcome (correct|incorrect) are required" }), {
         status: 422,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
@@ -846,9 +863,7 @@ serve(async (req) => {
 
     const { data: currentRow, error: currentError } = await serviceClient
       .from("user_vocabulary_notebook_entries")
-      .select(
-        "id, leitner_box, review_count, correct_count, incorrect_count, word, normalized_word, context_text, source_type, source_label, source_ref, notes, next_review_at, last_reviewed_at, metadata, lexicon_entry_id, updated_at",
-      )
+      .select(NOTEBOOK_COLUMNS)
       .eq("id", entryId)
       .eq("user_id", authedUserId)
       .eq("language_id", language.id)
@@ -869,28 +884,14 @@ serve(async (req) => {
       });
     }
 
-    const currentBox = Number((currentRow as any).leitner_box ?? 1);
-    const nextBox = outcome === "correct" ? clamp(currentBox + 1, 1, 5) : 1;
-    const intervalDays = intervalDaysForBox(nextBox);
-    const now = new Date();
-    const nextReviewAt = new Date(now.getTime() + intervalDays * 24 * 60 * 60 * 1000).toISOString();
-
+    // One FSRS schedule for every place a word is reviewed (_shared/english-srs.ts).
     const { data: updatedRow, error: updateError } = await serviceClient
       .from("user_vocabulary_notebook_entries")
-      .update({
-        leitner_box: nextBox,
-        next_review_at: nextReviewAt,
-        last_reviewed_at: now.toISOString(),
-        review_count: Number((currentRow as any).review_count ?? 0) + 1,
-        correct_count: Number((currentRow as any).correct_count ?? 0) + (outcome === "correct" ? 1 : 0),
-        incorrect_count: Number((currentRow as any).incorrect_count ?? 0) + (outcome === "incorrect" ? 1 : 0),
-      })
+      .update(notebookReviewPatch(currentRow as NotebookRow, grade, new Date()))
       .eq("id", entryId)
       .eq("user_id", authedUserId)
       .eq("language_id", language.id)
-      .select(
-        "id, word, normalized_word, context_text, source_type, source_label, source_ref, notes, leitner_box, next_review_at, last_reviewed_at, review_count, correct_count, incorrect_count, metadata, lexicon_entry_id, updated_at",
-      )
+      .select(NOTEBOOK_COLUMNS)
       .maybeSingle();
 
     if (updateError || !updatedRow) {

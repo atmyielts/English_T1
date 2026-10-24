@@ -14,6 +14,16 @@ export type NotebookCard = {
   correct_count: number;
   incorrect_count: number;
   updated_at: string;
+  last_reviewed_at?: string | null;
+  /** FSRS memory state (english-srs.ts); null before the first review under FSRS. */
+  srs?: Record<string, unknown> | null;
+  /** Other sentences where the learner met the word in their own reading and listening. */
+  contexts?: Array<{ text: string; source: string | null; at: string | null }>;
+  collocations?: string[];
+  word_family?: Array<{ word: string; part_of_speech: string | null }>;
+  translation_ru?: string | null;
+  translation_uz?: string | null;
+  part_of_speech?: string | null;
 };
 
 export type NotebookSnapshot = { summary: { due_count: number; total_count: number }; cards: NotebookCard[] };
@@ -41,7 +51,13 @@ export const getNotebook = (mode: 'due' | 'recent', limit = 20, signal?: AbortSi
 export const saveWords = (items: CaptureWord[]) =>
   edge<{ saved: number }>('vocabulary-notebook', '', { body: { action: 'capture', language_code: 'en', items } });
 
-export const reviewCard = (entryId: string, outcome: 'correct' | 'incorrect') =>
+/** 1 again, 2 hard, 3 good, 4 easy (the shared FSRS schedule). */
+export type ReviewGrade = 1 | 2 | 3 | 4;
+
+/** Records one review. Pass a grade; 'correct' / 'incorrect' are kept for older callers. */
+export const reviewCard = (entryId: string, grade: ReviewGrade | 'correct' | 'incorrect') =>
   edge<{ updated: boolean; card: NotebookCard }>('vocabulary-notebook', '', {
-    body: { action: 'review', language_code: 'en', entry_id: entryId, outcome },
+    body: typeof grade === 'number'
+      ? { action: 'review', language_code: 'en', entry_id: entryId, grade }
+      : { action: 'review', language_code: 'en', entry_id: entryId, outcome: grade },
   });

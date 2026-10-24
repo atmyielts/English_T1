@@ -1,26 +1,27 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { gradeFromQuality } from "../_shared/english-srs.ts";
+import {
+  addDrillWords,
+  dueDrillCards,
+  englishLanguageId,
+  ensureStarterWords,
+  gradeWord,
+  importDrillCards,
+  wordStats,
+} from "../_shared/english-word-store.ts";
+
+// The platform vocabulary drill (/vocab-drill) and the @schoodonlinebot funnel.
+// Words and reviews live in the learner's English notebook (one word store,
+// see _shared/english-word-store.ts); the response shapes are unchanged.
 
 const cors = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods": "GET, POST, OPTIONS" };
 const json = (s: number, b: unknown) => new Response(JSON.stringify(b), { status: s, headers: { "Content-Type": "application/json", ...cors } });
 const getEnv = (k: string) => { const v = Deno.env.get(k); if (!v) throw new Error(`Missing ${k}`); return v; };
 const bearer = (req: Request) => { const h = req.headers.get("Authorization") ?? ""; return h.startsWith("Bearer ") ? h.slice(7) : h || null; };
 
-// SM-2 algorithm: quality 0-5 (0-2 = fail, 3-5 = pass)
-function sm2(interval: number, easeFactor: number, repetitions: number, quality: number): { interval: number; easeFactor: number; repetitions: number } {
-  if (quality < 3) {
-    return { interval: 1, easeFactor: Math.max(1.3, easeFactor - 0.2), repetitions: 0 };
-  }
-  const newEF = Math.max(1.3, easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)));
-  let newInterval: number;
-  if (repetitions === 0) newInterval = 1;
-  else if (repetitions === 1) newInterval = 6;
-  else newInterval = Math.round(interval * newEF);
-  return { interval: newInterval, easeFactor: newEF, repetitions: repetitions + 1 };
-}
-
 // Top 120 IELTS Academic Word List entries
-const AWL_SEED = [
+const AWL_SEED: ReadonlyArray<readonly [string, string, string]> = [
   ["abandon","to leave behind or give up completely","The team had to abandon the project due to lack of funds."],
   ["abstract","existing as an idea, not concrete","The researcher presented an abstract theory."],
   ["access","the right or opportunity to use something","Students have access to the library 24/7."],
@@ -153,68 +154,39 @@ serve(async (req) => {
     const { data: auth } = await authSb.auth.getUser(token);
     if (!auth?.user) return json(401, { error: "Unauthorized" });
     const userId = auth.user.id;
+    const languageId = await englishLanguageId(sb);
+    if (!languageId) return json(500, { error: "English is not configured" });
 
     const url = new URL(req.url);
     const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
     const action = String(url.searchParams.get("action") || body?.action || "due").toLowerCase();
 
-    // Get or create default deck
-    const getOrCreateDeck = async () => {
-      let { data: deck } = await sb.from("vocab_drill_decks").select("id").eq("user_id", userId).eq("source", "ielts_awl").maybeSingle();
-      if (!deck?.id) {
-        const { data: created } = await sb.from("vocab_drill_decks").insert({ user_id: userId, name: "IELTS Academic Word List", source: "ielts_awl" }).select("id").maybeSingle();
-        deck = created;
-        // Seed AWL cards
-        const today = new Date().toISOString().slice(0, 10);
-        const cards = AWL_SEED.map(([word, definition, example]) => ({ deck_id: deck!.id, user_id: userId, word, definition, example, next_review: today }));
-        await sb.from("vocab_drill_cards").insert(cards).select("id");
-      }
-      return deck?.id;
-    };
+    // Cards written by an older version of this function move into the notebook first.
+    await importDrillCards(sb, userId, languageId);
 
     if (action === "stats") {
-      const deckId = await getOrCreateDeck();
-      const today = new Date().toISOString().slice(0, 10);
-      const [{ count: total }, { count: due }, { count: learned }] = await Promise.all([
-        sb.from("vocab_drill_cards").select("id", { count: "exact", head: true }).eq("deck_id", deckId),
-        sb.from("vocab_drill_cards").select("id", { count: "exact", head: true }).eq("deck_id", deckId).lte("next_review", today),
-        sb.from("vocab_drill_cards").select("id", { count: "exact", head: true }).eq("deck_id", deckId).gt("repetitions", 0),
-      ]);
-      return json(200, { total: total ?? 0, due: due ?? 0, learned: learned ?? 0 });
+      return json(200, await wordStats(sb, userId, languageId));
     }
 
     if (action === "due") {
-      const deckId = await getOrCreateDeck();
-      const today = new Date().toISOString().slice(0, 10);
-      const limit = Math.min(Number(url.searchParams.get("limit") ?? 20), 50);
-      const { data: cards } = await sb.from("vocab_drill_cards").select("id, word, definition, example, interval, repetitions, last_review").eq("deck_id", deckId).lte("next_review", today).order("next_review").limit(limit);
-      return json(200, { cards: cards ?? [], deck_id: deckId });
+      // A learner with no saved words at all starts with the AWL deck, twenty words a day.
+      await ensureStarterWords(sb, userId, languageId, AWL_SEED);
+      const limit = Math.max(1, Math.min(Number(url.searchParams.get("limit") ?? 20) || 20, 50));
+      return json(200, { cards: await dueDrillCards(sb, userId, languageId, limit), deck_id: null });
     }
 
     if (action === "review") {
       const cardId = String(body?.card_id ?? "").trim();
-      const quality = typeof body?.quality === "number" ? Math.min(5, Math.max(0, Math.round(body.quality))) : 3;
       if (!cardId) return json(400, { error: "card_id is required" });
-
-      const { data: card } = await sb.from("vocab_drill_cards").select("interval, ease_factor, repetitions").eq("id", cardId).eq("user_id", userId).maybeSingle();
-      if (!card) return json(404, { error: "Card not found" });
-
-      const { interval, easeFactor, repetitions } = sm2(Number(card.interval), Number(card.ease_factor), Number(card.repetitions), quality);
-      const nextReview = new Date(Date.now() + interval * 86400000).toISOString().slice(0, 10);
-
-      await sb.from("vocab_drill_cards").update({ interval, ease_factor: easeFactor, repetitions, next_review: nextReview, last_review: new Date().toISOString().slice(0, 10) }).eq("id", cardId);
-      return json(200, { ok: true, next_review: nextReview, interval, ease_factor: easeFactor });
+      const result = await gradeWord(sb, userId, languageId, cardId, gradeFromQuality(body?.quality));
+      if (!result.ok) return json(result.status, { error: result.error });
+      return json(200, { ok: true, next_review: result.next_review, interval: result.interval, ease_factor: result.ease_factor });
     }
 
     if (action === "add_words") {
-      const words = Array.isArray(body?.words) ? body.words as Array<{ word: string; definition: string; example?: string }> : [];
+      const words = Array.isArray(body?.words) ? body.words as Array<{ word?: unknown; definition?: unknown; example?: unknown }> : [];
       if (words.length === 0) return json(400, { error: "words array is required" });
-      const deckId = await getOrCreateDeck();
-      const today = new Date().toISOString().slice(0, 10);
-      const rows = words.slice(0, 50).map((w) => ({ deck_id: deckId, user_id: userId, word: String(w.word ?? "").trim(), definition: String(w.definition ?? "").trim(), example: String(w.example ?? "").trim() || null, next_review: today })).filter((r) => r.word && r.definition);
-      const { data, error } = await sb.from("vocab_drill_cards").upsert(rows, { onConflict: "deck_id,word", ignoreDuplicates: true }).select("id");
-      if (error) return json(500, { error: error.message });
-      return json(200, { added: data?.length ?? 0 });
+      return json(200, { added: await addDrillWords(sb, userId, languageId, words) });
     }
 
     return json(404, { error: "Not found" });

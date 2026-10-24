@@ -2,6 +2,8 @@ import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { validateTelegramInitData, type TelegramIdentity } from "../_shared/telegram-init-data.ts";
 import { ENGLISH_APP_ACTIONS, handleEnglishAppAction, handleEnglishWorkerAction } from "./english.ts";
+import { gradeFromQuality } from "../_shared/english-srs.ts";
+import { dueDrillCards, englishLanguageId, ensureStarterWords, gradeWord, importDrillCards, wordStats } from "../_shared/english-word-store.ts";
 
 type Json = Record<string, unknown>;
 type SupabaseClientLike = ReturnType<typeof createClient<any>>;
@@ -86,7 +88,7 @@ const academyName = (academies: Array<Record<string, unknown>>, academyId: strin
   return String(row?.name ?? "Academy");
 };
 
-const awlStarterSeed = [
+const awlStarterSeed: ReadonlyArray<readonly [string, string, string]> = [
   ["analyse", "to examine something carefully", "The report analyses the causes of migration."],
   ["approach", "a way of dealing with a task or problem", "This approach helps students build fluency."],
   ["assess", "to judge or evaluate", "Teachers assess progress through regular feedback."],
@@ -318,72 +320,33 @@ const loadGuardianDashboard = async (sb: SupabaseClientLike, ctx: UserContext) =
   return { guardians: guardianRows, children };
 };
 
-const getOrCreateVocabDeck = async (sb: SupabaseClientLike, userId: string): Promise<string | null> => {
-  const { data: existing } = await sb.from("vocab_drill_decks").select("id").eq("user_id", userId).eq("source", "ielts_awl").maybeSingle();
-  if (existing?.id) return String(existing.id);
-  const { data: created, error } = await sb.from("vocab_drill_decks").insert({ user_id: userId, name: "IELTS Academic Word List", source: "ielts_awl" }).select("id").maybeSingle();
-  if (error || !created?.id) return null;
-  const today = new Date().toISOString().slice(0, 10);
-  const cards = awlStarterSeed.map(([word, definition, example]) => ({
-    deck_id: created.id,
-    user_id: userId,
-    word,
-    definition,
-    example,
-    next_review: today,
-  }));
-  await sb.from("vocab_drill_cards").insert(cards);
-  return String(created.id);
-};
-
+// Vocabulary practice reads and writes the learner's English notebook: one word
+// store with the English app, the platform drill and the student bot
+// (_shared/english-word-store.ts). The dashboard only counts; it never adds words.
 const loadVocabStats = async (sb: SupabaseClientLike, userId: string) => {
-  const deckId = await getOrCreateVocabDeck(sb, userId);
-  if (!deckId) return { total: 0, due: 0, learned: 0 };
-  const today = new Date().toISOString().slice(0, 10);
-  const [totalRes, dueRes, learnedRes] = await Promise.all([
-    sb.from("vocab_drill_cards").select("id", { count: "exact", head: true }).eq("deck_id", deckId),
-    sb.from("vocab_drill_cards").select("id", { count: "exact", head: true }).eq("deck_id", deckId).lte("next_review", today),
-    sb.from("vocab_drill_cards").select("id", { count: "exact", head: true }).eq("deck_id", deckId).gt("repetitions", 0),
-  ]);
-  return { total: totalRes.count ?? 0, due: dueRes.count ?? 0, learned: learnedRes.count ?? 0 };
+  const languageId = await englishLanguageId(sb);
+  if (!languageId) return { total: 0, due: 0, learned: 0 };
+  await importDrillCards(sb, userId, languageId);
+  return await wordStats(sb, userId, languageId);
 };
 
 const loadNextVocabCard = async (sb: SupabaseClientLike, userId: string) => {
-  const deckId = await getOrCreateVocabDeck(sb, userId);
-  if (!deckId) return null;
-  const today = new Date().toISOString().slice(0, 10);
-  const { data } = await sb
-    .from("vocab_drill_cards")
-    .select("id,word,definition,example,interval,repetitions,last_review")
-    .eq("deck_id", deckId)
-    .lte("next_review", today)
-    .order("next_review", { ascending: true })
-    .limit(1);
-  return data?.[0] ?? null;
-};
-
-const sm2 = (interval: number, easeFactor: number, repetitions: number, quality: number) => {
-  if (quality < 3) return { interval: 1, easeFactor: Math.max(1.3, easeFactor - 0.2), repetitions: 0 };
-  const nextEase = Math.max(1.3, easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)));
-  const nextInterval = repetitions === 0 ? 1 : repetitions === 1 ? 6 : Math.round(interval * nextEase);
-  return { interval: nextInterval, easeFactor: nextEase, repetitions: repetitions + 1 };
+  const languageId = await englishLanguageId(sb);
+  if (!languageId) return null;
+  await importDrillCards(sb, userId, languageId);
+  // A learner with no saved words starts with the AWL words, twenty a day.
+  await ensureStarterWords(sb, userId, languageId, awlStarterSeed);
+  const [card] = await dueDrillCards(sb, userId, languageId, 1);
+  return card ?? null;
 };
 
 const reviewVocabCard = async (sb: SupabaseClientLike, userId: string, cardId: string, qualityRaw: unknown) => {
-  const quality = Math.min(5, Math.max(0, Math.round(Number(qualityRaw))));
-  if (!cardId || !Number.isFinite(quality)) return { error: "card_id and quality are required" };
-  const { data: card } = await sb.from("vocab_drill_cards").select("interval,ease_factor,repetitions").eq("id", cardId).eq("user_id", userId).maybeSingle();
-  if (!card) return { error: "Card not found" };
-  const next = sm2(Number(card.interval ?? 1), Number(card.ease_factor ?? 2.5), Number(card.repetitions ?? 0), quality);
-  const nextReview = new Date(Date.now() + next.interval * 86400000).toISOString().slice(0, 10);
-  await sb.from("vocab_drill_cards").update({
-    interval: next.interval,
-    ease_factor: next.easeFactor,
-    repetitions: next.repetitions,
-    next_review: nextReview,
-    last_review: new Date().toISOString().slice(0, 10),
-  }).eq("id", cardId).eq("user_id", userId);
-  return { ok: true, next_review: nextReview, next: await loadNextVocabCard(sb, userId), stats: await loadVocabStats(sb, userId) };
+  if (!cardId || !Number.isFinite(Number(qualityRaw))) return { error: "card_id and quality are required" };
+  const languageId = await englishLanguageId(sb);
+  if (!languageId) return { error: "English is not configured" };
+  const result = await gradeWord(sb, userId, languageId, cardId, gradeFromQuality(qualityRaw));
+  if (!result.ok) return { error: result.error };
+  return { ok: true, next_review: result.next_review, next: await loadNextVocabCard(sb, userId), stats: await loadVocabStats(sb, userId) };
 };
 
 const submitAssignment = async (sb: SupabaseClientLike, ctx: UserContext, body: Json) => {
