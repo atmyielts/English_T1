@@ -53,6 +53,11 @@ export const LevelJourneyPanel = ({ history, check }: { history: LevelEntry[]; c
       ) : (
         <p className="hint">{t('levels.empty')}</p>
       )}
+      {history.some((entry) => entry.source !== 'level_up') ? (
+        <div className="en-actions">
+          <Link className="en-button-quiet" to="/certificate">{t('certificate.cta')}</Link>
+        </div>
+      ) : null}
       <p className="hint">{t('levels.retakeHint')} <Link to="/settings">{t('progress.retake.cta')}</Link></p>
     </Panel>
   );
