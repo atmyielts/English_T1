@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useT } from '../i18n';
 import { getProgress } from '../lib/hub';
+import { handbookTopicHref } from '../lib/handbookSearch';
 import { getReviewItems } from '../lib/review';
 import { ReviewQuestions } from './ReviewQuestions';
 import { getNotebook, reviewCard, type NotebookCard } from '../lib/notebook';
@@ -162,6 +163,9 @@ export const ReviewPage = () => {
                         </span>
                       </span>
                       <span className="en-item-meta">
+                        {mistake.topic ? (
+                          <Link className="en-button-quiet" to={handbookTopicHref(mistake.topic)}>{t('handbook.readRule')}</Link>
+                        ) : null}
                         <Link className={mistake.status === 'open' && mistake.lesson ? 'en-button' : 'en-button-quiet'} to={target}>
                           {mistake.lesson ? t('review.mistakes.fix') : t('review.mistakes.practise')}
                         </Link>

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useEnglish } from '../app/EnglishContext';
 import { useT } from '../i18n';
 import { getCatalog } from '../lib/hub';
+import { HandbookTeaser } from '../skills/grammar/HandbookTeaser';
 import { SKILLS } from '../lib/skills';
 import { useResource } from '../lib/useResource';
 import { ErrorState, LevelBadge, PageHeader, ProgressBar, SkillDot, Tag } from '../ui/kit';
@@ -50,6 +51,7 @@ export const PracticePage = () => {
           );
         })}
       </div>
+      <HandbookTeaser />
       {access.status === 'ready' && access.unlocked.size < SKILLS.length ? (
         <section className="en-panel en-tone-lime">
           <h2>{t('practice.unlock.title')}</h2>
