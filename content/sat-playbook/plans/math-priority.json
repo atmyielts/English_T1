@@ -1,0 +1,595 @@
+{
+  "slug": "math-priority",
+  "plan_type": "skill_recovery",
+  "title": "Math Priority",
+  "summary": "A 42-day plan for students whose Math section trails Reading and Writing: most study time goes to Math in official-weight order (Algebra and Advanced Math first), with Desmos routines throughout and R&W kept warm.",
+  "duration_days": 42,
+  "score_min": 400,
+  "score_max": 1600,
+  "focus_section": "math",
+  "intensity": "moderate",
+  "schedule": {
+    "version": 1,
+    "simulator_cta": "https://sat.schood.online/?source=playbook&plan=math-priority",
+    "practice_cta": "https://practice.sat.schood.online/dashboard?source=playbook&plan=math-priority",
+    "resources": [
+      {
+        "label": "SAT Practice Bank (filter by domain, skill and difficulty)",
+        "url": "https://practice.sat.schood.online/bank"
+      },
+      {
+        "label": "SAT Practice daily session",
+        "url": "https://practice.sat.schood.online/today"
+      },
+      {
+        "label": "SAT Practice Reviews (spaced repetition)",
+        "url": "https://practice.sat.schood.online/reviews"
+      },
+      {
+        "label": "SAT Practice Notebook (error log)",
+        "url": "https://practice.sat.schood.online/notebook"
+      },
+      {
+        "label": "SAT simulator full mocks",
+        "url": "https://sat.schood.online"
+      },
+      {
+        "label": "Official Bluebook practice tests (College Board)",
+        "url": "https://satsuite.collegeboard.org/practice"
+      }
+    ],
+    "error_codes": [
+      {
+        "code": "C",
+        "meaning": "Content: did not know the rule, formula or skill"
+      },
+      {
+        "code": "P",
+        "meaning": "Process: knew it but set it up or read it wrongly"
+      },
+      {
+        "code": "T",
+        "meaning": "Time: rushed or ran out of time"
+      },
+      {
+        "code": "X",
+        "meaning": "Named slip: a specific, nameable careless error"
+      },
+      {
+        "code": "G",
+        "meaning": "Guess-right: correct but unsure; review as a miss"
+      }
+    ],
+    "who_for": "Your Math section score is clearly below your R&W score (for example by 80 points or more), or your Math errors dominate your Notebook. About 5–8 hours a week (heavier in mock weeks), with roughly three quarters of non-mock time on Math and the rest on R&W maintenance.",
+    "weekly_hours": {
+      "min": 4.7,
+      "max": 8.1,
+      "total": 38.4
+    },
+    "split": {
+      "primary": "math",
+      "maintenance": "reading_writing"
+    },
+    "rules": [
+      "Math domains in order of official weight: Algebra and Advanced Math (about 35% each) before Problem-Solving and Data Analysis and Geometry and Trigonometry (about 15% each).",
+      "Every Math session ends with at least one question solved two ways: algebra and Desmos.",
+      "Two short R&W maintenance sessions a week; never skip them.",
+      "Full mock at the start of weeks 1, 3 and 5; timed Math module every week."
+    ],
+    "phases": [
+      {
+        "label": "Algebra to automatic",
+        "weeks": [
+          1,
+          2
+        ],
+        "goal": "Linear equations, functions, systems and inequalities; Desmos graphing routines."
+      },
+      {
+        "label": "Advanced Math",
+        "weeks": [
+          3,
+          4
+        ],
+        "goal": "Quadratics, exponentials, functions and equivalent expressions; parameters with sliders."
+      },
+      {
+        "label": "Data, geometry and hard modules",
+        "weeks": [
+          5,
+          6
+        ],
+        "goal": "Smaller domains, hard-module traps, SPR precision."
+      }
+    ],
+    "modules": [
+      "math-algebra",
+      "math-advanced-math",
+      "math-problem-solving-data-analysis",
+      "math-geometry-trigonometry",
+      "desmos-and-calculator-strategy",
+      "pacing-and-adaptive-modules"
+    ],
+    "guides": [
+      "guide-desmos-power-moves",
+      "guide-math-hard-module-traps"
+    ],
+    "weeks": [
+      {
+        "week": 1,
+        "label": "Week 1: Baseline and linear algebra",
+        "focus": [
+          "Baseline mock",
+          "Linear equations",
+          "Linear functions",
+          "Desmos graphing"
+        ],
+        "hours": 8.1,
+        "days": [
+          {
+            "day": 1,
+            "weekday": "Mon",
+            "minutes": 180,
+            "tasks": [
+              "Full timed mock in the SAT simulator (https://sat.schood.online) at your real test time; one sitting with a 10-minute break"
+            ]
+          },
+          {
+            "day": 2,
+            "weekday": "Tue",
+            "minutes": 90,
+            "tasks": [
+              "Forensic review of the mock: re-solve each missed, guessed and slow question before reading the explanation; assign cause codes C/P/T/X/G; name the trap; write a rule sentence",
+              "Math misses by skill; mark which were C, P, T, X"
+            ]
+          },
+          {
+            "day": 3,
+            "weekday": "Wed",
+            "minutes": 60,
+            "tasks": [
+              "Read Math: Algebra — linear equations in one and two variables (/math-algebra), 20 min",
+              "SAT Practice Bank: 20 medium questions in Algebra → Linear equations (https://practice.sat.schood.online/bank); review every miss",
+              "Log misses and guesses in the Notebook with a cause code and a rule sentence (https://practice.sat.schood.online/notebook)"
+            ]
+          },
+          {
+            "day": 4,
+            "weekday": "Thu",
+            "minutes": 35,
+            "tasks": [
+              "SAT Practice Bank: 12 medium questions in Standard English Conventions (https://practice.sat.schood.online/bank); review every miss",
+              "Clear due Reviews (https://practice.sat.schood.online/reviews), 10 min"
+            ]
+          },
+          {
+            "day": 5,
+            "weekday": "Fri",
+            "minutes": 60,
+            "tasks": [
+              "Read Math: Algebra — linear functions: slope, intercept, interpretation (/math-algebra), 20 min",
+              "SAT Practice Bank: 20 medium questions in Algebra → Linear functions (https://practice.sat.schood.online/bank); review every miss"
+            ]
+          },
+          {
+            "day": 6,
+            "weekday": "Sat",
+            "minutes": 60,
+            "tasks": [
+              "Read Desmos and Calculator Strategy — graphing both sides and intersections (/desmos-and-calculator-strategy), 25 min",
+              "SAT Practice Bank: 12 medium questions in Algebra, solved twice: algebra and Desmos (https://practice.sat.schood.online/bank); review every miss",
+              "Re-solve Notebook entries from the last 2–3 days without notes; close only correct re-solves"
+            ]
+          },
+          {
+            "day": 7,
+            "weekday": "Sun",
+            "minutes": 0,
+            "tasks": [
+              "Rest day: no SAT work. Optional 20 minutes of reading nonfiction you enjoy"
+            ]
+          }
+        ],
+        "checkpoint": "Pass: Math misses classified; linear-equation accuracy rising in the Bank."
+      },
+      {
+        "week": 2,
+        "label": "Week 2: Systems and inequalities",
+        "focus": [
+          "Systems of equations",
+          "Linear inequalities",
+          "Parameter basics",
+          "Timed Math module"
+        ],
+        "hours": 5,
+        "days": [
+          {
+            "day": 1,
+            "weekday": "Mon",
+            "minutes": 60,
+            "tasks": [
+              "Read Math: Algebra — systems: one, none or infinitely many solutions (/math-algebra), 20 min",
+              "SAT Practice Bank: 20 medium questions in Algebra → Systems of linear equations (https://practice.sat.schood.online/bank); review every miss"
+            ]
+          },
+          {
+            "day": 2,
+            "weekday": "Tue",
+            "minutes": 35,
+            "tasks": [
+              "SAT Practice Bank: 12 medium questions in Information and Ideas (https://practice.sat.schood.online/bank); review every miss",
+              "Clear due Reviews (https://practice.sat.schood.online/reviews), 10 min"
+            ]
+          },
+          {
+            "day": 3,
+            "weekday": "Wed",
+            "minutes": 60,
+            "tasks": [
+              "Read Math: Algebra — linear inequalities (/math-algebra), 15 min",
+              "SAT Practice Bank: 15 medium questions in Algebra → Linear inequalities (https://practice.sat.schood.online/bank); review every miss",
+              "Read Desmos Power Moves (premium) — Move 5: inequalities and test points (/guide-desmos-power-moves), 15 min"
+            ]
+          },
+          {
+            "day": 4,
+            "weekday": "Thu",
+            "minutes": 60,
+            "tasks": [
+              "Read Desmos Power Moves (premium) — Moves 3–4: sliders and no-solution systems (/guide-desmos-power-moves), 20 min",
+              "SAT Practice Bank: 15 hard questions in Algebra → Systems of linear equations (parameters) (https://practice.sat.schood.online/bank); review every miss"
+            ]
+          },
+          {
+            "day": 5,
+            "weekday": "Fri",
+            "minutes": 40,
+            "tasks": [
+              "Timed Math module set: 22 mixed Math questions in 35 minutes from the SAT Practice Bank, timer on, Desmos allowed"
+            ]
+          },
+          {
+            "day": 6,
+            "weekday": "Sat",
+            "minutes": 45,
+            "tasks": [
+              "Re-solve Notebook entries from weeks 1–2 without notes; close only correct re-solves",
+              "Clear due Reviews (https://practice.sat.schood.online/reviews), 15 min",
+              "Checkpoint: Algebra misses in the timed set vs the baseline mock"
+            ]
+          },
+          {
+            "day": 7,
+            "weekday": "Sun",
+            "minutes": 0,
+            "tasks": [
+              "Rest day: no SAT work. Optional 20 minutes of reading nonfiction you enjoy"
+            ]
+          }
+        ],
+        "checkpoint": "Pass: in the timed Math set, Algebra misses are rare. If not, repeat week 2 days 1 and 4 before moving on."
+      },
+      {
+        "week": 3,
+        "label": "Week 3: Quadratics and nonlinear systems",
+        "focus": [
+          "Mock 2",
+          "Quadratics",
+          "Discriminant",
+          "Nonlinear systems"
+        ],
+        "hours": 7.8,
+        "days": [
+          {
+            "day": 1,
+            "weekday": "Mon",
+            "minutes": 180,
+            "tasks": [
+              "Full official Bluebook practice test (one you have not taken) at your real test time; one sitting with a 10-minute break"
+            ]
+          },
+          {
+            "day": 2,
+            "weekday": "Tue",
+            "minutes": 90,
+            "tasks": [
+              "Forensic review of the mock: re-solve each missed, guessed and slow question before reading the explanation; assign cause codes C/P/T/X/G; name the trap; write a rule sentence",
+              "Compare Math with mock 1 by domain"
+            ]
+          },
+          {
+            "day": 3,
+            "weekday": "Wed",
+            "minutes": 60,
+            "tasks": [
+              "Read Math: Advanced Math — quadratics: factoring, vertex form, discriminant (/math-advanced-math), 25 min",
+              "SAT Practice Bank: 15 medium questions in Advanced Math → Nonlinear equations and systems (https://practice.sat.schood.online/bank); review every miss"
+            ]
+          },
+          {
+            "day": 4,
+            "weekday": "Thu",
+            "minutes": 35,
+            "tasks": [
+              "SAT Practice Bank: 12 medium questions in Expression of Ideas → Transitions (https://practice.sat.schood.online/bank); review every miss",
+              "Clear due Reviews (https://practice.sat.schood.online/reviews), 10 min"
+            ]
+          },
+          {
+            "day": 5,
+            "weekday": "Fri",
+            "minutes": 60,
+            "tasks": [
+              "Read Math Hard-Module Traps (premium) — trap families 1, 3 and 4 (/guide-math-hard-module-traps), 25 min",
+              "SAT Practice Bank: 15 hard questions in Advanced Math → Nonlinear equations and systems (https://practice.sat.schood.online/bank); review every miss"
+            ]
+          },
+          {
+            "day": 6,
+            "weekday": "Sat",
+            "minutes": 40,
+            "tasks": [
+              "Re-solve Notebook entries from the last 2–3 days without notes; close only correct re-solves",
+              "Clear due Reviews (https://practice.sat.schood.online/reviews), 10 min"
+            ]
+          },
+          {
+            "day": 7,
+            "weekday": "Sun",
+            "minutes": 0,
+            "tasks": [
+              "Rest day: no SAT work. Optional 20 minutes of reading nonfiction you enjoy"
+            ]
+          }
+        ],
+        "checkpoint": "Pass: mock 2 Math section shows fewer Algebra misses than mock 1."
+      },
+      {
+        "week": 4,
+        "label": "Week 4: Exponentials, functions and expressions",
+        "focus": [
+          "Exponential models",
+          "Function notation and transformations",
+          "Equivalent expressions",
+          "Timed Math module"
+        ],
+        "hours": 5,
+        "days": [
+          {
+            "day": 1,
+            "weekday": "Mon",
+            "minutes": 60,
+            "tasks": [
+              "Read Math: Advanced Math — exponential growth and decay (/math-advanced-math), 20 min",
+              "SAT Practice Bank: 20 medium questions in Advanced Math → Nonlinear functions (https://practice.sat.schood.online/bank); review every miss"
+            ]
+          },
+          {
+            "day": 2,
+            "weekday": "Tue",
+            "minutes": 35,
+            "tasks": [
+              "SAT Practice Bank: 12 medium questions in Craft and Structure → Words in context (https://practice.sat.schood.online/bank); review every miss",
+              "Clear due Reviews (https://practice.sat.schood.online/reviews), 10 min"
+            ]
+          },
+          {
+            "day": 3,
+            "weekday": "Wed",
+            "minutes": 60,
+            "tasks": [
+              "Read Math: Advanced Math — equivalent expressions (/math-advanced-math), 20 min",
+              "SAT Practice Bank: 15 medium and hard questions in Advanced Math → Equivalent expressions (https://practice.sat.schood.online/bank); review every miss",
+              "Read Desmos Power Moves (premium) — Move 7: overlay (/guide-desmos-power-moves), 10 min"
+            ]
+          },
+          {
+            "day": 4,
+            "weekday": "Thu",
+            "minutes": 60,
+            "tasks": [
+              "Read Math Hard-Module Traps (premium) — trap families 5–7 (/guide-math-hard-module-traps), 20 min",
+              "SAT Practice Bank: 15 hard questions in Advanced Math and percentages (https://practice.sat.schood.online/bank); review every miss"
+            ]
+          },
+          {
+            "day": 5,
+            "weekday": "Fri",
+            "minutes": 40,
+            "tasks": [
+              "Timed Math module set: 22 mixed Math questions in 35 minutes from the SAT Practice Bank, timer on, Desmos allowed"
+            ]
+          },
+          {
+            "day": 6,
+            "weekday": "Sat",
+            "minutes": 45,
+            "tasks": [
+              "Re-solve Notebook entries from weeks 3–4 without notes; close only correct re-solves",
+              "Clear due Reviews (https://practice.sat.schood.online/reviews), 15 min"
+            ]
+          },
+          {
+            "day": 7,
+            "weekday": "Sun",
+            "minutes": 0,
+            "tasks": [
+              "Rest day: no SAT work. Optional 20 minutes of reading nonfiction you enjoy"
+            ]
+          }
+        ],
+        "checkpoint": "Pass: Advanced Math misses in the timed set are clearly fewer than in mock 2."
+      },
+      {
+        "week": 5,
+        "label": "Week 5: Data analysis and geometry",
+        "focus": [
+          "Mock 3",
+          "Percentages and statistics",
+          "Geometry and trigonometry",
+          "Desmos lists and regressions"
+        ],
+        "hours": 7.8,
+        "days": [
+          {
+            "day": 1,
+            "weekday": "Mon",
+            "minutes": 180,
+            "tasks": [
+              "Full timed mock in the SAT simulator (https://sat.schood.online) at your real test time; one sitting with a 10-minute break"
+            ]
+          },
+          {
+            "day": 2,
+            "weekday": "Tue",
+            "minutes": 90,
+            "tasks": [
+              "Forensic review of the mock: re-solve each missed, guessed and slow question before reading the explanation; assign cause codes C/P/T/X/G; name the trap; write a rule sentence"
+            ]
+          },
+          {
+            "day": 3,
+            "weekday": "Wed",
+            "minutes": 60,
+            "tasks": [
+              "Read Math: Problem-Solving and Data Analysis — percentages, data, probability and claims (/math-problem-solving-data-analysis), 25 min",
+              "SAT Practice Bank: 15 medium and hard questions in Problem-Solving and Data Analysis (https://practice.sat.schood.online/bank); review every miss",
+              "Read Desmos Power Moves (premium) — Moves 9–11 (/guide-desmos-power-moves), 15 min"
+            ]
+          },
+          {
+            "day": 4,
+            "weekday": "Thu",
+            "minutes": 35,
+            "tasks": [
+              "SAT Practice Bank: 12 medium questions in Standard English Conventions (https://practice.sat.schood.online/bank); review every miss",
+              "Clear due Reviews (https://practice.sat.schood.online/reviews), 10 min"
+            ]
+          },
+          {
+            "day": 5,
+            "weekday": "Fri",
+            "minutes": 60,
+            "tasks": [
+              "Read Math: Geometry and Trigonometry — area, volume, triangles, trigonometry, circles (/math-geometry-trigonometry), 25 min",
+              "SAT Practice Bank: 15 medium and hard questions in Geometry and Trigonometry (https://practice.sat.schood.online/bank); review every miss"
+            ]
+          },
+          {
+            "day": 6,
+            "weekday": "Sat",
+            "minutes": 40,
+            "tasks": [
+              "Re-solve Notebook entries from the last 2–3 days without notes; close only correct re-solves",
+              "Clear due Reviews (https://practice.sat.schood.online/reviews), 10 min"
+            ]
+          },
+          {
+            "day": 7,
+            "weekday": "Sun",
+            "minutes": 0,
+            "tasks": [
+              "Rest day: no SAT work. Optional 20 minutes of reading nonfiction you enjoy"
+            ]
+          }
+        ],
+        "checkpoint": "Pass: every Math domain drilled; mock 3 reviewed."
+      },
+      {
+        "week": 6,
+        "label": "Week 6: Hard modules and SPR precision",
+        "focus": [
+          "Hard-only Math",
+          "SPR entry rules",
+          "Timed Math modules",
+          "Next step"
+        ],
+        "hours": 4.7,
+        "days": [
+          {
+            "day": 1,
+            "weekday": "Mon",
+            "minutes": 60,
+            "tasks": [
+              "Read Math Hard-Module Traps (premium) — trap families 8–14 (/guide-math-hard-module-traps), 30 min",
+              "SAT Practice Bank: 15 hard questions in mixed Math (interleaved domains) (https://practice.sat.schood.online/bank); review every miss"
+            ]
+          },
+          {
+            "day": 2,
+            "weekday": "Tue",
+            "minutes": 35,
+            "tasks": [
+              "SAT Practice Bank: 12 medium and hard questions in mixed R&W (https://practice.sat.schood.online/bank); review every miss",
+              "Clear due Reviews (https://practice.sat.schood.online/reviews), 10 min"
+            ]
+          },
+          {
+            "day": 3,
+            "weekday": "Wed",
+            "minutes": 60,
+            "tasks": [
+              "SPR clinic: 15 student-produced response questions; write the exact entry before typing it, following the Bluebook entry rules",
+              "SAT Practice Bank: 10 hard questions in Geometry and Trigonometry and Problem-Solving and Data Analysis (https://practice.sat.schood.online/bank); review every miss"
+            ]
+          },
+          {
+            "day": 4,
+            "weekday": "Thu",
+            "minutes": 40,
+            "tasks": [
+              "Timed Math module set: 22 mixed Math questions in 35 minutes from the SAT Practice Bank, timer on, Desmos allowed"
+            ]
+          },
+          {
+            "day": 5,
+            "weekday": "Fri",
+            "minutes": 40,
+            "tasks": [
+              "Timed Math module set: 22 mixed Math questions in 35 minutes from the SAT Practice Bank, timer on, Desmos allowed",
+              "Use a different question set from day 4"
+            ]
+          },
+          {
+            "day": 6,
+            "weekday": "Sat",
+            "minutes": 45,
+            "tasks": [
+              "Re-solve Notebook entries from the whole plan without notes; close only correct re-solves",
+              "Decide the next plan: Eight-Week Standard (/plans/eight-week-standard) for continued balance, or the Four-Week Sprint (/plans/four-week-sprint) if a test is close"
+            ]
+          },
+          {
+            "day": 7,
+            "weekday": "Sun",
+            "minutes": 0,
+            "tasks": [
+              "Rest day: no SAT work. Optional 20 minutes of reading nonfiction you enjoy"
+            ]
+          }
+        ],
+        "checkpoint": "Pass: two timed Math modules with few misses and no SPR entry errors."
+      }
+    ],
+    "checkpoints": [
+      {
+        "week": 2,
+        "title": "Algebra secure",
+        "pass_rule": "Algebra misses rare in a timed Math set.",
+        "if_not": "Repeat week 2 before Advanced Math."
+      },
+      {
+        "week": 4,
+        "title": "Advanced Math secure",
+        "pass_rule": "Advanced Math misses fall clearly from mock 2.",
+        "if_not": "Extend weeks 3–4 by one week before data and geometry."
+      },
+      {
+        "week": 6,
+        "title": "Section ready",
+        "pass_rule": "Two clean timed Math modules; SPR entries correct.",
+        "if_not": "Repeat week 6 with new question sets."
+      }
+    ]
+  }
+}
