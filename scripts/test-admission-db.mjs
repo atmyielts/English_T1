@@ -6,6 +6,7 @@ import { randomUUID } from 'node:crypto';
 
 const container = `schood-admission-test-${randomUUID().slice(0, 8)}`;
 const migration = 'supabase/migrations/20261024200000_admission_learner_state.sql';
+const journey = 'supabase/migrations/20261025200000_admission_journey.sql';
 function docker(args, input) {
   const result = spawnSync('docker', args, { input, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024, timeout: 120000 });
   if (result.status !== 0) throw new Error(result.stderr || result.stdout || String(result.error));
@@ -27,9 +28,13 @@ try {
   docker(['exec', '-i', container, 'sh', '-c', 'cat > /work/migration.sql'], readFileSync(migration, 'utf8'));
   const output = psql(readFileSync('supabase/tests/admission-learner-state.integration.sql', 'utf8'));
   if (!output.includes('admission learner state: ok')) throw new Error(output);
-  // Applying the migration twice must be harmless.
+  docker(['exec', '-i', container, 'sh', '-c', 'cat > /work/journey.sql'], readFileSync(journey, 'utf8'));
+  const journeyOutput = psql(readFileSync('supabase/tests/admission-journey.integration.sql', 'utf8'));
+  if (!journeyOutput.includes('admission journey: ok')) throw new Error(journeyOutput);
+  // Applying the migrations twice must be harmless.
   psql(readFileSync(migration, 'utf8'));
-  console.log('Admission learner state: replay, lost-update protection, mistake kinds and browser isolation passed.');
+  psql(readFileSync(journey, 'utf8'));
+  console.log('Admission learner state and journey: replay, lost-update protection, mistake kinds, exam path, weekly mocks, mock answers and browser isolation passed.');
 } finally {
   spawnSync('docker', ['rm', '--force', container]);
 }
