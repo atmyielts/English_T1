@@ -3,8 +3,9 @@ import { Route, Routes } from 'react-router-dom';
 import { useEnglish } from '../../app/EnglishContext';
 import { useT } from '../../i18n';
 import { SkillHome } from '../SkillHome';
-import { HandbookTeaser } from './HandbookTeaser';
+import { GrammarMasteryPanel } from './Depth';
 import { GrammarLesson } from './Lesson';
+import './grammar.css';
 
 const GrammarHandbook = lazy(() => import('./Handbook').then((m) => ({ default: m.GrammarHandbook })));
 const GrammarDecoderCard = lazy(() => import('../../components/AIFeatureCards').then((m) => ({ default: m.GrammarDecoderCard })));
@@ -19,7 +20,7 @@ const GrammarApp = () => {
         element={(
           <SkillHome
             skill="grammar"
-            extra={<HandbookTeaser />}
+            extra={<GrammarMasteryPanel />}
             tools={[{ id: 'decoder', title: t('grammar.tool.decoder'), hint: t('grammar.tool.decoderHint'), render: () => <GrammarDecoderCard accessToken={accessToken} /> }]}
           />
         )}

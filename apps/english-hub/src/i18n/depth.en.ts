@@ -139,4 +139,23 @@ export const depthEn: Record<string, string> = {
   'depth.listen.tip.spelling': "You heard the word; check its spelling in My words or tap it in the transcript.",
   'depth.listen.tip.missed_words': "Replay that sentence slowly and say it aloud with the transcript: words you can say are easier to hear.",
   'depth.listen.tip.extra_words': "Write only what you hear. If you are unsure, leave a gap and fill it on the second listen.",
+
+  // Grammar: word order, mistakes, mastery
+  'depth.grammar.orderHint': "Tap the words below in the right order.",
+  'depth.grammar.orderClear': "Start again",
+  'depth.grammar.sameTopic': "All rules on this topic",
+  'depth.mastery.title': "Your grammar",
+  'depth.mastery.summary': "Mastered: {mastered} · Secure: {secure} · Still practising: {practising}",
+  'depth.mastery.dueTitle': "Time for a re-check",
+  'depth.mastery.dueLead': "Doing a lesson again a few days later is what makes a rule stick.",
+  'depth.mastery.noneDue': "No re-checks are due. Units you pass come back here after 3, 10 and 30 days.",
+  'depth.mastery.new': "New",
+  'depth.mastery.started': "Started",
+  'depth.mastery.practising': "Practising",
+  'depth.mastery.secure': "Secure",
+  'depth.mastery.mastered': "Mastered",
+  'depth.mastery.nextCheck': "Re-check this unit on {date} to make it stick.",
+  'depth.mastery.passToSchedule': "Get 80% or more and this unit comes back for spaced re-checks.",
+  'depth.mastery.recheckNow': "Re-check: you passed this unit before. Do it again now to make the rule stick.",
+  'depth.next.grammar_recheck': "A grammar unit you passed is due for a re-check, so it sticks.",
 };

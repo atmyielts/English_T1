@@ -135,4 +135,23 @@ export const depthRu: Record<string, string> = {
   'depth.listen.tip.spelling': "Слово вы услышали — проверьте написание в «Моих словах» или нажмите на него в тексте.",
   'depth.listen.tip.missed_words': "Повторите это предложение медленно и произнесите его вслух по тексту: слова, которые вы можете сказать, легче услышать.",
   'depth.listen.tip.extra_words': "Записывайте только то, что слышите. Если не уверены, оставьте пропуск и заполните его при втором прослушивании.",
+
+  // Grammar: word order, mistakes, mastery
+  'depth.grammar.orderHint': "Нажимайте на слова ниже в правильном порядке.",
+  'depth.grammar.orderClear': "Начать заново",
+  'depth.grammar.sameTopic': "Все правила по этой теме",
+  'depth.mastery.title': "Ваша грамматика",
+  'depth.mastery.summary': "Освоено: {mastered} · Уверенно: {secure} · В процессе: {practising}",
+  'depth.mastery.dueTitle': "Пора проверить снова",
+  'depth.mastery.dueLead': "Повторить урок через несколько дней — так правило закрепляется надолго.",
+  'depth.mastery.noneDue': "Сейчас проверять нечего. Пройденные темы вернутся сюда через 3, 10 и 30 дней.",
+  'depth.mastery.new': "Новая",
+  'depth.mastery.started': "Начата",
+  'depth.mastery.practising': "Отрабатывается",
+  'depth.mastery.secure': "Уверенно",
+  'depth.mastery.mastered': "Освоена",
+  'depth.mastery.nextCheck': "Проверьте эту тему снова {date}, чтобы закрепить.",
+  'depth.mastery.passToSchedule': "Наберите 80% или больше, и тема вернётся для повторных проверок.",
+  'depth.mastery.recheckNow': "Повторная проверка: вы уже проходили эту тему. Пройдите её снова, чтобы правило закрепилось.",
+  'depth.next.grammar_recheck': "Пройденную тему грамматики пора проверить снова, чтобы она закрепилась.",
 };

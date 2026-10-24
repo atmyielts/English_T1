@@ -135,4 +135,23 @@ export const depthUz: Record<string, string> = {
   'depth.listen.tip.spelling': "Soʻzni eshitdingiz — imlosini «Mening soʻzlarim»da tekshiring yoki matnda ustiga bosing.",
   'depth.listen.tip.missed_words': "Shu gapni sekin qayta tinglang va matn bilan ovoz chiqarib ayting: ayta oladigan soʻzlarni eshitish osonroq.",
   'depth.listen.tip.extra_words': "Faqat eshitganingizni yozing. Ishonchingiz komil boʻlmasa, boʻsh joy qoldiring va ikkinchi tinglashda toʻldiring.",
+
+  // Grammar: word order, mistakes, mastery
+  'depth.grammar.orderHint': "Quyidagi soʻzlarni toʻgʻri tartibda bosing.",
+  'depth.grammar.orderClear': "Qaytadan boshlash",
+  'depth.grammar.sameTopic': "Shu mavzudagi barcha qoidalar",
+  'depth.mastery.title': "Grammatikangiz",
+  'depth.mastery.summary': "Oʻzlashtirilgan: {mastered} · Ishonchli: {secure} · Mashq qilinmoqda: {practising}",
+  'depth.mastery.dueTitle': "Qayta tekshirish vaqti",
+  'depth.mastery.dueLead': "Darsni bir necha kundan keyin takrorlash qoidani mustahkamlaydi.",
+  'depth.mastery.noneDue': "Hozir qayta tekshiriladigan mavzu yoʻq. Oʻtgan mavzularingiz 3, 10 va 30 kundan keyin shu yerga qaytadi.",
+  'depth.mastery.new': "Yangi",
+  'depth.mastery.started': "Boshlangan",
+  'depth.mastery.practising': "Mashq qilinmoqda",
+  'depth.mastery.secure': "Ishonchli",
+  'depth.mastery.mastered': "Oʻzlashtirilgan",
+  'depth.mastery.nextCheck': "Mustahkamlash uchun bu mavzuni {date} kuni qayta tekshiring.",
+  'depth.mastery.passToSchedule': "80% yoki undan koʻp toʻplang, va bu mavzu qayta tekshirish uchun qaytadi.",
+  'depth.mastery.recheckNow': "Qayta tekshirish: bu mavzuni avval oʻtgansiz. Qoida mustahkamlanishi uchun hozir yana bajaring.",
+  'depth.next.grammar_recheck': "Oʻtgan grammatika mavzuingizni mustahkamlash uchun qayta tekshirish vaqti keldi.",
 };

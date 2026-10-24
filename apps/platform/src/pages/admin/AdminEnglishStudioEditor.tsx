@@ -649,7 +649,7 @@ const ChildFields: React.FC<{ serviceKey: StudioServiceKey; row: Rec; index: num
         record={row}
         onChange={set}
         specs={[
-          { key: 'drill_type', label: 'Type', kind: 'select', options: ['fill', 'error_correction', 'transformation'] },
+          { key: 'drill_type', label: 'Type', kind: 'select', options: ['fill', 'error_correction', 'transformation', 'word_order'] },
           { key: 'status', label: 'Status', kind: 'select', options: STATUSES },
           { key: 'title', label: 'Title (optional)', kind: 'text' },
           { key: 'instructions', label: 'Instructions (optional)', kind: 'text' },
@@ -660,7 +660,7 @@ const ChildFields: React.FC<{ serviceKey: StudioServiceKey; row: Rec; index: num
             kind: 'list',
             rows: 3,
             wide: true,
-            hint: 'For gaps give the words that go in the gap; for corrections give the whole correct sentence.',
+            hint: 'For gaps give the words that go in the gap; for corrections and rewrites give the whole sentence. Word order: write the prompt as words separated by / (always / she / late / is) and give the full sentence.',
           },
         ]}
       />

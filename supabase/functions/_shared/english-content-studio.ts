@@ -14,7 +14,7 @@
 
 import { normalizeQuestions as normalizeReadingQuestions, READING_SUBSKILLS } from "./english-reading.ts";
 import { parseQuestions as parseListeningQuestions } from "./english-listening.ts";
-import { blankFills, normalizeAnswer } from "./english-grammar.ts";
+import { blankFills, normalizeAnswer, usesAllTiles, wordOrderTiles } from "./english-grammar.ts";
 import { parsePoints, parseQuestions as parseImmersionQuestions } from "./english-immersion.ts";
 import { normalizeChoice, parseCollocations, parseWordFamily } from "./english-vocabulary.ts";
 
@@ -176,7 +176,7 @@ export const READING_TONES = ["lime", "mint", "sky", "peach", "lavender", "sand"
 export const LISTENING_SPEEDS = ["slow", "natural", "fast"] as const;
 export const SPEAKING_PROMPT_TYPES = ["guided_response", "roleplay", "storytelling", "shadowing", "read_aloud"] as const;
 export const SPEAKING_TASK_TYPES = ["describe", "explain", "opinion", "story", "roleplay", "presentation"] as const;
-export const GRAMMAR_DRILL_TYPES = ["fill", "error_correction", "transformation"] as const;
+export const GRAMMAR_DRILL_TYPES = ["fill", "error_correction", "transformation", "word_order"] as const;
 export const MISSION_TYPES = ["travel", "workplace", "study", "service", "social", "problem_solving"] as const;
 export const STEP_KINDS = ["read", "listen", "reply", "speak"] as const;
 
@@ -812,6 +812,7 @@ const buildGrammar = (c: Collector, item: JsonRecord, children: unknown[], commo
       fill: { title: "Fill the gap", instructions: "Write the missing words." },
       error_correction: { title: "Correct the sentence", instructions: "Find the mistake and write the whole sentence correctly." },
       transformation: { title: "Rewrite the sentence", instructions: "Rewrite the sentence as the task asks." },
+      word_order: { title: "Put the words in order", instructions: "Put the words in the right order to make a sentence." },
     };
     const title = c.text(`${at}.title`, str(row.title) || defaults[drillType]?.title, 220, "Title");
     const instructions = c.text(`${at}.instructions`, str(row.instructions) || defaults[drillType]?.instructions, 900, "Instructions");
@@ -828,6 +829,13 @@ const buildGrammar = (c: Collector, item: JsonRecord, children: unknown[], commo
       }
     }
     if (drillType !== "fill" && hasBlank) c.add(`${at}.prompt_text`, "Only fill-the-gap prompts use ___.");
+    if (drillType === "word_order" && prompt) {
+      // Tiles are written with slashes; every accepted answer must use all of them, once.
+      if (wordOrderTiles(prompt).length < 2) c.add(`${at}.prompt_text`, "Write the words to order separated by / (for example: always / she / late / is).");
+      else if (accepted.some((answer) => !usesAllTiles(prompt, answer))) {
+        c.add(`${at}.accepted_answers`, "Every accepted answer must use all the words in the prompt, each once.");
+      }
+    }
     if (drillType === "error_correction" && prompt) {
       const wrong = normalizeAnswer(prompt);
       if (accepted.some((answer) => normalizeAnswer(answer) === wrong)) {

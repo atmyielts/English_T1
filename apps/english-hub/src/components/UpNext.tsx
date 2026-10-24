@@ -27,6 +27,8 @@ export const stepReason = (step: NextStep, t: T): string => {
         ? t('engine.next.reason.weakest_skill', { skill, level: rating.level, progress: rating.progress, target: step.target_level })
         : t('engine.next.reason.weakest_skill.noGoal', { skill, level: rating.level, progress: rating.progress });
     }
+    case 'grammar_recheck':
+      return t('depth.next.grammar_recheck');
     case 'today_plan':
       return t('engine.next.reason.today_plan');
     default:
