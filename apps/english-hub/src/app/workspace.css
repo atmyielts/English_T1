@@ -1,0 +1,89 @@
+/* The one workspace: the forest-green sidebar on every signed-in page.
+   Hub pages keep their warm paper content (tokens restored on .is-hub .en-ws-main in english.css);
+   skill pages keep their accent colours from .en-workspace.is-<skill>. */
+
+.en-workspace.is-hub { background: transparent; }
+.en-workspace.is-hub .en-ws-main { position: relative; z-index: 1; max-width: none; padding: 0; gap: 0; color: var(--ink); }
+.en-workspace.is-hub .en-ws-main > .en-ws-topbar {
+  width: min(1360px, 100%); margin: 0 auto; padding: clamp(10px, 2vw, 24px) clamp(10px, 2vw, 24px) 0;
+  border-bottom: none; min-height: 0;
+}
+.en-workspace.is-hub .en-ws-main > .en-ws-topbar:not(:has(.en-ws-xp)) { display: none; }
+
+.en-ws-topbar { align-items: center; }
+.en-ws-where { min-width: 0; flex: 1; }
+.en-ws-tools { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.en-ws-xp {
+  min-height: 36px; display: inline-flex; align-items: center; padding: 0 14px; border-radius: 999px;
+  background: var(--highlight-bg); border: 1px solid var(--highlight-line); color: var(--accent-strong);
+  font-size: 0.85rem; font-weight: 800; white-space: nowrap;
+}
+
+/* Search: a full-width button in the sidebar, an icon button in the top bar on small screens. */
+.en-ws-search {
+  width: 100%; min-height: 40px; justify-content: flex-start; gap: 10px; padding: 0 12px; border-radius: 9px;
+  background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.18);
+  color: rgba(242, 249, 244, 0.82); font-weight: 600; font-size: 0.88rem;
+}
+.en-ws-search:hover:not(:disabled) { filter: none; background: rgba(255, 255, 255, 0.12); color: #fff; }
+.en-ws-search kbd {
+  margin-left: auto; font: inherit; font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.22); color: rgba(242, 249, 244, 0.6);
+}
+.en-ws-search.is-compact { display: none; width: 40px; padding: 0; justify-content: center; background: #fff; color: var(--ink); border-color: var(--line); }
+
+/* Sidebar groups and skills */
+.en-rail-body { gap: 18px; }
+.en-rail-skills { gap: 2px; }
+.en-rail-skill > a { gap: 10px; }
+.en-rail-dot { width: 9px; height: 9px; flex: 0 0 9px; border-radius: 999px; background: var(--dot, var(--lime)); }
+.en-rail-skill.is-reading { --dot: #d3efbd; }
+.en-rail-skill.is-listening { --dot: #b9e2ff; }
+.en-rail-skill.is-writing { --dot: #ffd3a4; }
+.en-rail-skill.is-speaking { --dot: #ffc3ca; }
+.en-rail-skill.is-grammar { --dot: #ccd6ff; }
+.en-rail-skill.is-vocabulary { --dot: #b2f0e2; }
+.en-rail-skill.is-immersion { --dot: #ffe4a4; }
+.en-rail-skill-name { min-width: 0; overflow-wrap: anywhere; }
+.en-rail-lock { margin-left: auto; display: inline-flex; color: rgba(242, 249, 244, 0.5); }
+.en-rail-skill.is-here > a { color: #fff; background: rgba(255, 255, 255, 0.1); }
+.en-rail-skill.is-here > a::before { background: var(--lime); }
+.en-rail-sub { display: grid; gap: 2px; margin: 2px 0 4px 21px; }
+.en-rail-sub a { min-height: 34px; padding: 6px 12px; font-size: 0.85rem; }
+
+/* Phone tab bar */
+.en-tabbar { display: none; }
+
+/* Quick switcher (Ctrl+K) */
+.en-switcher { border: none; padding: 0; background: transparent; width: min(560px, calc(100% - 32px)); max-width: none; margin: 12vh auto auto; overflow: visible; }
+.en-switcher::backdrop { background: rgba(23, 55, 45, 0.45); backdrop-filter: blur(2px); }
+.en-switcher-box { background: #fff; border-radius: 18px; box-shadow: 0 24px 60px rgba(23, 55, 45, 0.25); padding: 12px; display: grid; gap: 8px; color: #1f2a24; }
+.en-switcher input { font-size: 1rem; min-height: 48px; border-color: #d3ddd5; }
+.en-switcher-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; max-height: 50vh; overflow-y: auto; }
+.en-switcher-list li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+.en-switcher-list li[aria-selected='true'] { background: #eef4ef; }
+.en-switcher-list small { color: #566a5c; font-size: 0.78rem; font-weight: 600; white-space: nowrap; }
+.en-switcher-empty { padding: 10px 12px; }
+.en-switcher-keys { font-size: 0.75rem; padding: 0 4px 2px; }
+@media (pointer: coarse) { .en-switcher-keys, .en-ws-search kbd { display: none; } }
+
+@media (max-width: 1023px) {
+  .en-ws-search.is-compact { display: inline-flex; }
+}
+
+@media (max-width: 720px) {
+  .en-shell { padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+  .en-rail-toggle { display: none; }
+  .en-tabbar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px; padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); background: #17372d;
+    box-shadow: 0 -8px 24px rgba(23, 55, 45, 0.18);
+  }
+  .en-tabbar a, .en-tabbar button {
+    min-height: 46px; min-width: 0; padding: 0 4px; border: none; border-radius: 10px; background: none;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    color: rgba(242, 249, 244, 0.78); font-size: 0.78rem; font-weight: 700; overflow-wrap: anywhere; line-height: 1.15;
+  }
+  .en-tabbar a[aria-current='page'], .en-tabbar button[aria-expanded='true'] { color: #fff; background: rgba(255, 255, 255, 0.1); box-shadow: inset 0 -3px 0 var(--lime); }
+  .en-switcher { margin-top: 8vh; }
+}

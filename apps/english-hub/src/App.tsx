@@ -139,7 +139,6 @@ const App = () => {
         <Route path="/studio" element={<Navigate to="/tutor" replace />} />
         <Route path="*" element={<Navigate to="/today" replace />} />
       </Routes>
-      {skillByKey(location.pathname.split('/')[1]) ? null : <Footer />}
     </>
   );
 };

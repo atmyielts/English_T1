@@ -6,7 +6,9 @@
      skill's own accent colour.
    Shared components read the tokens below, so the same markup takes the right look in either place. */
 
-:root {
+:root,
+/* Hub pages inside the one workspace keep the warm paper tokens. */
+.en-workspace.is-hub .en-ws-main {
   --ink: #241a13;
   --ink-700: #5b4f44;
   --muted: #6b5e52;
