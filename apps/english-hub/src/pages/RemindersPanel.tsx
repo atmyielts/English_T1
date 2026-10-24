@@ -5,7 +5,7 @@ import { getReminders, saveReminders, type ReminderSettings } from '../lib/hub';
 import { useResource } from '../lib/useResource';
 import { Loading, Panel } from '../ui/kit';
 
-/** Opt-in Telegram nudge on days without practice, plus a Sunday summary. */
+/** Opt-in Telegram nudge on days without practice, a Sunday summary and a daily review quiz. */
 export const RemindersPanel = () => {
   const t = useT();
   const { locale } = useI18n();
@@ -16,7 +16,7 @@ export const RemindersPanel = () => {
   const [error, setError] = useState<string | null>(null);
   const value = local ?? remote.data;
 
-  const save = async (patch: Partial<Pick<ReminderSettings, 'enabled' | 'hour' | 'weekly'>>) => {
+  const save = async (patch: Partial<Pick<ReminderSettings, 'enabled' | 'hour' | 'weekly' | 'quiz'>>) => {
     setSaving(true);
     setError(null);
     try {
@@ -46,16 +46,23 @@ export const RemindersPanel = () => {
             <span>{t('reminders.daily')}</span>
           </label>
           {value.enabled ? (
+            <label className="en-toggle">
+              <input type="checkbox" checked={value.weekly} disabled={saving} onChange={(event) => void save({ weekly: event.target.checked })} />
+              <span>{t('reminders.weekly')}</span>
+            </label>
+          ) : null}
+          <label className="en-toggle">
+            <input type="checkbox" checked={Boolean(value.quiz)} disabled={saving} onChange={(event) => void save({ quiz: event.target.checked })} />
+            <span>{t('tgreview.toggle')}</span>
+          </label>
+          {Boolean(value.quiz) ? <p className="hint">{t('tgreview.hint')}</p> : null}
+          {value.enabled || value.quiz ? (
             <>
               <label className="en-field-inline">
                 <span>{t('reminders.hour')}</span>
                 <select value={value.hour} disabled={saving} onChange={(event) => void save({ hour: Number(event.target.value) })}>
                   {hours.map((hour) => <option key={hour} value={hour}>{`${String(hour).padStart(2, '0')}:00`}</option>)}
                 </select>
-              </label>
-              <label className="en-toggle">
-                <input type="checkbox" checked={value.weekly} disabled={saving} onChange={(event) => void save({ weekly: event.target.checked })} />
-                <span>{t('reminders.weekly')}</span>
               </label>
               <p className="hint">{t('reminders.note')}</p>
             </>

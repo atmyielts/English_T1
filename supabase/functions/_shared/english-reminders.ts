@@ -8,6 +8,8 @@ export type ReminderSettings = {
   enabled: boolean;
   hour: number;
   weekly: boolean;
+  /** Daily review quiz in Telegram (english-telegram-quiz.ts); works with or without the nudge. */
+  quiz: boolean;
   locale: ReminderLocale;
 };
 
@@ -33,6 +35,7 @@ export const readReminderSettings = (metadata: unknown): ReminderSettings => {
     enabled: raw.enabled === true,
     hour: clampHour(raw.hour ?? DEFAULT_REMINDER_HOUR),
     weekly: raw.weekly !== false,
+    quiz: raw.quiz === true,
     locale: isLocale(raw.locale) ? raw.locale : "en",
   };
 };
@@ -41,6 +44,7 @@ export const mergeReminderSettings = (current: ReminderSettings, patch: Record<s
   enabled: typeof patch.enabled === "boolean" ? patch.enabled : current.enabled,
   hour: patch.hour === undefined ? current.hour : clampHour(patch.hour),
   weekly: typeof patch.weekly === "boolean" ? patch.weekly : current.weekly,
+  quiz: typeof patch.quiz === "boolean" ? patch.quiz : current.quiz,
   locale: isLocale(patch.locale) ? patch.locale : current.locale,
 });
 

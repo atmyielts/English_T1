@@ -141,6 +141,8 @@ export type ReminderSettings = {
   enabled: boolean;
   hour: number;
   weekly: boolean;
+  /** Daily review quiz in Telegram (up to 3 questions at the same hour). */
+  quiz: boolean;
   locale: 'en' | 'ru' | 'uz';
   hours: { min: number; max: number };
 };
@@ -148,7 +150,7 @@ export type ReminderSettings = {
 export const getReminders = (signal?: AbortSignal) =>
   edge<ReminderSettings>('hub', '/reminders', { query: { language_code: 'en' }, signal });
 
-export const saveReminders = (body: Partial<Pick<ReminderSettings, 'enabled' | 'hour' | 'weekly' | 'locale'>>) =>
+export const saveReminders = (body: Partial<Pick<ReminderSettings, 'enabled' | 'hour' | 'weekly' | 'quiz' | 'locale'>>) =>
   edge<ReminderSettings>('hub', '/reminders', { query: { language_code: 'en' }, body });
 
 export type SaveOnboardingBody = {
