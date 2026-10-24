@@ -9,6 +9,7 @@ import { RemindersPanel } from './RemindersPanel';
 import { GoalSettingsPanel } from './goal/GoalSettingsPanel';
 import { LeagueSettingsPanel } from '../components/LeagueSettingsPanel';
 import { InstallPanel } from '../components/InstallApp';
+import { ProgressLinksPanel } from '../components/ProgressLinksPanel';
 
 export const SettingsPage = () => {
   const t = useT();
@@ -42,6 +43,7 @@ export const SettingsPage = () => {
           <InstallPanel />
           <GoalSettingsPanel />
           <RemindersPanel />
+          <ProgressLinksPanel />
           <LeagueSettingsPanel />
           <Panel title={t('settings.account.title')}>
             <div className="en-actions">

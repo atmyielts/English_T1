@@ -5,6 +5,7 @@
  * Schood Telegram Mini App.
  */
 import { routeEnglish } from "./english.ts";
+import { routeSocial } from "./social.ts";
 
 export interface Env {
   TELEGRAM_BOT_TOKEN: string;
@@ -265,6 +266,7 @@ const handleHelp = async (env: Env, chatId: number, user: LinkedUser | null) => 
     + `/cert - Latest certificates\n`
     + `/drill - Vocabulary flashcards\n`
     + `/english - English: today, review and the daily quiz\n`
+    + `/duel - Challenge a friend to a 60-second vocabulary duel\n`
     + `/me - Profile and active plans\n`
     + `/unlink - Disconnect Telegram\n`
     + `/help - This message`;
@@ -531,6 +533,13 @@ const routeEnglishQuiz = async (env: Env, update: Record<string, unknown>): Prom
 
 const handleClaimedUpdate = async (env: Env, update: Record<string, unknown>) => {
   if (await routeEnglishQuiz(env, update)) return;
+  // === Vocabulary duels and parent progress links (./social.ts); before /start so
+  // duel_ and pl_ links never reach the account-link handler ===
+  if (await routeSocial({
+    edge: (fn, body) => sbEdge(env, fn, body),
+    tg: (method, body) => tg(env.TELEGRAM_BOT_TOKEN, method, body),
+    webAppUrl: (route) => webAppUrl(env, route),
+  }, update)) return;
   // === /english and eng:* buttons (./english.ts) ===
   if (await routeEnglish({
     edge: (fn, body) => sbEdge(env, fn, body),

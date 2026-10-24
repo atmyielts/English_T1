@@ -20,6 +20,8 @@ export const ENGLISH_SERVICES = [
   "vocabulary",
   "immersion",
   "tutor",
+  // Vocabulary duels (english-duel.ts): pausing stops new duels and new starts.
+  "duels",
 ] as const;
 export type EnglishService = (typeof ENGLISH_SERVICES)[number];
 

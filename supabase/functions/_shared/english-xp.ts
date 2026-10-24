@@ -3,9 +3,11 @@
 // Pure functions only: the hub loads rows and passes them in, so every rule
 // here is testable without a database. Nothing is ever reported by the
 // browser: XP is derived from submitted attempts, correct answers to due
-// review items and completed daily plans. Days and weeks follow Uzbekistan
+// review items, completed daily plans and finished vocabulary duels (small,
+// capped per day; see english-duel.ts). Days and weeks follow Uzbekistan
 // time (UTC+5, no daylight saving), like the free allowance and reminders.
 
+import { cappedDuelXp } from "./english-duel.ts";
 import { longestStreak, TODAY_SKILLS } from "./english-today.ts";
 
 const LEARNER_UTC_OFFSET_MS = 5 * 3_600_000;
@@ -31,7 +33,10 @@ export type XpAttempt = {
 /** One answer to a review item. Only correct answers to due items earn XP. */
 export type XpReviewAnswer = { item_id: string; correct: boolean; was_due: boolean; answered_at: string };
 
-export type XpDay = { date: string; activity: number; review: number; bonus: number; total: number };
+/** XP a finished duel gave one player (english_duel_players.xp at xp_at). */
+export type XpDuel = { xp: number; at: string };
+
+export type XpDay = { date: string; activity: number; review: number; bonus: number; duel: number; total: number };
 
 /** The learner's calendar date (UTC+5) for an instant. */
 export const learnerDate = (at: string | number | Date): string =>
@@ -53,6 +58,7 @@ export const xpByDay = (input: {
   attempts: XpAttempt[];
   reviews?: XpReviewAnswer[];
   goalDates?: Iterable<string>;
+  duels?: XpDuel[];
 }): Map<string, XpDay> => {
   const bestPerItemDay = new Map<string, number>();
   for (const attempt of input.attempts) {
@@ -64,7 +70,7 @@ export const xpByDay = (input: {
   const day = (date: string): XpDay => {
     let entry = days.get(date);
     if (!entry) {
-      entry = { date, activity: 0, review: 0, bonus: 0, total: 0 };
+      entry = { date, activity: 0, review: 0, bonus: 0, duel: 0, total: 0 };
       days.set(date, entry);
     }
     return entry;
@@ -85,7 +91,11 @@ export const xpByDay = (input: {
     const entry = days.get(date);
     if (entry && entry.activity > 0) entry.bonus = XP_DAILY_GOAL_BONUS;
   }
-  for (const entry of days.values()) entry.total = entry.activity + entry.review + entry.bonus;
+  // Duel XP never counts toward the daily-goal bonus, and is capped per day.
+  for (const [date, xp] of cappedDuelXp((input.duels ?? []).map((duel) => ({ date: learnerDate(duel.at), xp: duel.xp })))) {
+    day(date).duel = xp;
+  }
+  for (const entry of days.values()) entry.total = entry.activity + entry.review + entry.bonus + entry.duel;
   return days;
 };
 

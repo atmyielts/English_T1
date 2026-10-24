@@ -16,7 +16,7 @@ export const RemindersPanel = () => {
   const [error, setError] = useState<string | null>(null);
   const value = local ?? remote.data;
 
-  const save = async (patch: Partial<Pick<ReminderSettings, 'enabled' | 'hour' | 'weekly' | 'quiz'>>) => {
+  const save = async (patch: Partial<Pick<ReminderSettings, 'enabled' | 'hour' | 'weekly' | 'quiz' | 'report'>>) => {
     setSaving(true);
     setError(null);
     try {
@@ -56,6 +56,11 @@ export const RemindersPanel = () => {
             <span>{t('tgreview.toggle')}</span>
           </label>
           {Boolean(value.quiz) ? <p className="hint">{t('tgreview.hint')}</p> : null}
+          <label className="en-toggle">
+            <input type="checkbox" checked={Boolean(value.report)} disabled={saving} onChange={(event) => void save({ report: event.target.checked })} />
+            <span>{t('social.report.toggle')}</span>
+          </label>
+          {value.report ? <p className="hint">{t('social.report.hint')}</p> : null}
           {value.enabled || value.quiz ? (
             <>
               <label className="en-field-inline">

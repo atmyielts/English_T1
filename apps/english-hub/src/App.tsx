@@ -23,6 +23,9 @@ const PublicCertificatePage = lazy(() => import('./pages/PublicCertificatePage')
 const RolePlaysPage = lazy(() => import('./pages/RolePlaysPage').then((m) => ({ default: m.RolePlaysPage })));
 const RolePlayPage = lazy(() => import('./pages/RolePlaysPage').then((m) => ({ default: m.RolePlayPage })));
 const SpeakingMockPage = lazy(() => import('./pages/SpeakingMockPage').then((m) => ({ default: m.SpeakingMockPage })));
+const DuelsPage = lazy(() => import('./pages/DuelPage').then((m) => ({ default: m.DuelsPage })));
+const DuelPage = lazy(() => import('./pages/DuelPage').then((m) => ({ default: m.DuelPage })));
+const PublicProgressPage = lazy(() => import('./pages/PublicProgressPage').then((m) => ({ default: m.PublicProgressPage })));
 
 const SKILL_APPS = {
   reading: lazy(() => import('./skills/reading')),
@@ -98,6 +101,8 @@ const App = () => {
             <Route path="/" element={<LandingPage />} />
             {/* A shared certificate link works for anyone. */}
             <Route path="/c/:code" element={<Page><PublicCertificatePage /></Page>} />
+            {/* A parent's or teacher's progress link works for anyone. */}
+            <Route path="/p/:token" element={<Page><PublicProgressPage /></Page>} />
             <Route path="*" element={<SignedOutGate />} />
           </Routes>
         </HubFrame>
@@ -127,6 +132,9 @@ const App = () => {
         <Route path="/roleplay" element={hub(<RolePlaysPage />)} />
         <Route path="/roleplay/:id" element={hub(<RolePlayPage />)} />
         <Route path="/speaking-mock" element={hub(<SpeakingMockPage />)} />
+        <Route path="/duel" element={hub(<DuelsPage />)} />
+        <Route path="/duel/:code" element={hub(<DuelPage />)} />
+        <Route path="/p/:token" element={hub(<PublicProgressPage />)} />
         {SKILLS.map((skill) => {
           const SkillApp = SKILL_APPS[skill.key];
           return (

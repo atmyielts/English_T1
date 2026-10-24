@@ -22,6 +22,7 @@ import { canSpeak, speak, stopSpeaking } from '../lib/speech';
 import { useResource } from '../lib/useResource';
 import { EmptyState, ErrorState, Loading, PageHeader, Panel, useErrorMessage } from '../ui/kit';
 import '../components/practice.css';
+import { ShareCardButton } from '../components/ShareCardButton';
 
 const CRITERIA: MockCriterion[] = ['fluency', 'lexical', 'grammar', 'pronunciation'];
 
@@ -315,6 +316,7 @@ export const SpeakingMockPage = () => {
           <MockResultView result={result} />
           <div className="en-actions" style={{ marginTop: '1rem' }}>
             <button type="button" onClick={() => { setResult(null); overview.reload(); }}>{t('mock.result.again')}</button>
+            {result.overall !== null ? <ShareCardButton card={{ kind: 'exam', label: t('social.card.exam.label'), big: bandText(result.overall), headline: t('social.card.mock.headline', { band: bandText(result.overall) }), detail: t('social.card.exam.detail') }} /> : null}
           </div>
         </Panel>
       </>

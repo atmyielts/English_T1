@@ -27,6 +27,7 @@ export const DAY_ENTRIES: NavEntry[] = [
   { to: '/tutor', labelKey: 'nav.tutor', group: 'day', keywords: 'ai chat coach conversation voice' },
   { to: '/roleplay', labelKey: 'ws.roleplay', group: 'day', keywords: 'roleplay scenario interview visa conversation speaking' },
   { to: '/speaking-mock', labelKey: 'ws.mock', group: 'day', keywords: 'ielts mock exam test band speaking' },
+  { to: '/duel', labelKey: 'social.nav.duel', group: 'day', keywords: 'duel battle friend challenge words vocabulary game' },
   { to: '/practice', labelKey: 'nav.practice', group: 'day', keywords: 'skills catalog library lessons' },
 ];
 
