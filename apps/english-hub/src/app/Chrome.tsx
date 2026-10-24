@@ -131,6 +131,7 @@ export const SkillWorkspace = ({ skill, children }: { skill: SkillKey; children:
                 <strong>{t('locked.title', { skill: t(`skill.${skill}`) })}</strong>
                 <p>{t('locked.body')}</p>
                 <a href={pricingHref(skill)}>{t('locked.cta')}</a>
+                <a href={pricingHref()}>{t('bundle.cta')}</a>
               </div>
             ) : null}
             <LocaleSwitcher label={t('settings.language.title')} />

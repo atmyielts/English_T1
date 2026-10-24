@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ApiError } from '../lib/api';
 import { useT } from '../i18n';
+import { useEnglish } from '../app/EnglishContext';
 import type { CefrLevel, SkillKey } from '../lib/skills';
 
 /** Page title block. One per screen; `actions` sit on the right on wide screens. */
@@ -134,6 +135,7 @@ export const ErrorState = ({ error, onRetry }: { error: unknown; onRetry?: () =>
 /** Shown in place of a paid activity when the learner has no access to that skill. */
 export const LockedPanel = ({ skillName, pricingHref, freeUsed = false }: { skillName: string; pricingHref: string; freeUsed?: boolean }) => {
   const t = useT();
+  const bundleHref = useEnglish().pricingHref();
   return (
     <section className="en-panel en-locked">
       <p className="eyebrow">{freeUsed ? t('free.usedEyebrow') : t('locked.eyebrow')}</p>
@@ -141,6 +143,7 @@ export const LockedPanel = ({ skillName, pricingHref, freeUsed = false }: { skil
       <p>{freeUsed ? t('free.usedBody') : t('locked.body')}</p>
       <div className="en-actions">
         <a className="en-button" href={pricingHref}>{t('locked.cta')}</a>
+        {pricingHref !== bundleHref ? <a className="en-button-quiet" href={bundleHref}>{t('bundle.cta')}</a> : null}
       </div>
     </section>
   );

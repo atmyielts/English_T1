@@ -10,6 +10,8 @@ import { useI18n } from '../i18n';
 import type { TranslationKey } from '../i18n/locales/en';
 import { platformJourney } from '../lib/journeyAnalytics';
 
+const ENGLISH_BUNDLE_SLUG = 'english-all';
+
 type ProductRow = {
   id: string;
   name: string;
@@ -405,6 +407,13 @@ export const PricingPage: React.FC = () => {
     navigate('/auth', { replace: true });
   };
 
+  // Someone looking at one English skill sees the All Skills bundle as an option.
+  const englishBundle = useMemo(() => {
+    const slug = selectedProduct ? productSlug(selectedProduct) : '';
+    if (!slug.startsWith('english-') || slug === ENGLISH_BUNDLE_SLUG) return null;
+    return products.find((p) => productSlug(p) === ENGLISH_BUNDLE_SLUG) ?? null;
+  }, [products, selectedProduct]);
+
   const goSelectProduct = (product: ProductRow) => {
     const slug = productSlug(product);
     navigate(`/pricing?product=${encodeURIComponent(slug)}&returnTo=${encodeURIComponent(returnTo)}`);
@@ -455,6 +464,21 @@ export const PricingPage: React.FC = () => {
               <div className="mt-2 text-sm text-gray-600 max-w-2xl">{selectedProduct.description}</div>
             ) : null}
           </div>
+          {englishBundle ? (
+            <div className="rounded-2xl border border-emerald-300 bg-emerald-50/80 p-4 text-emerald-950 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <div className="font-semibold">{t('pricing.englishBundle.title')}</div>
+                <div className="text-sm mt-1 max-w-2xl">{t('pricing.englishBundle.body')}</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => goSelectProduct(englishBundle)}
+                className="self-start md:self-auto px-4 py-2 rounded-full bg-emerald-800 hover:bg-emerald-900 text-white text-sm font-semibold whitespace-nowrap"
+              >
+                {t('pricing.englishBundle.cta')}
+              </button>
+            </div>
+          ) : null}
         </div>
 
         {error ? (

@@ -1,5 +1,17 @@
 type EnglishProductMap = Record<string, { productId?: string | null }>;
 
+/** "All of English": one product that unlocks every skill (seeded by 20261025160000). */
+export const ENGLISH_BUNDLE_PRODUCT_ID = "3a7bd983-58c5-4c75-b5f8-5ac46c94a0fa";
+
+/** Product ids the learner effectively holds: the bundle stands for every skill product. */
+export const expandBundleEntitlements = (
+  entitledIds: string[],
+  skillProductIds: string[],
+): string[] =>
+  entitledIds.includes(ENGLISH_BUNDLE_PRODUCT_ID)
+    ? [...new Set([...entitledIds, ...skillProductIds])]
+    : entitledIds;
+
 type AccessWindow = {
   is_active?: boolean | null;
   starts_at?: string | null;
@@ -127,7 +139,7 @@ export const requireEnglishSuiteAccess = async (
     .eq("tenant_id", tenantId)
     .eq("resource_type", "product")
     .eq("is_active", true)
-    .in("resource_id", productIds);
+    .in("resource_id", [...productIds, ENGLISH_BUNDLE_PRODUCT_ID]);
   if (entitlementError) {
     throw new Error(
       `Failed to resolve English entitlements: ${
@@ -136,10 +148,13 @@ export const requireEnglishSuiteAccess = async (
     );
   }
 
-  const entitlementProductIds = (rows ?? [])
-    .filter((row: AccessWindow) => isActiveAccessWindow(row))
-    .map((row: { resource_id?: unknown }) => String(row.resource_id ?? ""))
-    .filter(Boolean);
+  const entitlementProductIds = expandBundleEntitlements(
+    (rows ?? [])
+      .filter((row: AccessWindow) => isActiveAccessWindow(row))
+      .map((row: { resource_id?: unknown }) => String(row.resource_id ?? ""))
+      .filter(Boolean),
+    productIds,
+  );
 
   return {
     allowed: entitlementProductIds.length > 0,
