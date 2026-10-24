@@ -33,6 +33,7 @@ import {
   type SpeakingPromptInput,
   tokenize,
 } from "../_shared/english-speaking.ts";
+import { sanitizeClientFluency } from "../_shared/english-fluency.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -54,6 +55,53 @@ const asRecord = (value: unknown): JsonRecord =>
 
 const stringList = (value: unknown, max = 12): string[] =>
   Array.isArray(value) ? value.map((entry) => toText(entry, 200)).filter(Boolean).slice(0, max) : [];
+
+/** A past attempt as the app compares it: scores, pace, pauses and what was said. */
+const attemptSummary = (row: JsonRecord) => {
+  const feedback = asRecord(row.feedback);
+  const stats = asRecord(feedback.stats);
+  const scores = asRecord(feedback.scores);
+  const num = (value: unknown): number | null => (value === null || value === undefined || !Number.isFinite(Number(value)) ? null : Math.round(Number(value)));
+  return {
+    at: String(row.submitted_at ?? ""),
+    mode: row.mode === "speech" ? "speech" : "typed",
+    transcript: toText(row.transcript, 6000),
+    overall: num(feedback.overall),
+    scores: { task: num(scores.task), vocabulary: num(scores.vocabulary), grammar: num(scores.grammar), fluency: num(scores.fluency) },
+    stats: {
+      words: num(stats.words),
+      wpm: num(stats.wpm),
+      filler_count: num(stats.filler_count),
+      speaking_seconds: num(stats.speaking_seconds),
+    },
+    fluency: Object.keys(asRecord(row.fluency)).length ? asRecord(row.fluency) : null,
+  };
+};
+
+const ATTEMPT_COLUMNS =
+  "submitted_at, transcript:response_json->>transcript, mode:response_json->>mode, feedback:response_json->feedback, fluency:response_json->fluency";
+
+/** The learner's recent attempts at one prompt, newest first. */
+const loadAttempts = async (sb: any, userId: string, languageId: string, slug: string, limit: number): Promise<JsonRecord[]> => {
+  const item = await sb
+    .from("learning_content_registry_items")
+    .select("id")
+    .eq("language_id", languageId)
+    .eq("service_key", "speaking")
+    .eq("content_type", "speaking.prompt")
+    .eq("source_ref", slug)
+    .maybeSingle();
+  if (!item.data?.id) return [];
+  const { data } = await sb
+    .from("learning_attempts")
+    .select(ATTEMPT_COLUMNS)
+    .eq("user_id", userId)
+    .eq("content_item_id", String(item.data.id))
+    .not("submitted_at", "is", null)
+    .order("submitted_at", { ascending: false })
+    .limit(limit);
+  return ((data ?? []) as JsonRecord[]).filter((row) => Object.keys(asRecord(row.feedback)).length > 0);
+};
 
 /** Prompt as sent to the learner: the example answer and checking keywords stay on the server until submit. */
 const publicPrompt = (row: JsonRecord): JsonRecord => {
@@ -193,7 +241,12 @@ serve(async (req) => {
 
       const prompt = toPromptInput(row);
       const slug = toText(row.slug, 160) || String(row.id);
-      const feedback = await evaluate(sb, auth.userId, products, prompt, transcript, mode, speakingSeconds);
+      // Pause timing measured in the browser (checked; dropped when inconsistent).
+      const fluency = mode === "speech" ? sanitizeClientFluency(body.fluency, transcript, speakingSeconds) : null;
+      const [feedback, previousAttempts] = await Promise.all([
+        evaluate(sb, auth.userId, products, prompt, transcript, mode, speakingSeconds),
+        loadAttempts(sb, auth.userId, scope.languageId, slug, 1).catch(() => [] as JsonRecord[]),
+      ]);
       const correctnessRatio = feedback.overall / 100;
 
       const contentItem = await resolveOrCreateContentItem(sb, {
@@ -255,6 +308,7 @@ serve(async (req) => {
           mode,
           speaking_seconds: speakingSeconds,
           feedback,
+          ...(fluency ? { fluency } : {}),
         },
         metadata: { prompt_id: String(row.id), prompt_slug: slug, mode, feedback_source: feedback.source },
         timeSpentSeconds,
@@ -282,7 +336,7 @@ serve(async (req) => {
             previous_attempt_id: previous?.id ? String(previous.id) : null,
             retry_comparison_json: previousScore !== null ? { previous_score: previousScore, delta: feedback.overall - previousScore } : {},
             feedback_json: { version: 2, overall: feedback.overall, source: feedback.source, scores: feedback.scores },
-            metadata: { prompt_slug: slug, mode },
+            metadata: { prompt_slug: slug, mode, ...(fluency ? { fluency } : {}) },
           })
           .select("id")
           .maybeSingle();
@@ -318,7 +372,18 @@ serve(async (req) => {
         transcript,
         feedback,
         your_words_used: yourWordsUsed,
+        fluency,
+        previous_attempt: previousAttempts[0] ? attemptSummary(previousAttempts[0]) : null,
       });
+    }
+
+    // The learner's recent attempts at one prompt (newest first), to compare tries.
+    const attemptsMatch = /^\/prompts\/([^/]+)\/attempts$/.exec(route);
+    if (req.method === "GET" && attemptsMatch) {
+      const row = await loadPrompt(sb, productId, scope.languageId, decodeURIComponent(attemptsMatch[1]!).trim());
+      if (!row) return json(404, { error: "Speaking prompt not found" });
+      const attempts = await loadAttempts(sb, auth.userId, scope.languageId, toText(row.slug, 160) || String(row.id), 6);
+      return json(200, { attempts: attempts.map(attemptSummary) });
     }
 
     if (req.method === "GET" && route.startsWith("/prompts/")) {

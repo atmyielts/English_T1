@@ -50,6 +50,8 @@ const PRIMARY_CONTENT_TYPES = [
   // Finished role-plays and speaking mocks (./practice.ts).
   "speaking.roleplay",
   "speaking.mock",
+  // Shadowing takes (./shadowing.ts): one registry item, so at most one activity's XP a day.
+  "speaking.shadowing",
   "grammar.unit",
   "immersion.mission",
   "vocabulary.deck",
@@ -82,15 +84,15 @@ const readPages = async (build: (from: number, to: number) => any, maxPages: num
   return out;
 };
 
-type WeekXp = { attempts: XpAttempt[]; days: Map<string, XpDay>; total: number };
+export type WeekXp = { attempts: XpAttempt[]; days: Map<string, XpDay>; total: number };
 
-/** Weekly XP for up to one group of learners, from attempts, review answers and completed plans. */
-const loadWeekXp = async (sb: any, languageId: string, userIds: string[], week: Week, until = new Date()): Promise<Map<string, WeekXp>> => {
+/** Weekly XP for up to one group of learners, from attempts, review answers, completed plans and duels. */
+export const loadWeekXp = async (sb: any, languageId: string, userIds: string[], week: Week, until = new Date()): Promise<Map<string, WeekXp>> => {
   const out = new Map<string, WeekXp>();
   if (!userIds.length) return out;
   const from = week.starts_at;
   const to = new Date(Math.min(Date.parse(week.ends_at), until.getTime() + 60_000)).toISOString();
-  const [attemptRows, reviewRows, planRows] = await Promise.all([
+  const [attemptRows, reviewRows, planRows, duelRows] = await Promise.all([
     readPages((start, end) => sb.from("learning_attempts")
       .select("id, user_id, content_item_id, correctness_ratio, overall_score, submitted_at, learning_content_registry_items!inner(content_type)")
       .in("user_id", userIds)
@@ -123,6 +125,17 @@ const loadWeekXp = async (sb: any, languageId: string, userIds: string[], week: 
       .lte("plan_date", week.dates[6])
       .order("plan_date", { ascending: true })
       .range(start, end), 1),
+    // Finished vocabulary duels (english-duel.ts). A missing table never breaks XP.
+    readPages((start, end) => sb.from("english_duel_players")
+      .select("user_id, duel_id, xp, xp_at")
+      .in("user_id", userIds)
+      .eq("language_id", languageId)
+      .gt("xp", 0)
+      .gte("xp_at", from)
+      .lt("xp_at", to)
+      .order("xp_at", { ascending: true })
+      .order("duel_id", { ascending: true })
+      .range(start, end), 1).catch(() => [] as Row[]),
   ]);
   const attemptsBy = new Map<string, XpAttempt[]>();
   for (const row of attemptRows) {
@@ -143,9 +156,14 @@ const loadWeekXp = async (sb: any, languageId: string, userIds: string[], week: 
     const user = String(row.user_id);
     goalsBy.set(user, [...(goalsBy.get(user) ?? []), String(row.plan_date)]);
   }
+  const duelsBy = new Map<string, Array<{ xp: number; at: string }>>();
+  for (const row of duelRows) {
+    const user = String(row.user_id);
+    duelsBy.set(user, [...(duelsBy.get(user) ?? []), { xp: Number(row.xp ?? 0) || 0, at: String(row.xp_at) }]);
+  }
   for (const user of userIds) {
     const attempts = attemptsBy.get(user) ?? [];
-    const days = xpByDay({ attempts, reviews: reviewsBy.get(user) ?? [], goalDates: goalsBy.get(user) ?? [] });
+    const days = xpByDay({ attempts, reviews: reviewsBy.get(user) ?? [], goalDates: goalsBy.get(user) ?? [], duels: duelsBy.get(user) ?? [] });
     // Days outside the week (plan dates are client dates) never count.
     for (const date of [...days.keys()]) if (!week.dates.includes(date)) days.delete(date);
     out.set(user, { attempts, days, total: [...days.values()].reduce((sum, day) => sum + day.total, 0) });

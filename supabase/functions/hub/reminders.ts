@@ -223,7 +223,8 @@ export const runReminderCycle = async (options: CycleOptions) => {
     }
     if (daily && !dailyCarried) messages.push({ kind: "english_daily_reminder", text: daily, dedupe: `english-daily:${clock.date}` });
 
-    if (settings.enabled && clock.sunday && settings.weekly) {
+    // The fuller weekly report (./weekly-report.ts) replaces this short summary when it is on.
+    if (settings.enabled && clock.sunday && settings.weekly && !settings.report) {
       const weekAgo = new Date(Date.parse(dayStart) - 6 * 86_400_000).toISOString();
       const thisWeek = attempts.filter((attempt) => attempt.submitted_at >= weekAgo);
       messages.push({

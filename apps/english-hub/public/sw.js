@@ -10,6 +10,10 @@
 //     load, and an old index.html can never be served while online.
 //   - /assets/* (content-hashed Vite output) and /icons/*: cache-first.
 //   - Manifests: network-first, so a changed name or icon reaches installs.
+//   - "Download for offline" (Today) posts { type: 'warm-cache', urls } so the
+//     shell ('/') and the build files the page has loaded are cached before the
+//     connection goes. Only '/' and same-origin /assets/ and /icons/ files are
+//     accepted; learner data stays in the page's IndexedDB, never in this cache.
 //
 // Updates: a new worker installs in the background and WAITS until every tab
 // of the old one is closed (no skipWaiting / clients.claim), so an open lesson
@@ -19,7 +23,7 @@
 //
 // Bump VERSION whenever this file's behaviour or the precache list changes.
 
-const VERSION = 'v4';
+const VERSION = 'v5';
 const CACHE_PREFIX = 'schood-english-hub-shell-';
 const CACHE_NAME = `${CACHE_PREFIX}${VERSION}`;
 const OFFLINE_URL = '/offline.html';
@@ -111,6 +115,41 @@ const navigate = async (request) => {
     return (await caches.match('/')) || (await caches.match(OFFLINE_URL)) || offlineText();
   }
 };
+
+// Offline download: keep the shell and the build files the page lists.
+const warm = async (urls) => {
+  const cache = await caches.open(CACHE_NAME);
+  await Promise.all(urls.map(async (raw) => {
+    let url;
+    try {
+      url = new URL(String(raw), self.location.origin);
+    } catch {
+      return;
+    }
+    if (url.origin !== self.location.origin) return;
+    const shell = url.pathname === '/';
+    if (!shell && !isHashedAsset(url) && !isIcon(url)) return;
+    // Hashed files never change; skip what is already kept.
+    if (!shell && (await cache.match(url.pathname))) return;
+    try {
+      const response = await fetch(url.pathname, { cache: shell ? 'no-cache' : 'default', credentials: 'same-origin' });
+      if (!response.ok || response.type !== 'basic') return;
+      const html = (response.headers.get('content-type') || '').includes('text/html');
+      // The shell must be HTML; a build file must not be (a missing chunk comes back as index.html).
+      if (shell !== html) return;
+      await cache.put(url.pathname, await cleanCopy(response));
+    } catch {
+      // Offline or a storage error: the page reports the download; the next online visit fills the gap.
+    }
+  }));
+};
+
+self.addEventListener('message', (event) => {
+  const data = event.data;
+  if (!data || data.type !== 'warm-cache' || !Array.isArray(data.urls)) return;
+  if (event.origin && event.origin !== self.location.origin) return;
+  event.waitUntil(warm(data.urls.slice(0, 300)));
+});
 
 self.addEventListener('fetch', (event) => {
   const req = event.request;

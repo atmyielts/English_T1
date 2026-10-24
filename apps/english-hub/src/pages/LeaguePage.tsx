@@ -5,6 +5,11 @@ import { useResource } from '../lib/useResource';
 import { getLeague, LEAGUE_TIERS, saveLeagueSettings, timeLeft, type LeagueResponse, type LeagueTier } from '../lib/xp';
 import { EmptyState, ErrorState, Loading, PageHeader, Panel, Tag } from '../ui/kit';
 import '../xp.css';
+import { ShareCardButton } from '../components/ShareCardButton';
+
+/** The tier a promotion from `tier` leads to, in the learner's language. */
+const tierAfterPromotion = (tier: LeagueTier, t: ReturnType<typeof useT>): string =>
+  t(`xp.tier.${LEAGUE_TIERS[Math.min(LEAGUE_TIERS.length - 1, LEAGUE_TIERS.indexOf(tier) + 1)]}`);
 
 const neighbour = (tier: LeagueTier, step: 1 | -1): LeagueTier | null =>
   LEAGUE_TIERS[LEAGUE_TIERS.indexOf(tier) + step] ?? null;
@@ -27,7 +32,12 @@ const LastWeek = ({ last }: { last: NonNullable<LeagueResponse['last_week']> }) 
   const text = last.rank === null
     ? t('xp.league.last.noRank', { tier })
     : t(`xp.league.last.${last.outcome ?? 'stayed'}`, { rank: last.rank, tier });
-  return <p className={last.outcome === 'promoted' ? 'en-notice' : 'en-explain'} style={{ margin: 0 }}>{text}</p>;
+  return (
+    <>
+      <p className={last.outcome === 'promoted' ? 'en-notice' : 'en-explain'} style={{ margin: 0 }}>{text}</p>
+      {last.outcome === 'promoted' ? <ShareCardButton card={{ kind: 'league', label: t('social.card.league.label'), big: tierAfterPromotion(last.tier, t), headline: t('social.card.league.headline', { tier: tierAfterPromotion(last.tier, t) }), detail: t('social.card.league.detail') }} /> : null}
+    </>
+  );
 };
 
 const Ranking = ({ data }: { data: LeagueResponse }) => {

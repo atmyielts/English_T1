@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { BookOpen, ExternalLink, Flame, Repeat2, Sparkles } from 'lucide-react';
 import { useTgEnglishT, type TgEnglishKey } from './strings';
 import { TelegramEnglishReview } from './TelegramEnglishReview';
+import { TelegramDuelCard, TelegramEnglishDuel } from './TelegramEnglishDuel';
 import type { EnglishTask, EnglishToday, TelegramAppCall } from './types';
 
 // Schood English inside the Telegram Mini App: today's streak, XP and level,
@@ -34,11 +35,16 @@ export const TelegramEnglishSection: React.FC<{
   openLink: (url: string) => void;
   /** Open straight into review (bot "Review now" button). */
   startInReview?: boolean;
-}> = ({ call, openLink, startInReview = false }) => {
+  /** Open straight into a duel (bot duel buttons: view=english&duel=CODE). */
+  startDuel?: string | null;
+  /** t.me links (sharing a duel invite); falls back to openLink. */
+  openTelegramLink?: (url: string) => void;
+}> = ({ call, openLink, startInReview = false, startDuel = null, openTelegramLink }) => {
   const { t } = useTgEnglishT();
   const [today, setToday] = useState<EnglishToday | null>(null);
   const [error, setError] = useState(false);
   const [reviewing, setReviewing] = useState(startInReview);
+  const [dueling, setDueling] = useState<{ code: string | null } | null>(startDuel ? { code: startDuel } : null);
 
   const load = useCallback(async () => {
     setError(false);
@@ -53,10 +59,23 @@ export const TelegramEnglishSection: React.FC<{
     void load();
   }, [load]);
 
+  if (dueling) {
+    return (
+      <TelegramEnglishDuel
+        call={call}
+        openTelegramLink={openTelegramLink ?? openLink}
+        initialCode={dueling.code}
+        onExit={() => setDueling(null)}
+      />
+    );
+  }
+
   if (reviewing) {
     return (
       <TelegramEnglishReview
         call={call}
+        appUrl={today ? today.app_url.replace(/\/$/, '') : null}
+        openLink={openLink}
         onExit={(changed) => {
           setReviewing(false);
           if (changed || !today) void load();
@@ -123,6 +142,8 @@ export const TelegramEnglishSection: React.FC<{
           </button>
         ) : null}
       </Card>
+
+      <TelegramDuelCard onOpen={() => setDueling({ code: null })} />
 
       {today.placement_done ? (
         <Card>

@@ -32,7 +32,8 @@
           "Babies need more vaccines than adults."
         ],
         "answer_index": 2,
-        "explanation": "\"A vaccine gives your immune system a kind of practice session\" so it can \"learn what the enemy looks like\"."
+        "explanation": "\"A vaccine gives your immune system a kind of practice session\" so it can \"learn what the enemy looks like\".",
+        "focus": "gist"
       },
       {
         "prompt": "What are antibodies, according to the speaker?",

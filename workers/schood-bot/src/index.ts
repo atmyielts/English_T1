@@ -5,6 +5,7 @@
  * Schood Telegram Mini App.
  */
 import { routeEnglish } from "./english.ts";
+import { routeSocial } from "./social.ts";
 
 export interface Env {
   TELEGRAM_BOT_TOKEN: string;
@@ -118,7 +119,6 @@ type StudentHomeContext = {
 };
 
 const getStudentHomeContext = async (env: Env, user: LinkedUser): Promise<StudentHomeContext> => {
-  const today = new Date().toISOString().slice(0, 10);
   const contacts = await sbGet(env, "academy_contacts", { user_id: `eq.${user.id}`, select: "id", limit: "20" });
   const contactIds = (contacts ?? []).map((contact: any) => contact.id).filter(Boolean);
   if (contactIds.length) {
@@ -144,11 +144,10 @@ const getStudentHomeContext = async (env: Env, user: LinkedUser): Promise<Studen
     }
   }
 
-  const dueCards = await sbGet(env, "vocab_drill_cards", {
-    user_id: `eq.${user.id}`, next_review: `lte.${today}`, select: "id,last_review,repetitions", limit: "100",
-  });
+  // Saved words live in the English notebook (one word store with the app and the Mini App).
+  const dueCards = await dueWords(env, user.id, "id,leitner_box,last_reviewed_at", 100);
   if (dueCards?.length) {
-    const difficult = dueCards.filter((card: any) => Number(card.repetitions ?? 0) === 0 && card.last_review).length;
+    const difficult = dueCards.filter((card: any) => Number(card.leitner_box ?? 1) === 1 && card.last_reviewed_at).length;
     return {
       kind: "vocabulary_due",
       headline: `${dueCards.length}${dueCards.length === 100 ? "+" : ""} words due today`,
@@ -265,6 +264,7 @@ const handleHelp = async (env: Env, chatId: number, user: LinkedUser | null) => 
     + `/cert - Latest certificates\n`
     + `/drill - Vocabulary flashcards\n`
     + `/english - English: today, review and the daily quiz\n`
+    + `/duel - Challenge a friend to a 60-second vocabulary duel\n`
     + `/me - Profile and active plans\n`
     + `/unlink - Disconnect Telegram\n`
     + `/help - This message`;
@@ -401,15 +401,31 @@ const handleCert = async (env: Env, chatId: number, user: LinkedUser) => {
   await send(env, chatId, lines.join("\n"), { reply_markup: webAppMarkup(env) });
 };
 
-const getNextDrillCard = async (env: Env, userId: string) => {
-  const today = new Date().toISOString().slice(0, 10);
-  const rows = await sbGet(env, "vocab_drill_cards", {
+let englishLanguageIdCache: string | null = null;
+const englishLanguageId = async (env: Env): Promise<string | null> => {
+  if (englishLanguageIdCache) return englishLanguageIdCache;
+  const rows = await sbGet(env, "languages", { code: "eq.en", select: "id", limit: "1" });
+  englishLanguageIdCache = rows?.[0]?.id ? String(rows[0].id) : null;
+  return englishLanguageIdCache;
+};
+
+/** Saved words due now from the English notebook, oldest due first. */
+const dueWords = async (env: Env, userId: string, select: string, limit: number) => {
+  const languageId = await englishLanguageId(env);
+  if (!languageId) return null;
+  return await sbGet(env, "user_vocabulary_notebook_entries", {
     user_id: `eq.${userId}`,
-    next_review: `lte.${today}`,
-    select: "id,word,definition,example",
-    order: "next_review.asc",
-    limit: "1",
+    language_id: `eq.${languageId}`,
+    is_archived: "eq.false",
+    next_review_at: `lte.${new Date().toISOString()}`,
+    select,
+    order: "next_review_at.asc",
+    limit: String(limit),
   });
+};
+
+const getNextDrillCard = async (env: Env, userId: string) => {
+  const rows = await dueWords(env, userId, "id,word", 1);
   return rows?.[0] ?? null;
 };
 
@@ -531,6 +547,13 @@ const routeEnglishQuiz = async (env: Env, update: Record<string, unknown>): Prom
 
 const handleClaimedUpdate = async (env: Env, update: Record<string, unknown>) => {
   if (await routeEnglishQuiz(env, update)) return;
+  // === Vocabulary duels and parent progress links (./social.ts); before /start so
+  // duel_ and pl_ links never reach the account-link handler ===
+  if (await routeSocial({
+    edge: (fn, body) => sbEdge(env, fn, body),
+    tg: (method, body) => tg(env.TELEGRAM_BOT_TOKEN, method, body),
+    webAppUrl: (route) => webAppUrl(env, route),
+  }, update)) return;
   // === /english and eng:* buttons (./english.ts) ===
   if (await routeEnglish({
     edge: (fn, body) => sbEdge(env, fn, body),

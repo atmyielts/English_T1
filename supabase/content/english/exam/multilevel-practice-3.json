@@ -1,0 +1,180 @@
+{
+  "id": "multilevel-practice-3",
+  "title": "Practice paper 3",
+  "level_focus": "C1",
+  "reading": {
+    "parts": [
+      {
+        "id": "r1",
+        "type": "gap_fill",
+        "level": "B1",
+        "title": "Part 1. Complete the text. Each missing word appears somewhere else in the text.",
+        "text": "When I moved into a student flat last year, I could not cook anything except eggs. For the first month I ate in cheap cafes, but soon I had no money left. My grandmother gave me a small book of family recipes, and I decided to try one recipe every week. The first {{1}} I tried was plov, and it was a disaster: the rice was hard and the meat was burnt. I called my grandmother, and she explained that I had used too much heat. The second time, the {{2}} was soft and the meat was perfect. Since then I have learned to make soup, salads and two kinds of bread. Cooking at home is much cheaper than eating in {{3}}, and it is also healthier. My flatmates now share the {{4}} for food, and in return I cook dinner for everyone on Sundays. Last month my {{5}} visited us and tasted my plov. She said it was almost as good as hers. Now I am the one who teaches my friends how to {{6}}.",
+        "answers": { "1": "recipe", "2": "rice", "3": "cafes", "4": "money", "5": "grandmother", "6": "cook" }
+      },
+      {
+        "id": "r2",
+        "type": "mcq",
+        "level": "B2",
+        "title": "Part 2. Read the article and choose the correct answer.",
+        "text": "When Rano Alimova decided to learn to drive at the age of sixty-one, her children thought she was joking. She had spent her whole life in the passenger seat, first beside her father and later beside her husband, and she had never felt the need to take the wheel herself. Everything changed when her husband's eyesight began to fail. 'Suddenly the person who drove us everywhere couldn't do it any more,' she says. 'Either I learned, or we stayed at home.'\n\nHer first lessons were, by her own account, frightening. Traffic in the city had become much heavier since her youth, and she found it difficult to watch the mirrors, the road and the instructor's hands at the same time. Several times she considered giving up. What kept her going, she says, was her instructor, a patient young man who never raised his voice and who suggested they practise early on Sunday mornings, when the roads were almost empty.\n\nRano failed her first driving test because she drove too slowly on the main road. She was disappointed but not discouraged. 'At my age, you know that mistakes are not the end of the world,' she explains. She passed at the second attempt, three months later.\n\nToday she drives her husband to his appointments and visits her grandchildren in a nearby town every weekend. She has also become something of a local celebrity: two of her neighbours, both women in their fifties, have started lessons with the same instructor. 'They saw that I could do it,' Rano says, 'so they stopped making excuses.'",
+        "questions": [
+          { "id": "1", "prompt": "Why did Rano decide to learn to drive?", "options": [{ "id": "A", "text": "Her children encouraged her." }, { "id": "B", "text": "She wanted to find a job." }, { "id": "C", "text": "Her husband could no longer drive." }, { "id": "D", "text": "She had always dreamed of driving." }], "answer": "C" },
+          { "id": "2", "prompt": "What did Rano find most difficult in her first lessons?", "options": [{ "id": "A", "text": "Paying attention to several things at once." }, { "id": "B", "text": "Understanding the rules." }, { "id": "C", "text": "Paying for the lessons." }, { "id": "D", "text": "Driving at night." }], "answer": "A" },
+          { "id": "3", "prompt": "Why did the instructor suggest Sunday mornings?", "options": [{ "id": "A", "text": "He was free then." }, { "id": "B", "text": "The test centre was open." }, { "id": "C", "text": "Rano preferred them." }, { "id": "D", "text": "There was little traffic." }], "answer": "D" },
+          { "id": "4", "prompt": "Why did Rano fail her first test?", "options": [{ "id": "A", "text": "She drove too fast." }, { "id": "B", "text": "She drove too slowly." }, { "id": "C", "text": "She forgot to check the mirrors." }, { "id": "D", "text": "She arrived late." }], "answer": "B" },
+          { "id": "5", "prompt": "How did Rano react to failing?", "options": [{ "id": "A", "text": "She stopped her lessons for a year." }, { "id": "B", "text": "She changed instructors." }, { "id": "C", "text": "She complained about the examiner." }, { "id": "D", "text": "She stayed positive and tried again." }], "answer": "D" },
+          { "id": "6", "prompt": "What effect has Rano had on her neighbours?", "options": [{ "id": "A", "text": "They now drive her around." }, { "id": "B", "text": "They think she is too old to drive." }, { "id": "C", "text": "They have started learning to drive." }, { "id": "D", "text": "They have bought new cars." }], "answer": "C" }
+        ]
+      },
+      {
+        "id": "r3",
+        "type": "headings",
+        "level": "B2",
+        "title": "Part 3. Choose the best heading for each paragraph. There are two headings you do not need.",
+        "headings": [
+          { "id": "i", "text": "Plan meals before you shop" },
+          { "id": "ii", "text": "Understand date labels" },
+          { "id": "iii", "text": "Store food correctly" },
+          { "id": "iv", "text": "Use leftovers creatively" },
+          { "id": "v", "text": "Share what you cannot use" },
+          { "id": "vi", "text": "Turn scraps into compost" },
+          { "id": "vii", "text": "Buy only imported food" },
+          { "id": "viii", "text": "Eat out more often" }
+        ],
+        "paragraphs": [
+          { "id": "1", "text": "Most food waste begins in the shop, not the kitchen. People buy what looks good or what is on special offer, then discover at home that they have no plan for it. Spending ten minutes on Sunday deciding what you will cook during the week, and writing a list based on that, can cut waste dramatically.", "answer": "i" },
+          { "id": "2", "text": "Many products carry two different dates. A 'use by' date is about safety and should be taken seriously, especially for meat and dairy products. A 'best before' date, however, only tells you when the quality may start to decline. Rice or biscuits a day or two past that date are usually perfectly fine to eat.", "answer": "ii" },
+          { "id": "3", "text": "Where you keep food matters as much as when you eat it. Tomatoes and bananas lose flavour in the fridge, while fresh herbs last much longer if you put them in a glass of water. Keeping older items at the front of the shelf also means you are more likely to use them first.", "answer": "iii" },
+          { "id": "4", "text": "Yesterday's rice can become today's fried rice, and vegetables that are starting to soften are ideal for soup. Many traditional dishes around the world were originally invented as ways of using what was left from an earlier meal, so there is nothing second-class about cooking this way.", "answer": "iv" },
+          { "id": "5", "text": "Sometimes you simply have more than your family can eat, for example after a celebration. Instead of throwing it away, offer it to neighbours, or use local community groups that connect people who have extra food with those who need it.", "answer": "v" },
+          { "id": "6", "text": "Some waste cannot be avoided: vegetable peel, tea leaves, eggshells. If you have a garden or even a balcony, letting this material break down returns nutrients to the soil and reduces the amount of rubbish sent to landfill.", "answer": "vi" }
+        ]
+      },
+      {
+        "id": "r4",
+        "type": "mcq",
+        "level": "C1",
+        "title": "Part 4. Read the text and choose the correct answer.",
+        "text": "Few workplace ideas have spread as quickly in recent years as the four-day week. Trials in several countries have reported impressive results: employees working thirty-two hours instead of forty, with no loss of pay, said they were less stressed and slept better, while many employers found that productivity held steady or even rose. To its supporters, the case seems almost closed.\n\nEconomists, however, tend to be more cautious, and their reservations deserve attention. The first concerns the trials themselves. Companies that volunteer to take part are usually those whose managers already believe the idea will work, and whose work can be reorganised relatively easily. An advertising agency that cuts unnecessary meetings is a very different proposition from a hospital, a school or a bus company, where services must be provided every day and fewer hours per person simply means hiring more people.\n\nA second concern is what happens after the novelty wears off. Employees who know they are part of a high-profile experiment may work unusually hard to prove that it succeeds. Whether the same gains can be sustained over five or ten years, when the arrangement has become ordinary, is still largely unknown.\n\nNone of this means the idea is without merit. Even sceptics accept that much office work contains a great deal of wasted time, and that a shorter week can force organisations to identify and remove it. The more interesting question may not be whether the four-day week works, but for whom. A policy that suits software developers may be unworkable for nurses, and imposing one model on every sector would risk creating new inequalities between workers who can benefit and those who cannot.\n\nPerhaps the most realistic outcome is a gradual one. Rather than a single national change, we may see a patchwork of arrangements: four-day weeks in some industries, flexible hours in others, and in some sectors very little change at all. That may disappoint campaigners who hoped for a revolution, but it would reflect the very different realities of modern work.",
+        "questions": [
+          { "id": "1", "prompt": "What does the first paragraph say about the trials?", "options": [{ "id": "A", "text": "Their results were disappointing." }, { "id": "B", "text": "They reported mostly positive results." }, { "id": "C", "text": "They only involved hospitals." }, { "id": "D", "text": "They reduced employees' pay." }], "answer": "B" },
+          { "id": "2", "prompt": "Why does the writer mention a hospital and a bus company?", "options": [{ "id": "A", "text": "To praise their efficiency." }, { "id": "B", "text": "To show that they took part in trials." }, { "id": "C", "text": "To show where a shorter week is hardest to introduce." }, { "id": "D", "text": "To criticise their managers." }], "answer": "C" },
+          { "id": "3", "prompt": "What is the problem with companies that volunteer for trials?", "options": [{ "id": "A", "text": "Their managers already expect the idea to work." }, { "id": "B", "text": "They are usually very large." }, { "id": "C", "text": "They do not measure productivity." }, { "id": "D", "text": "They pay their staff less." }], "answer": "A" },
+          { "id": "4", "prompt": "What does 'after the novelty wears off' refer to?", "options": [{ "id": "A", "text": "When employees leave the company." }, { "id": "B", "text": "When managers change their minds." }, { "id": "C", "text": "When productivity falls." }, { "id": "D", "text": "When the arrangement is no longer new and special." }], "answer": "D" },
+          { "id": "5", "prompt": "According to the writer, what do even sceptics accept?", "options": [{ "id": "A", "text": "The four-day week works everywhere." }, { "id": "B", "text": "Much office work involves wasted time." }, { "id": "C", "text": "Nurses want shorter weeks." }, { "id": "D", "text": "New national laws are needed." }], "answer": "B" },
+          { "id": "6", "prompt": "Which outcome does the writer consider most likely?", "options": [{ "id": "A", "text": "A single national four-day week." }, { "id": "B", "text": "No change at all." }, { "id": "C", "text": "A return to longer hours." }, { "id": "D", "text": "Different arrangements in different sectors." }], "answer": "D" }
+        ]
+      }
+    ]
+  },
+  "listening": {
+    "parts": [
+      {
+        "id": "l1",
+        "type": "dialogues",
+        "level": "B1",
+        "title": "Part 1. Listen to six short conversations. Choose the correct answer for each.",
+        "items": [
+          { "id": "1", "script": "Man: Excuse me, is this the right platform for the train to Samarkand?\nWoman: No, that's platform three. This one is for Andijan. Go down the stairs and turn left.\nMan: Thank you very much.", "prompt": "Which platform does the man need?", "options": [{ "id": "A", "text": "Platform one" }, { "id": "B", "text": "Platform two" }, { "id": "C", "text": "Platform three" }], "answer": "C" },
+          { "id": "2", "script": "Woman: Did you enjoy the concert?\nMan: The music was great, but we were sitting so far from the stage that we could hardly see the band.\nWoman: Next time, buy your tickets earlier.", "prompt": "What was the man's problem at the concert?", "options": [{ "id": "A", "text": "The sound was poor." }, { "id": "B", "text": "His seat was far from the stage." }, { "id": "C", "text": "The band was late." }], "answer": "B" },
+          { "id": "3", "script": "Man: I'm thinking of joining the gym near the office.\nWoman: I joined last year. The equipment is good, but it's very crowded after work, so I go at lunchtime now.\nMan: Good idea.", "prompt": "When does the woman go to the gym now?", "options": [{ "id": "A", "text": "At lunchtime" }, { "id": "B", "text": "Before work" }, { "id": "C", "text": "After work" }], "answer": "A" },
+          { "id": "4", "script": "Woman: Your flat looks different.\nMan: We painted the walls white and moved the sofa next to the window. It feels much bigger now.\nWoman: It really does.", "prompt": "What did the man change?", "options": [{ "id": "A", "text": "He bought a new sofa." }, { "id": "B", "text": "He moved to a bigger flat." }, { "id": "C", "text": "He painted the walls and moved the furniture." }], "answer": "C" },
+          { "id": "5", "script": "Man: Can you help me with the maths homework tonight?\nWoman: I can't tonight, I'm working late. How about tomorrow during the break?\nMan: That's fine.", "prompt": "When will they do the homework together?", "options": [{ "id": "A", "text": "Tonight" }, { "id": "B", "text": "Tomorrow during the break" }, { "id": "C", "text": "After work tomorrow" }], "answer": "B" },
+          { "id": "6", "script": "Woman: How much is a ticket to the museum?\nMan: It's forty thousand for adults, but students pay half if they show their card.\nWoman: Great, here's my student card.", "prompt": "How much will the woman pay?", "options": [{ "id": "A", "text": "Twenty thousand" }, { "id": "B", "text": "Forty thousand" }, { "id": "C", "text": "Nothing" }], "answer": "A" }
+        ]
+      },
+      {
+        "id": "l2",
+        "type": "notes",
+        "level": "B1",
+        "title": "Part 2. Listen to a phone message. Complete the notes with ONE word or a number.",
+        "script": "Hello, this is Bekzod calling from the Brightway Training Centre about your application for the evening web design course. I'm happy to tell you that there's still a place for you. The course starts on Monday the fourteenth and runs for ten weeks. Classes are on Mondays and Wednesdays from half past six to nine in the evening, in room twenty-two on the third floor. You'll need to bring your own laptop; if that's a problem, we can lend you one, but please tell us in advance. The fee can be paid in two parts: half before the course starts and half after five weeks. On the first evening there's a short test, just so the teacher can see what you already know, so don't worry about it. Please confirm your place by Friday, either by phone or by replying to our email. If we don't hear from you, we'll offer the place to someone on the waiting list. Thanks, and have a good day.",
+        "notes": [
+          { "id": "1", "before": "Course: evening", "after": "design", "answers": ["web"] },
+          { "id": "2", "before": "Length:", "after": "weeks", "answers": ["ten", "10"] },
+          { "id": "3", "before": "Room:", "after": "(third floor)", "answers": ["twenty-two", "22", "twenty two"] },
+          { "id": "4", "before": "Bring your own", "after": "", "answers": ["laptop"] },
+          { "id": "5", "before": "First evening: a short", "after": "(nothing to worry about)", "answers": ["test"] },
+          { "id": "6", "before": "Confirm your place by", "after": "", "answers": ["friday"] }
+        ]
+      },
+      {
+        "id": "l3",
+        "type": "mcq",
+        "level": "B2",
+        "title": "Part 3. Listen to two colleagues discussing a team trip. Choose the correct answer.",
+        "script": "Aziz: Have you seen the email about the team trip in May?\nLola: Yes. The manager wants us to choose between a weekend in Khiva and a day trip to the mountains.\nAziz: Khiva sounds amazing. I've never been.\nLola: It does, but think about the travel. It's a long journey, and half the team has small children. A whole weekend away is difficult for them.\nAziz: I hadn't thought of that. Still, a day in the mountains is just a long walk. We could do that any time.\nLola: Not really. The plan includes a guide who'll teach us about the plants and the history of the area, and there's lunch at a guesthouse. It's more than a walk.\nAziz: Okay, that sounds better. What about people who don't like hiking? Rustam hurt his knee last month.\nLola: The email says there's a shorter route along the river. He could take that and meet us for lunch.\nAziz: Fair enough. So you'll vote for the mountains?\nLola: I think so. Though if Khiva were closer, I'd choose it without hesitating.\nAziz: Maybe we could suggest Khiva for the autumn, as a longer trip with families invited.\nLola: That's a great idea. Let's put it in our reply.",
+        "questions": [
+          { "id": "1", "prompt": "What are the two options for the trip?", "options": [{ "id": "A", "text": "Khiva or Samarkand." }, { "id": "B", "text": "Khiva or the mountains." }, { "id": "C", "text": "The mountains or the river." }], "answer": "B" },
+          { "id": "2", "prompt": "Why does Lola have doubts about Khiva?", "options": [{ "id": "A", "text": "It is too expensive." }, { "id": "B", "text": "She has been there before." }, { "id": "C", "text": "It is hard for colleagues with young children." }], "answer": "C" },
+          { "id": "3", "prompt": "What makes the mountain trip more than a walk?", "options": [{ "id": "A", "text": "A guide and lunch at a guesthouse." }, { "id": "B", "text": "A night in a hotel." }, { "id": "C", "text": "A sports competition." }], "answer": "A" },
+          { "id": "4", "prompt": "What could Rustam do?", "options": [{ "id": "A", "text": "Stay at home." }, { "id": "B", "text": "Drive to the guesthouse." }, { "id": "C", "text": "Take a shorter route." }], "answer": "C" },
+          { "id": "5", "prompt": "How does Lola feel about Khiva?", "options": [{ "id": "A", "text": "She would choose it if it were closer." }, { "id": "B", "text": "She dislikes it." }, { "id": "C", "text": "She thinks it is boring." }], "answer": "A" },
+          { "id": "6", "prompt": "What do they decide to suggest?", "options": [{ "id": "A", "text": "Cancelling the trip." }, { "id": "B", "text": "An autumn trip to Khiva with families." }, { "id": "C", "text": "Two trips in May." }], "answer": "B" }
+        ]
+      },
+      {
+        "id": "l4",
+        "type": "mcq",
+        "level": "C1",
+        "title": "Part 4. Listen to a short talk. Choose the correct answer.",
+        "script": "Over the past two decades, many schools have reduced the time spent teaching handwriting, on the reasonable assumption that most adult writing now happens on keyboards. It's a shift that seems sensible, but a growing body of research suggests we may want to be more careful about what we give up.\nThe central finding is fairly consistent. When students take lecture notes by hand, they tend to remember the content better than students who type, even though typists usually record more words. The leading explanation is that handwriting is slow. Because you cannot write down everything, you are forced to decide what matters and put it into your own words, and that act of selection and rephrasing is itself a form of learning. Typists, by contrast, can copy almost word for word, which requires much less thought.\nI'd add two qualifications. First, the advantage seems to depend on how the keyboard is used rather than on the keyboard itself. Students who are taught to summarise rather than copy while typing narrow the gap considerably. Second, for some learners, those with certain motor difficulties for instance, handwriting is so effortful that it gets in the way of thinking altogether, and for them a keyboard can be liberating.\nSo what should schools do? I'm not arguing for a return to hours of copying out letters. The skill worth protecting is not neat handwriting as such, but the habit of processing information actively. Handwriting happens to encourage that habit naturally, which is a good reason to keep it in classrooms, especially for note-taking. But the deeper goal should be to teach students how to listen, select and rephrase, whatever tool they happen to be holding.",
+        "questions": [
+          { "id": "1", "prompt": "Why did many schools teach less handwriting?", "options": [{ "id": "A", "text": "Handwriting was thought to be harmful." }, { "id": "B", "text": "Teachers prefer typed work." }, { "id": "C", "text": "Most adults now write on keyboards." }], "answer": "C" },
+          { "id": "2", "prompt": "According to the research, why do handwritten notes help memory?", "options": [{ "id": "A", "text": "Writing slowly forces students to select and rephrase." }, { "id": "B", "text": "Students write more words." }, { "id": "C", "text": "Handwritten notes look more attractive." }], "answer": "A" },
+          { "id": "3", "prompt": "What is the speaker's first qualification?", "options": [{ "id": "A", "text": "Keyboards are always worse." }, { "id": "B", "text": "How the keyboard is used matters." }, { "id": "C", "text": "Typists remember more." }], "answer": "B" },
+          { "id": "4", "prompt": "Why does the speaker mention learners with motor difficulties?", "options": [{ "id": "A", "text": "To argue for more handwriting practice." }, { "id": "B", "text": "To criticise keyboards." }, { "id": "C", "text": "To show that handwriting can be a barrier for some." }], "answer": "C" },
+          { "id": "5", "prompt": "What does the speaker think schools should protect?", "options": [{ "id": "A", "text": "Neat handwriting." }, { "id": "B", "text": "The habit of processing information actively." }, { "id": "C", "text": "Hours of copying letters." }], "answer": "B" },
+          { "id": "6", "prompt": "Which best describes the speaker's position?", "options": [{ "id": "A", "text": "Handwriting is useful mainly because it encourages active learning." }, { "id": "B", "text": "Handwriting should replace typing." }, { "id": "C", "text": "Typing should replace handwriting." }], "answer": "A" }
+        ]
+      }
+    ]
+  },
+  "writing": {
+    "input": {
+      "from": "Customer Service, CityNet Home Internet",
+      "subject": "Planned service interruption and new prices",
+      "body": "Dear customer,\n\nOn 12 and 13 March, internet service in your area will be interrupted between 10 a.m. and 4 p.m. while we upgrade our equipment. From April, the monthly price of the Home Plus plan will increase by 15%, but the speed will double. Please tell us how these changes affect you and whether you would like to move to a different plan.\n\nCityNet Customer Service"
+    },
+    "task11": "Write an email to a friend who uses the same internet company. Tell your friend how you feel about the changes and what you are going to do. Write about 50 words.",
+    "task12": "Write an email to the customer service team. Explain how the changes affect you and say what you would like the company to do. Write 120-150 words.",
+    "part2": "You are writing a post for an online discussion forum. The topic is: 'Working from home is better for employees than working in an office.' Give your opinion and support it with reasons and examples. Write 180-200 words."
+  },
+  "speaking": {
+    "part11": [
+      "What do you do to relax after a busy day?",
+      "Tell me about a place in your city that you like to visit.",
+      "How often do you use public transport?"
+    ],
+    "part12": {
+      "scene": "Picture A: a busy city street with tall buildings and heavy traffic. Picture B: a quiet village road with small houses and gardens.",
+      "questions": [
+        "Describe and compare the two pictures.",
+        "Why do many young people move from villages to cities?",
+        "Would you prefer to live in a city or a village in the future? Why?"
+      ]
+    },
+    "part2": {
+      "scene": "A picture of a family sitting together at dinner, with everyone looking at their own phone.",
+      "questions": [
+        "Tell me about how technology has changed your daily life.",
+        "What are the positive and negative effects of smartphones on family life?",
+        "Should there be limits on how much time children spend on screens? Why?"
+      ]
+    },
+    "part3": {
+      "statement": "University education should be free for all students.",
+      "for": [
+        "It gives equal chances to students from poor families",
+        "The country needs more educated people",
+        "Students can focus on study instead of part-time jobs"
+      ],
+      "against": [
+        "It is very expensive for the government",
+        "Students may value free education less",
+        "The money could be spent on schools or hospitals instead"
+      ]
+    }
+  }
+}

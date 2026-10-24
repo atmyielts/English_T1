@@ -45,6 +45,20 @@ export type SpeakingFeedback = {
   };
 };
 
+/** Pause timing measured in the browser (null for typed answers or when it looked unreliable). */
+export type SpeakingFluency = { long_pauses: number; longest_pause_seconds: number | null; first_word_seconds: number | null };
+
+/** One earlier attempt at the same prompt, for comparing tries. */
+export type SpeakingAttemptSummary = {
+  at: string;
+  mode: SpeakingMode;
+  transcript: string;
+  overall: number | null;
+  scores: { task: number | null; vocabulary: number | null; grammar: number | null; fluency: number | null };
+  stats: { words: number | null; wpm: number | null; filler_count: number | null; speaking_seconds: number | null };
+  fluency: SpeakingFluency | null;
+};
+
 export type SpeakingSubmitResponse = {
   ok: true;
   attempt_id: string;
@@ -54,6 +68,8 @@ export type SpeakingSubmitResponse = {
   transcript: string;
   feedback: SpeakingFeedback;
   your_words_used?: string[];
+  fluency?: SpeakingFluency | null;
+  previous_attempt?: SpeakingAttemptSummary | null;
 };
 
 export const getPrompt = (slug: string, signal?: AbortSignal) =>
@@ -64,7 +80,14 @@ export const getPrompt = (slug: string, signal?: AbortSignal) =>
 
 export const submitAnswer = (
   slug: string,
-  input: { transcript: string; mode: SpeakingMode; speakingSeconds: number | null; timeSpentSeconds: number; yourWordIds?: string[] },
+  input: {
+    transcript: string;
+    mode: SpeakingMode;
+    speakingSeconds: number | null;
+    timeSpentSeconds: number;
+    yourWordIds?: string[];
+    fluency?: SpeakingFluency | null;
+  },
 ) =>
   edge<SpeakingSubmitResponse>('speaking-studio', `/prompts/${encodeURIComponent(slug)}/submit`, {
     query: { language_code: 'en' },
@@ -74,5 +97,13 @@ export const submitAnswer = (
       speaking_seconds: input.speakingSeconds,
       time_spent_seconds: input.timeSpentSeconds,
       your_word_ids: input.yourWordIds ?? [],
+      fluency: input.fluency ?? null,
     },
+  });
+
+/** The learner's recent attempts at this prompt, newest first. */
+export const getAttempts = (slug: string, signal?: AbortSignal) =>
+  edge<{ attempts: SpeakingAttemptSummary[] }>('speaking-studio', `/prompts/${encodeURIComponent(slug)}/attempts`, {
+    query: { language_code: 'en' },
+    signal,
   });

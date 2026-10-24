@@ -12,9 +12,11 @@ export type ListeningQuestion = {
   options: string[];
   answer_index: number;
   explanation: string;
+  /** "gist" questions are about the whole recording and are asked after the first listen. */
+  focus?: "gist" | "detail";
 };
 
-export type PublicListeningQuestion = Pick<ListeningQuestion, "id" | "type" | "prompt" | "options">;
+export type PublicListeningQuestion = Pick<ListeningQuestion, "id" | "type" | "prompt" | "options" | "focus">;
 
 export type QuestionResult = {
   question_id: string;
@@ -43,14 +45,32 @@ export const parseQuestions = (raw: unknown): ListeningQuestion[] => {
     if (!id || seen.has(id) || !prompt || options.length < 2) continue;
     if (!Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex >= options.length) continue;
     seen.add(id);
-    out.push({ id, type: "mcq", prompt, options, answer_index: answerIndex, explanation: text(rec.explanation, 900) });
+    const focus = text(rec.focus, 10).toLowerCase();
+    out.push({
+      id,
+      type: "mcq",
+      prompt,
+      options,
+      answer_index: answerIndex,
+      explanation: text(rec.explanation, 900),
+      ...(focus === "gist" || focus === "detail" ? { focus } : {}),
+    });
   }
   return out;
 };
 
 /** Questions as sent to the browser before submission: no key, no explanation. */
 export const publicQuestions = (questions: ListeningQuestion[]): PublicListeningQuestion[] =>
-  questions.map(({ id, type, prompt, options }) => ({ id, type, prompt, options }));
+  questions.map(({ id, type, prompt, options, focus }) => ({ id, type, prompt, options, ...(focus ? { focus } : {}) }));
+
+/**
+ * Ids of the questions to ask after the first listen, for the main idea:
+ * those marked "gist", or else the first question.
+ */
+export const gistQuestionIds = (questions: Array<Pick<ListeningQuestion, "id" | "focus">>): string[] => {
+  const marked = questions.filter((question) => question.focus === "gist").map((question) => question.id);
+  return marked.length ? marked : questions.slice(0, 1).map((question) => question.id);
+};
 
 export const gradeQuestions = (
   questions: ListeningQuestion[],
@@ -481,4 +501,103 @@ export const listeningCorrectness = (input: {
       ? questionRatio
       : dictation ?? 0;
   return Math.round(value * 10000) / 10000;
+};
+
+// ---------------------------------------------------------------------------
+// Dictation: what kind of thing was missed
+// ---------------------------------------------------------------------------
+
+export type DictationIssueKind = "small_words" | "endings" | "contractions" | "numbers" | "spelling" | "missed_words" | "extra_words";
+
+export type DictationIssue = {
+  kind: DictationIssueKind;
+  count: number;
+  /** Up to three examples: "the", "walk → walked", "4 (four)". */
+  examples: string[];
+};
+
+const SMALL_WORDS = new Set([
+  "a", "an", "the", "to", "of", "for", "at", "on", "in", "by", "with", "from", "into", "up", "out", "off",
+  "is", "are", "was", "were", "am", "be", "been", "do", "does", "did", "has", "have", "had", "will", "would",
+  "can", "could", "and", "but", "or", "so", "if", "that", "it", "its", "there", "some", "any",
+]);
+const NUMBER_WORDS = /^(zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|first|second|third|fourth|fifth)$/;
+
+const bare = (word: string): string => word.toLowerCase().replace(/[’‘]/g, "'").replace(/^[^a-z0-9']+|[^a-z0-9']+$/g, "");
+
+const stem = (word: string): string =>
+  word.replace(/'s$/, "").replace(/(?:ing|ed|es|s|d)$/, "").replace(/([bdgmnprt])\1$/, "$1").replace(/e$/, "");
+
+/** True when two words differ only by a grammatical ending (walk / walked / walks / walking / stop / stopped). */
+export const differsByEnding = (expected: string, typed: string): boolean => {
+  const a = bare(expected);
+  const b = bare(typed);
+  if (!a || !b || a === b) return false;
+  const base = stem(a);
+  return base.length >= 2 && base === stem(b);
+};
+
+type Slip = { expected: string | null; typed: string | null; misspelled: boolean };
+
+/**
+ * Non-matching tokens as slips. A missed script word next to an extra typed
+ * word is one substitution ("walk" written for "walked"), paired in order.
+ */
+const slipsOf = (tokens: DiffToken[]): Slip[] => {
+  const slips: Slip[] = [];
+  let missed: string[] = [];
+  let extra: string[] = [];
+  const flush = () => {
+    const pairs = Math.min(missed.length, extra.length);
+    for (let i = 0; i < pairs; i += 1) slips.push({ expected: missed[i]!, typed: extra[i]!, misspelled: false });
+    for (const word of missed.slice(pairs)) slips.push({ expected: word, typed: null, misspelled: false });
+    for (const word of extra.slice(pairs)) slips.push({ expected: null, typed: word, misspelled: false });
+    missed = [];
+    extra = [];
+  };
+  for (const token of tokens) {
+    if (token.kind === "missed") missed.push(token.text);
+    else if (token.kind === "extra") extra.push(token.text);
+    else {
+      flush();
+      if (token.kind === "misspelled") slips.push({ expected: token.text, typed: token.typed ?? "", misspelled: true });
+    }
+  }
+  flush();
+  return slips;
+};
+
+const isNumberish = (word: string): boolean => /\d/.test(word) || NUMBER_WORDS.test(word);
+
+/**
+ * Turns word-level dictation results into specific advice: which kinds of
+ * words were lost (small words, word endings, contractions, numbers, spelling,
+ * whole words, extra words), most frequent first.
+ */
+export const dictationFeedback = (results: Array<Pick<DictationResult, "tokens">>): DictationIssue[] => {
+  const issues = new Map<DictationIssueKind, DictationIssue>();
+  const add = (kind: DictationIssueKind, example: string) => {
+    const issue = issues.get(kind) ?? { kind, count: 0, examples: [] };
+    issue.count += 1;
+    if (example && issue.examples.length < 3 && !issue.examples.includes(example)) issue.examples.push(example);
+    issues.set(kind, issue);
+  };
+  for (const result of results) {
+    for (const slip of slipsOf(result.tokens)) {
+      const expected = slip.expected === null ? "" : bare(slip.expected);
+      const typed = slip.typed === null ? "" : bare(slip.typed);
+      if (!expected) {
+        if (typed) add("extra_words", typed);
+        continue;
+      }
+      const example = typed ? `${typed} → ${expected}` : expected;
+      if (isNumberish(expected) || (typed && isNumberish(typed))) add("numbers", example);
+      else if (expected.includes("'")) add("contractions", example);
+      else if (typed && differsByEnding(expected, typed)) add("endings", example);
+      else if (!typed && SMALL_WORDS.has(expected)) add("small_words", expected);
+      else if (slip.misspelled) add("spelling", example);
+      else add("missed_words", example);
+    }
+  }
+  return [...issues.values()].sort((a, b) => b.count - a.count || a.kind.localeCompare(b.kind));
 };

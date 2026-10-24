@@ -5,8 +5,11 @@ import { getReminders, saveReminders, type ReminderSettings } from '../lib/hub';
 import { useResource } from '../lib/useResource';
 import { Loading, Panel } from '../ui/kit';
 
-/** Opt-in Telegram nudge on days without practice, a Sunday summary and a daily review quiz. */
-export const RemindersPanel = () => {
+/**
+ * Opt-in Telegram nudge on days without practice, a Sunday summary and a daily review quiz.
+ * `embedded` renders just the controls, inside Settings → Notifications.
+ */
+export const RemindersPanel = ({ embedded = false }: { embedded?: boolean } = {}) => {
   const t = useT();
   const { locale } = useI18n();
   const { telegramHref } = useEnglish();
@@ -16,7 +19,7 @@ export const RemindersPanel = () => {
   const [error, setError] = useState<string | null>(null);
   const value = local ?? remote.data;
 
-  const save = async (patch: Partial<Pick<ReminderSettings, 'enabled' | 'hour' | 'weekly' | 'quiz'>>) => {
+  const save = async (patch: Partial<Pick<ReminderSettings, 'enabled' | 'hour' | 'weekly' | 'quiz' | 'report'>>) => {
     setSaving(true);
     setError(null);
     try {
@@ -31,8 +34,8 @@ export const RemindersPanel = () => {
 
   const hours = value ? Array.from({ length: value.hours.max - value.hours.min + 1 }, (_, index) => value.hours.min + index) : [];
 
-  return (
-    <Panel title={t('reminders.title')}>
+  const content = (
+    <>
       {!value ? <Loading lines={2} /> : !value.telegram_linked ? (
         <>
           <p className="hint">{t('reminders.linkFirst')}</p>
@@ -56,6 +59,11 @@ export const RemindersPanel = () => {
             <span>{t('tgreview.toggle')}</span>
           </label>
           {Boolean(value.quiz) ? <p className="hint">{t('tgreview.hint')}</p> : null}
+          <label className="en-toggle">
+            <input type="checkbox" checked={Boolean(value.report)} disabled={saving} onChange={(event) => void save({ report: event.target.checked })} />
+            <span>{t('social.report.toggle')}</span>
+          </label>
+          {value.report ? <p className="hint">{t('social.report.hint')}</p> : null}
           {value.enabled || value.quiz ? (
             <>
               <label className="en-field-inline">
@@ -70,6 +78,10 @@ export const RemindersPanel = () => {
         </>
       )}
       {error || remote.error ? <p className="en-error" role="alert">{error ?? t('reminders.error')}</p> : null}
-    </Panel>
+    </>
   );
+
+  return embedded
+    ? <div className="en-stack en-notify-channel"><h3>{t('reminders.title')}</h3>{content}</div>
+    : <Panel title={t('reminders.title')}>{content}</Panel>;
 };

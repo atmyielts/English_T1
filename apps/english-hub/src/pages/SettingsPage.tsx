@@ -5,10 +5,11 @@ import { useEnglish } from '../app/EnglishContext';
 import { useT } from '../i18n';
 import { LevelBadge, PageHeader, Panel } from '../ui/kit';
 import { Onboarding } from './Onboarding';
-import { RemindersPanel } from './RemindersPanel';
+import { NotificationsPanel } from './NotificationsPanel';
 import { GoalSettingsPanel } from './goal/GoalSettingsPanel';
 import { LeagueSettingsPanel } from '../components/LeagueSettingsPanel';
 import { InstallPanel } from '../components/InstallApp';
+import { ProgressLinksPanel } from '../components/ProgressLinksPanel';
 
 export const SettingsPage = () => {
   const t = useT();
@@ -41,7 +42,8 @@ export const SettingsPage = () => {
           </Panel>
           <InstallPanel />
           <GoalSettingsPanel />
-          <RemindersPanel />
+          <NotificationsPanel />
+          <ProgressLinksPanel />
           <LeagueSettingsPanel />
           <Panel title={t('settings.account.title')}>
             <div className="en-actions">

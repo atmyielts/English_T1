@@ -9,7 +9,11 @@
     "theme": "urban transport",
     "tone": "lime",
     "is_hot": false,
-    "metadata": { "genre": "explainer", "writing_tone": "informative", "word_count": 256 },
+    "metadata": {
+      "genre": "explainer",
+      "writing_tone": "informative",
+      "word_count": 256
+    },
     "questions": [
       {
         "id": "q1",
@@ -75,6 +79,57 @@
         ],
         "answer_index": 1,
         "explanation": "\"Safe and separate lanes matter more than anything else.\""
+      },
+      {
+        "id": "t1",
+        "type": "tfng",
+        "prompt": "With a bike-sharing scheme, you can rent a bike using a phone app.",
+        "answer": "true",
+        "explanation": "\"…bike-sharing schemes, where you can rent a bike with a phone app for a short trip.\"",
+        "skill": "reading.detail"
+      },
+      {
+        "id": "t2",
+        "type": "tfng",
+        "prompt": "Electric bikes are cheaper than normal bikes.",
+        "answer": "not_given",
+        "explanation": "The text says electric bikes make longer or hillier journeys possible, but says nothing about their price.",
+        "skill": "reading.detail"
+      },
+      {
+        "id": "t3",
+        "type": "tfng",
+        "prompt": "Doctors disagree about whether exercise is good for mental health.",
+        "answer": "false",
+        "explanation": "\"Doctors generally agree that regular physical activity is good for the heart and for mental health.\"",
+        "skill": "reading.detail"
+      },
+      {
+        "id": "g1",
+        "type": "gap",
+        "prompt": "Complete the summary with words from the box.",
+        "text": "Many people find it hard to make time for ___. Cycling to work makes exercise part of their daily ___. But very hot or cold weather, fast cars and offices with nowhere to take a ___ can stop people from cycling.",
+        "answers": [
+          [
+            "exercise"
+          ],
+          [
+            "routine"
+          ],
+          [
+            "shower"
+          ]
+        ],
+        "word_bank": [
+          "exercise",
+          "routine",
+          "shower",
+          "fuel",
+          "journey",
+          "traffic"
+        ],
+        "explanation": "\"Many people say they find it hard to make time for exercise… the exercise becomes part of the daily routine.\" \"Some offices have nowhere to park a bike or take a shower.\"",
+        "skill": "reading.detail"
       }
     ]
   }

@@ -9,7 +9,11 @@
     "theme": "markets",
     "tone": "peach",
     "is_hot": false,
-    "metadata": { "genre": "feature", "writing_tone": "descriptive", "word_count": 401 },
+    "metadata": {
+      "genre": "feature",
+      "writing_tone": "descriptive",
+      "word_count": 401
+    },
     "questions": [
       {
         "id": "q1",
@@ -75,6 +79,38 @@
         ],
         "answer_index": 1,
         "explanation": "The sentence follows the example of a seller who hides bad fruit: word of dishonesty spreads fast and damages trust."
+      },
+      {
+        "id": "t1",
+        "type": "tfng",
+        "prompt": "Gulnora has a fixed price list for her fruit and nuts.",
+        "answer": "false",
+        "explanation": "\"She does not have a price list.\"",
+        "skill": "reading.detail"
+      },
+      {
+        "id": "t2",
+        "type": "tfng",
+        "prompt": "Gulnora sees bargaining as a kind of conversation.",
+        "answer": "true",
+        "explanation": "\"It's a conversation,\" she says.",
+        "skill": "reading.detail"
+      },
+      {
+        "id": "t3",
+        "type": "tfng",
+        "prompt": "Most of Gulnora's money comes from tourists.",
+        "answer": "false",
+        "explanation": "\"What keeps Gulnora's business going is not tourists but regular customers.\"",
+        "skill": "reading.detail"
+      },
+      {
+        "id": "t4",
+        "type": "tfng",
+        "prompt": "The bazaar is busier than the supermarkets nearby.",
+        "answer": "not_given",
+        "explanation": "The text says the bazaar remains busy, but it does not compare it with how busy supermarkets are.",
+        "skill": "reading.detail"
       }
     ]
   }

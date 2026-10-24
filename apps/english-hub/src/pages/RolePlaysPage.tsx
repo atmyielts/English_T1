@@ -1,7 +1,10 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Fragment, useEffect, useRef, useState, type FormEvent } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useEnglish } from '../app/EnglishContext';
 import { L1Why } from '../components/L1Why';
+import { ResultSummary } from '../components/ResultSummary';
+import { ShadowButton } from '../components/shadow/ShadowButton';
+import { getRoleplayState } from '../lib/glue';
 import { SpeakOrType } from '../components/SpeakOrType';
 import { useI18n, useT } from '../i18n';
 import { ApiError } from '../lib/api';
@@ -16,7 +19,7 @@ import {
 } from '../lib/practice';
 import { canSpeak, speak, stopSpeaking } from '../lib/speech';
 import { useResource } from '../lib/useResource';
-import { EmptyState, ErrorState, LevelBadge, Loading, PageHeader, Panel, ScoreBadge, Tag, useErrorMessage } from '../ui/kit';
+import { EmptyState, ErrorState, LevelBadge, Loading, PageHeader, Panel, Tag, useErrorMessage } from '../ui/kit';
 import '../components/practice.css';
 
 const levelLabel = (scenario: RoleplayScenarioView, t: ReturnType<typeof useT>) =>
@@ -142,11 +145,27 @@ const RoleplayResultView = ({ scenario, result, onAgain }: { scenario: RoleplayS
     }
   };
 
+  const mainFix = result.fixes[0] ?? null;
   return (
-    <Panel title={t('roleplay.result.title')} aside={<ScoreBadge score={result.score} />}>
-      <div className="en-stack">
+    <section className="en-panel" aria-live="polite">
+      <ResultSummary
+        title={t('roleplay.result.title')}
+        score={result.score}
+        summary={t('roleplay.result.goals', { met: result.goals_met, total: result.goals_total })}
+        xp={{ skill: 'speaking', slug: `roleplay-${scenario.id}` }}
+        saved={{ words: saved.size, mistakes: result.fixes.length }}
+        mainMistake={mainFix ? { original: mainFix.said, corrected: mainFix.better, explanation: mainFix.why, topic: mainFix.topic, noteId: mainFix.l1 } : null}
+        share={{ kind: 'roleplay', skill: 'speaking', slug: scenario.id, title: scenario.title, score: result.score }}
+        upNext={{ skill: 'speaking', slug: `roleplay-${scenario.id}` }}
+        actions={(
+          <>
+            <button type="button" onClick={onAgain}>{t('roleplay.result.again')}</button>
+            <Link className="en-button-quiet" to="/roleplay">{t('roleplay.result.other')}</Link>
+          </>
+        )}
+      >
         <div className="en-stack" style={{ gap: '.4rem' }}>
-          <h3 style={{ margin: 0, fontSize: '.95rem' }}>{t('roleplay.result.goals', { met: result.goals_met, total: result.goals_total })}</h3>
+          <h3 style={{ margin: 0, fontSize: '.95rem' }}>{t('roleplay.goals')}</h3>
           <ul className="en-rp-goals">
             {result.goals.map((goal) => (
               <li key={goal.id} className={goal.achieved ? 'is-met' : undefined}>
@@ -205,13 +224,8 @@ const RoleplayResultView = ({ scenario, result, onAgain }: { scenario: RoleplayS
             {error ? <div className="error" role="alert">{errorText(error)}</div> : null}
           </div>
         ) : null}
-
-        <div className="en-actions">
-          <button type="button" onClick={onAgain}>{t('roleplay.result.again')}</button>
-          <Link className="en-button-quiet" to="/roleplay">{t('roleplay.result.other')}</Link>
-        </div>
-      </div>
-    </Panel>
+      </ResultSummary>
+    </section>
   );
 };
 
@@ -222,6 +236,7 @@ export const RolePlayPage = () => {
   const { pricingHref } = useEnglish();
   const errorText = useErrorMessage();
   const { id = '' } = useParams();
+  const [params] = useSearchParams();
   const list = useResource((signal) => getRoleplayScenarios(locale, signal), [locale]);
   const scenario = list.data?.scenarios.find((entry) => entry.id === id) ?? null;
   const stored = useRef(readStored(id)).current;
@@ -247,6 +262,28 @@ export const RolePlayPage = () => {
   const lines: ChatLine[] = scenario && messages.length === 0 ? [{ role: 'partner', text: scenario.opening }] : messages;
 
   useEffect(() => () => stopSpeaking(), []);
+
+  // Continue a conversation started on another device (?session= from "Continue").
+  const remoteSession = params.get('session');
+  useEffect(() => {
+    if (!remoteSession || sessionId) return;
+    const controller = new AbortController();
+    getRoleplayState(remoteSession, controller.signal)
+      .then((state) => {
+        if (state.scenario_id !== id) return;
+        setSessionId(state.session_id);
+        setLevel(state.level);
+        setMessages(state.messages);
+        setGoalsMet(state.goals_met);
+        setTurnsLeft(state.turns_left);
+        setCanFinish(state.can_finish);
+        setShouldFinish(state.should_finish);
+      })
+      .catch(() => { /* Ended or not found: the learner starts a new conversation as usual. */ });
+    return () => controller.abort();
+    // Only on arrival with a session in the address.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [remoteSession, id]);
   useEffect(() => { endRef.current?.scrollIntoView({ block: 'nearest' }); }, [lines.length, busy]);
 
   useEffect(() => {
@@ -399,10 +436,15 @@ export const RolePlayPage = () => {
               </div>
               <div className="en-chat" aria-live="polite">
                 {lines.map((line, index) => (
-                  <div key={index} className={`en-bubble ${line.role === 'learner' ? 'is-me' : 'is-tutor'}`} lang="en">
-                    <span className="visually-hidden">{line.role === 'learner' ? t('roleplay.you') : scenario.partner}: </span>
-                    {line.text}
-                  </div>
+                  <Fragment key={index}>
+                    <div className={`en-bubble ${line.role === 'learner' ? 'is-me' : 'is-tutor'}`} lang="en">
+                      <span className="visually-hidden">{line.role === 'learner' ? t('roleplay.you') : scenario.partner}: </span>
+                      {line.text}
+                    </div>
+                    {line.role === 'partner' ? (
+                      <div className="sh-bubble-actions"><ShadowButton text={line.text} source="roleplay" /></div>
+                    ) : null}
+                  </Fragment>
                 ))}
                 {busy === 'send' ? <p className="hint">{t('roleplay.replying', { name: scenario.partner })}</p> : null}
                 <div ref={endRef} />

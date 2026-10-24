@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useEnglish } from '../app/EnglishContext';
 import { L1Why } from '../components/L1Why';
+import { ResultSummary } from '../components/ResultSummary';
 import { formatClock, SpeakOrType } from '../components/SpeakOrType';
 import { useI18n, useT } from '../i18n';
 import { ApiError } from '../lib/api';
@@ -311,12 +312,20 @@ export const SpeakingMockPage = () => {
     return (
       <>
         {header}
-        <Panel title={t('mock.result.title')}>
-          <MockResultView result={result} />
-          <div className="en-actions" style={{ marginTop: '1rem' }}>
-            <button type="button" onClick={() => { setResult(null); overview.reload(); }}>{t('mock.result.again')}</button>
-          </div>
-        </Panel>
+        <section className="en-panel" aria-live="polite">
+          <ResultSummary
+            title={t('mock.result.title')}
+            scoreSlot={<span className="en-result-band" aria-label={t('mock.result.overall')}><small>{t('mock.result.overall')}</small><strong>{bandText(result.overall)}</strong></span>}
+            xp={{ skill: 'speaking', slug: 'ielts-speaking-mock' }}
+            saved={{ mistakes: result.fixes.length }}
+            mainMistake={result.fixes[0] ? { original: result.fixes[0].said, corrected: result.fixes[0].better, explanation: result.fixes[0].why, topic: result.fixes[0].topic, noteId: result.fixes[0].l1 } : null}
+            share={{ kind: 'mock', skill: 'speaking', band: result.overall }}
+            upNext={{ skill: 'speaking', slug: 'ielts-speaking-mock' }}
+            actions={<button type="button" onClick={() => { setResult(null); overview.reload(); }}>{t('mock.result.again')}</button>}
+          >
+            <MockResultView result={result} />
+          </ResultSummary>
+        </section>
       </>
     );
   }

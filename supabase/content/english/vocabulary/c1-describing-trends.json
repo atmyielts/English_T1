@@ -13,7 +13,18 @@
       "definition": "a sudden large increase",
       "example": "There was a surge in online orders during the holidays.",
       "translation_ru": "резкий рост, всплеск",
-      "translation_uz": "keskin oʻsish"
+      "translation_uz": "keskin oʻsish",
+      "collocations": [
+        "a surge in demand",
+        "a sudden surge",
+        "prices surged"
+      ],
+      "word_family": [
+        {
+          "word": "surge",
+          "part_of_speech": "verb"
+        }
+      ]
     },
     {
       "word": "plummet",
@@ -21,7 +32,12 @@
       "definition": "to fall very quickly and suddenly",
       "example": "Temperatures plummeted overnight.",
       "translation_ru": "резко падать",
-      "translation_uz": "keskin tushib ketmoq"
+      "translation_uz": "keskin tushib ketmoq",
+      "collocations": [
+        "prices plummeted",
+        "plummet to a record low",
+        "sales plummeted by 40%"
+      ]
     },
     {
       "word": "fluctuate",
@@ -29,7 +45,18 @@
       "definition": "to keep changing, going up and down",
       "example": "The price of fruit fluctuates throughout the year.",
       "translation_ru": "колебаться",
-      "translation_uz": "oʻzgarib turmoq"
+      "translation_uz": "oʻzgarib turmoq",
+      "collocations": [
+        "fluctuate wildly",
+        "fluctuate between 10 and 20",
+        "fluctuating prices"
+      ],
+      "word_family": [
+        {
+          "word": "fluctuation",
+          "part_of_speech": "noun"
+        }
+      ]
     },
     {
       "word": "steady",
@@ -37,7 +64,22 @@
       "definition": "developing gradually and evenly, without sudden changes",
       "example": "The company has seen steady growth over the past five years.",
       "translation_ru": "устойчивый, равномерный",
-      "translation_uz": "barqaror, bir tekis"
+      "translation_uz": "barqaror, bir tekis",
+      "collocations": [
+        "a steady rise",
+        "a steady decline",
+        "remain steady"
+      ],
+      "word_family": [
+        {
+          "word": "steadily",
+          "part_of_speech": "adverb"
+        },
+        {
+          "word": "steady",
+          "part_of_speech": "verb"
+        }
+      ]
     },
     {
       "word": "peak",
@@ -45,7 +87,23 @@
       "definition": "to reach the highest point or level",
       "example": "Electricity use peaks in July, when everyone switches on the air conditioning.",
       "translation_ru": "достигать пика",
-      "translation_uz": "eng yuqori nuqtaga yetmoq"
+      "translation_uz": "eng yuqori nuqtaga yetmoq",
+      "collocations": [
+        "peak at",
+        "reach a peak",
+        "peak season",
+        "peak levels"
+      ],
+      "word_family": [
+        {
+          "word": "peak",
+          "part_of_speech": "noun"
+        },
+        {
+          "word": "peak",
+          "part_of_speech": "adjective"
+        }
+      ]
     },
     {
       "word": "level off",
@@ -53,7 +111,11 @@
       "definition": "to stop rising or falling and stay at the same level",
       "example": "After years of growth, sales have levelled off.",
       "translation_ru": "стабилизироваться, выравниваться",
-      "translation_uz": "barqarorlashmoq"
+      "translation_uz": "barqarorlashmoq",
+      "collocations": [
+        "level off at",
+        "begin to level off"
+      ]
     },
     {
       "word": "decline",
@@ -61,7 +123,23 @@
       "definition": "a gradual decrease in amount, quality or importance",
       "example": "A decline in readers forced the magazine to close.",
       "translation_ru": "спад, снижение",
-      "translation_uz": "pasayish"
+      "translation_uz": "pasayish",
+      "collocations": [
+        "a sharp decline",
+        "a gradual decline",
+        "a decline in sales",
+        "go into decline"
+      ],
+      "word_family": [
+        {
+          "word": "decline",
+          "part_of_speech": "verb"
+        },
+        {
+          "word": "declining",
+          "part_of_speech": "adjective"
+        }
+      ]
     },
     {
       "word": "marginal",
@@ -69,7 +147,22 @@
       "definition": "very small and not important",
       "example": "The difference between the two prices is marginal.",
       "translation_ru": "незначительный",
-      "translation_uz": "arzimas, juda kichik"
+      "translation_uz": "arzimas, juda kichik",
+      "collocations": [
+        "a marginal increase",
+        "a marginal difference",
+        "marginal gains"
+      ],
+      "word_family": [
+        {
+          "word": "marginally",
+          "part_of_speech": "adverb"
+        },
+        {
+          "word": "margin",
+          "part_of_speech": "noun"
+        }
+      ]
     },
     {
       "word": "dramatic",
@@ -77,7 +170,22 @@
       "definition": "sudden and very large or noticeable",
       "example": "The new metro line led to a dramatic fall in journey times.",
       "translation_ru": "резкий, разительный",
-      "translation_uz": "keskin, sezilarli"
+      "translation_uz": "keskin, sezilarli",
+      "collocations": [
+        "a dramatic rise",
+        "a dramatic fall",
+        "dramatic changes"
+      ],
+      "word_family": [
+        {
+          "word": "dramatically",
+          "part_of_speech": "adverb"
+        },
+        {
+          "word": "drama",
+          "part_of_speech": "noun"
+        }
+      ]
     },
     {
       "word": "double",
@@ -85,7 +193,22 @@
       "definition": "to become twice as big or twice as many",
       "example": "The number of users doubled in just six months.",
       "translation_ru": "удваиваться",
-      "translation_uz": "ikki baravar oshmoq"
+      "translation_uz": "ikki baravar oshmoq",
+      "collocations": [
+        "double in size",
+        "almost double",
+        "more than double"
+      ],
+      "word_family": [
+        {
+          "word": "double",
+          "part_of_speech": "adjective"
+        },
+        {
+          "word": "doubling",
+          "part_of_speech": "noun"
+        }
+      ]
     },
     {
       "word": "outnumber",
@@ -93,7 +216,17 @@
       "definition": "to be more in number than another group",
       "example": "On this course, women outnumber men by three to one.",
       "translation_ru": "превосходить численностью",
-      "translation_uz": "sonidan koʻp boʻlmoq"
+      "translation_uz": "sonidan koʻp boʻlmoq",
+      "collocations": [
+        "outnumber by two to one",
+        "be outnumbered by"
+      ],
+      "word_family": [
+        {
+          "word": "number",
+          "part_of_speech": "noun"
+        }
+      ]
     },
     {
       "word": "account for",
@@ -101,7 +234,12 @@
       "definition": "to form a particular part or amount of a total",
       "example": "Rent accounts for almost half of my monthly spending.",
       "translation_ru": "составлять (часть)",
-      "translation_uz": "...ni tashkil etmoq"
+      "translation_uz": "...ni tashkil etmoq",
+      "collocations": [
+        "account for 30%",
+        "account for the majority",
+        "account for a large share"
+      ]
     }
   ]
 }

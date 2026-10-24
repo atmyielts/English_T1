@@ -2,8 +2,14 @@
 // "which app now". Pure: the hub loads the rows and passes them in.
 //
 // Order of preference:
+//   0. continue an activity left unfinished on any device (english-resume.ts)
+//   0b. a class assignment due within two days (or overdue) from the learner's
+//      teacher (english-classes.ts builds these steps)
 //   1. due reviews (words and missed questions; always free)
-//   2. a lesson for a mistake the learner keeps making
+//   1b. any other open class assignment
+//   2. a lesson for a mistake the learner keeps making, then a grammar unit due
+//      for its spaced re-check (english-grammar-mastery.ts)
+//      (then, with an exam date set, this week's exam focus section)
 //   3. the weakest skill against the goal level (by the per-skill rating)
 //   4. the next unfinished task in today's plan
 //   5. anything else worth doing, weakest skill first
@@ -14,11 +20,13 @@
 
 import { type AttemptRow, type CatalogItem, CEFR_ORDER, type Cefr, type FixCandidate, pickItem, TODAY_SKILLS, type TodaySkill, type TodayTask } from "./english-today.ts";
 import type { SkillRating } from "./english-rating.ts";
+import { examPrepCandidates, type ExamNextContext } from "./english-exam-next.ts";
 
-export type NextReason = "review_due" | "fix_mistake" | "weakest_skill" | "today_plan" | "keep_going";
+export type NextReason = "continue" | "review_due" | "class_assignment" | "fix_mistake" | "weakest_skill" | "today_plan" | "keep_going" | "exam_prep" | "grammar_recheck";
 
 export type NextStep = {
-  kind: "review" | "activity";
+  /** practice: a role-play or the speaking mock, opened by `href` (those pages apply their own allowance). */
+  kind: "review" | "activity" | "practice";
   skill: TodaySkill | null;
   content_item_id: string | null;
   slug: string | null;
@@ -34,6 +42,20 @@ export type NextStep = {
   target_level?: Cefr | null;
   /** Opening it uses today's free activity. */
   uses_free: boolean;
+  /** Where to open it, when not the usual /<skill>/<slug>: a practice page, or a role-play or mock to continue. */
+  href?: string | null;
+  /** class_assignment: which assignment, its class and how far the learner is. */
+  assignment?: { id: string; class_name: string; due_at: string; done: number; required: number } | null;
+};
+
+/** Something started and not finished (see english-resume.ts selectResume). */
+export type NextResume = {
+  kind: "activity" | "roleplay" | "mock";
+  skill: TodaySkill;
+  ref: string;
+  title: string | null;
+  href: string;
+  progress: number | null;
 };
 
 export type NextInput = {
@@ -42,6 +64,8 @@ export type NextInput = {
   attempts: AttemptRow[];
   dueReviews: number;
   fixes: FixCandidate[];
+  /** Grammar units due for a re-check, most overdue first. */
+  rechecks?: CatalogItem[];
   ratings: Partial<Record<TodaySkill, Pick<SkillRating, "value" | "level" | "progress" | "attempts">>>;
   targetLevel: Cefr | null;
   /** Level to practise each skill at (placement, stepped down while struggling). */
@@ -54,6 +78,13 @@ export type NextInput = {
   /** The skill the learner is in now; the weakest-skill step prefers another one, to keep the week balanced. */
   fromSkill?: TodaySkill | null;
   goalKeys?: string[];
+  /** Open class assignments as ready-made steps (reason "class_assignment"), soonest due first. */
+  assignments?: NextStep[];
+  now?: Date;
+  /** Unfinished activities, newest first; the newest one comes before everything else. */
+  resume?: NextResume[];
+  /** National exam track: days left and this week's focus section (english-exam-next.ts). */
+  exam?: ExamNextContext | null;
 };
 
 export type NextResult = { step: NextStep | null; locked: NextStep | null };
@@ -62,6 +93,8 @@ const MINUTES_MIN = 3;
 const MINUTES_MAX = 30;
 const REVIEW_MINUTES = 5;
 const WEAKEST_CANDIDATES = 2;
+/** A class assignment due within this window (or overdue) goes before reviews. */
+export const ASSIGNMENT_URGENT_MS = 48 * 3_600_000;
 
 const levelValue = (level: Cefr | null): number | null => (level ? CEFR_ORDER.indexOf(level) : null);
 
@@ -117,13 +150,46 @@ export const pickNextStep = (input: NextInput): NextResult => {
 
   /** Whether the learner may open this now, and whether it uses the free activity. */
   const openable = (step: NextStep): { ok: boolean; usesFree: boolean } => {
-    if (step.kind === "review" || !step.skill) return { ok: true, usesFree: false };
+    if (step.kind === "review" || step.kind === "practice" || !step.skill) return { ok: true, usesFree: false };
+    // A role-play or mock already started was allowed when it started.
+    if (step.reason === "continue" && step.href) return { ok: true, usesFree: false };
     if (owned.has(step.skill)) return { ok: true, usesFree: false };
     if (step.content_item_id && freeToday.has(step.content_item_id)) return { ok: true, usesFree: false };
     return input.access.freeLeft > 0 ? { ok: true, usesFree: true } : { ok: false, usesFree: false };
   };
 
   const candidates: NextStep[] = [];
+
+  // 0. Something started and not finished, on any device.
+  for (const open of (input.resume ?? []).slice(0, 2)) {
+    if (open.kind === "activity") {
+      const item = items.find((entry) => entry.skill === open.skill && entry.slug === open.ref);
+      if (item) candidates.push(activityStep(item, "continue", { detail: open.progress === null ? null : String(open.progress) }));
+    } else {
+      candidates.push({
+        kind: "activity",
+        skill: open.skill,
+        content_item_id: null,
+        slug: null,
+        title: open.title ?? open.ref,
+        level: null,
+        minutes: open.kind === "mock" ? 14 : 8,
+        reason: "continue",
+        detail: open.kind,
+        uses_free: false,
+        href: open.href,
+      });
+    }
+  }
+
+  // 0b. Class assignments due soon. Entitlements still apply (openable below):
+  // a class never unlocks a skill the learner has not bought.
+  const nowMs = (input.now ?? new Date()).getTime();
+  const assignmentSteps = (input.assignments ?? [])
+    .filter((step) => step.assignment && !(exclude && step.content_item_id === exclude))
+    .sort((a, b) => Date.parse(a.assignment!.due_at) - Date.parse(b.assignment!.due_at));
+  const urgent = (step: NextStep) => Date.parse(step.assignment!.due_at) - nowMs <= ASSIGNMENT_URGENT_MS;
+  candidates.push(...assignmentSteps.filter(urgent));
 
   // 1. Reviews.
   if (input.dueReviews > 0) {
@@ -142,10 +208,19 @@ export const pickNextStep = (input: NextInput): NextResult => {
     });
   }
 
+  // 1b. Other open class assignments.
+  candidates.push(...assignmentSteps.filter((step) => !urgent(step)));
+
   // 2. Repeated mistakes.
   for (const fix of input.fixes) {
     if (fix.item.id === exclude) continue;
     candidates.push(activityStep(fix.item, "fix_mistake", { detail: fix.example || null }));
+  }
+
+  // 2b. A grammar unit due for its spaced re-check (one at a time).
+  for (const item of (input.rechecks ?? []).slice(0, 1)) {
+    if (item.id === exclude) continue;
+    candidates.push(activityStep(item, "grammar_recheck"));
   }
 
   // 3. The weakest skills against the goal, preferring an unfinished plan task in that skill.
@@ -161,6 +236,9 @@ export const pickNextStep = (input: NextInput): NextResult => {
       input.goalKeys ?? [],
     )?.item ?? null;
   };
+  // 2b. An upcoming national exam: this week's focus section.
+  if (input.exam) candidates.push(...examPrepCandidates(input.exam, itemFor, activityStep));
+
   const ranked = rankWeakest({ items, ratings: input.ratings, targetLevel: input.targetLevel, levelFor: input.levelFor });
   const weakest = input.fromSkill && ranked.length > 1
     ? [...ranked.filter((skill) => skill !== input.fromSkill), input.fromSkill].filter((skill) => ranked.includes(skill))

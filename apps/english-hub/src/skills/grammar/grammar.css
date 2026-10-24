@@ -1,0 +1,17 @@
+/* Grammar depth: word-order tiles, mistake links, mastery. */
+
+.gr-order { display: grid; gap: .6rem; }
+.gr-order-line { display: flex; flex-wrap: wrap; gap: .35rem; min-height: 2.6rem; margin: 0; padding: .45rem .6rem; border: 1px dashed var(--line); border-radius: 12px; align-items: center; }
+.gr-order-bank { display: flex; flex-wrap: wrap; gap: .4rem; }
+.gr-tile { padding: .3rem .75rem; border-radius: 10px; border: 1px solid var(--line); background: #fff; color: var(--ink); font-weight: 600; min-width: 0; }
+.gr-tile:disabled { opacity: .35; }
+.gr-tile.is-placed { background: #f5f3ff; border-color: #c4b5fd; }
+.gr-tile.is-placed:disabled { opacity: 1; }
+
+.gr-mistake-links { display: grid; gap: .25rem; font-size: .9rem; }
+
+.gr-mastery { display: inline-flex; gap: .45rem; align-items: center; font-size: .85rem; color: var(--muted); }
+.gr-dots { display: inline-flex; gap: 3px; }
+.gr-dots span { width: .55rem; height: .55rem; border-radius: 50%; background: #e5e7eb; }
+.gr-dots span.is-on { background: var(--skill-grammar, #7c3aed); }
+.gr-mastery-line { display: grid; gap: .3rem; }

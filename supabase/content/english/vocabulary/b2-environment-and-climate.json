@@ -13,7 +13,19 @@
       "definition": "gases that are sent into the air, for example from cars and factories",
       "example": "Electric buses can help cut emissions in the city centre.",
       "translation_ru": "выбросы",
-      "translation_uz": "chiqindi gazlar, chiqindilar"
+      "translation_uz": "chiqindi gazlar, chiqindilar",
+      "collocations": [
+        "carbon emissions",
+        "reduce emissions",
+        "cut emissions",
+        "greenhouse gas emissions"
+      ],
+      "word_family": [
+        {
+          "word": "emit",
+          "part_of_speech": "verb"
+        }
+      ]
     },
     {
       "word": "water scarcity",
@@ -21,7 +33,17 @@
       "definition": "a situation where there is not enough clean water for people's needs",
       "example": "Water scarcity is a serious concern for farmers in dry regions.",
       "translation_ru": "нехватка воды",
-      "translation_uz": "suv tanqisligi"
+      "translation_uz": "suv tanqisligi",
+      "collocations": [
+        "face water scarcity",
+        "severe water scarcity"
+      ],
+      "word_family": [
+        {
+          "word": "scarce",
+          "part_of_speech": "adjective"
+        }
+      ]
     },
     {
       "word": "renewable",
@@ -29,7 +51,22 @@
       "definition": "(of energy) coming from sources that do not run out, like the sun or wind",
       "example": "The country plans to produce more renewable energy from solar farms.",
       "translation_ru": "возобновляемый",
-      "translation_uz": "qayta tiklanadigan"
+      "translation_uz": "qayta tiklanadigan",
+      "collocations": [
+        "renewable energy",
+        "renewable sources",
+        "renewable resources"
+      ],
+      "word_family": [
+        {
+          "word": "renew",
+          "part_of_speech": "verb"
+        },
+        {
+          "word": "renewables",
+          "part_of_speech": "noun"
+        }
+      ]
     },
     {
       "word": "fossil fuels",
@@ -37,7 +74,12 @@
       "definition": "coal, oil and gas, which were formed in the ground over millions of years",
       "example": "Burning fossil fuels is the main cause of rising carbon dioxide levels.",
       "translation_ru": "ископаемое топливо",
-      "translation_uz": "qazilma yoqilgʻi"
+      "translation_uz": "qazilma yoqilgʻi",
+      "collocations": [
+        "burn fossil fuels",
+        "dependence on fossil fuels",
+        "move away from fossil fuels"
+      ]
     },
     {
       "word": "carbon footprint",
@@ -45,7 +87,12 @@
       "definition": "the amount of harmful gas your activities produce",
       "example": "Taking the train instead of flying reduces your carbon footprint.",
       "translation_ru": "углеродный след",
-      "translation_uz": "uglerod izi"
+      "translation_uz": "uglerod izi",
+      "collocations": [
+        "reduce your carbon footprint",
+        "a large carbon footprint",
+        "measure a carbon footprint"
+      ]
     },
     {
       "word": "endangered",
@@ -53,7 +100,22 @@
       "definition": "(of an animal or plant) at risk of disappearing completely",
       "example": "Some endangered animals now live only in a few protected areas.",
       "translation_ru": "находящийся под угрозой исчезновения",
-      "translation_uz": "yoʻqolib ketish xavfi ostidagi"
+      "translation_uz": "yoʻqolib ketish xavfi ostidagi",
+      "collocations": [
+        "an endangered species",
+        "critically endangered",
+        "endangered animals"
+      ],
+      "word_family": [
+        {
+          "word": "endanger",
+          "part_of_speech": "verb"
+        },
+        {
+          "word": "danger",
+          "part_of_speech": "noun"
+        }
+      ]
     },
     {
       "word": "conservation",
@@ -61,7 +123,22 @@
       "definition": "the protection of nature, animals and natural resources",
       "example": "She works for a water conservation project in Karakalpakstan.",
       "translation_ru": "охрана природы, сбережение",
-      "translation_uz": "tabiatni muhofaza qilish"
+      "translation_uz": "tabiatni muhofaza qilish",
+      "collocations": [
+        "wildlife conservation",
+        "conservation efforts",
+        "energy conservation"
+      ],
+      "word_family": [
+        {
+          "word": "conserve",
+          "part_of_speech": "verb"
+        },
+        {
+          "word": "conservationist",
+          "part_of_speech": "noun"
+        }
+      ]
     },
     {
       "word": "biodiversity",
@@ -69,7 +146,22 @@
       "definition": "the variety of plants and animals living in a particular area",
       "example": "Wetlands support a rich biodiversity of birds and fish.",
       "translation_ru": "биоразнообразие",
-      "translation_uz": "biologik xilma-xillik"
+      "translation_uz": "biologik xilma-xillik",
+      "collocations": [
+        "loss of biodiversity",
+        "protect biodiversity",
+        "rich biodiversity"
+      ],
+      "word_family": [
+        {
+          "word": "diverse",
+          "part_of_speech": "adjective"
+        },
+        {
+          "word": "diversity",
+          "part_of_speech": "noun"
+        }
+      ]
     },
     {
       "word": "deforestation",
@@ -77,7 +169,22 @@
       "definition": "the cutting down of trees over a large area",
       "example": "Deforestation makes floods and landslides more likely.",
       "translation_ru": "вырубка лесов",
-      "translation_uz": "oʻrmonlarni kesish"
+      "translation_uz": "oʻrmonlarni kesish",
+      "collocations": [
+        "large-scale deforestation",
+        "stop deforestation",
+        "deforestation rates"
+      ],
+      "word_family": [
+        {
+          "word": "forest",
+          "part_of_speech": "noun"
+        },
+        {
+          "word": "deforest",
+          "part_of_speech": "verb"
+        }
+      ]
     },
     {
       "word": "sustainable",
@@ -85,7 +192,26 @@
       "definition": "able to continue for a long time without damaging the environment",
       "example": "Drip irrigation is a more sustainable way to water cotton fields.",
       "translation_ru": "устойчивый, экологичный",
-      "translation_uz": "barqaror, ekologik toza"
+      "translation_uz": "barqaror, ekologik toza",
+      "collocations": [
+        "sustainable development",
+        "sustainable energy",
+        "environmentally sustainable"
+      ],
+      "word_family": [
+        {
+          "word": "sustain",
+          "part_of_speech": "verb"
+        },
+        {
+          "word": "sustainability",
+          "part_of_speech": "noun"
+        },
+        {
+          "word": "sustainably",
+          "part_of_speech": "adverb"
+        }
+      ]
     },
     {
       "word": "heatwave",
@@ -93,7 +219,12 @@
       "definition": "a period of unusually hot weather",
       "example": "During the heatwave, it was over 40 degrees for a whole week.",
       "translation_ru": "сильная жара, волна жары",
-      "translation_uz": "jazirama, issiq toʻlqini"
+      "translation_uz": "jazirama, issiq toʻlqini",
+      "collocations": [
+        "a severe heatwave",
+        "during a heatwave",
+        "a summer heatwave"
+      ]
     },
     {
       "word": "landfill",
@@ -101,7 +232,12 @@
       "definition": "a large area where rubbish is buried under the ground",
       "example": "Most of the city's rubbish still ends up in landfill.",
       "translation_ru": "свалка, полигон отходов",
-      "translation_uz": "chiqindi poligoni"
+      "translation_uz": "chiqindi poligoni",
+      "collocations": [
+        "a landfill site",
+        "end up in landfill",
+        "send waste to landfill"
+      ]
     }
   ]
 }

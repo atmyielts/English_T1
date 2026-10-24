@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "releaseId": "english-unified-oct25",
+  "releaseId": "english-depth-oct26",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
@@ -8,94 +8,107 @@
     "platform"
   ],
   "migrations": [
-    "20261025100000_english_ops_settings_ai_ledger.sql",
-    "20261025110000_english_skill_app_urls.sql",
-    "20261025120000_english_tg_checks.sql",
-    "20261025130000_english_goal_metadata_key.sql",
-    "20261025140000_english_roleplay_sessions.sql",
-    "20261025140100_english_speaking_mocks.sql",
-    "20261025150000_english_content_library_more.sql"
+    "20261026100000_english_exam_track.sql",
+    "20261026100100_english_exam_papers_seed.sql",
+    "20261026110000_english_duels.sql",
+    "20261026110100_english_progress_links.sql",
+    "20261026120000_english_client_attempts.sql",
+    "20261026130000_english_classes.sql",
+    "20261026140000_english_word_store_unify.sql",
+    "20261026140100_english_vocabulary_word_knowledge.sql",
+    "20261026140200_english_reading_question_types.sql",
+    "20261026140300_english_listening_gist_questions.sql",
+    "20261026140400_english_grammar_drill_types.sql",
+    "20261026140500_english_daily_stories.sql",
+    "20261026150000_english_output_depth.sql",
+    "20261026160000_english_inbox.sql",
+    "20261026160100_english_resume_points.sql",
+    "20261026160200_english_journey_indexes.sql",
+    "20261026170000_english_account_erasure_registry.sql"
   ],
   "edgeFunctions": [
-    "admin-english-content",
-    "admin-english-ops",
+    "grammar-remediation",
     "hub",
     "immersion-missions",
+    "listening-content",
+    "reading-articles",
     "speaking-studio",
     "telegram-app",
-    "telegram-public",
+    "vocab-drill",
+    "vocabulary-notebook",
     "writing-workbench"
   ],
   "workers": [
-    "schood-bot",
-    "schood-online-bot"
+    "schood-bot"
   ],
   "sharedEdgeConsumers": [
-    "grammar-remediation",
-    "listening-content",
-    "reading-articles",
-    "vocabulary-notebook"
+    "admin-english-content",
+    "admin-english-ops",
+    "telegram-public"
   ],
   "requiredSecrets": [
-    "ENGLISH_AI_DAILY_LIMIT",
     "ENGLISH_APP_URL",
-    "ENGLISH_TG_CHECK_DAILY_LIMIT",
     "SITE_URL",
     "TELEGRAM_BOT_TOKEN",
     "TELEGRAM_INTERNAL_SECRET",
-    "TELEGRAM_PUBLIC_BOT_TOKEN",
-    "TELEGRAM_RATE_LIMIT_SECRET"
+    "TELEGRAM_STUDENT_BOT_NAME"
   ],
   "rolloutOrder": [
     "pages",
-    "migration:20261025100000_english_ops_settings_ai_ledger.sql",
-    "migration:20261025110000_english_skill_app_urls.sql",
-    "migration:20261025120000_english_tg_checks.sql",
-    "migration:20261025130000_english_goal_metadata_key.sql",
-    "migration:20261025140000_english_roleplay_sessions.sql",
-    "migration:20261025140100_english_speaking_mocks.sql",
-    "migration:20261025150000_english_content_library_more.sql",
-    "secret:ENGLISH_AI_DAILY_LIMIT",
+    "migration:20261026100000_english_exam_track.sql",
+    "migration:20261026100100_english_exam_papers_seed.sql",
+    "migration:20261026110000_english_duels.sql",
+    "migration:20261026110100_english_progress_links.sql",
+    "migration:20261026120000_english_client_attempts.sql",
+    "migration:20261026130000_english_classes.sql",
+    "migration:20261026140000_english_word_store_unify.sql",
+    "migration:20261026140100_english_vocabulary_word_knowledge.sql",
+    "migration:20261026140200_english_reading_question_types.sql",
+    "migration:20261026140300_english_listening_gist_questions.sql",
+    "migration:20261026140400_english_grammar_drill_types.sql",
+    "migration:20261026140500_english_daily_stories.sql",
+    "migration:20261026150000_english_output_depth.sql",
+    "migration:20261026160000_english_inbox.sql",
+    "migration:20261026160100_english_resume_points.sql",
+    "migration:20261026160200_english_journey_indexes.sql",
+    "migration:20261026170000_english_account_erasure_registry.sql",
     "secret:ENGLISH_APP_URL",
-    "secret:ENGLISH_TG_CHECK_DAILY_LIMIT",
     "secret:SITE_URL",
     "secret:TELEGRAM_BOT_TOKEN",
     "secret:TELEGRAM_INTERNAL_SECRET",
-    "secret:TELEGRAM_PUBLIC_BOT_TOKEN",
-    "secret:TELEGRAM_RATE_LIMIT_SECRET",
+    "secret:TELEGRAM_STUDENT_BOT_NAME",
     "function:hub",
-    "function:speaking-studio",
-    "function:writing-workbench",
-    "function:immersion-missions",
     "function:grammar-remediation",
+    "function:immersion-missions",
     "function:listening-content",
     "function:reading-articles",
+    "function:speaking-studio",
+    "function:telegram-app",
+    "function:vocab-drill",
     "function:vocabulary-notebook",
+    "function:writing-workbench",
     "function:admin-english-content",
     "function:admin-english-ops",
-    "function:telegram-app",
     "function:telegram-public",
-    "worker:schood-bot",
-    "worker:schood-online-bot"
+    "worker:schood-bot"
   ],
   "manualFollowUps": [
-    "Pages: merging publishes english-hub (one workspace for every signed-in page with Ctrl+K switcher and phone tab bar; installable app and per-skill apps; Up next, ratings, streak freezes, progress check, IELTS estimate; role-plays, IELTS-style speaking mock, Russian/Uzbek mistake notes; paused-service states; refreshed landing) and platform (English control center at /admin/english/control; English tab in the Telegram Mini App). Until the functions are deployed the new panels show their error/empty states.",
-    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus the seven 20261025100000-20261025150000 English migrations, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first. Adds service-role-only tables english_service_settings (seeded to today's behaviour), english_ai_calls (with a 120-day pg_cron prune), english_tg_checks, english_roleplay_sessions, english_speaking_mocks; RPCs refund_english_ai_daily_quota, english_ai_usage_summary, english_tg_check_reserve, english_set_goal_metadata_key; skill product app_urls point at english.schood.online/<skill>; 72 new lessons.",
-    "Secrets: none are changed. supabase secrets set ENGLISH_AI_DAILY_LIMIT=, supabase secrets set ENGLISH_APP_URL=, supabase secrets set ENGLISH_TG_CHECK_DAILY_LIMIT= and supabase secrets set SITE_URL= are not run: the code defaults apply (30 AI calls a day, now editable in the control center; https://english.schood.online; 300 checks a day; https://schood.online). supabase secrets set TELEGRAM_BOT_TOKEN=, supabase secrets set TELEGRAM_INTERNAL_SECRET=, supabase secrets set TELEGRAM_PUBLIC_BOT_TOKEN= and supabase secrets set TELEGRAM_RATE_LIMIT_SECRET= are already configured in production and are only read by the new Telegram code.",
-    "Edge, after the migrations (--project-ref bbjawctnqrufvnesdsel): supabase functions deploy hub; supabase functions deploy speaking-studio; supabase functions deploy writing-workbench; supabase functions deploy immersion-missions; supabase functions deploy admin-english-content; supabase functions deploy admin-english-ops; supabase functions deploy telegram-app; supabase functions deploy telegram-public. Also redeploy grammar-remediation, listening-content, reading-articles and vocabulary-notebook, which share the new settings loader and free-allowance code. The settings loader and AI gateway fall back to today's behaviour if the settings table is unreadable.",
-    "Workers: cd workers/schood-bot && npx wrangler deploy; cd workers/schood-online-bot && npx wrangler deploy && npm run setup-commands (adds /check to the public bot's command list). Before deploying, confirm the live worker versions came from main (wrangler deployments list) so no unmerged worker code is overwritten."
+    "Pages: merging publishes english-hub (national exam track, duels, share cards, progress links, shadowing and read aloud, offline session, classes, deeper reading/listening/vocabulary/grammar, Story of the day, writing drafts and revisions, speaking retries, projects, a personal tutor, one result screen, Journey, Inbox, content search, Continue anywhere) and platform (control center switches for exam/classes/duels; Mini App duel card and review summary; vocab drill on the shared word store). Until the migrations and functions are deployed the new panels show their empty/error states.",
+    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus the seventeen 20261026100000-20261026170000 English migrations, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then run the functions IMMEDIATELY after (20261026140000 copies vocab drill cards into the notebook and stamps them; reviews written by the old drill code in between are picked up by the functions' lazy import, and the tutor tables must exist before the tutor uses AI credits). All new tables are service-role only with RLS on; account closure now also erases 18 English learner tables.",
+    "Secrets: none are changed. supabase secrets set ENGLISH_APP_URL= supabase secrets set SITE_URL= supabase secrets set TELEGRAM_BOT_TOKEN= supabase secrets set TELEGRAM_INTERNAL_SECRET= supabase secrets set TELEGRAM_STUDENT_BOT_NAME= are not run: each is either already configured in production or has a code default.",
+    "Edge (--project-ref bbjawctnqrufvnesdsel), right after the migrations: supabase functions deploy grammar-remediation ; supabase functions deploy hub ; supabase functions deploy immersion-missions ; supabase functions deploy listening-content ; supabase functions deploy reading-articles ; supabase functions deploy speaking-studio ; supabase functions deploy telegram-app ; supabase functions deploy vocab-drill ; supabase functions deploy vocabulary-notebook ; supabase functions deploy writing-workbench ; supabase functions deploy admin-english-content ; supabase functions deploy admin-english-ops ; supabase functions deploy telegram-public.",
+    "Worker: cd workers/schood-bot && npx wrangler deploy (duels, progress-link followers, /drill on the shared word store). Before deploying, confirm the live worker came from main (wrangler deployments list)."
   ],
   "verification": [
-    "supabase migration list --linked shows the seven migrations applied and the 9 #220 payment migrations still pending.",
-    "Without a session: GET /functions/v1/hub/next, /hub/ratings, /hub/streak, /hub/roleplay/scenarios, /hub/speaking-mock return 401; GET /admin-english-ops/control returns 401.",
-    "english.schood.online signed out shows the refreshed landing; signed in, every page shows the same sidebar; /speaking offers Install Schood Speaking in a supporting browser.",
-    "As admin: /admin/english/control loads services, free tier, AI switches and AI usage.",
-    "@schoodonlinebot /check answers a short sentence; @schoodstudentbot /english replies with status and buttons."
+    "supabase migration list --linked shows the seventeen migrations applied and the 9 #220 payment migrations still pending.",
+    "Without a session: GET /functions/v1/hub/exam, /hub/journey, /hub/inbox, /hub/search?q=a, /hub/classes, /hub/duels return 401; GET /hub/public/progress/UNKNOWN returns 404.",
+    "Signed in: /exam, /duel, /classes, /journey, /inbox, /stories, /speaking/shadowing, /vocabulary/practice load; Ctrl+K finds a lesson by topic; Settings shows Notifications and Progress links.",
+    "Telegram: @schoodstudentbot /duel offers a challenge link; /drill still works on the learner's words."
   ],
   "rollback": {
     "pages": "Cloudflare Pages rollback of schood-english and schood-platform to the previous deployment.",
-    "migration": "Additive tables, RPCs and content; leave in place. The app_url change only replaced old-subdomain or empty values.",
-    "edge": "Redeploy the twelve functions from the previous main commit (74f68af0); new routes stop, existing behaviour returns.",
-    "worker": "npx wrangler rollback in workers/schood-bot and workers/schood-online-bot; /english and /check then go unanswered."
+    "migration": "Additive; leave in place. vocab_drill_cards is kept untouched (only imported_at added) so the previous drill code still works after a function rollback.",
+    "edge": "Redeploy the thirteen functions from a411de5e; new routes stop, earlier behaviour returns (words reviewed meanwhile stay in the notebook).",
+    "worker": "npx wrangler rollback in workers/schood-bot."
   }
 }

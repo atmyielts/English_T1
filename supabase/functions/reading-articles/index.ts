@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { guardActivity } from "../_shared/english-allowance.ts";
 import { queueReviewItems } from "../_shared/english-review.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { dedupeSubmits, isSubmitPath } from "../_shared/english-client-attempt.ts";
 import {
   buildFeedbackPayload,
   calculateAttemptScore,
@@ -15,8 +16,11 @@ import {
   normalizeQuestions,
   publicQuestions,
   READING_SUBSKILLS,
+  reviewItemsFor,
   scoreReadingAnswers,
 } from "../_shared/english-reading.ts";
+import { paceFor, readingWpm, wordCount } from "../_shared/english-reading-depth.ts";
+import { nextRead, recordReadingEncounters, savedWordsForText, speedHistory } from "./depth.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -340,7 +344,7 @@ const archiveArticle = async (sb: any, id: string, userId: string): Promise<Resp
 };
 
 const QUESTIONS_ERROR =
-  "questions must be an array of { id, type: 'mcq', prompt, options (2-6), answer_index, explanation, skill? }";
+  "questions must be an array of well-formed questions: mcq { id, prompt, options (2-6), answer_index }, tfng { id, prompt, answer }, headings { id, prompt, options, items[{ paragraph, answer_index }] } or gap { id, prompt, text with ___, answers[[...]] }";
 
 /** Admin input: every question must be well-formed, otherwise nothing is saved. */
 const validQuestionsOrNull = (raw: unknown): ReturnType<typeof normalizeQuestions> | null => {
@@ -366,11 +370,19 @@ const loadPublishedArticle = async (sb: any, scope: Scope, slug: string): Promis
   return data as LearnerArticle;
 };
 
-/** One article for the learner: the text and its questions, without the answer key. */
-const getArticleForLearner = async (sb: any, scope: Scope, slug: string): Promise<Response> => {
+/**
+ * One article for the learner: the text and its questions without the answer
+ * key, its length in words (for reading speed) and the learner's saved words
+ * that appear in it (highlighted while reading).
+ */
+const getArticleForLearner = async (sb: any, scope: Scope, slug: string, userId: string): Promise<Response> => {
   const article = await loadPublishedArticle(sb, scope, slug);
   if (!article) return json(404, { error: "Reading article not found" });
+  const markdown = article.content_markdown ?? "";
+  const savedWords = await savedWordsForText(sb, userId, scope.languageId, markdown).catch(() => []);
   return json(200, {
+    word_count: wordCount(markdown),
+    saved_words: savedWords,
     article: {
       id: article.id,
       slug: article.slug,
@@ -425,6 +437,21 @@ const submitArticle = async (
   });
   const estimatedMinutes = Number(contentItem.estimated_minutes ?? article.read_time_minutes ?? 6);
 
+  // Reading speed: the browser times the reading itself (until the first answer
+  // or "I've finished reading"), not the time spent on questions.
+  const markdown = article.content_markdown ?? "";
+  const words = wordCount(markdown);
+  const readingSeconds = (() => {
+    const value = toNumber(body.reading_seconds);
+    return value === null ? null : clamp(Math.floor(value), 1, 4 * 60 * 60);
+  })();
+  const wpm = readingWpm(words, readingSeconds);
+  const reading = { words, seconds: readingSeconds, wpm, pace: paceFor(article.level, wpm) };
+  const speedMeta = wpm === null ? {} : { reading_wpm: wpm, reading_seconds: readingSeconds, word_count: words };
+  // Saved words met again here keep this sentence as one of their examples.
+  await recordReadingEncounters(sb, userId, scope.languageId, markdown, article.title).catch(() => 0);
+  const articleRef = { slug: article.slug, title: article.title, level: article.level, read_time_minutes: article.read_time_minutes };
+
   if (!questions.length) {
     // No questions to check understanding, so there is nothing to score. The
     // shared attempt record needs a ratio; completion (1) is the only honest
@@ -452,7 +479,7 @@ const submitArticle = async (
       contentItem,
       attemptType: "reading.finished",
       responseJson: { article_id: article.id, finished: true },
-      metadata: { article_id: article.id, article_slug: article.slug, no_questions: true },
+      metadata: { article_id: article.id, article_slug: article.slug, no_questions: true, ...speedMeta },
       timeSpentSeconds,
       score,
       feedback,
@@ -466,6 +493,8 @@ const submitArticle = async (
       correct: 0,
       total: 0,
       results: [],
+      reading,
+      next_read: await nextRead(sb, { userId, languageId: scope.languageId, productId: scope.productId, article: articleRef, score: null, wpm }).catch(() => null),
     });
   }
 
@@ -494,9 +523,16 @@ const submitArticle = async (
     attemptType: "reading.quiz",
     responseJson: {
       article_id: article.id,
-      answers: checked.results.map((result) => ({ question_id: result.question_id, chosen_index: result.chosen_index, correct: result.correct })),
+      answers: checked.results.map((result) => ({
+        question_id: result.question_id,
+        type: result.type,
+        chosen_index: result.chosen_index,
+        correct: result.correct,
+        earned: result.earned,
+        points: result.points,
+      })),
     },
-    metadata: { article_id: article.id, article_slug: article.slug, correct: checked.correct, total: checked.total },
+    metadata: { article_id: article.id, article_slug: article.slug, correct: checked.correct, total: checked.total, ...speedMeta },
     timeSpentSeconds,
     score,
     feedback,
@@ -504,28 +540,15 @@ const submitArticle = async (
   });
 
   // Questions answered wrongly come back on the Review page.
-  const questionById = new Map(questions.map((question) => [question.id, question]));
   await queueReviewItems(sb, {
     userId,
     languageId: scope.languageId,
     attemptId: String(recorded.attempt.id ?? "") || null,
-    items: checked.results.filter((result) => !result.correct).flatMap((result) => {
-      const question = questionById.get(result.question_id);
-      if (!question) return [];
-      return [{
-        kind: "reading" as const,
-        item_key: `reading:${article.slug}:${question.id}`,
-        payload: {
-          type: "choice" as const,
-          prompt: question.prompt,
-          options: question.options,
-          answer_index: question.answer_index,
-          explanation: question.explanation,
-          source_title: String(article.title ?? ""),
-          source_slug: String(article.slug ?? ""),
-        },
-      }];
-    }),
+    items: reviewItemsFor(questions, checked, article.slug).map((item) => ({
+      kind: "reading" as const,
+      item_key: item.item_key,
+      payload: { ...item.payload, source_title: String(article.title ?? ""), source_slug: String(article.slug ?? "") },
+    })),
   });
 
   return json(200, {
@@ -536,10 +559,18 @@ const submitArticle = async (
     correct: checked.correct,
     total: checked.total,
     results: checked.results,
+    reading,
+    next_read: await nextRead(sb, { userId, languageId: scope.languageId, productId: scope.productId, article: articleRef, score: checked.score, wpm }).catch(() => null),
   });
 };
 
-serve(async (req) => {
+// Offline answers synced later carry a client attempt id and are recorded once.
+serve(dedupeSubmits({
+  serviceKey: "reading",
+  routeMarker: "/reading-articles",
+  isSubmitRoute: (route) => isSubmitPath(route, "articles"),
+  client: () => createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "", { auth: { persistSession: false } }),
+}, async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   if (!["GET", "POST", "PATCH", "DELETE"].includes(req.method)) {
@@ -573,7 +604,7 @@ serve(async (req) => {
       } catch {
         return json(404, { error: "Reading article not found" });
       }
-      if (req.method === "GET" && !articleMatch[2]) return await getArticleForLearner(serviceClient, scope, slug);
+      if (req.method === "GET" && !articleMatch[2]) return await getArticleForLearner(serviceClient, scope, slug, authedUserId);
       if (req.method === "POST" && articleMatch[2]) {
         // Paid skills, or today's free activity.
         const blocked = await guardActivity(serviceClient, authedUserId, scope.languageId, "reading", route);
@@ -581,6 +612,10 @@ serve(async (req) => {
         return await submitArticle(serviceClient, scope, slug, await parseBody(req), authedUserId);
       }
       return json(405, { error: "Method not allowed" });
+    }
+    // Reading speed over time (library texts and daily stories).
+    if (req.method === "GET" && route === "/speed") {
+      return json(200, await speedHistory(serviceClient, authedUserId, scope.languageId));
     }
     if (route) return json(404, { error: "Not found" });
 
@@ -604,4 +639,4 @@ serve(async (req) => {
       details: error instanceof Error ? error.message : String(error),
     });
   }
-});
+}));

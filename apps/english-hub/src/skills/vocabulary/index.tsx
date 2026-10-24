@@ -5,6 +5,7 @@ import { useT } from '../../i18n';
 import { SkillHome } from '../SkillHome';
 import { VocabularyDeckActivity } from './Deck';
 import { MyWordsPanel } from './MyWords';
+import { VocabularyPractice } from './Practice';
 import './vocabulary.css';
 
 const VocabInContextCard = lazy(() => import('../../components/AIFeatureCards').then((m) => ({ default: m.VocabInContextCard })));
@@ -24,6 +25,7 @@ const VocabularyApp = () => {
           />
         )}
       />
+      <Route path="practice" element={<VocabularyPractice />} />
       <Route path=":slug" element={<VocabularyDeckActivity />} />
     </Routes>
   );
