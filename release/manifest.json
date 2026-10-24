@@ -1,101 +1,36 @@
 {
   "schemaVersion": 1,
-  "releaseId": "english-unified-oct25",
+  "releaseId": "sat-playbook-premium-guides-plans",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [
-    "english-hub",
-    "platform"
-  ],
+  "frontends": [],
   "migrations": [
-    "20261025100000_english_ops_settings_ai_ledger.sql",
-    "20261025110000_english_skill_app_urls.sql",
-    "20261025120000_english_tg_checks.sql",
-    "20261025130000_english_goal_metadata_key.sql",
-    "20261025140000_english_roleplay_sessions.sql",
-    "20261025140100_english_speaking_mocks.sql",
-    "20261025150000_english_content_library_more.sql"
+    "20261026161000_sat_playbook_premium_guides.sql",
+    "20261026161100_sat_playbook_plan_templates.sql"
   ],
-  "edgeFunctions": [
-    "admin-english-content",
-    "admin-english-ops",
-    "hub",
-    "immersion-missions",
-    "speaking-studio",
-    "telegram-app",
-    "telegram-public",
-    "writing-workbench"
-  ],
-  "workers": [
-    "schood-bot",
-    "schood-online-bot"
-  ],
-  "sharedEdgeConsumers": [
-    "grammar-remediation",
-    "listening-content",
-    "reading-articles",
-    "vocabulary-notebook"
-  ],
-  "requiredSecrets": [
-    "ENGLISH_AI_DAILY_LIMIT",
-    "ENGLISH_APP_URL",
-    "ENGLISH_TG_CHECK_DAILY_LIMIT",
-    "SITE_URL",
-    "TELEGRAM_BOT_TOKEN",
-    "TELEGRAM_INTERNAL_SECRET",
-    "TELEGRAM_PUBLIC_BOT_TOKEN",
-    "TELEGRAM_RATE_LIMIT_SECRET"
-  ],
+  "edgeFunctions": [],
+  "workers": [],
+  "sharedEdgeConsumers": [],
+  "requiredSecrets": [],
   "rolloutOrder": [
-    "pages",
-    "migration:20261025100000_english_ops_settings_ai_ledger.sql",
-    "migration:20261025110000_english_skill_app_urls.sql",
-    "migration:20261025120000_english_tg_checks.sql",
-    "migration:20261025130000_english_goal_metadata_key.sql",
-    "migration:20261025140000_english_roleplay_sessions.sql",
-    "migration:20261025140100_english_speaking_mocks.sql",
-    "migration:20261025150000_english_content_library_more.sql",
-    "secret:ENGLISH_AI_DAILY_LIMIT",
-    "secret:ENGLISH_APP_URL",
-    "secret:ENGLISH_TG_CHECK_DAILY_LIMIT",
-    "secret:SITE_URL",
-    "secret:TELEGRAM_BOT_TOKEN",
-    "secret:TELEGRAM_INTERNAL_SECRET",
-    "secret:TELEGRAM_PUBLIC_BOT_TOKEN",
-    "secret:TELEGRAM_RATE_LIMIT_SECRET",
-    "function:hub",
-    "function:speaking-studio",
-    "function:writing-workbench",
-    "function:immersion-missions",
-    "function:grammar-remediation",
-    "function:listening-content",
-    "function:reading-articles",
-    "function:vocabulary-notebook",
-    "function:admin-english-content",
-    "function:admin-english-ops",
-    "function:telegram-app",
-    "function:telegram-public",
-    "worker:schood-bot",
-    "worker:schood-online-bot"
+    "migration:20261026161000_sat_playbook_premium_guides.sql",
+    "migration:20261026161100_sat_playbook_plan_templates.sql"
   ],
   "manualFollowUps": [
-    "Pages: merging publishes english-hub (one workspace for every signed-in page with Ctrl+K switcher and phone tab bar; installable app and per-skill apps; Up next, ratings, streak freezes, progress check, IELTS estimate; role-plays, IELTS-style speaking mock, Russian/Uzbek mistake notes; paused-service states; refreshed landing) and platform (English control center at /admin/english/control; English tab in the Telegram Mini App). Until the functions are deployed the new panels show their error/empty states.",
-    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus the seven 20261025100000-20261025150000 English migrations, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first. Adds service-role-only tables english_service_settings (seeded to today's behaviour), english_ai_calls (with a 120-day pg_cron prune), english_tg_checks, english_roleplay_sessions, english_speaking_mocks; RPCs refund_english_ai_daily_quota, english_ai_usage_summary, english_tg_check_reserve, english_set_goal_metadata_key; skill product app_urls point at english.schood.online/<skill>; 72 new lessons.",
-    "Secrets: none are changed. supabase secrets set ENGLISH_AI_DAILY_LIMIT=, supabase secrets set ENGLISH_APP_URL=, supabase secrets set ENGLISH_TG_CHECK_DAILY_LIMIT= and supabase secrets set SITE_URL= are not run: the code defaults apply (30 AI calls a day, now editable in the control center; https://english.schood.online; 300 checks a day; https://schood.online). supabase secrets set TELEGRAM_BOT_TOKEN=, supabase secrets set TELEGRAM_INTERNAL_SECRET=, supabase secrets set TELEGRAM_PUBLIC_BOT_TOKEN= and supabase secrets set TELEGRAM_RATE_LIMIT_SECRET= are already configured in production and are only read by the new Telegram code.",
-    "Edge, after the migrations (--project-ref bbjawctnqrufvnesdsel): supabase functions deploy hub; supabase functions deploy speaking-studio; supabase functions deploy writing-workbench; supabase functions deploy immersion-missions; supabase functions deploy admin-english-content; supabase functions deploy admin-english-ops; supabase functions deploy telegram-app; supabase functions deploy telegram-public. Also redeploy grammar-remediation, listening-content, reading-articles and vocabulary-notebook, which share the new settings loader and free-allowance code. The settings loader and AI gateway fall back to today's behaviour if the settings table is unreadable.",
-    "Workers: cd workers/schood-bot && npx wrangler deploy; cd workers/schood-online-bot && npx wrangler deploy && npm run setup-commands (adds /check to the public bot's command list). Before deploying, confirm the live worker versions came from main (wrangler deployments list) so no unmerged worker code is overwritten."
+    "Order: apply after the SAT Playbook public-modules migrations (20261026160000-20261026160999) so each premium guide links to its parent module via parent_page_id; if those are not applied yet, the guides still publish with module_key set and parent_page_id null.",
+    "Database: supabase db push --linked from an isolated copy of the installed migrations plus 20261026161000_sat_playbook_premium_guides.sql and 20261026161100_sat_playbook_plan_templates.sql, keeping any deliberately pending migrations (for example the #220 payment set) excluded. Dry run first, then supabase migration list --linked. Content-only: 6 premium guides (visibility premium, page_type guide) with 155 sections, 18 sources, 39 page-source citations, and 5 published plan templates. Idempotent (deterministic ids, on conflict do nothing); existing rows are never overwritten.",
+    "No frontend, edge function, worker or secret changes. The current sat-playbook PageBlocks renders the rich_text (markdown), checklist and callout block types used here; PlanPage renders schedule_json.phases and weeks[].label/focus, and the richer per-day fields (days[].tasks, hours, checkpoint) are available for the playbooks-engine renderer."
   ],
   "verification": [
-    "supabase migration list --linked shows the seven migrations applied and the 9 #220 payment migrations still pending.",
-    "Without a session: GET /functions/v1/hub/next, /hub/ratings, /hub/streak, /hub/roleplay/scenarios, /hub/speaking-mock return 401; GET /admin-english-ops/control returns 401.",
-    "english.schood.online signed out shows the refreshed landing; signed in, every page shows the same sidebar; /speaking offers Install Schood Speaking in a supporting browser.",
-    "As admin: /admin/english/control loads services, free tier, AI switches and AI usage.",
-    "@schoodonlinebot /check answers a short sentence; @schoodstudentbot /english replies with status and buttons."
+    "supabase migration list --linked shows 20261026161000 and 20261026161100 applied.",
+    "GET /functions/v1/sat-playbook/catalog lists the 6 premium_guides (guide-rw-hard-module-traps, guide-math-hard-module-traps, guide-1200-to-1400-roadmap, guide-1400-to-1550-roadmap, guide-desmos-power-moves, guide-final-14-days).",
+    "GET /functions/v1/sat-playbook/pages/guide-final-14-days without a token returns 401/403 (premium); with a premium entitlement it returns 34 sections and 8 sources.",
+    "As a premium user, https://playbook.sat.schood.online/plans/four-week-sprint shows 4 phases and 4 weeks; the dashboard lists all 5 plan templates."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-english and schood-platform to the previous deployment.",
-    "migration": "Additive tables, RPCs and content; leave in place. The app_url change only replaced old-subdomain or empty values.",
-    "edge": "Redeploy the twelve functions from the previous main commit (74f68af0); new routes stop, existing behaviour returns.",
-    "worker": "npx wrangler rollback in workers/schood-bot and workers/schood-online-bot; /english and /check then go unanswered."
+    "pages": "Nothing deployed to Pages.",
+    "migration": "Hide instead of deleting (recommendation snapshots may reference plan templates): update public.sat_playbook_pages set status = 'archived' where metadata->>'seeded_by' = '20261026161000_sat_playbook_premium_guides'; update public.sat_playbook_plan_templates set status = 'archived' where metadata->>'seeded_by' = '20261026161100_sat_playbook_plan_templates'. Sources can stay; they are only shown through published pages.",
+    "edge": "Nothing deployed.",
+    "worker": "Nothing deployed."
   }
 }
