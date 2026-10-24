@@ -6,6 +6,9 @@ import { uz } from './uz';
 import { aiEn } from './ai.en';
 import { aiRu } from './ai.ru';
 import { aiUz } from './ai.uz';
+import { certificateEn } from './certificate.en';
+import { certificateRu } from './certificate.ru';
+import { certificateUz } from './certificate.uz';
 import { skillCatalogs } from '../skills/catalogs';
 
 type Partial3 = { en: Record<string, string>; ru: Partial<Record<string, string>>; uz: Partial<Record<string, string>> };
@@ -17,7 +20,7 @@ const merge = (parts: Partial3[]): Catalogs<string> => ({
 });
 
 /** Every UI string. Russian and Uzbek fall back to English for any missing key. */
-export const catalogs = merge([{ en, ru, uz }, { en: aiEn, ru: aiRu, uz: aiUz }, ...skillCatalogs]);
+export const catalogs = merge([{ en, ru, uz }, { en: aiEn, ru: aiRu, uz: aiUz }, { en: certificateEn, ru: certificateRu, uz: certificateUz }, ...skillCatalogs]);
 
 /** Translator for the English app. Keys live in i18n/en.ts and skills/<skill>/i18n.ts. */
 export const useT = () => useI18n().t;

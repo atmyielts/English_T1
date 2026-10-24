@@ -55,6 +55,8 @@ import { topicFromSubskill } from "../_shared/english-mistakes.ts";
 import { mergeReminderSettings, readReminderSettings, REMINDER_HOURS } from "../_shared/english-reminders.ts";
 import { isReminderWorker, runReminderCycle } from "./reminders.ts";
 import { appendLevelHistory, levelCheckStatus, perSkillLevels, readLevelHistory } from "../_shared/english-levels.ts";
+import { handleCertificateRoute, handlePublicCertificate, isPublicCertificateRoute } from "./certificate.ts";
+import { measurementMethod, testResultRecord } from "../_shared/english-certificate.ts";
 
 const routeMarker = "/hub";
 
@@ -265,6 +267,10 @@ serve(async (req) => {
       return json(200, { ok: true, ...result });
     }
 
+    // === Public certificate lookup (anyone with the link; no learner session) ===
+    const publicRoute = extractRoute(new URL(req.url), routeMarker);
+    if (isPublicCertificateRoute(req.method, publicRoute)) return await handlePublicCertificate(sb, publicRoute);
+
     const auth = await authUser(sb, req);
     if (!auth) return json(401, { error: "Unauthorized" });
 
@@ -302,6 +308,10 @@ serve(async (req) => {
     }
 
     const scope = await resolveLanguageScope(sb, toText(url.searchParams.get("language_code"), 16) || "en");
+
+    const certificateResponse = await handleCertificateRoute({ sb, req, route, userId: auth.userId, languageId: scope.languageId });
+    if (certificateResponse) return certificateResponse;
+
     const products = await resolveEnglishProducts(sb);
 
     const isEnglishAiRequest = (req.method === "GET" && route === "/insights/coach-summary")
@@ -1009,16 +1019,22 @@ serve(async (req) => {
           : tested;
         if (isCefr(overall)) row.current_cefr_estimate = overall;
         const completedAt = new Date().toISOString();
+        // Measured by the test only if this is the result the hub itself produced
+        // (certificates are issued from tested levels, never chosen ones).
+        const method = measurementMethod({ overall, per_skill: perSkillLevels({ per_skill: tested }) }, meta.placement_test_result);
+        delete meta.placement_test_result;
         meta.level_history = appendLevelHistory(meta, {
           at: completedAt,
           source: isCheck ? "check" : "placement",
           overall: isCefr(overall) ? overall as Cefr : null,
           per_skill: perSkillLevels({ per_skill: perSkill }),
+          method,
         });
         meta.placement = {
           overall_level: isCefr(overall) ? overall : null,
           per_skill: perSkill,
           completed_at: completedAt,
+          method,
         };
         row.metadata = meta;
       }
@@ -2464,6 +2480,22 @@ serve(async (req) => {
       const nextSteps = Array.isArray(result.next_steps)
         ? (result.next_steps as unknown[]).map((n) => toText(n, 320)).filter(Boolean).slice(0, 4)
         : [];
+
+      // Remember the graded result, so saving it can be told apart from a chosen level.
+      const testRecord = aiStatus === "ok" ? testResultRecord(overallLevel, perSkill) : null;
+      if (testRecord) {
+        const { data: goalRow } = await sb.from("learner_language_goals")
+          .select("metadata")
+          .eq("user_id", auth.userId)
+          .eq("language_id", scope.languageId)
+          .maybeSingle();
+        const goalMeta = ((goalRow as Record<string, unknown> | null)?.metadata ?? {}) as Record<string, unknown>;
+        const { error: recordError } = await sb.from("learner_language_goals").upsert(
+          { user_id: auth.userId, language_id: scope.languageId, metadata: { ...goalMeta, placement_test_result: testRecord } },
+          { onConflict: "user_id,language_id" },
+        );
+        if (recordError) console.error(JSON.stringify({ event: "english_placement_record_failed", request_id: requestId, error: recordError.message }));
+      }
 
       return json(200, {
         ok: true,

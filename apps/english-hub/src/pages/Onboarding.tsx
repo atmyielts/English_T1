@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useEnglish } from '../app/EnglishContext';
 import { useT } from '../i18n';
 import { edge } from '../lib/api';
@@ -54,6 +55,7 @@ const LEVEL_SKILLS = ['reading', 'listening', 'writing', 'grammar'] as const;
  */
 export const Onboarding = ({ onDone, retake = false, check = false }: { onDone?: () => void; retake?: boolean; check?: boolean } = {}) => {
   const t = useT();
+  const navigate = useNavigate();
   const { refreshOnboarding, displayName, onboarding } = useEnglish();
   const saved = retake || check ? onboarding.value : null;
   const [before] = useState(() => (check ? onboarding.value : null));
@@ -79,7 +81,8 @@ export const Onboarding = ({ onDone, retake = false, check = false }: { onDone?:
   const toggleGoal = (goal: Goal) =>
     setGoals((current) => (current.includes(goal) ? current.filter((entry) => entry !== goal) : [...current, goal].slice(-2)));
 
-  const finish = async (level: CefrLevel, perSkill: Record<string, { level: string }>) => {
+  /** `then`: where to go after saving instead of `onDone` (e.g. the certificate page). */
+  const finish = async (level: CefrLevel, perSkill: Record<string, { level: string }>, then?: string) => {
     setBusy(true);
     setError(null);
     try {
@@ -95,7 +98,8 @@ export const Onboarding = ({ onDone, retake = false, check = false }: { onDone?:
           placement: { overall_level: level, per_skill: per },
         });
       await refreshOnboarding();
-      onDone?.();
+      if (then) navigate(then);
+      else onDone?.();
     } catch (cause) {
       setError(cause);
       setBusy(false);
@@ -348,6 +352,19 @@ export const Onboarding = ({ onDone, retake = false, check = false }: { onDone?:
             >
               {busy ? t('common.saving') : check ? t('check.save') : t('onboarding.startLearning')}
             </button>
+            {check ? (
+              <button
+                type="button"
+                className="quiet is-large"
+                disabled={busy}
+                onClick={() => {
+                  const level = result.overall_level.toUpperCase();
+                  void finish(isCefr(level) ? (level as CefrLevel) : CEFR_LEVELS[2]!, result.per_skill, '/certificate');
+                }}
+              >
+                {t('certificate.ctaCheck')}
+              </button>
+            ) : null}
           </div>
         </Panel>
       ) : null}
