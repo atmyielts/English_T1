@@ -25,6 +25,18 @@ type Row = Record<string, unknown>;
 type Ctx = { sb: any; url: URL; userId: string; languageId: string };
 
 const DONE_STATUSES = ["submitted", "scored", "failed"];
+// One learner-facing activity per row (as hub/xp.ts): sub-items such as single grammar drills are left out.
+const PRIMARY_CONTENT_TYPES = [
+  "reading.article",
+  "listening.item",
+  "writing.prompt",
+  "speaking.prompt",
+  "speaking.roleplay",
+  "speaking.mock",
+  "grammar.unit",
+  "immersion.mission",
+  "vocabulary.deck",
+];
 const ROW_LIMIT = 1000;
 
 const relation = (row: Row): Row => {
@@ -72,10 +84,11 @@ const getJourney = async (ctx: Ctx): Promise<Response> => {
 
   const [attemptsRes, reviews, quizRes, wordsRes, roleplaysRes, mocksRes, goalRes, badgesRes, certificatesRes, earliestRes] = await Promise.all([
     sb.from("learning_attempts")
-      .select("id, service_key, correctness_ratio, overall_score, submitted_at, time_spent_seconds, learning_content_registry_items(content_type, source_ref, title, cefr_level)")
+      .select("id, service_key, correctness_ratio, overall_score, submitted_at, time_spent_seconds, learning_content_registry_items!inner(content_type, source_ref, title, cefr_level)")
       .eq("user_id", userId)
       .eq("language_id", languageId)
       .in("status", DONE_STATUSES)
+      .in("learning_content_registry_items.content_type", PRIMARY_CONTENT_TYPES)
       .gte("submitted_at", from)
       .lt("submitted_at", to)
       .order("submitted_at", { ascending: false })

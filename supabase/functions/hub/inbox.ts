@@ -28,6 +28,18 @@ type Ctx = { sb: any; req: Request; url: URL; route: string; userId: string; lan
 
 const DAY_MS = 86_400_000;
 const DONE_STATUSES = ["submitted", "scored", "failed"];
+// One learner-facing activity per row (as hub/xp.ts): sub-items such as single grammar drills are left out.
+const PRIMARY_CONTENT_TYPES = [
+  "reading.article",
+  "listening.item",
+  "writing.prompt",
+  "speaking.prompt",
+  "speaking.roleplay",
+  "speaking.mock",
+  "grammar.unit",
+  "immersion.mission",
+  "vocabulary.deck",
+];
 const STREAK_DAYS = 60;
 const STORED_DAYS = 60;
 
@@ -39,11 +51,13 @@ const loadFacts = async (ctx: Ctx, now: Date): Promise<InboxFacts> => {
     sb.from("learner_language_goals").select("metadata").eq("user_id", userId).eq("language_id", languageId).maybeSingle(),
     sb.from("learner_badges").select("badge_key, earned_at").eq("user_id", userId).eq("language_id", languageId).gte("earned_at", announceSince),
     sb.from("english_certificates").select("code, overall, issued_at").eq("user_id", userId).is("revoked_at", null).gte("issued_at", announceSince),
+    // Same activities as the streak on Today (GET /streak).
     sb.from("learning_attempts")
-      .select("submitted_at")
+      .select("submitted_at, learning_content_registry_items!inner(content_type)")
       .eq("user_id", userId)
       .eq("language_id", languageId)
       .in("status", DONE_STATUSES)
+      .in("learning_content_registry_items.content_type", PRIMARY_CONTENT_TYPES)
       .gte("submitted_at", new Date(now.getTime() - STREAK_DAYS * DAY_MS).toISOString())
       .order("submitted_at", { ascending: false })
       .limit(1000),
@@ -56,10 +70,11 @@ const loadFacts = async (ctx: Ctx, now: Date): Promise<InboxFacts> => {
       .lte("next_due_at", now.toISOString()),
     checkActivityAccess(sb, { userId, languageId, products: ctx.products, skill: null }).catch(() => null),
     sb.from("learning_attempts")
-      .select("id", { head: true, count: "exact" })
+      .select("id, learning_content_registry_items!inner(content_type)", { head: true, count: "exact" })
       .eq("user_id", userId)
       .eq("language_id", languageId)
       .in("status", DONE_STATUSES)
+      .in("learning_content_registry_items.content_type", PRIMARY_CONTENT_TYPES)
       .gte("submitted_at", lastWeek.starts_at)
       .lt("submitted_at", lastWeek.ends_at),
   ]);
