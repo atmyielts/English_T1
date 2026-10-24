@@ -15,7 +15,7 @@ import { isInternalRequest } from "../_shared/internal-auth.ts";
 import { checkReviewAnswer, parseReviewPayload, RETIRED_BOX } from "../_shared/english-review.ts";
 import { mergeReminderSettings, readReminderSettings } from "../_shared/english-reminders.ts";
 import { currentStreak, isCefr, TODAY_SKILLS, type TodaySkill } from "../_shared/english-today.ts";
-import { learnerDate, xpByDay } from "../_shared/english-xp.ts";
+import { learnerDate, XP_PER_REVIEW_CORRECT, xpByDay } from "../_shared/english-xp.ts";
 import {
   buildReviewCards,
   englishBotMessage,
@@ -255,16 +255,23 @@ const answerItem = async (sb: any, userId: string, languageId: string, id: strin
   const { error: updateError } = await sb.from("learner_review_items").update(next.patch).eq("id", id).eq("user_id", userId);
   if (updateError) throw new Error(`Failed to save review answer: ${updateError.message}`);
   // XP log, as hub/xp.ts logReviewAnswer: never fails the answer itself.
-  const { error: logError } = await sb.from("learner_review_answer_log").insert({
+  // channel marks Telegram answers for the learner's journey timeline.
+  const wasDue = reviewAnswerWasDue((row as Row).box, (row as Row).next_due_at, now);
+  const logRow = {
     user_id: userId,
     language_id: languageId,
     review_item_id: id,
     correct: checked.correct,
-    was_due: reviewAnswerWasDue((row as Row).box, (row as Row).next_due_at, now),
+    was_due: wasDue,
     answered_at: now.toISOString(),
-  });
+  };
+  let { error: logError } = await sb.from("learner_review_answer_log").insert({ ...logRow, channel: "telegram" });
+  // Before migration 20261026160200 the column is not there yet: keep the XP log without it.
+  if (logError && /channel/i.test(logError.message ?? "")) ({ error: logError } = await sb.from("learner_review_answer_log").insert(logRow));
   if (logError) console.error(JSON.stringify({ event: "english_review_answer_log_failed", user_id: userId, message: logError.message }));
-  return { status: 200, body: { ok: true, ...checked, retired: next.retired, next_due_at: next.patch.next_due_at } };
+  // What this answer adds to today's XP (a due item answered right), for the summary at the end.
+  const xpEarned = !logError && checked.correct && wasDue ? XP_PER_REVIEW_CORRECT : 0;
+  return { status: 200, body: { ok: true, ...checked, retired: next.retired, next_due_at: next.patch.next_due_at, xp_earned: xpEarned } };
 };
 
 const answerWord = async (sb: any, userId: string, languageId: string, id: string, outcome: unknown): Promise<Result> => {

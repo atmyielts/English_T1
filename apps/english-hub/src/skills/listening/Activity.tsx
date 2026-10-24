@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { TapScope, TapWords } from '../../components/WordLookup';
 import { useT } from '../../i18n';
@@ -7,6 +7,7 @@ import { canSpeak } from '../../lib/speech';
 import { useElapsedSeconds, useResource } from '../../lib/useResource';
 import { Panel, ProgressBar, Segmented, Tag, useErrorMessage } from '../../ui/kit';
 import { ActivityFrame, ResultPanel } from '../ActivityKit';
+import { getResumePoint, saveResume } from '../../lib/glue';
 import { RepeatAfterMe } from '../RepeatAfterMe';
 import { ShadowButton } from '../../components/shadow/ShadowButton';
 import { getItem, submitItem, type DiffToken, type ListeningSubmitResponse } from './api';
@@ -72,6 +73,11 @@ export const ListeningActivity = () => {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<unknown>(null);
 
+  // Answers and dictation saved on another device (or earlier here), to carry on where the learner stopped.
+  const remote = useResource((signal) => getResumePoint('listening', slug, signal), [slug]);
+  const restoredFor = useRef<string | null>(null);
+  const lastSaved = useRef('');
+
   const item = activity.data?.item;
   const targets = activity.data?.dictation ?? [];
   const questions = item?.questions ?? [];
@@ -83,6 +89,38 @@ export const ListeningActivity = () => {
   const chunks = useMemo(() => speechChunks(lines), [lines]);
   const hasAudioFile = Boolean(item?.audio_url);
   const useDictation = !readingMode && targets.length > 0;
+
+  useEffect(() => {
+    if (!item || remote.loading || restoredFor.current === slug) return;
+    restoredFor.current = slug;
+    const position = remote.data?.position;
+    if (!position) return;
+    const ids = new Set(questions.map((question) => question.id));
+    const saved = Object.fromEntries(Object.entries(position.answers ?? {}).filter(([id]) => ids.has(id)));
+    const typedBack = Object.fromEntries(Object.entries(position.typed ?? {}).map(([index, text]) => [Number(index), text]));
+    if (Object.keys(saved).length) setAnswers(saved);
+    if (Object.keys(typedBack).length) setTyped(typedBack);
+    if (position.plays) setPlays(position.plays);
+    lastSaved.current = JSON.stringify({ answers: saved, typed: position.typed ?? {}, plays: position.plays ?? 0 });
+  }, [item, questions, remote.loading, remote.data, slug]);
+
+  // Save where the learner is (answers, dictation so far), a few seconds after each change.
+  useEffect(() => {
+    if (restoredFor.current !== slug || result) return;
+    const typedOut = Object.fromEntries(Object.entries(typed).filter(([, text]) => text.trim()).map(([index, text]) => [String(index), text]));
+    const snapshot = JSON.stringify({ answers, typed: typedOut, plays });
+    if (snapshot === lastSaved.current || (!Object.keys(answers).length && !Object.keys(typedOut).length)) return;
+    const timer = window.setTimeout(() => {
+      lastSaved.current = snapshot;
+      const done = Object.keys(answers).length + Object.keys(typedOut).length;
+      void saveResume({
+        skill: 'listening',
+        slug,
+        position: { answers, typed: typedOut, plays, step: done, total: Math.max(done, questions.length + targets.length) },
+      });
+    }, 3000);
+    return () => window.clearTimeout(timer);
+  }, [answers, typed, plays, result, slug, questions.length, targets.length]);
 
   const answered = questions.filter((question) => answers[question.id] !== undefined).length;
   const written = targets.filter((target) => (typed[target.segment_index] ?? '').trim()).length;
@@ -209,6 +247,10 @@ export const ListeningActivity = () => {
           fix={fix}
           onRetry={retry}
           savedWords={saved}
+          savedQuestions={result.recorded
+            ? Math.max(0, result.questions.total - result.questions.correct) + result.dictation.results.filter((entry) => entry.accuracy < 90).length
+            : 0}
+          title={item?.title}
         >
           {result.mode === 'reading' ? <p className="en-notice" style={{ margin: 0 }}>{t('listening.result.readingMode')}</p> : null}
 

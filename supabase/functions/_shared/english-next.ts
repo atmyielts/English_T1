@@ -2,7 +2,8 @@
 // "which app now". Pure: the hub loads the rows and passes them in.
 //
 // Order of preference:
-//   0. a class assignment due within two days (or overdue) from the learner's
+//   0. continue an activity left unfinished on any device (english-resume.ts)
+//   0b. a class assignment due within two days (or overdue) from the learner's
 //      teacher (english-classes.ts builds these steps)
 //   1. due reviews (words and missed questions; always free)
 //   1b. any other open class assignment
@@ -18,7 +19,7 @@
 import { type AttemptRow, type CatalogItem, CEFR_ORDER, type Cefr, type FixCandidate, pickItem, TODAY_SKILLS, type TodaySkill, type TodayTask } from "./english-today.ts";
 import type { SkillRating } from "./english-rating.ts";
 
-export type NextReason = "review_due" | "class_assignment" | "fix_mistake" | "weakest_skill" | "today_plan" | "keep_going";
+export type NextReason = "continue" | "review_due" | "class_assignment" | "fix_mistake" | "weakest_skill" | "today_plan" | "keep_going";
 
 export type NextStep = {
   /** practice: a role-play or the speaking mock, opened by `href` (those pages apply their own allowance). */
@@ -38,10 +39,20 @@ export type NextStep = {
   target_level?: Cefr | null;
   /** Opening it uses today's free activity. */
   uses_free: boolean;
-  /** practice steps: the page to open. */
+  /** Where to open it, when not the usual /<skill>/<slug>: a practice page, or a role-play or mock to continue. */
   href?: string | null;
   /** class_assignment: which assignment, its class and how far the learner is. */
   assignment?: { id: string; class_name: string; due_at: string; done: number; required: number } | null;
+};
+
+/** Something started and not finished (see english-resume.ts selectResume). */
+export type NextResume = {
+  kind: "activity" | "roleplay" | "mock";
+  skill: TodaySkill;
+  ref: string;
+  title: string | null;
+  href: string;
+  progress: number | null;
 };
 
 export type NextInput = {
@@ -65,6 +76,8 @@ export type NextInput = {
   /** Open class assignments as ready-made steps (reason "class_assignment"), soonest due first. */
   assignments?: NextStep[];
   now?: Date;
+  /** Unfinished activities, newest first; the newest one comes before everything else. */
+  resume?: NextResume[];
 };
 
 export type NextResult = { step: NextStep | null; locked: NextStep | null };
@@ -131,6 +144,8 @@ export const pickNextStep = (input: NextInput): NextResult => {
   /** Whether the learner may open this now, and whether it uses the free activity. */
   const openable = (step: NextStep): { ok: boolean; usesFree: boolean } => {
     if (step.kind === "review" || step.kind === "practice" || !step.skill) return { ok: true, usesFree: false };
+    // A role-play or mock already started was allowed when it started.
+    if (step.reason === "continue" && step.href) return { ok: true, usesFree: false };
     if (owned.has(step.skill)) return { ok: true, usesFree: false };
     if (step.content_item_id && freeToday.has(step.content_item_id)) return { ok: true, usesFree: false };
     return input.access.freeLeft > 0 ? { ok: true, usesFree: true } : { ok: false, usesFree: false };
@@ -138,7 +153,29 @@ export const pickNextStep = (input: NextInput): NextResult => {
 
   const candidates: NextStep[] = [];
 
-  // 0. Class assignments due soon. Entitlements still apply (openable below):
+  // 0. Something started and not finished, on any device.
+  for (const open of (input.resume ?? []).slice(0, 2)) {
+    if (open.kind === "activity") {
+      const item = items.find((entry) => entry.skill === open.skill && entry.slug === open.ref);
+      if (item) candidates.push(activityStep(item, "continue", { detail: open.progress === null ? null : String(open.progress) }));
+    } else {
+      candidates.push({
+        kind: "activity",
+        skill: open.skill,
+        content_item_id: null,
+        slug: null,
+        title: open.title ?? open.ref,
+        level: null,
+        minutes: open.kind === "mock" ? 14 : 8,
+        reason: "continue",
+        detail: open.kind,
+        uses_free: false,
+        href: open.href,
+      });
+    }
+  }
+
+  // 0b. Class assignments due soon. Entitlements still apply (openable below):
   // a class never unlocks a skill the learner has not bought.
   const nowMs = (input.now ?? new Date()).getTime();
   const assignmentSteps = (input.assignments ?? [])

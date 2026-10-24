@@ -139,7 +139,7 @@ export const ProgressPage = () => {
           <p className="hint">{t('progress.skills.barExplain')}</p>
         </Panel>
 
-        <Panel title={t('progress.history.title')}>
+        <Panel title={t('progress.history.title')} aside={<Link to="/journey">{t('glue.journey.fromProgress')}</Link>}>
           {history.loading && !history.data ? <Loading lines={5} /> : null}
           {history.error ? <ErrorState error={history.error} onRetry={history.reload} /> : null}
           {history.data && history.data.attempts.length === 0 ? (

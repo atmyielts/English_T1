@@ -43,4 +43,4 @@ export type ReviewCard = ItemCard | WordCard;
 
 export type ReviewBatch = { ok: true; due: { items: number; words: number; total: number }; cards: ReviewCard[] };
 
-export type ItemVerdict = { ok: true; correct: boolean; expected: string; explanation: string | null; accuracy?: number; retired: boolean };
+export type ItemVerdict = { ok: true; correct: boolean; expected: string; explanation: string | null; accuracy?: number; retired: boolean; xp_earned?: number };

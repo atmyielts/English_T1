@@ -63,6 +63,7 @@ import { measurementMethod, testResultRecord } from "../_shared/english-certific
 import { handlePracticeRoute } from "./practice.ts";
 import { handleClassesRoute, runClassReminders } from "./classes.ts";
 import { handleShadowingRoute } from "./shadowing.ts";
+import { handleGlueRoute } from "./glue.ts";
 
 const routeMarker = "/hub";
 
@@ -419,6 +420,10 @@ serve(async (req) => {
     // === Shadowing sentence sets and light speaking logs (./shadowing.ts) ===
     const shadowingResponse = await handleShadowingRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId, products });
     if (shadowingResponse) return shadowingResponse;
+
+    // === Journey, inbox, content search, continue anywhere (./glue.ts) ===
+    const glueResponse = await handleGlueRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId, products });
+    if (glueResponse) return glueResponse;
 
     // === Today, catalog and history (learner home) ===
     // Built only from the learner's placement, real attempts and due reviews.

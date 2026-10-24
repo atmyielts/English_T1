@@ -6,7 +6,7 @@ One page for running Schood English alone. Learner app: `apps/english-hub` at ht
 
 | Function | Status | What it does |
 |---|---|---|
-| `hub` | active | Learner router: today/catalog/progress, access, review, XP/leagues, goal, certificates, reminders, Telegram quiz, word lookup (`/word`), 18 `/ai/*` tools + `/insights/coach-summary` |
+| `hub` | active | Learner router: today/catalog/progress, access, review, XP/leagues, goal, certificates, reminders, Telegram quiz, word lookup (`/word`), journey/inbox/search/resume (`hub/glue.ts`), 18 `/ai/*` tools + `/insights/coach-summary` |
 | `reading-articles`, `listening-content`, `writing-workbench`, `speaking-studio`, `grammar-remediation`, `vocabulary-notebook`, `immersion-missions` | active | One per skill: list, open and submit activities (each submit passes `guardActivity`) |
 | `me` | active | Account + entitlements for the learner app |
 | `admin-english-content` | active | Content Studio (list/edit/publish, `/content/draft` AI drafting) |
@@ -80,3 +80,17 @@ Any signed-in user can open a class at `/classes` and becomes its teacher; learn
 - **Offline session**: Today → "Download for offline" saves the unfinished reading, listening, grammar and vocabulary activities of today's plan in the learner's browser (IndexedDB) and asks the service worker (`sw.js` v5) to keep the app shell. `/offline` runs them without a connection; answers are queued on the device and sent through the normal submit routes when the learner is online and signed in. Writing, speaking, immersion and review show "Needs a connection".
 - Exactly-once sync: each queued answer carries a `client_attempt_id`. `reading-articles`, `listening-content`, `grammar-remediation` and `vocabulary-notebook` claim it in `english_client_attempts` (migration `20261026120000`, service role only, rows pruned after 30 days by pg_cron `english-client-attempts-prune-v1`) and replay the stored response for a repeat. Without the table the functions submit as before (no dedupe).
 - Known limit: an answer done offline counts on the day it is sent (the server time), so a learner offline for a whole day sees that day's practice on the next day.
+## One system: journey, inbox, search, continue (hub/glue.ts)
+
+No switches: these are read-mostly views over data that already exists. Nothing here calls AI.
+
+| Route | What | Tables |
+|---|---|---|
+| `GET /hub/journey?week=&skill=` | One learner-local week of everything: activities, role-plays, mocks, review answers (app and Telegram Mini App), Telegram quiz answers, saved words, level changes, badges, certificates. Page `/journey` (Progress → "Your full journey", sidebar → You → Journey) | reads only; `learner_review_answer_log.channel` marks Telegram answers (`telegram`; NULL = the app) |
+| `GET /hub/inbox`, `POST /hub/inbox/read` | In-app notices: the bell in the top bar (desktop/tablet; on phones only while something is unread) and `/inbox`. Derived on read: level-ups and badges/certificates of the last 14 days, streak at risk (from 16:00 Tashkent), reviews due, monthly check ready, paused services the learner uses, "Your week in review" each Monday | `english_inbox` (one row per learner + key; read state). Pruned daily by pg_cron `english-inbox-prune-v1` (read > 90 days, all > 180 days) |
+| `GET /hub/search?q=` | Ctrl+K content search: lessons in every skill by title/topic/level ("past simple b1"), the learner's notebook words and recent mistakes, grammar rules; each lesson labelled open / free today / not in plan | catalog + handbook cached ~5 min per function instance |
+| `GET/POST /hub/resume`, `POST /hub/resume/clear`, `GET /hub/resume/roleplay` | "Continue" on Today and first in Up next: the last activity opened per skill (writing draft and listening answers are kept), an open role-play (3 h), an unscored mock (3 h). Hidden once submitted or after 7 days | `english_resume_points` (one row per learner + skill) |
+
+- **Send a notice to a learner from code:** `pushInbox(sb, userId, { kind, key, params, link })` in `_shared/english-inbox.ts` (kinds: `INBOX_KINDS`; same key twice = one notice; never throws). Operator text: kind `system` with `title`/`body`. A new kind needs its text in `apps/english-hub/src/i18n/glue.*.ts` (`glue.inbox.<kind>.title/.body`).
+- **Result screens:** every result (7 skills, role-play, speaking mock, progress check, Review) goes through `components/ResultSummary.tsx`. A share button is added once in `components/resultShare.tsx` (`DefaultResultShare`) and appears on all of them.
+- **Deploy order for this part:** migrations `20261026160000`–`20261026160200` first, then `hub` and `telegram-app`, then the frontends. Before the migrations the routes degrade quietly (inbox shows derived notices unread, nothing to continue, Telegram answers logged without `channel`).

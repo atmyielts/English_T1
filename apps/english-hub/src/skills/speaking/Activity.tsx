@@ -372,6 +372,9 @@ const SpeakingResult = ({
       good={feedback.strengths}
       fix={fix}
       onRetry={onRetry}
+      savedMistakes={feedback.corrections.length}
+      mainMistake={feedback.corrections[0] ? { original: feedback.corrections[0].said, corrected: feedback.corrections[0].better, explanation: feedback.corrections[0].explanation } : null}
+      title={prompt.title}
     >
       {result.mode === 'typed' ? (
         <p className="en-notice" style={{ margin: 0 }}><strong>{t('speaking.typed.label')}</strong> {t('speaking.typed.note')}</p>

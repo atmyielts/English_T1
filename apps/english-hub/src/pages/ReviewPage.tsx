@@ -6,6 +6,8 @@ import { handbookTopicHref } from '../lib/handbookSearch';
 import { getReviewItems } from '../lib/review';
 import { ReviewQuestions } from './ReviewQuestions';
 import { L1Why } from '../components/L1Why';
+import { ResultSummary } from '../components/ResultSummary';
+import { XP_PER_REVIEW_CORRECT } from '../lib/glue';
 import { getNotebook, reviewCard, type NotebookCard } from '../lib/notebook';
 import { speak, canSpeak } from '../lib/speech';
 import { useResource } from '../lib/useResource';
@@ -98,14 +100,19 @@ export const ReviewPage = () => {
           {due.loading && !due.data ? <Loading lines={4} /> : null}
           {due.error ? <ErrorState error={due.error} onRetry={due.reload} /> : null}
           {finished !== null ? (
-            <EmptyState
+            <ResultSummary
               title={t('review.finished.title')}
-              body={t('review.finished.body', { remembered: finished, total: cards.length })}
-              action={<>
+              score={cards.length ? Math.round((finished / cards.length) * 100) : null}
+              summary={t('review.finished.body', { remembered: finished, total: cards.length })}
+              share={{ kind: 'review', skill: 'vocabulary', score: cards.length ? Math.round((finished / cards.length) * 100) : null }}
+              upNext={{ skill: 'vocabulary' }}
+              actions={<>
                 <button type="button" onClick={() => { setFinished(null); due.reload(); }}>{t('review.finished.more')}</button>
                 <Link className="en-button-quiet" to="/today">{t('review.finished.today')}</Link>
               </>}
-            />
+            >
+              {finished < cards.length ? <p className="hint" style={{ margin: 0 }}>{t('glue.review.wordsAgain')}</p> : null}
+            </ResultSummary>
           ) : due.data && cards.length === 0 ? (
             <EmptyState
               title={due.data.summary.total_count > 0 ? t('review.none.title') : t('review.empty.title')}
@@ -125,11 +132,18 @@ export const ReviewPage = () => {
           {questions.loading && !questions.data ? <Loading lines={3} /> : null}
           {questions.error ? <ErrorState error={questions.error} onRetry={questions.reload} /> : null}
           {questionsDone !== null ? (
-            <EmptyState
+            <ResultSummary
               title={t('review.questions.doneTitle')}
-              body={t('review.questions.doneBody', { right: questionsDone, total: reviewItems.length })}
-              action={<button type="button" onClick={() => { setQuestionsDone(null); questions.reload(); }}>{t('review.finished.more')}</button>}
-            />
+              score={reviewItems.length ? Math.round((questionsDone / reviewItems.length) * 100) : null}
+              summary={t('review.questions.doneBody', { right: questionsDone, total: reviewItems.length })}
+              // Every question here was due: each right answer earned review XP.
+              xp={{ amount: questionsDone * XP_PER_REVIEW_CORRECT }}
+              share={{ kind: 'review', score: reviewItems.length ? Math.round((questionsDone / reviewItems.length) * 100) : null }}
+              upNext={{ skill: 'grammar' }}
+              actions={<button type="button" onClick={() => { setQuestionsDone(null); questions.reload(); }}>{t('review.finished.more')}</button>}
+            >
+              {questionsDone < reviewItems.length ? <p className="hint" style={{ margin: 0 }}>{t('glue.review.questionsAgain')}</p> : null}
+            </ResultSummary>
           ) : questions.data && reviewItems.length === 0 ? (
             <p>{t('review.questions.none')}</p>
           ) : reviewItems.length ? (

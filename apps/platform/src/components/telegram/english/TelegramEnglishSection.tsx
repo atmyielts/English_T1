@@ -57,6 +57,8 @@ export const TelegramEnglishSection: React.FC<{
     return (
       <TelegramEnglishReview
         call={call}
+        appUrl={today ? today.app_url.replace(/\/$/, '') : null}
+        openLink={openLink}
         onExit={(changed) => {
           setReviewing(false);
           if (changed || !today) void load();

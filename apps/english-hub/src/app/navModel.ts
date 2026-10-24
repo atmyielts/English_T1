@@ -33,6 +33,8 @@ export const DAY_ENTRIES: NavEntry[] = [
 /** Personal pages, in sidebar order. */
 export const YOU_ENTRIES: NavEntry[] = [
   { to: '/progress', labelKey: 'nav.progress', group: 'you', keywords: 'level stats goal history' },
+  { to: '/journey', labelKey: 'glue.nav.journey', group: 'you', keywords: 'journey timeline history week diary activity telegram' },
+  { to: '/inbox', labelKey: 'glue.nav.inbox', group: 'you', keywords: 'inbox notifications notices bell messages' },
   { to: '/league', labelKey: 'nav.league', group: 'you', keywords: 'xp ranking leaderboard badges' },
   { to: '/certificate', labelKey: 'ws.certificate', group: 'you', keywords: 'certificate cefr share' },
   { to: '/classes', labelKey: 'classes.nav', group: 'you', keywords: 'class teacher school group homework assignments join code' },

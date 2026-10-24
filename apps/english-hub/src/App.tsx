@@ -27,6 +27,8 @@ const ClassesPage = lazy(() => import('./pages/ClassesPage').then((m) => ({ defa
 const ClassDashboardPage = lazy(() => import('./pages/ClassDashboardPage').then((m) => ({ default: m.ClassDashboardPage })));
 const SpeakingMockPage = lazy(() => import('./pages/SpeakingMockPage').then((m) => ({ default: m.SpeakingMockPage })));
 const OfflineSessionPage = lazy(() => import('./pages/OfflineSessionPage').then((m) => ({ default: m.OfflineSessionPage })));
+const JourneyPage = lazy(() => import('./pages/JourneyPage').then((m) => ({ default: m.JourneyPage })));
+const InboxPage = lazy(() => import('./pages/InboxPage').then((m) => ({ default: m.InboxPage })));
 
 const SKILL_APPS = {
   reading: lazy(() => import('./skills/reading')),
@@ -137,6 +139,8 @@ const App = () => {
         <Route path="/classes" element={hub(<ClassesPage />)} />
         <Route path="/classes/:id" element={hub(<ClassDashboardPage />)} />
         <Route path="/offline" element={hub(<OfflineSessionPage />)} />
+        <Route path="/journey" element={hub(<JourneyPage />)} />
+        <Route path="/inbox" element={hub(<InboxPage />)} />
         {SKILLS.map((skill) => {
           const SkillApp = SKILL_APPS[skill.key];
           return (

@@ -183,6 +183,8 @@ export const ReadingArticle = () => {
           good={good}
           fix={fix}
           savedWords={saved.length}
+          savedQuestions={result.no_questions ? 0 : Math.max(0, result.total - result.correct)}
+          title={article?.title}
           onRetry={result.no_questions ? undefined : retry}
         >
           <RepeatAfterMe title={t('repeat.reading.title')} lead={t('repeat.reading.lead')} sentences={readAloudSentences(blocks)} />

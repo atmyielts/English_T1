@@ -65,6 +65,9 @@ export const GrammarLesson = () => {
             ...(result.practised_mistakes ? [t('grammar.result.practisedMistakes', { count: result.practised_mistakes })] : []),
           ]}
           fix={result.correct < result.total ? [unit?.common_error_pattern ?? t('grammar.result.fixDefault')] : []}
+          savedQuestions={Math.max(0, result.total - result.correct)}
+          mainMistake={result.correct < result.total && unit?.focus_area ? { topic: unit.focus_area, explanation: unit.common_error_pattern } : null}
+          title={unit?.title}
           onRetry={retry}
         />
       ) : null}

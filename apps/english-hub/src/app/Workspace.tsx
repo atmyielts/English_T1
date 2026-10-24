@@ -10,6 +10,7 @@ import { useEnglish } from './EnglishContext';
 import { DAY_ENTRIES, SKILL_PAGES, YOU_ENTRIES, activeEntry, allEntries, type NavEntry } from './navModel';
 import { QuickSwitcher } from './QuickSwitcher';
 import { UpNextStrip } from '../components/UpNext';
+import { InboxBell } from '../components/Inbox';
 
 // XP for the top bar, shared across page changes so moving around doesn't refetch every time.
 let xpCache: { at: number; xp: number } | null = null;
@@ -184,6 +185,7 @@ export const Workspace = ({ skill, children }: { skill?: SkillKey; children: Rea
             {xp !== null ? (
               <Link className="en-ws-xp" to="/league" title={t('nav.league')}>{t('ws.xpToday', { xp: String(xp) })}</Link>
             ) : null}
+            <InboxBell pathname={location.pathname} />
             <button type="button" className="en-ws-search is-compact" onClick={() => setSwitcher(true)} aria-label={t('ws.search')}>
               <SearchIcon />
             </button>

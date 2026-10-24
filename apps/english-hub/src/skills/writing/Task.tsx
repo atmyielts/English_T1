@@ -7,6 +7,7 @@ import { useElapsedSeconds, useResource } from '../../lib/useResource';
 import { Panel, ProgressBar, useErrorMessage } from '../../ui/kit';
 import { YourWordsHint, YourWordsResult } from '../YourWords';
 import { ActivityFrame, ResultPanel } from '../ActivityKit';
+import { getResumePoint, saveResume } from '../../lib/glue';
 import {
   countWords,
   getWritingTask,
@@ -213,6 +214,9 @@ export const WritingTask = () => {
   const errorText = useErrorMessage();
   const { slug = '' } = useParams();
   const task = useResource((signal) => getWritingTask(slug, signal), [slug]);
+  // A draft saved on another device (phone, installed app), if any.
+  const remote = useResource((signal) => getResumePoint('writing', slug, signal), [slug]);
+  const remoteSaved = useRef('');
   const elapsed = useElapsedSeconds();
   const lastSubmitAt = useRef(0);
   const editorRef = useRef<HTMLTextAreaElement | null>(null);
@@ -230,15 +234,27 @@ export const WritingTask = () => {
   const prompt = task.data?.prompt;
   const yourWords = task.data?.your_words ?? [];
 
-  // Start from the draft saved on this device, else the last text sent to the server.
+  // Start from the draft saved on this device, else one saved on another device, else the last text sent.
   useEffect(() => {
-    if (!task.data || loadedFor.current === slug) return;
+    if (!task.data || remote.loading || loadedFor.current === slug) return;
     loadedFor.current = slug;
     const local = readDraft(slug);
-    const initial = local || task.data.draft?.text || '';
+    const elsewhere = remote.data?.position?.draft ?? '';
+    remoteSaved.current = elsewhere;
+    const initial = local || elsewhere || task.data.draft?.text || '';
     setText(initial);
     setRestored(Boolean(initial.trim()));
-  }, [task.data, slug]);
+  }, [task.data, remote.loading, remote.data, slug]);
+
+  // Keep the draft on the server too, less often, so it can be finished on any device.
+  useEffect(() => {
+    if (loadedFor.current !== slug || result || !text.trim() || text === remoteSaved.current) return;
+    const timer = window.setTimeout(() => {
+      remoteSaved.current = text;
+      void saveResume({ skill: 'writing', slug, position: { draft: text } });
+    }, 4000);
+    return () => window.clearTimeout(timer);
+  }, [text, slug, result]);
 
   // Autosave while typing.
   useEffect(() => {
@@ -316,6 +332,12 @@ export const WritingTask = () => {
             : t('writing.result.summaryBasic', { count: result.feedback.word_count })}
           good={result.feedback.strengths}
           fix={result.feedback.improvements}
+          savedMistakes={result.feedback.corrections.length}
+          mainMistake={(() => {
+            const main = result.feedback.corrections.find((entry) => entry.category === 'grammar') ?? result.feedback.corrections[0];
+            return main ? { original: main.original, corrected: main.corrected, explanation: main.explanation, topic: main.topic ?? null } : null;
+          })()}
+          title={prompt?.title}
         >
           {comparison ? <div className="en-stack" style={{ gap: '.4rem' }}>{comparison}</div> : null}
           <YourWordsResult suggested={yourWords} used={result.your_words_used ?? []} />
