@@ -2176,6 +2176,9 @@ const mockAcademyEdge = async (page: Page, persona: Persona, options: MockEdgeOp
             starts_at: null,
             ends_at: null,
             assigned_at: "2026-07-01T09:00:00.000Z",
+            version_mode: "pinned",
+            course_version: 1,
+            latest_version: 2,
           },
         ],
       },
@@ -4035,7 +4038,14 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
 
   test("teacher can author structured curriculum and native assessments", async ({ page }) => {
     await seedSessionCookie(page, "teacher-user");
-    await mockAcademyEdge(page, "teacher");
+    const moves: Array<Record<string, unknown>> = [];
+    await mockAcademyEdge(page, "teacher", {
+      respond: async (body) => {
+        if (body.action !== "move_course_version") return undefined;
+        moves.push(body);
+        return { move: { classroom_course_id: "classroom-course-route-smoke", classroom_id: body.classroom_id, course_id: body.course_id, from_mode: "pinned", from_version: 1, to_version: 2, changed: true } };
+      },
+    });
 
     await page.goto(`/academy/teacher/os?academy_id=${academyId}`);
     await expect(page.getByRole("heading", { name: "Curriculum & grading" })).toBeVisible();
@@ -4053,6 +4063,12 @@ test.describe("Academy routed workspaces with mocked Edge responses", () => {
     await expect(page.getByText("Consecutive work")).toBeVisible();
     await expect(page.getByRole("button", { name: "Next student" })).toBeDisabled();
     await expect(page.getByText("Evidence · max 6")).toBeVisible();
+    // A running group keeps its course version until staff move it.
+    await expect(page.getByText(/This group runs version 1\. Latest version: 2\./)).toBeVisible();
+    await expect(page.getByRole("button", { name: "Publish new version" })).toBeEnabled();
+    await page.getByRole("button", { name: "Move this group to version 2" }).click();
+    await expect.poll(() => moves.length).toBe(1);
+    expect(moves[0]).toMatchObject({ course_id: course.id, expected_version: 2 });
   });
 
   test("teacher can bulk-mark attendance and edit roster exceptions inline", async ({ page }) => {
