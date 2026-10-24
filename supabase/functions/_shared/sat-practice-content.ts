@@ -239,8 +239,9 @@ export function gradeSpr(value: unknown, accepted: unknown): boolean {
   const entry = normalizeSprInput(value);
   if (!entry || !Array.isArray(accepted)) return false;
   const keys = accepted.filter((a): a is string | number => typeof a === 'string' || (typeof a === 'number' && Number.isFinite(a))).map(normalizeSprInput).filter(Boolean);
-  if (keys.includes(entry)) return true;
+  // An entry that cannot be typed into the Digital SAT answer space never scores.
   if (sprEntryIssue(entry)) return false;
+  if (keys.includes(entry)) return true;
   const answer = parseSprNumber(entry)!;
   const targets = keys.map(parseSprNumber).filter((t): t is SprNumber => t !== null);
   if (targets.some(t => same(answer, t))) return true;
@@ -389,7 +390,7 @@ function textField(value: unknown, field: string, max: number, errors: string[],
   if (value.length > max) errors.push(`${field} is longer than ${max} characters`);
   // JSON turns \t \b \f \r \n into control characters: "\times", "\frac", "\beta",
   // "\right", "\neq" need a double backslash ("\\times") in the source file.
-  if (/[\u0000-\u0008\u000b-\u001f\u007f]/.test(value)) errors.push(`${field} contains a control character (tab/backspace/form feed/carriage return): write LaTeX commands such as \\times, \\frac, \\beta, \\right with a double backslash in JSON`);
+  if (/[\u0000-\u0009\u000b-\u001f\u007f]/.test(value)) errors.push(`${field} contains a control character (tab/backspace/form feed/carriage return): write LaTeX commands such as \\times, \\frac, \\beta, \\right with a double backslash in JSON`);
   for (const segment of parseRichText(value)) {
     if (segment.kind === 'math' && segment.tex.includes('\n')) errors.push(`${field}: math contains a line break; "\\neq", "\\nu" etc. need a double backslash in JSON`);
   }
