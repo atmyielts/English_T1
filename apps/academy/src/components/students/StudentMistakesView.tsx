@@ -19,7 +19,7 @@ function MistakeFeedConsent({academyId,actorId}:{academyId:string;actorId:string
  const on=feed?.status==='granted';
  return <article className="homework-plan-card" aria-labelledby="mistake-feed-title">
   <h3 id="mistake-feed-title">{t('Practise these in Schood English')}</h3>
-  {on?<p>{t(feed?.granted_by_role==='guardian'?'On since {date}, turned on by your parent or guardian.':'On since {date}.',{date:day(String(feed?.granted_at))})} {t('{n} mistakes are in your practice.',{n:feed?.copied??0})}</p>
+  {on?<p>{t(feed?.granted_by_role==='guardian'?'On since {date}, turned on by your parent or guardian.':'On since {date}.',{date:day(String(feed?.granted_at))})} {t('Mistakes in your practice: {n}.',{n:feed?.copied??0})}</p>
    :<p>{t('Off. Turn this on to add your open homework mistakes from this centre to your Schood English Today plan and Review.')}</p>}
   <p className="muted">{t('Only the mistake, its correction, the explanation and the centre name are copied. Your homework, scores and teachers stay here. Turn it off any time and the copies are deleted.')}</p>
   {!on&&<><label className="homework-toggle"><input type="checkbox" checked={adult} onChange={event=>setAdult(event.target.checked)}/>{t('I am 18 or older')}</label>
