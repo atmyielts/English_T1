@@ -1,0 +1,169 @@
+{
+  "item": {
+    "slug": "b2-talk-how-vaccines-train-the-body",
+    "title": "Talk: How Vaccines Train the Body",
+    "level": "B2",
+    "summary": "A short science talk explains, in simple terms, how a vaccine prepares the immune system and why the body remembers.",
+    "transcript_text": "Have you ever wondered how a vaccine actually works? The basic idea is surprisingly simple, and it's all about training. Your immune system is the body's defence against germs, like viruses and bacteria. When a new germ enters your body for the first time, the immune system needs time to recognise it and to build the right weapons, which are called antibodies. During that time, you can become quite ill. A vaccine gives your immune system a kind of practice session. It contains something that looks like the germ: a weakened or inactive version of it, for example, or just one harmless piece of it. This can't make you ill in the normal way, but it's enough for the immune system to learn what the enemy looks like. Then, and this is the important part, the body keeps a memory. Special memory cells stay in your body, sometimes for many years. So if the real germ arrives later, your body recognises it quickly and can usually fight it before it causes serious illness. Some people have a sore arm or a mild temperature for a day or two after a vaccine. That's generally a sign that the immune system is doing its job. And when many people in a community are protected, a germ finds it harder to spread, which also helps to protect people who can't be vaccinated themselves, such as very young babies.",
+    "category": "Health",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 150,
+    "duration_seconds": 94,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "health",
+      "science",
+      "immune system",
+      "talk"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "talk"
+    },
+    "questions": [
+      {
+        "prompt": "What is the main idea of the talk?",
+        "options": [
+          "Vaccines work by killing germs directly.",
+          "Most illnesses cannot be prevented.",
+          "Vaccines prepare the immune system to recognise germs.",
+          "Babies need more vaccines than adults."
+        ],
+        "answer_index": 2,
+        "explanation": "\"A vaccine gives your immune system a kind of practice session\" so it can \"learn what the enemy looks like\"."
+      },
+      {
+        "prompt": "What are antibodies, according to the speaker?",
+        "options": [
+          "Germs that cause illness",
+          "Weapons that the immune system builds",
+          "A type of vaccine",
+          "Cells that make you feel tired"
+        ],
+        "answer_index": 1,
+        "explanation": "The immune system needs time \"to build the right weapons, which are called antibodies.\""
+      },
+      {
+        "prompt": "Why can't a vaccine make you ill in the normal way?",
+        "options": [
+          "It is taken only by healthy people.",
+          "It works only for a day or two.",
+          "It is mostly water.",
+          "It contains only a weakened, inactive or harmless part of the germ."
+        ],
+        "answer_index": 3,
+        "explanation": "\"A weakened or inactive version of it, for example, or just one harmless piece of it.\""
+      },
+      {
+        "prompt": "What does the speaker say about a sore arm after a vaccine?",
+        "options": [
+          "It is usually a sign that the immune system is working.",
+          "It means the vaccine has failed.",
+          "It lasts for several weeks.",
+          "It happens to everyone."
+        ],
+        "answer_index": 0,
+        "explanation": "\"That's generally a sign that the immune system is doing its job.\""
+      },
+      {
+        "prompt": "Why does the speaker mention very young babies?",
+        "options": [
+          "To say that babies get ill more often",
+          "To explain how memory cells are made",
+          "To show that babies react badly to vaccines",
+          "To show how protecting many people helps those who cannot be vaccinated"
+        ],
+        "answer_index": 3,
+        "explanation": "Community protection \"helps to protect people who can't be vaccinated themselves, such as very young babies.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Have you ever wondered how a vaccine actually works?",
+      "focus_phrase": "actually works",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The basic idea is surprisingly simple, and it's all about training.",
+      "focus_phrase": "all about training",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Your immune system is the body's defence against germs, like viruses and bacteria.",
+      "focus_phrase": "the body's defence",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "When a new germ enters your body for the first time, the immune system needs time to recognise it and to build the right weapons, which are called antibodies.",
+      "focus_phrase": "called antibodies",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "During that time, you can become quite ill.",
+      "focus_phrase": "become quite ill",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "A vaccine gives your immune system a kind of practice session.",
+      "focus_phrase": "practice session",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "It contains something that looks like the germ: a weakened or inactive version of it, for example, or just one harmless piece of it.",
+      "focus_phrase": "one harmless piece",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "This can't make you ill in the normal way, but it's enough for the immune system to learn what the enemy looks like.",
+      "focus_phrase": "what the enemy looks like",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Then, and this is the important part, the body keeps a memory.",
+      "focus_phrase": "keeps a memory",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Special memory cells stay in your body, sometimes for many years.",
+      "focus_phrase": "memory cells",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "So if the real germ arrives later, your body recognises it quickly and can usually fight it before it causes serious illness.",
+      "focus_phrase": "recognises it quickly",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Some people have a sore arm or a mild temperature for a day or two after a vaccine.",
+      "focus_phrase": "a mild temperature",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "That's generally a sign that the immune system is doing its job.",
+      "focus_phrase": "doing its job",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "And when many people in a community are protected, a germ finds it harder to spread, which also helps to protect people who can't be vaccinated themselves, such as very young babies.",
+      "focus_phrase": "harder to spread",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

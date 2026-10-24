@@ -1,0 +1,193 @@
+{
+  "item": {
+    "slug": "c2-lecture-the-placebo-puzzle",
+    "title": "Lecture: The Placebo Puzzle",
+    "level": "C2",
+    "summary": "A lecture on the placebo effect: what expectation can and cannot change, why drug trials need a placebo group, and the ethics of prescribing one.",
+    "transcript_text": "Let me begin with a puzzle that has troubled medicine for a very long time. Give a patient a pill that contains nothing active, a sugar pill, tell them it will ease their pain, and a surprising proportion will report that it does. This is the placebo effect, and it's tempting to dismiss it as people simply imagining things. I'd caution against that. Pain, nausea and fatigue are, to a considerable degree, experiences shaped by the brain, and expectation appears to be one of the things that shapes them. When we expect relief, the brain may well respond in ways that genuinely change what we feel. Note, though, what the placebo effect doesn't do, at least as far as the current evidence suggests. It doesn't shrink a tumour or mend a broken bone. Its influence seems to be largely on symptoms, on how we experience an illness, rather than on the illness itself. Now, this creates a genuine methodological problem. If almost any treatment can produce some improvement purely through expectation, how do we know whether a new drug actually works? Hence the controlled trial, in which one group receives the drug and another receives a placebo, ideally with neither the patients nor the doctors knowing who got which. Only if the drug outperforms the placebo do we credit it with an effect of its own. And then there's the ethical puzzle, which I personally find the most interesting part. If expectation helps, should a doctor ever prescribe a placebo knowingly? Deceiving patients, even kindly, undermines the trust that medicine depends on. Intriguingly, some researchers have explored so-called open-label placebos, where patients are told quite plainly that the pill is inactive. Whether that works reliably remains, I'd stress, an open question.",
+    "category": "Science",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 170,
+    "duration_seconds": 103,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "medicine",
+      "lecture",
+      "psychology",
+      "ethics"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "lecture"
+    },
+    "questions": [
+      {
+        "prompt": "What is the lecturer's view of the idea that placebo patients are 'simply imagining things'?",
+        "options": [
+          "It is completely correct.",
+          "It is supported by most doctors.",
+          "It is too simple an explanation.",
+          "It explains why placebos cure illness."
+        ],
+        "answer_index": 2,
+        "explanation": "\"It's tempting to dismiss it as people simply imagining things. I'd caution against that.\""
+      },
+      {
+        "prompt": "According to the lecture, what does the placebo effect mainly influence?",
+        "options": [
+          "How patients experience their symptoms",
+          "The size of tumours",
+          "How quickly bones heal",
+          "The chemistry of the drug"
+        ],
+        "answer_index": 0,
+        "explanation": "\"Its influence seems to be largely on symptoms, on how we experience an illness, rather than on the illness itself.\""
+      },
+      {
+        "prompt": "Why are controlled trials needed?",
+        "options": [
+          "To make drugs cheaper",
+          "To separate a drug's real effect from the effect of expectation",
+          "To make sure patients feel no pain",
+          "To test whether doctors are honest"
+        ],
+        "answer_index": 1,
+        "explanation": "\"Only if the drug outperforms the placebo do we credit it with an effect of its own.\""
+      },
+      {
+        "prompt": "Why does the lecturer see prescribing a placebo knowingly as an ethical problem?",
+        "options": [
+          "Placebos are expensive.",
+          "Placebos have dangerous side effects.",
+          "Patients always find out.",
+          "Deceiving patients could damage trust in medicine."
+        ],
+        "answer_index": 3,
+        "explanation": "\"Deceiving patients, even kindly, undermines the trust that medicine depends on.\""
+      },
+      {
+        "prompt": "How does the lecturer present open-label placebos?",
+        "options": [
+          "As a proven replacement for real drugs",
+          "As an interesting idea whose reliability is still uncertain",
+          "As a dishonest practice",
+          "As the standard treatment for pain"
+        ],
+        "answer_index": 1,
+        "explanation": "\"Whether that works reliably remains, I'd stress, an open question.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Let me begin with a puzzle that has troubled medicine for a very long time.",
+      "focus_phrase": "troubled medicine",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Give a patient a pill that contains nothing active, a sugar pill, tell them it will ease their pain, and a surprising proportion will report that it does.",
+      "focus_phrase": "ease their pain",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "This is the placebo effect, and it's tempting to dismiss it as people simply imagining things.",
+      "focus_phrase": "simply imagining things",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I'd caution against that.",
+      "focus_phrase": "caution against that",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Pain, nausea and fatigue are, to a considerable degree, experiences shaped by the brain, and expectation appears to be one of the things that shapes them.",
+      "focus_phrase": "shaped by the brain",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "When we expect relief, the brain may well respond in ways that genuinely change what we feel.",
+      "focus_phrase": "genuinely change what we feel",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Note, though, what the placebo effect doesn't do, at least as far as the current evidence suggests.",
+      "focus_phrase": "the current evidence suggests",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "It doesn't shrink a tumour or mend a broken bone.",
+      "focus_phrase": "mend a broken bone",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Its influence seems to be largely on symptoms, on how we experience an illness, rather than on the illness itself.",
+      "focus_phrase": "rather than on the illness",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Now, this creates a genuine methodological problem.",
+      "focus_phrase": "a genuine methodological problem",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "If almost any treatment can produce some improvement purely through expectation, how do we know whether a new drug actually works?",
+      "focus_phrase": "purely through expectation",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Hence the controlled trial, in which one group receives the drug and another receives a placebo, ideally with neither the patients nor the doctors knowing who got which.",
+      "focus_phrase": "the controlled trial",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Only if the drug outperforms the placebo do we credit it with an effect of its own.",
+      "focus_phrase": "an effect of its own",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "And then there's the ethical puzzle, which I personally find the most interesting part.",
+      "focus_phrase": "the ethical puzzle",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "If expectation helps, should a doctor ever prescribe a placebo knowingly?",
+      "focus_phrase": "prescribe a placebo knowingly",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Deceiving patients, even kindly, undermines the trust that medicine depends on.",
+      "focus_phrase": "undermines the trust",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Intriguingly, some researchers have explored so-called open-label placebos, where patients are told quite plainly that the pill is inactive.",
+      "focus_phrase": "open-label placebos",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Whether that works reliably remains, I'd stress, an open question.",
+      "focus_phrase": "an open question",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

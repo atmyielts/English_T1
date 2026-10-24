@@ -1,0 +1,199 @@
+{
+  "item": {
+    "slug": "c2-radio-essay-on-nostalgia",
+    "title": "Radio Essay: The Courtyard I Remember",
+    "level": "C2",
+    "summary": "A reflective radio essay uses the memory of a childhood courtyard in Tashkent to ask what nostalgia is really a longing for.",
+    "transcript_text": "When I think of childhood, I think of a courtyard in Tashkent. There was a vine growing over a metal frame, a low table where the adults drank tea in the evenings, and a tap that never quite stopped dripping. I remember that courtyard as permanently sunlit, which I know cannot be true. It must have rained. I must have been bored there, and cold, and occasionally miserable. But memory, it seems, is an editor with strong opinions. The word nostalgia was coined centuries ago to describe a kind of illness, a homesickness so severe that it was thought to make soldiers far from home physically unwell. For a long time afterwards it kept a slightly suspicious reputation, as a sentimental longing for a past that never really existed. And there's some truth in that charge. Whole political movements have been built on a polished version of yesterday, one from which the inconvenient details have quietly been removed. Yet I've come to think that nostalgia deserves a more generous hearing. When I remember that courtyard, I'm not really claiming that the past was better. I'm reminding myself that I was once held in place by people who knew me, by a routine, by the sound of one particular tap. Nostalgia, in that sense, is less a longing for a time than for a feeling of belonging. The danger comes only when we mistake one for the other, and try to rebuild the time in the hope of recovering the feeling. The courtyard has since been replaced by an apartment block. I find, somewhat to my surprise, that I don't mind as much as I expected. What I was attached to was never really the vine or the tap. It was who I was, and who was around me, when I sat beneath them.",
+    "category": "Culture",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 170,
+    "duration_seconds": 107,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "memory",
+      "essay",
+      "radio",
+      "Tashkent"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "radio"
+    },
+    "questions": [
+      {
+        "prompt": "Why does the speaker say that the memory of a sunlit courtyard 'cannot be true'?",
+        "options": [
+          "The courtyard never existed.",
+          "The speaker has confused it with another place.",
+          "Memory tends to select and improve the past.",
+          "It always rained in Tashkent."
+        ],
+        "answer_index": 2,
+        "explanation": "\"It must have rained... But memory, it seems, is an editor with strong opinions.\""
+      },
+      {
+        "prompt": "How was nostalgia originally understood, according to the essay?",
+        "options": [
+          "As a kind of illness",
+          "As a type of poetry",
+          "As a political movement",
+          "As a happy memory"
+        ],
+        "answer_index": 0,
+        "explanation": "\"The word nostalgia was coined centuries ago to describe a kind of illness.\""
+      },
+      {
+        "prompt": "Which criticism of nostalgia does the speaker partly accept?",
+        "options": [
+          "It makes people physically ill.",
+          "It is only felt by older people.",
+          "It stops people from travelling.",
+          "It can be used to sell an idealised version of the past."
+        ],
+        "answer_index": 3,
+        "explanation": "\"There's some truth in that charge. Whole political movements have been built on a polished version of yesterday.\""
+      },
+      {
+        "prompt": "According to the speaker, what is nostalgia really a longing for?",
+        "options": [
+          "A particular historical period",
+          "A feeling of belonging",
+          "A simpler kind of technology",
+          "A better climate"
+        ],
+        "answer_index": 1,
+        "explanation": "\"Nostalgia, in that sense, is less a longing for a time than for a feeling of belonging.\""
+      },
+      {
+        "prompt": "How does the speaker feel about the courtyard being replaced?",
+        "options": [
+          "Angry with the city",
+          "Determined to rebuild it",
+          "Less upset than expected, because what mattered was the people and that feeling",
+          "Glad, because the speaker never liked it"
+        ],
+        "answer_index": 2,
+        "explanation": "\"I don't mind as much as I expected. What I was attached to was never really the vine or the tap.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "When I think of childhood, I think of a courtyard in Tashkent.",
+      "focus_phrase": "a courtyard in Tashkent",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "There was a vine growing over a metal frame, a low table where the adults drank tea in the evenings, and a tap that never quite stopped dripping.",
+      "focus_phrase": "never quite stopped dripping",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I remember that courtyard as permanently sunlit, which I know cannot be true.",
+      "focus_phrase": "permanently sunlit",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "It must have rained.",
+      "focus_phrase": "it must have rained",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I must have been bored there, and cold, and occasionally miserable.",
+      "focus_phrase": "occasionally miserable",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "But memory, it seems, is an editor with strong opinions.",
+      "focus_phrase": "an editor with strong opinions",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The word nostalgia was coined centuries ago to describe a kind of illness, a homesickness so severe that it was thought to make soldiers far from home physically unwell.",
+      "focus_phrase": "physically unwell",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "For a long time afterwards it kept a slightly suspicious reputation, as a sentimental longing for a past that never really existed.",
+      "focus_phrase": "a slightly suspicious reputation",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "And there's some truth in that charge.",
+      "focus_phrase": "some truth in that charge",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Whole political movements have been built on a polished version of yesterday, one from which the inconvenient details have quietly been removed.",
+      "focus_phrase": "the inconvenient details",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Yet I've come to think that nostalgia deserves a more generous hearing.",
+      "focus_phrase": "a more generous hearing",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "When I remember that courtyard, I'm not really claiming that the past was better.",
+      "focus_phrase": "the past was better",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I'm reminding myself that I was once held in place by people who knew me, by a routine, by the sound of one particular tap.",
+      "focus_phrase": "held in place",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Nostalgia, in that sense, is less a longing for a time than for a feeling of belonging.",
+      "focus_phrase": "a feeling of belonging",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The danger comes only when we mistake one for the other, and try to rebuild the time in the hope of recovering the feeling.",
+      "focus_phrase": "mistake one for the other",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The courtyard has since been replaced by an apartment block.",
+      "focus_phrase": "replaced by an apartment block",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I find, somewhat to my surprise, that I don't mind as much as I expected.",
+      "focus_phrase": "as much as I expected",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "What I was attached to was never really the vine or the tap.",
+      "focus_phrase": "never really the vine",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "It was who I was, and who was around me, when I sat beneath them.",
+      "focus_phrase": "who was around me",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

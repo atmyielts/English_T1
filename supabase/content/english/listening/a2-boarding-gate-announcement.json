@@ -1,0 +1,145 @@
+{
+  "item": {
+    "slug": "a2-boarding-gate-announcement",
+    "title": "Gate Change for the Istanbul Flight",
+    "level": "A2",
+    "summary": "An airport announcement about a gate change, a short delay and the order in which passengers will board.",
+    "transcript_text": "Good afternoon, ladies and gentlemen. This is an announcement for passengers on flight two seven one to Istanbul. Please note that this flight will now leave from gate fourteen, not gate nine. We're sorry, but there is also a short delay. The plane arrived late, and it needs to be cleaned and checked. The new departure time is ten past four. Boarding will start at half past three. Passengers with small children and anyone who needs extra help will board first. After that, we will call passengers by seat rows, starting with rows twenty to thirty-two. Please have your boarding pass and passport ready. Remember that each passenger can take only one small bag into the cabin. Thank you for your patience, and have a pleasant flight.",
+    "category": "Travel",
+    "accent": "general",
+    "speed_label": "slow",
+    "speed_wpm": 125,
+    "duration_seconds": 61,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "airport",
+      "announcement",
+      "travel"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "announcement"
+    },
+    "questions": [
+      {
+        "prompt": "Which gate will the flight leave from now?",
+        "options": [
+          "Gate nine",
+          "Gate fourteen",
+          "Gate twenty",
+          "Gate four"
+        ],
+        "answer_index": 1,
+        "explanation": "\"This flight will now leave from gate fourteen, not gate nine.\""
+      },
+      {
+        "prompt": "Why is the flight delayed?",
+        "options": [
+          "The weather is bad.",
+          "The pilot is ill.",
+          "The plane arrived late and must be cleaned and checked.",
+          "There are too many passengers."
+        ],
+        "answer_index": 2,
+        "explanation": "\"The plane arrived late, and it needs to be cleaned and checked.\""
+      },
+      {
+        "prompt": "Who will get on the plane first?",
+        "options": [
+          "Passengers in rows twenty to thirty-two",
+          "Passengers with small children and people who need help",
+          "Passengers with big bags",
+          "Business passengers only"
+        ],
+        "answer_index": 1,
+        "explanation": "\"Passengers with small children and anyone who needs extra help will board first.\""
+      },
+      {
+        "prompt": "What time will boarding start?",
+        "options": [
+          "At half past three",
+          "At ten past four",
+          "At four o'clock",
+          "At half past four"
+        ],
+        "answer_index": 0,
+        "explanation": "\"Boarding will start at half past three.\" The plane leaves at ten past four."
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Good afternoon, ladies and gentlemen.",
+      "focus_phrase": "ladies and gentlemen",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "This is an announcement for passengers on flight two seven one to Istanbul.",
+      "focus_phrase": "passengers on flight",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Please note that this flight will now leave from gate fourteen, not gate nine.",
+      "focus_phrase": "gate fourteen",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "We're sorry, but there is also a short delay.",
+      "focus_phrase": "a short delay",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The plane arrived late, and it needs to be cleaned and checked.",
+      "focus_phrase": "arrived late",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The new departure time is ten past four.",
+      "focus_phrase": "departure time",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Boarding will start at half past three.",
+      "focus_phrase": "Boarding will start",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Passengers with small children and anyone who needs extra help will board first.",
+      "focus_phrase": "needs extra help",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "After that, we will call passengers by seat rows, starting with rows twenty to thirty-two.",
+      "focus_phrase": "by seat rows",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Please have your boarding pass and passport ready.",
+      "focus_phrase": "boarding pass and passport",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Remember that each passenger can take only one small bag into the cabin.",
+      "focus_phrase": "one small bag",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Thank you for your patience, and have a pleasant flight.",
+      "focus_phrase": "for your patience",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

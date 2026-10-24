@@ -1,0 +1,205 @@
+{
+  "item": {
+    "slug": "c1-podcast-why-we-trust-online-reviews",
+    "title": "Podcast: Why We Trust Online Reviews",
+    "level": "C1",
+    "summary": "A podcast host explains social proof, why online reviews can be manipulated, and four habits for reading them critically.",
+    "transcript_text": "Welcome back to the show. Before you booked your last hotel, or chose a restaurant, or bought a phone case, I'd guess that you read the reviews. Most of us do, and it's worth asking why we trust the opinions of complete strangers so readily. Psychologists use the term social proof for this. When we're unsure what to do, we look at what other people have done and assume they knew something we don't. In a busy market, that's often a sensible shortcut. A crowded café is probably crowded for a reason. The trouble is that social proof can be manufactured. Some businesses pay for glowing reviews, or offer discounts in exchange for five stars, and some reviews are simply written by the owner's cousin. So how do you read reviews without being fooled? Well, a few habits help. First, ignore the average score and read the middle reviews, the threes and the fours. They tend to be more detailed and less emotional than the extremes. Second, look for specifics. 'Amazing place, best ever' tells you almost nothing, whereas 'the room was quiet but the wifi kept dropping' sounds like someone who was actually there. And if a reviewer mentions a problem, see whether the business replied, and how; a calm, helpful reply often tells you more than the complaint itself. Third, check the dates. A sudden wave of perfect reviews in a single week should make you suspicious. And finally, remember that every review describes someone else's experience, shaped by their own expectations. A hotel that one guest calls far too quiet might be exactly what you're looking for.",
+    "category": "Technology",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 160,
+    "duration_seconds": 101,
+    "audio_url": null,
+    "focus_skill": "gist",
+    "tags": [
+      "online reviews",
+      "psychology",
+      "shopping",
+      "podcast"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "podcast"
+    },
+    "questions": [
+      {
+        "prompt": "What is the speaker's main purpose?",
+        "options": [
+          "To persuade listeners to stop reading reviews",
+          "To explain why we trust reviews and how to read them critically",
+          "To advertise a review website",
+          "To complain about a bad hotel"
+        ],
+        "answer_index": 1,
+        "explanation": "The host asks \"why we trust the opinions of complete strangers\" and then \"how do you read reviews without being fooled?\""
+      },
+      {
+        "prompt": "What does 'social proof' refer to?",
+        "options": [
+          "Official certificates that prove quality",
+          "Reviews written by experts",
+          "Laws that protect customers",
+          "Assuming that other people's choices show us the right thing to do"
+        ],
+        "answer_index": 3,
+        "explanation": "\"We look at what other people have done and assume they knew something we don't.\""
+      },
+      {
+        "prompt": "Why does the speaker recommend reading three- and four-star reviews?",
+        "options": [
+          "They are usually more detailed and less emotional.",
+          "They are always written by real customers.",
+          "They are shorter and quicker to read.",
+          "They are the newest reviews."
+        ],
+        "answer_index": 0,
+        "explanation": "\"They tend to be more detailed and less emotional than the extremes.\""
+      },
+      {
+        "prompt": "Which of these should make you suspicious, according to the speaker?",
+        "options": [
+          "A review that mentions the wifi",
+          "A café that is very crowded",
+          "Many perfect reviews appearing in one week",
+          "A review with three stars"
+        ],
+        "answer_index": 2,
+        "explanation": "\"A sudden wave of perfect reviews in a single week should make you suspicious.\""
+      },
+      {
+        "prompt": "What does the final example about the quiet hotel suggest?",
+        "options": [
+          "Quiet hotels usually get bad reviews.",
+          "A negative point for one person may be a positive for another.",
+          "Guests should always complain about noise.",
+          "Reviews about noise are usually fake."
+        ],
+        "answer_index": 1,
+        "explanation": "\"A hotel that one guest calls far too quiet might be exactly what you're looking for.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Welcome back to the show.",
+      "focus_phrase": "welcome back",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Before you booked your last hotel, or chose a restaurant, or bought a phone case, I'd guess that you read the reviews.",
+      "focus_phrase": "read the reviews",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Most of us do, and it's worth asking why we trust the opinions of complete strangers so readily.",
+      "focus_phrase": "complete strangers",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Psychologists use the term social proof for this.",
+      "focus_phrase": "social proof",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "When we're unsure what to do, we look at what other people have done and assume they knew something we don't.",
+      "focus_phrase": "what other people have done",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "In a busy market, that's often a sensible shortcut.",
+      "focus_phrase": "a sensible shortcut",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "A crowded café is probably crowded for a reason.",
+      "focus_phrase": "for a reason",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The trouble is that social proof can be manufactured.",
+      "focus_phrase": "can be manufactured",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Some businesses pay for glowing reviews, or offer discounts in exchange for five stars, and some reviews are simply written by the owner's cousin.",
+      "focus_phrase": "in exchange for",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "So how do you read reviews without being fooled?",
+      "focus_phrase": "without being fooled",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Well, a few habits help.",
+      "focus_phrase": "a few habits help",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "First, ignore the average score and read the middle reviews, the threes and the fours.",
+      "focus_phrase": "the middle reviews",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "They tend to be more detailed and less emotional than the extremes.",
+      "focus_phrase": "less emotional",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Second, look for specifics.",
+      "focus_phrase": "look for specifics",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "'Amazing place, best ever' tells you almost nothing, whereas 'the room was quiet but the wifi kept dropping' sounds like someone who was actually there.",
+      "focus_phrase": "actually there",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "And if a reviewer mentions a problem, see whether the business replied, and how; a calm, helpful reply often tells you more than the complaint itself.",
+      "focus_phrase": "a calm, helpful reply",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Third, check the dates.",
+      "focus_phrase": "check the dates",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "A sudden wave of perfect reviews in a single week should make you suspicious.",
+      "focus_phrase": "make you suspicious",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "And finally, remember that every review describes someone else's experience, shaped by their own expectations.",
+      "focus_phrase": "their own expectations",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "A hotel that one guest calls far too quiet might be exactly what you're looking for.",
+      "focus_phrase": "exactly what you're looking for",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

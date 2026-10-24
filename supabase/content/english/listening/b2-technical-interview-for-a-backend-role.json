@@ -1,0 +1,227 @@
+{
+  "item": {
+    "slug": "b2-technical-interview-for-a-backend-role",
+    "title": "Interview: The Bug That Charged Customers Twice",
+    "level": "B2",
+    "summary": "In a job interview for a backend developer role, a candidate explains a difficult bug, how she found it and what she learned.",
+    "transcript_text": "Daniel: Thanks for coming in, Kamila. I'd like to start with something practical. Can you tell me about a bug that you found really difficult to fix?\nKamila: Sure, so last year I worked on the payment service for an online shop. Every few days, a small number of customers were charged twice for the same order.\nDaniel: That sounds stressful. How did you approach it?\nKamila: Well, at first we couldn't reproduce it at all. Everything worked perfectly on our test servers. So I added more detailed logging and waited for it to happen again.\nDaniel: And what did the logs show?\nKamila: They showed that when the network was slow, the mobile app sent the payment request a second time. Our server treated the two requests as two separate orders.\nDaniel: Right, so it was a retry problem. How did you fix it?\nKamila: We gave every payment request a unique key. If the server receives the same key twice, it simply returns the first result instead of charging the customer again.\nDaniel: Good, and looking back, what would you do differently?\nKamila: Honestly, I'd test for slow and unreliable networks from the start. We'd only tested the happy path, where everything goes right. I also learned to tell the support team about a problem early, so they can reassure customers while we're working on it.\nDaniel: That's a really useful lesson. Okay, let's move on to some questions about databases.",
+    "category": "Technology",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 150,
+    "duration_seconds": 93,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "job interview",
+      "IT",
+      "dialogue",
+      "problem solving"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Daniel",
+        "Kamila"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "What was the problem with the payment service?",
+        "options": [
+          "It was too slow for mobile users.",
+          "Some customers paid twice for one order.",
+          "Customers could not log in to the shop.",
+          "Orders were sent to the wrong address."
+        ],
+        "answer_index": 1,
+        "explanation": "Kamila says: \"a small number of customers were charged twice for the same order.\""
+      },
+      {
+        "prompt": "Why was the bug hard to fix at first?",
+        "options": [
+          "The logs had been deleted.",
+          "The mobile app was not finished.",
+          "The team could not make it happen on their test servers.",
+          "Customers did not report it."
+        ],
+        "answer_index": 2,
+        "explanation": "\"At first we couldn't reproduce it at all. Everything worked perfectly on our test servers.\""
+      },
+      {
+        "prompt": "What caused the double payments?",
+        "options": [
+          "A mistake in the shop's prices",
+          "The server crashing at night",
+          "Customers clicking the button twice",
+          "The app sending the request again on a slow network"
+        ],
+        "answer_index": 3,
+        "explanation": "\"When the network was slow, the mobile app sent the payment request a second time.\""
+      },
+      {
+        "prompt": "How did Kamila's fix work?",
+        "options": [
+          "Repeated requests with the same key return the first result.",
+          "The app stopped working on slow networks.",
+          "Customers had to confirm every payment by phone.",
+          "The server deleted every second order."
+        ],
+        "answer_index": 0,
+        "explanation": "\"If the server receives the same key twice, it simply returns the first result instead of charging the customer again.\""
+      },
+      {
+        "prompt": "What does Kamila's last answer suggest about her?",
+        "options": [
+          "She blames the support team for the problem.",
+          "She learns from mistakes and thinks about the customers.",
+          "She prefers to work alone.",
+          "She thinks testing is a waste of time."
+        ],
+        "answer_index": 1,
+        "explanation": "She would test unreliable networks \"from the start\" and tell support early \"so they can reassure customers\"."
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Thanks for coming in, Kamila.",
+      "focus_phrase": "thanks for coming in",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I'd like to start with something practical.",
+      "focus_phrase": "something practical",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Can you tell me about a bug that you found really difficult to fix?",
+      "focus_phrase": "difficult to fix",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Sure, so last year I worked on the payment service for an online shop.",
+      "focus_phrase": "payment service",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Every few days, a small number of customers were charged twice for the same order.",
+      "focus_phrase": "charged twice",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "That sounds stressful.",
+      "focus_phrase": "sounds stressful",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "How did you approach it?",
+      "focus_phrase": "approach it",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Well, at first we couldn't reproduce it at all.",
+      "focus_phrase": "reproduce it at all",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Everything worked perfectly on our test servers.",
+      "focus_phrase": "test servers",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "So I added more detailed logging and waited for it to happen again.",
+      "focus_phrase": "more detailed logging",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "And what did the logs show?",
+      "focus_phrase": "the logs show",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "They showed that when the network was slow, the mobile app sent the payment request a second time.",
+      "focus_phrase": "the network was slow",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Our server treated the two requests as two separate orders.",
+      "focus_phrase": "two separate orders",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Right, so it was a retry problem.",
+      "focus_phrase": "a retry problem",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "How did you fix it?",
+      "focus_phrase": "fix it",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "We gave every payment request a unique key.",
+      "focus_phrase": "a unique key",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "If the server receives the same key twice, it simply returns the first result instead of charging the customer again.",
+      "focus_phrase": "returns the first result",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Good, and looking back, what would you do differently?",
+      "focus_phrase": "looking back",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Honestly, I'd test for slow and unreliable networks from the start.",
+      "focus_phrase": "from the start",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "We'd only tested the happy path, where everything goes right.",
+      "focus_phrase": "the happy path",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I also learned to tell the support team about a problem early, so they can reassure customers while we're working on it.",
+      "focus_phrase": "reassure customers",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "That's a really useful lesson.",
+      "focus_phrase": "a really useful lesson",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Okay, let's move on to some questions about databases.",
+      "focus_phrase": "move on to",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

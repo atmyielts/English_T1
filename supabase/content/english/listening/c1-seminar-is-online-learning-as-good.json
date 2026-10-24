@@ -1,0 +1,221 @@
+{
+  "item": {
+    "slug": "c1-seminar-is-online-learning-as-good",
+    "title": "Seminar: Is Online Learning as Good?",
+    "level": "C1",
+    "summary": "Two students debate in a university seminar whether online courses can match learning on campus, and find more common ground than they expected.",
+    "transcript_text": "Madina: I'll start, if that's okay. I'd argue that online learning can be just as effective as studying on campus, provided it's designed properly.\nTom: Provided being the key word there, isn't it? Most of the online courses I've taken were basically recorded lectures with a quiz at the end.\nMadina: Fair point, but that's an argument against bad course design, not against online learning itself. A dull lecture in a hall isn't any better just because you're physically there.\nTom: I'm not so sure. Being in the same room creates a kind of pressure that I think is actually useful. You can't just switch off your camera and wander off to make tea.\nMadina: True, though for a lot of people that flexibility is the whole point. Think about someone working full-time in Namangan who wants a degree from a university in Tashkent, or abroad. For them, online study isn't a weaker version of campus life. It's the only version available.\nTom: Okay, I accept that, and access is a genuinely strong argument. My concern is more about what gets lost: the conversations in the corridor, the chance meetings that turn into projects.\nMadina: Some of that can be built in, with small group work and live discussions. But I'll admit it doesn't happen naturally. Someone has to make it happen.\nTom: So perhaps we actually agree more than it seemed. The real question isn't online versus on campus. It's whether a course is designed around people actually talking to each other.\nMadina: I think that's a fair summary, yes.",
+    "category": "Work and Study",
+    "accent": "general",
+    "speed_label": "natural",
+    "speed_wpm": 160,
+    "duration_seconds": 95,
+    "audio_url": null,
+    "focus_skill": "inference",
+    "tags": [
+      "education",
+      "debate",
+      "online learning",
+      "dialogue"
+    ],
+    "metadata": {
+      "format": "dialogue",
+      "script_type": "dialogue",
+      "speakers": [
+        "Madina",
+        "Tom"
+      ]
+    },
+    "questions": [
+      {
+        "prompt": "What is Madina's position at the start of the discussion?",
+        "options": [
+          "Online learning is always better than campus study.",
+          "Campus study is necessary for a real degree.",
+          "Online learning can work as well as campus study if it is well designed.",
+          "Lectures should be replaced by quizzes."
+        ],
+        "answer_index": 2,
+        "explanation": "\"Online learning can be just as effective as studying on campus, provided it's designed properly.\""
+      },
+      {
+        "prompt": "Why does Tom mention recorded lectures with a quiz?",
+        "options": [
+          "To give an example of the weak online courses he has experienced",
+          "To recommend a format he enjoyed",
+          "To show that quizzes are the best test",
+          "To explain why he prefers studying alone"
+        ],
+        "answer_index": 0,
+        "explanation": "\"Most of the online courses I've taken were basically recorded lectures with a quiz at the end.\""
+      },
+      {
+        "prompt": "What advantage of being in the same room does Tom point out?",
+        "options": [
+          "It is cheaper for students.",
+          "Lectures are shorter.",
+          "Teachers give better marks.",
+          "It creates a useful pressure to stay focused."
+        ],
+        "answer_index": 3,
+        "explanation": "\"Being in the same room creates a kind of pressure that I think is actually useful.\""
+      },
+      {
+        "prompt": "Why does Madina mention someone working full-time in Namangan?",
+        "options": [
+          "To complain about travel in Uzbekistan",
+          "To show that for some people online study is the only option",
+          "To argue that working students learn faster",
+          "To describe her own situation"
+        ],
+        "answer_index": 1,
+        "explanation": "\"For them, online study isn't a weaker version of campus life. It's the only version available.\""
+      },
+      {
+        "prompt": "How does the discussion end?",
+        "options": [
+          "Tom changes his mind completely.",
+          "They agree to disagree.",
+          "They agree that course design, and real interaction, matters most.",
+          "Madina admits that campus study is better."
+        ],
+        "answer_index": 2,
+        "explanation": "Tom: \"So perhaps we actually agree more than it seemed.\" Madina: \"I think that's a fair summary.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "I'll start, if that's okay.",
+      "focus_phrase": "if that's okay",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I'd argue that online learning can be just as effective as studying on campus, provided it's designed properly.",
+      "focus_phrase": "provided it's designed properly",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Provided being the key word there, isn't it?",
+      "focus_phrase": "the key word",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Most of the online courses I've taken were basically recorded lectures with a quiz at the end.",
+      "focus_phrase": "recorded lectures",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Fair point, but that's an argument against bad course design, not against online learning itself.",
+      "focus_phrase": "bad course design",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "A dull lecture in a hall isn't any better just because you're physically there.",
+      "focus_phrase": "physically there",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I'm not so sure.",
+      "focus_phrase": "not so sure",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Being in the same room creates a kind of pressure that I think is actually useful.",
+      "focus_phrase": "a kind of pressure",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "You can't just switch off your camera and wander off to make tea.",
+      "focus_phrase": "switch off your camera",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "True, though for a lot of people that flexibility is the whole point.",
+      "focus_phrase": "the whole point",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Think about someone working full-time in Namangan who wants a degree from a university in Tashkent, or abroad.",
+      "focus_phrase": "working full-time",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "For them, online study isn't a weaker version of campus life.",
+      "focus_phrase": "a weaker version",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "It's the only version available.",
+      "focus_phrase": "the only version available",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Okay, I accept that, and access is a genuinely strong argument.",
+      "focus_phrase": "a genuinely strong argument",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "My concern is more about what gets lost: the conversations in the corridor, the chance meetings that turn into projects.",
+      "focus_phrase": "chance meetings",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Some of that can be built in, with small group work and live discussions.",
+      "focus_phrase": "built in",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "But I'll admit it doesn't happen naturally.",
+      "focus_phrase": "happen naturally",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Someone has to make it happen.",
+      "focus_phrase": "make it happen",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "So perhaps we actually agree more than it seemed.",
+      "focus_phrase": "agree more than it seemed",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "The real question isn't online versus on campus.",
+      "focus_phrase": "online versus on campus",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "It's whether a course is designed around people actually talking to each other.",
+      "focus_phrase": "designed around people",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "I think that's a fair summary, yes.",
+      "focus_phrase": "a fair summary",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}

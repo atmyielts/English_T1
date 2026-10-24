@@ -1,0 +1,134 @@
+{
+  "item": {
+    "slug": "a2-a-day-trip-to-chimgan",
+    "title": "A Day Trip to Chimgan",
+    "level": "A2",
+    "summary": "A young man tells the story of a Saturday trip to the mountains with his friends.",
+    "transcript_text": "Last Saturday, my friends and I went on a day trip to Chimgan, in the mountains near Tashkent. We left very early, at six o'clock, because we wanted to miss the traffic. When we arrived, the air was cold and fresh, and there was still some snow on the mountain tops. First, we walked up a hill for about an hour. It was hard work, but the view from the top was amazing. We could see the whole valley and a lake far below. Then we had a picnic with bread, cheese, tomatoes and hot tea. In the afternoon, my friend Bekzod wanted to take the cable car, but it was closed because of the strong wind. We were a bit disappointed, so we played football instead. We got home at eight in the evening, tired but very happy.",
+    "category": "Travel",
+    "accent": "general",
+    "speed_label": "slow",
+    "speed_wpm": 125,
+    "duration_seconds": 67,
+    "audio_url": null,
+    "focus_skill": "detail",
+    "tags": [
+      "travel",
+      "mountains",
+      "weekend",
+      "past simple"
+    ],
+    "metadata": {
+      "format": "monologue",
+      "script_type": "story"
+    },
+    "questions": [
+      {
+        "prompt": "Why did they leave at six o'clock?",
+        "options": [
+          "To see the sunrise",
+          "To miss the traffic",
+          "To catch a bus",
+          "To get a good picnic place"
+        ],
+        "answer_index": 1,
+        "explanation": "\"We left very early, at six o'clock, because we wanted to miss the traffic.\""
+      },
+      {
+        "prompt": "What could they see from the top of the hill?",
+        "options": [
+          "The city of Tashkent",
+          "A small village",
+          "The whole valley and a lake",
+          "A football stadium"
+        ],
+        "answer_index": 2,
+        "explanation": "\"We could see the whole valley and a lake far below.\""
+      },
+      {
+        "prompt": "Why didn't they take the cable car?",
+        "options": [
+          "It was closed because of strong wind.",
+          "It was too expensive.",
+          "There was a long queue.",
+          "Bekzod was afraid."
+        ],
+        "answer_index": 0,
+        "explanation": "\"It was closed because of the strong wind.\""
+      },
+      {
+        "prompt": "How did they feel at the end of the day?",
+        "options": [
+          "Bored",
+          "Cold and hungry",
+          "Angry",
+          "Tired but very happy"
+        ],
+        "answer_index": 3,
+        "explanation": "\"We got home at eight in the evening, tired but very happy.\""
+      }
+    ]
+  },
+  "children": [
+    {
+      "segment_text": "Last Saturday, my friends and I went on a day trip to Chimgan, in the mountains near Tashkent.",
+      "focus_phrase": "a day trip",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "We left very early, at six o'clock, because we wanted to miss the traffic.",
+      "focus_phrase": "miss the traffic",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "When we arrived, the air was cold and fresh, and there was still some snow on the mountain tops.",
+      "focus_phrase": "cold and fresh",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "First, we walked up a hill for about an hour.",
+      "focus_phrase": "walked up a hill",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "It was hard work, but the view from the top was amazing.",
+      "focus_phrase": "the view from the top",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "We could see the whole valley and a lake far below.",
+      "focus_phrase": "the whole valley",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "Then we had a picnic with bread, cheese, tomatoes and hot tea.",
+      "focus_phrase": "had a picnic",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "In the afternoon, my friend Bekzod wanted to take the cable car, but it was closed because of the strong wind.",
+      "focus_phrase": "the strong wind",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "We were a bit disappointed, so we played football instead.",
+      "focus_phrase": "a bit disappointed",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    },
+    {
+      "segment_text": "We got home at eight in the evening, tired but very happy.",
+      "focus_phrase": "tired but very happy",
+      "starts_at_seconds": null,
+      "ends_at_seconds": null
+    }
+  ]
+}
