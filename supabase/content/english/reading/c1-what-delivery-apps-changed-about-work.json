@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "c1-what-delivery-apps-changed-about-work",
+    "title": "What Delivery Apps Changed About Work",
+    "level": "C1",
+    "summary": "A balanced look at app-based delivery work: the freedom it offers, the risks it shifts onto workers, and the questions it raises about what a job is.",
+    "content_markdown": "In many cities, the sight is now so familiar that it barely registers: a rider in a brightly coloured jacket, a large insulated box on his back, weaving through evening traffic with someone's dinner. A decade or so ago, that scene would have looked very different. Food delivery existed, but it was usually organised by individual restaurants with their own staff. Today, in large parts of the world, it is coordinated by apps, and the people doing the riding are typically not employees at all.\n\nThis shift is often discussed in either glowing or apocalyptic terms. The truth, as is often the case, sits somewhere less dramatic, and more interesting.\n\n## The appeal of flexibility\n\nFor many riders, the main attraction is control over their time. There is no manager to ask for a day off and no fixed shift to fit around. A university student can work for three hours on a Tuesday evening and none at all during exams. Someone between jobs can earn money almost immediately, without a long recruitment process. For people whose lives do not fit neatly into a nine-to-five schedule, this flexibility is not a minor perk; it can be the difference between working and not working.\n\nThe apps also lowered the barriers to entry for small businesses. A family café that could never have afforded its own delivery staff can suddenly reach customers across the city.\n\n## The risks that moved\n\nYet flexibility has a price, and much of that price has quietly been shifted onto the workers themselves. Because riders are usually classified as independent contractors, they often have to pay for their own vehicles, fuel, phones and repairs. Income can be unpredictable, rising on rainy weekend evenings and collapsing on quiet afternoons. If a rider is injured, protections that employees might take for granted, such as sick pay, may be limited or absent.\n\nThere is also the question of who is really in charge. Riders may be free to log in when they choose, but once they do, an algorithm decides which orders they are offered, how their performance is rated and, in some cases, whether they can keep using the platform. Being managed by software, without a clear person to speak to, is a new and sometimes frustrating experience.\n\n## Rethinking the job\n\nGovernments and courts in a number of countries have been wrestling with how to classify this kind of work, and there is no single model that everyone agrees on. Some argue for treating riders as employees; others favour a middle category that combines flexibility with basic protections.\n\nWhat is clear is that delivery apps have forced an old question back onto the agenda: what do we owe the people whose work keeps a city running? The convenience of a meal at the door is real. So is the effort, and the risk, of the person who carries it there.",
+    "category": "Work",
+    "theme": "gig economy",
+    "tone": "sky",
+    "is_hot": false,
+    "metadata": { "genre": "explainer", "writing_tone": "balanced", "word_count": 482 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "What is the writer's overall approach to the topic?",
+        "options": [
+          "Enthusiastic support for delivery apps",
+          "Strong opposition to all app-based work",
+          "A balanced view of both benefits and risks",
+          "A technical explanation of how the apps are built"
+        ],
+        "answer_index": 2,
+        "explanation": "The writer rejects \"glowing or apocalyptic terms\" and discusses both \"the appeal of flexibility\" and \"the risks that moved\"."
+      },
+      {
+        "id": "q2",
+        "skill": "reading.detail",
+        "prompt": "According to the article, how did the apps help small businesses?",
+        "options": [
+          "They gave them free advertising on television.",
+          "They allowed them to deliver across the city without hiring their own delivery staff.",
+          "They lowered the cost of ingredients.",
+          "They paid their rent during quiet months."
+        ],
+        "answer_index": 1,
+        "explanation": "\"A family café that could never have afforded its own delivery staff can suddenly reach customers across the city.\""
+      },
+      {
+        "id": "q3",
+        "skill": "reading.vocabulary",
+        "prompt": "In the section on flexibility, a \"perk\" is:",
+        "options": [
+          "An extra benefit of a job",
+          "A serious problem at work",
+          "A type of employment contract",
+          "A delivery route"
+        ],
+        "answer_index": 0,
+        "explanation": "The writer says flexibility \"is not a minor perk\", i.e. not just a small extra advantage."
+      },
+      {
+        "id": "q4",
+        "skill": "reading.inference",
+        "prompt": "Why does the writer raise the question \"who is really in charge\"?",
+        "options": [
+          "To show that riders have complete freedom once they log in",
+          "To suggest that restaurants control the riders",
+          "To point out that riders are, in practice, directed and judged by an algorithm",
+          "To argue that riders should manage the apps themselves"
+        ],
+        "answer_index": 2,
+        "explanation": "\"Once they do, an algorithm decides which orders they are offered, how their performance is rated and ... whether they can keep using the platform.\""
+      },
+      {
+        "id": "q5",
+        "skill": "reading.inference",
+        "prompt": "What does the final paragraph suggest?",
+        "options": [
+          "Customers should stop ordering food.",
+          "The convenience for customers and the effort and risk for riders both deserve to be recognised.",
+          "Governments have already solved the problem.",
+          "Riders earn more than most employees."
+        ],
+        "answer_index": 1,
+        "explanation": "\"The convenience of a meal at the door is real. So is the effort, and the risk, of the person who carries it there.\""
+      }
+    ]
+  }
+}

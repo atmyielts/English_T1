@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "c1-borrowing-money-from-family",
+    "title": "Borrowing Money from Family",
+    "level": "C1",
+    "summary": "A personal essay on the unwritten rules of lending and borrowing within a family, and on why the debts that matter most are not always financial.",
+    "content_markdown": "The first time I asked my uncle for money, I rehearsed the conversation for three days. I was twenty-three, I had just been offered a place on a master's programme abroad, and the scholarship covered tuition but not the deposit for a room. The sum was not enormous, but it was more than I had, and the deadline was close. I remember thinking that a bank would at least be honest about the conditions. With family, the conditions are never written down.\n\nIn the end, the conversation took less than five minutes. My uncle listened, nodded, and asked only one question: \"When do you need it?\" The money was in my account the next morning. He refused to discuss interest and waved away my offer of a written agreement as though I had suggested something slightly insulting. I left his house relieved, grateful and, if I am honest, uneasy.\n\n## The rules nobody explains\n\nThat unease, I have since learned, is common. In many families, including mine, lending money to relatives is not really a financial transaction. It belongs to a wider web of mutual help: the cousin who drives you to the airport at four in the morning, the aunt who cooks for forty guests at your wedding, the neighbour who lends chairs and asks for nothing. Within that web, keeping careful accounts can feel almost rude. And yet everyone, somehow, remembers.\n\nThe difficulty is that the obligations are real but vague. My uncle never named a date for repayment. Did that mean I could take my time? Or was I expected to understand that sooner was better? Every time I bought something small for myself, a new phone case or a ticket to a concert, I wondered whether it would be seen as evidence of ingratitude.\n\n## Paying it back\n\nI repaid the loan, in instalments, over about eighteen months. My uncle accepted each payment with the same slight embarrassment with which he had given the money, as if we were both performing a ritual whose meaning was understood but never spoken. When I transferred the final amount, he called me and talked for twenty minutes about my studies and not once about the money.\n\nIt took me a long time to realise that the money had never been the point. What he had given me was a vote of confidence, a way of saying that my future was a family matter, not merely mine. What I owed him was not only the sum itself but a certain kind of conduct: to finish what I had started, to stay in touch, and, eventually, to do the same for someone younger.\n\n## A double-edged tradition\n\nI do not want to romanticise this. Family loans can go badly wrong, and resentments can last for years, precisely because nothing was agreed clearly. There are good arguments for writing things down, even between people who love each other.\n\nStill, when my younger cousin called last spring, nervous and over-prepared, I recognised the tone immediately. I let him finish his speech. Then I asked him one question: \"When do you need it?\"",
+    "category": "Society",
+    "theme": "family and money",
+    "tone": "peach",
+    "is_hot": false,
+    "metadata": { "genre": "personal essay", "writing_tone": "reflective", "word_count": 519 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "What does the writer finally understand about the loan from the uncle?",
+        "options": [
+          "That it was a mistake to accept it",
+          "That it was mainly an expression of trust and family obligation, not just money",
+          "That the uncle expected high interest",
+          "That banks are always a better option"
+        ],
+        "answer_index": 1,
+        "explanation": "\"The money had never been the point. What he had given me was a vote of confidence.\""
+      },
+      {
+        "id": "q2",
+        "skill": "reading.inference",
+        "prompt": "Why did the uncle refuse a written agreement?",
+        "options": [
+          "He did not trust the writer.",
+          "He planned to ask for the money back immediately.",
+          "Within the family, a formal agreement felt slightly insulting.",
+          "He did not know how to write a contract."
+        ],
+        "answer_index": 2,
+        "explanation": "He \"waved away my offer of a written agreement as though I had suggested something slightly insulting\"."
+      },
+      {
+        "id": "q3",
+        "skill": "reading.detail",
+        "prompt": "What made the writer feel uneasy while repaying the loan?",
+        "options": [
+          "The uncle kept asking for the money.",
+          "The obligations were real but unclear, so even small purchases felt risky.",
+          "The interest was too high.",
+          "The bank charged fees for every transfer."
+        ],
+        "answer_index": 1,
+        "explanation": "\"The obligations are real but vague... Every time I bought something small for myself ... I wondered whether it would be seen as evidence of ingratitude.\""
+      },
+      {
+        "id": "q4",
+        "skill": "reading.vocabulary",
+        "prompt": "In the last section, what does \"double-edged\" mean?",
+        "options": [
+          "Having both good and bad sides",
+          "Very old and traditional",
+          "Shared by two families",
+          "Dangerous and illegal"
+        ],
+        "answer_index": 0,
+        "explanation": "The writer praises the tradition but also warns that \"family loans can go badly wrong\", so it has two sides."
+      },
+      {
+        "id": "q5",
+        "skill": "reading.inference",
+        "prompt": "What is the effect of the final sentence?",
+        "options": [
+          "It shows that the writer refuses to help the cousin.",
+          "It shows that the writer has now taken on the uncle's role and continues the tradition.",
+          "It suggests that the cousin asked for too much money.",
+          "It shows that the writer still has not repaid the uncle."
+        ],
+        "answer_index": 1,
+        "explanation": "The writer repeats the uncle's exact question, \"When do you need it?\", fulfilling the duty \"to do the same for someone younger\"."
+      }
+    ]
+  }
+}

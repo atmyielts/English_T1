@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "a2-my-first-week-in-seoul",
+    "title": "My First Week in Seoul",
+    "level": "A2",
+    "summary": "An Uzbek student writes a blog post about her first week on a Korean language course in Seoul.",
+    "content_markdown": "## Week one: hello, Seoul!\n\nI arrived in Seoul last Sunday. The flight from Tashkent was long, and I was very tired, but I couldn't sleep because I was so excited.\n\nMy language course started on Monday. There are fourteen students in my class, from eight different countries. Our teacher, Ms Park, speaks only Korean in the lessons. On the first day, I understood almost nothing! By Friday, it was easier. Now I can order food, ask for directions and say where I'm from.\n\nI live in a student dormitory near the university. My room is smaller than my bedroom at home, but it is clean and warm. My roommate is from Kazakhstan, so we speak Russian when we are tired of Korean.\n\nThe food is spicier than Uzbek food. I miss my mum's plov! But I love kimbap, and it is cheap.\n\nNext weekend, I'm going to visit a palace with my classmates. I'm going to take lots of photos for you!",
+    "category": "Study",
+    "theme": "study abroad",
+    "tone": "sky",
+    "is_hot": false,
+    "metadata": { "genre": "blog post", "writing_tone": "personal", "word_count": 162 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "What is the blog post mainly about?",
+        "options": [
+          "How to cook Korean food",
+          "The writer's first week as a student in Seoul",
+          "A holiday in Kazakhstan",
+          "Why Korean is difficult"
+        ],
+        "answer_index": 1,
+        "explanation": "The heading is \"Week one: hello, Seoul!\" and she writes about her course, room and food."
+      },
+      {
+        "id": "q2",
+        "skill": "reading.detail",
+        "prompt": "How many students are in her class?",
+        "options": [
+          "Eight",
+          "Ten",
+          "Fourteen",
+          "Forty"
+        ],
+        "answer_index": 2,
+        "explanation": "\"There are fourteen students in my class, from eight different countries.\""
+      },
+      {
+        "id": "q3",
+        "skill": "reading.detail",
+        "prompt": "Which language do the writer and her roommate speak when they are tired?",
+        "options": [
+          "Russian",
+          "Korean",
+          "English",
+          "Uzbek"
+        ],
+        "answer_index": 0,
+        "explanation": "\"We speak Russian when we are tired of Korean.\""
+      },
+      {
+        "id": "q4",
+        "skill": "reading.inference",
+        "prompt": "How did her Korean change during the week?",
+        "options": [
+          "It didn't change at all.",
+          "It got worse because the teacher spoke only Korean.",
+          "She stopped going to lessons.",
+          "It got better: she can do some simple things now."
+        ],
+        "answer_index": 3,
+        "explanation": "\"On the first day, I understood almost nothing! By Friday, it was easier. Now I can order food…\""
+      },
+      {
+        "id": "q5",
+        "skill": "reading.vocabulary",
+        "prompt": "\"The food is spicier than Uzbek food.\" Spicy food is…",
+        "options": [
+          "sweet, like cake",
+          "hot, with a strong taste, like chilli",
+          "cold, like ice cream",
+          "very expensive"
+        ],
+        "answer_index": 1,
+        "explanation": "Spicy food has a hot, strong taste; she compares Korean food with Uzbek food: \"spicier than Uzbek food\"."
+      }
+    ]
+  }
+}

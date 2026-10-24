@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "c1-the-aral-sea-and-the-limits-of-control",
+    "title": "The Aral Sea and the Limits of Control",
+    "level": "C1",
+    "summary": "The shrinking of the Aral Sea is often told as a story of disaster, but it is also a lesson about how confidently people plan, and how slowly they learn.",
+    "content_markdown": "There is a well-known image of the Aral Sea that appears in almost every article on the subject: a rusting fishing boat lying on dry sand, kilometres from the nearest water. The photograph is powerful precisely because it seems to need no explanation. A sea was here; now it is not. Yet the image can also mislead, because it suggests a sudden catastrophe, when what happened was slow, deliberate and, for a long time, regarded as a success.\n\n## A plan that worked, and failed\n\nFrom the 1960s onwards, the two great rivers that fed the sea, the Amu Darya and the Syr Darya, were increasingly diverted to irrigate vast new fields of cotton and other crops. On its own terms, the plan delivered what it promised: land that had been desert produced harvests, and many communities depended on them. The price, however, was paid further downstream. With less and less river water reaching it, the sea began to shrink, and over the following decades it split into separate, much smaller bodies of water.\n\nThe consequences went far beyond the loss of a view. Fishing towns found themselves stranded far from the shore. As the water retreated, it left behind exposed seabed, and winds carried dust and salt across the surrounding region. Local people have long described the effects on their livelihoods and health, and the area became one of the most widely cited examples of environmental damage caused by human planning.\n\n## The confidence of engineers\n\nWhat makes the story so instructive is not that the planners were foolish. Many of them were highly capable people, solving the problem they had been given: how to grow more crops in a dry land. The difficulty was that the sea lay outside the boundaries of that problem. It was, in a sense, nobody's responsibility. This is a pattern that recurs wherever complex systems are managed one part at a time: each decision is reasonable, and the sum of them is not.\n\nIt would be comforting to treat the Aral Sea as a relic of a particular era, the kind of mistake that could not happen today. That would be a misreading. Modern societies still divert rivers, drain wetlands and redesign landscapes, and they still tend to measure success by what they gain rather than by what they quietly lose.\n\n## Partial repair\n\nThe story does not end in pure despair. In the northern part of the former sea, a dam has helped to raise the water level and bring fish back, and efforts to plant hardy vegetation on the dry seabed aim to hold down the dust. These projects are modest compared with the scale of the original loss, and few experts expect the sea to return to its old shape. But they show that damage, once acknowledged, can at least be limited.\n\nPerhaps the most useful lesson of the Aral Sea is about humility. Control over nature is real, but it is always partial, and the effects of our choices rarely stay within the lines we draw on a map.",
+    "category": "Environment",
+    "theme": "water and planning",
+    "tone": "sand",
+    "is_hot": false,
+    "metadata": { "genre": "explainer", "writing_tone": "reflective", "word_count": 510 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "What is the writer's central argument?",
+        "options": [
+          "The Aral Sea was destroyed by a single natural disaster.",
+          "The planners of the irrigation schemes were careless and incompetent.",
+          "The Aral Sea shows how reasonable decisions within narrow goals can cause wide damage, and why humility is needed.",
+          "The Aral Sea will soon return to its original size."
+        ],
+        "answer_index": 2,
+        "explanation": "The writer argues \"each decision is reasonable, and the sum of them is not\" and concludes that \"the most useful lesson ... is about humility\"."
+      },
+      {
+        "id": "q2",
+        "skill": "reading.inference",
+        "prompt": "Why does the writer say the famous photograph \"can also mislead\"?",
+        "options": [
+          "It was taken in a different country.",
+          "It suggests a sudden disaster, while the change was slow and planned.",
+          "It exaggerates how much water has disappeared.",
+          "It shows a boat that never belonged to fishermen."
+        ],
+        "answer_index": 1,
+        "explanation": "\"It suggests a sudden catastrophe, when what happened was slow, deliberate and, for a long time, regarded as a success.\""
+      },
+      {
+        "id": "q3",
+        "skill": "reading.vocabulary",
+        "prompt": "In the second section, \"stranded\" is closest in meaning to:",
+        "options": [
+          "Left in a difficult position, cut off from something needed",
+          "Moved to a new and better location",
+          "Flooded by rising water",
+          "Officially closed by the government"
+        ],
+        "answer_index": 0,
+        "explanation": "Fishing towns were \"stranded far from the shore\": left behind, without the sea they relied on."
+      },
+      {
+        "id": "q4",
+        "skill": "reading.inference",
+        "prompt": "What is the purpose of the paragraph beginning \"It would be comforting...\"?",
+        "options": [
+          "To praise modern methods of managing water",
+          "To argue that the Aral Sea problem has been fully solved",
+          "To warn readers not to think that similar mistakes belong only to the past",
+          "To describe the history of cotton farming"
+        ],
+        "answer_index": 2,
+        "explanation": "The writer calls that view \"a misreading\" because \"modern societies still divert rivers, drain wetlands and redesign landscapes\"."
+      },
+      {
+        "id": "q5",
+        "skill": "reading.detail",
+        "prompt": "How does the writer describe the repair projects?",
+        "options": [
+          "As having restored the whole sea",
+          "As useless and too expensive",
+          "As planned but not yet started",
+          "As limited but proof that damage can be reduced"
+        ],
+        "answer_index": 3,
+        "explanation": "\"These projects are modest compared with the scale of the original loss ... But they show that damage, once acknowledged, can at least be limited.\""
+      }
+    ]
+  }
+}

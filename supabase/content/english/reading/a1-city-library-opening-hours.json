@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "a1-city-library-opening-hours",
+    "title": "City Library: Opening Hours",
+    "level": "A1",
+    "summary": "A notice gives the library's opening hours, its rules and how to get a free library card.",
+    "content_markdown": "## Welcome to the City Library!\n\n**Opening hours**\n\n- Monday to Friday: 9 am to 7 pm\n- Saturday: 10 am to 4 pm\n- Sunday: closed\n\n**Library rules**\n\n- Please be quiet in the reading room.\n- You can drink water, but you can't eat here.\n- Please turn off the sound on your phone.\n\n**A free library card**\n\nThe library card is free. Bring your passport or ID card to the front desk. With a card, you can take three books home for two weeks.\n\nThere is free Wi-Fi on every floor. The children's room is on the first floor. There are English books on the second floor.",
+    "category": "Everyday",
+    "theme": "library notice",
+    "tone": "sky",
+    "is_hot": false,
+    "metadata": { "genre": "notice", "writing_tone": "informative", "word_count": 103 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "What is this notice for?",
+        "options": [
+          "To sell books",
+          "To give information about the library",
+          "To invite people to a party",
+          "To find a new librarian"
+        ],
+        "answer_index": 1,
+        "explanation": "It gives the library's \"Opening hours\", \"Library rules\" and information about \"A free library card\"."
+      },
+      {
+        "id": "q2",
+        "skill": "reading.detail",
+        "prompt": "When is the library closed?",
+        "options": [
+          "On Monday",
+          "On Saturday",
+          "On Friday evening after 5 pm",
+          "On Sunday"
+        ],
+        "answer_index": 3,
+        "explanation": "\"Sunday: closed\"."
+      },
+      {
+        "id": "q3",
+        "skill": "reading.detail",
+        "prompt": "What do you need for a library card?",
+        "options": [
+          "Your passport or ID card",
+          "A photo and money",
+          "A letter from your school",
+          "Three books"
+        ],
+        "answer_index": 0,
+        "explanation": "\"Bring your passport or ID card to the front desk.\""
+      },
+      {
+        "id": "q4",
+        "skill": "reading.inference",
+        "prompt": "Aziz wants to eat a sandwich in the reading room. What can he do?",
+        "options": [
+          "He can eat it on the second floor.",
+          "He can eat it if he is quiet.",
+          "He can't eat it in the library.",
+          "He can eat it with a library card."
+        ],
+        "answer_index": 2,
+        "explanation": "The rules say \"You can drink water, but you can't eat here.\""
+      },
+      {
+        "id": "q5",
+        "skill": "reading.vocabulary",
+        "prompt": "\"Free\" in \"The library card is free\" means…",
+        "options": [
+          "very fast",
+          "you don't pay for it",
+          "it is new",
+          "you can only use it once"
+        ],
+        "answer_index": 1,
+        "explanation": "A free card costs no money: \"The library card is free.\""
+      }
+    ]
+  }
+}

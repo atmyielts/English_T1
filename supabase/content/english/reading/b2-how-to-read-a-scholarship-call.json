@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "b2-how-to-read-a-scholarship-call",
+    "title": "How to Read a Scholarship Call",
+    "level": "B2",
+    "summary": "A practical guide to understanding a scholarship announcement: who can apply, what to send, when to send it and which offers to avoid.",
+    "content_markdown": "Every year, thousands of students search for funding to study abroad, and every year many of them lose a good chance for a simple reason: they did not read the scholarship announcement carefully enough. These announcements, often called \"calls for applications\", are written in dense, formal language. Here is how to read one like an expert.\n\n## 1. Start with eligibility\n\nBefore you fall in love with a programme, find the section on eligibility. It tells you who is allowed to apply. Look for your nationality, your current level of study, your field and any age limit. Some scholarships are open only to students who have already been accepted by a university; others want you to apply for both at the same time. If you do not meet even one of the conditions, your application will usually be rejected without being read, however strong it is.\n\n## 2. Find the real deadline\n\nDeadlines are often more complicated than they look. Check whether the date refers to your time zone or the organiser's, and whether documents must be *received* or only *sent* by that day. Some programmes have two stages, with an early deadline for the university and a later one for the scholarship. Write every date in your calendar and plan to finish at least a week early, because websites tend to slow down on the last day.\n\n## 3. Make a document checklist\n\nMost calls list the documents you need: transcripts, a passport copy, a language certificate, a motivation letter and recommendation letters. Pay attention to small details. A transcript may need to be officially translated; a recommendation may have to come directly from your teacher rather than from you. Ask your referees at least a month in advance, since they are busy people too.\n\n## 4. Understand what is covered\n\n\"Full scholarship\" does not always mean the same thing. One programme may pay tuition, accommodation, flights and health insurance, while another covers only tuition. Read the section on benefits closely, and calculate what you would still need to pay yourself.\n\n## 5. Watch for red flags\n\nGenuine scholarships rarely ask you to pay to apply. Be careful with any offer that demands an \"application fee\" through a personal account, promises guaranteed success or pressures you to decide within hours. If the organisation has no clear website or contact details, check it with your university's international office before sending anything.\n\nReading a call properly takes time, but it saves far more time later, and it may be the difference between a rejection and a place.",
+    "category": "Study",
+    "theme": "scholarships",
+    "tone": "lime",
+    "is_hot": false,
+    "metadata": { "genre": "guide", "writing_tone": "practical", "word_count": 426 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "What is the purpose of this guide?",
+        "options": [
+          "To list the best scholarships available this year",
+          "To persuade students not to study abroad",
+          "To help students understand scholarship announcements and avoid common mistakes",
+          "To explain how universities choose their teachers"
+        ],
+        "answer_index": 2,
+        "explanation": "The writer says many students lose chances because they \"did not read the scholarship announcement carefully enough\" and explains \"how to read one like an expert\"."
+      },
+      {
+        "id": "q2",
+        "skill": "reading.detail",
+        "prompt": "What usually happens if you do not meet one eligibility condition?",
+        "options": [
+          "Your application is often rejected without being read.",
+          "You receive a smaller scholarship.",
+          "You are asked to send more documents.",
+          "You can apply again the following week."
+        ],
+        "answer_index": 0,
+        "explanation": "\"If you do not meet even one of the conditions, your application will usually be rejected without being read.\""
+      },
+      {
+        "id": "q3",
+        "skill": "reading.inference",
+        "prompt": "Why does the writer advise finishing at least a week before the deadline?",
+        "options": [
+          "Because organisers prefer early applications and give them extra points",
+          "Because technical problems are likely near the deadline",
+          "Because the deadline is always a week earlier than stated",
+          "Because referees need a week to read the application"
+        ],
+        "answer_index": 1,
+        "explanation": "The writer says to finish early \"because websites tend to slow down on the last day\"."
+      },
+      {
+        "id": "q4",
+        "skill": "reading.vocabulary",
+        "prompt": "In section 3, who are \"referees\"?",
+        "options": [
+          "Officials who judge sports matches",
+          "Staff at the scholarship office",
+          "Translators of official documents",
+          "People who write recommendation letters for you"
+        ],
+        "answer_index": 3,
+        "explanation": "The paragraph talks about recommendation letters from teachers, then says \"Ask your referees at least a month in advance\"."
+      },
+      {
+        "id": "q5",
+        "skill": "reading.detail",
+        "prompt": "Which of these is described as a warning sign?",
+        "options": [
+          "A scholarship that covers only tuition",
+          "A programme with two deadlines",
+          "A request to pay an application fee into a personal account",
+          "A call that asks for a motivation letter"
+        ],
+        "answer_index": 2,
+        "explanation": "\"Be careful with any offer that demands an 'application fee' through a personal account.\""
+      }
+    ]
+  }
+}

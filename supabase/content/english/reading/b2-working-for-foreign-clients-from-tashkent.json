@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "b2-working-for-foreign-clients-from-tashkent",
+    "title": "Working for Foreign Clients from Tashkent",
+    "level": "B2",
+    "summary": "A developer in Tashkent explains what it really takes to work for clients abroad: time zones, contracts, payments and trust.",
+    "content_markdown": "When Jasur tells people that he works for a company in Berlin, they usually imagine an office with a view of the river. In fact, his office is a desk by the window of his flat in Chilonzor, and his commute is the ten steps from the kitchen. He is one of a growing number of developers in Uzbekistan who have found clients abroad without ever leaving home.\n\nThe work itself is not so different from a local job. He writes code, joins video calls and argues politely about deadlines. What is different is everything around the work.\n\n## Living in two time zones\n\nThe first challenge is time. Berlin is several hours behind Tashkent, so Jasur's working day starts late and finishes late. \"At first I tried to be available all the time,\" he says. \"After a month I was exhausted.\" Now he agrees a fixed window of shared hours with his team, and outside that window he works on tasks that do not need anyone else. Clients, he has learned, respect clear boundaries more than constant availability.\n\n## Reading the contract\n\nThe second challenge is paperwork. A contract with a foreign client should say exactly what will be delivered, how changes are handled and when payment is due. \"My first contract was one paragraph long,\" Jasur admits. \"When the client changed the project twice, I had nothing to point to.\" These days he refuses to start until the scope has been written down, even for small jobs.\n\n## Getting paid\n\nPayments can also be complicated. Depending on the client, money may arrive through an international transfer, a freelance platform or a payment service, and each option has its own fees and delays. Jasur keeps a simple spreadsheet of every invoice and checks it every Friday. He also sets aside part of each payment for taxes, because he has seen friends get into trouble by spending everything they earned.\n\n## Building trust from far away\n\nPerhaps the biggest challenge is trust. A client who has never met you needs reasons to believe you will deliver. For Jasur, the answer is communication: short written updates at the end of each day, honest warnings when something is going to be late, and good English in every message. \"People forgive a delay,\" he says. \"They don't forgive silence.\"\n\nWorking from Tashkent for a team in another country is not a dream job without problems. But for developers who are organised and willing to learn, it can open doors that once seemed very far away.",
+    "category": "Work",
+    "theme": "remote work",
+    "tone": "sky",
+    "is_hot": false,
+    "metadata": { "genre": "feature", "writing_tone": "informative", "word_count": 422 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "What is the article mainly about?",
+        "options": [
+          "Why developers in Uzbekistan should move to Germany",
+          "The practical challenges of working remotely for clients abroad",
+          "How to find a cheap flat with a good view in Tashkent",
+          "Why freelance platforms charge high fees"
+        ],
+        "answer_index": 1,
+        "explanation": "The article describes \"everything around the work\": time zones, contracts, payments and trust."
+      },
+      {
+        "id": "q2",
+        "skill": "reading.detail",
+        "prompt": "What did Jasur do about the time difference after the first month?",
+        "options": [
+          "He started working only at night.",
+          "He asked the team to move to his time zone.",
+          "He agreed fixed shared hours and did independent tasks outside them.",
+          "He stopped joining video calls."
+        ],
+        "answer_index": 2,
+        "explanation": "\"Now he agrees a fixed window of shared hours with his team, and outside that window he works on tasks that do not need anyone else.\""
+      },
+      {
+        "id": "q3",
+        "skill": "reading.inference",
+        "prompt": "Why does Jasur now insist that the scope is written down before he starts?",
+        "options": [
+          "Because his first client changed the project and he had no written agreement to rely on",
+          "Because foreign law requires contracts to be long",
+          "Because he wants to charge more for small jobs",
+          "Because his clients asked him to write their contracts"
+        ],
+        "answer_index": 0,
+        "explanation": "\"My first contract was one paragraph long... When the client changed the project twice, I had nothing to point to.\""
+      },
+      {
+        "id": "q4",
+        "skill": "reading.vocabulary",
+        "prompt": "In the section \"Getting paid\", what does \"sets aside\" mean?",
+        "options": [
+          "Spends quickly",
+          "Refuses to accept",
+          "Sends to another person",
+          "Keeps for a particular purpose later"
+        ],
+        "answer_index": 3,
+        "explanation": "He \"sets aside part of each payment for taxes\", meaning he saves it for that purpose instead of spending it."
+      },
+      {
+        "id": "q5",
+        "skill": "reading.inference",
+        "prompt": "What does Jasur mean by \"They don't forgive silence\"?",
+        "options": [
+          "Clients prefer calls to written messages.",
+          "Not telling a client about problems damages trust more than the problem itself.",
+          "Clients expect him to work without speaking in meetings.",
+          "He should never admit that a task will be late."
+        ],
+        "answer_index": 1,
+        "explanation": "He recommends \"honest warnings when something is going to be late\"; a delay can be forgiven, but saying nothing cannot."
+      }
+    ]
+  }
+}

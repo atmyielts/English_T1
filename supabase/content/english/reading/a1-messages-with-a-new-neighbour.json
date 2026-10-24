@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "a1-messages-with-a-new-neighbour",
+    "title": "Messages with a New Neighbour",
+    "level": "A1",
+    "summary": "Two neighbours write messages about a parcel, a lift that doesn't work, and tea on Saturday.",
+    "content_markdown": "**Nilufar:** Hi! I'm Nilufar from flat 12. I'm your new neighbour. I have a parcel for you. The delivery man can't find you today.\n\n**Kamola:** Oh, thank you, Nilufar! I'm at work now. I can come at seven o'clock. Is that OK?\n\n**Nilufar:** Yes, that's fine. I'm at home all evening. My flat is on the fourth floor, next to the lift.\n\n**Kamola:** Great. Is the lift OK today? Yesterday it was broken.\n\n**Nilufar:** No, it's broken again. Sorry, you need the stairs!\n\n**Kamola:** No problem. I like the stairs. They are good exercise!\n\n**Nilufar:** Ha ha. Would you like tea with me on Saturday? I have a big family, and we always have sweets.\n\n**Kamola:** Yes, I'd love to! See you at seven.",
+    "category": "Everyday",
+    "theme": "neighbours",
+    "tone": "lavender",
+    "is_hot": false,
+    "metadata": { "genre": "message", "writing_tone": "friendly", "word_count": 124 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "Why does Nilufar write to Kamola first?",
+        "options": [
+          "She has Kamola's parcel.",
+          "She wants to buy Kamola's flat.",
+          "She needs help with the lift.",
+          "She is Kamola's teacher."
+        ],
+        "answer_index": 0,
+        "explanation": "\"I have a parcel for you.\""
+      },
+      {
+        "id": "q2",
+        "skill": "reading.detail",
+        "prompt": "When can Kamola come to Nilufar's flat?",
+        "options": [
+          "Now",
+          "On Saturday morning",
+          "At seven o'clock",
+          "Tomorrow"
+        ],
+        "answer_index": 2,
+        "explanation": "\"I can come at seven o'clock.\""
+      },
+      {
+        "id": "q3",
+        "skill": "reading.detail",
+        "prompt": "Where is Nilufar's flat?",
+        "options": [
+          "On the first floor",
+          "On the fourth floor, next to the lift",
+          "In flat 4",
+          "Next to Kamola's office"
+        ],
+        "answer_index": 1,
+        "explanation": "\"My flat is on the fourth floor, next to the lift.\""
+      },
+      {
+        "id": "q4",
+        "skill": "reading.inference",
+        "prompt": "How will Kamola go up to Nilufar's flat?",
+        "options": [
+          "By lift",
+          "With the delivery man",
+          "She will not go.",
+          "By the stairs"
+        ],
+        "answer_index": 3,
+        "explanation": "The lift is \"broken again\", and Kamola says \"No problem. I like the stairs.\""
+      },
+      {
+        "id": "q5",
+        "skill": "reading.vocabulary",
+        "prompt": "The lift is \"broken\". This means…",
+        "options": [
+          "it is new",
+          "it doesn't work",
+          "it is very fast",
+          "it is closed on Saturday"
+        ],
+        "answer_index": 1,
+        "explanation": "Kamola asks if the lift is OK, and Nilufar says \"No, it's broken again\": it doesn't work."
+      }
+    ]
+  }
+}

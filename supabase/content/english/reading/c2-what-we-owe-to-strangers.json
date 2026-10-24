@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "c2-what-we-owe-to-strangers",
+    "title": "What We Owe to Strangers",
+    "level": "C2",
+    "summary": "An essay on hospitality, from Central Asian guest traditions to modern cities, asking whether our duties to strangers can survive a world built for convenience.",
+    "content_markdown": "In many households across Central Asia, there is a saying, repeated so often that it has worn smooth with use, that a guest is a gift from God. Visitors who arrive unannounced are not turned away; the kettle goes on, bread is broken by hand, and dishes appear from a kitchen that seemed, a moment ago, to contain nothing at all. The host's own plans for the evening quietly dissolve. To a newcomer from a more reserved culture, the experience can be overwhelming, even a little alarming, in its generosity. To the host, it is simply what one does.\n\nIt would be tempting to treat such customs as charming relics, the kind of thing described in travel guides alongside traditional dress and regional cuisine. That would be a mistake. Traditions of hospitality, which in different forms can be found on every continent, encode a serious moral idea: that the arrival of a stranger places a claim on us, and that this claim does not depend on whether we know, like or expect to benefit from the person at the door.\n\n## The logic of the threshold\n\nIt is worth dwelling on how radical that idea is. Most of our obligations rest on relationships we have chosen or inherited. We owe things to family, to friends, to colleagues, to fellow citizens. The stranger belongs to none of these categories, which is precisely the point. The stranger is the person to whom, on any narrowly self-interested calculation, we owe nothing. Hospitality reverses that calculation. It insists that the very absence of a prior bond is itself a reason for care.\n\nHistorically, there were practical reasons for this. In a world of long journeys across deserts and steppes, a traveller refused shelter might not survive the night, and a host who turned someone away might one day find himself the traveller. Hospitality was a kind of insurance, distributed across a whole society. But it would be cynical to reduce it to self-interest. The best hosts do not calculate. They give because the guest is there.\n\n## Hospitality in the age of convenience\n\nModern cities complicate this picture. We live surrounded by strangers in numbers our ancestors could hardly have imagined, and we have developed elaborate systems to keep our encounters with them brief and frictionless. We pay for shelter through booking platforms, rate our drivers with stars, and conduct entire exchanges without once meeting the other person's eyes. These arrangements are often admirable in their efficiency. They are also, in a sense, designed to make hospitality unnecessary: to replace the uncertain gift of welcome with a predictable transaction.\n\nOne result is a curious thinning of moral imagination. When every stranger is either a service provider or a customer, it becomes harder to recognise those who are neither: the lost tourist, the newly arrived student, the migrant worker sleeping in a cold room above a shop. They fall into the gaps between transactions, and it is easy, without any malice at all, simply not to see them.\n\n## A demanding inheritance\n\nI do not want to romanticise the past. Traditional hospitality had its limits; it could coexist with suspicion of outsiders, and its burdens often fell most heavily on the women who did the cooking and cleaning. Nor can a city of millions run on the assumption that every door will open to every knock. Some boundaries are necessary for any life to be lived.\n\nStill, the old saying contains a challenge that has not expired. It asks whether our sense of obligation can stretch beyond the circle of those we have chosen. In practice, this need not mean grand gestures. It may mean giving directions with patience rather than haste, inviting a foreign classmate home for a holiday meal, or noticing the colleague who has nowhere to go during the long weekend.\n\nThe stranger, after all, is a role we all play sooner or later: in a new city, a new job, a country where we do not speak the language. What we owe to strangers is, in the end, what we would hope to receive. The tradition simply had the wisdom to say so before we needed it.",
+    "category": "Culture",
+    "theme": "hospitality",
+    "tone": "peach",
+    "is_hot": false,
+    "metadata": { "genre": "essay", "writing_tone": "reflective", "word_count": 696 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "What is the central question the essay explores?",
+        "options": [
+          "Whether traditional dishes should be served to tourists",
+          "Whether the moral idea behind hospitality to strangers can still guide us in modern life",
+          "Whether booking platforms are cheaper than staying with families",
+          "Whether Central Asian traditions are better than all others"
+        ],
+        "answer_index": 1,
+        "explanation": "The writer says hospitality \"encode[s] a serious moral idea\" and asks whether \"our sense of obligation can stretch beyond the circle of those we have chosen\" in modern cities."
+      },
+      {
+        "id": "q2",
+        "skill": "reading.inference",
+        "prompt": "Why does the writer call the idea of hospitality \"radical\"?",
+        "options": [
+          "Because it was invented recently",
+          "Because it requires very expensive meals",
+          "Because it treats the lack of any existing relationship as a reason to care for someone",
+          "Because it is opposed by most governments"
+        ],
+        "answer_index": 2,
+        "explanation": "\"It insists that the very absence of a prior bond is itself a reason for care.\""
+      },
+      {
+        "id": "q3",
+        "skill": "reading.detail",
+        "prompt": "What practical reason for hospitality does the writer mention?",
+        "options": [
+          "Hosts were paid by the government.",
+          "On long journeys, a traveller refused shelter might not survive, and any host might later be a traveller.",
+          "Guests usually brought valuable gifts.",
+          "It helped families find marriage partners."
+        ],
+        "answer_index": 1,
+        "explanation": "\"A traveller refused shelter might not survive the night, and a host who turned someone away might one day find himself the traveller.\""
+      },
+      {
+        "id": "q4",
+        "skill": "reading.vocabulary",
+        "prompt": "In the section on convenience, \"frictionless\" encounters are ones that are:",
+        "options": [
+          "Smooth, quick and free of personal involvement or difficulty",
+          "Warm and emotionally rich",
+          "Dangerous and unpredictable",
+          "Long and formal"
+        ],
+        "answer_index": 0,
+        "explanation": "The writer describes systems that keep encounters \"brief and frictionless\", such as rating drivers \"without once meeting the other person's eyes\"."
+      },
+      {
+        "id": "q5",
+        "skill": "reading.inference",
+        "prompt": "Why does the writer include the section \"A demanding inheritance\"?",
+        "options": [
+          "To argue that hospitality should be abandoned",
+          "To claim that the past was perfect",
+          "To show that only women should host guests",
+          "To acknowledge the limits and costs of traditional hospitality while still defending its core challenge"
+        ],
+        "answer_index": 3,
+        "explanation": "The writer admits its burdens \"fell most heavily on the women\" and that \"some boundaries are necessary\", then says \"the old saying contains a challenge that has not expired\"."
+      }
+    ]
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "item": {
+    "slug": "a1-a-rainy-day-in-tashkent",
+    "title": "A Rainy Day in Tashkent",
+    "level": "A1",
+    "summary": "Jasur has no umbrella on a rainy morning, but a kind woman at the bus stop helps him.",
+    "content_markdown": "It is Tuesday morning in Tashkent. Jasur looks out of the window. The sky is grey, and it is very cold. \"It's fine,\" he thinks. \"It never rains in October.\"\n\nHe takes his bag and goes to the bus stop. He doesn't have an umbrella. Then the rain starts. It rains and rains! Jasur's jacket is wet, and his shoes are wet too.\n\nAt the bus stop, there is a woman with a big red umbrella. She smiles at Jasur. \"Come here,\" she says. \"My umbrella is very big.\" They stand under the umbrella together and talk about the weather.\n\nThe bus comes, and Jasur says, \"Thank you very much!\" Now he always has an umbrella in his bag.",
+    "category": "Everyday",
+    "theme": "weather",
+    "tone": "mint",
+    "is_hot": false,
+    "metadata": { "genre": "story", "writing_tone": "light", "word_count": 119 },
+    "questions": [
+      {
+        "id": "q1",
+        "skill": "reading.main_idea",
+        "prompt": "What is the story about?",
+        "options": [
+          "Jasur buys a new jacket.",
+          "Jasur is late for school.",
+          "A woman helps Jasur on a rainy day.",
+          "Jasur loses his bag on the bus."
+        ],
+        "answer_index": 2,
+        "explanation": "It rains, Jasur has no umbrella, and a woman says \"Come here… My umbrella is very big.\""
+      },
+      {
+        "id": "q2",
+        "skill": "reading.detail",
+        "prompt": "What is the weather like in the morning?",
+        "options": [
+          "Grey and cold",
+          "Sunny and warm",
+          "Hot and dry",
+          "Snowy"
+        ],
+        "answer_index": 0,
+        "explanation": "\"The sky is grey, and it is very cold.\""
+      },
+      {
+        "id": "q3",
+        "skill": "reading.detail",
+        "prompt": "What colour is the woman's umbrella?",
+        "options": [
+          "Grey",
+          "Blue",
+          "Black",
+          "Red"
+        ],
+        "answer_index": 3,
+        "explanation": "\"There is a woman with a big red umbrella.\""
+      },
+      {
+        "id": "q4",
+        "skill": "reading.inference",
+        "prompt": "Why does Jasur go out without an umbrella?",
+        "options": [
+          "He doesn't have one at home.",
+          "He thinks it will not rain.",
+          "He likes the rain.",
+          "His umbrella is broken."
+        ],
+        "answer_index": 1,
+        "explanation": "He thinks: \"It never rains in October.\""
+      },
+      {
+        "id": "q5",
+        "skill": "reading.vocabulary",
+        "prompt": "\"His jacket is wet\" means his jacket is…",
+        "options": [
+          "new",
+          "warm",
+          "full of water from the rain",
+          "too small"
+        ],
+        "answer_index": 2,
+        "explanation": "\"Then the rain starts… Jasur's jacket is wet.\" The rain makes it wet."
+      }
+    ]
+  }
+}
