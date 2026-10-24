@@ -1,5 +1,10 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  practiceAccessRequired,
+  resolvePracticeProductId,
+  userHasPracticeAccess,
+} from "../_shared/ielts-practice-access.ts";
 
 type Json = Record<string, unknown>;
 
@@ -91,6 +96,12 @@ serve(async (req) => {
     if (authError || !authData?.user) return json(401, { error: "Unauthorized" });
 
     const userId = authData.user.id;
+    // Same product gate as ielts-practice: the review queue is part of IELTS
+    // Practice (personal, sponsored or bundle access).
+    const practiceProductId = await resolvePracticeProductId(sb);
+    if (!(await userHasPracticeAccess(sb, userId, practiceProductId))) {
+      return json(403, practiceAccessRequired(practiceProductId));
+    }
     const language = (await resolveLanguage(sb, "en")) ?? null;
     if (!language) return json(500, { error: "Language 'en' not found" });
 
