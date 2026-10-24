@@ -47,6 +47,9 @@ const PRIMARY_CONTENT_TYPES = [
   "listening.item",
   "writing.prompt",
   "speaking.prompt",
+  // Finished role-plays and speaking mocks (./practice.ts).
+  "speaking.roleplay",
+  "speaking.mock",
   "grammar.unit",
   "immersion.mission",
   "vocabulary.deck",

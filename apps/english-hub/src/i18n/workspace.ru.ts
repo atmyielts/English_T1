@@ -4,6 +4,8 @@ export const workspaceRu: Record<string, string> = {
   'ws.group.skills': 'Навыки',
   'ws.group.you': 'Вы',
   'ws.certificate': 'Сертификат',
+  'ws.roleplay': 'Ролевые диалоги',
+  'ws.mock': 'Пробный Speaking',
   'ws.handbook': 'Справочник по грамматике',
   'ws.locked': 'Не входит в ваш тариф',
   'ws.search': 'Поиск',

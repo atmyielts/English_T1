@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useT } from '../../i18n';
 import { canSpeak, speak, stopSpeaking } from '../../lib/speech';
+import { L1Why } from '../../components/L1Why';
 import { useElapsedSeconds, useResource } from '../../lib/useResource';
 import { Panel, Tag, useErrorMessage } from '../../ui/kit';
 import { YourWordsHint, YourWordsResult } from '../YourWords';
@@ -435,6 +436,7 @@ const SpeakingResult = ({
               <li key={index} className="en-stack" style={{ gap: '.25rem' }}>
                 <span className="en-diff" lang="en"><del>{correction.said}</del> <ins>{correction.better}</ins></span>
                 {correction.explanation ? <span className="hint">{correction.explanation}</span> : null}
+                <L1Why original={correction.said} corrected={correction.better} explanation={correction.explanation} />
               </li>
             ))}
           </ul>

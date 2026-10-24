@@ -4,6 +4,8 @@ export const workspaceUz: Record<string, string> = {
   'ws.group.skills': 'Koʻnikmalar',
   'ws.group.you': 'Siz',
   'ws.certificate': 'Sertifikat',
+  'ws.roleplay': 'Rolli suhbatlar',
+  'ws.mock': 'Speaking sinovi',
   'ws.handbook': 'Grammatika qoʻllanmasi',
   'ws.locked': 'Tarifingizga kirmaydi',
   'ws.search': 'Qidiruv',

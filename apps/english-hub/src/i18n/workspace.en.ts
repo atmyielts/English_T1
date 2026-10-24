@@ -6,6 +6,8 @@ export const workspaceEn: Record<string, string> = {
   'ws.group.skills': 'Skills',
   'ws.group.you': 'You',
   'ws.certificate': 'Certificate',
+  'ws.roleplay': 'Role-plays',
+  'ws.mock': 'Speaking mock',
   'ws.handbook': 'Grammar handbook',
   'ws.locked': 'Not in your plan',
   'ws.search': 'Search',
