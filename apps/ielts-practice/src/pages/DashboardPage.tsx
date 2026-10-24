@@ -1,5 +1,5 @@
-import { useEffect, useId, useMemo, useState } from 'react';
-import { Menu, Sparkles, X } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Sparkles } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   practiceDashboardGet,
@@ -14,7 +14,12 @@ import {
   type PracticeRoadmapItem,
   type SrsReviewItem,
 } from '../lib/api';
-import { IELTS_PRACTICE_PRODUCT_ID } from '../lib/constants';
+import { IELTS_PRACTICE_PRODUCT_ID, IELTS_SIMULATOR_PRODUCT_ID, IELTS_SIMULATOR_PRODUCT_SLUG } from '../lib/constants';
+import { buildPlatformUrl } from '../lib/platformUrls';
+import { usePracticeContext } from '../lib/practiceContext';
+import { PracticeShell } from '../components/PracticeShell';
+import { EmptyCatalogueCard, PracticeContextBanner } from '../components/PracticeContextBanner';
+import { useAppT } from '../i18n';
 import {
   EXPERIENCE_COPY,
   EXPERIENCE_KINDS,
@@ -173,9 +178,6 @@ const hasLabPayload = (item: { delivery_build?: { metadata?: unknown } | null })
   return labPayload.version === 'ielts.practice.lab.v1';
 };
 
-const IELTS_SIMULATOR_DASHBOARD_URL = 'https://ielts.schood.online/dashboard';
-const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
-
 const LAB_FEATURES = [
   { title: 'Mistake Coach', copy: 'Explains why today\'s lab was selected and what trap to watch.' },
   { title: 'Evidence Locator', copy: 'Prove Reading answers with the exact sentence or paragraph.' },
@@ -194,6 +196,8 @@ const SECTION_FALLBACK_COPY: Record<SectionType, string> = {
   writing: 'Rewrite, planning, sentence upgrade, and feedback labs',
 };
 
+const EMPTY_CATALOGUE = '__empty_catalogue__';
+
 const humanizeError = (message: string): string => {
   const text = message.toLowerCase();
   if (
@@ -203,7 +207,7 @@ const humanizeError = (message: string): string => {
     || text.includes('no published transformed ielts practice experiences')
     || text.includes('none could be selected and no fallback exercises are available')
   ) {
-    return 'Practice content is being prepared. Ask an admin to run Content Factory for transformed sessions.';
+    return EMPTY_CATALOGUE;
   }
   if (text.includes('network') || text.includes('failed to fetch')) {
     return 'Connection issue. Please refresh and try again.';
@@ -212,10 +216,19 @@ const humanizeError = (message: string): string => {
 };
 
 export const DashboardPage = () => {
+  const t = useAppT();
   const navigate = useNavigate();
-  const sidebarMenuId = useId();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { accessToken, me, session } = useAccess({ includeEffective: true });
+  const { accessToken, me, session, effective, status } = useAccess({ includeEffective: true });
+  const { context, session: contextSession, dismiss: dismissContext } = usePracticeContext(accessToken);
+  const [emptyCatalogue, setEmptyCatalogue] = useState(false);
+  // access-effective already expands bundles (e.g. IELTS Complete) into product ids.
+  const hasSimulatorAccess = status === 'loading'
+    ? null
+    : Boolean(
+      me?.entitlements.some((entry) => entry.resource_type === 'product' && entry.resource_id === IELTS_SIMULATOR_PRODUCT_ID)
+      || effective?.effective_product_ids?.includes(IELTS_SIMULATOR_PRODUCT_ID),
+    );
+  const simulatorPricingUrl = buildPlatformUrl('/pricing', undefined, { product: IELTS_SIMULATOR_PRODUCT_SLUG });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [targetBand, setTargetBand] = useState<number | null>(null);
@@ -289,7 +302,9 @@ export const DashboardPage = () => {
       setPlanStale(Boolean(dashboardRes.plan_stale));
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load dashboard';
-      setError(humanizeError(message));
+      const text = humanizeError(message);
+      if (text === EMPTY_CATALOGUE) setEmptyCatalogue(true);
+      else setError(text);
     } finally {
       setLoading(false);
     }
@@ -342,11 +357,14 @@ export const DashboardPage = () => {
     try {
       setGenerating(true);
       setError(null);
-      await practiceGeneratePlan(accessToken, generationBody(true));
+      const result = await practiceGeneratePlan(accessToken, generationBody(true));
+      setEmptyCatalogue(Boolean(result.empty_reason) && result.items.length === 0);
       await load();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Plan generation failed';
-      setError(humanizeError(message));
+      const text = humanizeError(message);
+      if (text === EMPTY_CATALOGUE) setEmptyCatalogue(true);
+      else setError(text);
     } finally {
       setGenerating(false);
     }
@@ -427,7 +445,9 @@ export const DashboardPage = () => {
         await load();
         setError('That lab was from an older generated plan, so I refreshed today\'s Practice Labs.');
       } else {
-        setError(humanizeError(message));
+        const text = humanizeError(message);
+        if (text === EMPTY_CATALOGUE) setEmptyCatalogue(true);
+        else setError(text);
       }
     } finally {
       setLaunchingId((current) => (current === item.id ? null : current));
@@ -470,69 +490,25 @@ export const DashboardPage = () => {
     () => plan.find((item) => item.status !== 'completed' && (item.blueprint_id || item.delivery_build_id)) ?? plan.find((item) => item.blueprint_id || item.delivery_build_id) ?? null,
     [plan],
   );
-  const closeSidebar = () => setSidebarOpen(false);
 
   return (
-    <div className="practice-root">
-      <div className="practice-workspace">
-        <aside className={`practice-sidebar glass${sidebarOpen ? ' mobile-open' : ''}`}>
-          <div className="practice-sidebar-head">
-            <Link to="/dashboard" className="practice-sidebar-brand" onClick={closeSidebar}>
-              <img src="/schood-logo.png" alt="Schood" />
-              <div>
-                <strong>IELTS Practice</strong>
-                <span>Practice Labs workspace</span>
-              </div>
-            </Link>
-            <button
-              className="sidebar-menu-button"
-              type="button"
-              onClick={() => setSidebarOpen((open) => !open)}
-              aria-expanded={sidebarOpen}
-              aria-controls={sidebarMenuId}
-            >
-              {sidebarOpen ? <X size={17} strokeWidth={2.4} /> : <Menu size={17} strokeWidth={2.4} />}
-              Menu
-            </button>
-          </div>
-
-          <div id={sidebarMenuId} className="practice-sidebar-menu">
-            <nav className="practice-sidebar-nav">
-              <Link to="/today" className="sidebar-link" onClick={closeSidebar} title="Your guided daily session">Today</Link>
-              <Link to="/dashboard" className="sidebar-link active" onClick={closeSidebar} title="Bands, mastery & mistakes">Progress</Link>
-              <Link to="/plan" className="sidebar-link" onClick={closeSidebar} title="Goal & schedule">Plan</Link>
-
-              <span className="sidebar-nav-label muted" style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.6, padding: '8px 0 2px' }}>More</span>
-              <Link to="/practice/reviews" className="sidebar-link" onClick={closeSidebar}>
-                Reviews due{srsSummary.due > 0 ? ` (${srsSummary.due})` : ''}
-              </Link>
-              <Link to="/practice/stats/by-type" className="sidebar-link" onClick={closeSidebar}>Stats by type</Link>
-              <a href="#practice-labs" className="sidebar-link" onClick={closeSidebar}>Practice Labs</a>
-              <a href="#mistake-notebook" className="sidebar-link" onClick={closeSidebar}>Notebook</a>
-              <a href="#band-roadmap" className="sidebar-link" onClick={closeSidebar}>Roadmap</a>
-              <a href={IELTS_SIMULATOR_DASHBOARD_URL} className="sidebar-link" onClick={closeSidebar}>IELTS Simulator</a>
-              <a href={`${PLAYBOOK_URL}/dashboard?source=practice`} className="sidebar-link" onClick={closeSidebar}>IELTS Playbook</a>
-            </nav>
-
-            <section className="sidebar-panel sidebar-actions-panel">
-              <h4>Quick Actions</h4>
-              <button
-                className="btn solid full"
-                type="button"
-                onClick={() => {
-                  closeSidebar();
-                  void handleGenerate();
-                }}
-                disabled={generating}
-              >
-                {generating ? 'Generating...' : 'Regenerate Plan'}
-              </button>
-              <Link to="/plan" className="btn ghost full" onClick={closeSidebar}>Open Plan Builder</Link>
-            </section>
-          </div>
-        </aside>
-
-        <main className="practice-main">
+    <PracticeShell
+      reviewsDueCount={srsSummary.due}
+      extraLinks={[
+        { label: t('dash.anchor.labs'), href: '#practice-labs' },
+        { label: t('dash.anchor.notebook'), href: '#mistake-notebook' },
+        { label: t('dash.anchor.roadmap'), href: '#band-roadmap' },
+      ]}
+      sidebarExtra={(
+        <section className="sidebar-panel sidebar-actions-panel">
+          <h4>{t('dash.quick.title')}</h4>
+          <button className="btn solid full" type="button" onClick={() => void handleGenerate()} disabled={generating}>
+            {generating ? t('dash.quick.generating') : t('dash.quick.regenerate')}
+          </button>
+          <Link to="/plan" className="btn ghost full">{t('dash.quick.planBuilder')}</Link>
+        </section>
+      )}
+    >
           <header className="practice-header glass">
             <div>
               <p className="eyebrow">Progress &amp; insights</p>
@@ -551,7 +527,11 @@ export const DashboardPage = () => {
           </header>
 
           {loading ? <div className="glass dashboard-alert">Loading IELTS practice workspace...</div> : null}
-          {error ? <div className="glass dashboard-alert error">{error}</div> : null}
+          {error ? <div className="glass dashboard-alert error" role="alert">{error}</div> : null}
+
+          <PracticeContextBanner context={context} session={contextSession} onDismiss={dismissContext} showStart />
+
+          {emptyCatalogue ? <EmptyCatalogueCard /> : null}
 
           <PracticeOnboarding goals={goal} onComplete={() => { void load(); }} />
 
@@ -583,18 +563,16 @@ export const DashboardPage = () => {
             anchorId="dashboard-today"
           />
 
-          <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 16 }}>
-            <MockTestEntryCard />
-            <section className="glass" style={{ padding: 22, display: 'grid', gap: 12 }}>
-              <p className="eyebrow"><Sparkles size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Guided session</p>
+          <section className="dash-two-col">
+            <MockTestEntryCard hasSimulatorAccess={hasSimulatorAccess} pricingUrl={simulatorPricingUrl} />
+            <section className="glass dash-card">
+              <p className="eyebrow"><Sparkles size={11} style={{ verticalAlign: -2, marginRight: 4 }} aria-hidden="true" /> {t('dash.guided.eyebrow')}</p>
               <div>
-                <h3 style={{ margin: '0 0 4px' }}>30-minute focused session</h3>
-                <p className="muted" style={{ margin: 0, fontSize: 14 }}>
-                  Spaced reviews → one focused lab → mastery check. Walks you through in order with skip buttons at every phase.
-                </p>
+                <h3>{t('dash.guided.title')}</h3>
+                <p className="muted" style={{ fontSize: 14 }}>{t('dash.guided.lead')}</p>
               </div>
-              <Link to="/today" className="btn solid compact" style={{ alignSelf: 'flex-start' }}>
-                Open today’s session
+              <Link to="/today" className="btn solid compact" style={{ justifySelf: 'start' }}>
+                {t('dash.guided.open')}
               </Link>
             </section>
           </section>
@@ -610,7 +588,7 @@ export const DashboardPage = () => {
 
           <MistakeCausesCard accessToken={accessToken} />
 
-          <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)', gap: 16 }}>
+          <section className="dash-two-col wide-first">
             <BandTrajectoryCard accessToken={accessToken} />
             <ActivityHeatmapCard accessToken={accessToken} />
           </section>
@@ -931,8 +909,6 @@ export const DashboardPage = () => {
               )}
             </article>
           </section>
-        </main>
-      </div>
-    </div>
+    </PracticeShell>
   );
 };

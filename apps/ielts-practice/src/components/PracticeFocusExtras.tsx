@@ -6,6 +6,8 @@ import {
   type ScoreImpactResponse,
   type VocabFromMistakesEntry,
 } from '../lib/api';
+import { formatPracticeLabel } from '../lib/practiceExperience';
+import { sectionLabel, useAppT, useFormat } from '../i18n';
 
 // ============================================================
 // Pre-test mode banner (T-7 ramp + final-week prep)
@@ -124,46 +126,42 @@ export const PreTestModeBanner = ({ targetDate }: PreTestProps) => {
 // ============================================================
 // Mock test entry card
 // ============================================================
-// Sends users to the simulator's full-exam flow with a query
-// parameter that flags this as a deliberate full mock so the
-// simulator can apply strict-mode timing.
+// IELTS Simulator is a separate product. The card says so plainly and shows
+// whether the learner's access (per access-effective, which includes bundles
+// such as IELTS Complete) covers it, linking to pricing when it does not.
 
 const SIMULATOR_FULL_EXAM_URL = 'https://ielts.schood.online/full-exam?source=practice&mode=mock';
 
-export const MockTestEntryCard = () => {
+interface MockEntryProps {
+  /** null while access is still loading */
+  hasSimulatorAccess: boolean | null;
+  pricingUrl: string;
+}
+
+export const MockTestEntryCard = ({ hasSimulatorAccess, pricingUrl }: MockEntryProps) => {
+  const t = useAppT();
   return (
-    <section
-      className="glass"
-      style={{
-        padding: 22,
-        display: 'grid',
-        gap: 14,
-      }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
-        <div>
-          <p className="eyebrow"><GraduationCap size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Full mock</p>
-          <h3 style={{ margin: '4px 0 0' }}>Take a full mock under exam conditions</h3>
-          <p className="muted" style={{ margin: '4px 0 0', fontSize: 14 }}>
-            All four sections, strict timing, no pause. Scored against the same rubric your
-            certificate will use. Run one of these every 7–10 days.
-          </p>
-        </div>
-        <a className="btn solid" href={SIMULATOR_FULL_EXAM_URL}>
-          Start full mock <Sparkles size={14} style={{ marginLeft: 6 }} />
-        </a>
+    <section className="glass dash-card" data-testid="full-mock-card">
+      <div>
+        <p className="eyebrow"><GraduationCap size={11} style={{ verticalAlign: -2, marginRight: 4 }} aria-hidden="true" /> {t('mock.eyebrow')}</p>
+        <h3>{t('mock.title')}</h3>
+        <p className="muted" style={{ fontSize: 14 }}>{t('mock.lead')}</p>
       </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, fontSize: 12.5 }}>
-        <span className="muted">~3 hours</span>
-        <span className="muted">·</span>
-        <span className="muted">Reading 60 min</span>
-        <span className="muted">·</span>
-        <span className="muted">Listening 30 min</span>
-        <span className="muted">·</span>
-        <span className="muted">Writing 60 min</span>
-        <span className="muted">·</span>
-        <span className="muted">Speaking 14 min</span>
-      </div>
+      {hasSimulatorAccess == null ? (
+        <span className="access-pill">{t('mock.checking')}</span>
+      ) : hasSimulatorAccess ? (
+        <>
+          <span className="access-pill ok"><ShieldCheck size={12} aria-hidden="true" /> {t('mock.included')}</span>
+          <a className="btn solid compact" href={SIMULATOR_FULL_EXAM_URL} style={{ justifySelf: 'start' }}>
+            {t('mock.start')} <Sparkles size={14} style={{ marginLeft: 6 }} aria-hidden="true" />
+          </a>
+        </>
+      ) : (
+        <>
+          <span className="access-pill">{t('mock.notIncluded')}</span>
+          <a className="btn solid compact" href={pricingUrl} style={{ justifySelf: 'start' }}>{t('mock.plans')}</a>
+        </>
+      )}
     </section>
   );
 };
@@ -270,21 +268,18 @@ export const DashboardSectionTitle = ({ eyebrow, title, hint, anchorId }: Sectio
 );
 
 // ============================================================
-// Score-impact callout
+// Biggest repair targets
 // ============================================================
-// Converts the top-3 active mistake notebook entries into a band
-// range like "fixing these 3 weak areas could add roughly 0.5-1.0
-// to your overall band." Conservative/optimistic comes from
-// expectedBandImpact in packages/ielts-core.
+// The learner's most frequent open mistake patterns with measured accuracy.
+// No projected band gain: that would be a guess presented as a number.
 
 interface ScoreImpactProps {
   accessToken: string | null;
 }
 
-const titleCase = (s: string) =>
-  s.replace(/[_-]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-
 export const ScoreImpactCallout = ({ accessToken }: ScoreImpactProps) => {
+  const t = useAppT();
+  const fmt = useFormat();
   const [data, setData] = useState<ScoreImpactResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -296,15 +291,9 @@ export const ScoreImpactCallout = ({ accessToken }: ScoreImpactProps) => {
     let active = true;
     setLoading(true);
     practiceScoreImpactGet(accessToken)
-      .then((res) => {
-        if (active) setData(res);
-      })
-      .catch(() => {
-        if (active) setData(null);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
+      .then((res) => { if (active) setData(res); })
+      .catch(() => { if (active) setData(null); })
+      .finally(() => { if (active) setLoading(false); });
     return () => {
       active = false;
     };
@@ -312,93 +301,36 @@ export const ScoreImpactCallout = ({ accessToken }: ScoreImpactProps) => {
 
   if (!accessToken) return null;
 
-  if (loading) {
-    return (
-      <article
-        style={{
-          padding: 18,
-          borderRadius: 14,
-          border: '1px solid color-mix(in srgb, #1f8a55 18%, transparent)',
-          background: 'color-mix(in srgb, #1f8a55 4%, white)',
-          minHeight: 110,
-        }}
-      >
-        <p className="muted" style={{ margin: 0, fontSize: 13 }}>Calculating score impact…</p>
-      </article>
-    );
-  }
-
-  if (!data || data.areas.length === 0) {
-    return (
-      <article
-        style={{
-          padding: 18,
-          borderRadius: 14,
-          border: '1px solid #e5e7eb',
-          background: '#fafafa',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-          <TrendingUp size={20} style={{ color: '#9ca3af', flexShrink: 0, marginTop: 2 }} />
-          <div>
-            <strong style={{ fontFamily: 'Fraunces, serif', fontSize: 16 }}>Score impact</strong>
-            <p style={{ margin: '6px 0 0', fontSize: 14, color: '#6b7280' }}>
-              Complete a few labs and we'll show you which weak areas would lift your band the most.
-            </p>
-          </div>
-        </div>
-      </article>
-    );
-  }
-
-  const { conservative, optimistic } = data.total;
   return (
-    <article
-      style={{
-        padding: 20,
-        borderRadius: 14,
-        border: '1px solid color-mix(in srgb, #1f8a55 25%, transparent)',
-        background: 'color-mix(in srgb, #1f8a55 5%, white)',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-        <TrendingUp size={22} style={{ color: '#1f8a55', flexShrink: 0, marginTop: 2 }} />
-        <div style={{ flex: 1 }}>
-          <p className="eyebrow" style={{ margin: 0, color: '#1f8a55' }}>Score impact</p>
-          <h3 style={{ fontFamily: 'Fraunces, serif', margin: '4px 0 6px', fontSize: 20 }}>
-            Fixing these {data.areas.length} weak areas could add roughly{' '}
-            <span style={{ color: '#1f8a55' }}>+{conservative} to +{optimistic}</span> to your overall band.
-          </h3>
-          <ul style={{ margin: '10px 0 0', padding: 0, listStyle: 'none', display: 'grid', gap: 6 }}>
-            {data.areas.map((area, i) => (
-              <li
-                key={`${area.question_type}-${i}`}
-                style={{
-                  padding: '8px 12px',
-                  background: '#fff',
-                  border: '1px solid #e8e2d0',
-                  borderRadius: 8,
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  fontSize: 13.5,
-                }}
-              >
-                <span>
-                  <strong>{titleCase(area.question_type)}</strong>
-                  <span style={{ color: '#7a7263', marginLeft: 6, fontSize: 12.5 }}>
-                    {titleCase(area.section_type)}
-                  </span>
-                </span>
-                <span style={{ color: '#1f8a55', fontWeight: 600 }}>
-                  +{area.conservative}–{area.optimistic}
-                </span>
-              </li>
-            ))}
-          </ul>
-          <p style={{ margin: '10px 0 0', fontSize: 12, color: '#7a7263' }}>
-            Range assumes you bring these areas to your current strongest level. Not a guarantee.
-          </p>
+    <article className="glass dash-card" data-testid="repair-targets">
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+        <TrendingUp size={20} style={{ color: '#1f8a55', flexShrink: 0, marginTop: 2 }} aria-hidden="true" />
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <p className="eyebrow" style={{ margin: 0 }}>{t('impact.eyebrow')}</p>
+          <h3>{t('impact.title')}</h3>
+          {loading ? <p className="muted">{t('impact.loading')}</p> : !data || data.areas.length === 0 ? (
+            <p className="muted">{t('impact.empty')}</p>
+          ) : (
+            <>
+              <p className="muted" style={{ fontSize: 13.5 }}>{t('impact.lead')}</p>
+              <ul className="history-list" style={{ marginTop: 10 }}>
+                {data.areas.map((area) => (
+                  <li key={`${area.section_type}-${area.question_type}`} className="history-row">
+                    <span>
+                      <strong>{formatPracticeLabel(area.question_type)}</strong>
+                      <span className="muted"> · {sectionLabel(t, area.section_type)}</span>
+                    </span>
+                    <span className="muted">
+                      {t('impact.misses', { count: area.error_frequency })} ·{' '}
+                      {area.rolling_accuracy != null && area.attempts > 0
+                        ? t('impact.accuracy', { value: fmt.percent(area.rolling_accuracy), attempts: area.attempts })
+                        : t('impact.noAccuracy')}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       </div>
     </article>
