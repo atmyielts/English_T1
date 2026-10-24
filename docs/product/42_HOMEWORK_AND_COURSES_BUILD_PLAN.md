@@ -28,7 +28,7 @@ The first version of this section was written against an older Academy branch. `
 | D3 | Which bot | **One Schood bot: @schoodstudentbot** (`workers/schood-bot`), the bot already linked to Academy students. `[DECIDED]` | Learners who attend several centers switch with `/center` or a "Switch centre" button; the choice is remembered per learner (`telegram_student_preferences`). With no choice made, every centre's open work is offered, labelled by centre |
 | D4 | Homework mistakes may feed the learner's own Schood Daily plan | **Yes, with consent.** `[DECIDED]` | Not wired yet: needs the consent capture and a mapping into `learner_language_errors` |
 | D5 | Course content delivery | **Least expensive first.** `[DECIDED]` | Telegram hosts files for free; S3 egress is the paid path. AI uses free OpenRouter models only (paid models are refused unless `HOMEWORK_AI_ALLOW_PAID=true`); voice notes are left to the teacher because there is no free speech-to-text path |
-| D6 | Pricing | **Fit onto the existing center tiers.** `[DECIDED]` | Growth = homework and courses; Premium and Exclusive add AI pre-marking. Independent teachers (no parent center) buy the new **Schood Teaching** product: "Teacher" (homework and courses) and "Teacher Pro" (adds AI). Prices are placeholders until the owner sets them |
+| D6 | Pricing | **Fit onto the existing center tiers.** `[DECIDED]` | Growth = homework and courses; Premium and Exclusive add AI pre-marking. Independent teachers (no parent center) buy the new **Schood Teaching** product: "Teacher" 149 000 UZS/month or 1 490 000/year (homework and courses) and "Teacher Pro" 249 000/month or 2 490 000/year (adds AI). Priced 2026-10-24 by delegation from the owner, anchored on learner plans (39-119k) and Growth (490k); only academy owners or admins can buy |
 | D7 | Who may sell courses | **Education centers and independent teachers, as long as they pay Schood.** `[DECIDED]` 2026-10-22 | Publishing a course is gated on the Schood Teaching plan or a center tier once billing is enforced; drafts are always free |
 
 ## 3. Data model (as built)
@@ -275,4 +275,4 @@ Owner go-ahead on 2026-10-22: "do them all, make it perfectly ready for use".
 - The Assessment Cloud bridge (§6) for module checks and signed certificates.
 - Collecting course fees through Schood (41 F12/F13: instalments, payouts, fiscal receipts).
 - Math OCR quality checks, centre-calibrated marking (V-HW-F11), churn warnings to parents (V-HW-F10).
-- Real Schood Teaching prices, then `billing.enforced`.
+- Schood Teaching prices are set (D6). Turn on `billing.enforced` only after Click checkout is confirmed working for tenant plans; until then Schood support activates plans manually.

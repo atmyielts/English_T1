@@ -6,7 +6,7 @@ const root=String(import.meta.env.VITE_SUPABASE_URL??'').replace(/\/$/,''),anon=
 export type HomeworkPlan={billing_enforced:boolean;audience:'center'|'independent';center_tier:string|null;teacher_tier:string|null;teacher_plan_ends_at:string|null;
  paid:{homework:boolean;courses:boolean;homework_ai:boolean};allowed:{homework:boolean;courses:boolean;homework_ai:boolean}};
 export type HomeworkSettings={premark_enabled:boolean;digest_enabled:boolean;telegram_handin_enabled:boolean};
-export type TeachingPlan={id:string;name:string;amount:number;currency:string;duration_days:number|null;is_active:boolean;metadata:{features?:string[];placeholder_price?:boolean}|null};
+export type TeachingPlan={id:string;name:string;amount:number;currency:string;duration_days:number|null;is_active:boolean;metadata:{features?:string[];placeholder_price?:boolean;billing_period?:'monthly'|'annual'}|null};
 export type HomeworkOverview={plan:HomeworkPlan;settings:HomeworkSettings;flags:{telegram_handin:boolean;premark:boolean;digest:boolean};
  can:{review:boolean;reports:boolean;manage:boolean};waiting:number;teaching_plans:TeachingPlan[]};
 export type HomeworkFile={filename:string|null;mime_type:string|null;size_bytes?:number|null;url:string|null};

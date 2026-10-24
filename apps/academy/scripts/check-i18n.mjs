@@ -334,7 +334,13 @@ const runtimeKeys = [
   "Schedule",
   "Start date",
   "Seats",
-  "Teacher"
+  "Teacher",
+  "month",
+  "year",
+  "Teacher (yearly)",
+  "Teacher Pro (yearly)",
+  "Everything in Teacher Pro",
+  "Two months free"
 ];
 const files = [];
 
