@@ -28,7 +28,7 @@
 /* Eight weekly bars; the dashed line is the weekly target. */
 .en-goal-chart { --goal-track: 7.5rem; position: relative; padding-top: 0.5rem; }
 .en-goal-line-zone { position: absolute; left: 0; right: 0; top: 0.5rem; height: var(--goal-track); pointer-events: none; z-index: 1; }
-.en-goal-line { position: absolute; left: 0; right: 0; border-top: 2px dashed var(--accent); opacity: 0.6; }
+.en-goal-target-line { position: absolute; left: 0; right: 0; border-top: 2px dashed var(--accent); opacity: 0.6; }
 .en-goal-bars {
   list-style: none;
   margin: 0;

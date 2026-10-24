@@ -10,6 +10,7 @@ import { catalogs } from './i18n';
 import { installEnglishGlobalRecoveryReporting } from './lib/clientRecovery';
 import { installPwa } from './lib/pwa';
 import './english.css';
+import './app/workspace.css';
 
 installEnglishGlobalRecoveryReporting();
 // Before render: catches an early install prompt, picks the right app manifest, registers the service worker.
