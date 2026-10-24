@@ -57,6 +57,7 @@ import { isReminderWorker, runReminderCycle } from "./reminders.ts";
 import { answerTelegramQuiz, isQuizWorker } from "./telegram-quiz.ts";
 import { handleGoalRoute } from "./goal.ts";
 import { handleXpRoute, logReviewAnswer } from "./xp.ts";
+import { handleEngineRoute } from "./engine.ts";
 import { handleWordLookup } from "./word-lookup.ts";
 import { appendLevelHistory, levelCheckStatus, perSkillLevels, readLevelHistory } from "../_shared/english-levels.ts";
 import { handleCertificateRoute, handlePublicCertificate, isPublicCertificateRoute } from "./certificate.ts";
@@ -341,9 +342,10 @@ serve(async (req) => {
     const isEnglishAiRequest = (req.method === "GET" && route === "/insights/coach-summary")
       || (req.method === "POST" && route.startsWith("/ai/"));
     if (isEnglishAiRequest) {
-      // The placement test is the front door, so it is open to every signed-in
-      // learner; it still counts against the daily AI quota below.
-      const isFreeAiRequest = route === "/ai/placement-test";
+      // The placement test is the front door and the monthly check repeats it, so
+      // both are open to every signed-in learner; they still count against the
+      // daily AI quota below.
+      const isFreeAiRequest = route === "/ai/placement-test" || route === "/ai/progress-check";
       const access = isFreeAiRequest ? { allowed: true } : await requireEnglishSuiteAccess(sb, auth.userId, products);
       if (!access.allowed) {
         return json(403, {
@@ -372,6 +374,10 @@ serve(async (req) => {
     // === XP, weekly leagues and badges (./xp.ts) ===
     const xpResponse = await handleXpRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId });
     if (xpResponse) return xpResponse;
+
+    // === Learning engine: ratings, one next step, streak freezes, progress check (./engine.ts) ===
+    const engineResponse = await handleEngineRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId, products, requestId });
+    if (engineResponse) return engineResponse;
 
     // === Today, catalog and history (learner home) ===
     // Built only from the learner's placement, real attempts and due reviews.

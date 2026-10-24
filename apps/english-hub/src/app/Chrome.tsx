@@ -4,6 +4,7 @@ import { LocaleSwitcher } from '../../../../packages/service-i18n/src/i18n.tsx';
 import { useT } from '../i18n';
 import { SKILLS, type SkillKey } from '../lib/skills';
 import { useEnglish } from './EnglishContext';
+import { UpNextStrip } from '../components/UpNext';
 
 export const HUB_NAV = ['today', 'practice', 'review', 'progress', 'tutor', 'league'] as const;
 
@@ -147,6 +148,7 @@ export const SkillWorkspace = ({ skill, children }: { skill: SkillKey; children:
           </div>
           <Link className="en-button-quiet" to="/today">{t('rail.backToToday')}</Link>
         </div>
+        <UpNextStrip skill={skill} />
         {children}
       </main>
     </div>

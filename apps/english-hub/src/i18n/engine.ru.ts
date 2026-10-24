@@ -1,0 +1,68 @@
+/** Русские строки движка обучения. Ключи совпадают с engine.en.ts. */
+export const engineRu: Record<string, string> = {
+  // Дальше
+  'engine.next.label': 'Дальше',
+  'engine.next.start': 'Начать',
+  'engine.next.go': 'Перейти',
+  'engine.next.loading': 'Подбираем следующий шаг…',
+  'engine.next.reviewTitle': '{count|one:Повторить # элемент|few:Повторить # элемента|many:Повторить # элементов|other:Повторить # элемента}',
+  'engine.next.reason.review_due': 'Пора повторить. Несколько минут — и всё останется в памяти.',
+  'engine.next.reason.fix_mistake': 'Исправляет ошибку, которую вы часто делаете: {example}',
+  'engine.next.reason.fix_mistake.plain': 'Исправляет ошибку, которую вы часто делаете.',
+  'engine.next.reason.weakest_skill': '{skill} дальше всего от цели ({level} · {progress}%, цель {target}).',
+  'engine.next.reason.weakest_skill.noGoal': '{skill} сейчас ваш самый слабый навык ({level} · {progress}%).',
+  'engine.next.reason.weakest_skill.plain': '{skill} сейчас нужнее всего практика.',
+  'engine.next.reason.today_plan': 'Следующее задание из плана на сегодня.',
+  'engine.next.reason.keep_going': 'Хорошая следующая практика: {skill}.',
+  'engine.next.usesFree': 'Это ваше бесплатное задание на сегодня.',
+  'engine.next.locked': 'Ещё рекомендуем: {title} ({skill}).',
+  'engine.next.lockedCta': 'Открыть {skill}',
+  'engine.next.none': 'Всё сделано. Выберите что угодно в разделе «Практика».',
+
+  // Уровень по навыкам
+  'engine.rating.title': 'Ваш уровень по каждому навыку',
+  'engine.rating.lead': 'По вашим последним результатам: учитываем сложность каждого задания и то, насколько оно свежее.',
+  'engine.rating.overall': 'Общий',
+  'engine.rating.value': '{level} · {progress}%',
+  'engine.rating.toward': '{progress}% пути до {level}',
+  'engine.rating.top': 'Высший уровень',
+  'engine.rating.barLabel': '{skill}: прогресс до следующего уровня',
+  'engine.rating.basis.none': 'Только по тесту уровня. Выполните несколько заданий, чтобы уточнить.',
+  'engine.rating.basis.some': '{count|one:По # последнему результату|few:По # последним результатам|many:По # последним результатам|other:По # последним результатам}',
+  'engine.rating.noData': 'Пока нет оценки',
+  'engine.rating.error': 'Не удалось загрузить уровни.',
+  'engine.rating.empty': 'Пройдите тест уровня или несколько заданий с оценкой, чтобы увидеть уровень здесь.',
+
+  // IELTS
+  'engine.ielts.title': 'Примерный балл IELTS',
+  'engine.ielts.label': 'Оценка',
+  'engine.ielts.lead': 'Приблизительный ориентир по вашим уровням в Schood English по обычному соответствию CEFR и IELTS. Это не официальный балл IELTS.',
+  'engine.ielts.overall': 'Общий (примерно)',
+  'engine.ielts.basedOn': '{count|one:Общий балл по # навыку|few:Общий балл по # навыкам|many:Общий балл по # навыкам|other:Общий балл по # навыкам}; остальные пока без оценки.',
+  'engine.ielts.tentative': 'По некоторым навыкам пока мало результатов, поэтому оценка может измениться.',
+  'engine.ielts.empty': 'Получите оценку хотя бы по одному навыку: аудирование, чтение, письмо или говорение.',
+  'engine.ielts.practice': 'Тренировать задания IELTS',
+  'engine.ielts.mock': 'Пройти полный пробный IELTS',
+  'engine.ielts.mockHint': 'Чтобы узнать реальный балл, пройдите пробный тест на время с проверкой как на экзамене.',
+
+  // Заморозки серии
+  'engine.streak.freezes': '{count|one:# заморозка серии|few:# заморозки серии|many:# заморозок серии|other:# заморозки серии}',
+  'engine.streak.freezesLabel': 'Заморозок серии: {count} из {max}',
+  'engine.streak.nextFreeze': '{count|one:Ещё # день практики — и будет заморозка.|few:Ещё # дня практики — и будет заморозка.|many:Ещё # дней практики — и будет заморозка.|other:Ещё # дня практики — и будет заморозка.}',
+  'engine.streak.maxFreezes': 'У вас максимум заморозок (2).',
+  'engine.streak.how': 'Каждые 7 дней подряд дают заморозку. Она автоматически спасает один пропущенный день.',
+  'engine.streak.frozen': 'Заморозка сохранила вашу серию {date}.',
+  'engine.streak.atRisk': 'Выполните одно задание сегодня, чтобы сохранить серию.',
+  'engine.comeback.title': 'Верните серию',
+  'engine.comeback.body': '{count|one:Ваша серия в # день прервалась.|few:Ваша серия в # дня прервалась.|many:Ваша серия в # дней прервалась.|other:Ваша серия в # дня прервалась.} Выполните {needed} задания до {date}, и она вернётся.',
+  'engine.comeback.progress': 'Выполнено {done} из {needed}',
+  'engine.comeback.progressLabel': 'Прогресс возврата серии',
+  'engine.comeback.cta': 'Начать задание',
+  'engine.comeback.wonTitle': 'Серия возвращена!',
+  'engine.comeback.wonBody': '{count|one:Ваша серия в # день снова с вами.|few:Ваша серия в # дня снова с вами.|many:Ваша серия в # дней снова с вами.|other:Ваша серия в # дня снова с вами.} Продолжайте.',
+
+  // Ежемесячная проверка
+  'engine.check.readyTitle': 'Проверка прогресса готова',
+  'engine.check.readyBody': 'Прошло четыре недели. Короткая смешанная проверка, около 8–10 минут, покажет, что изменилось в каждом навыке, и обновит ваши уровни.',
+  'engine.check.lead': 'Восемь коротких вопросов по чтению, аудированию, письму и грамматике, начиная с вашего текущего уровня. Мы сравним результат с прошлым и обновим уровни.',
+};

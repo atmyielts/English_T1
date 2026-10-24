@@ -15,6 +15,8 @@ type Goal = (typeof GOALS)[number];
 const MINUTES = [10, 20, 30, 45] as const;
 const SELF_LEVELS: CefrLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1'];
 const ROUNDS = 3;
+/** The monthly progress check is the shorter form: two rounds of four. */
+const CHECK_ROUNDS = 2;
 
 type Question = {
   skill: 'reading' | 'writing' | 'listening' | 'grammar';
@@ -77,6 +79,7 @@ export const Onboarding = ({ onDone, retake = false, check = false }: { onDone?:
   const [selfLevel, setSelfLevel] = useState<CefrLevel | null>(null);
   // First run ends with an optional goal date; retakes and checks finish straight away.
   const askDate = !retake && !check;
+  const rounds = check ? CHECK_ROUNDS : ROUNDS;
   const [pending, setPending] = useState<{ level: CefrLevel; perSkill: Record<string, { level: string }> } | null>(null);
 
   useEffect(() => {
@@ -121,8 +124,8 @@ export const Onboarding = ({ onDone, retake = false, check = false }: { onDone?:
     setBusy(true);
     setError(null);
     try {
-      const response = await edge<RoundResponse | FinalResponse>('hub', '/ai/placement-test', {
-        body: { round: nextRound, history: nextHistory, finalize: nextRound >= ROUNDS },
+      const response = await edge<RoundResponse | FinalResponse>('hub', check ? '/ai/progress-check' : '/ai/placement-test', {
+        body: { round: nextRound, history: nextHistory, finalize: nextRound >= rounds },
       });
       if (response.ai_status !== 'ok') {
         setTestUnavailable(true);
@@ -176,7 +179,7 @@ export const Onboarding = ({ onDone, retake = false, check = false }: { onDone?:
       <PageHeader
         eyebrow={check ? t('check.eyebrow') : t('onboarding.eyebrow')}
         title={check ? t('check.title') : retake ? t('onboarding.retakeTitle') : displayName ? t('onboarding.titleNamed', { name: displayName }) : t('onboarding.title')}
-        lead={check ? t('check.lead') : retake ? t('onboarding.retakeLead') : t('onboarding.lead')}
+        lead={check ? t('engine.check.lead') : retake ? t('onboarding.retakeLead') : t('onboarding.lead')}
       />
 {check ? null : (
         <ol className="en-steps" aria-label={t('onboarding.progress')}>
@@ -257,7 +260,7 @@ export const Onboarding = ({ onDone, retake = false, check = false }: { onDone?:
       ) : null}
 
       {step === 'test' ? (
-        <Panel title={t('onboarding.test.round', { round: round + 1, total: ROUNDS })} aside={<span>{t('onboarding.test.noPressure')}</span>}>
+        <Panel title={t('onboarding.test.round', { round: round + 1, total: rounds })} aside={<span>{t('onboarding.test.noPressure')}</span>}>
           {questions.map((question, index) => (
             <div key={`${round}-${index}`} className="en-question">
               <p className="eyebrow">{t(`skill.${question.skill}`)}</p>
@@ -301,7 +304,7 @@ export const Onboarding = ({ onDone, retake = false, check = false }: { onDone?:
           {error ? <ErrorState error={error} onRetry={submitRound} /> : null}
           <div className="en-actions">
             <button type="button" className="is-large" disabled={busy} onClick={submitRound}>
-              {busy ? t('onboarding.test.checking') : round + 1 >= ROUNDS ? t('onboarding.test.finish') : t('onboarding.test.next')}
+              {busy ? t('onboarding.test.checking') : round + 1 >= rounds ? t('onboarding.test.finish') : t('onboarding.test.next')}
             </button>
             <button type="button" className="is-link" disabled={busy} onClick={() => setStep('self')}>{t('onboarding.test.skip')}</button>
           </div>

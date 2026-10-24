@@ -1,0 +1,68 @@
+/** Oʻquv dvigateli uchun oʻzbekcha matnlar. Kalitlar engine.en.ts bilan bir xil. */
+export const engineUz: Record<string, string> = {
+  // Keyingi qadam
+  'engine.next.label': 'Keyingisi',
+  'engine.next.start': 'Boshlash',
+  'engine.next.go': 'Oʻtish',
+  'engine.next.loading': 'Keyingi qadam tanlanmoqda…',
+  'engine.next.reviewTitle': '{count|one:# ta elementni takrorlash|other:# ta elementni takrorlash}',
+  'engine.next.reason.review_due': 'Takrorlash vaqti keldi. Bir necha daqiqa — va ular yodda qoladi.',
+  'engine.next.reason.fix_mistake': 'Tez-tez qiladigan xatoingizni tuzatadi: {example}',
+  'engine.next.reason.fix_mistake.plain': 'Tez-tez qiladigan xatoingizni tuzatadi.',
+  'engine.next.reason.weakest_skill': '{skill} maqsadingizdan eng uzoqda ({level} · {progress}%, maqsad {target}).',
+  'engine.next.reason.weakest_skill.noGoal': '{skill} hozir eng past baholangan koʻnikmangiz ({level} · {progress}%).',
+  'engine.next.reason.weakest_skill.plain': '{skill} hozir eng koʻp mashqqa muhtoj.',
+  'engine.next.reason.today_plan': 'Bugungi rejadagi keyingi topshiriq.',
+  'engine.next.reason.keep_going': '{skill} boʻyicha yaxshi keyingi mashq.',
+  'engine.next.usesFree': 'Bu bugungi bepul mashqingiz.',
+  'engine.next.locked': 'Yana tavsiya qilamiz: {title} ({skill}).',
+  'engine.next.lockedCta': '{skill}ni ochish',
+  'engine.next.none': 'Hammasi bajarildi. «Mashq» boʻlimidan xohlaganingizni tanlang.',
+
+  // Har bir koʻnikma darajasi
+  'engine.rating.title': 'Har bir koʻnikma boʻyicha darajangiz',
+  'engine.rating.lead': 'Soʻnggi natijalaringiz asosida: har bir mashqning qiyinligi va qanchalik yangi ekani hisobga olinadi.',
+  'engine.rating.overall': 'Umumiy',
+  'engine.rating.value': '{level} · {progress}%',
+  'engine.rating.toward': '{level} darajasigacha {progress}%',
+  'engine.rating.top': 'Eng yuqori daraja',
+  'engine.rating.barLabel': '{skill}: keyingi darajagacha boʻlgan yoʻl',
+  'engine.rating.basis.none': 'Faqat daraja testi boʻyicha. Aniqlashtirish uchun bir nechta mashq bajaring.',
+  'engine.rating.basis.some': '{count|one:# ta soʻnggi natija asosida|other:# ta soʻnggi natija asosida}',
+  'engine.rating.noData': 'Hali baholanmagan',
+  'engine.rating.error': 'Darajalar yuklanmadi.',
+  'engine.rating.empty': 'Bu yerda darajani koʻrish uchun daraja testini yoki baholanadigan bir nechta mashqni bajaring.',
+
+  // IELTS
+  'engine.ielts.title': 'Taxminiy IELTS bali',
+  'engine.ielts.label': 'Taxmin',
+  'engine.ielts.lead': 'Schood English darajalaringiz asosida, odatiy CEFR–IELTS moslik boʻyicha taxminiy yoʻl-yoʻriq. Bu rasmiy IELTS bali emas.',
+  'engine.ielts.overall': 'Umumiy (taxminan)',
+  'engine.ielts.basedOn': '{count|one:Umumiy ball # ta koʻnikma boʻyicha|other:Umumiy ball # ta koʻnikma boʻyicha}; qolganlari hali baholanmagan.',
+  'engine.ielts.tentative': 'Baʼzi koʻnikmalarda natijalar hali kam, shuning uchun taxmin oʻzgarishi mumkin.',
+  'engine.ielts.empty': 'Taxminni koʻrish uchun tinglash, oʻqish, yozish yoki gapirishdan kamida bittasi baholansin.',
+  'engine.ielts.practice': 'IELTS topshiriqlarini mashq qilish',
+  'engine.ielts.mock': 'Toʻliq IELTS sinov testini topshirish',
+  'engine.ielts.mockHint': 'Haqiqiy ballni bilish uchun imtihondagidek baholanadigan vaqtli sinov testini topshiring.',
+
+  // Seriya muzlatmalari
+  'engine.streak.freezes': '{count|one:# ta seriya muzlatmasi|other:# ta seriya muzlatmasi}',
+  'engine.streak.freezesLabel': 'Seriya muzlatmalari: {count} / {max}',
+  'engine.streak.nextFreeze': '{count|one:Yana # kun mashq qilsangiz, muzlatma olasiz.|other:Yana # kun mashq qilsangiz, muzlatma olasiz.}',
+  'engine.streak.maxFreezes': 'Sizda eng koʻp muzlatma bor (2).',
+  'engine.streak.how': 'Har 7 kun ketma-ket mashq bitta muzlatma beradi. U bitta oʻtkazib yuborilgan kunni avtomatik saqlaydi.',
+  'engine.streak.frozen': 'Muzlatma {date} kuni seriyangizni saqlab qoldi.',
+  'engine.streak.atRisk': 'Seriyani saqlash uchun bugun bitta mashq bajaring.',
+  'engine.comeback.title': 'Seriyani qaytaring',
+  'engine.comeback.body': '{count|one:# kunlik seriyangiz uzildi.|other:# kunlik seriyangiz uzildi.} {date} gacha {needed} ta mashq bajaring va u qaytadi.',
+  'engine.comeback.progress': '{needed} tadan {done} tasi bajarildi',
+  'engine.comeback.progressLabel': 'Seriyani qaytarish jarayoni',
+  'engine.comeback.cta': 'Mashqni boshlash',
+  'engine.comeback.wonTitle': 'Seriya qaytarildi!',
+  'engine.comeback.wonBody': '{count|one:# kunlik seriyangiz qaytdi.|other:# kunlik seriyangiz qaytdi.} Davom eting.',
+
+  // Oylik tekshiruv
+  'engine.check.readyTitle': 'Natijani tekshirish vaqti keldi',
+  'engine.check.readyBody': 'Toʻrt hafta oʻtdi. Taxminan 8–10 daqiqalik qisqa aralash tekshiruv har bir koʻnikmada nima oʻzgarganini koʻrsatadi va darajalaringizni yangilaydi.',
+  'engine.check.lead': 'Oʻqish, tinglash, yozish va grammatika boʻyicha sakkizta qisqa savol, joriy darajangizdan boshlab. Natijani oldingisi bilan solishtirib, darajalaringizni yangilaymiz.',
+};

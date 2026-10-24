@@ -8,6 +8,7 @@ import { useResource } from '../lib/useResource';
 import { ErrorState, FeedbackList, LevelBadge, Loading, LockedPanel, PageHeader, ScoreBadge, SkillDot, Tag } from '../ui/kit';
 import { NewBadges } from '../components/Badges';
 import { XpEarned } from '../components/XpWidgets';
+import { UpNextCard } from '../components/UpNext';
 import { pickNext } from './SkillHome';
 
 /** Frame for one activity: back link, title, level and time, then the exercise. */
@@ -122,8 +123,9 @@ export const ResultPanel = ({
       </div>
       <NewBadges showLink />
       {children}
+      <UpNextCard skill={skill} slug={slug} />
       <div className="en-actions">
-        <Link className="en-button" to="/today">{t('activity.result.today')}</Link>
+        <Link className="en-button-quiet" to="/today">{t('activity.result.today')}</Link>
         <NextLink skill={skill} currentSlug={slug} />
         {onRetry ? <button type="button" className="quiet" onClick={onRetry}>{t('activity.result.retry')}</button> : null}
       </div>
