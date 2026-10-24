@@ -1,0 +1,169 @@
+{
+  "slug": "reading-listening-priority",
+  "plan_type": "skill_recovery",
+  "title": "Reading and Listening Priority",
+  "summary": "A 42-day recovery plan for learners whose Reading and/or Listening bands sit at least half a band below their Writing and Speaking (overall 3.5–5). Most hours go to Complete the Words, academic passages, campus listening and academic talks, with vocabulary in families and short productive maintenance.",
+  "duration_days": 42,
+  "score_min": 58,
+  "score_max": 113,
+  "focus_section": "reading",
+  "intensity": "moderate",
+  "schedule_json": {
+    "format": "toefl-ibt-2026",
+    "score_scale": "1-6",
+    "focus_sections": ["reading", "listening"],
+    "weekly_hours": { "min": 8, "max": 11 },
+    "split": "About 70% Reading and Listening, 30% Writing and Speaking maintenance",
+    "daily_routine": [
+      "15 minutes: vocabulary in families with collocations (academic words)",
+      "20 minutes: one Complete the Words paragraph plus one Daily Life or academic reading set",
+      "20 minutes: one listening set (alternate short exchanges and academic talks)",
+      "10 minutes (alternate days): one Listen and Repeat set or one Build a Sentence set"
+    ],
+    "weeks": [
+      {
+        "week": 1,
+        "label": "Week 1 · Baseline and receptive audit",
+        "phase": "Diagnose",
+        "hours": 9,
+        "focus": ["Full mock baseline", "Misses by task type", "Early-stage accuracy"],
+        "tasks": [
+          "Full mock 1 in the TOEFL simulator; record all four section bands.",
+          "Audit Reading misses by task type: Complete the Words, Read in Daily Life, Read an Academic Passage.",
+          "Audit Listening misses by task type: Choose a Response, Conversation, Announcement, Academic Talk.",
+          "Note where misses cluster in each section (early or late) because Reading and Listening are two-stage adaptive.",
+          "Set up the vocabulary notebook by word family.",
+          "Weekly review: choose the first focus (Reading or Listening) from the audit."
+        ],
+        "modules": ["score-scale-2026", "reading-complete-the-words", "listening-strategy"],
+        "guides": ["guide-band-4-to-5-roadmap"],
+        "simulator": { "url": "https://toefl.schood.online/full-exam", "action": "Full mock 1" },
+        "checkpoint": { "measure": "Receptive audit complete", "target": "Gap between receptive and productive sections confirmed (0.5 band or more)" }
+      },
+      {
+        "week": 2,
+        "label": "Week 2 · Complete the Words and word families",
+        "phase": "Repair",
+        "hours": 10,
+        "focus": ["Five-step routine", "Suffix families", "Short-word traps"],
+        "tasks": [
+          "One Complete the Words drill a day from the Complete the Words Drills guide, in level order, misses logged by type.",
+          "Study the suffix and small-word sections; make one family list per day from your misses.",
+          "Two Read in Daily Life sets; write the writer's purpose before answering.",
+          "Two Listen and Choose a Response sets with reply-type labels.",
+          "One Build a Sentence set and one Listen and Repeat set for maintenance.",
+          "Weekly review."
+        ],
+        "modules": ["reading-complete-the-words", "reading-daily-life-and-academic"],
+        "guides": ["guide-complete-the-words-drills"],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Reading task sets" },
+        "checkpoint": { "measure": "Complete the Words accuracy per drill", "target": "Level 1–2 drills at 9/10 or better" }
+      },
+      {
+        "week": 3,
+        "label": "Week 3 · Academic passages and purpose",
+        "phase": "Repair",
+        "hours": 10,
+        "focus": ["Paragraph purpose", "Stance mapping", "Inference questions"],
+        "tasks": [
+          "Four academic passages: write one function label per paragraph before answering.",
+          "Stance mapping on two passages: author's view, reported view or evidence.",
+          "Drills 8–10 (level 3) from the Complete the Words Drills guide.",
+          "Section mock: Reading in simulator practice; review it with the full protocol.",
+          "One email and one interview for maintenance.",
+          "Weekly review."
+        ],
+        "modules": ["reading-daily-life-and-academic"],
+        "guides": ["guide-complete-the-words-drills", "guide-band-5-to-6-roadmap"],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Reading section mock" },
+        "checkpoint": { "measure": "Reading section mock band", "target": "Reading at least half a band above baseline, or R-purpose and R-infer entries halved" }
+      },
+      {
+        "week": 4,
+        "label": "Week 4 · Campus listening and academic talks",
+        "phase": "Repair",
+        "hours": 10,
+        "focus": ["Conversations and announcements", "Purpose and structure in talks", "Accent rotation"],
+        "tasks": [
+          "Three conversation sets: predict the next action before the questions.",
+          "Three announcement sets: note the changed detail and the action required.",
+          "Four academic talks with two-word notes for purpose and structure; one play only.",
+          "Rotate accents: one session each of North American, British and Australian speakers.",
+          "Section mock: Listening in simulator practice; review it.",
+          "Weekly review."
+        ],
+        "modules": ["listening-strategy"],
+        "guides": ["guide-band-4-to-5-roadmap"],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Listening section mock" },
+        "checkpoint": { "measure": "Listening section mock band", "target": "Listening at least half a band above baseline, or L-structure and L-detail entries halved" }
+      },
+      {
+        "week": 5,
+        "label": "Week 5 · Full mock 2 and the hardest material",
+        "phase": "Check",
+        "hours": 10,
+        "focus": ["Full mock 2", "Receptive recount", "Level 4 drills"],
+        "tasks": [
+          "Full mock 2 in the TOEFL simulator.",
+          "Recount receptive error categories (R-form, R-vocab, R-purpose, R-infer, L-reply, L-detail, L-structure).",
+          "Drills 11–12 (level 4) from the Complete the Words Drills guide, timed.",
+          "Two sessions on the largest remaining category.",
+          "Check Writing and Speaking have not dropped; add a maintenance session if they have.",
+          "Weekly review; start the Final 14 Days guide if your test is two weeks away."
+        ],
+        "modules": ["score-goals-and-study-plans"],
+        "guides": ["guide-complete-the-words-drills", "guide-final-14-days"],
+        "simulator": { "url": "https://toefl.schood.online/full-exam", "action": "Full mock 2" },
+        "checkpoint": { "measure": "Mock 2 bands for all four sections", "target": "Gap between receptive and productive sections smaller than at baseline" }
+      },
+      {
+        "week": 6,
+        "label": "Week 6 · Consolidate and perform",
+        "phase": "Perform",
+        "hours": 8,
+        "focus": ["Mixed timed sets", "Top-ten error list", "Test-day routine"],
+        "tasks": [
+          "Two mixed timed sets: one Reading and one Listening, with extra care on the first items.",
+          "Write the top-ten error list, weighted toward Reading and Listening.",
+          "Logistics: ID, recipients, equipment check (Home Edition) or route (test center).",
+          "Light practice only in the last three days.",
+          "Test day, or continue with the Eight-Week Standard plan if mock 2 showed the gap is still large."
+        ],
+        "modules": ["test-day-guide"],
+        "guides": ["guide-final-14-days"],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Mixed timed sets" },
+        "checkpoint": { "measure": "Final timed sets reviewed", "target": "No new error categories; early-item misses rare" }
+      }
+    ],
+    "checkpoints": [
+      { "week": 1, "check": "Full mock 1 and receptive audit", "target_band": "Reading or Listening ≥ 0.5 below Writing/Speaking" },
+      { "week": 3, "check": "Reading section mock", "target_band": "+0.5 over Reading baseline" },
+      { "week": 4, "check": "Listening section mock", "target_band": "+0.5 over Listening baseline" },
+      { "week": 5, "check": "Full mock 2", "target_band": "Receptive gap narrower than baseline" }
+    ],
+    "decision_rules": [
+      "If R-vocab dominates after week 3, add 15 minutes a day of reading longer academic texts and record new words in families.",
+      "If misses cluster early in a section, slow the first items down slightly in every practice set.",
+      "If Writing or Speaking drops by half a band, add two maintenance sessions a week."
+    ],
+    "simulator_cta": "https://toefl.schood.online/full-exam?source=playbook&plan=reading-listening-priority",
+    "practice_cta": "https://toefl.schood.online/practice?source=playbook&plan=reading-listening-priority"
+  },
+  "metadata": {
+    "band_entry_min": 3.5,
+    "band_entry_max": 5.0,
+    "band_target_min": 4.0,
+    "band_target_max": 5.5,
+    "cefr_entry": "B1–C1",
+    "cefr_target": "B2–C1",
+    "focus_sections": ["reading", "listening"],
+    "primary_focus_note": "focus_section holds one value; this plan covers reading and listening (see focus_sections)",
+    "entry_rule": "Reading and/or Listening at least 0.5 band below Writing and Speaking",
+    "weekly_hours_min": 8,
+    "weekly_hours_max": 11,
+    "full_mocks": 2,
+    "recommended_for": "Profile B learners: productive skills strong, receptive skills weaker.",
+    "score_window_basis": "score_min/score_max are the ETS 0-120 comparison totals for band 3.5 (58+) and the top of band 5.5 (113); band windows are in band_*",
+    "guarantee": "none: practice plan, not a score prediction"
+  }
+}

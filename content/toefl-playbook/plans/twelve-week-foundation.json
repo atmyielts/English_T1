@@ -1,0 +1,266 @@
+{
+  "slug": "twelve-week-foundation",
+  "plan_type": "improvement",
+  "title": "Twelve-Week Foundation",
+  "summary": "A steady 84-day plan for learners at band 2.5–3.5 (A2–B1) building toward 3.5–4.5 (B1–B2). Foundations first (vocabulary in families, sentence grammar, everyday reading and listening, clear repetition), then task skills, then test conditions. Three full mocks in the TOEFL simulator.",
+  "duration_days": 84,
+  "score_min": 34,
+  "score_max": 94,
+  "focus_section": "all",
+  "intensity": "steady",
+  "schedule_json": {
+    "format": "toefl-ibt-2026",
+    "score_scale": "1-6",
+    "weekly_hours": { "min": 6, "max": 9 },
+    "daily_routine": [
+      "15 minutes: vocabulary in word families with a collocation for each word",
+      "20 minutes: one skill block (reading, listening or grammar) at your level",
+      "10 minutes: speaking aloud (repetition or a short answer), recorded",
+      "5 minutes: error log"
+    ],
+    "weeks": [
+      {
+        "week": 1,
+        "label": "Week 1 · Baseline and the format",
+        "phase": "Foundation",
+        "hours": 7,
+        "focus": ["Full mock baseline", "Learn the format", "Start the vocabulary notebook"],
+        "tasks": [
+          "Read TOEFL Essentials and Score Scale 2026 so you know every task type and how bands work.",
+          "Full mock 1 in the TOEFL simulator; do not worry about the score, it is your starting point.",
+          "Set up the error log and a vocabulary notebook organised by word family (noun, verb, adjective, adverb).",
+          "Two Read in Daily Life sets: notices, emails, schedules.",
+          "Weekly review: write your target and deadline."
+        ],
+        "modules": ["toefl-essentials", "score-scale-2026"],
+        "guides": ["guide-band-4-to-5-roadmap"],
+        "simulator": { "url": "https://toefl.schood.online/full-exam", "action": "Full mock 1" },
+        "checkpoint": { "measure": "Baseline bands recorded", "target": "Every task type recognised by name" }
+      },
+      {
+        "week": 2,
+        "label": "Week 2 · Sentence grammar for Build a Sentence",
+        "phase": "Foundation",
+        "hours": 7,
+        "focus": ["Word order", "Questions and relative clauses", "Everyday reading"],
+        "tasks": [
+          "Four short grammar sessions: statement and question word order, relative clauses with who/which/that, embedded questions.",
+          "Two Build a Sentence sets in simulator practice; log each miss by structure.",
+          "Three Read in Daily Life texts; write the purpose of each in one sentence before answering.",
+          "Daily vocabulary families (10 words a day).",
+          "Weekly review."
+        ],
+        "modules": ["writing-build-a-sentence", "reading-daily-life-and-academic"],
+        "guides": [],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Build a Sentence sets" },
+        "checkpoint": { "measure": "Build a Sentence accuracy on two sets", "target": "Accuracy trend recorded" }
+      },
+      {
+        "week": 3,
+        "label": "Week 3 · Everyday listening",
+        "phase": "Foundation",
+        "hours": 7,
+        "focus": ["Listen and Choose a Response", "Short conversations", "Clear repetition"],
+        "tasks": [
+          "Four sessions of Listen and Choose a Response; label the reply type after each item.",
+          "Two short conversation sets; predict what the speakers will do next.",
+          "Daily: five Listen and Repeat sentences, short ones, recorded and checked.",
+          "Daily vocabulary families.",
+          "Weekly review."
+        ],
+        "modules": ["listening-strategy", "speaking-listen-and-repeat"],
+        "guides": [],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Listening sets" },
+        "checkpoint": { "measure": "Reply-type accuracy", "target": "Most common reply types recognised" }
+      },
+      {
+        "week": 4,
+        "label": "Week 4 · Word families and Complete the Words",
+        "phase": "Foundation",
+        "hours": 8,
+        "focus": ["Suffixes and endings", "Complete the Words level 1", "Section check"],
+        "tasks": [
+          "Study the suffix table in the Complete the Words Drills guide; make one family list per day.",
+          "Drills 1–3 (level 1) from the Complete the Words Drills guide, one per day, with misses logged by type.",
+          "Section mock: Reading in simulator practice; review it.",
+          "Two speaking sessions: repetition plus one Recall interview answer.",
+          "Weekly review."
+        ],
+        "modules": ["reading-complete-the-words"],
+        "guides": ["guide-complete-the-words-drills"],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Reading section mock" },
+        "checkpoint": { "measure": "Reading section mock band vs baseline", "target": "Level 1 drills at 8/10 or better" }
+      },
+      {
+        "week": 5,
+        "label": "Week 5 · First emails",
+        "phase": "Task skills",
+        "hours": 8,
+        "focus": ["Email frame", "Register", "Functions bank"],
+        "tasks": [
+          "Learn the five-move email frame and the register examples.",
+          "Write three emails without time pressure, one each to a professor, an office and a friend.",
+          "Write one email in 7 minutes; proofread with the checklist.",
+          "Two listening sessions: announcements.",
+          "Weekly review."
+        ],
+        "modules": ["writing-email"],
+        "guides": ["guide-email-and-discussion-templates"],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Write an Email" },
+        "checkpoint": { "measure": "Timed email reviewed", "target": "All bullets covered in 7 minutes" }
+      },
+      {
+        "week": 6,
+        "label": "Week 6 · Full mock 2",
+        "phase": "Check",
+        "hours": 8,
+        "focus": ["Full mock 2", "Compare with baseline", "Re-plan"],
+        "tasks": [
+          "Full mock 2 in the TOEFL simulator.",
+          "Review and compare with mock 1; count error categories.",
+          "Choose the two weakest areas for weeks 7–10.",
+          "Two drill sessions on the weakest area.",
+          "Weekly review."
+        ],
+        "modules": ["score-goals-and-study-plans"],
+        "guides": ["guide-band-4-to-5-roadmap"],
+        "simulator": { "url": "https://toefl.schood.online/full-exam", "action": "Full mock 2" },
+        "checkpoint": { "measure": "Full mock 2 bands", "target": "Overall at least half a band above mock 1" }
+      },
+      {
+        "week": 7,
+        "label": "Week 7 · Academic reading",
+        "phase": "Task skills",
+        "hours": 8,
+        "focus": ["Read an Academic Passage", "Purpose of paragraphs", "Level 2 drills"],
+        "tasks": [
+          "Three academic passages; write one line per paragraph on what the paragraph is for.",
+          "Drills 4–5 (level 2) from the Complete the Words Drills guide.",
+          "Two interview sessions using the Reaction framework.",
+          "Daily vocabulary families with academic words.",
+          "Weekly review."
+        ],
+        "modules": ["reading-daily-life-and-academic", "reading-complete-the-words"],
+        "guides": ["guide-complete-the-words-drills", "guide-interview-answer-frameworks"],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Academic passage sets" },
+        "checkpoint": { "measure": "Accuracy on purpose questions", "target": "Fewer R-purpose entries than week 6" }
+      },
+      {
+        "week": 8,
+        "label": "Week 8 · Academic listening and the discussion post",
+        "phase": "Task skills",
+        "hours": 8,
+        "focus": ["Academic talks", "Discussion frame", "Thought groups"],
+        "tasks": [
+          "Three academic talks; note purpose and structure while listening.",
+          "Learn the discussion frame; write two posts without time pressure, then one in 10 minutes.",
+          "Thought-group routine on two model answers.",
+          "Drills 6–7 (level 2) from the Complete the Words Drills guide.",
+          "Weekly review."
+        ],
+        "modules": ["listening-strategy", "writing-academic-discussion"],
+        "guides": ["guide-email-and-discussion-templates", "guide-interview-answer-frameworks"],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Academic talk and discussion sets" },
+        "checkpoint": { "measure": "Timed discussion post reviewed", "target": "Position, reason, example and engagement present; 100+ words" }
+      },
+      {
+        "week": 9,
+        "label": "Week 9 · Speaking under time",
+        "phase": "Task skills",
+        "hours": 8,
+        "focus": ["Four interview frameworks", "Shrinking timer", "Longer repetitions"],
+        "tasks": [
+          "Two full interviews using all four frameworks, recorded and self-scored.",
+          "Shrinking-timer routine on three questions.",
+          "Ten longer Listen and Repeat sentences on three days, checked word by word.",
+          "Section mock: Speaking in simulator practice; review it.",
+          "Weekly review."
+        ],
+        "modules": ["speaking-take-an-interview", "speaking-listen-and-repeat"],
+        "guides": ["guide-interview-answer-frameworks"],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Speaking section mock" },
+        "checkpoint": { "measure": "Speaking section mock band", "target": "Answers reach about 40 seconds with a direct first sentence" }
+      },
+      {
+        "week": 10,
+        "label": "Week 10 · Mixed timed sets",
+        "phase": "Test conditions",
+        "hours": 9,
+        "focus": ["Timed sets in every section", "Two weakest areas", "Proofreading"],
+        "tasks": [
+          "One timed set of each section on separate days.",
+          "Two drill sessions on the two weakest areas from mock 2.",
+          "One timed email and one timed discussion with the two-minute proofread.",
+          "Redo ten old log entries without answers.",
+          "Weekly review."
+        ],
+        "modules": ["writing-email", "writing-academic-discussion"],
+        "guides": ["guide-band-4-to-5-roadmap"],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Timed sets" },
+        "checkpoint": { "measure": "Repeat-error rate on old entries", "target": "Most old entries now correct" }
+      },
+      {
+        "week": 11,
+        "label": "Week 11 · Full mock 3 and the final fortnight",
+        "phase": "Test conditions",
+        "hours": 9,
+        "focus": ["Full mock 3", "Final 14 Days, days 14–8", "Reschedule decision"],
+        "tasks": [
+          "Start the Final 14 Days guide: full mock 3 on its Day 14, review on Day 13.",
+          "Run its repair days (Days 12–8) using mock 3's largest categories.",
+          "Decide whether to keep the test date (ETS: reschedule at least four full days before).",
+          "Home Edition: equipment check at the same weekday and time as the test.",
+          "Weekly review."
+        ],
+        "modules": ["test-day-guide"],
+        "guides": ["guide-final-14-days"],
+        "simulator": { "url": "https://toefl.schood.online/full-exam", "action": "Full mock 3" },
+        "checkpoint": { "measure": "Full mock 3 bands", "target": "At target or within half a band of it" }
+      },
+      {
+        "week": 12,
+        "label": "Week 12 · Final week and test",
+        "phase": "Perform",
+        "hours": 7,
+        "focus": ["Final 14 Days, days 7–1", "Logistics", "Test-day routine"],
+        "tasks": [
+          "Follow the Final 14 Days guide from Day 7 to Day 1 (replace its full mock 2 with a section mock if you are tired).",
+          "Confirm score recipients before 10 p.m. local test-center time on the day before the test.",
+          "Write your top-ten error list and read it on the last day.",
+          "Test day: follow the test-center or Home Edition routine."
+        ],
+        "modules": ["test-day-guide", "retake-and-mybest-strategy"],
+        "guides": ["guide-final-14-days"],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Warm-up sets" },
+        "checkpoint": { "measure": "Logistics checklist", "target": "Test taken with the planned routine" }
+      }
+    ],
+    "checkpoints": [
+      { "week": 1, "check": "Full mock 1", "target_band": "Entry 2.5–3.5 overall" },
+      { "week": 6, "check": "Full mock 2", "target_band": "+0.5 over mock 1" },
+      { "week": 11, "check": "Full mock 3", "target_band": "Target 3.5–4.5 or within 0.5" }
+    ],
+    "decision_rules": [
+      "If mock 2 shows no movement, spend weeks 7–8 on vocabulary families and sentence grammar before task skills.",
+      "If one section is a full band below the others at mock 2, move to the matching priority plan for weeks 7–12.",
+      "Keep at least one rest day every week; this plan is designed to be sustainable."
+    ],
+    "simulator_cta": "https://toefl.schood.online/full-exam?source=playbook&plan=twelve-week-foundation",
+    "practice_cta": "https://toefl.schood.online/practice?source=playbook&plan=twelve-week-foundation"
+  },
+  "metadata": {
+    "band_entry_min": 2.5,
+    "band_entry_max": 3.5,
+    "band_target_min": 3.5,
+    "band_target_max": 4.5,
+    "cefr_entry": "A2–B1",
+    "cefr_target": "B1–B2",
+    "focus_sections": ["reading", "listening", "writing", "speaking"],
+    "weekly_hours_min": 6,
+    "weekly_hours_max": 9,
+    "full_mocks": 3,
+    "recommended_for": "A test date about three months away, or learners who found most task types hard in their first mock.",
+    "score_window_basis": "score_min/score_max are the ETS 0-120 comparison totals for band 2.5 (34+) and the top of band 4.5 (94); band windows are in band_*",
+    "guarantee": "none: practice plan, not a score prediction"
+  }
+}
