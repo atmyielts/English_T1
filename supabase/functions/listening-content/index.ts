@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { guardActivity } from "../_shared/english-allowance.ts";
 import { queueReviewItems } from "../_shared/english-review.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { dedupeSubmits, isSubmitPath } from "../_shared/english-client-attempt.ts";
 import {
   authUser,
   buildFeedbackPayload,
@@ -116,7 +117,13 @@ const loadSegments = async (sb: any, itemId: string): Promise<Segment[]> => {
 const dictationTargets = (segments: Segment[]): Segment[] =>
   segments.filter((segment) => segment.focus_phrase).slice(0, DICTATION_SENTENCES);
 
-serve(async (req) => {
+// Offline answers synced later carry a client attempt id and are recorded once.
+serve(dedupeSubmits({
+  serviceKey: "listening",
+  routeMarker: routeMarker,
+  isSubmitRoute: (route) => isSubmitPath(route, "items"),
+  client: () => createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "", { auth: { persistSession: false } }),
+}, async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
@@ -444,4 +451,4 @@ serve(async (req) => {
     console.error("listening-content", error);
     return json(500, { error: "Something went wrong. Please try again." });
   }
-});
+}));

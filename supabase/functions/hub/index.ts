@@ -61,6 +61,7 @@ import { appendLevelHistory, levelCheckStatus, perSkillLevels, readLevelHistory 
 import { handleCertificateRoute, handlePublicCertificate, isPublicCertificateRoute } from "./certificate.ts";
 import { measurementMethod, testResultRecord } from "../_shared/english-certificate.ts";
 import { handlePracticeRoute } from "./practice.ts";
+import { handleShadowingRoute } from "./shadowing.ts";
 
 const routeMarker = "/hub";
 
@@ -390,6 +391,10 @@ serve(async (req) => {
     // === Role-plays, speaking mock, first-language traps (./practice.ts) ===
     const practiceResponse = await handlePracticeRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId, products });
     if (practiceResponse) return practiceResponse;
+
+    // === Shadowing sentence sets and light speaking logs (./shadowing.ts) ===
+    const shadowingResponse = await handleShadowingRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId, products });
+    if (shadowingResponse) return shadowingResponse;
 
     // === Today, catalog and history (learner home) ===
     // Built only from the learner's placement, real attempts and due reviews.
