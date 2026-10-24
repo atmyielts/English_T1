@@ -467,7 +467,68 @@ const routeHomework = async (env: Env, update: Record<string, unknown>): Promise
   return result.handled === true;
 };
 
+// English daily review quiz: only enq:<id>:<option> buttons. The hub checks and
+// records the answer and returns the feedback and the next question; every
+// other callback carries on to the handlers below untouched.
+type QuizCallback = {
+  id: string;
+  from: { id: number; language_code?: string };
+  data?: string;
+  message?: { chat: { id: number }; message_id: number };
+};
+
+const QUIZ_RETRY: Record<"en" | "ru" | "uz", string> = {
+  en: "Couldn't save your answer. Please try again.",
+  ru: "Не удалось сохранить ответ. Попробуйте ещё раз.",
+  uz: "Javobni saqlab boʻlmadi. Qaytadan urinib koʻring.",
+};
+
+const routeEnglishQuiz = async (env: Env, update: Record<string, unknown>): Promise<boolean> => {
+  const query = update.callback_query as QuizCallback | undefined;
+  if (!query || !String(query.data ?? "").startsWith("enq:")) return false;
+  const code = String(query.from?.language_code ?? "").toLowerCase();
+  const locale = code.startsWith("ru") ? "ru" : code.startsWith("uz") ? "uz" : "en";
+  let result: Record<string, unknown>;
+  try {
+    result = await sbEdge(env, "hub/internal/telegram-quiz", { data: query.data, telegram_user_id: String(query.from.id), locale });
+  } catch {
+    result = { http_status: 0 };
+  }
+  if (Number(result.http_status) !== 200 || result.ok !== true) {
+    // The buttons stay, so the learner can simply tap again.
+    await answerCallback(env, query.id, QUIZ_RETRY[locale]);
+    return true;
+  }
+  await answerCallback(env, query.id, String(result.toast ?? "").slice(0, 200) || undefined);
+  const chatId = query.message?.chat.id ?? query.from.id;
+  // The answer is already saved, so a Telegram hiccup here must not replay the update.
+  try {
+    if (query.message && typeof result.edit_text === "string" && result.edit_text) {
+      await tg(env.TELEGRAM_BOT_TOKEN, "editMessageText", {
+        chat_id: chatId,
+        message_id: query.message.message_id,
+        text: result.edit_text,
+        disable_web_page_preview: true,
+        reply_markup: { inline_keyboard: [] },
+      });
+    }
+    const next = result.next as { text?: unknown; reply_markup?: unknown } | null | undefined;
+    if (next && typeof next.text === "string" && next.text) {
+      await tg(env.TELEGRAM_BOT_TOKEN, "sendMessage", {
+        chat_id: chatId,
+        text: next.text,
+        reply_markup: next.reply_markup,
+        disable_web_page_preview: true,
+      });
+    }
+  } catch (error) {
+    console.error(JSON.stringify({ event: "english_quiz_reply_failed", error: error instanceof Error ? error.message : "unknown" }));
+  }
+  return true;
+};
+
 const handleClaimedUpdate = async (env: Env, update: Record<string, unknown>) => {
+  if (await routeEnglishQuiz(env, update)) return;
   if (await routeHomework(env, update)) return;
 
   if (update.callback_query) {

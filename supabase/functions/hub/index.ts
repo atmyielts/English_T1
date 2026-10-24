@@ -54,6 +54,7 @@ import { checkReviewAnswer, parseReviewPayload, publicReviewPayload, RETIRED_BOX
 import { topicFromSubskill } from "../_shared/english-mistakes.ts";
 import { mergeReminderSettings, readReminderSettings, REMINDER_HOURS } from "../_shared/english-reminders.ts";
 import { isReminderWorker, runReminderCycle } from "./reminders.ts";
+import { answerTelegramQuiz, isQuizWorker } from "./telegram-quiz.ts";
 import { appendLevelHistory, levelCheckStatus, perSkillLevels, readLevelHistory } from "../_shared/english-levels.ts";
 
 const routeMarker = "/hub";
@@ -263,6 +264,13 @@ serve(async (req) => {
       });
       console.log(JSON.stringify({ event: "english_reminder_cycle", hour: result.hour, considered: result.considered, sent: result.sent.length }));
       return json(200, { ok: true, ...result });
+    }
+
+    // === Telegram review quiz answers (student bot Worker; no learner session) ===
+    if (req.method === "POST" && extractRoute(new URL(req.url), routeMarker) === "/internal/telegram-quiz") {
+      if (!(await isQuizWorker(req, serviceRoleKey))) return json(401, { error: "Unauthorized" });
+      const workerScope = await resolveLanguageScope(sb, "en");
+      return json(200, await answerTelegramQuiz({ sb, languageId: workerScope.languageId, body: await parseBody(req) as Record<string, unknown> }));
     }
 
     const auth = await authUser(sb, req);
@@ -754,7 +762,7 @@ serve(async (req) => {
         if (!goalRes.data) return json(409, { error: "Finish the level test first", code: "english_onboarding_required" });
         const body = await parseBody(req) as Record<string, unknown>;
         const next = mergeReminderSettings(settings, body);
-        if (next.enabled && !linked) {
+        if ((next.enabled || next.quiz) && !linked) {
           return json(409, { error: "Link Telegram on your Schood account first", code: "telegram_not_linked" });
         }
         const { error } = await sb.from("learner_language_goals")
