@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "ielts-playbook-depth-oct26",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": [
+    "ielts-playbook"
+  ],
+  "migrations": [
+    "20261026120900_ielts_playbook_premium_rls_and_uz_markets.sql",
+    "20261026120901_ielts_playbook_premium_advanced_labs.sql"
+  ],
+  "edgeFunctions": [
+    "ielts-playbook"
+  ],
+  "workers": [],
+  "sharedEdgeConsumers": [
+    "admin-ielts-playbook"
+  ],
+  "requiredSecrets": [],
+  "rolloutOrder": [
+    "pages",
+    "migration:20261026120900_ielts_playbook_premium_rls_and_uz_markets.sql",
+    "migration:20261026120901_ielts_playbook_premium_advanced_labs.sql",
+    "function:ielts-playbook",
+    "function:admin-ielts-playbook"
+  ],
+  "manualFollowUps": [
+    "Pages: merging publishes ielts-playbook (en/uz/ru UI, Schood header with Account/sign-out/LocaleSwitcher, labelled Premium features and locked-guide teasers with a pricing path, per-tab page cache and skeletons, Use in my plan, saved AI plans, Where will you sit IELTS market guide, simulator session anchoring, phone layout fixes). It works against the currently deployed function: the new /markets call and the teaser fall back to an honest empty or locked state until the function is deployed.",
+    "Database: supabase db push --linked (project bbjawctnqrufvnesdsel) for the two 20261026120900-901 migrations only, from an isolated copy as for the previous English release so the pending #220 payment migrations stay excluded. 120900 tightens the page-sections select policy (premium sections were readable with the anon key via PostgREST; only the service-role Edge Functions read the table) and adds UZ market guides (British Council row create-if-missing, IDP row new, local_guide merged only when absent). 120901 appends 144 original Advanced Lab sections to the 6 premium guides, insert-only with deterministic ids, after the existing sections.",
+    "Edge, after the migrations: supabase functions deploy ielts-playbook --project-ref bbjawctnqrufvnesdsel ; supabase functions deploy admin-ielts-playbook --project-ref bbjawctnqrufvnesdsel (it shares _shared/ielts-playbook.ts: CORS now allows DELETE, scope lookup cached, single-query page load).",
+    "Secrets: none."
+  ],
+  "verification": [
+    "supabase migration list --linked shows 20261026120900 and 20261026120901 applied and the #220 payment migrations still pending.",
+    "curl -sD - -o /dev/null https://bbjawctnqrufvnesdsel.supabase.co/functions/v1/ielts-playbook/pages/writing-master-guide with the anon key: 200, Cache-Control: public, max-age=300, stale-while-revalidate=86400, and noticeably faster than the previous 3-4 s.",
+    "Same with the anon key for /pages/guide-writing-task-2-premium: 401 with a teaser and Cache-Control: private, no-store. GET /rest/v1/ielts_playbook_page_sections?page_id=eq.c0170580-d846-45a7-8618-b9210482112c with the anon key returns [] (was 21 rows).",
+    "GET /ielts-playbook/markets lists UZ british-council and UZ idp; GET /ielts-playbook/pages/<slug>/sections/<id>/thread as a premium user returns 200 (was swallowed by the page route).",
+    "Signed in as a premium learner on https://playbook.ielts.schood.online: premium guides show the Advanced Lab sections after the existing ones; the section coach shows earlier questions; Use in my plan appears on the dashboard; notes can be removed; /dashboard?source=simulator&session_id=<id> shows the anchored result.",
+    "?lang=uz and ?lang=ru switch the UI; 375px phone: no sideways scroll on home, a module, dashboard and notes."
+  ],
+  "rollback": {
+    "pages": "Cloudflare Pages rollback of schood-ielts-playbook to the previous deployment.",
+    "migration": "Additive; leave in place. To undo the RLS change re-create the previous 'IELTS playbook sections select published' policy (status = 'published' and the page is published). Advanced Lab rows can be removed with delete ... where metadata->>'seeded_by' = '20261026120901_ielts_playbook_premium_advanced_labs' if ever needed (owner decision).",
+    "edge": "Redeploy ielts-playbook and admin-ielts-playbook from 378af006; the old routing returns (thread route shadowed again)."
+  }
+}

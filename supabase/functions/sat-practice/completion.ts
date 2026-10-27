@@ -1,7 +1,8 @@
 import { isCorrectAnswer, isObject } from "../_shared/sat-practice-core.ts";
 
 export class AttemptError extends Error {
-  constructor(public status: number, message: string) {
+  // `code` lets the app show the message in the learner's language.
+  constructor(public status: number, message: string, public code?: string) {
     super(message);
   }
 }

@@ -27,3 +27,8 @@ Deno.test('Legacy saved answers preserve choices, numeric zero and text without 
   assertEquals(savedAnswerText(null),'No answer entered.');
   assertEquals(savedAnswerText({unexpected:{current_key:'B'}}),'The saved answer format is unavailable.');
 });
+Deno.test('Grid-in results show every accepted answer and the saved explanation',()=>{
+  const spr={id:'spr',data:{prompt:'x'}};
+  const row={status:'scored',scored_items:[{question_id:'spr',correct:true,expected:{accepted:['2/3','.6667'],feedback:{explanation:'Divide by 3.'}},answer:{text:'4/6'}}]};
+  assertEquals(savedFeedback(row,spr,true),{correct:true,expected:'2/3 or .6667',explanation:'Divide by 3.'});
+});

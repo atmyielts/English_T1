@@ -15,6 +15,7 @@ import {
   type PracticeTrajectoryResponse,
   type TrajectoryPoint,
 } from '../lib/api';
+import { enumLabel, useT } from '../i18n';
 
 // ============================================================
 // Module progress — visited modules out of full catalog
@@ -26,6 +27,7 @@ interface ProgressProps {
 }
 
 export const PlaybookModuleProgress = ({ visitedSlugs }: ProgressProps) => {
+  const t = useT();
   const [modules, setModules] = useState<Array<{ slug: string; title: string }> | null>(null);
   useEffect(() => {
     playbookCatalogGet()
@@ -36,7 +38,7 @@ export const PlaybookModuleProgress = ({ visitedSlugs }: ProgressProps) => {
   if (modules == null) {
     return (
       <section className="glass" style={{ padding: 22 }}>
-        <p className="muted">Loading curriculum…</p>
+        <p className="muted">{t('progress.loading')}</p>
       </section>
     );
   }
@@ -52,13 +54,13 @@ export const PlaybookModuleProgress = ({ visitedSlugs }: ProgressProps) => {
         <div>
           <p className="eyebrow" style={{ margin: 0 }}>
             <BookOpen size={11} style={{ verticalAlign: -2, marginRight: 4 }} />
-            Curriculum progress
+            {t('progress.title')}
           </p>
           <h2 style={{ margin: '4px 0 4px' }}>
-            {completed} <span className="muted" style={{ fontSize: '0.6em', fontWeight: 400 }}>of {total} modules</span>
+            {completed} <span className="muted" style={{ fontSize: '0.6em', fontWeight: 400 }}>{t('progress.ofModules', { total })}</span>
           </h2>
           <p className="muted" style={{ margin: 0, fontSize: 13 }}>
-            Modules you’ve opened from your playbook plan.
+            {t('progress.lead')}
           </p>
         </div>
         <span
@@ -85,7 +87,7 @@ export const PlaybookModuleProgress = ({ visitedSlugs }: ProgressProps) => {
           }}
         />
       </div>
-      <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }}>
+      <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: 8 }}>
         {modules.slice(0, 8).map((m) => {
           const done = visitedSet.has(m.slug);
           return (
@@ -135,6 +137,7 @@ export const PlaybookStalePlanBanner = ({
   recommendationCreatedAt,
   onRegenerated,
 }: StalePlanProps) => {
+  const t = useT();
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -154,7 +157,7 @@ export const PlaybookStalePlanBanner = ({
       await playbookRecommendationGenerate(accessToken, {});
       onRegenerated();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not regenerate plan');
+      setError(t('stale.error'));
     } finally {
       setRunning(false);
     }
@@ -178,9 +181,9 @@ export const PlaybookStalePlanBanner = ({
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <AlertCircle size={20} style={{ color: '#b08020' }} />
         <div>
-          <strong style={{ color: '#7a5810' }}>Fresh mock results since your plan was generated</strong>
+          <strong style={{ color: '#7a5810' }}>{t('stale.title')}</strong>
           <p className="muted" style={{ margin: '2px 0 0', fontSize: 13 }}>
-            Regenerate so your strategy plan reflects what you actually need now.
+            {t('stale.lead')}
           </p>
         </div>
       </div>
@@ -191,7 +194,7 @@ export const PlaybookStalePlanBanner = ({
         disabled={running}
         style={{ background: '#b08020', borderColor: '#b08020' }}
       >
-        {running ? 'Regenerating…' : 'Regenerate plan'} <RefreshCw size={12} style={{ marginLeft: 4 }} />
+        {running ? t('stale.running') : t('stale.cta')} <RefreshCw size={12} style={{ marginLeft: 4 }} />
       </button>
       {error ? <p className="error-text" style={{ flexBasis: '100%', margin: 0 }}>{error}</p> : null}
     </div>
@@ -252,6 +255,7 @@ interface InsightsProps {
 }
 
 export const PlaybookTrajectoryCard = ({ accessToken, embedded }: InsightsProps) => {
+  const t = useT();
   const [data, setData] = useState<PracticeTrajectoryResponse | null>(embedded ?? null);
   type ChartKey = 'overall' | 'reading' | 'listening' | 'writing';
   const [activeKey, setActiveKey] = useState<ChartKey>('overall');
@@ -279,30 +283,29 @@ export const PlaybookTrajectoryCard = ({ accessToken, embedded }: InsightsProps)
     <section ref={ref} className="glass" style={{ padding: 24 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap', marginBottom: 12 }}>
         <div>
-          <p className="eyebrow"><TrendingUp size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Band trajectory</p>
+          <p className="eyebrow"><TrendingUp size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> {t('trajectory.title')}</p>
           <h2 style={{ margin: '4px 0 4px' }}>
             {predictor?.band != null ? predictor.band.toFixed(1) : '—'}
             <span className="muted" style={{ fontSize: '0.6em', fontWeight: 400, marginLeft: 6 }}>
-              predicted {activeKey}
+              {t('trajectory.predicted', { skill: enumLabel(t, 'skill', activeKey) })}
             </span>
           </h2>
           {predictor ? (
             <p className="muted" style={{ margin: 0, fontSize: 13 }}>
-              {predictor.sample_count} sample{predictor.sample_count === 1 ? '' : 's'} ·{' '}
-              {predictor.confidence === 'high' ? 'high confidence' : predictor.confidence === 'medium' ? 'moderate confidence' : 'low confidence — practice more'}
+              {t('trajectory.samples', { count: predictor.sample_count })} ·{' '}
+              {predictor.confidence === 'high' ? t('trajectory.high') : predictor.confidence === 'medium' ? t('trajectory.medium') : t('trajectory.low')}
             </p>
           ) : null}
         </div>
-        <div style={{ display: 'flex', gap: 4 }}>
+        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
           {(['overall', 'reading', 'listening', 'writing'] as const).map((k) => (
             <button
               key={k}
               type="button"
               className={`btn compact ${activeKey === k ? 'solid' : 'ghost'}`}
               onClick={() => setActiveKey(k)}
-              style={{ textTransform: 'capitalize' }}
             >
-              {k}
+              {enumLabel(t, 'skill', k)}
             </button>
           ))}
         </div>
@@ -322,7 +325,7 @@ export const PlaybookTrajectoryCard = ({ accessToken, embedded }: InsightsProps)
       </svg>
       {!data || data.series.length < 2 ? (
         <p className="muted" style={{ margin: '8px 0 0', textAlign: 'center' }}>
-          Complete two or more attempts in the practice or simulator app to draw a trajectory.
+          {t('trajectory.empty')}
         </p>
       ) : null}
     </section>
@@ -337,6 +340,7 @@ interface ActivityProps {
 }
 
 export const PlaybookActivityCard = ({ accessToken, embedded }: ActivityProps) => {
+  const t = useT();
   const [data, setData] = useState<PracticeActivityResponse | null>(embedded ?? null);
   const { ref, visible } = useLazyVisible();
   useEffect(() => {
@@ -379,14 +383,14 @@ export const PlaybookActivityCard = ({ accessToken, embedded }: ActivityProps) =
   return (
     <section ref={ref} className="glass" style={{ padding: 24 }}>
       <div style={{ marginBottom: 14 }}>
-        <p className="eyebrow"><Calendar size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Activity</p>
+        <p className="eyebrow"><Calendar size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> {t('activity.title')}</p>
         <h2 style={{ margin: '4px 0 4px', display: 'flex', alignItems: 'baseline', gap: 10 }}>
           <Flame size={24} style={{ color: '#b15a1e' }} />
           {data?.streak.current_days ?? 0}
-          <span className="muted" style={{ fontSize: '0.55em', fontWeight: 400 }}>day streak</span>
+          <span className="muted" style={{ fontSize: '0.55em', fontWeight: 400 }}>{t('activity.streak')}</span>
         </h2>
         <p className="muted" style={{ margin: 0, fontSize: 13 }}>
-          {data?.totals.last_30_days ?? 0} practice + simulator attempts in the last 30 days
+          {t('activity.last30', { count: data?.totals.last_30_days ?? 0 })}
         </p>
       </div>
       <div style={{ display: 'flex', gap: 3, overflowX: 'auto' }}>
@@ -395,7 +399,7 @@ export const PlaybookActivityCard = ({ accessToken, embedded }: ActivityProps) =
             {week.map((cell) => (
               <div
                 key={cell.date}
-                title={`${cell.date}: ${cell.attempts} attempt${cell.attempts === 1 ? '' : 's'}`}
+                title={`${cell.date}: ${t('activity.attempts', { count: cell.attempts })}`}
                 style={{ width: 11, height: 11, borderRadius: 2, background: shade(cell.attempts) }}
               />
             ))}
@@ -419,6 +423,7 @@ interface MasteryProps {
 }
 
 export const PlaybookMasteryCard = ({ accessToken, embedded }: MasteryProps) => {
+  const t = useT();
   const [data, setData] = useState<PracticeMasteryOverviewResponse | null>(embedded ?? null);
   const { ref, visible } = useLazyVisible();
   useEffect(() => {
@@ -434,10 +439,10 @@ export const PlaybookMasteryCard = ({ accessToken, embedded }: MasteryProps) => 
     return (
       <section ref={ref} className="glass" style={{ padding: 24, display: 'grid', gap: 14 }}>
         <div>
-          <p className="eyebrow"><Sparkles size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Mastery</p>
+          <p className="eyebrow"><Sparkles size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> {t('mastery.title')}</p>
           <span className="p2-skeleton p2-skeleton-line medium" style={{ marginTop: 8 }} />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))', gap: 12 }}>
           {[0, 1, 2, 3].map((i) => <span key={i} className="p2-skeleton p2-skeleton-block" style={{ height: 80 }} />)}
         </div>
       </section>
@@ -449,15 +454,15 @@ export const PlaybookMasteryCard = ({ accessToken, embedded }: MasteryProps) => 
   return (
     <section ref={ref} className="glass" style={{ padding: 24, display: 'grid', gap: 16 }}>
       <div>
-        <p className="eyebrow"><Sparkles size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Mastery</p>
+        <p className="eyebrow"><Sparkles size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> {t('mastery.title')}</p>
         <h2 style={{ margin: '4px 0 4px' }}>
-          {data.totals.mastered} <span className="muted" style={{ fontSize: '0.55em', fontWeight: 400 }}>of {data.totals.tracked} graduated</span>
+          {data.totals.mastered} <span className="muted" style={{ fontSize: '0.55em', fontWeight: 400 }}>{t('mastery.ofGraduated', { total: data.totals.tracked })}</span>
         </h2>
         <p className="muted" style={{ margin: 0, fontSize: 13 }}>
-          From your practice submissions — question types you’ve drilled into mastery.
+          {t('mastery.lead')}
         </p>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))', gap: 12 }}>
         {order.map((status) => {
           const rows: MasteryRow[] = data.by_status[status] ?? [];
           const copy = STATUS_COPY[status] ?? { label: status, tone: '#7a7263' };
@@ -473,7 +478,7 @@ export const PlaybookMasteryCard = ({ accessToken, embedded }: MasteryProps) => 
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                 <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: copy.tone }}>
-                  {copy.label}
+                  {enumLabel(t, 'mastery.status', status, copy.label)}
                 </span>
                 <strong style={{ fontFamily: 'Fraunces, serif', fontSize: 22 }}>{rows.length}</strong>
               </div>
@@ -483,7 +488,7 @@ export const PlaybookMasteryCard = ({ accessToken, embedded }: MasteryProps) => 
       </div>
       {data.recent_graduations.length > 0 ? (
         <div>
-          <p className="eyebrow" style={{ margin: '0 0 8px', color: '#166534' }}>Recent graduations</p>
+          <p className="eyebrow" style={{ margin: '0 0 8px', color: '#166534' }}>{t('mastery.recent')}</p>
           <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {data.recent_graduations.slice(0, 8).map((row) => (
               <li
