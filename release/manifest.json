@@ -1,13 +1,18 @@
 {
   "schemaVersion": 1,
-  "releaseId": "sat-playbook-learner-engine-oct27",
+  "releaseId": "sat-playbook-learner-engine-and-content",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
     "sat-playbook"
   ],
   "migrations": [
-    "20261026150900_sat_playbook_learner_engine.sql"
+    "20261026150900_sat_playbook_learner_engine.sql",
+    "20261026160900_sat_playbook_public_modules_core.sql",
+    "20261026160910_sat_playbook_public_modules_reading_writing.sql",
+    "20261026160920_sat_playbook_public_modules_math.sql",
+    "20261026161000_sat_playbook_premium_guides.sql",
+    "20261026161100_sat_playbook_plan_templates.sql"
   ],
   "edgeFunctions": [
     "admin-exam-playbook",
@@ -20,13 +25,19 @@
     "pages",
     "migration:20261026150900_sat_playbook_learner_engine.sql",
     "function:sat-playbook",
-    "function:admin-exam-playbook"
+    "function:admin-exam-playbook",
+    "migration:20261026160900_sat_playbook_public_modules_core.sql",
+    "migration:20261026160910_sat_playbook_public_modules_reading_writing.sql",
+    "migration:20261026160920_sat_playbook_public_modules_math.sql",
+    "migration:20261026161000_sat_playbook_premium_guides.sql",
+    "migration:20261026161100_sat_playbook_plan_templates.sql"
   ],
   "manualFollowUps": [
     "Pages: merging publishes sat-playbook (shared exam-playbook web package: public landing with real module links, grouped catalog, public modules readable without sign-in, GFM tables in scroll wrappers, diagnostic, plan templates with day-by-day tasks/hours/checkpoints and adoption, dashboard, notes/highlights, section coach, admin console at /admin, en/uz/ru UI). Until the function and migration ship, signed-in Premium panels show their error/empty states; public pages keep working against the old catalog/pages endpoints, which are unchanged.",
     "Database: supabase db push --linked (dry run first; keep the #220 payment migrations excluded as in previous releases). Adds sat_playbook_user_plans, sat_playbook_user_plan_items, sat_playbook_section_progress, sat_playbook_user_notes, sat_playbook_section_threads (owner RLS), optional profile columns current_section_scores/target_section_scores/weekly_hours, and widens the sat_playbook_events event_name check to module_open, section_complete, diagnostic_run, plan_adopted, note_saved, practice_click, upgrade_click. Additive only.",
     "Edge, after the migration (--project-ref bbjawctnqrufvnesdsel): supabase functions deploy sat-playbook; supabase functions deploy admin-exam-playbook. No new secrets: the section coach and AI summary reuse OPENROUTER_API_KEY through _shared/sat-ai.ts (free model google/gemma-4-31b-it:free by default, no paid fallback). toefl-playbook is untouched by this release.",
-    "Content: the SAT Playbook modules, premium guides and plan templates come from the separate content PRs (#304 and the SAT modules PR); this release renders them and has no content of its own."
+    "Content: the SAT Playbook modules, premium guides and plan templates come from the separate content PRs (#304 and the SAT modules PR); this release renders them and has no content of its own.",
+    "Content (folded in from #317 = #310 + #304): after the engine migration and the sat-playbook/admin-exam-playbook functions are live, push 20261026160900-160920 (14 public modules, 27 sources, 403 sections) then 20261026161000 (6 premium guides) and 20261026161100 (5 plan templates) in the same isolated supabase db push --linked --include-all, keeping #220's payment migrations excluded. All inserts are on conflict do nothing with deterministic ids."
   ],
   "verification": [
     "supabase migration list --linked shows 20261026150900_sat_playbook_learner_engine applied.",
@@ -34,7 +45,15 @@
     "GET /functions/v1/sat-playbook/diagnostic without a session returns 401 {code:auth_required}; POST /events with event_name note_saved and no session returns 401.",
     "GET /functions/v1/admin-exam-playbook/qa?exam=sat without a session returns 401; with exam=toefl returns 400 invalid_exam.",
     "playbook.sat.schood.online: landing lists public modules; /math-algebra readable signed out; at 375px no horizontal scroll; ?lang=uz shows Uzbek navigation.",
-    "As a Premium learner: Run diagnostic creates one snapshot; reloading /diagnostic does not create another; adopting four-week-sprint shows dated tasks."
+    "As a Premium learner: Run diagnostic creates one snapshot; reloading /diagnostic does not create another; adopting four-week-sprint shows dated tasks.",
+    "supabase migration list --linked shows 20261026160900, 20261026160910 and 20261026160920 applied and the 9 #220 payment migrations still pending.",
+    "select count(*) from sat_playbook_pages where metadata->>'seeded_by' = 'sat-pb-modules' returns 14; sections with metadata->>'seeded_by' = 'sat-pb-modules' return 403.",
+    "GET /functions/v1/sat-playbook/catalog with the anon key lists 14 modules in sort_order 1-14, starting with sat-essentials.",
+    "https://playbook.sat.schood.online/math-algebra and /test-day-guide open signed out and show sections and the Official references list.",
+    "supabase migration list --linked shows 20261026161000 and 20261026161100 applied.",
+    "GET /functions/v1/sat-playbook/catalog lists the 6 premium_guides (guide-rw-hard-module-traps, guide-math-hard-module-traps, guide-1200-to-1400-roadmap, guide-1400-to-1550-roadmap, guide-desmos-power-moves, guide-final-14-days).",
+    "GET /functions/v1/sat-playbook/pages/guide-final-14-days without a token returns 401/403 (premium); with a premium entitlement it returns 34 sections and 8 sources.",
+    "As a premium user, https://playbook.sat.schood.online/plans/four-week-sprint shows 4 phases and 4 weeks; the dashboard lists all 5 plan templates."
   ],
   "rollback": {
     "pages": "Cloudflare Pages rollback of schood-sat-playbook to the previous deployment.",
