@@ -83,7 +83,7 @@ const seedSession = async (page: Page, userId: string) => {
   await page.context().addCookies([{ name: 'schood-auth', value: encodeURIComponent(JSON.stringify(session)), domain: '127.0.0.1', path: '/', sameSite: 'Lax' }]);
 };
 
-type Calls = { method: string; path: string; body: unknown; auth: string | null }[];
+type Calls = { method: string; path: string; body: unknown; auth: string | null; region: string | null }[];
 
 const mock = async (page: Page, persona: Persona, overrides: Partial<Record<string, (route: Route) => Promise<void> | void>> = {}) => {
   const calls: Calls = [];
@@ -96,7 +96,10 @@ const mock = async (page: Page, persona: Persona, overrides: Partial<Record<stri
     const path = url.pathname.replace('/functions/v1', '');
     let body: unknown = null;
     try { body = req.postDataJSON(); } catch { body = null; }
-    calls.push({ method: req.method(), path: `${path}${url.search}`, body, auth: req.headers().authorization ?? null });
+    // Function calls are pinned next to the database; record that separately so paths stay comparable.
+    const region = url.searchParams.get('forceFunctionRegion');
+    url.searchParams.delete('forceFunctionRegion');
+    calls.push({ method: req.method(), path: `${path}${url.search}`, body, auth: req.headers().authorization ?? null, region });
     const json = (data: unknown, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(data) });
     const key = `${req.method()} ${path}`;
     if (overrides[key]) return overrides[key]!(route);
@@ -191,6 +194,8 @@ test('public module is readable without sign-in; GFM tables scroll inside their 
   await noHorizontalOverflow(page);
   const pageCall = calls.find((c) => c.path === '/sat-playbook/pages/math-algebra');
   expect(pageCall?.auth).toBe('Bearer sat-playbook-route-anon-key');
+  // Pinned to the database region (Singapore) so queries don't cross from the nearest edge.
+  expect(pageCall?.region).toBe('ap-southeast-1');
 });
 
 test('premium guide shows a teaser and an upgrade path, never a raw error', async ({ page }) => {
