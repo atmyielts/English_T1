@@ -20,6 +20,7 @@ import {
   type TrajectoryPoint,
 } from '../lib/api';
 import { formatPracticeLabel } from '../lib/practiceExperience';
+import { sectionLabel, useAppT, useErrorText, useFormat, type AppKey } from '../i18n';
 
 const BAND_OPTIONS = ['4.0', '4.5', '5.0', '5.5', '6.0', '6.5', '7.0', '7.5', '8.0', '8.5', '9.0'];
 
@@ -32,11 +33,11 @@ const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 // Plan narrative banner: "Day 14 of 90 toward 7.5"
 // ============================================================
 
-const PACE_COPY: Record<PracticeNarrativeResponse['pace_label'], { label: string; tone: string }> = {
-  ahead: { label: 'Ahead of pace', tone: '#166534' },
-  on_track: { label: 'On track', tone: '#0e4955' },
-  behind: { label: 'Below pace — adjust', tone: '#9b2c2c' },
-  unknown: { label: 'Pace forming', tone: '#7a7263' },
+const PACE_COPY: Record<PracticeNarrativeResponse['pace_label'], { label: AppKey; tone: string }> = {
+  ahead: { label: 'ins.pace.ahead', tone: '#166534' },
+  on_track: { label: 'ins.pace.on_track', tone: '#0e4955' },
+  behind: { label: 'ins.pace.behind', tone: '#9b2c2c' },
+  unknown: { label: 'ins.pace.unknown', tone: '#7a7263' },
 };
 
 interface PlanNarrativeProps {
@@ -58,6 +59,9 @@ const addDaysIso = (days: number): string => {
 };
 
 export const PlanNarrativeBanner = ({ accessToken, onChanged }: PlanNarrativeProps) => {
+  const t = useAppT();
+  const fmt = useFormat();
+  const errorText = useErrorText();
   const [data, setData] = useState<PracticeNarrativeResponse | null>(null);
   const [goal, setGoal] = useState<PracticeGoal | null>(null);
   const [achieved, setAchieved] = useState<string>('');
@@ -95,8 +99,8 @@ export const PlanNarrativeBanner = ({ accessToken, onChanged }: PlanNarrativePro
 
   const pace = PACE_COPY[data.pace_label];
   const subtitle = data.target_date
-    ? `Target band ${data.target_band.toFixed(1)} by ${new Date(data.target_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`
-    : `Target band ${data.target_band.toFixed(1)}`;
+    ? t('ins.targetBy', { band: fmt.band(data.target_band), date: fmt.date(`${data.target_date}T00:00:00`) })
+    : t('ins.target', { band: fmt.band(data.target_band) });
 
   const targetPassed = data.target_date ? new Date(data.target_date) < todayMidnight() : false;
   const overrun = data.total_days != null && data.day_n > data.total_days;
@@ -129,7 +133,7 @@ export const PlanNarrativeBanner = ({ accessToken, onChanged }: PlanNarrativePro
         setGoal(res.goals);
         setResultSaved(true);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Could not save your result');
+        setError(errorText(err));
       } finally {
         setSavingResult(false);
       }
@@ -150,7 +154,7 @@ export const PlanNarrativeBanner = ({ accessToken, onChanged }: PlanNarrativePro
         reload(accessToken);
         onChanged?.();
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Could not start a new cycle');
+        setError(errorText(err));
       } finally {
         setStartingCycle(false);
       }
@@ -163,14 +167,11 @@ export const PlanNarrativeBanner = ({ accessToken, onChanged }: PlanNarrativePro
     return (
       <section className="glass" style={{ padding: 22, marginBottom: 20, display: 'grid', gap: 16, borderLeft: '3px solid #b6512c' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-          <Flag size={18} style={{ marginTop: 3, color: '#b6512c' }} />
+          <Flag size={18} style={{ marginTop: 3, color: '#b6512c' }} aria-hidden="true" />
           <div>
-            <p className="eyebrow">Study plan complete</p>
-            <h2 style={{ margin: '4px 0 2px' }}>Your plan window has ended</h2>
-            <p className="muted" style={{ margin: 0 }}>
-              You trained for {data.day_n} day{data.day_n === 1 ? '' : 's'} toward {subtitle.toLowerCase()}. Lock in the
-              result, then set your next goal — the daily plan keeps working until you do.
-            </p>
+            <p className="eyebrow">{t('ins.ended.eyebrow')}</p>
+            <h2 style={{ margin: '4px 0 2px' }}>{t('ins.ended.title')}</h2>
+            <p className="muted" style={{ margin: 0 }}>{t('ins.ended.lead', { days: data.day_n, target: subtitle })}</p>
           </div>
         </div>
 
@@ -178,20 +179,21 @@ export const PlanNarrativeBanner = ({ accessToken, onChanged }: PlanNarrativePro
 
         {/* Reflection — record the end result */}
         <div style={{ display: 'grid', gap: 10, background: 'color-mix(in srgb, #0e4955 5%, transparent)', borderRadius: 12, padding: 16 }}>
-          <strong style={{ fontSize: 14 }}>How did it go?</strong>
+          <strong style={{ fontSize: 14 }}>{t('ins.ended.how')}</strong>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <label className="muted" style={{ fontSize: 13 }}>Band reached</label>
+            <label className="muted" style={{ fontSize: 13 }} htmlFor="cycle-achieved">{t('ins.ended.reached')}</label>
             <select
+              id="cycle-achieved"
               value={achieved}
               onChange={(e) => { setAchieved(e.target.value); setResultSaved(false); }}
               style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #d8d2c6' }}
             >
-              <option value="">Select…</option>
+              <option value="">{t('ins.ended.select')}</option>
               {BAND_OPTIONS.map((b) => <option key={b} value={b}>{b}</option>)}
             </select>
             <label className="muted" style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
               <input type="checkbox" checked={tookTest} onChange={(e) => setTookTest(e.target.checked)} />
-              I sat the official test
+              {t('ins.ended.official')}
             </label>
             <button
               type="button"
@@ -199,15 +201,15 @@ export const PlanNarrativeBanner = ({ accessToken, onChanged }: PlanNarrativePro
               disabled={savingResult || achievedNum == null}
               onClick={() => void saveResult()}
             >
-              {savingResult ? 'Saving…' : resultSaved ? 'Update result' : 'Save result'}
+              {savingResult ? t('common.saving') : resultSaved ? t('ins.ended.update') : t('ins.ended.save')}
             </button>
           </div>
           {resultSaved && achievedNum != null ? (
             <p style={{ margin: 0, fontSize: 13, color: reachedTarget ? '#166534' : '#9b2c2c', display: 'flex', alignItems: 'center', gap: 6 }}>
               <CheckCircle2 size={14} />
               {reachedTarget
-                ? `Goal reached — band ${achievedNum.toFixed(1)} vs target ${data.target_band.toFixed(1)}. Time to aim higher.`
-                : `Band ${achievedNum.toFixed(1)} — ${(data.target_band - achievedNum).toFixed(1)} below your ${data.target_band.toFixed(1)} target. Another focused cycle can close the gap.`}
+                ? t('ins.ended.goalReached', { achieved: fmt.band(achievedNum), target: fmt.band(data.target_band) })
+                : t('ins.ended.gap', { achieved: fmt.band(achievedNum), gap: fmt.band(data.target_band - achievedNum), target: fmt.band(data.target_band) })}
             </p>
           ) : null}
         </div>
@@ -220,11 +222,9 @@ export const PlanNarrativeBanner = ({ accessToken, onChanged }: PlanNarrativePro
             disabled={startingCycle}
             onClick={() => void startNewCycle(nextBand)}
           >
-            {startingCycle
-              ? 'Setting up…'
-              : `Start a new ${weeks}-week cycle → band ${nextBand.toFixed(1)}`}
+            {startingCycle ? t('ins.ended.settingUp') : t('ins.ended.newCycle', { weeks, band: fmt.band(nextBand) })}
           </button>
-          <Link to="/plan" className="btn ghost compact">Adjust target &amp; dates</Link>
+          <Link to="/plan" className="btn ghost compact">{t('ins.ended.adjust')}</Link>
         </div>
       </section>
     );
@@ -237,14 +237,14 @@ export const PlanNarrativeBanner = ({ accessToken, onChanged }: PlanNarrativePro
     <section className="glass" style={{ padding: 22, marginBottom: 20, display: 'grid', gap: 12 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 16, flexWrap: 'wrap' }}>
         <div>
-          <p className="eyebrow">Your study plan</p>
+          <p className="eyebrow">{t('ins.plan.eyebrow')}</p>
           <h2 style={{ margin: '4px 0 2px' }}>
-            Day {data.day_n}
-            {data.total_days ? <span className="muted" style={{ fontWeight: 400 }}> of {data.total_days}</span> : null}
+            {t('ins.plan.day', { n: data.day_n })}
+            {data.total_days ? <span className="muted" style={{ fontWeight: 400 }}> {t('ins.plan.of', { total: data.total_days })}</span> : null}
           </h2>
           <p className="muted" style={{ margin: 0 }}>{subtitle}</p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <span
             style={{
               padding: '4px 10px',
@@ -256,11 +256,11 @@ export const PlanNarrativeBanner = ({ accessToken, onChanged }: PlanNarrativePro
               letterSpacing: '0.05em',
             }}
           >
-            {pace.label.toUpperCase()}
+            {t(pace.label).toUpperCase()}
           </span>
           {data.weeks_remaining != null ? (
             <span className="muted" style={{ fontSize: 13 }}>
-              {data.weeks_remaining} week{data.weeks_remaining === 1 ? '' : 's'} remaining
+              {t('ins.plan.weeksLeft', { count: data.weeks_remaining })}
             </span>
           ) : null}
         </div>
@@ -283,6 +283,8 @@ interface ReadinessProps {
 }
 
 export const ExamReadinessCard = ({ accessToken }: ReadinessProps) => {
+  const t = useAppT();
+  const fmt = useFormat();
   const [narrative, setNarrative] = useState<PracticeNarrativeResponse | null>(null);
   const [predictor, setPredictor] = useState<number | null>(null);
 
@@ -291,7 +293,7 @@ export const ExamReadinessCard = ({ accessToken }: ReadinessProps) => {
     let cancelled = false;
     practiceNarrativeGet(accessToken).then((r) => { if (!cancelled) setNarrative(r); }).catch(() => null);
     practiceTrajectoryGet(accessToken)
-      .then((r) => { if (!cancelled) setPredictor(typeof r.predictor?.overall === 'number' ? r.predictor.overall : null); })
+      .then((r) => { if (!cancelled) setPredictor(typeof r.predictor?.overall?.band === 'number' ? r.predictor.overall.band : null); })
       .catch(() => null);
     return () => { cancelled = true; };
   }, [accessToken]);
@@ -308,30 +310,30 @@ export const ExamReadinessCard = ({ accessToken }: ReadinessProps) => {
   const gap = predictor != null ? Math.round((target - predictor) * 10) / 10 : null;
 
   let tone = '#7a7263';
-  let verdict = 'Keep practising — a few more sessions and we can predict your readiness.';
-  let cta: { label: string; to: string } = { label: 'Start today’s session', to: '/today' };
+  let verdict = t('ins.ready.default');
+  let cta: { label: string; to: string } = { label: t('ins.ready.ctaToday'), to: '/today' };
 
   if (!targetDate) {
     tone = '#365c96';
-    verdict = 'Set your exam date so we can track readiness and pace your plan.';
-    cta = { label: 'Set exam date', to: '/plan' };
+    verdict = t('ins.ready.setDate');
+    cta = { label: t('ins.ready.ctaDate'), to: '/plan' };
   } else if (daysLeft != null && daysLeft < 0) {
     tone = '#9b2c2c';
-    verdict = 'Your exam date has passed — set a new date to keep a live readiness target.';
-    cta = { label: 'Update exam date', to: '/plan' };
+    verdict = t('ins.ready.passed');
+    cta = { label: t('ins.ready.ctaUpdate'), to: '/plan' };
   } else if (predictor != null && gap != null) {
     if (gap <= 0) {
       tone = '#166534';
-      verdict = `On track — your predicted band (${predictor.toFixed(1)}) is at or above your ${target.toFixed(1)} target. Hold the line and keep reviews warm.`;
-      cta = { label: 'Take a timed mock', to: '/generator' };
+      verdict = t('ins.ready.onTrack', { band: fmt.band(predictor), target: fmt.band(target) });
+      cta = { label: t('ins.ready.ctaMock'), to: '/generator' };
     } else if (gap <= 0.5) {
       tone = '#9a6b00';
-      verdict = `Close — predicted ${predictor.toFixed(1)} vs target ${target.toFixed(1)}. A focused push on your weak types should close the gap.`;
-      cta = { label: 'Drill weak types', to: '/practice/stats/by-type' };
+      verdict = t('ins.ready.close', { band: fmt.band(predictor), target: fmt.band(target) });
+      cta = { label: t('ins.ready.ctaWeak'), to: '/practice/stats/by-type' };
     } else {
       tone = '#9b2c2c';
-      verdict = `Behind — predicted ${predictor.toFixed(1)} vs target ${target.toFixed(1)} (${gap.toFixed(1)} to go). Prioritise daily sessions on your weakest sections.`;
-      cta = { label: 'Start today’s session', to: '/today' };
+      verdict = t('ins.ready.behind', { band: fmt.band(predictor), target: fmt.band(target), gap: fmt.band(gap) });
+      cta = { label: t('ins.ready.ctaToday'), to: '/today' };
     }
   }
 
@@ -339,22 +341,20 @@ export const ExamReadinessCard = ({ accessToken }: ReadinessProps) => {
     <section className="glass" style={{ padding: 22, marginBottom: 20, display: 'grid', gap: 14, borderLeft: `3px solid ${tone}` }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
         <div>
-          <p className="eyebrow"><Calendar size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Exam readiness</p>
+          <p className="eyebrow"><Calendar size={11} style={{ verticalAlign: -2, marginRight: 4 }} aria-hidden="true" /> {t('ins.ready.eyebrow')}</p>
           <h2 style={{ margin: '4px 0 2px' }}>
-            {daysLeft != null && daysLeft >= 0
-              ? <>{daysLeft} day{daysLeft === 1 ? '' : 's'} <span className="muted" style={{ fontWeight: 400 }}>to your exam</span></>
-              : 'How ready are you?'}
+            {daysLeft != null && daysLeft >= 0 ? t('ins.ready.days', { count: daysLeft }) : t('ins.ready.how')}
           </h2>
           <p className="muted" style={{ margin: 0, maxWidth: '60ch' }}>{verdict}</p>
         </div>
         <div style={{ textAlign: 'right' }}>
           <div style={{ fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: tone, fontWeight: 700 }}>
-            Predicted
+            {t('ins.ready.estimated')}
           </div>
           <div style={{ fontSize: '2rem', fontWeight: 800, lineHeight: 1, color: tone }}>
-            {predictor != null ? predictor.toFixed(1) : '—'}
+            {predictor != null ? fmt.band(predictor) : '—'}
           </div>
-          <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>target {target.toFixed(1)}</div>
+          <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>{t('ins.ready.target', { band: fmt.band(target) })}</div>
         </div>
       </div>
       <div>
@@ -416,6 +416,8 @@ interface TrajectoryProps {
 }
 
 export const BandTrajectoryCard = ({ accessToken }: TrajectoryProps) => {
+  const t = useAppT();
+  const fmt = useFormat();
   const [data, setData] = useState<PracticeTrajectoryResponse | null>(null);
   const [loading, setLoading] = useState(false);
   type ChartKey = 'overall' | 'reading' | 'listening' | 'writing';
@@ -445,36 +447,36 @@ export const BandTrajectoryCard = ({ accessToken }: TrajectoryProps) => {
     <section ref={ref} className="glass" style={{ padding: 24 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap', marginBottom: 12 }}>
         <div>
-          <p className="eyebrow"><TrendingUp size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Band trajectory</p>
+          <p className="eyebrow"><TrendingUp size={11} style={{ verticalAlign: -2, marginRight: 4 }} aria-hidden="true" /> {t('ins.traj.eyebrow')}</p>
           <h2 style={{ margin: '4px 0 4px' }}>
-            {predictor?.band != null ? predictor.band.toFixed(1) : '—'}
+            {predictor?.band != null ? fmt.band(predictor.band) : '—'}
             <span className="muted" style={{ fontSize: '0.6em', fontWeight: 400, marginLeft: 6 }}>
-              predicted {activeKey}
+              {t('ins.traj.estimated', { key: activeKey === 'overall' ? t('ins.traj.overall') : sectionLabel(t, activeKey) })}
             </span>
           </h2>
           {predictor ? (
             <p className="muted" style={{ margin: 0, fontSize: 13 }}>
-              {predictor.sample_count} sample{predictor.sample_count === 1 ? '' : 's'} ·{' '}
-              {predictor.confidence === 'high' ? 'high confidence' : predictor.confidence === 'medium' ? 'moderate confidence' : 'low confidence — practice more'}
+              {t('ins.traj.samples', { count: predictor.sample_count })} ·{' '}
+              {predictor.confidence === 'high' ? t('ins.traj.high') : predictor.confidence === 'medium' ? t('ins.traj.medium') : t('ins.traj.low')}
             </p>
           ) : null}
         </div>
-        <div style={{ display: 'flex', gap: 4 }}>
+        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
           {(['overall', 'reading', 'listening', 'writing'] as const).map((k) => (
             <button
               key={k}
               type="button"
               className={`btn compact ${activeKey === k ? 'solid' : 'ghost'}`}
               onClick={() => setActiveKey(k)}
-              style={{ textTransform: 'capitalize' }}
+              aria-pressed={activeKey === k}
             >
-              {k}
+              {k === 'overall' ? t('ins.traj.overall') : sectionLabel(t, k)}
             </button>
           ))}
         </div>
       </div>
       <div style={{ position: 'relative' }}>
-        <svg width="100%" viewBox={`0 0 ${w} ${h + 20}`} preserveAspectRatio="none" style={{ display: 'block' }}>
+        <svg width="100%" viewBox={`0 0 ${w} ${h + 20}`} preserveAspectRatio="none" style={{ display: 'block' }} role="img" aria-label={t('ins.traj.chart')}>
           {/* Horizontal band grid lines at 5, 6, 7, 8 */}
           {[5, 6, 7, 8].map((band) => {
             const y = h - ((band - 4) / 5) * h;
@@ -494,10 +496,10 @@ export const BandTrajectoryCard = ({ accessToken }: TrajectoryProps) => {
             <circle key={idx} cx={p.x} cy={p.y} r={3} fill={SECTION_COLORS[activeKey]} />
           ))}
         </svg>
-        {loading ? <p className="muted" style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>Loading…</p> : null}
+        {loading ? <p className="muted" style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>{t('ins.traj.loading')}</p> : null}
         {!loading && (!data || data.series.length < 2) ? (
           <p className="muted" style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', textAlign: 'center', padding: 16 }}>
-            Complete two or more attempts to draw a trajectory.
+            {t('ins.traj.empty')}
           </p>
         ) : null}
       </div>
@@ -514,6 +516,8 @@ interface ActivityProps {
 }
 
 export const ActivityHeatmapCard = ({ accessToken }: ActivityProps) => {
+  const t = useAppT();
+  const fmt = useFormat();
   const [data, setData] = useState<PracticeActivityResponse | null>(null);
   const { ref, visible } = useLazyVisible();
   useEffect(() => {
@@ -555,24 +559,24 @@ export const ActivityHeatmapCard = ({ accessToken }: ActivityProps) => {
     <section ref={ref} className="glass" style={{ padding: 24 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap', marginBottom: 14 }}>
         <div>
-          <p className="eyebrow"><Calendar size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Activity</p>
+          <p className="eyebrow"><Calendar size={11} style={{ verticalAlign: -2, marginRight: 4 }} aria-hidden="true" /> {t('ins.act.eyebrow')}</p>
           <h2 style={{ margin: '4px 0 4px', display: 'flex', alignItems: 'baseline', gap: 10 }}>
             <Flame size={24} style={{ color: '#b15a1e' }} />
             {data?.streak.current_days ?? 0}
-            <span className="muted" style={{ fontSize: '0.55em', fontWeight: 400 }}>day streak</span>
+            <span className="muted" style={{ fontSize: '0.55em', fontWeight: 400 }}>{t('ins.act.streak')}</span>
           </h2>
           <p className="muted" style={{ margin: 0, fontSize: 13 }}>
-            Longest {data?.streak.longest_days ?? 0} days · {data?.totals.last_30_days ?? 0} attempts in the last 30 days
+            {t('ins.act.summary', { longest: data?.streak.longest_days ?? 0, attempts: data?.totals.last_30_days ?? 0 })}
           </p>
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 3, overflowX: 'auto' }}>
+      <div style={{ display: 'flex', gap: 3, overflowX: 'auto', maxWidth: '100%' }} role="img" aria-label={t('ins.act.grid')}>
         {grid.map((week, wi) => (
           <div key={wi} style={{ display: 'grid', gap: 3 }}>
             {week.map((cell) => (
               <div
                 key={cell.date}
-                title={`${cell.date}: ${cell.attempts} attempt${cell.attempts === 1 ? '' : 's'}`}
+                title={t('ins.act.cell', { date: fmt.date(`${cell.date}T00:00:00`), count: cell.attempts })}
                 style={{
                   width: 11,
                   height: 11,
@@ -585,14 +589,14 @@ export const ActivityHeatmapCard = ({ accessToken }: ActivityProps) => {
         ))}
       </div>
       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 6, marginTop: 10, fontSize: 11, color: '#7a7263' }}>
-        <span>Less</span>
+        <span>{t('ins.act.less')}</span>
         {[0, 1, 2, 4, 7].map((n, i) => (
           <div
             key={i}
             style={{ width: 11, height: 11, borderRadius: 2, background: shade(n) }}
           />
         ))}
-        <span>More</span>
+        <span>{t('ins.act.more')}</span>
       </div>
     </section>
   );
@@ -607,14 +611,16 @@ interface MasteryOverviewProps {
 }
 
 const STATUS_ORDER: Array<MasteryRow['mastery_status']> = ['weak', 'building', 'stable', 'mastered'];
-const STATUS_COPY: Record<string, { label: string; tone: string; description: string }> = {
-  weak: { label: 'Repair', tone: '#9b2c2c', description: 'Below 60% rolling accuracy' },
-  building: { label: 'Building', tone: '#b08020', description: 'Reaching consistency' },
-  stable: { label: 'Stable', tone: '#0e4955', description: 'Above 75% across attempts' },
-  mastered: { label: 'Graduated', tone: '#166534', description: '90%+ for 3+ attempts in a row' },
+// Thresholds match masteryStatusFrom in supabase/functions/ielts-practice/index.ts.
+const STATUS_COPY: Record<string, { label: AppKey; tone: string; description: AppKey }> = {
+  weak: { label: 'ins.mast.weak', tone: '#9b2c2c', description: 'ins.mast.weak.desc' },
+  building: { label: 'ins.mast.building', tone: '#b08020', description: 'ins.mast.building.desc' },
+  stable: { label: 'ins.mast.stable', tone: '#0e4955', description: 'ins.mast.stable.desc' },
+  mastered: { label: 'ins.mast.mastered', tone: '#166534', description: 'ins.mast.mastered.desc' },
 };
 
 export const MasteryOverviewCard = ({ accessToken }: MasteryOverviewProps) => {
+  const t = useAppT();
   const [data, setData] = useState<PracticeMasteryOverviewResponse | null>(null);
   const { ref, visible } = useLazyVisible();
   useEffect(() => {
@@ -626,10 +632,10 @@ export const MasteryOverviewCard = ({ accessToken }: MasteryOverviewProps) => {
     return (
       <section ref={ref} className="glass" style={{ padding: 24, display: 'grid', gap: 14 }}>
         <div>
-          <p className="eyebrow"><GraduationCap size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Mastery taxonomy</p>
+          <p className="eyebrow"><GraduationCap size={11} style={{ verticalAlign: -2, marginRight: 4 }} aria-hidden="true" /> {t('ins.mast.eyebrow')}</p>
           <span className="p2-skeleton p2-skeleton-line medium" style={{ marginTop: 8 }} />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(160px, 100%), 1fr))', gap: 12 }}>
           {[0, 1, 2, 3].map((i) => <span key={i} className="p2-skeleton p2-skeleton-block" />)}
         </div>
       </section>
@@ -639,17 +645,17 @@ export const MasteryOverviewCard = ({ accessToken }: MasteryOverviewProps) => {
   return (
     <section ref={ref} className="glass" style={{ padding: 24, display: 'grid', gap: 18 }}>
       <div>
-        <p className="eyebrow"><GraduationCap size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Mastery taxonomy</p>
+        <p className="eyebrow"><GraduationCap size={11} style={{ verticalAlign: -2, marginRight: 4 }} aria-hidden="true" /> {t('ins.mast.eyebrow')}</p>
         <h2 style={{ margin: '4px 0 4px' }}>
-          {data.totals.mastered} of {data.totals.tracked}
-          <span className="muted" style={{ fontSize: '0.55em', fontWeight: 400, marginLeft: 6 }}>graduated</span>
+          {t('ins.mast.count', { mastered: data.totals.mastered, tracked: data.totals.tracked })}
+          <span className="muted" style={{ fontSize: '0.55em', fontWeight: 400, marginLeft: 6 }}>{t('ins.mast.graduated')}</span>
         </h2>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(160px, 100%), 1fr))', gap: 12 }}>
         {STATUS_ORDER.map((status) => {
           const rows = data.by_status[status] ?? [];
-          const copy = STATUS_COPY[status] ?? { label: status, tone: '#7a7263', description: '' };
+          const copy = STATUS_COPY[status] ?? STATUS_COPY.weak!;
           return (
             <article
               key={status}
@@ -662,22 +668,22 @@ export const MasteryOverviewCard = ({ accessToken }: MasteryOverviewProps) => {
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                 <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: copy.tone }}>
-                  {copy.label}
+                  {t(copy.label)}
                 </span>
                 <strong style={{ fontFamily: 'Fraunces, serif', fontSize: 22 }}>{rows.length}</strong>
               </div>
-              <p className="muted" style={{ margin: '6px 0 10px', fontSize: 12 }}>{copy.description}</p>
+              <p className="muted" style={{ margin: '6px 0 10px', fontSize: 12 }}>{t(copy.description)}</p>
               <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gap: 4 }}>
                 {rows.slice(0, 4).map((row) => (
                   <li key={`${row.section_type}::${row.question_type}`} style={{ fontSize: 12.5, color: 'var(--ink-2)' }}>
-                    <span className={`chip ${row.section_type}`} style={{ marginRight: 6, fontSize: 9 }}>
-                      {row.section_type[0]?.toUpperCase()}
+                    <span className={`chip ${row.section_type}`} style={{ marginRight: 6, fontSize: 9 }} title={sectionLabel(t, row.section_type)}>
+                      {sectionLabel(t, row.section_type)[0]?.toUpperCase()}
                     </span>
                     {formatPracticeLabel(row.question_type)}
                   </li>
                 ))}
                 {rows.length > 4 ? (
-                  <li className="muted" style={{ fontSize: 12 }}>+ {rows.length - 4} more</li>
+                  <li className="muted" style={{ fontSize: 12 }}>{t('ins.mast.more', { count: rows.length - 4 })}</li>
                 ) : null}
               </ul>
             </article>
@@ -687,7 +693,7 @@ export const MasteryOverviewCard = ({ accessToken }: MasteryOverviewProps) => {
 
       {data.trap_patterns.length > 0 ? (
         <div>
-          <p className="eyebrow" style={{ margin: '0 0 8px' }}>Trap pattern fingerprint</p>
+          <p className="eyebrow" style={{ margin: '0 0 8px' }}>{t('ins.mast.traps')}</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {data.trap_patterns.map((trap) => (
               <span
@@ -712,7 +718,7 @@ export const MasteryOverviewCard = ({ accessToken }: MasteryOverviewProps) => {
         <div>
           <p className="eyebrow" style={{ margin: '0 0 8px', color: '#166534' }}>
             <Sparkles size={11} style={{ verticalAlign: -2, marginRight: 4 }} />
-            Recent graduations
+            {t('ins.mast.recent')}
           </p>
           <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {data.recent_graduations.map((row) => (
@@ -728,8 +734,8 @@ export const MasteryOverviewCard = ({ accessToken }: MasteryOverviewProps) => {
                   fontWeight: 600,
                 }}
               >
-                <span className={`chip ${row.section_type}`} style={{ marginRight: 6, fontSize: 9, background: 'transparent', color: '#166534', border: 'none' }}>
-                  {row.section_type[0]?.toUpperCase()}
+                <span className={`chip ${row.section_type}`} style={{ marginRight: 6, fontSize: 9, background: 'transparent', color: '#166534', border: 'none' }} title={sectionLabel(t, row.section_type)}>
+                  {sectionLabel(t, row.section_type)[0]?.toUpperCase()}
                 </span>
                 {formatPracticeLabel(row.question_type)}
               </li>

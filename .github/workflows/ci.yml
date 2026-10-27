@@ -84,6 +84,9 @@ jobs:
       - name: English Edge typecheck
         run: deno check supabase/functions/hub/index.ts
 
+      - name: IELTS Practice Edge, access and catalog tests
+        run: deno test --no-lock --allow-env supabase/functions/_shared/ielts-practice-core.test.ts supabase/functions/_shared/ielts-practice-blueprints.test.ts supabase/functions/_shared/ielts-practice-mock.test.ts supabase/functions/_shared/ielts-practice-item-srs.test.ts supabase/functions/_shared/ielts-practice-access.test.ts supabase/functions/_shared/ielts-practice-speaking.test.ts apps/ielts-practice/tests/i18n-catalog.test.ts && deno check --no-lock supabase/functions/ielts-practice/index.ts supabase/functions/ielts-srs/index.ts
+
       - name: English mass-readiness contracts
         run: npm run --if-present test:english:mass-readiness
 
@@ -205,6 +208,9 @@ jobs:
       - name: Academy product smoke
         if: matrix.group == 'platform-academy'
         run: npm run smoke:academy
+      - name: IELTS Practice mocked route tests (phone widths, en/uz/ru)
+        if: matrix.group == 'practice-and-playbooks'
+        run: npx playwright install --with-deps chromium && npm --workspace apps/ielts-practice run test:routes
 
   validate:
     runs-on: ubuntu-latest

@@ -9,6 +9,7 @@ import {
 } from '../lib/api';
 import { useAccess } from '../lib/useAccess';
 import { PracticeShell } from '../components/PracticeShell';
+import { useAppT, useErrorText, useFormat } from '../i18n';
 
 const CRITERION_TONES: Record<string, string> = {
   TR: '#1e40af',
@@ -18,6 +19,9 @@ const CRITERION_TONES: Record<string, string> = {
 };
 
 export const WritingPrepPage = () => {
+  const t = useAppT();
+  const fmt = useFormat();
+  const errorText = useErrorText();
   const { accessToken } = useAccess();
   const [prompt, setPrompt] = useState('');
   const [taskType, setTaskType] = useState<'task1' | 'task2'>('task2');
@@ -29,7 +33,7 @@ export const WritingPrepPage = () => {
 
   const generate = async () => {
     if (!accessToken || prompt.trim().length < 20) {
-      setError('Paste a real IELTS prompt (at least 20 characters).');
+      setError(t('wp.tooShort'));
       return;
     }
     setBusy(true);
@@ -41,13 +45,15 @@ export const WritingPrepPage = () => {
         practiceWritingOutline(accessToken, { prompt, task_type: taskType }),
         practiceWritingSample(accessToken, { prompt, task_type: taskType, target_band: targetBand }),
       ]);
-      setOutline(outlineRes);
-      setSample(sampleRes);
+      // Placeholder content is never shown as if it were AI output.
       if (!outlineRes.ai_available || !sampleRes.ai_available) {
-        setError('AI is offline right now — the outline and sample shown are placeholders.');
+        setError(t('wp.offline'));
+      } else {
+        setOutline(outlineRes);
+        setSample(sampleRes);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not generate plan');
+      setError(errorText(err));
     } finally {
       setBusy(false);
     }
@@ -57,35 +63,32 @@ export const WritingPrepPage = () => {
     <PracticeShell>
       <header className="practice-page-head">
         <div>
-          <span className="eyebrow">AI Writing prep</span>
-          <h1>Plan before you write. See good before you do good.</h1>
-          <p>
-            Paste any IELTS Writing prompt and get a structured plan (thesis, paragraphs, vocabulary) plus a
-            target-band model answer with rubric-anchored annotations. Treat it as a north star, not a template
-            to copy.
-          </p>
+          <span className="eyebrow">{t('wp.eyebrow')}</span>
+          <h1>{t('wp.title')}</h1>
+          <p>{t('wp.lead')}</p>
         </div>
       </header>
 
       <section className="glass" style={{ padding: 24, display: 'grid', gap: 16, marginBottom: 24 }}>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           <div>
-            <p className="muted" style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', margin: '0 0 6px' }}>Task</p>
+            <p className="muted" style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', margin: '0 0 6px' }}>{t('wp.task')}</p>
             <div style={{ display: 'flex', gap: 6 }}>
-              {(['task1', 'task2'] as const).map((t) => (
+              {(['task1', 'task2'] as const).map((task) => (
                 <button
-                  key={t}
+                  key={task}
                   type="button"
-                  className={`btn compact ${taskType === t ? 'solid' : 'ghost'}`}
-                  onClick={() => setTaskType(t)}
+                  className={`btn compact ${taskType === task ? 'solid' : 'ghost'}`}
+                  onClick={() => setTaskType(task)}
+                  aria-pressed={taskType === task}
                 >
-                  {t === 'task1' ? 'Task 1' : 'Task 2'}
+                  {task === 'task1' ? t('wp.task1') : t('wp.task2')}
                 </button>
               ))}
             </div>
           </div>
-          <div style={{ flex: 1, minWidth: 200 }}>
-            <p className="muted" style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', margin: '0 0 6px' }}>Target band</p>
+          <div style={{ flex: 1, minWidth: 'min(200px, 100%)' }}>
+            <p className="muted" style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', margin: '0 0 6px' }}>{t('wp.target')}</p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <input
                 type="range"
@@ -94,21 +97,21 @@ export const WritingPrepPage = () => {
                 step={0.5}
                 value={targetBand}
                 onChange={(e) => setTargetBand(Number(e.target.value))}
-                style={{ flex: 1 }}
+                style={{ flex: 1, minWidth: 0 }}
+                aria-label={t('wp.target')}
               />
-              <strong style={{ fontFamily: 'Fraunces, serif', fontSize: 22, minWidth: 36 }}>{targetBand.toFixed(1)}</strong>
+              <strong style={{ fontFamily: 'Fraunces, serif', fontSize: 22, minWidth: 36 }}>{fmt.band(targetBand)}</strong>
             </div>
           </div>
         </div>
 
         <div>
-          <p className="muted" style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', margin: '0 0 6px' }}>Prompt</p>
+          <p className="muted" style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', margin: '0 0 6px' }}>{t('wp.prompt')}</p>
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder={taskType === 'task1'
-              ? 'Paste the Task 1 task description here (e.g., "The chart below shows…")'
-              : 'Paste the Task 2 essay question here (e.g., "Some people think that universities should accept equal numbers of male and female students…")'}
+            placeholder={taskType === 'task1' ? t('wp.placeholder1') : t('wp.placeholder2')}
+            aria-label={t('wp.prompt')}
             rows={5}
             style={{ width: '100%', fontSize: 14, lineHeight: 1.6, resize: 'vertical' }}
           />
@@ -116,7 +119,7 @@ export const WritingPrepPage = () => {
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
           <span className="muted" style={{ fontSize: 13 }}>
-            Generates two things in parallel: the outline you should plan with, and a model response at your target band.
+            {t('wp.hint')}
           </span>
           <button
             type="button"
@@ -124,21 +127,21 @@ export const WritingPrepPage = () => {
             onClick={() => void generate()}
             disabled={busy || prompt.trim().length < 20}
           >
-            {busy ? 'Generating…' : 'Generate plan + sample'} <Wand2 size={14} style={{ marginLeft: 6 }} />
+            {busy ? t('wp.generating') : t('wp.generate')} <Wand2 size={14} style={{ marginLeft: 6 }} />
           </button>
         </div>
-        {error ? <p className="error-text">{error}</p> : null}
+        {error ? <p className="error-text" role="alert">{error}</p> : null}
       </section>
 
       {outline ? (
         <section className="glass" style={{ padding: 24, marginBottom: 18 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
             <ListChecks size={16} />
-            <h2 style={{ margin: 0 }}>Your outline</h2>
+            <h2 style={{ margin: 0 }}>{t('wp.outline')}</h2>
           </div>
           {outline.thesis ? (
             <div style={{ background: 'var(--accent-soft)', padding: 14, borderRadius: 8, marginBottom: 14, borderLeft: '3px solid var(--accent)' }}>
-              <p className="eyebrow" style={{ margin: '0 0 4px', color: 'var(--accent)' }}>Thesis</p>
+              <p className="eyebrow" style={{ margin: '0 0 4px', color: 'var(--accent)' }}>{t('wp.thesis')}</p>
               <p style={{ margin: 0, fontSize: 15, lineHeight: 1.55 }}>{outline.thesis}</p>
             </div>
           ) : null}
@@ -159,7 +162,7 @@ export const WritingPrepPage = () => {
           ) : null}
           {outline.key_vocabulary.length > 0 ? (
             <div>
-              <p className="eyebrow" style={{ margin: '0 0 8px' }}>Key vocabulary to consider</p>
+              <p className="eyebrow" style={{ margin: '0 0 8px' }}>{t('wp.vocab')}</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 {outline.key_vocabulary.map((v, i) => (
                   <span
@@ -172,7 +175,7 @@ export const WritingPrepPage = () => {
               </div>
             </div>
           ) : null}
-          <p className="muted" style={{ margin: '14px 0 0', fontSize: 13 }}>⏱ {outline.time_management}</p>
+          {outline.time_management ? <p className="muted" style={{ margin: '14px 0 0', fontSize: 13 }}>⏱ {outline.time_management}</p> : null}
         </section>
       ) : null}
 
@@ -181,15 +184,16 @@ export const WritingPrepPage = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 12, marginBottom: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <PenSquare size={16} />
-              <h2 style={{ margin: 0 }}>Band {sample.target_band.toFixed(1)} model response</h2>
+              <h2 style={{ margin: 0 }}>{t('wp.model', { band: fmt.band(sample.target_band) })}</h2>
             </div>
-            <span className="muted" style={{ fontSize: 13 }}>{sample.word_count} words</span>
+            <span className="muted" style={{ fontSize: 13 }}>{t('wp.words', { count: sample.word_count })}</span>
           </div>
-          <p style={{ whiteSpace: 'pre-wrap', fontSize: 15, lineHeight: 1.75, color: 'var(--ink-2)' }}>{sample.response_text}</p>
+          <p className="muted" style={{ fontSize: 13, margin: '0 0 10px' }}>{t('wp.notScored')}</p>
+          <p className="content-text">{sample.response_text}</p>
 
           {sample.annotations.length > 0 ? (
             <div style={{ marginTop: 18 }}>
-              <p className="eyebrow"><Sparkles size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Why this scores band {sample.target_band.toFixed(1)}</p>
+              <p className="eyebrow"><Sparkles size={11} style={{ verticalAlign: -2, marginRight: 4 }} aria-hidden="true" /> {t('wp.why', { band: fmt.band(sample.target_band) })}</p>
               <ul style={{ margin: '8px 0 0', padding: 0, listStyle: 'none', display: 'grid', gap: 8 }}>
                 {sample.annotations.map((a, i) => {
                   const tone = CRITERION_TONES[a.criterion] ?? '#0e4955';
@@ -208,7 +212,7 @@ export const WritingPrepPage = () => {
           ) : null}
 
           {sample.rubric_notes && Object.values(sample.rubric_notes).some(Boolean) ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginTop: 18, paddingTop: 18, borderTop: '1px solid var(--card-border)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(220px, 100%), 1fr))', gap: 12, marginTop: 18, paddingTop: 18, borderTop: '1px solid var(--card-border)' }}>
               {(['TR', 'CC', 'LR', 'GRA'] as const).map((key) => {
                 const note = sample.rubric_notes[key];
                 if (!note) return null;
@@ -223,12 +227,12 @@ export const WritingPrepPage = () => {
             </div>
           ) : null}
 
-          <div style={{ marginTop: 18, display: 'flex', gap: 8 }}>
+          <div style={{ marginTop: 18, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <Link to="/dashboard" className="btn ghost compact">
-              Back to dashboard <ArrowRight size={12} style={{ marginLeft: 4 }} />
+              {t('wp.back')} <ArrowRight size={12} style={{ marginLeft: 4 }} />
             </Link>
             <Link to="/plan" className="btn ghost compact">
-              <BookOpen size={12} style={{ marginRight: 4 }} /> Practice writing labs
+              <BookOpen size={12} style={{ marginRight: 4 }} aria-hidden="true" /> {t('wp.labs')}
             </Link>
           </div>
         </section>
