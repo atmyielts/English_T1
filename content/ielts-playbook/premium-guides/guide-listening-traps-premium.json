@@ -1,0 +1,208 @@
+{
+  "slug": "guide-listening-traps-premium",
+  "sections": [
+    {
+      "block_type": "rich_text",
+      "heading": "Advanced Lab: How to Use This Section",
+      "content": {
+        "markdown": "Everything above this point explains the traps. This Advanced Lab is where you train against them under realistic pressure. It assumes you already know the four-part structure of IELTS Listening (40 questions, one recording per part, heard once) and that you can name the common trap types. If you cannot yet name them, go back and read the trap sections first; the Lab will feel confusing otherwise.\n\nThe Lab is built in four layers:\n\n1. **Precision techniques** – step-by-step methods for the moments where band 6.5 candidates usually lose marks: the pre-listening scan, live tracking, distractor dissection and answer transfer.\n2. **Worked examples** – short original transcript excerpts with the question, the evidence, the reasoning, and an explanation of why each tempting wrong answer fails.\n3. **Timed drills** – three drills with stated time limits. The answers are in a separate section so that you can attempt each drill honestly first.\n4. **Decision rules and repair planning** – if/then rules for live decisions, an error-diagnosis table, and a 14-day advanced repair schedule.\n\nWork through the Lab with a notebook open. Every time a technique surprises you, write one sentence about why. Those sentences become your personal rulebook, and a personal rulebook is far more useful in the exam room than anything you can memorise from a page."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "What Separates a Band 7 Listener From a Band 8 Listener",
+      "content": {
+        "markdown": "At band 6 to 6.5, most lost marks come from understanding problems: the candidate did not catch the word, or lost the thread. At band 7 to 8, understanding is usually good enough, and the lost marks come from **control** problems:\n\n- writing the first plausible word instead of the final confirmed word;\n- a spelling slip in a word that was heard perfectly;\n- breaking the word limit by adding an article or a second noun;\n- choosing a multiple-choice option because its words were heard, not because its meaning was confirmed;\n- losing one question and then losing the next two while searching for it;\n- transferring answers carelessly at the end.\n\nThe practical consequence is important: at the higher bands, **more listening practice alone gives diminishing returns**. What moves you is deliberate control of the answer-making process. Every technique in this Lab is about control, not about hearing more.\n\n### A useful self-test\n\nTake your last two practice tests and sort every wrong answer into one of two piles: \"I did not understand it\" and \"I understood it but wrote or chose the wrong thing\". If the second pile is the larger one, this Lab is exactly where your next band is hiding."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Technique 1: The Three-Pass Pre-Listening Scan",
+      "content": {
+        "markdown": "You are given a short reading time before each part (and before each section of a part). Most candidates use it to read the questions once. Strong candidates run three fast passes.\n\n### Pass 1 – Grammar of the gap (about a third of the time)\n\nFor each gap, decide what **kind** of word fits: noun or verb, singular or plural, a number, a date, a name, an adjective. Write a tiny symbol next to it: *n*, *pl*, *#*, *£*, *date*, *adj*. This alone prevents a large share of plural and word-form mistakes.\n\n### Pass 2 – Prediction of meaning\n\nFor each gap, imagine one or two realistic answers. If the form says \"Parking available at: ______\", you might predict \"rear entrance\" or \"Mill Street\". You are not trying to be right; you are tuning your ear to the right category of word.\n\n### Pass 3 – Anchors\n\nUnderline one **anchor** per question: a word that is unlikely to be paraphrased, such as a name, a day, a number or a heading on the form. Anchors tell you where you are in the recording. Content words in the question are often paraphrased, so do not rely on them as anchors.\n\n### Why three passes and not one?\n\nOne slow read gives you a vague sense of the topic. Three fast passes give you a grammar check, a sound target and a map. In practice the three passes take no longer than one careful read once you have trained them for a week."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Technique 2: Live Tracking With Two Questions in View",
+      "content": {
+        "markdown": "The single most damaging habit at band 7 is **tunnel listening**: focusing so hard on question 14 that question 15 passes unnoticed.\n\nThe fix is to keep two questions \"live\" at all times:\n\n1. Your eyes rest on the current question.\n2. Your peripheral attention sits on the next anchor.\n3. When you hear the next anchor, you move on immediately, even if the current gap is still empty.\n\n### The rule of the empty gap\n\nIf you hear the anchor for question 15 and question 14 is still blank, **write a mark in the margin and move on**. A blank gap costs one mark. Searching for it costs one mark plus however many you miss while searching. You can often reconstruct the missed answer later from the grammar and context you prepared in the scan.\n\n### Training drill\n\nPlay any recording and, without answering anything, simply tap the desk each time you hear an anchor word. If you cannot tap every anchor, your tracking is the problem, not your vocabulary."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Technique 3: Distractor Anatomy",
+      "content": {
+        "markdown": "A distractor is not random noise. It almost always follows one of a small number of shapes. When you learn the shapes, you start hearing them coming.\n\n| Shape | What you hear | What it does to you |\n|---|---|---|\n| Self-correction | \"It's on the fourth... sorry, the fifth of May\" | Tempts you to keep the first value |\n| Rejected option | \"We thought about the coach, but it was too slow\" | Mentions an option that is ruled out |\n| Changed plan | \"Originally Tuesday, but now it'll be Thursday\" | First value was true once, not now |\n| Second speaker overrides | \"So, Monday?\" / \"No, Wednesday suits me better\" | One speaker proposes, the other decides |\n| Category confusion | A price for adults, then a price for students | Right type of answer, wrong row |\n| General then specific | \"Somewhere in the north... actually Hartley Road\" | The vague answer is not the answer |\n\n### The listening principle behind every shape\n\nThe answer is the **last confirmed version** of the information for the **exact person or category** in the question. Train yourself to wait for confirmation words: *so*, *then*, *in the end*, *we've decided*, *that's settled*, *let's go with*.\n\n### A caution\n\nNot every early mention is a distractor. Sometimes the first answer is simply the answer. Do not develop a superstition that the first thing you hear must be wrong. Instead, hold the first version lightly and stay alert for a change until the next anchor arrives."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Technique 4: Word Limits and Spelling Under Pressure",
+      "content": {
+        "markdown": "Instructions such as **\"Write NO MORE THAN TWO WORDS AND/OR A NUMBER\"** are strict. An answer that exceeds the limit is marked wrong even if the meaning is perfect.\n\n### Reading the limit precisely\n\n- \"NO MORE THAN TWO WORDS AND/OR A NUMBER\" allows: one word; two words; a number; one word and a number; two words and a number.\n- \"ONE WORD ONLY\" allows exactly one word, so \"a library\" is wrong where \"library\" is right.\n- Hyphenated words are generally treated as one word, but do not build answers that depend on that; if a natural answer fits without a hyphen problem, prefer it.\n- Numbers can be written as digits, and digits are safer than words because they avoid spelling errors.\n\n### The three-second spelling check\n\nWhen you write a word you have heard clearly, give it three seconds before moving on:\n\n1. Is it singular or plural, and does the grammar of the gap agree?\n2. Are there double letters you may have collapsed (*accommodation*, *committee*, *necessary*)?\n3. If it was spelled aloud, did you write every letter in the order given?\n\n### Spelled-out names and codes\n\nWhen a speaker spells a name or a postcode, write it letter by letter **as you hear it**, then read it back silently once. Common confusions in fast speech include A/E/I, G/J, M/N, B/P/V and S/F. Practise these pairs deliberately if you know they trouble you."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Technique 5: Multiple-Choice Elimination in Real Time",
+      "content": {
+        "markdown": "Multiple-choice questions punish candidates who match words instead of meanings. All three or four options are usually mentioned in some way, so hearing a word from an option proves very little.\n\n### The four-label method\n\nDuring the scan, reduce each option to a two- or three-word meaning label in the margin. While listening, mark each option with one of four symbols:\n\n- **✓** confirmed as true for the question asked;\n- **✗** clearly rejected or contradicted;\n- **~** mentioned, but not as the answer (for example, true of someone else, or true in the past);\n- **?** not yet heard.\n\nChoose the option that ends with **✓**. If you end with two **~** marks and no **✓**, choose the one most closely tied to the exact question focus (the reason, the main concern, the speaker's preference) rather than the one that was mentioned more often.\n\n### Questions with two answers from five options\n\n\"Choose TWO letters\" questions often mention all five options. Keep a running tally and only commit at the end of the relevant stretch. The order in which you write the two letters does not normally matter, but each letter must be one of the correct pair."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Technique 6: Map and Plan Orientation Without Panic",
+      "content": {
+        "markdown": "Map and plan questions feel difficult because they combine listening with spatial reasoning. The solution is to do the spatial reasoning **before** the recording starts.\n\n### Before you listen\n\n1. Find the starting point the speaker is likely to use: an entrance, a \"You are here\" marker, a reception desk.\n2. Note fixed features: a lake, a car park, a corridor, the main road.\n3. Label directions on the plan yourself if they are not marked: write *left*, *right*, *top* and *bottom* from the viewpoint of someone standing at the entrance.\n4. Look at which labelled locations are still free and how far apart they are.\n\n### While you listen\n\nMove your pen along the route as the speaker describes it. Never jump ahead to guess the destination. Listen for position language: *opposite*, *beyond*, *at the far end*, *just before you reach*, *on the corner of*, *between*, *alongside*.\n\n### The orientation trap\n\nSpeakers sometimes describe a location from a different viewpoint (\"if you're coming in from the garden side...\"). When this happens, physically rotate the paper or your mental image so that your viewpoint matches theirs. A rotated map is far easier than a mental translation under time pressure."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Technique 7: Matching Questions and Signposting",
+      "content": {
+        "markdown": "Matching tasks (for example, matching people to opinions, or stages to features) often follow the order of the questions but present the options in a mixed order. Signposting language is your best tool here.\n\n### Signposts to listen for\n\n- **Sequencing:** *first of all*, *moving on to*, *the next stage*, *finally*.\n- **Contrast:** *however*, *on the other hand*, *that said*, *whereas*.\n- **Emphasis:** *what really matters is*, *the key point*, *above all*.\n- **Summary:** *so overall*, *to sum up*, *the bottom line is*.\n\nIn Part 4 especially, a lecturer will usually announce structure (\"I'll look at three factors\"). Write the number down. If you have only filled two gaps by the time the speaker says \"finally\", you know a gap is missing and can mark it.\n\n### Matching method\n\nBefore listening, read the option list and write a short meaning label beside each option. During the recording, write option letters lightly next to questions as soon as you hear a match, then confirm or change them as the speaker continues. Options are often used once only, but check the instructions: some matching tasks allow an option to be used more than once."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Computer vs Paper: Handling Your Answers",
+      "content": {
+        "markdown": "The answer-handling rules differ depending on how you take the test, so train in the format you will actually sit. Check the current rules with your test centre or the official IELTS sources before test day, because operational details can change.\n\n### Paper-based IELTS\n\n- You write answers on the question paper while listening.\n- At the end, you get **10 minutes to transfer** answers to the answer sheet.\n- Use the transfer time actively: check spelling, plurals, word limits and capital letters; fill any blanks with your best grammatically correct guess.\n- Transfer in blocks of ten and check the question numbers at each block, so that one skipped line does not shift every later answer.\n\n### Computer-delivered IELTS\n\n- You type answers directly into the boxes during the recording.\n- There is **no 10-minute transfer period**; you have about **2 minutes at the end to check** your answers.\n- Typing speed matters. If you type slowly, write a short note on the provided paper and type it in a pause.\n- Use the check time for blanks first, then spelling.\n\n### The shared rule\n\nIn both formats, there is no penalty for a wrong answer. **Never leave a gap empty.** A grammatically correct guess has a chance; a blank has none."
+      }
+    },
+    {
+      "block_type": "callout",
+      "heading": "The Last-Confirmed Rule",
+      "content": {
+        "label": "Rule to keep",
+        "body": "The answer is the last confirmed version of the information, for the exact person or category in the question, written within the word limit, spelled exactly. Every one of those four conditions must be true. Most band 7 errors fail exactly one of them."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Worked Example 1: Correction Inside a Booking Call (Part 1 Style)",
+      "content": {
+        "markdown": "**Question:** Course start date: ______\n\n**Original transcript excerpt:**\n\n> **Receptionist:** The beginners' pottery course normally starts on the third of October.\n> **Caller:** Oh, I'm away that week.\n> **Receptionist:** Then you're in luck, because this term we've pushed everything back a week, so the first session is now on the tenth. The intermediate group still begins on the third, though.\n\n**Evidence:** \"the first session is now on the tenth\".\n\n**Reasoning:** The question is about the course the caller is booking (beginners). The word *normally* signals a default that may not apply. *Now* signals the updated fact.\n\n**Why the tempting wrong answers fail:**\n\n- **3 October** – heard first, and heard twice, but it is the old date for beginners and the current date for a different group (intermediate). This is a combined changed-plan and category trap.\n- **Any date \"a week\" before or after** – candidates who do mental arithmetic instead of listening for the stated date sometimes write the seventeenth. The speaker states the date directly, so arithmetic is unnecessary.\n\n**Correct answer:** 10 October (or 10th October / 10 Oct, written within the limit)."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Worked Example 2: Option Elimination in a Tutorial (Part 3 Style)",
+      "content": {
+        "markdown": "**Question:** What is the students' main concern about the survey?\nA the number of questions  B the choice of participants  C the time available to analyse results\n\n**Original transcript excerpt:**\n\n> **Maya:** I know the questionnaire is a bit long, but people seem happy to finish it.\n> **Tom:** True. What bothers me more is that we only asked people at the station in the morning.\n> **Maya:** Exactly, they're nearly all commuters, so it doesn't represent the town at all. We've got plenty of weeks left to crunch the numbers, so that's not the issue.\n\n**Evidence:** \"What bothers me more is that we only asked people at the station...\" followed by agreement: \"Exactly... it doesn't represent the town\".\n\n**Reasoning:** The question asks for the *main* concern shared by the students. The phrase \"what bothers me more\" ranks one concern above another, and Maya's agreement makes it shared.\n\n**Why the tempting wrong answers fail:**\n\n- **A** – the length is mentioned first, but Maya immediately reduces its importance (\"people seem happy to finish it\"). Mark it **~**.\n- **C** – the analysis time is mentioned with a word associated with time pressure (\"crunch the numbers\"), but it is explicitly dismissed (\"that's not the issue\"). Mark it **✗**.\n\n**Correct answer:** B."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Worked Example 3: Lecture Note Completion With a Word Limit (Part 4 Style)",
+      "content": {
+        "markdown": "**Question:** Write NO MORE THAN TWO WORDS for each answer.\nEarly lighthouses: fires were burned on ______ to guide ships.\n\n**Original transcript excerpt:**\n\n> Long before glass lenses, coastal communities simply lit fires. At first these were built on the beach itself, but that was hardly visible from a distance, so people moved them up onto high cliffs, where the light carried much further out to sea.\n\n**Evidence:** \"moved them up onto high cliffs, where the light carried much further\".\n\n**Reasoning:** The lecture describes a change. The question describes the guiding method that worked, which is the improved version. \"Guide ships\" is paraphrased by \"the light carried much further out to sea\".\n\n**Why the tempting wrong answers fail:**\n\n- **the beach** – heard first, but described as \"hardly visible\", so it was not effective guidance; it is also an early-version trap.\n- **high coastal cliffs** – three words; it breaks the limit even though the meaning is close.\n- **cliff** – singular; the speaker says \"cliffs\" and the grammar \"on ______\" accepts either, but you should write what you hear. Markers expect the form used in the recording when it fits the gap.\n\n**Correct answer:** high cliffs (or cliffs)."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Timed Drill A: Form Completion (Time Limit: 4 Minutes)",
+      "content": {
+        "markdown": "**Instructions:** Read the transcript below once at normal reading speed, as though you were hearing it, then cover it and complete the form. Allow **1 minute** to read the form first and **3 minutes** for the transcript and answers. Write NO MORE THAN TWO WORDS AND/OR A NUMBER.\n\n**Form:**\n\n1. Name of club: ______ Cycling Club\n2. Meeting point: outside the ______\n3. Day of weekly ride: ______\n4. Membership fee for students: £______ per year\n5. Item every member must bring: a ______\n\n**Original transcript:**\n\n> **Woman:** So you're interested in joining. We're the Ferndale Cycling Club, that's F-E-R-N-D-A-L-E. We used to gather at the town hall, but since the roadworks we meet outside the library instead. Rides were on Saturdays last year; this year we've switched to Sundays because the roads are quieter. Full membership is forty pounds a year, students pay twenty-five, and under-twelves ride free with a parent. Oh, and a helmet is compulsory. A repair kit is useful, but nobody will turn you away without one.\n\nCheck your answers in the Answers section before reading on."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Timed Drill B: Multiple Choice and Matching (Time Limit: 5 Minutes)",
+      "content": {
+        "markdown": "**Instructions:** Allow **1 minute** to read the questions, then **4 minutes** for the transcript and answers.\n\n**Questions 6–7:** Choose the correct letter.\n\n6. Why did the speaker change her research topic?\nA Her supervisor suggested it. B She found more data on the new topic. C The original topic had already been studied.\n\n7. What does she say about the interviews?\nA They took longer than planned. B They produced unexpected results. C They were difficult to arrange.\n\n**Questions 8–10:** Match each source to the comment made about it. Choose from: A reliable but dated, B detailed but biased, C recent but limited.\n\n8. the council report  9. the local newspaper  10. the online survey\n\n**Original transcript:**\n\n> I began by looking at river pollution, and my supervisor was keen for me to carry on with it, but then I discovered that three theses in our department had covered it already, so I turned to urban noise instead, even though there's actually less published data on noise. The interviews went smoothly to set up, and they finished on schedule, but what surprised me was how many residents said traffic noise didn't bother them at all. For sources, the council report is careful and trustworthy, though it's from more than a decade ago. The local newspaper gives a lot of detail, but it's clearly campaigning against the new road. The online survey is only a few months old, which is great, but fewer than forty people answered it.\n\nCheck the Answers section before reading on."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Timed Drill C: Map Labelling (Time Limit: 4 Minutes)",
+      "content": {
+        "markdown": "**Instructions:** Draw this simple plan on paper first (allow **1 minute**). Then read the transcript and label the plan (allow **3 minutes**).\n\n**Plan:** A rectangular park. The main gate is in the middle of the bottom (south) edge. A path runs straight north from the gate to a fountain in the centre. Four unlabelled buildings, marked A, B, C and D, stand at the four corners: A top-left, B top-right, C bottom-right, D bottom-left.\n\n**Label:** 11. café  12. toilets  13. playground\n\n**Original transcript:**\n\n> As you come through the main gate, turn right and follow the low wall; the first building you reach, in the corner, is the café. If you keep going and head up the eastern side towards the top of the park, you'll find the toilets in that corner. The playground isn't next to either of them: it's diagonally across the park from the café, in the far corner on the western side.\n\nCheck the Answers section before reading on."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Answers: Timed Drills A, B and C",
+      "content": {
+        "markdown": "### Drill A\n\n1. **Ferndale** – spelled aloud; check every letter.\n2. **library** – \"town hall\" is the old meeting point (changed-plan trap).\n3. **Sunday** (or Sundays) – Saturday was last year.\n4. **25** – £40 is full membership; free is for under-twelves (category trap). Writing \"25\" as digits avoids spelling risk.\n5. **helmet** – \"repair kit\" is useful but not required; \"every member must bring\" matches \"compulsory\".\n\n### Drill B\n\n6. **C** – the supervisor is mentioned, so A is tempting, but she wanted the speaker to continue with the original topic. B is contradicted: there is less data on noise. The reason is that the topic had already been covered.\n7. **B** – A is contradicted (\"finished on schedule\") and C is contradicted (\"went smoothly to set up\"). The surprise in the residents' answers is the unexpected result.\n8. **A** – \"careful and trustworthy\" but \"more than a decade ago\".\n9. **B** – \"a lot of detail\" but \"campaigning\".\n10. **C** – \"a few months old\" but few respondents.\n\n### Drill C\n\n11. **C** (bottom-right) – \"turn right\" from a south-facing gate means east; the first corner reached is the south-east corner.\n12. **B** (top-right) – continuing up the eastern side to the top.\n13. **A** (top-left) – diagonally opposite the bottom-right café, on the western side.\n\n### Scoring yourself honestly\n\nCount any answer with a spelling error or an extra word as wrong, exactly as an examiner would. If you lost marks in Drill C, practise orientation; if in Drill A, practise changed-plan listening; if in Drill B, practise the four-label method."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Decision Rules for the Live Test",
+      "content": {
+        "markdown": "Use these rules as automatic responses. The point of a rule is that you do not need to think about it under pressure.\n\n- **If** you hear the next question's anchor and the current gap is empty, **then** mark it and move on immediately.\n- **If** a speaker uses *actually*, *sorry*, *I mean*, *no, wait* or *now*, **then** expect the previous value to be replaced.\n- **If** one speaker proposes and another responds, **then** wait for the response before writing.\n- **If** your answer has more words than the limit, **then** remove articles and adjectives first, and keep the core noun.\n- **If** two multiple-choice options both sound possible, **then** choose the one that answers the exact question word (*main*, *first*, *most*, *why*), not the one mentioned more often.\n- **If** you lose your place completely, **then** stop searching backwards, read the next two anchors, and rejoin there.\n- **If** you are unsure of a spelling at transfer time, **then** write the most standard spelling you know; never leave it blank.\n- **If** a number could be written as a word or digits, **then** use digits."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Error-Diagnosis Table",
+      "content": {
+        "markdown": "Use this table after every practice test. Find the symptom, confirm the likely cause, and apply the fix for at least a week before judging it.\n\n| Symptom | Likely cause | Fix |\n|---|---|---|\n| Right word, marked wrong | Spelling, plural or word-limit slip | Three-second check; spelling list of your own errors |\n| Wrote the first value heard | Not waiting for confirmation | Listen for *now*, *in the end*, *actually* before committing |\n| Missed two or three in a row | Tunnel listening on one gap | Two-questions-in-view tracking; empty-gap rule |\n| Multiple choice errors despite \"hearing\" the option | Word matching, not meaning matching | Four-label method (✓ ✗ ~ ?) |\n| Map questions mostly wrong | Orientation not set before audio | Label directions in the scan; rotate the plan |\n| Part 4 gaps blank | Lost structure of the lecture | Note the announced number of points; follow signposts |\n| Answers shifted on answer sheet | Careless paper transfer | Transfer in blocks of ten; check numbering each block |\n| Good scores at home, worse in mocks | Practising untimed or with pauses | Full-length timed practice, no replays |"
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "The 14-Day Advanced Repair Schedule",
+      "content": {
+        "markdown": "This schedule assumes about 45 to 60 minutes per day. Use original recordings from reliable IELTS practice material; never replay during the timed portion.\n\n| Day | Focus | Task |\n|---|---|---|\n| 1 | Baseline | One full timed test; sort errors into \"understanding\" and \"control\" |\n| 2 | Scan | Three-pass scan on four forms; no audio, check your predictions afterwards |\n| 3 | Tracking | Anchor-tapping on two recordings; then answer one part |\n| 4 | Distractors | Collect ten correction and changed-plan moments in a notebook |\n| 5 | Word limits | Rewrite twenty of your past answers to fit strict limits |\n| 6 | Spelling | Build a list of your misspelled words; test yourself twice |\n| 7 | Review | One timed Parts 1–2; compare error types with Day 1 |\n| 8 | Multiple choice | Four-label method on three Part 3 recordings |\n| 9 | Maps | Two map tasks; set orientation before each one |\n| 10 | Matching | Signpost hunt on two Part 4 lectures; then answer the questions |\n| 11 | Format | Practise answer handling in your test format (paper transfer or computer check) |\n| 12 | Pressure | Full timed test in exam conditions |\n| 13 | Repair | Re-do only the question types where you lost the most marks |\n| 14 | Consolidation | Final timed test; update your personal rulebook |\n\n### How to judge progress\n\nCompare the **mix** of errors, not only the score. If \"control\" errors are shrinking, the method is working even if one test score dips. Scores naturally vary between practice tests."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Building Your Personal Rulebook",
+      "content": {
+        "markdown": "Generic advice is useful once. Your own rules are useful every time. After each practice test, write one rule in this form:\n\n> **When** [situation], **I tend to** [error], **so I will** [specific action].\n\nFor example: \"When a speaker spells a street name, I tend to drop double letters, so I will read the spelling back silently once before moving on.\"\n\nKeep the rulebook short; ten precise rules beat fifty vague ones. Read it the evening before a full practice test and again before the real exam. Delete rules once the error disappears for three tests in a row, so that the list always reflects your current weaknesses."
+      }
+    },
+    {
+      "block_type": "faq",
+      "heading": "Advanced Lab FAQ",
+      "content": {
+        "items": [
+          {
+            "question": "Should I write answers in capital letters?",
+            "answer": "Capitals are commonly accepted and can make handwriting clearer on paper, but check the current instructions for your test. Whatever you choose, be consistent and make sure every letter is legible."
+          },
+          {
+            "question": "Is it worth predicting answers if my predictions are often wrong?",
+            "answer": "Yes. The value of prediction is in tuning your attention to the right type of word, not in guessing the exact answer. A wrong prediction of the right category still helps you hear the real answer."
+          },
+          {
+            "question": "Do accents matter for the higher bands?",
+            "answer": "The test uses a range of accents. At higher bands, accent difficulty is usually smaller than control errors, but if one accent consistently causes trouble, add a few recordings in that accent to your weekly practice."
+          },
+          {
+            "question": "Can I change an answer after the recording moves on?",
+            "answer": "You can, but only if you have a specific reason, such as a later correction you heard. Do not change answers based on vague doubt; first instincts backed by evidence are usually more reliable than late second guesses."
+          },
+          {
+            "question": "How many full tests should I do in two weeks?",
+            "answer": "Quality matters more than quantity. Two or three full timed tests in two weeks, each followed by careful error analysis, are usually more useful than a test every day with no review."
+          }
+        ]
+      }
+    },
+    {
+      "block_type": "checklist",
+      "heading": "Advanced Lab Final Checklist",
+      "content": {
+        "items": [
+          "I run a three-pass scan: grammar of the gap, meaning prediction, anchors.",
+          "I keep two questions in view and use the empty-gap rule without hesitation.",
+          "I can name the distractor shapes and wait for the last confirmed version.",
+          "I read every word limit literally and remove extra words before moving on.",
+          "I use digits for numbers and check plurals and double letters.",
+          "I mark multiple-choice options with ✓, ✗, ~ and ? instead of matching words.",
+          "I set map orientation before the audio starts and rotate the plan if needed.",
+          "I follow signposts and note the number of points a lecturer announces.",
+          "I know how answers are handled in my format: 10 minutes to transfer on paper, about 2 minutes to check on computer.",
+          "I never leave a gap empty.",
+          "I sort every practice error into understanding or control and apply the diagnosis table.",
+          "I keep a short personal rulebook and update it after each test."
+        ]
+      }
+    }
+  ]
+}
