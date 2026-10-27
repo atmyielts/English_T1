@@ -13,6 +13,7 @@ import {
 } from "./exam-playbook-diagnostic.ts";
 import {
   isoDate,
+  normalizeTemplateMeta,
   normalizeTemplateWeeks,
   planItemsFromSchedule,
   scheduleTemplateWeeks,
@@ -281,14 +282,26 @@ export const loadPageBySlug = async (cfg: ExamPlaybookConfig, db: any, slug: str
 export const loadPageDetail = async (cfg: ExamPlaybookConfig, db: any, page: JsonRecord, opts: { includeDrafts?: boolean } = {}) => {
   let sectionQuery = db.from(cfg.tables.sections).select("*").eq("page_id", page.id);
   if (!opts.includeDrafts) sectionQuery = sectionQuery.eq("status", "published");
-  let childQuery = db
-    .from(cfg.tables.pages)
-    .select("id, parent_page_id, page_type, module_key, slug, title, summary, visibility, sort_order, published_at, metadata, status")
-    .eq("parent_page_id", page.id);
-  if (!opts.includeDrafts) childQuery = childQuery.eq("status", "published");
-  const [sectionResult, childResult, linkResult] = await Promise.all([
+  // Guides point at their module by parent_page_id or, when modules were
+  // seeded later, by module_key = the module's slug. Resolve both at read time.
+  const childColumns = "id, parent_page_id, page_type, module_key, slug, title, summary, visibility, sort_order, published_at, metadata, status";
+  let childQuery = db.from(cfg.tables.pages).select(childColumns).eq("product_id", cfg.playbookProductId).eq("parent_page_id", page.id);
+  let keyedQuery = db.from(cfg.tables.pages).select(childColumns).eq("product_id", cfg.playbookProductId).eq("module_key", String(page.slug ?? ""));
+  if (!opts.includeDrafts) {
+    childQuery = childQuery.eq("status", "published");
+    keyedQuery = keyedQuery.eq("status", "published");
+  }
+  const parentKey = toText(page.module_key, 160);
+  const parentQuery = page.parent_page_id
+    ? db.from(cfg.tables.pages).select("id, slug, title, visibility, status").eq("id", page.parent_page_id).maybeSingle()
+    : parentKey && parentKey !== page.slug
+      ? db.from(cfg.tables.pages).select("id, slug, title, visibility, status").eq("product_id", cfg.playbookProductId).eq("slug", parentKey).maybeSingle()
+      : Promise.resolve({ data: null, error: null });
+  const [sectionResult, childResult, keyedResult, parentResult, linkResult] = await Promise.all([
     sectionQuery.order("sort_order", { ascending: true }),
     childQuery.order("sort_order", { ascending: true }),
+    keyedQuery.order("sort_order", { ascending: true }),
+    parentQuery,
     db.from(cfg.tables.pageSources).select("source_id, sort_order, citation_note, is_primary").eq("page_id", page.id).order("sort_order", { ascending: true }),
   ]);
   const links = rows(must(linkResult, "load page sources"));
@@ -306,7 +319,13 @@ export const loadPageDetail = async (cfg: ExamPlaybookConfig, db: any, page: Jso
       content: isObject(row.content) ? row.content : {},
       metadata: isObject(row.metadata) ? row.metadata : {},
     })),
-    child_pages: rows(must(childResult, "load child pages")).map((row) => ({ ...row, metadata: isObject(row.metadata) ? row.metadata : {} })),
+    child_pages: [...rows(must(childResult, "load child pages")), ...rows(must(keyedResult, "load keyed pages"))]
+      .filter((row, index, all) => String(row.id) !== String(page.id) && all.findIndex((other) => String(other.id) === String(row.id)) === index)
+      .map((row) => ({ ...row, metadata: isObject(row.metadata) ? row.metadata : {} })),
+    parent_page: (() => {
+      const parent = parentResult?.error ? null : parentResult?.data;
+      return isObject(parent) && (opts.includeDrafts || parent.status === "published") ? { id: parent.id, slug: parent.slug, title: parent.title, visibility: parent.visibility } : null;
+    })(),
     sources: links
       .map((link) => {
         const source = sourceRows.find((s) => String(s.id) === String(link.source_id));
@@ -783,7 +802,7 @@ export const createPlaybookHandler = (cfg: ExamPlaybookConfig, makeDeps: () => P
         const weeks = normalizeTemplateWeeks(plan.schedule_json, Number(plan.duration_days ?? 0), known);
         const preview = scheduleTemplateWeeks(weeks, { startDate: isoDate(deps.now()), testDate: (profile.deadline_date as string | null) ?? null });
         const adopted = myPlan.plan && String(myPlan.plan.template_slug) === slug ? myPlan : null;
-        return json(200, { plan, weeks, schedule_preview: preview, adopted }, { "Cache-Control": "private, no-store" });
+        return json(200, { plan, weeks, meta: normalizeTemplateMeta(plan.schedule_json), schedule_preview: preview, adopted }, { "Cache-Control": "private, no-store" });
       }
 
       m = match(/^\/plans\/([^/]+)\/adopt$/);
