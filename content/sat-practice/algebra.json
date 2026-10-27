@@ -1,0 +1,2903 @@
+[
+  {
+    "slug": "alg-lin1v-001",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_one_variable",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "If $5x - 8 = 27$, what is the value of $x$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{19}{5}$"
+      },
+      {
+        "id": "B",
+        "label": "$7$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{67}{5}$"
+      },
+      {
+        "id": "D",
+        "label": "$35$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Add 8 to both sides to get $5x = 35$, then divide by 5: $x = 7$. Choice A comes from subtracting 8 instead of adding it ($5x = 19$). Choice C comes from dividing 27 by 5 and then adding 8, which undoes the steps in the wrong order. Choice D is the value of $5x$, not $x$."
+  },
+  {
+    "slug": "alg-lin1v-002",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_one_variable",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A climbing gym charges a one-time registration fee of 25 dollars plus 12 dollars for each month of membership. Lena paid a total of 121 dollars for registration and $m$ months of membership. What is the value of $m$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$8$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{121}{12}$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{73}{6}$"
+      },
+      {
+        "id": "D",
+        "label": "$96$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "The total cost is $25 + 12m = 121$. Subtract 25: $12m = 96$. Divide by 12: $m = 8$. Choice B divides the total by 12 and ignores the registration fee. Choice C adds the fee instead of subtracting it ($12m = 146$). Choice D is the cost of the months, $12m$, rather than the number of months."
+  },
+  {
+    "slug": "alg-lin1v-003",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_one_variable",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "What value of $x$ satisfies the equation $\\frac{x}{4} + 3 = 9$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{3}{2}$"
+      },
+      {
+        "id": "B",
+        "label": "$24$"
+      },
+      {
+        "id": "C",
+        "label": "$33$"
+      },
+      {
+        "id": "D",
+        "label": "$48$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Subtract 3 from both sides: $\\frac{x}{4} = 6$. Multiply both sides by 4: $x = 24$. Choice A divides 6 by 4 instead of multiplying. Choice C multiplies 9 by 4 before subtracting 3, which treats the equation as $\\frac{x+3}{4} = 9$. Choice D adds 3 instead of subtracting it."
+  },
+  {
+    "slug": "alg-lin1v-004",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_one_variable",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "What is the solution to the equation $3(x + 4) = 2x + 19$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{7}{5}$"
+      },
+      {
+        "id": "B",
+        "label": "$7$"
+      },
+      {
+        "id": "C",
+        "label": "$15$"
+      },
+      {
+        "id": "D",
+        "label": "$31$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Distribute: $3x + 12 = 2x + 19$. Subtract $2x$ and 12 from both sides: $x = 7$. Choice C comes from writing $3x + 4$ instead of $3x + 12$ (not distributing the 3 to the 4). Choice A comes from adding $2x$ to $3x$ instead of subtracting, giving $5x = 7$. Choice D comes from adding 12 to 19 instead of subtracting it."
+  },
+  {
+    "slug": "alg-lin1v-005",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_one_variable",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "If $2x + 7 = 15$, what is the value of $6x + 21$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$4$"
+      },
+      {
+        "id": "B",
+        "label": "$24$"
+      },
+      {
+        "id": "C",
+        "label": "$31$"
+      },
+      {
+        "id": "D",
+        "label": "$45$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Notice that $6x + 21 = 3(2x + 7)$. Since $2x + 7 = 15$, the expression equals $3(15) = 45$. (Solving first also works: $x = 4$, and $6(4) + 21 = 45$.) Choice A is the value of $x$, choice B is the value of $6x$, and choice C adds 7 instead of 21."
+  },
+  {
+    "slug": "alg-lin1v-006",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_one_variable",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A taxi ride costs 3.50 dollars to start plus 1.25 dollars for each mile driven. A ride cost a total of 16.00 dollars. How many miles long was the ride?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$10$"
+      },
+      {
+        "id": "B",
+        "label": "$12.5$"
+      },
+      {
+        "id": "C",
+        "label": "$12.8$"
+      },
+      {
+        "id": "D",
+        "label": "$15.6$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Let $m$ be the number of miles. Then $3.50 + 1.25m = 16.00$, so $1.25m = 12.50$ and $m = 10$. Choice B is the cost of the miles, 12.50 dollars, not the number of miles. Choice C divides the total by 1.25 and ignores the 3.50-dollar starting charge. Choice D adds the starting charge instead of subtracting it."
+  },
+  {
+    "slug": "alg-lin1v-007",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_one_variable",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "What value of $x$ is the solution to $7 - 2x = 19$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-13$"
+      },
+      {
+        "id": "B",
+        "label": "$-6$"
+      },
+      {
+        "id": "C",
+        "label": "$6$"
+      },
+      {
+        "id": "D",
+        "label": "$13$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Subtract 7 from both sides: $-2x = 12$. Divide by $-2$: $x = -6$. Choice C ignores the negative sign on $-2x$. Choice A and choice D come from adding 7 to 19 instead of subtracting it."
+  },
+  {
+    "slug": "alg-lin1v-008",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_one_variable",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "What is the solution to the equation $\\frac{2x - 1}{3} = \\frac{x + 4}{2}$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{11}{4}$"
+      },
+      {
+        "id": "B",
+        "label": "$5$"
+      },
+      {
+        "id": "C",
+        "label": "$13$"
+      },
+      {
+        "id": "D",
+        "label": "$14$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Multiply both sides by 6: $2(2x - 1) = 3(x + 4)$, so $4x - 2 = 3x + 12$ and $x = 14$. Choice B comes from not distributing ($4x - 1 = 3x + 4$). Choice C distributes the 2 to $2x$ but not to $-1$. Choice A cross-multiplies with the wrong denominators, $3(2x - 1) = 2(x + 4)$."
+  },
+  {
+    "slug": "alg-lin1v-009",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_one_variable",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "In the equation $4(2x - 3) = 8x + k$, $k$ is a constant. For what value of $k$ does the equation have infinitely many solutions?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-12$"
+      },
+      {
+        "id": "B",
+        "label": "$-3$"
+      },
+      {
+        "id": "C",
+        "label": "$3$"
+      },
+      {
+        "id": "D",
+        "label": "$12$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "The left side is $8x - 12$. The equation $8x - 12 = 8x + k$ is true for every $x$ exactly when $k = -12$. Any other value of $k$ gives no solution. Choice B uses $-3$ from inside the parentheses without multiplying by 4. Choice C changes the sign of that $-3$, and choice D changes the sign of $-12$; both give no solution."
+  },
+  {
+    "slug": "alg-lin1v-010",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_one_variable",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "How many solutions does the equation $3(2x + 5) = 6x + 15$ have?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Exactly one"
+      },
+      {
+        "id": "B",
+        "label": "Exactly two"
+      },
+      {
+        "id": "C",
+        "label": "Infinitely many"
+      },
+      {
+        "id": "D",
+        "label": "None"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Distributing gives $6x + 15 = 6x + 15$, which is true for every value of $x$, so the equation has infinitely many solutions. Choice A is tempting if you stop after seeing a single $x$ term on each side, but subtracting $6x$ leaves $15 = 15$ rather than a value of $x$. A linear equation can never have exactly two solutions (choice B), and choice D would require a false statement such as $15 = 12$."
+  },
+  {
+    "slug": "alg-lin1v-011",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_one_variable",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "Caterer P charges a 150-dollar setup fee plus 18 dollars per guest. Caterer Q charges a 90-dollar setup fee plus 22 dollars per guest. For how many guests will the two caterers charge the same total amount?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$1.5$"
+      },
+      {
+        "id": "B",
+        "label": "$6$"
+      },
+      {
+        "id": "C",
+        "label": "$15$"
+      },
+      {
+        "id": "D",
+        "label": "$60$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Set the costs equal: $150 + 18g = 90 + 22g$. Subtract $18g$ and 90 from both sides: $60 = 4g$, so $g = 15$. Choice D stops at $60 = 4g$ without dividing. Choice A divides 60 by $22 + 18$, adding the per-guest prices instead of subtracting them. Choice B divides the total of the setup fees by the total of the per-guest prices, which does not compare the two caterers."
+  },
+  {
+    "slug": "alg-lin1v-012",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_one_variable",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "What value of $x$ satisfies $\\frac{3}{4}(x - 8) = \\frac{1}{2}x + 1$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{7}{4}$"
+      },
+      {
+        "id": "B",
+        "label": "$20$"
+      },
+      {
+        "id": "C",
+        "label": "$28$"
+      },
+      {
+        "id": "D",
+        "label": "$36$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Distribute: $\\frac{3}{4}x - 6 = \\frac{1}{2}x + 1$. Subtract $\\frac{1}{2}x$ and add 6: $\\frac{1}{4}x = 7$, so $x = 28$. Choice D forgets to multiply the 8 by $\\frac{3}{4}$. Choice B moves both constants with the wrong signs, writing $\\frac{1}{4}x = 6 - 1 = 5$. Choice A divides 7 by 4 instead of multiplying."
+  },
+  {
+    "slug": "alg-lin1v-013",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_one_variable",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The formula $F = \\frac{9}{5}C + 32$ converts a temperature of $C$ degrees Celsius to $F$ degrees Fahrenheit. A weather station records a temperature of 50 degrees Fahrenheit. What is this temperature in degrees Celsius?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$10$"
+      },
+      {
+        "id": "B",
+        "label": "$18$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{162}{5}$"
+      },
+      {
+        "id": "D",
+        "label": "$122$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Substitute $F = 50$: $50 = \\frac{9}{5}C + 32$. Subtract 32 to get $18 = \\frac{9}{5}C$, then multiply by $\\frac{5}{9}$: $C = 10$. Choice B stops after subtracting 32. Choice C multiplies 18 by $\\frac{9}{5}$ instead of dividing. Choice D substitutes 50 for $C$ instead of $F$, converting in the wrong direction."
+  },
+  {
+    "slug": "alg-lin1v-014",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_one_variable",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "What is the solution to $5(x - 2) - 3(x + 1) = 11$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$7$"
+      },
+      {
+        "id": "B",
+        "label": "$9$"
+      },
+      {
+        "id": "C",
+        "label": "$11$"
+      },
+      {
+        "id": "D",
+        "label": "$12$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Distribute carefully: $5x - 10 - 3x - 3 = 11$, so $2x - 13 = 11$, $2x = 24$, and $x = 12$. Choice B results from $-3(x + 1) = -3x + 3$, a sign error. Choice A results from not distributing either coefficient to the constants. Choice C distributes the 5 but not the $-3$ to the 1."
+  },
+  {
+    "slug": "alg-lin1v-015",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_one_variable",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "An online store sells a jacket at 80% of its original price $p$, in dollars, and then adds a 6-dollar shipping charge. A customer pays 54 dollars in total. The equation $0.8p + 6 = 54$ represents this situation. What was the original price of the jacket, in dollars?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{192}{5}$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{123}{2}$"
+      },
+      {
+        "id": "C",
+        "label": "$60$"
+      },
+      {
+        "id": "D",
+        "label": "$240$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Subtract 6: $0.8p = 48$. Divide by 0.8: $p = 60$. Choice A multiplies 48 by 0.8 instead of dividing. Choice B divides 54 by 0.8 before subtracting the shipping charge. Choice D divides by 0.2, the discount rate, instead of 0.8, the fraction of the price that is paid."
+  },
+  {
+    "slug": "alg-lin1v-016",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_one_variable",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The equation $\\frac{3x + p}{4} = \\frac{x}{2} + 5$, where $p$ is a constant, has the solution $x = 6$. What is the value of $p$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-1$"
+      },
+      {
+        "id": "B",
+        "label": "$2$"
+      },
+      {
+        "id": "C",
+        "label": "$14$"
+      },
+      {
+        "id": "D",
+        "label": "$26$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Substitute $x = 6$: $\\frac{18 + p}{4} = 3 + 5 = 8$. Multiply by 4: $18 + p = 32$, so $p = 14$. Choice A multiplies only the $\\frac{x}{2}$ term by 4, writing $18 + p = 12 + 5$. Choice B drops the $\\frac{x}{2}$ term, solving $\\frac{18 + p}{4} = 5$. Choice D uses 6 instead of $\\frac{6}{2} = 3$ for $\\frac{x}{2}$."
+  },
+  {
+    "slug": "alg-lin1v-017",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_one_variable",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "In the equation $\\frac{k}{3}(6x - 9) = 4x + c$, $k$ and $c$ are constants. If the equation has infinitely many solutions, what is the value of $c$?",
+    "answer": [
+      "-6"
+    ],
+    "explanation": "Distribute: $\\frac{k}{3}(6x - 9) = 2kx - 3k$. For the equation $2kx - 3k = 4x + c$ to hold for all $x$, the coefficients of $x$ must match and the constants must match: $2k = 4$, so $k = 2$, and $c = -3k = -6$."
+  },
+  {
+    "slug": "alg-lin1v-018",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_one_variable",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "In the equation $a(x + 3) - 2x = 4x + 9$, $a$ is a constant. For which value of $a$ does the equation have no solution?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-6$"
+      },
+      {
+        "id": "B",
+        "label": "$2$"
+      },
+      {
+        "id": "C",
+        "label": "$3$"
+      },
+      {
+        "id": "D",
+        "label": "$6$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Expand and collect terms: $ax + 3a - 2x = 4x + 9$, so $(a - 6)x = 9 - 3a$. There is no solution when the coefficient of $x$ is 0 but the constant is not: $a = 6$ gives $0 = -9$, which is false. Choice C makes the constant $9 - 3a$ zero, which gives the single solution $x = 0$. Choice A ($a = -6$) has the wrong sign, and choice B ($a = 2$) adds the coefficients $-2$ and 4 instead of moving $4x$ across the equal sign; both leave a nonzero coefficient $a - 6$, so each gives exactly one solution."
+  },
+  {
+    "slug": "alg-lin1v-019",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_one_variable",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "Right now, Ana is 3 times as old as her cousin. In 12 years, Ana will be twice as old as her cousin will be then. How old, in years, is Ana now?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$12$"
+      },
+      {
+        "id": "B",
+        "label": "$24$"
+      },
+      {
+        "id": "C",
+        "label": "$36$"
+      },
+      {
+        "id": "D",
+        "label": "$48$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Let $c$ be the cousin's current age, so Ana is $3c$. In 12 years: $3c + 12 = 2(c + 12)$, so $3c + 12 = 2c + 24$ and $c = 12$. Ana is $3(12) = 36$ years old. Choice A is the cousin's current age. Choice B is the cousin's age in 12 years. Choice D is Ana's age in 12 years rather than now."
+  },
+  {
+    "slug": "alg-lin1v-020",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_one_variable",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "What is the solution to the equation $\\frac{x + 2}{3} - \\frac{2x - 1}{4} = \\frac{1}{6}$?",
+    "answer": [
+      "9/2",
+      "4.5"
+    ],
+    "explanation": "Multiply every term by 12: $4(x + 2) - 3(2x - 1) = 2$. Expand: $4x + 8 - 6x + 3 = 2$, so $-2x + 11 = 2$, $-2x = -9$, and $x = \\frac{9}{2}$, or 4.5. A frequent error is writing $-3(2x - 1)$ as $-6x - 3$, which gives $x = \\frac{3}{2}$."
+  },
+  {
+    "slug": "alg-lin1v-021",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_one_variable",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "In the equation $4(px - 3) = 12x - 3q$, $p$ and $q$ are constants. The equation has infinitely many solutions. What is the value of $p + q$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-1$"
+      },
+      {
+        "id": "B",
+        "label": "$7$"
+      },
+      {
+        "id": "C",
+        "label": "$9$"
+      },
+      {
+        "id": "D",
+        "label": "$16$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "The left side is $4px - 12$. For infinitely many solutions, $4px - 12$ and $12x - 3q$ must be identical: $4p = 12$ gives $p = 3$, and $-12 = -3q$ gives $q = 4$. So $p + q = 7$. Choice A uses $q = -4$, a sign error. Choice D adds the visible coefficients 4 and 12, and choice C subtracts 3 from 12 without solving for either constant."
+  },
+  {
+    "slug": "alg-lin1v-022",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_one_variable",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "In the equation $\\frac{3}{5}(10x - 15) - 2(ax + 1) = 4$, $a$ is a constant. If the equation has no solution, what is the value of $a$?",
+    "answer": [
+      "3"
+    ],
+    "explanation": "Expand: $6x - 9 - 2ax - 2 = 4$, so $(6 - 2a)x - 11 = 4$, or $(6 - 2a)x = 15$. The equation has no solution only when the coefficient of $x$ is 0, because then it reads $0 = 15$. So $6 - 2a = 0$ and $a = 3$."
+  },
+  {
+    "slug": "alg-linfn-001",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_functions",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "The function $f$ is defined by $f(x) = 4x - 9$. What is the value of $f(5)$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-4$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{7}{2}$"
+      },
+      {
+        "id": "C",
+        "label": "$11$"
+      },
+      {
+        "id": "D",
+        "label": "$29$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Substitute 5 for $x$: $f(5) = 4(5) - 9 = 20 - 9 = 11$. Choice D adds 9 instead of subtracting it. Choice B solves $4x - 9 = 5$, which finds the input that gives an output of 5. Choice A adds the input to $-9$ without multiplying by 4."
+  },
+  {
+    "slug": "alg-linfn-002",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_functions",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "For the linear function $f$, the table shows three values of $x$ and their corresponding values of $f(x)$. What is the slope of the graph of $y = f(x)$ in the xy-plane?",
+    "table": {
+      "headers": [
+        "x",
+        "f(x)"
+      ],
+      "rows": [
+        [
+          "1",
+          "7"
+        ],
+        [
+          "3",
+          "13"
+        ],
+        [
+          "5",
+          "19"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{1}{3}$"
+      },
+      {
+        "id": "B",
+        "label": "$3$"
+      },
+      {
+        "id": "C",
+        "label": "$4$"
+      },
+      {
+        "id": "D",
+        "label": "$6$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "From $x = 1$ to $x = 3$, $f(x)$ increases from 7 to 13. The slope is $\\frac{13 - 7}{3 - 1} = \\frac{6}{2} = 3$. Choice D is the change in $f(x)$ between rows, but $x$ also changes by 2. Choice C is the y-intercept, $f(0) = 7 - 3 = 4$. Choice A inverts the ratio."
+  },
+  {
+    "slug": "alg-linfn-003",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_functions",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A plumber uses the function $C(h) = 65h + 40$ to find the total charge, in dollars, for a job that takes $h$ hours. What is the best interpretation of 40 in this context?",
+    "options": [
+      {
+        "id": "A",
+        "label": "The charge for each hour of work"
+      },
+      {
+        "id": "B",
+        "label": "The total charge for a job that takes 1 hour"
+      },
+      {
+        "id": "C",
+        "label": "The number of hours the plumber works on a typical job"
+      },
+      {
+        "id": "D",
+        "label": "A fixed charge that does not depend on the number of hours"
+      }
+    ],
+    "answer": "D",
+    "explanation": "When $h = 0$, $C(0) = 40$, so 40 dollars is charged regardless of time: a fixed fee. Choice A describes 65, the coefficient of $h$. Choice C confuses a charge with a number of hours. Choice B would be $C(1) = 105$ dollars, not 40."
+  },
+  {
+    "slug": "alg-linfn-004",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_functions",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "The function $g$ is defined by $g(x) = -2x + 7$. For what value of $x$ does $g(x) = -5$?",
+    "answer": [
+      "6"
+    ],
+    "explanation": "Set $-2x + 7 = -5$. Subtract 7: $-2x = -12$. Divide by $-2$: $x = 6$."
+  },
+  {
+    "slug": "alg-linfn-005",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_functions",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "The graph of the linear function $y = f(x)$ is shown. It passes through the points $(0, 2)$ and $(3, 8)$. Which equation defines $f$?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 300 420\" width=\"300\" height=\"420\" role=\"img\" aria-label=\"A line passing through (0, 2) and (3, 8)\" font-family=\"sans-serif\" font-size=\"10\"><title>A line passing through (0, 2) and (3, 8)</title><path d=\"M24.0 396.0V24.0M49.2 396.0V24.0M74.4 396.0V24.0M99.6 396.0V24.0M124.8 396.0V24.0M150.0 396.0V24.0M175.2 396.0V24.0M200.4 396.0V24.0M225.6 396.0V24.0M250.8 396.0V24.0M276.0 396.0V24.0M24.0 396.0H276.0M24.0 369.4H276.0M24.0 342.9H276.0M24.0 316.3H276.0M24.0 289.7H276.0M24.0 263.1H276.0M24.0 236.6H276.0M24.0 210.0H276.0M24.0 183.4H276.0M24.0 156.9H276.0M24.0 130.3H276.0M24.0 103.7H276.0M24.0 77.1H276.0M24.0 50.6H276.0M24.0 24.0H276.0\" stroke=\"currentColor\" stroke-opacity=\"0.18\" stroke-width=\"1\" fill=\"none\"/><path d=\"M24.0 263.1H276.0M150.0 396.0V24.0\" stroke=\"currentColor\" stroke-width=\"1.4\" fill=\"none\"/><text x=\"280.0\" y=\"267.1\" fill=\"currentColor\" font-style=\"italic\" font-size=\"12\">x</text><text x=\"146.0\" y=\"16.0\" fill=\"currentColor\" font-style=\"italic\" font-size=\"12\">y</text><text x=\"49.2\" y=\"275.1\" text-anchor=\"middle\" fill=\"currentColor\">-4</text><text x=\"99.6\" y=\"275.1\" text-anchor=\"middle\" fill=\"currentColor\">-2</text><text x=\"200.4\" y=\"275.1\" text-anchor=\"middle\" fill=\"currentColor\">2</text><text x=\"250.8\" y=\"275.1\" text-anchor=\"middle\" fill=\"currentColor\">4</text><text x=\"146.0\" y=\"372.9\" text-anchor=\"end\" fill=\"currentColor\">-4</text><text x=\"146.0\" y=\"319.8\" text-anchor=\"end\" fill=\"currentColor\">-2</text><text x=\"146.0\" y=\"213.5\" text-anchor=\"end\" fill=\"currentColor\">2</text><text x=\"146.0\" y=\"160.4\" text-anchor=\"end\" fill=\"currentColor\">4</text><text x=\"146.0\" y=\"107.2\" text-anchor=\"end\" fill=\"currentColor\">6</text><text x=\"146.0\" y=\"54.1\" text-anchor=\"end\" fill=\"currentColor\">8</text><text x=\"146.0\" y=\"275.1\" text-anchor=\"end\" fill=\"currentColor\">0</text><path d=\"M61.8 396.0L62.9 393.8L63.9 391.6L64.9 389.4L66.0 387.1L67.0 384.9L68.1 382.7L69.2 380.5L70.2 378.3L71.2 376.1L72.3 373.9L73.3 371.6L74.4 369.4L75.4 367.2L76.5 365.0L77.5 362.8L78.6 360.6L79.7 358.4L80.7 356.1L81.8 353.9L82.8 351.7L83.8 349.5L84.9 347.3L86.0 345.1L87.0 342.9L88.0 340.6L89.1 338.4L90.1 336.2L91.2 334.0L92.2 331.8L93.3 329.6L94.3 327.4L95.4 325.1L96.5 322.9L97.5 320.7L98.5 318.5L99.6 316.3L100.6 314.1L101.7 311.9L102.8 309.6L103.8 307.4L104.9 305.2L105.9 303.0L106.9 300.8L108.0 298.6L109.0 296.4L110.1 294.1L111.2 291.9L112.2 289.7L113.2 287.5L114.3 285.3L115.3 283.1L116.4 280.9L117.5 278.6L118.5 276.4L119.5 274.2L120.6 272.0L121.6 269.8L122.7 267.6L123.8 265.4L124.8 263.1L125.9 260.9L126.9 258.7L128.0 256.5L129.0 254.3L130.0 252.1L131.1 249.9L132.2 247.6L133.2 245.4L134.2 243.2L135.3 241.0L136.3 238.8L137.4 236.6L138.4 234.4L139.5 232.1L140.6 229.9L141.6 227.7L142.6 225.5L143.7 223.3L144.8 221.1L145.8 218.9L146.8 216.6L147.9 214.4L148.9 212.2L150.0 210.0L151.1 207.8L152.1 205.6L153.2 203.4L154.2 201.1L155.2 198.9L156.3 196.7L157.3 194.5L158.4 192.3L159.4 190.1L160.5 187.9L161.5 185.6L162.6 183.4L163.7 181.2L164.7 179.0L165.8 176.8L166.8 174.6L167.8 172.4L168.9 170.1L170.0 167.9L171.0 165.7L172.0 163.5L173.1 161.3L174.1 159.1L175.2 156.9L176.2 154.6L177.3 152.4L178.3 150.2L179.4 148.0L180.4 145.8L181.5 143.6L182.6 141.4L183.6 139.1L184.7 136.9L185.7 134.7L186.8 132.5L187.8 130.3L188.8 128.1L189.9 125.9L190.9 123.6L192.0 121.4L193.0 119.2L194.1 117.0L195.2 114.8L196.2 112.6L197.2 110.4L198.3 108.1L199.3 105.9L200.4 103.7L201.4 101.5L202.5 99.3L203.5 97.1L204.6 94.9L205.6 92.6L206.7 90.4L207.8 88.2L208.8 86.0L209.8 83.8L210.9 81.6L211.9 79.4L213.0 77.1L214.1 74.9L215.1 72.7L216.2 70.5L217.2 68.3L218.2 66.1L219.3 63.9L220.3 61.6L221.4 59.4L222.4 57.2L223.5 55.0L224.5 52.8L225.6 50.6L226.6 48.4L227.7 46.1L228.8 43.9L229.8 41.7L230.9 39.5L231.9 37.3L232.9 35.1L234.0 32.9L235.0 30.6L236.1 28.4L237.2 26.2L238.2 24.0\" stroke=\"#2563eb\" stroke-width=\"2\" fill=\"none\"/><circle cx=\"150.0\" cy=\"210.0\" r=\"3\" fill=\"currentColor\"/><circle cx=\"225.6\" cy=\"50.6\" r=\"3\" fill=\"currentColor\"/></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$y = \\frac{1}{2}x + 2$"
+      },
+      {
+        "id": "B",
+        "label": "$y = 3x + 2$"
+      },
+      {
+        "id": "C",
+        "label": "$y = 2x - 2$"
+      },
+      {
+        "id": "D",
+        "label": "$y = 2x + 2$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "The y-intercept is 2. The slope is $\\frac{8 - 2}{3 - 0} = 2$. So $y = 2x + 2$. Choice A inverts the slope (run over rise). Choice C has the wrong sign for the intercept. Choice B uses the x-coordinate 3 as the slope."
+  },
+  {
+    "slug": "alg-linfn-006",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_functions",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "A bike-share service charges according to the function $C(m) = 2.4m + 3$, where $C(m)$ is the cost, in dollars, of a ride that lasts $m$ half-hour periods. What is the cost, in dollars, of a ride that lasts 15 half-hour periods?",
+    "answer": [
+      "39"
+    ],
+    "explanation": "Substitute $m = 15$: $C(15) = 2.4(15) + 3 = 36 + 3 = 39$."
+  },
+  {
+    "slug": "alg-linfn-007",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_functions",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A line in the xy-plane has a slope of 3 and passes through the point $(2, 5)$. What is the y-coordinate of the line's y-intercept?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-1$"
+      },
+      {
+        "id": "B",
+        "label": "$3$"
+      },
+      {
+        "id": "C",
+        "label": "$5$"
+      },
+      {
+        "id": "D",
+        "label": "$11$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Use $y = 3x + b$ with $(2, 5)$: $5 = 3(2) + b$, so $b = -1$. Choice C is the y-coordinate of the given point, not the intercept. Choice D adds $3 \\cdot 2$ instead of subtracting it. Choice B is the slope."
+  },
+  {
+    "slug": "alg-linfn-008",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_functions",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "If $f(x) = \\frac{x}{3} + 2$, what is $f(12)$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$4$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{14}{3}$"
+      },
+      {
+        "id": "C",
+        "label": "$6$"
+      },
+      {
+        "id": "D",
+        "label": "$38$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "$f(12) = \\frac{12}{3} + 2 = 4 + 2 = 6$. Choice B divides $12 + 2$ by 3, treating the function as $\\frac{x + 2}{3}$. Choice A forgets to add 2. Choice D multiplies by 3 instead of dividing."
+  },
+  {
+    "slug": "alg-linfn-009",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_functions",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "For the linear function $f$, $f(2) = 5$ and $f(6) = 17$. Which equation defines $f$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$f(x) = \\frac{1}{3}x + \\frac{13}{3}$"
+      },
+      {
+        "id": "B",
+        "label": "$f(x) = 3x + 5$"
+      },
+      {
+        "id": "C",
+        "label": "$f(x) = 2x + 1$"
+      },
+      {
+        "id": "D",
+        "label": "$f(x) = 3x - 1$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "The slope is $\\frac{17 - 5}{6 - 2} = 3$. Then $5 = 3(2) + b$, so $b = -1$, and $f(x) = 3x - 1$. Choice B uses 5 as the y-intercept, but 5 is the output at $x = 2$, not $x = 0$. Choice C fits $f(2) = 5$ only. Choice A inverts the slope."
+  },
+  {
+    "slug": "alg-linfn-010",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_functions",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The height, in centimeters, of a burning candle $t$ hours after it is lit is modeled by $h(t) = 30 - 1.5t$. According to the model, how many hours after it is lit will the candle be 9 centimeters tall?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$14$"
+      },
+      {
+        "id": "B",
+        "label": "$16.5$"
+      },
+      {
+        "id": "C",
+        "label": "$20$"
+      },
+      {
+        "id": "D",
+        "label": "$21$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Set $30 - 1.5t = 9$. Subtract 30: $-1.5t = -21$, so $t = 14$. Choice B is $h(9)$, the height after 9 hours, which answers a different question. Choice C is the time until the candle burns down completely ($h(t) = 0$). Choice D is the number of centimeters burned, $30 - 9$, not the number of hours."
+  },
+  {
+    "slug": "alg-linfn-011",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_functions",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "During a dry season, the volume of water in a reservoir, in millions of liters, is modeled by $w(t) = 1{,}250 - 35t$, where $t$ is the number of days since the start of the season. What is the best interpretation of 35 in this context?",
+    "options": [
+      {
+        "id": "A",
+        "label": "The reservoir held 35 million liters at the start of the season."
+      },
+      {
+        "id": "B",
+        "label": "The reservoir will be empty after 35 days."
+      },
+      {
+        "id": "C",
+        "label": "The volume of water decreases by 35% each day."
+      },
+      {
+        "id": "D",
+        "label": "The volume of water decreases by 35 million liters each day."
+      }
+    ],
+    "answer": "D",
+    "explanation": "35 is the coefficient of $t$: each additional day reduces $w(t)$ by 35 million liters, a constant rate of decrease. Choice A describes the initial volume, which is $w(0) = 1{,}250$. Choice B is false: the model reaches 0 when $t = \\frac{1250}{35} \\approx 35.7$ days, which is not what 35 represents. Choice C describes exponential decay; a linear model changes by a constant amount, not a constant percent."
+  },
+  {
+    "slug": "alg-linfn-012",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_functions",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The table shows three points on the graph of a linear function in the xy-plane. Which equation represents this function?",
+    "table": {
+      "headers": [
+        "x",
+        "y"
+      ],
+      "rows": [
+        [
+          "-2",
+          "11"
+        ],
+        [
+          "0",
+          "7"
+        ],
+        [
+          "4",
+          "-1"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "$y = 2x + 7$"
+      },
+      {
+        "id": "B",
+        "label": "$y = -2x + 11$"
+      },
+      {
+        "id": "C",
+        "label": "$y = -\\frac{1}{2}x + 7$"
+      },
+      {
+        "id": "D",
+        "label": "$y = -2x + 7$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "The point $(0, 7)$ gives the y-intercept 7. From $(0, 7)$ to $(4, -1)$, the slope is $\\frac{-1 - 7}{4 - 0} = -2$. So $y = -2x + 7$. Check: $-2(-2) + 7 = 11$. Choice A has the wrong sign of the slope. Choice C inverts the slope. Choice B uses the first y-value, 11, as the intercept even though it corresponds to $x = -2$."
+  },
+  {
+    "slug": "alg-linfn-013",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_functions",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The function $f$ is defined by $f(x) = ax + 3$, where $a$ is a constant. If $f(4) = -9$, what is the value of $a$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-3$"
+      },
+      {
+        "id": "B",
+        "label": "$-\\frac{9}{4}$"
+      },
+      {
+        "id": "C",
+        "label": "$-\\frac{3}{2}$"
+      },
+      {
+        "id": "D",
+        "label": "$3$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Substitute: $4a + 3 = -9$, so $4a = -12$ and $a = -3$. Choice C adds 3 instead of subtracting it ($4a = -6$). Choice B ignores the constant term. Choice D has the wrong sign."
+  },
+  {
+    "slug": "alg-linfn-014",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_functions",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The graph of a linear function is shown in the xy-plane. The graph passes through the points $(-2, 4)$ and $(2, -2)$. What is the slope of the graph?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 300 360\" width=\"300\" height=\"360\" role=\"img\" aria-label=\"A line passing through (-2, 4) and (2, -2)\" font-family=\"sans-serif\" font-size=\"10\"><title>A line passing through (-2, 4) and (2, -2)</title><path d=\"M24.0 336.0V24.0M49.2 336.0V24.0M74.4 336.0V24.0M99.6 336.0V24.0M124.8 336.0V24.0M150.0 336.0V24.0M175.2 336.0V24.0M200.4 336.0V24.0M225.6 336.0V24.0M250.8 336.0V24.0M276.0 336.0V24.0M24.0 336.0H276.0M24.0 310.0H276.0M24.0 284.0H276.0M24.0 258.0H276.0M24.0 232.0H276.0M24.0 206.0H276.0M24.0 180.0H276.0M24.0 154.0H276.0M24.0 128.0H276.0M24.0 102.0H276.0M24.0 76.0H276.0M24.0 50.0H276.0M24.0 24.0H276.0\" stroke=\"currentColor\" stroke-opacity=\"0.18\" stroke-width=\"1\" fill=\"none\"/><path d=\"M24.0 180.0H276.0M150.0 336.0V24.0\" stroke=\"currentColor\" stroke-width=\"1.4\" fill=\"none\"/><text x=\"280.0\" y=\"184.0\" fill=\"currentColor\" font-style=\"italic\" font-size=\"12\">x</text><text x=\"146.0\" y=\"16.0\" fill=\"currentColor\" font-style=\"italic\" font-size=\"12\">y</text><text x=\"49.2\" y=\"192.0\" text-anchor=\"middle\" fill=\"currentColor\">-4</text><text x=\"99.6\" y=\"192.0\" text-anchor=\"middle\" fill=\"currentColor\">-2</text><text x=\"200.4\" y=\"192.0\" text-anchor=\"middle\" fill=\"currentColor\">2</text><text x=\"250.8\" y=\"192.0\" text-anchor=\"middle\" fill=\"currentColor\">4</text><text x=\"146.0\" y=\"339.5\" text-anchor=\"end\" fill=\"currentColor\">-6</text><text x=\"146.0\" y=\"287.5\" text-anchor=\"end\" fill=\"currentColor\">-4</text><text x=\"146.0\" y=\"235.5\" text-anchor=\"end\" fill=\"currentColor\">-2</text><text x=\"146.0\" y=\"131.5\" text-anchor=\"end\" fill=\"currentColor\">2</text><text x=\"146.0\" y=\"79.5\" text-anchor=\"end\" fill=\"currentColor\">4</text><text x=\"146.0\" y=\"27.5\" text-anchor=\"end\" fill=\"currentColor\">6</text><text x=\"146.0\" y=\"192.0\" text-anchor=\"end\" fill=\"currentColor\">0</text><path d=\"M66.0 24.0L67.0 25.6L68.1 27.2L69.2 28.9L70.2 30.5L71.2 32.1L72.3 33.8L73.3 35.4L74.4 37.0L75.4 38.6L76.5 40.2L77.5 41.9L78.6 43.5L79.7 45.1L80.7 46.8L81.8 48.4L82.8 50.0L83.8 51.6L84.9 53.2L86.0 54.9L87.0 56.5L88.0 58.1L89.1 59.8L90.1 61.4L91.2 63.0L92.2 64.6L93.3 66.2L94.3 67.9L95.4 69.5L96.5 71.1L97.5 72.8L98.5 74.4L99.6 76.0L100.6 77.6L101.7 79.2L102.8 80.9L103.8 82.5L104.9 84.1L105.9 85.8L106.9 87.4L108.0 89.0L109.0 90.6L110.1 92.2L111.2 93.9L112.2 95.5L113.2 97.1L114.3 98.8L115.3 100.4L116.4 102.0L117.5 103.6L118.5 105.2L119.5 106.9L120.6 108.5L121.6 110.1L122.7 111.8L123.8 113.4L124.8 115.0L125.9 116.6L126.9 118.2L128.0 119.9L129.0 121.5L130.0 123.1L131.1 124.8L132.2 126.4L133.2 128.0L134.2 129.6L135.3 131.2L136.3 132.9L137.4 134.5L138.4 136.1L139.5 137.8L140.6 139.4L141.6 141.0L142.6 142.6L143.7 144.2L144.8 145.9L145.8 147.5L146.8 149.1L147.9 150.8L148.9 152.4L150.0 154.0L151.1 155.6L152.1 157.2L153.2 158.9L154.2 160.5L155.2 162.1L156.3 163.8L157.3 165.4L158.4 167.0L159.4 168.6L160.5 170.2L161.5 171.9L162.6 173.5L163.7 175.1L164.7 176.8L165.8 178.4L166.8 180.0L167.8 181.6L168.9 183.2L170.0 184.9L171.0 186.5L172.0 188.1L173.1 189.8L174.1 191.4L175.2 193.0L176.2 194.6L177.3 196.2L178.3 197.9L179.4 199.5L180.4 201.1L181.5 202.8L182.6 204.4L183.6 206.0L184.7 207.6L185.7 209.2L186.8 210.9L187.8 212.5L188.8 214.1L189.9 215.8L190.9 217.4L192.0 219.0L193.0 220.6L194.1 222.2L195.2 223.9L196.2 225.5L197.2 227.1L198.3 228.8L199.3 230.4L200.4 232.0L201.4 233.6L202.5 235.2L203.5 236.9L204.6 238.5L205.6 240.1L206.7 241.8L207.8 243.4L208.8 245.0L209.8 246.6L210.9 248.2L211.9 249.9L213.0 251.5L214.1 253.1L215.1 254.8L216.2 256.4L217.2 258.0L218.2 259.6L219.3 261.2L220.3 262.9L221.4 264.5L222.4 266.1L223.5 267.8L224.5 269.4L225.6 271.0L226.6 272.6L227.7 274.2L228.8 275.9L229.8 277.5L230.9 279.1L231.9 280.8L232.9 282.4L234.0 284.0L235.0 285.6L236.1 287.2L237.2 288.9L238.2 290.5L239.2 292.1L240.3 293.8L241.3 295.4L242.4 297.0L243.5 298.6L244.5 300.2L245.5 301.9L246.6 303.5L247.7 305.1L248.7 306.8L249.8 308.4L250.8 310.0L251.8 311.6L252.9 313.2L253.9 314.9L255.0 316.5L256.1 318.1L257.1 319.8L258.1 321.4L259.2 323.0L260.2 324.6L261.3 326.2L262.4 327.9L263.4 329.5L264.4 331.1L265.5 332.8L266.5 334.4L267.6 336.0\" stroke=\"#2563eb\" stroke-width=\"2\" fill=\"none\"/><circle cx=\"99.6\" cy=\"76.0\" r=\"3\" fill=\"currentColor\"/><circle cx=\"200.4\" cy=\"232.0\" r=\"3\" fill=\"currentColor\"/></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-\\frac{3}{2}$"
+      },
+      {
+        "id": "B",
+        "label": "$-\\frac{2}{3}$"
+      },
+      {
+        "id": "C",
+        "label": "$1$"
+      },
+      {
+        "id": "D",
+        "label": "$\\frac{3}{2}$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Slope is the change in $y$ divided by the change in $x$: $\\frac{-2 - 4}{2 - (-2)} = \\frac{-6}{4} = -\\frac{3}{2}$. Choice B divides the change in $x$ by the change in $y$. Choice D drops the negative sign, though the line falls from left to right. Choice C is the y-intercept of the line."
+  },
+  {
+    "slug": "alg-linfn-015",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_functions",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The function $f$ is defined by $f(x) = 5x - 1$. The function $h$ is defined by $h(x) = f(x + 2)$. Which equation defines $h$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$h(x) = 5x + 1$"
+      },
+      {
+        "id": "B",
+        "label": "$h(x) = 7x - 1$"
+      },
+      {
+        "id": "C",
+        "label": "$h(x) = 5x + 11$"
+      },
+      {
+        "id": "D",
+        "label": "$h(x) = 5x + 9$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Replace $x$ with $x + 2$ in $f$: $h(x) = 5(x + 2) - 1 = 5x + 10 - 1 = 5x + 9$. Choice A adds 2 to the output, $f(x) + 2$, instead of to the input. Choice C forgets to subtract 1. Choice B adds 2 to the slope."
+  },
+  {
+    "slug": "alg-linfn-016",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_functions",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A bakery models its weekly revenue, in dollars, with $R(n) = 12.5n + 300$, where $n$ is the number of cakes sold that week. According to the model, by how many dollars does the revenue increase when the number of cakes sold increases by 10?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{25}{2}$"
+      },
+      {
+        "id": "B",
+        "label": "$125$"
+      },
+      {
+        "id": "C",
+        "label": "$310$"
+      },
+      {
+        "id": "D",
+        "label": "$425$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Each additional cake adds 12.5 dollars, so 10 more cakes add $10 \\times 12.5 = 125$ dollars. Choice A is the increase for one cake. Choice D is $R(10)$, the total revenue for 10 cakes, which includes the 300-dollar constant. Choice C adds 10 to the constant term."
+  },
+  {
+    "slug": "alg-linfn-017",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_functions",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "In the xy-plane, a line with slope $-\\frac{3}{4}$ passes through the points $(-3, 7)$ and $(5, k)$. What is the value of $k$?",
+    "answer": [
+      "1"
+    ],
+    "explanation": "The slope condition is $\\frac{k - 7}{5 - (-3)} = -\\frac{3}{4}$, so $\\frac{k - 7}{8} = -\\frac{3}{4}$ and $k - 7 = -6$. Thus $k = 1$."
+  },
+  {
+    "slug": "alg-linfn-018",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_functions",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "For the linear function $f$, $f(3) = f(1) + 8$ and $f(0) = -2$. What is the value of $f(5)$?",
+    "answer": [
+      "18"
+    ],
+    "explanation": "From $x = 1$ to $x = 3$, the output increases by 8 while the input increases by 2, so the slope is $\\frac{8}{2} = 4$. With $f(0) = -2$, $f(x) = 4x - 2$, so $f(5) = 20 - 2 = 18$. A common error is to use 8 as the slope, giving 38."
+  },
+  {
+    "slug": "alg-linfn-019",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_functions",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "The function $f$ is defined by $f(x) = kx + 6$, where $k$ is a constant. In the xy-plane, the graph of $y = f(x)$ has an x-intercept at $(4, 0)$. What is the value of $f(-2)$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$3$"
+      },
+      {
+        "id": "B",
+        "label": "$6$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{22}{3}$"
+      },
+      {
+        "id": "D",
+        "label": "$9$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Since $f(4) = 0$: $4k + 6 = 0$, so $k = -\\frac{3}{2}$. Then $f(-2) = -\\frac{3}{2}(-2) + 6 = 3 + 6 = 9$. Choice A is $f(2)$, which you get by dropping the negative sign on the input. Choice B is $f(0)$, the y-intercept. Choice C uses $k = -\\frac{4}{6}$, dividing the intercepts in the wrong order."
+  },
+  {
+    "slug": "alg-linfn-020",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_functions",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "For the linear function $f$, $f(x + 1) - f(x) = -4$ for all values of $x$, and $f(2) = 10$. Which equation defines $f$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$f(x) = -4x + 2$"
+      },
+      {
+        "id": "B",
+        "label": "$f(x) = -4x + 10$"
+      },
+      {
+        "id": "C",
+        "label": "$f(x) = 4x + 2$"
+      },
+      {
+        "id": "D",
+        "label": "$f(x) = -4x + 18$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "$f(x + 1) - f(x) = -4$ says the output drops by 4 whenever the input increases by 1, so the slope is $-4$. Then $10 = -4(2) + b$ gives $b = 18$. Choice A subtracts 8 from 10 instead of adding. Choice C uses slope 4. Choice B treats $f(2) = 10$ as the y-intercept."
+  },
+  {
+    "slug": "alg-linfn-021",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_functions",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "A phone's battery charge decreases at a constant rate while a video plays. At 1:00 p.m. the charge is 86%, and at 3:30 p.m. it is 61%. If the charge continues to decrease at the same rate, at what time will the charge be 11%?",
+    "options": [
+      {
+        "id": "A",
+        "label": "6:00 p.m."
+      },
+      {
+        "id": "B",
+        "label": "7:00 p.m."
+      },
+      {
+        "id": "C",
+        "label": "8:30 p.m."
+      },
+      {
+        "id": "D",
+        "label": "10:00 p.m."
+      }
+    ],
+    "answer": "C",
+    "explanation": "From 1:00 to 3:30 is 2.5 hours, and the charge falls by $86 - 61 = 25$ percentage points, so it falls 10 points per hour. Falling from 86% to 11% is 75 points, which takes $\\frac{75}{10} = 7.5$ hours after 1:00 p.m., or 8:30 p.m. Choice A measures the 50-point drop from 61% but adds the time to 1:00 p.m. instead of 3:30 p.m. Choice B treats the interval as 2 hours (12.5 points per hour), and choice D treats it as 3 hours."
+  },
+  {
+    "slug": "alg-linfn-022",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_functions",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "For the linear function $f$, $f(4) = 2f(1)$ and $f(7) = 15$. What is the value of $f(10)$?",
+    "answer": [
+      "20"
+    ],
+    "explanation": "Write $f(x) = mx + b$. The condition $f(4) = 2f(1)$ gives $4m + b = 2(m + b)$, so $b = 2m$. Then $f(7) = 7m + 2m = 9m = 15$, so $m = \\frac{5}{3}$ and $b = \\frac{10}{3}$. Finally $f(10) = \\frac{50}{3} + \\frac{10}{3} = 20$."
+  },
+  {
+    "slug": "alg-lin2v-001",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_two_variables",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "Which point $(x, y)$ lies on the graph of $2x + 3y = 18$ in the xy-plane?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$(2, 5)$"
+      },
+      {
+        "id": "B",
+        "label": "$(6, 1)$"
+      },
+      {
+        "id": "C",
+        "label": "$(4, 3)$"
+      },
+      {
+        "id": "D",
+        "label": "$(3, 4)$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Substitute each point: $2(3) + 3(4) = 6 + 12 = 18$, so $(3, 4)$ is on the line. For $(4, 3)$, the coordinates are swapped and give $8 + 9 = 17$. For $(2, 5)$: $4 + 15 = 19$. For $(6, 1)$: $12 + 3 = 15$. Choice A, choice C and choice B do not satisfy the equation."
+  },
+  {
+    "slug": "alg-lin2v-002",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_two_variables",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "A florist sells roses for 3 dollars each and tulips for 2 dollars each. One morning the florist's sales of these two flowers totaled 60 dollars, and 12 roses were sold. How many tulips were sold that morning?",
+    "answer": [
+      "12"
+    ],
+    "explanation": "Let $t$ be the number of tulips. Then $3(12) + 2t = 60$, so $36 + 2t = 60$, $2t = 24$, and $t = 12$."
+  },
+  {
+    "slug": "alg-lin2v-003",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_two_variables",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "What is the y-intercept of the graph of $4x - 2y = 10$ in the xy-plane?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$(0, -10)$"
+      },
+      {
+        "id": "B",
+        "label": "$(0, 5)$"
+      },
+      {
+        "id": "C",
+        "label": "$(0, \\frac{5}{2})$"
+      },
+      {
+        "id": "D",
+        "label": "$(0, -5)$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Set $x = 0$: $-2y = 10$, so $y = -5$. The y-intercept is $(0, -5)$. Choice B ignores the negative coefficient of $y$. Choice C uses the x-intercept value $\\frac{5}{2}$, found by setting $y = 0$. Choice A uses the constant 10 without dividing by $-2$."
+  },
+  {
+    "slug": "alg-lin2v-004",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_two_variables",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "What is the slope of the graph of $3x + 4y = 12$ in the xy-plane?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-\\frac{4}{3}$"
+      },
+      {
+        "id": "B",
+        "label": "$-\\frac{3}{4}$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{3}{4}$"
+      },
+      {
+        "id": "D",
+        "label": "$3$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Solve for $y$: $4y = -3x + 12$, so $y = -\\frac{3}{4}x + 3$. The slope is $-\\frac{3}{4}$. Choice C forgets that $3x$ changes sign when moved to the other side. Choice A inverts the ratio. Choice D is the y-intercept."
+  },
+  {
+    "slug": "alg-lin2v-005",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_two_variables",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "Priya has a 40-dollar gift card. She buys $n$ notebooks for 2.50 dollars each and $p$ pens for 1.25 dollars each, using exactly the full value of the card, so $2.5n + 1.25p = 40$. If she buys 10 notebooks, how many pens does she buy?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$6$"
+      },
+      {
+        "id": "B",
+        "label": "$12$"
+      },
+      {
+        "id": "C",
+        "label": "$22$"
+      },
+      {
+        "id": "D",
+        "label": "$24$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Substitute $n = 10$: $25 + 1.25p = 40$, so $1.25p = 15$ and $p = 12$. Choice D subtracts 10 (the number of notebooks) rather than their cost of 25 dollars. Choice C subtracts 10 after dividing. Choice A divides the remaining 15 dollars by the notebook price instead of the pen price."
+  },
+  {
+    "slug": "alg-lin2v-006",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_two_variables",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "The graph shows a line in the xy-plane that crosses the axes at $(0, 4)$ and $(6, 0)$. Which equation represents the line?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 300 270\" width=\"300\" height=\"270\" role=\"img\" aria-label=\"A line crossing the y-axis at (0, 4) and the x-axis at (6, 0)\" font-family=\"sans-serif\" font-size=\"10\"><title>A line crossing the y-axis at (0, 4) and the x-axis at (6, 0)</title><path d=\"M24.0 246.0V24.0M49.2 246.0V24.0M74.4 246.0V24.0M99.6 246.0V24.0M124.8 246.0V24.0M150.0 246.0V24.0M175.2 246.0V24.0M200.4 246.0V24.0M225.6 246.0V24.0M250.8 246.0V24.0M276.0 246.0V24.0M24.0 246.0H276.0M24.0 221.3H276.0M24.0 196.7H276.0M24.0 172.0H276.0M24.0 147.3H276.0M24.0 122.7H276.0M24.0 98.0H276.0M24.0 73.3H276.0M24.0 48.7H276.0M24.0 24.0H276.0\" stroke=\"currentColor\" stroke-opacity=\"0.18\" stroke-width=\"1\" fill=\"none\"/><path d=\"M24.0 172.0H276.0M74.4 246.0V24.0\" stroke=\"currentColor\" stroke-width=\"1.4\" fill=\"none\"/><text x=\"280.0\" y=\"176.0\" fill=\"currentColor\" font-style=\"italic\" font-size=\"12\">x</text><text x=\"70.4\" y=\"16.0\" fill=\"currentColor\" font-style=\"italic\" font-size=\"12\">y</text><text x=\"24.0\" y=\"184.0\" text-anchor=\"middle\" fill=\"currentColor\">-2</text><text x=\"49.2\" y=\"184.0\" text-anchor=\"middle\" fill=\"currentColor\">-1</text><text x=\"99.6\" y=\"184.0\" text-anchor=\"middle\" fill=\"currentColor\">1</text><text x=\"124.8\" y=\"184.0\" text-anchor=\"middle\" fill=\"currentColor\">2</text><text x=\"150.0\" y=\"184.0\" text-anchor=\"middle\" fill=\"currentColor\">3</text><text x=\"175.2\" y=\"184.0\" text-anchor=\"middle\" fill=\"currentColor\">4</text><text x=\"200.4\" y=\"184.0\" text-anchor=\"middle\" fill=\"currentColor\">5</text><text x=\"225.6\" y=\"184.0\" text-anchor=\"middle\" fill=\"currentColor\">6</text><text x=\"250.8\" y=\"184.0\" text-anchor=\"middle\" fill=\"currentColor\">7</text><text x=\"276.0\" y=\"184.0\" text-anchor=\"middle\" fill=\"currentColor\">8</text><text x=\"70.4\" y=\"249.5\" text-anchor=\"end\" fill=\"currentColor\">-3</text><text x=\"70.4\" y=\"224.8\" text-anchor=\"end\" fill=\"currentColor\">-2</text><text x=\"70.4\" y=\"200.2\" text-anchor=\"end\" fill=\"currentColor\">-1</text><text x=\"70.4\" y=\"150.8\" text-anchor=\"end\" fill=\"currentColor\">1</text><text x=\"70.4\" y=\"126.2\" text-anchor=\"end\" fill=\"currentColor\">2</text><text x=\"70.4\" y=\"101.5\" text-anchor=\"end\" fill=\"currentColor\">3</text><text x=\"70.4\" y=\"76.8\" text-anchor=\"end\" fill=\"currentColor\">4</text><text x=\"70.4\" y=\"52.2\" text-anchor=\"end\" fill=\"currentColor\">5</text><text x=\"70.4\" y=\"27.5\" text-anchor=\"end\" fill=\"currentColor\">6</text><text x=\"70.4\" y=\"184.0\" text-anchor=\"end\" fill=\"currentColor\">0</text><path d=\"M24.0 40.4L25.1 41.1L26.1 41.8L27.1 42.5L28.2 43.2L29.2 43.9L30.3 44.6L31.4 45.2L32.4 45.9L33.5 46.6L34.5 47.3L35.5 48.0L36.6 48.7L37.6 49.4L38.7 50.0L39.8 50.7L40.8 51.4L41.9 52.1L42.9 52.8L43.9 53.5L45.0 54.1L46.0 54.8L47.1 55.5L48.2 56.2L49.2 56.9L50.2 57.6L51.3 58.3L52.3 58.9L53.4 59.6L54.4 60.3L55.5 61.0L56.6 61.7L57.6 62.4L58.6 63.1L59.7 63.7L60.8 64.4L61.8 65.1L62.9 65.8L63.9 66.5L64.9 67.2L66.0 67.9L67.0 68.5L68.1 69.2L69.2 69.9L70.2 70.6L71.2 71.3L72.3 72.0L73.3 72.6L74.4 73.3L75.4 74.0L76.5 74.7L77.5 75.4L78.6 76.1L79.7 76.8L80.7 77.4L81.8 78.1L82.8 78.8L83.8 79.5L84.9 80.2L86.0 80.9L87.0 81.6L88.0 82.2L89.1 82.9L90.1 83.6L91.2 84.3L92.2 85.0L93.3 85.7L94.3 86.4L95.4 87.0L96.5 87.7L97.5 88.4L98.5 89.1L99.6 89.8L100.6 90.5L101.7 91.1L102.8 91.8L103.8 92.5L104.9 93.2L105.9 93.9L106.9 94.6L108.0 95.3L109.0 95.9L110.1 96.6L111.2 97.3L112.2 98.0L113.2 98.7L114.3 99.4L115.3 100.1L116.4 100.7L117.5 101.4L118.5 102.1L119.5 102.8L120.6 103.5L121.6 104.2L122.7 104.9L123.8 105.5L124.8 106.2L125.9 106.9L126.9 107.6L128.0 108.3L129.0 109.0L130.0 109.6L131.1 110.3L132.2 111.0L133.2 111.7L134.2 112.4L135.3 113.1L136.3 113.8L137.4 114.4L138.4 115.1L139.5 115.8L140.6 116.5L141.6 117.2L142.6 117.9L143.7 118.6L144.8 119.2L145.8 119.9L146.8 120.6L147.9 121.3L148.9 122.0L150.0 122.7L151.1 123.4L152.1 124.0L153.2 124.7L154.2 125.4L155.2 126.1L156.3 126.8L157.3 127.5L158.4 128.1L159.4 128.8L160.5 129.5L161.5 130.2L162.6 130.9L163.7 131.6L164.7 132.3L165.8 132.9L166.8 133.6L167.8 134.3L168.9 135.0L170.0 135.7L171.0 136.4L172.0 137.1L173.1 137.7L174.1 138.4L175.2 139.1L176.2 139.8L177.3 140.5L178.3 141.2L179.4 141.9L180.4 142.5L181.5 143.2L182.6 143.9L183.6 144.6L184.7 145.3L185.7 146.0L186.8 146.6L187.8 147.3L188.8 148.0L189.9 148.7L190.9 149.4L192.0 150.1L193.0 150.8L194.1 151.4L195.2 152.1L196.2 152.8L197.2 153.5L198.3 154.2L199.3 154.9L200.4 155.6L201.4 156.2L202.5 156.9L203.5 157.6L204.6 158.3L205.6 159.0L206.7 159.7L207.8 160.4L208.8 161.0L209.8 161.7L210.9 162.4L211.9 163.1L213.0 163.8L214.1 164.5L215.1 165.1L216.2 165.8L217.2 166.5L218.2 167.2L219.3 167.9L220.3 168.6L221.4 169.3L222.4 169.9L223.5 170.6L224.5 171.3L225.6 172.0L226.6 172.7L227.7 173.4L228.8 174.1L229.8 174.7L230.9 175.4L231.9 176.1L232.9 176.8L234.0 177.5L235.0 178.2L236.1 178.9L237.2 179.5L238.2 180.2L239.2 180.9L240.3 181.6L241.3 182.3L242.4 183.0L243.5 183.6L244.5 184.3L245.5 185.0L246.6 185.7L247.7 186.4L248.7 187.1L249.8 187.8L250.8 188.4L251.8 189.1L252.9 189.8L253.9 190.5L255.0 191.2L256.1 191.9L257.1 192.6L258.1 193.2L259.2 193.9L260.2 194.6L261.3 195.3L262.4 196.0L263.4 196.7L264.4 197.4L265.5 198.0L266.5 198.7L267.6 199.4L268.6 200.1L269.7 200.8L270.8 201.5L271.8 202.1L272.9 202.8L273.9 203.5L275.0 204.2L276.0 204.9\" stroke=\"#2563eb\" stroke-width=\"2\" fill=\"none\"/><circle cx=\"74.4\" cy=\"73.3\" r=\"3\" fill=\"currentColor\"/><circle cx=\"225.6\" cy=\"172.0\" r=\"3\" fill=\"currentColor\"/></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$2x - 3y = 12$"
+      },
+      {
+        "id": "B",
+        "label": "$3x + 2y = 12$"
+      },
+      {
+        "id": "C",
+        "label": "$4x + 6y = 12$"
+      },
+      {
+        "id": "D",
+        "label": "$2x + 3y = 12$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Check both intercepts: $2(0) + 3(4) = 12$ and $2(6) + 3(0) = 12$, so $2x + 3y = 12$ works. Choice B swaps the coefficients and gives intercepts $(4, 0)$ and $(0, 6)$. Choice C uses the intercepts as coefficients and gives intercepts $(3, 0)$ and $(0, 2)$. Choice A gives a line with a positive slope."
+  },
+  {
+    "slug": "alg-lin2v-007",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_two_variables",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "In the xy-plane, the graph of $y = -2x + 9$ crosses the x-axis at the point $(a, 0)$. What is the value of $a$?",
+    "answer": [
+      "9/2",
+      "4.5"
+    ],
+    "explanation": "At the x-intercept, $y = 0$: $0 = -2a + 9$, so $2a = 9$ and $a = \\frac{9}{2}$, or 4.5."
+  },
+  {
+    "slug": "alg-lin2v-008",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_two_variables",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "Which of the following equations has a graph in the xy-plane that is parallel to the graph of $y = 3x - 1$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$y = 3x + 5$"
+      },
+      {
+        "id": "B",
+        "label": "$y = \\frac{1}{3}x + 4$"
+      },
+      {
+        "id": "C",
+        "label": "$y = -3x - 1$"
+      },
+      {
+        "id": "D",
+        "label": "$y = -\\frac{1}{3}x - 1$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Parallel lines have equal slopes. The given line has slope 3, and $y = 3x + 5$ also has slope 3 (with a different intercept, so the lines are distinct). Choice C and choice B change the sign or take the reciprocal of the slope, and choice D has the slope of a perpendicular line."
+  },
+  {
+    "slug": "alg-lin2v-009",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_two_variables",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "Line $k$ in the xy-plane has equation $2x - 5y = 10$. Line $m$ is perpendicular to line $k$. What is the slope of line $m$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-\\frac{5}{2}$"
+      },
+      {
+        "id": "B",
+        "label": "$-\\frac{2}{5}$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{2}{5}$"
+      },
+      {
+        "id": "D",
+        "label": "$\\frac{5}{2}$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Rewrite line $k$: $-5y = -2x + 10$, so $y = \\frac{2}{5}x - 2$, with slope $\\frac{2}{5}$. A perpendicular slope is the negative reciprocal, $-\\frac{5}{2}$. Choice D is the reciprocal without the sign change. Choice C is the slope of $k$ itself, which describes a parallel line. Choice B changes the sign but does not take the reciprocal."
+  },
+  {
+    "slug": "alg-lin2v-010",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_two_variables",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A theater sells adult tickets for 14 dollars each and child tickets for 9 dollars each. On Saturday the theater's ticket revenue was 2,310 dollars, which is represented by the equation $14a + 9c = 2{,}310$. What does $9c$ represent in this equation?",
+    "options": [
+      {
+        "id": "A",
+        "label": "The number of child tickets sold"
+      },
+      {
+        "id": "B",
+        "label": "The number of child tickets sold for every adult ticket"
+      },
+      {
+        "id": "C",
+        "label": "The price of one child ticket, in dollars"
+      },
+      {
+        "id": "D",
+        "label": "The revenue, in dollars, from child tickets"
+      }
+    ],
+    "answer": "D",
+    "explanation": "$c$ is the number of child tickets, and each one costs 9 dollars, so $9c$ is the total revenue from child tickets. Choice A describes $c$ alone. Choice C describes the coefficient 9 alone. Choice B describes a ratio that the equation does not give."
+  },
+  {
+    "slug": "alg-lin2v-011",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_two_variables",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A line in the xy-plane passes through the points $(1, 4)$ and $(5, -4)$. Which equation represents the line?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$2x + y = 6$"
+      },
+      {
+        "id": "B",
+        "label": "$x + 2y = 9$"
+      },
+      {
+        "id": "C",
+        "label": "$2x - y = -2$"
+      },
+      {
+        "id": "D",
+        "label": "$x - 2y = -7$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "The slope is $\\frac{-4 - 4}{5 - 1} = -2$, so $y - 4 = -2(x - 1)$, which gives $y = -2x + 6$, or $2x + y = 6$. Both points check: $2 + 4 = 6$ and $10 - 4 = 6$. Choice B has slope $-\\frac{1}{2}$ (the reciprocal) and contains only $(1, 4)$. Choice C has slope 2, the wrong sign, and contains only $(1, 4)$. Choice D contains $(1, 4)$ but has slope $\\frac{1}{2}$."
+  },
+  {
+    "slug": "alg-lin2v-012",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_two_variables",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "In the xy-plane, where does the graph of $\\frac{x}{4} + \\frac{y}{6} = 1$ intersect the y-axis?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$(0, 4)$"
+      },
+      {
+        "id": "B",
+        "label": "$(0, 6)$"
+      },
+      {
+        "id": "C",
+        "label": "$(0, \\frac{3}{2})$"
+      },
+      {
+        "id": "D",
+        "label": "$(0, \\frac{2}{3})$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "On the y-axis $x = 0$, so $\\frac{y}{6} = 1$ and $y = 6$. Choice A is the x-intercept value placed on the y-axis. Choice C and choice D come from the slope magnitude $\\frac{6}{4}$ and its reciprocal, not from setting $x = 0$."
+  },
+  {
+    "slug": "alg-lin2v-013",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_two_variables",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The point $(a, 7)$ lies on the graph of $3x - 2y = 4$ in the xy-plane. What is the value of $a$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-\\frac{10}{3}$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{11}{3}$"
+      },
+      {
+        "id": "C",
+        "label": "$6$"
+      },
+      {
+        "id": "D",
+        "label": "$18$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Substitute $y = 7$: $3a - 14 = 4$, so $3a = 18$ and $a = 6$. Choice A treats $-2(7)$ as $+14$. Choice B substitutes 7 for $2y$ instead of for $y$. Choice D is the value of $3a$."
+  },
+  {
+    "slug": "alg-lin2v-014",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_two_variables",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "Line $p$ in the xy-plane passes through $(-2, 3)$ and is parallel to the graph of $4x + 2y = 9$. If the equation of line $p$ is written in the form $y = mx + b$, what is the value of $b$?",
+    "answer": [
+      "-1"
+    ],
+    "explanation": "Rewrite $4x + 2y = 9$ as $y = -2x + \\frac{9}{2}$, so a parallel line has slope $-2$. Using $(-2, 3)$: $3 = -2(-2) + b = 4 + b$, so $b = -1$."
+  },
+  {
+    "slug": "alg-lin2v-015",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_two_variables",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A bakery uses 0.75 cup of sugar for each loaf of bread and 1.5 cups of sugar for each batch of cookies. On Monday the bakery used exactly 30 cups of sugar to make 16 loaves of bread and $k$ batches of cookies. What is the value of $k$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$8$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{28}{3}$"
+      },
+      {
+        "id": "C",
+        "label": "$12$"
+      },
+      {
+        "id": "D",
+        "label": "$24$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "The sugar equation is $0.75(16) + 1.5k = 30$. Since $0.75(16) = 12$, we get $1.5k = 18$, so $k = 12$. Choice A swaps the two amounts per item ($1.5(16) + 0.75k = 30$). Choice D correctly finds the 18 cups left for cookies but divides by 0.75, the amount for a loaf, instead of 1.5. Choice B subtracts the number of loaves, 16, from 30 instead of the sugar they use."
+  },
+  {
+    "slug": "alg-lin2v-016",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_two_variables",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "In the xy-plane, the graph of $6x + ky = 18$, where $k$ is a constant, passes through the point $(2, -3)$. What is the value of $k$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-10$"
+      },
+      {
+        "id": "B",
+        "label": "$-2$"
+      },
+      {
+        "id": "C",
+        "label": "$2$"
+      },
+      {
+        "id": "D",
+        "label": "$10$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Substitute: $6(2) + k(-3) = 18$, so $12 - 3k = 18$, $-3k = 6$, and $k = -2$. Choice C drops the negative sign of $y = -3$. Choice A and choice D come from adding 12 to 18 instead of subtracting ($\\pm 3k = 30$)."
+  },
+  {
+    "slug": "alg-lin2v-017",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_two_variables",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "In the xy-plane, the graphs of $3x - ay = 7$ and $6x + 4y = 11$, where $a$ is a constant, are parallel. What is the value of $a$?",
+    "answer": [
+      "-2"
+    ],
+    "explanation": "Solve each for $y$. The first gives $y = \\frac{3}{a}x - \\frac{7}{a}$, slope $\\frac{3}{a}$. The second gives $y = -\\frac{3}{2}x + \\frac{11}{4}$, slope $-\\frac{3}{2}$. Parallel lines have equal slopes: $\\frac{3}{a} = -\\frac{3}{2}$, so $a = -2$. (The intercepts $\\frac{7}{2}$ and $\\frac{11}{4}$ differ, so the lines are distinct.)"
+  },
+  {
+    "slug": "alg-lin2v-018",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_two_variables",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "A line in the xy-plane has slope $-\\frac{3}{5}$ and passes through the point $(10, -2)$. What is the sum of the x-coordinate of its x-intercept and the y-coordinate of its y-intercept?",
+    "answer": [
+      "32/3",
+      "10.66",
+      "10.67"
+    ],
+    "explanation": "Point-slope form gives $y + 2 = -\\frac{3}{5}(x - 10)$, so $y = -\\frac{3}{5}x + 4$. The y-intercept is 4. Setting $y = 0$: $\\frac{3}{5}x = 4$, so $x = \\frac{20}{3}$. The sum is $4 + \\frac{20}{3} = \\frac{32}{3}$, which may be entered as 32/3 or 10.66 or 10.67."
+  },
+  {
+    "slug": "alg-lin2v-019",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_two_variables",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "On a ferry, each car takes up 5 meters of lane space and each truck takes up 15 meters. When the ferry is loaded so that exactly 450 meters of lane space is used, the numbers of cars $c$ and trucks $t$ satisfy $5c + 15t = 450$. If the ferry is loaded to exactly 450 meters again but with 4 fewer trucks, how many more cars can it carry?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$3$"
+      },
+      {
+        "id": "B",
+        "label": "$4$"
+      },
+      {
+        "id": "C",
+        "label": "$12$"
+      },
+      {
+        "id": "D",
+        "label": "$60$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Removing 4 trucks frees $4 \\times 15 = 60$ meters, and each car needs 5 meters, so $\\frac{60}{5} = 12$ more cars fit. Equivalently, the slope of $c = 90 - 3t$ is $-3$, so a change of $-4$ in $t$ changes $c$ by $+12$. Choice A is the number of cars that replace one truck. Choice B assumes one car per truck. Choice D is the meters freed, not the number of cars."
+  },
+  {
+    "slug": "alg-lin2v-020",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_two_variables",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "Line $\\ell$ in the xy-plane passes through $(6, 7)$ and is perpendicular to the line through $(2, 1)$ and $(6, 7)$. What is the x-coordinate of the x-intercept of line $\\ell$?",
+    "answer": [
+      "33/2",
+      "16.5"
+    ],
+    "explanation": "The line through $(2, 1)$ and $(6, 7)$ has slope $\\frac{6}{4} = \\frac{3}{2}$, so $\\ell$ has slope $-\\frac{2}{3}$. Its equation is $y - 7 = -\\frac{2}{3}(x - 6)$. Setting $y = 0$: $-7 = -\\frac{2}{3}(x - 6)$, so $x - 6 = \\frac{21}{2}$ and $x = \\frac{33}{2}$, or 16.5."
+  },
+  {
+    "slug": "alg-lin2v-021",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_two_variables",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "In the xy-plane, the graph of $ax + by = 12$, where $a$ and $b$ are constants, has an x-intercept at $(2, 0)$ and a y-intercept at $(0, -3)$. What is the value of $a + b$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-1$"
+      },
+      {
+        "id": "B",
+        "label": "$2$"
+      },
+      {
+        "id": "C",
+        "label": "$6$"
+      },
+      {
+        "id": "D",
+        "label": "$10$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "At $(2, 0)$: $2a = 12$, so $a = 6$. At $(0, -3)$: $-3b = 12$, so $b = -4$. Then $a + b = 2$. Choice D uses $b = 4$, a sign error. Choice A adds the intercept coordinates $2 + (-3)$ instead of finding the coefficients. Choice C is the value of $a$ alone."
+  },
+  {
+    "slug": "alg-lin2v-022",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_equations_two_variables",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "In the xy-plane, the graph of $2y - kx = 8$, where $k$ is a constant, is perpendicular to the graph of $3x + 6y = 5$. What is the value of $k$?",
+    "answer": [
+      "4"
+    ],
+    "explanation": "The first line is $y = \\frac{k}{2}x + 4$, with slope $\\frac{k}{2}$. The second is $y = -\\frac{1}{2}x + \\frac{5}{6}$, with slope $-\\frac{1}{2}$. Perpendicular slopes multiply to $-1$: $\\frac{k}{2} \\cdot \\left(-\\frac{1}{2}\\right) = -1$, so $k = 4$."
+  },
+  {
+    "slug": "alg-sys-001",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "systems_of_linear_equations",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "$$x + y = 10$$ $$x - y = 4$$ What is the value of $x$ in the solution $(x, y)$ to the system of equations?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$3$"
+      },
+      {
+        "id": "B",
+        "label": "$6$"
+      },
+      {
+        "id": "C",
+        "label": "$7$"
+      },
+      {
+        "id": "D",
+        "label": "$14$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Add the equations: $2x = 14$, so $x = 7$ (and $y = 3$). Choice A is the value of $y$. Choice D is $2x$; remember to divide by 2. Choice B subtracts the constants, $10 - 4$, which equals $2y$, not $x$."
+  },
+  {
+    "slug": "alg-sys-002",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "systems_of_linear_equations",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "$$y = 2x + 1$$ $$y = -x + 10$$ The solution to the given system of equations is $(x, y)$. What is the value of $y$?",
+    "answer": [
+      "7"
+    ],
+    "explanation": "Set the expressions for $y$ equal: $2x + 1 = -x + 10$, so $3x = 9$ and $x = 3$. Then $y = 2(3) + 1 = 7$."
+  },
+  {
+    "slug": "alg-sys-003",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "systems_of_linear_equations",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A school play sold 50 tickets for a total of 520 dollars. Adult tickets cost 12 dollars each and student tickets cost 8 dollars each. Which system of equations can be used to find the number of adult tickets, $a$, and student tickets, $s$, that were sold?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$a + s = 520$ and $12a + 8s = 50$"
+      },
+      {
+        "id": "B",
+        "label": "$a + s = 50$ and $8a + 12s = 520$"
+      },
+      {
+        "id": "C",
+        "label": "$12a + 8s = 50$ and $a + s = 20$"
+      },
+      {
+        "id": "D",
+        "label": "$a + s = 50$ and $12a + 8s = 520$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "The number of tickets gives $a + s = 50$, and the revenue gives $12a + 8s = 520$. (The solution is $a = 30$, $s = 20$.) Choice A swaps the total count and the total revenue. Choice B attaches the adult price to student tickets. Choice C uses the revenue equation with the count total and an unsupported second equation."
+  },
+  {
+    "slug": "alg-sys-004",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "systems_of_linear_equations",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "$$2x + y = 11$$ $$x - y = 1$$ If $(x, y)$ is the solution to the system of equations, what is the value of $x$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$3$"
+      },
+      {
+        "id": "B",
+        "label": "$4$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{11}{2}$"
+      },
+      {
+        "id": "D",
+        "label": "$10$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Adding the equations eliminates $y$: $3x = 12$, so $x = 4$ and then $y = 3$. Choice A is $y$. Choice C solves $2x = 11$, ignoring $y$. Choice D subtracts the constants instead of adding the equations."
+  },
+  {
+    "slug": "alg-sys-005",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "systems_of_linear_equations",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "$$4x + 3y = 25$$ $$4x - 3y = 7$$ What is the value of $x$ in the solution to the system?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$3$"
+      },
+      {
+        "id": "B",
+        "label": "$4$"
+      },
+      {
+        "id": "C",
+        "label": "$8$"
+      },
+      {
+        "id": "D",
+        "label": "$32$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Add the equations: $8x = 32$, so $x = 4$. (Subtracting gives $6y = 18$, so $y = 3$.) Choice A is $y$. Choice C is $2x$, and choice D is $8x$; both stop before dividing."
+  },
+  {
+    "slug": "alg-sys-006",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "systems_of_linear_equations",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "The graphs of the equations $y = 2x - 1$ and $y = -\\frac{1}{2}x + 4$ are shown in the xy-plane. What is the solution $(x, y)$ to the system of these two equations?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 300 375\" width=\"300\" height=\"375\" role=\"img\" aria-label=\"Two lines that intersect at the point (2, 3)\" font-family=\"sans-serif\" font-size=\"10\"><title>Two lines that intersect at the point (2, 3)</title><path d=\"M24.0 351.0V24.0M55.5 351.0V24.0M87.0 351.0V24.0M118.5 351.0V24.0M150.0 351.0V24.0M181.5 351.0V24.0M213.0 351.0V24.0M244.5 351.0V24.0M276.0 351.0V24.0M24.0 351.0H276.0M24.0 318.3H276.0M24.0 285.6H276.0M24.0 252.9H276.0M24.0 220.2H276.0M24.0 187.5H276.0M24.0 154.8H276.0M24.0 122.1H276.0M24.0 89.4H276.0M24.0 56.7H276.0M24.0 24.0H276.0\" stroke=\"currentColor\" stroke-opacity=\"0.18\" stroke-width=\"1\" fill=\"none\"/><path d=\"M24.0 252.9H276.0M87.0 351.0V24.0\" stroke=\"currentColor\" stroke-width=\"1.4\" fill=\"none\"/><text x=\"280.0\" y=\"256.9\" fill=\"currentColor\" font-style=\"italic\" font-size=\"12\">x</text><text x=\"83.0\" y=\"16.0\" fill=\"currentColor\" font-style=\"italic\" font-size=\"12\">y</text><text x=\"24.0\" y=\"264.9\" text-anchor=\"middle\" fill=\"currentColor\">-2</text><text x=\"55.5\" y=\"264.9\" text-anchor=\"middle\" fill=\"currentColor\">-1</text><text x=\"118.5\" y=\"264.9\" text-anchor=\"middle\" fill=\"currentColor\">1</text><text x=\"150.0\" y=\"264.9\" text-anchor=\"middle\" fill=\"currentColor\">2</text><text x=\"181.5\" y=\"264.9\" text-anchor=\"middle\" fill=\"currentColor\">3</text><text x=\"213.0\" y=\"264.9\" text-anchor=\"middle\" fill=\"currentColor\">4</text><text x=\"244.5\" y=\"264.9\" text-anchor=\"middle\" fill=\"currentColor\">5</text><text x=\"276.0\" y=\"264.9\" text-anchor=\"middle\" fill=\"currentColor\">6</text><text x=\"83.0\" y=\"354.5\" text-anchor=\"end\" fill=\"currentColor\">-3</text><text x=\"83.0\" y=\"321.8\" text-anchor=\"end\" fill=\"currentColor\">-2</text><text x=\"83.0\" y=\"289.1\" text-anchor=\"end\" fill=\"currentColor\">-1</text><text x=\"83.0\" y=\"223.7\" text-anchor=\"end\" fill=\"currentColor\">1</text><text x=\"83.0\" y=\"191.0\" text-anchor=\"end\" fill=\"currentColor\">2</text><text x=\"83.0\" y=\"158.3\" text-anchor=\"end\" fill=\"currentColor\">3</text><text x=\"83.0\" y=\"125.6\" text-anchor=\"end\" fill=\"currentColor\">4</text><text x=\"83.0\" y=\"92.9\" text-anchor=\"end\" fill=\"currentColor\">5</text><text x=\"83.0\" y=\"60.2\" text-anchor=\"end\" fill=\"currentColor\">6</text><text x=\"83.0\" y=\"27.5\" text-anchor=\"end\" fill=\"currentColor\">7</text><text x=\"83.0\" y=\"264.9\" text-anchor=\"end\" fill=\"currentColor\">0</text><path d=\"M55.5 351.0L56.6 348.8L57.6 346.6L58.7 344.5L59.7 342.3L60.8 340.1L61.8 337.9L62.9 335.7L63.9 333.6L65.0 331.4L66.0 329.2L67.1 327.0L68.1 324.8L69.2 322.7L70.2 320.5L71.2 318.3L72.3 316.1L73.3 313.9L74.4 311.8L75.4 309.6L76.5 307.4L77.5 305.2L78.6 303.0L79.7 300.9L80.7 298.7L81.8 296.5L82.8 294.3L83.8 292.1L84.9 290.0L85.9 287.8L87.0 285.6L88.0 283.4L89.1 281.2L90.2 279.1L91.2 276.9L92.2 274.7L93.3 272.5L94.4 270.3L95.4 268.2L96.4 266.0L97.5 263.8L98.5 261.6L99.6 259.4L100.6 257.3L101.7 255.1L102.8 252.9L103.8 250.7L104.9 248.5L105.9 246.4L107.0 244.2L108.0 242.0L109.1 239.8L110.1 237.6L111.1 235.5L112.2 233.3L113.2 231.1L114.3 228.9L115.3 226.7L116.4 224.6L117.5 222.4L118.5 220.2L119.5 218.0L120.6 215.8L121.7 213.7L122.7 211.5L123.8 209.3L124.8 207.1L125.9 204.9L126.9 202.8L127.9 200.6L129.0 198.4L130.1 196.2L131.1 194.0L132.1 191.9L133.2 189.7L134.2 187.5L135.3 185.3L136.4 183.1L137.4 181.0L138.4 178.8L139.5 176.6L140.6 174.4L141.6 172.2L142.6 170.1L143.7 167.9L144.8 165.7L145.8 163.5L146.8 161.3L147.9 159.2L148.9 157.0L150.0 154.8L151.1 152.6L152.1 150.4L153.1 148.3L154.2 146.1L155.2 143.9L156.3 141.7L157.3 139.5L158.4 137.4L159.4 135.2L160.5 133.0L161.5 130.8L162.6 128.6L163.7 126.5L164.7 124.3L165.8 122.1L166.8 119.9L167.8 117.7L168.9 115.6L170.0 113.4L171.0 111.2L172.1 109.0L173.1 106.8L174.2 104.7L175.2 102.5L176.2 100.3L177.3 98.1L178.4 95.9L179.4 93.8L180.5 91.6L181.5 89.4L182.5 87.2L183.6 85.0L184.6 82.9L185.7 80.7L186.8 78.5L187.8 76.3L188.8 74.1L189.9 72.0L190.9 69.8L192.0 67.6L193.0 65.4L194.1 63.2L195.2 61.1L196.2 58.9L197.2 56.7L198.3 54.5L199.3 52.3L200.4 50.2L201.5 48.0L202.5 45.8L203.6 43.6L204.6 41.4L205.7 39.3L206.7 37.1L207.8 34.9L208.8 32.7L209.9 30.5L210.9 28.4L212.0 26.2L213.0 24.0\" stroke=\"#2563eb\" stroke-width=\"2\" fill=\"none\"/><path d=\"M24.0 89.4L25.1 89.9L26.1 90.5L27.2 91.0L28.2 91.6L29.3 92.1L30.3 92.7L31.4 93.2L32.4 93.8L33.5 94.3L34.5 94.8L35.5 95.4L36.6 95.9L37.6 96.5L38.7 97.0L39.8 97.6L40.8 98.1L41.8 98.7L42.9 99.2L44.0 99.8L45.0 100.3L46.0 100.8L47.1 101.4L48.1 101.9L49.2 102.5L50.2 103.0L51.3 103.6L52.3 104.1L53.4 104.7L54.5 105.2L55.5 105.7L56.6 106.3L57.6 106.8L58.7 107.4L59.7 107.9L60.8 108.5L61.8 109.0L62.9 109.6L63.9 110.1L65.0 110.7L66.0 111.2L67.1 111.7L68.1 112.3L69.2 112.8L70.2 113.4L71.2 113.9L72.3 114.5L73.3 115.0L74.4 115.6L75.4 116.1L76.5 116.6L77.5 117.2L78.6 117.7L79.7 118.3L80.7 118.8L81.8 119.4L82.8 119.9L83.8 120.5L84.9 121.0L85.9 121.6L87.0 122.1L88.0 122.6L89.1 123.2L90.2 123.7L91.2 124.3L92.2 124.8L93.3 125.4L94.4 125.9L95.4 126.5L96.4 127.0L97.5 127.5L98.5 128.1L99.6 128.6L100.6 129.2L101.7 129.7L102.8 130.3L103.8 130.8L104.9 131.4L105.9 131.9L107.0 132.5L108.0 133.0L109.1 133.5L110.1 134.1L111.1 134.6L112.2 135.2L113.2 135.7L114.3 136.3L115.3 136.8L116.4 137.4L117.5 137.9L118.5 138.4L119.5 139.0L120.6 139.5L121.7 140.1L122.7 140.6L123.8 141.2L124.8 141.7L125.9 142.3L126.9 142.8L127.9 143.4L129.0 143.9L130.1 144.4L131.1 145.0L132.1 145.5L133.2 146.1L134.2 146.6L135.3 147.2L136.4 147.7L137.4 148.3L138.4 148.8L139.5 149.3L140.6 149.9L141.6 150.4L142.6 151.0L143.7 151.5L144.8 152.1L145.8 152.6L146.8 153.2L147.9 153.7L148.9 154.3L150.0 154.8L151.1 155.3L152.1 155.9L153.1 156.4L154.2 157.0L155.2 157.5L156.3 158.1L157.3 158.6L158.4 159.2L159.4 159.7L160.5 160.2L161.5 160.8L162.6 161.3L163.7 161.9L164.7 162.4L165.8 163.0L166.8 163.5L167.8 164.1L168.9 164.6L170.0 165.2L171.0 165.7L172.1 166.2L173.1 166.8L174.2 167.3L175.2 167.9L176.2 168.4L177.3 169.0L178.4 169.5L179.4 170.1L180.5 170.6L181.5 171.1L182.5 171.7L183.6 172.2L184.6 172.8L185.7 173.3L186.8 173.9L187.8 174.4L188.8 175.0L189.9 175.5L190.9 176.1L192.0 176.6L193.0 177.1L194.1 177.7L195.2 178.2L196.2 178.8L197.2 179.3L198.3 179.9L199.3 180.4L200.4 181.0L201.5 181.5L202.5 182.1L203.6 182.6L204.6 183.1L205.7 183.7L206.7 184.2L207.8 184.8L208.8 185.3L209.9 185.9L210.9 186.4L212.0 187.0L213.0 187.5L214.0 188.0L215.1 188.6L216.1 189.1L217.2 189.7L218.2 190.2L219.3 190.8L220.3 191.3L221.4 191.9L222.4 192.4L223.5 192.9L224.5 193.5L225.6 194.0L226.7 194.6L227.7 195.1L228.8 195.7L229.8 196.2L230.8 196.8L231.9 197.3L233.0 197.9L234.0 198.4L235.1 198.9L236.1 199.5L237.2 200.0L238.2 200.6L239.2 201.1L240.3 201.7L241.4 202.2L242.4 202.8L243.5 203.3L244.5 203.8L245.5 204.4L246.6 204.9L247.6 205.5L248.7 206.0L249.8 206.6L250.8 207.1L251.8 207.7L252.9 208.2L253.9 208.8L255.0 209.3L256.0 209.8L257.1 210.4L258.1 210.9L259.2 211.5L260.2 212.0L261.3 212.6L262.4 213.1L263.4 213.7L264.5 214.2L265.5 214.8L266.6 215.3L267.6 215.8L268.6 216.4L269.7 216.9L270.8 217.5L271.8 218.0L272.9 218.6L273.9 219.1L275.0 219.7L276.0 220.2\" stroke=\"#dc2626\" stroke-width=\"2\" fill=\"none\"/><circle cx=\"150.0\" cy=\"154.8\" r=\"3\" fill=\"currentColor\"/><text x=\"222.4\" y=\"46.9\" fill=\"#2563eb\" font-size=\"11\" font-style=\"italic\">y = 2x − 1</text><text x=\"200.4\" y=\"220.2\" fill=\"#dc2626\" font-size=\"11\" font-style=\"italic\">y = −x/2 + 4</text></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$(2, 3)$"
+      },
+      {
+        "id": "B",
+        "label": "$(0, 4)$"
+      },
+      {
+        "id": "C",
+        "label": "$(3, 2)$"
+      },
+      {
+        "id": "D",
+        "label": "$(\\frac{1}{2}, 0)$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "The solution is the intersection point, $(2, 3)$. Check: $2(2) - 1 = 3$ and $-\\frac{1}{2}(2) + 4 = 3$. Choice C swaps the coordinates. Choice B is the y-intercept of only the second line, and choice D is the x-intercept of only the first line."
+  },
+  {
+    "slug": "alg-sys-007",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "systems_of_linear_equations",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A farm has only chickens and goats. Altogether the animals have 30 heads and 84 legs. Each chicken has 2 legs and each goat has 4 legs. How many goats are on the farm?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$12$"
+      },
+      {
+        "id": "B",
+        "label": "$18$"
+      },
+      {
+        "id": "C",
+        "label": "$21$"
+      },
+      {
+        "id": "D",
+        "label": "$24$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Let $c$ and $g$ be the numbers of chickens and goats: $c + g = 30$ and $2c + 4g = 84$. Doubling the first equation gives $2c + 2g = 60$; subtracting from the second gives $2g = 24$, so $g = 12$ (and $c = 18$). Choice B is the number of chickens. Choice C assumes every leg belongs to a goat ($84 \\div 4$). Choice D is $2g$; it still needs to be divided by 2."
+  },
+  {
+    "slug": "alg-sys-008",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "systems_of_linear_equations",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "$$kx + 3y = 9$$ $$4x + 6y = 5$$ In the system of equations, $k$ is a constant. For what value of $k$ does the system have no solution?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{1}{2}$"
+      },
+      {
+        "id": "B",
+        "label": "$2$"
+      },
+      {
+        "id": "C",
+        "label": "$4$"
+      },
+      {
+        "id": "D",
+        "label": "$8$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "A system of two linear equations has no solution when the lines are parallel and distinct. Multiplying the first equation by 2 gives $2kx + 6y = 18$; this is parallel to $4x + 6y = 5$ when $2k = 4$, so $k = 2$, and the constants 18 and 5 differ. Choice C copies the coefficient 4 without matching the $y$-coefficients. Choice D doubles the 4 instead of halving it, and choice A inverts the ratio $\\frac{4}{2}$."
+  },
+  {
+    "slug": "alg-sys-009",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "systems_of_linear_equations",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "$$2x - 5y = 8$$ $$6x + ay = 24$$ In the system of equations, $a$ is a constant. If the system has infinitely many solutions, what is the value of $a$?",
+    "answer": [
+      "-15"
+    ],
+    "explanation": "For infinitely many solutions, the second equation must be a multiple of the first. Since $6 = 3 \\times 2$ and $24 = 3 \\times 8$, the multiplier is 3, so $a = 3 \\times (-5) = -15$."
+  },
+  {
+    "slug": "alg-sys-010",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "systems_of_linear_equations",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "A cafe sold 140 coffees on Friday, each either small or large. Small coffees cost 3 dollars and large coffees cost 4.50 dollars, and the cafe's coffee sales totaled 513 dollars. How many large coffees did the cafe sell?",
+    "answer": [
+      "62"
+    ],
+    "explanation": "Let $s$ and $\\ell$ be the numbers of small and large coffees: $s + \\ell = 140$ and $3s + 4.5\\ell = 513$. Multiplying the first equation by 3 gives $3s + 3\\ell = 420$. Subtracting, $1.5\\ell = 93$, so $\\ell = 62$ (and $s = 78$)."
+  },
+  {
+    "slug": "alg-sys-011",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "systems_of_linear_equations",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "$$y = 3x - 4$$ $$6x - 2y = 8$$ How many solutions does the system of equations have?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Zero"
+      },
+      {
+        "id": "B",
+        "label": "Exactly one"
+      },
+      {
+        "id": "C",
+        "label": "Exactly two"
+      },
+      {
+        "id": "D",
+        "label": "Infinitely many"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Substitute $y = 3x - 4$ into the second equation: $6x - 2(3x - 4) = 6x - 6x + 8 = 8$, which is always true. The equations describe the same line, so there are infinitely many solutions. Choice A would require parallel, distinct lines, and choice B would require different slopes; here both lines have slope 3 and y-intercept $-4$. Two distinct lines can never meet in exactly two points (choice C)."
+  },
+  {
+    "slug": "alg-sys-012",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "systems_of_linear_equations",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "$$3x - 2y = 1$$ $$5x + 2y = 23$$ If $(a, b)$ is the solution to the system of equations, what is the value of $\\frac{a}{b}$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{3}{4}$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{4}{3}$"
+      },
+      {
+        "id": "C",
+        "label": "$7$"
+      },
+      {
+        "id": "D",
+        "label": "$12$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Adding the equations gives $8x = 24$, so $a = 3$. Then $3(3) - 2y = 1$ gives $b = 4$. So $\\frac{a}{b} = \\frac{3}{4}$. Choice B is $\\frac{b}{a}$. Choice D is $ab$, and choice C is $a + b$."
+  },
+  {
+    "slug": "alg-sys-013",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "systems_of_linear_equations",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A boat travels 36 kilometers downstream in 2 hours and returns the same 36 kilometers upstream in 3 hours. Assuming the boat's speed in still water and the speed of the current are constant, what is the speed of the boat in still water, in kilometers per hour?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$3$"
+      },
+      {
+        "id": "B",
+        "label": "$12$"
+      },
+      {
+        "id": "C",
+        "label": "$15$"
+      },
+      {
+        "id": "D",
+        "label": "$18$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Downstream the speeds add: $b + c = \\frac{36}{2} = 18$. Upstream they subtract: $b - c = \\frac{36}{3} = 12$. Adding gives $2b = 30$, so $b = 15$ (and $c = 3$). Choice A is the current's speed. Choice D and choice B are the downstream and upstream speeds, not the boat's speed in still water."
+  },
+  {
+    "slug": "alg-sys-014",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "systems_of_linear_equations",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "$$x = 2y + 1$$ $$3x - 5y = 8$$ What is the value of $x$ in the solution $(x, y)$ to the system of equations?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$5$"
+      },
+      {
+        "id": "B",
+        "label": "$9$"
+      },
+      {
+        "id": "C",
+        "label": "$11$"
+      },
+      {
+        "id": "D",
+        "label": "$15$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Substitute: $3(2y + 1) - 5y = 8$, so $6y + 3 - 5y = 8$ and $y = 5$. Then $x = 2(5) + 1 = 11$. Choice A is the value of $y$. Choice B finds $y = 5$ but then computes $x = 2y - 1$. Choice D comes from writing $3(2y + 1)$ as $6y + 1$, which gives $y = 7$ and $x = 15$."
+  },
+  {
+    "slug": "alg-sys-015",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "systems_of_linear_equations",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "Which of the following systems of equations has exactly one solution?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$2x + 3y = 6$ and $4x + 6y = 12$"
+      },
+      {
+        "id": "B",
+        "label": "$2x + 3y = 6$ and $3x + 2y = 6$"
+      },
+      {
+        "id": "C",
+        "label": "$2x + 3y = 6$ and $4x + 6y = 7$"
+      },
+      {
+        "id": "D",
+        "label": "$y = 5x + 1$ and $y = 5x - 1$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "A system has exactly one solution when the lines have different slopes. In choice B the slopes are $-\\frac{2}{3}$ and $-\\frac{3}{2}$, which differ (the lines meet at $(\\frac{6}{5}, \\frac{6}{5})$). In choice A the second equation is twice the first: infinitely many solutions. In choice C and choice D the lines are parallel and distinct: no solution."
+  },
+  {
+    "slug": "alg-sys-016",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "systems_of_linear_equations",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "$$3x + ky = 12$$ $$kx + 12y = 24$$ In the system of equations, $k$ is a constant. If the system has no solution, what is the value of $k$?",
+    "answer": [
+      "-6"
+    ],
+    "explanation": "No solution requires parallel lines: the coefficients must be proportional, $\\frac{3}{k} = \\frac{k}{12}$, so $k^2 = 36$ and $k = 6$ or $k = -6$. If $k = 6$, the equations are $3x + 6y = 12$ and $6x + 12y = 24$, which are the same line (infinitely many solutions). If $k = -6$, they are $3x - 6y = 12$, or $x - 2y = 4$, and $-6x + 12y = 24$, or $x - 2y = -4$: parallel and distinct. So $k = -6$."
+  },
+  {
+    "slug": "alg-sys-017",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "systems_of_linear_equations",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "A chemist mixes a solution that is 15% acid with a solution that is 40% acid to make 50 liters of a mixture that is 25% acid. How many liters of the 40% solution does the chemist use?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$20$"
+      },
+      {
+        "id": "B",
+        "label": "$25$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{125}{4}$"
+      },
+      {
+        "id": "D",
+        "label": "$30$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Let $a$ and $b$ be the liters of 15% and 40% solution: $a + b = 50$ and $0.15a + 0.40b = 0.25(50) = 12.5$. Substituting $a = 50 - b$: $7.5 + 0.25b = 12.5$, so $b = 20$. Choice D is the amount of 15% solution. Choice B assumes equal amounts, which would give a 27.5% mixture. Choice C scales 50 liters by $\\frac{25}{40}$, ignoring the acid in the 15% solution."
+  },
+  {
+    "slug": "alg-sys-018",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "systems_of_linear_equations",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "$$y = ax + 4$$ $$y = 3x + b$$ In the system of equations, $a$ and $b$ are constants. The graphs of the equations intersect at the point $(2, 12)$. What is the value of $a + b$?",
+    "answer": [
+      "10"
+    ],
+    "explanation": "Substitute $(2, 12)$ into each equation. First: $12 = 2a + 4$, so $a = 4$. Second: $12 = 6 + b$, so $b = 6$. Thus $a + b = 10$."
+  },
+  {
+    "slug": "alg-sys-019",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "systems_of_linear_equations",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "$$4x - 3y = 5$$ $$12x + ry = s$$ In the system of equations, $r$ and $s$ are constants. If the system has infinitely many solutions, what is the value of $r + s$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-4$"
+      },
+      {
+        "id": "B",
+        "label": "$2$"
+      },
+      {
+        "id": "C",
+        "label": "$6$"
+      },
+      {
+        "id": "D",
+        "label": "$24$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "The second equation must be 3 times the first: $12x - 9y = 15$. So $r = -9$, $s = 15$, and $r + s = 6$. Choice D uses $r = 9$, losing the negative sign. Choice B adds the original coefficients $-3$ and 5 without scaling. Choice A scales only the $y$-coefficient."
+  },
+  {
+    "slug": "alg-sys-020",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "systems_of_linear_equations",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "At a fair, 3 ride wristbands and 2 meal vouchers cost 46 dollars, and 2 ride wristbands and 5 meal vouchers cost 49 dollars. What is the total cost, in dollars, of 1 ride wristband and 1 meal voucher?",
+    "answer": [
+      "17"
+    ],
+    "explanation": "Let $w$ and $m$ be the prices: $3w + 2m = 46$ and $2w + 5m = 49$. Multiply the first by 2 and the second by 3: $6w + 4m = 92$ and $6w + 15m = 147$. Subtracting gives $11m = 55$, so $m = 5$, and then $3w = 36$ gives $w = 12$. The total is $12 + 5 = 17$."
+  },
+  {
+    "slug": "alg-sys-021",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "systems_of_linear_equations",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "$$3x + 5y = 41$$ $$5x + 3y = 39$$ If $(x, y)$ satisfies the system of equations, what is the value of $x + y$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{9}{2}$"
+      },
+      {
+        "id": "B",
+        "label": "$10$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{11}{2}$"
+      },
+      {
+        "id": "D",
+        "label": "$40$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Adding the equations gives $8x + 8y = 80$, so $x + y = 10$ directly. (Solving fully gives $x = \\frac{9}{2}$ and $y = \\frac{11}{2}$.) Choice A and choice C are the individual values of $x$ and $y$. Choice D adds the equations but divides $41 + 39$ by 2 instead of by 8."
+  },
+  {
+    "slug": "alg-sys-022",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "systems_of_linear_equations",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "$$2x + 3y = 7$$ $$cx - 9y = 4$$ In the system of equations, $c$ is a constant. The system has exactly one solution for every value of $c$ except one. What is that value of $c$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-9$"
+      },
+      {
+        "id": "B",
+        "label": "$-6$"
+      },
+      {
+        "id": "C",
+        "label": "$-\\frac{3}{2}$"
+      },
+      {
+        "id": "D",
+        "label": "$6$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "The system fails to have exactly one solution only when the lines are parallel, that is, when the coefficients are proportional: $\\frac{c}{2} = \\frac{-9}{3}$, so $c = -6$. (Then $-6x - 9y = 4$ is parallel to $-6x - 9y = -21$, so there is no solution.) Choice D loses the negative sign. Choice A copies the $y$-coefficient. Choice C inverts the ratio."
+  },
+  {
+    "slug": "alg-ineq-001",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_inequalities",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "Which inequality describes all solutions to $3x - 5 > 10$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$x > \\frac{5}{3}$"
+      },
+      {
+        "id": "B",
+        "label": "$x > 5$"
+      },
+      {
+        "id": "C",
+        "label": "$x < 5$"
+      },
+      {
+        "id": "D",
+        "label": "$x > 15$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Add 5 to both sides: $3x > 15$. Divide by the positive number 3, which keeps the direction: $x > 5$. Choice C reverses the inequality without a reason (only dividing by a negative number does that). Choice D stops before dividing. Choice A subtracts 5 instead of adding it."
+  },
+  {
+    "slug": "alg-ineq-002",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_inequalities",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "Which value of $x$ satisfies the inequality $2x + 7 \\le 1$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-4$"
+      },
+      {
+        "id": "B",
+        "label": "$-2$"
+      },
+      {
+        "id": "C",
+        "label": "$0$"
+      },
+      {
+        "id": "D",
+        "label": "$3$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Subtract 7: $2x \\le -6$, so $x \\le -3$. Only $-4$ is at most $-3$. Choice B, $-2$, gives $2(-2) + 7 = 3$, which is greater than 1. Choice C and choice D give 7 and 13."
+  },
+  {
+    "slug": "alg-ineq-003",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_inequalities",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A freight elevator can safely carry at most 500 kilograms. Its operator weighs 80 kilograms, and each box to be moved weighs 18 kilograms. What is the greatest number of boxes the operator can take in the elevator in one trip?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$23$"
+      },
+      {
+        "id": "B",
+        "label": "$24$"
+      },
+      {
+        "id": "C",
+        "label": "$27$"
+      },
+      {
+        "id": "D",
+        "label": "$32$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "The load must satisfy $80 + 18b \\le 500$, so $18b \\le 420$ and $b \\le 23.\\overline{3}$. The number of boxes must be a whole number, so the greatest possible value is 23. Choice B rounds up; 24 boxes would make the load $80 + 432 = 512$ kilograms. Choice C ignores the operator's weight. Choice D adds the operator's weight to the limit instead of subtracting it."
+  },
+  {
+    "slug": "alg-ineq-004",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_inequalities",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "Which inequality is equivalent to $-4x \\ge 12$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$x \\ge -3$"
+      },
+      {
+        "id": "B",
+        "label": "$x \\ge 3$"
+      },
+      {
+        "id": "C",
+        "label": "$x \\le -3$"
+      },
+      {
+        "id": "D",
+        "label": "$x \\le 3$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Divide both sides by $-4$ and reverse the inequality, since dividing by a negative number reverses order: $x \\le -3$. Choice A forgets to reverse the sign. Choice B and choice D drop the negative sign from the quotient."
+  },
+  {
+    "slug": "alg-ineq-005",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_inequalities",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "Maria has 62 points in a reading challenge and earns 4 points for each book report she completes. What is the minimum number of book reports she must complete to have at least 85 points?",
+    "answer": [
+      "6"
+    ],
+    "explanation": "She needs $62 + 4r \\ge 85$, so $4r \\ge 23$ and $r \\ge 5.75$. Since $r$ is a whole number, the minimum is 6. Five reports would give only $62 + 20 = 82$ points."
+  },
+  {
+    "slug": "alg-ineq-006",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_inequalities",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A number $n$ increased by 9 is at most 30. Which inequality represents this statement?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$n + 9 < 30$"
+      },
+      {
+        "id": "B",
+        "label": "$9n \\le 30$"
+      },
+      {
+        "id": "C",
+        "label": "$n + 9 \\ge 30$"
+      },
+      {
+        "id": "D",
+        "label": "$n + 9 \\le 30$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "\\\"Increased by 9\\\" means $n + 9$, and \\\"at most 30\\\" means less than or equal to 30, so $n + 9 \\le 30$. Choice A excludes $n + 9 = 30$, which \\\"at most\\\" allows. Choice C means \\\"at least.\\\" Choice B multiplies by 9 instead of adding."
+  },
+  {
+    "slug": "alg-ineq-007",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_inequalities",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "Which point $(x, y)$ is a solution to the inequality $y > 2x - 3$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$(1, 0)$"
+      },
+      {
+        "id": "B",
+        "label": "$(2, 1)$"
+      },
+      {
+        "id": "C",
+        "label": "$(3, 2)$"
+      },
+      {
+        "id": "D",
+        "label": "$(4, 4)$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "For $(1, 0)$: $2(1) - 3 = -1$, and $0 > -1$ is true. For $(2, 1)$: $1 > 1$ is false because the inequality is strict. For $(3, 2)$: $2 > 3$ is false. For $(4, 4)$: $4 > 5$ is false. So choice B, choice C and choice D are not solutions."
+  },
+  {
+    "slug": "alg-ineq-008",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_inequalities",
+    "sat_domain": "algebra",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "Which inequality describes all solutions to $5 - x < 2$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$x < 3$"
+      },
+      {
+        "id": "B",
+        "label": "$x > 3$"
+      },
+      {
+        "id": "C",
+        "label": "$x < -3$"
+      },
+      {
+        "id": "D",
+        "label": "$x > 7$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Subtract 5: $-x < -3$. Multiply by $-1$ and reverse the inequality: $x > 3$. Choice A forgets to reverse the inequality. Choice C drops a negative sign. Choice D adds 5 to 2 instead of subtracting."
+  },
+  {
+    "slug": "alg-ineq-009",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_inequalities",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "How many integers $x$ satisfy $-3 < 2x + 1 \\le 9$?",
+    "answer": [
+      "6"
+    ],
+    "explanation": "Subtract 1 from all three parts: $-4 < 2x \\le 8$. Divide by 2: $-2 < x \\le 4$. The integers are $-1, 0, 1, 2, 3, 4$, so there are 6. Note that $-2$ is excluded because the left inequality is strict, while 4 is included."
+  },
+  {
+    "slug": "alg-ineq-010",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_inequalities",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "Phone plan A costs 30 dollars per month plus 0.10 dollar per text message. Plan B costs 45 dollars per month with unlimited texts. Which inequality gives all numbers of texts $t$ in a month for which plan A costs less than plan B?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$t < 450$"
+      },
+      {
+        "id": "B",
+        "label": "$t > 150$"
+      },
+      {
+        "id": "C",
+        "label": "$t < 150$"
+      },
+      {
+        "id": "D",
+        "label": "$t < 15$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Plan A is cheaper when $30 + 0.10t < 45$, so $0.10t < 15$ and $t < 150$. Choice B reverses the comparison. Choice A divides 45 by 0.10 without first subtracting the 30-dollar base fee. Choice D stops at $0.10t < 15$ and forgets to divide by 0.10."
+  },
+  {
+    "slug": "alg-ineq-011",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_inequalities",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "$$y \\le 2x + 3$$ $$y > -x + 1$$ Which point $(x, y)$ is a solution to the system of inequalities?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$(0, 0)$"
+      },
+      {
+        "id": "B",
+        "label": "$(-1, 2)$"
+      },
+      {
+        "id": "C",
+        "label": "$(2, 8)$"
+      },
+      {
+        "id": "D",
+        "label": "$(1, 4)$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "For $(1, 4)$: $4 \\le 2(1) + 3 = 5$ is true, and $4 > -1 + 1 = 0$ is true, so it satisfies both. For $(0, 0)$, the second inequality fails because $0 > 1$ is false. For $(-1, 2)$, the first fails: $2 \\le 1$ is false. For $(2, 8)$, the first fails: $8 \\le 7$ is false. Choice A, choice B and choice C each satisfy at most one inequality."
+  },
+  {
+    "slug": "alg-ineq-012",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_inequalities",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A volunteer packs between 40 and 55 food boxes per hour, inclusive. Which of the following could be the number of hours it takes the volunteer to pack 400 boxes?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$6$"
+      },
+      {
+        "id": "B",
+        "label": "$7$"
+      },
+      {
+        "id": "C",
+        "label": "$9$"
+      },
+      {
+        "id": "D",
+        "label": "$11$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "At the fastest rate the job takes $\\frac{400}{55} \\approx 7.3$ hours, and at the slowest rate it takes $\\frac{400}{40} = 10$ hours. So the time $h$ satisfies $\\frac{80}{11} \\le h \\le 10$, and only 9 hours is possible. In 7 hours (choice B) even the fastest rate gives only $7 \\times 55 = 385$ boxes. Choice A is too short as well, and in 11 hours (choice D) even the slowest rate gives 440 boxes."
+  },
+  {
+    "slug": "alg-ineq-013",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_inequalities",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "If $3a - 2 > 13$, which of the following must be true?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$2a > 10$"
+      },
+      {
+        "id": "B",
+        "label": "$a > 6$"
+      },
+      {
+        "id": "C",
+        "label": "$a < 5$"
+      },
+      {
+        "id": "D",
+        "label": "$a > \\frac{11}{3}$ and $a < 6$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Add 2 and divide by 3: $a > 5$. Multiplying by 2 gives $2a > 10$, which must be true. Choice B is not guaranteed: $a = 5.5$ satisfies the inequality but not $a > 6$. Choice C contradicts $a > 5$. Choice D fails for large values such as $a = 7$."
+  },
+  {
+    "slug": "alg-ineq-014",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_inequalities",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "What is the greatest value of $x$ that satisfies $4(x - 2) \\ge 6x + 4$?",
+    "answer": [
+      "-6"
+    ],
+    "explanation": "Distribute: $4x - 8 \\ge 6x + 4$. Subtract $6x$ and add 8: $-2x \\ge 12$. Divide by $-2$ and reverse the inequality: $x \\le -6$. The greatest value is $-6$."
+  },
+  {
+    "slug": "alg-ineq-015",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_inequalities",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A delivery truck can carry at most 2,000 kilograms. It is loaded with $c$ crates that weigh 45 kilograms each and $b$ barrels that weigh 70 kilograms each. Which inequality represents this situation?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$45c + 70b \\ge 2{,}000$"
+      },
+      {
+        "id": "B",
+        "label": "$45c + 70b \\le 2{,}000$"
+      },
+      {
+        "id": "C",
+        "label": "$70c + 45b \\le 2{,}000$"
+      },
+      {
+        "id": "D",
+        "label": "$c + b \\le 2{,}000$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Crates contribute $45c$ kilograms and barrels contribute $70b$ kilograms, and \\\"at most\\\" means $\\le$. Choice A means at least 2,000 kilograms. Choice C swaps the weights. Choice D counts items instead of kilograms."
+  },
+  {
+    "slug": "alg-ineq-016",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_inequalities",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "Which point $(x, y)$ is NOT a solution to the inequality $2x - 3y > 6$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$(0, -3)$"
+      },
+      {
+        "id": "B",
+        "label": "$(4, 0)$"
+      },
+      {
+        "id": "C",
+        "label": "$(3, 0)$"
+      },
+      {
+        "id": "D",
+        "label": "$(1, -2)$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "For $(3, 0)$: $2(3) - 0 = 6$, and $6 > 6$ is false, so this point is not a solution; it lies on the boundary line, which is excluded. Choice A, choice B and choice D are solutions: $(0, -3)$ gives 9, $(4, 0)$ gives 8, and $(1, -2)$ gives 8, and each of those exceeds 6."
+  },
+  {
+    "slug": "alg-ineq-017",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_inequalities",
+    "sat_domain": "algebra",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A bakery sells muffins for 2.75 dollars each. Each muffin costs the bakery 0.95 dollar to make, and the bakery also pays a fixed cost of 180 dollars per day. What is the minimum number of muffins the bakery must sell in a day to earn a profit of at least 270 dollars that day?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$150$"
+      },
+      {
+        "id": "B",
+        "label": "$164$"
+      },
+      {
+        "id": "C",
+        "label": "$250$"
+      },
+      {
+        "id": "D",
+        "label": "$474$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Profit is $2.75n - (0.95n + 180) = 1.8n - 180$. Solving $1.8n - 180 \\ge 270$ gives $1.8n \\ge 450$, so $n \\ge 250$. Choice A ignores the fixed cost ($1.8n \\ge 270$). Choice B ignores the cost per muffin ($2.75n \\ge 450$ gives $n \\ge 163.6$). Choice D divides 450 by the cost per muffin instead of by the profit per muffin."
+  },
+  {
+    "slug": "alg-ineq-018",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_inequalities",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "In the inequality $3(x - k) > 2x + 5$, $k$ is a constant. The solution set of the inequality is $x > 11$. What is the value of $k$?",
+    "answer": [
+      "2"
+    ],
+    "explanation": "Distribute: $3x - 3k > 2x + 5$. Subtract $2x$ and add $3k$: $x > 3k + 5$. This must be the same as $x > 11$, so $3k + 5 = 11$ and $k = 2$."
+  },
+  {
+    "slug": "alg-ineq-019",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_inequalities",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "Gym X charges a 40-dollar enrollment fee plus 25 dollars per month. Gym Y has no enrollment fee and charges 15 dollars per month plus 3 dollars per visit. Kofi will visit the gym 8 times each month. What is the minimum number of whole months of membership for which Gym X would cost Kofi less in total than Gym Y?",
+    "answer": [
+      "3"
+    ],
+    "explanation": "After $m$ months, Gym X costs $40 + 25m$ and Gym Y costs $15m + 3(8)m = 39m$. Gym X is cheaper when $40 + 25m < 39m$, so $40 < 14m$ and $m > 2.86$. The least whole number is 3. (Check: after 2 months X costs 90 and Y costs 78; after 3 months X costs 115 and Y costs 117.)"
+  },
+  {
+    "slug": "alg-ineq-020",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_inequalities",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "$$y > 2x - 6$$ $$y \\le -3x + 19$$ The point $(a, 4)$ is a solution to the system of inequalities. What is the greatest possible integer value of $a$?",
+    "answer": [
+      "4"
+    ],
+    "explanation": "Substitute $y = 4$. The first inequality gives $4 > 2a - 6$, so $a < 5$. The second gives $4 \\le -3a + 19$, so $a \\le 5$. Both hold when $a < 5$, so the greatest integer is 4. A common error is to answer 5, which satisfies the second inequality but not the strict first one."
+  },
+  {
+    "slug": "alg-ineq-021",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_inequalities",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "$$y \\le -x + 9$$ $$y \\le x + 3$$ In the xy-plane, the point $(x, y)$ satisfies the system of inequalities. What is the maximum possible value of $y$?",
+    "answer": [
+      "6"
+    ],
+    "explanation": "Both inequalities bound $y$ from above, so $y$ is largest where the two boundary lines meet. Setting $-x + 9 = x + 3$ gives $x = 3$, and then $y = 6$. For any other $x$, one of the two bounds is smaller than 6, so the maximum value of $y$ is 6."
+  },
+  {
+    "slug": "alg-ineq-022",
+    "section": "math",
+    "official_domain": "algebra",
+    "skill": "linear_inequalities",
+    "sat_domain": "algebra",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "A delivery van can carry a total of at most 1,200 kilograms, including its 85-kilogram driver. The driver loads 15 boxes that weigh 32 kilograms each. What is the greatest number of 25-kilogram boxes that can also be loaded?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$25$"
+      },
+      {
+        "id": "B",
+        "label": "$26$"
+      },
+      {
+        "id": "C",
+        "label": "$28$"
+      },
+      {
+        "id": "D",
+        "label": "$44$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "The total weight must satisfy $85 + 32(15) + 25y \\le 1{,}200$, so $565 + 25y \\le 1{,}200$, $25y \\le 635$, and $y \\le 25.4$. The greatest whole number is 25. Choice B rounds 25.4 up, which would exceed the limit. Choice D ignores the 15 heavier boxes. Choice C ignores the driver's 85 kilograms."
+  }
+]

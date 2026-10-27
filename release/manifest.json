@@ -1,54 +1,44 @@
 {
   "schemaVersion": 1,
-  "releaseId": "sat-practice-engine-v2",
+  "releaseId": "sat-practice-question-bank-800",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [
-    "sat-practice"
-  ],
+  "frontends": [],
   "migrations": [
-    "20261026130900_sat_practice_engine_v2.sql"
+    "20261026140900_sat_practice_algebra_advanced_math.sql",
+    "20261026141000_sat_practice_data_geometry.sql",
+    "20261026142000_sat_practice_information_ideas.sql",
+    "20261026142100_sat_practice_craft_structure.sql",
+    "20261026143000_sat_practice_expression_conventions.sql"
   ],
-  "edgeFunctions": [
-    "admin-sat-practice",
-    "sat-practice"
-  ],
-  "sharedEdgeConsumers": [],
+  "edgeFunctions": [],
   "workers": [],
-  "requiredSecrets": [
-    "AI_ADDON_PRODUCT_ID",
-    "OPENROUTER_API_KEY",
-    "OPENROUTER_BASE_URL",
-    "OPENROUTER_MODEL",
-    "SAT_TUTOR_SERVICE_DAILY_LIMIT"
-  ],
+  "sharedEdgeConsumers": [],
+  "requiredSecrets": [],
   "rolloutOrder": [
-    "pages",
-    "migration:20261026130900_sat_practice_engine_v2.sql",
-    "secret:OPENROUTER_API_KEY",
-    "secret:OPENROUTER_MODEL",
-    "secret:OPENROUTER_BASE_URL",
-    "secret:AI_ADDON_PRODUCT_ID",
-    "secret:SAT_TUTOR_SERVICE_DAILY_LIMIT",
-    "function:sat-practice",
-    "function:admin-sat-practice"
+    "requires:sat-engine release (PR #314: migration 20261026130900, sat-practice function, Pages) live first",
+    "migration:20261026140900_sat_practice_algebra_advanced_math.sql",
+    "migration:20261026141000_sat_practice_data_geometry.sql",
+    "migration:20261026142000_sat_practice_information_ideas.sql",
+    "migration:20261026142100_sat_practice_craft_structure.sql",
+    "migration:20261026143000_sat_practice_expression_conventions.sql"
   ],
   "manualFollowUps": [
-    "Merge, then let CI ship schood-sat-practice. The new app tolerates the old sat-practice function for the short window until the function is deployed (new pages show a retryable error instead of breaking).",
-    "Apply the migration: supabase db push --linked (only 20261026130900_sat_practice_engine_v2.sql from this release). It must run BEFORE the SAT content migrations 20261026140xxx-20261026143xxx, which rely on draft exclusion and the catalog. It is additive: create-or-replace of select/start/complete RPCs with identical signatures, a new catalog RPC, admin import RPCs and one widened check constraint; the currently deployed sat-practice function keeps working against it.",
-    "Secrets (existing ones only need checking with supabase secrets list): OPENROUTER_API_KEY is already set (only if missing: supabase secrets set OPENROUTER_API_KEY=<existing key>); OPENROUTER_MODEL and OPENROUTER_BASE_URL are optional (defaults google/gemma-4-31b-it:free and https://openrouter.ai/api/v1; never a paid model) — if set, keep supabase secrets set OPENROUTER_MODEL=google/gemma-4-31b-it:free and supabase secrets set OPENROUTER_BASE_URL=https://openrouter.ai/api/v1; AI_ADDON_PRODUCT_ID is unchanged (supabase secrets set AI_ADDON_PRODUCT_ID=<existing add-on product id> only if missing). Turn the tutor on with supabase secrets set SAT_TUTOR_SERVICE_DAILY_LIMIT=300.",
-    "Deploy the functions after the migration: supabase functions deploy sat-practice --project-ref <prod>, then supabase functions deploy admin-sat-practice --project-ref <prod> (new function; config.toml verify_jwt=false, authorised by the shared admin check admin.products.manage).",
-    "Then deploy the SAT content migrations (sat-math-a/b, sat-rw-a/b) with supabase db push --linked; content uses content_status published and appears immediately in bank, plans and modules."
+    "Combines PRs #303, #305, #308 and #309: 800 original Digital SAT practice questions across all 8 official domains (Algebra 110, Advanced Math 110, Problem-Solving and Data Analysis 90, Geometry and Trigonometry 90, Information and Ideas 100, Craft and Structure 100, Expression of Ideas 90, Standard English Conventions 110). Every item passes node scripts/content/validate-sat-practice.mjs.",
+    "Order: only after the sat-engine release (#314) is live (Pages + migration 20261026130900 + sat-practice function). The old app and function cannot render passages, KaTeX, tables or figures, nor grade question_spr, and select_sat_practice_questions serves every published question.",
+    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus these five files, keeping Codex's 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then supabase migration list --linked. Every insert is on conflict do nothing; ids are md5('schood-sat-part:'||official_domain) and md5('schood-sat-q:'||slug); parts use fixed display_order 10-13 per section.",
+    "Source of truth: content/sat-practice/*.json; generators scripts/content/sat-math-a.mjs, sat-math-b.mjs, sat-rw-a.mjs, sat-rw-b.mjs (each has --check). New content can also be imported with the admin-sat-practice function from #314.",
+    "No Pages, Edge Function, worker or secret changes in this release."
   ],
   "verification": [
-    "Local: deno tests (contract-A validator, SPR grading, SVG sanitiser, selection/plan/module builder, insights, goals, admin handler, tutor, existing completion/start/bank suites), deno check of both functions, app typecheck and build, uz/ru catalog completeness, 6 Playwright route tests with mocked network (bank filters, drill with mcq+spr+table+figure+KaTeX, timed module with navigator/flags/calculator, plan start, dashboard/onboarding, locale; 320/375px no horizontal overflow), and 13 PostgreSQL checks of the migration (scripts/test-sat-practice-engine-db.mjs) on a local PostgreSQL 18 cluster.",
-    "After deploy: open practice.sat.schood.online/bank and filter by official domain and skill; start a plan drill and confirm it holds the promised number of questions (or says honestly how many the bank has); start a Math module and check 22 questions/35:00 timer, navigator and calculator; submit and confirm the plan item turns Done and the dashboard minutes equal real elapsed time; score impact shows 'Not enough data yet' for a new learner.",
-    "Admin: open practice.sat.schood.online/admin as a content admin, validate a contract-A JSON file, import as draft (not visible in the learner bank), publish, then unpublish.",
-    "SQL: select count(*) from select_sat_practice_catalog('<test user>') equals the published SAT Practice questions; select_sat_practice_questions excludes content_status draft."
+    "supabase migration list --linked shows the five migrations applied and the 9 #220 payment migrations still pending.",
+    "select u.metadata->>'sat_official_domain' d, count(*) from public.content_units u where u.metadata->>'content_revision'='original-2026-10-v2' group by 1 returns the eight domains with 110/110/90/90/100/100/90/110, and every row has an answer_keys row.",
+    "As a signed-in SAT Practice learner: the bank filters by official domain and skill show the new items; a passage item, a table item, an SVG figure item and a grid-in item render and grade correctly at 375px."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-sat-practice to the previous deployment.",
-    "functions": "Redeploy the previous sat-practice function from main before this merge; the migration stays compatible with it. Delete or ignore admin-sat-practice (no other caller).",
-    "migration": "Additive; leave in place. Previous function versions call the same RPC signatures. Learner history, receipts and frozen attempt snapshots are untouched. Drafted items can be republished with admin_set_sat_practice_item_status."
+    "pages": "Nothing deployed.",
+    "migration": "Do not delete (attempts may reference the rows). Retire: update public.content_units set metadata = metadata || '{\"content_status\":\"retired\"}'::jsonb where metadata->>'content_revision'='original-2026-10-v2'; select_sat_practice_questions skips retired rows.",
+    "edge": "Nothing deployed.",
+    "worker": "Nothing deployed."
   }
 }
