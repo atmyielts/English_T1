@@ -1,114 +1,35 @@
 {
   "schemaVersion": 1,
-  "releaseId": "english-depth-oct26",
+  "releaseId": "sat-practice-data-geometry-content",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [
-    "english-hub",
-    "platform"
-  ],
+  "frontends": [],
   "migrations": [
-    "20261026100000_english_exam_track.sql",
-    "20261026100100_english_exam_papers_seed.sql",
-    "20261026110000_english_duels.sql",
-    "20261026110100_english_progress_links.sql",
-    "20261026120000_english_client_attempts.sql",
-    "20261026130000_english_classes.sql",
-    "20261026140000_english_word_store_unify.sql",
-    "20261026140100_english_vocabulary_word_knowledge.sql",
-    "20261026140200_english_reading_question_types.sql",
-    "20261026140300_english_listening_gist_questions.sql",
-    "20261026140400_english_grammar_drill_types.sql",
-    "20261026140500_english_daily_stories.sql",
-    "20261026150000_english_output_depth.sql",
-    "20261026160000_english_inbox.sql",
-    "20261026160100_english_resume_points.sql",
-    "20261026160200_english_journey_indexes.sql",
-    "20261026170000_english_account_erasure_registry.sql"
+    "20261026141000_sat_practice_data_geometry.sql"
   ],
-  "edgeFunctions": [
-    "grammar-remediation",
-    "hub",
-    "immersion-missions",
-    "listening-content",
-    "reading-articles",
-    "speaking-studio",
-    "telegram-app",
-    "vocab-drill",
-    "vocabulary-notebook",
-    "writing-workbench"
-  ],
-  "workers": [
-    "schood-bot"
-  ],
-  "sharedEdgeConsumers": [
-    "admin-english-content",
-    "admin-english-ops",
-    "telegram-public"
-  ],
-  "requiredSecrets": [
-    "ENGLISH_APP_URL",
-    "SITE_URL",
-    "TELEGRAM_BOT_TOKEN",
-    "TELEGRAM_INTERNAL_SECRET",
-    "TELEGRAM_STUDENT_BOT_NAME"
-  ],
+  "edgeFunctions": [],
+  "workers": [],
+  "sharedEdgeConsumers": [],
+  "requiredSecrets": [],
   "rolloutOrder": [
-    "pages",
-    "migration:20261026100000_english_exam_track.sql",
-    "migration:20261026100100_english_exam_papers_seed.sql",
-    "migration:20261026110000_english_duels.sql",
-    "migration:20261026110100_english_progress_links.sql",
-    "migration:20261026120000_english_client_attempts.sql",
-    "migration:20261026130000_english_classes.sql",
-    "migration:20261026140000_english_word_store_unify.sql",
-    "migration:20261026140100_english_vocabulary_word_knowledge.sql",
-    "migration:20261026140200_english_reading_question_types.sql",
-    "migration:20261026140300_english_listening_gist_questions.sql",
-    "migration:20261026140400_english_grammar_drill_types.sql",
-    "migration:20261026140500_english_daily_stories.sql",
-    "migration:20261026150000_english_output_depth.sql",
-    "migration:20261026160000_english_inbox.sql",
-    "migration:20261026160100_english_resume_points.sql",
-    "migration:20261026160200_english_journey_indexes.sql",
-    "migration:20261026170000_english_account_erasure_registry.sql",
-    "secret:ENGLISH_APP_URL",
-    "secret:SITE_URL",
-    "secret:TELEGRAM_BOT_TOKEN",
-    "secret:TELEGRAM_INTERNAL_SECRET",
-    "secret:TELEGRAM_STUDENT_BOT_NAME",
-    "function:hub",
-    "function:grammar-remediation",
-    "function:immersion-missions",
-    "function:listening-content",
-    "function:reading-articles",
-    "function:speaking-studio",
-    "function:telegram-app",
-    "function:vocab-drill",
-    "function:vocabulary-notebook",
-    "function:writing-workbench",
-    "function:admin-english-content",
-    "function:admin-english-ops",
-    "function:telegram-public",
-    "worker:schood-bot"
+    "requires:sat-engine release (claude/sat-engine: question_spr grading, KaTeX rendering, table and figure_svg rendering, official-domain filters) merged, Pages deployed and the sat-practice function deployed first",
+    "migration:20261026141000_sat_practice_data_geometry.sql"
   ],
   "manualFollowUps": [
-    "Pages: merging publishes english-hub (national exam track, duels, share cards, progress links, shadowing and read aloud, offline session, classes, deeper reading/listening/vocabulary/grammar, Story of the day, writing drafts and revisions, speaking retries, projects, a personal tutor, one result screen, Journey, Inbox, content search, Continue anywhere) and platform (control center switches for exam/classes/duels; Mini App duel card and review summary; vocab drill on the shared word store). Until the migrations and functions are deployed the new panels show their empty/error states.",
-    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus the seventeen 20261026100000-20261026170000 English migrations, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then run the functions IMMEDIATELY after (20261026140000 copies vocab drill cards into the notebook and stamps them; reviews written by the old drill code in between are picked up by the functions' lazy import, and the tutor tables must exist before the tutor uses AI credits). All new tables are service-role only with RLS on; account closure now also erases 18 English learner tables.",
-    "Secrets: none are changed. supabase secrets set ENGLISH_APP_URL= supabase secrets set SITE_URL= supabase secrets set TELEGRAM_BOT_TOKEN= supabase secrets set TELEGRAM_INTERNAL_SECRET= supabase secrets set TELEGRAM_STUDENT_BOT_NAME= are not run: each is either already configured in production or has a code default.",
-    "Edge (--project-ref bbjawctnqrufvnesdsel), right after the migrations: supabase functions deploy grammar-remediation ; supabase functions deploy hub ; supabase functions deploy immersion-missions ; supabase functions deploy listening-content ; supabase functions deploy reading-articles ; supabase functions deploy speaking-studio ; supabase functions deploy telegram-app ; supabase functions deploy vocab-drill ; supabase functions deploy vocabulary-notebook ; supabase functions deploy writing-workbench ; supabase functions deploy admin-english-content ; supabase functions deploy admin-english-ops ; supabase functions deploy telegram-public.",
-    "Worker: cd workers/schood-bot && npx wrangler deploy (duels, progress-link followers, /drill on the shared word store). Before deploying, confirm the live worker came from main (wrangler deployments list)."
+    "Order: ship the sat-engine release first (or in the same window, engine first). This migration publishes 46 grid-in items of type question_spr, LaTeX ($...$) prompts, 12 table items and 22 SVG figures; the currently deployed SAT Practice app and function cannot grade question_spr or render KaTeX, tables or figures, and select_sat_practice_questions serves every published question_% row, so pushing this before the engine would show learners raw LaTeX, missing charts and ungradable grid-ins.",
+    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus 20261026141000_sat_practice_data_geometry.sql (and whatever sat-engine / sat-math-a migrations ship with it), keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then supabase migration list --linked. Adds 2 parts under the SAT Practice Math section (Problem-Solving and Data Analysis display_order 12, Geometry and Trigonometry display_order 13) and 180 original questions (90 per domain; 134 question_single_choice, 46 question_spr) with answer keys. Idempotent: every insert is on conflict do nothing, ids are md5('schood-sat-part:'||domain) and md5('schood-sat-q:'||slug); the migration raises if the product, the Math section or either part is missing.",
+    "Source of truth: content/sat-practice/problem_solving_data_analysis.json and content/sat-practice/geometry_trigonometry.json. To change content, edit the JSON, run node scripts/content/validate-sat-practice.mjs content/sat-practice/*.json, then node scripts/content/sat-math-b.mjs and ship a new migration (this one never updates existing rows).",
+    "No Pages, Edge Function, worker or secret changes in this release."
   ],
   "verification": [
-    "supabase migration list --linked shows the seventeen migrations applied and the 9 #220 payment migrations still pending.",
-    "Without a session: GET /functions/v1/hub/exam, /hub/journey, /hub/inbox, /hub/search?q=a, /hub/classes, /hub/duels return 401; GET /hub/public/progress/UNKNOWN returns 404.",
-    "Signed in: /exam, /duel, /classes, /journey, /inbox, /stories, /speaking/shadowing, /vocabulary/practice load; Ctrl+K finds a lesson by topic; Settings shows Notifications and Progress links.",
-    "Telegram: @schoodstudentbot /duel offers a challenge link; /drill still works on the learner's words."
+    "supabase migration list --linked shows 20261026141000 applied and the 9 #220 payment migrations still pending; the push log prints the notice 'SAT Practice Problem-Solving/Geometry questions present: 180 of 180'.",
+    "select u.metadata->>'sat_official_domain' d, u.type, count(*) from public.content_units u join public.parts p on p.id=u.part_id where p.section_id='bee41358-7368-5bbb-bb76-e42afe3c1c44' and u.metadata->>'content_revision'='original-2026-10-v2' and u.metadata->>'sat_official_domain' in ('problem_solving_data_analysis','geometry_trigonometry') group by 1,2 returns problem_solving_data_analysis/question_single_choice 67, problem_solving_data_analysis/question_spr 23, geometry_trigonometry/question_single_choice 67, geometry_trigonometry/question_spr 23; every one of those rows has an answer_keys row.",
+    "As a signed-in SAT Practice learner: a Math set filtered to Problem-Solving and Data Analysis or Geometry and Trigonometry shows the new questions with rendered math; psda-twovar-001 shows its scatterplot, psda-prob-002 its two-way table and geo-lines-018 its triangle figure, each readable at 320px; a grid-in item (original_slug geo-trig-010, accepted 5/12, .4166, .4167, 0.416, 0.417) grades 5/12 and .4167 as correct and .41 as incorrect."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-english and schood-platform to the previous deployment.",
-    "migration": "Additive; leave in place. vocab_drill_cards is kept untouched (only imported_at added) so the previous drill code still works after a function rollback.",
-    "edge": "Redeploy the thirteen functions from a411de5e; new routes stop, earlier behaviour returns (words reviewed meanwhile stay in the notebook).",
-    "worker": "npx wrangler rollback in workers/schood-bot."
+    "pages": "Nothing deployed.",
+    "migration": "Do not delete (learner attempts may reference the rows). Retire instead: update public.content_units set metadata = metadata || '{\"content_status\":\"retired\",\"retired_in\":\"sat-practice-data-geometry-content\"}'::jsonb where metadata->>'content_revision'='original-2026-10-v2' and metadata->>'sat_official_domain' in ('problem_solving_data_analysis','geometry_trigonometry'); select_sat_practice_questions skips retired rows.",
+    "edge": "Nothing deployed.",
+    "worker": "Nothing deployed."
   }
 }
