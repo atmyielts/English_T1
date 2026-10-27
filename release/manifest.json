@@ -1,37 +1,30 @@
 {
   "schemaVersion": 1,
-  "releaseId": "sat-playbook-speed-ielts-sim-handoff",
+  "releaseId": "sat-playbook-function-region",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "ielts-simulator"
+    "sat-playbook"
   ],
   "migrations": [],
   "edgeFunctions": [],
   "workers": [],
-  "sharedEdgeConsumers": [
-    "sat-playbook",
-    "admin-exam-playbook"
-  ],
+  "sharedEdgeConsumers": [],
   "requiredSecrets": [],
   "rolloutOrder": [
-    "pages",
-    "function:sat-playbook",
-    "function:admin-exam-playbook"
+    "pages"
   ],
   "manualFollowUps": [
-    "Pages: merging publishes ielts-simulator. The results page gains a 'Practise <weakest skill>' button that opens IELTS Practice /today with source=simulator, session_id and weak_skill; the dashboard panel's Playbook links now carry the latest mock's session_id.",
-    "Edge: supabase functions deploy sat-playbook --project-ref bbjawctnqrufvnesdsel and supabase functions deploy admin-exam-playbook --project-ref bbjawctnqrufvnesdsel (both import _shared/exam-playbook.ts). Signed-out requests that carry the public anon / sb_ key no longer trigger an auth.getUser round trip and get the public Cache-Control; public modules and the catalog are memoised per isolate for 60 s (gated pages are never memoised)."
+    "Pages: merging publishes sat-playbook. Every SAT Playbook function call now adds ?forceFunctionRegion=ap-southeast-1 so the Edge Function runs next to the Singapore database instead of at the learner's nearest edge (eu-central-1 for Uzbekistan). Override with VITE_SUPABASE_FUNCTION_REGION if the database ever moves. No function or database change."
   ],
   "verification": [
-    "Repeat GET /functions/v1/sat-playbook/pages/math-algebra with the anon key returns Cache-Control 'public, max-age=300, stale-while-revalidate=86400' and a warm first-byte time well under the previous 2.2-2.8 s.",
-    "A premium guide still returns 401 without a session and 403 for a signed-in non-premium learner.",
-    "IELTS simulator results page: 'Practise <skill>' opens practice.ielts.schood.online/today showing the 'From your IELTS mock' banner for that session."
+    "In the browser network tab on playbook.sat.schood.online, sat-playbook requests carry forceFunctionRegion=ap-southeast-1 and responses have x-sb-edge-region: ap-southeast-1.",
+    "Median first-byte for a public module page drops from about 1.96 s to about 1.2 s (measured 18 loads each before the change)."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-ielts.",
+    "pages": "Cloudflare Pages rollback of schood-sat-playbook.",
     "migration": "None.",
-    "edge": "Redeploy sat-playbook and admin-exam-playbook from the previous main commit.",
+    "edge": "None.",
     "worker": "None."
   }
 }

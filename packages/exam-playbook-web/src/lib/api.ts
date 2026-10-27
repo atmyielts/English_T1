@@ -88,10 +88,20 @@ const toError = (status: number, body: Json): ApiError =>
 
 type Options = { method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'; body?: unknown; signal?: AbortSignal; token?: string | null };
 
+// The database lives in Singapore. Without this, Supabase runs the function at the
+// edge nearest the learner (Frankfurt for Uzbekistan) and every query crosses
+// Frankfurt-Singapore; pinning the function next to the database measured about
+// 40% faster (median 1.96 s -> 1.18 s for a module page). A query parameter, unlike
+// the x-region header, adds no CORS preflight.
+const FUNCTION_REGION = String(import.meta.env.VITE_SUPABASE_FUNCTION_REGION ?? 'ap-southeast-1').trim();
+
+export const withFunctionRegion = (url: string, region: string = FUNCTION_REGION): string =>
+  region ? `${url}${url.includes('?') ? '&' : '?'}forceFunctionRegion=${encodeURIComponent(region)}` : url;
+
 /** One request. Signed-in calls retry once after a session refresh on 401. */
 export const request = async <T>(path: string, options: Options = {}): Promise<T> => {
   const send = (token: string | null) =>
-    fetch(`${edgeBase}${path}`, {
+    fetch(withFunctionRegion(`${edgeBase}${path}`), {
       method: options.method ?? 'GET',
       signal: options.signal,
       headers: {
