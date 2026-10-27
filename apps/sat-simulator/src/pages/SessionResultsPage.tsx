@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { gradeWriting, scoreSession, type ScoreSessionResponse } from '../lib/platformClient';
 import { ESTIMATED_SAT_SCORE_DISCLAIMER, ESTIMATED_SAT_SCORE_LABEL } from '../lib/scoreCopy';
 import { useAccess } from '../lib/useAccess';
+import { STUDY_PLAN_COPY, practiceLabUrl, resultsLocale, studyPlanUrl } from '../lib/resultLinks';
 
 export const SessionResultsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -158,11 +159,9 @@ export const SessionResultsPage: React.FC = () => {
     if (!Number.isFinite(raw) || !Number.isFinite(max) || max <= 0) return 'Not available';
     return `${Math.round((raw / max) * 100)}%`;
   };
-  const practiceLabUrl = (() => {
-    const url = new URL('https://practice.sat.schood.online/bank');
-    url.searchParams.set('mistake_history', 'previously_missed');
-    return url.toString();
-  })();
+  const practiceUrl = practiceLabUrl();
+  const playbookUrl = studyPlanUrl(sessionId);
+  const studyPlanCopy = STUDY_PLAN_COPY[resultsLocale()];
 
   // Auto-trigger writing grading for sessions that include Writing.
   useEffect(() => {
@@ -333,10 +332,28 @@ export const SessionResultsPage: React.FC = () => {
                 </p>
               </div>
               <a
-                href={practiceLabUrl}
+                href={practiceUrl}
                 className="w-full md:w-auto px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-center"
               >
                 Open Practice Lab
+              </a>
+            </div>
+          </div>
+        ) : null}
+
+        {isSatSession ? (
+          <div className="mt-4 rounded-2xl border border-indigo-700/15 bg-indigo-50 p-5" data-testid="sat-study-plan-link">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div className="min-w-0">
+                <div className="text-xs font-semibold tracking-wider uppercase text-indigo-700">{studyPlanCopy.badge}</div>
+                <h2 className="text-lg font-bold text-gray-900 mt-1">{studyPlanCopy.title}</h2>
+                <p className="text-sm text-gray-600 mt-1">{studyPlanCopy.body}</p>
+              </div>
+              <a
+                href={playbookUrl}
+                className="w-full md:w-auto px-4 py-2.5 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white font-semibold text-center"
+              >
+                {studyPlanCopy.cta}
               </a>
             </div>
           </div>
