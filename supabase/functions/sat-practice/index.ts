@@ -1,24 +1,20 @@
-import { bankFilters, loadBankQuestions } from './bank.ts';
+import { loadBankQuestions } from './bank.ts';
 import { AttemptError, getAttemptResult, submitAttempt } from './completion.ts';
-import { readStartBody, startAttempt } from './start.ts';
+import { readStartBody, startAttempt, startSelected } from './start.ts';
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createSatTutorHandler, generateTutorFeedback, type TutorMode } from "./tutor.ts";
 import { resolveAiAllowance } from "../_shared/ai-addon.ts";
 import { createCoachingCapacityReader } from "../_shared/coaching-capacity.ts";
-import {
-  canonicalDifficulty,
-  canonicalDomain,
-  canonicalSection,
-  expectedPointImpact,
-  isObject,
-  toNumber,
-} from "../_shared/sat-practice-core.ts";
-import { buildSatPracticePlan } from "../_shared/sat-practice-plan-generator.ts";
+import { canonicalDifficulty, canonicalDomain, canonicalSection, isObject } from "../_shared/sat-practice-core.ts";
 import { practiceAccess, questionForLearner, SAT_PRACTICE_PRODUCT_ID } from "./access.ts";
+import {
+  bankPage, bankQuery, bankSelection, currentWeek, enrichNotebook, generateWeek, hasOfficialFilters, insights, loadCatalog,
+  moduleSelection, startPlanItem, todayIso,
+} from "./practice.ts";
+import { computeStreak, goalsSet, validGoalPatch } from "./goals.ts";
 
 type JsonRecord = Record<string, unknown>;
-
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -43,6 +39,8 @@ const tutorCapacity = createCoachingCapacityReader({
   model: env("OPENROUTER_MODEL") || "google/gemma-4-31b-it:free",
   baseUrl: env("OPENROUTER_BASE_URL") || "https://openrouter.ai/api/v1",
 });
+// The tutor stays off until the coordinator sets SAT_TUTOR_SERVICE_DAILY_LIMIT
+// (service-wide requests per UTC day); the app then shows each learner's allowance.
 const configuredTutorLimit = Number(env("SAT_TUTOR_SERVICE_DAILY_LIMIT"));
 const tutorServiceLimit = Number.isInteger(configuredTutorLimit) && configuredTutorLimit > 0 && configuredTutorLimit <= 1000000 ? configuredTutorLimit : 0;
 
@@ -50,8 +48,6 @@ const getBearerToken = (req: Request): string => {
   const header = req.headers.get("Authorization") ?? "";
   return header.startsWith("Bearer ") ? header.slice(7) : header;
 };
-
-const todayIso = (): string => new Date().toISOString().slice(0, 10);
 
 const readBody = async (req: Request): Promise<JsonRecord> => {
   try {
@@ -81,78 +77,54 @@ const getOrCreateGoals = async (sb: any, userId: string) => {
 };
 
 const loadDashboard = async (sb: any, userId: string) => {
-  const [goals, masteryRes, planRes, notebookRes, activityRes] = await Promise.all([
+  const [goals, masteryRes, notebookRes, activityRes, entries] = await Promise.all([
     getOrCreateGoals(sb, userId),
     sb.from("sat_practice_mastery").select("*").eq("user_id", userId),
-    sb.from("sat_practice_plan_items").select("*").eq("user_id", userId).eq("scheduled_for", todayIso()).order("created_at"),
     sb.from("sat_practice_mistake_notebook").select("*").eq("user_id", userId).neq("status", "archived").order("created_at", { ascending: false }).limit(20),
     sb.from("sat_practice_daily_activity").select("*").eq("user_id", userId).order("day", { ascending: false }).limit(30),
+    loadCatalog(sb, userId),
   ]);
   if (masteryRes.error) throw masteryRes.error;
-  if (planRes.error) throw planRes.error;
   if (notebookRes.error) throw notebookRes.error;
   if (activityRes.error) throw activityRes.error;
+  const week = await currentWeek(sb, userId, goals, entries);
 
   const mastery = masteryRes.data ?? [];
   const mastered = mastery.filter((row: any) => ["stable", "mastered"].includes(String(row.mastery_status))).length;
-  const masteryPercent = mastery.length > 0 ? Math.round((mastered / mastery.length) * 100) : 0;
+  const masteryPercent = mastery.length > 0 ? Math.round((mastered / mastery.length) * 100) : null;
   const activityRows = activityRes.data ?? [];
-  const weeklyMinutes = activityRows.slice(0, 7).reduce((sum: number, row: any) => sum + Number(row.minutes_studied ?? 0), 0);
+  const weekAgo = new Date(Date.now() - 6 * 86_400_000).toISOString().slice(0, 10);
+  const thisWeek = activityRows.filter((row: any) => String(row.day) >= weekAgo);
+  const weeklyMinutes = thisWeek.reduce((sum: number, row: any) => sum + Number(row.minutes_studied ?? 0), 0);
   const xpTotal = activityRows.reduce((sum: number, row: any) => sum + Number(row.xp_earned ?? 0), 0);
-  const xpWeek = activityRows.slice(0, 7).reduce((sum: number, row: any) => sum + Number(row.xp_earned ?? 0), 0);
-  const streakDays = computeStreak(activityRows);
-  const scoreImpact = computeScoreImpact(notebookRes.data ?? [], mastery);
+  const xpWeek = thisWeek.reduce((sum: number, row: any) => sum + Number(row.xp_earned ?? 0), 0);
+  const view = insights(entries, mastery);
 
   return {
     goals,
+    goals_set: goalsSet(goals),
     mastery,
-    plan_items: planRes.data ?? [],
-    notebook: notebookRes.data ?? [],
+    official_mastery: view.official_mastery,
+    insights: { domains: view.domains, totals: view.totals },
+    plan_items: week.today_items,
+    plan_week: { week_start: week.week_start, week_end: week.week_end, progress: week.progress },
+    notebook: enrichNotebook(notebookRes.data ?? [], entries),
     activity: {
-      streak_days: streakDays,
+      streak_days: computeStreak(activityRows, todayIso()),
       weekly_minutes: weeklyMinutes,
       weekly_goal_minutes: Number(goals.hours_per_week ?? 3) * 60,
+      weekly_attempts: thisWeek.reduce((sum: number, row: any) => sum + Number(row.attempts ?? 0), 0),
       xp_total: xpTotal,
       xp_week: xpWeek,
     },
     mastery_percent: masteryPercent,
-    score_impact: { ...scoreImpact, label: "Range is an if-mastered estimate, not a guaranteed score gain." },
+    score_impact: { ...view.score_impact, label: "Rough estimate from your own answers, not an official or guaranteed score." },
     plan_stale: false,
   };
 };
 
-const computeStreak = (rows: any[]): number => {
-  const days = new Set(rows.filter((row) => Number(row.minutes_studied ?? 0) > 0 || Number(row.attempts ?? 0) > 0).map((row) => String(row.day)));
-  let streak = 0;
-  const cursor = new Date(`${todayIso()}T00:00:00.000Z`);
-  while (days.has(cursor.toISOString().slice(0, 10))) {
-    streak += 1;
-    cursor.setUTCDate(cursor.getUTCDate() - 1);
-  }
-  return streak;
-};
-
-const computeScoreImpact = (notebook: any[], mastery: any[]) => {
-  const byDomain = new Map<string, { count: number; accuracy: number | null }>();
-  for (const item of notebook) {
-    const domain = canonicalDomain(item.domain, canonicalSection(item.section_type));
-    const row = mastery.find((entry: any) => entry.domain === domain);
-    const current = byDomain.get(domain) ?? { count: 0, accuracy: toNumber(row?.rolling_accuracy) };
-    current.count += 1;
-    byDomain.set(domain, current);
-  }
-  let conservative = 0;
-  let optimistic = 0;
-  for (const [domain, entry] of byDomain.entries()) {
-    const impact = expectedPointImpact(domain as Parameters<typeof expectedPointImpact>[0], entry.accuracy, entry.count);
-    conservative += impact.conservative;
-    optimistic += impact.optimistic;
-  }
-  return {
-    conservative: Math.min(90, Math.max(0, conservative || 20)),
-    optimistic: Math.min(140, Math.max(30, optimistic || 60)),
-  };
-};
+const REASON_TAGS = ["concept_gap", "careless", "time_pressure", "misread_wording", "unknown"];
+const NOTEBOOK_STATUSES = ["active", "reviewing", "mastered", "archived"];
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -173,47 +145,65 @@ serve(async (req) => {
     if (access === "denied") return json(403, { error: "Premium access required", code: "premium_required", product_id: SAT_PRACTICE_PRODUCT_ID });
 
     if (req.method === "GET" && path === "/goals") {
-      return json(200, { goals: await getOrCreateGoals(sb, user.id) });
+      const goals = await getOrCreateGoals(sb, user.id);
+      return json(200, { goals, goals_set: goalsSet(goals) });
     }
 
     if (req.method === "PATCH" && path === "/goals") {
-      const body = await readBody(req);
-      const patch = {
-        user_id: user.id,
-        target_score: Math.max(400, Math.min(1600, Math.round(toNumber(body.target_score) ?? 1400))),
-        test_date: typeof body.test_date === "string" && body.test_date ? body.test_date : null,
-        hours_per_week: Math.max(1, Math.min(40, Math.round(toNumber(body.hours_per_week) ?? 3))),
-        metadata: isObject(body.metadata) ? body.metadata : {},
-        updated_at: new Date().toISOString(),
-      };
-      const { data, error } = await sb.from("sat_practice_user_goals").upsert(patch).select("*").single();
-      if (error) throw error;
-      return json(200, { ok: true, goals: data });
+      const current = await getOrCreateGoals(sb, user.id);
+      const patch = validGoalPatch(await readBody(req), current, todayIso());
+      if ("error" in patch) return json(400, { error: patch.error, code: patch.code });
+      const { data, error } = await sb.from("sat_practice_user_goals").upsert({ ...patch.value, user_id: user.id, updated_at: new Date().toISOString() }).select("*").single();
+      if (error) throw new AttemptError(503, "Your goal could not be saved. Please retry.", "goal_unavailable");
+      // The plan follows the goal immediately; a plan failure never loses the saved goal.
+      let planUpdated = true;
+      try { await generateWeek(sb, user.id, data); } catch { planUpdated = false; }
+      return json(200, { ok: true, goals: data, goals_set: goalsSet(data), plan_updated: planUpdated });
     }
 
     if (req.method === "GET" && path === "/dashboard") return json(200, await loadDashboard(sb, user.id));
 
-    if (req.method === "GET" && path === "/insights/mastery") {
-      const { data, error } = await sb.from("sat_practice_mastery").select("*").eq("user_id", user.id);
-      if (error) throw error;
-      return json(200, { mastery: data ?? [] });
-    }
-
-    if (req.method === "GET" && path === "/insights/score-impact") {
-      const dashboard = await loadDashboard(sb, user.id);
-      return json(200, dashboard.score_impact);
+    if (req.method === "GET" && path === "/insights") {
+      const [entries, masteryRes] = await Promise.all([loadCatalog(sb, user.id), sb.from("sat_practice_mastery").select("*").eq("user_id", user.id)]);
+      if (masteryRes.error) throw masteryRes.error;
+      return json(200, insights(entries, masteryRes.data ?? []));
     }
 
     if (req.method === "GET" && path === "/bank") {
-      const filters = bankFilters(Object.fromEntries(url.searchParams));
-      const questions = await loadBankQuestions(sb, user.id, filters);
-      return json(200, { questions: questions.map(questionForLearner) });
+      const query = bankQuery(Object.fromEntries(url.searchParams));
+      const entries = await loadCatalog(sb, user.id);
+      const { page, facets, total } = bankPage(entries, query);
+      const ids = page.map(e => e.id);
+      const rows = ids.length ? await loadBankQuestions(sb, user.id, { question_ids: ids, limit: ids.length }) : [];
+      const byId = new Map(rows.map((q: any) => [q.id, q]));
+      const history = Object.fromEntries(page.map(e => [e.id, e.status]));
+      return json(200, { questions: ids.map(id => byId.get(id)).filter(Boolean).map(questionForLearner), total, offset: query.offset, limit: query.limit, facets, history });
     }
 
     if (req.method === "POST" && path === "/attempts/start") {
       const body = await readStartBody(req);
+      if (hasOfficialFilters(body) || body.mode === "bank") {
+        const count = Number(body.question_count ?? 10);
+        if (!Number.isInteger(count) || count < 1 || count > 30) throw new AttemptError(400, "Choose between 1 and 30 questions.", "invalid_filter");
+        const query = bankQuery({ ...body, limit: count, offset: 0 });
+        const result = await startSelected(sb, user.id, body, async () => bankSelection(await loadCatalog(sb, user.id), query, count));
+        return json(200, { ...result, questions: result.questions.map(questionForLearner), selection: { requested: count, available: result.questions.length } });
+      }
       const result = await startAttempt(sb, user.id, body);
       return json(200, { ...result, questions: result.questions.map(questionForLearner) });
+    }
+
+    if (req.method === "POST" && path === "/modules/start") {
+      const body = await readStartBody(req);
+      if (body.section !== "math" && body.section !== "reading_writing") throw new AttemptError(400, "Choose Reading and Writing or Math.", "invalid_request");
+      const profile = body.profile === "harder" ? "harder" : "standard";
+      let selection: JsonRecord = {};
+      const result = await startSelected(sb, user.id, body, async () => {
+        const m = moduleSelection(await loadCatalog(sb, user.id), body.section as "math" | "reading_writing", profile);
+        selection = { requested: m.build.requested, available: m.ids.length, domains: m.build.domains, time_limit_seconds: m.build.time_limit_seconds };
+        return m;
+      });
+      return json(200, { ...result, questions: result.questions.map(questionForLearner), selection });
     }
 
     const attemptMatch = path.match(/^\/attempts\/([0-9a-f-]{36})$/i);
@@ -231,27 +221,40 @@ serve(async (req) => {
     }
 
     if (req.method === "GET" && path === "/notebook") {
-      const { data, error } = await sb.from("sat_practice_mistake_notebook").select("*").eq("user_id", user.id).neq("status", "archived").order("created_at", { ascending: false });
+      const [{ data, error }, entries] = await Promise.all([
+        sb.from("sat_practice_mistake_notebook").select("*").eq("user_id", user.id).neq("status", "archived").order("created_at", { ascending: false }),
+        loadCatalog(sb, user.id),
+      ]);
       if (error) throw error;
-      return json(200, { items: data ?? [] });
+      return json(200, { items: enrichNotebook(data ?? [], entries) });
     }
 
     const notebookMatch = path.match(/^\/notebook\/([0-9a-f-]{36})(?:\/retry)?$/i);
     if (notebookMatch && req.method === "PATCH") {
       const body = await readBody(req);
       const patch: JsonRecord = { updated_at: new Date().toISOString() };
-      if (typeof body.reason_tag === "string") patch.reason_tag = body.reason_tag;
-      if (typeof body.status === "string") patch.status = body.status;
-      if (typeof body.coach_note === "string") patch.coach_note = body.coach_note;
-      const { data, error } = await sb.from("sat_practice_mistake_notebook").update(patch).eq("id", notebookMatch[1]).eq("user_id", user.id).select("*").single();
-      if (error) throw error;
+      if (body.reason_tag !== undefined) {
+        if (!REASON_TAGS.includes(String(body.reason_tag))) throw new AttemptError(400, "Invalid reason tag.", "invalid_request");
+        patch.reason_tag = body.reason_tag;
+      }
+      if (body.status !== undefined) {
+        if (!NOTEBOOK_STATUSES.includes(String(body.status))) throw new AttemptError(400, "Invalid status.", "invalid_request");
+        patch.status = body.status;
+      }
+      if (body.coach_note !== undefined) {
+        if (typeof body.coach_note !== "string" || body.coach_note.length > 1000) throw new AttemptError(400, "Notes can be up to 1000 characters.", "invalid_request");
+        patch.coach_note = body.coach_note;
+      }
+      const { data, error } = await sb.from("sat_practice_mistake_notebook").update(patch).eq("id", notebookMatch[1]).eq("user_id", user.id).select("*").maybeSingle();
+      if (error) throw new AttemptError(503, "The notebook could not be updated. Please retry.", "notebook_unavailable");
+      if (!data) throw new AttemptError(404, "Review not found.", "not_found");
       return json(200, { item: data });
     }
 
     if (notebookMatch && req.method === "POST" && path.endsWith("/retry")) {
       const { data: item, error } = await sb.from("sat_practice_mistake_notebook").select("*").eq("id", notebookMatch[1]).eq("user_id", user.id).maybeSingle();
-      if (error) throw new AttemptError(503, "Reviews are temporarily unavailable. Please retry.");
-      if (!item) throw new AttemptError(404, "Review not found.");
+      if (error) throw new AttemptError(503, "Reviews are temporarily unavailable. Please retry.", "reviews_unavailable");
+      if (!item) throw new AttemptError(404, "Review not found.", "not_found");
       const result = await startAttempt(sb, user.id, await readStartBody(req), {
         id: item.id,
         section_type: canonicalSection(item.section_type),
@@ -263,7 +266,7 @@ serve(async (req) => {
 
     if (req.method === "GET" && path === "/srs/due") {
       const { data, error } = await sb.rpc("select_sat_practice_due_questions", { p_user_id: user.id });
-      if (error || !Array.isArray(data)) throw new AttemptError(503, "Reviews are temporarily unavailable. Please retry.");
+      if (error || !Array.isArray(data)) throw new AttemptError(503, "Reviews are temporarily unavailable. Please retry.", "reviews_unavailable");
       const items = data.map((row: any) => ({
         id: row.id,
         section_type: row.question.section_type,
@@ -284,25 +287,26 @@ serve(async (req) => {
       return json(200, { items });
     }
 
-    if (req.method === "GET" && path === "/plans/today") {
-      const { data, error } = await sb.from("sat_practice_plan_items").select("*").eq("user_id", user.id).eq("scheduled_for", todayIso()).order("created_at");
-      if (error) throw error;
-      return json(200, { items: data ?? [] });
+    if (req.method === "GET" && (path === "/plans/today" || path === "/plans/week")) {
+      const goals = await getOrCreateGoals(sb, user.id);
+      const week = await currentWeek(sb, user.id, goals);
+      // /plans/today keeps its original shape for older app versions.
+      return json(200, path === "/plans/today" ? { items: week.today_items } : { ...week, goals_set: goalsSet(goals), goals });
     }
 
     if (req.method === "POST" && path === "/plans/regenerate") {
       const goals = await getOrCreateGoals(sb, user.id);
-      const { data: masteryRows, error } = await sb.from("sat_practice_mastery").select("*").eq("user_id", user.id);
-      if (error) throw error;
-      await sb.from("sat_practice_plan_items").delete().eq("user_id", user.id).eq("scheduled_for", todayIso()).in("status", ["pending", "skipped"]);
-      const items = buildSatPracticePlan(masteryRows ?? [], {
-        targetScore: Number(goals.target_score ?? 1400),
-        testDate: goals.test_date ?? null,
-        today: todayIso(),
-      }).map((item) => ({ ...item, user_id: user.id, status: "pending" }));
-      const { data, error: insertError } = await sb.from("sat_practice_plan_items").insert(items).select("*");
-      if (insertError) throw insertError;
-      return json(200, { ok: true, items: data ?? [] });
+      await generateWeek(sb, user.id, goals);
+      const week = await currentWeek(sb, user.id, goals);
+      return json(200, { ok: true, items: week.today_items, week });
+    }
+
+    const planStart = path.match(/^\/plans\/items\/([0-9a-f-]{36})\/start$/i);
+    if (req.method === "POST" && planStart) {
+      const body = await readStartBody(req);
+      const result = await startPlanItem(sb, user.id, planStart[1], body);
+      if (result.completed) return json(200, { completed: true, selection: result.selection });
+      return json(200, { ...result, questions: (result.questions ?? []).map((q: any) => questionForLearner(q)) });
     }
 
     const tutorMatch = path.match(/^\/tutor\/(explain|simpler|similar|why-wrong)$/);
@@ -322,9 +326,9 @@ serve(async (req) => {
 
     return json(404, { error: "Not found", path });
   } catch (err) {
-    if (err instanceof AttemptError) return json(err.status, { error: err.message });
+    if (err instanceof AttemptError) return json(err.status, { error: err.message, ...(err.code ? { code: err.code } : {}) });
     const message = err instanceof Error ? err.message : String(err);
     const status = message === "Unauthorized" ? 401 : 500;
-    return json(status, { error: status === 401 ? "Sign in to continue." : "SAT Practice is temporarily unavailable. Please retry." });
+    return json(status, { error: status === 401 ? "Sign in to continue." : "SAT Practice is temporarily unavailable. Please retry.", code: status === 401 ? "unauthorized" : "unavailable" });
   }
 });

@@ -70,3 +70,12 @@ Deno.test("transport failures expose only recovery copy", () => withKey(async ()
   assertEquals(result.status, "failed");
   assert(!JSON.stringify(result).includes("private credential"));
 }));
+
+Deno.test("free-model JSON wrapped in a fence or a sentence is accepted; arrays and prose are not", () => withKey(async () => {
+  for (const content of ['```json\n{"steps":["a"]}\n```', 'Here is the JSON: {"steps":["a"]} Hope it helps.', ' {"steps":["a"]} ']) {
+    assertEquals(await callOpenRouterJson(options, async () => response(content)), { steps: ["a"] });
+  }
+  for (const content of ['```json\n[1]\n```', 'no json here', '{broken']) {
+    await assertRejects(() => callOpenRouterJson(options, async () => response(content)));
+  }
+}));
