@@ -341,7 +341,8 @@ test.describe('IELTS Playbook routes (mocked API)', () => {
     await expect(page.getByRole('heading', { name: 'Balanced 28-day plan', level: 1 })).toBeVisible();
     await page.getByRole('button', { name: /Generate AI plan/ }).click();
     await expect(page.getByTestId('ai-plan')).toContainText('Task 2 structure');
-    await expect(page.getByText('Saved to your profile.')).toBeVisible();
+    // The status line can be matched twice while the panel re-renders; one visible copy is enough.
+    await expect(page.getByText('Saved to your profile.').first()).toBeVisible();
     // The profile PATCH can land after the "saved" text renders; wait for it.
     const findPatch = () => calls.find((call) => call.method === 'PATCH' && call.path === '/ielts-playbook/profile');
     await expect.poll(findPatch).toBeTruthy();
