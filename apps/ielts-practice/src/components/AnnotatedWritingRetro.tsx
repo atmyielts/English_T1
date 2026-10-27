@@ -1,6 +1,7 @@
 import { Fragment, useMemo, useState } from 'react';
 import { PenLine, Sparkles } from 'lucide-react';
 import { practiceWritingAnnotate, type AnnotatedWritingTask, type WritingAnnotation } from '../lib/api';
+import { useAppT, useErrorText, type AppKey } from '../i18n';
 
 const CRITERION_TONES: Record<string, string> = {
   TR: '#1e40af',
@@ -61,6 +62,8 @@ interface Props {
 }
 
 export const AnnotatedWritingRetro = ({ accessToken, practiceSessionId }: Props) => {
+  const t = useAppT();
+  const errorText = useErrorText();
   const [tasks, setTasks] = useState<AnnotatedWritingTask[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -74,7 +77,7 @@ export const AnnotatedWritingRetro = ({ accessToken, practiceSessionId }: Props)
       const res = await practiceWritingAnnotate(accessToken, practiceSessionId);
       setTasks(res.tasks);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not generate annotations');
+      setError(errorText(err));
     } finally {
       setLoading(false);
     }
@@ -89,12 +92,9 @@ export const AnnotatedWritingRetro = ({ accessToken, practiceSessionId }: Props)
     <section className="glass stat-card wide" style={{ padding: 28 }}>
       <div className="task-card-head">
         <div>
-          <p className="eyebrow"><PenLine size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Annotated retro</p>
-          <h3 style={{ marginTop: 4 }}>Inline rubric annotations on your response</h3>
-          <p className="muted" style={{ margin: '4px 0 0', fontSize: 14 }}>
-            See exactly which phrases moved the band — anchored to the criterion (TR / CC / LR / GRA).
-            Hover or tap a highlight to read the examiner note.
-          </p>
+          <p className="eyebrow"><PenLine size={11} style={{ verticalAlign: -2, marginRight: 4 }} aria-hidden="true" /> {t('annot.eyebrow')}</p>
+          <h3 style={{ marginTop: 4 }}>{t('annot.title')}</h3>
+          <p className="muted" style={{ margin: '4px 0 0', fontSize: 14 }}>{t('annot.lead')}</p>
         </div>
         {tasks == null ? (
           <button
@@ -103,7 +103,7 @@ export const AnnotatedWritingRetro = ({ accessToken, practiceSessionId }: Props)
             onClick={() => void request()}
             disabled={loading || !accessToken}
           >
-            {loading ? 'Annotating…' : 'Annotate response'}
+            {loading ? t('annot.running') : t('annot.run')}
           </button>
         ) : null}
       </div>
@@ -111,12 +111,12 @@ export const AnnotatedWritingRetro = ({ accessToken, practiceSessionId }: Props)
       {error ? <p className="error-text" style={{ marginTop: 12 }}>{error}</p> : null}
 
       {tasks != null && tasks.length === 0 ? (
-        <p className="muted" style={{ marginTop: 12 }}>No writing responses found for this session.</p>
+        <p className="muted" style={{ marginTop: 12 }}>{t('annot.none')}</p>
       ) : null}
 
       {tasks != null && totalAnnotations === 0 && tasks.length > 0 ? (
         <p className="muted" style={{ marginTop: 12 }}>
-          The model didn’t surface any pivotal annotations — try the AI coach above for a higher-level take.
+          {t('annot.noNotes')}
         </p>
       ) : null}
 
@@ -128,10 +128,10 @@ export const AnnotatedWritingRetro = ({ accessToken, practiceSessionId }: Props)
               <article key={task.task_id} className="feedback-panel">
                 <div className="task-card-head" style={{ marginBottom: 10 }}>
                   <h4 style={{ margin: 0 }}>
-                    {task.task_type ? task.task_type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : `Task ${taskIdx + 1}`}
+                    {task.task_type ? task.task_type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : t('annot.task', { n: taskIdx + 1 })}
                   </h4>
                   <span className="muted" style={{ fontSize: 12 }}>
-                    {task.annotations.length} annotation{task.annotations.length === 1 ? '' : 's'}
+                    {t('annot.count', { count: task.annotations.length })}
                   </span>
                 </div>
 
@@ -159,7 +159,8 @@ export const AnnotatedWritingRetro = ({ accessToken, practiceSessionId }: Props)
                             cursor: 'pointer',
                             font: 'inherit',
                           }}
-                          title={`${ann.criterion} · ${ann.severity}`}
+                          title={`${ann.criterion} · ${t(`annot.severity.${ann.severity}` as AppKey)}`}
+                          aria-expanded={open}
                         >
                           {span.text}
                         </button>
@@ -172,8 +173,8 @@ export const AnnotatedWritingRetro = ({ accessToken, practiceSessionId }: Props)
                               left: 0,
                               marginTop: 6,
                               zIndex: 5,
-                              minWidth: 240,
-                              maxWidth: 360,
+                              minWidth: 'min(240px, 80vw)',
+                              maxWidth: 'min(360px, 85vw)',
                               padding: '10px 12px',
                               background: 'var(--card)',
                               border: `1px solid ${tone}`,
@@ -186,7 +187,7 @@ export const AnnotatedWritingRetro = ({ accessToken, practiceSessionId }: Props)
                             }}
                           >
                             <strong style={{ color: tone, display: 'block', marginBottom: 4, fontSize: 11, letterSpacing: '0.12em' }}>
-                              {ann.criterion} · {ann.severity.toUpperCase()}
+                              {ann.criterion} · {t(`annot.severity.${ann.severity}` as AppKey).toUpperCase()}
                             </strong>
                             {ann.comment}
                           </span>

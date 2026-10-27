@@ -16,7 +16,7 @@ export const RequireProductEntitlement = () => {
   const disablePaywall = String(import.meta.env.VITE_DISABLE_PAYWALL ?? '').toLowerCase() === 'true';
   const returnTo = getReturnTo(location);
 
-  if (status === 'loading') return <AccessLoading label="Checking access" />;
+  if (status === 'loading') return <AccessLoading />;
 
   if (status === 'unauthenticated') {
     const url = buildPlatformUrl('/auth', returnTo, { product: SAT_PRACTICE_PRODUCT_SLUG });
@@ -27,7 +27,7 @@ export const RequireProductEntitlement = () => {
     return <Navigate to={url} replace />;
   }
 
-  if (!me) return <AccessLoading label="Loading account" />;
+  if (!me) return <AccessLoading />;
 
   const hasEffective = Array.isArray(effective?.effective_product_ids)
     && effective.effective_product_ids.includes(SAT_PRACTICE_PRODUCT_ID);

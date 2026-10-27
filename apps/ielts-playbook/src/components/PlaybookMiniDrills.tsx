@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Sparkles, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
 import { playbookDrillsGenerate, playbookDrillSubmit, type PlaybookDrill } from '../lib/api';
+import { useT } from '../i18n';
 
 interface Props {
   accessToken: string | null;
@@ -10,6 +11,7 @@ interface Props {
 type Answer = { drill_id: string; selected_index: number; is_correct: boolean };
 
 export const PlaybookMiniDrills: React.FC<Props> = ({ accessToken, pageSlug }) => {
+  const t = useT();
   const [drills, setDrills] = useState<PlaybookDrill[] | null>(null);
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
   const [busy, setBusy] = useState(false);
@@ -23,10 +25,10 @@ export const PlaybookMiniDrills: React.FC<Props> = ({ accessToken, pageSlug }) =
       const res = await playbookDrillsGenerate(accessToken, pageSlug);
       setDrills(res.drills);
       setAnswers({});
-      if (res.ai_status === 'unconfigured') setAiNotice('AI is not configured — showing fallback prompts.');
-      else if (res.ai_status === 'failed') setAiNotice('AI call failed — showing fallback prompts.');
+      if (res.ai_status === 'unconfigured') setAiNotice(t('ai.unconfiguredFallback'));
+      else if (res.ai_status === 'failed') setAiNotice(t('ai.failedFallback'));
     } catch (err) {
-      setAiNotice(err instanceof Error ? err.message : 'Could not load drills');
+      setAiNotice(t('drills.error'));
     } finally {
       setBusy(false);
     }
@@ -62,22 +64,21 @@ export const PlaybookMiniDrills: React.FC<Props> = ({ accessToken, pageSlug }) =
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
         <div>
-          <p className="eyebrow" style={{ color: '#b6512c', marginBottom: 4 }}>Check yourself</p>
+          <p className="eyebrow" style={{ color: '#b6512c', marginBottom: 4 }}>{t('drills.eyebrow')}</p>
           <strong style={{ display: 'block', fontFamily: 'Fraunces, serif', fontSize: 19, fontWeight: 600 }}>
-            Mini-drill on this strategy
+            {t('drills.title')}
           </strong>
           <p style={{ margin: '4px 0 0', fontSize: 14, color: '#3b352a', maxWidth: 540 }}>
-            Four questions grounded in the article you just read. We'll log your answers so the dashboard
-            can show progress.
+            {t('drills.lead')}
           </p>
         </div>
         {drills ? (
           <button type="button" className="button button-secondary" onClick={() => void load()} disabled={busy}>
-            <RefreshCw size={14} /> {busy ? 'Generating…' : 'New set'}
+            <RefreshCw size={14} /> {busy ? t('common.generating') : t('drills.newSet')}
           </button>
         ) : (
           <button type="button" className="button button-primary" onClick={() => void load()} disabled={busy}>
-            {busy ? 'Generating…' : 'Generate drill'} <Sparkles size={14} style={{ marginLeft: 4 }} />
+            {busy ? t('common.generating') : t('drills.generate')} <Sparkles size={14} style={{ marginLeft: 4 }} />
           </button>
         )}
       </div>
@@ -164,7 +165,7 @@ export const PlaybookMiniDrills: React.FC<Props> = ({ accessToken, pageSlug }) =
 
           {completed === total && total > 0 ? (
             <p style={{ marginTop: 14, fontSize: 14, color: '#1f8a55', fontWeight: 600 }}>
-              {correctCount}/{total} correct — {correctCount === total ? 'mastery looks solid.' : 'review the misses above.'}
+              {t('drills.result', { correct: correctCount, total })} {correctCount === total ? t('drills.allCorrect') : t('drills.reviewMisses')}
             </p>
           ) : null}
         </>

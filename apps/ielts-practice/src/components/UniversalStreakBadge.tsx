@@ -1,5 +1,6 @@
 import { Flame } from 'lucide-react';
 import { useUserStreak } from '../lib/useUserStreak';
+import { useAppT } from '../i18n';
 
 // Cross-app streak badge — drops into any nav. Shows current streak as a
 // flame + XP counter. Quiet when there's no data (new user / not logged in).
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export const UniversalStreakBadge = ({ accessToken }: Props) => {
+  const t = useAppT();
   const { data } = useUserStreak(accessToken);
 
   if (!accessToken || !data) return null;
@@ -18,11 +20,8 @@ export const UniversalStreakBadge = ({ accessToken }: Props) => {
 
   return (
     <div
-      title={
-        isLit
-          ? `${streak}-day streak across schood · ${xp} XP total · ${data.this_week_minutes} min this week`
-          : 'Start a session to begin your streak'
-      }
+      title={isLit ? t('streak.title', { streak, xp, minutes: data.this_week_minutes }) : t('streak.start')}
+      aria-label={t('streak.aria', { streak })}
       style={{
         display: 'inline-flex',
         alignItems: 'center',

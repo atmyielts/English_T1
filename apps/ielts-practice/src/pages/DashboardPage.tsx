@@ -1,5 +1,5 @@
-import { useEffect, useId, useMemo, useState } from 'react';
-import { Menu, Sparkles, X } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Sparkles } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   practiceDashboardGet,
@@ -14,9 +14,14 @@ import {
   type PracticeRoadmapItem,
   type SrsReviewItem,
 } from '../lib/api';
-import { IELTS_PRACTICE_PRODUCT_ID } from '../lib/constants';
+import { IELTS_PRACTICE_PRODUCT_ID, IELTS_SIMULATOR_PRODUCT_ID, IELTS_SIMULATOR_PRODUCT_SLUG } from '../lib/constants';
+import { buildPlatformUrl } from '../lib/platformUrls';
+import { usePracticeContext } from '../lib/practiceContext';
+import { PracticeShell } from '../components/PracticeShell';
+import { EmptyCatalogueCard, PracticeContextBanner } from '../components/PracticeContextBanner';
+import { sectionLabel, statusLabel, useAppT, useErrorText, useFormat, type AppKey } from '../i18n';
+import { experienceCopy } from '../lib/practiceExperience';
 import {
-  EXPERIENCE_COPY,
   EXPERIENCE_KINDS,
   formatPracticeLabel,
   getPlanExperienceSteps,
@@ -173,26 +178,25 @@ const hasLabPayload = (item: { delivery_build?: { metadata?: unknown } | null })
   return labPayload.version === 'ielts.practice.lab.v1';
 };
 
-const IELTS_SIMULATOR_DASHBOARD_URL = 'https://ielts.schood.online/dashboard';
-const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
-
-const LAB_FEATURES = [
-  { title: 'Mistake Coach', copy: 'Explains why today\'s lab was selected and what trap to watch.' },
-  { title: 'Evidence Locator', copy: 'Prove Reading answers with the exact sentence or paragraph.' },
-  { title: 'Distractor Drill', copy: 'Classify wrong answers by trap type before moving on.' },
-  { title: 'Listening Replay', copy: 'Predict, replay, catch signposts, then answer.' },
-  { title: 'Writing Rewrite', copy: 'Analyse, plan, rewrite, and receive criterion feedback.' },
-  { title: 'Mistake Notebook', copy: 'Keeps recurring patterns and due reviews visible.' },
-  { title: 'Band Roadmap', copy: 'Connects every gap to the lab that repairs it.' },
+const LAB_FEATURES: AppKey[] = [
+  'dash.feature.coach',
+  'dash.feature.evidence',
+  'dash.feature.distractor',
+  'dash.feature.replay',
+  'dash.feature.rewrite',
+  'dash.feature.notebook',
+  'dash.feature.roadmap',
 ];
 
 const SECTION_ORDER: SectionType[] = ['reading', 'listening', 'writing'];
 
-const SECTION_FALLBACK_COPY: Record<SectionType, string> = {
-  reading: 'Evidence, distractor, timed, and mastery labs',
-  listening: 'Replay, prediction, distractor, timed, and mastery labs',
-  writing: 'Rewrite, planning, sentence upgrade, and feedback labs',
+const SECTION_FALLBACK_COPY: Record<SectionType, AppKey> = {
+  reading: 'dash.fallback.reading',
+  listening: 'dash.fallback.listening',
+  writing: 'dash.fallback.writing',
 };
+
+const EMPTY_CATALOGUE = '__empty_catalogue__';
 
 const humanizeError = (message: string): string => {
   const text = message.toLowerCase();
@@ -203,19 +207,27 @@ const humanizeError = (message: string): string => {
     || text.includes('no published transformed ielts practice experiences')
     || text.includes('none could be selected and no fallback exercises are available')
   ) {
-    return 'Practice content is being prepared. Ask an admin to run Content Factory for transformed sessions.';
-  }
-  if (text.includes('network') || text.includes('failed to fetch')) {
-    return 'Connection issue. Please refresh and try again.';
+    return EMPTY_CATALOGUE;
   }
   return message;
 };
 
 export const DashboardPage = () => {
+  const t = useAppT();
+  const fmt = useFormat();
+  const errorText = useErrorText();
   const navigate = useNavigate();
-  const sidebarMenuId = useId();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { accessToken, me, session } = useAccess({ includeEffective: true });
+  const { accessToken, me, session, effective, status } = useAccess({ includeEffective: true });
+  const { context, session: contextSession, dismiss: dismissContext } = usePracticeContext(accessToken);
+  const [emptyCatalogue, setEmptyCatalogue] = useState(false);
+  // access-effective already expands bundles (e.g. IELTS Complete) into product ids.
+  const hasSimulatorAccess = status === 'loading'
+    ? null
+    : Boolean(
+      me?.entitlements.some((entry) => entry.resource_type === 'product' && entry.resource_id === IELTS_SIMULATOR_PRODUCT_ID)
+      || effective?.effective_product_ids?.includes(IELTS_SIMULATOR_PRODUCT_ID),
+    );
+  const simulatorPricingUrl = buildPlatformUrl('/pricing', undefined, { product: IELTS_SIMULATOR_PRODUCT_SLUG });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [targetBand, setTargetBand] = useState<number | null>(null);
@@ -240,9 +252,9 @@ export const DashboardPage = () => {
     if (full) return full;
     const fullName = String(session?.user.user_metadata?.full_name ?? '').trim();
     if (fullName) return fullName;
-    const raw = String(me?.user.email ?? '').split('@')[0] ?? 'Learner';
-    return raw.length > 0 ? raw : 'Learner';
-  }, [me?.user.email, session?.user.user_metadata]);
+    const raw = String(me?.user.email ?? '').split('@')[0] ?? '';
+    return raw.length > 0 ? raw : t('dash.learner');
+  }, [me?.user.email, session?.user.user_metadata, t]);
 
   const generationBody = (refreshDiagnostics: boolean) => ({
     refresh_diagnostics: refreshDiagnostics,
@@ -288,8 +300,9 @@ export const DashboardPage = () => {
       setRoadmap(dashboardRes.roadmap ?? []);
       setPlanStale(Boolean(dashboardRes.plan_stale));
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load dashboard';
-      setError(humanizeError(message));
+      const message = err instanceof Error ? err.message : '';
+      if (humanizeError(message) === EMPTY_CATALOGUE) setEmptyCatalogue(true);
+      else setError(errorText(err));
     } finally {
       setLoading(false);
     }
@@ -326,7 +339,7 @@ export const DashboardPage = () => {
         next.delete(key);
         return next;
       });
-      setError(err instanceof Error ? err.message : 'Could not add to queue');
+      setError(errorText(err));
     } finally {
       setQueuingKey(null);
     }
@@ -342,11 +355,13 @@ export const DashboardPage = () => {
     try {
       setGenerating(true);
       setError(null);
-      await practiceGeneratePlan(accessToken, generationBody(true));
+      const result = await practiceGeneratePlan(accessToken, generationBody(true));
+      setEmptyCatalogue(Boolean(result.empty_reason) && result.items.length === 0);
       await load();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Plan generation failed';
-      setError(humanizeError(message));
+      const message = err instanceof Error ? err.message : '';
+      if (humanizeError(message) === EMPTY_CATALOGUE) setEmptyCatalogue(true);
+      else setError(errorText(err));
     } finally {
       setGenerating(false);
     }
@@ -356,14 +371,14 @@ export const DashboardPage = () => {
     const sections = diagnostics?.sections;
     return SECTION_ORDER.map((section) => {
       const row = sections?.[section];
-      const accuracy = row?.accuracy_ratio != null ? Math.max(0, Math.min(1, row.accuracy_ratio)) : 0;
+      const accuracy = row?.accuracy_ratio != null && (row.samples ?? 0) > 0 ? Math.max(0, Math.min(1, row.accuracy_ratio)) : null;
       return {
         section,
         samples: row?.samples ?? 0,
         targetBand: row?.target_band ?? targetBand,
         averageBand: row?.average_band ?? null,
         bandGap: row?.band_gap ?? null,
-        accuracyPct: Math.round(accuracy * 100),
+        accuracy,
       };
     });
   }, [diagnostics, targetBand]);
@@ -425,9 +440,11 @@ export const DashboardPage = () => {
       if (message.toLowerCase().includes('plan item not found')) {
         await practiceGeneratePlan(accessToken, generationBody(false)).catch(() => null);
         await load();
-        setError('That lab was from an older generated plan, so I refreshed today\'s Practice Labs.');
+        setError(t('dash.stale'));
+      } else if (humanizeError(message) === EMPTY_CATALOGUE) {
+        setEmptyCatalogue(true);
       } else {
-        setError(humanizeError(message));
+        setError(errorText(err));
       }
     } finally {
       setLaunchingId((current) => (current === item.id ? null : current));
@@ -449,7 +466,7 @@ export const DashboardPage = () => {
           : prev.map((row) => (row.id === item.id ? response.item : row))
       ));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update notebook item');
+      setError(errorText(err));
     } finally {
       setNotebookBusyId((current) => (current === item.id ? null : current));
     }
@@ -470,88 +487,46 @@ export const DashboardPage = () => {
     () => plan.find((item) => item.status !== 'completed' && (item.blueprint_id || item.delivery_build_id)) ?? plan.find((item) => item.blueprint_id || item.delivery_build_id) ?? null,
     [plan],
   );
-  const closeSidebar = () => setSidebarOpen(false);
 
   return (
-    <div className="practice-root">
-      <div className="practice-workspace">
-        <aside className={`practice-sidebar glass${sidebarOpen ? ' mobile-open' : ''}`}>
-          <div className="practice-sidebar-head">
-            <Link to="/dashboard" className="practice-sidebar-brand" onClick={closeSidebar}>
-              <img src="/schood-logo.png" alt="Schood" />
-              <div>
-                <strong>IELTS Practice</strong>
-                <span>Practice Labs workspace</span>
-              </div>
-            </Link>
-            <button
-              className="sidebar-menu-button"
-              type="button"
-              onClick={() => setSidebarOpen((open) => !open)}
-              aria-expanded={sidebarOpen}
-              aria-controls={sidebarMenuId}
-            >
-              {sidebarOpen ? <X size={17} strokeWidth={2.4} /> : <Menu size={17} strokeWidth={2.4} />}
-              Menu
-            </button>
-          </div>
-
-          <div id={sidebarMenuId} className="practice-sidebar-menu">
-            <nav className="practice-sidebar-nav">
-              <Link to="/today" className="sidebar-link" onClick={closeSidebar} title="Your guided daily session">Today</Link>
-              <Link to="/dashboard" className="sidebar-link active" onClick={closeSidebar} title="Bands, mastery & mistakes">Progress</Link>
-              <Link to="/plan" className="sidebar-link" onClick={closeSidebar} title="Goal & schedule">Plan</Link>
-
-              <span className="sidebar-nav-label muted" style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.6, padding: '8px 0 2px' }}>More</span>
-              <Link to="/practice/reviews" className="sidebar-link" onClick={closeSidebar}>
-                Reviews due{srsSummary.due > 0 ? ` (${srsSummary.due})` : ''}
-              </Link>
-              <Link to="/practice/stats/by-type" className="sidebar-link" onClick={closeSidebar}>Stats by type</Link>
-              <a href="#practice-labs" className="sidebar-link" onClick={closeSidebar}>Practice Labs</a>
-              <a href="#mistake-notebook" className="sidebar-link" onClick={closeSidebar}>Notebook</a>
-              <a href="#band-roadmap" className="sidebar-link" onClick={closeSidebar}>Roadmap</a>
-              <a href={IELTS_SIMULATOR_DASHBOARD_URL} className="sidebar-link" onClick={closeSidebar}>IELTS Simulator</a>
-              <a href={`${PLAYBOOK_URL}/dashboard?source=practice`} className="sidebar-link" onClick={closeSidebar}>IELTS Playbook</a>
-            </nav>
-
-            <section className="sidebar-panel sidebar-actions-panel">
-              <h4>Quick Actions</h4>
-              <button
-                className="btn solid full"
-                type="button"
-                onClick={() => {
-                  closeSidebar();
-                  void handleGenerate();
-                }}
-                disabled={generating}
-              >
-                {generating ? 'Generating...' : 'Regenerate Plan'}
-              </button>
-              <Link to="/plan" className="btn ghost full" onClick={closeSidebar}>Open Plan Builder</Link>
-            </section>
-          </div>
-        </aside>
-
-        <main className="practice-main">
+    <PracticeShell
+      reviewsDueCount={srsSummary.due}
+      extraLinks={[
+        { label: t('dash.anchor.labs'), href: '#practice-labs' },
+        { label: t('dash.anchor.notebook'), href: '#mistake-notebook' },
+        { label: t('dash.anchor.roadmap'), href: '#band-roadmap' },
+      ]}
+      sidebarExtra={(
+        <section className="sidebar-panel sidebar-actions-panel">
+          <h4>{t('dash.quick.title')}</h4>
+          <button className="btn solid full" type="button" onClick={() => void handleGenerate()} disabled={generating}>
+            {generating ? t('dash.quick.generating') : t('dash.quick.regenerate')}
+          </button>
+          <Link to="/plan" className="btn ghost full">{t('dash.quick.planBuilder')}</Link>
+        </section>
+      )}
+    >
           <header className="practice-header glass">
             <div>
-              <p className="eyebrow">Progress &amp; insights</p>
-              <h1>Welcome back, {displayName}</h1>
-              <p className="muted">
-                Your bands, mastery, mistakes, and roadmap. When you’re ready to train, head to today’s guided session.
-              </p>
+              <p className="eyebrow">{t('dash.header.eyebrow')}</p>
+              <h1 style={{ overflowWrap: 'anywhere' }}>{t('dash.header.welcome', { name: displayName })}</h1>
+              <p className="muted">{t('dash.header.lead')}</p>
             </div>
             <div className="top-nav-actions">
               <UniversalStreakBadge accessToken={accessToken} />
-              <Link to="/today" className="btn solid">▶ Start today’s session</Link>
+              <Link to="/today" className="btn solid">▶ {t('dash.header.start')}</Link>
               <button className="btn ghost" type="button" onClick={() => void handleGenerate()} disabled={generating}>
-                {generating ? 'Regenerating…' : 'Regenerate plan'}
+                {generating ? t('dash.quick.generating') : t('dash.quick.regenerate')}
               </button>
             </div>
           </header>
 
-          {loading ? <div className="glass dashboard-alert">Loading IELTS practice workspace...</div> : null}
-          {error ? <div className="glass dashboard-alert error">{error}</div> : null}
+          {loading ? <div className="glass dashboard-alert" aria-busy="true">{t('dash.loading')}</div> : null}
+          {error ? <div className="glass dashboard-alert error" role="alert">{error}</div> : null}
+
+          <PracticeContextBanner context={context} session={contextSession} onDismiss={dismissContext} showStart />
+
+          {emptyCatalogue ? <EmptyCatalogueCard /> : null}
 
           <PracticeOnboarding goals={goal} onComplete={() => { void load(); }} />
 
@@ -566,9 +541,9 @@ export const DashboardPage = () => {
           />
 
           <DashboardSectionTitle
-            eyebrow="Coach"
-            title="What to focus on right now"
-            hint="AI-generated insights from your trajectory, streak, and mastery. Refreshes every 8 hours."
+            eyebrow={t('dash.sec.coach.eyebrow')}
+            title={t('dash.sec.coach.title')}
+            hint={t('dash.sec.coach.hint')}
             anchorId="dashboard-coach"
           />
 
@@ -577,32 +552,30 @@ export const DashboardPage = () => {
           <AskCoachPanel accessToken={accessToken} />
 
           <DashboardSectionTitle
-            eyebrow="Today"
-            title="Your next move"
-            hint="Pick the focused session or run a full mock under exam conditions."
+            eyebrow={t('dash.sec.today.eyebrow')}
+            title={t('dash.sec.today.title')}
+            hint={t('dash.sec.today.hint')}
             anchorId="dashboard-today"
           />
 
-          <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 16 }}>
-            <MockTestEntryCard />
-            <section className="glass" style={{ padding: 22, display: 'grid', gap: 12 }}>
-              <p className="eyebrow"><Sparkles size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Guided session</p>
+          <section className="dash-two-col">
+            <MockTestEntryCard hasSimulatorAccess={hasSimulatorAccess} pricingUrl={simulatorPricingUrl} />
+            <section className="glass dash-card">
+              <p className="eyebrow"><Sparkles size={11} style={{ verticalAlign: -2, marginRight: 4 }} aria-hidden="true" /> {t('dash.guided.eyebrow')}</p>
               <div>
-                <h3 style={{ margin: '0 0 4px' }}>30-minute focused session</h3>
-                <p className="muted" style={{ margin: 0, fontSize: 14 }}>
-                  Spaced reviews → one focused lab → mastery check. Walks you through in order with skip buttons at every phase.
-                </p>
+                <h3>{t('dash.guided.title')}</h3>
+                <p className="muted" style={{ fontSize: 14 }}>{t('dash.guided.lead')}</p>
               </div>
-              <Link to="/today" className="btn solid compact" style={{ alignSelf: 'flex-start' }}>
-                Open today’s session
+              <Link to="/today" className="btn solid compact" style={{ justifySelf: 'start' }}>
+                {t('dash.guided.open')}
               </Link>
             </section>
           </section>
 
           <DashboardSectionTitle
-            eyebrow="Progress"
-            title="Where you stand"
-            hint="Real-time band trajectory and your study consistency over 90 days."
+            eyebrow={t('dash.sec.progress.eyebrow')}
+            title={t('dash.sec.progress.title')}
+            hint={t('dash.sec.progress.hint')}
             anchorId="dashboard-progress"
           />
 
@@ -610,68 +583,66 @@ export const DashboardPage = () => {
 
           <MistakeCausesCard accessToken={accessToken} />
 
-          <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)', gap: 16 }}>
+          <section className="dash-two-col wide-first">
             <BandTrajectoryCard accessToken={accessToken} />
             <ActivityHeatmapCard accessToken={accessToken} />
           </section>
 
           <DashboardSectionTitle
-            eyebrow="Mastery"
-            title="What you’ve repaired"
-            hint="Question types you've drilled and the trap patterns most often catching you."
+            eyebrow={t('dash.sec.mastery.eyebrow')}
+            title={t('dash.sec.mastery.title')}
+            hint={t('dash.sec.mastery.hint')}
             anchorId="dashboard-mastery"
           />
 
           <MasteryOverviewCard accessToken={accessToken} />
 
           <DashboardSectionTitle
-            eyebrow="Plan"
-            title="Today’s adaptive labs"
-            hint="Transformed simulator material rebuilt for repair, not retake."
+            eyebrow={t('dash.sec.plan.eyebrow')}
+            title={t('dash.sec.plan.title')}
+            hint={t('dash.sec.plan.hint')}
             anchorId="dashboard-labs"
           />
 
           <section className="glass labs-hero-card" id="practice-labs">
             <div className="labs-hero-copy">
-              <p className="eyebrow">Practice Labs</p>
-              <h2>Practice Labs train Reading, Listening, and Writing.</h2>
-              <p>
-                The top recommendation changes with your diagnostic; today&apos;s mix keeps all three IELTS sections visible.
-              </p>
+              <p className="eyebrow">{t('dash.labs.eyebrow')}</p>
+              <h2>{t('dash.labs.title')}</h2>
+              <p>{t('dash.labs.lead')}</p>
               <div className="task-feature-row">
                 {LAB_FEATURES.map((feature) => (
-                  <span className="feature-pill" key={feature.title}>{feature.title}</span>
+                  <span className="feature-pill" key={feature}>{t(feature)}</span>
                 ))}
               </div>
-              <div className="lab-section-mix" aria-label="Today's Reading, Listening, and Writing lab mix">
+              <div className="lab-section-mix" aria-label={t('dash.labs.mixAria')}>
                 {dailyLabMix.map((row) => (
                   <article className={`lab-section-tile ${row.section}`} key={row.section}>
                     <div className="lab-section-tile-head">
-                      <span className={sectionChipClass(row.section)}>{row.section}</span>
-                      <span>{row.total > 0 ? `${row.completed}/${row.total} done` : 'no task yet'}</span>
+                      <span className={sectionChipClass(row.section)}>{sectionLabel(t, row.section)}</span>
+                      <span>{row.total > 0 ? t('dash.labs.doneOf', { done: row.completed, total: row.total }) : t('dash.labs.noTask')}</span>
                     </div>
-                    <strong>{row.item ? getPlanItemTitle(row.item) : SECTION_FALLBACK_COPY[row.section]}</strong>
-                    <p>{row.item ? getPlanItemDescription(row.item) : 'Regenerate the plan to add this section to today.'}</p>
+                    <strong>{row.item ? getPlanItemTitle(row.item, t) : t(SECTION_FALLBACK_COPY[row.section])}</strong>
+                    <p>{row.item ? getPlanItemDescription(row.item, t) : t('dash.labs.addSection')}</p>
                   </article>
                 ))}
               </div>
             </div>
             <div className="labs-next-panel">
-              <span className="muted">Top priority lab</span>
+              <span className="muted">{t('dash.labs.top')}</span>
               {nextLabItem ? (
                 <>
-                  <strong>{getPlanItemTitle(nextLabItem)}</strong>
-                  <p>{getPlanWhyCopy(nextLabItem)}</p>
+                  <strong>{getPlanItemTitle(nextLabItem, t)}</strong>
+                  <p>{getPlanWhyCopy(nextLabItem, t)}</p>
                   <button className="btn solid full" type="button" onClick={() => void launchPlanItem(nextLabItem)} disabled={launchingId === nextLabItem.id}>
-                    {launchingId === nextLabItem.id ? 'Opening...' : 'Start lab'}
+                    {launchingId === nextLabItem.id ? t('common.opening') : t('dash.labs.start')}
                   </button>
                 </>
               ) : (
                 <>
-                  <strong>No lab in today&apos;s plan yet</strong>
-                  <p>Generate a plan to create lab-ready tasks from your diagnostics.</p>
+                  <strong>{t('dash.labs.none')}</strong>
+                  <p>{t('dash.labs.noneLead')}</p>
                   <button className="btn solid full" type="button" onClick={() => void handleGenerate()} disabled={generating}>
-                    {generating ? 'Generating...' : 'Generate labs'}
+                    {generating ? t('dash.quick.generating') : t('dash.labs.generate')}
                   </button>
                 </>
               )}
@@ -679,9 +650,9 @@ export const DashboardPage = () => {
           </section>
 
           <DashboardSectionTitle
-            eyebrow="Review"
-            title="Practice queues + mistake notebook"
-            hint="The drills that keep what you've learned from slipping away."
+            eyebrow={t('dash.sec.review.eyebrow')}
+            title={t('dash.sec.review.title')}
+            hint={t('dash.sec.review.hint')}
             anchorId="dashboard-review"
           />
 
@@ -691,21 +662,21 @@ export const DashboardPage = () => {
 
           <section className="practice-grid" style={{ marginTop: 16 }}>
             <article className="glass practice-card section-progress-card">
-              <h3>Section accuracy</h3>
+              <h3>{t('dash.acc.title')}</h3>
               <div className="section-progress-list">
                 {sectionRows.map((row) => (
                   <div key={row.section} className="section-progress-row">
                     <div className="section-progress-head">
-                      <span className={sectionChipClass(row.section)}>{row.section}</span>
-                      <span className="muted">{row.accuracyPct}% accuracy</span>
+                      <span className={sectionChipClass(row.section)}>{sectionLabel(t, row.section)}</span>
+                      <span className="muted">{row.accuracy != null ? t('dash.acc.value', { value: fmt.percent(row.accuracy) }) : t('dash.acc.noData')}</span>
                     </div>
                     <div className="progress-track">
-                      <div className={sectionBarClass(row.section)} style={{ width: `${row.accuracyPct}%` }} />
+                      <div className={sectionBarClass(row.section)} style={{ width: `${Math.round((row.accuracy ?? 0) * 100)}%` }} />
                     </div>
                     <div className="section-progress-meta">
-                      <span>Samples: {row.samples}</span>
-                      <span>Band: {row.averageBand != null ? row.averageBand.toFixed(1) : '-'} / {row.targetBand != null ? row.targetBand.toFixed(1) : '-'}</span>
-                      <span>Gap: {row.bandGap != null ? row.bandGap.toFixed(2) : '-'}</span>
+                      <span>{t('dash.acc.samples', { count: row.samples })}</span>
+                      <span>{t('dash.acc.band', { current: row.averageBand != null ? fmt.band(row.averageBand) : '–', target: row.targetBand != null ? fmt.band(row.targetBand) : '–' })}</span>
+                      <span>{t('dash.acc.gap', { value: row.bandGap != null ? row.bandGap.toFixed(2) : '–' })}</span>
                     </div>
                   </div>
                 ))}
@@ -715,18 +686,18 @@ export const DashboardPage = () => {
             <article className="glass practice-card srs-card" id="srs-reviews">
               <div className="task-card-head">
                 <div className="srs-card-head-titles">
-                  <span className="eyebrow">Spaced repetition</span>
-                  <h3>Reviews due today</h3>
+                  <span className="eyebrow">{t('dash.srs.eyebrow')}</span>
+                  <h3>{t('dash.srs.title')}</h3>
                 </div>
                 <div className="srs-card-head-actions">
                   <span className="srs-summary-pill">
-                    <strong>{srsSummary.due}</strong> due
+                    {t('dash.srs.due', { count: srsSummary.due })}
                   </span>
                   <span className="srs-summary-pill muted">
-                    {srsQueueKeys.size} tracked - {srsSummary.mastered} mastered
+                    {t('dash.srs.tracked', { tracked: srsQueueKeys.size, mastered: srsSummary.mastered })}
                   </span>
                   <Link to="/practice/reviews" className="btn solid compact">
-                    Open queue
+                    {t('dash.srs.open')}
                   </Link>
                 </div>
               </div>
@@ -734,8 +705,8 @@ export const DashboardPage = () => {
                 <div className="srs-empty">
                   <p className="muted">
                     {srsSummary.total === 0
-                      ? "Nothing tracked yet. Use Add to queue on a weak type below, or submit a practice lab to start filling your queue automatically."
-                      : "You're caught up. Items return to the queue on a Leitner schedule (1, 2, 4, 8, 16 days)."}
+                      ? t('dash.srs.emptyNever')
+                      : t('dash.srs.caughtUp')}
                   </p>
                 </div>
               ) : (
@@ -743,13 +714,13 @@ export const DashboardPage = () => {
                   {srsItems.slice(0, 4).map((item) => (
                     <li key={item.id} className="weakness-item">
                       <div>
-                        <span className={sectionChipClass(item.section_type)}>{item.section_type}</span>
+                        <span className={sectionChipClass(item.section_type)}>{sectionLabel(t, item.section_type)}</span>
                         <h4>{formatPracticeLabel(item.question_type)}</h4>
                       </div>
                       <div className="weakness-metrics">
-                        <span>Box {item.leitner_box}/5</span>
-                        <span>Last {item.last_accuracy_ratio != null ? `${Math.round(item.last_accuracy_ratio * 100)}%` : '-'}</span>
-                        <span>Reviews {item.review_count}</span>
+                        <span>{t('common.box', { box: item.leitner_box })}</span>
+                        <span>{t('dash.srs.last', { value: item.last_accuracy_ratio != null ? fmt.percent(item.last_accuracy_ratio) : '–' })}</span>
+                        <span>{t('dash.srs.reviews', { count: item.review_count })}</span>
                       </div>
                     </li>
                   ))}
@@ -759,11 +730,11 @@ export const DashboardPage = () => {
 
             <article className="glass practice-card weakness-card">
               <div className="task-card-head">
-                <h3>Top Weaknesses By Question Type</h3>
-                <Link to="/practice/stats/by-type" className="btn ghost compact">See all</Link>
+                <h3>{t('dash.weak.title')}</h3>
+                <Link to="/practice/stats/by-type" className="btn ghost compact">{t('dash.weak.all')}</Link>
               </div>
               {topWeaknesses.length === 0 ? (
-                <p className="muted">No diagnostic weaknesses yet. Complete simulator attempts or regenerate diagnostics.</p>
+                <p className="muted">{t('dash.weak.empty')}</p>
               ) : (
                 <ul className="weakness-list">
                   {topWeaknesses.map((row) => {
@@ -773,18 +744,18 @@ export const DashboardPage = () => {
                     return (
                       <li key={`${row.section_type}-${row.question_type}`} className="weakness-item">
                         <div>
-                          <span className={sectionChipClass(row.section_type)}>{row.section_type}</span>
+                          <span className={sectionChipClass(row.section_type)}>{sectionLabel(t, row.section_type)}</span>
                           <h4>{formatPracticeLabel(row.question_type)}</h4>
                         </div>
                         <div className="weakness-metrics">
-                          <span>Weakness {row.weakness_score.toFixed(2)}</span>
-                          <span>Accuracy {row.accuracy_ratio != null ? `${Math.round(row.accuracy_ratio * 100)}%` : '-'}</span>
-                          <span>Mastery {row.mastery_level != null ? `${Math.round(row.mastery_level * 100)}%` : row.mastery_status ?? '-'}</span>
+                          <span>{t('dash.weak.weakness', { value: row.weakness_score.toFixed(2) })}</span>
+                          <span>{t('dash.weak.accuracy', { value: row.accuracy_ratio != null ? fmt.percent(row.accuracy_ratio) : '–' })}</span>
+                          <span>{t('dash.weak.mastery', { value: row.mastery_level != null ? fmt.percent(row.mastery_level) : row.mastery_status ?? '–' })}</span>
                         </div>
-                        <div className="weakness-actions" style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+                        <div className="weakness-actions" style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
                           <TeachSkillButton accessToken={accessToken} sectionType={row.section_type} questionType={row.question_type} />
                           {inQueue ? (
-                            <Link to="/practice/reviews" className="btn ghost compact">In queue</Link>
+                            <Link to="/practice/reviews" className="btn ghost compact">{t('dash.weak.inQueue')}</Link>
                           ) : (
                             <button
                               type="button"
@@ -792,7 +763,7 @@ export const DashboardPage = () => {
                               disabled={isQueuing}
                               onClick={() => void addWeaknessToQueue(row.section_type, row.question_type, row.accuracy_ratio)}
                             >
-                              {isQueuing ? 'Adding...' : 'Add to queue'}
+                              {isQueuing ? t('dash.weak.adding') : t('dash.weak.add')}
                             </button>
                           )}
                         </div>
@@ -805,25 +776,25 @@ export const DashboardPage = () => {
 
             <article className="glass practice-card notebook-card" id="mistake-notebook">
               <div className="task-card-head">
-                <h3>Mistake Notebook</h3>
-                <span className="muted">{notebook.length} active</span>
+                <h3>{t('dash.nb.title')}</h3>
+                <span className="muted">{t('dash.nb.active', { count: notebook.length })}</span>
               </div>
               {notebookPreview.length === 0 ? (
-                <p className="muted">Mistake patterns will appear after lab submissions.</p>
+                <p className="muted">{t('dash.nb.empty')}</p>
               ) : (
                 <ul className="notebook-list">
                   {notebookPreview.map((item) => (
                     <li key={item.id} className="notebook-item">
                       <div>
-                        <span className={sectionChipClass(item.section_type)}>{item.section_type}</span>
-                        <h4>{item.mistake_pattern}</h4>
+                        <span className={sectionChipClass(item.section_type)}>{sectionLabel(t, item.section_type)}</span>
+                        <h4 style={{ overflowWrap: 'anywhere' }}>{item.mistake_pattern}</h4>
                         <p>{item.coach_note ?? `${formatPracticeLabel(item.question_type)} | ${formatPracticeLabel(item.trap_type)}`}</p>
                       </div>
                       <div className="notebook-actions">
                         <NotebookRetestButton accessToken={accessToken} notebookId={item.id} />
-                        <button className="btn ghost compact" type="button" disabled={notebookBusyId === item.id} onClick={() => void updateNotebookStatus(item, 'reviewed')}>Reviewed</button>
-                        <button className="btn ghost compact" type="button" disabled={notebookBusyId === item.id} onClick={() => void updateNotebookStatus(item, 'difficult')}>Hard</button>
-                        <button className="btn ghost compact" type="button" disabled={notebookBusyId === item.id} onClick={() => void updateNotebookStatus(item, 'archived')}>Archive</button>
+                        <button className="btn ghost compact" type="button" disabled={notebookBusyId === item.id} onClick={() => void updateNotebookStatus(item, 'reviewed')}>{t('dash.nb.reviewed')}</button>
+                        <button className="btn ghost compact" type="button" disabled={notebookBusyId === item.id} onClick={() => void updateNotebookStatus(item, 'difficult')}>{t('dash.nb.hard')}</button>
+                        <button className="btn ghost compact" type="button" disabled={notebookBusyId === item.id} onClick={() => void updateNotebookStatus(item, 'archived')}>{t('dash.nb.archive')}</button>
                       </div>
                     </li>
                   ))}
@@ -833,18 +804,18 @@ export const DashboardPage = () => {
 
             <article className="glass practice-card roadmap-card" id="band-roadmap">
               <div className="task-card-head">
-                <h3>Band Roadmap</h3>
-                <Link to="/plan" className="btn ghost compact">Tune goal</Link>
+                <h3>{t('dash.road.title')}</h3>
+                <Link to="/plan" className="btn ghost compact">{t('dash.road.tune')}</Link>
               </div>
               {roadmapPreview.length === 0 ? (
-                <p className="muted">Roadmap items are created from your diagnostics and target band.</p>
+                <p className="muted">{t('dash.road.empty')}</p>
               ) : (
                 <ul className="roadmap-list">
                   {roadmapPreview.map((item) => (
                     <li key={item.id} className="roadmap-item">
-                      <span className={sectionChipClass(item.section_type)}>{item.section_type}</span>
-                      <div>
-                        <h4>{item.title}</h4>
+                      <span className={sectionChipClass(item.section_type)}>{sectionLabel(t, item.section_type)}</span>
+                      <div style={{ minWidth: 0 }}>
+                        <h4 style={{ overflowWrap: 'anywhere' }}>{item.title}</h4>
                         <p>{item.current_state} {'->'} {item.target_state}</p>
                       </div>
                       <strong>{formatPracticeLabel(item.linked_lab_kind ?? 'lab')}</strong>
@@ -856,11 +827,11 @@ export const DashboardPage = () => {
 
             <article className="glass practice-card task-card">
               <div className="task-card-head">
-                <h3>Today's Adaptive Sessions</h3>
+                <h3>{t('dash.sessions.title')}</h3>
                 <div className="task-summary">
-                  <span>Total {planSummary.total}</span>
-                  <span>Done {planSummary.completed}</span>
-                  <span>Pending {planSummary.pending}</span>
+                  <span>{t('dash.sessions.total', { count: planSummary.total })}</span>
+                  <span>{t('dash.sessions.done', { count: planSummary.completed })}</span>
+                  <span>{t('dash.sessions.pending', { count: planSummary.pending })}</span>
                 </div>
               </div>
 
@@ -868,23 +839,23 @@ export const DashboardPage = () => {
                 <div className="progress-fill writing" style={{ width: `${planSummary.completion}%` }} />
               </div>
 
-              <div className="experience-strip" aria-label="Available transformed practice modes">
+              <div className="experience-strip" aria-label={t('dash.sessions.modes')}>
                 {EXPERIENCE_KINDS.map((kind) => (
                   <article className="experience-mode-card" key={kind}>
-                    <strong>{EXPERIENCE_COPY[kind].label}</strong>
-                    <span>{EXPERIENCE_COPY[kind].short}</span>
+                    <strong>{experienceCopy(kind, t).label}</strong>
+                    <span>{experienceCopy(kind, t).short}</span>
                   </article>
                 ))}
               </div>
 
               {plan.length === 0 ? (
                 <div className="empty-plan">
-                  <p>No practice sessions are available in today's plan yet.</p>
+                  <p>{t('dash.sessions.empty')}</p>
                   <div className="inline-actions">
                     <button className="btn solid" type="button" onClick={() => void handleGenerate()} disabled={generating}>
-                      Generate Now
+                      {t('dash.sessions.generate')}
                     </button>
-                    <Link to="/plan" className="btn ghost">Configure Plan</Link>
+                    <Link to="/plan" className="btn ghost">{t('dash.sessions.configure')}</Link>
                   </div>
                 </div>
               ) : (
@@ -892,24 +863,24 @@ export const DashboardPage = () => {
                   {plan.map((item) => (
                     <li key={item.id} className="task-item">
                       <div>
-                        <span className={sectionChipClass(item.section_type)}>{item.section_type}</span>
-                        <h4>{getPlanItemTitle(item)}</h4>
-                        <p>{getPlanItemDescription(item)}</p>
-                        <p className="task-why">{getPlanWhyCopy(item)}</p>
+                        <span className={sectionChipClass(item.section_type)}>{sectionLabel(t, item.section_type)}</span>
+                        <h4>{getPlanItemTitle(item, t)}</h4>
+                        <p>{getPlanItemDescription(item, t)}</p>
+                        <p className="task-why">{getPlanWhyCopy(item, t)}</p>
                         <div className="task-feature-row">
-                          {getPlanExperienceSteps(item).map((step) => (
+                          {getPlanExperienceSteps(item, t).map((step) => (
                             <span className="feature-pill" key={step}>{step}</span>
                           ))}
                         </div>
                         <div className="task-meta-row">
-                          {getPlanPersonalizationChips(item).map((chip) => (
+                          {getPlanPersonalizationChips(item, t).map((chip) => (
                             <span key={chip}>{chip}</span>
                           ))}
                         </div>
-                        {item.blueprint_id || item.delivery_build_id ? <p className="source-note">{getPlanSourceCopy(item)}</p> : null}
+                        {item.blueprint_id || item.delivery_build_id ? <p className="source-note">{getPlanSourceCopy(item, t)}</p> : null}
                       </div>
                       <div className="inline-actions">
-                        <span className={`status-pill ${item.status}`}>{item.status.replace('_', ' ')}</span>
+                        <span className={`status-pill ${item.status}`}>{statusLabel(t, item.status)}</span>
                         {item.blueprint_id || item.delivery_build_id ? (
                           <button
                             type="button"
@@ -917,11 +888,11 @@ export const DashboardPage = () => {
                             onClick={() => void launchPlanItem(item)}
                             disabled={launchingId === item.id}
                           >
-                            {launchingId === item.id ? 'Opening...' : item.status === 'completed' ? 'Review' : 'Start'}
+                            {launchingId === item.id ? t('common.opening') : item.status === 'completed' ? t('dash.sessions.review') : t('dash.sessions.start')}
                           </button>
                         ) : (
                           <button className="btn ghost" type="button" onClick={() => void handleGenerate()} disabled={generating}>
-                            Refresh
+                            {t('dash.sessions.refresh')}
                           </button>
                         )}
                       </div>
@@ -931,8 +902,6 @@ export const DashboardPage = () => {
               )}
             </article>
           </section>
-        </main>
-      </div>
-    </div>
+    </PracticeShell>
   );
 };

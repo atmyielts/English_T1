@@ -1,45 +1,40 @@
-import { ArrowRight, Brain, NotebookTabs, Repeat, Sparkles } from 'lucide-react';
+import { ArrowRight, Brain, NotebookTabs, Sparkles, Timer } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { LocaleSwitcher } from '../../../../packages/service-i18n/src/i18n.tsx';
+import { PLATFORM_URL, SAT_SIMULATOR_URL } from '../lib/constants';
+import { useAppT, type AppKey } from '../i18n';
 
-export const LandingPage = () => (
-  <main className="landing-page">
+const FEATURES: Array<{ icon: typeof Brain; key: 'f1' | 'f2' | 'f3' | 'f4' }> = [
+  { icon: Brain, key: 'f1' }, { icon: Timer, key: 'f2' }, { icon: NotebookTabs, key: 'f3' }, { icon: Sparkles, key: 'f4' },
+];
+
+export const LandingPage = () => {
+  const t = useAppT();
+  return <main className="landing-page">
     <header className="landing-nav">
       <img src="/schood-logo.png" alt="Schood" />
-      <strong>SAT Practice Lab</strong>
-      <Link to="/dashboard" className="btn ghost">Open app</Link>
+      <strong>{t('app.name')}</strong>
+      <a className="btn ghost compact" href={PLATFORM_URL}>{t('nav.home')}</a>
+      <LocaleSwitcher label={t('nav.language')} />
+      <Link to="/dashboard" className="btn ghost">{t('landing.open')}</Link>
     </header>
     <section className="landing-hero">
       <div>
-        <p className="eyebrow">Schood SAT</p>
-        <h1>SAT Practice Lab</h1>
-        <p>
-          Adaptive drills, mistake notebook, spaced reviews, and AI explanations built around the full SAT simulator.
-        </p>
+        <p className="eyebrow">{t('landing.eyebrow')}</p>
+        <h1>{t('landing.title')}</h1>
+        <p>{t('landing.lead')}</p>
         <div className="hero-actions">
-          <Link to="/dashboard" className="btn solid">
-            Start practice
-            <ArrowRight size={17} />
-          </Link>
-          <a className="btn ghost" href="https://sat.schood.online">Take a mock first</a>
+          <Link to="/dashboard" className="btn solid">{t('landing.start')}<ArrowRight size={17} aria-hidden="true" /></Link>
+          <a className="btn ghost" href={SAT_SIMULATOR_URL}>{t('landing.mock')}</a>
         </div>
       </div>
     </section>
-    <section className="feature-grid">
-      {[
-        { icon: Brain, title: 'Adaptive drills', copy: 'Escalates by rolling accuracy across Reading & Writing and Math.' },
-        { icon: NotebookTabs, title: 'Mistake notebook', copy: 'Missed simulator and lab questions become retryable evidence.' },
-        { icon: Repeat, title: 'Spaced review', copy: 'Leitner queue keeps repaired skills from slipping.' },
-        { icon: Sparkles, title: 'AI tutor', copy: 'Explain, simplify, generate similar, and diagnose why wrong.' },
-      ].map((item) => {
-        const Icon = item.icon;
-        return (
-          <article className="feature-card" key={item.title}>
-            <Icon size={22} />
-            <h2>{item.title}</h2>
-            <p>{item.copy}</p>
-          </article>
-        );
-      })}
+    <section className="feature-grid" aria-label={t('landing.features')}>
+      {FEATURES.map(({ icon: Icon, key }) => <article className="feature-card" key={key}>
+        <Icon size={22} aria-hidden="true" />
+        <h2>{t(`landing.${key}.title` as AppKey)}</h2>
+        <p>{t(`landing.${key}.copy` as AppKey)}</p>
+      </article>)}
     </section>
-  </main>
-);
+  </main>;
+};

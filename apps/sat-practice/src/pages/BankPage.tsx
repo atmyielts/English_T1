@@ -1,75 +1,88 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { SAT_DIFFICULTIES, SAT_DOMAINS, SAT_SECTION_TYPES, formatSatDomain, formatSatSection, type SatDomain } from '@schood/sat-core';
 import { PracticeTopNav } from '../components/PracticeTopNav';
 import { QuestionCard } from '../components/QuestionCard';
-import { attemptStart, bankGet, type SatQuestion } from '../lib/api';
+import { attemptStart, bankGet, type Facets, type QuestionStatus, type SatQuestion } from '../lib/api';
+import { OFFICIAL_DOMAIN_IDS, OFFICIAL_DOMAINS, type OfficialDomain } from '../lib/content';
 import { useAccess } from '../lib/useAccess';
+import { domainLabel, questionTaxonomy, sectionLabel, skillLabel } from '../lib/labels';
+import { useAppT, useErrorText, type AppKey } from '../i18n';
 
-const mathDomains: readonly SatDomain[] = ['algebra', 'advanced_math', 'problem_solving_data_analysis', 'geometry_trig'];
-const domainSection = (domain: string) => mathDomains.includes(domain as SatDomain) ? 'math' : 'reading_writing';
+const PAGE = 12;
+const FILTERS = ['section_type', 'official_domain', 'skill', 'difficulty', 'format', 'status'] as const;
 
 export const BankPage = () => {
+  const t = useAppT();
+  const errorText = useErrorText();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const { accessToken } = useAccess();
-  const section = params.get('section_type') ?? '';
-  const domain = params.get('domain') ?? '';
-  const difficulty = params.get('difficulty') ?? '';
-  const history = params.get('mistake_history') ?? '';
+  const value = (name: typeof FILTERS[number]) => params.get(name) ?? '';
+  const section = value('section_type'), domain = value('official_domain') as OfficialDomain | '', skill = value('skill');
+  const difficulty = value('difficulty'), format = value('format'), status = value('status');
+  const offset = Math.max(0, Number(params.get('offset') ?? 0) || 0);
+  const [count, setCount] = useState(10);
   const [questions, setQuestions] = useState<SatQuestion[]>([]);
+  const [history, setHistory] = useState<Record<string, QuestionStatus>>({});
+  const [facets, setFacets] = useState<Facets | null>(null);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
   const [reload, setReload] = useState(0);
   const startPending = useRef(false);
   const actor = useRef(accessToken);
   actor.current = accessToken;
 
-  const changeFilter = (name: string, value: string) => {
+  const changeFilter = (name: string, next: string) => {
     setParams(current => {
-      const next = new URLSearchParams(current);
-      value ? next.set(name, value) : next.delete(name);
-      if (name === 'section_type' && value && domain && domainSection(domain) !== value) next.delete('domain');
-      return next;
+      const p = new URLSearchParams(current);
+      next ? p.set(name, next) : p.delete(name);
+      p.delete('offset');
+      if (name === 'section_type' && next && domain && OFFICIAL_DOMAINS[domain]?.section !== next) { p.delete('official_domain'); p.delete('skill'); }
+      if (name === 'official_domain') p.delete('skill');
+      return p;
     });
   };
+  const page = (next: number) => setParams(current => { const p = new URLSearchParams(current); next ? p.set('offset', String(next)) : p.delete('offset'); return p; });
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
-    setQuestions([]);
-    setError(null);
+    setLoading(true); setError(null);
     if (!accessToken) return () => { active = false; };
     bankGet(accessToken, {
-      section_type: section as never, domain: domain as never,
-      difficulty: difficulty as never, mistake_history: history, limit: 24,
+      section_type: (section || undefined) as never, official_domain: (domain || undefined) as never, skill: skill || undefined,
+      difficulty: (difficulty || undefined) as never, format: (format || undefined) as never, status: (status || undefined) as never, limit: PAGE, offset,
     }).then(result => {
-      if (active) setQuestions(result.questions);
-    }).catch(err => {
-      if (active) setError(err instanceof Error ? err.message : 'Question bank failed to load. Please retry.');
-    }).finally(() => { if (active) setLoading(false); });
+      if (!active) return;
+      setQuestions(result.questions); setHistory(result.history ?? {}); setFacets(result.facets ?? null); setTotal(result.total ?? result.questions.length);
+    }).catch(err => { if (active) { setError(err); setQuestions([]); } })
+      .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [accessToken, section, domain, difficulty, history, reload]);
+  }, [accessToken, section, domain, skill, difficulty, format, status, offset, reload]);
 
   const startFiltered = async () => {
-    if (!accessToken || loading || !questions.length || startPending.current) return;
-    startPending.current = true;
-    setStarting(true);
-    setError(null);
+    if (!accessToken || loading || !total || startPending.current) return;
+    startPending.current = true; setStarting(true); setError(null);
     try {
       const result = await attemptStart(accessToken, {
-        section_type: section as never, domain: domain as never,
-        difficulty: difficulty as never, mistake_history: history, question_count: 10,
+        mode: 'bank', section_type: (section || undefined) as never, official_domain: (domain || undefined) as never, skill: skill || undefined,
+        difficulty: (difficulty || undefined) as never, format: (format || undefined) as never, status: (status || undefined) as never, question_count: count,
       });
-      if (actor.current === accessToken) navigate(`/lab/${result.attempt.id}`);
+      if (actor.current === accessToken) navigate(`/lab/${result.attempt.id}`, { state: { selection: result.selection ?? null } });
     } catch (err) {
-      if (actor.current === accessToken) setError(err instanceof Error ? err.message : 'The drill could not be started. Please retry.');
+      if (actor.current === accessToken) setError(err);
     } finally {
-      startPending.current = false;
-      setStarting(false);
+      startPending.current = false; setStarting(false);
     }
   };
+  const facet = (group: keyof Omit<Facets, 'total'>, key: string, label: string) => {
+    const n = facets?.[group]?.[key];
+    return n == null ? label : t('bank.facet', { label, count: n });
+  };
+  const domains = OFFICIAL_DOMAIN_IDS.filter(d => !section || OFFICIAL_DOMAINS[d].section === section);
+  const skills = domain ? OFFICIAL_DOMAINS[domain].skills : [];
+  const anyFilter = FILTERS.some(f => value(f));
 
   return (
     <div className="app-shell">
@@ -77,48 +90,84 @@ export const BankPage = () => {
       <main className="workspace">
         <header className="page-header">
           <div>
-            <p className="eyebrow">Question Bank</p>
-            <h1>Filterable SAT drills</h1>
-            <p>Start a drill with up to 10 questions matching these filters.</p>
+            <p className="eyebrow">{t('bank.eyebrow')}</p>
+            <h1>{t('bank.title')}</h1>
+            <p>{t('bank.lead')}</p>
           </div>
-          <button type="button" className="btn solid" disabled={loading || starting || !questions.length || !accessToken} onClick={() => void startFiltered()}>
-            {starting ? 'Starting drill…' : 'Start filtered drill'}
-          </button>
+          <div className="bank-start">
+            <label>{t('bank.count')}
+              <select value={count} onChange={event => setCount(Number(event.target.value))}>
+                {[5, 10, 15, 20].map(n => <option key={n} value={n}>{n}</option>)}
+              </select>
+            </label>
+            <button type="button" className="btn solid" disabled={loading || starting || !total || !accessToken} onClick={() => void startFiltered()}>
+              {starting ? t('bank.starting') : t('bank.start')}
+            </button>
+          </div>
         </header>
-        {error ? <div className="alert error" role="alert">{error} <button type="button" className="btn" disabled={loading || starting} onClick={() => setReload(value => value + 1)}>Retry</button></div> : null}
+        {error ? <div className="alert error" role="alert">{errorText(error)} <button type="button" className="btn" disabled={loading || starting} onClick={() => setReload(v => v + 1)}>{t('common.retry')}</button></div> : null}
         <fieldset className="filter-bar bank-filters" disabled={starting}>
-          <legend>Choose practice questions</legend>
-          <label>Section
+          <legend>{t('bank.filters')}</legend>
+          <label>{t('bank.section')}
             <select value={section} onChange={event => changeFilter('section_type', event.target.value)}>
-              <option value="">Any section</option>
-              {SAT_SECTION_TYPES.map(entry => <option key={entry} value={entry}>{formatSatSection(entry)}</option>)}
+              <option value="">{t('bank.anySection')}</option>
+              {(['reading_writing', 'math'] as const).map(s => <option key={s} value={s}>{sectionLabel(t, s)}</option>)}
             </select>
           </label>
-          <label>Domain
-            <select value={domain} onChange={event => changeFilter('domain', event.target.value)}>
-              <option value="">Any domain</option>
-              {SAT_DOMAINS.filter(entry => !section || domainSection(entry) === section).map(entry => <option key={entry} value={entry}>{formatSatDomain(entry)}</option>)}
+          <label>{t('bank.domain')}
+            <select value={domain} onChange={event => changeFilter('official_domain', event.target.value)}>
+              <option value="">{t('bank.anyDomain')}</option>
+              {domains.map(d => <option key={d} value={d}>{facet('official_domain', d, domainLabel(t, d))}</option>)}
             </select>
           </label>
-          <label>Difficulty
+          <label>{t('bank.skill')}
+            <select value={skill} disabled={!domain} onChange={event => changeFilter('skill', event.target.value)}>
+              <option value="">{t('bank.anySkill')}</option>
+              {skills.map(s => <option key={s} value={s}>{facet('skill', s, skillLabel(t, s))}</option>)}
+            </select>
+          </label>
+          <label>{t('bank.difficulty')}
             <select value={difficulty} onChange={event => changeFilter('difficulty', event.target.value)}>
-              <option value="">Any difficulty</option>
-              {SAT_DIFFICULTIES.map(entry => <option key={entry} value={entry}>{entry}</option>)}
+              <option value="">{t('bank.anyDifficulty')}</option>
+              {(['easy', 'medium', 'hard'] as const).map(d => <option key={d} value={d}>{facet('difficulty', d, t(`difficulty.${d}`))}</option>)}
             </select>
           </label>
-          <label>Your history
-            <select value={history} onChange={event => changeFilter('mistake_history', event.target.value)}>
-              <option value="">Any history</option>
-              <option value="previously_missed">Previously missed</option>
-              <option value="mastered">Repeatedly correct</option>
-              <option value="unseen">Unseen</option>
+          <label>{t('bank.format')}
+            <select value={format} onChange={event => changeFilter('format', event.target.value)}>
+              <option value="">{t('bank.anyFormat')}</option>
+              {(['mcq', 'spr'] as const).map(f => <option key={f} value={f}>{facet('format', f, t(`format.${f}`))}</option>)}
+            </select>
+          </label>
+          <label>{t('bank.status')}
+            <select value={status} onChange={event => changeFilter('status', event.target.value)}>
+              <option value="">{t('bank.anyStatus')}</option>
+              {(['unseen', 'missed', 'correct'] as const).map(s => <option key={s} value={s}>{facet('status', s, t(`status.${s}`))}</option>)}
             </select>
           </label>
         </fieldset>
-        <p role="status">{loading ? 'Loading matching questions…' : !error ? questions.length ? `Showing ${questions.length} matching questions.` : 'No questions match these filters. Try another domain, difficulty, or history.' : ''}</p>
-        <section className="question-grid" aria-label="Matching questions" aria-busy={loading}>
-          {questions.map(question => <QuestionCard key={question.id} question={question} readOnly />)}
+        <div className="bank-status">
+          <p role="status">{loading ? t('bank.loading') : !error ? total ? t('bank.showing', { from: offset + 1, to: Math.min(total, offset + questions.length), total }) : t('bank.none') : ''}</p>
+          {anyFilter ? <button type="button" className="btn ghost compact" onClick={() => setParams(new URLSearchParams())}>{t('bank.clear')}</button> : null}
+        </div>
+        <section className="question-grid" aria-label={t('bank.preview')} aria-busy={loading}>
+          {questions.map(question => {
+            const tax = questionTaxonomy(question);
+            const st = history[question.id];
+            return <div key={question.id} className="question-shell">
+              <div className="chip-row">
+                <span className={`chip ${question.section_type}`}>{domainLabel(t, tax.official_domain)}</span>
+                {tax.skill ? <span className="chip neutral">{skillLabel(t, tax.skill)}</span> : null}
+                <span className="chip neutral">{t(`difficulty.${question.difficulty}` as AppKey)}</span>
+                {st ? <span className={`chip status-${st}`}>{t(`status.${st}` as AppKey)}</span> : null}
+              </div>
+              <QuestionCard question={question} readOnly />
+            </div>;
+          })}
         </section>
+        {total > PAGE ? <nav className="row-actions pager" aria-label={t('bank.preview')}>
+          <button type="button" className="btn ghost" disabled={offset === 0 || loading} onClick={() => page(Math.max(0, offset - PAGE))}>{t('bank.prev')}</button>
+          <button type="button" className="btn ghost" disabled={offset + PAGE >= total || loading} onClick={() => page(offset + PAGE)}>{t('bank.next')}</button>
+        </nav> : null}
       </main>
     </div>
   );

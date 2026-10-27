@@ -1,0 +1,206 @@
+{
+  "slug": "guide-band-6-to-7-roadmap",
+  "sections": [
+    {
+      "block_type": "rich_text",
+      "heading": "Advanced Lab: How to Use This Section",
+      "content": {
+        "markdown": "Everything above this point explains the road from Band 6 to Band 7. This Advanced Lab is the workshop. It assumes you already know the four skills, the band descriptors in broad terms and the eight-week outline earlier in this guide. Here you will do the arithmetic, run the diagnostics and make the decisions that most candidates leave to luck.\n\nWork through the Lab in three passes:\n\n1. **Measure.** Read the arithmetic and minimum-score sections, then work out exactly which combination of section bands gets you to your target. Do this before you study anything else this week.\n2. **Diagnose.** Use the before-and-after examples, the error-diagnosis table and the decision rules to find the one or two behaviours that are actually holding your score down.\n3. **Train.** Complete the three timed drills, check the answer key honestly, then run the 14-day breakthrough block.\n\nKeep a single notebook or document for this Lab. Every number you write in it should come from real evidence: a marked practice test, a timed section in the simulator, a teacher's assessment against the criteria, or an official result. Feelings and guesses go in a separate column labelled \"impression\" so they never contaminate your tracker."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "The Overall Band Arithmetic, Done Properly",
+      "content": {
+        "markdown": "Your overall band is the mean of your four section bands, rounded to the nearest whole or half band. The rounding rule has two details that matter for planning:\n\n- If the mean ends in **.25**, it is rounded **up** to the next half band (6.25 becomes 6.5).\n- If the mean ends in **.75**, it is rounded **up** to the next whole band (6.75 becomes 7.0).\n- Means ending in .125 or .625 round **down** to the nearest half or whole band; means ending in .375 or .875 round **up**.\n\nBecause every section band is a whole or half number, the sum of your four bands always moves in steps of 0.5, and the mean moves in steps of 0.125. That gives you a simple shortcut: **add the four bands and look at the total.**\n\n| Section bands (L / R / W / S) | Total | Mean | Overall |\n|---|---|---|---|\n| 7.0 / 6.5 / 6.0 / 6.5 | 26.0 | 6.5 | 6.5 |\n| 7.0 / 6.5 / 6.5 / 6.5 | 26.5 | 6.625 | 6.5 |\n| 7.0 / 7.0 / 6.5 / 6.5 | 27.0 | 6.75 | 7.0 |\n| 7.5 / 7.0 / 6.5 / 6.5 | 27.5 | 6.875 | 7.0 |\n| 6.5 / 6.5 / 6.0 / 6.0 | 25.0 | 6.25 | 6.5 |\n| 6.0 / 6.0 / 6.0 / 6.5 | 24.5 | 6.125 | 6.0 |\n\nThe practical rule that falls out of this table: **an overall 7.0 needs a total of at least 27.0.** An overall 6.5 needs at least 25.0. If your current total is 26.0, you are exactly two half-band steps away from 7.0 overall. It does not matter, for the overall, which two skills provide those steps. It matters enormously for the section minimums, which is the next section."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Why Section Minimums Beat the Overall",
+      "content": {
+        "markdown": "Many universities, employers and visa schemes publish a requirement in two parts: an overall band and a minimum for every section, or for specific sections. A typical shape is \"7.0 overall with no band below 6.5\", or \"7.0 overall with at least 7.0 in Writing\". The second number is the one that decides whether your result is accepted.\n\nConsider two fictional candidates aiming for \"7.0 overall, no band below 6.5\":\n\n- **Candidate P:** L 8.0, R 7.5, W 6.0, S 6.5. Total 28.0, mean 7.0, overall 7.0. **Rejected**, because Writing is 6.0.\n- **Candidate Q:** L 7.0, R 7.0, W 6.5, S 6.5. Total 27.0, mean 6.75, overall 7.0. **Accepted**, despite a lower total than Candidate P.\n\nCandidate P studied harder in the skills that were already strong, because progress there felt quicker. Candidate Q studied where the requirement bit. The lesson is that the overall band is a consequence; the minimums are the constraint. Plan around the constraint first.\n\nAlways copy the exact requirement wording from the receiving organisation's official page into your Lab notebook, including which test type it accepts and how recent the result must be. Requirements change, and departments within the same university can differ. If the wording is ambiguous, ask the organisation in writing before you book."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Reverse-Engineering Your Cheapest Path to 7.0",
+      "content": {
+        "markdown": "The \"cheapest path\" is the combination of half-band gains that satisfies every requirement with the least total effort. Find it in four steps.\n\n**Step 1: List the hard floors.** Write each section's minimum next to your current evidence. Any section below its floor must rise, whatever else happens. These are your compulsory gains.\n\n**Step 2: Count the remaining total gap.** Add your current bands, add the compulsory gains, and compare the new total with 27.0 (for 7.0 overall). The difference is your optional gap, measured in half-band steps.\n\n**Step 3: Price each optional step.** For each skill, estimate how hard the next half band is, using your error logs rather than your mood. A skill where your errors are mostly careless (transfer mistakes, spelling, running out of time on the last passage) is cheap. A skill where errors come from range or accuracy you do not yet have is expensive.\n\n**Step 4: Buy the cheapest steps first, with a safety margin.** Plan for one half-band step more than the arithmetic requires. Test-day variation is real, and a plan that only works if everything goes perfectly is not a plan.\n\nMost Band 6.5 candidates discover that one receptive skill (Listening or Reading) offers a cheap step through error discipline, while Writing or Speaking contains the compulsory step. That combination, one cheap step plus one compulsory step, is the most common shape of a realistic route to 7.0."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Worked Profile A: The Writing Bottleneck",
+      "content": {
+        "markdown": "**Candidate A** (fictional): L 7.0, R 6.5, W 6.0, S 6.5. Needs 7.0 overall with no band below 6.5. Ten weeks available. Evidence: two full simulator tests and four marked essays.\n\n**Arithmetic.** Current total 26.0, overall 6.5. Writing 6.0 is below the 6.5 floor, so one Writing step is compulsory. After that step the total is 26.5, still overall 6.5. One more step is needed to reach 27.0.\n\n**Pricing the optional step.** Candidate A's Reading log shows that most lost marks come from True/False/Not Given questions answered from memory rather than from the text, and from leaving the last six questions of passage three rushed. Both are discipline problems: cheap. Listening is already 7.0 and the remaining errors are spread thinly, so the next step there is expensive. Speaking errors are grammatical range in Part 3: medium cost.\n\n**Decision.** Compulsory step: Writing 6.0 to 6.5 (task response and paragraph development in Task 2, overview in Task 1). Optional step: Reading 6.5 to 7.0 through an evidence-first TFNG routine and a fixed passage-time budget. Safety step: Speaking 6.5 to 7.0 is the stretch goal, trained lightly through Part 3 extension practice.\n\n**What Candidate A stops doing:** extra Listening practice tests, which were comfortable but no longer moved the plan."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Worked Profile B: The Uneven High Scorer",
+      "content": {
+        "markdown": "**Candidate B** (fictional): L 8.0, R 8.0, W 6.0, S 6.0. Needs 7.0 overall with at least 6.5 in each section. Six weeks available.\n\n**Arithmetic.** Total 28.0, mean 7.0, overall 7.0 already. The overall target is met; the result is still unusable because two sections are below the floor. The only work that matters is Writing 6.0 to 6.5 and Speaking 6.0 to 6.5.\n\n**The trap.** Candidate B's receptive scores suggest strong English, so the instinct is to \"polish\" with advanced vocabulary. Their marked essays, however, show a different problem: positions that drift between paragraphs and examples that are asserted rather than explained. Their Speaking recordings show short Part 1 answers and Part 2 talks that end after about a minute. Neither problem is fixed by rarer words.\n\n**Decision.** Zero new Reading or Listening practice beyond one maintenance test every two weeks. Writing: a clear position stated in the introduction and restated consistently, two body paragraphs each built as claim, explanation, example, link. Speaking: Part 2 talks timed to the full two minutes, Part 1 answers extended with a reason and a detail, Part 3 answers that compare and qualify.\n\n**Booking decision.** Book only after three consecutive marked essays and two recorded mock interviews reach the floor on the criteria, not after one good day."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Worked Profile C: The Flat 6.5",
+      "content": {
+        "markdown": "**Candidate C** (fictional): L 6.5, R 6.5, W 6.5, S 6.5. Needs 7.0 overall, no individual minimum. Twelve weeks available.\n\n**Arithmetic.** Total 26.0. Needs 27.0, which means two half-band steps anywhere. No compulsory steps exist, which sounds like freedom but often produces drift: candidates spread effort evenly and nothing crosses a boundary.\n\n**Pricing.** Candidate C's logs show Listening errors clustered in Part 4 note completion (spelling and word limits), and Reading errors clustered in matching headings. Writing and Speaking errors are broad: range, accuracy and development all slightly short.\n\n**Decision.** Buy the two cheapest steps: Listening through a spelling and word-limit discipline routine plus Part 4 prediction practice, and Reading through a headings method that summarises each paragraph's main idea before looking at the options. Keep Writing and Speaking on maintenance so they do not slip; a fall from 6.5 to 6.0 in either would cancel one of the gains.\n\n**Key insight.** With no minimums, a flat profile can reach 7.0 without touching its hardest skill at all. That is legitimate, and often the fastest route, provided the plan protects the other two skills from slipping."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Writing at Band 7: Before and After",
+      "content": {
+        "markdown": "The difference between a Band 6 and a Band 7 Writing response is usually not vocabulary level. It is control: a clear position, ideas that are explained, and language that is precise rather than decorative.\n\n### Development\n\n**Band 6 shape:** \"Public transport is important for cities. It reduces pollution and traffic. Therefore governments should invest more money in it.\"\n\n**Band 7 shape:** \"Investing in public transport cuts congestion more effectively than building roads, because each new bus lane moves far more people per hour than the car lane it replaces. In cities where commuting by car is the default, this shift also lowers emissions without asking residents to change where they live.\"\n\nThe second version makes one claim, explains why it is true, and adds a consequence. It answers \"why?\" before the examiner has to ask.\n\n### Position\n\n**Band 6 shape:** an introduction that says \"this essay will discuss both views\" and a conclusion that suddenly agrees with one of them.\n\n**Band 7 shape:** \"While remote work suits some roles, I believe most organisations benefit from requiring staff in the office for part of the week.\" The same position then appears in every body paragraph and the conclusion.\n\n### Task 1 overview\n\n**Band 6 shape:** a list of every number in the chart, with no summary.\n\n**Band 7 shape:** \"Overall, spending on housing rose steadily throughout the period, while spending on entertainment remained the smallest category in every year shown.\" Two sentences that tell the reader what matters before any detail.\n\nRewrite one of your own old paragraphs in each of these three ways this week. The rewrite teaches more than a new essay."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Speaking at Band 7: Before and After",
+      "content": {
+        "markdown": "Band 7 Speaking sounds like someone thinking aloud in English with some flexibility, not someone reciting.\n\n### Part 1\n\n**Question:** \"Do you enjoy cooking?\"\n\n**Band 6 shape:** \"Yes, I enjoy cooking. I cook every day. It is my hobby.\"\n\n**Band 7 shape:** \"I do, though mostly at weekends. During the week I just make something quick, but on Saturdays I like trying a recipe I haven't attempted before, which is usually a bit chaotic but fun.\"\n\nThe upgrade adds a contrast (though, but), a time frame and a small personal detail. Nothing in it is memorised.\n\n### Part 3\n\n**Question:** \"Why do some people prefer to live in small towns?\"\n\n**Band 6 shape:** \"Because small towns are quiet and cheap. Big cities are noisy and expensive.\"\n\n**Band 7 shape:** \"Partly it's about cost, since housing tends to be cheaper, but I think the bigger reason is a sense of belonging. In a small town you see the same faces every day, and for some people that matters more than having endless choice. Having said that, younger people often feel the opposite way, because the opportunities they want are concentrated in cities.\"\n\nThe upgrade gives a reason, ranks reasons, and qualifies the answer by considering a different group. Comparing, ranking and qualifying are the three Part 3 moves that most reliably signal Band 7 range.\n\n### Recovery\n\nWhen you lose a word, paraphrase instead of stopping: \"it's a sort of... the tool you use to open tins\". Smooth recovery protects fluency, which a long silence damages."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Reading at Band 7: The Error Log Upgrade",
+      "content": {
+        "markdown": "A Band 6 error log records what went wrong. A Band 7 error log records why, and what you will do differently on the next passage.\n\n**Band 6 entry:**\n\"Q23 wrong. Answered True, answer was Not Given.\"\n\n**Band 7 entry:**\n\"Q23 (TFNG). I chose True. The statement said the scheme was *successful*; the text said it was *popular with residents*. I treated popular as successful. Rule: a statement needs evidence for every key claim, including evaluation words. Next time I will underline the evaluation word in the statement and look for evidence of that exact judgement.\"\n\nThe upgraded entry has four parts: question type, what you chose, the precise gap between statement and text, and a reusable rule. After twenty entries like this, patterns appear: perhaps most of your errors are evaluation words, quantity words (some, most, all), or time words (now, previously, will). Each pattern becomes one targeted rule.\n\n### Timing evidence\n\nRecord the time you finish each passage in every timed test. If passage three regularly starts with less than twenty minutes left, your issue is partly allocation rather than understanding. A fixed budget (for example, leaving passage one at a set clock time no matter what) is a cheap half-band for many candidates."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Listening at Band 7: The Error Log Upgrade",
+      "content": {
+        "markdown": "Listening errors feel random, which is why candidates rarely log them properly. They are not random.\n\n**Band 6 entry:**\n\"Part 2 Q14 wrong. Didn't hear.\"\n\n**Band 7 entry:**\n\"Part 2 Q14 (map labelling). I wrote the café, answer was the gift shop. The speaker first said 'the café used to be next to the entrance', then corrected it: 'it's now moved to the back'. I wrote the first location I heard. Rule: in map and plan questions, wait for the end of the sentence before writing, because past locations are a common distractor.\"\n\n### Four error families to tag\n\n- **Correction errors:** you wrote the first answer and missed the change.\n- **Form errors:** spelling, plurals, word limits, number formats.\n- **Location errors:** you lost your place and missed two or three answers in a row.\n- **Meaning errors:** you heard the words but did not recognise the paraphrase.\n\nTag every wrong answer with one family. If form errors make up a large share of your list, you have the cheapest half-band in the whole test available: a careful transfer and spelling routine. If location errors dominate, practise following the question order with your eyes slightly ahead of the audio."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Error Diagnosis Table",
+      "content": {
+        "markdown": "Use this table after every marked test. Find the symptom you see, check whether the likely cause matches your evidence, and apply the fix for two weeks before judging it.\n\n| Symptom | Likely cause | Fix |\n|---|---|---|\n| Writing stuck at 6.0 despite strong vocabulary | Ideas listed, not explained | Each body paragraph: claim, why, example, so what |\n| Task 1 marked down despite accurate numbers | No overview, or overview hidden at the end | Write a two-sentence overview before any detail |\n| Speaking Part 2 ends early | No structure for the long turn | Plan four prompts: what, when, why, how you felt |\n| Speaking marked as limited range | Safe short answers in Part 3 | Compare, rank and qualify in every Part 3 answer |\n| Reading TFNG errors in clusters | Answering from knowledge, not text | Underline key claim words; demand evidence for each |\n| Last Reading passage always rushed | No time budget | Fixed exit time for passages one and two |\n| Listening errors in two or three consecutive answers | Lost place | Read one question ahead; mark a skip and move on |\n| Listening answers correct but marked wrong | Spelling, plurals, word limit | Slow transfer check against the instruction |\n| Scores swing by a band between tests | Practice conditions not consistent | Same timing, same order, no pauses, every test |"
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Decision Rules for Where the Next Hour Goes",
+      "content": {
+        "markdown": "When you sit down to study, use these rules in order. Stop at the first one that applies.\n\n1. **If** any section is below its required minimum, **then** the hour goes to that section. If two are below, alternate days, starting with the larger gap.\n2. **If** a section has an error family that makes up most of its recent mistakes, **then** spend the hour on that family only (one drill type, one rule, repeated).\n3. **If** you have not done a full timed test in the past fourteen days, **then** the hour (or the next three hours) goes to a full timed test under real conditions.\n4. **If** your last two Writing tasks were not marked against the criteria, **then** get one marked or self-assess carefully with the public band descriptors before writing more.\n5. **If** none of the above apply, **then** spend the hour on the cheapest optional half-band from your cheapest-path calculation.\n\nTwo anti-rules:\n\n- **If** a task feels comfortable and enjoyable, **then** check whether it still moves your plan. Comfort is often a sign of maintenance, not progress.\n- **If** you are tempted to start a new resource, **then** first finish reviewing the mistakes from the last one."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Decision Tree: Ready to Book or Not Yet",
+      "content": {
+        "markdown": "Answer each question with evidence from the last three weeks only.\n\n**Q1. Have you completed at least two full timed tests under real conditions in the last three weeks?**\n- No: not ready. Schedule them first.\n- Yes: go to Q2.\n\n**Q2. In both tests, did every section meet its required minimum?**\n- No: not ready. Return to the decision rules; the failing section gets priority.\n- Yes: go to Q3.\n\n**Q3. Did the total of your four section bands reach the target total (27.0 for 7.0 overall) in both tests?**\n- No, but within one half-band step: borderline. Go to Q4.\n- No, by two or more steps: not ready. Rebuild the cheapest path.\n- Yes: go to Q5.\n\n**Q4. Is the missing step in a skill whose errors are mostly discipline (form, timing, place)?**\n- Yes: book with a two-to-three week runway and train that discipline daily.\n- No: not ready. The missing step needs skill development, which takes longer.\n\n**Q5. Were your Writing and Speaking bands assessed against the criteria by someone other than you, or by a consistent rubric?**\n- No: get an external or rubric-based assessment before booking; self-estimates in productive skills tend to drift.\n- Yes: ready. Book, and switch to the score stabilisation routine.\n\nBefore you book, confirm the test type, delivery options and any local timing details on the official booking page for your test centre."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "The Evidence-Only Score Tracker",
+      "content": {
+        "markdown": "A score tracker is only useful if every entry is real. Use one row per assessed piece of work, never per study session.\n\n| Date | Source | Skill and band | Notes |\n|---|---|---|---|\n| Week 1 | Simulator full test | L 7.0, R 6.5 | R: four TFNG errors, passage three rushed |\n| Week 1 | Teacher-marked essay | W 6.0 | Task response: position unclear |\n| Week 2 | Recorded mock interview, rubric | S 6.5 | Part 2 ended early |\n\n### Rules for the tracker\n\n- **Source must be named.** \"Felt like a 7\" is not a source.\n- **Productive skills need a rubric or a marker.** Record which descriptor statement you matched, not just a number.\n- **No averaging across different conditions.** An untimed Reading test and a timed one are different measurements; record them separately or not at all.\n- **Look at the trend over three or more entries,** never at a single result. One high score proves you can; three consistent scores suggest you will.\n- **Record what you changed** in the notes column. When a band moves, you want to know which fix caused it.\n\nAt the end of each week, write one sentence: \"This week the evidence shows...\" If you cannot finish that sentence with real data, the week's plan should start with a timed test."
+      }
+    },
+    {
+      "block_type": "callout",
+      "heading": "What Counts as Evidence",
+      "content": {
+        "label": "Only measured performance goes in the tracker",
+        "body": "Count timed practice tests taken under real conditions, Writing marked against the official criteria, Speaking recordings assessed with a rubric, and official results. Do not count untimed practice, scores from tests you have seen before, or your impression after a good study session. Keep impressions in a separate column so you can compare them with the evidence later; the gap between the two is itself useful information."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Drill 1: Band Arithmetic Sprint (8 minutes)",
+      "content": {
+        "markdown": "Set a timer for eight minutes. For each profile, write the total, the mean and the overall band. Then say whether it meets \"7.0 overall with no band below 6.5\". Answers are in the Drill Answers section; do not look until the timer ends.\n\n1. L 7.5, R 7.0, W 6.0, S 6.5\n2. L 7.0, R 7.0, W 6.5, S 6.5\n3. L 6.5, R 6.5, W 6.5, S 6.0\n4. L 7.5, R 7.0, W 6.5, S 6.5\n5. L 7.0, R 6.5, W 6.5, S 6.5\n6. L 7.0, R 7.0, W 5.5, S 6.5\n\nBonus question: Candidate D has L 7.0, R 6.5, W 6.0, S 6.5. What is the smallest number of half-band steps needed for 7.0 overall with no band below 6.5, and which skill must contain at least one of them?"
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Drill 2: Diagnose the Profile (10 minutes)",
+      "content": {
+        "markdown": "Read each fictional log extract and write: the error family or bottleneck, and the single fix you would apply for the next two weeks.\n\n**Extract 1 (Listening):** \"Q8 wrote 'libary'. Q9 wrote 'two bedroom' (answer needed 'bedrooms'). Q27 wrote three words when instruction said no more than two.\"\n\n**Extract 2 (Writing, marker comment):** \"Your ideas are relevant, but each paragraph lists three reasons in one sentence each without explaining any of them.\"\n\n**Extract 3 (Reading):** \"Finished passage one at 24 minutes, passage two at 47 minutes. Guessed the last eight questions.\"\n\n**Extract 4 (Speaking, rubric note):** \"Fluent and accurate in Part 1. In Part 3, answers are one or two sentences and avoid complex structures.\"\n\n**Extract 5 (Reading):** \"Q31 and Q34: chose False; answers were Not Given. In both cases the text did not mention the claim at all, but I knew it was untrue in real life.\""
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Drill 3: Upgrade the Sentence (12 minutes)",
+      "content": {
+        "markdown": "Rewrite each Band 6 shape into a Band 7 shape. Aim for precision and explanation, not rare words. Model answers are in the Drill Answers section, but yours do not need to match them; check yours against the principle named in brackets.\n\n1. (Development) \"Social media has many bad effects. It wastes time and causes stress.\"\n2. (Position) \"There are advantages and disadvantages to studying abroad, and this essay will discuss both.\"\n3. (Task 1 overview) \"In 2010 the figure was 40, in 2015 it was 55, and in 2020 it was 70.\"\n4. (Speaking Part 1 extension) \"Yes, I like reading. I read books.\"\n5. (Speaking Part 3 qualification) \"Children should learn languages because it is useful.\""
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Drill Answers",
+      "content": {
+        "markdown": "### Drill 1\n\n1. Total 27.0, mean 6.75, overall 7.0. **Does not meet** the requirement: Writing 6.0 is below 6.5.\n2. Total 27.0, mean 6.75, overall 7.0. **Meets** the requirement.\n3. Total 25.5, mean 6.375, overall 6.5. Does not meet: overall too low and Speaking below 6.5.\n4. Total 27.5, mean 6.875, overall 7.0. **Meets** the requirement.\n5. Total 26.5, mean 6.625, overall 6.5. Does not meet: overall too low by one half-band step.\n6. Total 26.0, mean 6.5, overall 6.5. Does not meet: overall too low by two half-band steps, and Writing 5.5 is below the floor.\n\n**Bonus:** Candidate D's total is 26.0. Two half-band steps are needed to reach 27.0, and at least one must be in Writing, because Writing 6.0 is below the floor. Planning a third step as a safety margin is sensible.\n\n### Drill 2\n\n1. Form errors (spelling, plurals, word limit). Fix: a slow transfer check reading each answer against the instruction, plus a personal list of commonly misspelt words.\n2. Development. Fix: claim, explanation, example, link for every body paragraph; fewer ideas, each fully explained.\n3. Time allocation. Fix: fixed exit times for passages one and two, practised in every timed test.\n4. Range in Part 3. Fix: compare, rank and qualify in every Part 3 answer; practise with structures such as \"it depends on...\", \"whereas...\", \"if... then...\".\n5. Answering from world knowledge. Fix: if the text does not address the claim, the answer is Not Given, whatever you know to be true.\n\n### Drill 3 (model answers)\n\n1. \"Heavy social media use can crowd out sleep, because endless feeds have no natural stopping point, and tired students then find it harder to concentrate the next day.\"\n2. \"Although studying abroad is expensive, I believe its benefits for independence and career prospects outweigh the cost for most students who can access funding.\"\n3. \"Overall, the figure rose steadily over the decade, increasing by roughly the same amount in each five-year period.\"\n4. \"I do, mainly crime novels, which I tend to read on the train. It's the one time in the day when nobody can interrupt me.\"\n5. \"Learning a second language early seems to make pronunciation easier, so there's a strong case for it. That said, it probably works best when the language is actually used outside the classroom; otherwise children forget it quickly.\""
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "The 14-Day Breakthrough Block",
+      "content": {
+        "markdown": "Use this block when you are within two half-band steps of your target and have already identified your cheapest path. It assumes about ninety minutes a day; scale the volume, not the order.\n\n| Day | Main work | Evidence produced |\n|---|---|---|\n| 1 | Full timed test, all four skills | Four bands, error log |\n| 2 | Tag every error by family; update the cheapest path | Updated plan |\n| 3 | Compulsory skill: one targeted drill type, repeated | Drill log |\n| 4 | Compulsory skill: one full task, marked | One band estimate |\n| 5 | Optional skill: discipline routine on two timed sections | Section scores |\n| 6 | Compulsory skill: rewrite day four's task using feedback | Before/after comparison |\n| 7 | Rest or light review of the error rules only | None |\n| 8 | Timed sections of both target skills | Two section scores |\n| 9 | Compulsory skill: one full task, marked | One band estimate |\n| 10 | Optional skill: hardest error family only | Drill log |\n| 11 | Speaking or Writing maintenance for non-target skills | Recording or essay |\n| 12 | Compulsory skill: final targeted drill | Drill log |\n| 13 | Full timed test, real conditions | Four bands |\n| 14 | Compare days one and thirteen; decide using the booking tree | Decision |\n\nOn day fourteen, compare like with like: the same conditions, the same marking approach. If the target skills moved and nothing else fell, continue with the same block or book. If nothing moved, go to the plateau protocol."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Plateau Protocol: When Nothing Moves for Three Weeks",
+      "content": {
+        "markdown": "A plateau is three or more consecutive assessed results in a skill with no movement. It is a signal to change the method, not to add more hours of the same method.\n\n**Check 1: Is the measurement stable?** If your practice materials, timing or marker changed between results, the plateau may be noise. Fix the conditions first, then measure again.\n\n**Check 2: Are you practising or performing?** Full tests measure; they rarely teach. If most of your time goes to complete practice tests, swap half of it for targeted drills on your top error family.\n\n**Check 3: Is the feedback specific enough?** \"Improve your grammar\" is not actionable. Ask for, or create, feedback that names a criterion and a behaviour: \"complex sentences are attempted but subordinate clauses are often incomplete\".\n\n**Check 4: Are you fixing the right layer?** In Writing and Speaking, candidates often polish language when the problem is ideas and organisation. In Reading and Listening, they often add speed when the problem is accuracy.\n\n**Check 5: Is fatigue involved?** Scores that fall in the second half of a test suggest stamina. Practise full-length sessions at the same time of day as your test.\n\nAfter the checks, change one variable for two weeks and measure again. Changing several things at once makes it impossible to know what worked."
+      }
+    },
+    {
+      "block_type": "faq",
+      "heading": "Advanced FAQ",
+      "content": {
+        "items": [
+          {
+            "question": "Should I aim for 7.5 in my strongest skill to protect the overall?",
+            "answer": "Only if your section minimums are already safe. An extra half band in a strong skill can lift the total, but it cannot fix a section that is below its floor. Protect the floors first, then use strong skills as a margin."
+          },
+          {
+            "question": "Is it realistic to move two skills by half a band each in a few weeks?",
+            "answer": "It can be when one of the moves comes from discipline problems such as spelling, transfer or timing, and the other has a clearly identified behaviour to change. It is much less likely when both moves require broad language development. Your error log is the best predictor; no general timeline applies to everyone."
+          },
+          {
+            "question": "How many practice tests should I take each week?",
+            "answer": "Usually one full timed test per week is enough to measure progress, with targeted drills on the other days. Taking several full tests a week often replaces learning with repetition."
+          },
+          {
+            "question": "Can I trust my own Writing band estimate?",
+            "answer": "Treat it cautiously. Self-assessment tends to be generous on vocabulary and harsh on ideas, or the reverse, depending on the person. Use the public band descriptors line by line, and check your estimates against an external marker from time to time."
+          },
+          {
+            "question": "What if my target organisation changes its requirement after I start?",
+            "answer": "Recalculate the cheapest path immediately using the new floors. Keep the exact wording and the date you checked it in your Lab notebook, and confirm with the organisation in writing if anything is unclear."
+          }
+        ]
+      }
+    },
+    {
+      "block_type": "checklist",
+      "heading": "Advanced Lab Checklist",
+      "content": {
+        "items": [
+          "I have copied the exact requirement, including every section minimum, from the official source.",
+          "I know my current four-band total and the total my target requires.",
+          "I have listed my compulsory half-band steps and priced each optional step using my error logs.",
+          "My plan includes one half-band step more than the arithmetic strictly needs.",
+          "Every entry in my score tracker names a real source and was produced under consistent conditions.",
+          "Every Reading and Listening error in the last two weeks is tagged by family with a reusable rule.",
+          "I have rewritten at least three of my own old Writing paragraphs into Band 7 shapes.",
+          "I have recorded Part 2 and Part 3 Speaking answers and checked them for comparing, ranking and qualifying.",
+          "I have completed all three drills and checked them against the answer key.",
+          "I will use the booking decision tree, not my mood, to decide when to book."
+        ]
+      }
+    }
+  ]
+}
