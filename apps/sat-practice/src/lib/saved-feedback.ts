@@ -31,7 +31,7 @@ export function savedFeedback(
   if (matches.length !== 1 || typeof matches[0]?.correct !== 'boolean') return null;
   const row = matches[0]!;
   const key = object(row.expected);
-  const value = key ? key.option_id ?? key.selected_option ?? key.correct ?? key.text ?? key.value : row.expected;
+  const value = key ? key.option_id ?? key.selected_option ?? key.correct ?? key.text ?? key.value ?? key.accepted : row.expected;
   const values = Array.isArray(value) ? value : [value];
   const tokens = values.map(text);
   const options = Array.isArray(question.data.options) ? question.data.options.map(object).filter(Boolean) : [];

@@ -1,3 +1,4 @@
+import { gradeSpr } from "./sat-practice-content.ts";
 export type SatSectionType = "reading_writing" | "math";
 export type SatDifficulty = "easy" | "medium" | "hard";
 export type SatDomain =
@@ -104,6 +105,11 @@ export const expectedPointImpact = (
 export const isCorrectAnswer = (answer: unknown, correct: unknown): boolean => {
   const answerObj = isObject(answer) ? answer : {};
   const correctObj = isObject(correct) ? correct : {};
+  // Grid-in (student-produced response) keys list accepted strings; grade with
+  // the Digital SAT rules (exact, equivalent value, or full-width rounding).
+  if (Array.isArray(correctObj.accepted)) {
+    return gradeSpr(answerObj.text ?? answerObj.value ?? (isObject(answer) ? null : answer), correctObj.accepted);
+  }
   const token = (value: unknown): string | null => {
     if (typeof value !== "string" && (typeof value !== "number" || !Number.isFinite(value))) return null;
     const text = String(value).trim().toUpperCase();

@@ -624,7 +624,7 @@ textarea {
   min-height: 0;
 }
 
-.option-row span {
+.option-row > span {
   display: inline-grid;
   place-items: center;
   width: 26px;
@@ -636,7 +636,7 @@ textarea {
   font-size: 0.78rem;
 }
 
-.option-row strong {
+.option-row > strong {
   font-weight: 650;
 }
 

@@ -86,7 +86,7 @@ try {
   await check('readable original question and one dispatch for repeated clicks', async () => {
     await reset('success'); await ready();
     await page.getByText(question.data.prompt, { exact: true }).waitFor();
-    await page.getByText('Your answer — incorrect', { exact: true }).waitFor();
+    await page.getByText('Your answer: incorrect', { exact: true }).waitFor();
     assert.equal(await page.locator('.option-row.answer-incorrect').count(), 1);
     await page.getByRole('button', { name: 'Explain', exact: true }).evaluate(button => { button.click(); button.click(); });
     await page.getByRole('heading', { name: advice.key_concept }).waitFor();
@@ -107,8 +107,8 @@ try {
     await reset('success'); await ready();
     await page.getByRole('button', { name: 'Similar example', exact: true }).click();
     await page.getByRole('heading', { name: 'Similar practice example' }).waitFor();
-    await page.getByText('AI-generated example; its answer has not been independently verified.', { exact: true }).waitFor();
-    await page.getByText('Show example answer', { exact: true }).click();
+    await page.getByText('AI-generated example; its answer has not been independently checked.', { exact: true }).waitFor();
+    await page.getByText('Show the example answer', { exact: true }).click();
     await page.getByText('Subtract 2 and divide by 3.', { exact: false }).waitFor();
     assert.equal(posts, 1);
   });
@@ -125,13 +125,13 @@ try {
   await check('saved feedback remains visible when allowance refresh fails', async () => {
     await reset('quota-outage'); await ready(); await page.getByRole('button', { name: 'Explain', exact: true }).click();
     await page.getByRole('heading', { name: advice.key_concept }).waitFor();
-    await page.getByRole('button', { name: 'Retry allowance' }).waitFor();
+    await page.getByRole('button', { name: 'Retry loading the allowance' }).waitFor();
     assert.equal(posts, 1); assert(quotaReads >= 2);
   });
   await check('uncertain requests require explicit recovery and a fresh acknowledged request', async () => {
     await reset('uncertain'); await ready(); await page.getByRole('button', { name: 'Explain', exact: true }).click();
     await page.getByRole('button', { name: 'Check saved explanation' }).click();
-    await page.getByText('This request may have reached the provider and remains counted.', { exact: false }).waitFor();
+    await page.getByText('This request may have reached the AI provider and still counts.', { exact: false }).waitFor();
     const id = saved.request_id;
     await page.getByRole('button', { name: 'Prepare a new request' }).click();
     scenario = 'success'; await ready(); await page.getByRole('button', { name: 'Explain', exact: true }).click();
@@ -141,7 +141,7 @@ try {
   await check('disabled, old runtime and malformed feedback fail visibly without crashing', async () => {
     for (const mode of ['disabled', 'old-runtime']) {
       await reset(mode);
-      if (mode === 'disabled') await page.getByText('AI explanations are temporarily unavailable.', { exact: false }).waitFor();
+      if (mode === 'disabled') await page.getByText('AI explanations are switched off right now.', { exact: false }).waitFor();
       else await page.getByText('SAT Tutor is being updated.', { exact: false }).waitFor();
       assert.equal(await page.getByRole('button', { name: 'Explain', exact: true }).isDisabled(), true);
       assert.equal(posts, 0);
