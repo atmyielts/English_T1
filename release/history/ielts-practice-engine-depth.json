@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "ielts-practice-engine-depth",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": [
+    "ielts-practice"
+  ],
+  "migrations": [
+    "20261026110900_ielts_practice_engine_depth.sql"
+  ],
+  "edgeFunctions": [
+    "ielts-practice",
+    "ielts-srs"
+  ],
+  "workers": [],
+  "sharedEdgeConsumers": [],
+  "requiredSecrets": [
+    "IELTS_PRACTICE_SCORE_SESSION_FUNCTION",
+    "OPENAI_API_KEY",
+    "OPENROUTER_API_KEY",
+    "OPENROUTER_APP_NAME",
+    "OPENROUTER_BASE_URL",
+    "OPENROUTER_MODEL",
+    "OPENROUTER_REFERER"
+  ],
+  "rolloutOrder": [
+    "pages",
+    "migration:20261026110900_ielts_practice_engine_depth.sql",
+    "secret:IELTS_PRACTICE_SCORE_SESSION_FUNCTION",
+    "secret:OPENAI_API_KEY",
+    "secret:OPENROUTER_API_KEY",
+    "secret:OPENROUTER_APP_NAME",
+    "secret:OPENROUTER_BASE_URL",
+    "secret:OPENROUTER_MODEL",
+    "secret:OPENROUTER_REFERER",
+    "function:ielts-practice",
+    "function:ielts-srs"
+  ],
+  "manualFollowUps": [
+    "Pages: merging publishes apps/ielts-practice (practice.ielts.schood.online): en/uz/ru UI with LocaleSwitcher, Schood home/Account/sign-out in the shell, IELTS Playbook link, Speaking practice page, item-level review queue, server-graded AI mock generator with history, simulator/Playbook context focus, honest full-mock card, retired /exercise and /results routes redirect. Until the migration and functions are deployed, the new Speaking, review-item and generator calls return errors and their panels show the error/empty state; existing labs, plans and type-level reviews keep working.",
+    "Database (after Pages): supabase db push --linked from an isolated copy that adds only 20261026110900_ielts_practice_engine_depth.sql (keep the #220 payment migrations excluded as usual). Additive: three new tables (ielts_practice_generated_mocks, ielts_practice_item_reviews, ielts_practice_speaking_attempts) with RLS read-own and no learner writes.",
+    "Secrets: none are changed. supabase secrets set IELTS_PRACTICE_SCORE_SESSION_FUNCTION= supabase secrets set OPENAI_API_KEY= supabase secrets set OPENROUTER_API_KEY= supabase secrets set OPENROUTER_APP_NAME= supabase secrets set OPENROUTER_BASE_URL= supabase secrets set OPENROUTER_MODEL= supabase secrets set OPENROUTER_REFERER= are NOT run: they are already configured or have code defaults (verifier lists them because ielts-practice/index.ts reads them). OPENROUTER_MODEL should stay the free model (google/gemma-4-31b-it:free); _shared/ielts-ai.ts falls back to openrouter/auto when it is unset.",
+    "Edge (--project-ref bbjawctnqrufvnesdsel), right after the migration: supabase functions deploy ielts-practice ; supabase functions deploy ielts-srs. ielts-srs now enforces IELTS Practice access (personal, sponsored or IELTS Complete bundle) like ielts-practice; learners without access get 403 instead of the review queue."
+  ],
+  "verification": [
+    "supabase migration list --linked shows 20261026110900_ielts_practice_engine_depth applied.",
+    "Without a session: GET /functions/v1/ielts-practice/reviews/items and /functions/v1/ielts-srs return 401; signed in without IELTS Practice access both return 403 with code product_access_required.",
+    "Signed in with access: /generator generates a mock, Check my answers returns a score from the server, and the mock appears under Your generated mocks; a missed question appears under Questions to redo the next day.",
+    "/speaking loads Part 1-3 prompts; a typed 12+ word answer returns transcript-only feedback (no band) in the chosen language.",
+    "practice.ielts.schood.online/today?source=playbook&weak_skill=listening shows the From IELTS Playbook banner and a Listening lab first; /practice/today and /results/x redirect.",
+    "Switching the language to O‘zbekcha and Русский translates the shell and pages; nothing overflows at 375px."
+  ],
+  "rollback": {
+    "pages": "Cloudflare Pages rollback of schood-ielts-practice to the previous deployment.",
+    "migration": "Additive; leave in place (the three tables are unused by the previous code).",
+    "edge": "Redeploy ielts-practice and ielts-srs from 378af006; the old generator returns in-browser mocks again and ielts-srs drops the product check."
+  }
+}
