@@ -1,114 +1,58 @@
 {
   "schemaVersion": 1,
-  "releaseId": "english-depth-oct26",
+  "releaseId": "exam-families-sellable-oct26",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "english-hub",
-    "platform"
+    "platform",
+    "sat-simulator"
   ],
   "migrations": [
-    "20261026100000_english_exam_track.sql",
-    "20261026100100_english_exam_papers_seed.sql",
-    "20261026110000_english_duels.sql",
-    "20261026110100_english_progress_links.sql",
-    "20261026120000_english_client_attempts.sql",
-    "20261026130000_english_classes.sql",
-    "20261026140000_english_word_store_unify.sql",
-    "20261026140100_english_vocabulary_word_knowledge.sql",
-    "20261026140200_english_reading_question_types.sql",
-    "20261026140300_english_listening_gist_questions.sql",
-    "20261026140400_english_grammar_drill_types.sql",
-    "20261026140500_english_daily_stories.sql",
-    "20261026150000_english_output_depth.sql",
-    "20261026160000_english_inbox.sql",
-    "20261026160100_english_resume_points.sql",
-    "20261026160200_english_journey_indexes.sql",
-    "20261026170000_english_account_erasure_registry.sql"
+    "20261026100900_exam_plans_and_complete_bundles.sql"
   ],
   "edgeFunctions": [
-    "grammar-remediation",
-    "hub",
-    "immersion-missions",
-    "listening-content",
-    "reading-articles",
-    "speaking-studio",
-    "telegram-app",
-    "vocab-drill",
-    "vocabulary-notebook",
-    "writing-workbench"
+    "access-effective",
+    "exam-state",
+    "learning-profile",
+    "me",
+    "recommendations",
+    "review-session",
+    "score-prediction",
+    "start-session",
+    "trial-claim"
   ],
-  "workers": [
-    "schood-bot"
-  ],
-  "sharedEdgeConsumers": [
-    "admin-english-content",
-    "admin-english-ops",
-    "telegram-public"
-  ],
-  "requiredSecrets": [
-    "ENGLISH_APP_URL",
-    "SITE_URL",
-    "TELEGRAM_BOT_TOKEN",
-    "TELEGRAM_INTERNAL_SECRET",
-    "TELEGRAM_STUDENT_BOT_NAME"
-  ],
+  "workers": [],
+  "sharedEdgeConsumers": [],
+  "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "migration:20261026100000_english_exam_track.sql",
-    "migration:20261026100100_english_exam_papers_seed.sql",
-    "migration:20261026110000_english_duels.sql",
-    "migration:20261026110100_english_progress_links.sql",
-    "migration:20261026120000_english_client_attempts.sql",
-    "migration:20261026130000_english_classes.sql",
-    "migration:20261026140000_english_word_store_unify.sql",
-    "migration:20261026140100_english_vocabulary_word_knowledge.sql",
-    "migration:20261026140200_english_reading_question_types.sql",
-    "migration:20261026140300_english_listening_gist_questions.sql",
-    "migration:20261026140400_english_grammar_drill_types.sql",
-    "migration:20261026140500_english_daily_stories.sql",
-    "migration:20261026150000_english_output_depth.sql",
-    "migration:20261026160000_english_inbox.sql",
-    "migration:20261026160100_english_resume_points.sql",
-    "migration:20261026160200_english_journey_indexes.sql",
-    "migration:20261026170000_english_account_erasure_registry.sql",
-    "secret:ENGLISH_APP_URL",
-    "secret:SITE_URL",
-    "secret:TELEGRAM_BOT_TOKEN",
-    "secret:TELEGRAM_INTERNAL_SECRET",
-    "secret:TELEGRAM_STUDENT_BOT_NAME",
-    "function:hub",
-    "function:grammar-remediation",
-    "function:immersion-missions",
-    "function:listening-content",
-    "function:reading-articles",
-    "function:speaking-studio",
-    "function:telegram-app",
-    "function:vocab-drill",
-    "function:vocabulary-notebook",
-    "function:writing-workbench",
-    "function:admin-english-content",
-    "function:admin-english-ops",
-    "function:telegram-public",
-    "worker:schood-bot"
+    "migration:20261026100900_exam_plans_and_complete_bundles.sql",
+    "function:access-effective",
+    "function:me",
+    "function:start-session",
+    "function:exam-state",
+    "function:review-session",
+    "function:trial-claim",
+    "function:learning-profile",
+    "function:score-prediction",
+    "function:recommendations"
   ],
   "manualFollowUps": [
-    "Pages: merging publishes english-hub (national exam track, duels, share cards, progress links, shadowing and read aloud, offline session, classes, deeper reading/listening/vocabulary/grammar, Story of the day, writing drafts and revisions, speaking retries, projects, a personal tutor, one result screen, Journey, Inbox, content search, Continue anywhere) and platform (control center switches for exam/classes/duels; Mini App duel card and review summary; vocab drill on the shared word store). Until the migrations and functions are deployed the new panels show their empty/error states.",
-    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus the seventeen 20261026100000-20261026170000 English migrations, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then run the functions IMMEDIATELY after (20261026140000 copies vocab drill cards into the notebook and stamps them; reviews written by the old drill code in between are picked up by the functions' lazy import, and the tutor tables must exist before the tutor uses AI credits). All new tables are service-role only with RLS on; account closure now also erases 18 English learner tables.",
-    "Secrets: none are changed. supabase secrets set ENGLISH_APP_URL= supabase secrets set SITE_URL= supabase secrets set TELEGRAM_BOT_TOKEN= supabase secrets set TELEGRAM_INTERNAL_SECRET= supabase secrets set TELEGRAM_STUDENT_BOT_NAME= are not run: each is either already configured in production or has a code default.",
-    "Edge (--project-ref bbjawctnqrufvnesdsel), right after the migrations: supabase functions deploy grammar-remediation ; supabase functions deploy hub ; supabase functions deploy immersion-missions ; supabase functions deploy listening-content ; supabase functions deploy reading-articles ; supabase functions deploy speaking-studio ; supabase functions deploy telegram-app ; supabase functions deploy vocab-drill ; supabase functions deploy vocabulary-notebook ; supabase functions deploy writing-workbench ; supabase functions deploy admin-english-content ; supabase functions deploy admin-english-ops ; supabase functions deploy telegram-public.",
-    "Worker: cd workers/schood-bot && npx wrangler deploy (duels, progress-link followers, /drill on the shared word store). Before deploying, confirm the live worker came from main (wrangler deployments list)."
+    "Pages: merging publishes platform (public /pricing with every product, plan and Complete bundle; buying asks for sign-in and returns to /checkout for the chosen plan; IELTS and SAT family cards on home, /ielts, /sat and the Telegram pages) and sat-simulator (results page adds a Get your study plan link to playbook.sat.schood.online/diagnostic?source=sat-simulator&session_id=...). Before the migration, /pricing?product=ielts-complete|sat-complete says the service was not found; everything else works.",
+    "Database: supabase db push --linked from an isolated copy that adds only 20261026100900_exam_plans_and_complete_bundles.sql to the installed migrations, keeping the 9 pending #220 payment migrations (20261010162000-20261010174000) excluded. Dry run first. It adds IELTS Playbook Premium and SAT Playbook Premium (59,000 UZS / 30 days and 149,000 UZS / 90 days each), SAT Exam Simulator Standard (69,000 UZS / 30 days; the simulator was paywalled with no active plan), and the IELTS Complete (179,000) and SAT Complete (159,000) products with 30-day plans. No TOEFL row is added or changed. Bundle plans carry metadata.included_product_ids, so payment fulfilment grants every member product at purchase.",
+    "Edge, after the migration (--project-ref bbjawctnqrufvnesdsel): supabase functions deploy access-effective; supabase functions deploy me; supabase functions deploy start-session; supabase functions deploy exam-state; supabase functions deploy review-session; supabase functions deploy trial-claim; supabase functions deploy learning-profile; supabase functions deploy score-prediction; supabase functions deploy recommendations. The first six expand a Complete bundle granted any other way (admin, academy sponsor) to its members and refuse trials of bundles; purchases already work without them. score-prediction was returning 500 for everyone (it selected exam_outcomes.exam_type, which does not exist) and now derives the exam from the product.",
+    "Owner of ielts-practice: its function checks entitlements directly (userHasPracticeAccess). Purchased IELTS Complete works through the grant-time member entitlement; a bundle granted by admin or academy sponsor also needs productIdsGrantingAccess() from _shared/product-bundles.ts in that query (see PR body)."
   ],
   "verification": [
-    "supabase migration list --linked shows the seventeen migrations applied and the 9 #220 payment migrations still pending.",
-    "Without a session: GET /functions/v1/hub/exam, /hub/journey, /hub/inbox, /hub/search?q=a, /hub/classes, /hub/duels return 401; GET /hub/public/progress/UNKNOWN returns 404.",
-    "Signed in: /exam, /duel, /classes, /journey, /inbox, /stories, /speaking/shadowing, /vocabulary/practice load; Ctrl+K finds a lesson by topic; Settings shows Notifications and Progress links.",
-    "Telegram: @schoodstudentbot /duel offers a challenge link; /drill still works on the learner's words."
+    "supabase migration list --linked shows 20261026100900 applied and the 9 #220 payment migrations still pending.",
+    "Anon REST: plans?is_active=eq.true lists the 7 new plans; products?metadata->>slug=in.(ielts-complete,sat-complete) returns two rows; the TOEFL Playbook plan 'test' is unchanged.",
+    "Signed out, https://schood.online/pricing shows IELTS, Digital SAT and English groups with prices; Sign in to buy opens /auth?returnTo=/checkout?plan_id=...; after sign-in the checkout shows the chosen plan.",
+    "GET /functions/v1/score-prediction with a learner token returns 200 (was 500).",
+    "With a test account holding only SAT Complete: access-effective effective_product_ids includes SAT Exam Simulator, SAT Practice Lab and SAT Playbook; /me lists derived member rows with value.via_bundle_product_id."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-english and schood-platform to the previous deployment.",
-    "migration": "Additive; leave in place. vocab_drill_cards is kept untouched (only imported_at added) so the previous drill code still works after a function rollback.",
-    "edge": "Redeploy the thirteen functions from a411de5e; new routes stop, earlier behaviour returns (words reviewed meanwhile stay in the notebook).",
-    "worker": "npx wrangler rollback in workers/schood-bot."
+    "pages": "Cloudflare Pages rollback of schood-platform and schood-sat to the previous deployment (pricing is then sign-in only again).",
+    "migration": "Set is_active=false on the 7 new plans and status='disabled' on the two Complete products. Entitlements already bought stay valid.",
+    "edge": "Redeploy the nine functions from the previous main commit (a411de5e); bundle grants made outside checkout stop expanding, purchased member entitlements keep working."
   }
 }
