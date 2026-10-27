@@ -1161,13 +1161,14 @@ export type CoachInsight = {
 export type CoachSummaryResponse = {
   ok: boolean;
   ai_available: boolean;
+  limited?: boolean;
   summary: string;
   insights: CoachInsight[];
   generated_at: string;
 };
 
-export const practiceCoachSummaryGet = (accessToken: string): Promise<CoachSummaryResponse> =>
-  call(accessToken, '/ielts-practice/insights/coach-summary');
+export const practiceCoachSummaryGet = (accessToken: string, lang: CoachLang = 'en'): Promise<CoachSummaryResponse> =>
+  call(accessToken, `/ielts-practice/insights/coach-summary?lang=${lang}`);
 
 // AI mock generator: the server stores the mock with a normalised answer key
 // and grades submissions; the learner never receives the key before submitting.

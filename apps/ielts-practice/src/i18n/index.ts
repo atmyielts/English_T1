@@ -84,3 +84,18 @@ export function useErrorText() {
     return t('common.error.generic');
   }, [t, locale]);
 }
+
+const STATUS_KEYS: Record<string, AppKey> = {
+  planned: 'status.planned',
+  in_progress: 'status.in_progress',
+  completed: 'status.completed',
+  expired: 'status.expired',
+  skipped: 'status.skipped',
+};
+
+/** Translated plan-item / session status. */
+export const statusLabel = (t: AppTranslate, status: unknown): string => {
+  const raw = String(status ?? '');
+  const key = STATUS_KEYS[raw];
+  return key ? t(key) : raw.replace(/_/g, ' ');
+};

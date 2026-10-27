@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { buildPlatformUrl, getReturnTo, hasPlatformBase } from '../../lib/platformUrls';
+import { useAppT } from '../../i18n';
 
 type Props = { path: string; productId?: string; productSlug?: string };
 
 export const PlatformRedirect: React.FC<Props> = ({ path, productId, productSlug }) => {
+  const t = useAppT();
   const location = useLocation();
   const queryReturnTo = new URLSearchParams(location.search).get('returnTo');
   const returnTo = queryReturnTo
@@ -27,7 +29,7 @@ export const PlatformRedirect: React.FC<Props> = ({ path, productId, productSlug
   }, [url]);
 
   if (hasPlatformBase) {
-    return <div className="route-loading">Redirecting...</div>;
+    return <div className="route-loading">{t('shell.redirecting')}</div>;
   }
 
   return <Navigate to={url} replace />;

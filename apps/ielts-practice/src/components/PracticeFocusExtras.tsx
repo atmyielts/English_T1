@@ -7,7 +7,7 @@ import {
   type VocabFromMistakesEntry,
 } from '../lib/api';
 import { formatPracticeLabel } from '../lib/practiceExperience';
-import { sectionLabel, useAppT, useFormat } from '../i18n';
+import { sectionLabel, useAppT, useFormat, type AppKey } from '../i18n';
 
 // ============================================================
 // Pre-test mode banner (T-7 ramp + final-week prep)
@@ -20,36 +20,16 @@ interface PreTestProps {
   targetDate: string | null | undefined;
 }
 
-const TEST_DAY_CHECKLIST = [
-  'ID document checked (passport/national ID with photo)',
-  'Test centre printout or app QR ready',
-  'Pens, pencils, eraser, sharpener in clear case',
-  'Water bottle (transparent, label removed)',
-  'Watch off — clocks are at the centre',
-  'No phone, no smartwatch, no earphones in pocket',
-];
-
-const T1_ROUTINE = [
-  'No new content today — only confidence drills',
-  'Sleep before midnight, alarm set 1h earlier',
-  'Light breakfast 90 min before the test',
-  'Re-read your top 5 strongest writing essays',
-  'Skim the Playbook’s strategy summary cards',
-];
-
-const T7_ROUTINE = [
-  'Switch to retesting only — no new material',
-  'Daily mock under exact timing once',
-  'Limit new vocabulary; consolidate what you know',
-  'Two days off in the last week is fine, not more',
-  'Sleep target: 7.5+ hours every night',
-];
+const TEST_DAY_CHECKLIST: AppKey[] = ['pre.kit1', 'pre.kit2', 'pre.kit3', 'pre.kit4', 'pre.kit5'];
+const T1_ROUTINE: AppKey[] = ['pre.t1.1', 'pre.t1.2', 'pre.t1.3', 'pre.t1.4', 'pre.t1.5'];
+const T7_ROUTINE: AppKey[] = ['pre.t7.1', 'pre.t7.2', 'pre.t7.3', 'pre.t7.4', 'pre.t7.5'];
 
 export const PreTestModeBanner = ({ targetDate }: PreTestProps) => {
+  const t = useAppT();
   if (!targetDate) return null;
   const days = Math.ceil((new Date(targetDate).getTime() - Date.now()) / (24 * 60 * 60 * 1000));
   if (days < 0 || days > 7) return null;
-  const headline = days === 0 ? "Test day" : days === 1 ? "Test day tomorrow" : `${days} days to test`;
+  const headline = days === 0 ? t('pre.today') : days === 1 ? t('pre.tomorrow') : t('pre.days', { count: days });
   const tone = days <= 1 ? '#9b2c2c' : '#b08020';
   const routine = days <= 1 ? T1_ROUTINE : T7_ROUTINE;
 
@@ -66,15 +46,13 @@ export const PreTestModeBanner = ({ targetDate }: PreTestProps) => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
         <div>
           <p className="eyebrow" style={{ color: tone, margin: 0 }}>
-            <AlarmClock size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Pre-test mode
+            <AlarmClock size={11} style={{ verticalAlign: -2, marginRight: 4 }} aria-hidden="true" /> {t('pre.eyebrow')}
           </p>
           <h2 style={{ margin: '4px 0 4px', fontFamily: 'Fraunces, serif', fontWeight: 600 }}>
             {headline}
           </h2>
           <p className="muted" style={{ margin: 0 }}>
-            {days <= 1
-              ? "Final-stretch protocol below. Sleep wins this section."
-              : "Switch into ramp-down. Consolidation beats new material this close to the test."}
+            {days <= 1 ? t('pre.leadFinal') : t('pre.leadWeek')}
           </p>
         </div>
         <div
@@ -91,16 +69,16 @@ export const PreTestModeBanner = ({ targetDate }: PreTestProps) => {
           T-{days}
         </div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 18, marginTop: 18 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(260px, 100%), 1fr))', gap: 18, marginTop: 18 }}>
         <div>
           <p className="eyebrow" style={{ margin: '0 0 8px', color: tone }}>
             <Moon size={11} style={{ verticalAlign: -2, marginRight: 4 }} />
-            {days <= 1 ? 'Tonight & tomorrow' : 'This week'}
+            {days <= 1 ? t('pre.tonight') : t('pre.week')}
           </p>
           <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gap: 4 }}>
             {routine.map((item, i) => (
               <li key={i} style={{ fontSize: 13.5, lineHeight: 1.5, color: 'var(--ink-2)' }}>
-                · {item}
+                · {t(item)}
               </li>
             ))}
           </ul>
@@ -108,12 +86,12 @@ export const PreTestModeBanner = ({ targetDate }: PreTestProps) => {
         <div>
           <p className="eyebrow" style={{ margin: '0 0 8px', color: tone }}>
             <ShieldCheck size={11} style={{ verticalAlign: -2, marginRight: 4 }} />
-            Test-day kit
+            {t('pre.kit')}
           </p>
           <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gap: 4 }}>
             {TEST_DAY_CHECKLIST.map((item, i) => (
               <li key={i} style={{ fontSize: 13.5, lineHeight: 1.5, color: 'var(--ink-2)' }}>
-                ☐ {item}
+                ☐ {t(item)}
               </li>
             ))}
           </ul>
@@ -177,6 +155,7 @@ interface VocabSurfaceProps {
 const VOCABULARY_APP_URL = 'https://vocabulary.english.schood.online';
 
 export const VocabFromMistakesCard = ({ accessToken }: VocabSurfaceProps) => {
+  const t = useAppT();
   const [items, setItems] = useState<VocabFromMistakesEntry[] | null>(null);
   const [total, setTotal] = useState(0);
 
@@ -191,7 +170,7 @@ export const VocabFromMistakesCard = ({ accessToken }: VocabSurfaceProps) => {
   if (items == null) {
     return (
       <section className="glass" style={{ padding: 22 }}>
-        <p className="muted">Loading words from your mistakes…</p>
+        <p className="muted">{t('vocab.loading')}</p>
       </section>
     );
   }
@@ -200,27 +179,26 @@ export const VocabFromMistakesCard = ({ accessToken }: VocabSurfaceProps) => {
     <section className="glass" style={{ padding: 22, display: 'grid', gap: 14 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
         <div>
-          <p className="eyebrow"><Library size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Vocabulary from mistakes</p>
+          <p className="eyebrow"><Library size={11} style={{ verticalAlign: -2, marginRight: 4 }} aria-hidden="true" /> {t('vocab.eyebrow')}</p>
           <h3 style={{ margin: '4px 0 0' }}>
-            {total > 0 ? `${total} words captured` : 'No words yet'}
+            {total > 0 ? t('vocab.count', { count: total }) : t('vocab.none')}
           </h3>
           <p className="muted" style={{ margin: '4px 0 0', fontSize: 14 }}>
-            We automatically save words from gap-fill and completion questions you miss. Review
-            them in your vocabulary notebook to lock them in.
+            {t('vocab.lead')}
           </p>
         </div>
         {total > 0 ? (
           <a className="btn ghost compact" href={VOCABULARY_APP_URL} target="_blank" rel="noreferrer">
-            Open notebook <BookmarkPlus size={12} style={{ marginLeft: 4 }} />
+            {t('vocab.open')} <BookmarkPlus size={12} style={{ marginLeft: 4 }} />
           </a>
         ) : null}
       </div>
       {items.length === 0 ? (
         <p className="muted" style={{ margin: 0 }}>
-          Complete a practice lab with gap-fill questions and any you miss will land here automatically.
+          {t('vocab.empty')}
         </p>
       ) : (
-        <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 }}>
+        <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(180px, 100%), 1fr))', gap: 10 }}>
           {items.slice(0, 8).map((item) => (
             <li
               key={item.id}
@@ -231,12 +209,12 @@ export const VocabFromMistakesCard = ({ accessToken }: VocabSurfaceProps) => {
                 background: 'var(--card-subtle)',
               }}
             >
-              <strong style={{ fontFamily: 'Fraunces, serif', fontWeight: 600, fontSize: 15 }}>{item.word}</strong>
+              <strong style={{ fontFamily: 'Fraunces, serif', fontWeight: 600, fontSize: 15, overflowWrap: 'anywhere' }}>{item.word}</strong>
               <p className="muted" style={{ margin: '4px 0 0', fontSize: 12, lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                 {item.context_text ?? '—'}
               </p>
               <span className="muted" style={{ fontSize: 10, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: 6, display: 'inline-block' }}>
-                Box {item.leitner_box} · {item.source_type}
+                {t('common.box', { box: item.leitner_box })}
               </span>
             </li>
           ))}

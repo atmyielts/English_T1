@@ -1,14 +1,14 @@
 import { Link } from 'react-router-dom';
-import {
-  ClipboardList,
-  Sparkles,
-  Target,
-  TrendingUp,
-} from 'lucide-react';
-import { PracticeTopNav } from '../components/PracticeTopNav';
+import { ClipboardList, Sparkles, Target, TrendingUp } from 'lucide-react';
+import { LocaleSwitcher } from '../../../../packages/service-i18n/src/i18n.tsx';
+import { PracticeTopNav, type PracticeNavAction } from '../components/PracticeTopNav';
 import { IELTS_PRACTICE_PRODUCT_SLUG } from '../lib/constants';
-import { buildPlatformUrl } from '../lib/platformUrls';
+import { buildPlatformUrl, platformBase } from '../lib/platformUrls';
+import { supabase } from '../lib/supabase';
 import { useAccess } from '../lib/useAccess';
+import { sectionLabel, useAppT, type AppKey } from '../i18n';
+
+const SCHOOD_HOME_URL = platformBase || 'https://schood.online';
 
 const resolveDashboardReturnTo = (): string => {
   // Land signed-in learners on the guided daily session (the clear start→finish path),
@@ -18,220 +18,139 @@ const resolveDashboardReturnTo = (): string => {
 };
 
 const FULL_ROW = { gridColumn: '1 / -1' } as const;
-
-const STATS: Array<{ value: string; label: string }> = [
-  { value: '3', label: 'IELTS sections — Reading, Listening, Writing' },
-  { value: 'Daily', label: 'Adaptive plan rebuilt from your results' },
-  { value: 'AI', label: 'Band-level feedback on every submission' },
-  { value: 'SRS', label: 'Spaced repetition keeps gains from slipping' },
-];
-
-const STEPS: Array<{ icon: typeof ClipboardList; title: string; copy: string }> = [
-  {
-    icon: ClipboardList,
-    title: 'Take a mock',
-    copy: 'Sit a full test in the IELTS Simulator. Your real answers become the raw material — no separate setup.',
-  },
-  {
-    icon: Target,
-    title: 'We diagnose the gaps',
-    copy: 'Section bands, weak question types, recurring traps, and distance to your target band — all scored automatically.',
-  },
-  {
-    icon: Sparkles,
-    title: 'Daily labs repair them',
-    copy: 'Short, focused drills aimed at exactly what you missed — evidence work, distractor traps, rewrites. Not another full mock.',
-  },
-  {
-    icon: TrendingUp,
-    title: 'Your band rises',
-    copy: 'Every submission updates mastery, your mistake notebook, and tomorrow’s plan — so the system keeps catching up to you.',
-  },
-];
-
-const LABS: Array<{ title: string; copy: string }> = [
-  { title: 'Mistake Coach', copy: 'Explains why each lab was chosen and the trap to watch for.' },
-  { title: 'Evidence Locator', copy: 'Prove every Reading answer with the exact sentence or paragraph.' },
-  { title: 'Distractor Drill', copy: 'Classify wrong answers by trap type before moving on.' },
-  { title: 'Listening Replay', copy: 'Predict, replay, catch the signposts, then answer.' },
-  { title: 'Writing Rewrite', copy: 'Analyse, plan, rewrite, and get criterion-level feedback.' },
-  { title: 'Mistake Notebook', copy: 'Keeps recurring patterns and due reviews in one place.' },
-  { title: 'Band Roadmap', copy: 'Connects every gap to the lab that repairs it.' },
-  { title: 'Spaced Review', copy: 'Leitner schedule resurfaces weak types right before you forget.' },
-];
-
-const FAQS: Array<{ q: string; a: string }> = [
-  {
-    q: 'How is this different from the IELTS Simulator?',
-    a: 'The Simulator is for full, timed mock tests. Practice is for repairing what those mocks reveal — targeted drills on your weak question types, not another whole exam.',
-  },
-  {
-    q: 'Do I need to take a mock first?',
-    a: 'It works best right after a Simulator attempt, since your results drive the plan. But you can also generate a plan from your target band and start drilling straight away.',
-  },
-  {
-    q: 'Which skills does it cover?',
-    a: 'Reading, Listening, and Writing — with AI band-level feedback on writing. Speaking strategy lives in the IELTS Playbook.',
-  },
-  {
-    q: 'How long is a daily session?',
-    a: 'About 30 minutes: a short spaced-review warm-up, one focused lab, and a quick mastery check — with skip options at every step.',
-  },
-];
+const STATS = [1, 2, 3, 4] as const;
+const STEP_ICONS = [ClipboardList, Target, Sparkles, TrendingUp];
+const LABS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
+const FAQS = [1, 2, 3, 4] as const;
+const COVERAGE = ['reading', 'listening', 'writing', 'speaking'] as const;
 
 export const LandingPage = () => {
+  const t = useAppT();
   const { status } = useAccess();
   const returnTo = resolveDashboardReturnTo();
   const authHref = buildPlatformUrl('/auth', returnTo, { mode: 'signin', product: IELTS_PRACTICE_PRODUCT_SLUG });
   const pricingHref = buildPlatformUrl('/pricing', returnTo, { product: IELTS_PRACTICE_PRODUCT_SLUG });
   const authed = status === 'authenticated';
 
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut({ scope: 'local' });
+    } finally {
+      window.location.reload();
+    }
+  };
+
+  const actions: PracticeNavAction[] = [
+    { id: 'home', label: t('land.nav.home'), href: SCHOOD_HOME_URL },
+    { id: 'account', label: t('land.nav.account'), href: `${SCHOOD_HOME_URL}/account` },
+    authed
+      ? { id: 'today', label: t('land.nav.continue'), to: '/today' }
+      : { id: 'signin', label: t('land.nav.signin'), href: authHref },
+    ...(authed ? [{ id: 'signout', label: t('land.nav.signout'), onClick: () => void signOut() }] : []),
+    { id: 'access', label: t('land.nav.access'), href: pricingHref, variant: 'solid' },
+  ];
+
   return (
     <div className="practice-root">
       <PracticeTopNav
-        title="Schood IELTS Practice"
-        subtitle="Targeted labs for IELTS growth"
-        brandHref="https://schood.online"
-        actions={[
-          authed
-            ? { id: 'today', label: 'Continue', to: '/today' }
-            : { id: 'signin', label: 'Sign in', href: authHref },
-          { id: 'access', label: 'Get access', href: pricingHref, variant: 'solid' },
-        ]}
+        title={t('land.title')}
+        subtitle={t('land.subtitle')}
+        brandHref={SCHOOD_HOME_URL}
+        leadingNode={<LocaleSwitcher label={t('shell.language')} />}
+        actions={actions}
       />
 
       <main className="landing-grid">
-        {/* Hero */}
         <section className="hero-panel glass">
-          <p className="eyebrow">IELTS Practice Lab</p>
-          <h1>From mock results to a sharper band — every session.</h1>
-          <p>
-            Every wrong answer in the simulator becomes a focused drill here.
-            Spaced repetition keeps the patterns close; AI coaching tells you
-            why each miss happened and what to do next time. Built for serious
-            test-takers who want their study time to compound.
-          </p>
+          <p className="eyebrow">{t('land.hero.eyebrow')}</p>
+          <h1>{t('land.hero.title')}</h1>
+          <p>{t('land.hero.lead')}</p>
           <div className="hero-actions">
-            <Link to="/today" className="btn solid">Start today’s session</Link>
-            <a href={pricingHref} className="btn ghost">See plans</a>
+            <Link to="/today" className="btn solid">{t('land.hero.start')}</Link>
+            <a href={pricingHref} className="btn ghost">{t('land.hero.plans')}</a>
           </div>
         </section>
 
-        {/* Value pillars */}
         <section className="metric-panel glass">
-          <article>
-            <h3>Diagnostic-led</h3>
-            <p>Section gaps, type weaknesses, recency, and target-band distance all feed every day’s plan.</p>
-          </article>
-          <article>
-            <h3>Repair, not retake</h3>
-            <p>Strategy primers, evidence drills, distractor work, and writing rewrites — not another full mock.</p>
-          </article>
-          <article>
-            <h3>Loop that learns</h3>
-            <p>Each submission updates mastery, mistakes, and the next lab so the system keeps catching up to you.</p>
-          </article>
+          {[1, 2, 3].map((n) => (
+            <article key={n}>
+              <h3>{t(`land.pillar${n}.title` as AppKey)}</h3>
+              <p>{t(`land.pillar${n}.copy` as AppKey)}</p>
+            </article>
+          ))}
         </section>
 
-        {/* Trust / stat band */}
         <section className="glass" style={{ ...FULL_ROW, padding: 22 }}>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-              gap: 18,
-              textAlign: 'center',
-            }}
-          >
-            {STATS.map((stat) => (
-              <div key={stat.label}>
-                <div style={{ fontSize: '2rem', fontWeight: 800, color: '#0e4955', lineHeight: 1 }}>{stat.value}</div>
-                <div className="muted" style={{ marginTop: 6, fontSize: 13 }}>{stat.label}</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(180px, 100%), 1fr))', gap: 18, textAlign: 'center' }}>
+            {STATS.map((n) => (
+              <div key={n}>
+                <div style={{ fontSize: '2rem', fontWeight: 800, color: '#0e4955', lineHeight: 1 }}>{t(`land.stat${n}.value` as AppKey)}</div>
+                <div className="muted" style={{ marginTop: 6, fontSize: 13 }}>{t(`land.stat${n}.label` as AppKey)}</div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* How it works */}
         <section className="glass" style={{ ...FULL_ROW, padding: 28 }}>
-          <p className="eyebrow">How it works</p>
-          <h2 style={{ margin: '6px 0 18px', maxWidth: '24ch' }}>Four steps from a mock score to a higher band.</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
-            {STEPS.map((step, i) => {
-              const Icon = step.icon;
-              return (
-                <article
-                  key={step.title}
-                  style={{ display: 'grid', gap: 8, alignContent: 'start', borderTop: '2px solid #0e4955', paddingTop: 14 }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span
-                      style={{
-                        width: 26, height: 26, borderRadius: 999, background: '#0e4955', color: '#fff',
-                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700,
-                      }}
-                    >
-                      {i + 1}
-                    </span>
-                    <Icon size={18} style={{ color: '#0e4955' }} />
-                  </div>
-                  <strong style={{ fontSize: '1.02rem' }}>{step.title}</strong>
-                  <p className="muted" style={{ margin: 0, fontSize: 14 }}>{step.copy}</p>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* What's inside — lab showcase */}
-        <section className="glass" style={{ ...FULL_ROW, padding: 28 }}>
-          <p className="eyebrow">What’s inside</p>
-          <h2 style={{ margin: '6px 0 6px', maxWidth: '26ch' }}>Labs that fix the specific way you lose marks.</h2>
-          <p className="muted" style={{ marginTop: 0, maxWidth: '60ch' }}>
-            Each lab targets a different failure mode — from finding textual evidence to rewriting weak paragraphs —
-            so practice time goes straight to your gaps.
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14, marginTop: 16 }}>
-            {LABS.map((lab) => (
-              <article key={lab.title} className="service-card glass" style={{ display: 'grid', gap: 4 }}>
-                <h4 style={{ margin: 0 }}>{lab.title}</h4>
-                <p className="muted" style={{ margin: 0, fontSize: 13.5 }}>{lab.copy}</p>
+          <p className="eyebrow">{t('land.how.eyebrow')}</p>
+          <h2 style={{ margin: '6px 0 18px', maxWidth: '24ch' }}>{t('land.how.title')}</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(220px, 100%), 1fr))', gap: 16 }}>
+            {STEP_ICONS.map((Icon, i) => (
+              <article key={i} style={{ display: 'grid', gap: 8, alignContent: 'start', borderTop: '2px solid #0e4955', paddingTop: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span
+                    style={{
+                      width: 26, height: 26, borderRadius: 999, background: '#0e4955', color: '#fff',
+                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700,
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+                  <Icon size={18} style={{ color: '#0e4955' }} aria-hidden="true" />
+                </div>
+                <strong style={{ fontSize: '1.02rem' }}>{t(`land.step${i + 1}.title` as AppKey)}</strong>
+                <p className="muted" style={{ margin: 0, fontSize: 14 }}>{t(`land.step${i + 1}.copy` as AppKey)}</p>
               </article>
             ))}
           </div>
         </section>
 
-        {/* Section coverage */}
-        <section className="cards-row">
-          <article className="service-card glass reading">
-            <h4>Reading</h4>
-            <p>Evidence locators, matching headings, TFNG, completion drills, distractor elimination, and timed mini tests.</p>
-          </article>
-          <article className="service-card glass listening">
-            <h4>Listening</h4>
-            <p>Prediction work, replay chunks, transcript and signpost checks, paraphrase repair, and timed mini tasks.</p>
-          </article>
-          <article className="service-card glass writing">
-            <h4>Writing</h4>
-            <p>Task analysis, plan building, sentence and paragraph rewrites, and AI-graded feedback against IELTS rubrics.</p>
-          </article>
+        <section className="glass" style={{ ...FULL_ROW, padding: 28 }}>
+          <p className="eyebrow">{t('land.labs.eyebrow')}</p>
+          <h2 style={{ margin: '6px 0 6px', maxWidth: '26ch' }}>{t('land.labs.title')}</h2>
+          <p className="muted" style={{ marginTop: 0, maxWidth: '60ch' }}>{t('land.labs.lead')}</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', gap: 14, marginTop: 16 }}>
+            {LABS.map((n) => (
+              <article key={n} className="service-card glass" style={{ display: 'grid', gap: 4 }}>
+                <h4 style={{ margin: 0 }}>{t(`land.lab${n}.title` as AppKey)}</h4>
+                <p className="muted" style={{ margin: 0, fontSize: 13.5 }}>{t(`land.lab${n}.copy` as AppKey)}</p>
+              </article>
+            ))}
+          </div>
         </section>
 
-        {/* FAQ */}
+        <section className="cards-row">
+          {COVERAGE.map((section) => (
+            <article key={section} className={`service-card glass ${section}`}>
+              <h4>{sectionLabel(t, section)}</h4>
+              <p>{t(`land.cover.${section}` as AppKey)}</p>
+            </article>
+          ))}
+        </section>
+
         <section className="glass" style={{ ...FULL_ROW, padding: 28 }}>
-          <p className="eyebrow">FAQ</p>
-          <h2 style={{ margin: '6px 0 18px' }}>Common questions</h2>
+          <p className="eyebrow">{t('land.faq.eyebrow')}</p>
+          <h2 style={{ margin: '6px 0 18px' }}>{t('land.faq.title')}</h2>
           <div style={{ display: 'grid', gap: 14 }}>
-            {FAQS.map((item) => (
-              <details key={item.q} style={{ borderBottom: '1px solid #e7e1d6', paddingBottom: 12 }}>
-                <summary style={{ cursor: 'pointer', fontWeight: 600, listStyle: 'revert' }}>{item.q}</summary>
-                <p className="muted" style={{ margin: '8px 0 0', maxWidth: '70ch' }}>{item.a}</p>
+            {FAQS.map((n) => (
+              <details key={n} style={{ borderBottom: '1px solid #e7e1d6', paddingBottom: 12 }}>
+                <summary style={{ cursor: 'pointer', fontWeight: 600, listStyle: 'revert' }}>{t(`land.faq${n}.q` as AppKey)}</summary>
+                <p className="muted" style={{ margin: '8px 0 0', maxWidth: '70ch' }}>{t(`land.faq${n}.a` as AppKey)}</p>
               </details>
             ))}
           </div>
         </section>
 
-        {/* Final CTA band */}
         <section
           className="glass"
           style={{
@@ -245,18 +164,16 @@ export const LandingPage = () => {
             justifyItems: 'center',
           }}
         >
-          <h2 style={{ margin: 0, color: '#fff', maxWidth: '24ch' }}>Turn your next mock into your highest band yet.</h2>
-          <p style={{ margin: 0, color: 'rgba(255,255,255,0.82)', maxWidth: '56ch' }}>
-            Start today’s guided session, or get access to unlock the full adaptive plan.
-          </p>
+          <h2 style={{ margin: 0, color: '#fff', maxWidth: '24ch' }}>{t('land.cta.title')}</h2>
+          <p style={{ margin: 0, color: 'rgba(255,255,255,0.82)', maxWidth: '56ch' }}>{t('land.cta.lead')}</p>
           <div className="hero-actions" style={{ justifyContent: 'center' }}>
             {authed ? (
-              <Link to="/today" className="btn solid">Start today’s session</Link>
+              <Link to="/today" className="btn solid">{t('land.hero.start')}</Link>
             ) : (
-              <a href={authHref} className="btn solid">Sign in to start</a>
+              <a href={authHref} className="btn solid">{t('land.cta.signin')}</a>
             )}
             <a href={pricingHref} className="btn ghost" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)' }}>
-              Get access
+              {t('land.nav.access')}
             </a>
           </div>
         </section>
