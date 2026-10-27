@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "sat-playbook-premium-guides-plans",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": [],
+  "migrations": [
+    "20261026161000_sat_playbook_premium_guides.sql",
+    "20261026161100_sat_playbook_plan_templates.sql"
+  ],
+  "edgeFunctions": [],
+  "workers": [],
+  "sharedEdgeConsumers": [],
+  "requiredSecrets": [],
+  "rolloutOrder": [
+    "migration:20261026161000_sat_playbook_premium_guides.sql",
+    "migration:20261026161100_sat_playbook_plan_templates.sql"
+  ],
+  "manualFollowUps": [
+    "Order: apply after the SAT Playbook public-modules migrations (20261026160000-20261026160999) so each premium guide links to its parent module via parent_page_id; if those are not applied yet, the guides still publish with module_key set and parent_page_id null.",
+    "Database: supabase db push --linked from an isolated copy of the installed migrations plus 20261026161000_sat_playbook_premium_guides.sql and 20261026161100_sat_playbook_plan_templates.sql, keeping any deliberately pending migrations (for example the #220 payment set) excluded. Dry run first, then supabase migration list --linked. Content-only: 6 premium guides (visibility premium, page_type guide) with 155 sections, 18 sources, 39 page-source citations, and 5 published plan templates. Idempotent (deterministic ids, on conflict do nothing); existing rows are never overwritten.",
+    "No frontend, edge function, worker or secret changes. The current sat-playbook PageBlocks renders the rich_text (markdown), checklist and callout block types used here; PlanPage renders schedule_json.phases and weeks[].label/focus, and the richer per-day fields (days[].tasks, hours, checkpoint) are available for the playbooks-engine renderer."
+  ],
+  "verification": [
+    "supabase migration list --linked shows 20261026161000 and 20261026161100 applied.",
+    "GET /functions/v1/sat-playbook/catalog lists the 6 premium_guides (guide-rw-hard-module-traps, guide-math-hard-module-traps, guide-1200-to-1400-roadmap, guide-1400-to-1550-roadmap, guide-desmos-power-moves, guide-final-14-days).",
+    "GET /functions/v1/sat-playbook/pages/guide-final-14-days without a token returns 401/403 (premium); with a premium entitlement it returns 34 sections and 8 sources.",
+    "As a premium user, https://playbook.sat.schood.online/plans/four-week-sprint shows 4 phases and 4 weeks; the dashboard lists all 5 plan templates."
+  ],
+  "rollback": {
+    "pages": "Nothing deployed to Pages.",
+    "migration": "Hide instead of deleting (recommendation snapshots may reference plan templates): update public.sat_playbook_pages set status = 'archived' where metadata->>'seeded_by' = '20261026161000_sat_playbook_premium_guides'; update public.sat_playbook_plan_templates set status = 'archived' where metadata->>'seeded_by' = '20261026161100_sat_playbook_plan_templates'. Sources can stay; they are only shown through published pages.",
+    "edge": "Nothing deployed.",
+    "worker": "Nothing deployed."
+  }
+}
