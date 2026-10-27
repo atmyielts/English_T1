@@ -4,6 +4,7 @@
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
+    "ielts-playbook",
     "ielts-practice"
   ],
   "migrations": [
