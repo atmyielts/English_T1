@@ -1,29 +1,34 @@
 {
   "schemaVersion": 1,
-  "releaseId": "teacher-studio-serve-fix",
+  "releaseId": "function-region-ielts-sat",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [],
-  "migrations": [],
-  "edgeFunctions": [
-    "teacher-studio"
+  "frontends": [
+    "ielts-playbook",
+    "ielts-practice",
+    "ielts-simulator",
+    "sat-practice",
+    "sat-simulator"
   ],
+  "migrations": [],
+  "edgeFunctions": [],
   "workers": [],
   "sharedEdgeConsumers": [],
   "requiredSecrets": [],
   "rolloutOrder": [
-    "function:teacher-studio"
+    "pages"
   ],
   "manualFollowUps": [
-    "Edge: supabase functions deploy teacher-studio --project-ref bbjawctnqrufvnesdsel. teacher-studio only did `import \"../academy/index.ts\"`, but since 2026-06-18 academy calls serve() only when it is the entry module (import.meta.main), so the redeploy of 2026-10-27 (#318) started no server and requests hung (546 / timeout). It now serves the exported handleAcademyRequest itself. academy is unchanged and was never affected."
+    "Pages: merging publishes ielts-playbook, ielts-practice, ielts-simulator, sat-practice and sat-simulator. Each entry point now first imports packages/edge-region, which adds ?forceFunctionRegion=ap-southeast-1 to requests for this project's Edge Functions so they run next to the Singapore database instead of at the learner's nearest edge (eu-central-1 for Uzbekistan). Auth, REST and storage calls are unchanged. VITE_SUPABASE_FUNCTION_REGION overrides it; an empty value turns it off. SAT Playbook already does this (#320). No function or database change."
   ],
   "verification": [
-    "POST /functions/v1/teacher-studio with the anon key answers within a couple of seconds with academy's own JSON (e.g. 401 Unauthorized), the same as /functions/v1/academy, instead of hanging."
+    "In each app's browser network tab, requests to /functions/v1/ carry forceFunctionRegion=ap-southeast-1 and responses have x-sb-edge-region: ap-southeast-1.",
+    "IELTS Playbook public module median first-byte drops from about 1.5 s to about 1.1 s (measured 18 loads each); signed-in Practice and simulator calls improve at least as much since they make more database queries."
   ],
   "rollback": {
-    "pages": "None.",
+    "pages": "Cloudflare Pages rollback of the five apps, or set VITE_SUPABASE_FUNCTION_REGION to an empty value and redeploy.",
     "migration": "None.",
-    "edge": "Redeploy teacher-studio from the previous main commit (it hangs; prefer fixing forward).",
+    "edge": "None.",
     "worker": "None."
   }
 }

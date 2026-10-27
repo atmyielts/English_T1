@@ -74,18 +74,21 @@ const json = (route: Route, body: unknown, status = 200) =>
   route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
 
 const mockBackend = async (page: Page, options: Options = {}) => {
-  const calls: Array<{ method: string; path: string; body: unknown }> = [];
+  const calls: Array<{ method: string; path: string; body: unknown; region: string | null }> = [];
   await page.context().addCookies([{ name: 'schood-auth', value: encodeURIComponent(JSON.stringify(session)), domain: '127.0.0.1', path: '/', httpOnly: false, sameSite: 'Lax' }]);
   await page.route('**/auth/v1/**', (route) => json(route, session.user));
   await page.route('**/rest/v1/**', (route) => json(route, []));
   await page.route('**/functions/v1/**', async (route) => {
     const request = route.request();
     const url = new URL(request.url());
+    // Function calls are pinned to the database region; record it apart so paths stay comparable.
+    const region = url.searchParams.get('forceFunctionRegion');
+    url.searchParams.delete('forceFunctionRegion');
     const path = url.pathname.replace(/^.*\/functions\/v1/, '');
     const method = request.method();
     let body: unknown = null;
     try { body = request.postDataJSON(); } catch { body = null; }
-    calls.push({ method, path: `${path}${url.search}`, body });
+    calls.push({ method, path: `${path}${url.search}`, body, region });
 
     if (path === '/me') return json(route, { user: { id: 'practice-user', email: session.user.email }, entitlements: [{ id: 'e1', resource_type: 'product', resource_id: PRACTICE_ID, starts_at: null, ends_at: null, value: null }] });
     if (path === '/access-effective') return json(route, { effective_product_ids: options.simulatorAccess ? [PRACTICE_ID, SIMULATOR_ID] : [PRACTICE_ID] });
@@ -272,6 +275,9 @@ test.describe('IELTS Practice behaviour', () => {
     await page.getByRole('button', { name: 'Check answer' }).click();
     await expect(page.getByText(/Correct\. It moves to box 2/)).toBeVisible();
     expect(calls.some((call) => call.path === `/ielts-practice/reviews/items/${ITEM_ID}/answer` && JSON.stringify(call.body) === JSON.stringify({ response: { answer: 1 } }))).toBe(true);
+    // Every function call runs next to the Singapore database (packages/edge-region).
+    expect(calls.length).toBeGreaterThan(0);
+    expect(calls.every((call) => call.region === 'ap-southeast-1')).toBe(true);
   });
 
   test('“Drill this type” links to /today (not the old /practice/today)', async ({ page }) => {
