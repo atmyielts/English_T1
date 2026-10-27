@@ -1,34 +1,43 @@
 {
   "schemaVersion": 1,
-  "releaseId": "sat-practice-data-geometry-content",
+  "releaseId": "sat-practice-question-bank-800",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [],
   "migrations": [
-    "20261026141000_sat_practice_data_geometry.sql"
+    "20261026140900_sat_practice_algebra_advanced_math.sql",
+    "20261026141000_sat_practice_data_geometry.sql",
+    "20261026142000_sat_practice_information_ideas.sql",
+    "20261026142100_sat_practice_craft_structure.sql",
+    "20261026143000_sat_practice_expression_conventions.sql"
   ],
   "edgeFunctions": [],
   "workers": [],
   "sharedEdgeConsumers": [],
   "requiredSecrets": [],
   "rolloutOrder": [
-    "requires:sat-engine release (claude/sat-engine: question_spr grading, KaTeX rendering, table and figure_svg rendering, official-domain filters) merged, Pages deployed and the sat-practice function deployed first",
-    "migration:20261026141000_sat_practice_data_geometry.sql"
+    "requires:sat-engine release (PR #314: migration 20261026130900, sat-practice function, Pages) live first",
+    "migration:20261026140900_sat_practice_algebra_advanced_math.sql",
+    "migration:20261026141000_sat_practice_data_geometry.sql",
+    "migration:20261026142000_sat_practice_information_ideas.sql",
+    "migration:20261026142100_sat_practice_craft_structure.sql",
+    "migration:20261026143000_sat_practice_expression_conventions.sql"
   ],
   "manualFollowUps": [
-    "Order: ship the sat-engine release first (or in the same window, engine first). This migration publishes 46 grid-in items of type question_spr, LaTeX ($...$) prompts, 12 table items and 22 SVG figures; the currently deployed SAT Practice app and function cannot grade question_spr or render KaTeX, tables or figures, and select_sat_practice_questions serves every published question_% row, so pushing this before the engine would show learners raw LaTeX, missing charts and ungradable grid-ins.",
-    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus 20261026141000_sat_practice_data_geometry.sql (and whatever sat-engine / sat-math-a migrations ship with it), keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then supabase migration list --linked. Adds 2 parts under the SAT Practice Math section (Problem-Solving and Data Analysis display_order 12, Geometry and Trigonometry display_order 13) and 180 original questions (90 per domain; 134 question_single_choice, 46 question_spr) with answer keys. Idempotent: every insert is on conflict do nothing, ids are md5('schood-sat-part:'||domain) and md5('schood-sat-q:'||slug); the migration raises if the product, the Math section or either part is missing.",
-    "Source of truth: content/sat-practice/problem_solving_data_analysis.json and content/sat-practice/geometry_trigonometry.json. To change content, edit the JSON, run node scripts/content/validate-sat-practice.mjs content/sat-practice/*.json, then node scripts/content/sat-math-b.mjs and ship a new migration (this one never updates existing rows).",
+    "Combines PRs #303, #305, #308 and #309: 800 original Digital SAT practice questions across all 8 official domains (Algebra 110, Advanced Math 110, Problem-Solving and Data Analysis 90, Geometry and Trigonometry 90, Information and Ideas 100, Craft and Structure 100, Expression of Ideas 90, Standard English Conventions 110). Every item passes node scripts/content/validate-sat-practice.mjs.",
+    "Order: only after the sat-engine release (#314) is live (Pages + migration 20261026130900 + sat-practice function). The old app and function cannot render passages, KaTeX, tables or figures, nor grade question_spr, and select_sat_practice_questions serves every published question.",
+    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus these five files, keeping Codex's 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then supabase migration list --linked. Every insert is on conflict do nothing; ids are md5('schood-sat-part:'||official_domain) and md5('schood-sat-q:'||slug); parts use fixed display_order 10-13 per section.",
+    "Source of truth: content/sat-practice/*.json; generators scripts/content/sat-math-a.mjs, sat-math-b.mjs, sat-rw-a.mjs, sat-rw-b.mjs (each has --check). New content can also be imported with the admin-sat-practice function from #314.",
     "No Pages, Edge Function, worker or secret changes in this release."
   ],
   "verification": [
-    "supabase migration list --linked shows 20261026141000 applied and the 9 #220 payment migrations still pending; the push log prints the notice 'SAT Practice Problem-Solving/Geometry questions present: 180 of 180'.",
-    "select u.metadata->>'sat_official_domain' d, u.type, count(*) from public.content_units u join public.parts p on p.id=u.part_id where p.section_id='bee41358-7368-5bbb-bb76-e42afe3c1c44' and u.metadata->>'content_revision'='original-2026-10-v2' and u.metadata->>'sat_official_domain' in ('problem_solving_data_analysis','geometry_trigonometry') group by 1,2 returns problem_solving_data_analysis/question_single_choice 67, problem_solving_data_analysis/question_spr 23, geometry_trigonometry/question_single_choice 67, geometry_trigonometry/question_spr 23; every one of those rows has an answer_keys row.",
-    "As a signed-in SAT Practice learner: a Math set filtered to Problem-Solving and Data Analysis or Geometry and Trigonometry shows the new questions with rendered math; psda-twovar-001 shows its scatterplot, psda-prob-002 its two-way table and geo-lines-018 its triangle figure, each readable at 320px; a grid-in item (original_slug geo-trig-010, accepted 5/12, .4166, .4167, 0.416, 0.417) grades 5/12 and .4167 as correct and .41 as incorrect."
+    "supabase migration list --linked shows the five migrations applied and the 9 #220 payment migrations still pending.",
+    "select u.metadata->>'sat_official_domain' d, count(*) from public.content_units u where u.metadata->>'content_revision'='original-2026-10-v2' group by 1 returns the eight domains with 110/110/90/90/100/100/90/110, and every row has an answer_keys row.",
+    "As a signed-in SAT Practice learner: the bank filters by official domain and skill show the new items; a passage item, a table item, an SVG figure item and a grid-in item render and grade correctly at 375px."
   ],
   "rollback": {
     "pages": "Nothing deployed.",
-    "migration": "Do not delete (learner attempts may reference the rows). Retire instead: update public.content_units set metadata = metadata || '{\"content_status\":\"retired\",\"retired_in\":\"sat-practice-data-geometry-content\"}'::jsonb where metadata->>'content_revision'='original-2026-10-v2' and metadata->>'sat_official_domain' in ('problem_solving_data_analysis','geometry_trigonometry'); select_sat_practice_questions skips retired rows.",
+    "migration": "Do not delete (attempts may reference the rows). Retire: update public.content_units set metadata = metadata || '{\"content_status\":\"retired\"}'::jsonb where metadata->>'content_revision'='original-2026-10-v2'; select_sat_practice_questions skips retired rows.",
     "edge": "Nothing deployed.",
     "worker": "Nothing deployed."
   }
