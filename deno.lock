@@ -4403,10 +4403,10 @@
         "npm:@electric-sql/pglite@0.5.8",
         "npm:@supabase/supabase-js@^2.89.0",
         "npm:@tailwindcss/postcss@^4.1.18",
-        "npm:@types/nodemailer@7.0.12",
+        "npm:@types/nodemailer@8.0.2",
         "npm:autoprefixer@^10.4.23",
         "npm:esbuild@0.27.2",
-        "npm:nodemailer@7.0.6",
+        "npm:nodemailer@10.2.1",
         "npm:postcss@^8.5.6",
         "npm:tailwindcss@^4.1.18"
       ]

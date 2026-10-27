@@ -13,7 +13,8 @@ import {staffGuardianCommand,staffGuardianActions} from './staff-guardian-comman
 import {dispatchGuardianNotification,sendParentTelegram,sendParentSms} from './guardian-delivery.ts';
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import * as nodemailer from "npm:nodemailer@7.0.6";
+import * as nodemailer from "npm:nodemailer@10.2.1";
+import { resolve4 } from "node:dns/promises";
 import { placementBand } from "../_shared/academy-scoring.ts";
 import { callOpenRouterJsonWithStatus, type AIStatus } from "../_shared/ielts-ai.ts";
 import { getS3Config, signStorageRef, uploadFileToS3 } from "../_shared/media-storage.ts";
@@ -5912,9 +5913,17 @@ const dispatchQueuedNotifications = async (
   const serviceRole = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   const smtpEmail = normalizeEmail(Deno.env.get("GMAIL_SMTP_EMAIL"));
   const smtpPassword = normalizeText(Deno.env.get("GMAIL_SMTP_APP_PASSWORD"), 400);
+  // nodemailer 10 races IPv6 and IPv4 inside tls.connect (autoSelectFamily) when a
+  // host resolves to several addresses, and Deno drops that TLS handshake on 465.
+  // Connecting to one IPv4 address keeps a plain tls.connect; `servername` keeps the
+  // certificate check on smtp.gmail.com. Falls back to the hostname if DNS fails.
+  const smtpHost = smtpEmail && smtpPassword
+    ? await resolve4("smtp.gmail.com").then((addresses) => addresses[0] ?? "smtp.gmail.com").catch(() => "smtp.gmail.com")
+    : "smtp.gmail.com";
   const mailer = smtpEmail && smtpPassword
     ? nodemailer.createTransport({
-      host: "smtp.gmail.com",
+      host: smtpHost,
+      tls: { servername: "smtp.gmail.com" },
       port: 465,
       secure: true,
       pool: true,

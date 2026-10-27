@@ -157,6 +157,31 @@ Deno.test("events: the global anonymous cap drops floods without touching signed
   assertEquals(results, [true, true, false, false]);
 });
 
+Deno.test("the public anon key is not a session: no auth lookup, public cache, and repeat views come from memory", async () => {
+  const db = seed();
+  let authLookups = 0;
+  const { deps } = makeDeps(db, { getUser: () => { authLookups += 1; return Promise.resolve(null); } });
+  const handler = createPlaybookHandler(SAT_PLAYBOOK_CONFIG, () => deps);
+  const b64 = (value: unknown) => btoa(JSON.stringify(value)).replace(/=+$/, "").replace(/\+/g, "-").replace(/\//g, "_");
+  const anonKey = `${b64({ alg: "HS256", typ: "JWT" })}.${b64({ role: "anon", iss: "supabase" })}.signature`;
+
+  const first = await call(handler, "/pages/math-algebra", { token: anonKey });
+  assertEquals(first.status, 200);
+  assertEquals(first.headers.get("Cache-Control"), PUBLIC_CACHE);
+  assertEquals((await call(handler, "/catalog", { token: "sb_publishable_example" })).status, 200);
+  assertEquals(authLookups, 0);
+
+  // A second view is served from the isolate memo even if the database is unavailable.
+  db.throwOn = (table) => table === "sat_playbook_pages" || table === "sat_playbook_page_sections";
+  const second = await call(handler, "/pages/math-algebra", { token: anonKey });
+  assertEquals(second.status, 200);
+  assertEquals(second.body.sections.length, first.body.sections.length);
+
+  // Gated pages are never memoised: they still go to the database.
+  const premium = await call(handler, "/pages/guide-math-hard-module-traps", { token: "premium-token" });
+  assertEquals(premium.status, 500);
+});
+
 Deno.test("unexpected failures return a generic message and log the detail", async () => {
   const db = seed();
   db.throwOn = (table) => table === "sat_playbook_pages";
