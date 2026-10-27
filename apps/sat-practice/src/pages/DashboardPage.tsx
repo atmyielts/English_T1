@@ -59,7 +59,8 @@ export const DashboardPage = () => {
     );
   }
   const goals = dashboard.goals;
-  const progress = dashboard.plan_week.progress;
+  // Tolerate the previous sat-practice function during a rolling release.
+  const progress = dashboard.plan_week?.progress ?? { completed: dashboard.plan_items.filter(i => i.status === 'completed').length, total: dashboard.plan_items.length, minutes_planned: 0, minutes_completed: 0 };
   return (
     <div className="app-shell">
       <PracticeTopNav streakDays={dashboard.activity.streak_days} xp={dashboard.activity.xp_total} />
@@ -77,7 +78,7 @@ export const DashboardPage = () => {
         {error ? <div className="alert error" role="alert">{errorText(error)}</div> : null}
         {plan.error ? <div className="alert error" role="alert">{errorText(plan.error)}</div> : null}
         {plan.notice ? <div className="alert" role="status">{t('plan.nothingDue')}</div> : null}
-        {!dashboard.goals_set ? <section className="panel goal-callout">
+        {dashboard.goals_set === false ? <section className="panel goal-callout">
           <div><h2>{t('dashboard.setGoal.title')}</h2><p>{t('dashboard.setGoal.body')}</p></div>
           <Link className="btn solid" to="/onboarding">{t('dashboard.setGoal.cta')}</Link>
         </section> : null}
@@ -95,8 +96,8 @@ export const DashboardPage = () => {
             <Link className="btn solid" to="/modules">{t('dashboard.module.cta')}</Link>
           </section>
         </section>
-        <DomainInsights domains={dashboard.insights.domains} />
-        <MasteryMap mastery={dashboard.official_mastery} />
+        <DomainInsights domains={dashboard.insights?.domains ?? []} />
+        {dashboard.official_mastery ? <MasteryMap mastery={dashboard.official_mastery} /> : null}
         <section className="panel">
           <div className="section-head">
             <div>

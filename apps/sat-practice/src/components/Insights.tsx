@@ -12,12 +12,12 @@ export function ScoreImpactCallout(props: { impact: ScoreImpact }) {
     <div>
       <p className="eyebrow">{t('impact.eyebrow')}</p>
       {impact.status !== 'ok' || impact.conservative == null || impact.optimistic == null
-        ? <><h2 id="score-impact-title">{t('impact.noData.title')}</h2><span>{t('impact.noData.body', { min: impact.min_answers, answered: impact.answered_total })}</span></>
+        ? <><h2 id="score-impact-title">{t('impact.noData.title')}</h2><span>{t('impact.noData.body', { min: impact.min_answers ?? 8, answered: impact.answered_total ?? 0 })}</span></>
         : impact.optimistic === 0
           ? <><h2 id="score-impact-title">{t('impact.none')}</h2><span>{t('impact.note')}</span></>
           : <>
             <h2 id="score-impact-title">{t('impact.title', { low: impact.conservative, high: impact.optimistic })}</h2>
-            <ul className="impact-lines">{impact.domains.map(d => <li key={d.official_domain}>{t('impact.line', { domain: domainLabel(t, d.official_domain), accuracy: percent(d.accuracy), answered: d.answered, low: d.points_low, high: d.points_high })}</li>)}</ul>
+            <ul className="impact-lines">{(impact.domains ?? []).map(d => <li key={d.official_domain}>{t('impact.line', { domain: domainLabel(t, d.official_domain), accuracy: percent(d.accuracy), answered: d.answered, low: d.points_low, high: d.points_high })}</li>)}</ul>
             <span>{t('impact.note')}</span>
           </>}
     </div>
