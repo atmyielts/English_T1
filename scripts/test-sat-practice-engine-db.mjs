@@ -82,7 +82,7 @@ try {
   for (const name of ['20261007100000_sat_attempt_atomic_completion.sql', '20261008100000_sat_bank_filtered_selection.sql', '20261008110000_sat_attempt_atomic_start.sql', '20261020183010_sat_original_foundations.sql']) await sql(readFileSync('supabase/migrations/' + name, 'utf8'));
   // An attempt started on the old engine must complete on the new one.
   const before = await start({ section_type: 'math', limit: 2 });
-  const engine = readFileSync('supabase/migrations/20261026130000_sat_practice_engine_v2.sql', 'utf8');
+  const engine = readFileSync('supabase/migrations/20261026130900_sat_practice_engine_v2.sql', 'utf8');
   await sql(engine);
   await check('Migration is re-runnable', async () => { await sql(engine); });
 

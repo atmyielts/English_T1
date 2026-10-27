@@ -209,15 +209,25 @@ export function parseSprNumber(value: unknown): SprNumber | null {
 export const SPR_MAX_POSITIVE = 5, SPR_MAX_NEGATIVE = 6;
 export const sprMaxLength = (entry: string): number => entry.startsWith('-') ? SPR_MAX_NEGATIVE : SPR_MAX_POSITIVE;
 
+export type SprProblem = 'empty' | 'spaces' | 'symbols' | 'length' | 'format';
+/** Machine-readable reason a grid-in entry cannot be entered on the Digital SAT (null when it can). */
+export function sprEntryProblem(value: unknown): SprProblem | null {
+  const s = normalizeSprInput(value);
+  if (!s) return 'empty';
+  if (/\s/.test(s)) return 'spaces';
+  if (/[%$,]/.test(s)) return 'symbols';
+  if (s.length > sprMaxLength(s)) return 'length';
+  if (!parseSprNumber(s)) return 'format';
+  return null;
+}
+const SPR_PROBLEM_TEXT: Record<SprProblem, string> = {
+  empty: 'empty answer', spaces: 'no spaces or mixed numbers (enter 7/2, not 3 1/2)', symbols: 'no symbols such as %, $ or commas',
+  length: `at most ${SPR_MAX_POSITIVE} characters (${SPR_MAX_NEGATIVE} with a leading minus)`, format: 'must be an integer, a decimal or a fraction such as 3/4',
+};
 /** Why a grid-in entry cannot be entered on the Digital SAT, or null when it can. */
 export function sprEntryIssue(value: unknown): string | null {
-  const s = normalizeSprInput(value);
-  if (!s) return 'empty answer';
-  if (/\s/.test(s)) return 'no spaces or mixed numbers (enter 7/2, not 3 1/2)';
-  if (/[%$,]/.test(s)) return 'no symbols such as %, $ or commas';
-  if (s.length > sprMaxLength(s)) return `at most ${SPR_MAX_POSITIVE} characters (${SPR_MAX_NEGATIVE} with a leading minus)`;
-  if (!parseSprNumber(s)) return 'must be an integer, a decimal or a fraction such as 3/4';
-  return null;
+  const problem = sprEntryProblem(value);
+  return problem ? SPR_PROBLEM_TEXT[problem] : null;
 }
 
 const same = (a: SprNumber, b: { num: bigint; den: bigint }) => a.num * b.den === b.num * a.den;
