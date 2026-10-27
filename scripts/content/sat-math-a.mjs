@@ -15,7 +15,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const MIGRATION = 'supabase/migrations/20261026140000_sat_practice_algebra_advanced_math.sql';
+const MIGRATION = 'supabase/migrations/20261026140900_sat_practice_algebra_advanced_math.sql';
 const PRODUCT_ID = '2cf7b1a7-4df9-4de8-99e8-5b9d5bb85010';
 const EXPERIENCE_ID = 'd2f60197-eaa3-5772-88ac-b05d60f11bb5';
 const MATH_SECTION_ID = 'bee41358-7368-5bbb-bb76-e42afe3c1c44';
