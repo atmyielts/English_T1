@@ -347,6 +347,8 @@ serve(async (req) => {
         .eq("resource_type", "product")
         .in("resource_id", grantingProductIds)
         .eq("is_active", true)
+        // Newest grants first so expired rows still flagged active cannot crowd out a current one.
+        .order("ends_at", { ascending: false, nullsFirst: true })
         .limit(10);
 
       if (entErr) return json(500, { error: "Failed to load entitlements", details: entErr });
