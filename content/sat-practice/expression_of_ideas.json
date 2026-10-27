@@ -1,0 +1,2792 @@
+[
+  {
+    "slug": "eoi-rs-001",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Maria Sibylla Merian (1647–1717) was a German-born naturalist and artist.\n• In 1699, she traveled to Suriname to study insects and plants.\n• She documented the life cycles of butterflies and moths.\n• Her book Metamorphosis insectorum Surinamensium was published in 1705.\n• Its illustrations showed insects alongside the plants they feed on.",
+    "prompt": "The student wants to specify where Merian traveled to conduct her research. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Merian, a German-born naturalist, documented the life cycles of butterflies and moths."
+      },
+      {
+        "id": "B",
+        "label": "Merian’s book Metamorphosis insectorum Surinamensium was published in 1705."
+      },
+      {
+        "id": "C",
+        "label": "Merian’s illustrations showed insects alongside the plants they feed on."
+      },
+      {
+        "id": "D",
+        "label": "In 1699, Merian traveled to Suriname to study insects and plants."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because it names the place Merian traveled to for her research, Suriname, which is exactly what the goal asks for. Choice A is incorrect because it describes what Merian documented but not where she went. Choice B is incorrect because it gives the title and date of her book, not a location. Choice C is incorrect because it describes her illustrations without mentioning where she did her research."
+  },
+  {
+    "slug": "eoi-rs-002",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Tardigrades are microscopic animals, usually less than 1 millimeter long.\n• They are often called “water bears” because of their appearance and slow, lumbering walk.\n• They live in many habitats, including moss, soil, and ocean sediments.\n• When their surroundings dry out, they can enter a dormant state called a tun.\n• In this state, some tardigrades survive for years without water.",
+    "prompt": "The student wants to explain what happens to tardigrades when their environment dries out. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Tardigrades, microscopic animals often called “water bears,” live in many habitats, including moss, soil, and ocean sediments, and are usually less than 1 millimeter long."
+      },
+      {
+        "id": "B",
+        "label": "Tardigrades are often called “water bears” because of their appearance and slow, lumbering walk."
+      },
+      {
+        "id": "C",
+        "label": "Tardigrades are microscopic animals that live in many different habitats."
+      },
+      {
+        "id": "D",
+        "label": "When their surroundings dry out, tardigrades can enter a dormant state called a tun, in which some survive for years without water."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because it explains what tardigrades do when their surroundings dry out: they enter a dormant state, a tun, in which some can survive for years. Choice A is incorrect because it gives their nickname, habitats, and size but says nothing about what happens when their surroundings dry out. Choice B is incorrect because it explains their nickname, not their response to dry conditions. Choice C is incorrect because it only introduces tardigrades in general terms."
+  },
+  {
+    "slug": "eoi-rs-003",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Great Zimbabwe is a ruined city in southeastern Zimbabwe.\n• It was built between roughly the eleventh and fifteenth centuries.\n• Its stone walls were constructed without mortar.\n• Its largest structure is known as the Great Enclosure.\n• The site was designated a UNESCO World Heritage Site in 1986.",
+    "prompt": "The student wants to describe a construction technique used at Great Zimbabwe. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "The builders of Great Zimbabwe constructed its stone walls without mortar."
+      },
+      {
+        "id": "B",
+        "label": "Great Zimbabwe, a ruined city, was designated a UNESCO World Heritage Site in 1986."
+      },
+      {
+        "id": "C",
+        "label": "The largest structure at Great Zimbabwe is known as the Great Enclosure."
+      },
+      {
+        "id": "D",
+        "label": "Great Zimbabwe was built between roughly the eleventh and fifteenth centuries."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because it describes how the walls were built, without mortar, which is a construction technique. Choice B is incorrect because it reports the site’s UNESCO status, not how it was built. Choice C is incorrect because it names a structure without describing a technique used to build it. Choice D is incorrect because it tells when the city was built, not how."
+  },
+  {
+    "slug": "eoi-rs-004",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Katsushika Hokusai (1760–1849) was a Japanese artist.\n• He worked in ukiyo-e, a style of woodblock printing.\n• His series Thirty-Six Views of Mount Fuji was produced in the early 1830s.\n• The series includes the print The Great Wave off Kanagawa.\n• The Great Wave shows a towering wave above three boats, with Mount Fuji in the distance.",
+    "prompt": "The student wants to identify the series that includes The Great Wave off Kanagawa. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Hokusai, who lived from 1760 to 1849, was a Japanese artist."
+      },
+      {
+        "id": "B",
+        "label": "The Great Wave off Kanagawa shows a towering wave above three boats."
+      },
+      {
+        "id": "C",
+        "label": "The Great Wave off Kanagawa is part of Hokusai’s series Thirty-Six Views of Mount Fuji."
+      },
+      {
+        "id": "D",
+        "label": "Hokusai worked in ukiyo-e, a style of woodblock printing."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because it names the series, Thirty-Six Views of Mount Fuji, to which The Great Wave off Kanagawa belongs. Choice A is incorrect because it gives Hokusai’s nationality and dates but no series. Choice B is incorrect because it describes what the print shows rather than the series it belongs to. Choice D is incorrect because it names an artistic style, ukiyo-e, not a series."
+  },
+  {
+    "slug": "eoi-rs-005",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Honeybee foragers that find food return to the hive.\n• There, they perform a movement called the waggle dance.\n• The angle of the dance relative to vertical indicates the direction of the food relative to the sun.\n• The duration of the waggle portion of the dance indicates the distance to the food.\n• Karl von Frisch, who studied the dance, shared a Nobel Prize in 1973.",
+    "prompt": "The student wants to explain what information the duration of the waggle dance conveys. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Karl von Frisch, who studied the waggle dance, shared a Nobel Prize in 1973."
+      },
+      {
+        "id": "B",
+        "label": "The duration of the waggle portion of the dance tells other bees how far away the food is."
+      },
+      {
+        "id": "C",
+        "label": "Honeybee foragers perform the waggle dance after returning to the hive."
+      },
+      {
+        "id": "D",
+        "label": "When honeybee foragers return to the hive, they perform a waggle dance whose angle relative to vertical indicates the direction of the food relative to the sun."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because it states that the duration of the waggle portion communicates the distance to the food. Choice A is incorrect because it concerns the scientist who studied the dance, not what the dance conveys. Choice C is incorrect because it tells when the dance is performed, not what its duration means. Choice D is incorrect because it explains what the angle of the dance conveys (direction), not what the duration conveys."
+  },
+  {
+    "slug": "eoi-rs-006",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Zora Neale Hurston (1891–1960) was an American writer and anthropologist.\n• She studied anthropology at Barnard College with Franz Boas.\n• She collected African American folklore in Florida in the late 1920s.\n• Her folklore collection Mules and Men was published in 1935.\n• Her novel Their Eyes Were Watching God was published in 1937.",
+    "prompt": "The student wants to indicate the genre and publication year of Their Eyes Were Watching God. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Hurston’s folklore collection Mules and Men was published in 1935."
+      },
+      {
+        "id": "B",
+        "label": "Hurston studied anthropology at Barnard College with Franz Boas."
+      },
+      {
+        "id": "C",
+        "label": "Zora Neale Hurston, an American writer, lived from 1891 to 1960."
+      },
+      {
+        "id": "D",
+        "label": "Their Eyes Were Watching God is a novel by Hurston that was published in 1937."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because it gives both required details about Their Eyes Were Watching God: it is a novel (its genre), and it was published in 1937. Choice A is incorrect because it describes a different work, Mules and Men. Choice B is incorrect because it concerns Hurston’s education. Choice C is incorrect because it gives Hurston’s dates but says nothing about the novel."
+  },
+  {
+    "slug": "eoi-rs-007",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Ada Lovelace (1815–1852) was an English mathematician.\n• She worked with Charles Babbage, who designed a machine called the Analytical Engine.\n• The Analytical Engine was never completed.\n• In 1843, Lovelace published notes on the machine.\n• Her notes included a method for calculating Bernoulli numbers with the machine.",
+    "prompt": "The student wants to describe what Lovelace’s 1843 notes contained. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Lovelace’s 1843 notes on the Analytical Engine included a method for calculating Bernoulli numbers with the machine."
+      },
+      {
+        "id": "B",
+        "label": "Charles Babbage designed the Analytical Engine, which was never completed."
+      },
+      {
+        "id": "C",
+        "label": "Ada Lovelace, an English mathematician, worked with Charles Babbage."
+      },
+      {
+        "id": "D",
+        "label": "Ada Lovelace lived from 1815 to 1852."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because it describes the content of the 1843 notes: a method for calculating Bernoulli numbers with the Analytical Engine. Choice B is incorrect because it is about Babbage’s machine, not Lovelace’s notes. Choice C is incorrect because it names Lovelace’s collaborator without describing the notes. Choice D is incorrect because it gives only her birth and death years."
+  },
+  {
+    "slug": "eoi-rs-008",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Mangroves are trees and shrubs that grow in coastal saltwater.\n• They are found mainly in tropical and subtropical regions.\n• Their tangled roots slow the movement of water.\n• This slowing allows sediment to settle and helps protect coastlines from erosion.\n• Mangrove forests also provide habitat for young fish.",
+    "prompt": "The student wants to explain how mangroves help protect coastlines. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Mangroves, trees and shrubs that grow in coastal saltwater mainly in tropical and subtropical regions, form forests that provide habitat for young fish."
+      },
+      {
+        "id": "B",
+        "label": "Mangrove forests provide habitat for young fish."
+      },
+      {
+        "id": "C",
+        "label": "By slowing the movement of water, mangroves’ tangled roots allow sediment to settle, which helps protect coastlines from erosion."
+      },
+      {
+        "id": "D",
+        "label": "Mangroves are trees and shrubs that grow in tropical regions."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because it explains the mechanism: the roots slow the water, sediment settles, and coastlines are protected from erosion. Choice A is incorrect because it tells where mangroves grow and mentions a different benefit, habitat for fish, without explaining how they protect coastlines. Choice B is incorrect because it describes a different benefit, habitat for fish. Choice D is incorrect because it only defines mangroves."
+  },
+  {
+    "slug": "eoi-rs-009",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• The Atacama Desert in Chile is one of the driest places on Earth.\n• It is a coastal desert located between the Pacific Ocean and the Andes Mountains.\n• Some weather stations there have recorded almost no rain for years at a time.\n• Antarctica’s McMurdo Dry Valleys also receive extremely little precipitation.\n• The Dry Valleys are cold deserts, with average temperatures well below freezing.",
+    "prompt": "The student wants to emphasize a similarity between the Atacama Desert and the McMurdo Dry Valleys. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "The Atacama Desert is in Chile, whereas the McMurdo Dry Valleys are in Antarctica."
+      },
+      {
+        "id": "B",
+        "label": "Both the Atacama Desert and the McMurdo Dry Valleys receive extremely little precipitation."
+      },
+      {
+        "id": "C",
+        "label": "The Atacama Desert lies between the Pacific Ocean and the Andes Mountains."
+      },
+      {
+        "id": "D",
+        "label": "The McMurdo Dry Valleys have average temperatures well below freezing."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because it states something the two places share: both receive extremely little precipitation. Choice A is incorrect because it emphasizes a difference in location rather than a similarity. Choice C is incorrect because it describes only the Atacama Desert. Choice D is incorrect because it describes only the Dry Valleys, and their cold temperatures are a way they differ from the Atacama rather than resemble it."
+  },
+  {
+    "slug": "eoi-rs-010",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Phillis Wheatley (c. 1753–1784) was born in West Africa and enslaved as a child.\n• She was brought to Boston in 1761.\n• She learned to read English, Latin, and Greek.\n• Her book Poems on Various Subjects, Religious and Moral was published in London in 1773.\n• It was the first book of poetry published by an African American woman.",
+    "prompt": "The student wants to emphasize the historical significance of Wheatley’s book. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Wheatley’s book Poems on Various Subjects, Religious and Moral was published in London."
+      },
+      {
+        "id": "B",
+        "label": "Phillis Wheatley was brought to Boston in 1761."
+      },
+      {
+        "id": "C",
+        "label": "Phillis Wheatley learned to read English, Latin, and Greek."
+      },
+      {
+        "id": "D",
+        "label": "Published in 1773, Wheatley’s Poems on Various Subjects, Religious and Moral was the first book of poetry published by an African American woman."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because it explains why the book matters historically: it was the first book of poetry published by an African American woman. Choice A is incorrect because it gives the place of publication without any sign of the book’s significance. Choice B is incorrect because it concerns Wheatley’s arrival in Boston, not her book. Choice C is incorrect because it describes her learning, not the book’s historical importance."
+  },
+  {
+    "slug": "eoi-rs-011",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• The Rosetta Stone was found in 1799 near the town of Rashid (Rosetta) in Egypt.\n• It is inscribed with the same decree in three scripts: hieroglyphic, Demotic, and ancient Greek.\n• Scholars could already read ancient Greek.\n• Jean-François Champollion used the stone to help decipher hieroglyphs, announcing his breakthrough in 1822.\n• The stone is now held by the British Museum in London.",
+    "prompt": "The student wants to explain why the Rosetta Stone was useful for deciphering hieroglyphs. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "The Rosetta Stone, which was found in 1799 near the town of Rashid in Egypt and is inscribed in three scripts, is now held by the British Museum in London."
+      },
+      {
+        "id": "B",
+        "label": "Jean-François Champollion announced his breakthrough in deciphering hieroglyphs in 1822."
+      },
+      {
+        "id": "C",
+        "label": "Because the Rosetta Stone presents the same decree in hieroglyphic, Demotic, and ancient Greek, and scholars could already read Greek, the stone helped them decipher hieroglyphs."
+      },
+      {
+        "id": "D",
+        "label": "The Rosetta Stone is inscribed with text in three different scripts."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because it explains why the stone was useful: the same decree appears in three scripts, one of which, Greek, scholars could already read, so the Greek could serve as a key to the hieroglyphs. Choice A is incorrect because it gives the stone’s discovery and current location and mentions its three scripts, but it does not explain why the stone was useful. Choice B is incorrect because it reports when a breakthrough was announced without explaining why the stone made it possible. Choice D is incorrect because it mentions the three scripts but leaves out the crucial facts that the texts say the same thing and that Greek was readable."
+  },
+  {
+    "slug": "eoi-rs-012",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Octopuses can change the color of their skin within a fraction of a second.\n• The changes are produced by cells called chromatophores.\n• Each chromatophore contains pigment and is surrounded by muscles.\n• When the muscles contract, the chromatophore expands and displays more color.\n• Octopuses use color changes for camouflage and communication.",
+    "prompt": "The student wants to identify two purposes of octopuses’ color changes. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Octopuses use color changes for camouflage and communication."
+      },
+      {
+        "id": "B",
+        "label": "Octopuses change color by using cells called chromatophores."
+      },
+      {
+        "id": "C",
+        "label": "Each chromatophore contains pigment and is surrounded by muscles."
+      },
+      {
+        "id": "D",
+        "label": "Octopuses can change their skin color within a fraction of a second."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because it names two purposes of color change: camouflage and communication. Choice B is incorrect because it explains how octopuses change color, not why. Choice C is incorrect because it describes the structure of a chromatophore. Choice D is incorrect because it describes how fast the change happens, not its purpose."
+  },
+  {
+    "slug": "eoi-rs-013",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Frida Kahlo (1907–1954) was a Mexican painter.\n• She was born in Coyoacán, a neighborhood of Mexico City.\n• She began painting while recovering from a bus accident in 1925.\n• About 55 of her roughly 140 paintings are self-portraits.\n• Her work often draws on Mexican folk art.",
+    "prompt": "The student wants to explain how Kahlo began painting. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Kahlo’s work often draws on Mexican folk art."
+      },
+      {
+        "id": "B",
+        "label": "Kahlo began painting while she was recovering from a bus accident in 1925."
+      },
+      {
+        "id": "C",
+        "label": "About 55 of Kahlo’s roughly 140 paintings are self-portraits."
+      },
+      {
+        "id": "D",
+        "label": "Frida Kahlo was born in Coyoacán, a neighborhood of Mexico City."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because it describes the circumstances in which Kahlo started painting: while recovering from a 1925 bus accident. Choice A is incorrect because it describes an influence on her work, not how she began. Choice C is incorrect because it counts her self-portraits. Choice D is incorrect because it gives her birthplace, not the start of her painting."
+  },
+  {
+    "slug": "eoi-rs-014",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Pando is a grove of quaking aspen trees in Utah.\n• Although it looks like a forest, all of its roughly 47,000 stems grow from a single root system.\n• Genetic tests have shown that the stems are genetically identical.\n• Pando covers about 106 acres.\n• Scientists consider it one of the most massive known organisms.",
+    "prompt": "The student wants to explain why Pando is considered a single organism. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Pando, a grove of quaking aspen trees in Utah that covers about 106 acres, is considered by scientists to be one of the most massive known organisms."
+      },
+      {
+        "id": "B",
+        "label": "Pando is a grove of quaking aspen trees that looks like a forest."
+      },
+      {
+        "id": "C",
+        "label": "Pando’s roughly 47,000 stems all grow from a single root system and are genetically identical."
+      },
+      {
+        "id": "D",
+        "label": "Scientists consider Pando one of the most massive known organisms."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because it gives the reasons Pando counts as one organism: all of its stems share a single root system and are genetically identical. Choice A is incorrect because it gives Pando’s location and area and reports that scientists consider it a massive organism, but it gives no reason why it counts as a single organism. Choice B is incorrect because it notes that Pando looks like a forest, which if anything suggests many organisms. Choice D is incorrect because it states the conclusion that Pando is an organism without explaining why."
+  },
+  {
+    "slug": "eoi-rs-015",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• The Inca road system, called Qhapaq Ñan, stretched about 30,000 kilometers.\n• It connected parts of present-day Peru, Ecuador, Bolivia, Chile, Argentina, and Colombia.\n• Runners called chasquis carried messages along the roads in relays.\n• Rope bridges crossed deep river gorges.\n• The network was designated a UNESCO World Heritage Site in 2014.",
+    "prompt": "The student wants to describe how messages were carried along the Inca roads. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Runners called chasquis carried messages along the Inca roads in relays."
+      },
+      {
+        "id": "B",
+        "label": "Rope bridges allowed the Inca roads to cross deep river gorges."
+      },
+      {
+        "id": "C",
+        "label": "The Inca road system was designated a UNESCO World Heritage Site in 2014."
+      },
+      {
+        "id": "D",
+        "label": "Stretching about 30,000 kilometers, the Inca road system connected parts of six present-day countries."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because it explains how messages traveled: relay runners called chasquis carried them. Choice B is incorrect because it describes how roads crossed gorges, not how messages moved. Choice C is incorrect because it gives the network’s UNESCO status. Choice D is incorrect because it describes the size and reach of the network without mentioning messages."
+  },
+  {
+    "slug": "eoi-rs-016",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Wangari Maathai (1940–2011) was a Kenyan environmental activist.\n• In 1977, she founded the Green Belt Movement.\n• The movement encouraged women to plant trees in their communities.\n• It has planted tens of millions of trees in Kenya.\n• In 2004, Maathai became the first African woman to receive the Nobel Peace Prize.",
+    "prompt": "The student wants to describe the main activity of the Green Belt Movement. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "In 2004, Maathai became the first African woman to receive the Nobel Peace Prize."
+      },
+      {
+        "id": "B",
+        "label": "Wangari Maathai was a Kenyan environmental activist who lived from 1940 to 2011."
+      },
+      {
+        "id": "C",
+        "label": "Maathai founded the Green Belt Movement in Kenya in 1977."
+      },
+      {
+        "id": "D",
+        "label": "The Green Belt Movement, which Maathai founded in 1977, has encouraged women to plant trees in their communities."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because it describes what the Green Belt Movement does: it encourages women to plant trees in their communities. Choice A is incorrect because it concerns Maathai’s Nobel Prize. Choice B is incorrect because it introduces Maathai without describing the movement. Choice C is incorrect because it names the movement and its founding year but not its activity."
+  },
+  {
+    "slug": "eoi-rs-017",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Cumulus clouds are puffy clouds with flat bases.\n• They often form on warm days when rising air cools.\n• Stratus clouds form flat, gray layers that can cover the whole sky.\n• Stratus clouds can produce light drizzle.\n• Both types are low clouds, usually with bases below 2,000 meters.",
+    "prompt": "The student wants to emphasize a difference in appearance between cumulus and stratus clouds. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Both cumulus and stratus clouds are low clouds, usually with bases below 2,000 meters."
+      },
+      {
+        "id": "B",
+        "label": "Stratus clouds can produce light drizzle."
+      },
+      {
+        "id": "C",
+        "label": "Cumulus clouds often form on warm days when rising air cools."
+      },
+      {
+        "id": "D",
+        "label": "Whereas cumulus clouds are puffy with flat bases, stratus clouds form flat, gray layers that can cover the whole sky."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because it contrasts how the two cloud types look: cumulus clouds are puffy, while stratus clouds form flat, gray layers. Choice A is incorrect because it emphasizes a similarity in height, not a difference in appearance. Choice B is incorrect because it describes what stratus clouds can produce and mentions only one type. Choice C is incorrect because it explains when cumulus clouds form, not how they differ in appearance from stratus clouds."
+  },
+  {
+    "slug": "eoi-rs-018",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Mary Cassatt (1844–1926) was an American painter who spent much of her career in France.\n• Berthe Morisot (1841–1895) was a French painter.\n• Both artists exhibited with the Impressionists in Paris.\n• Cassatt often painted scenes of mothers and children.\n• Morisot often painted domestic interiors and gardens.",
+    "prompt": "The student wants to emphasize a similarity between Cassatt and Morisot. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Cassatt was an American painter, while Morisot was French."
+      },
+      {
+        "id": "B",
+        "label": "Cassatt often painted mothers and children, whereas Morisot often painted gardens."
+      },
+      {
+        "id": "C",
+        "label": "Cassatt and Morisot both exhibited with the Impressionists in Paris."
+      },
+      {
+        "id": "D",
+        "label": "Mary Cassatt, who lived from 1844 to 1926, spent much of her career in France."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because it identifies something the two painters have in common: both exhibited with the Impressionists in Paris. Choice A is incorrect because it contrasts their nationalities. Choice B is incorrect because its “whereas” sets up a contrast between their subjects rather than a similarity. Choice D is incorrect because it describes only Cassatt."
+  },
+  {
+    "slug": "eoi-rs-019",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• The Voynich manuscript is a handwritten book of about 240 pages.\n• Its text is written in an unknown script that no one has convincingly deciphered.\n• Radiocarbon dating places its parchment in the early fifteenth century.\n• It is named after Wilfrid Voynich, a book dealer who acquired it in 1912.\n• It is held at Yale University’s Beinecke Rare Book and Manuscript Library.",
+    "prompt": "The student wants to introduce the Voynich manuscript to an audience unfamiliar with it. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Wilfrid Voynich, a book dealer, acquired the manuscript that bears his name in 1912."
+      },
+      {
+        "id": "B",
+        "label": "The Voynich manuscript, a handwritten book of about 240 pages whose parchment has been dated to the early fifteenth century, is written in an unknown script that no one has convincingly deciphered."
+      },
+      {
+        "id": "C",
+        "label": "Radiocarbon dating has placed the parchment of the Voynich manuscript in the early fifteenth century."
+      },
+      {
+        "id": "D",
+        "label": "The Voynich manuscript is held at Yale University’s Beinecke Rare Book and Manuscript Library."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because it tells an unfamiliar reader what the manuscript is (a roughly 240-page handwritten book), how old its parchment is, and why it is notable (its undeciphered script). Choice A is incorrect because it concerns how the manuscript got its name and assumes the reader already knows what “the manuscript” is. Choice C is incorrect because it gives only a dating result without explaining what the manuscript is. Choice D is incorrect because it gives only the manuscript’s location."
+  },
+  {
+    "slug": "eoi-rs-020",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Traffic noise in cities is concentrated at low sound frequencies.\n• Researchers wanted to know whether birds in cities sing at higher pitches than birds of the same species in nearby forests.\n• They recorded great tits in several cities and in forests near those cities.\n• City great tits sang songs with higher minimum frequencies than forest great tits did.\n• Higher-pitched songs may be easier to hear over low-frequency noise.",
+    "prompt": "The student wants to present the research question the researchers sought to answer. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "City great tits sang songs with higher minimum frequencies than forest great tits did, possibly because higher-pitched songs are easier to hear over low-frequency traffic noise."
+      },
+      {
+        "id": "B",
+        "label": "Because traffic noise is concentrated at low frequencies, higher-pitched songs may be easier to hear in cities."
+      },
+      {
+        "id": "C",
+        "label": "The researchers recorded great tits both in several cities and in nearby forests."
+      },
+      {
+        "id": "D",
+        "label": "The researchers sought to determine whether birds in cities sing at higher pitches than birds of the same species in nearby forests."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because it states the question the study was designed to answer: whether city birds sing at higher pitches than forest birds of the same species. Choice A is incorrect because it reports the study’s finding and a possible explanation for it, not the question the study set out to answer. Choice B is incorrect because it offers a possible explanation for the finding. Choice C is incorrect because it describes the study’s method."
+  },
+  {
+    "slug": "eoi-rs-021",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• New Caledonian crows live on islands in the South Pacific.\n• In the wild, they use twigs and leaves as tools to pull insect larvae out of holes in wood.\n• Some of the crows shape twigs into hooks.\n• In one experiment, a crow given a straight piece of wire bent it into a hook to lift a small bucket of food out of a tube.\n• The crow had not been trained to bend wire.",
+    "prompt": "The student wants to emphasize that the crow’s behavior in the experiment was not the result of training. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "In one experiment, a crow bent a straight wire into a hook to retrieve food from a tube, even though it had never been trained to bend wire."
+      },
+      {
+        "id": "B",
+        "label": "New Caledonian crows use twigs and leaves to pull insect larvae out of holes in wood."
+      },
+      {
+        "id": "C",
+        "label": "Some New Caledonian crows, which live on South Pacific islands, shape twigs into hooks."
+      },
+      {
+        "id": "D",
+        "label": "In one experiment, a crow used a piece of wire to lift a small bucket of food out of a tube."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because it describes the experiment and explicitly states that the crow had not been trained to bend wire. Choice B is incorrect because it describes the crows’ ordinary tool use in the wild, not the experiment. Choice C is incorrect because it describes hook-making with twigs and says nothing about training. Choice D is incorrect because it describes the experiment but omits the key point that the behavior was untrained."
+  },
+  {
+    "slug": "eoi-rs-022",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• The Mariana Trench, in the Pacific Ocean, reaches a depth of about 10,900 meters.\n• It is the deepest known point in Earth’s oceans.\n• The Puerto Rico Trench is the deepest point in the Atlantic Ocean.\n• It reaches a depth of about 8,400 meters.\n• Both trenches formed where one tectonic plate sinks beneath another.",
+    "prompt": "The student wants to compare the depths of the two trenches. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Both the Mariana Trench and the Puerto Rico Trench formed where one tectonic plate sinks beneath another."
+      },
+      {
+        "id": "B",
+        "label": "The Puerto Rico Trench, which reaches about 8,400 meters, is the deepest point in the Atlantic Ocean."
+      },
+      {
+        "id": "C",
+        "label": "At about 10,900 meters deep, the Mariana Trench is roughly 2,500 meters deeper than the Puerto Rico Trench, which reaches about 8,400 meters."
+      },
+      {
+        "id": "D",
+        "label": "The Mariana Trench is in the Pacific Ocean, whereas the Puerto Rico Trench is in the Atlantic Ocean."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because it gives both depths and states the difference between them (10,900 − 8,400 = 2,500 meters). Choice A is incorrect because it compares how the trenches formed, not their depths. Choice B is incorrect because it gives the depth of only one trench. Choice D is incorrect because it compares the trenches’ locations rather than their depths."
+  },
+  {
+    "slug": "eoi-rs-023",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Ancient Roman builders made concrete with lime, water, and volcanic ash.\n• Some Roman harbor structures have survived in seawater for about 2,000 years.\n• Modern concrete exposed to seawater often begins to crumble within decades.\n• Researchers have found that seawater reacts with the volcanic ash in Roman concrete to form new minerals.\n• These minerals strengthen the concrete over time.",
+    "prompt": "The student wants to explain why some Roman harbor structures have lasted so long. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Roman concrete was made with lime, water, and volcanic ash, while modern concrete often crumbles in seawater within decades."
+      },
+      {
+        "id": "B",
+        "label": "Roman harbor structures have lasted because seawater reacts with the volcanic ash in their concrete, forming minerals that strengthen it over time."
+      },
+      {
+        "id": "C",
+        "label": "Some Roman harbor structures have survived in seawater for about 2,000 years."
+      },
+      {
+        "id": "D",
+        "label": "Researchers have studied Roman concrete, which was made with lime, water, and volcanic ash."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because it gives the reason for the structures’ durability: seawater reacts with the volcanic ash to form strengthening minerals. Choice A is incorrect because it contrasts ingredients and outcomes without explaining what causes the Roman concrete to last. Choice C is incorrect because it states that the structures have lasted but not why. Choice D is incorrect because it notes that the concrete has been studied and lists its ingredients but does not explain its longevity."
+  },
+  {
+    "slug": "eoi-rs-024",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Marco Polo, a merchant from Venice, traveled across Asia between 1271 and 1295.\n• His account of the journey was written down by Rustichello da Pisa, a writer he met in prison.\n• Ibn Battuta, a scholar from Morocco, traveled across Africa, the Middle East, and Asia between 1325 and 1354.\n• His account, known as the Rihla, was written down by the scholar Ibn Juzayy.\n• Ibn Battuta’s travels covered a much greater distance than Polo’s.",
+    "prompt": "The student wants to emphasize a similarity in how the two travelers’ accounts were produced. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Ibn Battuta’s travels covered a much greater distance than those of Marco Polo."
+      },
+      {
+        "id": "B",
+        "label": "Marco Polo traveled between 1271 and 1295, and Ibn Battuta traveled between 1325 and 1354."
+      },
+      {
+        "id": "C",
+        "label": "Ibn Battuta’s account, known as the Rihla, was written down by the scholar Ibn Juzayy."
+      },
+      {
+        "id": "D",
+        "label": "Both Marco Polo and Ibn Battuta had the accounts of their journeys written down by someone else: Rustichello da Pisa and Ibn Juzayy, respectively."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because it identifies a shared feature of how the accounts were produced: each traveler’s account was written down by another person. Choice A is incorrect because it emphasizes a difference in distance traveled. Choice B is incorrect because it gives the dates of the journeys, which concern when they traveled, not how the accounts were produced. Choice C is incorrect because it describes only Ibn Battuta’s account, so it cannot show a similarity."
+  },
+  {
+    "slug": "eoi-rs-025",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• The James Webb Space Telescope (JWST) launched in December 2021.\n• It observes mainly in infrared light.\n• Infrared light can pass through clouds of dust that block visible light.\n• As the universe expands, light from very distant galaxies is stretched to longer, infrared wavelengths.\n• JWST’s primary mirror is 6.5 meters across.",
+    "prompt": "The student wants to explain why observing in infrared light helps JWST study very distant galaxies. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Because light from very distant galaxies has been stretched to infrared wavelengths as the universe expands, JWST’s infrared instruments can detect that light."
+      },
+      {
+        "id": "B",
+        "label": "Infrared light can pass through clouds of dust that block visible light."
+      },
+      {
+        "id": "C",
+        "label": "JWST, which launched in December 2021, has a primary mirror 6.5 meters across."
+      },
+      {
+        "id": "D",
+        "label": "JWST observes mainly in infrared light rather than visible light."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because it connects infrared observation to distant galaxies specifically: their light arrives stretched to infrared wavelengths, so an infrared telescope can detect it. Choice B is incorrect because, although it names a real advantage of infrared light, that advantage concerns dust clouds, not the distance of galaxies. Choice C is incorrect because it gives the launch date and mirror size, not a reason infrared helps. Choice D is incorrect because it states that JWST observes in infrared without explaining why that helps with distant galaxies."
+  },
+  {
+    "slug": "eoi-rs-026",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Many people assume that all sharks must keep swimming in order to breathe.\n• Some shark species, such as great white sharks, rely on swimming to push water over their gills.\n• Other species, such as nurse sharks, can pump water over their gills while resting on the seafloor.\n• Nurse sharks are often found resting in groups during the day.",
+    "prompt": "The student wants to challenge a common assumption about sharks. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Great white sharks rely on swimming to push water over their gills."
+      },
+      {
+        "id": "B",
+        "label": "Nurse sharks are often found resting in groups during the day."
+      },
+      {
+        "id": "C",
+        "label": "Although many people assume that all sharks must keep swimming to breathe, nurse sharks can pump water over their gills while resting on the seafloor."
+      },
+      {
+        "id": "D",
+        "label": "Many people assume that all sharks must keep swimming to breathe, and some species do rely on swimming to move water over their gills."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because it states the common assumption and then gives evidence against it: nurse sharks can breathe while resting. Choice A is incorrect because the behavior of great white sharks is consistent with the assumption rather than a challenge to it. Choice B is incorrect because it mentions resting nurse sharks but neither states the assumption nor explains how they breathe while still. Choice D is incorrect because it supports the assumption instead of challenging it."
+  },
+  {
+    "slug": "eoi-rs-027",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Dendrochronology is the study of tree rings to date past events.\n• Trees in temperate climates usually add one growth ring each year.\n• Rings are wider in years with favorable growing conditions and narrower in dry or cold years.\n• By matching ring patterns across many trees, including ancient timbers, researchers can build timelines thousands of years long.\n• Such timelines are used to date wooden objects and buildings.",
+    "prompt": "The student wants to explain how researchers build long tree-ring timelines. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Tree-ring timelines are used to date wooden objects and buildings."
+      },
+      {
+        "id": "B",
+        "label": "Researchers build timelines thousands of years long by matching the patterns of wide and narrow rings across many trees, including ancient timbers."
+      },
+      {
+        "id": "C",
+        "label": "Because trees in temperate climates usually add one ring each year, with wider rings in favorable years and narrower rings in dry or cold years, tree rings can be used to date past events."
+      },
+      {
+        "id": "D",
+        "label": "Dendrochronology is the study of tree rings to date past events."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because it describes the process for building long timelines: matching ring patterns across many trees, including ancient timbers. Choice A is incorrect because it describes a use of the timelines, not how they are built. Choice C is incorrect because it explains why tree rings can be used for dating, but not how researchers combine ring patterns from many trees into long timelines. Choice D is incorrect because it only defines the field."
+  },
+  {
+    "slug": "eoi-rs-028",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Romare Bearden (1911–1988) was an African American artist.\n• He is best known for his collages, which combine cut paper, photographs, and paint.\n• In 1964, he created a series of photomontages called Projections.\n• His 1971 collage The Block depicts a street in Harlem, New York.",
+    "prompt": "The student wants to describe The Block to an audience unfamiliar with Bearden. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "In 1964, Bearden created a series of photomontages called Projections."
+      },
+      {
+        "id": "B",
+        "label": "Bearden’s 1971 work The Block depicts a street in Harlem."
+      },
+      {
+        "id": "C",
+        "label": "Romare Bearden, who lived from 1911 to 1988, is best known for his collages."
+      },
+      {
+        "id": "D",
+        "label": "The Block, a 1971 collage by the African American artist Romare Bearden, depicts a street in Harlem, New York."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because it describes The Block (a 1971 collage depicting a Harlem street) and identifies Bearden for a reader who does not know him. Choice A is incorrect because it describes a different work, Projections. Choice B is incorrect because it describes The Block but gives no information about who Bearden is, which an unfamiliar audience would need. Choice C is incorrect because it introduces Bearden but does not describe The Block."
+  },
+  {
+    "slug": "eoi-rs-029",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• The Great Barrier Reef lies off the coast of Queensland, Australia.\n• It is made up of nearly 3,000 individual reefs.\n• It stretches for more than 2,300 kilometers.\n• It is the world’s largest coral reef system.\n• Rising ocean temperatures have caused several mass coral bleaching events there since 1998.",
+    "prompt": "The student wants to emphasize the size of the Great Barrier Reef. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "The Great Barrier Reef lies off the coast of Queensland, Australia."
+      },
+      {
+        "id": "B",
+        "label": "Made up of nearly 3,000 individual reefs stretching for more than 2,300 kilometers, the Great Barrier Reef is the world’s largest coral reef system."
+      },
+      {
+        "id": "C",
+        "label": "Rising ocean temperatures have caused several mass bleaching events on the Great Barrier Reef since 1998."
+      },
+      {
+        "id": "D",
+        "label": "The Great Barrier Reef, which lies off the coast of Queensland, Australia, is made up of individual reefs."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because it emphasizes size with three relevant details: the number of reefs, the length of the system, and its status as the world’s largest. Choice A is incorrect because it gives only the reef’s location. Choice C is incorrect because it describes a threat to the reef, not its size. Choice D is incorrect because it mentions that the reef is made up of individual reefs but omits how many and how far they stretch."
+  },
+  {
+    "slug": "eoi-rs-030",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Mansa Musa ruled the Mali Empire in the early fourteenth century.\n• In 1324, he made a pilgrimage to Mecca.\n• He traveled with a large caravan carrying great quantities of gold.\n• His spending and gifts in Cairo are reported to have lowered the value of gold there for years.\n• The Catalan Atlas of 1375 depicts Mansa Musa holding a gold nugget.",
+    "prompt": "The student wants to emphasize the economic impact of Mansa Musa’s pilgrimage. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "During his 1324 pilgrimage to Mecca, Mansa Musa spent and gave away so much gold in Cairo that the value of gold there is reported to have fallen for years."
+      },
+      {
+        "id": "B",
+        "label": "The Catalan Atlas of 1375 depicts Mansa Musa holding a gold nugget."
+      },
+      {
+        "id": "C",
+        "label": "Mansa Musa, who ruled the Mali Empire in the early fourteenth century, made a pilgrimage to Mecca in 1324."
+      },
+      {
+        "id": "D",
+        "label": "Mansa Musa, who ruled the Mali Empire in the early fourteenth century, traveled to Mecca in 1324 with a large caravan carrying great quantities of gold."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because it describes an economic effect of the pilgrimage: Mansa Musa’s spending reportedly lowered the value of gold in Cairo for years. Choice B is incorrect because it describes a later map, not an economic impact. Choice C is incorrect because it gives the date of the pilgrimage without any effect. Choice D is incorrect because it mentions the gold he carried but not what his spending did to the economy."
+  },
+  {
+    "slug": "eoi-rs-031",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Cities are often warmer than surrounding rural areas, an effect called the urban heat island.\n• Dark surfaces such as asphalt absorb sunlight and release it as heat.\n• Some cities have painted roofs and pavements with reflective coatings.\n• Reflective surfaces absorb less sunlight than dark surfaces do.\n• Trees cool streets by providing shade and releasing water vapor.",
+    "prompt": "The student wants to explain why reflective coatings can help reduce the urban heat island effect. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Trees cool city streets by providing shade and releasing water vapor."
+      },
+      {
+        "id": "B",
+        "label": "Cities are often warmer than surrounding rural areas, an effect called the urban heat island."
+      },
+      {
+        "id": "C",
+        "label": "Because reflective surfaces absorb less sunlight than dark surfaces like asphalt, which absorb sunlight and release it as heat, reflective coatings on roofs and pavements can help reduce the urban heat island effect."
+      },
+      {
+        "id": "D",
+        "label": "Some cities have painted their roofs and pavements with reflective coatings."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because it explains the reasoning: dark surfaces absorb sunlight and release heat, while reflective coatings absorb less sunlight, so they can reduce the heat island effect. Choice A is incorrect because it describes a different cooling strategy, trees. Choice B is incorrect because it defines the effect without explaining how coatings help. Choice D is incorrect because it reports that some cities use the coatings but not why they work."
+  },
+  {
+    "slug": "eoi-rs-032",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Emily Dickinson (1830–1886) was an American poet.\n• She wrote nearly 1,800 poems.\n• Fewer than a dozen of them were published during her lifetime.\n• Her poems often use dashes and unconventional capitalization.\n• After her death, her sister Lavinia found the poems and sought to have them published.",
+    "prompt": "The student wants to emphasize how little of Dickinson’s work was published while she was alive. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Dickinson’s poems often use dashes and unconventional capitalization."
+      },
+      {
+        "id": "B",
+        "label": "After Dickinson’s death, her sister Lavinia found her poems and sought to have them published."
+      },
+      {
+        "id": "C",
+        "label": "Emily Dickinson, an American poet who lived from 1830 to 1886, wrote nearly 1,800 poems, which often use dashes and unconventional capitalization."
+      },
+      {
+        "id": "D",
+        "label": "Although Dickinson wrote nearly 1,800 poems, fewer than a dozen were published during her lifetime."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because it sets the small number of poems published in her lifetime (fewer than a dozen) against the large number she wrote (nearly 1,800), emphasizing how little appeared while she was alive. Choice A is incorrect because it describes features of her style. Choice B is incorrect because it concerns publication efforts after her death and does not say how few poems appeared during her life. Choice C is incorrect because it gives the total number of poems and describes their style but says nothing about publication."
+  },
+  {
+    "slug": "eoi-rs-033",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Marie Curie won the Nobel Prize in Physics in 1903, sharing it with Pierre Curie and Henri Becquerel.\n• She won the Nobel Prize in Chemistry in 1911.\n• The 1911 prize recognized her discovery of the elements polonium and radium.\n• She was the first person to win Nobel Prizes in two different sciences.\n• Linus Pauling later won two Nobel Prizes, one in Chemistry and one for Peace.",
+    "prompt": "The student wants to emphasize that Curie’s achievement was unprecedented. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Curie shared the 1903 Nobel Prize in Physics with Pierre Curie and Henri Becquerel."
+      },
+      {
+        "id": "B",
+        "label": "By winning the 1903 Nobel Prize in Physics and the 1911 Nobel Prize in Chemistry, Marie Curie became the first person to win Nobel Prizes in two different sciences."
+      },
+      {
+        "id": "C",
+        "label": "Curie’s 1911 Nobel Prize in Chemistry recognized her discovery of polonium and radium."
+      },
+      {
+        "id": "D",
+        "label": "Like Linus Pauling, who won Nobel Prizes in Chemistry and for Peace, Curie won two Nobel Prizes."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because it states that Curie was the first person to win Nobel Prizes in two different sciences, which shows that her achievement had no precedent. Choice A is incorrect because it describes a shared prize and gives no sign that anything was unprecedented. Choice C is incorrect because it explains what one prize recognized. Choice D is incorrect because it likens Curie to another winner, which undercuts rather than emphasizes the uniqueness of her achievement."
+  },
+  {
+    "slug": "eoi-rs-034",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Gamelan is a type of ensemble music from Indonesia, especially the islands of Java and Bali.\n• A gamelan ensemble consists mainly of bronze percussion instruments such as gongs and metallophones.\n• The instruments of a gamelan are tuned to one another and are usually not played with instruments from another set.\n• French composer Claude Debussy heard gamelan music at the Paris Exposition of 1889.\n• Scholars have linked features of Debussy’s later piano music to that experience.",
+    "prompt": "The student wants to explain a connection between gamelan and Western classical music. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "The instruments of a gamelan are tuned to one another and are usually not played with instruments from another set."
+      },
+      {
+        "id": "B",
+        "label": "Gamelan, a type of ensemble music from Indonesia, consists mainly of bronze percussion instruments."
+      },
+      {
+        "id": "C",
+        "label": "Scholars have linked features of French composer Claude Debussy’s later piano music to his experience of hearing gamelan at the Paris Exposition of 1889."
+      },
+      {
+        "id": "D",
+        "label": "Gamelan music comes especially from the Indonesian islands of Java and Bali."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because it connects gamelan to Western classical music through Debussy, whose later piano music scholars have linked to hearing gamelan in 1889. Choice A is incorrect because it describes how gamelan instruments are tuned, without any link to Western music. Choice B is incorrect because it describes gamelan’s instruments only. Choice D is incorrect because it gives gamelan’s geographic origins only."
+  },
+  {
+    "slug": "eoi-rs-035",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• The Golden Gate Bridge in San Francisco opened in 1937.\n• Its main span is about 1,280 meters long.\n• The Akashi Kaikyō Bridge in Japan opened in 1998.\n• Its central span is about 1,991 meters long.\n• Both are suspension bridges, in which the deck hangs from cables strung between towers.",
+    "prompt": "The student wants to emphasize a similarity in the design of the two bridges. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "The Golden Gate Bridge and the Akashi Kaikyō Bridge are both suspension bridges, with decks that hang from cables strung between towers."
+      },
+      {
+        "id": "B",
+        "label": "The central span of the Akashi Kaikyō Bridge is about 711 meters longer than the main span of the Golden Gate Bridge."
+      },
+      {
+        "id": "C",
+        "label": "The Golden Gate Bridge opened in 1937, and the Akashi Kaikyō Bridge opened in 1998."
+      },
+      {
+        "id": "D",
+        "label": "The Akashi Kaikyō Bridge, which opened in Japan in 1998, has a central span about 1,991 meters long."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because it identifies a shared design feature: both are suspension bridges whose decks hang from cables between towers. Choice B is incorrect because it emphasizes a difference in span length. Choice C is incorrect because it gives opening dates, which concern history rather than design and show a difference. Choice D is incorrect because it describes only one bridge."
+  },
+  {
+    "slug": "eoi-rs-036",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Arctic terns breed in the Arctic during the northern summer.\n• They spend the northern winter near Antarctica, where it is summer.\n• Tracking devices have shown that some terns fly more than 70,000 kilometers in a year.\n• Arctic terns may live for 30 years or more.\n• Because of their migration, Arctic terns are thought to experience more daylight than any other animal.",
+    "prompt": "The student wants to explain why Arctic terns experience so much daylight. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Tracking devices have shown that some Arctic terns fly more than 70,000 kilometers in a single year."
+      },
+      {
+        "id": "B",
+        "label": "Arctic terns may live for 30 years or more."
+      },
+      {
+        "id": "C",
+        "label": "Tracking devices have shown that some Arctic terns, which breed in the Arctic during the northern summer and may live for 30 years or more, fly more than 70,000 kilometers in a year."
+      },
+      {
+        "id": "D",
+        "label": "By breeding in the Arctic during the northern summer and spending the northern winter near Antarctica, where it is summer, Arctic terns are thought to experience more daylight than any other animal."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because it explains the cause of the terns’ extra daylight: they spend both halves of the year in the summer of one polar region or the other. Choice A is incorrect because it gives the distance the terns fly without connecting it to daylight. Choice B is incorrect because it gives their life span. Choice C is incorrect because, although it mentions that the terns breed in the Arctic during the northern summer, it leaves out that they spend the northern winter in the Antarctic summer, so it does not explain why they experience so much daylight; its focus is distance and life span."
+  },
+  {
+    "slug": "eoi-rs-037",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• CRISPR-Cas9 is a tool that allows scientists to cut DNA at specific locations.\n• It was adapted from a defense system that bacteria use against viruses.\n• Jennifer Doudna and Emmanuelle Charpentier described the tool in a 2012 paper.\n• They received the 2020 Nobel Prize in Chemistry for this work.\n• Scientists have used CRISPR-Cas9 to develop crops that resist certain diseases.",
+    "prompt": "The student wants to emphasize both the natural source of CRISPR-Cas9 and one of its practical uses. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Doudna and Charpentier, who described CRISPR-Cas9 in a 2012 paper, received the 2020 Nobel Prize in Chemistry."
+      },
+      {
+        "id": "B",
+        "label": "CRISPR-Cas9, which allows scientists to cut DNA at specific locations, has been used to develop crops that resist certain diseases."
+      },
+      {
+        "id": "C",
+        "label": "CRISPR-Cas9 was adapted from a defense system that bacteria use against viruses, and its developers received the 2020 Nobel Prize in Chemistry."
+      },
+      {
+        "id": "D",
+        "label": "Adapted from a defense system that bacteria use against viruses, CRISPR-Cas9 has been used to develop crops that resist certain diseases."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because it meets both parts of the goal: it names the natural source of the tool (a bacterial defense system) and a practical use (disease-resistant crops). Choice A is incorrect because it mentions neither the natural source nor a practical use. Choice B is incorrect because it gives a practical use but replaces the natural source with a description of what the tool does. Choice C is incorrect because it gives the natural source but replaces the practical use with the Nobel Prize, which is recognition, not a use."
+  },
+  {
+    "slug": "eoi-rs-038",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Lidar is a remote-sensing method that uses laser pulses to measure distances to the ground.\n• It can detect ground features hidden beneath dense forest canopy.\n• In 2016, researchers used aircraft-mounted lidar to survey more than 2,100 square kilometers of forest in northern Guatemala.\n• The survey revealed tens of thousands of previously unrecorded Maya structures, including houses, causeways, and defensive walls.\n• The survey took a fraction of the time that mapping the area on foot would have required.",
+    "prompt": "The student wants to explain why the 2016 survey was able to reveal structures that had not been recorded before. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "In 2016, researchers used aircraft-mounted lidar, a method that uses laser pulses to measure distances to the ground, to survey forest in northern Guatemala."
+      },
+      {
+        "id": "B",
+        "label": "The 2016 lidar survey covered more than 2,100 square kilometers in a fraction of the time that mapping on foot would have required."
+      },
+      {
+        "id": "C",
+        "label": "The 2016 survey revealed tens of thousands of previously unrecorded Maya structures, including houses, causeways, and defensive walls."
+      },
+      {
+        "id": "D",
+        "label": "Because lidar can detect ground features hidden beneath dense forest canopy, the 2016 survey of northern Guatemala was able to reveal tens of thousands of previously unrecorded Maya structures."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because it links the result (previously unrecorded structures) to its cause: lidar can detect features hidden beneath dense forest canopy. Choice A is incorrect because it describes how lidar works and where it was used but never mentions the structures it revealed. Choice B is incorrect because it emphasizes the survey’s speed and area, not why hidden structures could be found. Choice C is incorrect because it reports what the survey found without explaining why it was able to find it."
+  },
+  {
+    "slug": "eoi-rs-039",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• The transit method detects a planet when it passes in front of its star, slightly dimming the star’s light.\n• The radial velocity method detects a planet by measuring how the planet’s gravity makes its star wobble.\n• The transit method can reveal a planet’s size.\n• The radial velocity method can reveal a planet’s mass.\n• Both methods work best for large planets that orbit close to their stars.",
+    "prompt": "The student wants to emphasize a similarity between the two methods while also noting a difference in what they can reveal. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Both methods work best for large planets that orbit close to their stars, though one detects a dimming of starlight and the other detects a stellar wobble."
+      },
+      {
+        "id": "B",
+        "label": "Both methods work best for large planets that orbit close to their stars, but the transit method can reveal a planet’s size, whereas the radial velocity method can reveal its mass."
+      },
+      {
+        "id": "C",
+        "label": "The transit method can reveal a planet’s size, whereas the radial velocity method can reveal a planet’s mass."
+      },
+      {
+        "id": "D",
+        "label": "The transit method, which can reveal a planet’s size, works best for large planets that orbit close to their stars."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because it does both things the goal requires: it states a similarity (both methods work best for large, close-in planets) and a difference in what the methods reveal (size versus mass). Choice A is incorrect because, although it states the similarity, the difference it notes concerns how the methods detect planets, not what they reveal. Choice C is incorrect because it notes the difference in what the methods reveal but omits any similarity. Choice D is incorrect because it describes only the transit method, so it cannot compare the two."
+  },
+  {
+    "slug": "eoi-rs-040",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Johannes Gutenberg developed a movable-type printing press in Mainz around 1450.\n• His press used metal type that could be rearranged and reused.\n• Before printing, books in Europe were copied by hand, often taking months.\n• The Gutenberg Bible was completed around 1455.\n• By 1500, printing presses were operating in more than 200 European towns and cities.",
+    "prompt": "The student wants to emphasize how quickly printing spread after Gutenberg developed his press. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Before printing, books in Europe were copied by hand, a process that often took months, but Gutenberg’s press used metal type that could be rearranged and reused."
+      },
+      {
+        "id": "B",
+        "label": "The Gutenberg Bible was completed around 1455, roughly five years after Gutenberg developed his press."
+      },
+      {
+        "id": "C",
+        "label": "Within about fifty years of Gutenberg’s development of a movable-type press around 1450, printing presses were operating in more than 200 European towns and cities."
+      },
+      {
+        "id": "D",
+        "label": "By 1500, printing presses were operating in more than 200 European towns and cities."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because it conveys both the extent of the spread (more than 200 towns and cities) and the short time it took (about fifty years after Gutenberg’s press around 1450). Choice A is incorrect because it contrasts hand copying with printing but says nothing about the spread of presses. Choice B is incorrect because it measures the time to produce one book, not the spread of printing. Choice D is incorrect because, while it reports how widespread presses were by 1500, it gives no starting point, so it does not show how quickly that spread happened."
+  },
+  {
+    "slug": "eoi-rs-041",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• In the early 1920s, many astronomers believed that the Milky Way made up the entire universe.\n• Many thought that spiral-shaped clouds of light called spiral nebulae lay within the Milky Way.\n• In 1923, Edwin Hubble identified a Cepheid variable star in the Andromeda nebula.\n• The pattern of a Cepheid’s brightness changes can be used to calculate its distance.\n• Hubble’s calculations showed that Andromeda lies far outside the Milky Way and is a separate galaxy.",
+    "prompt": "The student wants to explain how Hubble determined that Andromeda is a separate galaxy. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "By identifying a Cepheid variable star—a type of star whose brightness changes can be used to calculate its distance—in the Andromeda nebula, Hubble was able to show that Andromeda lies far outside the Milky Way."
+      },
+      {
+        "id": "B",
+        "label": "In the early 1920s, many astronomers believed that the Milky Way made up the entire universe and that spiral nebulae such as Andromeda lay within it."
+      },
+      {
+        "id": "C",
+        "label": "Hubble showed that Andromeda lies far outside the Milky Way and is a separate galaxy, overturning the view that the Milky Way made up the entire universe."
+      },
+      {
+        "id": "D",
+        "label": "The pattern of a Cepheid variable star’s brightness changes can be used to calculate the star’s distance."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because it explains the method Hubble used: he found a Cepheid in Andromeda, and because a Cepheid’s brightness changes reveal its distance, he could show that Andromeda is far outside the Milky Way. Choice B is incorrect because it describes the view that prevailed before Hubble’s work. Choice C is incorrect because it states Hubble’s conclusion and its significance but not how he reached it. Choice D is incorrect because it describes a general property of Cepheids without connecting it to Hubble or Andromeda."
+  },
+  {
+    "slug": "eoi-rs-042",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• In 1968, ecologist Garrett Hardin argued that people sharing a resource, such as a pasture, will tend to overuse it.\n• He called this outcome the “tragedy of the commons.”\n• Political economist Elinor Ostrom studied communities that manage shared resources, such as fisheries and forests.\n• She found that many such communities create their own rules that prevent overuse over long periods.\n• In 2009, Ostrom became the first woman to receive the Nobel Prize in Economic Sciences.",
+    "prompt": "The student wants to present Ostrom’s findings as a challenge to Hardin’s argument. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Hardin described the “tragedy of the commons” in 1968, and Ostrom later studied communities that manage shared resources such as fisheries and forests."
+      },
+      {
+        "id": "B",
+        "label": "Whereas Hardin argued that people sharing a resource will tend to overuse it, Ostrom found that many communities create their own rules that prevent overuse of shared resources over long periods."
+      },
+      {
+        "id": "C",
+        "label": "Ostrom, who studied how communities manage shared resources, became the first woman to receive the Nobel Prize in Economic Sciences."
+      },
+      {
+        "id": "D",
+        "label": "In 1968, Hardin argued that people sharing a pasture will tend to overuse it, an outcome he called the “tragedy of the commons.”"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because it sets Ostrom’s finding (communities often make rules that prevent overuse) directly against Hardin’s claim (shared resources tend to be overused), presenting her work as a challenge. Choice A is incorrect because it mentions both scholars but never states Ostrom’s findings, so no challenge is presented. Choice C is incorrect because it concerns Ostrom’s Nobel Prize and does not mention Hardin. Choice D is incorrect because it presents only Hardin’s argument."
+  },
+  {
+    "slug": "eoi-rs-043",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Earth’s atmosphere is about 78 percent nitrogen and 21 percent oxygen.\n• Carbon dioxide makes up about 0.04 percent of Earth’s atmosphere.\n• Mars’s atmosphere is about 95 percent carbon dioxide.\n• The surface pressure of Mars’s atmosphere is less than 1 percent of Earth’s.\n• Both planets’ atmospheres contain small amounts of argon.",
+    "prompt": "The student wants to emphasize that, despite its high proportion of carbon dioxide, Mars’s atmosphere is very thin compared with Earth’s. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Although Mars’s atmosphere is about 95 percent carbon dioxide, its surface pressure is less than 1 percent of Earth’s."
+      },
+      {
+        "id": "B",
+        "label": "Carbon dioxide makes up about 95 percent of Mars’s atmosphere but only about 0.04 percent of Earth’s."
+      },
+      {
+        "id": "C",
+        "label": "Earth’s atmosphere is about 78 percent nitrogen and 21 percent oxygen, while Mars’s is about 95 percent carbon dioxide."
+      },
+      {
+        "id": "D",
+        "label": "The surface pressure of Mars’s atmosphere is less than 1 percent of Earth’s, and both atmospheres contain small amounts of argon."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because it fulfills both parts of the goal: it acknowledges Mars’s high proportion of carbon dioxide and, with “although,” emphasizes that the atmosphere is nonetheless very thin (less than 1 percent of Earth’s surface pressure). Choice B is incorrect because it compares carbon dioxide proportions but says nothing about thinness. Choice C is incorrect because it compares composition only. Choice D is incorrect because it conveys thinness but omits the high proportion of carbon dioxide that the goal says to acknowledge."
+  },
+  {
+    "slug": "eoi-rs-044",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Claude Monet painted Impression, Sunrise in 1872.\n• The painting depicts the harbor of Le Havre, France, in loose, quick brushstrokes.\n• It was shown at an independent exhibition in Paris in 1874.\n• Critic Louis Leroy used the painting’s title to mock the exhibiting artists, calling them “Impressionists.”\n• The artists later adopted the name themselves.",
+    "prompt": "The student wants to explain how the Impressionist movement got its name. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Monet’s Impression, Sunrise, which depicts the harbor of Le Havre in loose, quick brushstrokes, was painted in 1872 and shown at an independent exhibition in Paris in 1874."
+      },
+      {
+        "id": "B",
+        "label": "At an independent exhibition in Paris in 1874, the critic Louis Leroy mocked the exhibiting artists."
+      },
+      {
+        "id": "C",
+        "label": "The critic Louis Leroy used the title of Monet’s Impression, Sunrise to mock the artists at an 1874 exhibition, calling them “Impressionists,” a name the artists later adopted."
+      },
+      {
+        "id": "D",
+        "label": "Monet’s Impression, Sunrise was shown at an 1874 exhibition of artists who later called themselves Impressionists."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because it traces the name’s origin: a critic turned the painting’s title into a mocking label, “Impressionists,” which the artists then adopted. Choice A is incorrect because it describes the painting and where it was shown without explaining how the movement got its name. Choice B is incorrect because it mentions the critic’s mockery but not the label or its source in the painting’s title. Choice D is incorrect because it mentions the name but does not explain how it arose."
+  },
+  {
+    "slug": "eoi-rs-045",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Ötzi is a naturally preserved human body found in the Ötztal Alps in 1991.\n• He lived about 5,300 years ago.\n• Researchers initially thought he might have died from exposure to the cold.\n• In 2001, X-rays revealed an arrowhead lodged in his left shoulder.\n• The wound would likely have caused fatal bleeding.",
+    "prompt": "The student wants to explain how researchers’ understanding of Ötzi’s death changed. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "In 2001, X-rays revealed that Ötzi had an arrowhead lodged in his left shoulder, a wound that would likely have caused fatal bleeding."
+      },
+      {
+        "id": "B",
+        "label": "Researchers have suggested both that Ötzi was exposed to the cold and that he had an arrowhead lodged in his left shoulder."
+      },
+      {
+        "id": "C",
+        "label": "Found in the Ötztal Alps in 1991, Ötzi was initially thought to have died from exposure to the cold."
+      },
+      {
+        "id": "D",
+        "label": "Researchers initially thought that Ötzi might have died from exposure to the cold, but X-rays in 2001 revealed an arrowhead in his shoulder that would likely have caused fatal bleeding."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because it shows a change: it presents the initial explanation (exposure to cold) and the later evidence that replaced it (an arrowhead wound). Choice A is incorrect because it gives only the newer understanding, so no change is shown. Choice B is incorrect because, although it mentions both the cold and the arrowhead, it presents them side by side and does not show that the arrowhead evidence replaced the earlier explanation. Choice C is incorrect because it gives only the initial explanation."
+  },
+  {
+    "slug": "eoi-rs-046",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Bioluminescence is the production of light by living organisms.\n• The anglerfish uses a glowing lure to attract prey.\n• Some squid produce light on their undersides that matches the light from above, hiding their silhouettes from predators below.\n• Fireflies flash light in patterns to attract mates.\n• In each case, the light comes from a chemical reaction involving compounds known as luciferins.",
+    "prompt": "The student wants to make a generalization about how organisms use bioluminescence. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "In anglerfish, squid, and fireflies, light comes from a chemical reaction involving compounds known as luciferins."
+      },
+      {
+        "id": "B",
+        "label": "Organisms use bioluminescence for a variety of purposes, including attracting prey, hiding from predators, and attracting mates."
+      },
+      {
+        "id": "C",
+        "label": "Some squid hide their silhouettes from predators below by producing light on their undersides."
+      },
+      {
+        "id": "D",
+        "label": "Fireflies flash light in patterns to attract mates, and anglerfish use a glowing lure to attract prey."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because it makes a general statement about how organisms use bioluminescence, summarizing the purposes shown in the notes. Choice A is incorrect because, although it is a generalization, it concerns how the light is produced rather than how organisms use it. Choice C is incorrect because it describes one specific case. Choice D is incorrect because it lists two specific examples without drawing a general conclusion."
+  },
+  {
+    "slug": "eoi-rs-047",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Radiocarbon dating estimates the age of organic material by measuring how much carbon-14 remains in it.\n• Carbon-14 decays at a known rate, with a half-life of about 5,730 years.\n• After about 50,000 years, too little carbon-14 remains to measure reliably.\n• The method cannot be used directly on most rocks, which do not contain carbon from once-living things.\n• Chemist Willard Libby developed the method in the late 1940s.",
+    "prompt": "The student wants to emphasize a limitation of radiocarbon dating that is related to the age of a sample. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Radiocarbon dating, which Willard Libby developed in the late 1940s, cannot be used directly on most rocks because they do not contain carbon from once-living things."
+      },
+      {
+        "id": "B",
+        "label": "Carbon-14 decays at a known rate, with a half-life of about 5,730 years."
+      },
+      {
+        "id": "C",
+        "label": "Because too little carbon-14 remains to measure reliably after about 50,000 years, radiocarbon dating cannot reliably date older material."
+      },
+      {
+        "id": "D",
+        "label": "Radiocarbon dating, which estimates the age of organic material, was developed by Willard Libby in the late 1940s."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because it describes a limitation tied to a sample’s age: material older than about 50,000 years retains too little carbon-14 to measure. Choice A is incorrect because, although it names a limitation, that limitation depends on what a sample is made of, not how old it is. Choice B is incorrect because the known decay rate is what makes the method work, not a limitation. Choice D is incorrect because it concerns the method’s history."
+  },
+  {
+    "slug": "eoi-rs-048",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "rhetorical_synthesis",
+    "sat_domain": "rhetoric",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "While researching a topic, a student has taken the following notes:\n• Linear B is a script found on clay tablets at Bronze Age sites such as Knossos and Pylos.\n• It was used in Mycenaean Greece from about 1400 to 1200 BCE.\n• Before 1952, many scholars assumed that the script did not record Greek.\n• In 1952, Michael Ventris, an architect and amateur scholar, deciphered Linear B and showed that it recorded an early form of Greek.",
+    "prompt": "The student wants to emphasize that Ventris’s decipherment overturned an earlier assumption. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Many scholars had assumed that Linear B did not record Greek, but in 1952 Michael Ventris deciphered the script and showed that it recorded an early form of Greek."
+      },
+      {
+        "id": "B",
+        "label": "Michael Ventris, who deciphered Linear B in 1952, was an architect and amateur scholar."
+      },
+      {
+        "id": "C",
+        "label": "Before 1952, many scholars assumed that Linear B, a script found on clay tablets at Knossos and Pylos, did not record Greek."
+      },
+      {
+        "id": "D",
+        "label": "In 1952, Ventris showed that Linear B, a script found on clay tablets at Knossos and Pylos, recorded an early form of Greek."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because it states the earlier assumption (Linear B did not record Greek) and Ventris’s finding that contradicted it, so the decipherment is clearly shown to overturn the assumption. Choice B is incorrect because it emphasizes Ventris’s profession, not the assumption he overturned. Choice C is incorrect because it states the earlier assumption but never says that Ventris’s work overturned it. Choice D is incorrect because it reports Ventris’s finding but omits the assumption it overturned."
+  },
+  {
+    "slug": "eoi-tr-001",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Today, the Sahara is the largest hot desert in the world, receiving very little rain in most years. ______ evidence from ancient lake beds and rock paintings shows that much of the region was covered by grasslands and lakes several thousand years ago.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Similarly,"
+      },
+      {
+        "id": "B",
+        "label": "However,"
+      },
+      {
+        "id": "C",
+        "label": "For instance,"
+      },
+      {
+        "id": "D",
+        "label": "Therefore,"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because “However” signals a contrast between the Sahara’s present dryness and the evidence that it was once covered by grasslands and lakes. Choice A is incorrect because the second sentence does not describe a situation similar to the first. Choice C is incorrect because evidence of a green past is not an example of the desert’s current dryness. Choice D is incorrect because the past grasslands are not a result of the present dryness."
+  },
+  {
+    "slug": "eoi-tr-002",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Many animals besides humans use tools to obtain food. ______ sea otters use rocks to crack open the shells of clams and sea urchins, often balancing a rock on their chests while floating on their backs.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "For example,"
+      },
+      {
+        "id": "B",
+        "label": "Nevertheless,"
+      },
+      {
+        "id": "C",
+        "label": "In contrast,"
+      },
+      {
+        "id": "D",
+        "label": "Meanwhile,"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because sea otters cracking shells with rocks is a specific example of animals using tools to obtain food, and “For example” introduces such an illustration. Choice B is incorrect because nothing in the second sentence goes against the first. Choice C is incorrect because the sea otters support, rather than contrast with, the general claim. Choice D is incorrect because “Meanwhile” indicates events happening at the same time, which is not the relationship here."
+  },
+  {
+    "slug": "eoi-tr-003",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "After decades of exposure to salty sea air, the steel cables supporting the old harbor bridge had badly corroded. ______ city engineers closed the bridge to heavy trucks until the cables could be replaced.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "In addition,"
+      },
+      {
+        "id": "B",
+        "label": "For instance,"
+      },
+      {
+        "id": "C",
+        "label": "As a result,"
+      },
+      {
+        "id": "D",
+        "label": "Still,"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because closing the bridge to trucks is a consequence of the corroded cables, and “As a result” signals cause and effect. Choice A is incorrect because the closure is not simply an additional fact; it is a response to the corrosion. Choice B is incorrect because the closure is not an example of corrosion. Choice D is incorrect because “Still” would suggest that the closure happened despite the corrosion, which reverses the logic."
+  },
+  {
+    "slug": "eoi-tr-004",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "The Iraqi British architect Zaha Hadid was known for buildings with sweeping, curved forms, such as the Heydar Aliyev Center in Baku, Azerbaijan. ______ she was the first woman to receive the Pritzker Architecture Prize, which she won in 2004.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Instead,"
+      },
+      {
+        "id": "B",
+        "label": "However,"
+      },
+      {
+        "id": "C",
+        "label": "For example,"
+      },
+      {
+        "id": "D",
+        "label": "Additionally,"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the second sentence adds another notable fact about Hadid, and “Additionally” signals that addition. Choice A is incorrect because the prize did not replace or substitute for her style. Choice B is incorrect because winning the prize does not contrast with her being known for distinctive buildings. Choice C is incorrect because the prize is not an example of her curved forms."
+  },
+  {
+    "slug": "eoi-tr-005",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "To make paper by hand, workers first soak plant fibers in water and beat them until they form a soft pulp. ______ they dip a screen into the pulp, lift out a thin, even layer of fibers, and leave it to dry.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Next,"
+      },
+      {
+        "id": "B",
+        "label": "In contrast,"
+      },
+      {
+        "id": "C",
+        "label": "For example,"
+      },
+      {
+        "id": "D",
+        "label": "Regardless,"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the passage describes a process in order, and “Next” introduces the step that follows soaking and beating the fibers. Choice B is incorrect because the second step does not contrast with the first. Choice C is incorrect because dipping the screen is not an example of making pulp. Choice D is incorrect because “Regardless” suggests that the second step happens despite the first, which does not fit a sequence."
+  },
+  {
+    "slug": "eoi-tr-006",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Most spiders have eight eyes, which they use to detect movement and, in some species, to spot prey from a distance. ______ many spiders that live deep in caves have reduced eyes or none at all, since there is little or no light in their environment.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Therefore,"
+      },
+      {
+        "id": "B",
+        "label": "Similarly,"
+      },
+      {
+        "id": "C",
+        "label": "By contrast,"
+      },
+      {
+        "id": "D",
+        "label": "For instance,"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because cave spiders with few or no eyes differ from most spiders, which have eight, and “By contrast” signals that difference. Choice A is incorrect because cave spiders’ reduced eyes do not follow from most spiders having eight eyes. Choice B is incorrect because the two groups are different, not similar. Choice D is incorrect because cave spiders are an exception to the first statement, not an example of it."
+  },
+  {
+    "slug": "eoi-tr-007",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Some plants rely on animals to spread their seeds far from the parent plant. ______ the seed heads of the burdock plant are covered in tiny hooks that catch on the fur of passing mammals, which may carry them a long distance before they fall off.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "However,"
+      },
+      {
+        "id": "B",
+        "label": "For instance,"
+      },
+      {
+        "id": "C",
+        "label": "As a result,"
+      },
+      {
+        "id": "D",
+        "label": "Likewise,"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because burdock is a specific case of a plant that relies on animals to spread its seeds, so “For instance” fits. Choice A is incorrect because the burdock example supports the first sentence rather than contradicting it. Choice C is incorrect because the burdock’s hooks are not caused by the general fact in the first sentence. Choice D is incorrect because “Likewise” would introduce a separate but similar case, whereas burdock is an instance of the very group just described."
+  },
+  {
+    "slug": "eoi-tr-008",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Light travels through air about a million times faster than sound does. ______ during a thunderstorm, people see a flash of lightning before they hear the thunder it produces.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "For this reason,"
+      },
+      {
+        "id": "B",
+        "label": "Nevertheless,"
+      },
+      {
+        "id": "C",
+        "label": "Similarly,"
+      },
+      {
+        "id": "D",
+        "label": "In other words,"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because seeing lightning before hearing thunder is a consequence of light traveling faster than sound, and “For this reason” signals that cause-and-effect relationship. Choice B is incorrect because the second sentence is not surprising given the first. Choice C is incorrect because the second sentence is not a separate similar fact but an effect of the first. Choice D is incorrect because the second sentence does not restate the first; it describes something that follows from it."
+  },
+  {
+    "slug": "eoi-tr-009",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "In ancient Egypt, scribes wrote on a material that was abundant where they lived: sheets made from the papyrus plant, which grew along the Nile. ______ early writers in ancient China often used a material that was plentiful in their region, writing on strips of bamboo.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Instead,"
+      },
+      {
+        "id": "B",
+        "label": "Similarly,"
+      },
+      {
+        "id": "C",
+        "label": "As a result,"
+      },
+      {
+        "id": "D",
+        "label": "For example,"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because both sentences describe writers using a locally plentiful material, and “Similarly” signals that parallel. Choice A is incorrect because Chinese writers’ use of bamboo did not replace the Egyptians’ use of papyrus. Choice C is incorrect because Egyptian practices did not cause Chinese ones. Choice D is incorrect because China is not an example of what happened in Egypt."
+  },
+  {
+    "slug": "eoi-tr-010",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "The first draft of the young novelist’s book was rejected by five publishers, and two of them advised her to abandon the project entirely. ______ she kept revising the manuscript, and the sixth publisher she approached accepted it.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Therefore,"
+      },
+      {
+        "id": "B",
+        "label": "For example,"
+      },
+      {
+        "id": "C",
+        "label": "Similarly,"
+      },
+      {
+        "id": "D",
+        "label": "Still,"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the novelist kept working despite the rejections and discouraging advice, and “Still” signals that she continued in spite of what came before. Choice A is incorrect because continuing to revise is not a logical result of being told to quit. Choice B is incorrect because her persistence is not an example of the rejections. Choice C is incorrect because her persistence is not similar to the rejections."
+  },
+  {
+    "slug": "eoi-tr-011",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "In 1869, Russian chemist Dmitri Mendeleev published a periodic table that left gaps for elements that had not yet been discovered, and he predicted some of their properties. ______ chemists discovered gallium, scandium, and germanium, elements whose properties closely matched his predictions.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Later,"
+      },
+      {
+        "id": "B",
+        "label": "In comparison,"
+      },
+      {
+        "id": "C",
+        "label": "For instance,"
+      },
+      {
+        "id": "D",
+        "label": "Nonetheless,"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the discoveries happened after Mendeleev published his table, and “Later” signals that time sequence. Choice B is incorrect because the passage is not comparing two things. Choice C is incorrect because the discoveries are not an example of Mendeleev publishing his table. Choice D is incorrect because the discoveries confirm his predictions rather than happening despite them."
+  },
+  {
+    "slug": "eoi-tr-012",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "The Kuiper Belt is a region of icy bodies that lies beyond the orbit of Neptune. ______ it is located farther from the Sun than the most distant of the solar system’s eight major planets.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "However,"
+      },
+      {
+        "id": "B",
+        "label": "For example,"
+      },
+      {
+        "id": "C",
+        "label": "In other words,"
+      },
+      {
+        "id": "D",
+        "label": "As a result,"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the second sentence restates the location given in the first (beyond Neptune, the outermost major planet) in different terms, and “In other words” signals a restatement. Choice A is incorrect because the two sentences agree. Choice B is incorrect because the second sentence is not a specific example. Choice D is incorrect because being farther than Neptune is not a consequence of being beyond Neptune; it is the same fact."
+  },
+  {
+    "slug": "eoi-tr-013",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Unlike most bony fish, sharks do not have a swim bladder, a gas-filled organ that helps many fish stay afloat. ______ sharks rely partly on a large, oil-filled liver, which is less dense than seawater, to keep them from sinking.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Similarly,"
+      },
+      {
+        "id": "B",
+        "label": "Instead,"
+      },
+      {
+        "id": "C",
+        "label": "For example,"
+      },
+      {
+        "id": "D",
+        "label": "Specifically,"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the oily liver serves sharks in place of the swim bladder they lack, and “Instead” signals that substitution. Choice A is incorrect because sharks’ use of a liver is not similar to their lacking a swim bladder. Choice C is incorrect because the liver is not an example of a swim bladder. Choice D is incorrect because the second sentence does not give a more precise version of the first; it describes an alternative."
+  },
+  {
+    "slug": "eoi-tr-014",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Honey has very low water content and is acidic, conditions in which few bacteria can survive. ______ honey stored in a sealed container can remain edible for many years.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "In contrast,"
+      },
+      {
+        "id": "B",
+        "label": "Similarly,"
+      },
+      {
+        "id": "C",
+        "label": "For instance,"
+      },
+      {
+        "id": "D",
+        "label": "Thus,"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because honey’s long shelf life results from conditions in which bacteria cannot survive, and “Thus” signals that consequence. Choice A is incorrect because the second sentence does not contrast with the first. Choice B is incorrect because the second sentence is an effect of the first, not a similar but separate fact. Choice C is incorrect because a long shelf life is not an example of low water content or acidity."
+  },
+  {
+    "slug": "eoi-tr-015",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "The Great Wall of China is often described as a single continuous wall stretching across northern China. ______ it is a series of walls, trenches, and fortifications built and rebuilt by different dynasties over many centuries.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Likewise,"
+      },
+      {
+        "id": "B",
+        "label": "As a result,"
+      },
+      {
+        "id": "C",
+        "label": "In reality,"
+      },
+      {
+        "id": "D",
+        "label": "For example,"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the second sentence corrects the common description in the first, and “In reality” introduces the actual situation in contrast to a popular belief. Choice A is incorrect because the second sentence does not describe something similar. Choice B is incorrect because the true structure of the wall is not a result of how it is commonly described. Choice D is incorrect because the second sentence is a correction, not an example."
+  },
+  {
+    "slug": "eoi-tr-016",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "The Inca Empire developed a sophisticated accounting system that did not rely on written numerals. ______ officials recorded quantities on khipus, arrangements of knotted cords in which the type and position of each knot represented a particular value.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Specifically,"
+      },
+      {
+        "id": "B",
+        "label": "Nevertheless,"
+      },
+      {
+        "id": "C",
+        "label": "Similarly,"
+      },
+      {
+        "id": "D",
+        "label": "In conclusion,"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the second sentence explains in precise terms how the accounting system worked without written numerals, and “Specifically” introduces such detail. Choice B is incorrect because the khipus are consistent with the first sentence rather than contrary to it. Choice C is incorrect because the second sentence elaborates on the same system rather than describing a different but similar one. Choice D is incorrect because the second sentence adds detail rather than summarizing the passage."
+  },
+  {
+    "slug": "eoi-tr-017",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Charles Darwin acknowledged that the fossil record of his time contained few clear examples of forms intermediate between species, a fact that critics used against his theory of evolution. ______ he remained confident in the theory, arguing that the fossil record was simply incomplete.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Accordingly,"
+      },
+      {
+        "id": "B",
+        "label": "For instance,"
+      },
+      {
+        "id": "C",
+        "label": "Nevertheless,"
+      },
+      {
+        "id": "D",
+        "label": "Likewise,"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because Darwin stayed confident despite a weakness that critics pointed out, and “Nevertheless” signals that he persisted in spite of the difficulty. Choice A is incorrect because confidence in the theory is not a logical result of evidence that critics used against it. Choice B is incorrect because his confidence is not an example of the gaps in the fossil record. Choice D is incorrect because his confidence is not similar to the critics’ objection."
+  },
+  {
+    "slug": "eoi-tr-018",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "The Spanish cellist Pablo Casals was famous for his dedication to daily practice. ______ he reportedly continued practicing for several hours each day well into his nineties, explaining that he believed he was still improving.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "However,"
+      },
+      {
+        "id": "B",
+        "label": "Indeed,"
+      },
+      {
+        "id": "C",
+        "label": "Instead,"
+      },
+      {
+        "id": "D",
+        "label": "Secondly,"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the second sentence strengthens the claim in the first with a striking piece of supporting evidence, and “Indeed” introduces such emphasis. Choice A is incorrect because practicing into his nineties supports, rather than contradicts, his reputation. Choice C is incorrect because nothing is being replaced. Choice D is incorrect because the passage is not presenting a numbered list of points."
+  },
+  {
+    "slug": "eoi-tr-019",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "The heart of an adult blue whale, the largest animal known to have lived, can weigh roughly 180 kilograms, about as much as two adult men. ______ the heart of an adult human weighs only about 0.3 kilograms.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Furthermore,"
+      },
+      {
+        "id": "B",
+        "label": "Thus,"
+      },
+      {
+        "id": "C",
+        "label": "For example,"
+      },
+      {
+        "id": "D",
+        "label": "In comparison,"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the second sentence measures the human heart against the blue whale’s, and “In comparison” introduces that comparison. Choice A is incorrect because the human heart’s weight is presented as a contrast, not as an additional point about blue whales. Choice B is incorrect because the human heart’s weight does not follow from the whale’s. Choice C is incorrect because a human heart is not an example of a blue whale heart."
+  },
+  {
+    "slug": "eoi-tr-020",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Since 2006, the International Astronomical Union has classified Pluto as a dwarf planet, a body that orbits the Sun but has not cleared its orbital neighborhood of other objects. ______ Pluto had been considered the ninth planet of the solar system for more than seventy years.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Previously,"
+      },
+      {
+        "id": "B",
+        "label": "Subsequently,"
+      },
+      {
+        "id": "C",
+        "label": "Consequently,"
+      },
+      {
+        "id": "D",
+        "label": "Similarly,"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the second sentence describes Pluto’s status before 2006, and “Previously” signals a move back to an earlier time. Choice B is incorrect because “Subsequently” would place the planet classification after 2006, reversing the timeline. Choice C is incorrect because Pluto’s earlier status was not caused by its 2006 reclassification. Choice D is incorrect because the two classifications differ."
+  },
+  {
+    "slug": "eoi-tr-021",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Urban gardens can provide fresh produce in neighborhoods that have few grocery stores. ______ they can lower nearby air temperatures on hot days, since plants release water vapor that cools the surrounding air.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Namely,"
+      },
+      {
+        "id": "B",
+        "label": "Nonetheless,"
+      },
+      {
+        "id": "C",
+        "label": "Moreover,"
+      },
+      {
+        "id": "D",
+        "label": "In contrast,"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the second sentence adds another benefit of urban gardens, and “Moreover” signals an additional supporting point. Choice A is incorrect because cooling the air does not specify or name the produce benefit just mentioned. Choice B is incorrect because the cooling benefit does not go against the first benefit. Choice D is incorrect because the two benefits are complementary, not contrasting."
+  },
+  {
+    "slug": "eoi-tr-022",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Some critics have dismissed graphic novels as a lesser form of literature. ______ many graphic novels are written mainly to entertain, but works such as Art Spiegelman’s Maus, which received a special Pulitzer Prize in 1992, show that the form can treat serious subjects with great depth.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Therefore,"
+      },
+      {
+        "id": "B",
+        "label": "Granted,"
+      },
+      {
+        "id": "C",
+        "label": "For instance,"
+      },
+      {
+        "id": "D",
+        "label": "In short,"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the sentence concedes a point that partly supports the critics (many graphic novels are mainly entertainment) before countering it with “but,” and “Granted” introduces such a concession. Choice A is incorrect because the sentence does not present a conclusion that follows from the critics’ view. Choice C is incorrect because the sentence is not an example of critics dismissing graphic novels; it weighs their view against counterevidence. Choice D is incorrect because the sentence introduces new information rather than summarizing."
+  },
+  {
+    "slug": "eoi-tr-023",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Glass allows most visible light to pass through it, but many polished metals reflect most of the visible light that strikes their surfaces. ______ thin layers of aluminum or silver have long been applied to the backs of glass panes to make mirrors.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Conversely,"
+      },
+      {
+        "id": "B",
+        "label": "Meanwhile,"
+      },
+      {
+        "id": "C",
+        "label": "For instance,"
+      },
+      {
+        "id": "D",
+        "label": "Hence,"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because coating glass with reflective metal to make mirrors follows logically from metals’ ability to reflect light, and “Hence” signals that consequence. Choice A is incorrect because the use of metals in mirrors does not oppose the preceding statement. Choice B is incorrect because “Meanwhile” signals simultaneous events, not a logical result. Choice C is incorrect because mirrors are an application of metals’ reflectivity rather than an example of it."
+  },
+  {
+    "slug": "eoi-tr-024",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Tea was first cultivated in China, and for centuries China was the world’s only major producer of the crop. ______ by the late 1800s, plantations in British-ruled India were producing large quantities of tea for export to Europe.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Thus,"
+      },
+      {
+        "id": "B",
+        "label": "However,"
+      },
+      {
+        "id": "C",
+        "label": "Likewise,"
+      },
+      {
+        "id": "D",
+        "label": "In other words,"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the rise of large-scale tea production in India ended China’s position as the only major producer, and “However” signals this contrast. Choice A is incorrect because India’s production was not a logical consequence of China’s long dominance. Choice C is incorrect because the second sentence describes a change, not a parallel situation. Choice D is incorrect because the second sentence does not restate the first."
+  },
+  {
+    "slug": "eoi-tr-025",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Ornithologists describe the young of some bird species, such as robins and sparrows, as altricial. ______ these chicks hatch with their eyes closed and with little or no down, and they must be fed and kept warm by their parents for some time.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Additionally,"
+      },
+      {
+        "id": "B",
+        "label": "Consequently,"
+      },
+      {
+        "id": "C",
+        "label": "That is,"
+      },
+      {
+        "id": "D",
+        "label": "Even so,"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the second sentence explains what the term “altricial” means, and “That is” introduces a clarification or definition. Choice A is incorrect because the description is not an additional, separate fact; it explains the term. Choice B is incorrect because the chicks’ helplessness is not a result of what scientists call them. Choice D is incorrect because nothing in the description goes against the first sentence."
+  },
+  {
+    "slug": "eoi-tr-026",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Construction of the Sagrada Família in Barcelona began in 1882, and Antoni Gaudí, who took over the project the following year, devoted much of his later career to it. When Gaudí died in 1926, however, the church was far from finished. ______ work has continued for about a century, guided in part by Gaudí’s surviving models and drawings.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Since then,"
+      },
+      {
+        "id": "B",
+        "label": "Before that,"
+      },
+      {
+        "id": "C",
+        "label": "For example,"
+      },
+      {
+        "id": "D",
+        "label": "Likewise,"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the final sentence describes work carried on after Gaudí’s death in 1926, and “Since then” signals the period from that point to the present. Choice B is incorrect because “Before that” would place the continued work earlier than 1926, contradicting “about a century.” Choice C is incorrect because continued construction is not an example of the church being unfinished. Choice D is incorrect because the final sentence does not describe something similar to Gaudí’s death."
+  },
+  {
+    "slug": "eoi-tr-027",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "In the Northern Hemisphere, the longest day of the year falls in June, when that half of Earth is tilted toward the Sun. ______ in the Southern Hemisphere, which is tilted away from the Sun at that time of year, June brings the shortest days.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Similarly,"
+      },
+      {
+        "id": "B",
+        "label": "For example,"
+      },
+      {
+        "id": "C",
+        "label": "As a result,"
+      },
+      {
+        "id": "D",
+        "label": "Conversely,"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the Southern Hemisphere experiences the opposite of the Northern Hemisphere in June, and “Conversely” signals a reversal. Choice A is incorrect because the two hemispheres have opposite, not similar, experiences. Choice B is incorrect because the Southern Hemisphere is not an example of the Northern Hemisphere’s long days. Choice C is incorrect because the Southern Hemisphere’s short days result from its own tilt away from the Sun, not from the Northern Hemisphere’s long days."
+  },
+  {
+    "slug": "eoi-tr-028",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "The Atacama Desert’s high altitude, extremely dry air, and mostly cloudless skies make it one of the best places on Earth for astronomical observation. ______ several major astronomical observatories have been built there, including the Atacama Large Millimeter/submillimeter Array (ALMA).",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Even so,"
+      },
+      {
+        "id": "B",
+        "label": "In contrast,"
+      },
+      {
+        "id": "C",
+        "label": "For this reason,"
+      },
+      {
+        "id": "D",
+        "label": "Specifically,"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the observatories were built in the Atacama because of its excellent viewing conditions, and “For this reason” signals that cause-and-effect relationship. Choice A is incorrect because building observatories there is expected, not surprising, given the conditions. Choice B is incorrect because nothing in the second sentence contrasts with the first. Choice D is incorrect because the observatories are not a more precise description of the desert’s conditions."
+  },
+  {
+    "slug": "eoi-tr-029",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Researchers who want to know the age of a tree have two main options. They can count the tree’s growth rings after it has been cut down. ______ they can use a tool called an increment borer to extract a thin core from a living tree and count the rings in that core.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Consequently,"
+      },
+      {
+        "id": "B",
+        "label": "Alternatively,"
+      },
+      {
+        "id": "C",
+        "label": "For instance,"
+      },
+      {
+        "id": "D",
+        "label": "In summary,"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the passage announces two options, and the final sentence presents the second one, which “Alternatively” introduces. Choice A is incorrect because using an increment borer is not a result of counting rings in a cut tree. Choice C is incorrect because the borer is not an example of cutting a tree down; it is a different method. Choice D is incorrect because the final sentence adds a new option rather than summarizing."
+  },
+  {
+    "slug": "eoi-tr-030",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Many writers of the Harlem Renaissance drew on African American folk traditions. The poet Langston Hughes, for example, used the rhythms of blues and jazz in poems such as “The Weary Blues.” ______ the novelist Zora Neale Hurston incorporated the speech patterns of Black communities in Florida into the dialogue of her fiction.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Instead,"
+      },
+      {
+        "id": "B",
+        "label": "Similarly,"
+      },
+      {
+        "id": "C",
+        "label": "Consequently,"
+      },
+      {
+        "id": "D",
+        "label": "Nevertheless,"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because Hurston’s use of local speech patterns is another case of a Harlem Renaissance writer drawing on folk traditions, parallel to Hughes’s use of blues and jazz, so “Similarly” fits. Choice A is incorrect because Hurston’s practice did not replace Hughes’s. Choice C is incorrect because Hughes’s poetry did not cause Hurston’s choices. Choice D is incorrect because Hurston’s work supports, rather than contrasts with, the pattern described."
+  },
+  {
+    "slug": "eoi-tr-031",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Over the past decade, the city added 40 kilometers of protected bike lanes, expanded its bike-share program to every neighborhood, and lowered speed limits on residential streets. ______ the city has made several changes intended to make cycling safer and more convenient.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "In short,"
+      },
+      {
+        "id": "B",
+        "label": "For instance,"
+      },
+      {
+        "id": "C",
+        "label": "However,"
+      },
+      {
+        "id": "D",
+        "label": "Afterward,"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the second sentence sums up the specific changes listed in the first, and “In short” introduces a brief summary. Choice B is incorrect because the second sentence is a general statement, not an example of the changes. Choice C is incorrect because the summary agrees with the list rather than contrasting with it. Choice D is incorrect because the second sentence does not describe a later event; it describes the same changes."
+  },
+  {
+    "slug": "eoi-tr-032",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "The museum’s new exhibit features centuries-old textiles whose natural dyes fade when exposed to strong light. ______ the galleries displaying them are kept dimly lit, and each piece is removed from display after a few months to rest in dark storage.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Nevertheless,"
+      },
+      {
+        "id": "B",
+        "label": "Likewise,"
+      },
+      {
+        "id": "C",
+        "label": "For example,"
+      },
+      {
+        "id": "D",
+        "label": "Accordingly,"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the dim lighting and rotation are measures taken in response to the textiles’ sensitivity to light, and “Accordingly” signals an action that follows from a stated condition. Choice A is incorrect because the protective measures are expected, not contrary, given the fading risk. Choice B is incorrect because the measures are not similar to the textiles’ fragility; they respond to it. Choice C is incorrect because the measures are not an example of fading."
+  },
+  {
+    "slug": "eoi-tr-033",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Gray wolves had been eliminated from Yellowstone National Park by the 1920s, and for decades afterward the park’s elk populations grew largely unchecked. In the early 1990s, federal agencies set out to restore wolves to the park. ______ biologists captured wolves in Canada and released them into Yellowstone in 1995 and 1996.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Regardless,"
+      },
+      {
+        "id": "B",
+        "label": "In other words,"
+      },
+      {
+        "id": "C",
+        "label": "By contrast,"
+      },
+      {
+        "id": "D",
+        "label": "To that end,"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because capturing and releasing wolves was the action taken to achieve the goal just stated (restoring wolves to the park), and “To that end” introduces a step taken toward a goal. Choice A is incorrect because the releases were carried out in pursuit of the plan, not in disregard of anything. Choice B is incorrect because the final sentence does not restate the goal; it describes the specific means used to accomplish it. Choice C is incorrect because the releases are consistent with, not opposed to, the plan to restore wolves."
+  },
+  {
+    "slug": "eoi-tr-034",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "For decades, many scientists assumed that the deep seafloor, cold and lacking sunlight, could support only sparse life. In 1977, however, researchers exploring hydrothermal vents near the Galápagos Islands found dense communities of tube worms, clams, and other animals. These animals depend on bacteria that produce food from chemicals in the vent water rather than from sunlight. ______ the discovery revealed that entire ecosystems can be based on a source of energy other than sunlight.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Nevertheless,"
+      },
+      {
+        "id": "B",
+        "label": "Thus,"
+      },
+      {
+        "id": "C",
+        "label": "Meanwhile,"
+      },
+      {
+        "id": "D",
+        "label": "Earlier,"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the final sentence states the conclusion that follows from the preceding evidence (vent animals depend on chemical-based food), and “Thus” introduces a conclusion. Choice A is incorrect because the conclusion is supported by, not contrary to, the sentence before it; the contrast with the old assumption has already been marked by “however.” Choice C is incorrect because the final sentence draws a conclusion rather than describing a simultaneous event. Choice D is incorrect because the conclusion came from the 1977 discovery, so it cannot have come earlier."
+  },
+  {
+    "slug": "eoi-tr-035",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Historians often credit Johannes Gutenberg’s printing press of the mid-1400s with transforming access to information in Europe. ______ printing with movable type had been developed centuries earlier in East Asia, and metal movable type was in use in Korea by the thirteenth century. Gutenberg’s achievement lay instead in combining metal type with a press and oil-based inks, a system well suited to Europe’s alphabetic scripts.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Admittedly,"
+      },
+      {
+        "id": "B",
+        "label": "Consequently,"
+      },
+      {
+        "id": "C",
+        "label": "Similarly,"
+      },
+      {
+        "id": "D",
+        "label": "Specifically,"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the sentence concedes a point that limits Gutenberg’s originality (movable type existed earlier in East Asia) before the passage explains what his real achievement was, and “Admittedly” introduces such a concession. Choice B is incorrect because earlier East Asian printing was not caused by historians’ view of Gutenberg. Choice C is incorrect because the earlier invention is not similar to historians’ crediting Gutenberg; it qualifies that credit. Choice D is incorrect because the sentence does not give precise details of Gutenberg’s press; it shifts to a different time and place."
+  },
+  {
+    "slug": "eoi-tr-036",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "The Voyager 1 spacecraft, launched in 1977, crossed into interstellar space in 2012, becoming the first human-made object to do so. Its aging power source now produces so little electricity that engineers have shut down many of its instruments and heaters to conserve energy. ______ the spacecraft continues to send data back to Earth, giving scientists rare direct measurements of the region beyond the Sun’s protective bubble.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Therefore,"
+      },
+      {
+        "id": "B",
+        "label": "Likewise,"
+      },
+      {
+        "id": "C",
+        "label": "Even so,"
+      },
+      {
+        "id": "D",
+        "label": "In other words,"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the spacecraft keeps sending data despite its dwindling power and disabled instruments, and “Even so” signals that something happens in spite of what was just described. Choice A is incorrect because continuing to send data does not result from shutting down instruments; it happens despite the power loss. Choice B is incorrect because sending data is not similar to losing power. Choice D is incorrect because the final sentence does not restate the previous one."
+  },
+  {
+    "slug": "eoi-tr-037",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Most of the large moons in the solar system orbit their planets in the same direction that the planet rotates. Neptune’s largest moon, Triton, is a striking exception: it orbits in the opposite direction. ______ astronomers think that Triton did not form alongside Neptune but was instead captured by the planet’s gravity, perhaps after originating in the Kuiper Belt.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Partly for this reason,"
+      },
+      {
+        "id": "B",
+        "label": "Nonetheless,"
+      },
+      {
+        "id": "C",
+        "label": "In comparison,"
+      },
+      {
+        "id": "D",
+        "label": "By the same token,"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because Triton’s backward orbit is evidence for the idea that it was captured, and “Partly for this reason” presents the astronomers’ view as following, in part, from that unusual orbit. Choice B is incorrect because the capture hypothesis is supported by, not contrary to, the backward orbit. Choice C is incorrect because the final sentence does not compare Triton with other moons; it explains Triton’s origin. Choice D is incorrect because “By the same token” introduces a parallel claim based on the same reasoning, whereas the final sentence is an inference drawn from the orbit itself."
+  },
+  {
+    "slug": "eoi-tr-038",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "On July 1, 1858, papers by Charles Darwin and Alfred Russel Wallace describing the theory of natural selection were read together at a meeting of the Linnean Society of London. Wallace, however, was not in the audience. ______ he was thousands of kilometers away in the Malay Archipelago, collecting specimens of birds and insects.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Afterward,"
+      },
+      {
+        "id": "B",
+        "label": "At the time,"
+      },
+      {
+        "id": "C",
+        "label": "As a result,"
+      },
+      {
+        "id": "D",
+        "label": "Similarly,"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the final sentence explains where Wallace was when the papers were read, and “At the time” signals that the two situations were simultaneous. Choice A is incorrect because Wallace was already abroad during the meeting, not only after it. Choice C is incorrect because his being abroad was the reason he missed the meeting, not a result of missing it. Choice D is incorrect because the final sentence does not describe something similar to his absence; it explains it."
+  },
+  {
+    "slug": "eoi-tr-039",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Economists use the term “opportunity cost” to describe the value of the best alternative that a person gives up when making a choice. A student who works an evening shift at a café instead of studying, ______ gives up whatever benefit the extra hours of study would have brought; that benefit is the opportunity cost of the shift.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "however,"
+      },
+      {
+        "id": "B",
+        "label": "in other words,"
+      },
+      {
+        "id": "C",
+        "label": "for instance,"
+      },
+      {
+        "id": "D",
+        "label": "similarly,"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the student is a concrete illustration of the general definition in the first sentence, and “for instance” introduces an example. Choice A is incorrect because the example applies the definition rather than contradicting it. Choice B is incorrect because a specific case of a student is not a restatement of the abstract definition. Choice D is incorrect because “similarly” would suggest a second, parallel case, but no earlier case has been given; the student is the first and only illustration of the definition."
+  },
+  {
+    "slug": "eoi-tr-040",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "When the Brooklyn Bridge opened in 1883, its 486-meter main span was the longest of any suspension bridge in the world. Its construction had been plagued by setbacks: the original designer, John A. Roebling, died from an injury suffered while surveying the site, and his son Washington Roebling, who took over, was left partially paralyzed by decompression sickness. ______ the bridge was completed under Washington’s direction, with his wife, Emily Warren Roebling, relaying his instructions to the engineers on site.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Consequently,"
+      },
+      {
+        "id": "B",
+        "label": "For instance,"
+      },
+      {
+        "id": "C",
+        "label": "Similarly,"
+      },
+      {
+        "id": "D",
+        "label": "Nevertheless,"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the bridge was finished despite the death of its designer and the illness of his successor, and “Nevertheless” signals an outcome achieved in spite of obstacles. Choice A is incorrect because the bridge’s completion was not caused by the setbacks. Choice B is incorrect because its completion is not an example of a setback. Choice C is incorrect because completing the bridge is the opposite of a setback, not something similar to one."
+  },
+  {
+    "slug": "eoi-tr-041",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Many plants flower only when nights reach a certain length. Botanists once described such plants as responding to the length of the day. Experiments in the 1930s and 1940s, however, showed that interrupting a long night with a brief flash of light could prevent flowering, whereas interrupting the day with a period of darkness had little effect. ______ these plants are measuring the length of uninterrupted darkness, not the length of daylight.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Nonetheless,"
+      },
+      {
+        "id": "B",
+        "label": "For instance,"
+      },
+      {
+        "id": "C",
+        "label": "Similarly,"
+      },
+      {
+        "id": "D",
+        "label": "Thus,"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the final sentence states the conclusion that follows from the experiments: since breaking the night mattered and breaking the day did not, the plants must be measuring darkness, and “Thus” introduces such a conclusion. Choice A is incorrect because the conclusion is supported by the experimental results, not reached in spite of them; the contrast with the older view has already been signaled by “however.” Choice B is incorrect because the final sentence is a general conclusion, not a specific example of the experiments. Choice C is incorrect because the final sentence does not describe a separate, parallel finding; it interprets the results just described."
+  },
+  {
+    "slug": "eoi-tr-042",
+    "section": "reading_writing",
+    "official_domain": "expression_of_ideas",
+    "skill": "transitions",
+    "sat_domain": "transitions",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "The novelist Charles Dickens published most of his novels in monthly or weekly installments, which allowed readers of modest means to buy them a few chapters at a time. Serial publication helped make Dickens one of the most widely read authors of his era. ______ the format also had drawbacks: because each installment had to hold readers’ interest, some critics have argued that his plots contain digressions and contrived cliffhangers.",
+    "prompt": "Which choice completes the text with the most logical transition?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Indeed,"
+      },
+      {
+        "id": "B",
+        "label": "Therefore,"
+      },
+      {
+        "id": "C",
+        "label": "That said,"
+      },
+      {
+        "id": "D",
+        "label": "In other words,"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the final sentence qualifies the positive account of serial publication by introducing its drawbacks, and “That said” signals such a qualification. Choice A is incorrect because “Indeed” would intensify the praise of serial publication, but the sentence introduces criticism. Choice B is incorrect because the drawbacks do not follow logically from the format’s popularity. Choice D is incorrect because the final sentence adds a new point instead of restating the previous one."
+  }
+]

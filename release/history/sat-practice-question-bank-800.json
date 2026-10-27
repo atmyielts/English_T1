@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "sat-practice-question-bank-800",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": [],
+  "migrations": [
+    "20261026140900_sat_practice_algebra_advanced_math.sql",
+    "20261026141000_sat_practice_data_geometry.sql",
+    "20261026142000_sat_practice_information_ideas.sql",
+    "20261026142100_sat_practice_craft_structure.sql",
+    "20261026143000_sat_practice_expression_conventions.sql"
+  ],
+  "edgeFunctions": [],
+  "workers": [],
+  "sharedEdgeConsumers": [],
+  "requiredSecrets": [],
+  "rolloutOrder": [
+    "requires:sat-engine release (PR #314: migration 20261026130900, sat-practice function, Pages) live first",
+    "migration:20261026140900_sat_practice_algebra_advanced_math.sql",
+    "migration:20261026141000_sat_practice_data_geometry.sql",
+    "migration:20261026142000_sat_practice_information_ideas.sql",
+    "migration:20261026142100_sat_practice_craft_structure.sql",
+    "migration:20261026143000_sat_practice_expression_conventions.sql"
+  ],
+  "manualFollowUps": [
+    "Combines PRs #303, #305, #308 and #309: 800 original Digital SAT practice questions across all 8 official domains (Algebra 110, Advanced Math 110, Problem-Solving and Data Analysis 90, Geometry and Trigonometry 90, Information and Ideas 100, Craft and Structure 100, Expression of Ideas 90, Standard English Conventions 110). Every item passes node scripts/content/validate-sat-practice.mjs.",
+    "Order: only after the sat-engine release (#314) is live (Pages + migration 20261026130900 + sat-practice function). The old app and function cannot render passages, KaTeX, tables or figures, nor grade question_spr, and select_sat_practice_questions serves every published question.",
+    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus these five files, keeping Codex's 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then supabase migration list --linked. Every insert is on conflict do nothing; ids are md5('schood-sat-part:'||official_domain) and md5('schood-sat-q:'||slug); parts use fixed display_order 10-13 per section.",
+    "Source of truth: content/sat-practice/*.json; generators scripts/content/sat-math-a.mjs, sat-math-b.mjs, sat-rw-a.mjs, sat-rw-b.mjs (each has --check). New content can also be imported with the admin-sat-practice function from #314.",
+    "No Pages, Edge Function, worker or secret changes in this release."
+  ],
+  "verification": [
+    "supabase migration list --linked shows the five migrations applied and the 9 #220 payment migrations still pending.",
+    "select u.metadata->>'sat_official_domain' d, count(*) from public.content_units u where u.metadata->>'content_revision'='original-2026-10-v2' group by 1 returns the eight domains with 110/110/90/90/100/100/90/110, and every row has an answer_keys row.",
+    "As a signed-in SAT Practice learner: the bank filters by official domain and skill show the new items; a passage item, a table item, an SVG figure item and a grid-in item render and grade correctly at 375px."
+  ],
+  "rollback": {
+    "pages": "Nothing deployed.",
+    "migration": "Do not delete (attempts may reference the rows). Retire: update public.content_units set metadata = metadata || '{\"content_status\":\"retired\"}'::jsonb where metadata->>'content_revision'='original-2026-10-v2'; select_sat_practice_questions skips retired rows.",
+    "edge": "Nothing deployed.",
+    "worker": "Nothing deployed."
+  }
+}
