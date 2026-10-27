@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { combinedWeakSkills, examNextSteps, loadSisterSignals, type SisterSignals } from "../_shared/sister-signals.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -229,6 +230,19 @@ serve(async (req) => {
       : computeProfileFromOutcomes(outcomes);
     const latestOutcome = projection?.latest_result ?? outcomes[0] ?? null;
 
+    // Practice and playbook evidence from the sister apps (service-role read,
+    // scoped to the already-authorised target user). Never fails the profile.
+    let sisterSignals: SisterSignals | null = null;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (serviceRoleKey) {
+      try {
+        const serviceClient = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
+        sisterSignals = await loadSisterSignals(serviceClient, targetUserId);
+      } catch {
+        sisterSignals = null;
+      }
+    }
+
     return new Response(
       JSON.stringify({
         user_id: targetUserId,
@@ -236,6 +250,10 @@ serve(async (req) => {
         source: { rows: outcomes.length, schema: "exam.result.v1" },
         latest_outcome: latestOutcome,
         skill_profile: profile,
+        // Mock profile plus practice evidence, weakest first.
+        weak_skills: combinedWeakSkills(profile as Record<string, unknown>, sisterSignals),
+        sister_signals: sisterSignals,
+        next_steps: sisterSignals ? examNextSteps(sisterSignals) : [],
         projection: projection
           ? {
               schema_version: projection.schema_version,
