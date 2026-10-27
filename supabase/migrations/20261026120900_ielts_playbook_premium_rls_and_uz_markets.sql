@@ -58,7 +58,7 @@ values
     'https://www.britishcouncil.uz/en/exam/ielts/test-dates-fees-location',
     'Official British Council Uzbekistan page listing IELTS test centre locations, test dates and current fees in UZS.',
     'published', now(), '2026-10-24', '2026-10-24',
-    jsonb_build_object('seeded_by', '20261026120000_ielts_playbook_premium_rls_and_uz_markets', 'market', 'UZ')
+    jsonb_build_object('seeded_by', '20261026120900_ielts_playbook_premium_rls_and_uz_markets', 'market', 'UZ')
   ),
   (
     'provider_url', 'british-council',
@@ -66,7 +66,7 @@ values
     'https://www.britishcouncil.uz/en/exam/ielts/book-test',
     'Official British Council Uzbekistan booking page for IELTS on paper and IELTS on computer.',
     'published', now(), '2026-10-24', '2026-10-24',
-    jsonb_build_object('seeded_by', '20261026120000_ielts_playbook_premium_rls_and_uz_markets', 'market', 'UZ')
+    jsonb_build_object('seeded_by', '20261026120900_ielts_playbook_premium_rls_and_uz_markets', 'market', 'UZ')
   ),
   (
     'provider_url', 'idp',
@@ -74,7 +74,7 @@ values
     'https://ielts.idp.com/uzbekistan',
     'Official IDP IELTS site for Uzbekistan: test centres, dates, fees and online booking.',
     'published', now(), '2026-10-24', '2026-10-24',
-    jsonb_build_object('seeded_by', '20261026120000_ielts_playbook_premium_rls_and_uz_markets', 'market', 'UZ')
+    jsonb_build_object('seeded_by', '20261026120900_ielts_playbook_premium_rls_and_uz_markets', 'market', 'UZ')
   ),
   (
     'provider_url', 'idp',
@@ -82,7 +82,7 @@ values
     'https://ielts.idp.com/uzbekistan/about/ielts-one-skill-retake/ielts-one-skill-retake-test-centres',
     'Official IDP Uzbekistan page on One Skill Retake: available after a full IELTS on computer test at eligible centres, within 60 days of the original test date.',
     'published', now(), '2026-10-24', '2026-10-24',
-    jsonb_build_object('seeded_by', '20261026120000_ielts_playbook_premium_rls_and_uz_markets', 'market', 'UZ')
+    jsonb_build_object('seeded_by', '20261026120900_ielts_playbook_premium_rls_and_uz_markets', 'market', 'UZ')
   )
 on conflict (url) where url is not null do nothing;
 
@@ -99,7 +99,7 @@ values (
   'Results for IELTS on computer usually arrive within a few days and paper results take longer. Confirm the current timing on the booking page before you choose a date.',
   'https://www.britishcouncil.uz/en/exam/ielts/book-test',
   '2026-10-24', now(),
-  jsonb_build_object('seeded_by', '20261026120000_ielts_playbook_premium_rls_and_uz_markets')
+  jsonb_build_object('seeded_by', '20261026120900_ielts_playbook_premium_rls_and_uz_markets')
 )
 on conflict (country_code, provider_key) do nothing;
 
@@ -115,7 +115,7 @@ values (
   'Results for IELTS on computer usually arrive within a few days and paper results take longer. Confirm the current timing on the IDP booking page before you choose a date.',
   'https://ielts.idp.com/uzbekistan',
   '2026-10-24', now(),
-  jsonb_build_object('seeded_by', '20261026120000_ielts_playbook_premium_rls_and_uz_markets')
+  jsonb_build_object('seeded_by', '20261026120900_ielts_playbook_premium_rls_and_uz_markets')
 )
 on conflict (country_code, provider_key) do nothing;
 

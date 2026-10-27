@@ -16,7 +16,7 @@ import path from 'node:path';
 
 const root = path.resolve(import.meta.dirname, '..', '..');
 const sourceDir = path.join(root, 'content', 'ielts-playbook', 'premium-guides');
-const migrationName = '20261026120100_ielts_playbook_premium_advanced_labs';
+const migrationName = '20261026120901_ielts_playbook_premium_advanced_labs';
 const target = path.join(root, 'supabase', 'migrations', `${migrationName}.sql`);
 const BLOCK_TYPES = new Set(['rich_text', 'checklist', 'faq', 'callout']);
 const ORDER = [
