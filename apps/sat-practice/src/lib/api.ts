@@ -1,4 +1,5 @@
 import type { SatDifficulty, SatDomain, SatSectionType } from '@schood/sat-core';
+import type { OfficialDomain } from './content';
 import { supabase } from './supabase';
 import { pendingStart, startActor, startSelection } from './start-requests';
 
@@ -6,6 +7,7 @@ export type Json = Record<string, unknown>;
 
 export type MeResponse = {
   user: { id: string; email: string | null; role?: string | null };
+  admin?: { permissions?: string[] } | null;
   entitlements: Array<{
     id: string;
     resource_type: string;
@@ -55,11 +57,23 @@ export type MasteryRow = {
 export type PlanItem = {
   id: string;
   scheduled_for: string;
-  task_type: 'drill' | 'notebook_review' | 'half_mock' | 'tutor_session';
+  task_type: 'drill' | 'notebook_review' | 'half_mock' | 'tutor_session' | 'module';
   payload: Json;
   status: string;
   estimated_minutes: number;
+  completed_at?: string | null;
 };
+export type PlanProgress = { completed: number; total: number; minutes_planned: number; minutes_completed: number };
+export type PlanWeek = { week_start: string; week_end: string; today: string; generated: boolean; items: PlanItem[]; today_items: PlanItem[]; progress: PlanProgress; goals?: SatGoals; goals_set?: boolean };
+export type QuestionStatus = 'unseen' | 'missed' | 'correct';
+export type SkillStat = { skill: string; bank: number; answered: number; correct: number; accuracy: number | null };
+export type DomainStat = { official_domain: OfficialDomain; section_type: SatSectionType; bank: number; answered: number; correct: number; accuracy: number | null; skills: SkillStat[] };
+export type ScoreImpact = { status: 'ok' | 'insufficient_data'; conservative: number | null; optimistic: number | null; min_answers: number; answered_total: number;
+  domains: Array<{ official_domain: OfficialDomain; answered: number; accuracy: number; points_low: number; points_high: number }>; label?: string };
+export type OfficialMastery = { official_domain: OfficialDomain; section_type: SatSectionType; attempts: number; mastery_level: number | null };
+export type Facets = { total: number; section_type: Record<string, number>; official_domain: Record<string, number>; skill: Record<string, number>;
+  difficulty: Record<string, number>; format: Record<string, number>; status: Record<string, number> };
+export type Selection = { requested?: number; available?: number; widened?: string[]; time_limit_seconds?: number };
 
 export type NotebookItem = {
   id: string;
@@ -76,6 +90,8 @@ export type NotebookItem = {
   next_review_at: string | null;
   last_seen_at: string | null;
   created_at: string;
+  official_domain?: OfficialDomain;
+  skill?: string | null;
 };
 
 export type ActivitySummary = {
@@ -88,12 +104,16 @@ export type ActivitySummary = {
 
 export type DashboardResponse = {
   goals: SatGoals;
+  goals_set: boolean;
   mastery: MasteryRow[];
+  official_mastery: OfficialMastery[];
+  insights: { domains: DomainStat[]; totals: { bank: number; answered: number; correct: number } };
   plan_items: PlanItem[];
+  plan_week: { week_start: string; week_end: string; progress: PlanProgress };
   notebook: NotebookItem[];
   activity: ActivitySummary;
-  mastery_percent: number;
-  score_impact: { conservative: number; optimistic: number; label: string };
+  mastery_percent: number | null;
+  score_impact: ScoreImpact;
   plan_stale: boolean;
 };
 
@@ -108,7 +128,10 @@ export type Attempt = {
   score_accuracy: number | null;
   started_at: string;
   submitted_at: string | null;
+  scored_at?: string | null;
 };
+export type Timing = { elapsed_seconds: number; counted_seconds: number; study_minutes: number; time_limit_seconds: number | null };
+export type StartResponse = { attempt: Attempt; questions: SatQuestion[]; selection?: Selection };
 
 export type TutorResponse<T = Json> = {
   ok: boolean;
@@ -170,7 +193,7 @@ const call = async <T>(
   const assertActor = async () => {
     if (!opts?.actorId) return;
     const { data, error } = await supabase.auth.getSession();
-    if (error || data.session?.user.id !== opts.actorId) throw new Error('Your account changed. Sign in and reopen your results.');
+    if (error || data.session?.user.id !== opts.actorId) throw new ApiError('Your account changed. Sign in and reopen your results.', 401, 'account_changed');
   };
   await assertActor();
   const method = opts?.method ?? 'GET';
@@ -183,13 +206,18 @@ const call = async <T>(
       body: opts?.body != null ? JSON.stringify(opts.body) : undefined,
     });
 
-  let res = await send(accessToken);
+  let res: Response;
+  try { res = await send(accessToken); } catch (failure) {
+    throw new ApiError(failure instanceof Error && failure.name === 'TimeoutError' ? 'The request timed out. Please retry.' : 'The connection failed. Please retry.', 0, 'network');
+  }
   if (res.status === 401) {
     await readBody(res).catch(() => null);
     const refreshed = await supabase.auth.refreshSession().catch(() => null);
     const retryToken = refreshed?.data.session?.access_token ?? null;
     await assertActor();
-    if (retryToken && retryToken !== accessToken && (!opts?.actorId || refreshed?.data.session?.user.id === opts.actorId)) res = await send(retryToken);
+    if (retryToken && retryToken !== accessToken && (!opts?.actorId || refreshed?.data.session?.user.id === opts.actorId)) {
+      try { res = await send(retryToken); } catch { throw new ApiError('The connection failed. Please retry.', 0, 'network'); }
+    }
   }
 
   if (!res.ok) {
@@ -219,40 +247,30 @@ export const goalsPatch = (
 export const dashboardGet = (accessToken: string): Promise<DashboardResponse> =>
   call(accessToken, '/sat-practice/dashboard');
 
-export const masteryGet = (accessToken: string): Promise<{ mastery: MasteryRow[] }> =>
-  call(accessToken, '/sat-practice/insights/mastery');
+export const insightsGet = (accessToken: string): Promise<{ domains: DomainStat[]; score_impact: ScoreImpact; official_mastery: OfficialMastery[]; totals: { bank: number; answered: number; correct: number } }> =>
+  call(accessToken, '/sat-practice/insights');
 
-export const scoreImpactGet = (
-  accessToken: string,
-): Promise<{ conservative: number; optimistic: number; label: string }> =>
-  call(accessToken, '/sat-practice/insights/score-impact');
-
-export const bankGet = (
-  accessToken: string,
-  opts?: Partial<{
-    section_type: SatSectionType;
-    domain: SatDomain;
-    difficulty: SatDifficulty;
-    mistake_history: string;
-    limit: number;
-  }>,
-): Promise<{ questions: SatQuestion[] }> => {
+export type BankParams = Partial<{
+  section_type: SatSectionType; official_domain: OfficialDomain; skill: string; difficulty: SatDifficulty;
+  format: 'mcq' | 'spr'; status: QuestionStatus; limit: number; offset: number;
+}>;
+export const bankGet = (accessToken: string, opts?: BankParams): Promise<{ questions: SatQuestion[]; total: number; offset: number; limit: number; facets: Facets; history: Record<string, QuestionStatus> }> => {
   const qs = new URLSearchParams();
   for (const [key, value] of Object.entries(opts ?? {})) {
     if (value != null && value !== '') qs.set(key, String(value));
   }
-  return call(accessToken, `/sat-practice/bank${qs.toString() ? `?${qs.toString()}` : ''}`);
+  return call(accessToken, '/sat-practice/bank' + (qs.toString() ? '?' + qs.toString() : ''));
 };
 
-const starting = new Map<string, Promise<{ attempt: Attempt; questions: SatQuestion[] }>>();
+const starting = new Map<string, Promise<StartResponse>>();
 const durableStart = async (accessToken: string, path: string, body: Record<string, unknown>) => {
   const actor = startActor(accessToken), selection = startSelection(path, body), key = actor + ':' + selection;
   const existing = starting.get(key);
   if (existing) return existing;
   let storage: Storage;
-  try { storage = sessionStorage; } catch { throw new Error('Enable browser storage before starting a drill, then retry.'); }
+  try { storage = sessionStorage; } catch { throw new ApiError('Enable browser storage before starting a drill, then retry.', 0, 'storage'); }
   const requestId = pendingStart(storage, actor, selection);
-  const promise = call<{ attempt: Attempt; questions: SatQuestion[] }>(accessToken, path, {
+  const promise = call<StartResponse>(accessToken, path, {
     method: 'POST', body: { ...body, request_id: requestId }, timeoutMs: 30000,
   }).finally(() => { if (starting.get(key) === promise) starting.delete(key); });
   // Retain the ID until Lab confirms the owned drill loaded. A reload between
@@ -266,24 +284,35 @@ export const attemptStart = (
   body: Partial<{
     section_type: SatSectionType;
     domain: SatDomain;
+    official_domain: OfficialDomain;
+    skill: string;
+    format: 'mcq' | 'spr';
+    status: QuestionStatus;
+    mode: 'bank';
     difficulty: SatDifficulty;
     question_count: number;
     question_ids: string[];
     mistake_history: string;
   }>,
-): Promise<{ attempt: Attempt; questions: SatQuestion[] }> =>
+): Promise<StartResponse> =>
   durableStart(accessToken, '/sat-practice/attempts/start', body);
+
+export const moduleStart = (accessToken: string, body: { section: 'math' | 'reading_writing'; profile: 'standard' | 'harder' }): Promise<StartResponse> =>
+  durableStart(accessToken, '/sat-practice/modules/start', body);
+
+export const planItemStart = (accessToken: string, itemId: string): Promise<StartResponse & { completed?: boolean }> =>
+  durableStart(accessToken, '/sat-practice/plans/items/' + encodeURIComponent(itemId) + '/start', {}) as Promise<StartResponse & { completed?: boolean }>;
 
 export const attemptSubmit = (
   accessToken: string,
   body: { attempt_id: string; answers: Record<string, unknown> },
-): Promise<{ attempt: Attempt; questions: SatQuestion[]; notebook: NotebookItem[] }> =>
+): Promise<{ attempt: Attempt; questions: SatQuestion[]; notebook: NotebookItem[]; timing?: Timing }> =>
   call(accessToken, '/sat-practice/attempts/submit', { method: 'POST', body, timeoutMs: 30000 });
 
 export const attemptGet = (
   accessToken: string,
   attemptId: string,
-): Promise<{ attempt: Attempt; questions: SatQuestion[]; legacy_result?: boolean }> =>
+): Promise<{ attempt: Attempt; questions: SatQuestion[]; legacy_result?: boolean; timing?: Timing }> =>
   call(accessToken, `/sat-practice/attempts/${encodeURIComponent(attemptId)}`);
 
 export const notebookGet = (accessToken: string): Promise<{ items: NotebookItem[] }> =>
@@ -299,7 +328,7 @@ export const notebookPatch = (
 export const notebookRetry = (
   accessToken: string,
   id: string,
-): Promise<{ attempt: Attempt; questions: SatQuestion[] }> =>
+): Promise<StartResponse> =>
   durableStart(accessToken, `/sat-practice/notebook/${encodeURIComponent(id)}/retry`, {});
 
 export const srsDueGet = (accessToken: string): Promise<{ items: Array<NotebookItem & { question: SatQuestion | null }> }> =>
@@ -308,8 +337,23 @@ export const srsDueGet = (accessToken: string): Promise<{ items: Array<NotebookI
 export const plansTodayGet = (accessToken: string): Promise<{ items: PlanItem[] }> =>
   call(accessToken, '/sat-practice/plans/today');
 
-export const plansRegenerate = (accessToken: string): Promise<{ ok: boolean; items: PlanItem[] }> =>
+export const plansWeekGet = (accessToken: string): Promise<PlanWeek> => call(accessToken, '/sat-practice/plans/week');
+
+export const plansRegenerate = (accessToken: string): Promise<{ ok: boolean; items: PlanItem[]; week: PlanWeek }> =>
   call(accessToken, '/sat-practice/plans/regenerate', { method: 'POST', body: {} });
+
+// Admin authoring (admin-sat-practice; the server enforces admin.products.manage).
+export type AdminItem = { id: string; type: string; data: Json; metadata: Json; correct: Json | null; explanation: string | null };
+export type AdminIssue = { index: number; slug: string | null; message: string };
+export const adminItemsGet = (accessToken: string, params: { status?: string; domain?: string; q?: string; limit?: number; offset?: number }): Promise<{ total: number; items: AdminItem[] }> => {
+  const qs = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) if (value != null && value !== '') qs.set(key, String(value));
+  return call(accessToken, '/admin-sat-practice/items?' + qs.toString());
+};
+export const adminImport = (accessToken: string, items: unknown[], status: 'draft' | 'published'): Promise<{ ok: boolean; inserted: number; updated: number; status: string; warnings: AdminIssue[] }> =>
+  call(accessToken, '/admin-sat-practice/import', { method: 'POST', body: { items, status }, timeoutMs: 120000 });
+export const adminSetStatus = (accessToken: string, ids: string[], status: 'draft' | 'published'): Promise<{ ok: boolean; changed: number }> =>
+  call(accessToken, '/admin-sat-practice/items/status', { method: 'POST', body: { ids, status } });
 
 export const tutorQuota = (accessToken: string, actorId: string): Promise<TutorQuota> =>
   call(accessToken, '/sat-practice/tutor/explain?action=quota', { actorId });

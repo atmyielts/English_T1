@@ -12,6 +12,7 @@ export default defineConfig({
           if (id.includes('@supabase')) return 'supabase';
           if (id.includes('react-router')) return 'router';
           if (id.includes('lucide-react')) return 'icons';
+          if (id.includes('node_modules/katex')) return 'katex';
           if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) return 'react';
           return undefined;
         },
@@ -21,7 +22,8 @@ export default defineConfig({
   server: {
     port: 5196,
     fs: {
-      allow: ['..'],
+      // Shared packages and the contract-A module in supabase/functions/_shared.
+      allow: ['../..'],
     },
   },
 });
