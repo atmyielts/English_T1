@@ -13,7 +13,7 @@ import {staffGuardianCommand,staffGuardianActions} from './staff-guardian-comman
 import {dispatchGuardianNotification,sendParentTelegram,sendParentSms} from './guardian-delivery.ts';
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import * as nodemailer from "https://esm.sh/nodemailer@7.0.6?target=denonext";
+import * as nodemailer from "npm:nodemailer@7.0.6";
 import { placementBand } from "../_shared/academy-scoring.ts";
 import { callOpenRouterJsonWithStatus, type AIStatus } from "../_shared/ielts-ai.ts";
 import { getS3Config, signStorageRef, uploadFileToS3 } from "../_shared/media-storage.ts";
