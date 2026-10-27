@@ -1,0 +1,2877 @@
+[
+  {
+    "slug": "adv-equiv-001",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "Which expression is equivalent to $(3x^2 + 5x - 2) + (x^2 - 7x + 4)$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$4x^4 - 2x^2 + 2$"
+      },
+      {
+        "id": "B",
+        "label": "$4x^2 + 12x + 2$"
+      },
+      {
+        "id": "C",
+        "label": "$4x^2 - 2x - 6$"
+      },
+      {
+        "id": "D",
+        "label": "$4x^2 - 2x + 2$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Combine like terms: $3x^2 + x^2 = 4x^2$, $5x - 7x = -2x$, and $-2 + 4 = 2$, giving $4x^2 - 2x + 2$. Choice B adds 7 instead of $-7$ to the $x$-coefficient. Choice C subtracts 4 instead of adding it. Choice A adds the exponents when combining like terms; exponents do not change when like terms are added."
+  },
+  {
+    "slug": "adv-equiv-002",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "Which expression is equivalent to $(2x - 3)(x + 4)$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$2x^2 - 12$"
+      },
+      {
+        "id": "B",
+        "label": "$2x^2 - 5x - 12$"
+      },
+      {
+        "id": "C",
+        "label": "$2x^2 + 11x - 12$"
+      },
+      {
+        "id": "D",
+        "label": "$2x^2 + 5x - 12$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Distribute: $2x \\cdot x + 2x \\cdot 4 - 3 \\cdot x - 3 \\cdot 4 = 2x^2 + 8x - 3x - 12 = 2x^2 + 5x - 12$. Choice A multiplies only the first terms and the last terms and leaves out the middle terms. Choice C adds $3x$ instead of subtracting it. Choice B has the sign of the middle term reversed, as if the factors were $(2x + 3)(x - 4)$."
+  },
+  {
+    "slug": "adv-equiv-003",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "Which expression is equivalent to $4x(3x - 5) - 2x^2$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$10x^2 - 5x$"
+      },
+      {
+        "id": "B",
+        "label": "$12x^2 - 22x$"
+      },
+      {
+        "id": "C",
+        "label": "$14x^2 - 20x$"
+      },
+      {
+        "id": "D",
+        "label": "$10x^2 - 20x$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Distribute: $4x(3x - 5) = 12x^2 - 20x$. Subtracting $2x^2$ gives $10x^2 - 20x$. Choice A multiplies $-5$ by $x$ instead of by $4x$. Choice B combines $-2x^2$ with $-20x$, which are not like terms. Choice C adds $2x^2$ instead of subtracting it."
+  },
+  {
+    "slug": "adv-equiv-004",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "Which expression is equivalent to $x^2 - 9x + 20$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$(x + 4)(x + 5)$"
+      },
+      {
+        "id": "B",
+        "label": "$(x - 2)(x - 10)$"
+      },
+      {
+        "id": "C",
+        "label": "$(x - 4)(x + 5)$"
+      },
+      {
+        "id": "D",
+        "label": "$(x - 4)(x - 5)$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Look for two numbers with product 20 and sum $-9$: they are $-4$ and $-5$, so $x^2 - 9x + 20 = (x - 4)(x - 5)$. Choice A gives a middle term of $+9x$. Choice B has product 20 but sum $-12$. Choice C has product $-20$."
+  },
+  {
+    "slug": "adv-equiv-005",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "For $x \\neq 0$, which expression is equivalent to $\\frac{12x^5}{3x^2}$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$4x^{\\frac{5}{2}}$"
+      },
+      {
+        "id": "B",
+        "label": "$9x^3$"
+      },
+      {
+        "id": "C",
+        "label": "$4x^7$"
+      },
+      {
+        "id": "D",
+        "label": "$4x^3$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Divide the coefficients and subtract the exponents: $\\frac{12}{3} = 4$ and $x^{5 - 2} = x^3$, so the expression is $4x^3$. Choice B subtracts the coefficients. Choice C adds the exponents, which is the rule for multiplication. Choice A divides the exponents."
+  },
+  {
+    "slug": "adv-equiv-006",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "Which expression is equivalent to $(x^3)^4 \\cdot x^2$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$x^9$"
+      },
+      {
+        "id": "B",
+        "label": "$x^{14}$"
+      },
+      {
+        "id": "C",
+        "label": "$x^{12}$"
+      },
+      {
+        "id": "D",
+        "label": "$x^{24}$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "A power of a power multiplies exponents: $(x^3)^4 = x^{12}$. Multiplying by $x^2$ adds exponents: $x^{12 + 2} = x^{14}$. Choice A adds all three exponents. Choice C leaves out the factor $x^2$. Choice D multiplies all three exponents."
+  },
+  {
+    "slug": "adv-equiv-007",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "The expression $(x + 6)^2$ is equivalent to $x^2 + bx + 36$, where $b$ is a constant. What is the value of $b$?",
+    "answer": [
+      "12"
+    ],
+    "explanation": "$(x + 6)^2 = (x + 6)(x + 6) = x^2 + 6x + 6x + 36 = x^2 + 12x + 36$, so $b = 12$. A common mistake is to write $(x + 6)^2 = x^2 + 36$, which leaves out the middle term."
+  },
+  {
+    "slug": "adv-equiv-008",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "Which expression is equivalent to $9x^2 - 25$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$(3x - 5)^2$"
+      },
+      {
+        "id": "B",
+        "label": "$(3x - 25)(3x + 1)$"
+      },
+      {
+        "id": "C",
+        "label": "$(9x - 5)(x + 5)$"
+      },
+      {
+        "id": "D",
+        "label": "$(3x - 5)(3x + 5)$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "$9x^2 - 25$ is a difference of squares, $(3x)^2 - 5^2$, which factors as $(3x - 5)(3x + 5)$. Choice A expands to $9x^2 - 30x + 25$. Choice C expands to $9x^2 + 40x - 25$. Choice B expands to $9x^2 - 72x - 25$."
+  },
+  {
+    "slug": "adv-equiv-009",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "Which expression is equivalent to $(5x^2 - 2x + 1) - (3x^2 + 4x - 6)$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$2x^2 + 2x - 5$"
+      },
+      {
+        "id": "B",
+        "label": "$2x^2 - 6x - 5$"
+      },
+      {
+        "id": "C",
+        "label": "$2x^2 + 2x + 7$"
+      },
+      {
+        "id": "D",
+        "label": "$2x^2 - 6x + 7$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Distribute the subtraction to every term: $5x^2 - 2x + 1 - 3x^2 - 4x + 6 = 2x^2 - 6x + 7$. Choice A subtracts only the first term and adds the others. Choice B subtracts $-6$ incorrectly, getting $-5$. Choice C changes the constant correctly but adds $4x$."
+  },
+  {
+    "slug": "adv-equiv-010",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "The area $A$ of a trapezoid with height $h$ and parallel sides of lengths $b_1$ and $b_2$ is given by $A = \\frac{1}{2}h(b_1 + b_2)$. Which equation correctly expresses $h$ in terms of $A$, $b_1$, and $b_2$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$h = \\frac{2A}{b_1 + b_2}$"
+      },
+      {
+        "id": "B",
+        "label": "$h = \\frac{A}{2(b_1 + b_2)}$"
+      },
+      {
+        "id": "C",
+        "label": "$h = 2A - (b_1 + b_2)$"
+      },
+      {
+        "id": "D",
+        "label": "$h = \\frac{b_1 + b_2}{2A}$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Multiply both sides by 2: $2A = h(b_1 + b_2)$. Divide by $b_1 + b_2$: $h = \\frac{2A}{b_1 + b_2}$. Choice B divides by 2 instead of multiplying by 2. Choice C subtracts $b_1 + b_2$, but it multiplies $h$ and must be removed by division. Choice D is the reciprocal of the correct expression."
+  },
+  {
+    "slug": "adv-equiv-011",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "For $x > 0$, which expression is equivalent to $\\sqrt[3]{x^2}$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$x^{\\frac{3}{2}}$"
+      },
+      {
+        "id": "B",
+        "label": "$x^{\\frac{2}{3}}$"
+      },
+      {
+        "id": "C",
+        "label": "$x^{6}$"
+      },
+      {
+        "id": "D",
+        "label": "$x^{-1}$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "The cube root is the $\\frac{1}{3}$ power, so $\\sqrt[3]{x^2} = (x^2)^{\\frac{1}{3}} = x^{\\frac{2}{3}}$. Choice A puts the root index in the numerator. Choice C multiplies 2 and 3. Choice D subtracts 3 from 2."
+  },
+  {
+    "slug": "adv-equiv-012",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "For $x \\neq 4$, the expression $\\frac{x^2 - 16}{x - 4}$ is equivalent to $x + k$, where $k$ is a constant. What is the value of $k$?",
+    "answer": [
+      "4"
+    ],
+    "explanation": "Factor the numerator as a difference of squares: $x^2 - 16 = (x - 4)(x + 4)$. Dividing by $x - 4$ leaves $x + 4$, so $k = 4$."
+  },
+  {
+    "slug": "adv-equiv-013",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "The expression $2(3x - 4) + 5(x + 2)$ is equivalent to $ax + b$, where $a$ and $b$ are constants. What is the value of $a + b$?",
+    "answer": [
+      "13"
+    ],
+    "explanation": "Distribute: $6x - 8 + 5x + 10 = 11x + 2$. So $a = 11$, $b = 2$, and $a + b = 13$."
+  },
+  {
+    "slug": "adv-equiv-014",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "Which expression is equivalent to $(2x + 3)^2 - (2x - 3)^2$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$0$"
+      },
+      {
+        "id": "B",
+        "label": "$12x$"
+      },
+      {
+        "id": "C",
+        "label": "$24x$"
+      },
+      {
+        "id": "D",
+        "label": "$8x^2 + 18$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Expand: $(4x^2 + 12x + 9) - (4x^2 - 12x + 9) = 24x$. Choice A assumes the squares cancel completely, ignoring the middle terms of opposite sign. Choice B counts the middle term $12x$ only once. Choice D adds the two squares instead of subtracting them."
+  },
+  {
+    "slug": "adv-equiv-015",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "For $x \\neq -3$, which expression is equivalent to $\\frac{x^2 + 5x + 6}{x + 3}$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$x - 2$"
+      },
+      {
+        "id": "B",
+        "label": "$x^2 + 5x + 2$"
+      },
+      {
+        "id": "C",
+        "label": "$x + 3$"
+      },
+      {
+        "id": "D",
+        "label": "$x + 2$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Factor the numerator: $x^2 + 5x + 6 = (x + 2)(x + 3)$. Dividing by $x + 3$ leaves $x + 2$. Choice A has the wrong sign. Choice C is the canceled factor. Choice B \\\"cancels\\\" the 3 from the denominator with part of the 6, which is not a valid operation."
+  },
+  {
+    "slug": "adv-equiv-016",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "For $x > 0$, which expression is equivalent to $x^{-2} \\cdot x^{\\frac{5}{2}}$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\sqrt{x}$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{1}{\\sqrt{x}}$"
+      },
+      {
+        "id": "C",
+        "label": "$x^{\\frac{9}{2}}$"
+      },
+      {
+        "id": "D",
+        "label": "$x^{-5}$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Add the exponents: $-2 + \\frac{5}{2} = \\frac{1}{2}$, so the product is $x^{\\frac{1}{2}} = \\sqrt{x}$. Choice D multiplies the exponents. Choice B gets $-\\frac{1}{2}$ by subtracting in the wrong order. Choice C ignores the negative sign on $-2$."
+  },
+  {
+    "slug": "adv-equiv-017",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "For $x > 0$, which expression is equivalent to $\\frac{3}{x} + \\frac{2}{x + 1}$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{5}{2x + 1}$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{5x + 3}{x(x + 1)}$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{5x + 1}{x(x + 1)}$"
+      },
+      {
+        "id": "D",
+        "label": "$\\frac{6}{x(x + 1)}$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Use the common denominator $x(x + 1)$: $\\frac{3(x + 1) + 2x}{x(x + 1)} = \\frac{5x + 3}{x(x + 1)}$. Choice A adds the numerators and the denominators separately. Choice C writes $3(x + 1)$ as $3x + 1$. Choice D multiplies the numerators instead of rewriting each fraction over the common denominator."
+  },
+  {
+    "slug": "adv-equiv-018",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The speed $v$ of an object with mass $m$ and kinetic energy $E$ satisfies $v = \\sqrt{\\frac{2E}{m}}$, where $m > 0$ and $v > 0$. Which equation gives $m$ in terms of $E$ and $v$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$m = \\frac{2E}{v}$"
+      },
+      {
+        "id": "B",
+        "label": "$m = \\frac{v^2}{2E}$"
+      },
+      {
+        "id": "C",
+        "label": "$m = \\frac{2E}{v^2}$"
+      },
+      {
+        "id": "D",
+        "label": "$m = 2Ev^2$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Square both sides: $v^2 = \\frac{2E}{m}$. Multiply by $m$ and divide by $v^2$: $m = \\frac{2E}{v^2}$. Choice A forgets to square $v$ when removing the square root. Choice B inverts the fraction. Choice D multiplies by $v^2$ instead of dividing."
+  },
+  {
+    "slug": "adv-equiv-019",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "The expression $(3x - 2)(ax + 5)$, where $a$ is a constant, is equivalent to $6x^2 + bx - 10$, where $b$ is a constant. What is the value of $b$?",
+    "answer": [
+      "11"
+    ],
+    "explanation": "The $x^2$-coefficient of the product is $3a$, so $3a = 6$ and $a = 2$. Then $(3x - 2)(2x + 5) = 6x^2 + 15x - 4x - 10 = 6x^2 + 11x - 10$, so $b = 11$."
+  },
+  {
+    "slug": "adv-equiv-020",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "The expression $x^2 + 10x + 7$ can be written in the form $(x + h)^2 + k$, where $h$ and $k$ are constants. What is the value of $k$?",
+    "answer": [
+      "-18"
+    ],
+    "explanation": "Complete the square: $x^2 + 10x = (x + 5)^2 - 25$. So $x^2 + 10x + 7 = (x + 5)^2 - 25 + 7 = (x + 5)^2 - 18$, and $k = -18$."
+  },
+  {
+    "slug": "adv-equiv-021",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "If $a = 3b - 2$, which expression is equivalent to $9b^2 - 12b + 4$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$a^2 - 4$"
+      },
+      {
+        "id": "B",
+        "label": "$a^2 + 4$"
+      },
+      {
+        "id": "C",
+        "label": "$(a - 2)^2$"
+      },
+      {
+        "id": "D",
+        "label": "$a^2$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Notice that $9b^2 - 12b + 4 = (3b - 2)^2$, a perfect square. Since $3b - 2 = a$, the expression equals $a^2$. Choice A treats $(3b - 2)^2$ as $9b^2 - 4$. Choice C replaces $3b$ with $a$ instead of replacing $3b - 2$ with $a$. Choice B treats $9b^2 - 12b$ as $a^2$ and then adds the 4 again."
+  },
+  {
+    "slug": "adv-equiv-022",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "For $x \\neq -4$, the expression $\\frac{2x^2 + 7x - 3}{x + 4}$ is equivalent to $2x - 1 + \\frac{A}{x + 4}$, where $A$ is a constant. What is the value of $A$?",
+    "answer": [
+      "1"
+    ],
+    "explanation": "Multiply $2x - 1 + \\frac{A}{x + 4}$ by $x + 4$: $(2x - 1)(x + 4) + A = 2x^2 + 7x - 4 + A$. This must equal $2x^2 + 7x - 3$, so $A = 1$."
+  },
+  {
+    "slug": "adv-equiv-023",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "For $x > 0$ and $y > 0$, which expression is equivalent to $(x^2 y^3)^2 (x y^{-1})^3$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$x^7 y^3$"
+      },
+      {
+        "id": "B",
+        "label": "$x^7 y^9$"
+      },
+      {
+        "id": "C",
+        "label": "$x^{12} y^{-18}$"
+      },
+      {
+        "id": "D",
+        "label": "$x^4 y^6$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Apply each power: $(x^2y^3)^2 = x^4y^6$ and $(xy^{-1})^3 = x^3y^{-3}$. Multiply by adding exponents: $x^{4 + 3}y^{6 - 3} = x^7y^3$. Choice D stops after the first factor. Choice B drops the negative sign on $-3$. Choice C multiplies the exponents of the two factors instead of adding them."
+  },
+  {
+    "slug": "adv-equiv-024",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "Which expression is equivalent to $2x^2 - x - 15$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$(2x - 5)(x + 3)$"
+      },
+      {
+        "id": "B",
+        "label": "$(2x + 5)(x - 3)$"
+      },
+      {
+        "id": "C",
+        "label": "$(2x + 3)(x - 5)$"
+      },
+      {
+        "id": "D",
+        "label": "$(2x - 3)(x + 5)$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Expand each choice and compare the middle term. $(2x + 5)(x - 3) = 2x^2 - 6x + 5x - 15 = 2x^2 - x - 15$. Choice A gives $2x^2 + x - 15$, the wrong sign. Choice C gives $2x^2 - 7x - 15$. Choice D gives $2x^2 + 7x - 15$."
+  },
+  {
+    "slug": "adv-equiv-025",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "An account balance $A$ after $t$ years of annual compound interest is given by $A = P(1 + r)^t$, where $P$ is the initial deposit and $r$ is the annual interest rate written as a decimal. Which equation expresses $P$ in terms of $A$, $r$, and $t$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$P = A(1 + r)^t$"
+      },
+      {
+        "id": "B",
+        "label": "$P = \\frac{A}{1 + rt}$"
+      },
+      {
+        "id": "C",
+        "label": "$P = \\frac{A}{(1 + r)^t}$"
+      },
+      {
+        "id": "D",
+        "label": "$P = A - (1 + r)^t$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "$P$ is multiplied by $(1 + r)^t$, so divide both sides by $(1 + r)^t$: $P = \\frac{A}{(1 + r)^t}$. Choice A multiplies instead of dividing. Choice B replaces the exponent $t$ with multiplication, which describes simple interest. Choice D subtracts a factor instead of dividing by it."
+  },
+  {
+    "slug": "adv-equiv-026",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "For $x > 0$, which expression is equivalent to $\\sqrt{50x^3}$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$5x\\sqrt{2}$"
+      },
+      {
+        "id": "B",
+        "label": "$25x\\sqrt{2x}$"
+      },
+      {
+        "id": "C",
+        "label": "$5x^2\\sqrt{2x}$"
+      },
+      {
+        "id": "D",
+        "label": "$5x\\sqrt{2x}$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Write $50x^3 = 25x^2 \\cdot 2x$. Then $\\sqrt{25x^2 \\cdot 2x} = 5x\\sqrt{2x}$. Choice B takes 25 out of the root without taking its square root. Choice C takes $x^2$ out unchanged instead of $x$. Choice A leaves the remaining factor of $x$ out of the radicand."
+  },
+  {
+    "slug": "adv-equiv-027",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "The expression $4x^2 - 20x + 25$ is equivalent to $(ax + b)^2$, where $a$ and $b$ are constants and $a > 0$. What is the value of $ab$?",
+    "answer": [
+      "-10"
+    ],
+    "explanation": "Since $4x^2 = (2x)^2$ and $25 = 5^2$, try $(2x - 5)^2 = 4x^2 - 20x + 25$. The middle term matches, so $a = 2$, $b = -5$, and $ab = -10$. (Choosing $b = 5$ would give a middle term of $+20x$.)"
+  },
+  {
+    "slug": "adv-equiv-028",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "For $x \\neq 3$ and $x \\neq -3$, which expression is equivalent to $\\frac{x}{x - 3} - \\frac{18}{x^2 - 9}$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{x + 6}{x + 3}$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{x - 18}{x^2 - 9}$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{x + 6}{x - 3}$"
+      },
+      {
+        "id": "D",
+        "label": "$\\frac{x - 6}{x + 3}$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Rewrite the first fraction over $x^2 - 9 = (x - 3)(x + 3)$: $\\frac{x(x + 3) - 18}{(x - 3)(x + 3)} = \\frac{x^2 + 3x - 18}{(x - 3)(x + 3)} = \\frac{(x + 6)(x - 3)}{(x - 3)(x + 3)} = \\frac{x + 6}{x + 3}$. Choice D factors $x^2 + 3x - 18$ with the wrong signs. Choice B subtracts the numerators without first multiplying $x$ by $x + 3$. Choice C cancels the wrong factor."
+  },
+  {
+    "slug": "adv-equiv-029",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "The expression $(ax + 3)(bx - 5)$, where $a$ and $b$ are positive integer constants, is equivalent to $12x^2 - 11x - 15$. What is the value of $a + b$?",
+    "answer": [
+      "7"
+    ],
+    "explanation": "Expanding gives $abx^2 + (3b - 5a)x - 15$. So $ab = 12$ and $3b - 5a = -11$. Test the positive factor pairs of 12: $(a, b) = (4, 3)$ gives $3(3) - 5(4) = -11$, and no other pair works (for example, $(3, 4)$ gives $-3$). So $a + b = 7$."
+  },
+  {
+    "slug": "adv-equiv-030",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "For $x \\neq 2$, which expression is equivalent to $\\frac{x^3 - 8}{x - 2}$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$x^2 + 4$"
+      },
+      {
+        "id": "B",
+        "label": "$x^2 + 2x + 4$"
+      },
+      {
+        "id": "C",
+        "label": "$x^2 - 2x + 4$"
+      },
+      {
+        "id": "D",
+        "label": "$x^2 + 4x + 4$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "$x^3 - 8$ is a difference of cubes: $x^3 - 2^3 = (x - 2)(x^2 + 2x + 4)$. Dividing by $x - 2$ leaves $x^2 + 2x + 4$. Choice A divides term by term, which is not valid. Choice C is the factor that appears in a sum of cubes, $x^3 + 8$. Choice D is $(x + 2)^2$."
+  },
+  {
+    "slug": "adv-equiv-031",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "If $x^2 + y^2 = 29$ and $xy = 10$, what is the value of $(x - y)^2$?",
+    "answer": [
+      "9"
+    ],
+    "explanation": "Expand: $(x - y)^2 = x^2 - 2xy + y^2 = (x^2 + y^2) - 2xy = 29 - 2(10) = 9$. There is no need to find $x$ and $y$ individually."
+  },
+  {
+    "slug": "adv-equiv-032",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "For $x > 0$ and $y > 0$, which expression is equivalent to $\\left(\\frac{27x^6}{y^3}\\right)^{-\\frac{2}{3}}$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{9x^4}{y^2}$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{y^2}{18x^4}$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{y^2}{9x^4}$"
+      },
+      {
+        "id": "D",
+        "label": "$\\frac{1}{9x^4y^2}$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "A negative exponent inverts the base: $\\left(\\frac{y^3}{27x^6}\\right)^{\\frac{2}{3}}$. Then $(y^3)^{\\frac{2}{3}} = y^2$, $27^{\\frac{2}{3}} = (\\sqrt[3]{27})^2 = 9$, and $(x^6)^{\\frac{2}{3}} = x^4$, giving $\\frac{y^2}{9x^4}$. Choice A ignores the negative sign. Choice B computes $27^{\\frac{2}{3}}$ as $27 \\times \\frac{2}{3} = 18$. Choice D applies the negative sign to $y$ twice, leaving $y$ in the denominator."
+  },
+  {
+    "slug": "adv-equiv-033",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "Which of the following is the complete factorization of $x^4 - 13x^2 + 36$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$(x - 4)(x + 4)(x - 9)(x + 9)$"
+      },
+      {
+        "id": "B",
+        "label": "$(x - 2)^2(x - 3)^2$"
+      },
+      {
+        "id": "C",
+        "label": "$(x^2 + 4)(x^2 + 9)$"
+      },
+      {
+        "id": "D",
+        "label": "$(x - 2)(x + 2)(x - 3)(x + 3)$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Treat the expression as a quadratic in $x^2$: $x^4 - 13x^2 + 36 = (x^2 - 4)(x^2 - 9)$, since $4 \\cdot 9 = 36$ and $4 + 9 = 13$. Each factor is a difference of squares, so the complete factorization is $(x - 2)(x + 2)(x - 3)(x + 3)$. Choice A uses 4 and 9 where their square roots belong. Choice B expands to an expression with odd powers of $x$. Choice C has the wrong signs and expands to $x^4 + 13x^2 + 36$."
+  },
+  {
+    "slug": "adv-equiv-034",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "For $x > 0$, the expression $\\sqrt[3]{x^5} \\cdot \\sqrt{x}$ is equivalent to $x^k$. What is the value of $k$?",
+    "answer": [
+      "13/6",
+      "2.166",
+      "2.167"
+    ],
+    "explanation": "Write each root as a power: $\\sqrt[3]{x^5} = x^{\\frac{5}{3}}$ and $\\sqrt{x} = x^{\\frac{1}{2}}$. Multiplying adds the exponents: $\\frac{5}{3} + \\frac{1}{2} = \\frac{10}{6} + \\frac{3}{6} = \\frac{13}{6}$. Enter 13/6, 2.166, or 2.167."
+  },
+  {
+    "slug": "adv-equiv-035",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "Which expression is equivalent to $(16^x)^{\\frac{1}{2}} \\cdot 2^x$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$8^x$"
+      },
+      {
+        "id": "B",
+        "label": "$2^{5x}$"
+      },
+      {
+        "id": "C",
+        "label": "$2^{\\frac{5x}{2}}$"
+      },
+      {
+        "id": "D",
+        "label": "$32^x$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "$(16^x)^{\\frac{1}{2}} = 16^{\\frac{x}{2}} = (2^4)^{\\frac{x}{2}} = 2^{2x}$. Multiplying by $2^x$ gives $2^{3x} = (2^3)^x = 8^x$. Choice B ignores the exponent $\\frac{1}{2}$ and adds $4x + x$. Choice C applies the exponent $\\frac{1}{2}$ to the factor $2^x$ as well, computing $(16^x \\cdot 2^x)^{\\frac{1}{2}}$. Choice D multiplies the bases, $16 \\cdot 2 = 32$, without applying the exponent $\\frac{1}{2}$ to 16."
+  },
+  {
+    "slug": "adv-equiv-036",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "equivalent_expressions",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "For $x > 1$, which expression is equivalent to $\\frac{x - 1}{\\sqrt{x} + 1}$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\sqrt{x} + 1$"
+      },
+      {
+        "id": "B",
+        "label": "$\\sqrt{x} - 1$"
+      },
+      {
+        "id": "C",
+        "label": "$x - 2$"
+      },
+      {
+        "id": "D",
+        "label": "$\\frac{x - 1}{\\sqrt{x}}$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Factor the numerator as a difference of squares: $x - 1 = (\\sqrt{x})^2 - 1^2 = (\\sqrt{x} - 1)(\\sqrt{x} + 1)$. Dividing by $\\sqrt{x} + 1$ leaves $\\sqrt{x} - 1$. Choice A is the canceled factor. Choice C subtracts 1 in the denominator from the numerator, which is not valid for division. Choice D cancels only the 1 in the denominator."
+  },
+  {
+    "slug": "adv-nleq-001",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "If $3x^2 = 75$ and $x > 0$, what is the value of $x$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$5$"
+      },
+      {
+        "id": "B",
+        "label": "$5\\sqrt{3}$"
+      },
+      {
+        "id": "C",
+        "label": "$25$"
+      },
+      {
+        "id": "D",
+        "label": "$72$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Divide by 3: $x^2 = 25$. Since $x > 0$, $x = 5$. Choice C is the value of $x^2$; the square root still has to be taken. Choice B takes the square root of 75 without first dividing by 3. Choice D subtracts 3 instead of dividing by it."
+  },
+  {
+    "slug": "adv-nleq-002",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "What are the solutions to the equation $(x - 3)(x + 5) = 0$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-3$ and $5$"
+      },
+      {
+        "id": "B",
+        "label": "$3$ and $5$"
+      },
+      {
+        "id": "C",
+        "label": "$3$ and $-5$"
+      },
+      {
+        "id": "D",
+        "label": "$-15$ only"
+      }
+    ],
+    "answer": "C",
+    "explanation": "A product is zero when one of its factors is zero: $x - 3 = 0$ gives $x = 3$, and $x + 5 = 0$ gives $x = -5$. Choice A reverses both signs. Choice B reverses the sign of the second solution. Choice D multiplies the constants, which gives the constant term of the expanded equation, not a solution."
+  },
+  {
+    "slug": "adv-nleq-003",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "What value of $x$ satisfies the equation $\\sqrt{x + 4} = 5$?",
+    "answer": [
+      "21"
+    ],
+    "explanation": "Square both sides: $x + 4 = 25$, so $x = 21$. Check: $\\sqrt{25} = 5$. A common error is to forget to square the 5, which gives $x = 1$."
+  },
+  {
+    "slug": "adv-nleq-004",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "What is the sum of the solutions to $x^2 - 6x + 8 = 0$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-6$"
+      },
+      {
+        "id": "B",
+        "label": "$2$"
+      },
+      {
+        "id": "C",
+        "label": "$6$"
+      },
+      {
+        "id": "D",
+        "label": "$8$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Factor: $(x - 2)(x - 4) = 0$, so the solutions are 2 and 4, and their sum is 6. Choice A has the wrong sign (the sum is the opposite of the $x$-coefficient). Choice B is only one of the solutions. Choice D is the product of the solutions."
+  },
+  {
+    "slug": "adv-nleq-005",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "What are all the solutions to $x^2 + 4x = 0$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-4$ only"
+      },
+      {
+        "id": "B",
+        "label": "$0$ and $4$"
+      },
+      {
+        "id": "C",
+        "label": "$4$ only"
+      },
+      {
+        "id": "D",
+        "label": "$0$ and $-4$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Factor out $x$: $x(x + 4) = 0$, so $x = 0$ or $x = -4$. Choice A divides both sides by $x$, which loses the solution $x = 0$. Choice B and choice C have the wrong sign for the nonzero solution."
+  },
+  {
+    "slug": "adv-nleq-006",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A ball is dropped from a height of 45 meters. Its height $h$, in meters, $t$ seconds after it is dropped is modeled by $h = -5t^2 + 45$. How many seconds after it is dropped does the ball reach the ground?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$3$"
+      },
+      {
+        "id": "B",
+        "label": "$3\\sqrt{5}$"
+      },
+      {
+        "id": "C",
+        "label": "$9$"
+      },
+      {
+        "id": "D",
+        "label": "$45$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "The ball reaches the ground when $h = 0$: $-5t^2 + 45 = 0$, so $t^2 = 9$ and $t = 3$ (time must be positive). Choice C is $t^2$. Choice B takes the square root of 45 without dividing by 5. Choice D is the starting height."
+  },
+  {
+    "slug": "adv-nleq-007",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "What value of $x$ satisfies $2^{x + 1} = 32$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$4$"
+      },
+      {
+        "id": "B",
+        "label": "$5$"
+      },
+      {
+        "id": "C",
+        "label": "$15$"
+      },
+      {
+        "id": "D",
+        "label": "$16$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Since $32 = 2^5$, the exponents must be equal: $x + 1 = 5$, so $x = 4$. Choice B is the value of $x + 1$. Choice D is the value of $2^x$, since $2^{x + 1} = 2 \\cdot 2^x = 32$ gives $2^x = 16$. Choice C treats $2^{x + 1}$ as $2(x + 1)$ and solves $2x + 2 = 32$."
+  },
+  {
+    "slug": "adv-nleq-008",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "What is the negative solution to the equation $(x + 2)^2 = 25$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-23$"
+      },
+      {
+        "id": "B",
+        "label": "$-7$"
+      },
+      {
+        "id": "C",
+        "label": "$-3$"
+      },
+      {
+        "id": "D",
+        "label": "$3$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Take square roots: $x + 2 = 5$ or $x + 2 = -5$. So $x = 3$ or $x = -7$; the negative solution is $-7$. Choice A forgets to take the square root of 25. Choice C solves $x + 2 = -5$ by adding 2 instead of subtracting it. Choice D is the positive solution."
+  },
+  {
+    "slug": "adv-nleq-009",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "What is the real solution to the equation $2x^3 - 54 = 0$?",
+    "answer": [
+      "3"
+    ],
+    "explanation": "Add 54 and divide by 2: $x^3 = 27$. The real cube root of 27 is 3, since $3^3 = 27$."
+  },
+  {
+    "slug": "adv-nleq-010",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "$$y = x^2$$ $$y = 9$$ How many solutions $(x, y)$ does the system of equations have?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Zero"
+      },
+      {
+        "id": "B",
+        "label": "Exactly one"
+      },
+      {
+        "id": "C",
+        "label": "Exactly two"
+      },
+      {
+        "id": "D",
+        "label": "Infinitely many"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Substitute $y = 9$: $x^2 = 9$, so $x = 3$ or $x = -3$. The solutions are $(3, 9)$ and $(-3, 9)$: exactly two. Choice B counts only the positive square root. Graphically, the horizontal line $y = 9$ crosses the parabola $y = x^2$ twice, so choice A and choice D are not possible."
+  },
+  {
+    "slug": "adv-nleq-011",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "What is the solution to the equation $x^2 - 10x + 25 = 0$?",
+    "answer": [
+      "5"
+    ],
+    "explanation": "The left side is a perfect square: $(x - 5)^2 = 0$, so $x - 5 = 0$ and $x = 5$."
+  },
+  {
+    "slug": "adv-nleq-012",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "If $x^2 - x - 12 = 0$ and $x > 0$, what is the value of $x$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$3$"
+      },
+      {
+        "id": "B",
+        "label": "$4$"
+      },
+      {
+        "id": "C",
+        "label": "$6$"
+      },
+      {
+        "id": "D",
+        "label": "$12$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Factor: $(x - 4)(x + 3) = 0$, so $x = 4$ or $x = -3$. Since $x > 0$, $x = 4$. Choice A drops the negative sign of the solution $-3$. Choice C and choice D are factors of 12 that do not satisfy the equation; for example, $6^2 - 6 - 12 = 18$."
+  },
+  {
+    "slug": "adv-nleq-013",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "What value of $x$ satisfies $\\sqrt{2x} = 6$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$3$"
+      },
+      {
+        "id": "B",
+        "label": "$12$"
+      },
+      {
+        "id": "C",
+        "label": "$18$"
+      },
+      {
+        "id": "D",
+        "label": "$36$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Square both sides: $2x = 36$, so $x = 18$. Choice A divides 6 by 2 without squaring. Choice B doubles 6. Choice D is the value of $2x$."
+  },
+  {
+    "slug": "adv-nleq-014",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "What are the solutions to $x^2 - 4x - 1 = 0$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$2 \\pm \\sqrt{5}$"
+      },
+      {
+        "id": "B",
+        "label": "$2 \\pm \\sqrt{3}$"
+      },
+      {
+        "id": "C",
+        "label": "$-2 \\pm \\sqrt{5}$"
+      },
+      {
+        "id": "D",
+        "label": "$4 \\pm 2\\sqrt{5}$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "By the quadratic formula, $x = \\frac{4 \\pm \\sqrt{16 + 4}}{2} = \\frac{4 \\pm 2\\sqrt{5}}{2} = 2 \\pm \\sqrt{5}$. (Completing the square gives the same result: $(x - 2)^2 = 5$.) Choice C uses $-b = -4$ instead of $4$. Choice B subtracts 4 under the radical instead of adding it. Choice D forgets to divide the whole numerator by 2."
+  },
+  {
+    "slug": "adv-nleq-015",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "$$y = x^2 - 2x$$ $$y = x + 4$$ Which point $(x, y)$ is a solution to the system of equations?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$(4, 0)$"
+      },
+      {
+        "id": "B",
+        "label": "$(4, 8)$"
+      },
+      {
+        "id": "C",
+        "label": "$(1, 5)$"
+      },
+      {
+        "id": "D",
+        "label": "$(-4, 0)$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Set the expressions equal: $x^2 - 2x = x + 4$, so $x^2 - 3x - 4 = 0$ and $(x - 4)(x + 1) = 0$. If $x = 4$, then $y = 8$; if $x = -1$, then $y = 3$. Only $(4, 8)$ is listed. Choice A has the right $x$-value but the wrong $y$-value, so it lies on neither graph. Choice C lies on the line but not on the parabola. Choice D lies on the line but not on the parabola."
+  },
+  {
+    "slug": "adv-nleq-016",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "What are all the solutions to the equation $\\sqrt{2x + 7} = x + 2$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$1$ and $-3$"
+      },
+      {
+        "id": "B",
+        "label": "$-3$ only"
+      },
+      {
+        "id": "C",
+        "label": "$1$ only"
+      },
+      {
+        "id": "D",
+        "label": "There is no solution."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Square both sides: $2x + 7 = x^2 + 4x + 4$, so $x^2 + 2x - 3 = 0$ and $(x + 3)(x - 1) = 0$. Check each value in the original equation: $x = 1$ gives $\\sqrt{9} = 3$, which equals $1 + 2$. But $x = -3$ gives $\\sqrt{1} = 1$, while $-3 + 2 = -1$, so $-3$ is extraneous. Choice A keeps the extraneous solution. Choice B keeps only the extraneous one, and choice D overlooks that $x = 1$ checks."
+  },
+  {
+    "slug": "adv-nleq-017",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "In the equation $x^2 + kx + 9 = 0$, $k$ is a positive constant. If the equation has exactly one real solution, what is the value of $k$?",
+    "answer": [
+      "6"
+    ],
+    "explanation": "A quadratic has exactly one real solution when its discriminant is 0: $k^2 - 4(1)(9) = 0$, so $k^2 = 36$. Since $k > 0$, $k = 6$. (Then $x^2 + 6x + 9 = (x + 3)^2$.)"
+  },
+  {
+    "slug": "adv-nleq-018",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "What is the sum of the solutions to the equation $\\frac{3}{x - 1} = \\frac{x}{2}$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-1$"
+      },
+      {
+        "id": "B",
+        "label": "$1$"
+      },
+      {
+        "id": "C",
+        "label": "$5$"
+      },
+      {
+        "id": "D",
+        "label": "$6$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Cross-multiply: $x(x - 1) = 6$, so $x^2 - x - 6 = 0$ and $(x - 3)(x + 2) = 0$. The solutions are 3 and $-2$ (neither makes a denominator zero), and their sum is 1. Choice A has the wrong sign. Choice C adds 3 and 2, ignoring the negative sign of $-2$. Choice D is the constant that appears after cross-multiplying, not a sum of solutions."
+  },
+  {
+    "slug": "adv-nleq-019",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "What value of $x$ satisfies $4^{x} = 8^{x - 1}$?",
+    "answer": [
+      "3"
+    ],
+    "explanation": "Write both sides as powers of 2: $4^x = 2^{2x}$ and $8^{x - 1} = 2^{3x - 3}$. Setting the exponents equal gives $2x = 3x - 3$, so $x = 3$. Check: $4^3 = 64$ and $8^2 = 64$."
+  },
+  {
+    "slug": "adv-nleq-020",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A ball is thrown upward from the roof of a building. Its height, in meters, $t$ seconds after it is thrown is modeled by $h(t) = -4.9t^2 + 19.6t + 24.5$. How many seconds after it is thrown does the ball hit the ground?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$1$"
+      },
+      {
+        "id": "B",
+        "label": "$2$"
+      },
+      {
+        "id": "C",
+        "label": "$4$"
+      },
+      {
+        "id": "D",
+        "label": "$5$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Set $h(t) = 0$ and divide by $-4.9$: $t^2 - 4t - 5 = 0$, so $(t - 5)(t + 1) = 0$. Time is positive, so $t = 5$. Choice A drops the negative sign of the rejected solution $-1$. Choice B is the time when the ball reaches its maximum height, $t = \\frac{19.6}{2(4.9)}$. Choice C is the sum of the two solutions of the quadratic."
+  },
+  {
+    "slug": "adv-nleq-021",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "The equation $x^2 - 10x + c = 0$, where $c$ is a constant, has solutions $x = 3$ and $x = k$. What is the value of $c$?",
+    "answer": [
+      "21"
+    ],
+    "explanation": "Substitute $x = 3$: $9 - 30 + c = 0$, so $c = 21$. (The other solution is $k = 7$, since $x^2 - 10x + 21 = (x - 3)(x - 7)$.)"
+  },
+  {
+    "slug": "adv-nleq-022",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "$$x + y = 7$$ $$xy = 12$$ If $(x, y)$ is a solution to the system of equations, what is the value of $x^2 + y^2$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$25$"
+      },
+      {
+        "id": "B",
+        "label": "$37$"
+      },
+      {
+        "id": "C",
+        "label": "$49$"
+      },
+      {
+        "id": "D",
+        "label": "$73$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Square the first equation: $x^2 + 2xy + y^2 = 49$. Substitute $xy = 12$: $x^2 + y^2 = 49 - 24 = 25$. (Indeed, the solutions are $(3, 4)$ and $(4, 3)$.) Choice C assumes $(x + y)^2 = x^2 + y^2$. Choice B subtracts $xy$ instead of $2xy$. Choice D adds $2xy$ instead of subtracting it."
+  },
+  {
+    "slug": "adv-nleq-023",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "What is the sum of all solutions to the equation $|2x - 5| = 9$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-2$"
+      },
+      {
+        "id": "B",
+        "label": "$5$"
+      },
+      {
+        "id": "C",
+        "label": "$7$"
+      },
+      {
+        "id": "D",
+        "label": "$14$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Either $2x - 5 = 9$, giving $x = 7$, or $2x - 5 = -9$, giving $x = -2$. The sum is $7 + (-2) = 5$. Choice A and choice C are the individual solutions. Choice D is the value of $2x$ for the positive case, before dividing by 2."
+  },
+  {
+    "slug": "adv-nleq-024",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "How many real solutions does the equation $x^2 + 6x + 13 = 0$ have?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Zero"
+      },
+      {
+        "id": "B",
+        "label": "Exactly one"
+      },
+      {
+        "id": "C",
+        "label": "Exactly two"
+      },
+      {
+        "id": "D",
+        "label": "Infinitely many"
+      }
+    ],
+    "answer": "A",
+    "explanation": "The discriminant is $6^2 - 4(1)(13) = 36 - 52 = -16$. A negative discriminant means there are no real solutions. (Completing the square gives $(x + 3)^2 = -4$, and a square cannot be negative.) Choice B would require a discriminant of 0, and choice C a positive discriminant. A quadratic equation never has infinitely many solutions (choice D)."
+  },
+  {
+    "slug": "adv-nleq-025",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "A rectangular garden has a length that is 4 meters greater than its width. The area of the garden is 96 square meters. What is the width of the garden, in meters?",
+    "answer": [
+      "8"
+    ],
+    "explanation": "Let $w$ be the width. Then $w(w + 4) = 96$, so $w^2 + 4w - 96 = 0$ and $(w + 12)(w - 8) = 0$. A width must be positive, so $w = 8$ (and the length is 12)."
+  },
+  {
+    "slug": "adv-nleq-026",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The solutions to $x^2 - 5x = 14$ are $a$ and $b$, where $a > b$. What is the value of $a - b$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$5$"
+      },
+      {
+        "id": "B",
+        "label": "$7$"
+      },
+      {
+        "id": "C",
+        "label": "$9$"
+      },
+      {
+        "id": "D",
+        "label": "$14$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Rewrite as $x^2 - 5x - 14 = 0$ and factor: $(x - 7)(x + 2) = 0$. So $a = 7$ and $b = -2$, and $a - b = 7 - (-2) = 9$. Choice A computes $7 - 2$, ignoring the sign of $b$ (it is also the sum of the solutions). Choice B is $a$ alone. Choice D is the constant on the right side."
+  },
+  {
+    "slug": "adv-nleq-027",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "What are all the solutions to the equation $\\frac{x^2 - 4}{x + 2} = 6$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$4$ only"
+      },
+      {
+        "id": "B",
+        "label": "$-2$ only"
+      },
+      {
+        "id": "C",
+        "label": "$8$ and $-2$"
+      },
+      {
+        "id": "D",
+        "label": "$8$ only"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Multiply both sides by $x + 2$: $x^2 - 4 = 6x + 12$, so $x^2 - 6x - 16 = 0$ and $(x - 8)(x + 2) = 0$. But $x = -2$ makes the denominator 0, so it is not a solution; only $x = 8$ works. Choice B and choice C include the excluded value. Choice A simplifies the fraction to $x + 2$ instead of $x - 2$."
+  },
+  {
+    "slug": "adv-nleq-028",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "$$x^2 + y^2 = 25$$ $$y = x + 1$$ Which point $(x, y)$ is a solution to the system of equations?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$(3, 4)$"
+      },
+      {
+        "id": "B",
+        "label": "$(0, 1)$"
+      },
+      {
+        "id": "C",
+        "label": "$(-3, -2)$"
+      },
+      {
+        "id": "D",
+        "label": "$(4, 3)$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Substitute $y = x + 1$: $x^2 + (x + 1)^2 = 25$, so $2x^2 + 2x - 24 = 0$, $x^2 + x - 12 = 0$, and $x = 3$ or $x = -4$. The solutions are $(3, 4)$ and $(-4, -3)$, and only $(3, 4)$ is listed. Choice D is on the circle but not on the line. Choice B and choice C are on the line but not on the circle."
+  },
+  {
+    "slug": "adv-nleq-029",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "In the xy-plane, the graphs of $y = x^2 + 3x - 2$ and $y = 5x + k$, where $k$ is a constant, intersect at exactly one point. What is the value of $k$?",
+    "answer": [
+      "-3"
+    ],
+    "explanation": "Set the expressions equal: $x^2 + 3x - 2 = 5x + k$, so $x^2 - 2x - (2 + k) = 0$. Exactly one intersection means the discriminant is 0: $(-2)^2 + 4(2 + k) = 0$, so $4 + 8 + 4k = 0$ and $k = -3$. (The line is tangent to the parabola at $(1, 2)$.)"
+  },
+  {
+    "slug": "adv-nleq-030",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "What is the sum of all solutions to the equation $\\frac{2}{x} + \\frac{3}{x + 2} = 1$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-4$"
+      },
+      {
+        "id": "B",
+        "label": "$-1$"
+      },
+      {
+        "id": "C",
+        "label": "$3$"
+      },
+      {
+        "id": "D",
+        "label": "$4$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Multiply by $x(x + 2)$: $2(x + 2) + 3x = x(x + 2)$, so $5x + 4 = x^2 + 2x$ and $x^2 - 3x - 4 = 0$. Then $(x - 4)(x + 1) = 0$, giving $x = 4$ or $x = -1$; neither makes a denominator 0. The sum is 3. Choice A is the product of the solutions. Choice B and choice D are the individual solutions."
+  },
+  {
+    "slug": "adv-nleq-031",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "In the equation $2x^2 - 8x + c = 0$, $c$ is a constant. Which of the following describes all values of $c$ for which the equation has two distinct real solutions?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$c < 4$"
+      },
+      {
+        "id": "B",
+        "label": "$c < 8$"
+      },
+      {
+        "id": "C",
+        "label": "$c > 8$"
+      },
+      {
+        "id": "D",
+        "label": "$c < 16$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Two distinct real solutions require a positive discriminant: $(-8)^2 - 4(2)(c) > 0$, so $64 - 8c > 0$ and $c < 8$. Choice C reverses the inequality, which gives no real solutions. Choice D forgets the leading coefficient 2 and uses $64 - 4c > 0$. Choice A is too restrictive; for example, $c = 6$ gives $2x^2 - 8x + 6 = 2(x - 1)(x - 3)$, which has two solutions."
+  },
+  {
+    "slug": "adv-nleq-032",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "What is the product of all real solutions to the equation $x^4 - 3x^2 - 4 = 0$?",
+    "answer": [
+      "-4"
+    ],
+    "explanation": "Treat the equation as a quadratic in $x^2$: $(x^2 - 4)(x^2 + 1) = 0$. The factor $x^2 + 1$ is never 0 for real $x$, so the only real solutions come from $x^2 = 4$: $x = 2$ and $x = -2$. Their product is $2 \\cdot (-2) = -4$."
+  },
+  {
+    "slug": "adv-nleq-033",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "What is the solution to the equation $x - \\sqrt{x} = 12$?",
+    "answer": [
+      "16"
+    ],
+    "explanation": "Let $u = \\sqrt{x}$, so $x = u^2$ and $u^2 - u - 12 = 0$. Then $(u - 4)(u + 3) = 0$. Since $u = \\sqrt{x}$ cannot be negative, $u = 4$, so $x = 16$. Check: $16 - 4 = 12$. The value $u = -3$ would give $x = 9$, but $9 - 3 = 6$, so 9 is not a solution."
+  },
+  {
+    "slug": "adv-nleq-034",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "In the equation $ax^2 + 4x - 3 = 0$, $a$ is a nonzero constant. If the equation has exactly one real solution, what is the value of $a$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-\\frac{4}{3}$"
+      },
+      {
+        "id": "B",
+        "label": "$-\\frac{3}{4}$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{3}{4}$"
+      },
+      {
+        "id": "D",
+        "label": "$\\frac{4}{3}$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "With $a \\neq 0$, the equation is quadratic, and exactly one solution means the discriminant is 0: $4^2 - 4(a)(-3) = 16 + 12a = 0$, so $a = -\\frac{4}{3}$. Choice D drops the negative sign that comes from $c = -3$. Choice B and choice C invert the ratio $\\frac{16}{12}$."
+  },
+  {
+    "slug": "adv-nleq-035",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "A company's monthly profit $P$, in dollars, from selling a gadget at a price of $x$ dollars is modeled by $P(x) = -2x^2 + 160x - 2{,}400$. The company breaks even (makes a profit of 0 dollars) at two prices. What is the greater of these two prices, in dollars?",
+    "answer": [
+      "60"
+    ],
+    "explanation": "Set $P(x) = 0$ and divide by $-2$: $x^2 - 80x + 1{,}200 = 0$. Factor: $(x - 20)(x - 60) = 0$, so the break-even prices are 20 and 60 dollars. The greater price is 60. (The price that maximizes profit, 40 dollars, lies halfway between them.)"
+  },
+  {
+    "slug": "adv-nleq-036",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "$$y = 2^x$$ $$y = 8 \\cdot 4^{x - 2}$$ Which point $(x, y)$ is the solution to the system of equations?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$(2, 4)$"
+      },
+      {
+        "id": "B",
+        "label": "$(3, 8)$"
+      },
+      {
+        "id": "C",
+        "label": "$(1, 2)$"
+      },
+      {
+        "id": "D",
+        "label": "$(-1, \\frac{1}{2})$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Write the second equation in base 2: $8 \\cdot 4^{x - 2} = 2^3 \\cdot 2^{2x - 4} = 2^{2x - 1}$. Setting $2^x = 2^{2x - 1}$ gives $x = 2x - 1$, so $x = 1$ and $y = 2^1 = 2$. Choice A, choice B and choice D lie on $y = 2^x$, but for those $x$-values the second equation gives $y = 8$, $32$ and $\\frac{1}{8}$, respectively."
+  },
+  {
+    "slug": "adv-nleq-037",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_equations_and_systems",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "What are all the solutions to the equation $\\frac{x}{x - 2} = \\frac{2}{x - 2} + 3$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$2$ only"
+      },
+      {
+        "id": "B",
+        "label": "$0$ only"
+      },
+      {
+        "id": "C",
+        "label": "$4$ only"
+      },
+      {
+        "id": "D",
+        "label": "There is no solution."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Multiply both sides by $x - 2$: $x = 2 + 3(x - 2) = 3x - 4$, so $x = 2$. But $x = 2$ makes the denominators 0, so it is excluded, and the equation has no solution. Choice A ignores the excluded value. Choice B comes from writing $3(x - 2)$ as $3x - 2$, and choice C from treating $\\frac{2}{x - 2}$ as $-\\frac{2}{x - 2}$; neither value satisfies the original equation."
+  },
+  {
+    "slug": "adv-nlfn-001",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "The function $f$ is defined by $f(x) = x^2 - 3x + 2$. What is the value of $f(4)$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-2$"
+      },
+      {
+        "id": "B",
+        "label": "$6$"
+      },
+      {
+        "id": "C",
+        "label": "$18$"
+      },
+      {
+        "id": "D",
+        "label": "$30$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "$f(4) = 4^2 - 3(4) + 2 = 16 - 12 + 2 = 6$. Choice A evaluates $4^2$ as 8. Choice C leaves out the $-3x$ term. Choice D adds $3x$ instead of subtracting it."
+  },
+  {
+    "slug": "adv-nlfn-002",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "The function $g$ is defined by $g(x) = 3 \\cdot 2^x$. What is the value of $g(3)$?",
+    "answer": [
+      "24"
+    ],
+    "explanation": "$g(3) = 3 \\cdot 2^3 = 3 \\cdot 8 = 24$. Note that the exponent applies only to 2: computing $6^3 = 216$ would be an error."
+  },
+  {
+    "slug": "adv-nlfn-003",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "The population of a town $t$ years after 2020 is modeled by $P(t) = 500(1.04)^t$. What is the best interpretation of 500 in this context?",
+    "options": [
+      {
+        "id": "A",
+        "label": "The estimated population of the town in 2020"
+      },
+      {
+        "id": "B",
+        "label": "The population increases by 500 people each year."
+      },
+      {
+        "id": "C",
+        "label": "The population increases by 500% each year."
+      },
+      {
+        "id": "D",
+        "label": "The estimated population of the town after 4 years"
+      }
+    ],
+    "answer": "A",
+    "explanation": "When $t = 0$ (the year 2020), $P(0) = 500(1.04)^0 = 500$, so 500 is the population in 2020. Choice B describes linear growth; this model grows by 4% each year, a different number of people every year. Choice C misreads the growth rate, which is given by 1.04, not 500. Choice D confuses the 4 in 1.04 with a number of years."
+  },
+  {
+    "slug": "adv-nlfn-004",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "In the xy-plane, what is the y-intercept of the graph of $y = (x - 2)(x + 5)$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$(0, 10)$"
+      },
+      {
+        "id": "B",
+        "label": "$(0, -10)$"
+      },
+      {
+        "id": "C",
+        "label": "$(2, 0)$"
+      },
+      {
+        "id": "D",
+        "label": "$(0, 3)$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Set $x = 0$: $y = (0 - 2)(0 + 5) = -10$, so the y-intercept is $(0, -10)$. Choice A loses the negative sign. Choice C is an x-intercept. Choice D adds $-2$ and 5 instead of multiplying them."
+  },
+  {
+    "slug": "adv-nlfn-005",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "The graph of $y = f(x)$, where $f$ is a quadratic function, is shown. The graph passes through $(1, 0)$, $(2, -1)$, and $(3, 0)$. What is the minimum value of $f(x)$?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 300 375\" width=\"300\" height=\"375\" role=\"img\" aria-label=\"Upward-opening parabola with vertex (2, -1) and x-intercepts 1 and 3\" font-family=\"sans-serif\" font-size=\"10\"><title>Upward-opening parabola with vertex (2, -1) and x-intercepts 1 and 3</title><path d=\"M24.0 351.0V24.0M55.5 351.0V24.0M87.0 351.0V24.0M118.5 351.0V24.0M150.0 351.0V24.0M181.5 351.0V24.0M213.0 351.0V24.0M244.5 351.0V24.0M276.0 351.0V24.0M24.0 351.0H276.0M24.0 318.3H276.0M24.0 285.6H276.0M24.0 252.9H276.0M24.0 220.2H276.0M24.0 187.5H276.0M24.0 154.8H276.0M24.0 122.1H276.0M24.0 89.4H276.0M24.0 56.7H276.0M24.0 24.0H276.0\" stroke=\"currentColor\" stroke-opacity=\"0.18\" stroke-width=\"1\" fill=\"none\"/><path d=\"M24.0 285.6H276.0M87.0 351.0V24.0\" stroke=\"currentColor\" stroke-width=\"1.4\" fill=\"none\"/><text x=\"280.0\" y=\"289.6\" fill=\"currentColor\" font-style=\"italic\" font-size=\"12\">x</text><text x=\"83.0\" y=\"16.0\" fill=\"currentColor\" font-style=\"italic\" font-size=\"12\">y</text><text x=\"24.0\" y=\"297.6\" text-anchor=\"middle\" fill=\"currentColor\">-2</text><text x=\"55.5\" y=\"297.6\" text-anchor=\"middle\" fill=\"currentColor\">-1</text><text x=\"118.5\" y=\"297.6\" text-anchor=\"middle\" fill=\"currentColor\">1</text><text x=\"150.0\" y=\"297.6\" text-anchor=\"middle\" fill=\"currentColor\">2</text><text x=\"181.5\" y=\"297.6\" text-anchor=\"middle\" fill=\"currentColor\">3</text><text x=\"213.0\" y=\"297.6\" text-anchor=\"middle\" fill=\"currentColor\">4</text><text x=\"244.5\" y=\"297.6\" text-anchor=\"middle\" fill=\"currentColor\">5</text><text x=\"276.0\" y=\"297.6\" text-anchor=\"middle\" fill=\"currentColor\">6</text><text x=\"83.0\" y=\"354.5\" text-anchor=\"end\" fill=\"currentColor\">-2</text><text x=\"83.0\" y=\"321.8\" text-anchor=\"end\" fill=\"currentColor\">-1</text><text x=\"83.0\" y=\"256.4\" text-anchor=\"end\" fill=\"currentColor\">1</text><text x=\"83.0\" y=\"223.7\" text-anchor=\"end\" fill=\"currentColor\">2</text><text x=\"83.0\" y=\"191.0\" text-anchor=\"end\" fill=\"currentColor\">3</text><text x=\"83.0\" y=\"158.3\" text-anchor=\"end\" fill=\"currentColor\">4</text><text x=\"83.0\" y=\"125.6\" text-anchor=\"end\" fill=\"currentColor\">5</text><text x=\"83.0\" y=\"92.9\" text-anchor=\"end\" fill=\"currentColor\">6</text><text x=\"83.0\" y=\"60.2\" text-anchor=\"end\" fill=\"currentColor\">7</text><text x=\"83.0\" y=\"27.5\" text-anchor=\"end\" fill=\"currentColor\">8</text><text x=\"83.0\" y=\"297.6\" text-anchor=\"end\" fill=\"currentColor\">0</text><path d=\"M55.5 24.0L56.6 30.5L57.6 36.9L58.7 43.3L59.7 49.6L60.8 55.8L61.8 61.9L62.9 68.0L63.9 74.0L65.0 79.9L66.0 85.8L67.1 91.5L68.1 97.2L69.2 102.9L70.2 108.4L71.2 113.9L72.3 119.3L73.3 124.7L74.4 129.9L75.4 135.1L76.5 140.3L77.5 145.3L78.6 150.3L79.7 155.2L80.7 160.0L81.8 164.8L82.8 169.5L83.8 174.1L84.9 178.6L85.9 183.1L87.0 187.5L88.0 191.8L89.1 196.1L90.2 200.3L91.2 204.4L92.2 208.4L93.3 212.4L94.4 216.2L95.4 220.1L96.4 223.8L97.5 227.5L98.5 231.1L99.6 234.6L100.6 238.0L101.7 241.4L102.8 244.7L103.8 248.0L104.9 251.1L105.9 254.2L107.0 257.2L108.0 260.2L109.1 263.0L110.1 265.8L111.1 268.6L112.2 271.2L113.2 273.8L114.3 276.3L115.3 278.7L116.4 281.1L117.5 283.4L118.5 285.6L119.5 287.7L120.6 289.8L121.7 291.8L122.7 293.7L123.8 295.6L124.8 297.4L125.9 299.1L126.9 300.7L127.9 302.3L129.0 303.8L130.1 305.2L131.1 306.5L132.1 307.8L133.2 309.0L134.2 310.1L135.3 311.2L136.4 312.2L137.4 313.1L138.4 313.9L139.5 314.7L140.6 315.4L141.6 316.0L142.6 316.5L143.7 317.0L144.8 317.4L145.8 317.7L146.8 318.0L147.9 318.2L148.9 318.3L150.0 318.3L151.1 318.3L152.1 318.2L153.1 318.0L154.2 317.7L155.2 317.4L156.3 317.0L157.3 316.5L158.4 316.0L159.4 315.4L160.5 314.7L161.5 313.9L162.6 313.1L163.7 312.2L164.7 311.2L165.8 310.1L166.8 309.0L167.8 307.8L168.9 306.5L170.0 305.2L171.0 303.8L172.1 302.3L173.1 300.7L174.2 299.1L175.2 297.4L176.2 295.6L177.3 293.7L178.4 291.8L179.4 289.8L180.5 287.7L181.5 285.6L182.5 283.4L183.6 281.1L184.6 278.7L185.7 276.3L186.8 273.8L187.8 271.2L188.8 268.6L189.9 265.8L190.9 263.0L192.0 260.2L193.0 257.2L194.1 254.2L195.2 251.1L196.2 248.0L197.2 244.7L198.3 241.4L199.3 238.0L200.4 234.6L201.5 231.1L202.5 227.5L203.6 223.8L204.6 220.1L205.7 216.2L206.7 212.4L207.8 208.4L208.8 204.4L209.9 200.3L210.9 196.1L212.0 191.8L213.0 187.5L214.0 183.1L215.1 178.6L216.1 174.1L217.2 169.5L218.2 164.8L219.3 160.0L220.3 155.2L221.4 150.3L222.4 145.3L223.5 140.3L224.5 135.1L225.6 129.9L226.7 124.7L227.7 119.3L228.8 113.9L229.8 108.4L230.8 102.9L231.9 97.2L233.0 91.5L234.0 85.8L235.1 79.9L236.1 74.0L237.2 68.0L238.2 61.9L239.2 55.8L240.3 49.6L241.4 43.3L242.4 36.9L243.5 30.5L244.5 24.0\" stroke=\"#2563eb\" stroke-width=\"2\" fill=\"none\"/><circle cx=\"150.0\" cy=\"318.3\" r=\"3\" fill=\"currentColor\"/><circle cx=\"118.5\" cy=\"285.6\" r=\"3\" fill=\"currentColor\"/><circle cx=\"181.5\" cy=\"285.6\" r=\"3\" fill=\"currentColor\"/></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-1$"
+      },
+      {
+        "id": "B",
+        "label": "$1$"
+      },
+      {
+        "id": "C",
+        "label": "$2$"
+      },
+      {
+        "id": "D",
+        "label": "$3$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "The minimum value of $f(x)$ is the y-coordinate of the vertex, the lowest point of the graph: $-1$. Choice C is the x-coordinate of the vertex, which is where the minimum occurs, not the minimum value. Choice B and choice D are x-intercepts."
+  },
+  {
+    "slug": "adv-nlfn-006",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "The function $f$ is defined by $f(x) = 2x^2 + 1$. What is the value of $f(-3)$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-17$"
+      },
+      {
+        "id": "B",
+        "label": "$13$"
+      },
+      {
+        "id": "C",
+        "label": "$19$"
+      },
+      {
+        "id": "D",
+        "label": "$37$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "$f(-3) = 2(-3)^2 + 1 = 2(9) + 1 = 19$. Choice A computes $(-3)^2$ as $-9$. Choice B treats squaring as doubling, $2 \\cdot 2 \\cdot 3 + 1$. Choice D squares $2 \\cdot (-3)$ instead of squaring only $-3$."
+  },
+  {
+    "slug": "adv-nlfn-007",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "The function $g$ is defined by $g(x) = (x - 4)(x + 1)(x - 7)$. What are the zeros of $g$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-4$, $1$, and $-7$"
+      },
+      {
+        "id": "B",
+        "label": "$4$, $1$, and $7$"
+      },
+      {
+        "id": "C",
+        "label": "$4$, $-1$, and $7$"
+      },
+      {
+        "id": "D",
+        "label": "$28$ only"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Each factor equals 0 at one value: $x - 4 = 0$ at $x = 4$, $x + 1 = 0$ at $x = -1$, and $x - 7 = 0$ at $x = 7$. Choice A reverses every sign. Choice B reverses the sign of the zero from $x + 1$. Choice D multiplies the constants, which gives $g(0) = 28$, not a zero."
+  },
+  {
+    "slug": "adv-nlfn-008",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "The value, in dollars, of a car $t$ years after it is purchased is modeled by $V(t) = 24{,}000(0.85)^t$. According to the model, by what percent does the car's value decrease each year?",
+    "options": [
+      {
+        "id": "A",
+        "label": "0.85%"
+      },
+      {
+        "id": "B",
+        "label": "8.5%"
+      },
+      {
+        "id": "C",
+        "label": "15%"
+      },
+      {
+        "id": "D",
+        "label": "85%"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Each year the value is multiplied by 0.85, so it keeps 85% of its value and loses $100\\% - 85\\% = 15\\%$. Choice D is the percent of the value that remains, not the percent lost. Choice A and choice B misplace the decimal point."
+  },
+  {
+    "slug": "adv-nlfn-009",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "The table shows four values of $x$ and the corresponding values of $f(x)$ for a function $f$. Which equation could define $f$?",
+    "table": {
+      "headers": [
+        "x",
+        "f(x)"
+      ],
+      "rows": [
+        [
+          "0",
+          "3"
+        ],
+        [
+          "1",
+          "6"
+        ],
+        [
+          "2",
+          "12"
+        ],
+        [
+          "3",
+          "24"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "$f(x) = 3x + 3$"
+      },
+      {
+        "id": "B",
+        "label": "$f(x) = 2(3)^x$"
+      },
+      {
+        "id": "C",
+        "label": "$f(x) = 6x$"
+      },
+      {
+        "id": "D",
+        "label": "$f(x) = 3(2)^x$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Each time $x$ increases by 1, $f(x)$ doubles, and $f(0) = 3$. So $f(x) = 3(2)^x$. Choice A fits the first two rows only ($f(2)$ would be 9). Choice B swaps the initial value and the growth factor, giving $f(0) = 2$. Choice C gives $f(0) = 0$."
+  },
+  {
+    "slug": "adv-nlfn-010",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "In the xy-plane, what is the vertex of the graph of $y = (x + 3)^2 - 4$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$(-3, -4)$"
+      },
+      {
+        "id": "B",
+        "label": "$(3, -4)$"
+      },
+      {
+        "id": "C",
+        "label": "$(-3, 4)$"
+      },
+      {
+        "id": "D",
+        "label": "$(3, 4)$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "In vertex form $y = (x - h)^2 + k$, the vertex is $(h, k)$. Here $x + 3 = x - (-3)$, so $h = -3$ and $k = -4$: the vertex is $(-3, -4)$. Choice B misreads the sign of $h$. Choice C and choice D misread the sign of $k$."
+  },
+  {
+    "slug": "adv-nlfn-011",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "The function $h$ is defined by $h(x) = x^3 - 2x$. What is the value of $h(-2)$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-12$"
+      },
+      {
+        "id": "B",
+        "label": "$-4$"
+      },
+      {
+        "id": "C",
+        "label": "$4$"
+      },
+      {
+        "id": "D",
+        "label": "$12$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "$h(-2) = (-2)^3 - 2(-2) = -8 + 4 = -4$. Choice A subtracts 4 instead of adding it (the product $-2(-2)$ is positive). Choice C treats $(-2)^3$ as $+8$. Choice D makes both sign errors."
+  },
+  {
+    "slug": "adv-nlfn-012",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A bacteria culture starts with 200 cells, and the number of cells doubles every 3 hours. Which function gives the number of cells $N(t)$ after $t$ hours?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$N(t) = 200(2)^{3t}$"
+      },
+      {
+        "id": "B",
+        "label": "$N(t) = 200(2)^{\\frac{t}{3}}$"
+      },
+      {
+        "id": "C",
+        "label": "$N(t) = 200(3)^{\\frac{t}{2}}$"
+      },
+      {
+        "id": "D",
+        "label": "$N(t) = 200 + 2^{\\frac{t}{3}}$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "The number of doublings after $t$ hours is $\\frac{t}{3}$, so $N(t) = 200(2)^{\\frac{t}{3}}$. Check: $N(3) = 400$ and $N(6) = 800$. Choice A doubles three times every hour. Choice C swaps the growth factor and the doubling time. Choice D adds instead of multiplying, so $N(3)$ would be only 202."
+  },
+  {
+    "slug": "adv-nlfn-013",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "For what value of $x$ is the function $f(x) = \\frac{x + 1}{x - 4}$ undefined?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-4$"
+      },
+      {
+        "id": "B",
+        "label": "$-1$"
+      },
+      {
+        "id": "C",
+        "label": "$1$"
+      },
+      {
+        "id": "D",
+        "label": "$4$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "A fraction is undefined when its denominator is 0: $x - 4 = 0$ when $x = 4$. Choice A has the wrong sign. Choice B is the zero of $f$ (where the numerator is 0), and $f(-1) = 0$ is defined. Choice C reverses the sign of that zero."
+  },
+  {
+    "slug": "adv-nlfn-014",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The function $f$ is defined by $f(x) = x^2 - 8x + 15$. What is the minimum value of $f(x)$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$-16$"
+      },
+      {
+        "id": "B",
+        "label": "$-1$"
+      },
+      {
+        "id": "C",
+        "label": "$4$"
+      },
+      {
+        "id": "D",
+        "label": "$15$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "The vertex is at $x = -\\frac{-8}{2(1)} = 4$, and $f(4) = 16 - 32 + 15 = -1$. Equivalently, $f(x) = (x - 4)^2 - 1$. Choice A completes the square but forgets to add the 15. Choice C is the $x$-value where the minimum occurs. Choice D is $f(0)$, the y-intercept."
+  },
+  {
+    "slug": "adv-nlfn-015",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "The functions $f$ and $g$ are defined by $f(x) = 2x + 1$ and $g(x) = x^2 - 3$. What is the value of $f(g(2))$?",
+    "answer": [
+      "3"
+    ],
+    "explanation": "Work from the inside out: $g(2) = 4 - 3 = 1$. Then $f(1) = 2(1) + 1 = 3$. Computing $g(f(2)) = g(5) = 22$ instead reverses the order of the functions."
+  },
+  {
+    "slug": "adv-nlfn-016",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A museum had 1,200 members at the end of 2023. The number of members is expected to increase by 5% each year. Which function gives the expected number of members $M(t)$, $t$ years after the end of 2023?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$M(t) = 1{,}200(0.05)^t$"
+      },
+      {
+        "id": "B",
+        "label": "$M(t) = 1{,}200(1.5)^t$"
+      },
+      {
+        "id": "C",
+        "label": "$M(t) = 1{,}200(1.05)^t$"
+      },
+      {
+        "id": "D",
+        "label": "$M(t) = 1{,}200 + 0.05t$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Increasing by 5% means multiplying by $1 + 0.05 = 1.05$ each year, so $M(t) = 1{,}200(1.05)^t$. Choice A would multiply by 0.05, keeping only 5% of the members each year. Choice B uses 1.5, which is a 50% increase. Choice D adds 0.05 member per year, a linear model."
+  },
+  {
+    "slug": "adv-nlfn-017",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The graph of the polynomial function $y = f(x)$ is shown. It crosses the x-axis at $x = -2$, $x = 1$, and $x = 3$, and $f(0) = 6$. Which equation could define $f$?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 300 360\" width=\"300\" height=\"360\" role=\"img\" aria-label=\"Cubic graph crossing the x-axis at -2, 1 and 3, rising on the right\" font-family=\"sans-serif\" font-size=\"10\"><title>Cubic graph crossing the x-axis at -2, 1 and 3, rising on the right</title><path d=\"M24.0 336.0V24.0M60.0 336.0V24.0M96.0 336.0V24.0M132.0 336.0V24.0M168.0 336.0V24.0M204.0 336.0V24.0M240.0 336.0V24.0M276.0 336.0V24.0M24.0 336.0H276.0M24.0 318.7H276.0M24.0 301.3H276.0M24.0 284.0H276.0M24.0 266.7H276.0M24.0 249.3H276.0M24.0 232.0H276.0M24.0 214.7H276.0M24.0 197.3H276.0M24.0 180.0H276.0M24.0 162.7H276.0M24.0 145.3H276.0M24.0 128.0H276.0M24.0 110.7H276.0M24.0 93.3H276.0M24.0 76.0H276.0M24.0 58.7H276.0M24.0 41.3H276.0M24.0 24.0H276.0\" stroke=\"currentColor\" stroke-opacity=\"0.18\" stroke-width=\"1\" fill=\"none\"/><path d=\"M24.0 197.3H276.0M132.0 336.0V24.0\" stroke=\"currentColor\" stroke-width=\"1.4\" fill=\"none\"/><text x=\"280.0\" y=\"201.3\" fill=\"currentColor\" font-style=\"italic\" font-size=\"12\">x</text><text x=\"128.0\" y=\"16.0\" fill=\"currentColor\" font-style=\"italic\" font-size=\"12\">y</text><text x=\"60.0\" y=\"209.3\" text-anchor=\"middle\" fill=\"currentColor\">-2</text><text x=\"204.0\" y=\"209.3\" text-anchor=\"middle\" fill=\"currentColor\">2</text><text x=\"276.0\" y=\"209.3\" text-anchor=\"middle\" fill=\"currentColor\">4</text><text x=\"128.0\" y=\"339.5\" text-anchor=\"end\" fill=\"currentColor\">-8</text><text x=\"128.0\" y=\"304.8\" text-anchor=\"end\" fill=\"currentColor\">-6</text><text x=\"128.0\" y=\"270.2\" text-anchor=\"end\" fill=\"currentColor\">-4</text><text x=\"128.0\" y=\"235.5\" text-anchor=\"end\" fill=\"currentColor\">-2</text><text x=\"128.0\" y=\"166.2\" text-anchor=\"end\" fill=\"currentColor\">2</text><text x=\"128.0\" y=\"131.5\" text-anchor=\"end\" fill=\"currentColor\">4</text><text x=\"128.0\" y=\"96.8\" text-anchor=\"end\" fill=\"currentColor\">6</text><text x=\"128.0\" y=\"62.2\" text-anchor=\"end\" fill=\"currentColor\">8</text><text x=\"128.0\" y=\"27.5\" text-anchor=\"end\" fill=\"currentColor\">10</text><text x=\"128.0\" y=\"209.3\" text-anchor=\"end\" fill=\"currentColor\">0</text><path d=\"M45.0 331.0L46.0 319.9L47.1 309.1L48.2 298.6L49.2 288.3L50.2 278.3L51.3 268.5L52.4 259.0L53.4 249.8L54.4 240.8L55.5 232.0L56.6 223.5L57.6 215.3L58.6 207.3L59.7 199.5L60.8 192.0L61.8 184.7L62.8 177.6L63.9 170.8L64.9 164.2L66.0 157.8L67.0 151.6L68.1 145.7L69.2 139.9L70.2 134.4L71.2 129.1L72.3 124.0L73.3 119.1L74.4 114.4L75.5 109.9L76.5 105.6L77.6 101.5L78.6 97.6L79.7 93.9L80.7 90.4L81.8 87.0L82.8 83.9L83.8 80.9L84.9 78.1L86.0 75.5L87.0 73.0L88.0 70.7L89.1 68.6L90.1 66.7L91.2 64.9L92.2 63.2L93.3 61.8L94.3 60.4L95.4 59.3L96.5 58.2L97.5 57.4L98.5 56.6L99.6 56.0L100.7 55.6L101.7 55.3L102.8 55.1L103.8 55.0L104.8 55.1L105.9 55.3L107.0 55.7L108.0 56.1L109.0 56.7L110.1 57.3L111.2 58.1L112.2 59.0L113.2 60.0L114.3 61.2L115.4 62.4L116.4 63.7L117.4 65.1L118.5 66.6L119.6 68.2L120.6 69.9L121.6 71.7L122.7 73.6L123.8 75.5L124.8 77.5L125.8 79.6L126.9 81.8L128.0 84.0L129.0 86.4L130.1 88.7L131.1 91.2L132.2 93.7L133.2 96.3L134.2 98.9L135.3 101.6L136.3 104.3L137.4 107.1L138.4 109.9L139.5 112.7L140.6 115.6L141.6 118.6L142.7 121.6L143.7 124.6L144.8 127.6L145.8 130.7L146.9 133.8L147.9 136.9L148.9 140.0L150.0 143.2L151.1 146.3L152.1 149.5L153.2 152.7L154.2 155.9L155.2 159.1L156.3 162.3L157.3 165.5L158.4 168.7L159.5 171.9L160.5 175.1L161.6 178.2L162.6 181.4L163.7 184.5L164.7 187.7L165.8 190.8L166.8 193.8L167.8 196.9L168.9 199.9L169.9 202.9L171.0 205.9L172.0 208.8L173.1 211.7L174.2 214.5L175.2 217.3L176.2 220.0L177.3 222.7L178.3 225.4L179.4 228.0L180.4 230.5L181.5 233.0L182.6 235.4L183.6 237.7L184.7 240.0L185.7 242.2L186.8 244.3L187.8 246.4L188.8 248.4L189.9 250.3L191.0 252.1L192.0 253.8L193.1 255.5L194.1 257.0L195.1 258.5L196.2 259.8L197.2 261.1L198.3 262.3L199.4 263.3L200.4 264.3L201.4 265.1L202.5 265.8L203.5 266.4L204.6 266.9L205.7 267.3L206.7 267.6L207.8 267.7L208.8 267.7L209.8 267.6L210.9 267.3L211.9 266.9L213.0 266.4L214.1 265.7L215.1 264.9L216.2 264.0L217.2 262.8L218.2 261.6L219.3 260.2L220.3 258.6L221.4 256.9L222.5 255.0L223.5 253.0L224.6 250.7L225.6 248.4L226.6 245.8L227.7 243.1L228.8 240.2L229.8 237.1L230.9 233.8L231.9 230.4L232.9 226.8L234.0 222.9L235.0 218.9L236.1 214.7L237.2 210.3L238.2 205.7L239.2 200.9L240.3 195.9L241.3 190.7L242.4 185.2L243.4 179.6L244.5 173.7L245.6 167.7L246.6 161.4L247.7 154.9L248.7 148.1L249.8 141.1L250.8 133.9L251.8 126.5L252.9 118.8L254.0 110.9L255.0 102.8L256.1 94.4L257.1 85.8L258.1 76.9L259.2 67.7L260.2 58.4L261.3 48.7L262.4 38.8L263.4 28.6\" stroke=\"#2563eb\" stroke-width=\"2\" fill=\"none\"/><circle cx=\"60.0\" cy=\"197.3\" r=\"3\" fill=\"currentColor\"/><circle cx=\"168.0\" cy=\"197.3\" r=\"3\" fill=\"currentColor\"/><circle cx=\"240.0\" cy=\"197.3\" r=\"3\" fill=\"currentColor\"/></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$f(x) = (x - 2)(x + 1)(x + 3)$"
+      },
+      {
+        "id": "B",
+        "label": "$f(x) = -(x + 2)(x - 1)(x - 3)$"
+      },
+      {
+        "id": "C",
+        "label": "$f(x) = (x - 2)(x - 1)(x - 3)$"
+      },
+      {
+        "id": "D",
+        "label": "$f(x) = (x + 2)(x - 1)(x - 3)$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "A zero at $x = a$ corresponds to a factor $x - a$, so the zeros $-2$, 1, and 3 give the factors $x + 2$, $x - 1$, and $x - 3$. Also $(0 + 2)(0 - 1)(0 - 3) = 6$, which matches $f(0) = 6$. Choice A reverses every sign. Choice C reverses one sign. Choice B has the correct zeros, but $f(0)$ would be $-6$ and the graph would fall on the right."
+  },
+  {
+    "slug": "adv-nlfn-018",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "The function $f$ is defined by $f(x) = a(x - 3)^2 + 5$, where $a$ is a constant. The graph of $y = f(x)$ in the xy-plane passes through the point $(5, 13)$. What is the value of $a$?",
+    "answer": [
+      "2"
+    ],
+    "explanation": "Substitute $(5, 13)$: $13 = a(5 - 3)^2 + 5 = 4a + 5$. So $4a = 8$ and $a = 2$."
+  },
+  {
+    "slug": "adv-nlfn-019",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A ball is kicked upward, and its height, in feet, $t$ seconds after it is kicked is modeled by $h(t) = -16t^2 + 64t + 5$. What is the maximum height, in feet, that the ball reaches?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$2$"
+      },
+      {
+        "id": "B",
+        "label": "$5$"
+      },
+      {
+        "id": "C",
+        "label": "$64$"
+      },
+      {
+        "id": "D",
+        "label": "$69$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "The maximum occurs at the vertex, $t = -\\frac{64}{2(-16)} = 2$ seconds, and $h(2) = -64 + 128 + 5 = 69$ feet. Choice A is the time of the maximum, not the height. Choice B is the starting height, $h(0)$. Choice C is the coefficient of $t$."
+  },
+  {
+    "slug": "adv-nlfn-020",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The vertex of the graph of the quadratic function $y = f(x)$ is $(1, 4)$. The function $g$ is defined by $g(x) = f(x - 2) + 3$. What is the vertex of the graph of $y = g(x)$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$(3, 7)$"
+      },
+      {
+        "id": "B",
+        "label": "$(3, 1)$"
+      },
+      {
+        "id": "C",
+        "label": "$(-1, 7)$"
+      },
+      {
+        "id": "D",
+        "label": "$(-1, 1)$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Replacing $x$ with $x - 2$ shifts the graph 2 units right, and adding 3 shifts it 3 units up. The vertex moves from $(1, 4)$ to $(1 + 2, 4 + 3) = (3, 7)$. Choice C shifts left instead of right. Choice B shifts down instead of up. Choice D makes both errors."
+  },
+  {
+    "slug": "adv-nlfn-021",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "For a polynomial function $p$, $p(3) = 0$. Which of the following must be a factor of $p(x)$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$x + 3$"
+      },
+      {
+        "id": "B",
+        "label": "$x - 3$"
+      },
+      {
+        "id": "C",
+        "label": "$3x$"
+      },
+      {
+        "id": "D",
+        "label": "$x^2 - 3$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "By the factor theorem, $p(a) = 0$ exactly when $x - a$ is a factor of $p(x)$. With $a = 3$, $x - 3$ must be a factor. Choice A would mean $p(-3) = 0$. Choice C would mean $p(0) = 0$. Choice D would mean $p(\\sqrt{3}) = 0$ and $p(-\\sqrt{3}) = 0$; none of these is guaranteed."
+  },
+  {
+    "slug": "adv-nlfn-022",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "The function $f$ is defined by $f(x) = 3(x - 1)(x + 5)$. What is the x-coordinate of the vertex of the graph of $y = f(x)$ in the xy-plane?",
+    "answer": [
+      "-2"
+    ],
+    "explanation": "The zeros of $f$ are 1 and $-5$. A parabola is symmetric about the vertical line through its vertex, which lies halfway between the zeros: $\\frac{1 + (-5)}{2} = -2$. The factor 3 stretches the graph but does not move the vertex horizontally."
+  },
+  {
+    "slug": "adv-nlfn-023",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A radioactive substance has a half-life of 8 years, meaning the amount remaining is cut in half every 8 years. A sample contains 640 grams of the substance. How many grams will remain after 24 years?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$80$"
+      },
+      {
+        "id": "B",
+        "label": "$160$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{640}{3}$"
+      },
+      {
+        "id": "D",
+        "label": "$320$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "24 years is $\\frac{24}{8} = 3$ half-lives, so the amount is $640\\left(\\frac{1}{2}\\right)^3 = 80$ grams. Choice B uses only 2 half-lives and choice D uses only 1. Choice C divides by the number of half-lives instead of halving three times."
+  },
+  {
+    "slug": "adv-nlfn-024",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The table shows four values of $x$ and the corresponding values of $f(x)$ for a quadratic function $f$. Which equation defines $f$?",
+    "table": {
+      "headers": [
+        "x",
+        "f(x)"
+      ],
+      "rows": [
+        [
+          "-1",
+          "6"
+        ],
+        [
+          "0",
+          "1"
+        ],
+        [
+          "1",
+          "-2"
+        ],
+        [
+          "2",
+          "-3"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "$f(x) = x^2 + 4x + 1$"
+      },
+      {
+        "id": "B",
+        "label": "$f(x) = -x^2 - 2x + 1$"
+      },
+      {
+        "id": "C",
+        "label": "$f(x) = x^2 - 4x + 1$"
+      },
+      {
+        "id": "D",
+        "label": "$f(x) = x^2 - 5x + 1$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "From $f(0) = 1$, the constant term is 1. Write $f(x) = ax^2 + bx + 1$. Then $f(1) = a + b + 1 = -2$ and $f(-1) = a - b + 1 = 6$. Adding gives $2a + 2 = 4$, so $a = 1$ and $b = -4$: $f(x) = x^2 - 4x + 1$. Check: $f(2) = 4 - 8 + 1 = -3$. Choice A has the wrong sign on $b$. Choice B fits $f(0)$ and $f(1)$ but not $f(-1)$ or $f(2)$. Choice D fits only $f(0)$."
+  },
+  {
+    "slug": "adv-nlfn-025",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The function $f$ is defined by $f(x) = x^2 + 6x + c$, where $c$ is a constant. In the xy-plane, the vertex of the graph of $y = f(x)$ lies on the x-axis. What is the value of $c$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$3$"
+      },
+      {
+        "id": "B",
+        "label": "$6$"
+      },
+      {
+        "id": "C",
+        "label": "$9$"
+      },
+      {
+        "id": "D",
+        "label": "$36$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "The vertex is on the x-axis exactly when the minimum value of $f$ is 0, which means $f(x)$ is a perfect square: $x^2 + 6x + 9 = (x + 3)^2$. So $c = 9$. Choice A is half of the $x$-coefficient, before squaring. Choice B is the $x$-coefficient itself. Choice D is $6^2$, without dividing by 4."
+  },
+  {
+    "slug": "adv-nlfn-026",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The function $f$ is defined by $f(x) = x^2 - 2x - 24$. Which of the following equivalent forms of $f(x)$ displays the x-intercepts of the graph of $y = f(x)$ as constants or coefficients?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$(x - 1)^2 - 25$"
+      },
+      {
+        "id": "B",
+        "label": "$x(x - 2) - 24$"
+      },
+      {
+        "id": "C",
+        "label": "$x^2 - 2(x + 12)$"
+      },
+      {
+        "id": "D",
+        "label": "$(x - 6)(x + 4)$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "The factored form $(x - 6)(x + 4)$ shows that $f(x) = 0$ when $x = 6$ or $x = -4$, so the x-intercepts are $(6, 0)$ and $(-4, 0)$. Choice A is vertex form, which displays the vertex $(1, -25)$. Choice B and choice C are other rewritings that do not show where $f(x) = 0$."
+  },
+  {
+    "slug": "adv-nlfn-027",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The function $f$ is defined by $f(x) = 2^x - 8$. At what point does the graph of $y = f(x)$ cross the x-axis?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$(3, 0)$"
+      },
+      {
+        "id": "B",
+        "label": "$(4, 0)$"
+      },
+      {
+        "id": "C",
+        "label": "$(0, 3)$"
+      },
+      {
+        "id": "D",
+        "label": "$(0, -7)$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "The graph crosses the x-axis where $f(x) = 0$: $2^x = 8 = 2^3$, so $x = 3$, and the point is $(3, 0)$. Choice D is the y-intercept, since $f(0) = 1 - 8 = -7$. Choice B solves $2x = 8$, treating the exponent as multiplication. Choice C has the right number in the wrong coordinate."
+  },
+  {
+    "slug": "adv-nlfn-028",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "The graph of the quadratic function $y = f(x)$ in the xy-plane has its vertex at $(3, -8)$ and passes through the point $(5, 0)$. What is the value of $f(0)$?",
+    "answer": [
+      "10"
+    ],
+    "explanation": "Use vertex form: $f(x) = a(x - 3)^2 - 8$. Since $f(5) = 0$, $4a - 8 = 0$ and $a = 2$. Then $f(0) = 2(0 - 3)^2 - 8 = 18 - 8 = 10$."
+  },
+  {
+    "slug": "adv-nlfn-029",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "A bacteria population is modeled by $N(t) = 400(1.5)^{\\frac{t}{2}}$, where $t$ is the time in hours. By what factor does the population increase every 6 hours?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$2.25$"
+      },
+      {
+        "id": "B",
+        "label": "$3.375$"
+      },
+      {
+        "id": "C",
+        "label": "$4.5$"
+      },
+      {
+        "id": "D",
+        "label": "$9$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Increasing $t$ by 6 increases the exponent $\\frac{t}{2}$ by 3, so the population is multiplied by $1.5^3 = 3.375$. Choice A uses 2 periods instead of 3. Choice C multiplies 1.5 by 3 instead of raising it to the third power. Choice D multiplies 1.5 by 6."
+  },
+  {
+    "slug": "adv-nlfn-030",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "The balance $B$, in dollars, in a savings account $t$ years after it is opened is modeled by $B(t) = 2{,}000(1.02)^{12t}$. Which of the following functions best approximates this model?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$B(t) = 2{,}000(1.24)^t$"
+      },
+      {
+        "id": "B",
+        "label": "$B(t) = 2{,}000(1.268)^t$"
+      },
+      {
+        "id": "C",
+        "label": "$B(t) = 24{,}000(1.02)^t$"
+      },
+      {
+        "id": "D",
+        "label": "$B(t) = 2{,}000(1.02)^t$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "By the power rule, $(1.02)^{12t} = \\left((1.02)^{12}\\right)^t \\approx (1.268)^t$, so the balance grows by about 26.8% per year. Choice A adds 12 increases of 2% to get 24%, ignoring compounding. Choice D drops the 12 from the exponent. Choice C moves the 12 into the initial amount, which is not a valid rule for exponents."
+  },
+  {
+    "slug": "adv-nlfn-031",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "The graph of the quadratic function $y = f(x)$ is shown. It has x-intercepts at $(-3, 0)$ and $(1, 0)$ and passes through $(0, 3)$. What is the value of $f(3)$?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 300 412\" width=\"300\" height=\"412\" role=\"img\" aria-label=\"Downward-opening parabola with vertex (-1, 4) and x-intercepts -3 and 1\" font-family=\"sans-serif\" font-size=\"10\"><title>Downward-opening parabola with vertex (-1, 4) and x-intercepts -3 and 1</title><path d=\"M24.0 388.0V24.0M55.5 388.0V24.0M87.0 388.0V24.0M118.5 388.0V24.0M150.0 388.0V24.0M181.5 388.0V24.0M213.0 388.0V24.0M244.5 388.0V24.0M276.0 388.0V24.0M24.0 388.0H276.0M24.0 354.9H276.0M24.0 321.8H276.0M24.0 288.7H276.0M24.0 255.6H276.0M24.0 222.5H276.0M24.0 189.5H276.0M24.0 156.4H276.0M24.0 123.3H276.0M24.0 90.2H276.0M24.0 57.1H276.0M24.0 24.0H276.0\" stroke=\"currentColor\" stroke-opacity=\"0.18\" stroke-width=\"1\" fill=\"none\"/><path d=\"M24.0 222.5H276.0M181.5 388.0V24.0\" stroke=\"currentColor\" stroke-width=\"1.4\" fill=\"none\"/><text x=\"280.0\" y=\"226.5\" fill=\"currentColor\" font-style=\"italic\" font-size=\"12\">x</text><text x=\"177.5\" y=\"16.0\" fill=\"currentColor\" font-style=\"italic\" font-size=\"12\">y</text><text x=\"24.0\" y=\"234.5\" text-anchor=\"middle\" fill=\"currentColor\">-5</text><text x=\"55.5\" y=\"234.5\" text-anchor=\"middle\" fill=\"currentColor\">-4</text><text x=\"87.0\" y=\"234.5\" text-anchor=\"middle\" fill=\"currentColor\">-3</text><text x=\"118.5\" y=\"234.5\" text-anchor=\"middle\" fill=\"currentColor\">-2</text><text x=\"150.0\" y=\"234.5\" text-anchor=\"middle\" fill=\"currentColor\">-1</text><text x=\"213.0\" y=\"234.5\" text-anchor=\"middle\" fill=\"currentColor\">1</text><text x=\"244.5\" y=\"234.5\" text-anchor=\"middle\" fill=\"currentColor\">2</text><text x=\"276.0\" y=\"234.5\" text-anchor=\"middle\" fill=\"currentColor\">3</text><text x=\"177.5\" y=\"391.5\" text-anchor=\"end\" fill=\"currentColor\">-5</text><text x=\"177.5\" y=\"358.4\" text-anchor=\"end\" fill=\"currentColor\">-4</text><text x=\"177.5\" y=\"325.3\" text-anchor=\"end\" fill=\"currentColor\">-3</text><text x=\"177.5\" y=\"292.2\" text-anchor=\"end\" fill=\"currentColor\">-2</text><text x=\"177.5\" y=\"259.1\" text-anchor=\"end\" fill=\"currentColor\">-1</text><text x=\"177.5\" y=\"193.0\" text-anchor=\"end\" fill=\"currentColor\">1</text><text x=\"177.5\" y=\"159.9\" text-anchor=\"end\" fill=\"currentColor\">2</text><text x=\"177.5\" y=\"126.8\" text-anchor=\"end\" fill=\"currentColor\">3</text><text x=\"177.5\" y=\"93.7\" text-anchor=\"end\" fill=\"currentColor\">4</text><text x=\"177.5\" y=\"60.6\" text-anchor=\"end\" fill=\"currentColor\">5</text><text x=\"177.5\" y=\"27.5\" text-anchor=\"end\" fill=\"currentColor\">6</text><text x=\"177.5\" y=\"234.5\" text-anchor=\"end\" fill=\"currentColor\">0</text><path d=\"M55.5 388.0L56.5 381.4L57.6 374.9L58.7 368.5L59.7 362.1L60.8 355.8L61.8 349.6L62.9 343.5L63.9 337.4L64.9 331.4L66.0 325.5L67.1 319.6L68.1 313.9L69.2 308.2L70.2 302.6L71.2 297.0L72.3 291.5L73.3 286.1L74.4 280.8L75.4 275.5L76.5 270.3L77.6 265.2L78.6 260.2L79.7 255.2L80.7 250.3L81.8 245.5L82.8 240.8L83.8 236.1L84.9 231.5L86.0 227.0L87.0 222.5L88.0 218.2L89.1 213.9L90.2 209.6L91.2 205.5L92.2 201.4L93.3 197.4L94.4 193.5L95.4 189.6L96.4 185.8L97.5 182.1L98.5 178.5L99.6 174.9L100.6 171.4L101.7 168.0L102.8 164.6L103.8 161.4L104.9 158.2L105.9 155.0L107.0 152.0L108.0 149.0L109.1 146.1L110.1 143.3L111.1 140.5L112.2 137.8L113.2 135.2L114.3 132.7L115.3 130.2L116.4 127.8L117.5 125.5L118.5 123.3L119.5 121.1L120.6 119.0L121.7 117.0L122.7 115.0L123.8 113.2L124.8 111.4L125.9 109.6L126.9 108.0L127.9 106.4L129.0 104.9L130.1 103.5L131.1 102.1L132.1 100.8L133.2 99.6L134.2 98.5L135.3 97.4L136.4 96.4L137.4 95.5L138.4 94.6L139.5 93.9L140.6 93.2L141.6 92.5L142.6 92.0L143.7 91.5L144.8 91.1L145.8 90.8L146.8 90.5L147.9 90.3L148.9 90.2L150.0 90.2L151.1 90.2L152.1 90.3L153.1 90.5L154.2 90.8L155.2 91.1L156.3 91.5L157.3 92.0L158.4 92.5L159.4 93.2L160.5 93.9L161.5 94.6L162.6 95.5L163.7 96.4L164.7 97.4L165.8 98.5L166.8 99.6L167.8 100.8L168.9 102.1L170.0 103.5L171.0 104.9L172.1 106.4L173.1 108.0L174.2 109.6L175.2 111.4L176.2 113.2L177.3 115.0L178.4 117.0L179.4 119.0L180.5 121.1L181.5 123.3L182.5 125.5L183.6 127.8L184.6 130.2L185.7 132.7L186.8 135.2L187.8 137.8L188.8 140.5L189.9 143.3L190.9 146.1L192.0 149.0L193.0 152.0L194.1 155.0L195.2 158.2L196.2 161.4L197.2 164.6L198.3 168.0L199.3 171.4L200.4 174.9L201.5 178.5L202.5 182.1L203.6 185.8L204.6 189.6L205.7 193.5L206.7 197.4L207.8 201.4L208.8 205.5L209.9 209.6L210.9 213.9L212.0 218.2L213.0 222.5L214.0 227.0L215.1 231.5L216.1 236.1L217.2 240.8L218.2 245.5L219.3 250.3L220.3 255.2L221.4 260.2L222.4 265.2L223.5 270.3L224.5 275.5L225.6 280.8L226.7 286.1L227.7 291.5L228.8 297.0L229.8 302.6L230.8 308.2L231.9 313.9L233.0 319.6L234.0 325.5L235.1 331.4L236.1 337.4L237.2 343.5L238.2 349.6L239.2 355.8L240.3 362.1L241.4 368.5L242.4 374.9L243.5 381.4L244.5 388.0\" stroke=\"#2563eb\" stroke-width=\"2\" fill=\"none\"/><circle cx=\"87.0\" cy=\"222.5\" r=\"3\" fill=\"currentColor\"/><circle cx=\"213.0\" cy=\"222.5\" r=\"3\" fill=\"currentColor\"/><circle cx=\"150.0\" cy=\"90.2\" r=\"3\" fill=\"currentColor\"/><circle cx=\"181.5\" cy=\"123.3\" r=\"3\" fill=\"currentColor\"/></svg>",
+    "answer": [
+      "-12"
+    ],
+    "explanation": "From the x-intercepts, $f(x) = a(x + 3)(x - 1)$. Since $f(0) = 3$, $a(3)(-1) = 3$, so $a = -1$. Then $f(3) = -(3 + 3)(3 - 1) = -12$. (In vertex form, $f(x) = -(x + 1)^2 + 4$.)"
+  },
+  {
+    "slug": "adv-nlfn-032",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "The function $f$ is defined by $f(x) = (x - k)(x + 6)$, where $k$ is a constant. The graph of $y = f(x)$ in the xy-plane is symmetric about the line $x = -1$. What is the value of $k$?",
+    "answer": [
+      "4"
+    ],
+    "explanation": "The zeros of $f$ are $k$ and $-6$, and the axis of symmetry lies halfway between them: $\\frac{k + (-6)}{2} = -1$. So $k - 6 = -2$ and $k = 4$."
+  },
+  {
+    "slug": "adv-nlfn-033",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "The function $g$ is defined by $g(x) = \\frac{2x - 6}{x^2 - 9}$. Which of the following gives all the vertical asymptotes of the graph of $y = g(x)$ in the xy-plane?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$x = 3$ only"
+      },
+      {
+        "id": "B",
+        "label": "$x = -3$ and $x = 3$"
+      },
+      {
+        "id": "C",
+        "label": "$x = -3$ only"
+      },
+      {
+        "id": "D",
+        "label": "$x = 9$ only"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Factor: $g(x) = \\frac{2(x - 3)}{(x - 3)(x + 3)} = \\frac{2}{x + 3}$ for $x \\neq 3$. At $x = -3$ the denominator is 0 but the numerator is not, so there is a vertical asymptote. At $x = 3$ the common factor cancels, so the graph has a hole at $\\left(3, \\frac{1}{3}\\right)$, not an asymptote. Choice B overlooks the cancellation. Choice A keeps the hole and drops the asymptote. Choice D sets $x^2$ equal to 9 incorrectly as $x = 9$."
+  },
+  {
+    "slug": "adv-nlfn-034",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "The function $p$ is defined by $p(x) = x^3 - 4x^2 - 7x + 10$, and $p(1) = 0$. What is the greatest zero of $p$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$1$"
+      },
+      {
+        "id": "B",
+        "label": "$2$"
+      },
+      {
+        "id": "C",
+        "label": "$5$"
+      },
+      {
+        "id": "D",
+        "label": "$10$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Since $p(1) = 0$, $x - 1$ is a factor. Dividing gives $p(x) = (x - 1)(x^2 - 3x - 10) = (x - 1)(x - 5)(x + 2)$. The zeros are 1, 5, and $-2$, so the greatest is 5. Choice A is the given zero. Choice B reverses the sign of the zero $-2$. Choice D is the constant term."
+  },
+  {
+    "slug": "adv-nlfn-035",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "A farmer uses 120 meters of fencing to make a rectangular pen along a straight wall, so fencing is needed on only three sides. If each side perpendicular to the wall has length $x$ meters, the area of the pen, in square meters, is $A(x) = x(120 - 2x)$. What is the maximum possible area of the pen, in square meters?",
+    "answer": [
+      "1800"
+    ],
+    "explanation": "$A(x) = -2x^2 + 120x$ is a downward-opening parabola with zeros at $x = 0$ and $x = 60$. Its maximum is halfway between them, at $x = 30$: $A(30) = 30(120 - 60) = 1{,}800$. (A common error is to report the side length 30 or 60 instead of the area.)"
+  },
+  {
+    "slug": "adv-nlfn-036",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "The function $f$ is defined by $f(x) = c \\cdot b^x$, where $c$ and $b$ are positive constants. If $f(1) = 6$ and $f(3) = 54$, what is the value of $f(0)$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$2$"
+      },
+      {
+        "id": "B",
+        "label": "$3$"
+      },
+      {
+        "id": "C",
+        "label": "$6$"
+      },
+      {
+        "id": "D",
+        "label": "$18$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Divide: $\\frac{f(3)}{f(1)} = \\frac{cb^3}{cb} = b^2 = \\frac{54}{6} = 9$, so $b = 3$. Then $f(1) = 3c = 6$ gives $c = 2$, and $f(0) = c = 2$. Choice B is the base $b$. Choice C is $f(1)$. Choice D is $f(2)$."
+  },
+  {
+    "slug": "adv-nlfn-037",
+    "section": "math",
+    "official_domain": "advanced_math",
+    "skill": "nonlinear_functions",
+    "sat_domain": "advanced_math",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "For the polynomial $p(x) = 2x^3 + kx^2 - 5x + 6$, where $k$ is a constant, $x + 3$ is a factor of $p(x)$. What is the value of $k$?",
+    "answer": [
+      "11/3",
+      "3.666",
+      "3.667"
+    ],
+    "explanation": "If $x + 3$ is a factor, then $p(-3) = 0$: $2(-27) + 9k + 15 + 6 = 0$, so $9k - 33 = 0$ and $k = \\frac{11}{3}$. Enter 11/3, 3.666, or 3.667."
+  }
+]
