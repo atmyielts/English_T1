@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { MessagesSquare, Send, ChevronUp, ChevronDown } from 'lucide-react';
-import { playbookSectionAsk, playbookSectionThreadGet, type PlaybookThreadMessage } from '../lib/api';
+import { MessagesSquare, Send, ChevronUp, ChevronDown, RefreshCw } from 'lucide-react';
+import { apiErrorStatus, playbookSectionAsk, playbookSectionThreadGet, type PlaybookThreadMessage } from '../lib/api';
+import { useT, type Translate } from '../i18n';
 
 interface Props {
   accessToken: string | null;
@@ -9,30 +10,44 @@ interface Props {
   sectionHeading?: string | null;
 }
 
+const errorMessage = (t: Translate, err: unknown, fallback: Parameters<Translate>[0]): string => {
+  const status = apiErrorStatus(err);
+  if (status === 401) return t('error.signedOut');
+  if (status === 403) return t('error.premiumRequired');
+  return t(fallback);
+};
+
 export const PlaybookSectionCoach: React.FC<Props> = ({ accessToken, pageSlug, sectionId, sectionHeading }) => {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<PlaybookThreadMessage[]>([]);
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [loadingThread, setLoadingThread] = useState(false);
+  const [threadError, setThreadError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const ensureLoaded = async () => {
-    if (loaded || !accessToken) return;
+  const loadThread = async () => {
+    if (!accessToken) return;
+    setLoadingThread(true);
+    setThreadError(null);
     try {
       const res = await playbookSectionThreadGet(accessToken, pageSlug, sectionId);
-      setMessages(res.messages);
-    } catch {
-      // existing thread is optional
-    } finally {
+      setMessages(Array.isArray(res.messages) ? res.messages : []);
       setLoaded(true);
+    } catch (err) {
+      // Say so instead of silently showing an empty thread.
+      setThreadError(errorMessage(t, err, 'coach.threadError'));
+    } finally {
+      setLoadingThread(false);
     }
   };
 
-  const toggle = async () => {
+  const toggle = () => {
     const next = !open;
     setOpen(next);
-    if (next) await ensureLoaded();
+    if (next && !loaded) void loadThread();
   };
 
   const send = async () => {
@@ -44,8 +59,9 @@ export const PlaybookSectionCoach: React.FC<Props> = ({ accessToken, pageSlug, s
       const res = await playbookSectionAsk(accessToken, pageSlug, sectionId, trimmed);
       setMessages(res.messages);
       setDraft('');
+      setLoaded(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not ask');
+      setError(errorMessage(t, err, 'coach.askError'));
     } finally {
       setBusy(false);
     }
@@ -54,66 +70,38 @@ export const PlaybookSectionCoach: React.FC<Props> = ({ accessToken, pageSlug, s
   if (!accessToken) return null;
 
   return (
-    <div style={{ margin: '12px 0 0' }}>
-      <button
-        type="button"
-        onClick={() => void toggle()}
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 6,
-          padding: '6px 12px',
-          fontSize: 12.5,
-          border: '1px solid color-mix(in srgb, #0e4955 30%, transparent)',
-          background: 'color-mix(in srgb, #0e4955 6%, white)',
-          color: '#0e4955',
-          borderRadius: 20,
-          cursor: 'pointer',
-          fontWeight: 600,
-        }}
-      >
+    <div className="section-coach">
+      <button type="button" className="section-coach-toggle" onClick={toggle} aria-expanded={open}>
         <MessagesSquare size={13} />
-        Ask about {sectionHeading ? `"${sectionHeading.slice(0, 32)}"` : 'this section'}
+        {sectionHeading ? t('coach.askAbout', { heading: sectionHeading.slice(0, 32) }) : t('coach.askThis')}
         {open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
       </button>
 
       {open ? (
-        <div
-          style={{
-            marginTop: 10,
-            padding: 14,
-            background: 'color-mix(in srgb, #0e4955 3%, white)',
-            border: '1px solid #e8e2d0',
-            borderRadius: 10,
-          }}
-        >
-          {messages.length === 0 ? (
-            <p style={{ margin: 0, fontSize: 13, color: '#7a7263', fontStyle: 'italic' }}>
-              Ask a follow-up about this section — the coach answers using only this section's text.
+        <div className="section-coach-panel">
+          {loadingThread ? <p className="muted">{t('coach.loadingThread')}</p> : null}
+          {threadError ? (
+            <p className="inline-error" role="alert">
+              {threadError}{' '}
+              <button type="button" className="link-button" onClick={() => void loadThread()}>
+                <RefreshCw size={12} /> {t('common.retry')}
+              </button>
             </p>
-          ) : (
-            <div style={{ display: 'grid', gap: 8, marginBottom: 10 }}>
+          ) : null}
+          {!loadingThread && !threadError && messages.length === 0 ? (
+            <p className="muted coach-empty">{t('coach.empty')}</p>
+          ) : null}
+          {messages.length > 0 ? (
+            <div className="coach-messages">
               {messages.map((m, i) => (
-                <div
-                  key={i}
-                  style={{
-                    padding: '8px 12px',
-                    background: m.role === 'assistant' ? '#fff' : 'color-mix(in srgb, #0e4955 8%, white)',
-                    border: '1px solid #e8e2d0',
-                    borderRadius: 8,
-                    fontSize: 13.5,
-                    lineHeight: 1.5,
-                  }}
-                >
-                  <p style={{ margin: '0 0 4px', fontSize: 11, fontWeight: 700, color: m.role === 'assistant' ? '#0e4955' : '#7a7263', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                    {m.role === 'assistant' ? 'Coach' : 'You'}
-                  </p>
-                  <p style={{ margin: 0, color: '#1a1814' }}>{m.content}</p>
+                <div key={i} className={`coach-message ${m.role === 'assistant' ? 'is-coach' : 'is-you'}`}>
+                  <p className="coach-role">{m.role === 'assistant' ? t('coach.coach') : t('coach.you')}</p>
+                  <p>{m.content}</p>
                 </div>
               ))}
             </div>
-          )}
-          <div style={{ display: 'flex', gap: 6 }}>
+          ) : null}
+          <div className="coach-compose">
             <input
               type="text"
               value={draft}
@@ -124,28 +112,21 @@ export const PlaybookSectionCoach: React.FC<Props> = ({ accessToken, pageSlug, s
                   void send();
                 }
               }}
-              placeholder="What does this mean?"
+              placeholder={t('coach.placeholder')}
+              aria-label={t('coach.placeholder')}
               disabled={busy}
-              style={{
-                flex: 1,
-                padding: '8px 10px',
-                fontSize: 13.5,
-                border: '1px solid #d4cdb9',
-                borderRadius: 6,
-                background: '#fff',
-              }}
             />
             <button
               type="button"
               onClick={() => void send()}
               disabled={busy || !draft.trim()}
               className="button button-primary"
-              style={{ padding: '8px 14px', fontSize: 13 }}
+              aria-label={t('coach.send')}
             >
               {busy ? '…' : <Send size={14} />}
             </button>
           </div>
-          {error ? <p style={{ color: '#9b2c2c', margin: '8px 0 0', fontSize: 12.5 }}>{error}</p> : null}
+          {error ? <p className="inline-error" role="alert">{error}</p> : null}
         </div>
       ) : null}
     </div>

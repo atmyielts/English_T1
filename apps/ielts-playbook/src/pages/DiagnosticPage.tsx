@@ -14,14 +14,18 @@ import {
   Sparkles,
   TriangleAlert,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   playbookDiagnosticSynthesize,
   playbookRecommendationGenerate,
   type DiagnosticSynthesisResponse,
 } from '../lib/api';
 import { SiteChrome } from '../components/content/SiteChrome';
+import { MarketGuidePanel } from '../components/MarketGuidePanel';
+import { enumLabel, useLocale, useT } from '../i18n';
+import { readSimulatorContext } from '../lib/simulatorContext';
 import { useAccess } from '../lib/useAccess';
+import { scoreLabel, slugTitle } from './DashboardPage';
 
 type Row = Record<string, unknown>;
 
@@ -29,45 +33,9 @@ const isRow = (value: unknown): value is Row => Boolean(value && typeof value ==
 const toRecord = (value: unknown): Row => (isRow(value) ? value : {});
 const toRows = (value: unknown): Row[] => (Array.isArray(value) ? value.filter(isRow) : []);
 
-const toNumber = (value: unknown): number | null => {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'string' && value.trim()) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  return null;
-};
-
-const scoreLabel = (value: unknown) => {
-  const number = toNumber(value);
-  if (number != null) return number % 1 === 0 ? String(number) : number.toFixed(1);
-  const text = typeof value === 'string' ? value.trim() : '';
-  return text || '-';
-};
-
-const titleLabel = (value: unknown, fallback = '-') => {
-  const text = typeof value === 'string' ? value.trim() : '';
-  if (!text) return fallback;
-  return text
-    .replaceAll('-', ' ')
-    .replaceAll('_', ' ')
-    .split(' ')
-    .filter(Boolean)
-    .map((word) => `${word.slice(0, 1).toUpperCase()}${word.slice(1)}`)
-    .join(' ');
-};
-
-const formatDate = (value: unknown) => {
-  const text = typeof value === 'string' ? value.trim() : '';
-  if (!text) return '-';
-  const date = new Date(text);
-  if (Number.isNaN(date.getTime())) return text;
-  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).format(date);
-};
-
 const ratioLabel = (value: unknown) => {
-  const number = toNumber(value);
-  return number == null ? '-' : `${Math.round(number * 100)}%`;
+  const number = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(number) ? `${Math.round(number * 100)}%` : '-';
 };
 
 const externalBase = (value: unknown, fallback: string) => {
@@ -79,55 +47,58 @@ const SIMULATOR_URL = externalBase(import.meta.env.VITE_IELTS_SIMULATOR_URL, 'ht
 const PRACTICE_URL = externalBase(import.meta.env.VITE_IELTS_PRACTICE_URL, 'https://practice.ielts.schood.online');
 
 export const DiagnosticPage: React.FC = () => {
+  const t = useT();
+  const { date } = useLocale();
+  const location = useLocation();
   const { accessToken } = useAccess({ includeEffective: true });
-  const [payload, setPayload] = useState<Record<string, unknown> | null>(null);
+  const [simulator] = useState(() => readSimulatorContext(location.search));
+  const [payload, setPayload] = useState<Row | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [synthesis, setSynthesis] = useState<DiagnosticSynthesisResponse | null>(null);
   const [synthesizing, setSynthesizing] = useState(false);
   const [synthError, setSynthError] = useState<string | null>(null);
 
+  const formatDate = (value: unknown) => {
+    const text = typeof value === 'string' ? value.trim() : '';
+    if (!text) return '-';
+    const parsed = new Date(text);
+    return Number.isNaN(parsed.getTime()) ? text : date(parsed, { dateStyle: 'medium' });
+  };
+
   useEffect(() => {
     if (!accessToken) return;
     let active = true;
     setLoading(true);
     setSynthesizing(true);
-    // Fire the rule-based recommendation and the AI synthesis in parallel —
-    // each takes ~1-2s on its own; serialising them made the page feel slow.
-    // Auto-running synthesis also removes a click and lets the user see real
-    // analysis straight away instead of an empty "Generate" panel.
+    // Rule-based recommendation and AI synthesis run in parallel. A learner
+    // coming from a finished simulator test gets the plan anchored to that result.
     Promise.allSettled([
-      playbookRecommendationGenerate(accessToken, {}),
+      playbookRecommendationGenerate(accessToken, simulator.sessionId ? { session_id: simulator.sessionId } : {}),
       playbookDiagnosticSynthesize(accessToken),
     ]).then(([recRes, synthRes]) => {
       if (!active) return;
-      if (recRes.status === 'fulfilled') {
-        setPayload(recRes.value.recommendation ?? null);
-      } else {
-        setError(recRes.reason instanceof Error ? recRes.reason.message : 'Could not load recommendation');
-      }
-      if (synthRes.status === 'fulfilled') {
-        setSynthesis(synthRes.value);
-      } else {
-        setSynthError(synthRes.reason instanceof Error ? synthRes.reason.message : 'Could not generate synthesis');
-      }
+      if (recRes.status === 'fulfilled') setPayload(recRes.value.recommendation ?? null);
+      else setError(t('diagnostic.loadError'));
+      if (synthRes.status === 'fulfilled') setSynthesis(synthRes.value);
+      else setSynthError(t('diagnostic.synthError'));
       setLoading(false);
       setSynthesizing(false);
     });
     return () => {
       active = false;
     };
-  }, [accessToken]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accessToken, simulator.sessionId]);
 
   const runSynthesis = async () => {
     if (!accessToken) return;
     setSynthesizing(true);
     setSynthError(null);
     try {
-      const res = await playbookDiagnosticSynthesize(accessToken);
-      setSynthesis(res);
-    } catch (err) {
-      setSynthError(err instanceof Error ? err.message : 'Could not generate synthesis');
+      setSynthesis(await playbookDiagnosticSynthesize(accessToken));
+    } catch {
+      setSynthError(t('diagnostic.synthError'));
     } finally {
       setSynthesizing(false);
     }
@@ -148,160 +119,128 @@ export const DiagnosticPage: React.FC = () => {
   const planItems = toRows(practiceEvidence.plan_items);
   const mistakes = toRows(practiceEvidence.mistake_notebook);
   const moduleOrder = toRows(payload?.recommended_module_order);
-  const bottlenecks = Array.isArray(planning.likely_bottlenecks) ? (planning.likely_bottlenecks as Array<unknown>) : [];
+  const bottlenecks = Array.isArray(planning.likely_bottlenecks) ? (planning.likely_bottlenecks as unknown[]) : [];
+  const anchor = toRecord(payload?.simulator_anchor);
+  const profile = toRecord(payload?.profile);
   const simulatorConnected = Boolean(simulatorEvidence.connected);
   const practiceConnected = Boolean(practiceEvidence.connected ?? practiceEvidenceSummary.connected);
-  const evidenceSources = [
-    simulatorConnected ? 'Simulator' : null,
-    practiceConnected ? 'Practice' : null,
-  ].filter(Boolean).join(' + ');
+  const evidenceSources = [simulatorConnected ? t('service.simulator') : null, practiceConnected ? t('service.practice') : null]
+    .filter(Boolean)
+    .join(' + ');
   const weakSkillRaw = String(planning.weakest_skill ?? '').trim().toLowerCase();
   const currentBand = scoreLabel(
     outcomeSummary.current_overall_band ?? simulatorEvidence.overall_band ?? practiceEvidenceSummary.overall_band,
   );
-  const practiceLink = `${PRACTICE_URL}/dashboard?source=playbook${weakSkillRaw ? `&weak_skill=${encodeURIComponent(weakSkillRaw)}` : ''}`;
+  const practiceParams = new URLSearchParams({ source: 'playbook' });
+  if (weakSkillRaw) practiceParams.set('weak_skill', weakSkillRaw);
+  if (simulator.sessionId) practiceParams.set('session_id', simulator.sessionId);
+  const practiceLink = `${PRACTICE_URL}/dashboard?${practiceParams.toString()}`;
 
   return (
     <SiteChrome compact>
       <section className="workspace-hero">
         <div>
-          <p className="eyebrow">Diagnostic output</p>
-          <h1>Your current IELTS operating strategy.</h1>
-          <p className="hero-summary">
-            This recommendation blends onboarding profile, simulator outcomes, practice mastery, market constraints,
-            and planning rules into one action order.
-          </p>
+          <p className="eyebrow">{t('diagnostic.eyebrow')}</p>
+          <h1>{t('diagnostic.title')}</h1>
+          <p className="hero-summary">{t('diagnostic.lead')}</p>
           <div className="hero-actions">
             <a href={`${SIMULATOR_URL}/dashboard?source=playbook`} className="button button-secondary">
               <Activity size={17} />
-              Simulator
+              {t('service.simulator')}
             </a>
             <a href={practiceLink} className="button button-secondary">
               <Repeat2 size={17} />
-              Practice
+              {t('service.practice')}
             </a>
           </div>
         </div>
         <aside className="diagnostic-status">
           {loading ? <LoaderCircle size={22} className="spin" /> : <CheckCircle2 size={22} />}
-          <span>{loading ? 'Generating recommendation' : `Evidence: ${evidenceSources || 'Profile only'}`}</span>
+          <span>{loading ? t('diagnostic.generating') : t('dashboard.evidence', { sources: evidenceSources || t('dashboard.profileOnly') })}</span>
         </aside>
       </section>
 
-      {loading ? <div className="route-loading">Generating recommendation...</div> : null}
-      {error ? <p className="notice-banner notice-danger">{error}</p> : null}
+      {simulator.sessionId && payload ? (
+        <p className="notice-banner anchor-banner" role="status" data-testid="simulator-anchor">
+          {anchor.found
+            ? t('anchor.found', { band: scoreLabel(anchor.overall_band), date: formatDate(anchor.computed_at) })
+            : t('anchor.pending')}
+        </p>
+      ) : null}
 
-      <section
-        style={{
-          margin: '20px 0',
-          padding: 22,
-          borderRadius: 14,
-          border: '1px solid color-mix(in srgb, #6c4ab8 22%, transparent)',
-          background: 'color-mix(in srgb, #6c4ab8 4%, white)',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-            <Brain size={22} style={{ color: '#6c4ab8', flexShrink: 0, marginTop: 2 }} />
+      {error ? <p className="notice-banner notice-danger" role="alert">{error}</p> : null}
+
+      <section className="ai-panel ai-panel-violet">
+        <div className="ai-panel-head">
+          <div className="ai-panel-title">
+            <Brain size={22} />
             <div>
-              <strong style={{ display: 'block', fontFamily: 'Fraunces, serif', fontSize: 19, fontWeight: 600, marginBottom: 4 }}>
-                AI strategist synthesis
-              </strong>
-              <p style={{ margin: 0, fontSize: 14, color: '#3b352a', maxWidth: 560 }}>
-                AI reads your profile, latest skills probe, and practice mastery, then produces a personalised
-                narrative, risk callouts, and a weekly-hours feasibility check.
-              </p>
+              <strong>{t('diagnostic.ai.title')}</strong>
+              <p>{t('diagnostic.ai.lead')}</p>
             </div>
           </div>
           <button type="button" className="button button-primary" onClick={() => void runSynthesis()} disabled={synthesizing}>
-            {synthesizing ? 'Synthesising…' : synthesis ? 'Re-run' : 'Generate'} <Sparkles size={14} style={{ marginLeft: 4 }} />
+            {synthesizing ? t('diagnostic.ai.running') : synthesis ? t('diagnostic.ai.rerun') : t('common.generate')} <Sparkles size={14} />
           </button>
         </div>
 
-        {synthError ? <p style={{ color: '#9b2c2c', margin: '10px 0 0', fontSize: 13.5 }}>{synthError}</p> : null}
+        {synthError ? <p className="inline-error" role="alert">{synthError}</p> : null}
+        {synthesis?.ai_status === 'unconfigured' || synthesis?.ai_status === 'failed' ? (
+          <p className="inline-error">{t('ai.fallbackNote')}</p>
+        ) : null}
 
         {synthesizing && !synthesis ? (
-          <div style={{ marginTop: 16, padding: 14, background: '#fff', border: '1px solid #e8e2d0', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10, color: '#6c4ab8' }}>
+          <div className="ai-panel-loading">
             <LoaderCircle size={18} className="spin" />
-            <span style={{ fontSize: 14 }}>Reading your profile, probe, and practice signals…</span>
+            <span>{t('diagnostic.ai.reading')}</span>
           </div>
         ) : null}
 
         {synthesis ? (
-          <div style={{ marginTop: 16, display: 'grid', gap: 14 }}>
-            <div style={{ padding: 14, background: '#fff', border: '1px solid #e8e2d0', borderRadius: 10 }}>
-              {synthesis.narrative.split(/\n\n+/).map((para: string, i: number) => (
-                <p key={i} style={{ margin: i === 0 ? '0 0 10px' : '10px 0', fontSize: 14.5, lineHeight: 1.65, color: '#1a1814' }}>
-                  {para}
-                </p>
+          <div className="ai-panel-body">
+            <div className="ai-panel-card">
+              {synthesis.narrative.split(/\n\n+/).map((para, i) => (
+                <p key={i}>{para}</p>
               ))}
             </div>
 
-            <div style={{ display: 'grid', gap: 10, gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
-              <article style={{ padding: 14, background: '#fff', border: '1px solid #e8e2d0', borderRadius: 10 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#6c4ab8', margin: '0 0 6px' }}>
-                  Section priority
-                </p>
-                <ol style={{ margin: 0, paddingLeft: 18, fontSize: 14, lineHeight: 1.6 }}>
-                  {synthesis.section_priority.map((s: string, i: number) => (
-                    <li key={i} style={{ textTransform: 'capitalize', fontWeight: i === 0 ? 700 : 400 }}>
-                      {s}
-                    </li>
+            <div className="ai-panel-grid">
+              <article className="ai-panel-card">
+                <p className="ai-panel-label">{t('diagnostic.ai.priority')}</p>
+                <ol>
+                  {synthesis.section_priority.map((s, i) => (
+                    <li key={i} style={{ fontWeight: i === 0 ? 700 : 400 }}>{enumLabel(t, 'skill', s)}</li>
                   ))}
                 </ol>
               </article>
-
-              <article style={{ padding: 14, background: '#fff', border: '1px solid #e8e2d0', borderRadius: 10 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#6c4ab8', margin: '0 0 6px' }}>
-                  Weekly hours needed
-                </p>
-                <h3 style={{ margin: 0, fontFamily: 'Fraunces, serif', fontSize: 30 }}>
+              <article className="ai-panel-card">
+                <p className="ai-panel-label">{t('diagnostic.ai.hours')}</p>
+                <h3 className="ai-panel-number">
                   {synthesis.weekly_hours_needed ?? '-'}
-                  <span style={{ fontSize: 14, color: '#7a7263', marginLeft: 6 }}>h/wk</span>
+                  <span>{t('diagnostic.ai.hoursUnit')}</span>
                 </h3>
-                <p style={{ margin: '6px 0 0', fontSize: 13, color: '#3b352a' }}>
-                  Feasibility: <strong style={{ textTransform: 'capitalize' }}>{synthesis.feasibility}</strong>
-                </p>
+                <p>{t('diagnostic.ai.feasibility', { value: enumLabel(t, 'feasibility', synthesis.feasibility) })}</p>
               </article>
             </div>
 
             {synthesis.risks.length > 0 ? (
-              <article style={{ padding: 14, background: '#fff', border: '1px solid #e8e2d0', borderRadius: 10 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#6c4ab8', margin: '0 0 10px' }}>
-                  Risk callouts
-                </p>
-                <div style={{ display: 'grid', gap: 8 }}>
-                  {synthesis.risks.map((r: DiagnosticSynthesisResponse['risks'][number], i: number) => {
-                    const color = r.severity === 'high' ? '#b6512c' : r.severity === 'medium' ? '#7b6a3d' : '#1f8a55';
-                    return (
-                      <div
-                        key={i}
-                        style={{
-                          padding: 10,
-                          borderLeft: `3px solid ${color}`,
-                          background: `color-mix(in srgb, ${color} 6%, white)`,
-                          borderRadius: 6,
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                          <AlertTriangle size={15} color={color} style={{ flexShrink: 0, marginTop: 2 }} />
-                          <div style={{ flex: 1 }}>
-                            <strong style={{ fontSize: 13.5, color: '#1a1814' }}>{r.risk}</strong>
-                            <p style={{ margin: '4px 0 0', fontSize: 13, color: '#3b352a', lineHeight: 1.5 }}>
-                              <em style={{ color, fontWeight: 600, fontStyle: 'normal' }}>Mitigation:</em> {r.mitigation}
-                            </p>
-                          </div>
-                        </div>
+              <article className="ai-panel-card">
+                <p className="ai-panel-label">{t('diagnostic.ai.risks')}</p>
+                <div className="risk-list">
+                  {synthesis.risks.map((r, i) => (
+                    <div key={i} className={`risk-item risk-${r.severity}`}>
+                      <AlertTriangle size={15} />
+                      <div>
+                        <strong>{r.risk}</strong>
+                        <p><em>{t('diagnostic.ai.mitigation')}</em> {r.mitigation}</p>
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
                 </div>
               </article>
             ) : null}
 
-            <p style={{ margin: 0, fontSize: 11, color: '#7a7263' }}>
-              Generated {new Date(synthesis.generated_at).toLocaleString()}
-            </p>
+            <p className="muted small">{t('common.generatedAt', { time: date(synthesis.generated_at) })}</p>
           </div>
         ) : null}
       </section>
@@ -310,100 +249,103 @@ export const DiagnosticPage: React.FC = () => {
         <>
           <section className="dashboard-grid">
             <article className="metric-card">
-              <span className="card-icon">
-                <Compass size={18} />
-              </span>
-              <p className="eyebrow">Decision</p>
-              <h2>{titleLabel(decision.selected_track, 'General')}</h2>
-              <p>Delivery: {titleLabel(decision.recommended_delivery_mode, 'Computer')}</p>
+              <span className="card-icon"><Compass size={18} /></span>
+              <p className="eyebrow">{t('diagnostic.card.decision')}</p>
+              <h2>{enumLabel(t, 'track', decision.selected_track, t('track.general'))}</h2>
+              <p>{t('diagnostic.delivery', { mode: enumLabel(t, 'delivery', decision.recommended_delivery_mode, t('delivery.computer')) })}</p>
               <div className="pill-row">
-                <span className="pill">OSR: {String(decision.one_skill_retake_eligible ?? false)}</span>
+                <span className="pill">
+                  {decision.one_skill_retake_eligible ? t('diagnostic.osrYes') : t('diagnostic.osrNo')}
+                </span>
               </div>
             </article>
 
             <article className="metric-card metric-card-accent">
-              <span className="card-icon">
-                <Route size={18} />
-              </span>
-              <p className="eyebrow">Planning</p>
-              <h2>{titleLabel(planning.deadline_bucket, 'Improvement')}</h2>
-              <p>Weakest skill: {titleLabel(planning.weakest_skill)}</p>
+              <span className="card-icon"><Route size={18} /></span>
+              <p className="eyebrow">{t('diagnostic.card.planning')}</p>
+              <h2>{enumLabel(t, 'bucket', planning.deadline_bucket, t('bucket.improvement'))}</h2>
+              <p>{t('dashboard.weakSkill', { skill: enumLabel(t, 'skill', planning.weakest_skill) })}</p>
               <p>{String(planning.realistic_timeline ?? '')}</p>
             </article>
 
             <article className="metric-card">
-              <span className="card-icon">
-                <BookOpenCheck size={18} />
-              </span>
-              <p className="eyebrow">Evidence blend</p>
-              <h2>Band {currentBand}</h2>
-              <p>{evidenceSources || 'Waiting for simulator or practice evidence'}.</p>
+              <span className="card-icon"><BookOpenCheck size={18} /></span>
+              <p className="eyebrow">{t('diagnostic.card.evidence')}</p>
+              <h2>{t('dashboard.band', { band: currentBand })}</h2>
+              <p>{evidenceSources || t('diagnostic.evidence.waiting')}</p>
               <div className="pill-row">
-                <span className="pill">Mock: {formatDate(simulatorEvidence.latest_computed_at)}</span>
-                <span className="pill">Practice: {formatDate(practiceEvidenceSummary.latest_practice_at ?? freshness.latest_practice_at)}</span>
+                <span className="pill">{t('diagnostic.mockDate', { date: formatDate(simulatorEvidence.latest_computed_at) })}</span>
+                <span className="pill">{t('diagnostic.practiceDate', { date: formatDate(practiceEvidenceSummary.latest_practice_at ?? freshness.latest_practice_at) })}</span>
               </div>
             </article>
 
             <article className="metric-card">
-              <span className="card-icon">
-                <ClipboardList size={18} />
-              </span>
-              <p className="eyebrow">Template</p>
-              <h2>{String(planTemplate.title ?? 'No plan template selected')}</h2>
+              <span className="card-icon"><ClipboardList size={18} /></span>
+              <p className="eyebrow">{t('diagnostic.card.template')}</p>
+              <h2>{String(planTemplate.title ?? t('diagnostic.noTemplate'))}</h2>
               <p>{String(planTemplate.summary ?? '')}</p>
               {planTemplate.slug ? (
                 <Link to={`/plans/${String(planTemplate.slug)}`} className="text-link">
-                  Open plan
+                  {t('dashboard.openPlan')}
                   <ArrowRight size={15} />
                 </Link>
               ) : null}
             </article>
           </section>
 
+          <MarketGuidePanel
+            initialCountry={typeof profile.test_market_country_code === 'string' ? profile.test_market_country_code : null}
+            initialProvider={typeof profile.provider_key === 'string' ? profile.provider_key : null}
+          />
+
           <section className="workspace-grid">
             <article className="content-card priority-panel">
               <div className="section-heading compact-heading">
-                <p className="eyebrow">Priority order</p>
-                <h2>Modules to study next</h2>
+                <p className="eyebrow">{t('diagnostic.order.eyebrow')}</p>
+                <h2>{t('diagnostic.order.title')}</h2>
               </div>
               <div className="timeline-list">
-                {(moduleOrder.length ? moduleOrder : [{ slug: 'study-plans', reason: 'Generate more evidence to sharpen module order.' }]).map(
-                  (item, index) => (
+                {moduleOrder.length === 0 ? (
+                  <p className="muted">{t('diagnostic.order.empty')}</p>
+                ) : (
+                  moduleOrder.map((item, index) => (
                     <Link key={`${String(item.slug)}-${index}`} to={`/${String(item.slug)}`} className="timeline-item">
                       <span>{index + 1}</span>
                       <div>
-                        <strong>{titleLabel(item.slug)}</strong>
+                        <strong>{slugTitle(item.slug)}</strong>
                         <p>{String(item.reason ?? '')}</p>
                       </div>
                       <ArrowRight size={16} />
                     </Link>
-                  ),
+                  ))
                 )}
               </div>
             </article>
 
             <article className="content-card evidence-panel">
               <div className="section-heading compact-heading">
-                <p className="eyebrow">Practice focus</p>
-                <h2>Signals from IELTS Practice</h2>
+                <p className="eyebrow">{t('diagnostic.practice.eyebrow')}</p>
+                <h2>{t('diagnostic.practice.title')}</h2>
               </div>
               <div className="evidence-list">
-                {(weakQuestionTypes.length ? weakQuestionTypes.slice(0, 5) : [{ section_type: 'practice', question_type: 'No weak question types yet', mastery_status: practiceConnected ? 'steady' : 'waiting' }]).map(
-                  (item, index) => (
+                {weakQuestionTypes.length === 0 ? (
+                  <p className="muted">{practiceConnected ? t('dashboard.evidence.noneWeak') : t('dashboard.evidence.waiting')}</p>
+                ) : (
+                  weakQuestionTypes.slice(0, 5).map((item, index) => (
                     <div key={`${String(item.question_type)}-${index}`} className="evidence-item">
                       <div>
-                        <strong>{titleLabel(item.question_type, 'Practice signal')}</strong>
-                        <span>{titleLabel(item.section_type)} · {titleLabel(item.mastery_status, 'Unscored')}</span>
+                        <strong>{slugTitle(item.question_type, t('dashboard.signal'))}</strong>
+                        <span>{enumLabel(t, 'skill', item.section_type)} · {enumLabel(t, 'mastery.status', item.mastery_status, t('dashboard.unscored'))}</span>
                       </div>
                       <em>{item.mastery_level != null ? ratioLabel(item.mastery_level) : '-'}</em>
                     </div>
-                  ),
+                  ))
                 )}
               </div>
               <div className="inline-actions">
                 <a href={practiceLink} className="button button-primary">
                   <Repeat2 size={17} />
-                  Open targeted practice
+                  {t('diagnostic.openTargeted')}
                 </a>
               </div>
             </article>
@@ -412,38 +354,35 @@ export const DiagnosticPage: React.FC = () => {
           <section className="workspace-grid supporting-grid">
             <article className="content-card">
               <div className="section-heading compact-heading">
-                <p className="eyebrow">Roadmap</p>
-                <h2>Practice work queued next</h2>
+                <p className="eyebrow">{t('dashboard.roadmap')}</p>
+                <h2>{t('diagnostic.roadmap.title')}</h2>
               </div>
               <div className="mini-feed">
                 {(roadmapItems.length ? roadmapItems.slice(0, 4) : planItems.slice(0, 4)).map((item, index) => (
                   <div key={`${String(item.id ?? item.title)}-${index}`} className="feed-item">
-                    <strong>{String(item.title ?? item.rationale ?? 'Practice task')}</strong>
-                    <span>{titleLabel(item.section_type)} · {titleLabel(item.status, 'Queued')}</span>
+                    <strong>{String(item.title ?? item.rationale ?? '')}</strong>
+                    <span>{enumLabel(t, 'skill', item.section_type)}</span>
                   </div>
                 ))}
-                {roadmapItems.length === 0 && planItems.length === 0 ? (
-                  <div className="feed-item">
-                    <strong>Practice roadmap pending</strong>
-                    <span>Complete a practice lab to create targeted tasks.</span>
-                  </div>
-                ) : null}
+                {roadmapItems.length === 0 && planItems.length === 0 ? <p className="muted">{t('dashboard.roadmap.empty')}</p> : null}
               </div>
             </article>
 
             <article className="content-card">
               <div className="section-heading compact-heading">
-                <p className="eyebrow">Mistake notebook</p>
-                <h2>Patterns to review</h2>
+                <p className="eyebrow">{t('dashboard.mistakes')}</p>
+                <h2>{t('diagnostic.mistakes.title')}</h2>
               </div>
               <div className="mini-feed">
-                {(mistakes.length ? mistakes.slice(0, 4) : [{ mistake_pattern: 'No active mistake patterns yet.', status: 'clean' }]).map(
-                  (item, index) => (
+                {mistakes.length === 0 ? (
+                  <p className="muted">{t('dashboard.mistakes.empty')}</p>
+                ) : (
+                  mistakes.slice(0, 4).map((item, index) => (
                     <div key={`${String(item.mistake_pattern)}-${index}`} className="feed-item">
-                      <strong>{String(item.mistake_pattern ?? item.trap_type ?? 'Mistake pattern')}</strong>
-                      <span>{titleLabel(item.section_type)} · {titleLabel(item.status, 'Tracked')}</span>
+                      <strong>{String(item.mistake_pattern ?? item.trap_type ?? '')}</strong>
+                      <span>{enumLabel(t, 'skill', item.section_type)}</span>
                     </div>
-                  ),
+                  ))
                 )}
               </div>
             </article>
@@ -452,17 +391,21 @@ export const DiagnosticPage: React.FC = () => {
           <section className="workspace-grid">
             <article className="content-card risk-panel wide-card">
               <div className="section-heading compact-heading">
-                <p className="eyebrow">Likely bottlenecks</p>
-                <h2>What may still block progress</h2>
+                <p className="eyebrow">{t('diagnostic.bottlenecks.eyebrow')}</p>
+                <h2>{t('diagnostic.bottlenecks.title')}</h2>
               </div>
-              <ul className="plain-list">
-                {(bottlenecks.length ? bottlenecks : ['Generate more scored evidence to reveal blockers.']).map((item, index) => (
-                  <li key={index}>
-                    <TriangleAlert size={17} />
-                    <span>{String(item)}</span>
-                  </li>
-                ))}
-              </ul>
+              {bottlenecks.length === 0 ? (
+                <p className="muted">{t('diagnostic.bottlenecks.empty')}</p>
+              ) : (
+                <ul className="plain-list">
+                  {bottlenecks.map((item, index) => (
+                    <li key={index}>
+                      <TriangleAlert size={17} />
+                      <span>{String(item)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </article>
           </section>
         </>

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
+  MODULE_ORDER,
   PLAYBOOK_PRODUCT_SLUG,
   authUser,
   buildDashboardPayload,
@@ -11,8 +12,11 @@ import {
   hasPremiumAccess,
   json,
   listCatalog,
+  listMarkets,
   loadCurrentRecommendation,
+  loadOutcomeForSession,
   loadPageDetail,
+  loadPageRef,
   loadPlanTemplates,
   loadProfile,
   loadUpdatesPayload,
@@ -24,6 +28,11 @@ import {
   saveProfile,
   toText,
 } from "../_shared/ielts-playbook.ts";
+import {
+  matchPlaybookRoute,
+  pageCacheControl,
+  pathHasRoute,
+} from "../_shared/ielts-playbook-routes.ts";
 import {
   buildPracticeActivity,
   buildPracticeMasteryOverview,
@@ -55,11 +64,20 @@ serve(async (req) => {
     const supabaseAnonKey = getEnv("SUPABASE_ANON_KEY");
     const supabaseServiceRole = getEnv("SUPABASE_SERVICE_ROLE_KEY");
 
-    const sb = createClient(supabaseUrl, supabaseServiceRole, { auth: { persistSession: false } });
-    const scope = await resolveScope(sb);
     const url = new URL(req.url);
     const route = extractRoute(url, routeMarker);
-    const auth = await authUser(sb, req);
+    const matched = matchPlaybookRoute(req.method, route);
+    if (!matched) {
+      return pathHasRoute(route)
+        ? json(405, { error: "Method not allowed" })
+        : json(404, { error: "Not found" });
+    }
+    const params = matched.params;
+
+    const sb = createClient(supabaseUrl, supabaseServiceRole, { auth: { persistSession: false } });
+    // Scope (cached per isolate) and the session check are independent, so run
+    // them together instead of one after the other.
+    const [scope, auth] = await Promise.all([resolveScope(sb), authUser(sb, req)]);
 
     const requirePremium = async () => {
       if (!auth) return { ok: false as const, response: json(401, unauthorizedPayload) };
@@ -68,15 +86,19 @@ serve(async (req) => {
       return { ok: true as const };
     };
 
-    if (req.method === "GET" && route === "/catalog") {
+    if (matched.name === "catalog") {
       return json(200, await listCatalog(sb, scope));
     }
 
-    if (req.method === "GET" && route === "/updates") {
+    if (matched.name === "updates") {
       return json(200, await loadUpdatesPayload(sb, scope));
     }
 
-    if (req.method === "GET" && route === "/market-guidance") {
+    if (matched.name === "markets") {
+      return json(200, { markets: await listMarkets(sb, scope) }, { "Cache-Control": "public, max-age=300" });
+    }
+
+    if (matched.name === "market_guidance") {
       const countryCode = toText(url.searchParams.get("country_code"), 16) || "GLOBAL";
       const providerKey = toText(url.searchParams.get("provider_key"), 64) || "british-council";
       const guidance = await resolveMarketGuidance(sb, scope, countryCode, providerKey);
@@ -94,29 +116,51 @@ serve(async (req) => {
       });
     }
 
-    if (req.method === "GET" && route.startsWith("/pages/")) {
-      const slug = toText(route.replace("/pages/", ""), 160);
+    if (matched.name === "page_detail") {
+      const slug = toText(params.slug, 160);
       if (!slug) return json(404, { error: "Page not found" });
       const payload = await loadPageDetail(sb, scope, slug);
       if (!payload) return json(404, { error: "Page not found" });
 
       const page = payload.page as Record<string, unknown>;
       const visibility = String(page.visibility ?? "public");
+      const noStore = { "Cache-Control": "private, no-store" };
       if (visibility === "authenticated" && !auth) {
-        return json(401, { ...unauthorizedPayload, page_slug: slug });
+        return json(401, { ...unauthorizedPayload, page_slug: slug }, noStore);
       }
       if (visibility === "premium") {
         const gate = await requirePremium();
-        if (!gate.ok) return gate.response;
+        if (!gate.ok) {
+          // Locked guides still show what is inside (title, summary, section
+          // headings) so the app can render an honest upgrade screen.
+          const status = gate.response.status;
+          const sections = Array.isArray(payload.sections) ? payload.sections as Array<Record<string, unknown>> : [];
+          return json(status, {
+            ...(status === 401 ? unauthorizedPayload : premiumPayload),
+            page_slug: slug,
+            teaser: {
+              slug,
+              title: toText(page.title, 200),
+              summary: toText(page.summary, 600),
+              module_key: page.module_key ?? null,
+              page_type: page.page_type ?? null,
+              section_count: sections.length,
+              headings: sections.map((sec) => toText(sec.heading, 160)).filter(Boolean).slice(0, 14),
+            },
+          }, noStore);
+        }
       }
-      return json(200, payload);
+      return json(200, payload, {
+        "Cache-Control": pageCacheControl({ visibility, authenticated: Boolean(auth) }),
+        Vary: "Authorization, x-user-jwt",
+      });
     }
 
-    if (req.method === "GET" && route.startsWith("/plans/")) {
+    if (matched.name === "plan_detail") {
       const gate = await requirePremium();
       if (!gate.ok) return gate.response;
 
-      const slug = toText(route.replace("/plans/", ""), 160);
+      const slug = toText(params.slug, 160);
       const templates = await loadPlanTemplates(sb, scope);
       const plan = templates.find((row) => row.slug === slug);
       if (!plan) return json(404, { error: "Plan not found" });
@@ -128,7 +172,7 @@ serve(async (req) => {
       });
     }
 
-    if (req.method === "GET" && route === "/dashboard") {
+    if (matched.name === "dashboard") {
       const gate = await requirePremium();
       if (!gate.ok) return gate.response;
 
@@ -137,7 +181,8 @@ serve(async (req) => {
       // Running them in parallel server-side avoids 3 extra browser round-trips
       // and lets the playbook frontend hydrate everything from one response.
       const languageId = scope.languageId ?? "";
-      const [base, trajectory, activity, mastery] = await Promise.all([
+      const anchorSessionId = toText(url.searchParams.get("session_id"), 80);
+      const [base, trajectory, activity, mastery, anchorOutcome] = await Promise.all([
         buildDashboardPayload(sb, scope, auth!.userId),
         buildPracticeTrajectory(sb, scope.practiceProductId, auth!.userId).catch(() => null),
         languageId
@@ -146,11 +191,22 @@ serve(async (req) => {
         languageId
           ? buildPracticeMasteryOverview(sb, languageId, auth!.userId).catch(() => null)
           : Promise.resolve(null),
+        anchorSessionId
+          ? loadOutcomeForSession(sb, scope, auth!.userId, anchorSessionId).catch(() => null)
+          : Promise.resolve(null),
       ]);
 
       return new Response(
         JSON.stringify({
           ...base,
+          simulator_anchor: anchorSessionId
+            ? {
+              session_id: anchorSessionId,
+              found: Boolean(anchorOutcome),
+              computed_at: anchorOutcome?.computed_at ?? null,
+              overall_band: anchorOutcome?.overall_band ?? null,
+            }
+            : null,
           insights: {
             trajectory,
             activity,
@@ -168,7 +224,7 @@ serve(async (req) => {
       );
     }
 
-    if (req.method === "GET" && route === "/profile") {
+    if (matched.name === "profile_get") {
       const gate = await requirePremium();
       if (!gate.ok) return gate.response;
       // Short-cache so the onboarding wizard's repeated reads (when navigating
@@ -187,7 +243,7 @@ serve(async (req) => {
       );
     }
 
-    if (req.method === "PATCH" && route === "/profile") {
+    if (matched.name === "profile_patch") {
       const gate = await requirePremium();
       if (!gate.ok) return gate.response;
       const body = await parseBody(req);
@@ -195,17 +251,19 @@ serve(async (req) => {
       return json(200, { ok: true, profile });
     }
 
-    if (req.method === "POST" && route === "/recommendations/generate") {
+    if (matched.name === "recommendation_generate") {
       const gate = await requirePremium();
       if (!gate.ok) return gate.response;
       const body = await parseBody(req);
       const profile = await saveProfile(sb, scope, auth!.userId, body);
-      const recommendation = await generateRecommendation(sb, scope, auth!.userId, profile);
+      const recommendation = await generateRecommendation(sb, scope, auth!.userId, profile, {
+        anchorSessionId: toText(body.session_id, 80) || null,
+      });
       const snapshot = await persistRecommendation(sb, scope, auth!.userId, profile, recommendation);
       return json(200, { ok: true, snapshot, recommendation });
     }
 
-    if (req.method === "POST" && route === "/events") {
+    if (matched.name === "events") {
       const body = await parseBody(req);
       await recordEvent(sb, scope, body, auth?.userId ?? null);
       return json(200, { ok: true });
@@ -216,8 +274,8 @@ serve(async (req) => {
     // personalized walkthrough of the strategy grounded in the user's actual
     // errors. Powered by OpenRouter; degrades to a generic explanation when
     // the API key isn't set.
-    if (req.method === "POST" && route.startsWith("/pages/") && route.endsWith("/explain")) {
-      const slug = toText(route.replace("/pages/", "").replace(/\/explain$/, ""), 160);
+    if (matched.name === "page_explain") {
+      const slug = toText(params.slug, 160);
       if (!slug) return json(400, { error: "page slug required" });
       const gate = await requirePremium();
       if (!gate.ok) return gate.response;
@@ -309,8 +367,8 @@ serve(async (req) => {
     // internalized the strategy. AI-generated, not stored — frontend keeps the
     // answer key in memory between generate and submit calls. The drill text
     // is grounded in the page's actual section bodies so it doesn't drift.
-    if (req.method === "POST" && route.startsWith("/pages/") && route.endsWith("/drills")) {
-      const slug = toText(route.replace("/pages/", "").replace(/\/drills$/, ""), 160);
+    if (matched.name === "page_drills") {
+      const slug = toText(params.slug, 160);
       if (!slug) return json(400, { error: "page slug required" });
       const gate = await requirePremium();
       if (!gate.ok) return gate.response;
@@ -391,8 +449,8 @@ serve(async (req) => {
     // No SRS seeding here — playbook drills are reinforcement of strategy
     // understanding, distinct from question-type mastery which the simulator
     // pipeline owns.
-    if (req.method === "POST" && route.startsWith("/pages/") && route.endsWith("/drills/submit")) {
-      const slug = toText(route.replace("/pages/", "").replace(/\/drills\/submit$/, ""), 160);
+    if (matched.name === "page_drills_submit") {
+      const slug = toText(params.slug, 160);
       if (!slug) return json(400, { error: "page slug required" });
       const gate = await requirePremium();
       if (!gate.ok) return gate.response;
@@ -421,8 +479,8 @@ serve(async (req) => {
     // Diagnostic starter quiz — 3 MCQs that decide whether the user should
     // read the module or can skip it. Less rigorous than the mini-drills;
     // the threshold is 2/3 to skip.
-    if (req.method === "POST" && route.startsWith("/pages/") && route.endsWith("/diagnostic")) {
-      const slug = toText(route.replace("/pages/", "").replace(/\/diagnostic$/, ""), 160);
+    if (matched.name === "page_diagnostic") {
+      const slug = toText(params.slug, 160);
       if (!slug) return json(400, { error: "page slug required" });
       const gate = await requirePremium();
       if (!gate.ok) return gate.response;
@@ -499,8 +557,8 @@ serve(async (req) => {
 
     // Record diagnostic result so the dashboard can show "skipped: yes" for
     // modules the user pre-tested out of.
-    if (req.method === "POST" && route.startsWith("/pages/") && route.endsWith("/diagnostic/submit")) {
-      const slug = toText(route.replace("/pages/", "").replace(/\/diagnostic\/submit$/, ""), 160);
+    if (matched.name === "page_diagnostic_submit") {
+      const slug = toText(params.slug, 160);
       if (!slug) return json(400, { error: "page slug required" });
       const gate = await requirePremium();
       if (!gate.ok) return gate.response;
@@ -529,11 +587,9 @@ serve(async (req) => {
     // Per-section ask-the-coach: user reads a paragraph, asks a follow-up,
     // gets an inline AI reply scoped to that section. Thread persists per
     // (user, page, section).
-    if (req.method === "POST" && route.startsWith("/pages/") && /\/sections\/[^/]+\/ask$/.test(route)) {
-      const match = route.match(/^\/pages\/(.+?)\/sections\/(.+?)\/ask$/);
-      if (!match) return json(400, { error: "bad ask route" });
-      const slug = toText(match[1], 160);
-      const sectionId = toText(match[2], 80);
+    if (matched.name === "section_ask") {
+      const slug = toText(params.slug, 160);
+      const sectionId = toText(params.sectionId, 80);
       if (!slug || !sectionId) return json(400, { error: "page slug + section id required" });
       const gate = await requirePremium();
       if (!gate.ok) return gate.response;
@@ -603,11 +659,9 @@ serve(async (req) => {
       return json(200, { ok: true, ai_status: aiStatus, reply, messages: nextMessages });
     }
 
-    if (req.method === "GET" && route.startsWith("/pages/") && /\/sections\/[^/]+\/thread$/.test(route)) {
-      const match = route.match(/^\/pages\/(.+?)\/sections\/(.+?)\/thread$/);
-      if (!match) return json(400, { error: "bad thread route" });
-      const slug = toText(match[1], 160);
-      const sectionId = toText(match[2], 80);
+    if (matched.name === "section_thread") {
+      const slug = toText(params.slug, 160);
+      const sectionId = toText(params.sectionId, 80);
       const gate = await requirePremium();
       if (!gate.ok) return gate.response;
 
@@ -632,8 +686,8 @@ serve(async (req) => {
     // Interactive worked example. AI walks through a real-shaped example of
     // the technique step-by-step. Returns an array of steps, each with a
     // reveal label and explanation, so the frontend can show progressively.
-    if (req.method === "POST" && route.startsWith("/pages/") && route.endsWith("/worked-example")) {
-      const slug = toText(route.replace("/pages/", "").replace(/\/worked-example$/, ""), 160);
+    if (matched.name === "page_worked_example") {
+      const slug = toText(params.slug, 160);
       if (!slug) return json(400, { error: "page slug required" });
       const gate = await requirePremium();
       if (!gate.ok) return gate.response;
@@ -699,8 +753,8 @@ serve(async (req) => {
 
     // Band-aware re-rendering. Same module, re-framed for a target band so a
     // band-5 reader gets simpler examples and a band-7 reader gets nuance.
-    if (req.method === "POST" && route.startsWith("/pages/") && route.endsWith("/band-render")) {
-      const slug = toText(route.replace("/pages/", "").replace(/\/band-render$/, ""), 160);
+    if (matched.name === "page_band_render") {
+      const slug = toText(params.slug, 160);
       if (!slug) return json(400, { error: "page slug required" });
       const gate = await requirePremium();
       if (!gate.ok) return gate.response;
@@ -758,7 +812,7 @@ serve(async (req) => {
     }
 
     // Notes / highlights — personal study sheet aggregated across pages.
-    if (req.method === "GET" && route === "/notes") {
+    if (matched.name === "notes_list") {
       if (!auth) return json(401, unauthorizedPayload);
       const { data: rows } = await sb
         .from("ielts_playbook_user_notes")
@@ -769,17 +823,16 @@ serve(async (req) => {
       return json(200, { ok: true, notes: rows ?? [] });
     }
 
-    if (req.method === "POST" && route === "/notes") {
+    if (matched.name === "notes_create") {
       const gate = await requirePremium();
       if (!gate.ok) return gate.response;
       const body = await parseBody(req);
       const pageSlug = toText(body.page_slug, 160);
       if (!pageSlug) return json(400, { error: "page_slug required" });
-      const pagePayload = await loadPageDetail(sb, scope, pageSlug);
-      if (!pagePayload) return json(404, { error: "Page not found" });
-      const page = pagePayload.page as Record<string, unknown>;
+      const page = await loadPageRef(sb, scope, pageSlug);
+      if (!page) return json(404, { error: "Page not found" });
 
-      const { data: created } = await sb
+      const { data: created, error: createError } = await sb
         .from("ielts_playbook_user_notes")
         .insert({
           user_id: auth!.userId,
@@ -791,13 +844,14 @@ serve(async (req) => {
         })
         .select("id, page_id, section_id, anchor_text, body, color, updated_at")
         .single();
+      if (createError || !created) return json(500, { error: "Could not save the note" });
 
       return json(200, { ok: true, note: created });
     }
 
-    if (req.method === "DELETE" && route.startsWith("/notes/")) {
+    if (matched.name === "notes_delete") {
       if (!auth) return json(401, unauthorizedPayload);
-      const id = toText(route.replace("/notes/", ""), 60);
+      const id = toText(params.id, 60);
       if (!id) return json(400, { error: "note id required" });
       await sb.from("ielts_playbook_user_notes").delete().eq("user_id", auth.userId).eq("id", id);
       return json(200, { ok: true });
@@ -805,7 +859,7 @@ serve(async (req) => {
 
     // ===== Deep diagnostic: AI skills probe + synthesis + AI plan =====
 
-    if (req.method === "POST" && route === "/diagnostic/probe") {
+    if (matched.name === "diagnostic_probe") {
       const gate = await requirePremium();
       if (!gate.ok) return gate.response;
       const body = await parseBody(req);
@@ -878,7 +932,7 @@ serve(async (req) => {
       });
     }
 
-    if (req.method === "POST" && route === "/diagnostic/probe/grade") {
+    if (matched.name === "diagnostic_probe_grade") {
       const gate = await requirePremium();
       if (!gate.ok) return gate.response;
       const body = await parseBody(req);
@@ -955,7 +1009,7 @@ serve(async (req) => {
       });
     }
 
-    if (req.method === "POST" && route === "/diagnostic/synthesize") {
+    if (matched.name === "diagnostic_synthesize") {
       const gate = await requirePremium();
       if (!gate.ok) return gate.response;
 
@@ -1085,8 +1139,8 @@ serve(async (req) => {
       });
     }
 
-    if (req.method === "POST" && route.startsWith("/plans/") && route.endsWith("/generate-ai")) {
-      const slug = toText(route.replace("/plans/", "").replace(/\/generate-ai$/, ""), 160);
+    if (matched.name === "plan_generate_ai") {
+      const slug = toText(params.slug, 160);
       if (!slug) return json(400, { error: "plan slug required" });
       const gate = await requirePremium();
       if (!gate.ok) return gate.response;
@@ -1110,7 +1164,7 @@ serve(async (req) => {
         weeks?: unknown;
       }>(
         {
-          systemPrompt: "You are an IELTS coach drafting a concrete week-by-week study plan for a single student. You have: a base plan template, the student's profile, available weekly hours, and a prioritized section order. Return strict JSON: {intro: 2-3 sentences framing how this plan was tailored, weeks: [{week_number: 1..N, theme: short label, focus_sections: array of 1-3 section names, hours: total hours, key_activities: 3-5 specific bullets, success_criteria: 1-2 sentences, playbook_modules: optional module_keys}]}. Generate up to 8 weeks. Front-load the highest-priority section. Adapt to deadline: if 3 weeks out, make 3 weeks; if 12+ weeks, make 8.",
+          systemPrompt: `You are an IELTS coach drafting a concrete week-by-week study plan for a single student. You have: a base plan template, the student's profile, available weekly hours, and a prioritized section order. Return strict JSON: {intro: 2-3 sentences framing how this plan was tailored, weeks: [{week_number: 1..N, theme: short label, focus_sections: array of 1-3 section names, hours: total hours, key_activities: 3-5 specific bullets, success_criteria: 1-2 sentences, playbook_modules: optional array of module slugs chosen ONLY from: ${MODULE_ORDER.join(", ")}}]}. Generate up to 8 weeks. Front-load the highest-priority section. Adapt to deadline: if 3 weeks out, make 3 weeks; if 12+ weeks, make 8.`,
           userPayload: JSON.stringify({
             plan_template: {
               title: plan.title,
@@ -1150,8 +1204,9 @@ serve(async (req) => {
                 ? (w.key_activities as unknown[]).map((a) => toText(a, 320)).filter(Boolean).slice(0, 6)
                 : [],
               success_criteria: toText(w.success_criteria, 600),
+              // Only real module slugs, so every chip in the plan opens a page.
               playbook_modules: Array.isArray(w.playbook_modules)
-                ? (w.playbook_modules as unknown[]).map((m) => toText(m, 80)).filter(Boolean).slice(0, 4)
+                ? (w.playbook_modules as unknown[]).map((m) => toText(m, 80)).filter((m) => MODULE_ORDER.includes(m)).slice(0, 4)
                 : [],
             }))
             .filter((w) => w.theme)
@@ -1172,8 +1227,8 @@ serve(async (req) => {
 
     // Mark a playbook module as visited so the dashboard can show progress.
     // Idempotent — repeated visits just refresh the timestamp.
-    if (req.method === "POST" && route.startsWith("/modules/") && route.endsWith("/visit")) {
-      const slug = toText(route.replace("/modules/", "").replace(/\/visit$/, ""), 160);
+    if (matched.name === "module_visit") {
+      const slug = toText(params.slug, 160);
       if (!slug) return json(400, { error: "module slug required" });
       const gate = await requirePremium();
       if (!gate.ok) return gate.response;
@@ -1191,7 +1246,9 @@ serve(async (req) => {
       return json(200, { ok: true, visited_modules: Object.keys(nextVisited), last_visited_slug: slug });
     }
 
-    return json(404, { error: "Not found" });
+    // Every matched route returns above; reaching here means a route was added
+    // to the table without a handler.
+    return json(501, { error: "Route not implemented", route: matched.name });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return json(500, { error: message });

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BrainCog, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 import { playbookPageExplain, type PlaybookExplainResponse } from '../lib/api';
+import { useT } from '../i18n';
 
 interface Props {
   accessToken: string | null;
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export const PlaybookStrategyExplainer: React.FC<Props> = ({ accessToken, pageSlug }) => {
+  const t = useT();
   const [data, setData] = useState<PlaybookExplainResponse | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,14 +26,14 @@ export const PlaybookStrategyExplainer: React.FC<Props> = ({ accessToken, pageSl
       // Surface a precise diagnostic so the user knows whether they're
       // looking at a real AI response or a fallback string.
       if (res.ai_status === 'unconfigured') {
-        setError('AI is not yet configured for this environment (missing OPENROUTER_API_KEY). The text below is a fallback, not an AI response.');
+        setError(t('ai.unconfigured'));
       } else if (res.ai_status === 'failed') {
-        setError(`The AI call failed: ${res.ai_error ?? 'unknown error'}. The text below is a fallback, not an AI response.`);
+        setError(t('ai.failed'));
       } else if (res.ai_status === 'ok' && res.recent_mistake_count === 0) {
-        setError('No active mistake-notebook entries yet — the AI returned a general distillation of the strategy rather than a personalised walkthrough. Complete a few practice labs to unlock the personalised version.');
+        setError(t('explain.noMistakes'));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not generate explanation');
+      setError(t('explain.error'));
     } finally {
       setBusy(false);
     }
@@ -54,11 +56,10 @@ export const PlaybookStrategyExplainer: React.FC<Props> = ({ accessToken, pageSl
           <BrainCog size={20} style={{ color: '#0e4955', flexShrink: 0, marginTop: 2 }} />
           <div>
             <strong style={{ display: 'block', fontFamily: 'Fraunces, serif', fontSize: 17, fontWeight: 600, marginBottom: 4 }}>
-              Explain this strategy with my actual mistakes
+              {t('explain.title')}
             </strong>
             <p style={{ margin: 0, fontSize: 14, color: '#3b352a', lineHeight: 1.5 }}>
-              AI will read your recent active notebook entries and connect each one to the specific
-              technique on this page.
+              {t('explain.lead')}
             </p>
           </div>
         </div>
@@ -68,7 +69,7 @@ export const PlaybookStrategyExplainer: React.FC<Props> = ({ accessToken, pageSl
             className="button button-secondary"
             onClick={() => setOpen((o) => !o)}
           >
-            {open ? <>Hide <ChevronUp size={14} /></> : <>Show <ChevronDown size={14} /></>}
+            {open ? <>{t('common.hide')} <ChevronUp size={14} /></> : <>{t('common.show')} <ChevronDown size={14} /></>}
           </button>
         ) : (
           <button
@@ -77,7 +78,7 @@ export const PlaybookStrategyExplainer: React.FC<Props> = ({ accessToken, pageSl
             onClick={() => void explain()}
             disabled={busy}
           >
-            {busy ? 'Generating…' : 'Generate'} <Sparkles size={14} style={{ marginLeft: 4 }} />
+            {busy ? t('common.generating') : t('common.generate')} <Sparkles size={14} style={{ marginLeft: 4 }} />
           </button>
         )}
       </div>
@@ -93,7 +94,7 @@ export const PlaybookStrategyExplainer: React.FC<Props> = ({ accessToken, pageSl
           {data.examples.length > 0 ? (
             <div>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#0e4955', margin: '0 0 8px' }}>
-                Tied to your mistakes
+                {t('explain.tied')}
               </p>
               <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gap: 10 }}>
                 {data.examples.map((ex, i) => (
@@ -120,7 +121,7 @@ export const PlaybookStrategyExplainer: React.FC<Props> = ({ accessToken, pageSl
           ) : null}
 
           <p style={{ margin: 0, fontSize: 11, color: '#7a7263' }}>
-            Generated {new Date(data.generated_at).toLocaleTimeString()}
+            {t('common.generatedAt', { time: new Date(data.generated_at).toLocaleTimeString() })}
           </p>
         </div>
       ) : null}

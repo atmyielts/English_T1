@@ -5,6 +5,7 @@ import {
   playbookDiagnosticSubmit,
   type PlaybookDiagnosticQuestion,
 } from '../lib/api';
+import { useT } from '../i18n';
 
 interface Props {
   accessToken: string | null;
@@ -14,6 +15,7 @@ interface Props {
 type Outcome = { score: number; total: number; recommended_skip: boolean };
 
 export const PlaybookDiagnostic: React.FC<Props> = ({ accessToken, pageSlug }) => {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [questions, setQuestions] = useState<PlaybookDiagnosticQuestion[] | null>(null);
   const [answers, setAnswers] = useState<Record<string, number>>({});
@@ -32,7 +34,7 @@ export const PlaybookDiagnostic: React.FC<Props> = ({ accessToken, pageSlug }) =
       setAnswers({});
       setOutcome(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not start diagnostic');
+      setError(t('check.startError'));
     } finally {
       setBusy(false);
     }
@@ -51,7 +53,7 @@ export const PlaybookDiagnostic: React.FC<Props> = ({ accessToken, pageSlug }) =
       });
       setOutcome(res);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not record diagnostic');
+      setError(t('check.submitError'));
     } finally {
       setBusy(false);
     }
@@ -75,16 +77,16 @@ export const PlaybookDiagnostic: React.FC<Props> = ({ accessToken, pageSlug }) =
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <FastForward size={18} color="#7b6a3d" />
           <strong style={{ fontFamily: 'Fraunces, serif', fontSize: 16 }}>
-            Do you need this module?
+            {t('check.title')}
           </strong>
         </div>
         {!open ? (
           <button type="button" className="button button-secondary" onClick={() => void startDiagnostic()} disabled={busy}>
-            {busy ? 'Loading…' : 'Take 3-question check'} <Sparkles size={13} style={{ marginLeft: 4 }} />
+            {busy ? t('common.loading') : t('check.start')} <Sparkles size={13} style={{ marginLeft: 4 }} />
           </button>
         ) : (
           <button type="button" className="button button-secondary" onClick={() => setOpen(false)}>
-            Hide <ChevronUp size={13} />
+            {t('common.hide')} <ChevronUp size={13} />
           </button>
         )}
       </div>
@@ -123,7 +125,7 @@ export const PlaybookDiagnostic: React.FC<Props> = ({ accessToken, pageSlug }) =
           ))}
           <div>
             <button type="button" className="button button-primary" onClick={() => void submitAnswers()} disabled={!allAnswered || busy}>
-              {busy ? 'Submitting…' : 'See if you can skip'}
+              {busy ? t('common.submitting') : t('check.submit')}
             </button>
           </div>
         </div>
@@ -132,12 +134,12 @@ export const PlaybookDiagnostic: React.FC<Props> = ({ accessToken, pageSlug }) =
       {open && outcome ? (
         <div style={{ marginTop: 14, padding: 12, background: '#fff', border: '1px solid #e8e2d0', borderRadius: 8 }}>
           <p style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>
-            You scored {outcome.score} / {outcome.total}.
+            {t('check.score', { score: outcome.score, total: outcome.total })}
           </p>
           <p style={{ margin: '6px 0 0', fontSize: 13.5, color: '#3b352a', lineHeight: 1.5 }}>
             {outcome.recommended_skip
-              ? "You've got the basics — skim this module or skip it and head to a drill instead."
-              : 'Take the module — there are gaps worth filling. Then come back and re-run this check.'}
+              ? t('check.skip')
+              : t('check.study')}
           </p>
           <button
             type="button"
@@ -150,7 +152,7 @@ export const PlaybookDiagnostic: React.FC<Props> = ({ accessToken, pageSlug }) =
               setOpen(false);
             }}
           >
-            Close <ChevronDown size={13} />
+            {t('common.close')} <ChevronDown size={13} />
           </button>
         </div>
       ) : null}
