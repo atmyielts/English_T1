@@ -72,9 +72,12 @@ const isPlanStale = (
 interface Props {
   accessToken: string | null;
   latestBand: number | null;
+  /** The newest completed mock, so the Playbook can anchor its plan to that exact result. */
+  latestSessionId?: string | null;
 }
 
-export const IeltsEcosystemPanel: React.FC<Props> = ({ accessToken, latestBand }) => {
+export const IeltsEcosystemPanel: React.FC<Props> = ({ accessToken, latestBand, latestSessionId }) => {
+  const sessionParam = latestSessionId ? `&session_id=${encodeURIComponent(latestSessionId)}` : '';
   const [playbook, setPlaybook] = useState<PlaybookDashboard | null>(null);
   const [srs, setSrs] = useState<SrsListResponse | null>(null);
   const [loaded, setLoaded] = useState(false);
@@ -127,7 +130,7 @@ export const IeltsEcosystemPanel: React.FC<Props> = ({ accessToken, latestBand }
             </div>
           </div>
           <a
-            href={`${PLAYBOOK_URL}/dashboard?source=simulator&intent=regenerate`}
+            href={`${PLAYBOOK_URL}/dashboard?source=simulator&intent=regenerate${sessionParam}`}
             className="flex-shrink-0 rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700"
           >
             Regenerate plan
@@ -182,7 +185,7 @@ export const IeltsEcosystemPanel: React.FC<Props> = ({ accessToken, latestBand }
                   : 'Run diagnostic to start'}
           </div>
           <a
-            href={`${PLAYBOOK_URL}/dashboard?source=simulator`}
+            href={`${PLAYBOOK_URL}/dashboard?source=simulator${sessionParam}`}
             className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-blue-700 hover:text-blue-900"
           >
             Open playbook <ArrowRight size={12} />

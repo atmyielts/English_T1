@@ -65,6 +65,48 @@ export const getBearerToken = (req: Request): string | null => {
   return header.slice(7).trim() || null;
 };
 
+const jwtRole = (token: string): string | null => {
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+  try {
+    const base64 = parts[1]!.replace(/-/g, "+").replace(/_/g, "/");
+    const payload = JSON.parse(atob(base64 + "=".repeat((4 - (base64.length % 4)) % 4))) as Record<string, unknown>;
+    return typeof payload.role === "string" ? payload.role : null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Signed-out visitors send the public anon (or sb_ publishable) key as the bearer
+ * token. It is not a session: asking the auth server about it is a wasted round
+ * trip, and treating it as one stopped public pages from being cacheable.
+ */
+export const userTokenFrom = (req: Request): string | null => {
+  const token = getBearerToken(req);
+  if (!token || token.startsWith("sb_")) return null;
+  const role = jwtRole(token);
+  return role === "anon" || role === "service_role" ? null : token;
+};
+
+// Public modules and the catalog change only when an admin publishes, so each
+// isolate keeps them for a minute instead of re-reading them on every view.
+const PUBLIC_MEMO_TTL_MS = 60_000;
+const publicMemo = new Map<string, { value: unknown; expiresAt: number }>();
+
+export const memoPublic = async <T>(key: string, load: () => Promise<T>, keep: (value: T) => boolean = () => true): Promise<T> => {
+  const hit = publicMemo.get(key);
+  if (hit && hit.expiresAt > Date.now()) return hit.value as T;
+  const value = await load();
+  if (keep(value)) {
+    if (publicMemo.size > 200) publicMemo.clear();
+    publicMemo.set(key, { value, expiresAt: Date.now() + PUBLIC_MEMO_TTL_MS });
+  }
+  return value;
+};
+
+export const clearPublicMemo = () => publicMemo.clear();
+
 export const extractRoute = (url: URL, marker: string): string => {
   const idx = url.pathname.indexOf(marker);
   if (idx < 0) return "";
@@ -596,8 +638,10 @@ const sectionText = (section: JsonRecord): string => {
 
 const PREMIUM_REQUIRED = "premium_required";
 
-export const createPlaybookHandler = (cfg: ExamPlaybookConfig, makeDeps: () => PlaybookDeps) =>
-  async (req: Request): Promise<Response> => {
+export const createPlaybookHandler = (cfg: ExamPlaybookConfig, makeDeps: () => PlaybookDeps) => {
+  // A new handler (once per isolate in production, once per test) starts with an empty memo.
+  clearPublicMemo();
+  return async (req: Request): Promise<Response> => {
     if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
     const url = new URL(req.url);
     const route = extractRoute(url, cfg.routeMarker);
@@ -605,7 +649,7 @@ export const createPlaybookHandler = (cfg: ExamPlaybookConfig, makeDeps: () => P
     try {
       deps = makeDeps();
       const db = deps.db;
-      const token = getBearerToken(req);
+      const token = userTokenFrom(req);
       const user = token ? await deps.getUser(token) : null;
       const userId = user?.id ?? null;
       let premiumCache: boolean | null = null;
@@ -630,7 +674,7 @@ export const createPlaybookHandler = (cfg: ExamPlaybookConfig, makeDeps: () => P
 
       // ---- Public catalog ----
       if (method === "GET" && route === "/catalog") {
-        return json(200, await buildCatalog(cfg, db), { "Cache-Control": PUBLIC_CACHE });
+        return json(200, await memoPublic(`${cfg.exam}:catalog`, () => buildCatalog(cfg, db)), { "Cache-Control": PUBLIC_CACHE });
       }
 
       // ---- Page (public / authenticated / premium per page) ----
@@ -638,7 +682,13 @@ export const createPlaybookHandler = (cfg: ExamPlaybookConfig, makeDeps: () => P
       if (method === "GET" && m) {
         const slug = decodeURIComponent(m[1]).toLowerCase();
         if (!isSlug(slug)) throw new PlaybookError(404, "not_found", "Page not found.");
-        const page = await loadPageBySlug(cfg, db, slug);
+        // Only public pages are memoised, with their full detail; gated pages are read fresh.
+        const memo = await memoPublic(`${cfg.exam}:page:${slug}`, async () => {
+          const row = await loadPageBySlug(cfg, db, slug);
+          const isPublic = !!row && String(row.visibility ?? "public") === "public";
+          return { page: row, detail: isPublic ? await loadPageDetail(cfg, db, row!) : null };
+        }, (value) => value.detail !== null);
+        const page = memo.page;
         if (!page) throw new PlaybookError(404, "not_found", "Page not found.");
         const visibility = String(page.visibility ?? "public");
         const teaser = {
@@ -656,8 +706,8 @@ export const createPlaybookHandler = (cfg: ExamPlaybookConfig, makeDeps: () => P
           if (!userId) throw new PlaybookError(401, "auth_required", "Sign in to read this page.", { product_slug: cfg.playbookProductSlug, teaser });
           if (!(await isPremium())) throw new PlaybookError(403, PREMIUM_REQUIRED, "This guide is part of Premium.", { product_slug: cfg.playbookProductSlug, teaser });
         }
-        const detail = await loadPageDetail(cfg, db, page);
-        const cache = visibility === "public" && !token ? PUBLIC_CACHE : visibility === "public" ? "private, max-age=60" : "private, no-store";
+        const detail = memo.detail ?? await loadPageDetail(cfg, db, page);
+        const cache =visibility === "public" && !token ? PUBLIC_CACHE : visibility === "public" ? "private, max-age=60" : "private, no-store";
         return json(200, detail, { "Cache-Control": cache });
       }
 
@@ -1066,3 +1116,4 @@ export const createPlaybookHandler = (cfg: ExamPlaybookConfig, makeDeps: () => P
       return json(500, { error: "Something went wrong. Please try again.", code: "internal_error" });
     }
   };
+};
