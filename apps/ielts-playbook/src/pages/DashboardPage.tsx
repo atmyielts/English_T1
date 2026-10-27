@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Activity,
   ArrowRight,
@@ -10,9 +10,10 @@ import {
   Repeat2,
   Target,
   TrendingUp,
+  X,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { playbookDashboardGet } from '../lib/api';
+import { Link, useLocation } from 'react-router-dom';
+import { playbookDashboardGet, playbookRecommendationGenerate } from '../lib/api';
 import {
   PlaybookActivityCard,
   PlaybookMasteryCard,
@@ -22,6 +23,10 @@ import {
   PlaybookTrajectoryCard,
 } from '../components/PlaybookEnrichments';
 import { SiteChrome } from '../components/content/SiteChrome';
+import { PageSkeleton } from '../components/PlaybookPremium';
+import { enumLabel, useLocale, useT } from '../i18n';
+import { readPlanModules, setPlanModule } from '../lib/planModules';
+import { readSimulatorContext } from '../lib/simulatorContext';
 import { useAccess } from '../lib/useAccess';
 
 type Row = Record<string, unknown>;
@@ -40,14 +45,14 @@ const toNumber = (value: unknown): number | null => {
   return null;
 };
 
-const scoreLabel = (value: unknown) => {
+export const scoreLabel = (value: unknown) => {
   const number = toNumber(value);
   if (number != null) return number % 1 === 0 ? String(number) : number.toFixed(1);
   const text = typeof value === 'string' ? value.trim() : '';
   return text || '-';
 };
 
-const titleLabel = (value: unknown, fallback = '-') => {
+export const slugTitle = (value: unknown, fallback = '-') => {
   const text = typeof value === 'string' ? value.trim() : '';
   if (!text) return fallback;
   return text
@@ -57,14 +62,6 @@ const titleLabel = (value: unknown, fallback = '-') => {
     .filter(Boolean)
     .map((word) => `${word.slice(0, 1).toUpperCase()}${word.slice(1)}`)
     .join(' ');
-};
-
-const formatDate = (value: unknown) => {
-  const text = typeof value === 'string' ? value.trim() : '';
-  if (!text) return '-';
-  const date = new Date(text);
-  if (Number.isNaN(date.getTime())) return text;
-  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).format(date);
 };
 
 const ratioLabel = (value: unknown) => {
@@ -80,28 +77,81 @@ const externalBase = (value: unknown, fallback: string) => {
 const SIMULATOR_URL = externalBase(import.meta.env.VITE_IELTS_SIMULATOR_URL, 'https://ielts.schood.online');
 const PRACTICE_URL = externalBase(import.meta.env.VITE_IELTS_PRACTICE_URL, 'https://practice.ielts.schood.online');
 
+const insight = (payload: Row | null, key: string): never | null => {
+  const insights = payload?.insights;
+  if (!isRow(insights)) return null;
+  const value = insights[key];
+  return isRow(value) ? ({ ok: true, ...value } as never) : null;
+};
+
 export const DashboardPage: React.FC = () => {
+  const t = useT();
+  const { date } = useLocale();
+  const location = useLocation();
   const { accessToken } = useAccess({ includeEffective: true });
-  const [payload, setPayload] = useState<Record<string, unknown> | null>(null);
+  const [simulator] = useState(() => readSimulatorContext(location.search));
+  const [payload, setPayload] = useState<Row | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const [planModules, setPlanModules] = useState<string[]>([]);
+  const [regenState, setRegenState] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
+  const autoRegenerated = useRef(false);
+
+  const formatDate = (value: unknown) => {
+    const text = typeof value === 'string' ? value.trim() : '';
+    if (!text) return '-';
+    const parsed = new Date(text);
+    return Number.isNaN(parsed.getTime()) ? text : date(parsed, { dateStyle: 'medium' });
+  };
 
   useEffect(() => {
     if (!accessToken) return;
     let active = true;
-    playbookDashboardGet(accessToken)
+    setError(null);
+    playbookDashboardGet(accessToken, { sessionId: simulator.sessionId })
       .then((data) => {
         if (!active) return;
         setPayload(data);
+        setPlanModules(readPlanModules(toRecord(data.profile)));
       })
-      .catch((err: Error) => {
-        if (!active) return;
-        setError(err.message);
+      .catch(() => {
+        if (active) setError(t('dashboard.loadError'));
       });
     return () => {
       active = false;
     };
-  }, [accessToken, reloadKey]);
+  }, [accessToken, reloadKey, simulator.sessionId, t]);
+
+  const regenerate = async () => {
+    if (!accessToken) return;
+    setRegenState('running');
+    try {
+      await playbookRecommendationGenerate(accessToken, simulator.sessionId ? { session_id: simulator.sessionId } : {});
+      setRegenState('done');
+      setReloadKey((k) => k + 1);
+    } catch {
+      setRegenState('error');
+    }
+  };
+
+  // The simulator's "Update my plan" link: /dashboard?source=simulator&intent=regenerate
+  useEffect(() => {
+    if (!accessToken || autoRegenerated.current) return;
+    if (simulator.source === 'simulator' && simulator.intent === 'regenerate') {
+      autoRegenerated.current = true;
+      void regenerate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accessToken, simulator.source, simulator.intent]);
+
+  const removeFromPlan = async (slug: string) => {
+    if (!accessToken) return;
+    try {
+      setPlanModules(await setPlanModule(accessToken, slug, false));
+    } catch {
+      setError(t('content.useInPlan.error'));
+    }
+  };
 
   const profile = toRecord(payload?.profile);
   const recommendation = toRecordOrNull(payload?.latest_recommendation);
@@ -121,64 +171,99 @@ export const DashboardPage: React.FC = () => {
   const recentLabs = toRows(practiceEvidence.recent_lab_attempts);
   const guides = toRows(payload?.premium_guides);
   const moduleOrder = toRows(recommendation?.recommended_module_order);
+  const anchor = toRecordOrNull(payload?.simulator_anchor);
   const targetBand = scoreLabel(profile.target_overall_band ?? '6.5');
   const currentBand = scoreLabel(
     simulatorOutcome?.overall_band ?? practiceOutcome?.overall_band ?? profile.current_band_or_estimate,
   );
   const weakSkillRaw = String(planning.weakest_skill ?? profile.weakest_skill ?? '').trim().toLowerCase();
-  const weakSkill = titleLabel(weakSkillRaw, 'Not set');
+  const weakSkill = enumLabel(t, 'skill', weakSkillRaw, t('common.notSet'));
   const simulatorConnected = Boolean(simulatorService.connected ?? simulatorOutcome);
   const practiceConnected = Boolean(practiceService.connected ?? practiceEvidence.connected ?? practiceOutcome);
-  const evidenceSources = [
-    simulatorConnected ? 'Simulator' : null,
-    practiceConnected ? 'Practice' : null,
-  ].filter(Boolean).join(' + ');
+  const evidenceSources = [simulatorConnected ? t('service.simulator') : null, practiceConnected ? t('service.practice') : null]
+    .filter(Boolean)
+    .join(' + ');
   const weakCount = toNumber(masterySummary.weak_question_types) ?? weakQuestionTypes.length;
   const trackedCount = toNumber(masterySummary.tracked_question_types) ?? 0;
   const latestPracticeAt = freshness.latest_practice_at ?? practiceOutcome?.computed_at;
   const latestEvidenceAt = simulatorOutcome?.computed_at ?? practiceOutcome?.computed_at ?? latestPracticeAt;
   const latestLab = recentLabs[0] ?? null;
-  const practiceLink = `${PRACTICE_URL}/dashboard?source=playbook${weakSkillRaw ? `&weak_skill=${encodeURIComponent(weakSkillRaw)}` : ''}`;
+  const practiceParams = new URLSearchParams({ source: 'playbook' });
+  if (weakSkillRaw) practiceParams.set('weak_skill', weakSkillRaw);
+  if (simulator.sessionId) practiceParams.set('session_id', simulator.sessionId);
+  const practiceLink = `${PRACTICE_URL}/dashboard?${practiceParams.toString()}`;
+  const diagnosticLink = simulator.sessionId
+    ? `/diagnostic?source=simulator&session_id=${encodeURIComponent(simulator.sessionId)}`
+    : '/diagnostic';
+  const meta = toRecord(profile.metadata);
+  const visited = Object.keys(toRecord(meta.visited_modules));
 
   return (
     <SiteChrome compact>
       <section className="workspace-hero">
         <div>
-          <p className="eyebrow">Premium dashboard</p>
-          <h1>Your IELTS command center.</h1>
-          <p className="hero-summary">
-            Target band, simulator scores, practice mastery, market logic, and next modules now live in one decision
-            layer.
-          </p>
+          <p className="eyebrow">{t('dashboard.eyebrow')}</p>
+          <h1>{t('dashboard.title')}</h1>
+          <p className="hero-summary">{t('dashboard.lead')}</p>
           <div className="hero-actions">
-            <Link to="/diagnostic" className="button button-primary">
+            <Link to={diagnosticLink} className="button button-primary">
               <Radar size={17} />
-              Generate Strategy
+              {t('dashboard.generateStrategy')}
             </Link>
             <a href={practiceLink} className="button button-secondary">
               <Repeat2 size={17} />
-              Open Practice
+              {t('dashboard.openPractice')}
             </a>
           </div>
         </div>
-        <aside className="score-panel" aria-label="Current IELTS target">
+        <aside className="score-panel" aria-label={t('dashboard.target')}>
           <div>
-            <span>Target</span>
+            <span>{t('dashboard.target')}</span>
             <strong>{targetBand}</strong>
           </div>
           <div>
-            <span>Current</span>
+            <span>{t('dashboard.current')}</span>
             <strong>{currentBand}</strong>
           </div>
           <div className="score-panel-note">
-            Weak skill: {weakSkill}
+            {t('dashboard.weakSkill', { skill: weakSkill })}
             <br />
-            Evidence: {evidenceSources || 'Profile only'}
+            {t('dashboard.evidence', { sources: evidenceSources || t('dashboard.profileOnly') })}
           </div>
         </aside>
       </section>
 
-      {error ? <p className="notice-banner notice-danger">{error}</p> : null}
+      {simulator.source === 'simulator' && simulator.sessionId ? (
+        <section className="notice-banner anchor-banner" data-testid="simulator-anchor" role="status">
+          {anchor && anchor.found ? (
+            <span>
+              {t('anchor.found', {
+                band: scoreLabel(anchor.overall_band),
+                date: formatDate(anchor.computed_at),
+              })}
+            </span>
+          ) : payload ? (
+            <span>{t('anchor.pending')}</span>
+          ) : (
+            <span>{t('anchor.loading')}</span>
+          )}
+          <button
+            type="button"
+            className="button button-secondary"
+            onClick={() => void regenerate()}
+            disabled={regenState === 'running'}
+          >
+            <TrendingUp size={16} />
+            {regenState === 'running' ? t('stale.running') : t('anchor.rebuild')}
+          </button>
+          {regenState === 'done' ? <span className="ok-text">{t('anchor.rebuilt')}</span> : null}
+          {regenState === 'error' ? <span className="inline-error">{t('stale.error')}</span> : null}
+        </section>
+      ) : null}
+
+      {error ? <p className="notice-banner notice-danger" role="alert">{error}</p> : null}
+
+      {!payload && !error ? <PageSkeleton /> : null}
 
       <PlaybookStalePlanBanner
         accessToken={accessToken}
@@ -187,83 +272,50 @@ export const DashboardPage: React.FC = () => {
         onRegenerated={() => setReloadKey((k) => k + 1)}
       />
 
-      <PlaybookSectionTitle
-        eyebrow="Progress"
-        title="Where you stand right now"
-        hint="Pulled live from your practice and simulator activity."
-      />
+      <PlaybookSectionTitle eyebrow={t('dashboard.progress.eyebrow')} title={t('dashboard.progress.title')} hint={t('dashboard.progress.hint')} />
 
-      <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)', gap: 16, marginBottom: 8 }}>
-        <PlaybookTrajectoryCard
-          accessToken={accessToken}
-          embedded={(() => {
-            const insights = payload?.insights;
-            if (!insights || typeof insights !== 'object') return null;
-            const t = (insights as Record<string, unknown>).trajectory;
-            return t && typeof t === 'object' ? { ok: true, ...(t as Record<string, unknown>) } as never : null;
-          })()}
-        />
-        <PlaybookActivityCard
-          accessToken={accessToken}
-          embedded={(() => {
-            const insights = payload?.insights;
-            if (!insights || typeof insights !== 'object') return null;
-            const a = (insights as Record<string, unknown>).activity;
-            return a && typeof a === 'object' ? { ok: true, ...(a as Record<string, unknown>) } as never : null;
-          })()}
-        />
+      <section className="insights-grid">
+        <PlaybookTrajectoryCard accessToken={accessToken} embedded={insight(payload, 'trajectory')} />
+        <PlaybookActivityCard accessToken={accessToken} embedded={insight(payload, 'activity')} />
       </section>
 
-      <PlaybookSectionTitle
-        eyebrow="Mastery"
-        title="What you’ve repaired vs what’s still weak"
-        hint="From your practice attempts, classified into Repair / Building / Stable / Graduated."
-      />
+      <PlaybookSectionTitle eyebrow={t('dashboard.mastery.eyebrow')} title={t('dashboard.mastery.title')} hint={t('dashboard.mastery.hint')} />
+      <PlaybookMasteryCard accessToken={accessToken} embedded={insight(payload, 'mastery')} />
 
-      <PlaybookMasteryCard
-        accessToken={accessToken}
-        embedded={(() => {
-          const insights = payload?.insights;
-          if (!insights || typeof insights !== 'object') return null;
-          const m = (insights as Record<string, unknown>).mastery;
-          return m && typeof m === 'object' ? { ok: true, ...(m as Record<string, unknown>) } as never : null;
-        })()}
-      />
+      <PlaybookSectionTitle eyebrow={t('dashboard.curriculum.eyebrow')} title={t('dashboard.curriculum.title')} hint={t('dashboard.curriculum.hint')} />
 
-      <PlaybookSectionTitle
-        eyebrow="Curriculum"
-        title="Your playbook path"
-        hint="Modules you’ve opened from your strategy plan."
-      />
+      <section className="content-card plan-modules" data-testid="plan-modules">
+        <h2>{t('dashboard.planModules.title')}</h2>
+        {planModules.length === 0 ? (
+          <p className="muted">{t('dashboard.planModules.empty')}</p>
+        ) : (
+          <ul className="plan-module-list">
+            {planModules.map((slug) => (
+              <li key={slug}>
+                <Link to={`/${slug}`}>{slugTitle(slug)}</Link>
+                <button type="button" className="icon-button" onClick={() => void removeFromPlan(slug)} aria-label={t('dashboard.planModules.remove', { name: slugTitle(slug) })}>
+                  <X size={14} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
-      <PlaybookModuleProgress
-        visitedSlugs={(() => {
-          const meta = profile.metadata && typeof profile.metadata === 'object' && !Array.isArray(profile.metadata)
-            ? profile.metadata as Record<string, unknown>
-            : {};
-          const visited = meta.visited_modules && typeof meta.visited_modules === 'object' && !Array.isArray(meta.visited_modules)
-            ? meta.visited_modules as Record<string, unknown>
-            : {};
-          return Object.keys(visited);
-        })()}
-      />
+      <PlaybookModuleProgress visitedSlugs={visited} />
 
-      <PlaybookSectionTitle
-        eyebrow="Plan"
-        title="Strategy recommendation"
-        hint="Generated from your latest mock + practice signals."
-      />
+      <PlaybookSectionTitle eyebrow={t('dashboard.plan.eyebrow')} title={t('dashboard.plan.title')} hint={t('dashboard.plan.hint')} />
 
       <section className="dashboard-grid">
         <article className="metric-card">
           <span className="card-icon">
             <Target size={18} />
           </span>
-          <p className="eyebrow">Profile</p>
-          <h2>Band {targetBand}</h2>
-          <p>Purpose: {titleLabel(profile.purpose ?? 'study')}</p>
+          <p className="eyebrow">{t('dashboard.card.profile')}</p>
+          <h2>{t('dashboard.band', { band: targetBand })}</h2>
+          <p>{t('dashboard.purpose', { purpose: enumLabel(t, 'purpose', profile.purpose ?? 'study') })}</p>
           <Link to="/onboarding" className="text-link">
-            Adjust profile
+            {t('dashboard.adjustProfile')}
             <ArrowRight size={15} />
           </Link>
         </article>
@@ -272,15 +324,15 @@ export const DashboardPage: React.FC = () => {
           <span className="card-icon">
             <Gauge size={18} />
           </span>
-          <p className="eyebrow">Simulator</p>
-          <h2>{simulatorOutcome ? `Overall ${scoreLabel(simulatorOutcome.overall_band)}` : 'No mock yet'}</h2>
+          <p className="eyebrow">{t('service.simulator')}</p>
+          <h2>{simulatorOutcome ? t('dashboard.overall', { band: scoreLabel(simulatorOutcome.overall_band) }) : t('dashboard.noMock')}</h2>
           <p>
             {simulatorOutcome
-              ? `Latest scored mock: ${formatDate(simulatorOutcome.computed_at)}`
-              : 'Run a full mock so the Playbook can anchor strategy to section bands.'}
+              ? t('dashboard.latestMock', { date: formatDate(simulatorOutcome.computed_at) })
+              : t('dashboard.noMock.lead')}
           </p>
           <a href={`${SIMULATOR_URL}/dashboard?source=playbook`} className="text-link">
-            Open simulator
+            {t('dashboard.openSimulator')}
             <ArrowRight size={15} />
           </a>
         </article>
@@ -289,16 +341,16 @@ export const DashboardPage: React.FC = () => {
           <span className="card-icon">
             <Activity size={18} />
           </span>
-          <p className="eyebrow">Practice loop</p>
-          <h2>{practiceConnected ? `${weakCount} weak focus${weakCount === 1 ? '' : 'es'}` : 'Not connected'}</h2>
+          <p className="eyebrow">{t('dashboard.card.practice')}</p>
+          <h2>{practiceConnected ? t('dashboard.weakFocuses', { count: weakCount }) : t('dashboard.notConnected')}</h2>
           <p>
             {practiceConnected
-              ? `${trackedCount} question types tracked. Last practice: ${formatDate(latestPracticeAt)}.`
-              : 'Open Practice to generate mastery, mistakes, and roadmap signals.'}
+              ? t('dashboard.tracked', { count: trackedCount, date: formatDate(latestPracticeAt) })
+              : t('dashboard.practice.lead')}
           </p>
           <div className="pill-row">
-            <span className="pill">Latest lab: {latestLab ? titleLabel(latestLab.section_type) : '-'}</span>
-            <span className="pill">Accuracy: {latestLab ? ratioLabel(latestLab.accuracy_ratio) : '-'}</span>
+            <span className="pill">{t('dashboard.latestLab', { section: latestLab ? enumLabel(t, 'skill', latestLab.section_type) : '-' })}</span>
+            <span className="pill">{t('dashboard.accuracy', { value: latestLab ? ratioLabel(latestLab.accuracy_ratio) : '-' })}</span>
           </div>
         </article>
 
@@ -306,12 +358,14 @@ export const DashboardPage: React.FC = () => {
           <span className="card-icon">
             <CalendarClock size={18} />
           </span>
-          <p className="eyebrow">Current plan</p>
-          <h2>{String(planTemplate.title ?? 'No saved plan')}</h2>
-          <p>{String(planning.realistic_timeline ?? 'Generate a recommendation to get a timeline and module order.')}</p>
+          <p className="eyebrow">{t('dashboard.card.plan')}</p>
+          <h2>{String(planTemplate.title ?? t('dashboard.noPlan'))}</h2>
+          <p>{String(planning.realistic_timeline ?? t('dashboard.noPlan.lead'))}</p>
           <div className="pill-row">
-            <span className="pill">Bucket: {titleLabel(planning.deadline_bucket)}</span>
-            <span className="pill">Weak: {weakSkill}</span>
+            <span className="pill">{t('dashboard.bucket', { bucket: enumLabel(t, 'bucket', planning.deadline_bucket) })}</span>
+            {planTemplate.slug ? (
+              <Link to={`/plans/${String(planTemplate.slug)}`} className="pill pill-link">{t('dashboard.openPlan')}</Link>
+            ) : null}
           </div>
         </article>
       </section>
@@ -319,71 +373,84 @@ export const DashboardPage: React.FC = () => {
       <section className="workspace-grid">
         <article className="content-card priority-panel">
           <div className="section-heading compact-heading">
-            <p className="eyebrow">Next modules</p>
-            <h2>Recommended order</h2>
+            <p className="eyebrow">{t('dashboard.next.eyebrow')}</p>
+            <h2>{t('dashboard.next.title')}</h2>
           </div>
           <div className="timeline-list">
-            {(moduleOrder.length ? moduleOrder : [{ slug: 'diagnostic', reason: 'Generate a strategy to unlock module priority.' }]).map(
-              (item, index) => (
-                <Link
-                  key={`${String(item.slug)}-${index}`}
-                  to={String(item.slug) === 'diagnostic' ? '/diagnostic' : `/${String(item.slug)}`}
-                  className="timeline-item"
-                >
+            {moduleOrder.length === 0 ? (
+              <Link to={diagnosticLink} className="timeline-item">
+                <span>1</span>
+                <div>
+                  <strong>{t('dashboard.next.emptyTitle')}</strong>
+                  <p>{t('dashboard.next.empty')}</p>
+                </div>
+                <ArrowRight size={16} />
+              </Link>
+            ) : (
+              moduleOrder.map((item, index) => (
+                <Link key={`${String(item.slug)}-${index}`} to={`/${String(item.slug)}`} className="timeline-item">
                   <span>{index + 1}</span>
                   <div>
-                    <strong>{titleLabel(item.slug)}</strong>
+                    <strong>{slugTitle(item.slug)}</strong>
                     <p>{String(item.reason ?? '')}</p>
                   </div>
                   <ArrowRight size={16} />
                 </Link>
-              ),
+              ))
             )}
           </div>
         </article>
 
         <article className="content-card evidence-panel">
           <div className="section-heading compact-heading">
-            <p className="eyebrow">Practice evidence</p>
-            <h2>What the lab is flagging</h2>
+            <p className="eyebrow">{t('dashboard.evidence.eyebrow')}</p>
+            <h2>{t('dashboard.evidence.title')}</h2>
           </div>
           <div className="evidence-list">
-            {(weakQuestionTypes.length ? weakQuestionTypes.slice(0, 4) : [{ section_type: 'practice', question_type: 'No weak question types yet', mastery_status: practiceConnected ? 'steady' : 'waiting' }]).map(
-              (item, index) => (
+            {weakQuestionTypes.length === 0 ? (
+              <p className="muted">{practiceConnected ? t('dashboard.evidence.noneWeak') : t('dashboard.evidence.waiting')}</p>
+            ) : (
+              weakQuestionTypes.slice(0, 4).map((item, index) => (
                 <div key={`${String(item.question_type)}-${index}`} className="evidence-item">
                   <div>
-                    <strong>{titleLabel(item.question_type, 'Practice signal')}</strong>
-                    <span>{titleLabel(item.section_type)} · {titleLabel(item.mastery_status, 'Unscored')}</span>
+                    <strong>{slugTitle(item.question_type, t('dashboard.signal'))}</strong>
+                    <span>
+                      {enumLabel(t, 'skill', item.section_type)} · {enumLabel(t, 'mastery.status', item.mastery_status, t('dashboard.unscored'))}
+                    </span>
                   </div>
                   <em>{item.mastery_level != null ? ratioLabel(item.mastery_level) : '-'}</em>
                 </div>
-              ),
+              ))
             )}
           </div>
           <div className="evidence-columns">
             <div>
-              <h3>Roadmap</h3>
+              <h3>{t('dashboard.roadmap')}</h3>
               <div className="mini-feed">
-                {(roadmapItems.length ? roadmapItems.slice(0, 3) : [{ title: 'Practice roadmap will appear after targeted sessions.', section_type: weakSkillRaw || 'practice' }]).map(
-                  (item, index) => (
+                {roadmapItems.length === 0 ? (
+                  <p className="muted">{t('dashboard.roadmap.empty')}</p>
+                ) : (
+                  roadmapItems.slice(0, 3).map((item, index) => (
                     <div key={`${String(item.title)}-${index}`} className="feed-item">
-                      <strong>{String(item.title ?? 'Practice roadmap')}</strong>
-                      <span>{titleLabel(item.section_type)} · Priority {String(item.priority ?? '-')}</span>
+                      <strong>{String(item.title ?? '')}</strong>
+                      <span>{enumLabel(t, 'skill', item.section_type)} · {t('dashboard.priority', { value: String(item.priority ?? '-') })}</span>
                     </div>
-                  ),
+                  ))
                 )}
               </div>
             </div>
             <div>
-              <h3>Mistakes</h3>
+              <h3>{t('dashboard.mistakes')}</h3>
               <div className="mini-feed">
-                {(mistakes.length ? mistakes.slice(0, 3) : [{ mistake_pattern: 'No active mistake patterns yet.', trap_type: 'clean' }]).map(
-                  (item, index) => (
+                {mistakes.length === 0 ? (
+                  <p className="muted">{t('dashboard.mistakes.empty')}</p>
+                ) : (
+                  mistakes.slice(0, 3).map((item, index) => (
                     <div key={`${String(item.mistake_pattern)}-${index}`} className="feed-item">
-                      <strong>{String(item.mistake_pattern ?? item.trap_type ?? 'Mistake pattern')}</strong>
-                      <span>{titleLabel(item.section_type)} · {titleLabel(item.status, 'Tracked')}</span>
+                      <strong>{String(item.mistake_pattern ?? item.trap_type ?? '')}</strong>
+                      <span>{enumLabel(t, 'skill', item.section_type)}</span>
                     </div>
-                  ),
+                  ))
                 )}
               </div>
             </div>
@@ -394,8 +461,8 @@ export const DashboardPage: React.FC = () => {
       <section className="workspace-grid supporting-grid">
         <article className="content-card">
           <div className="section-heading compact-heading">
-            <p className="eyebrow">Premium guides</p>
-            <h2>Deep dives tied to band movement</h2>
+            <p className="eyebrow">{t('dashboard.guides.eyebrow')}</p>
+            <h2>{t('dashboard.guides.title')}</h2>
           </div>
           <div className="mini-feed">
             {guides.slice(0, 6).map((guide) => (
@@ -404,54 +471,49 @@ export const DashboardPage: React.FC = () => {
                 <span>{String(guide.summary ?? '')}</span>
               </Link>
             ))}
-            {guides.length === 0 ? (
-              <Link to="/essentials" className="feed-item">
-                <strong>Start with IELTS Essentials</strong>
-                <span>Load the public module structure while premium guides are being prepared.</span>
-              </Link>
-            ) : null}
+            {guides.length === 0 && payload ? <p className="muted">{t('dashboard.guides.empty')}</p> : null}
           </div>
         </article>
 
         <article className="content-card">
           <div className="section-heading compact-heading">
-            <p className="eyebrow">Connected IELTS family</p>
-            <h2>Evidence sources</h2>
+            <p className="eyebrow">{t('dashboard.family.eyebrow')}</p>
+            <h2>{t('dashboard.family.title')}</h2>
           </div>
           <div className="service-grid">
             <a href={`${SIMULATOR_URL}/dashboard?source=playbook`} className="service-card">
               <CheckCircle2 size={18} />
               <div>
-                <strong>IELTS Simulator</strong>
-                <span>{simulatorConnected ? `Latest mock ${formatDate(simulatorOutcome?.computed_at)}` : 'Waiting for a scored mock'}</span>
+                <strong>{t('service.simulatorFull')}</strong>
+                <span>{simulatorConnected ? t('dashboard.latestMock', { date: formatDate(simulatorOutcome?.computed_at) }) : t('dashboard.family.waitingMock')}</span>
               </div>
             </a>
             <a href={practiceLink} className="service-card">
               <CheckCircle2 size={18} />
               <div>
-                <strong>IELTS Practice</strong>
-                <span>{practiceConnected ? `Latest practice ${formatDate(latestPracticeAt)}` : 'Waiting for practice activity'}</span>
+                <strong>{t('service.practiceFull')}</strong>
+                <span>{practiceConnected ? t('dashboard.family.latestPractice', { date: formatDate(latestPracticeAt) }) : t('dashboard.family.waitingPractice')}</span>
               </div>
             </a>
           </div>
-          <p className="card-footnote">Last evidence refresh: {formatDate(latestEvidenceAt)}</p>
+          <p className="card-footnote">{t('dashboard.family.refresh', { date: formatDate(latestEvidenceAt) })}</p>
         </article>
       </section>
 
       <section className="cta-strip">
         <div>
-          <p className="eyebrow">Keep the loop moving</p>
-          <h2>Refresh the strategy after each mock or practice cycle.</h2>
-          <p>IELTS planning gets sharper when both evidence streams are recent.</p>
+          <p className="eyebrow">{t('dashboard.cta.eyebrow')}</p>
+          <h2>{t('dashboard.cta.title')}</h2>
+          <p>{t('dashboard.cta.lead')}</p>
         </div>
         <div className="cta-actions">
-          <Link to="/diagnostic" className="button button-primary">
+          <Link to={diagnosticLink} className="button button-primary">
             <TrendingUp size={17} />
-            Refresh Strategy
+            {t('dashboard.cta.refresh')}
           </Link>
           <Link to="/study-plans" className="button button-secondary">
             <NotebookTabs size={17} />
-            View Plans
+            {t('dashboard.cta.plans')}
           </Link>
         </div>
       </section>

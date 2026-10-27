@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Highlighter, X } from 'lucide-react';
-import { playbookNoteCreate } from '../lib/api';
+import { apiErrorStatus, playbookNoteCreate } from '../lib/api';
+import { useT } from '../i18n';
 
 interface Props {
   accessToken: string | null;
@@ -15,52 +16,44 @@ type FloatingState = {
   selectedText: string;
 };
 
-// Renders a floating "Save highlight" button when the user selects text inside
-// the article container. POSTs the selection + an optional note to the notes
-// endpoint. Intentionally lightweight — does not visually mark the source text
-// in the article (that'd require a much heavier highlight-renderer rewrite);
-// instead the captured highlights live on /notes.
+const EDGE = 12;
+const BUTTON_HALF_WIDTH = 72;
+
+/** Keep the floating button inside the viewport even when the selection hugs an edge. */
+export const clampToViewport = (x: number, y: number, viewportWidth: number): { x: number; y: number } => ({
+  x: Math.min(Math.max(x, EDGE + BUTTON_HALF_WIDTH), Math.max(EDGE + BUTTON_HALF_WIDTH, viewportWidth - EDGE - BUTTON_HALF_WIDTH)),
+  // The button is drawn above the point; never let it leave the top edge.
+  y: Math.max(y, 48),
+});
+
+// Floating "Save highlight" button for text selected inside the article. The
+// selection and an optional note are saved to /notes.
 export const PlaybookHighlighter: React.FC<Props> = ({ accessToken, pageSlug, containerRef }) => {
+  const t = useT();
   const [floating, setFloating] = useState<FloatingState>({ visible: false, x: 0, y: 0, selectedText: '' });
   const [composerOpen, setComposerOpen] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [saving, setSaving] = useState(false);
-  const [savedNotice, setSavedNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     if (!accessToken) return;
     const container = containerRef.current;
     if (!container) return;
 
+    const hide = () => setFloating((prev) => (prev.visible ? { ...prev, visible: false } : prev));
     const handler = () => {
       const sel = window.getSelection();
-      if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
-        setFloating((prev) => (prev.visible ? { ...prev, visible: false } : prev));
-        return;
-      }
+      if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return hide();
       const text = sel.toString().trim();
-      if (text.length < 3) {
-        setFloating((prev) => (prev.visible ? { ...prev, visible: false } : prev));
-        return;
-      }
+      if (text.length < 3) return hide();
       const range = sel.getRangeAt(0);
       const containerNode = containerRef.current;
-      if (!containerNode || !containerNode.contains(range.commonAncestorContainer)) {
-        setFloating((prev) => (prev.visible ? { ...prev, visible: false } : prev));
-        return;
-      }
-      // Viewport-relative coordinates — pair with position: fixed below so the
-      // floating button lands right above the selection regardless of which
-      // ancestor has position: relative. Previously combined window.scroll*
-      // with position: absolute, which placed the button thousands of pixels
-      // off-screen and made the feature look broken.
+      if (!containerNode || !containerNode.contains(range.commonAncestorContainer)) return hide();
+      // Viewport coordinates paired with position: fixed below.
       const rect = range.getBoundingClientRect();
-      setFloating({
-        visible: true,
-        x: rect.left + rect.width / 2,
-        y: rect.top - 8,
-        selectedText: text,
-      });
+      const point = clampToViewport(rect.left + rect.width / 2, rect.top - 8, window.innerWidth);
+      setFloating({ visible: true, x: point.x, y: point.y, selectedText: text });
     };
 
     document.addEventListener('mouseup', handler);
@@ -88,10 +81,14 @@ export const PlaybookHighlighter: React.FC<Props> = ({ accessToken, pageSlug, co
         color: 'amber',
       });
       setComposerOpen(false);
-      setSavedNotice('Saved to your notes.');
-      setTimeout(() => setSavedNotice(null), 2400);
+      setNotice({ kind: 'ok', text: t('highlight.saved') });
+      setTimeout(() => setNotice(null), 2400);
     } catch (err) {
-      setSavedNotice(err instanceof Error ? err.message : 'Could not save');
+      const status = apiErrorStatus(err);
+      setNotice({
+        kind: 'error',
+        text: status === 403 ? t('error.premiumRequired') : status === 401 ? t('error.signedOut') : t('highlight.saveError'),
+      });
     } finally {
       setSaving(false);
     }
@@ -104,119 +101,42 @@ export const PlaybookHighlighter: React.FC<Props> = ({ accessToken, pageSlug, co
       {floating.visible ? (
         <button
           type="button"
+          className="highlight-fab"
           onMouseDown={(e) => e.preventDefault()}
           onClick={openComposer}
-          style={{
-            position: 'fixed',
-            top: floating.y,
-            left: floating.x,
-            transform: 'translate(-50%, -100%)',
-            padding: '6px 10px',
-            background: '#1a1814',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 18,
-            fontSize: 12.5,
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            zIndex: 50,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.18)',
-          }}
+          style={{ top: floating.y, left: floating.x }}
         >
           <Highlighter size={13} />
-          Save highlight
+          {t('highlight.save')}
         </button>
       ) : null}
 
       {composerOpen ? (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: 24,
-            right: 24,
-            width: 340,
-            padding: 16,
-            background: '#fff',
-            border: '1px solid #e8e2d0',
-            borderRadius: 12,
-            boxShadow: '0 12px 32px rgba(26, 24, 20, 0.18)',
-            zIndex: 100,
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <strong style={{ fontFamily: 'Fraunces, serif', fontSize: 15 }}>Save to notes</strong>
-            <button
-              type="button"
-              onClick={() => setComposerOpen(false)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: '#7a7263' }}
-              aria-label="Close"
-            >
+        <div className="highlight-composer" role="dialog" aria-label={t('highlight.title')}>
+          <div className="highlight-composer-head">
+            <strong>{t('highlight.title')}</strong>
+            <button type="button" className="icon-button" onClick={() => setComposerOpen(false)} aria-label={t('common.close')}>
               <X size={16} />
             </button>
           </div>
-          <blockquote
-            style={{
-              margin: '0 0 8px',
-              padding: '8px 10px',
-              fontSize: 12.5,
-              fontStyle: 'italic',
-              color: '#3b352a',
-              borderLeft: '3px solid #d4a85a',
-              background: 'color-mix(in srgb, #d4a85a 8%, white)',
-            }}
-          >
+          <blockquote>
             {floating.selectedText.length > 220 ? `${floating.selectedText.slice(0, 220)}…` : floating.selectedText}
           </blockquote>
           <textarea
-            placeholder="Add a note (optional)"
+            placeholder={t('highlight.notePlaceholder')}
+            aria-label={t('highlight.notePlaceholder')}
             value={noteText}
             onChange={(e) => setNoteText(e.target.value)}
             rows={3}
-            style={{
-              width: '100%',
-              padding: 8,
-              fontSize: 13.5,
-              border: '1px solid #d4cdb9',
-              borderRadius: 6,
-              resize: 'vertical',
-              fontFamily: 'inherit',
-              boxSizing: 'border-box',
-            }}
           />
-          <button
-            type="button"
-            className="button button-primary"
-            onClick={() => void saveNote()}
-            disabled={saving}
-            style={{ marginTop: 8, width: '100%' }}
-          >
-            {saving ? 'Saving…' : 'Save'}
+          <button type="button" className="button button-primary" onClick={() => void saveNote()} disabled={saving}>
+            {saving ? t('common.saving') : t('common.save')}
           </button>
+          {notice?.kind === 'error' ? <p className="inline-error" role="alert">{notice.text}</p> : null}
         </div>
       ) : null}
 
-      {savedNotice ? (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: 24,
-            right: 24,
-            padding: '10px 16px',
-            background: '#1f8a55',
-            color: '#fff',
-            fontSize: 13.5,
-            fontWeight: 600,
-            borderRadius: 10,
-            zIndex: 110,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.18)',
-          }}
-        >
-          {savedNotice}
-        </div>
-      ) : null}
+      {notice?.kind === 'ok' ? <div className="highlight-toast" role="status">{notice.text}</div> : null}
     </>
   );
 };

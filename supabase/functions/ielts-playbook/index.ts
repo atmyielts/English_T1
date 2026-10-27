@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
+  MODULE_ORDER,
   PLAYBOOK_PRODUCT_SLUG,
   authUser,
   buildDashboardPayload,
@@ -1163,7 +1164,7 @@ serve(async (req) => {
         weeks?: unknown;
       }>(
         {
-          systemPrompt: "You are an IELTS coach drafting a concrete week-by-week study plan for a single student. You have: a base plan template, the student's profile, available weekly hours, and a prioritized section order. Return strict JSON: {intro: 2-3 sentences framing how this plan was tailored, weeks: [{week_number: 1..N, theme: short label, focus_sections: array of 1-3 section names, hours: total hours, key_activities: 3-5 specific bullets, success_criteria: 1-2 sentences, playbook_modules: optional module_keys}]}. Generate up to 8 weeks. Front-load the highest-priority section. Adapt to deadline: if 3 weeks out, make 3 weeks; if 12+ weeks, make 8.",
+          systemPrompt: `You are an IELTS coach drafting a concrete week-by-week study plan for a single student. You have: a base plan template, the student's profile, available weekly hours, and a prioritized section order. Return strict JSON: {intro: 2-3 sentences framing how this plan was tailored, weeks: [{week_number: 1..N, theme: short label, focus_sections: array of 1-3 section names, hours: total hours, key_activities: 3-5 specific bullets, success_criteria: 1-2 sentences, playbook_modules: optional array of module slugs chosen ONLY from: ${MODULE_ORDER.join(", ")}}]}. Generate up to 8 weeks. Front-load the highest-priority section. Adapt to deadline: if 3 weeks out, make 3 weeks; if 12+ weeks, make 8.`,
           userPayload: JSON.stringify({
             plan_template: {
               title: plan.title,
@@ -1203,8 +1204,9 @@ serve(async (req) => {
                 ? (w.key_activities as unknown[]).map((a) => toText(a, 320)).filter(Boolean).slice(0, 6)
                 : [],
               success_criteria: toText(w.success_criteria, 600),
+              // Only real module slugs, so every chip in the plan opens a page.
               playbook_modules: Array.isArray(w.playbook_modules)
-                ? (w.playbook_modules as unknown[]).map((m) => toText(m, 80)).filter(Boolean).slice(0, 4)
+                ? (w.playbook_modules as unknown[]).map((m) => toText(m, 80)).filter((m) => MODULE_ORDER.includes(m)).slice(0, 4)
                 : [],
             }))
             .filter((w) => w.theme)
