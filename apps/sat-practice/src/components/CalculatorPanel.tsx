@@ -47,7 +47,7 @@ export function CalculatorPanel(props: { onClose?: () => void }) {
         <button type="button" className="btn ghost compact" onClick={() => setInput(v => v.slice(0, -1))}>{t('calc.delete')}</button>
       </div>
       <div className="calc-keys">
-        {KEYS.flat().map(key => <button key={key} type="button" className="calc-key" onClick={() => setInput(v => v + key)}>{key.replace('(', '')}</button>)}
+        {KEYS.flat().map(key => <button key={key} type="button" className="calc-key" onClick={() => setInput(v => v + key)}>{key.length > 1 ? key.replace('(', '') : key}</button>)}
         <button type="button" className="calc-key equals" onClick={run}>=</button>
       </div>
       {history.length ? <details className="calc-history"><summary>{t('calc.history')}</summary>

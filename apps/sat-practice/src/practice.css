@@ -42,6 +42,7 @@
 .kpi-card small, .mastery-row small { display: block; margin-top: 8px; color: var(--muted); font-size: 0.8rem; }
 .kpi-card .progress-track { margin-top: 12px; }
 .goal-callout, .module-callout { display: flex; justify-content: space-between; gap: 16px; align-items: center; flex-wrap: wrap; }
+.module-callout { align-content: flex-start; align-items: flex-start; flex-direction: column; justify-content: flex-start; }
 .goal-callout { border-color: rgba(37, 99, 235, 0.25); background: #eff6ff; }
 .goal-callout h2, .module-callout h2 { margin: 4px 0; }
 .goal-callout p, .module-callout p { color: var(--muted); margin: 6px 0 0; }
