@@ -1,5 +1,6 @@
 ﻿import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { isExamBundleProductId } from "../_shared/product-bundles.ts";
 
 type JsonObject = Record<string, unknown>;
 
@@ -164,6 +165,9 @@ const loadContext = async (
   return { userId, tenantId, settings: settings as PlatformSettings };
 };
 
+const withoutBundleTrial = <T extends { trial_enabled: boolean }>(config: T, productId: string): T =>
+  isExamBundleProductId(productId) ? { ...config, trial_enabled: false } : config;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "GET" && req.method !== "POST") return json(405, { error: "Method not allowed" });
@@ -192,7 +196,8 @@ serve(async (req) => {
       if ("status" in ctx) return json(ctx.status, { error: ctx.error, code: "auth_failed", details: (ctx as any).details ?? null });
 
       const { userId, tenantId, settings } = ctx;
-      const effective = resolveEffectiveTrialConfig(settings, productId);
+      // Bundles are a purchase-only discount; trials stay on the individual products.
+      const effective = withoutBundleTrial(resolveEffectiveTrialConfig(settings, productId), productId);
 
       const { data: product, error: productErr } = await sb
         .from("products")
@@ -261,7 +266,7 @@ serve(async (req) => {
     if ("status" in ctx) return json(ctx.status, { error: ctx.error, code: "auth_failed", details: (ctx as any).details ?? null });
 
     const { userId, tenantId, settings } = ctx;
-    const effective = resolveEffectiveTrialConfig(settings, productId);
+    const effective = withoutBundleTrial(resolveEffectiveTrialConfig(settings, productId), productId);
 
     if (!effective.trial_enabled) return json(409, { error: "Trial is disabled" });
     if ((effective.trial_days ?? 0) <= 0) return json(500, { error: "Trial days are not configured" });
