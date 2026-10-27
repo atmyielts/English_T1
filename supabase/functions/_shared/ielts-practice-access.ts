@@ -15,6 +15,15 @@ import {
 export const IELTS_PRACTICE_SLUG = "ielts-practice";
 export const IELTS_PRACTICE_PRODUCT_ID_FALLBACK = "a74195fd-b4f3-4fd4-93bf-c807e42250c6";
 
+/**
+ * IELTS Complete (md5('schood-product:ielts-complete')::uuid), seeded by the
+ * integration PR #311 (_shared/product-bundles.ts, productIdsGrantingAccess).
+ * Listed here as well so an admin/sponsor grant of the bundle opens IELTS
+ * Practice even if the products lookup fails; once #311 is merged this module
+ * can import productIdsGrantingAccess instead.
+ */
+export const IELTS_COMPLETE_PRODUCT_ID = "50dab6d9-5345-ce1e-0e66-853450737e39";
+
 /** The IELTS Practice product id (by slug, with the seeded id as fallback). */
 export const resolvePracticeProductId = async (sb: any): Promise<string> => {
   const { data, error } = await sb.from("products").select("id").eq("metadata->>slug", IELTS_PRACTICE_SLUG).maybeSingle();
@@ -33,7 +42,10 @@ export const bundleIdsIncluding = (
       const metadata = isObject((row as Record<string, unknown>).metadata)
         ? (row as Record<string, unknown>).metadata as Record<string, unknown>
         : {};
-      const members = Array.isArray(metadata.bundle_of) ? metadata.bundle_of.map((entry) => String(entry)) : [];
+      const members = [
+        ...(Array.isArray(metadata.bundle_of) ? metadata.bundle_of : []),
+        ...(Array.isArray(metadata.bundle_product_ids) ? metadata.bundle_product_ids : []),
+      ].map((entry) => String(entry));
       return members.includes(practiceSlug) || members.includes(practiceProductId);
     })
     .map((row) => String((row as Record<string, unknown>).id ?? ""))
@@ -83,7 +95,10 @@ export const userHasPracticeAccess = async (
     .not("metadata->bundle_of", "is", null)
     .limit(200);
   // A bundle lookup failure must not lock out direct subscribers.
-  const bundleProductIds = bundleError ? [] : bundleIdsIncluding(bundleRows, practiceProductId);
+  const bundleProductIds = [...new Set([
+    ...(practiceProductId === IELTS_PRACTICE_PRODUCT_ID_FALLBACK ? [IELTS_COMPLETE_PRODUCT_ID] : []),
+    ...(bundleError ? [] : bundleIdsIncluding(bundleRows, practiceProductId)),
+  ])];
   const candidateIds = [practiceProductId, ...bundleProductIds];
 
   const { data: memberships, error: membershipError } = await sb

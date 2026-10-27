@@ -2,6 +2,7 @@ import { assertEquals, assertRejects } from "https://deno.land/std@0.224.0/asser
 import {
   bundleIdsIncluding,
   decidePracticeAccess,
+  IELTS_COMPLETE_PRODUCT_ID,
   IELTS_PRACTICE_PRODUCT_ID_FALLBACK,
   practiceAccessRequired,
   resolvePracticeProductId,
@@ -19,10 +20,11 @@ Deno.test("bundles that list IELTS Practice by slug or id count; others do not",
   const products = [
     { id: COMPLETE, status: "active", metadata: { bundle_of: ["ielts-academic-simulator", "ielts-practice", "ielts-playbook"] } },
     { id: "by-id", status: "active", metadata: { bundle_of: [PRACTICE] } },
+    { id: "by-product-ids", status: "active", metadata: { bundle_product_ids: [PRACTICE] } },
     { id: ENGLISH_ALL, status: "active", metadata: { bundle_of: ["english-reading", "english-writing"] } },
     { id: "retired", status: "archived", metadata: { bundle_of: ["ielts-practice"] } },
   ];
-  assertEquals(bundleIdsIncluding(products, PRACTICE), [COMPLETE, "by-id"]);
+  assertEquals(bundleIdsIncluding(products, PRACTICE), [COMPLETE, "by-id", "by-product-ids"]);
   assertEquals(bundleIdsIncluding(null, PRACTICE), []);
 });
 
@@ -71,6 +73,15 @@ Deno.test("loader: a bundle subscriber passes, a learner with no product gets th
     academy_entitlements: { data: [] },
   });
   assertEquals(await userHasPracticeAccess(bundleOwner, "user-1", PRACTICE), true);
+
+  // An admin/sponsor grant of IELTS Complete (#311) opens Practice even when the products lookup fails.
+  const sponsoredComplete = fakeClient({
+    users: { data: { role: "student" } },
+    products: { data: null, error: { message: "unavailable" } },
+    tenant_memberships: { data: [] },
+    academy_entitlements: { data: [{ status: "active", grant_type: "product_access", resource_type: "product", resource_id: IELTS_COMPLETE_PRODUCT_ID, starts_at: "2026-01-01T00:00:00.000Z", expires_at: null }] },
+  });
+  assertEquals(await userHasPracticeAccess(sponsoredComplete, "user-3", PRACTICE), true);
 
   const noProduct = fakeClient({
     users: { data: { role: "student" } },

@@ -4894,6 +4894,11 @@ serve(async (req) => {
     // AI study coach — daily insights derived from trajectory + activity +
     // mastery + goals. One small per-user payload; cached 8h client-side.
     if (req.method === "GET" && route === "/insights/coach-summary") {
+      const summaryLang = toText(url.searchParams.get("lang"), 8).toLowerCase();
+      // Same per-learner AI cap as the other coaching calls (cost guardrail).
+      if (isOpenRouterConfigured() && !(await enforcePracticeAiCap(sb, auth.userId))) {
+        return json(200, { ok: true, ai_available: true, limited: true, summary: "", insights: [], generated_at: new Date().toISOString() });
+      }
       const [trajectory, activity, mastery] = await Promise.all([
         buildPracticeTrajectoryShared(sb, scope.practiceProductId, auth.userId).catch(() => null),
         buildPracticeActivityShared(sb, scope.languageId, scope.practiceProductId, auth.userId).catch(() => null),
@@ -4933,7 +4938,7 @@ serve(async (req) => {
         insights?: unknown;
       }>(
         {
-          systemPrompt: "You are an IELTS study coach reviewing a student's recent activity. From the JSON context, generate 3-4 SPECIFIC actionable insights. Each insight names a concrete observation tied to the data and a single next action. Return strict JSON: {summary: 1-2 sentence overall read, insights: array (3-4 items) of {type: 'progress'|'risk'|'recommendation'|'celebration', title: 5-8 words, body: 1-2 sentences citing the actual numbers, action_label: 3-5 word CTA, action_route: relative URL like '/today' or '/practice/reviews' or '/plan'}}. Do NOT use generic IELTS advice — every insight must reference data from the context.",
+          systemPrompt: "You are an IELTS study coach reviewing a student's recent activity. From the JSON context, generate 3-4 SPECIFIC actionable insights. Each insight names a concrete observation tied to the data and a single next action. Return strict JSON: {summary: 1-2 sentence overall read, insights: array (3-4 items) of {type: 'progress'|'risk'|'recommendation'|'celebration', title: 5-8 words, body: 1-2 sentences citing the actual numbers, action_label: 3-5 word CTA, action_route: relative URL like '/today' or '/practice/reviews' or '/plan'}}. Do NOT use generic IELTS advice — every insight must reference data from the context." + coachLangInstruction(summaryLang),
           userPayload: JSON.stringify(context),
           temperature: 0.4,
         },
@@ -5643,10 +5648,18 @@ serve(async (req) => {
         .eq("source_label", "Missed in practice")
         .order("created_at", { ascending: false })
         .limit(20);
+      // The real number of captured words, not just the page of 20 returned.
+      const { count: capturedTotal } = await sb
+        .from("user_vocabulary_notebook_entries")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", auth.userId)
+        .eq("language_id", scope.languageId)
+        .eq("is_archived", false)
+        .eq("source_label", "Missed in practice");
       return jsonCached(200, {
         ok: true,
         items: (rows ?? []) as JsonRecord[],
-        total: (rows ?? []).length,
+        total: capturedTotal ?? (rows ?? []).length,
       });
     }
 
