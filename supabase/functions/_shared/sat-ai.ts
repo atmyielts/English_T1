@@ -42,6 +42,20 @@ const requestOpenRouter = async (
     }),
   });
 
+/**
+ * Free models sometimes wrap JSON in a Markdown fence or a sentence even when
+ * asked for a JSON object. Accept exactly one top-level object; anything else fails.
+ */
+export const parseModelJson = (content: string): unknown => {
+  const text = content.trim();
+  try { return JSON.parse(text); } catch { /* try the tolerant forms below */ }
+  const fenced = /^```(?:json)?\s*([\s\S]*?)\s*```$/i.exec(text);
+  if (fenced) return JSON.parse(fenced[1]!);
+  const start = text.indexOf("{"), end = text.lastIndexOf("}");
+  if (start < 0 || end <= start) throw new Error("invalid_provider_result");
+  return JSON.parse(text.slice(start, end + 1));
+};
+
 export const callOpenRouterJson = async (
   options: OpenRouterCallOptions,
   fetcher: typeof fetch = fetch,
@@ -72,7 +86,7 @@ export const callOpenRouterJson = async (
   };
   const content = payload?.choices?.[0]?.message?.content;
   if (typeof content !== "string" || content.length > 60000) throw new Error("invalid_provider_result");
-  const result = JSON.parse(content);
+  const result = parseModelJson(content);
   if (!result || typeof result !== "object" || Array.isArray(result)) {
     throw new Error("invalid_provider_result");
   }

@@ -1,47 +1,54 @@
 {
   "schemaVersion": 1,
-  "releaseId": "ielts-playbook-depth-oct26",
+  "releaseId": "sat-practice-engine-v2",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "ielts-playbook"
+    "sat-practice"
   ],
   "migrations": [
-    "20261026120900_ielts_playbook_premium_rls_and_uz_markets.sql",
-    "20261026120901_ielts_playbook_premium_advanced_labs.sql"
+    "20261026130900_sat_practice_engine_v2.sql"
   ],
   "edgeFunctions": [
-    "ielts-playbook"
+    "admin-sat-practice",
+    "sat-practice"
   ],
+  "sharedEdgeConsumers": [],
   "workers": [],
-  "sharedEdgeConsumers": [
-    "admin-ielts-playbook"
+  "requiredSecrets": [
+    "AI_ADDON_PRODUCT_ID",
+    "OPENROUTER_API_KEY",
+    "OPENROUTER_BASE_URL",
+    "OPENROUTER_MODEL",
+    "SAT_TUTOR_SERVICE_DAILY_LIMIT"
   ],
-  "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "migration:20261026120900_ielts_playbook_premium_rls_and_uz_markets.sql",
-    "migration:20261026120901_ielts_playbook_premium_advanced_labs.sql",
-    "function:ielts-playbook",
-    "function:admin-ielts-playbook"
+    "migration:20261026130900_sat_practice_engine_v2.sql",
+    "secret:OPENROUTER_API_KEY",
+    "secret:OPENROUTER_MODEL",
+    "secret:OPENROUTER_BASE_URL",
+    "secret:AI_ADDON_PRODUCT_ID",
+    "secret:SAT_TUTOR_SERVICE_DAILY_LIMIT",
+    "function:sat-practice",
+    "function:admin-sat-practice"
   ],
   "manualFollowUps": [
-    "Pages: merging publishes ielts-playbook (en/uz/ru UI, Schood header with Account/sign-out/LocaleSwitcher, labelled Premium features and locked-guide teasers with a pricing path, per-tab page cache and skeletons, Use in my plan, saved AI plans, Where will you sit IELTS market guide, simulator session anchoring, phone layout fixes). It works against the currently deployed function: the new /markets call and the teaser fall back to an honest empty or locked state until the function is deployed.",
-    "Database: supabase db push --linked (project bbjawctnqrufvnesdsel) for the two 20261026120900-901 migrations only, from an isolated copy as for the previous English release so the pending #220 payment migrations stay excluded. 120900 tightens the page-sections select policy (premium sections were readable with the anon key via PostgREST; only the service-role Edge Functions read the table) and adds UZ market guides (British Council row create-if-missing, IDP row new, local_guide merged only when absent). 120901 appends 144 original Advanced Lab sections to the 6 premium guides, insert-only with deterministic ids, after the existing sections.",
-    "Edge, after the migrations: supabase functions deploy ielts-playbook --project-ref bbjawctnqrufvnesdsel ; supabase functions deploy admin-ielts-playbook --project-ref bbjawctnqrufvnesdsel (it shares _shared/ielts-playbook.ts: CORS now allows DELETE, scope lookup cached, single-query page load).",
-    "Secrets: none."
+    "Merge, then let CI ship schood-sat-practice. The new app tolerates the old sat-practice function for the short window until the function is deployed (new pages show a retryable error instead of breaking).",
+    "Apply the migration: supabase db push --linked (only 20261026130900_sat_practice_engine_v2.sql from this release). It must run BEFORE the SAT content migrations 20261026140xxx-20261026143xxx, which rely on draft exclusion and the catalog. It is additive: create-or-replace of select/start/complete RPCs with identical signatures, a new catalog RPC, admin import RPCs and one widened check constraint; the currently deployed sat-practice function keeps working against it.",
+    "Secrets (existing ones only need checking with supabase secrets list): OPENROUTER_API_KEY is already set (only if missing: supabase secrets set OPENROUTER_API_KEY=<existing key>); OPENROUTER_MODEL and OPENROUTER_BASE_URL are optional (defaults google/gemma-4-31b-it:free and https://openrouter.ai/api/v1; never a paid model) — if set, keep supabase secrets set OPENROUTER_MODEL=google/gemma-4-31b-it:free and supabase secrets set OPENROUTER_BASE_URL=https://openrouter.ai/api/v1; AI_ADDON_PRODUCT_ID is unchanged (supabase secrets set AI_ADDON_PRODUCT_ID=<existing add-on product id> only if missing). Turn the tutor on with supabase secrets set SAT_TUTOR_SERVICE_DAILY_LIMIT=300.",
+    "Deploy the functions after the migration: supabase functions deploy sat-practice --project-ref <prod>, then supabase functions deploy admin-sat-practice --project-ref <prod> (new function; config.toml verify_jwt=false, authorised by the shared admin check admin.products.manage).",
+    "Then deploy the SAT content migrations (sat-math-a/b, sat-rw-a/b) with supabase db push --linked; content uses content_status published and appears immediately in bank, plans and modules."
   ],
   "verification": [
-    "supabase migration list --linked shows 20261026120900 and 20261026120901 applied and the #220 payment migrations still pending.",
-    "curl -sD - -o /dev/null https://bbjawctnqrufvnesdsel.supabase.co/functions/v1/ielts-playbook/pages/writing-master-guide with the anon key: 200, Cache-Control: public, max-age=300, stale-while-revalidate=86400, and noticeably faster than the previous 3-4 s.",
-    "Same with the anon key for /pages/guide-writing-task-2-premium: 401 with a teaser and Cache-Control: private, no-store. GET /rest/v1/ielts_playbook_page_sections?page_id=eq.c0170580-d846-45a7-8618-b9210482112c with the anon key returns [] (was 21 rows).",
-    "GET /ielts-playbook/markets lists UZ british-council and UZ idp; GET /ielts-playbook/pages/<slug>/sections/<id>/thread as a premium user returns 200 (was swallowed by the page route).",
-    "Signed in as a premium learner on https://playbook.ielts.schood.online: premium guides show the Advanced Lab sections after the existing ones; the section coach shows earlier questions; Use in my plan appears on the dashboard; notes can be removed; /dashboard?source=simulator&session_id=<id> shows the anchored result.",
-    "?lang=uz and ?lang=ru switch the UI; 375px phone: no sideways scroll on home, a module, dashboard and notes."
+    "Local: deno tests (contract-A validator, SPR grading, SVG sanitiser, selection/plan/module builder, insights, goals, admin handler, tutor, existing completion/start/bank suites), deno check of both functions, app typecheck and build, uz/ru catalog completeness, 6 Playwright route tests with mocked network (bank filters, drill with mcq+spr+table+figure+KaTeX, timed module with navigator/flags/calculator, plan start, dashboard/onboarding, locale; 320/375px no horizontal overflow), and 13 PostgreSQL checks of the migration (scripts/test-sat-practice-engine-db.mjs) on a local PostgreSQL 18 cluster.",
+    "After deploy: open practice.sat.schood.online/bank and filter by official domain and skill; start a plan drill and confirm it holds the promised number of questions (or says honestly how many the bank has); start a Math module and check 22 questions/35:00 timer, navigator and calculator; submit and confirm the plan item turns Done and the dashboard minutes equal real elapsed time; score impact shows 'Not enough data yet' for a new learner.",
+    "Admin: open practice.sat.schood.online/admin as a content admin, validate a contract-A JSON file, import as draft (not visible in the learner bank), publish, then unpublish.",
+    "SQL: select count(*) from select_sat_practice_catalog('<test user>') equals the published SAT Practice questions; select_sat_practice_questions excludes content_status draft."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-ielts-playbook to the previous deployment.",
-    "migration": "Additive; leave in place. To undo the RLS change re-create the previous 'IELTS playbook sections select published' policy (status = 'published' and the page is published). Advanced Lab rows can be removed with delete ... where metadata->>'seeded_by' = '20261026120901_ielts_playbook_premium_advanced_labs' if ever needed (owner decision).",
-    "edge": "Redeploy ielts-playbook and admin-ielts-playbook from 378af006; the old routing returns (thread route shadowed again)."
+    "pages": "Cloudflare Pages rollback of schood-sat-practice to the previous deployment.",
+    "functions": "Redeploy the previous sat-practice function from main before this merge; the migration stays compatible with it. Delete or ignore admin-sat-practice (no other caller).",
+    "migration": "Additive; leave in place. Previous function versions call the same RPC signatures. Learner history, receipts and frozen attempt snapshots are untouched. Drafted items can be republished with admin_set_sat_practice_item_status."
   }
 }
