@@ -1,6 +1,8 @@
 import React from 'react';
 import { Dumbbell, ExternalLink } from 'lucide-react';
 import { PRACTICE_APP_URL } from '../lib/constants';
+import { useT } from '../i18n';
+import { readSimulatorContext } from '../lib/simulatorContext';
 
 interface Props {
   moduleKey?: string | null;
@@ -21,10 +23,14 @@ const deriveSection = (moduleKey: string | null | undefined): string | null => {
 };
 
 export const PlaybookPracticeNow: React.FC<Props> = ({ moduleKey }) => {
+  const t = useT();
   const section = deriveSection(moduleKey);
   if (!section) return null;
   const params = new URLSearchParams({ source: 'playbook', weak_skill: section });
   if (moduleKey) params.set('focus_module', String(moduleKey));
+  // Carry the simulator session the learner came from, so Practice can open the same weak spots.
+  const { sessionId } = readSimulatorContext('');
+  if (sessionId) params.set('session_id', sessionId);
   const href = `${PRACTICE_APP_URL}/dashboard?${params.toString()}`;
 
   return (
@@ -45,7 +51,7 @@ export const PlaybookPracticeNow: React.FC<Props> = ({ moduleKey }) => {
       }}
     >
       <Dumbbell size={15} />
-      Practice this now
+      {t('content.practiceNow')}
       <ExternalLink size={12} style={{ opacity: 0.7 }} />
     </a>
   );

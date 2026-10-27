@@ -3,6 +3,7 @@ import { ArrowRight, CheckCircle2, MessageCircleQuestion } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { PlaybookSectionCoach } from '../PlaybookSectionCoach';
+import { useT } from '../../i18n';
 
 // Markdown renderer for authored section bodies. The legacy import path
 // stored copy as raw markdown (### headings, - bullets, **bold**), so the
@@ -10,7 +11,20 @@ import { PlaybookSectionCoach } from '../PlaybookSectionCoach';
 // Scoped class so existing prose-card styles still apply to surrounding chrome.
 const ProseMarkdown: React.FC<{ source: string }> = ({ source }) => (
   <div className="prose-markdown">
-    <ReactMarkdown remarkPlugins={[remarkGfm]}>{source}</ReactMarkdown>
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        // Wide comparison tables scroll inside their card on phones instead of
+        // pushing the whole page sideways.
+        table: ({ node: _node, ...props }) => (
+          <div className="table-scroll" role="region" aria-label="Table" tabIndex={0}>
+            <table {...props} />
+          </div>
+        ),
+      }}
+    >
+      {source}
+    </ReactMarkdown>
   </div>
 );
 
@@ -18,7 +32,8 @@ const looksLikeMarkdown = (text: string): boolean => {
   // Cheap heuristic: any of the common markdown markers suggests the source
   // was an imported .md file and should be rendered through the markdown
   // pipeline rather than as a single plain paragraph.
-  return /(^|\n)#{1,6}\s|(^|\n)[-*+]\s|(^|\n)\d+\.\s|\*\*[^*]+\*\*|`[^`]+`|^>\s|\[[^\]]+\]\([^)]+\)/.test(text);
+  // GFM tables count too: a section holding only a table must not be shown as raw pipes.
+  return /(^|\n)\|.*\|\s*(\n|$)|(^|\n)#{1,6}\s|(^|\n)[-*+]\s|(^|\n)\d+\.\s|\*\*[^*]+\*\*|`[^`]+`|^>\s|\[[^\]]+\]\([^)]+\)/.test(text);
 };
 
 const toList = (value: unknown): string[] =>
@@ -38,7 +53,9 @@ interface PageBlocksProps {
   enableSectionCoach?: boolean;
 }
 
-export const PageBlocks: React.FC<PageBlocksProps> = ({ sections, accessToken, pageSlug, enableSectionCoach }) => (
+export const PageBlocks: React.FC<PageBlocksProps> = ({ sections, accessToken, pageSlug, enableSectionCoach }) => {
+  const t = useT();
+  return (
   <div className="page-blocks">
     {sections.map((section, index) => {
       const id = blockId(section, index);
@@ -76,16 +93,16 @@ export const PageBlocks: React.FC<PageBlocksProps> = ({ sections, accessToken, p
           <section key={id} className="cta-strip">
             <div>
               {heading ? <p className="eyebrow">{heading}</p> : null}
-              <h2>{String(content.label ?? 'Next step')}</h2>
+              <h2>{String(content.label ?? t('blocks.nextStep'))}</h2>
               <p>{String(content.primary_text ?? '')}</p>
             </div>
             <div className="cta-actions">
               <a href={String(content.primary_url ?? '#')} className="button button-primary">
-                {String(content.primary_text ?? 'Open')}
+                {String(content.primary_text ?? t('blocks.open'))}
                 <ArrowRight size={16} />
               </a>
               <a href={String(content.secondary_url ?? '#')} className="button button-secondary">
-                {String(content.secondary_text ?? 'Learn more')}
+                {String(content.secondary_text ?? t('blocks.learnMore'))}
               </a>
             </div>
           </section>
@@ -101,7 +118,7 @@ export const PageBlocks: React.FC<PageBlocksProps> = ({ sections, accessToken, p
                 <article key={`${id}-${itemIndex}`}>
                   <MessageCircleQuestion size={18} />
                   <div>
-                    <h3>{String(item.question ?? 'Question')}</h3>
+                    <h3>{String(item.question ?? '')}</h3>
                     <p>{String(item.answer ?? '')}</p>
                   </div>
                 </article>
@@ -118,7 +135,7 @@ export const PageBlocks: React.FC<PageBlocksProps> = ({ sections, accessToken, p
             <div className="data-grid">
               {toRecordList(content.items).map((item, itemIndex) => (
                 <article key={`${id}-${itemIndex}`} className="data-item">
-                  <strong>{String(item.label ?? item.title ?? `Item ${itemIndex + 1}`)}</strong>
+                  <strong>{String(item.label ?? item.title ?? `${itemIndex + 1}`)}</strong>
                   <p>{String(item.value ?? item.description ?? item.note ?? '')}</p>
                 </article>
               ))}
@@ -131,7 +148,7 @@ export const PageBlocks: React.FC<PageBlocksProps> = ({ sections, accessToken, p
         return (
           <section key={id} className="callout-card">
             {heading ? <p className="eyebrow">{heading}</p> : null}
-            <h2>{String(content.label ?? content.title ?? 'Important')}</h2>
+            <h2>{String(content.label ?? content.title ?? t('blocks.important'))}</h2>
             <p>{String(content.body ?? content.description ?? content.note ?? '')}</p>
           </section>
         );
@@ -151,7 +168,9 @@ export const PageBlocks: React.FC<PageBlocksProps> = ({ sections, accessToken, p
       for (const [key, value] of Object.entries(content)) {
         if (reservedKeys.has(key)) continue;
         if (typeof value === 'string') {
-          const trimmed = value.trim();
+          let trimmed = value.trim();
+          // Imported sections repeat the lead as the first markdown paragraph.
+          if (proseLead && trimmed.startsWith(proseLead)) trimmed = trimmed.slice(proseLead.length).trim();
           if (trimmed) proseStringValues.push(trimmed);
         }
       }
@@ -196,4 +215,5 @@ export const PageBlocks: React.FC<PageBlocksProps> = ({ sections, accessToken, p
       );
     })}
   </div>
-);
+  );
+};
