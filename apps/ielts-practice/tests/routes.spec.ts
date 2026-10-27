@@ -210,6 +210,30 @@ test.describe('IELTS Practice routes in Uzbek and Russian on a small phone', () 
   }
 });
 
+test.describe('IELTS Practice layout with a wide fallback font', () => {
+  // CI and some phones lack the web fonts; a wide monospace font is the worst case.
+  for (const locale of ['en', 'uz', 'ru']) {
+    test(`${locale} pages fit at 320px even in a wide monospace font`, async ({ page }) => {
+      await page.setViewportSize(SMALL_PHONE);
+      await page.addInitScript((value) => {
+        localStorage.setItem('schood.locale', value);
+        document.addEventListener('DOMContentLoaded', () => {
+          const style = document.createElement('style');
+          style.textContent = '* { font-family: "Courier New", "DejaVu Sans Mono", monospace !important; }';
+          document.head.appendChild(style);
+        });
+      }, locale);
+      await mockBackend(page);
+      for (const path of ['/', '/today', '/dashboard', `/lab/${LAB_SESSION_ID}`, '/practice/reviews', '/generator', '/speaking', '/plan', '/practice/stats/by-type']) {
+        await page.goto(path);
+        await expect(page.locator('h1').first()).toBeVisible();
+        await page.waitForLoadState('networkidle');
+        await expectNoHorizontalOverflow(page, `${locale} ${path} (monospace)`);
+      }
+    });
+  }
+});
+
 test.describe('IELTS Practice behaviour', () => {
   test('shell has Schood home, Account, sign-out state, language and Playbook links', async ({ page }) => {
     await mockBackend(page);

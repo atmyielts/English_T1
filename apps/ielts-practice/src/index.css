@@ -3698,3 +3698,61 @@ audio.practice-audio {
 .task-card-head > * {
   min-width: 0;
 }
+
+/* Cards on phones: flex/grid children may shrink below their content, and
+   headings and copy wrap instead of widening the card (fonts differ by OS). */
+.dash-card > *,
+.task-card-head > *,
+.coach-panel-copy {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.task-card-head h3,
+.task-card-head h4,
+.task-card-head p,
+.dash-card h2,
+.dash-card h3,
+.dash-card p {
+  overflow-wrap: anywhere;
+}
+
+.practice-root .eyebrow {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+@media (max-width: 520px) {
+  .coach-panel-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .coach-lang-toggle {
+    align-self: flex-start;
+  }
+}
+
+.srs-filter-row .filter-sort-group {
+  flex-wrap: wrap;
+}
+
+.practice-page-head > *,
+.landing-grid > *,
+.top-nav-row > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* On phones nothing may widen the page: long words (Uzbek/Russian labels,
+   AI text, URLs) break only when they would not otherwise fit. */
+@media (max-width: 520px) {
+  .practice-root :is(h1, h2, h3, h4, h5, p, li, label, summary, strong, span, a, button, legend) {
+    overflow-wrap: anywhere;
+  }
+
+  .practice-root .btn {
+    max-width: 100%;
+    white-space: normal;
+  }
+}

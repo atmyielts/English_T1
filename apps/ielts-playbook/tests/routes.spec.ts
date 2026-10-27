@@ -342,7 +342,10 @@ test.describe('IELTS Playbook routes (mocked API)', () => {
     await page.getByRole('button', { name: /Generate AI plan/ }).click();
     await expect(page.getByTestId('ai-plan')).toContainText('Task 2 structure');
     await expect(page.getByText('Saved to your profile.')).toBeVisible();
-    const patch = calls.find((call) => call.method === 'PATCH' && call.path === '/ielts-playbook/profile');
+    // The profile PATCH can land after the "saved" text renders; wait for it.
+    const findPatch = () => calls.find((call) => call.method === 'PATCH' && call.path === '/ielts-playbook/profile');
+    await expect.poll(findPatch).toBeTruthy();
+    const patch = findPatch();
     expect((patch?.body as { metadata?: { saved_ai_plans?: Record<string, unknown> } })?.metadata?.saved_ai_plans).toHaveProperty('balanced-28');
     await expectNoHorizontalOverflow(page);
   });

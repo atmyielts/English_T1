@@ -157,7 +157,7 @@ export const ConversationalCoach = ({ accessToken, practiceSessionId }: CoachCha
     <section className="glass stat-card wide" style={{ padding: 24, display: 'grid', gap: 12 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
         <p className="eyebrow" style={{ margin: 0 }}><MessageSquare size={11} style={{ verticalAlign: -2, marginRight: 4 }} aria-hidden="true" /> {t('adapt.chat.eyebrow')}</p>
-        <div style={{ display: 'inline-flex', gap: 2, border: '1px solid var(--card-border)', borderRadius: 999, padding: 2, flexShrink: 0 }} title={t('adapt.lang')} role="group" aria-label={t('adapt.lang')}>
+        <div className="coach-lang-toggle" style={{ display: 'inline-flex', flexWrap: 'wrap', gap: 2, border: '1px solid var(--card-border)', borderRadius: 999, padding: 2, flexShrink: 0 }} title={t('adapt.lang')} role="group" aria-label={t('adapt.lang')}>
           {COACH_LANGS.map((l) => (
             <button
               key={l.id}
@@ -275,13 +275,13 @@ export const AskCoachPanel = ({ accessToken }: { accessToken: string | null }) =
 
   return (
     <section className="glass dash-card">
-      <div className="task-card-head" style={{ alignItems: 'flex-start' }}>
-        <div>
+      <div className="task-card-head coach-panel-head" style={{ alignItems: 'flex-start' }}>
+        <div className="coach-panel-copy">
           <p className="eyebrow"><MessageSquare size={11} style={{ verticalAlign: -2, marginRight: 4 }} aria-hidden="true" /> {t('adapt.ask.eyebrow')}</p>
           <h3 style={{ margin: '4px 0 0' }}>{t('adapt.ask.title')}</h3>
           <p className="muted" style={{ margin: '4px 0 0', fontSize: 14 }}>{t('adapt.ask.lead')}</p>
         </div>
-        <div style={{ display: 'inline-flex', gap: 2, border: '1px solid var(--card-border)', borderRadius: 999, padding: 2, flexShrink: 0 }} title={t('adapt.lang')} role="group" aria-label={t('adapt.lang')}>
+        <div className="coach-lang-toggle" style={{ display: 'inline-flex', flexWrap: 'wrap', gap: 2, border: '1px solid var(--card-border)', borderRadius: 999, padding: 2, flexShrink: 0 }} title={t('adapt.lang')} role="group" aria-label={t('adapt.lang')}>
           {COACH_LANGS.map((l) => (
             <button
               key={l.id}
