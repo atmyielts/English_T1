@@ -1,0 +1,2685 @@
+[
+  {
+    "slug": "psda-ratio-001",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "ratios_rates_proportions_units",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A pancake recipe uses $3$ cups of flour for every $2$ cups of milk. If a cook uses $12$ cups of flour and keeps the same ratio, how many cups of milk are needed?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$6$"
+      },
+      {
+        "id": "B",
+        "label": "$8$"
+      },
+      {
+        "id": "C",
+        "label": "$11$"
+      },
+      {
+        "id": "D",
+        "label": "$18$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "The flour is multiplied by $\\frac{12}{3} = 4$, so the milk must also be multiplied by 4: $2 \\times 4 = 8$ cups. Choice B is correct. Choice A is incorrect. This divides the flour by the milk amount from the ratio, which does not keep the ratio constant. Choice C is incorrect. This adds and subtracts the same amounts instead of scaling both quantities by the same factor. Choice D is incorrect. This uses the ratio upside down, multiplying 12 by $\\frac{3}{2}$ instead of $\\frac{2}{3}$."
+  },
+  {
+    "slug": "psda-ratio-002",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "ratios_rates_proportions_units",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "A car travels $168$ miles in $3$ hours at a constant speed. At this speed, how many miles does the car travel in $5$ hours?",
+    "answer": [
+      "280"
+    ],
+    "explanation": "The speed is $\\frac{168}{3} = 56$ miles per hour, so in 5 hours the car travels $56 \\times 5 = 280$ miles."
+  },
+  {
+    "slug": "psda-ratio-003",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "ratios_rates_proportions_units",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "There are $12$ inches in $1$ foot. A wooden board is $7.5$ feet long. What is the length of the board, in inches?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$0.625$"
+      },
+      {
+        "id": "B",
+        "label": "$19.5$"
+      },
+      {
+        "id": "C",
+        "label": "$84$"
+      },
+      {
+        "id": "D",
+        "label": "$90$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Multiply the number of feet by 12 inches per foot: $7.5 \\times 12 = 90$ inches. Choice D is correct. Choice A is incorrect. This divides by 12 instead of multiplying; inches are smaller units, so the number of inches must be larger. Choice B is incorrect. This adds 12 instead of multiplying by 12. Choice C is incorrect. This converts only the 7 whole feet and ignores the extra half foot."
+  },
+  {
+    "slug": "psda-ratio-004",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "ratios_rates_proportions_units",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A printer prints $45$ pages per minute. At this rate, how many minutes will it take the printer to print $1{,}260$ pages?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$2.8$"
+      },
+      {
+        "id": "B",
+        "label": "$28$"
+      },
+      {
+        "id": "C",
+        "label": "$1{,}215$"
+      },
+      {
+        "id": "D",
+        "label": "$56{,}700$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Time equals pages divided by rate: $\\frac{1{,}260}{45} = 28$ minutes. Choice B is correct. Choice A is incorrect. This misplaces the decimal point when dividing 1,260 by 45. Choice C is incorrect. This subtracts the rate from the number of pages instead of dividing. Choice D is incorrect. This multiplies the rate by the number of pages, which gives units of pages squared per minute, not minutes."
+  },
+  {
+    "slug": "psda-ratio-005",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "ratios_rates_proportions_units",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "On a map, $1$ centimeter represents $2.5$ kilometers. Two towns are $6.4$ centimeters apart on the map. What is the actual distance between the towns, in kilometers?",
+    "answer": [
+      "16"
+    ],
+    "explanation": "Multiply the map distance by the scale: $6.4 \\times 2.5 = 16$ kilometers."
+  },
+  {
+    "slug": "psda-ratio-006",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "ratios_rates_proportions_units",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A pump moves water at a constant rate of $750$ liters per hour. How many liters of water does the pump move in $36$ minutes?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$20.8$"
+      },
+      {
+        "id": "B",
+        "label": "$450$"
+      },
+      {
+        "id": "C",
+        "label": "$1{,}250$"
+      },
+      {
+        "id": "D",
+        "label": "$27{,}000$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "36 minutes is $\\frac{36}{60} = 0.6$ hour, so the pump moves $750 \\times 0.6 = 450$ liters. Choice B is correct. Choice A is incorrect. This divides the hourly rate by 36, which mixes hours and minutes incorrectly. Choice C is incorrect. This multiplies by $\\frac{60}{36}$ instead of $\\frac{36}{60}$, so the conversion factor is inverted. Choice D is incorrect. This multiplies 750 liters per hour by 36 as if 36 minutes were 36 hours."
+  },
+  {
+    "slug": "psda-ratio-007",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "ratios_rates_proportions_units",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A runner's top speed is $20$ meters per second. What is this speed in kilometers per hour? ($1$ kilometer $= 1{,}000$ meters)",
+    "options": [
+      {
+        "id": "A",
+        "label": "$1.2$"
+      },
+      {
+        "id": "B",
+        "label": "$5.56$"
+      },
+      {
+        "id": "C",
+        "label": "$72$"
+      },
+      {
+        "id": "D",
+        "label": "$1{,}200$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Multiply by 3,600 seconds per hour and divide by 1,000 meters per kilometer: $20 \\times \\frac{3{,}600}{1{,}000} = 72$ kilometers per hour. Choice C is correct. Choice A is incorrect. This converts seconds to minutes only (multiplying by 60), giving kilometers per minute. Choice B is incorrect. This divides by 3.6 instead of multiplying; the conversion factors are applied in the wrong direction. Choice D is incorrect. This multiplies by 60 and does not convert meters to kilometers."
+  },
+  {
+    "slug": "psda-ratio-008",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "ratios_rates_proportions_units",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "A bag contains only red and blue marbles in a ratio of $5$ to $3$. There are $64$ marbles in the bag. How many more red marbles than blue marbles are in the bag?",
+    "answer": [
+      "16"
+    ],
+    "explanation": "The ratio has $5 + 3 = 8$ parts, so each part is $\\frac{64}{8} = 8$ marbles. There are $40$ red and $24$ blue marbles, a difference of $16$."
+  },
+  {
+    "slug": "psda-ratio-009",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "ratios_rates_proportions_units",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "Every $100$ milliliters of a salt solution contains $12$ grams of salt. How many milliliters of the solution contain $30$ grams of salt?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$2.5$"
+      },
+      {
+        "id": "B",
+        "label": "$40$"
+      },
+      {
+        "id": "C",
+        "label": "$250$"
+      },
+      {
+        "id": "D",
+        "label": "$360$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Set up $\\frac{12}{100} = \\frac{30}{v}$. Then $v = \\frac{30 \\times 100}{12} = 250$ milliliters. Choice C is correct. Choice A is incorrect. This is $\\frac{30}{12}$, the number of 100-milliliter portions, not the number of milliliters. Choice B is incorrect. This sets up the proportion upside down, $\\frac{12 \\cdot 100}{30}$. Choice D is incorrect. This multiplies the two given amounts of salt, which has no meaning in this context."
+  },
+  {
+    "slug": "psda-ratio-010",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "ratios_rates_proportions_units",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A cyclist rides $\\frac{3}{4}$ mile in $2.5$ minutes. At this rate, how many miles does the cyclist ride in $1$ hour?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$0.3$"
+      },
+      {
+        "id": "B",
+        "label": "$1.875$"
+      },
+      {
+        "id": "C",
+        "label": "$18$"
+      },
+      {
+        "id": "D",
+        "label": "$30$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "The rate is $\\frac{0.75}{2.5} = 0.3$ mile per minute, so in 60 minutes the cyclist rides $0.3 \\times 60 = 18$ miles. Choice C is correct. Choice A is incorrect. This is the rate in miles per minute; it still needs to be multiplied by 60. Choice B is incorrect. This multiplies distance by time instead of dividing distance by time. Choice D is incorrect. This uses only the whole number of minutes and ignores the distance of $\\frac{3}{4}$ mile."
+  },
+  {
+    "slug": "psda-ratio-011",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "ratios_rates_proportions_units",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The quantity $y$ is directly proportional to $x$. When $x = 4$, $y = 14$. What is the value of $y$ when $x = 10$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$2.86$"
+      },
+      {
+        "id": "B",
+        "label": "$20$"
+      },
+      {
+        "id": "C",
+        "label": "$35$"
+      },
+      {
+        "id": "D",
+        "label": "$140$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Since $y = kx$, $k = \\frac{14}{4} = 3.5$. Then $y = 3.5 \\times 10 = 35$. Choice C is correct. Choice A is incorrect. This uses the constant $\\frac{x}{y}$ in the wrong place, computing $\\frac{4 \\cdot 10}{14}$. Choice B is incorrect. This adds the change in $x$ to $y$, treating the relationship as $y = x + 10$ rather than $y = kx$. Choice D is incorrect. This multiplies 14 by 10 without first dividing by 4 to find the constant of proportionality."
+  },
+  {
+    "slug": "psda-ratio-012",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "ratios_rates_proportions_units",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "A carpet costs $24$ dollars per square yard. What is the cost of the carpet, in dollars per square foot? ($1$ yard $= 3$ feet)",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{8}{3}$"
+      },
+      {
+        "id": "B",
+        "label": "$8$"
+      },
+      {
+        "id": "C",
+        "label": "$72$"
+      },
+      {
+        "id": "D",
+        "label": "$216$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "One square yard is $3 \\text{ ft} \\times 3 \\text{ ft} = 9$ square feet. The cost per square foot is $\\frac{24}{9} = \\frac{8}{3} \\approx 2.67$ dollars. Choice A is correct. Choice B is incorrect. This divides by 3, converting a length rather than an area. One square yard is $3 \\times 3 = 9$ square feet. Choice C is incorrect. This multiplies by 3; a square foot is smaller than a square yard, so the cost per square foot must be less than 24. Choice D is incorrect. This multiplies by 9 instead of dividing by 9."
+  },
+  {
+    "slug": "psda-ratio-013",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "ratios_rates_proportions_units",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "Machine A fills $240$ bottles in $8$ minutes. Working together at their constant rates, machines A and B fill $600$ bottles in $12$ minutes. How many minutes would it take machine B, working alone, to fill $400$ bottles?",
+    "answer": [
+      "20"
+    ],
+    "explanation": "Machine A fills $\\frac{240}{8} = 30$ bottles per minute, and together they fill $\\frac{600}{12} = 50$ bottles per minute. Machine B fills $50 - 30 = 20$ bottles per minute, so 400 bottles take $\\frac{400}{20} = 20$ minutes."
+  },
+  {
+    "slug": "psda-ratio-014",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "ratios_rates_proportions_units",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "For positive quantities $a$, $b$, and $c$, the ratio of $a$ to $b$ is $3 : 5$ and the ratio of $b$ to $c$ is $4 : 7$. What is the ratio of $a$ to $c$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$7 : 12$"
+      },
+      {
+        "id": "B",
+        "label": "$21 : 20$"
+      },
+      {
+        "id": "C",
+        "label": "$3 : 7$"
+      },
+      {
+        "id": "D",
+        "label": "$12 : 35$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Rewrite both ratios with a common value of $b$: $a : b = 12 : 20$ and $b : c = 20 : 35$. So $a : c = 12 : 35$. Equivalently, $\\frac{a}{c} = \\frac{a}{b} \\cdot \\frac{b}{c} = \\frac{3}{5} \\cdot \\frac{4}{7} = \\frac{12}{35}$. Choice D is correct. Choice A is incorrect. This adds the corresponding terms of the two ratios, which is not a valid way to combine ratios. Choice B is incorrect. This divides $\\frac{3}{5}$ by $\\frac{4}{7}$ instead of multiplying $\\frac{a}{b} \\cdot \\frac{b}{c}$. Choice C is incorrect. This pairs the first term of one ratio with the second term of the other without making $b$ the same in both ratios."
+  },
+  {
+    "slug": "psda-pct-001",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "percentages",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "What is $15\\%$ of $240$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$3.6$"
+      },
+      {
+        "id": "B",
+        "label": "$16$"
+      },
+      {
+        "id": "C",
+        "label": "$36$"
+      },
+      {
+        "id": "D",
+        "label": "$204$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "$15\\%$ of 240 is $0.15 \\times 240 = 36$. Choice C is correct. Choice A is incorrect. This uses 0.015 instead of 0.15 for 15%. Choice B is incorrect. This divides 240 by 15 instead of multiplying 240 by 0.15. Choice D is incorrect. This is 85% of 240, the amount left after removing 15%."
+  },
+  {
+    "slug": "psda-pct-002",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "percentages",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "A jacket that regularly sells for $80$ dollars is on sale for $25\\%$ off the regular price. What is the sale price of the jacket, in dollars?",
+    "answer": [
+      "60"
+    ],
+    "explanation": "The discount is $0.25 \\times 80 = 20$ dollars, so the sale price is $80 - 20 = 60$ dollars."
+  },
+  {
+    "slug": "psda-pct-003",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "percentages",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "The number $18$ is what percent of $72$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$4\\%$"
+      },
+      {
+        "id": "B",
+        "label": "$25\\%$"
+      },
+      {
+        "id": "C",
+        "label": "$54\\%$"
+      },
+      {
+        "id": "D",
+        "label": "$400\\%$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Divide the part by the whole: $\\frac{18}{72} = 0.25$, which is $25\\%$. Choice B is correct. Choice A is incorrect. This is the quotient $\\frac{72}{18} = 4$ written as a percent without multiplying by 100. Choice C is incorrect. This subtracts the two numbers instead of dividing. Choice D is incorrect. This is $\\frac{72}{18} \\times 100$; it tells what percent 72 is of 18."
+  },
+  {
+    "slug": "psda-pct-004",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "percentages",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "The population of a town increased from $1{,}250$ to $1{,}500$. What was the percent increase in the population?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$16.7\\%$"
+      },
+      {
+        "id": "B",
+        "label": "$20\\%$"
+      },
+      {
+        "id": "C",
+        "label": "$83.3\\%$"
+      },
+      {
+        "id": "D",
+        "label": "$120\\%$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "The increase is $1{,}500 - 1{,}250 = 250$. Divide by the original amount: $\\frac{250}{1{,}250} = 0.2$, a $20\\%$ increase. Choice B is correct. Choice A is incorrect. This divides the increase by the new population instead of the original population. Choice C is incorrect. This is the original population as a percent of the new population. Choice D is incorrect. This is the new population as a percent of the original; the increase is $120\\% - 100\\% = 20\\%$."
+  },
+  {
+    "slug": "psda-pct-005",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "percentages",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "If $p\\%$ of $60$ is $21$, what is the value of $p$?",
+    "answer": [
+      "35"
+    ],
+    "explanation": "Write $\\frac{p}{100} \\times 60 = 21$. Then $p = \\frac{21 \\times 100}{60} = 35$."
+  },
+  {
+    "slug": "psda-pct-006",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "percentages",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A store increased the price of a lamp, originally $150$ dollars, by $20\\%$. Later, the store decreased the new price by $20\\%$. What is the final price of the lamp, in dollars?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$120$"
+      },
+      {
+        "id": "B",
+        "label": "$144$"
+      },
+      {
+        "id": "C",
+        "label": "$150$"
+      },
+      {
+        "id": "D",
+        "label": "$180$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "After the increase the price is $150 \\times 1.2 = 180$ dollars. After the decrease it is $180 \\times 0.8 = 144$ dollars. Choice B is correct. Choice A is incorrect. This takes 20% off the original price and ignores the earlier increase. Choice C is incorrect. This assumes the increase and decrease cancel; the 20% decrease is applied to a larger amount, 180 dollars. Choice D is incorrect. This is the price after the increase only; the 20% decrease was not applied."
+  },
+  {
+    "slug": "psda-pct-007",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "percentages",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "After a $12\\%$ increase, the membership of a club is $1{,}568$. What was the membership before the increase?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$1{,}379.84$"
+      },
+      {
+        "id": "B",
+        "label": "$1{,}400$"
+      },
+      {
+        "id": "C",
+        "label": "$1{,}556$"
+      },
+      {
+        "id": "D",
+        "label": "$1{,}756.16$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "If $m$ is the original membership, $1.12m = 1{,}568$, so $m = \\frac{1{,}568}{1.12} = 1{,}400$. Choice B is correct. Choice A is incorrect. This multiplies by 0.88, taking 12% of the new total away; the 12% was based on the original membership. Choice C is incorrect. This subtracts 12 members instead of reversing a 12% increase. Choice D is incorrect. This applies another 12% increase instead of undoing one."
+  },
+  {
+    "slug": "psda-pct-008",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "percentages",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "A store sets the retail price of a backpack by marking up its wholesale cost by $60\\%$. The retail price is $72$ dollars. What is the wholesale cost, in dollars?",
+    "answer": [
+      "45"
+    ],
+    "explanation": "If $w$ is the wholesale cost, then $1.6w = 72$, so $w = \\frac{72}{1.6} = 45$ dollars. (Taking 60% off 72 dollars would give 28.8 dollars, which is not correct, because the markup is based on the wholesale cost.)"
+  },
+  {
+    "slug": "psda-pct-009",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "percentages",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The number $x$ is $30\\%$ greater than the number $y$, and $y$ is $20\\%$ less than the positive number $z$. The number $x$ is what percent of $z$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$84\\%$"
+      },
+      {
+        "id": "B",
+        "label": "$90\\%$"
+      },
+      {
+        "id": "C",
+        "label": "$104\\%$"
+      },
+      {
+        "id": "D",
+        "label": "$110\\%$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Write $y = 0.8z$ and $x = 1.3y$. Then $x = 1.3(0.8z) = 1.04z$, so $x$ is $104\\%$ of $z$. Choice C is correct. Choice A is incorrect. This computes $0.7 \\times 1.2 = 0.84$, applying each change in the wrong direction. Choice B is incorrect. This adds and subtracts the percents with the signs reversed: $100 - 30 + 20 = 90$. Choice D is incorrect. This adds and subtracts the percents directly: $100 + 30 - 20 = 110$."
+  },
+  {
+    "slug": "psda-pct-010",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "percentages",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The table shows the number of members of a school robotics club in each grade. What percent of the club's members are in grade 11?",
+    "table": {
+      "headers": [
+        "Grade",
+        "Number of members"
+      ],
+      "rows": [
+        [
+          "9",
+          "48"
+        ],
+        [
+          "10",
+          "60"
+        ],
+        [
+          "11",
+          "72"
+        ],
+        [
+          "12",
+          "60"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "$25\\%$"
+      },
+      {
+        "id": "B",
+        "label": "$30\\%$"
+      },
+      {
+        "id": "C",
+        "label": "$42.9\\%$"
+      },
+      {
+        "id": "D",
+        "label": "$72\\%$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "The total membership is $48 + 60 + 72 + 60 = 240$. The grade 11 percent is $\\frac{72}{240} = 0.3$, or $30\\%$. Choice B is correct. Choice A is incorrect. This is the percent of members in grade 10 (or grade 12), not grade 11. Choice C is incorrect. This divides by the number of members not in grade 11 instead of by the total. Choice D is incorrect. This treats the number of grade 11 members as a percent without dividing by the total."
+  },
+  {
+    "slug": "psda-pct-011",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "percentages",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "A $400$-milliliter solution is $15\\%$ acid. How many milliliters of pure acid must be added to make a solution that is $20\\%$ acid?",
+    "answer": [
+      "25"
+    ],
+    "explanation": "The solution starts with $0.15 \\times 400 = 60$ mL of acid. After adding $a$ mL of pure acid, $\\frac{60 + a}{400 + a} = 0.2$. Then $60 + a = 80 + 0.2a$, so $0.8a = 20$ and $a = 25$."
+  },
+  {
+    "slug": "psda-pct-012",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "percentages",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "The value of a machine decreases by $15\\%$ each year. At the end of $3$ years, the value of the machine is approximately what percent of its original value?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$39\\%$"
+      },
+      {
+        "id": "B",
+        "label": "$45\\%$"
+      },
+      {
+        "id": "C",
+        "label": "$55\\%$"
+      },
+      {
+        "id": "D",
+        "label": "$61\\%$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Each year the value is multiplied by $0.85$. After 3 years it is $0.85^3 = 0.614125$ times the original, or about $61\\%$. Choice D is correct. Choice A is incorrect. This is the approximate percent of the value that was lost, not the percent that remains. Choice B is incorrect. This is the total of three 15% decreases treated as simple, which is not the remaining value. Choice C is incorrect. This subtracts $3 \\times 15\\% = 45\\%$ from 100%, but each decrease applies to the reduced value, not the original."
+  },
+  {
+    "slug": "psda-pct-013",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "percentages",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "At a school, $40\\%$ of the students in a physics program are juniors and the rest are seniors. Of the juniors, $25\\%$ take an advanced lab, and of the seniors, $50\\%$ take the advanced lab. Of the students in the program who take the advanced lab, $p\\%$ are juniors. What is the value of $p$?",
+    "answer": [
+      "25"
+    ],
+    "explanation": "Juniors in the lab make up $0.40 \\times 0.25 = 0.10$ of the program, and seniors in the lab make up $0.60 \\times 0.50 = 0.30$. The lab is $0.10 + 0.30 = 0.40$ of the program, so juniors are $\\frac{0.10}{0.40} = 0.25$, or $25\\%$, of the lab students."
+  },
+  {
+    "slug": "psda-pct-014",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "percentages",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "The positive number $A$ is $25\\%$ greater than the positive number $B$. The number $B$ is what percent less than $A$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$20\\%$"
+      },
+      {
+        "id": "B",
+        "label": "$25\\%$"
+      },
+      {
+        "id": "C",
+        "label": "$75\\%$"
+      },
+      {
+        "id": "D",
+        "label": "$80\\%$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Let $B = 100$. Then $A = 125$, and $B$ is $125 - 100 = 25$ less than $A$. As a percent of $A$, that is $\\frac{25}{125} = 0.2$, or $20\\%$. Choice A is correct. Choice B is incorrect. This assumes the percent difference is the same in both directions, but the comparison to $A$ uses a larger base. Choice C is incorrect. This subtracts 25% from 100%, which compares to $B$ rather than to $A$. Choice D is incorrect. This is $B$ as a percent of $A$; $B$ is $100\\% - 80\\% = 20\\%$ less than $A$."
+  },
+  {
+    "slug": "psda-onevar-001",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "one_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "The numbers of laps swum by $5$ students during a practice were $12$, $15$, $9$, $20$, and $24$. What is the mean number of laps swum by these students?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$15$"
+      },
+      {
+        "id": "B",
+        "label": "$16$"
+      },
+      {
+        "id": "C",
+        "label": "$24$"
+      },
+      {
+        "id": "D",
+        "label": "$80$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "The sum is $12 + 15 + 9 + 20 + 24 = 80$, so the mean is $\\frac{80}{5} = 16$. Choice B is correct. Choice A is incorrect. This is the median, the middle value of the ordered list, not the mean. Choice C is incorrect. This is the greatest value in the data set. Choice D is incorrect. This is the total number of laps; it still needs to be divided by 5."
+  },
+  {
+    "slug": "psda-onevar-002",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "one_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "The mean of $4$ numbers is $9$. Three of the numbers are $6$, $11$, and $7$. What is the fourth number?",
+    "answer": [
+      "12"
+    ],
+    "explanation": "The four numbers have a sum of $4 \\times 9 = 36$. The three known numbers add to $24$, so the fourth number is $36 - 24 = 12$."
+  },
+  {
+    "slug": "psda-onevar-003",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "one_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "The dot plot shows the number of hours each of $10$ volunteers worked at a community garden last week. What is the range of the number of hours worked?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 420 220\" width=\"420\" height=\"220\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"17\" role=\"img\"><title>Dot plot of hours worked by 10 volunteers: one at 2, two at 3, three at 4, two at 5, one at 6, one at 8.</title><rect x=\"0\" y=\"0\" width=\"420\" height=\"220\" fill=\"#ffffff\"/><line x1=\"20\" y1=\"160\" x2=\"400\" y2=\"160\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><line x1=\"30\" y1=\"160\" x2=\"30\" y2=\"166\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><text x=\"30\" y=\"184\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">1</text><line x1=\"75\" y1=\"160\" x2=\"75\" y2=\"166\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><text x=\"75\" y=\"184\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">2</text><line x1=\"120\" y1=\"160\" x2=\"120\" y2=\"166\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><text x=\"120\" y=\"184\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">3</text><line x1=\"165\" y1=\"160\" x2=\"165\" y2=\"166\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><text x=\"165\" y=\"184\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">4</text><line x1=\"210\" y1=\"160\" x2=\"210\" y2=\"166\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><text x=\"210\" y=\"184\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">5</text><line x1=\"255\" y1=\"160\" x2=\"255\" y2=\"166\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><text x=\"255\" y=\"184\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">6</text><line x1=\"300\" y1=\"160\" x2=\"300\" y2=\"166\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><text x=\"300\" y=\"184\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">7</text><line x1=\"345\" y1=\"160\" x2=\"345\" y2=\"166\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><text x=\"345\" y=\"184\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">8</text><line x1=\"390\" y1=\"160\" x2=\"390\" y2=\"166\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><text x=\"390\" y=\"184\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">9</text><circle cx=\"75\" cy=\"148\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"120\" cy=\"148\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"120\" cy=\"130\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"165\" cy=\"148\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"165\" cy=\"130\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"165\" cy=\"112\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"210\" cy=\"148\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"210\" cy=\"130\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"255\" cy=\"148\" r=\"6\" fill=\"#1f2937\"/><circle cx=\"345\" cy=\"148\" r=\"6\" fill=\"#1f2937\"/><text x=\"210\" y=\"210\" text-anchor=\"middle\" font-size=\"16\" fill=\"#1f2937\">Hours worked</text></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$4$"
+      },
+      {
+        "id": "B",
+        "label": "$6$"
+      },
+      {
+        "id": "C",
+        "label": "$8$"
+      },
+      {
+        "id": "D",
+        "label": "$10$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "The greatest value is 8 and the least value is 2, so the range is $8 - 2 = 6$. Choice B is correct. Choice A is incorrect. This is the mode, the value that appears most often. Choice C is incorrect. This is the greatest value, not the difference between the greatest and least values. Choice D is incorrect. This is the number of volunteers."
+  },
+  {
+    "slug": "psda-onevar-004",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "one_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "What is the median of the data set $7$, $3$, $9$, $4$, $12$, $10$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$6.5$"
+      },
+      {
+        "id": "B",
+        "label": "$7.5$"
+      },
+      {
+        "id": "C",
+        "label": "$8$"
+      },
+      {
+        "id": "D",
+        "label": "$9$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "In order, the values are $3, 4, 7, 9, 10, 12$. With 6 values, the median is the mean of the two middle values: $\\frac{7 + 9}{2} = 8$. Choice C is correct. Choice A is incorrect. This averages the two middle numbers of the list as given, without first putting the values in order. Choice B is incorrect. This is the mean of the data set. Choice D is incorrect. This is only one of the two middle values of the ordered list $3, 4, 7, 9, 10, 12$."
+  },
+  {
+    "slug": "psda-onevar-005",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "one_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "The table shows the number of goals a soccer team scored in each of its $20$ games last season. What is the total number of goals the team scored in these games?",
+    "table": {
+      "headers": [
+        "Goals scored",
+        "Number of games"
+      ],
+      "rows": [
+        [
+          "0",
+          "3"
+        ],
+        [
+          "1",
+          "6"
+        ],
+        [
+          "2",
+          "5"
+        ],
+        [
+          "3",
+          "4"
+        ],
+        [
+          "4",
+          "2"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "$10$"
+      },
+      {
+        "id": "B",
+        "label": "$20$"
+      },
+      {
+        "id": "C",
+        "label": "$36$"
+      },
+      {
+        "id": "D",
+        "label": "$46$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Multiply each number of goals by its frequency and add: $0(3) + 1(6) + 2(5) + 3(4) + 4(2) = 0 + 6 + 10 + 12 + 8 = 36$. Choice C is correct. Choice A is incorrect. This adds the different goal values without weighting each by its frequency. Choice B is incorrect. This is the number of games, not the number of goals. Choice D is incorrect. This counts each of the 5 games with 2 goals as 4 goals."
+  },
+  {
+    "slug": "psda-onevar-006",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "one_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The bar graph shows the number of pets owned by each of $25$ households on a street. What is the median number of pets owned by these households?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 420 320\" width=\"420\" height=\"320\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"17\" role=\"img\"><title>Bar graph: 0 pets, 9 households; 1 pet, 7; 2 pets, 5; 3 pets, 3; 4 pets, 1.</title><rect x=\"0\" y=\"0\" width=\"420\" height=\"320\" fill=\"#ffffff\"/><line x1=\"62\" y1=\"262\" x2=\"400\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"267\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">0</text><line x1=\"62\" y1=\"213.2\" x2=\"400\" y2=\"213.2\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"218.2\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">2</text><line x1=\"62\" y1=\"164.4\" x2=\"400\" y2=\"164.4\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"169.4\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">4</text><line x1=\"62\" y1=\"115.6\" x2=\"400\" y2=\"115.6\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"120.6\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">6</text><line x1=\"62\" y1=\"66.8\" x2=\"400\" y2=\"66.8\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"71.8\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">8</text><line x1=\"62\" y1=\"18\" x2=\"400\" y2=\"18\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"23\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">10</text><line x1=\"62\" y1=\"262\" x2=\"400\" y2=\"262\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><line x1=\"62\" y1=\"18\" x2=\"62\" y2=\"262\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><text x=\"231\" y=\"310\" text-anchor=\"middle\" font-size=\"16\" fill=\"#1f2937\">Number of pets</text><text x=\"18\" y=\"140\" text-anchor=\"middle\" font-size=\"16\" transform=\"rotate(-90 18 140)\" fill=\"#1f2937\">Number of households</text><rect x=\"75.52\" y=\"42.4\" width=\"40.56\" height=\"219.6\" fill=\"#1d4ed8\" fill-opacity=\"0.75\" stroke=\"#1f2937\" stroke-width=\"1\"/><text x=\"95.8\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">0</text><rect x=\"143.12\" y=\"91.2\" width=\"40.56\" height=\"170.8\" fill=\"#1d4ed8\" fill-opacity=\"0.75\" stroke=\"#1f2937\" stroke-width=\"1\"/><text x=\"163.4\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">1</text><rect x=\"210.72\" y=\"140\" width=\"40.56\" height=\"122\" fill=\"#1d4ed8\" fill-opacity=\"0.75\" stroke=\"#1f2937\" stroke-width=\"1\"/><text x=\"231\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">2</text><rect x=\"278.32\" y=\"188.8\" width=\"40.56\" height=\"73.2\" fill=\"#1d4ed8\" fill-opacity=\"0.75\" stroke=\"#1f2937\" stroke-width=\"1\"/><text x=\"298.6\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">3</text><rect x=\"345.92\" y=\"237.6\" width=\"40.56\" height=\"24.4\" fill=\"#1d4ed8\" fill-opacity=\"0.75\" stroke=\"#1f2937\" stroke-width=\"1\"/><text x=\"366.2\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">4</text></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$0$"
+      },
+      {
+        "id": "B",
+        "label": "$1$"
+      },
+      {
+        "id": "C",
+        "label": "$2$"
+      },
+      {
+        "id": "D",
+        "label": "$5$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "With 25 households, the median is the 13th value when the data are ordered. The first 9 values are 0 and the next 7 values (the 10th through 16th) are 1, so the 13th value is 1. Choice B is correct. Choice A is incorrect. This is the mode, the number of pets owned by the most households. Choice C is incorrect. This is the middle category on the horizontal axis, which is not necessarily the middle value of the data. Choice D is incorrect. This is the middle frequency among the bar heights, not a number of pets."
+  },
+  {
+    "slug": "psda-onevar-007",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "one_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A data set consists of $9$ different numbers. The greatest number, $40$, is replaced with $85$. Which statement about the new data set compared with the original data set must be true?",
+    "options": [
+      {
+        "id": "A",
+        "label": "The mean increases by 5, and the median does not change."
+      },
+      {
+        "id": "B",
+        "label": "The mean and the median each increase by 5."
+      },
+      {
+        "id": "C",
+        "label": "The mean does not change, and the median increases."
+      },
+      {
+        "id": "D",
+        "label": "The mean increases by 45, and the median does not change."
+      }
+    ],
+    "answer": "A",
+    "explanation": "The sum of the data increases by $85 - 40 = 45$, so the mean increases by $\\frac{45}{9} = 5$. The greatest value stays the greatest, so the 5th value in order, the median, is unchanged. Choice A is correct. Choice B is incorrect. The median is the 5th value in order, and changing the greatest value does not change it. Choice C is incorrect. Increasing a value increases the sum, so the mean must increase; the middle value is unaffected. Choice D is incorrect. The sum increases by 45, but the mean is the sum divided by 9, so it increases by $\\frac{45}{9} = 5$."
+  },
+  {
+    "slug": "psda-onevar-008",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "one_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "The mean of $8$ numbers is $14$. When a ninth number is added to the data set, the mean of the $9$ numbers is $15$. What is the ninth number?",
+    "answer": [
+      "23"
+    ],
+    "explanation": "The original sum is $8 \\times 14 = 112$, and the new sum is $9 \\times 15 = 135$. The ninth number is $135 - 112 = 23$."
+  },
+  {
+    "slug": "psda-onevar-009",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "one_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The table shows the frequency of each value in data set A and data set B. Each data set contains $12$ values. Which statement best compares the standard deviations of the two data sets?",
+    "table": {
+      "headers": [
+        "Value",
+        "Frequency in data set A",
+        "Frequency in data set B"
+      ],
+      "rows": [
+        [
+          "1",
+          "1",
+          "4"
+        ],
+        [
+          "2",
+          "2",
+          "1"
+        ],
+        [
+          "3",
+          "6",
+          "2"
+        ],
+        [
+          "4",
+          "2",
+          "1"
+        ],
+        [
+          "5",
+          "1",
+          "4"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "The standard deviations of the two data sets are equal."
+      },
+      {
+        "id": "B",
+        "label": "The standard deviation of data set A is greater than that of data set B."
+      },
+      {
+        "id": "C",
+        "label": "There is not enough information to compare the standard deviations."
+      },
+      {
+        "id": "D",
+        "label": "The standard deviation of data set A is less than that of data set B."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Both data sets are symmetric about 3, so each has a mean of 3. In data set A, half the values equal the mean, while in data set B, 8 of the 12 values are 1 or 5, as far from the mean as possible. So data set B is more spread out and has the greater standard deviation. Choice D is correct. Choice A is incorrect. The data sets have the same mean and range, but data set B has many more values at the extremes 1 and 5. Choice B is incorrect. Data set A has most of its values at the center, 3, so its values are closer to the mean, not farther. Choice C is incorrect. The table gives every value in both data sets, which is enough to compare their spread."
+  },
+  {
+    "slug": "psda-onevar-010",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "one_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The histogram shows the commute times, in minutes, of $30$ employees. Each interval includes its left endpoint but not its right endpoint. Which interval contains the median commute time?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 420 320\" width=\"420\" height=\"320\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"17\" role=\"img\"><title>Histogram of commute times: 0 to 10 minutes, 9 employees; 10 to 20, 5; 20 to 30, 6; 30 to 40, 7; 40 to 50, 3.</title><rect x=\"0\" y=\"0\" width=\"420\" height=\"320\" fill=\"#ffffff\"/><line x1=\"62\" y1=\"262\" x2=\"400\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"267\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">0</text><line x1=\"62\" y1=\"213.2\" x2=\"400\" y2=\"213.2\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"218.2\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">2</text><line x1=\"62\" y1=\"164.4\" x2=\"400\" y2=\"164.4\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"169.4\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">4</text><line x1=\"62\" y1=\"115.6\" x2=\"400\" y2=\"115.6\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"120.6\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">6</text><line x1=\"62\" y1=\"66.8\" x2=\"400\" y2=\"66.8\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"71.8\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">8</text><line x1=\"62\" y1=\"18\" x2=\"400\" y2=\"18\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"23\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">10</text><text x=\"62\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">0</text><text x=\"129.6\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">10</text><text x=\"197.2\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">20</text><text x=\"264.8\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">30</text><text x=\"332.4\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">40</text><text x=\"400\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">50</text><line x1=\"62\" y1=\"262\" x2=\"400\" y2=\"262\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><line x1=\"62\" y1=\"18\" x2=\"62\" y2=\"262\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><text x=\"231\" y=\"310\" text-anchor=\"middle\" font-size=\"16\" fill=\"#1f2937\">Commute time (minutes)</text><text x=\"18\" y=\"140\" text-anchor=\"middle\" font-size=\"16\" transform=\"rotate(-90 18 140)\" fill=\"#1f2937\">Number of employees</text><rect x=\"62\" y=\"42.4\" width=\"67.6\" height=\"219.6\" fill=\"#1d4ed8\" fill-opacity=\"0.75\" stroke=\"#1f2937\" stroke-width=\"1\"/><rect x=\"129.6\" y=\"140\" width=\"67.6\" height=\"122\" fill=\"#1d4ed8\" fill-opacity=\"0.75\" stroke=\"#1f2937\" stroke-width=\"1\"/><rect x=\"197.2\" y=\"115.6\" width=\"67.6\" height=\"146.4\" fill=\"#1d4ed8\" fill-opacity=\"0.75\" stroke=\"#1f2937\" stroke-width=\"1\"/><rect x=\"264.8\" y=\"91.2\" width=\"67.6\" height=\"170.8\" fill=\"#1d4ed8\" fill-opacity=\"0.75\" stroke=\"#1f2937\" stroke-width=\"1\"/><rect x=\"332.4\" y=\"188.8\" width=\"67.6\" height=\"73.2\" fill=\"#1d4ed8\" fill-opacity=\"0.75\" stroke=\"#1f2937\" stroke-width=\"1\"/></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "0 to 10 minutes"
+      },
+      {
+        "id": "B",
+        "label": "10 to 20 minutes"
+      },
+      {
+        "id": "C",
+        "label": "20 to 30 minutes"
+      },
+      {
+        "id": "D",
+        "label": "30 to 40 minutes"
+      }
+    ],
+    "answer": "C",
+    "explanation": "The median is the mean of the 15th and 16th values in order. The first two intervals hold $9 + 5 = 14$ values, and the third interval holds values 15 through 20. So the median is in the interval from 20 to 30 minutes. Choice C is correct. Choice A is incorrect. This interval has the most employees, so it contains the mode, not the median. Choice B is incorrect. Only $9 + 5 = 14$ employees have commutes less than 20 minutes, so the 15th and 16th values are not in this interval. Choice D is incorrect. By 30 minutes, $9 + 5 + 6 = 20$ values have already been counted, which is past the 15th and 16th values."
+  },
+  {
+    "slug": "psda-onevar-011",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "one_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "A data set of $15$ numbers has a mean of $40$ and a standard deviation of $6$. Two numbers in the data set, each equal to $40$, are removed. Which statement about the remaining $13$ numbers must be true?",
+    "options": [
+      {
+        "id": "A",
+        "label": "The mean is 40, and the standard deviation is greater than 6."
+      },
+      {
+        "id": "B",
+        "label": "The mean is 40, and the standard deviation is 6."
+      },
+      {
+        "id": "C",
+        "label": "The mean is less than 40, and the standard deviation is greater than 6."
+      },
+      {
+        "id": "D",
+        "label": "The mean is 40, and the standard deviation is less than 6."
+      }
+    ],
+    "answer": "A",
+    "explanation": "The original sum is $15 \\times 40 = 600$. After removing two 40s, the sum is $520$ and $\\frac{520}{13} = 40$, so the mean is unchanged. The removed values each had a distance of 0 from the mean, so the sum of squared distances stays the same while the number of values decreases. The standard deviation therefore increases. Choice A is correct. Choice B is incorrect. The total of the squared distances from the mean is unchanged, but it is now shared among fewer values, so the standard deviation changes. Choice C is incorrect. The removed values equal the mean, so the sum decreases by 80 while the count decreases by 2; the mean stays $\\frac{600 - 80}{13} = 40$. Choice D is incorrect. Removing values that sit exactly at the mean leaves only values that are, on average, farther from the mean, so the spread increases."
+  },
+  {
+    "slug": "psda-onevar-012",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "one_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "The mean test score of the $20$ students in class A is $78$. The mean test score of the students in class B is $84$. The mean score of all the students in both classes combined is $81.6$. How many students are in class B?",
+    "answer": [
+      "30"
+    ],
+    "explanation": "Let $b$ be the number of students in class B. Then $\\frac{20(78) + 84b}{20 + b} = 81.6$. This gives $1{,}560 + 84b = 1{,}632 + 81.6b$, so $2.4b = 72$ and $b = 30$."
+  },
+  {
+    "slug": "psda-onevar-013",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "one_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "The data set $3$, $5$, $8$, $11$, $x$ has $5$ numbers, where $x > 11$. The mean of the data set is $2$ greater than its median. What is the value of $x$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$13$"
+      },
+      {
+        "id": "B",
+        "label": "$18$"
+      },
+      {
+        "id": "C",
+        "label": "$23$"
+      },
+      {
+        "id": "D",
+        "label": "$50$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Because $x > 11$, the ordered data are $3, 5, 8, 11, x$, and the median is 8. The mean must be $8 + 2 = 10$, so the sum is $5 \\times 10 = 50$. Then $3 + 5 + 8 + 11 + x = 50$, so $x = 23$. Choice C is correct. Choice A is incorrect. This makes the mean equal to the median, 8, rather than 2 greater. Choice B is incorrect. This makes the mean 9, which is only 1 greater than the median. Choice D is incorrect. This is the sum of all five numbers when the mean is 10, not the value of $x$."
+  },
+  {
+    "slug": "psda-twovar-001",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "two_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "The scatterplot shows the number of hours $10$ students spent studying for a quiz and their quiz scores. A line of best fit is also shown. Based on the line of best fit, what is the predicted score for a student who studied for $6$ hours?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 420 320\" width=\"420\" height=\"320\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"17\" role=\"img\"><title>Scatterplot of quiz score versus hours studied with a line of best fit through (0, 55) and (8, 95).</title><rect x=\"0\" y=\"0\" width=\"420\" height=\"320\" fill=\"#ffffff\"/><line x1=\"62\" y1=\"262\" x2=\"400\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"267\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">50</text><line x1=\"62\" y1=\"213.2\" x2=\"400\" y2=\"213.2\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"218.2\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">60</text><line x1=\"62\" y1=\"164.4\" x2=\"400\" y2=\"164.4\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"169.4\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">70</text><line x1=\"62\" y1=\"115.6\" x2=\"400\" y2=\"115.6\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"120.6\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">80</text><line x1=\"62\" y1=\"66.8\" x2=\"400\" y2=\"66.8\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"71.8\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">90</text><line x1=\"62\" y1=\"18\" x2=\"400\" y2=\"18\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"23\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">100</text><line x1=\"62\" y1=\"18\" x2=\"62\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"62\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">0</text><line x1=\"99.56\" y1=\"18\" x2=\"99.56\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"99.56\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">1</text><line x1=\"137.11\" y1=\"18\" x2=\"137.11\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"137.11\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">2</text><line x1=\"174.67\" y1=\"18\" x2=\"174.67\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"174.67\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">3</text><line x1=\"212.22\" y1=\"18\" x2=\"212.22\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"212.22\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">4</text><line x1=\"249.78\" y1=\"18\" x2=\"249.78\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"249.78\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">5</text><line x1=\"287.33\" y1=\"18\" x2=\"287.33\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"287.33\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">6</text><line x1=\"324.89\" y1=\"18\" x2=\"324.89\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"324.89\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">7</text><line x1=\"362.44\" y1=\"18\" x2=\"362.44\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"362.44\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">8</text><line x1=\"400\" y1=\"18\" x2=\"400\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"400\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">9</text><line x1=\"62\" y1=\"262\" x2=\"400\" y2=\"262\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><line x1=\"62\" y1=\"18\" x2=\"62\" y2=\"262\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><text x=\"231\" y=\"310\" text-anchor=\"middle\" font-size=\"16\" fill=\"#1f2937\">Hours studied</text><text x=\"18\" y=\"140\" text-anchor=\"middle\" font-size=\"16\" transform=\"rotate(-90 18 140)\" fill=\"#1f2937\">Quiz score</text><line x1=\"62\" y1=\"237.6\" x2=\"400\" y2=\"18\" stroke=\"#1d4ed8\" stroke-width=\"2\"/><circle cx=\"99.56\" cy=\"198.56\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"137.11\" cy=\"208.32\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"137.11\" cy=\"179.04\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"174.67\" cy=\"174.16\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"212.22\" cy=\"120.48\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"212.22\" cy=\"154.64\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"249.78\" cy=\"110.72\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"287.33\" cy=\"96.08\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"324.89\" cy=\"52.16\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"362.44\" cy=\"52.16\" r=\"4\" fill=\"#1f2937\"/></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$70$"
+      },
+      {
+        "id": "B",
+        "label": "$80$"
+      },
+      {
+        "id": "C",
+        "label": "$85$"
+      },
+      {
+        "id": "D",
+        "label": "$90$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "The line passes through $(0, 55)$ and $(4, 75)$, so it rises 5 points per hour. At 6 hours it gives $55 + 5(6) = 85$. Choice C is correct. Choice A is incorrect. This is the predicted score for 3 hours of study, not 6. Choice B is incorrect. This is the predicted score for 5 hours of study, not 6. Choice D is incorrect. This is the predicted score for 7 hours of study."
+  },
+  {
+    "slug": "psda-twovar-002",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "two_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "The scatterplot shows the age, in years, and the resale value, in hundreds of dollars, of $10$ used bicycles of the same model. Which statement best describes the relationship between age and resale value for these bicycles?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 420 320\" width=\"420\" height=\"320\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"17\" role=\"img\"><title>Scatterplot of resale value versus age for 10 bicycles; points fall steadily from about 92 at age 1 to 40 at age 10.</title><rect x=\"0\" y=\"0\" width=\"420\" height=\"320\" fill=\"#ffffff\"/><line x1=\"62\" y1=\"262\" x2=\"400\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"267\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">30</text><line x1=\"62\" y1=\"227.14\" x2=\"400\" y2=\"227.14\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"232.14\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">40</text><line x1=\"62\" y1=\"192.29\" x2=\"400\" y2=\"192.29\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"197.29\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">50</text><line x1=\"62\" y1=\"157.43\" x2=\"400\" y2=\"157.43\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"162.43\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">60</text><line x1=\"62\" y1=\"122.57\" x2=\"400\" y2=\"122.57\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"127.57\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">70</text><line x1=\"62\" y1=\"87.71\" x2=\"400\" y2=\"87.71\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"92.71\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">80</text><line x1=\"62\" y1=\"52.86\" x2=\"400\" y2=\"52.86\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"57.86\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">90</text><line x1=\"62\" y1=\"18\" x2=\"400\" y2=\"18\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"23\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">100</text><line x1=\"62\" y1=\"18\" x2=\"62\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"62\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">0</text><line x1=\"92.73\" y1=\"18\" x2=\"92.73\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"92.73\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">1</text><line x1=\"123.45\" y1=\"18\" x2=\"123.45\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"123.45\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">2</text><line x1=\"154.18\" y1=\"18\" x2=\"154.18\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"154.18\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">3</text><line x1=\"184.91\" y1=\"18\" x2=\"184.91\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"184.91\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">4</text><line x1=\"215.64\" y1=\"18\" x2=\"215.64\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"215.64\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">5</text><line x1=\"246.36\" y1=\"18\" x2=\"246.36\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"246.36\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">6</text><line x1=\"277.09\" y1=\"18\" x2=\"277.09\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"277.09\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">7</text><line x1=\"307.82\" y1=\"18\" x2=\"307.82\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"307.82\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">8</text><line x1=\"338.55\" y1=\"18\" x2=\"338.55\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"338.55\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">9</text><line x1=\"369.27\" y1=\"18\" x2=\"369.27\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"369.27\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">10</text><line x1=\"400\" y1=\"18\" x2=\"400\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"400\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">11</text><line x1=\"62\" y1=\"262\" x2=\"400\" y2=\"262\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><line x1=\"62\" y1=\"18\" x2=\"62\" y2=\"262\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><text x=\"231\" y=\"310\" text-anchor=\"middle\" font-size=\"16\" fill=\"#1f2937\">Age (years)</text><text x=\"18\" y=\"140\" text-anchor=\"middle\" font-size=\"16\" transform=\"rotate(-90 18 140)\" fill=\"#1f2937\">Resale value (hundreds of dollars)</text><circle cx=\"92.73\" cy=\"45.89\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"123.45\" cy=\"70.29\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"154.18\" cy=\"77.26\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"184.91\" cy=\"108.63\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"215.64\" cy=\"122.57\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"246.36\" cy=\"150.46\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"277.09\" cy=\"157.43\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"307.82\" cy=\"188.8\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"338.55\" cy=\"202.74\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"369.27\" cy=\"227.14\" r=\"4\" fill=\"#1f2937\"/></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "There is no association between age and resale value."
+      },
+      {
+        "id": "B",
+        "label": "There is a strong positive linear association."
+      },
+      {
+        "id": "C",
+        "label": "There is a weak positive linear association."
+      },
+      {
+        "id": "D",
+        "label": "There is a strong negative linear association."
+      }
+    ],
+    "answer": "D",
+    "explanation": "As age increases from left to right, resale value decreases, and the points lie close to a straight line. This is a strong negative linear association. Choice D is correct. Choice A is incorrect. The points follow a clear downward linear pattern. Choice B is incorrect. Resale value decreases as age increases, so the association is negative, not positive. Choice C is incorrect. The points fall from left to right and lie close to a line, so the association is strong and negative, not weak and positive."
+  },
+  {
+    "slug": "psda-twovar-003",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "two_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "A botanist models the height $y$, in centimeters, of a seedling $x$ days after planting with the equation $y = 0.75x + 12$. According to the model, what is the height of the seedling, in centimeters, $20$ days after planting?",
+    "answer": [
+      "27"
+    ],
+    "explanation": "Substitute $x = 20$: $y = 0.75(20) + 12 = 15 + 12 = 27$."
+  },
+  {
+    "slug": "psda-twovar-004",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "two_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A phone plan's monthly cost $y$, in dollars, is modeled by $y = 3.2x + 45$, where $x$ is the number of gigabytes of data used that month. What is the best interpretation of $3.2$ in this context?",
+    "options": [
+      {
+        "id": "A",
+        "label": "The cost increases by 3.20 dollars for each additional gigabyte of data used."
+      },
+      {
+        "id": "B",
+        "label": "A customer can use 3.2 gigabytes for each dollar spent."
+      },
+      {
+        "id": "C",
+        "label": "The plan costs 3.20 dollars per month before any data are used."
+      },
+      {
+        "id": "D",
+        "label": "The total monthly cost is 3.20 dollars."
+      }
+    ],
+    "answer": "A",
+    "explanation": "In the linear model $y = 3.2x + 45$, the coefficient of $x$ is the slope, which is the change in cost per gigabyte. Each additional gigabyte adds 3.20 dollars to the monthly cost. Choice A is correct. Choice B is incorrect. The units are reversed: 3.2 is dollars per gigabyte, not gigabytes per dollar. Choice C is incorrect. The cost when $x = 0$ is the constant term, 45 dollars, not 3.20 dollars. Choice D is incorrect. The total cost depends on $x$; 3.2 is the rate of change of the cost."
+  },
+  {
+    "slug": "psda-twovar-005",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "two_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The table shows $5$ data points. A line of best fit for the data is $y = 2x + 10$. What is the residual for the data point where $x = 8$? (A residual is the actual $y$-value minus the $y$-value predicted by the line.)",
+    "table": {
+      "headers": [
+        "x",
+        "y"
+      ],
+      "rows": [
+        [
+          "2",
+          "15"
+        ],
+        [
+          "4",
+          "17"
+        ],
+        [
+          "6",
+          "24"
+        ],
+        [
+          "8",
+          "30"
+        ],
+        [
+          "10",
+          "29"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "$-4$"
+      },
+      {
+        "id": "B",
+        "label": "$4$"
+      },
+      {
+        "id": "C",
+        "label": "$26$"
+      },
+      {
+        "id": "D",
+        "label": "$30$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "The line predicts $y = 2(8) + 10 = 26$ at $x = 8$. The actual value is 30, so the residual is $30 - 26 = 4$. Choice B is correct. Choice A is incorrect. This subtracts in the wrong order, giving predicted minus actual. Choice C is incorrect. This is the predicted $y$-value at $x = 8$, not the residual. Choice D is incorrect. This is the actual $y$-value at $x = 8$, not the residual."
+  },
+  {
+    "slug": "psda-twovar-006",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "two_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The table shows the number of bacteria colonies $y$ counted in a dish $x$ days after the start of an experiment. Which equation models the data in the table?",
+    "table": {
+      "headers": [
+        "x (days)",
+        "y (colonies)"
+      ],
+      "rows": [
+        [
+          "0",
+          "50"
+        ],
+        [
+          "1",
+          "60"
+        ],
+        [
+          "2",
+          "72"
+        ],
+        [
+          "3",
+          "86.4"
+        ],
+        [
+          "4",
+          "103.68"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "$y = 50(1.2)^x$"
+      },
+      {
+        "id": "B",
+        "label": "$y = 1.2(50)^x$"
+      },
+      {
+        "id": "C",
+        "label": "$y = 50(0.2)^x$"
+      },
+      {
+        "id": "D",
+        "label": "$y = 50 + 10x$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Each value is $1.2$ times the previous one: $\\frac{60}{50} = \\frac{72}{60} = \\frac{86.4}{72} = 1.2$, and the value at $x = 0$ is 50. So $y = 50(1.2)^x$. Choice A is correct. Choice B is incorrect. This switches the initial value and the growth factor; it gives 1.2 at $x = 0$. Choice C is incorrect. This model decreases, but the data increase. A 20% increase corresponds to the factor 1.2, not 0.2. Choice D is incorrect. This linear model matches the first two values, but it predicts 70 at $x = 2$, not 72; the data increase by a constant factor, not a constant amount."
+  },
+  {
+    "slug": "psda-twovar-007",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "two_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "The table shows a linear relationship between $x$ and $y$. The relationship can be written as $y = ax + b$, where $a$ and $b$ are constants. What is the value of $b$?",
+    "table": {
+      "headers": [
+        "x",
+        "y"
+      ],
+      "rows": [
+        [
+          "2",
+          "11"
+        ],
+        [
+          "5",
+          "20"
+        ],
+        [
+          "9",
+          "32"
+        ],
+        [
+          "14",
+          "47"
+        ]
+      ]
+    },
+    "answer": [
+      "5"
+    ],
+    "explanation": "The slope is $a = \\frac{20 - 11}{5 - 2} = 3$. Using $(2, 11)$: $11 = 3(2) + b$, so $b = 5$. The other points check: $3(9) + 5 = 32$ and $3(14) + 5 = 47$."
+  },
+  {
+    "slug": "psda-twovar-008",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "two_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The scatterplot shows $10$ data points and the line $y = 1.5x + 4$, which is a line of best fit for the data. For how many of the data points is the actual $y$-value greater than the $y$-value predicted by the line?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 420 320\" width=\"420\" height=\"320\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"17\" role=\"img\"><title>Scatterplot of 10 points with the line y = 1.5x + 4; points alternate above and below the line, with 6 above.</title><rect x=\"0\" y=\"0\" width=\"420\" height=\"320\" fill=\"#ffffff\"/><line x1=\"62\" y1=\"262\" x2=\"400\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"267\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">0</text><line x1=\"62\" y1=\"221.33\" x2=\"400\" y2=\"221.33\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"226.33\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">4</text><line x1=\"62\" y1=\"180.67\" x2=\"400\" y2=\"180.67\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"185.67\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">8</text><line x1=\"62\" y1=\"140\" x2=\"400\" y2=\"140\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"145\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">12</text><line x1=\"62\" y1=\"99.33\" x2=\"400\" y2=\"99.33\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"104.33\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">16</text><line x1=\"62\" y1=\"58.67\" x2=\"400\" y2=\"58.67\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"63.67\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">20</text><line x1=\"62\" y1=\"18\" x2=\"400\" y2=\"18\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"23\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">24</text><line x1=\"62\" y1=\"18\" x2=\"62\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"62\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">0</text><line x1=\"92.73\" y1=\"18\" x2=\"92.73\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"92.73\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">1</text><line x1=\"123.45\" y1=\"18\" x2=\"123.45\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"123.45\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">2</text><line x1=\"154.18\" y1=\"18\" x2=\"154.18\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"154.18\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">3</text><line x1=\"184.91\" y1=\"18\" x2=\"184.91\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"184.91\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">4</text><line x1=\"215.64\" y1=\"18\" x2=\"215.64\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"215.64\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">5</text><line x1=\"246.36\" y1=\"18\" x2=\"246.36\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"246.36\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">6</text><line x1=\"277.09\" y1=\"18\" x2=\"277.09\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"277.09\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">7</text><line x1=\"307.82\" y1=\"18\" x2=\"307.82\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"307.82\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">8</text><line x1=\"338.55\" y1=\"18\" x2=\"338.55\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"338.55\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">9</text><line x1=\"369.27\" y1=\"18\" x2=\"369.27\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"369.27\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">10</text><line x1=\"400\" y1=\"18\" x2=\"400\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"400\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">11</text><line x1=\"62\" y1=\"262\" x2=\"400\" y2=\"262\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><line x1=\"62\" y1=\"18\" x2=\"62\" y2=\"262\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><text x=\"231\" y=\"310\" text-anchor=\"middle\" font-size=\"16\" fill=\"#1f2937\">x</text><text x=\"18\" y=\"140\" text-anchor=\"middle\" font-size=\"16\" transform=\"rotate(-90 18 140)\" fill=\"#1f2937\">y</text><line x1=\"62\" y1=\"221.33\" x2=\"400\" y2=\"53.58\" stroke=\"#1d4ed8\" stroke-width=\"2\"/><circle cx=\"92.73\" cy=\"190.83\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"123.45\" cy=\"201\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"154.18\" cy=\"160.33\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"184.91\" cy=\"170.5\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"215.64\" cy=\"129.83\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"246.36\" cy=\"140\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"277.09\" cy=\"99.33\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"307.82\" cy=\"109.5\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"338.55\" cy=\"68.83\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"369.27\" cy=\"48.5\" r=\"4\" fill=\"#1f2937\"/></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$4$"
+      },
+      {
+        "id": "B",
+        "label": "$5$"
+      },
+      {
+        "id": "C",
+        "label": "$6$"
+      },
+      {
+        "id": "D",
+        "label": "$10$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "A point's actual value is greater than the predicted value when the point lies above the line. Comparing each point with $1.5x + 4$: the points at $x = 1, 3, 5, 7, 9, 10$ lie above the line and the points at $x = 2, 4, 6, 8$ lie below it, so 6 points have actual values greater than predicted. Choice C is correct. Choice A is incorrect. This is the number of points below the line, where the actual value is less than the predicted value. Choice B is incorrect. This assumes a line of best fit always has exactly half the points above it; here 6 points lie above the line. Choice D is incorrect. This counts every data point."
+  },
+  {
+    "slug": "psda-twovar-009",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "two_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The table shows the estimated number of fish in a lake every $2$ years. Which type of model best fits the data?",
+    "table": {
+      "headers": [
+        "Years since 2010",
+        "Estimated number of fish"
+      ],
+      "rows": [
+        [
+          "0",
+          "8,000"
+        ],
+        [
+          "2",
+          "7,200"
+        ],
+        [
+          "4",
+          "6,480"
+        ],
+        [
+          "6",
+          "5,832"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "Increasing linear"
+      },
+      {
+        "id": "B",
+        "label": "Decreasing linear"
+      },
+      {
+        "id": "C",
+        "label": "Increasing exponential"
+      },
+      {
+        "id": "D",
+        "label": "Decreasing exponential"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Each value is $0.9$ times the previous value: $\\frac{7{,}200}{8{,}000} = \\frac{6{,}480}{7{,}200} = \\frac{5{,}832}{6{,}480} = 0.9$. A constant factor less than 1 gives a decreasing exponential model. Choice D is correct. Choice A is incorrect. The number of fish decreases over time. Choice B is incorrect. The differences between consecutive values (800, 720, 648) are not constant, so a linear model does not fit exactly. Choice C is incorrect. The values are multiplied by a constant factor, but the factor is 0.9, which is less than 1, so the model is decreasing."
+  },
+  {
+    "slug": "psda-twovar-010",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "two_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "A data analyst models the value $V$, in dollars, of a piece of equipment $t$ years after it was purchased with the equation $V = 2{,}400(0.85)^{\\frac{t}{2}}$. According to the model, the value of the equipment decreases by approximately what percent each year?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$7.5\\%$"
+      },
+      {
+        "id": "B",
+        "label": "$7.8\\%$"
+      },
+      {
+        "id": "C",
+        "label": "$15\\%$"
+      },
+      {
+        "id": "D",
+        "label": "$30\\%$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Rewrite the model as $V = 2{,}400\\left(0.85^{\\frac{1}{2}}\\right)^t$. Since $0.85^{\\frac{1}{2}} \\approx 0.922$, the value is multiplied by about 0.922 each year, a decrease of about $1 - 0.922 = 0.078$, or $7.8\\%$. Choice B is correct. Choice A is incorrect. This halves the 15% decrease, but a decrease that compounds over 2 years cannot be split evenly by halving. Choice C is incorrect. This is the percent decrease every 2 years, not every year. Choice D is incorrect. This doubles the 15% instead of finding the yearly factor $0.85^{\\frac{1}{2}}$."
+  },
+  {
+    "slug": "psda-twovar-011",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "two_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "A linear model $f$ and an exponential model $g$ are both fit to the same two data points, $(0, 64)$ and $(2, 144)$. Based on the models, how much greater is $g(6)$ than $f(6)$?",
+    "answer": [
+      "425"
+    ],
+    "explanation": "The linear model has slope $\\frac{144 - 64}{2} = 40$, so $f(x) = 64 + 40x$ and $f(6) = 304$. The exponential model is $g(x) = 64b^x$ with $64b^2 = 144$, so $b^2 = \\frac{9}{4}$ and $b = 1.5$. Then $g(6) = 64(1.5)^6 = 729$. The difference is $729 - 304 = 425$."
+  },
+  {
+    "slug": "psda-twovar-012",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "two_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "The scatterplot shows the relationship between two variables, $x$ and $y$. Which of the following equations best models the data?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 420 320\" width=\"420\" height=\"320\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"17\" role=\"img\"><title>Scatterplot of 10 points rising from about 8 at x = 1 to a peak near 20 at x = 6, then falling to about 13 at x = 10.</title><rect x=\"0\" y=\"0\" width=\"420\" height=\"320\" fill=\"#ffffff\"/><line x1=\"62\" y1=\"262\" x2=\"400\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"267\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">0</text><line x1=\"62\" y1=\"221.33\" x2=\"400\" y2=\"221.33\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"226.33\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">4</text><line x1=\"62\" y1=\"180.67\" x2=\"400\" y2=\"180.67\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"185.67\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">8</text><line x1=\"62\" y1=\"140\" x2=\"400\" y2=\"140\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"145\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">12</text><line x1=\"62\" y1=\"99.33\" x2=\"400\" y2=\"99.33\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"104.33\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">16</text><line x1=\"62\" y1=\"58.67\" x2=\"400\" y2=\"58.67\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"63.67\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">20</text><line x1=\"62\" y1=\"18\" x2=\"400\" y2=\"18\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"23\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">24</text><line x1=\"62\" y1=\"18\" x2=\"62\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"62\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">0</text><line x1=\"92.73\" y1=\"18\" x2=\"92.73\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"92.73\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">1</text><line x1=\"123.45\" y1=\"18\" x2=\"123.45\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"123.45\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">2</text><line x1=\"154.18\" y1=\"18\" x2=\"154.18\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"154.18\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">3</text><line x1=\"184.91\" y1=\"18\" x2=\"184.91\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"184.91\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">4</text><line x1=\"215.64\" y1=\"18\" x2=\"215.64\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"215.64\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">5</text><line x1=\"246.36\" y1=\"18\" x2=\"246.36\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"246.36\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">6</text><line x1=\"277.09\" y1=\"18\" x2=\"277.09\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"277.09\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">7</text><line x1=\"307.82\" y1=\"18\" x2=\"307.82\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"307.82\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">8</text><line x1=\"338.55\" y1=\"18\" x2=\"338.55\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"338.55\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">9</text><line x1=\"369.27\" y1=\"18\" x2=\"369.27\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"369.27\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">10</text><line x1=\"400\" y1=\"18\" x2=\"400\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"400\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">11</text><line x1=\"62\" y1=\"262\" x2=\"400\" y2=\"262\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><line x1=\"62\" y1=\"18\" x2=\"62\" y2=\"262\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><text x=\"231\" y=\"310\" text-anchor=\"middle\" font-size=\"16\" fill=\"#1f2937\">x</text><text x=\"18\" y=\"140\" text-anchor=\"middle\" font-size=\"16\" transform=\"rotate(-90 18 140)\" fill=\"#1f2937\">y</text><circle cx=\"92.73\" cy=\"175.58\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"123.45\" cy=\"150.17\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"154.18\" cy=\"104.42\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"184.91\" cy=\"68.83\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"215.64\" cy=\"73.92\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"246.36\" cy=\"58.67\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"277.09\" cy=\"53.58\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"307.82\" cy=\"89.17\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"338.55\" cy=\"104.42\" r=\"4\" fill=\"#1f2937\"/><circle cx=\"369.27\" cy=\"129.83\" r=\"4\" fill=\"#1f2937\"/></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$y = -0.5x^2 + 4x + 12$"
+      },
+      {
+        "id": "B",
+        "label": "$y = -2x + 30$"
+      },
+      {
+        "id": "C",
+        "label": "$y = 0.5x^2 - 6x + 38$"
+      },
+      {
+        "id": "D",
+        "label": "$y = -0.5x^2 + 6x + 2$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "The data rise to a maximum of about 20 near $x = 6$ and then fall, so the model should be a downward-opening parabola with vertex near $(6, 20)$. The equation $y = -0.5x^2 + 6x + 2$ has vertex $x = -\\frac{6}{2(-0.5)} = 6$ and $y = -18 + 36 + 2 = 20$, and it gives $y \\approx 7.5$ at $x = 1$ and $y \\approx 12$ at $x = 10$, matching the plotted points. Choice D is correct. Choice A is incorrect. This parabola opens downward but has its maximum at $x = 4$, while the data reach their greatest values near $x = 6$. Choice B is incorrect. This linear model decreases throughout, but the data increase and then decrease. Choice C is incorrect. This parabola has its vertex at $(6, 20)$ but opens upward, so it has a minimum, not a maximum, there."
+  },
+  {
+    "slug": "psda-twovar-013",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "two_variable_data",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "The table shows three values of an exponential function that models a set of data. The function can be written as $y = a(b)^x$, where $a$ and $b$ are positive constants. What is the value of $a + b$?",
+    "table": {
+      "headers": [
+        "x",
+        "y"
+      ],
+      "rows": [
+        [
+          "1",
+          "24"
+        ],
+        [
+          "2",
+          "36"
+        ],
+        [
+          "3",
+          "54"
+        ]
+      ]
+    },
+    "answer": [
+      "35/2",
+      "17.5"
+    ],
+    "explanation": "The ratio of consecutive $y$-values is $\\frac{36}{24} = \\frac{54}{36} = 1.5$, so $b = 1.5$. Then $24 = a(1.5)^1$, so $a = 16$. Therefore $a + b = 16 + 1.5 = 17.5$."
+  },
+  {
+    "slug": "psda-prob-001",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "probability_and_conditional_probability",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A bag contains $5$ red tiles, $7$ blue tiles, and $8$ green tiles. One tile is chosen at random. What is the probability that the tile is blue?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{1}{3}$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{7}{20}$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{7}{13}$"
+      },
+      {
+        "id": "D",
+        "label": "$\\frac{13}{20}$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "There are $5 + 7 + 8 = 20$ tiles, and 7 are blue, so the probability is $\\frac{7}{20}$. Choice B is correct. Choice A is incorrect. This assumes each color is equally likely, but the colors have different numbers of tiles. Choice C is incorrect. This divides the number of blue tiles by the number of tiles that are not blue, which gives odds rather than a probability. Choice D is incorrect. This is the probability that the tile is not blue."
+  },
+  {
+    "slug": "psda-prob-002",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "probability_and_conditional_probability",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "The table shows the lunch choices of $160$ students in grades 10 and 11. If one of these students is selected at random, what is the probability that the student is in grade 11 and brings a packed lunch?",
+    "table": {
+      "headers": [
+        "",
+        "Hot lunch",
+        "Packed lunch",
+        "Total"
+      ],
+      "rows": [
+        [
+          "Grade 10",
+          "42",
+          "28",
+          "70"
+        ],
+        [
+          "Grade 11",
+          "36",
+          "54",
+          "90"
+        ],
+        [
+          "Total",
+          "78",
+          "82",
+          "160"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{27}{80}$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{9}{16}$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{3}{5}$"
+      },
+      {
+        "id": "D",
+        "label": "$\\frac{27}{41}$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "There are 54 grade 11 students who bring a packed lunch out of 160 students in all, so the probability is $\\frac{54}{160} = \\frac{27}{80}$. Choice A is correct. Choice B is incorrect. This is the probability that the student is in grade 11, regardless of lunch choice. Choice C is incorrect. This is the probability that a grade 11 student brings a packed lunch; it divides by the grade 11 total instead of the total of all students. Choice D is incorrect. This is the probability that a student who brings a packed lunch is in grade 11."
+  },
+  {
+    "slug": "psda-prob-003",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "probability_and_conditional_probability",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "An integer from $1$ through $40$, inclusive, is chosen at random. What is the probability that the integer is a multiple of $6$?",
+    "answer": [
+      "3/20",
+      ".15",
+      "0.15"
+    ],
+    "explanation": "The multiples of 6 from 1 through 40 are 6, 12, 18, 24, 30, and 36, so there are 6 of them. The probability is $\\frac{6}{40} = \\frac{3}{20}$, or 0.15."
+  },
+  {
+    "slug": "psda-prob-004",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "probability_and_conditional_probability",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A spinner is divided into $8$ equal sections numbered $1$ through $8$. If the spinner is spun once, what is the probability that it lands on a number greater than $5$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{1}{8}$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{3}{8}$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{1}{2}$"
+      },
+      {
+        "id": "D",
+        "label": "$\\frac{5}{8}$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "The numbers greater than 5 are 6, 7, and 8, so the probability is $\\frac{3}{8}$. Choice B is correct. Choice A is incorrect. This is the probability of landing on one particular number. Choice C is incorrect. This counts the numbers greater than 4, not greater than 5. Choice D is incorrect. This is the probability of landing on a number less than or equal to 5."
+  },
+  {
+    "slug": "psda-prob-005",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "probability_and_conditional_probability",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The table summarizes a survey of $200$ adults about the type of home they live in and whether they own a pet. If a person who owns a pet is selected at random from this group, what is the probability that the person lives in a house?",
+    "table": {
+      "headers": [
+        "",
+        "Owns a pet",
+        "Does not own a pet",
+        "Total"
+      ],
+      "rows": [
+        [
+          "Apartment",
+          "36",
+          "54",
+          "90"
+        ],
+        [
+          "House",
+          "77",
+          "33",
+          "110"
+        ],
+        [
+          "Total",
+          "113",
+          "87",
+          "200"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{77}{200}$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{113}{200}$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{77}{113}$"
+      },
+      {
+        "id": "D",
+        "label": "$\\frac{7}{10}$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "The condition limits the group to the $36 + 77 = 113$ pet owners. Of these, 77 live in a house, so the probability is $\\frac{77}{113}$. Choice C is correct. Choice A is incorrect. This is the probability that a randomly selected adult from the whole group lives in a house and owns a pet. Choice B is incorrect. This is the probability that a randomly selected adult owns a pet. Choice D is incorrect. This is the probability that a person who lives in a house owns a pet; the condition is reversed."
+  },
+  {
+    "slug": "psda-prob-006",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "probability_and_conditional_probability",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "The table shows the results of an experiment with $120$ plants that received either fertilizer A or fertilizer B. If a plant that grew tall is selected at random, what is the probability that it received fertilizer A?",
+    "table": {
+      "headers": [
+        "",
+        "Grew tall",
+        "Stayed short",
+        "Total"
+      ],
+      "rows": [
+        [
+          "Fertilizer A",
+          "45",
+          "15",
+          "60"
+        ],
+        [
+          "Fertilizer B",
+          "30",
+          "30",
+          "60"
+        ],
+        [
+          "Total",
+          "75",
+          "45",
+          "120"
+        ]
+      ]
+    },
+    "answer": [
+      "3/5",
+      ".6",
+      "0.6"
+    ],
+    "explanation": "There are $45 + 30 = 75$ tall plants, and 45 of them received fertilizer A. The probability is $\\frac{45}{75} = \\frac{3}{5}$, or 0.6."
+  },
+  {
+    "slug": "psda-prob-007",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "probability_and_conditional_probability",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "Two fair six-sided dice, each with faces numbered $1$ through $6$, are rolled. What is the probability that the sum of the two numbers rolled is $8$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{1}{11}$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{5}{36}$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{1}{6}$"
+      },
+      {
+        "id": "D",
+        "label": "$\\frac{2}{9}$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "There are $6 \\times 6 = 36$ equally likely outcomes. A sum of 8 occurs for $(2, 6), (3, 5), (4, 4), (5, 3), (6, 2)$, which is 5 outcomes, so the probability is $\\frac{5}{36}$. Choice B is correct. Choice A is incorrect. This treats the 11 possible sums, 2 through 12, as equally likely. Choice C is incorrect. This is the probability of the most likely sum, 7, which can occur in 6 ways. Choice D is incorrect. This uses the sum itself as the number of favorable outcomes."
+  },
+  {
+    "slug": "psda-prob-008",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "probability_and_conditional_probability",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "Events $A$ and $B$ are independent. The probability of $A$ is $0.3$, and the probability of $B$ is $0.5$. What is the probability that at least one of the two events occurs?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$0.15$"
+      },
+      {
+        "id": "B",
+        "label": "$0.35$"
+      },
+      {
+        "id": "C",
+        "label": "$0.65$"
+      },
+      {
+        "id": "D",
+        "label": "$0.8$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "The probability that neither occurs is $(1 - 0.3)(1 - 0.5) = 0.35$. So the probability that at least one occurs is $1 - 0.35 = 0.65$. Choice C is correct. Choice A is incorrect. This is the probability that both events occur. Choice B is incorrect. This is the probability that neither event occurs. Choice D is incorrect. This adds the probabilities and counts the outcomes where both events occur twice."
+  },
+  {
+    "slug": "psda-prob-009",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "probability_and_conditional_probability",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "A box contains $24$ chips, each red or blue. The probability of selecting a blue chip at random is $\\frac{3}{8}$. How many red chips must be added to the box so that the probability of selecting a blue chip at random becomes $\\frac{1}{4}$?",
+    "answer": [
+      "12"
+    ],
+    "explanation": "There are $\\frac{3}{8} \\times 24 = 9$ blue chips. After adding $r$ red chips, $\\frac{9}{24 + r} = \\frac{1}{4}$, so $24 + r = 36$ and $r = 12$."
+  },
+  {
+    "slug": "psda-prob-010",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "probability_and_conditional_probability",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "A drawer contains $4$ black socks and $6$ white socks. Two socks are selected at random without replacement. What is the probability that the two socks are the same color?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{2}{15}$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{1}{3}$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{7}{15}$"
+      },
+      {
+        "id": "D",
+        "label": "$\\frac{13}{25}$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "The probability that both are black is $\\frac{4}{10} \\cdot \\frac{3}{9} = \\frac{12}{90}$, and the probability that both are white is $\\frac{6}{10} \\cdot \\frac{5}{9} = \\frac{30}{90}$. The total is $\\frac{42}{90} = \\frac{7}{15}$. Choice C is correct. Choice A is incorrect. This is the probability that both socks are black; it leaves out the case where both are white. Choice B is incorrect. This is the probability that both socks are white; it leaves out the case where both are black. Choice D is incorrect. This treats the selections as made with replacement, using $\\frac{4}{10} \\cdot \\frac{4}{10} + \\frac{6}{10} \\cdot \\frac{6}{10}$."
+  },
+  {
+    "slug": "psda-prob-011",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "probability_and_conditional_probability",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "A factory makes parts on machine A and machine B. Machine A makes $70\\%$ of the parts, and $2\\%$ of its parts are defective. Machine B makes the rest of the parts, and $5\\%$ of its parts are defective. If a defective part is selected at random, what is the probability that it was made by machine B?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{1}{20}$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{3}{10}$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{14}{29}$"
+      },
+      {
+        "id": "D",
+        "label": "$\\frac{15}{29}$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Out of all parts, $0.70 \\times 0.02 = 0.014$ are defective from A and $0.30 \\times 0.05 = 0.015$ are defective from B. Given that a part is defective, the probability it came from B is $\\frac{0.015}{0.014 + 0.015} = \\frac{15}{29}$. Choice D is correct. Choice A is incorrect. This is the probability that a part made by machine B is defective; the condition is reversed. Choice B is incorrect. This is the probability that any part, defective or not, was made by machine B. Choice C is incorrect. This is the probability that the defective part was made by machine A."
+  },
+  {
+    "slug": "psda-prob-012",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "probability_and_conditional_probability",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "A sports center surveyed its $300$ members, $180$ of whom are under $30$ years old. Each member prefers either indoor or outdoor sports. The probability that a randomly selected member prefers outdoor sports is $0.45$. Given that a member is under $30$, the probability that the member prefers outdoor sports is $0.5$. How many members who are $30$ or older prefer indoor sports?",
+    "answer": [
+      "75"
+    ],
+    "explanation": "Outdoor sports are preferred by $0.45 \\times 300 = 135$ members, including $0.5 \\times 180 = 90$ members under 30. So $135 - 90 = 45$ members aged 30 or older prefer outdoor sports. There are $300 - 180 = 120$ members aged 30 or older, so $120 - 45 = 75$ of them prefer indoor sports."
+  },
+  {
+    "slug": "psda-infer-001",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "inference_from_samples_and_margin_of_error",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A school has $2{,}000$ students. In a random sample of $250$ of these students, $60$ said they ride a bicycle to school. Based on the sample, which is the best estimate of the number of students at the school who ride a bicycle to school?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$60$"
+      },
+      {
+        "id": "B",
+        "label": "$190$"
+      },
+      {
+        "id": "C",
+        "label": "$480$"
+      },
+      {
+        "id": "D",
+        "label": "$1{,}520$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "In the sample, $\\frac{60}{250} = 0.24$ of the students ride a bicycle. Applying this to the school gives $0.24 \\times 2{,}000 = 480$ students. Choice C is correct. Choice A is incorrect. This is the number of bicycle riders in the sample, not an estimate for the whole school. Choice B is incorrect. This is the number of students in the sample who do not ride a bicycle. Choice D is incorrect. This is the estimated number of students at the school who do not ride a bicycle."
+  },
+  {
+    "slug": "psda-infer-002",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "inference_from_samples_and_margin_of_error",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A city planner wants to estimate the average number of hours per week that the city's adult residents spend commuting. Which sampling method is most likely to produce a sample that is representative of all adult residents of the city?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Selecting 400 adults at random from a complete list of the city's adult residents"
+      },
+      {
+        "id": "B",
+        "label": "Surveying 400 adults who work in the same office building"
+      },
+      {
+        "id": "C",
+        "label": "Posting an online poll and using the first 400 adults who respond"
+      },
+      {
+        "id": "D",
+        "label": "Surveying the first 400 adults who leave a downtown train station on a Monday morning"
+      }
+    ],
+    "answer": "A",
+    "explanation": "A random sample from a complete list of the population gives every adult resident an equal chance of being chosen, which makes the sample most likely to represent the population. Choice A is correct. Choice B is incorrect. People who work in one building share a commute destination and are unlikely to represent the whole city. Choice C is incorrect. Volunteers who choose to respond may differ from other residents, so the sample may be biased. Choice D is incorrect. Train commuters at one station on one morning are not typical of all adults in the city."
+  },
+  {
+    "slug": "psda-infer-003",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "inference_from_samples_and_margin_of_error",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "An inspector randomly selects $80$ light bulbs from a shipment of $4{,}000$ bulbs and finds that $3$ of the selected bulbs are defective. Based on this sample, what is the best estimate of the number of defective bulbs in the shipment?",
+    "answer": [
+      "150"
+    ],
+    "explanation": "The sample proportion of defective bulbs is $\\frac{3}{80}$. Applying it to the shipment gives $\\frac{3}{80} \\times 4{,}000 = 150$ bulbs."
+  },
+  {
+    "slug": "psda-infer-004",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "inference_from_samples_and_margin_of_error",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A random sample of a town's voters found that $42\\%$ support building a new library, with a margin of error of $3$ percentage points. Which of the following is a plausible value for the percent of all the town's voters who support building the new library?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$38\\%$"
+      },
+      {
+        "id": "B",
+        "label": "$40\\%$"
+      },
+      {
+        "id": "C",
+        "label": "$46\\%$"
+      },
+      {
+        "id": "D",
+        "label": "$50\\%$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "The plausible values are within 3 percentage points of 42%, from 39% to 45%. Of the choices, only 40% is in this interval. Choice B is correct. Choice A is incorrect. 38% is below the interval from 39% to 45% given by the estimate and its margin of error. Choice C is incorrect. 46% is above the interval from 39% to 45%. Choice D is incorrect. 50% is well above the interval from 39% to 45%."
+  },
+  {
+    "slug": "psda-infer-005",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "inference_from_samples_and_margin_of_error",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "Researchers estimated the mean amount of time that teenagers in a region spend reading each week, using a random sample of $300$ teenagers. They want to repeat the study and obtain an estimate with a smaller margin of error. Which change is most likely to achieve this?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Using a smaller random sample of teenagers from the region"
+      },
+      {
+        "id": "B",
+        "label": "Surveying only teenagers who visit the region's libraries"
+      },
+      {
+        "id": "C",
+        "label": "Surveying the same number of teenagers chosen from volunteers"
+      },
+      {
+        "id": "D",
+        "label": "Using a larger random sample of teenagers from the region"
+      }
+    ],
+    "answer": "D",
+    "explanation": "For random samples, the margin of error decreases as the sample size increases, because larger samples give estimates that vary less from sample to sample. Choice D is correct. Choice A is incorrect. Smaller samples produce more variable estimates and therefore larger margins of error. Choice B is incorrect. This introduces bias; it does not make the estimate more precise for all teenagers in the region. Choice C is incorrect. Volunteers form a biased sample, and the sample size, which drives the margin of error, is unchanged."
+  },
+  {
+    "slug": "psda-infer-006",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "inference_from_samples_and_margin_of_error",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A random sample of students at a university found that the mean amount of sleep the students in the sample got on weeknights was $6.8$ hours. The associated margin of error is $0.4$ hour. Which statement is the most appropriate conclusion?",
+    "options": [
+      {
+        "id": "A",
+        "label": "It is plausible that the mean weeknight sleep of all students at the university is between 6.4 and 7.2 hours."
+      },
+      {
+        "id": "B",
+        "label": "The mean weeknight sleep of all students at the university is greater than 7.2 hours."
+      },
+      {
+        "id": "C",
+        "label": "The mean weeknight sleep of all students at the university is exactly 6.8 hours."
+      },
+      {
+        "id": "D",
+        "label": "Every student at the university sleeps between 6.4 and 7.2 hours on weeknights."
+      }
+    ],
+    "answer": "A",
+    "explanation": "A margin of error gives an interval of plausible values for the population mean: $6.8 - 0.4 = 6.4$ to $6.8 + 0.4 = 7.2$ hours. Choice A is correct. Choice B is incorrect. 7.2 hours is the upper end of the plausible interval, so the data do not suggest a greater mean. Choice C is incorrect. 6.8 hours is an estimate from a sample; the margin of error shows that the population mean could differ from it. Choice D is incorrect. The margin of error describes the uncertainty in the estimate of the mean, not the range of individual students' sleep."
+  },
+  {
+    "slug": "psda-infer-007",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "inference_from_samples_and_margin_of_error",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A researcher selected $500$ registered voters at random from City X and found that $58\\%$ of them favor a proposal to extend library hours. To which group can the results of the survey most appropriately be generalized?",
+    "options": [
+      {
+        "id": "A",
+        "label": "All registered voters in City X"
+      },
+      {
+        "id": "B",
+        "label": "Only the 500 voters who were surveyed"
+      },
+      {
+        "id": "C",
+        "label": "All residents of City X, including those who are not registered voters"
+      },
+      {
+        "id": "D",
+        "label": "All registered voters in the country"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Results from a random sample can be generalized to the population from which the sample was drawn, which is the registered voters of City X. Choice A is correct. Choice B is incorrect. Because the sample was random, the results can be generalized beyond the 500 people surveyed to the population they were drawn from. Choice C is incorrect. Residents who are not registered voters had no chance of being selected. Choice D is incorrect. The sample was drawn only from City X, so it does not represent voters elsewhere."
+  },
+  {
+    "slug": "psda-infer-008",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "inference_from_samples_and_margin_of_error",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "In a random sample of $120$ of the $9{,}600$ households in a town, $45$ households own a dog. The margin of error for the estimated proportion of households in the town that own a dog is $0.05$. Based on this information, what is the greatest plausible number of households in the town that own a dog?",
+    "answer": [
+      "4080"
+    ],
+    "explanation": "The sample proportion is $\\frac{45}{120} = 0.375$. The greatest plausible proportion is $0.375 + 0.05 = 0.425$, and $0.425 \\times 9{,}600 = 4{,}080$ households."
+  },
+  {
+    "slug": "psda-infer-009",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "inference_from_samples_and_margin_of_error",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A store manager claims that more than half of the store's customers would use a new delivery service. In a random sample of the store's customers, $54\\%$ said they would use the service, with a margin of error of $6$ percentage points. Which statement is best supported by these results?",
+    "options": [
+      {
+        "id": "A",
+        "label": "The results show that exactly 54% of all the store's customers would use the service."
+      },
+      {
+        "id": "B",
+        "label": "The results establish the claim, because 54% is greater than 50%."
+      },
+      {
+        "id": "C",
+        "label": "The results show that the claim is false, because the margin of error is greater than 4 percentage points."
+      },
+      {
+        "id": "D",
+        "label": "The results do not establish the claim, because the plausible values include percents of 50% or less."
+      }
+    ],
+    "answer": "D",
+    "explanation": "The plausible values for the percent of all customers are $54\\% \\pm 6\\%$, or from 48% to 60%. Because this interval contains values at or below 50% as well as values above it, the data neither confirm nor refute the claim. Choice D is correct. Choice A is incorrect. 54% is an estimate from a sample, not the exact population value. Choice B is incorrect. The sample estimate is above 50%, but the plausible interval from 48% to 60% also includes values below 50%. Choice C is incorrect. Plausible values above 50% are also in the interval, so the claim is not shown to be false."
+  },
+  {
+    "slug": "psda-infer-010",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "inference_from_samples_and_margin_of_error",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "Researchers selected $300$ people at random from the list of all library card holders in a city. Of those surveyed, $34\\%$ reported reading at least $3$ books last month, with an associated margin of error of $5$ percentage points. Which conclusion is most appropriate?",
+    "options": [
+      {
+        "id": "A",
+        "label": "It is plausible that between 29% and 39% of all residents of the city read at least 3 books last month."
+      },
+      {
+        "id": "B",
+        "label": "Between 29% and 39% of the 300 people surveyed read at least 3 books last month."
+      },
+      {
+        "id": "C",
+        "label": "Exactly 34% of all library card holders in the city read at least 3 books last month."
+      },
+      {
+        "id": "D",
+        "label": "It is plausible that between 29% and 39% of all library card holders in the city read at least 3 books last month."
+      }
+    ],
+    "answer": "D",
+    "explanation": "The interval $34\\% \\pm 5\\%$, from 29% to 39%, gives plausible values for the population that was sampled: the library card holders of the city. Choice D is correct. Choice A is incorrect. The sample was drawn only from library card holders, who may read more than residents in general. Choice B is incorrect. Exactly 34% of the people surveyed did so; the interval describes the population, not the sample. Choice C is incorrect. 34% is a sample estimate; the margin of error shows the population value may differ."
+  },
+  {
+    "slug": "psda-infer-011",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "inference_from_samples_and_margin_of_error",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "For a certain survey, the margin of error is inversely proportional to the square root of the sample size. A random sample of $400$ people gives a margin of error of $5$ percentage points. Approximately what sample size would give a margin of error of $2.5$ percentage points?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$200$"
+      },
+      {
+        "id": "B",
+        "label": "$800$"
+      },
+      {
+        "id": "C",
+        "label": "$1{,}600$"
+      },
+      {
+        "id": "D",
+        "label": "$3{,}200$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "If $E = \\frac{k}{\\sqrt{n}}$, halving $E$ requires doubling $\\sqrt{n}$, which multiplies $n$ by 4. So the sample size should be $4 \\times 400 = 1{,}600$. Choice C is correct. Choice A is incorrect. This halves the sample size, which would make the margin of error larger, not smaller. Choice B is incorrect. This doubles the sample size; because the margin of error depends on the square root of the sample size, halving it requires 4 times as many people. Choice D is incorrect. This multiplies the sample size by 8, more than the factor of 4 needed."
+  },
+  {
+    "slug": "psda-infer-012",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "inference_from_samples_and_margin_of_error",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "Biologists caught, tagged, and released $120$ fish in a lake. A month later, they caught a random sample of $250$ fish from the lake and found that $15$ of them were tagged. Assuming the tagged fish mixed evenly with the rest of the population, what is the best estimate of the total number of fish in the lake?",
+    "answer": [
+      "2000"
+    ],
+    "explanation": "The proportion of tagged fish in the sample, $\\frac{15}{250}$, estimates the proportion in the lake, $\\frac{120}{N}$. Solving $\\frac{120}{N} = \\frac{15}{250}$ gives $N = \\frac{120 \\times 250}{15} = 2{,}000$."
+  },
+  {
+    "slug": "psda-claims-001",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "evaluating_statistical_claims",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A researcher surveyed adults and found that those who reported drinking more water each day also reported having fewer headaches. Participants were not assigned to drink any particular amount of water. Which conclusion is best supported by the study?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Among the people surveyed, drinking more water is associated with having fewer headaches."
+      },
+      {
+        "id": "B",
+        "label": "There is no relationship between water intake and headaches."
+      },
+      {
+        "id": "C",
+        "label": "Having fewer headaches causes people to drink more water."
+      },
+      {
+        "id": "D",
+        "label": "Drinking more water causes people to have fewer headaches."
+      }
+    ],
+    "answer": "A",
+    "explanation": "This is an observational study: the researcher recorded what people did rather than assigning treatments. It can show an association but not a cause-and-effect relationship. Choice A is correct. Choice B is incorrect. The survey did find a relationship; it just cannot show that one causes the other. Choice C is incorrect. An observational study cannot establish causation in either direction. Choice D is incorrect. Because the participants were not randomly assigned to drink different amounts, the study cannot show cause and effect."
+  },
+  {
+    "slug": "psda-claims-002",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "evaluating_statistical_claims",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "Researchers recruited $200$ volunteers and randomly assigned half of them to use a new sleep app for one month and the other half not to use it. The group using the app slept an average of $25$ minutes longer per night. Which conclusion is most appropriate?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Sleeping longer causes people to use the app."
+      },
+      {
+        "id": "B",
+        "label": "No conclusion about cause and effect can be drawn from the study."
+      },
+      {
+        "id": "C",
+        "label": "The app causes longer sleep for all adults."
+      },
+      {
+        "id": "D",
+        "label": "The app is likely to cause longer sleep for people similar to the volunteers in the study."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Because the volunteers were randomly assigned to groups, the difference in sleep can be attributed to the app. Because they were not randomly selected from a larger population, the conclusion applies to people like the volunteers. Choice D is correct. Choice A is incorrect. The researchers decided who used the app, so the direction of the effect is from the app to sleep. Choice B is incorrect. Random assignment to the two groups allows a cause-and-effect conclusion for the participants. Choice C is incorrect. The participants were volunteers, not a random sample of all adults, so the result cannot be generalized to all adults."
+  },
+  {
+    "slug": "psda-claims-003",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "evaluating_statistical_claims",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "To estimate the average number of hours that the adults in a town exercise each week, a researcher surveyed $150$ adults at the town's fitness center. Which statement best explains why the results may not be a good estimate for all adults in the town?",
+    "options": [
+      {
+        "id": "A",
+        "label": "People at a fitness center are likely to exercise more than typical adults in the town."
+      },
+      {
+        "id": "B",
+        "label": "The researcher should have asked about exercise per day instead of per week."
+      },
+      {
+        "id": "C",
+        "label": "A sample of 150 adults is too large to give a useful estimate."
+      },
+      {
+        "id": "D",
+        "label": "The town's adults all exercise the same amount, so no survey is needed."
+      }
+    ],
+    "answer": "A",
+    "explanation": "The sample was taken from a place where people go to exercise, so it overrepresents active adults. The sample is biased and not representative of all adults in the town. Choice A is correct. Choice B is incorrect. Changing the time unit does not fix the bias in who was surveyed. Choice C is incorrect. Larger samples generally give better estimates; the problem is how the sample was chosen. Choice D is incorrect. There is no reason to believe this, and it does not address the flaw in the sampling method."
+  },
+  {
+    "slug": "psda-claims-004",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "evaluating_statistical_claims",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "The bar graph shows the number of bicycles sold last month by two stores. Note that the vertical axis does not start at $0$. A newspaper claims that store B sold more than twice as many bicycles as store A. Which statement best evaluates the claim?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 420 320\" width=\"420\" height=\"320\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"17\" role=\"img\"><title>Bar graph with vertical axis starting at 88: Store A sold 92 bicycles and Store B sold 98 bicycles.</title><rect x=\"0\" y=\"0\" width=\"420\" height=\"320\" fill=\"#ffffff\"/><line x1=\"62\" y1=\"262\" x2=\"400\" y2=\"262\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"267\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">88</text><line x1=\"62\" y1=\"221.33\" x2=\"400\" y2=\"221.33\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"226.33\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">90</text><line x1=\"62\" y1=\"180.67\" x2=\"400\" y2=\"180.67\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"185.67\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">92</text><line x1=\"62\" y1=\"140\" x2=\"400\" y2=\"140\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"145\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">94</text><line x1=\"62\" y1=\"99.33\" x2=\"400\" y2=\"99.33\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"104.33\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">96</text><line x1=\"62\" y1=\"58.67\" x2=\"400\" y2=\"58.67\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"63.67\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">98</text><line x1=\"62\" y1=\"18\" x2=\"400\" y2=\"18\" stroke=\"#d1d5db\" stroke-width=\"1\"/><text x=\"54\" y=\"23\" text-anchor=\"end\" font-size=\"15\" fill=\"#1f2937\">100</text><line x1=\"62\" y1=\"262\" x2=\"400\" y2=\"262\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><line x1=\"62\" y1=\"18\" x2=\"62\" y2=\"262\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><path d=\"M56,256 L68,250 M56,262 L68,256\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><text x=\"231\" y=\"310\" text-anchor=\"middle\" font-size=\"16\" fill=\"#1f2937\">Store</text><text x=\"18\" y=\"140\" text-anchor=\"middle\" font-size=\"16\" transform=\"rotate(-90 18 140)\" fill=\"#1f2937\">Bicycles sold</text><rect x=\"95.8\" y=\"180.67\" width=\"101.4\" height=\"81.33\" fill=\"#1d4ed8\" fill-opacity=\"0.75\" stroke=\"#1f2937\" stroke-width=\"1\"/><text x=\"146.5\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">Store A</text><rect x=\"264.8\" y=\"58.67\" width=\"101.4\" height=\"203.33\" fill=\"#1d4ed8\" fill-opacity=\"0.75\" stroke=\"#1f2937\" stroke-width=\"1\"/><text x=\"315.5\" y=\"282\" text-anchor=\"middle\" font-size=\"15\" fill=\"#1f2937\">Store B</text></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "The claim is supported, because store B's bar is more than twice as tall as store A's bar."
+      },
+      {
+        "id": "B",
+        "label": "The claim is supported, because store B sold 98 bicycles, which is greater than 92."
+      },
+      {
+        "id": "C",
+        "label": "The claim cannot be evaluated without knowing each store's total revenue."
+      },
+      {
+        "id": "D",
+        "label": "The claim is not supported; store B sold only 6 more bicycles than store A, about 6.5% more."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Reading the graph, store A sold 92 bicycles and store B sold 98. Twice 92 is 184, so the claim is false. The difference is $98 - 92 = 6$, and $\\frac{6}{92} \\approx 0.065$, so store B sold about 6.5% more. Choice D is correct. Choice A is incorrect. The axis starts at 88, so bar heights exaggerate the difference; the actual counts are 92 and 98. Choice B is incorrect. Selling more is not the same as selling more than twice as many; twice 92 is 184. Choice C is incorrect. The graph gives the number of bicycles sold, which is all that is needed to evaluate the claim."
+  },
+  {
+    "slug": "psda-claims-005",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "evaluating_statistical_claims",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A city council member wants to estimate how residents feel about a proposed budget. Which survey question is most likely to produce biased results?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Do you agree that the city's wasteful new budget should be rejected?"
+      },
+      {
+        "id": "B",
+        "label": "Have you read a summary of the proposed budget?"
+      },
+      {
+        "id": "C",
+        "label": "Do you support or oppose the city's proposed budget?"
+      },
+      {
+        "id": "D",
+        "label": "How would you rate the proposed budget on a scale from 1 (strongly oppose) to 5 (strongly support)?"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Calling the budget wasteful and asking respondents to agree that it should be rejected leads them toward one answer. Leading wording like this biases survey results. Choice A is correct. Choice B is incorrect. This asks a factual question and does not push respondents toward an opinion. Choice C is incorrect. This wording presents both options neutrally. Choice D is incorrect. This gives a balanced scale with labeled ends and does not suggest an answer."
+  },
+  {
+    "slug": "psda-claims-006",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "evaluating_statistical_claims",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A study of many families found that students who take private music lessons tend to have higher math scores than students who do not. Which statement gives a possible explanation for this association that does not involve music lessons causing higher math scores?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Students who take music lessons practice their instruments."
+      },
+      {
+        "id": "B",
+        "label": "The study included many families."
+      },
+      {
+        "id": "C",
+        "label": "Math scores were measured with a standardized test."
+      },
+      {
+        "id": "D",
+        "label": "Families that can afford private lessons may also be able to provide other educational resources."
+      }
+    ],
+    "answer": "D",
+    "explanation": "A third factor, such as family resources, could make students both more likely to take lessons and more likely to score well in math. Such a confounding variable explains an association without causation. Choice D is correct. Choice A is incorrect. This describes the lessons; it does not offer another factor that could explain the higher math scores. Choice B is incorrect. A large sample does not explain the association or rule out causation. Choice C is incorrect. The way scores were measured does not provide an alternative explanation for the association."
+  },
+  {
+    "slug": "psda-claims-007",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "evaluating_statistical_claims",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "In a random sample of $1{,}000$ adults in Country X, those who reported walking at least $30$ minutes a day had lower average blood pressure than those who did not. Which conclusion is most appropriate?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Among adults in Country X, walking at least 30 minutes a day is associated with lower blood pressure."
+      },
+      {
+        "id": "B",
+        "label": "Walking at least 30 minutes a day is associated with lower blood pressure for all adults worldwide."
+      },
+      {
+        "id": "C",
+        "label": "Walking at least 30 minutes a day causes lower blood pressure among adults in Country X."
+      },
+      {
+        "id": "D",
+        "label": "There is no association, because the study was not an experiment."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Because the sample was randomly selected from adults in Country X, the association can be generalized to that population. Because the walking was not assigned, no cause-and-effect conclusion is justified. Choice A is correct. Choice B is incorrect. The sample came only from Country X, so the results can be generalized only to adults there. Choice C is incorrect. The adults chose whether to walk; without random assignment, the study cannot show causation. Choice D is incorrect. Observational studies can establish associations; they just cannot establish causation."
+  },
+  {
+    "slug": "psda-claims-008",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "evaluating_statistical_claims",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A farmer wants to determine whether a new fertilizer increases the yield of tomato plants. Which study design would best allow the farmer to conclude that the fertilizer causes a change in yield?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Let the farm workers choose which plants receive the fertilizer, and compare the yields."
+      },
+      {
+        "id": "B",
+        "label": "Apply the fertilizer to plants in the sunniest rows, and compare them with plants in the other rows."
+      },
+      {
+        "id": "C",
+        "label": "Apply the fertilizer to all plants this year and compare the yield with last year's yield."
+      },
+      {
+        "id": "D",
+        "label": "Randomly assign 60 plants from one field to receive the fertilizer or not, and compare the yields."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Random assignment of plants to treatment and control groups balances other factors, such as soil and sunlight, between the groups, so a difference in yield can be attributed to the fertilizer. Choice D is correct. Choice A is incorrect. Workers might choose healthier plants, which would bias the comparison. Choice B is incorrect. Sunlight would be confounded with the fertilizer, so its effect could not be separated. Choice C is incorrect. Weather and other conditions differ between years, so any difference cannot be attributed to the fertilizer."
+  },
+  {
+    "slug": "psda-claims-009",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "evaluating_statistical_claims",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "Two groups estimated the percent of a state's residents who favor a new park. Group 1 posted an online poll and received $5{,}000$ responses. Group 2 surveyed $400$ residents selected at random from the state's residents. Which statement is best supported?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Group 2's estimate is more reliable, because its sample was randomly selected."
+      },
+      {
+        "id": "B",
+        "label": "Neither estimate can be used, because neither group surveyed every resident."
+      },
+      {
+        "id": "C",
+        "label": "Both estimates are equally reliable, because both groups surveyed residents."
+      },
+      {
+        "id": "D",
+        "label": "Group 1's estimate is more reliable, because its sample is larger."
+      }
+    ],
+    "answer": "A",
+    "explanation": "People who choose to answer an online poll may hold stronger opinions than other residents, so Group 1's sample is likely biased. A random sample gives every resident an equal chance of selection, making Group 2's estimate more trustworthy. Choice A is correct. Choice B is incorrect. A random sample can give a reliable estimate without surveying the entire population. Choice C is incorrect. The way the residents were chosen differs, and that affects reliability. Choice D is incorrect. A large sample of volunteers can still be biased; size does not fix a biased selection method."
+  },
+  {
+    "slug": "psda-claims-010",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "evaluating_statistical_claims",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "A researcher selected $500$ residents of Town T at random and then randomly assigned half of them to receive weekly text reminders about recycling. After two months, the residents who received reminders recycled significantly more on average than the others. Which conclusion is most appropriate?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Text reminders are likely to cause an increase in recycling among residents of every town."
+      },
+      {
+        "id": "B",
+        "label": "Text reminders are associated with more recycling, but no cause-and-effect conclusion is possible."
+      },
+      {
+        "id": "C",
+        "label": "No conclusion is possible, because only 500 of the town's residents were studied."
+      },
+      {
+        "id": "D",
+        "label": "Text reminders are likely to cause an increase in recycling among residents of Town T."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Random selection from Town T allows generalization to Town T's residents, and random assignment of reminders allows a cause-and-effect conclusion. Together they support a causal conclusion for residents of Town T. Choice D is correct. Choice A is incorrect. The residents were selected only from Town T, so the results cannot be generalized beyond Town T. Choice B is incorrect. Random assignment to the two groups is what allows a cause-and-effect conclusion. Choice C is incorrect. A random sample of 500 residents is enough to draw conclusions about the town's population."
+  },
+  {
+    "slug": "psda-claims-011",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "evaluating_statistical_claims",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "In a random sample of $800$ employees of Company Q, employees who chose to work remotely reported higher job satisfaction, on average, than employees who chose to work in the office. Which conclusion is most appropriate?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Among employees of Company Q, working remotely is associated with higher job satisfaction, but the study does not show that remote work causes it."
+      },
+      {
+        "id": "B",
+        "label": "Working remotely causes higher job satisfaction among employees of Company Q."
+      },
+      {
+        "id": "C",
+        "label": "Working remotely causes higher job satisfaction for workers at all companies."
+      },
+      {
+        "id": "D",
+        "label": "The association applies only to the 800 employees surveyed."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Random sampling supports generalizing the association to all employees of Company Q. Because employees were not randomly assigned to work locations, a cause-and-effect conclusion is not supported. Choice A is correct. Choice B is incorrect. The employees chose where to work, so other differences between the groups could explain the result. Choice C is incorrect. The study supports neither causation nor generalization beyond Company Q. Choice D is incorrect. Because the sample was random, the association can be generalized to all employees of Company Q."
+  },
+  {
+    "slug": "psda-claims-012",
+    "section": "math",
+    "official_domain": "problem_solving_data_analysis",
+    "skill": "evaluating_statistical_claims",
+    "sat_domain": "problem_solving_data_analysis",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "The table shows the annual salaries, in thousands of dollars, of all $9$ employees at a small company. In an advertisement, the company claims that its typical employee earns more than $70$ thousand dollars per year. Which statement best evaluates the claim?",
+    "table": {
+      "headers": [
+        "Employee",
+        "Salary (thousands of dollars)"
+      ],
+      "rows": [
+        [
+          "1",
+          "41"
+        ],
+        [
+          "2",
+          "43"
+        ],
+        [
+          "3",
+          "44"
+        ],
+        [
+          "4",
+          "45"
+        ],
+        [
+          "5",
+          "45"
+        ],
+        [
+          "6",
+          "47"
+        ],
+        [
+          "7",
+          "48"
+        ],
+        [
+          "8",
+          "50"
+        ],
+        [
+          "9",
+          "300"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "The claim is misleading, because the mode of the salaries is 70 thousand dollars."
+      },
+      {
+        "id": "B",
+        "label": "The claim is accurate, because the mean salary is greater than 70 thousand dollars."
+      },
+      {
+        "id": "C",
+        "label": "The claim is accurate, because the range of salaries is greater than 70 thousand dollars."
+      },
+      {
+        "id": "D",
+        "label": "The claim is misleading; the mean is about 73.7 thousand dollars only because of one very high salary, and the median, 45 thousand dollars, better describes a typical employee."
+      }
+    ],
+    "answer": "D",
+    "explanation": "The sum of the salaries is $663$, so the mean is $\\frac{663}{9} \\approx 73.7$ thousand dollars. The median, the 5th value in order, is 45 thousand dollars. Because one outlier inflates the mean, the median is the better measure of a typical salary, and it is far below 70 thousand dollars. Choice D is correct. Choice A is incorrect. The mode is 45 thousand dollars, the only value that appears twice. Choice B is incorrect. The mean is pulled up by the single salary of 300 thousand dollars; 8 of the 9 employees earn 50 thousand dollars or less. Choice C is incorrect. The range measures spread, not a typical value."
+  }
+]

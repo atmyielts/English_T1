@@ -1,0 +1,2354 @@
+[
+  {
+    "slug": "geo-area-001",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "area_and_volume",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A rectangle has a length of $14$ inches and a width of $9$ inches. What is the area of the rectangle, in square inches?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$23$"
+      },
+      {
+        "id": "B",
+        "label": "$46$"
+      },
+      {
+        "id": "C",
+        "label": "$63$"
+      },
+      {
+        "id": "D",
+        "label": "$126$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "The area of a rectangle is length times width: $14 \\times 9 = 126$ square inches. Choice D is correct. Choice A is incorrect. This adds the length and width instead of multiplying them. Choice B is incorrect. This is the perimeter of the rectangle, not its area. Choice C is incorrect. This takes half of the product, which is the area of a triangle with this base and height, not of a rectangle."
+  },
+  {
+    "slug": "geo-area-002",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "area_and_volume",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "A rectangular prism has a length of $5$ centimeters, a width of $4$ centimeters, and a height of $7$ centimeters. What is the volume of the prism, in cubic centimeters?",
+    "answer": [
+      "140"
+    ],
+    "explanation": "The volume of a rectangular prism is length times width times height: $5 \\times 4 \\times 7 = 140$ cubic centimeters."
+  },
+  {
+    "slug": "geo-area-003",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "area_and_volume",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "In the figure, the triangle has a base of length $16$ and a height of $9$. What is the area of the triangle?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 400 260\" width=\"400\" height=\"260\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"17\" role=\"img\"><title>Triangle with base 16 and a dashed height of 9 drawn from the top vertex to the base.</title><rect x=\"0\" y=\"0\" width=\"400\" height=\"260\" fill=\"#ffffff\"/><polygon points=\"40,220 360,220 140,40\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"2\" stroke-linejoin=\"round\"/><line x1=\"140\" y1=\"40\" x2=\"140\" y2=\"220\" stroke=\"#1f2937\" stroke-width=\"1.5\" stroke-dasharray=\"6 4\"/><path d=\"M152,220 L152,208 L140,208\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"1.2\"/><text x=\"200\" y=\"246\" text-anchor=\"middle\" fill=\"#1f2937\">16</text><text x=\"154\" y=\"135\" fill=\"#1f2937\">9</text></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$25$"
+      },
+      {
+        "id": "B",
+        "label": "$36$"
+      },
+      {
+        "id": "C",
+        "label": "$72$"
+      },
+      {
+        "id": "D",
+        "label": "$144$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "The area of a triangle is $\\frac{1}{2} \\times \\text{base} \\times \\text{height} = \\frac{1}{2}(16)(9) = 72$. Choice C is correct. Choice A is incorrect. This adds the base and the height instead of using the area formula. Choice B is incorrect. This multiplies by $\\frac{1}{4}$ instead of $\\frac{1}{2}$. Choice D is incorrect. This is base times height without the factor of $\\frac{1}{2}$; it is the area of a rectangle."
+  },
+  {
+    "slug": "geo-area-004",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "area_and_volume",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A circle has a radius of $5$ meters. What is the area of the circle, in square meters?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$5\\pi$"
+      },
+      {
+        "id": "B",
+        "label": "$10\\pi$"
+      },
+      {
+        "id": "C",
+        "label": "$25\\pi$"
+      },
+      {
+        "id": "D",
+        "label": "$100\\pi$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "The area of a circle is $\\pi r^2 = \\pi(5)^2 = 25\\pi$ square meters. Choice C is correct. Choice A is incorrect. This multiplies $\\pi$ by the radius instead of by the square of the radius. Choice B is incorrect. This is the circumference, $2\\pi r$, not the area. Choice D is incorrect. This squares the diameter, 10, instead of the radius."
+  },
+  {
+    "slug": "geo-area-005",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "area_and_volume",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "A cube has a volume of $343$ cubic inches. What is the length of one edge of the cube, in inches?",
+    "answer": [
+      "7"
+    ],
+    "explanation": "The volume of a cube is $s^3$. Since $7^3 = 343$, the edge length is $7$ inches."
+  },
+  {
+    "slug": "geo-area-006",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "area_and_volume",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A right circular cylinder has a radius of $3$ feet and a height of $10$ feet. What is the volume of the cylinder, in cubic feet?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$30\\pi$"
+      },
+      {
+        "id": "B",
+        "label": "$60\\pi$"
+      },
+      {
+        "id": "C",
+        "label": "$90\\pi$"
+      },
+      {
+        "id": "D",
+        "label": "$360\\pi$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "The volume of a cylinder is $\\pi r^2 h = \\pi(3)^2(10) = 90\\pi$ cubic feet. Choice C is correct. Choice A is incorrect. This uses $\\pi r h$, forgetting to square the radius. Choice B is incorrect. This is the lateral surface area, $2\\pi r h$, not the volume. Choice D is incorrect. This uses the diameter, 6, in place of the radius."
+  },
+  {
+    "slug": "geo-area-007",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "area_and_volume",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A square has a perimeter of $36$ centimeters. What is the area of the square, in square centimeters?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$9$"
+      },
+      {
+        "id": "B",
+        "label": "$18$"
+      },
+      {
+        "id": "C",
+        "label": "$36$"
+      },
+      {
+        "id": "D",
+        "label": "$81$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Each side of the square has length $\\frac{36}{4} = 9$ centimeters, so the area is $9^2 = 81$ square centimeters. Choice D is correct. Choice A is incorrect. This is the side length of the square, not its area. Choice B is incorrect. This doubles the side length instead of squaring it. Choice C is incorrect. This is the perimeter of the square."
+  },
+  {
+    "slug": "geo-area-008",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "area_and_volume",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A rectangle has an area of $96$ square feet and a length of $12$ feet. What is the perimeter of the rectangle, in feet?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$8$"
+      },
+      {
+        "id": "B",
+        "label": "$20$"
+      },
+      {
+        "id": "C",
+        "label": "$28$"
+      },
+      {
+        "id": "D",
+        "label": "$40$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "The width is $\\frac{96}{12} = 8$ feet, so the perimeter is $2(12 + 8) = 40$ feet. Choice D is correct. Choice A is incorrect. This is the width of the rectangle, not its perimeter. Choice B is incorrect. This adds the length and width once; the perimeter includes each side twice. Choice C is incorrect. This adds only three of the four sides."
+  },
+  {
+    "slug": "geo-area-009",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "area_and_volume",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "In the figure, all angles are right angles. What is the area of the figure?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 360 290\" width=\"360\" height=\"290\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"17\" role=\"img\"><title>L-shaped figure: a 12 by 10 rectangle with a 5 by 4 rectangle removed from its upper right corner.</title><rect x=\"0\" y=\"0\" width=\"360\" height=\"290\" fill=\"#ffffff\"/><polygon points=\"40,250 304,250 304,118 194,118 194,30 40,30\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"2\" stroke-linejoin=\"round\"/><text x=\"172\" y=\"272\" text-anchor=\"middle\" fill=\"#1f2937\">12</text><text x=\"24\" y=\"145\" text-anchor=\"end\" fill=\"#1f2937\">10</text><text x=\"249\" y=\"110\" text-anchor=\"middle\" fill=\"#1f2937\">5</text><text x=\"186\" y=\"79\" text-anchor=\"end\" fill=\"#1f2937\">4</text></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$44$"
+      },
+      {
+        "id": "B",
+        "label": "$100$"
+      },
+      {
+        "id": "C",
+        "label": "$120$"
+      },
+      {
+        "id": "D",
+        "label": "$140$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "The figure is a 12-by-10 rectangle with a 5-by-4 rectangle removed. Its area is $12 \\times 10 - 5 \\times 4 = 120 - 20 = 100$. Choice B is correct. Choice A is incorrect. This is the perimeter of the figure, not its area. Choice C is incorrect. This is the area of the full 12-by-10 rectangle; it does not remove the 5-by-4 corner. Choice D is incorrect. This adds the corner's area instead of subtracting it."
+  },
+  {
+    "slug": "geo-area-010",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "area_and_volume",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "Each of the length, width, and height of a rectangular box is multiplied by $3$. The volume of the new box is how many times the volume of the original box?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$3$"
+      },
+      {
+        "id": "B",
+        "label": "$6$"
+      },
+      {
+        "id": "C",
+        "label": "$9$"
+      },
+      {
+        "id": "D",
+        "label": "$27$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "If the dimensions are $l$, $w$, and $h$, the new volume is $(3l)(3w)(3h) = 27lwh$, which is 27 times the original volume. Choice D is correct. Choice A is incorrect. This multiplies only one dimension by 3; all three dimensions are multiplied. Choice B is incorrect. This adds the factor 3 twice instead of multiplying it three times. Choice C is incorrect. This is the factor by which the area of each face changes, $3^2$."
+  },
+  {
+    "slug": "geo-area-011",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "area_and_volume",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "A sphere has a volume of $36\\pi$ cubic centimeters. What is the radius of the sphere, in centimeters?",
+    "answer": [
+      "3"
+    ],
+    "explanation": "The volume of a sphere is $\\frac{4}{3}\\pi r^3$. Setting $\\frac{4}{3}\\pi r^3 = 36\\pi$ gives $r^3 = 27$, so $r = 3$."
+  },
+  {
+    "slug": "geo-area-012",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "area_and_volume",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A right circular cone has a radius of $6$ inches, a height of $8$ inches, and a slant height of $10$ inches. What is the volume of the cone, in cubic inches?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$16\\pi$"
+      },
+      {
+        "id": "B",
+        "label": "$96\\pi$"
+      },
+      {
+        "id": "C",
+        "label": "$120\\pi$"
+      },
+      {
+        "id": "D",
+        "label": "$288\\pi$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "The volume of a cone is $\\frac{1}{3}\\pi r^2 h = \\frac{1}{3}\\pi(6)^2(8) = 96\\pi$ cubic inches. Choice B is correct. Choice A is incorrect. This uses the radius instead of the square of the radius. Choice C is incorrect. This uses the slant height, 10, in place of the height, 8. Choice D is incorrect. This is $\\pi r^2 h$, the volume of a cylinder; the cone's volume includes a factor of $\\frac{1}{3}$."
+  },
+  {
+    "slug": "geo-area-013",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "area_and_volume",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A trapezoid has parallel bases of lengths $10$ and $16$ and a height of $7$. What is the area of the trapezoid?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$70$"
+      },
+      {
+        "id": "B",
+        "label": "$91$"
+      },
+      {
+        "id": "C",
+        "label": "$112$"
+      },
+      {
+        "id": "D",
+        "label": "$182$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "The area of a trapezoid is $\\frac{1}{2}(b_1 + b_2)h = \\frac{1}{2}(10 + 16)(7) = 91$. Choice B is correct. Choice A is incorrect. This uses only the shorter base. Choice C is incorrect. This uses only the longer base. Choice D is incorrect. This leaves out the factor of $\\frac{1}{2}$ in the trapezoid area formula."
+  },
+  {
+    "slug": "geo-area-014",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "area_and_volume",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "A rectangular tank has a base that is $40$ centimeters by $25$ centimeters. The tank contains water to a depth of $18$ centimeters. When a rock is placed in the tank and completely submerged, the water level rises to $21$ centimeters. What is the volume of the rock, in cubic centimeters?",
+    "answer": [
+      "3000"
+    ],
+    "explanation": "The rock displaces water with a volume equal to its own. The water rises $21 - 18 = 3$ centimeters over a base of $40 \\times 25 = 1{,}000$ square centimeters, so the rock's volume is $1{,}000 \\times 3 = 3{,}000$ cubic centimeters."
+  },
+  {
+    "slug": "geo-area-015",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "area_and_volume",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A cube has a volume of $125$ cubic meters. What is the total surface area of the cube, in square meters?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$25$"
+      },
+      {
+        "id": "B",
+        "label": "$100$"
+      },
+      {
+        "id": "C",
+        "label": "$125$"
+      },
+      {
+        "id": "D",
+        "label": "$150$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "The edge length is $\\sqrt[3]{125} = 5$ meters. Each face has area $5^2 = 25$ square meters, so the surface area is $6 \\times 25 = 150$ square meters. Choice D is correct. Choice A is incorrect. This is the area of one face; a cube has 6 faces. Choice B is incorrect. This counts only 4 of the cube's 6 faces. Choice C is incorrect. This is the volume of the cube, not its surface area."
+  },
+  {
+    "slug": "geo-area-016",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "area_and_volume",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A right circular cylinder has a volume of $200\\pi$ cubic inches and a radius of $5$ inches. What is the height of the cylinder, in inches?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{8}{5}$"
+      },
+      {
+        "id": "B",
+        "label": "$2$"
+      },
+      {
+        "id": "C",
+        "label": "$4$"
+      },
+      {
+        "id": "D",
+        "label": "$8$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "From $V = \\pi r^2 h$: $200\\pi = \\pi(5)^2 h = 25\\pi h$, so $h = \\frac{200}{25} = 8$ inches. Choice D is correct. Choice A is incorrect. This divides by $r^3$ instead of by $r^2$. Choice B is incorrect. This uses the diameter, 10, in place of the radius, dividing 200 by $10^2$. Choice C is incorrect. This divides by $2r^2$, as if the volume formula were $2\\pi r^2 h$."
+  },
+  {
+    "slug": "geo-area-017",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "area_and_volume",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A rectangular prism has a square base and a height of $5$ units. The volume of the prism is $180$ cubic units. What is the total surface area of the prism, in square units?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$120$"
+      },
+      {
+        "id": "B",
+        "label": "$132$"
+      },
+      {
+        "id": "C",
+        "label": "$156$"
+      },
+      {
+        "id": "D",
+        "label": "$192$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "The base area is $\\frac{180}{5} = 36$, so each side of the base is 6. The surface area is two bases plus four rectangular sides: $2(36) + 4(6 \\times 5) = 72 + 120 = 192$. Choice D is correct. Choice A is incorrect. This is the lateral area only; it leaves out the two square bases. Choice B is incorrect. This includes only two of the four rectangular faces. Choice C is incorrect. This includes only one of the two square bases."
+  },
+  {
+    "slug": "geo-area-018",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "area_and_volume",
+    "sat_domain": "geometry_trig",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "Two right circular cylinders are similar. The ratio of the radius of the smaller cylinder to the radius of the larger cylinder is $2 : 3$. The volume of the smaller cylinder is $48\\pi$ cubic centimeters. What is the volume of the larger cylinder, in cubic centimeters?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$72\\pi$"
+      },
+      {
+        "id": "B",
+        "label": "$96\\pi$"
+      },
+      {
+        "id": "C",
+        "label": "$108\\pi$"
+      },
+      {
+        "id": "D",
+        "label": "$162\\pi$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "For similar solids, volumes scale by the cube of the scale factor. The scale factor from small to large is $\\frac{3}{2}$, so the larger volume is $48\\pi \\left(\\frac{3}{2}\\right)^3 = 48\\pi \\cdot \\frac{27}{8} = 162\\pi$ cubic centimeters. Choice D is correct. Choice A is incorrect. This scales the volume by the linear ratio $\\frac{3}{2}$; volumes scale by the cube of that ratio. Choice B is incorrect. This doubles the volume, which does not use the given ratio. Choice C is incorrect. This scales the volume by the square of the ratio, which is how areas scale."
+  },
+  {
+    "slug": "geo-area-019",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "area_and_volume",
+    "sat_domain": "geometry_trig",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "A container is shaped like a right circular cone with its vertex pointing down. The cone has a radius of $6$ inches and a height of $12$ inches. Water fills the container to a depth of $8$ inches. The volume of the water is $k\\pi$ cubic inches. What is the value of $k$?",
+    "answer": [
+      "128/3",
+      "42.66",
+      "42.67"
+    ],
+    "explanation": "The water forms a smaller cone similar to the container. Its radius is $6 \\cdot \\frac{8}{12} = 4$ inches. Its volume is $\\frac{1}{3}\\pi(4)^2(8) = \\frac{128}{3}\\pi$, so $k = \\frac{128}{3}$, or about 42.67."
+  },
+  {
+    "slug": "geo-area-020",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "area_and_volume",
+    "sat_domain": "geometry_trig",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "In the figure, a square is inscribed in a circle with radius $5$. What is the area of the region inside the circle but outside the square?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 360 300\" width=\"360\" height=\"300\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"17\" role=\"img\"><title>Square with all four vertices on a circle; a radius of length 5 is drawn from the center to a vertex.</title><rect x=\"0\" y=\"0\" width=\"360\" height=\"300\" fill=\"#ffffff\"/><circle cx=\"180\" cy=\"150\" r=\"110\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"2\"/><polygon points=\"257.78,227.78 102.22,227.78 102.22,72.22 257.78,72.22\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"2\" stroke-linejoin=\"round\"/><circle cx=\"180\" cy=\"150\" r=\"3\" fill=\"#1f2937\"/><line x1=\"180\" y1=\"150\" x2=\"257.78\" y2=\"227.78\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><text x=\"227.38\" y=\"185.41\" text-anchor=\"middle\" fill=\"#1f2937\">5</text></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$25\\pi - 100$"
+      },
+      {
+        "id": "B",
+        "label": "$100 - 25\\pi$"
+      },
+      {
+        "id": "C",
+        "label": "$25\\pi - 50$"
+      },
+      {
+        "id": "D",
+        "label": "$25\\pi - 25$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "The diagonal of the square is a diameter, 10. A square with diagonal 10 has side $\\frac{10}{\\sqrt{2}} = 5\\sqrt{2}$ and area $(5\\sqrt{2})^2 = 50$. The circle's area is $25\\pi$, so the region has area $25\\pi - 50$. Choice C is correct. Choice A is incorrect. This uses 100 for the square's area, as if its side were the diameter 10; the diameter is the square's diagonal. Choice B is incorrect. This subtracts the circle's area from the area of a square with side 10, which is the square circumscribed about the circle. Choice D is incorrect. This uses 25 for the square's area, as if its side were the radius 5; the side is $5\\sqrt{2}$."
+  },
+  {
+    "slug": "geo-area-021",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "area_and_volume",
+    "sat_domain": "geometry_trig",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "A regular hexagon has a side length of $6$. What is the area of the hexagon?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$9\\sqrt{3}$"
+      },
+      {
+        "id": "B",
+        "label": "$54\\sqrt{3}$"
+      },
+      {
+        "id": "C",
+        "label": "$108\\sqrt{3}$"
+      },
+      {
+        "id": "D",
+        "label": "$216$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "A regular hexagon with side 6 can be divided into 6 equilateral triangles with side 6. Each triangle has area $\\frac{\\sqrt{3}}{4}(6)^2 = 9\\sqrt{3}$, so the hexagon's area is $6 \\times 9\\sqrt{3} = 54\\sqrt{3}$. Choice B is correct. Choice A is incorrect. This is the area of just one of the six equilateral triangles that make up the hexagon. Choice C is incorrect. This finds each triangle's area as base times height without the factor of $\\frac{1}{2}$. Choice D is incorrect. This treats the hexagon as six squares with side 6."
+  },
+  {
+    "slug": "geo-area-022",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "area_and_volume",
+    "sat_domain": "geometry_trig",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "A right pyramid has a square base with side length $10$ meters. The slant height of each triangular face, measured from the midpoint of a base edge to the apex, is $13$ meters. What is the volume of the pyramid, in cubic meters?",
+    "answer": [
+      "400"
+    ],
+    "explanation": "The height, half the base side (5), and the slant height (13) form a right triangle, so the height is $\\sqrt{13^2 - 5^2} = 12$ meters. The volume is $\\frac{1}{3}(10^2)(12) = 400$ cubic meters."
+  },
+  {
+    "slug": "geo-area-023",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "area_and_volume",
+    "sat_domain": "geometry_trig",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "A sphere and a right circular cylinder have the same radius $r$ and the same volume. Which expression represents the height of the cylinder in terms of $r$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{r}{3}$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{3r}{4}$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{4r}{3}$"
+      },
+      {
+        "id": "D",
+        "label": "$2r$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Set the volumes equal: $\\pi r^2 h = \\frac{4}{3}\\pi r^3$. Dividing both sides by $\\pi r^2$ gives $h = \\frac{4}{3}r$. Choice C is correct. Choice A is incorrect. This drops the factor of 4 from the sphere volume formula. Choice B is incorrect. This inverts the ratio when solving $\\pi r^2 h = \\frac{4}{3}\\pi r^3$. Choice D is incorrect. This is the height of a cylinder that just encloses the sphere, which has a greater volume than the sphere."
+  },
+  {
+    "slug": "geo-lines-001",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "lines_angles_triangles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "In the figure, line $\\ell$ is parallel to line $m$. What is the value of $x$?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 420 300\" width=\"420\" height=\"300\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"17\" role=\"img\"><title>Two parallel horizontal lines l and m cut by a transversal; the upper angle is labeled 65 degrees and an angle at the lower intersection is labeled x degrees.</title><rect x=\"0\" y=\"0\" width=\"420\" height=\"300\" fill=\"#ffffff\"/><line x1=\"20\" y1=\"90\" x2=\"396\" y2=\"90\" stroke=\"#1f2937\" stroke-width=\"2\"/><line x1=\"20\" y1=\"210\" x2=\"396\" y2=\"210\" stroke=\"#1f2937\" stroke-width=\"2\"/><line x1=\"150\" y1=\"280\" x2=\"271.24\" y2=\"20\" stroke=\"#1f2937\" stroke-width=\"2\"/><text x=\"404\" y=\"96\" font-style=\"italic\" fill=\"#1f2937\">ℓ</text><text x=\"404\" y=\"216\" font-style=\"italic\" fill=\"#1f2937\">m</text><path d=\"M247.05,71.87 A20,20 0 0 1 258.6,90\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"1.2\"/><text x=\"270.65\" y=\"74.58\" text-anchor=\"middle\" fill=\"#1f2937\">65°</text><path d=\"M202.64,210 A20,20 0 0 1 174.19,228.13\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"1.2\"/><text x=\"204.13\" y=\"248.74\" text-anchor=\"middle\" fill=\"#1f2937\">x°</text></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$25$"
+      },
+      {
+        "id": "B",
+        "label": "$50$"
+      },
+      {
+        "id": "C",
+        "label": "$65$"
+      },
+      {
+        "id": "D",
+        "label": "$115$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "At the lower intersection, the angle between line $m$ (to the right) and the transversal (going up) corresponds to the 65° angle, so it also measures 65°. That angle and the angle marked $x°$ form a linear pair, so $x = 180 - 65 = 115$. Choice D is correct. Choice A is incorrect. This finds the complement of 65°, but the angles form a linear pair relationship, not a right angle. Choice B is incorrect. This subtracts 65° twice from 180°, as if two 65° angles and the angle marked $x°$ formed a straight angle. Choice C is incorrect. This assumes the two marked angles are congruent, but they are on opposite sides of the transversal relative to the parallel lines, so they are supplementary."
+  },
+  {
+    "slug": "geo-lines-002",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "lines_angles_triangles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "Two angles of a triangle measure $48°$ and $67°$. What is the measure, in degrees, of the third angle?",
+    "answer": [
+      "65"
+    ],
+    "explanation": "The angles of a triangle add to $180°$, so the third angle measures $180 - 48 - 67 = 65$ degrees."
+  },
+  {
+    "slug": "geo-lines-003",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "lines_angles_triangles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "Two lines intersect, forming a pair of vertical angles with measures $(3x + 10)°$ and $(5x - 20)°$. What is the value of $x$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$5$"
+      },
+      {
+        "id": "B",
+        "label": "$15$"
+      },
+      {
+        "id": "C",
+        "label": "$23.75$"
+      },
+      {
+        "id": "D",
+        "label": "$55$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Vertical angles are congruent, so $3x + 10 = 5x - 20$. Then $30 = 2x$ and $x = 15$. Choice B is correct. Choice A is incorrect. This combines the constants incorrectly, using $2x = 20 - 10$ instead of $2x = 10 + 20$. Choice C is incorrect. This treats the angles as supplementary, but vertical angles are congruent. Choice D is incorrect. This is the measure of each angle, not the value of $x$."
+  },
+  {
+    "slug": "geo-lines-004",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "lines_angles_triangles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "In isosceles triangle $ABC$, $AB = AC$ and the measure of angle $A$ is $40°$. What is the measure of angle $B$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$40^\\circ$"
+      },
+      {
+        "id": "B",
+        "label": "$70^\\circ$"
+      },
+      {
+        "id": "C",
+        "label": "$100^\\circ$"
+      },
+      {
+        "id": "D",
+        "label": "$140^\\circ$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Since $AB = AC$, the base angles $B$ and $C$ are congruent. Each measures $\\frac{180 - 40}{2} = 70°$. Choice B is correct. Choice A is incorrect. Angle $B$ is a base angle; it is not congruent to the vertex angle $A$. Choice C is incorrect. This assumes angle $B$ equals angle $A$ and finds angle $C$ from that. Choice D is incorrect. This is the sum of the two base angles, not the measure of one of them."
+  },
+  {
+    "slug": "geo-lines-005",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "lines_angles_triangles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "Three angles together form a straight angle. Their measures are $x°$, $2x°$, and $3x°$. What is the value of $x$?",
+    "answer": [
+      "30"
+    ],
+    "explanation": "The angles add to $180°$, so $x + 2x + 3x = 6x = 180$, and $x = 30$."
+  },
+  {
+    "slug": "geo-lines-006",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "lines_angles_triangles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "An exterior angle of a triangle measures $120°$. One of the two interior angles not adjacent to it measures $45°$. What is the measure of the other nonadjacent interior angle?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$45^\\circ$"
+      },
+      {
+        "id": "B",
+        "label": "$60^\\circ$"
+      },
+      {
+        "id": "C",
+        "label": "$75^\\circ$"
+      },
+      {
+        "id": "D",
+        "label": "$135^\\circ$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "An exterior angle equals the sum of the two nonadjacent interior angles. So the other angle measures $120 - 45 = 75°$. Choice C is correct. Choice A is incorrect. This assumes the two nonadjacent interior angles are congruent. Choice B is incorrect. This is the interior angle adjacent to the exterior angle. Choice D is incorrect. This finds the supplement of 45°, which is not one of the triangle's angles here."
+  },
+  {
+    "slug": "geo-lines-007",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "lines_angles_triangles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "Triangle $ABC$ is similar to triangle $DEF$, where $A$, $B$, and $C$ correspond to $D$, $E$, and $F$, respectively. If $AB = 6$, $BC = 8$, and $DE = 9$, what is $EF$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{16}{3}$"
+      },
+      {
+        "id": "B",
+        "label": "$6.75$"
+      },
+      {
+        "id": "C",
+        "label": "$11$"
+      },
+      {
+        "id": "D",
+        "label": "$12$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "The scale factor from $ABC$ to $DEF$ is $\\frac{DE}{AB} = \\frac{9}{6} = 1.5$. So $EF = 1.5 \\times 8 = 12$. Choice D is correct. Choice A is incorrect. This inverts the scale factor, multiplying by $\\frac{6}{9}$ instead of $\\frac{9}{6}$. Choice B is incorrect. This matches $\\overline{AB}$ with $\\overline{EF}$ instead of with $\\overline{DE}$, computing $\\frac{6 \\cdot 9}{8}$. Choice C is incorrect. This adds the difference $9 - 6$ instead of multiplying by the scale factor."
+  },
+  {
+    "slug": "geo-lines-008",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "lines_angles_triangles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "What is the sum of the measures of the interior angles of a hexagon?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$540^\\circ$"
+      },
+      {
+        "id": "B",
+        "label": "$720^\\circ$"
+      },
+      {
+        "id": "C",
+        "label": "$900^\\circ$"
+      },
+      {
+        "id": "D",
+        "label": "$1{,}080^\\circ$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "A polygon with $n$ sides can be divided into $n - 2$ triangles, so the angle sum is $(n - 2) \\cdot 180°$. For a hexagon, $(6 - 2)(180°) = 720°$. Choice B is correct. Choice A is incorrect. This is the angle sum of a pentagon, which has 5 sides. Choice C is incorrect. This is the angle sum of a heptagon, which has 7 sides. Choice D is incorrect. This multiplies 180° by 6 instead of by $6 - 2$."
+  },
+  {
+    "slug": "geo-lines-009",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "lines_angles_triangles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "In the figure, $\\overline{DE}$ is parallel to $\\overline{BC}$. What is the length of $\\overline{EC}$? Note: Figure not drawn to scale.",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 420 290\" width=\"420\" height=\"290\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"17\" role=\"img\"><title>Triangle ABC with segment DE parallel to BC; D is on AB and E is on AC. AD = 4, DB = 6, AE = 5.</title><rect x=\"0\" y=\"0\" width=\"420\" height=\"290\" fill=\"#ffffff\"/><polygon points=\"200,30 60,250 360,250\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"2\" stroke-linejoin=\"round\"/><line x1=\"144\" y1=\"118\" x2=\"264\" y2=\"118\" stroke=\"#1f2937\" stroke-width=\"2\"/><text x=\"200\" y=\"22\" text-anchor=\"middle\" fill=\"#1f2937\">A</text><text x=\"48\" y=\"256\" text-anchor=\"middle\" fill=\"#1f2937\">B</text><text x=\"372\" y=\"256\" text-anchor=\"middle\" fill=\"#1f2937\">C</text><text x=\"130\" y=\"122\" text-anchor=\"middle\" fill=\"#1f2937\">D</text><text x=\"278\" y=\"122\" text-anchor=\"middle\" fill=\"#1f2937\">E</text><text x=\"160.19\" y=\"71.48\" text-anchor=\"middle\" fill=\"#1f2937\">4</text><text x=\"90.19\" y=\"181.48\" text-anchor=\"middle\" fill=\"#1f2937\">6</text><text x=\"243.32\" y=\"70.77\" text-anchor=\"middle\" fill=\"#1f2937\">5</text></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{10}{3}$"
+      },
+      {
+        "id": "B",
+        "label": "$4.8$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{15}{2}$"
+      },
+      {
+        "id": "D",
+        "label": "$\\frac{25}{2}$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Because $\\overline{DE} \\parallel \\overline{BC}$, the segment divides the two sides proportionally: $\\frac{AD}{DB} = \\frac{AE}{EC}$. So $\\frac{4}{6} = \\frac{5}{EC}$ and $EC = \\frac{30}{4} = 7.5$. Choice C is correct. Choice A is incorrect. This sets up the proportion with $AD$ and $DB$ in the wrong places, $\\frac{6}{4} = \\frac{5}{EC}$. Choice B is incorrect. This multiplies $DB$ by $AD$ and divides by $AE$, which does not match corresponding parts. Choice D is incorrect. This is the length of $\\overline{AC}$, found from $\\frac{AD}{AB} = \\frac{AE}{AC}$, not the length of $\\overline{EC}$."
+  },
+  {
+    "slug": "geo-lines-010",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "lines_angles_triangles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "At the same time of day, a person who is $1.8$ meters tall casts a shadow $2.4$ meters long, and a tree casts a shadow $16$ meters long. What is the height of the tree, in meters?",
+    "answer": [
+      "12"
+    ],
+    "explanation": "The sun's rays make similar right triangles, so $\\frac{\\text{height}}{\\text{shadow}}$ is the same: $\\frac{1.8}{2.4} = \\frac{h}{16}$. Then $h = 16 \\times 0.75 = 12$ meters."
+  },
+  {
+    "slug": "geo-lines-011",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "lines_angles_triangles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "Each interior angle of a regular polygon measures $140°$. How many sides does the polygon have?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$9$"
+      },
+      {
+        "id": "B",
+        "label": "$10$"
+      },
+      {
+        "id": "C",
+        "label": "$11$"
+      },
+      {
+        "id": "D",
+        "label": "$12$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Each exterior angle measures $180 - 140 = 40°$, and the exterior angles of a polygon add to $360°$. So the polygon has $\\frac{360}{40} = 9$ sides. Choice A is correct. Choice B is incorrect. A regular decagon has interior angles of $180 - 36 = 144°$. Choice C is incorrect. A regular polygon with 11 sides has interior angles of about 147.3°. Choice D is incorrect. A regular dodecagon has interior angles of $180 - 30 = 150°$."
+  },
+  {
+    "slug": "geo-lines-012",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "lines_angles_triangles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "Two sides of a triangle have lengths $7$ and $12$. Which of the following could be the length of the third side?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$2$"
+      },
+      {
+        "id": "B",
+        "label": "$4$"
+      },
+      {
+        "id": "C",
+        "label": "$5$"
+      },
+      {
+        "id": "D",
+        "label": "$18$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "By the triangle inequality, the third side $s$ must satisfy $12 - 7 < s < 12 + 7$, or $5 < s < 19$. Only 18 is in this range. Choice D is correct. Choice A is incorrect. A side of length 2 would be too short: $7 + 2 = 9$, which is less than 12. Choice B is incorrect. A side of length 4 would be too short: $7 + 4 = 11$, which is less than 12. Choice C is incorrect. A side of length 5 would make $7 + 5 = 12$, equal to the third side, so the triangle would collapse into a segment."
+  },
+  {
+    "slug": "geo-lines-013",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "lines_angles_triangles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A transversal intersects two parallel lines, forming alternate interior angles with measures $(2x + 15)°$ and $(3x - 40)°$. What is the measure of one of these angles, in degrees?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$41$"
+      },
+      {
+        "id": "B",
+        "label": "$55$"
+      },
+      {
+        "id": "C",
+        "label": "$97$"
+      },
+      {
+        "id": "D",
+        "label": "$125$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Alternate interior angles formed by parallel lines are congruent: $2x + 15 = 3x - 40$, so $x = 55$. Each angle measures $2(55) + 15 = 125°$. Choice D is correct. Choice A is incorrect. This is the value of $x$ when the angles are treated as supplementary; alternate interior angles are congruent. Choice B is incorrect. This is the value of $x$, not the measure of the angle. Choice C is incorrect. This is the angle measure that results from treating the angles as supplementary."
+  },
+  {
+    "slug": "geo-lines-014",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "lines_angles_triangles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "In triangle $ABC$, $AB = AC$. The measure of angle $B$ is $(3x + 5)°$ and the measure of angle $C$ is $(5x - 25)°$. What is the measure of angle $A$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$50^\\circ$"
+      },
+      {
+        "id": "B",
+        "label": "$80^\\circ$"
+      },
+      {
+        "id": "C",
+        "label": "$100^\\circ$"
+      },
+      {
+        "id": "D",
+        "label": "$130^\\circ$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Since $AB = AC$, angles $B$ and $C$ are congruent: $3x + 5 = 5x - 25$, so $x = 15$ and each base angle is $50°$. Then angle $A$ measures $180 - 2(50) = 80°$. Choice B is correct. Choice A is incorrect. This is the measure of angle $B$ (and angle $C$), not angle $A$. Choice C is incorrect. This is the sum of the two base angles, not the measure of angle $A$. Choice D is incorrect. This subtracts only one base angle from 180°."
+  },
+  {
+    "slug": "geo-lines-015",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "lines_angles_triangles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "Two triangles are similar. A side of the smaller triangle has length $4$, and the corresponding side of the larger triangle has length $10$. The area of the smaller triangle is $12$. What is the area of the larger triangle?",
+    "answer": [
+      "75"
+    ],
+    "explanation": "The scale factor is $\\frac{10}{4} = 2.5$, and areas scale by the square of the scale factor: $12 \\times 2.5^2 = 12 \\times 6.25 = 75$."
+  },
+  {
+    "slug": "geo-lines-016",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "lines_angles_triangles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "In the figure, line $j$ is parallel to line $k$. What is the value of $x$?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 420 290\" width=\"420\" height=\"290\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"17\" role=\"img\"><title>Two parallel horizontal lines j and k with a point P between them. Segments from P meet line j at a 38 degree angle and line k at a 47 degree angle; the angle at P is labeled x degrees.</title><rect x=\"0\" y=\"0\" width=\"420\" height=\"290\" fill=\"#ffffff\"/><line x1=\"20\" y1=\"60\" x2=\"396\" y2=\"60\" stroke=\"#1f2937\" stroke-width=\"2\"/><line x1=\"20\" y1=\"240\" x2=\"396\" y2=\"240\" stroke=\"#1f2937\" stroke-width=\"2\"/><polyline points=\"144.81,60 260,150 176.07,240\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"2\" stroke-linejoin=\"round\"/><text x=\"404\" y=\"66\" font-style=\"italic\" fill=\"#1f2937\">j</text><text x=\"404\" y=\"246\" font-style=\"italic\" fill=\"#1f2937\">k</text><path d=\"M170.81,60 A26,26 0 0 1 165.29,76.01\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"1.2\"/><text x=\"190.19\" y=\"80.63\" text-anchor=\"middle\" fill=\"#1f2937\">38°</text><path d=\"M193.81,220.98 A26,26 0 0 1 202.07,240\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"1.2\"/><text x=\"220.09\" y=\"225.86\" text-anchor=\"middle\" fill=\"#1f2937\">47°</text><path d=\"M246.36,164.63 A20,20 0 0 1 244.24,137.69\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"1.2\"/><text x=\"226\" y=\"155\" text-anchor=\"middle\" fill=\"#1f2937\">x°</text><text x=\"270\" y=\"155\" fill=\"#1f2937\">P</text></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$47$"
+      },
+      {
+        "id": "B",
+        "label": "$85$"
+      },
+      {
+        "id": "C",
+        "label": "$95$"
+      },
+      {
+        "id": "D",
+        "label": "$133$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Draw a line through $P$ parallel to $j$ and $k$. It splits the angle at $P$ into two parts that are alternate interior angles with the 38° and 47° angles. So $x = 38 + 47 = 85$. Choice B is correct. Choice A is incorrect. This uses only one of the two given angles. Choice C is incorrect. This finds the supplement of the correct angle. Choice D is incorrect. This is the supplement of 47°, which is not the angle at $P$."
+  },
+  {
+    "slug": "geo-lines-017",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "lines_angles_triangles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "In triangle $PQR$, the measure of angle $P$ is $30°$ greater than the measure of angle $Q$, and the measure of angle $R$ is twice the measure of angle $Q$. What is the measure of angle $R$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$37.5^\\circ$"
+      },
+      {
+        "id": "B",
+        "label": "$67.5^\\circ$"
+      },
+      {
+        "id": "C",
+        "label": "$75^\\circ$"
+      },
+      {
+        "id": "D",
+        "label": "$90^\\circ$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Let angle $Q$ measure $q$. Then $q + (q + 30) + 2q = 180$, so $4q = 150$ and $q = 37.5$. Angle $R$ measures $2(37.5) = 75°$. Choice C is correct. Choice A is incorrect. This is the measure of angle $Q$. Choice B is incorrect. This is the measure of angle $P$. Choice D is incorrect. This assumes the triangle is a right triangle, which is not given."
+  },
+  {
+    "slug": "geo-lines-018",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "lines_angles_triangles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "In the figure, point $D$ lies on $\\overline{AB}$, point $E$ lies on $\\overline{AC}$, and angle $ADE$ is congruent to angle $ACB$. If $AD = 4$, $AE = 6$, and $AC = 12$, what is the length of $\\overline{DB}$?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 400 280\" width=\"400\" height=\"280\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"17\" role=\"img\"><title>Triangle ABC with D on side AB and E on side AC. Segment DE is drawn. Angle ADE and angle ACB are marked congruent. AD = 4, AE = 6, AC = 12.</title><rect x=\"0\" y=\"0\" width=\"400\" height=\"280\" fill=\"#ffffff\"/><polygon points=\"40,240 364,240 178.84,74.53\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"2\" stroke-linejoin=\"round\"/><line x1=\"112\" y1=\"240\" x2=\"109.42\" y2=\"157.27\" stroke=\"#1f2937\" stroke-width=\"2\"/><text x=\"30\" y=\"258\" text-anchor=\"middle\" fill=\"#1f2937\">A</text><text x=\"374\" y=\"258\" text-anchor=\"middle\" fill=\"#1f2937\">B</text><text x=\"178.84\" y=\"64.53\" text-anchor=\"middle\" fill=\"#1f2937\">C</text><text x=\"112\" y=\"260\" text-anchor=\"middle\" fill=\"#1f2937\">D</text><text x=\"95.42\" y=\"157.27\" text-anchor=\"middle\" fill=\"#1f2937\">E</text><path d=\"M96,240 A16,16 0 0 1 111.5,224.01\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"1.2\"/><path d=\"M195.25,89.19 A22,22 0 0 1 164.7,91.39\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"1.2\"/><text x=\"76\" y=\"261\" text-anchor=\"middle\" fill=\"#1f2937\">4</text><text x=\"63.99\" y=\"194.63\" text-anchor=\"middle\" fill=\"#1f2937\">6</text><text x=\"133.41\" y=\"111.9\" text-anchor=\"middle\" fill=\"#1f2937\">6</text></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$4$"
+      },
+      {
+        "id": "B",
+        "label": "$8$"
+      },
+      {
+        "id": "C",
+        "label": "$14$"
+      },
+      {
+        "id": "D",
+        "label": "$18$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Triangles $ADE$ and $ACB$ share angle $A$, and angle $ADE \\cong$ angle $ACB$, so triangle $ADE \\sim$ triangle $ACB$ with $D \\leftrightarrow C$ and $E \\leftrightarrow B$. Then $\\frac{AD}{AC} = \\frac{AE}{AB}$, so $\\frac{4}{12} = \\frac{6}{AB}$ and $AB = 18$. Therefore $DB = 18 - 4 = 14$. Choice C is correct. Choice A is incorrect. This assumes $\\overline{DE}$ is parallel to $\\overline{BC}$, but the congruent angles make $D$ correspond to $C$, not to $B$. Choice B is incorrect. This is the length of $\\overline{AB}$ under the incorrect assumption that $\\overline{DE} \\parallel \\overline{BC}$. Choice D is incorrect. This is the length of $\\overline{AB}$; the length of $\\overline{DB}$ is $AB - AD$."
+  },
+  {
+    "slug": "geo-lines-019",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "lines_angles_triangles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "Each exterior angle of a regular polygon measures $24°$. What is the sum of the measures of the interior angles of the polygon?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$156^\\circ$"
+      },
+      {
+        "id": "B",
+        "label": "$2{,}160^\\circ$"
+      },
+      {
+        "id": "C",
+        "label": "$2{,}340^\\circ$"
+      },
+      {
+        "id": "D",
+        "label": "$2{,}700^\\circ$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "The polygon has $\\frac{360}{24} = 15$ sides. The sum of its interior angles is $(15 - 2)(180°) = 2{,}340°$. Choice C is correct. Choice A is incorrect. This is the measure of one interior angle, not the sum of all of them. Choice B is incorrect. This uses $n - 3$ triangles instead of $n - 2$. Choice D is incorrect. This multiplies 180° by the number of sides without subtracting 2."
+  },
+  {
+    "slug": "geo-lines-020",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "lines_angles_triangles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "In triangle $ABC$, the measure of angle $A$ is $64°$. The bisectors of angles $B$ and $C$ intersect at point $I$. What is the measure of angle $BIC$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$32^\\circ$"
+      },
+      {
+        "id": "B",
+        "label": "$58^\\circ$"
+      },
+      {
+        "id": "C",
+        "label": "$116^\\circ$"
+      },
+      {
+        "id": "D",
+        "label": "$122^\\circ$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Angles $B$ and $C$ add to $180 - 64 = 116°$, so half of each adds to $58°$. In triangle $BIC$, angle $BIC = 180 - 58 = 122°$. Choice D is correct. Choice A is incorrect. This halves angle $A$; the bisectors divide angles $B$ and $C$, not angle $A$. Choice B is incorrect. This is the sum of angles $IBC$ and $ICB$, not angle $BIC$. Choice C is incorrect. This is the sum of angles $B$ and $C$; the bisectors take only half of each."
+  },
+  {
+    "slug": "geo-lines-021",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "lines_angles_triangles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "Triangle $ABC$ is similar to triangle $DEF$, with $\\overline{AB}$ corresponding to $\\overline{DE}$. The area of triangle $ABC$ is $32$ and the area of triangle $DEF$ is $72$. If $AB = x$ and $DE = x + 4$, what is the value of $x$?",
+    "answer": [
+      "8"
+    ],
+    "explanation": "The ratio of the areas is $\\frac{72}{32} = \\frac{9}{4}$, so the ratio of corresponding sides is $\\sqrt{\\frac{9}{4}} = \\frac{3}{2}$. Then $\\frac{x + 4}{x} = \\frac{3}{2}$, so $2x + 8 = 3x$ and $x = 8$."
+  },
+  {
+    "slug": "geo-lines-022",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "lines_angles_triangles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "Two sides of a triangle have lengths $9$ and $15$. The third side has a length that is an integer. How many different lengths are possible for the third side?",
+    "answer": [
+      "17"
+    ],
+    "explanation": "By the triangle inequality, the third side $s$ satisfies $15 - 9 < s < 15 + 9$, or $6 < s < 24$. The integers from 7 through 23 inclusive number $23 - 7 + 1 = 17$."
+  },
+  {
+    "slug": "geo-lines-023",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "lines_angles_triangles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "In triangle $XYZ$, the measure of angle $X$ is equal to the sum of the measures of angles $Y$ and $Z$, and the measure of angle $Y$ is $4$ times the measure of angle $Z$. What is the measure of angle $Y$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$18^\\circ$"
+      },
+      {
+        "id": "B",
+        "label": "$36^\\circ$"
+      },
+      {
+        "id": "C",
+        "label": "$72^\\circ$"
+      },
+      {
+        "id": "D",
+        "label": "$90^\\circ$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Since $X = Y + Z$ and $X + Y + Z = 180$, $2X = 180$ and $X = 90$. Then $Y + Z = 90$ with $Y = 4Z$, so $5Z = 90$, $Z = 18$, and $Y = 72°$. Choice C is correct. Choice A is incorrect. This is the measure of angle $Z$. Choice B is incorrect. This divides 180° into 5 parts for angles $Y$ and $Z$, ignoring that angle $X$ takes half of the 180°. Choice D is incorrect. This is the measure of angle $X$."
+  },
+  {
+    "slug": "geo-trig-001",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "right_triangles_and_trigonometry",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "The legs of a right triangle have lengths $9$ and $12$. What is the length of the hypotenuse?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$3\\sqrt{7}$"
+      },
+      {
+        "id": "B",
+        "label": "$15$"
+      },
+      {
+        "id": "C",
+        "label": "$21$"
+      },
+      {
+        "id": "D",
+        "label": "$225$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "By the Pythagorean theorem, $c^2 = 9^2 + 12^2 = 81 + 144 = 225$, so $c = 15$. Choice B is correct. Choice A is incorrect. This is $\\sqrt{144 - 81}$, which treats 12 as the hypotenuse. Choice C is incorrect. This adds the leg lengths; the hypotenuse is found with the Pythagorean theorem. Choice D is incorrect. This is the square of the hypotenuse, not the hypotenuse."
+  },
+  {
+    "slug": "geo-trig-002",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "right_triangles_and_trigonometry",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "A right triangle has a hypotenuse of length $26$ and one leg of length $10$. What is the length of the other leg?",
+    "answer": [
+      "24"
+    ],
+    "explanation": "By the Pythagorean theorem, the other leg is $\\sqrt{26^2 - 10^2} = \\sqrt{676 - 100} = \\sqrt{576} = 24$."
+  },
+  {
+    "slug": "geo-trig-003",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "right_triangles_and_trigonometry",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "In right triangle $ABC$ shown, what is the value of $\\sin A$?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 340 270\" width=\"340\" height=\"270\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"17\" role=\"img\"><title>Right triangle ABC with the right angle at C. AC = 15, BC = 8, and AB = 17.</title><rect x=\"0\" y=\"0\" width=\"340\" height=\"270\" fill=\"#ffffff\"/><polygon points=\"50,230 290,102 290,230\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M278,230 L278,218 L290,218\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"1.2\"/><text x=\"40\" y=\"246\" text-anchor=\"middle\" fill=\"#1f2937\">A</text><text x=\"300\" y=\"98\" text-anchor=\"middle\" fill=\"#1f2937\">B</text><text x=\"302\" y=\"246\" text-anchor=\"middle\" fill=\"#1f2937\">C</text><text x=\"170\" y=\"252\" text-anchor=\"middle\" fill=\"#1f2937\">15</text><text x=\"304\" y=\"171\" fill=\"#1f2937\">8</text><text x=\"163.41\" y=\"158.65\" text-anchor=\"middle\" fill=\"#1f2937\">17</text></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{8}{17}$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{8}{15}$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{15}{17}$"
+      },
+      {
+        "id": "D",
+        "label": "$\\frac{17}{8}$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "The sine of an acute angle is the length of the opposite side divided by the hypotenuse. The side opposite angle $A$ is $BC = 8$ and the hypotenuse is 17, so $\\sin A = \\frac{8}{17}$. Choice A is correct. Choice B is incorrect. This is $\\tan A$, the opposite side over the adjacent side. Choice C is incorrect. This is $\\cos A$, the adjacent side over the hypotenuse. Choice D is incorrect. This is the hypotenuse over the opposite side, the reciprocal of $\\sin A$."
+  },
+  {
+    "slug": "geo-trig-004",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "right_triangles_and_trigonometry",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "In a right triangle, one acute angle measures $x°$, and $\\sin(x°) = 0.6$. What is the value of $\\cos((90 - x)°)$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$0.4$"
+      },
+      {
+        "id": "B",
+        "label": "$0.6$"
+      },
+      {
+        "id": "C",
+        "label": "$0.8$"
+      },
+      {
+        "id": "D",
+        "label": "$1.67$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "For complementary angles, $\\cos((90 - x)°) = \\sin(x°)$. So $\\cos((90 - x)°) = 0.6$. Choice B is correct. Choice A is incorrect. This subtracts 0.6 from 1, but sine and cosine of complementary angles are equal. Choice C is incorrect. This is $\\cos(x°)$, which is found from $\\sqrt{1 - 0.6^2}$, not $\\cos((90 - x)°)$. Choice D is incorrect. This is the reciprocal of 0.6."
+  },
+  {
+    "slug": "geo-trig-005",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "right_triangles_and_trigonometry",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "In a $30°$-$60°$-$90°$ triangle, the shortest side has length $6$. What is the length of the hypotenuse?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$6\\sqrt{2}$"
+      },
+      {
+        "id": "B",
+        "label": "$6\\sqrt{3}$"
+      },
+      {
+        "id": "C",
+        "label": "$12$"
+      },
+      {
+        "id": "D",
+        "label": "$18$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "In a $30°$-$60°$-$90°$ triangle, the sides are in the ratio $1 : \\sqrt{3} : 2$. The hypotenuse is twice the shortest side: $2 \\times 6 = 12$. Choice C is correct. Choice A is incorrect. This uses the ratio for a 45°-45°-90° triangle. Choice B is incorrect. This is the length of the longer leg, opposite the 60° angle. Choice D is incorrect. This multiplies by 3 instead of 2."
+  },
+  {
+    "slug": "geo-trig-006",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "right_triangles_and_trigonometry",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "In the right triangle shown, what is the value of $\\tan \\theta$?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 320 280\" width=\"320\" height=\"280\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"17\" role=\"img\"><title>Right triangle with the right angle at C. The horizontal leg CA = 7, the vertical leg CB = 24, the hypotenuse AB = 25, and angle theta is at vertex A.</title><rect x=\"0\" y=\"0\" width=\"320\" height=\"280\" fill=\"#ffffff\"/><polygon points=\"213,250 150,34 150,250\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M162,250 L162,238 L150,238\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"1.2\"/><path d=\"M195,250 A18,18 0 0 1 207.96,232.72\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"1.2\"/><text x=\"195\" y=\"226\" text-anchor=\"middle\" fill=\"#1f2937\">θ</text><text x=\"138\" y=\"266\" text-anchor=\"middle\" fill=\"#1f2937\">C</text><text x=\"225\" y=\"266\" text-anchor=\"middle\" fill=\"#1f2937\">A</text><text x=\"138\" y=\"32\" text-anchor=\"middle\" fill=\"#1f2937\">B</text><text x=\"181.5\" y=\"272\" text-anchor=\"middle\" fill=\"#1f2937\">7</text><text x=\"138\" y=\"142\" text-anchor=\"end\" fill=\"#1f2937\">24</text><text x=\"194.94\" y=\"143.08\" text-anchor=\"middle\" fill=\"#1f2937\">25</text></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{7}{25}$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{7}{24}$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{24}{25}$"
+      },
+      {
+        "id": "D",
+        "label": "$\\frac{24}{7}$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "The tangent is the opposite side divided by the adjacent side. The side opposite $\\theta$ is 24 and the adjacent leg is 7, so $\\tan \\theta = \\frac{24}{7}$. Choice D is correct. Choice A is incorrect. This is $\\cos \\theta$, the adjacent side over the hypotenuse. Choice B is incorrect. This is the adjacent side over the opposite side, the reciprocal of $\\tan \\theta$. Choice C is incorrect. This is $\\sin \\theta$, the opposite side over the hypotenuse."
+  },
+  {
+    "slug": "geo-trig-007",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "right_triangles_and_trigonometry",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A $13$-foot ladder leans against a vertical wall. The bottom of the ladder is $5$ feet from the base of the wall on level ground. How high up the wall, in feet, does the top of the ladder reach?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$8$"
+      },
+      {
+        "id": "B",
+        "label": "$12$"
+      },
+      {
+        "id": "C",
+        "label": "$13.9$"
+      },
+      {
+        "id": "D",
+        "label": "$18$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "The ladder is the hypotenuse of a right triangle with the ground and wall. The height is $\\sqrt{13^2 - 5^2} = \\sqrt{144} = 12$ feet. Choice B is correct. Choice A is incorrect. This subtracts the lengths instead of using the Pythagorean theorem. Choice C is incorrect. This adds the squares, treating the ladder as a leg instead of the hypotenuse. Choice D is incorrect. This adds the lengths instead of using the Pythagorean theorem."
+  },
+  {
+    "slug": "geo-trig-008",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "right_triangles_and_trigonometry",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "What is the measure of a $150°$ angle in radians?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{\\pi}{6}$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{5\\pi}{12}$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{5\\pi}{6}$"
+      },
+      {
+        "id": "D",
+        "label": "$\\frac{5\\pi}{3}$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Multiply by $\\frac{\\pi}{180}$: $150 \\cdot \\frac{\\pi}{180} = \\frac{5\\pi}{6}$ radians. Choice C is correct. Choice A is incorrect. This is $30°$ in radians. Choice B is incorrect. This is $75°$ in radians; it divides by 360 instead of 180. Choice D is incorrect. This is $300°$ in radians; it divides by 90 instead of 180."
+  },
+  {
+    "slug": "geo-trig-009",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "right_triangles_and_trigonometry",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "In the right triangle shown, what is the value of $x$?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 320 260\" width=\"320\" height=\"260\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"17\" role=\"img\"><title>Right triangle ABC with the right angle at C. Angle A measures 30 degrees, hypotenuse AB = 10, and side AC is labeled x.</title><rect x=\"0\" y=\"0\" width=\"320\" height=\"260\" fill=\"#ffffff\"/><polygon points=\"40,220 265.17,90 265.17,220\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M253.17,220 L253.17,208 L265.17,208\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"1.2\"/><path d=\"M65.98,205 A30,30 0 0 1 70,220\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"1.2\"/><text x=\"92\" y=\"214\" text-anchor=\"middle\" fill=\"#1f2937\">30°</text><text x=\"30\" y=\"236\" text-anchor=\"middle\" fill=\"#1f2937\">A</text><text x=\"275.17\" y=\"88\" text-anchor=\"middle\" fill=\"#1f2937\">B</text><text x=\"277.17\" y=\"236\" text-anchor=\"middle\" fill=\"#1f2937\">C</text><text x=\"145.58\" y=\"147.88\" text-anchor=\"middle\" fill=\"#1f2937\">10</text><text x=\"152.58\" y=\"244\" text-anchor=\"middle\" font-style=\"italic\" fill=\"#1f2937\">x</text></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$5$"
+      },
+      {
+        "id": "B",
+        "label": "$5\\sqrt{2}$"
+      },
+      {
+        "id": "C",
+        "label": "$5\\sqrt{3}$"
+      },
+      {
+        "id": "D",
+        "label": "$10\\sqrt{3}$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "In a $30°$-$60°$-$90°$ triangle, the side opposite 30° is half the hypotenuse, 5, and the side opposite 60° is $\\sqrt{3}$ times that: $x = 5\\sqrt{3}$. Equivalently, $x = 10\\cos 30° = 10 \\cdot \\frac{\\sqrt{3}}{2}$. Choice C is correct. Choice A is incorrect. This is the length of $\\overline{BC}$, the side opposite the 30° angle. Choice B is incorrect. This uses the side ratio of a 45°-45°-90° triangle. Choice D is incorrect. This multiplies the hypotenuse by $\\sqrt{3}$ instead of the shorter leg."
+  },
+  {
+    "slug": "geo-trig-010",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "right_triangles_and_trigonometry",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "In right triangle $ABC$, angle $C$ is a right angle and $\\sin A = \\frac{5}{13}$. What is the value of $\\tan A$?",
+    "answer": [
+      "5/12",
+      ".4166",
+      ".4167",
+      "0.416",
+      "0.417"
+    ],
+    "explanation": "If $\\sin A = \\frac{5}{13}$, the side opposite $A$ can be taken as 5 and the hypotenuse as 13. The adjacent side is $\\sqrt{13^2 - 5^2} = 12$, so $\\tan A = \\frac{5}{12}$."
+  },
+  {
+    "slug": "geo-trig-011",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "right_triangles_and_trigonometry",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The diagonal of a square has length $12$. What is the area of the square?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$36$"
+      },
+      {
+        "id": "B",
+        "label": "$72$"
+      },
+      {
+        "id": "C",
+        "label": "$72\\sqrt{2}$"
+      },
+      {
+        "id": "D",
+        "label": "$144$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "The diagonal of a square is $s\\sqrt{2}$, so $s = \\frac{12}{\\sqrt{2}} = 6\\sqrt{2}$. The area is $s^2 = 72$. (Equivalently, the area is $\\frac{d^2}{2} = \\frac{144}{2}$.) Choice B is correct. Choice A is incorrect. This uses half the diagonal, 6, as the side length. Choice C is incorrect. This multiplies the area by $\\sqrt{2}$ an extra time. Choice D is incorrect. This squares the diagonal, as if it were the side length."
+  },
+  {
+    "slug": "geo-trig-012",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "right_triangles_and_trigonometry",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A straight ramp is $20$ feet long and makes an angle of $12°$ with the level ground. Which of the following is closest to the vertical height of the top of the ramp above the ground, in feet?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$4.16$"
+      },
+      {
+        "id": "B",
+        "label": "$4.25$"
+      },
+      {
+        "id": "C",
+        "label": "$19.56$"
+      },
+      {
+        "id": "D",
+        "label": "$96.19$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "The ramp is the hypotenuse and the height is the side opposite the 12° angle, so the height is $20\\sin 12° \\approx 20(0.2079) \\approx 4.16$ feet. Choice A is correct. Choice B is incorrect. This uses $20\\tan 12°$, which treats the ramp as the horizontal leg instead of the hypotenuse. Choice C is incorrect. This is the horizontal distance covered by the ramp, $20\\cos 12°$. Choice D is incorrect. This divides 20 by $\\sin 12°$ instead of multiplying; the height must be less than the ramp's length."
+  },
+  {
+    "slug": "geo-trig-013",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "right_triangles_and_trigonometry",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "In the $xy$-plane, what is the distance between the points $(-2, 3)$ and $(10, 8)$?",
+    "answer": [
+      "13"
+    ],
+    "explanation": "The horizontal change is $10 - (-2) = 12$ and the vertical change is $8 - 3 = 5$. By the Pythagorean theorem, the distance is $\\sqrt{12^2 + 5^2} = \\sqrt{169} = 13$."
+  },
+  {
+    "slug": "geo-trig-014",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "right_triangles_and_trigonometry",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "For an acute angle $\\theta$, $\\cos \\theta = 0.28$. What is the value of $\\sin \\theta$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$0.0784$"
+      },
+      {
+        "id": "B",
+        "label": "$0.28$"
+      },
+      {
+        "id": "C",
+        "label": "$0.72$"
+      },
+      {
+        "id": "D",
+        "label": "$0.96$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Use $\\sin^2 \\theta + \\cos^2 \\theta = 1$: $\\sin^2 \\theta = 1 - 0.0784 = 0.9216$, so $\\sin \\theta = 0.96$ (positive because $\\theta$ is acute). Choice D is correct. Choice A is incorrect. This is $\\cos^2 \\theta$; the square root of $1 - \\cos^2 \\theta$ is still needed. Choice B is incorrect. This assumes sine equals cosine, which is true only for a 45° angle. Choice C is incorrect. This subtracts 0.28 from 1; the identity is $\\sin^2 \\theta + \\cos^2 \\theta = 1$."
+  },
+  {
+    "slug": "geo-trig-015",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "right_triangles_and_trigonometry",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A triangle has side lengths $20$, $21$, and $29$. What is the measure of the angle opposite the side of length $29$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$60^\\circ$"
+      },
+      {
+        "id": "B",
+        "label": "$75^\\circ$"
+      },
+      {
+        "id": "C",
+        "label": "$90^\\circ$"
+      },
+      {
+        "id": "D",
+        "label": "$120^\\circ$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "Since $20^2 + 21^2 = 400 + 441 = 841 = 29^2$, the converse of the Pythagorean theorem shows that the triangle is a right triangle with the right angle opposite the longest side, so the angle measures 90°. Choice C is correct. Choice A is incorrect. If the angle measured 60°, the square of 29 would be less than $20^2 + 21^2$; instead it is equal. Choice B is incorrect. This guesses an angle less than 90°, but $29^2 = 20^2 + 21^2$ exactly. Choice D is incorrect. An obtuse angle would require $29^2 > 20^2 + 21^2$."
+  },
+  {
+    "slug": "geo-trig-016",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "right_triangles_and_trigonometry",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "For acute angles measuring $(2x + 10)°$ and $(3x + 5)°$, $\\sin((2x + 10)°) = \\cos((3x + 5)°)$. What is the value of $x$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$5$"
+      },
+      {
+        "id": "B",
+        "label": "$15$"
+      },
+      {
+        "id": "C",
+        "label": "$33$"
+      },
+      {
+        "id": "D",
+        "label": "$40$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "If $\\sin a = \\cos b$ for acute angles, then $a + b = 90$. So $(2x + 10) + (3x + 5) = 90$, giving $5x = 75$ and $x = 15$. Choice B is correct. Choice A is incorrect. This sets the two angle measures equal, but sine and cosine are equal for complementary angles. Choice C is incorrect. This makes the angles supplementary, adding to 180°, instead of complementary. Choice D is incorrect. This is the measure of one of the angles, not the value of $x$."
+  },
+  {
+    "slug": "geo-trig-017",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "right_triangles_and_trigonometry",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "An isosceles triangle has side lengths $10$, $10$, and $12$. What is the area of the triangle?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$40$"
+      },
+      {
+        "id": "B",
+        "label": "$48$"
+      },
+      {
+        "id": "C",
+        "label": "$80$"
+      },
+      {
+        "id": "D",
+        "label": "$96$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "The height to the base of length 12 bisects it, forming right triangles with legs 6 and $h$ and hypotenuse 10. So $h = \\sqrt{10^2 - 6^2} = 8$, and the area is $\\frac{1}{2}(12)(8) = 48$. Choice B is correct. Choice A is incorrect. This uses 10 as the base with the height to the side of length 12. Choice C is incorrect. This multiplies a side of length 10 by the height 8 and leaves out the factor of $\\frac{1}{2}$; the height is perpendicular to the base of 12. Choice D is incorrect. This is base times height without the factor of $\\frac{1}{2}$."
+  },
+  {
+    "slug": "geo-trig-018",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "right_triangles_and_trigonometry",
+    "sat_domain": "geometry_trig",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "In the figure, triangle $ABC$ has a right angle at $C$, and $\\overline{CD}$ is the altitude to hypotenuse $\\overline{AB}$. If $AD = 4$ and $DB = 9$, what is the area of triangle $ABC$?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 380 270\" width=\"380\" height=\"270\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"17\" role=\"img\"><title>Right triangle ABC with the right angle at C. Altitude CD is drawn to hypotenuse AB, with AD = 4 and DB = 9.</title><rect x=\"0\" y=\"0\" width=\"380\" height=\"270\" fill=\"#ffffff\"/><polygon points=\"40,230 352,230 136,86\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"2\" stroke-linejoin=\"round\"/><line x1=\"136\" y1=\"86\" x2=\"136\" y2=\"230\" stroke=\"#1f2937\" stroke-width=\"1.5\" stroke-dasharray=\"6 4\"/><path d=\"M129.34,95.98 L139.33,102.64 L145.98,92.66\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"1.2\"/><path d=\"M146,230 L146,220 L136,220\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"1.2\"/><text x=\"30\" y=\"246\" text-anchor=\"middle\" fill=\"#1f2937\">A</text><text x=\"362\" y=\"246\" text-anchor=\"middle\" fill=\"#1f2937\">B</text><text x=\"136\" y=\"76\" text-anchor=\"middle\" fill=\"#1f2937\">C</text><text x=\"136\" y=\"252\" text-anchor=\"middle\" fill=\"#1f2937\">D</text><text x=\"88\" y=\"252\" text-anchor=\"middle\" fill=\"#1f2937\">4</text><text x=\"244\" y=\"252\" text-anchor=\"middle\" fill=\"#1f2937\">9</text></svg>",
+    "answer": [
+      "39"
+    ],
+    "explanation": "The altitude to the hypotenuse creates triangles $ADC$ and $CDB$, which are similar, so $\\frac{AD}{CD} = \\frac{CD}{DB}$ and $CD^2 = 4 \\cdot 9 = 36$, giving $CD = 6$. The hypotenuse is $AB = 4 + 9 = 13$, so the area is $\\frac{1}{2}(13)(6) = 39$."
+  },
+  {
+    "slug": "geo-trig-019",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "right_triangles_and_trigonometry",
+    "sat_domain": "geometry_trig",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "In right triangle $PQR$, angle $Q$ is a right angle and $\\sin P = \\frac{3}{5}$. The hypotenuse is $12$ units longer than $\\overline{QR}$. What is the length of $\\overline{PQ}$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$6$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{48}{5}$"
+      },
+      {
+        "id": "C",
+        "label": "$18$"
+      },
+      {
+        "id": "D",
+        "label": "$24$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Since $\\sin P = \\frac{QR}{PR} = \\frac{3}{5}$, write $QR = 3k$ and $PR = 5k$. Then $5k - 3k = 12$, so $k = 6$. The remaining leg is $PQ = 4k = 24$, from the 3-4-5 relationship. Choice D is correct. Choice A is incorrect. This is the value of $k$ in $QR = 3k$ and $PR = 5k$, not a side length. Choice B is incorrect. This assumes the hypotenuse itself is 12 and finds the leg as $\\frac{4}{5}$ of it. Choice C is incorrect. This is the length of $\\overline{QR}$, the side opposite angle $P$."
+  },
+  {
+    "slug": "geo-trig-020",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "right_triangles_and_trigonometry",
+    "sat_domain": "geometry_trig",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "For an acute angle $x$, $\\sin x = k$. Which expression is equal to $\\cos(90° - x) + \\sin(90° - x)$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$k + \\sqrt{1 - k^2}$"
+      },
+      {
+        "id": "B",
+        "label": "$2k$"
+      },
+      {
+        "id": "C",
+        "label": "$1$"
+      },
+      {
+        "id": "D",
+        "label": "$k + (1 - k^2)$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "By the complementary angle relationships, $\\cos(90° - x) = \\sin x = k$ and $\\sin(90° - x) = \\cos x$. Since $x$ is acute, $\\cos x = \\sqrt{1 - \\sin^2 x} = \\sqrt{1 - k^2}$. The sum is $k + \\sqrt{1 - k^2}$. Choice A is correct. Choice B is incorrect. This treats both terms as equal to $k$, but $\\sin(90° - x) = \\cos x$, not $\\sin x$. Choice C is incorrect. This assumes the two terms add to 1, which is true for their squares, not the terms themselves. Choice D is incorrect. This uses $\\cos x = 1 - k^2$ instead of $\\cos x = \\sqrt{1 - k^2}$."
+  },
+  {
+    "slug": "geo-trig-021",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "right_triangles_and_trigonometry",
+    "sat_domain": "geometry_trig",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "In the $xy$-plane, the terminal side of an angle $\\theta$ in standard position, where $0 \\le \\theta < 2\\pi$, intersects the unit circle at $\\left(-\\frac{\\sqrt{3}}{2}, \\frac{1}{2}\\right)$. What is the value of $\\theta$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{\\pi}{6}$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{2\\pi}{3}$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{5\\pi}{6}$"
+      },
+      {
+        "id": "D",
+        "label": "$\\frac{7\\pi}{6}$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "The point has $\\cos \\theta = -\\frac{\\sqrt{3}}{2}$ and $\\sin \\theta = \\frac{1}{2}$, so it is in the second quadrant with a reference angle of $\\frac{\\pi}{6}$. Then $\\theta = \\pi - \\frac{\\pi}{6} = \\frac{5\\pi}{6}$. Choice C is correct. Choice A is incorrect. This angle ends at $\\left(\\frac{\\sqrt{3}}{2}, \\frac{1}{2}\\right)$, in the first quadrant; the given point has a negative $x$-coordinate. Choice B is incorrect. This angle ends at $\\left(-\\frac{1}{2}, \\frac{\\sqrt{3}}{2}\\right)$; the coordinates are switched. Choice D is incorrect. This angle ends at $\\left(-\\frac{\\sqrt{3}}{2}, -\\frac{1}{2}\\right)$, in the third quadrant."
+  },
+  {
+    "slug": "geo-trig-022",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "right_triangles_and_trigonometry",
+    "sat_domain": "geometry_trig",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "An isosceles trapezoid has parallel bases of lengths $10$ and $22$, and each of its nonparallel sides has length $10$. What is the area of the trapezoid?",
+    "answer": [
+      "128"
+    ],
+    "explanation": "Dropping perpendiculars from the ends of the shorter base splits the longer base into $6 + 10 + 6$. Each right triangle has hypotenuse 10 and leg 6, so the height is $\\sqrt{10^2 - 6^2} = 8$. The area is $\\frac{1}{2}(10 + 22)(8) = 128$."
+  },
+  {
+    "slug": "geo-circle-001",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "circles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A circle has a radius of $9$ centimeters. What is the circumference of the circle, in centimeters?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$18\\pi$"
+      },
+      {
+        "id": "B",
+        "label": "$36\\pi$"
+      },
+      {
+        "id": "C",
+        "label": "$81\\pi$"
+      },
+      {
+        "id": "D",
+        "label": "$162\\pi$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "The circumference is $2\\pi r = 2\\pi(9) = 18\\pi$ centimeters. Choice A is correct. Choice B is incorrect. This uses $2\\pi d$, doubling the diameter. Choice C is incorrect. This is the area of the circle, $\\pi r^2$. Choice D is incorrect. This is $2\\pi r^2$, which mixes the circumference and area formulas."
+  },
+  {
+    "slug": "geo-circle-002",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "circles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "A circle has an area of $49\\pi$ square inches. What is the diameter of the circle, in inches?",
+    "answer": [
+      "14"
+    ],
+    "explanation": "From $\\pi r^2 = 49\\pi$, $r^2 = 49$ and $r = 7$. The diameter is $2r = 14$ inches."
+  },
+  {
+    "slug": "geo-circle-003",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "circles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "Which equation represents a circle in the $xy$-plane with center $(3, -2)$ and radius $5$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$(x - 3)^2 + (y + 2)^2 = 25$"
+      },
+      {
+        "id": "B",
+        "label": "$(x - 3)^2 + (y + 2)^2 = 5$"
+      },
+      {
+        "id": "C",
+        "label": "$(x + 3)^2 + (y - 2)^2 = 5$"
+      },
+      {
+        "id": "D",
+        "label": "$(x + 3)^2 + (y - 2)^2 = 25$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "A circle with center $(h, k)$ and radius $r$ has equation $(x - h)^2 + (y - k)^2 = r^2$. Here that is $(x - 3)^2 + (y - (-2))^2 = 5^2$, or $(x - 3)^2 + (y + 2)^2 = 25$. Choice A is correct. Choice B is incorrect. The right side must be the square of the radius, $5^2 = 25$. Choice C is incorrect. This has both the wrong center and the radius not squared. Choice D is incorrect. This circle has center $(-3, 2)$; the signs in the equation are opposite to the coordinates of the center."
+  },
+  {
+    "slug": "geo-circle-004",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "circles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "In the figure, $O$ is the center of the circle, and the measure of central angle $AOB$ is $80°$. What is the value of $x$?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 400 290\" width=\"400\" height=\"290\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"17\" role=\"img\"><title>Circle with center O. Points A and B are on the circle with central angle AOB of 80 degrees; point P is on the circle opposite them, and angle APB is labeled x degrees.</title><rect x=\"0\" y=\"0\" width=\"400\" height=\"290\" fill=\"#ffffff\"/><circle cx=\"200\" cy=\"150\" r=\"110\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"2\"/><line x1=\"200\" y1=\"150\" x2=\"129.29\" y2=\"234.26\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><line x1=\"200\" y1=\"150\" x2=\"270.71\" y2=\"234.26\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><line x1=\"200\" y1=\"40\" x2=\"129.29\" y2=\"234.26\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><line x1=\"200\" y1=\"40\" x2=\"270.71\" y2=\"234.26\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><circle cx=\"200\" cy=\"150\" r=\"3\" fill=\"#1f2937\"/><path d=\"M212.86,165.32 A20,20 0 0 1 187.14,165.32\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"1.2\"/><text x=\"200\" y=\"192\" text-anchor=\"middle\" fill=\"#1f2937\">80°</text><path d=\"M208.89,64.43 A26,26 0 0 1 191.11,64.43\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"1.2\"/><text x=\"200\" y=\"86\" text-anchor=\"middle\" fill=\"#1f2937\">x°</text><text x=\"214\" y=\"146\" fill=\"#1f2937\">O</text><text x=\"117.29\" y=\"248.26\" text-anchor=\"middle\" fill=\"#1f2937\">A</text><text x=\"282.71\" y=\"248.26\" text-anchor=\"middle\" fill=\"#1f2937\">B</text><text x=\"200\" y=\"32\" text-anchor=\"middle\" fill=\"#1f2937\">P</text></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$40$"
+      },
+      {
+        "id": "B",
+        "label": "$80$"
+      },
+      {
+        "id": "C",
+        "label": "$100$"
+      },
+      {
+        "id": "D",
+        "label": "$160$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "Angle $APB$ is an inscribed angle that intercepts the same arc $AB$ as central angle $AOB$. An inscribed angle measures half of the central angle, so $x = \\frac{80}{2} = 40$. Choice A is correct. Choice B is incorrect. This assumes the inscribed angle equals the central angle. Choice C is incorrect. This is the supplement of the central angle; an inscribed angle is one-half of the central angle that intercepts the same arc. Choice D is incorrect. This doubles the central angle instead of halving it."
+  },
+  {
+    "slug": "geo-circle-005",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "circles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "A circle in the $xy$-plane has equation $(x + 1)^2 + (y - 4)^2 = 36$. What is the radius of the circle?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$6$"
+      },
+      {
+        "id": "B",
+        "label": "$12$"
+      },
+      {
+        "id": "C",
+        "label": "$18$"
+      },
+      {
+        "id": "D",
+        "label": "$36$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "In the form $(x - h)^2 + (y - k)^2 = r^2$, $r^2 = 36$, so the radius is $r = 6$. Choice A is correct. Choice B is incorrect. This is the diameter of the circle, not the radius. Choice C is incorrect. This divides 36 by 2 instead of taking its square root. Choice D is incorrect. This is the square of the radius."
+  },
+  {
+    "slug": "geo-circle-006",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "circles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "spr",
+    "prompt": "A circle has a circumference of $30\\pi$ meters. What is the radius of the circle, in meters?",
+    "answer": [
+      "15"
+    ],
+    "explanation": "The circumference is $2\\pi r = 30\\pi$, so $r = 15$ meters."
+  },
+  {
+    "slug": "geo-circle-007",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "circles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "easy",
+    "format": "mcq",
+    "prompt": "In the figure, $\\overline{OP}$ is a radius of the circle with center $O$, and line $PQ$ is tangent to the circle at $P$. If the measure of angle $POQ$ is $35°$, what is the value of $x$?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 400 280\" width=\"400\" height=\"280\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"17\" role=\"img\"><title>Circle with center O and radius OP. Line through P and Q is tangent to the circle at P. Angle POQ is 35 degrees.</title><rect x=\"0\" y=\"0\" width=\"400\" height=\"280\" fill=\"#ffffff\"/><circle cx=\"150\" cy=\"120\" r=\"120\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"2\"/><line x1=\"20\" y1=\"240\" x2=\"390\" y2=\"240\" stroke=\"#1f2937\" stroke-width=\"2\"/><line x1=\"150\" y1=\"120\" x2=\"150\" y2=\"240\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><line x1=\"150\" y1=\"120\" x2=\"234.02\" y2=\"240\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><circle cx=\"150\" cy=\"120\" r=\"3\" fill=\"#1f2937\"/><path d=\"M150,228 L162,228 L162,240\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"1.2\"/><path d=\"M169.5,147.85 A34,34 0 0 1 150,154\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"1.2\"/><text x=\"166\" y=\"172\" fill=\"#1f2937\">35°</text><text x=\"138\" y=\"116\" text-anchor=\"middle\" fill=\"#1f2937\">O</text><text x=\"138\" y=\"258\" text-anchor=\"middle\" fill=\"#1f2937\">P</text><text x=\"238.02\" y=\"258\" text-anchor=\"middle\" fill=\"#1f2937\">Q</text><path d=\"M212.02,240 A22,22 0 0 1 221.41,221.98\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"1.2\"/><text x=\"195\" y=\"224.68\" text-anchor=\"middle\" fill=\"#1f2937\">x°</text></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$55$"
+      },
+      {
+        "id": "B",
+        "label": "$90$"
+      },
+      {
+        "id": "C",
+        "label": "$125$"
+      },
+      {
+        "id": "D",
+        "label": "$145$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "A tangent line is perpendicular to the radius at the point of tangency, so angle $OPQ = 90°$. In triangle $OPQ$, $x = 180 - 90 - 35 = 55$. Choice A is correct. Choice B is incorrect. This is the measure of angle $OPQ$, the angle between the radius and the tangent. Choice C is incorrect. This adds the right angle and the 35° angle; the three angles of the triangle must add to 180°. Choice D is incorrect. This subtracts only 35° from 180°, leaving out the right angle at $P$."
+  },
+  {
+    "slug": "geo-circle-008",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "circles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A circle has a radius of $12$. What is the length of an arc of the circle intercepted by a central angle of $60°$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$2\\pi$"
+      },
+      {
+        "id": "B",
+        "label": "$4\\pi$"
+      },
+      {
+        "id": "C",
+        "label": "$24\\pi$"
+      },
+      {
+        "id": "D",
+        "label": "$720$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "The arc is $\\frac{60}{360} = \\frac{1}{6}$ of the circumference. The circumference is $2\\pi(12) = 24\\pi$, so the arc length is $\\frac{24\\pi}{6} = 4\\pi$. Choice B is correct. Choice A is incorrect. This uses $\\pi r = 12\\pi$ as the circumference instead of $2\\pi r = 24\\pi$. Choice C is incorrect. This is the area of the sector, not the arc length. Choice D is incorrect. This multiplies the radius by the angle in degrees; the formula $s = r\\theta$ requires $\\theta$ in radians."
+  },
+  {
+    "slug": "geo-circle-009",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "circles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "A sector of a circle with radius $6$ has a central angle of $100°$. The area of the sector is $a\\pi$. What is the value of $a$?",
+    "answer": [
+      "10"
+    ],
+    "explanation": "The sector is $\\frac{100}{360}$ of the circle's area, $36\\pi$. So the area is $\\frac{100}{360} \\cdot 36\\pi = 10\\pi$, and $a = 10$."
+  },
+  {
+    "slug": "geo-circle-010",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "circles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A circle in the $xy$-plane has equation $x^2 + y^2 - 6x + 10y - 15 = 0$. What is the radius of the circle?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\sqrt{15}$"
+      },
+      {
+        "id": "B",
+        "label": "$7$"
+      },
+      {
+        "id": "C",
+        "label": "$15$"
+      },
+      {
+        "id": "D",
+        "label": "$49$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Complete the square: $(x^2 - 6x + 9) + (y^2 + 10y + 25) = 15 + 9 + 25$, so $(x - 3)^2 + (y + 5)^2 = 49$. The radius is $\\sqrt{49} = 7$. Choice B is correct. Choice A is incorrect. This takes the square root of the constant term, without completing the square. Choice C is incorrect. This uses the constant term as the radius. Choice D is incorrect. This is the square of the radius."
+  },
+  {
+    "slug": "geo-circle-011",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "circles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "A circle has a radius of $9$. What is the length of the arc intercepted by a central angle of $\\frac{2\\pi}{3}$ radians?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$3\\pi$"
+      },
+      {
+        "id": "B",
+        "label": "$6\\pi$"
+      },
+      {
+        "id": "C",
+        "label": "$12\\pi$"
+      },
+      {
+        "id": "D",
+        "label": "$27\\pi$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "For an angle in radians, the arc length is $s = r\\theta = 9 \\cdot \\frac{2\\pi}{3} = 6\\pi$. Choice B is correct. Choice A is incorrect. This is half the correct arc length; it uses $\\frac{\\pi}{3}$ instead of $\\frac{2\\pi}{3}$. Choice C is incorrect. This uses the diameter, 18, in place of the radius. Choice D is incorrect. This is the area of the sector, $\\frac{1}{2}r^2\\theta$."
+  },
+  {
+    "slug": "geo-circle-012",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "circles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "The point $(5, k)$ lies on the circle with equation $x^2 + y^2 = 169$. If $k > 0$, what is the value of $k$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$8$"
+      },
+      {
+        "id": "B",
+        "label": "$12$"
+      },
+      {
+        "id": "C",
+        "label": "$13$"
+      },
+      {
+        "id": "D",
+        "label": "$144$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "Substitute $x = 5$: $25 + k^2 = 169$, so $k^2 = 144$ and $k = 12$ (positive). Choice B is correct. Choice A is incorrect. This subtracts 5 from the radius instead of using $5^2 + k^2 = 169$. Choice C is incorrect. This is the radius of the circle. Choice D is incorrect. This is $k^2$, not $k$."
+  },
+  {
+    "slug": "geo-circle-013",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "circles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "spr",
+    "prompt": "From point $P$ outside a circle, two segments are drawn tangent to the circle at points $A$ and $B$. If $PA = 3x + 4$ and $PB = 5x - 6$, what is the length of $\\overline{PA}$?",
+    "answer": [
+      "19"
+    ],
+    "explanation": "Two tangent segments drawn to a circle from the same external point are congruent, so $3x + 4 = 5x - 6$, giving $x = 5$. Then $PA = 3(5) + 4 = 19$."
+  },
+  {
+    "slug": "geo-circle-014",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "circles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "In the figure, a chord of length $24$ is drawn in a circle with center $O$ and radius $13$. What is the distance $d$ from $O$ to the chord?",
+    "figure_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 400 280\" width=\"400\" height=\"280\" font-family=\"Arial, Helvetica, sans-serif\" font-size=\"17\" role=\"img\"><title>Circle with center O and radius 13. A chord of length 24 lies below the center; a dashed perpendicular segment of length d joins the center to the chord's midpoint.</title><rect x=\"0\" y=\"0\" width=\"400\" height=\"280\" fill=\"#ffffff\"/><circle cx=\"200\" cy=\"140\" r=\"117\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"2\"/><line x1=\"92\" y1=\"185\" x2=\"308\" y2=\"185\" stroke=\"#1f2937\" stroke-width=\"2\"/><line x1=\"200\" y1=\"140\" x2=\"308\" y2=\"185\" stroke=\"#1f2937\" stroke-width=\"1.5\"/><line x1=\"200\" y1=\"140\" x2=\"200\" y2=\"185\" stroke=\"#1f2937\" stroke-width=\"1.5\" stroke-dasharray=\"5 4\"/><path d=\"M210,185 L210,175 L200,175\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"1.2\"/><circle cx=\"200\" cy=\"140\" r=\"3\" fill=\"#1f2937\"/><text x=\"188\" y=\"136\" text-anchor=\"middle\" fill=\"#1f2937\">O</text><text x=\"258.62\" y=\"156.42\" text-anchor=\"middle\" fill=\"#1f2937\">13</text><text x=\"186\" y=\"167.5\" text-anchor=\"middle\" font-style=\"italic\" fill=\"#1f2937\">d</text><text x=\"150\" y=\"205\" text-anchor=\"middle\" fill=\"#1f2937\">24</text></svg>",
+    "options": [
+      {
+        "id": "A",
+        "label": "$1$"
+      },
+      {
+        "id": "B",
+        "label": "$5$"
+      },
+      {
+        "id": "C",
+        "label": "$12$"
+      },
+      {
+        "id": "D",
+        "label": "$\\sqrt{313}$"
+      }
+    ],
+    "answer": "B",
+    "explanation": "The perpendicular from the center bisects the chord, giving a right triangle with hypotenuse 13 (the radius) and leg 12 (half the chord). So $d = \\sqrt{13^2 - 12^2} = 5$. Choice B is correct. Choice A is incorrect. This subtracts half the chord from the radius instead of using the Pythagorean theorem. Choice C is incorrect. This is half the length of the chord. Choice D is incorrect. This adds the squares, $\\sqrt{13^2 + 12^2}$, but the radius is the hypotenuse of the right triangle."
+  },
+  {
+    "slug": "geo-circle-015",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "circles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "Triangle $ABC$ is inscribed in a circle so that $\\overline{AB}$ is a diameter of the circle. If the measure of angle $A$ is $34°$, what is the measure of angle $B$?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$56^\\circ$"
+      },
+      {
+        "id": "B",
+        "label": "$68^\\circ$"
+      },
+      {
+        "id": "C",
+        "label": "$90^\\circ$"
+      },
+      {
+        "id": "D",
+        "label": "$146^\\circ$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "An angle inscribed in a semicircle is a right angle, so angle $C = 90°$. Then angle $B = 180 - 90 - 34 = 56°$. Choice A is correct. Choice B is incorrect. This doubles angle $A$, as if angle $B$ were a central angle. Choice C is incorrect. This is the measure of angle $C$, which is inscribed in a semicircle. Choice D is incorrect. This is the supplement of angle $A$; it leaves out the right angle at $C$."
+  },
+  {
+    "slug": "geo-circle-016",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "circles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "medium",
+    "format": "mcq",
+    "prompt": "In the $xy$-plane, a circle has equation $(x - 2)^2 + (y + 1)^2 = 20$. Which of the following points lies inside the circle?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$(5, 2)$"
+      },
+      {
+        "id": "B",
+        "label": "$(0, 4)$"
+      },
+      {
+        "id": "C",
+        "label": "$(-3, -1)$"
+      },
+      {
+        "id": "D",
+        "label": "$(6, 1)$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "A point is inside the circle when $(x - 2)^2 + (y + 1)^2 < 20$. For $(5, 2)$: $3^2 + 3^2 = 18 < 20$, so it is inside. Choice A is correct. Choice B is incorrect. For this point, $(0 - 2)^2 + (4 + 1)^2 = 29 > 20$, so it lies outside the circle. Choice C is incorrect. For this point, $(-3 - 2)^2 + (-1 + 1)^2 = 25 > 20$, so it lies outside the circle. Choice D is incorrect. For this point, $(6 - 2)^2 + (1 + 1)^2 = 20$, so it lies on the circle, not inside it."
+  },
+  {
+    "slug": "geo-circle-017",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "circles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "The equation $x^2 + y^2 + 8x - 4y = k$ represents a circle in the $xy$-plane with radius $6$. What is the value of $k$?",
+    "answer": [
+      "16"
+    ],
+    "explanation": "Complete the square: $(x^2 + 8x + 16) + (y^2 - 4y + 4) = k + 16 + 4$, so $(x + 4)^2 + (y - 2)^2 = k + 20$. The radius is 6, so $k + 20 = 36$ and $k = 16$."
+  },
+  {
+    "slug": "geo-circle-018",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "circles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "On a circle with radius $9$, an arc has length $5\\pi$. What is the measure, in radians, of the central angle that intercepts this arc?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$\\frac{5}{9}$"
+      },
+      {
+        "id": "B",
+        "label": "$\\frac{5\\pi}{18}$"
+      },
+      {
+        "id": "C",
+        "label": "$\\frac{5\\pi}{9}$"
+      },
+      {
+        "id": "D",
+        "label": "$\\frac{10\\pi}{9}$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "For an angle in radians, $s = r\\theta$, so $\\theta = \\frac{s}{r} = \\frac{5\\pi}{9}$. Choice C is correct. Choice A is incorrect. This drops the factor of $\\pi$ from the arc length. Choice B is incorrect. This divides the arc length by the diameter instead of the radius. Choice D is incorrect. This doubles the angle, as if the arc length were $10\\pi$."
+  },
+  {
+    "slug": "geo-circle-019",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "circles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "A circle in the $xy$-plane passes through the points $(1, 2)$, $(7, 2)$, and $(1, 10)$. Which equation represents the circle?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$(x - 4)^2 + (y - 6)^2 = 25$"
+      },
+      {
+        "id": "B",
+        "label": "$(x - 4)^2 + (y - 6)^2 = 100$"
+      },
+      {
+        "id": "C",
+        "label": "$(x - 1)^2 + (y - 2)^2 = 100$"
+      },
+      {
+        "id": "D",
+        "label": "$(x + 4)^2 + (y + 6)^2 = 25$"
+      }
+    ],
+    "answer": "A",
+    "explanation": "The segments from $(1, 2)$ to $(7, 2)$ and from $(1, 2)$ to $(1, 10)$ are perpendicular, so the angle at $(1, 2)$ is a right angle inscribed in the circle. The opposite side, from $(7, 2)$ to $(1, 10)$, is a diameter. Its midpoint, $(4, 6)$, is the center, and its length is $\\sqrt{6^2 + 8^2} = 10$, so the radius is 5. The equation is $(x - 4)^2 + (y - 6)^2 = 25$. Choice A is correct. Choice B is incorrect. This uses the diameter, 10, as the radius. Choice C is incorrect. This places the center at one of the given points; that point is on the circle, not its center. Choice D is incorrect. This uses the correct radius but reverses the signs of the center's coordinates."
+  },
+  {
+    "slug": "geo-circle-020",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "circles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "hard",
+    "format": "spr",
+    "prompt": "Quadrilateral $ABCD$ is inscribed in a circle. The measure of angle $A$ is $(3x + 12)°$ and the measure of angle $C$ is $(5x - 8)°$. What is the measure of angle $C$, in degrees?",
+    "answer": [
+      "102"
+    ],
+    "explanation": "Opposite angles of a quadrilateral inscribed in a circle are supplementary: $(3x + 12) + (5x - 8) = 180$, so $8x + 4 = 180$ and $x = 22$. Then angle $C$ measures $5(22) - 8 = 102$ degrees."
+  },
+  {
+    "slug": "geo-circle-021",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "circles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "Two circles have the same center. The larger circle has radius $10$, and the smaller circle has radius $6$. A chord of the larger circle is tangent to the smaller circle. What is the length of the chord?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$4$"
+      },
+      {
+        "id": "B",
+        "label": "$8$"
+      },
+      {
+        "id": "C",
+        "label": "$2\\sqrt{34}$"
+      },
+      {
+        "id": "D",
+        "label": "$16$"
+      }
+    ],
+    "answer": "D",
+    "explanation": "The radius of the smaller circle drawn to the point of tangency is perpendicular to the chord and bisects it. The radius of the larger circle to an endpoint of the chord is the hypotenuse of a right triangle with leg 6, so half the chord is $\\sqrt{10^2 - 6^2} = 8$. The chord has length 16. Choice D is correct. Choice A is incorrect. This is the difference of the radii, the width of the ring between the circles, not the chord. Choice B is incorrect. This is half the chord; the point of tangency is the midpoint of the chord. Choice C is incorrect. This adds the squares of the radii, $\\sqrt{10^2 + 6^2} = \\sqrt{136}$, as if the larger radius were a leg; it is the hypotenuse of the right triangle."
+  },
+  {
+    "slug": "geo-circle-022",
+    "section": "math",
+    "official_domain": "geometry_trigonometry",
+    "skill": "circles",
+    "sat_domain": "geometry_trig",
+    "difficulty": "hard",
+    "format": "mcq",
+    "prompt": "A sector of a circle has an area of $15\\pi$ square units and an arc length of $5\\pi$ units. What is the radius of the circle?",
+    "options": [
+      {
+        "id": "A",
+        "label": "$3$"
+      },
+      {
+        "id": "B",
+        "label": "$\\sqrt{15}$"
+      },
+      {
+        "id": "C",
+        "label": "$6$"
+      },
+      {
+        "id": "D",
+        "label": "$30$"
+      }
+    ],
+    "answer": "C",
+    "explanation": "The area of a sector is $\\frac{1}{2}rs$, where $s$ is the arc length. So $\\frac{1}{2}r(5\\pi) = 15\\pi$, which gives $r = 6$. Choice C is correct. Choice A is incorrect. This uses sector area $= r \\cdot s$ without the factor of $\\frac{1}{2}$. Choice B is incorrect. This treats $15\\pi$ as the area of the whole circle, solving $\\pi r^2 = 15\\pi$. Choice D is incorrect. This multiplies the area by 2 without dividing by the arc length."
+  }
+]
