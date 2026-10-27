@@ -193,6 +193,15 @@ try {
     await assert.rejects(start({ question_ids: [id] }), /No matching/);
     assert.equal((await complete(r)).attempt.score_raw, 1);
   });
+  // Optional: prove content migrations from other branches apply on top of this engine.
+  for (const file of (process.env.SAT_EXTRA_MIGRATIONS ?? '').split(',').filter(Boolean)) {
+    await check(`Content migration applies after the engine: ${file.split(/[\\/]/).pop()}`, async () => { await sql(readFileSync(file, 'utf8')); });
+  }
+  if (process.env.SAT_EXTRA_MIGRATIONS) {
+    const rows = await catalog(other);
+    const byDomain = rows.reduce((m, q) => ({ ...m, [q.official_domain ?? q.domain]: (m[q.official_domain ?? q.domain] ?? 0) + 1 }), {});
+    console.log('Catalog after content:', rows.length, JSON.stringify(byDomain), 'spr:', rows.filter(q => q.answer_format === 'spr').length);
+  }
   console.log(`${checks.length} SAT Practice engine database checks passed`);
 } finally {
   if (localPsql && created) await run(localPsql, psqlArgs('postgres'), `drop database ${database} with (force);`).catch(() => {});

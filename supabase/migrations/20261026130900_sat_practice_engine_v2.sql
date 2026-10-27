@@ -458,7 +458,9 @@ begin
       update public.content_units set type=item->>'type',data=item->'data',metadata=coalesce(metadata,'{}'::jsonb)||meta where id=unit_id;
       updated:=updated+1;
     else
-      select coalesce(max(display_order),0)+1 into next_order from public.content_units where part_id=part;
+      -- Admin-authored units live above 100000 so they never take a display_order
+      -- that a generated content migration (1..N per part) will insert later.
+      select greatest(coalesce(max(display_order),0),100000)+1 into next_order from public.content_units where part_id=part;
       insert into public.content_units(id,part_id,type,data,display_order,metadata)
         values(unit_id,part,item->>'type',item->'data',next_order,meta);
       inserted:=inserted+1;
