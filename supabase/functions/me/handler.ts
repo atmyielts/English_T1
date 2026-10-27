@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { loadSecurityPolicy, resolvePermissions } from "../_shared/admin-access.ts";
+import { withExamBundleMemberEntitlements } from "../_shared/product-bundles.ts";
 
 type EntitlementRow = {
   id: string;
@@ -158,7 +159,11 @@ export const handleMe = async (req: Request): Promise<Response> => {
         });
       }
 
-      entitlements = (entitlementRows ?? []).filter(isActiveEntitlement) as EntitlementRow[];
+      // Exam "Complete" bundles stand for their member products, so frontends
+      // that gate on a member product id see a derived row for it.
+      entitlements = withExamBundleMemberEntitlements(
+        (entitlementRows ?? []).filter(isActiveEntitlement) as EntitlementRow[],
+      ) as EntitlementRow[];
     }
 
     let adminPayload: {

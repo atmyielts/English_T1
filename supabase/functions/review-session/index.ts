@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { signStorageRef } from "../_shared/media-storage.ts";
+import { productIdsGrantingAccess } from "../_shared/product-bundles.ts";
 
 type Json = Record<string, unknown>;
 
@@ -419,7 +420,8 @@ serve(async (req) => {
         .select("id, tenant_id, starts_at, ends_at, is_active")
         .in("tenant_id", tenantIds)
         .eq("resource_type", "product")
-        .eq("resource_id", productId)
+        // The product itself or an exam "Complete" bundle that contains it.
+        .in("resource_id", productIdsGrantingAccess(productId))
         .eq("is_active", true);
 
       if (entitlementError) {

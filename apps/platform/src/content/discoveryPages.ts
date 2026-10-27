@@ -157,6 +157,17 @@ const pages: DiscoveryPageConfig[] = [
         description: 'Use the companion library for strategy, study plans, and skill guides.',
         external: true,
       },
+      {
+        label: 'IELTS Practice',
+        href: 'https://practice.ielts.schood.online',
+        description: 'Daily adaptive drills for the question types that cost you the most marks.',
+        external: true,
+      },
+      {
+        label: 'IELTS Complete',
+        href: '/pricing?product=ielts-complete',
+        description: 'The simulator, Practice and Playbook Premium in one plan.',
+      },
     ],
     appName: 'Schood IELTS Simulator',
     applicationCategory: 'EducationalApplication',
@@ -578,9 +589,9 @@ const pages: DiscoveryPageConfig[] = [
     heroDescription:
       'Schood now has a dedicated SAT landing page on the main platform so learners can understand the product, find the right entry point, and move into practice quickly.',
     heroBullets: [
-      'A dedicated SAT page for search engines and learners.',
-      'Direct access into the SAT simulator.',
-      'A stronger public surface than relying on the product app alone.',
+      'Direct access into the SAT simulator for full adaptive-style tests.',
+      'SAT Practice Lab for daily drills and the SAT Playbook for strategy and a study plan.',
+      'SAT Complete: the simulator, Practice Lab and Playbook Premium in one plan.',
     ],
     primaryCta: {
       label: 'Open SAT simulator',
@@ -589,9 +600,10 @@ const pages: DiscoveryPageConfig[] = [
       external: true,
     },
     secondaryCta: {
-      label: 'Explore plans',
-      href: '/plans',
-      description: 'Compare access paths on the platform.',
+      label: 'Open SAT Practice Lab',
+      href: 'https://practice.sat.schood.online',
+      description: 'Daily adaptive drills, a mistake notebook and spaced review between mock tests.',
+      external: true,
     },
     highlights: [
       { value: 'Digital', label: 'exam focus', detail: 'The route is aligned with the Digital SAT product and audience.' },
@@ -638,9 +650,15 @@ const pages: DiscoveryPageConfig[] = [
         description: 'Open the higher-intent SAT practice-test page.',
       },
       {
-        label: 'Platform plans',
-        href: '/plans',
-        description: 'View plans and shared access options.',
+        label: 'SAT Playbook',
+        href: 'https://playbook.sat.schood.online',
+        description: 'Strategy modules, a diagnostic and a personal SAT study plan.',
+        external: true,
+      },
+      {
+        label: 'SAT Complete',
+        href: '/pricing?product=sat-complete',
+        description: 'The simulator, Practice Lab and Playbook Premium in one plan.',
       },
       {
         label: 'SAT simulator',
@@ -736,9 +754,15 @@ const pages: DiscoveryPageConfig[] = [
         description: 'Return to the broader SAT landing page.',
       },
       {
-        label: 'Platform plans',
-        href: '/plans',
-        description: 'See shared access and pricing options.',
+        label: 'SAT Practice Lab',
+        href: 'https://practice.sat.schood.online',
+        description: 'Drill the domains your practice test showed as weak.',
+        external: true,
+      },
+      {
+        label: 'SAT prices',
+        href: '/pricing?product=sat-complete',
+        description: 'See SAT Complete and every SAT plan.',
       },
       {
         label: 'SAT simulator',

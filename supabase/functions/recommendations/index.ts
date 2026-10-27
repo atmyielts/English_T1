@@ -12,6 +12,7 @@ import {
   resolveLanguageScope,
   toText,
 } from "../_shared/english-learning.ts";
+import { examNextSteps, loadSisterSignals } from "../_shared/sister-signals.ts";
 
 const routeMarker = "/recommendations";
 
@@ -31,10 +32,15 @@ serve(async (req) => {
     const products = await resolveEnglishProducts(sb);
 
     if (req.method === "GET" && route === "/queue") {
-      const queue = await loadActiveRecommendations(sb, auth.userId, scope.languageId);
+      const [queue, examSteps] = await Promise.all([
+        loadActiveRecommendations(sb, auth.userId, scope.languageId),
+        // Weak skills from SAT/IELTS Practice and playbook diagnostics.
+        loadSisterSignals(sb, auth.userId).then(examNextSteps).catch(() => []),
+      ]);
       return json(200, {
         scope: { user_id: auth.userId, language_id: scope.languageId, language_code: scope.languageCode },
         queue,
+        exam_next_steps: examSteps,
       });
     }
 

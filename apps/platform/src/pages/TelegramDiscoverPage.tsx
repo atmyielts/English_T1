@@ -22,6 +22,7 @@ import {
   UsersRound,
 } from 'lucide-react';
 import { edgeBase } from '../lib/supabase';
+import { ExamFamilyCards } from '../components/platform/ExamFamilyCards';
 
 declare global {
   interface Window {
@@ -434,6 +435,8 @@ export const TelegramDiscoverPage: React.FC = () => {
             </div>
           </MiniCard>
         ) : null}
+
+        {tab === 'exams' ? <ExamFamilyCards compact onOpen={openExternal} /> : null}
 
         {tab === 'support' ? (
           <MiniCard>

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { productIdsGrantingAccess } from "../_shared/product-bundles.ts";
 
 type Json = Record<string, unknown>;
 
@@ -337,17 +338,25 @@ serve(async (req) => {
     if (!isAdmin) {
       const guardrails = await loadSessionGuardrails(sb);
 
-      const { data: entitlement, error: entErr } = await sb
+      // The product itself or an exam "Complete" bundle that contains it.
+      const grantingProductIds = productIdsGrantingAccess(productId);
+      const { data: entitlementRows, error: entErr } = await sb
         .from("entitlements")
-        .select("id, tenant_id, starts_at, ends_at, is_active, value")
+        .select("id, tenant_id, resource_id, starts_at, ends_at, is_active, value")
         .eq("tenant_id", tenantId)
         .eq("resource_type", "product")
-        .eq("resource_id", productId)
+        .in("resource_id", grantingProductIds)
         .eq("is_active", true)
-        .maybeSingle();
+        // Newest grants first so expired rows still flagged active cannot crowd out a current one.
+        .order("ends_at", { ascending: false, nullsFirst: true })
+        .limit(10);
 
       if (entErr) return json(500, { error: "Failed to load entitlements", details: entErr });
-      let hasProductAccess = Boolean(entitlement && isActiveEntitlement(entitlement as EntitlementRow));
+      const activeEntitlements = ((entitlementRows ?? []) as Array<EntitlementRow & { resource_id?: string | null }>)
+        .filter((row) => isActiveEntitlement(row));
+      // Limits come from the product's own grant when there is one.
+      const entitlement = activeEntitlements.find((row) => row.resource_id === productId) ?? activeEntitlements[0] ?? null;
+      let hasProductAccess = Boolean(entitlement);
 
       if (!hasProductAccess) {
         const { data: sponsoredEntitlements, error: sponsoredErr } = await sb
@@ -357,12 +366,12 @@ serve(async (req) => {
           .eq("status", "active")
           .eq("grant_type", "product_access")
           .eq("resource_type", "product")
-          .eq("resource_id", productId)
+          .in("resource_id", grantingProductIds)
           .limit(10);
 
         if (sponsoredErr) return json(500, { error: "Failed to load sponsored entitlements", details: sponsoredErr });
         hasProductAccess = ((sponsoredEntitlements ?? []) as SponsoredEntitlementRow[]).some((row) =>
-          isActiveSponsoredProductAccess(row, productId)
+          grantingProductIds.some((grantingId) => isActiveSponsoredProductAccess(row, grantingId))
         );
       }
 
@@ -474,7 +483,7 @@ serve(async (req) => {
       }
 
       const capabilityKey = determineCapabilityKey(metadata, body?.capability_key ?? null);
-      const limits = extractLimits((entitlement as any).value);
+      const limits = extractLimits((entitlement as any)?.value);
       const limit = limits[capabilityKey];
 
       if (limit && limit > 0) {
