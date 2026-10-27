@@ -1,60 +1,64 @@
 {
   "schemaVersion": 1,
-  "releaseId": "ielts-practice-engine-depth",
+  "releaseId": "sat-playbook-learner-engine-and-content",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
     "ielts-playbook",
-    "ielts-practice"
+    "sat-playbook"
   ],
   "migrations": [
-    "20261026110900_ielts_practice_engine_depth.sql"
+    "20261026150900_sat_playbook_learner_engine.sql",
+    "20261026160900_sat_playbook_public_modules_core.sql",
+    "20261026160910_sat_playbook_public_modules_reading_writing.sql",
+    "20261026160920_sat_playbook_public_modules_math.sql",
+    "20261026161000_sat_playbook_premium_guides.sql",
+    "20261026161100_sat_playbook_plan_templates.sql"
   ],
   "edgeFunctions": [
-    "ielts-practice",
-    "ielts-srs"
+    "admin-exam-playbook",
+    "sat-playbook"
   ],
   "workers": [],
   "sharedEdgeConsumers": [],
-  "requiredSecrets": [
-    "IELTS_PRACTICE_SCORE_SESSION_FUNCTION",
-    "OPENAI_API_KEY",
-    "OPENROUTER_API_KEY",
-    "OPENROUTER_APP_NAME",
-    "OPENROUTER_BASE_URL",
-    "OPENROUTER_MODEL",
-    "OPENROUTER_REFERER"
-  ],
+  "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "migration:20261026110900_ielts_practice_engine_depth.sql",
-    "secret:IELTS_PRACTICE_SCORE_SESSION_FUNCTION",
-    "secret:OPENAI_API_KEY",
-    "secret:OPENROUTER_API_KEY",
-    "secret:OPENROUTER_APP_NAME",
-    "secret:OPENROUTER_BASE_URL",
-    "secret:OPENROUTER_MODEL",
-    "secret:OPENROUTER_REFERER",
-    "function:ielts-practice",
-    "function:ielts-srs"
+    "migration:20261026150900_sat_playbook_learner_engine.sql",
+    "migration:20261026160900_sat_playbook_public_modules_core.sql",
+    "migration:20261026160910_sat_playbook_public_modules_reading_writing.sql",
+    "migration:20261026160920_sat_playbook_public_modules_math.sql",
+    "migration:20261026161000_sat_playbook_premium_guides.sql",
+    "migration:20261026161100_sat_playbook_plan_templates.sql",
+    "function:sat-playbook",
+    "function:admin-exam-playbook"
   ],
   "manualFollowUps": [
-    "Pages: merging publishes apps/ielts-practice (practice.ielts.schood.online): en/uz/ru UI with LocaleSwitcher, Schood home/Account/sign-out in the shell, IELTS Playbook link, Speaking practice page, item-level review queue, server-graded AI mock generator with history, simulator/Playbook context focus, honest full-mock card, retired /exercise and /results routes redirect. Until the migration and functions are deployed, the new Speaking, review-item and generator calls return errors and their panels show the error/empty state; existing labs, plans and type-level reviews keep working.",
-    "Database (after Pages): supabase db push --linked from an isolated copy that adds only 20261026110900_ielts_practice_engine_depth.sql (keep the #220 payment migrations excluded as usual). Additive: three new tables (ielts_practice_generated_mocks, ielts_practice_item_reviews, ielts_practice_speaking_attempts) with RLS read-own and no learner writes.",
-    "Secrets: none are changed. supabase secrets set IELTS_PRACTICE_SCORE_SESSION_FUNCTION= supabase secrets set OPENAI_API_KEY= supabase secrets set OPENROUTER_API_KEY= supabase secrets set OPENROUTER_APP_NAME= supabase secrets set OPENROUTER_BASE_URL= supabase secrets set OPENROUTER_MODEL= supabase secrets set OPENROUTER_REFERER= are NOT run: they are already configured or have code defaults (verifier lists them because ielts-practice/index.ts reads them). OPENROUTER_MODEL should stay the free model (google/gemma-4-31b-it:free); _shared/ielts-ai.ts falls back to openrouter/auto when it is unset.",
-    "Edge (--project-ref bbjawctnqrufvnesdsel), right after the migration: supabase functions deploy ielts-practice ; supabase functions deploy ielts-srs. ielts-srs now enforces IELTS Practice access (personal, sponsored or IELTS Complete bundle) like ielts-practice; learners without access get 403 instead of the review queue."
+    "Pages: merging publishes sat-playbook (shared exam-playbook web package: public landing with real module links, grouped catalog, public modules readable without sign-in, GFM tables in scroll wrappers, diagnostic, plan templates with day-by-day tasks/hours/checkpoints and adoption, dashboard, notes/highlights, section coach, admin console at /admin, en/uz/ru UI). Until the function and migration ship, signed-in Premium panels show their error/empty states; public pages keep working against the old catalog/pages endpoints, which are unchanged.",
+    "Database: supabase db push --linked (dry run first; keep the #220 payment migrations excluded as in previous releases). Adds sat_playbook_user_plans, sat_playbook_user_plan_items, sat_playbook_section_progress, sat_playbook_user_notes, sat_playbook_section_threads (owner RLS), optional profile columns current_section_scores/target_section_scores/weekly_hours, and widens the sat_playbook_events event_name check to module_open, section_complete, diagnostic_run, plan_adopted, note_saved, practice_click, upgrade_click. Additive only.",
+    "Edge, after the migration (--project-ref bbjawctnqrufvnesdsel): supabase functions deploy sat-playbook; supabase functions deploy admin-exam-playbook. No new secrets: the section coach and AI summary reuse OPENROUTER_API_KEY through _shared/sat-ai.ts (free model google/gemma-4-31b-it:free by default, no paid fallback). toefl-playbook is untouched by this release.",
+    "Content: the SAT Playbook modules, premium guides and plan templates come from the separate content PRs (#304 and the SAT modules PR); this release renders them and has no content of its own.",
+    "Content (folded in from #317 = #310 + #304): after the engine migration and the sat-playbook/admin-exam-playbook functions are live, push 20261026160900-160920 (14 public modules, 27 sources, 403 sections) then 20261026161000 (6 premium guides) and 20261026161100 (5 plan templates) in the same isolated supabase db push --linked --include-all, keeping #220's payment migrations excluded. All inserts are on conflict do nothing with deterministic ids."
   ],
   "verification": [
-    "supabase migration list --linked shows 20261026110900_ielts_practice_engine_depth applied.",
-    "Without a session: GET /functions/v1/ielts-practice/reviews/items and /functions/v1/ielts-srs return 401; signed in without IELTS Practice access both return 403 with code product_access_required.",
-    "Signed in with access: /generator generates a mock, Check my answers returns a score from the server, and the mock appears under Your generated mocks; a missed question appears under Questions to redo the next day.",
-    "/speaking loads Part 1-3 prompts; a typed 12+ word answer returns transcript-only feedback (no band) in the chosen language.",
-    "practice.ielts.schood.online/today?source=playbook&weak_skill=listening shows the From IELTS Playbook banner and a Listening lab first; /practice/today and /results/x redirect.",
-    "Switching the language to O‘zbekcha and Русский translates the shell and pages; nothing overflows at 375px."
+    "supabase migration list --linked shows 20261026150900_sat_playbook_learner_engine applied.",
+    "GET /functions/v1/sat-playbook/catalog returns 200 with Cache-Control public, max-age=300, stale-while-revalidate=86400.",
+    "GET /functions/v1/sat-playbook/diagnostic without a session returns 401 {code:auth_required}; POST /events with event_name note_saved and no session returns 401.",
+    "GET /functions/v1/admin-exam-playbook/qa?exam=sat without a session returns 401; with exam=toefl returns 400 invalid_exam.",
+    "playbook.sat.schood.online: landing lists public modules; /math-algebra readable signed out; at 375px no horizontal scroll; ?lang=uz shows Uzbek navigation.",
+    "As a Premium learner: Run diagnostic creates one snapshot; reloading /diagnostic does not create another; adopting four-week-sprint shows dated tasks.",
+    "supabase migration list --linked shows 20261026160900, 20261026160910 and 20261026160920 applied and the 9 #220 payment migrations still pending.",
+    "select count(*) from sat_playbook_pages where metadata->>'seeded_by' = 'sat-pb-modules' returns 14; sections with metadata->>'seeded_by' = 'sat-pb-modules' return 403.",
+    "GET /functions/v1/sat-playbook/catalog with the anon key lists 14 modules in sort_order 1-14, starting with sat-essentials.",
+    "https://playbook.sat.schood.online/math-algebra and /test-day-guide open signed out and show sections and the Official references list.",
+    "supabase migration list --linked shows 20261026161000 and 20261026161100 applied.",
+    "GET /functions/v1/sat-playbook/catalog lists the 6 premium_guides (guide-rw-hard-module-traps, guide-math-hard-module-traps, guide-1200-to-1400-roadmap, guide-1400-to-1550-roadmap, guide-desmos-power-moves, guide-final-14-days).",
+    "GET /functions/v1/sat-playbook/pages/guide-final-14-days without a token returns 401/403 (premium); with a premium entitlement it returns 34 sections and 8 sources.",
+    "As a premium user, https://playbook.sat.schood.online/plans/four-week-sprint shows 4 phases and 4 weeks; the dashboard lists all 5 plan templates."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-ielts-practice to the previous deployment.",
-    "migration": "Additive; leave in place (the three tables are unused by the previous code).",
-    "edge": "Redeploy ielts-practice and ielts-srs from 378af006; the old generator returns in-browser mocks again and ielts-srs drops the product check."
+    "pages": "Cloudflare Pages rollback of schood-sat-playbook to the previous deployment.",
+    "migration": "Additive tables and columns; leave in place. The widened event check is a superset of the old one.",
+    "edge": "Redeploy sat-playbook from the previous main commit; admin-exam-playbook can be left deployed (admin-only) or deleted with supabase functions delete admin-exam-playbook."
   }
 }

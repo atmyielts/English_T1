@@ -1,0 +1,218 @@
+[
+  {
+    "key": "structure",
+    "url": "https://satsuite.collegeboard.org/sat/whats-on-the-test/structure",
+    "title": "College Board: SAT structure, sections, modules and timing",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official overview of the digital SAT: two sections, two separately timed modules each, 98 questions, 134 minutes and a 10-minute break."
+  },
+  {
+    "key": "rw",
+    "url": "https://satsuite.collegeboard.org/sat/whats-on-the-test/reading-writing",
+    "title": "College Board: The SAT Reading and Writing section",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official description of the four Reading and Writing content domains, 25-150 word passages and one question per passage."
+  },
+  {
+    "key": "math",
+    "url": "https://satsuite.collegeboard.org/sat/whats-on-the-test/math/overview",
+    "title": "College Board: The SAT Math section overview",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official description of the four Math content domains, question counts per domain and the share of in-context questions."
+  },
+  {
+    "key": "spec",
+    "url": "https://satsuite.collegeboard.org/media/pdf/digital-sat-test-spec-overview.pdf",
+    "title": "College Board: Digital SAT Suite Specifications Overview (PDF)",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official specification summary: operational and pretest questions per module, domain weights, question ordering, multistage adaptive design and score scales."
+  },
+  {
+    "key": "framework",
+    "url": "https://satsuite.collegeboard.org/media/pdf/assessment-framework-for-digital-sat-suite.pdf",
+    "title": "College Board: Assessment Framework for the Digital SAT Suite (PDF)",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "The full official test specifications behind the digital SAT, including skill definitions for every content domain."
+  },
+  {
+    "key": "directions",
+    "url": "https://satsuite.collegeboard.org/media/pdf/english-sat-test-directions-bb.pdf",
+    "title": "College Board: Bluebook test directions and Math reference sheet (PDF)",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official Bluebook directions: module rules, student-produced response entry rules and the Math reference sheet."
+  },
+  {
+    "key": "bring",
+    "url": "https://satsuite.collegeboard.org/sat/what-to-bring-do/what-to-bring",
+    "title": "College Board: What to bring on SAT test day",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official must-bring and nice-to-have lists for SAT test day."
+  },
+  {
+    "key": "expect",
+    "url": "https://satsuite.collegeboard.org/sat/what-to-bring-do/what-to-expect",
+    "title": "College Board: What to expect on SAT test day",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official test-day timeline, check-in steps, break rules and what happens if a device fails."
+  },
+  {
+    "key": "calc",
+    "url": "https://satsuite.collegeboard.org/sat/what-to-bring-do/calculator-policy",
+    "title": "College Board: SAT calculator policy",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official calculator policy: the embedded Desmos calculator, acceptable handheld calculators and prohibited models."
+  },
+  {
+    "key": "id",
+    "url": "https://satsuite.collegeboard.org/sat/what-to-bring-do/id-requirements",
+    "title": "College Board: SAT ID requirements",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official photo ID rules, including the passport rule for students testing outside their home country."
+  },
+  {
+    "key": "rules",
+    "url": "https://satsuite.collegeboard.org/sat/testing-rules",
+    "title": "College Board: SAT testing rules",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official testing rules: prohibited devices and items, break rules, score cancellation and the voluntary cancellation deadline."
+  },
+  {
+    "key": "bb-weekend",
+    "url": "https://bluebook.collegeboard.org/students/sat-weekend",
+    "title": "College Board Bluebook: Getting ready for the SAT (weekend)",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official Bluebook preparation timeline: download 30 days ahead, exam setup and admission ticket 5 days ahead, test-day steps."
+  },
+  {
+    "key": "bb-tools",
+    "url": "https://bluebook.collegeboard.org/students/tools",
+    "title": "College Board Bluebook: Testing tools",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official list of Bluebook tools: timer, Desmos calculator, reference sheet, highlights and notes, mark for review, line reader, option eliminator, question menu and zoom."
+  },
+  {
+    "key": "bb-device",
+    "url": "https://bluebook.collegeboard.org/students/prepare-your-device",
+    "title": "College Board Bluebook: Prepare your device",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official device preparation guidance, approved devices and how to request a College Board device for weekend testing."
+  },
+  {
+    "key": "scoring",
+    "url": "https://satsuite.collegeboard.org/scores/what-scores-mean/how-scores-calculated",
+    "title": "College Board: How SAT scores are calculated",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official explanation of adaptive routing, item response theory scoring, unscored pretest questions and the advice to guess rather than leave blanks."
+  },
+  {
+    "key": "release",
+    "url": "https://satsuite.collegeboard.org/scores/score-release-dates",
+    "title": "College Board: SAT score release dates",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official score release calendar for weekend and school-day testing."
+  },
+  {
+    "key": "sending",
+    "url": "https://satsuite.collegeboard.org/scores/sending-sat-scores/weekend",
+    "title": "College Board: Sending scores from SAT Weekend",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official rules for free score sends, Score Choice by test date and superscoring institutions."
+  },
+  {
+    "key": "retake",
+    "url": "https://satsuite.collegeboard.org/help-center/how-many-times-can-student-take-sat-and-when-should-they-take-it",
+    "title": "College Board Help Center: How many times can a student take the SAT?",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official guidance that there is no limit on SAT attempts and on recommended timing for a first test and a retake."
+  },
+  {
+    "key": "scorechoice",
+    "url": "https://satsuite.collegeboard.org/help-center/can-colleges-opt-out-score-choice",
+    "title": "College Board Help Center: Can colleges opt out of Score Choice?",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official note that colleges cannot opt out of Score Choice, while some colleges require all scores."
+  },
+  {
+    "key": "superscore",
+    "url": "https://blog.collegeboard.org/what-is-an-sat-superscore",
+    "title": "College Board Blog: What is an SAT superscore?",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official explanation of superscoring and why each college's own score-use policy must be checked."
+  },
+  {
+    "key": "percentiles",
+    "url": "https://research.collegeboard.org/reports/sat-suite/understanding-scores/sat",
+    "title": "College Board Research: SAT nationally representative and user percentiles",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official percentile tables for SAT total and section scores (user group and nationally representative)."
+  },
+  {
+    "key": "annual",
+    "url": "https://reports.collegeboard.org/media/pdf/2025-total-group-sat-suite-of-assessments-annual-report.pdf",
+    "title": "College Board: 2025 SAT Suite Annual Report, Total Group (PDF)",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official class-of-2025 results: number of test takers, mean scores and score distributions."
+  },
+  {
+    "key": "understanding",
+    "url": "https://satsuite.collegeboard.org/media/pdf/understanding-sat-scores.pdf",
+    "title": "College Board: Understanding SAT scores (PDF)",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official guide to score reports, score ranges, percentiles, content domain performance and the 480/530 college readiness benchmarks."
+  },
+  {
+    "key": "practice-tests",
+    "url": "https://satsuite.collegeboard.org/practice/practice-tests",
+    "title": "College Board: Full-length SAT practice tests",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official full-length practice tests in Bluebook and nonadaptive paper practice tests for students with paper-based accommodations."
+  },
+  {
+    "key": "cancel",
+    "url": "https://satsuite.collegeboard.org/digital/cancel-scores",
+    "title": "College Board: Canceling SAT scores",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official cancellation deadline (11:59 p.m. ET one week after the test date), method and irreversibility."
+  },
+  {
+    "key": "khan",
+    "url": "https://www.khanacademy.org/test-prep/sat",
+    "title": "Khan Academy: Official Digital SAT Prep",
+    "provider_key": "khan-academy",
+    "source_type": "provider_url",
+    "summary": "Free official SAT practice produced with College Board."
+  },
+  {
+    "key": "desmos-practice",
+    "url": "https://www.desmos.com/practice",
+    "title": "Desmos: Test practice calculators",
+    "provider_key": "desmos",
+    "source_type": "provider_url",
+    "summary": "Desmos calculators configured like the ones used in testing platforms, for practice before test day."
+  }
+]

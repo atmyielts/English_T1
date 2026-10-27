@@ -1,0 +1,597 @@
+{
+  "slug": "reading-writing-priority",
+  "plan_type": "skill_recovery",
+  "title": "Reading and Writing Priority",
+  "summary": "A 42-day plan for students whose Reading and Writing section trails Math: most study time goes to R&W, starting with rule-based conventions and expression of ideas, then evidence and craft, with daily reading and Math kept warm.",
+  "duration_days": 42,
+  "score_min": 400,
+  "score_max": 1600,
+  "focus_section": "reading_writing",
+  "intensity": "moderate",
+  "schedule": {
+    "version": 1,
+    "simulator_cta": "https://sat.schood.online/?source=playbook&plan=reading-writing-priority",
+    "practice_cta": "https://practice.sat.schood.online/dashboard?source=playbook&plan=reading-writing-priority",
+    "resources": [
+      {
+        "label": "SAT Practice Bank (filter by domain, skill and difficulty)",
+        "url": "https://practice.sat.schood.online/bank"
+      },
+      {
+        "label": "SAT Practice daily session",
+        "url": "https://practice.sat.schood.online/today"
+      },
+      {
+        "label": "SAT Practice Reviews (spaced repetition)",
+        "url": "https://practice.sat.schood.online/reviews"
+      },
+      {
+        "label": "SAT Practice Notebook (error log)",
+        "url": "https://practice.sat.schood.online/notebook"
+      },
+      {
+        "label": "SAT simulator full mocks",
+        "url": "https://sat.schood.online"
+      },
+      {
+        "label": "Official Bluebook practice tests (College Board)",
+        "url": "https://satsuite.collegeboard.org/practice"
+      }
+    ],
+    "error_codes": [
+      {
+        "code": "C",
+        "meaning": "Content: did not know the rule, formula or skill"
+      },
+      {
+        "code": "P",
+        "meaning": "Process: knew it but set it up or read it wrongly"
+      },
+      {
+        "code": "T",
+        "meaning": "Time: rushed or ran out of time"
+      },
+      {
+        "code": "X",
+        "meaning": "Named slip: a specific, nameable careless error"
+      },
+      {
+        "code": "G",
+        "meaning": "Guess-right: correct but unsure; review as a miss"
+      }
+    ],
+    "who_for": "Your R&W section score is clearly below your Math score (for example by 80 points or more), or R&W errors dominate your Notebook. About 5–8 hours a week (heavier in mock weeks), with roughly three quarters of non-mock time on R&W (including a reading habit) and the rest on Math maintenance.",
+    "weekly_hours": {
+      "min": 4.5,
+      "max": 7.9,
+      "total": 37.8
+    },
+    "split": {
+      "primary": "reading_writing",
+      "maintenance": "math"
+    },
+    "rules": [
+      "Rule-based skills first (conventions, transitions, rhetorical synthesis), because they convert fastest; then evidence and craft.",
+      "Every R&W question: state the task in three words before reading the choices.",
+      "20 minutes of dense nonfiction reading on at least five days a week.",
+      "Two short Math maintenance sessions a week; full mock at the start of weeks 1, 3 and 5."
+    ],
+    "phases": [
+      {
+        "label": "Conventions and expression",
+        "weeks": [
+          1,
+          2
+        ],
+        "goal": "Boundaries, form/structure/sense, transitions and rhetorical synthesis to automatic."
+      },
+      {
+        "label": "Information and ideas",
+        "weeks": [
+          3,
+          4
+        ],
+        "goal": "Central ideas, inferences, textual and quantitative evidence."
+      },
+      {
+        "label": "Craft, structure and hard modules",
+        "weeks": [
+          5,
+          6
+        ],
+        "goal": "Words in context, structure, cross-text; hard-module traps and pacing."
+      }
+    ],
+    "modules": [
+      "reading-writing-conventions",
+      "reading-writing-expression-of-ideas",
+      "reading-writing-information-ideas",
+      "reading-writing-craft-structure",
+      "pacing-and-adaptive-modules"
+    ],
+    "guides": [
+      "guide-rw-hard-module-traps"
+    ],
+    "weeks": [
+      {
+        "week": 1,
+        "label": "Week 1: Baseline and boundaries",
+        "focus": [
+          "Baseline mock",
+          "Boundaries",
+          "Form, structure and sense",
+          "Reading habit"
+        ],
+        "hours": 7.9,
+        "days": [
+          {
+            "day": 1,
+            "weekday": "Mon",
+            "minutes": 180,
+            "tasks": [
+              "Full timed mock in the SAT simulator (https://sat.schood.online) at your real test time; one sitting with a 10-minute break"
+            ]
+          },
+          {
+            "day": 2,
+            "weekday": "Tue",
+            "minutes": 90,
+            "tasks": [
+              "Forensic review of the mock: re-solve each missed, guessed and slow question before reading the explanation; assign cause codes C/P/T/X/G; name the trap; write a rule sentence",
+              "R&W misses by skill; mark which were C, P, T, X"
+            ]
+          },
+          {
+            "day": 3,
+            "weekday": "Wed",
+            "minutes": 60,
+            "tasks": [
+              "Read R&W: Standard English Conventions — boundaries (/reading-writing-conventions), 20 min",
+              "SAT Practice Bank: 25 medium questions in Standard English Conventions → Boundaries (https://practice.sat.schood.online/bank); review every miss",
+              "Log misses and guesses in the Notebook with a cause code and a rule sentence (https://practice.sat.schood.online/notebook)"
+            ]
+          },
+          {
+            "day": 4,
+            "weekday": "Thu",
+            "minutes": 35,
+            "tasks": [
+              "SAT Practice Bank: 12 medium questions in Algebra (https://practice.sat.schood.online/bank); review every miss",
+              "Clear due Reviews (https://practice.sat.schood.online/reviews), 10 min"
+            ]
+          },
+          {
+            "day": 5,
+            "weekday": "Fri",
+            "minutes": 60,
+            "tasks": [
+              "Read R&W: Standard English Conventions — form, structure and sense (/reading-writing-conventions), 20 min",
+              "SAT Practice Bank: 25 medium questions in Standard English Conventions → Form, structure and sense (https://practice.sat.schood.online/bank); review every miss"
+            ]
+          },
+          {
+            "day": 6,
+            "weekday": "Sat",
+            "minutes": 50,
+            "tasks": [
+              "Read 20 minutes of dense nonfiction (science, history, economics) and summarise each article's claim in one sentence",
+              "Re-solve Notebook entries from the last 2–3 days without notes; close only correct re-solves",
+              "Clear due Reviews (https://practice.sat.schood.online/reviews), 10 min"
+            ]
+          },
+          {
+            "day": 7,
+            "weekday": "Sun",
+            "minutes": 0,
+            "tasks": [
+              "Rest day: no SAT work. Optional 20 minutes of reading nonfiction you enjoy"
+            ]
+          }
+        ],
+        "checkpoint": "Pass: R&W misses classified; conventions accuracy rising in the Bank."
+      },
+      {
+        "week": 2,
+        "label": "Week 2: Transitions and rhetorical synthesis",
+        "focus": [
+          "Transitions",
+          "Rhetorical synthesis",
+          "Conventions speed",
+          "Timed R&W module"
+        ],
+        "hours": 4.8,
+        "days": [
+          {
+            "day": 1,
+            "weekday": "Mon",
+            "minutes": 60,
+            "tasks": [
+              "Read R&W: Expression of Ideas — transitions (/reading-writing-expression-of-ideas), 20 min",
+              "SAT Practice Bank: 20 medium questions in Expression of Ideas → Transitions (https://practice.sat.schood.online/bank); review every miss"
+            ]
+          },
+          {
+            "day": 2,
+            "weekday": "Tue",
+            "minutes": 35,
+            "tasks": [
+              "SAT Practice Bank: 12 medium questions in Advanced Math (https://practice.sat.schood.online/bank); review every miss",
+              "Clear due Reviews (https://practice.sat.schood.online/reviews), 10 min"
+            ]
+          },
+          {
+            "day": 3,
+            "weekday": "Wed",
+            "minutes": 60,
+            "tasks": [
+              "Read R&W: Expression of Ideas — rhetorical synthesis (/reading-writing-expression-of-ideas), 20 min",
+              "SAT Practice Bank: 20 medium and hard questions in Expression of Ideas → Rhetorical synthesis (https://practice.sat.schood.online/bank); review every miss",
+              "Count goal verbs aloud on every item"
+            ]
+          },
+          {
+            "day": 4,
+            "weekday": "Thu",
+            "minutes": 50,
+            "tasks": [
+              "SAT Practice Bank: 20 medium and hard questions in Standard English Conventions, timed at 40 seconds each (https://practice.sat.schood.online/bank); review every miss",
+              "Read 15 minutes of dense nonfiction (science, history, economics) and summarise each article's claim in one sentence"
+            ]
+          },
+          {
+            "day": 5,
+            "weekday": "Fri",
+            "minutes": 40,
+            "tasks": [
+              "Timed R&W module set: 27 mixed R&W questions in 32 minutes from the SAT Practice Bank, timer on"
+            ]
+          },
+          {
+            "day": 6,
+            "weekday": "Sat",
+            "minutes": 45,
+            "tasks": [
+              "Re-solve Notebook entries from weeks 1–2 without notes; close only correct re-solves",
+              "Clear due Reviews (https://practice.sat.schood.online/reviews), 15 min",
+              "Checkpoint: conventions and expression misses vs the baseline mock"
+            ]
+          },
+          {
+            "day": 7,
+            "weekday": "Sun",
+            "minutes": 0,
+            "tasks": [
+              "Rest day: no SAT work. Optional 20 minutes of reading nonfiction you enjoy"
+            ]
+          }
+        ],
+        "checkpoint": "Pass: conventions and expression-of-ideas misses rare in the timed set. If not, repeat week 2 days 1, 3 and 4."
+      },
+      {
+        "week": 3,
+        "label": "Week 3: Central ideas and inferences",
+        "focus": [
+          "Mock 2",
+          "Central ideas and details",
+          "Inferences",
+          "Reading habit"
+        ],
+        "hours": 7.9,
+        "days": [
+          {
+            "day": 1,
+            "weekday": "Mon",
+            "minutes": 180,
+            "tasks": [
+              "Full official Bluebook practice test (one you have not taken) at your real test time; one sitting with a 10-minute break"
+            ]
+          },
+          {
+            "day": 2,
+            "weekday": "Tue",
+            "minutes": 90,
+            "tasks": [
+              "Forensic review of the mock: re-solve each missed, guessed and slow question before reading the explanation; assign cause codes C/P/T/X/G; name the trap; write a rule sentence",
+              "Compare R&W with mock 1 by domain"
+            ]
+          },
+          {
+            "day": 3,
+            "weekday": "Wed",
+            "minutes": 60,
+            "tasks": [
+              "Read R&W: Information and Ideas — central ideas and details (/reading-writing-information-ideas), 20 min",
+              "SAT Practice Bank: 20 medium questions in Information and Ideas → Central ideas and details (https://practice.sat.schood.online/bank); review every miss"
+            ]
+          },
+          {
+            "day": 4,
+            "weekday": "Thu",
+            "minutes": 35,
+            "tasks": [
+              "SAT Practice Bank: 12 medium questions in Problem-Solving and Data Analysis (https://practice.sat.schood.online/bank); review every miss",
+              "Clear due Reviews (https://practice.sat.schood.online/reviews), 10 min"
+            ]
+          },
+          {
+            "day": 5,
+            "weekday": "Fri",
+            "minutes": 60,
+            "tasks": [
+              "Read R&W: Information and Ideas — inferences (/reading-writing-information-ideas), 20 min",
+              "SAT Practice Bank: 20 medium and hard questions in Information and Ideas → Inferences (https://practice.sat.schood.online/bank); review every miss"
+            ]
+          },
+          {
+            "day": 6,
+            "weekday": "Sat",
+            "minutes": 50,
+            "tasks": [
+              "Read 20 minutes of dense nonfiction (science, history, economics) and summarise each article's claim in one sentence",
+              "Re-solve Notebook entries from the last 2–3 days without notes; close only correct re-solves",
+              "Clear due Reviews (https://practice.sat.schood.online/reviews), 10 min"
+            ]
+          },
+          {
+            "day": 7,
+            "weekday": "Sun",
+            "minutes": 0,
+            "tasks": [
+              "Rest day: no SAT work. Optional 20 minutes of reading nonfiction you enjoy"
+            ]
+          }
+        ],
+        "checkpoint": "Pass: mock 2 R&W shows fewer conventions and expression misses than mock 1."
+      },
+      {
+        "week": 4,
+        "label": "Week 4: Evidence: textual and quantitative",
+        "focus": [
+          "Command of evidence (textual)",
+          "Command of evidence (quantitative)",
+          "Weaken and strengthen",
+          "Timed R&W module"
+        ],
+        "hours": 4.8,
+        "days": [
+          {
+            "day": 1,
+            "weekday": "Mon",
+            "minutes": 60,
+            "tasks": [
+              "Read R&W: Information and Ideas — command of evidence (textual) (/reading-writing-information-ideas), 20 min",
+              "SAT Practice Bank: 20 medium and hard questions in Information and Ideas → Command of evidence (textual) (https://practice.sat.schood.online/bank); review every miss"
+            ]
+          },
+          {
+            "day": 2,
+            "weekday": "Tue",
+            "minutes": 35,
+            "tasks": [
+              "SAT Practice Bank: 12 medium questions in Algebra and Advanced Math (https://practice.sat.schood.online/bank); review every miss",
+              "Clear due Reviews (https://practice.sat.schood.online/reviews), 10 min"
+            ]
+          },
+          {
+            "day": 3,
+            "weekday": "Wed",
+            "minutes": 60,
+            "tasks": [
+              "Read R&W Hard-Module Traps (premium) — trap families 1–2 (/guide-rw-hard-module-traps), 20 min",
+              "SAT Practice Bank: 20 medium and hard questions in Information and Ideas → Command of evidence (quantitative) (https://practice.sat.schood.online/bank); review every miss",
+              "Translate each claim into the comparison it needs before reading choices"
+            ]
+          },
+          {
+            "day": 4,
+            "weekday": "Thu",
+            "minutes": 50,
+            "tasks": [
+              "SAT Practice Bank: 15 hard questions in Information and Ideas (mixed) (https://practice.sat.schood.online/bank); review every miss",
+              "Read 15 minutes of dense nonfiction (science, history, economics) and summarise each article's claim in one sentence"
+            ]
+          },
+          {
+            "day": 5,
+            "weekday": "Fri",
+            "minutes": 40,
+            "tasks": [
+              "Timed R&W module set: 27 mixed R&W questions in 32 minutes from the SAT Practice Bank, timer on"
+            ]
+          },
+          {
+            "day": 6,
+            "weekday": "Sat",
+            "minutes": 45,
+            "tasks": [
+              "Re-solve Notebook entries from weeks 3–4 without notes; close only correct re-solves",
+              "Clear due Reviews (https://practice.sat.schood.online/reviews), 15 min"
+            ]
+          },
+          {
+            "day": 7,
+            "weekday": "Sun",
+            "minutes": 0,
+            "tasks": [
+              "Rest day: no SAT work. Optional 20 minutes of reading nonfiction you enjoy"
+            ]
+          }
+        ],
+        "checkpoint": "Pass: true-but-irrelevant (TT) errors rare in the timed set."
+      },
+      {
+        "week": 5,
+        "label": "Week 5: Craft and structure",
+        "focus": [
+          "Mock 3",
+          "Words in context",
+          "Text structure and purpose",
+          "Cross-text connections"
+        ],
+        "hours": 7.9,
+        "days": [
+          {
+            "day": 1,
+            "weekday": "Mon",
+            "minutes": 180,
+            "tasks": [
+              "Full timed mock in the SAT simulator (https://sat.schood.online) at your real test time; one sitting with a 10-minute break"
+            ]
+          },
+          {
+            "day": 2,
+            "weekday": "Tue",
+            "minutes": 90,
+            "tasks": [
+              "Forensic review of the mock: re-solve each missed, guessed and slow question before reading the explanation; assign cause codes C/P/T/X/G; name the trap; write a rule sentence"
+            ]
+          },
+          {
+            "day": 3,
+            "weekday": "Wed",
+            "minutes": 60,
+            "tasks": [
+              "Read R&W: Craft and Structure — words in context (/reading-writing-craft-structure), 20 min",
+              "SAT Practice Bank: 20 medium and hard questions in Craft and Structure → Words in context (https://practice.sat.schood.online/bank); review every miss",
+              "Write the punctuation or contrast clue for each blank"
+            ]
+          },
+          {
+            "day": 4,
+            "weekday": "Thu",
+            "minutes": 35,
+            "tasks": [
+              "SAT Practice Bank: 12 medium questions in Geometry and Trigonometry (https://practice.sat.schood.online/bank); review every miss",
+              "Clear due Reviews (https://practice.sat.schood.online/reviews), 10 min"
+            ]
+          },
+          {
+            "day": 5,
+            "weekday": "Fri",
+            "minutes": 60,
+            "tasks": [
+              "Read R&W: Craft and Structure — text structure and cross-text (/reading-writing-craft-structure), 20 min",
+              "Read R&W Hard-Module Traps (premium) — trap families 3, 5 and 6 (/guide-rw-hard-module-traps), 15 min",
+              "SAT Practice Bank: 15 medium and hard questions in Craft and Structure → Text structure and purpose and Cross-text connections (https://practice.sat.schood.online/bank); review every miss"
+            ]
+          },
+          {
+            "day": 6,
+            "weekday": "Sat",
+            "minutes": 50,
+            "tasks": [
+              "Read 20 minutes of dense nonfiction (science, history, economics) and summarise each article's claim in one sentence",
+              "Re-solve Notebook entries from the last 2–3 days without notes; close only correct re-solves",
+              "Clear due Reviews (https://practice.sat.schood.online/reviews), 10 min"
+            ]
+          },
+          {
+            "day": 7,
+            "weekday": "Sun",
+            "minutes": 0,
+            "tasks": [
+              "Rest day: no SAT work. Optional 20 minutes of reading nonfiction you enjoy"
+            ]
+          }
+        ],
+        "checkpoint": "Pass: every R&W skill drilled; mock 3 reviewed."
+      },
+      {
+        "week": 6,
+        "label": "Week 6: Hard modules and pacing",
+        "focus": [
+          "Hard-only R&W",
+          "Pacing across skill groups",
+          "Timed R&W modules",
+          "Next step"
+        ],
+        "hours": 4.5,
+        "days": [
+          {
+            "day": 1,
+            "weekday": "Mon",
+            "minutes": 60,
+            "tasks": [
+              "Read R&W Hard-Module Traps (premium) — trap families 7–11 and pacing (/guide-rw-hard-module-traps), 30 min",
+              "SAT Practice Bank: 15 hard questions in mixed R&W (interleaved skills) (https://practice.sat.schood.online/bank); review every miss"
+            ]
+          },
+          {
+            "day": 2,
+            "weekday": "Tue",
+            "minutes": 35,
+            "tasks": [
+              "SAT Practice Bank: 12 medium and hard questions in mixed Math (https://practice.sat.schood.online/bank); review every miss",
+              "Clear due Reviews (https://practice.sat.schood.online/reviews), 10 min"
+            ]
+          },
+          {
+            "day": 3,
+            "weekday": "Wed",
+            "minutes": 50,
+            "tasks": [
+              "Read Pacing and Adaptive Modules — R&W pacing (/pacing-and-adaptive-modules), 15 min",
+              "SAT Practice Bank: 20 hard questions in mixed R&W (https://practice.sat.schood.online/bank); review every miss",
+              "Track seconds per question: conventions under 45 seconds"
+            ]
+          },
+          {
+            "day": 4,
+            "weekday": "Thu",
+            "minutes": 40,
+            "tasks": [
+              "Timed R&W module set: 27 mixed R&W questions in 32 minutes from the SAT Practice Bank, timer on"
+            ]
+          },
+          {
+            "day": 5,
+            "weekday": "Fri",
+            "minutes": 40,
+            "tasks": [
+              "Timed R&W module set: 27 mixed R&W questions in 32 minutes from the SAT Practice Bank, timer on",
+              "Use a different question set from day 4"
+            ]
+          },
+          {
+            "day": 6,
+            "weekday": "Sat",
+            "minutes": 45,
+            "tasks": [
+              "Re-solve Notebook entries from the whole plan without notes; close only correct re-solves",
+              "Decide the next plan: Eight-Week Standard (/plans/eight-week-standard) for continued balance, or the Four-Week Sprint (/plans/four-week-sprint) if a test is close"
+            ]
+          },
+          {
+            "day": 7,
+            "weekday": "Sun",
+            "minutes": 0,
+            "tasks": [
+              "Rest day: no SAT work. Optional 20 minutes of reading nonfiction you enjoy"
+            ]
+          }
+        ],
+        "checkpoint": "Pass: two timed R&W modules finished on time with few misses."
+      }
+    ],
+    "checkpoints": [
+      {
+        "week": 2,
+        "title": "Rules secure",
+        "pass_rule": "Conventions and expression misses rare in a timed R&W set.",
+        "if_not": "Repeat week 2 before Information and Ideas."
+      },
+      {
+        "week": 4,
+        "title": "Evidence secure",
+        "pass_rule": "Evidence misses fall from mock 2; TT errors rare.",
+        "if_not": "Extend week 4 by one week."
+      },
+      {
+        "week": 6,
+        "title": "Section ready",
+        "pass_rule": "Two timed R&W modules on time with few misses.",
+        "if_not": "Repeat week 6 with new question sets."
+      }
+    ]
+  }
+}
