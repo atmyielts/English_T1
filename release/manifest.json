@@ -1,114 +1,44 @@
 {
   "schemaVersion": 1,
-  "releaseId": "english-depth-oct26",
+  "releaseId": "sat-playbook-learner-engine-oct27",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "english-hub",
-    "platform"
+    "sat-playbook"
   ],
   "migrations": [
-    "20261026100000_english_exam_track.sql",
-    "20261026100100_english_exam_papers_seed.sql",
-    "20261026110000_english_duels.sql",
-    "20261026110100_english_progress_links.sql",
-    "20261026120000_english_client_attempts.sql",
-    "20261026130000_english_classes.sql",
-    "20261026140000_english_word_store_unify.sql",
-    "20261026140100_english_vocabulary_word_knowledge.sql",
-    "20261026140200_english_reading_question_types.sql",
-    "20261026140300_english_listening_gist_questions.sql",
-    "20261026140400_english_grammar_drill_types.sql",
-    "20261026140500_english_daily_stories.sql",
-    "20261026150000_english_output_depth.sql",
-    "20261026160000_english_inbox.sql",
-    "20261026160100_english_resume_points.sql",
-    "20261026160200_english_journey_indexes.sql",
-    "20261026170000_english_account_erasure_registry.sql"
+    "20261026150900_sat_playbook_learner_engine.sql"
   ],
   "edgeFunctions": [
-    "grammar-remediation",
-    "hub",
-    "immersion-missions",
-    "listening-content",
-    "reading-articles",
-    "speaking-studio",
-    "telegram-app",
-    "vocab-drill",
-    "vocabulary-notebook",
-    "writing-workbench"
+    "admin-exam-playbook",
+    "sat-playbook"
   ],
-  "workers": [
-    "schood-bot"
-  ],
-  "sharedEdgeConsumers": [
-    "admin-english-content",
-    "admin-english-ops",
-    "telegram-public"
-  ],
-  "requiredSecrets": [
-    "ENGLISH_APP_URL",
-    "SITE_URL",
-    "TELEGRAM_BOT_TOKEN",
-    "TELEGRAM_INTERNAL_SECRET",
-    "TELEGRAM_STUDENT_BOT_NAME"
-  ],
+  "workers": [],
+  "sharedEdgeConsumers": [],
+  "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "migration:20261026100000_english_exam_track.sql",
-    "migration:20261026100100_english_exam_papers_seed.sql",
-    "migration:20261026110000_english_duels.sql",
-    "migration:20261026110100_english_progress_links.sql",
-    "migration:20261026120000_english_client_attempts.sql",
-    "migration:20261026130000_english_classes.sql",
-    "migration:20261026140000_english_word_store_unify.sql",
-    "migration:20261026140100_english_vocabulary_word_knowledge.sql",
-    "migration:20261026140200_english_reading_question_types.sql",
-    "migration:20261026140300_english_listening_gist_questions.sql",
-    "migration:20261026140400_english_grammar_drill_types.sql",
-    "migration:20261026140500_english_daily_stories.sql",
-    "migration:20261026150000_english_output_depth.sql",
-    "migration:20261026160000_english_inbox.sql",
-    "migration:20261026160100_english_resume_points.sql",
-    "migration:20261026160200_english_journey_indexes.sql",
-    "migration:20261026170000_english_account_erasure_registry.sql",
-    "secret:ENGLISH_APP_URL",
-    "secret:SITE_URL",
-    "secret:TELEGRAM_BOT_TOKEN",
-    "secret:TELEGRAM_INTERNAL_SECRET",
-    "secret:TELEGRAM_STUDENT_BOT_NAME",
-    "function:hub",
-    "function:grammar-remediation",
-    "function:immersion-missions",
-    "function:listening-content",
-    "function:reading-articles",
-    "function:speaking-studio",
-    "function:telegram-app",
-    "function:vocab-drill",
-    "function:vocabulary-notebook",
-    "function:writing-workbench",
-    "function:admin-english-content",
-    "function:admin-english-ops",
-    "function:telegram-public",
-    "worker:schood-bot"
+    "migration:20261026150900_sat_playbook_learner_engine.sql",
+    "function:sat-playbook",
+    "function:admin-exam-playbook"
   ],
   "manualFollowUps": [
-    "Pages: merging publishes english-hub (national exam track, duels, share cards, progress links, shadowing and read aloud, offline session, classes, deeper reading/listening/vocabulary/grammar, Story of the day, writing drafts and revisions, speaking retries, projects, a personal tutor, one result screen, Journey, Inbox, content search, Continue anywhere) and platform (control center switches for exam/classes/duels; Mini App duel card and review summary; vocab drill on the shared word store). Until the migrations and functions are deployed the new panels show their empty/error states.",
-    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus the seventeen 20261026100000-20261026170000 English migrations, keeping the 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then run the functions IMMEDIATELY after (20261026140000 copies vocab drill cards into the notebook and stamps them; reviews written by the old drill code in between are picked up by the functions' lazy import, and the tutor tables must exist before the tutor uses AI credits). All new tables are service-role only with RLS on; account closure now also erases 18 English learner tables.",
-    "Secrets: none are changed. supabase secrets set ENGLISH_APP_URL= supabase secrets set SITE_URL= supabase secrets set TELEGRAM_BOT_TOKEN= supabase secrets set TELEGRAM_INTERNAL_SECRET= supabase secrets set TELEGRAM_STUDENT_BOT_NAME= are not run: each is either already configured in production or has a code default.",
-    "Edge (--project-ref bbjawctnqrufvnesdsel), right after the migrations: supabase functions deploy grammar-remediation ; supabase functions deploy hub ; supabase functions deploy immersion-missions ; supabase functions deploy listening-content ; supabase functions deploy reading-articles ; supabase functions deploy speaking-studio ; supabase functions deploy telegram-app ; supabase functions deploy vocab-drill ; supabase functions deploy vocabulary-notebook ; supabase functions deploy writing-workbench ; supabase functions deploy admin-english-content ; supabase functions deploy admin-english-ops ; supabase functions deploy telegram-public.",
-    "Worker: cd workers/schood-bot && npx wrangler deploy (duels, progress-link followers, /drill on the shared word store). Before deploying, confirm the live worker came from main (wrangler deployments list)."
+    "Pages: merging publishes sat-playbook (shared exam-playbook web package: public landing with real module links, grouped catalog, public modules readable without sign-in, GFM tables in scroll wrappers, diagnostic, plan templates with day-by-day tasks/hours/checkpoints and adoption, dashboard, notes/highlights, section coach, admin console at /admin, en/uz/ru UI). Until the function and migration ship, signed-in Premium panels show their error/empty states; public pages keep working against the old catalog/pages endpoints, which are unchanged.",
+    "Database: supabase db push --linked (dry run first; keep the #220 payment migrations excluded as in previous releases). Adds sat_playbook_user_plans, sat_playbook_user_plan_items, sat_playbook_section_progress, sat_playbook_user_notes, sat_playbook_section_threads (owner RLS), optional profile columns current_section_scores/target_section_scores/weekly_hours, and widens the sat_playbook_events event_name check to module_open, section_complete, diagnostic_run, plan_adopted, note_saved, practice_click, upgrade_click. Additive only.",
+    "Edge, after the migration (--project-ref bbjawctnqrufvnesdsel): supabase functions deploy sat-playbook; supabase functions deploy admin-exam-playbook. No new secrets: the section coach and AI summary reuse OPENROUTER_API_KEY through _shared/sat-ai.ts (free model google/gemma-4-31b-it:free by default, no paid fallback). toefl-playbook is untouched by this release.",
+    "Content: the SAT Playbook modules, premium guides and plan templates come from the separate content PRs (#304 and the SAT modules PR); this release renders them and has no content of its own."
   ],
   "verification": [
-    "supabase migration list --linked shows the seventeen migrations applied and the 9 #220 payment migrations still pending.",
-    "Without a session: GET /functions/v1/hub/exam, /hub/journey, /hub/inbox, /hub/search?q=a, /hub/classes, /hub/duels return 401; GET /hub/public/progress/UNKNOWN returns 404.",
-    "Signed in: /exam, /duel, /classes, /journey, /inbox, /stories, /speaking/shadowing, /vocabulary/practice load; Ctrl+K finds a lesson by topic; Settings shows Notifications and Progress links.",
-    "Telegram: @schoodstudentbot /duel offers a challenge link; /drill still works on the learner's words."
+    "supabase migration list --linked shows 20261026150900_sat_playbook_learner_engine applied.",
+    "GET /functions/v1/sat-playbook/catalog returns 200 with Cache-Control public, max-age=300, stale-while-revalidate=86400.",
+    "GET /functions/v1/sat-playbook/diagnostic without a session returns 401 {code:auth_required}; POST /events with event_name note_saved and no session returns 401.",
+    "GET /functions/v1/admin-exam-playbook/qa?exam=sat without a session returns 401; with exam=toefl returns 400 invalid_exam.",
+    "playbook.sat.schood.online: landing lists public modules; /math-algebra readable signed out; at 375px no horizontal scroll; ?lang=uz shows Uzbek navigation.",
+    "As a Premium learner: Run diagnostic creates one snapshot; reloading /diagnostic does not create another; adopting four-week-sprint shows dated tasks."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-english and schood-platform to the previous deployment.",
-    "migration": "Additive; leave in place. vocab_drill_cards is kept untouched (only imported_at added) so the previous drill code still works after a function rollback.",
-    "edge": "Redeploy the thirteen functions from a411de5e; new routes stop, earlier behaviour returns (words reviewed meanwhile stay in the notebook).",
-    "worker": "npx wrangler rollback in workers/schood-bot."
+    "pages": "Cloudflare Pages rollback of schood-sat-playbook to the previous deployment.",
+    "migration": "Additive tables and columns; leave in place. The widened event check is a superset of the old one.",
+    "edge": "Redeploy sat-playbook from the previous main commit; admin-exam-playbook can be left deployed (admin-only) or deleted with supabase functions delete admin-exam-playbook."
   }
 }
