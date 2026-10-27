@@ -1,6 +1,7 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { ArrowRight, Menu, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAppT } from '../i18n';
 
 export type PracticeNavAction = {
   id: string;
@@ -35,6 +36,7 @@ export const PracticeTopNav: React.FC<PracticeTopNavProps> = ({
   leadingNode,
   actions = [],
 }) => {
+  const t = useAppT();
   const [mobileOpen, setMobileOpen] = useState(false);
   const mobileNavId = useId();
   const headerRef = useRef<HTMLElement>(null);
@@ -163,7 +165,7 @@ export const PracticeTopNav: React.FC<PracticeTopNavProps> = ({
               ref={toggleRef}
               type="button"
               onClick={() => setMobileOpen((open) => !open)}
-              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+              aria-label={t('shell.menu')}
               aria-expanded={mobileOpen}
               aria-controls={mobileNavId}
             >
@@ -174,7 +176,7 @@ export const PracticeTopNav: React.FC<PracticeTopNavProps> = ({
       </div>
 
       {actions.length > 0 ? (
-        <nav id={mobileNavId} aria-label="IELTS Practice" className="mobile-nav-panel" hidden={!mobileOpen} aria-hidden={!mobileOpen}>
+        <nav id={mobileNavId} aria-label={t('shell.nav.label')} className="mobile-nav-panel" hidden={!mobileOpen} aria-hidden={!mobileOpen}>
           {actions.map((action) => renderAction(action, true))}
         </nav>
       ) : null}

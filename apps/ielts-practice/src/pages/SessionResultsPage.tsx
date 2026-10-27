@@ -10,7 +10,7 @@ import {
   type PracticeCoachStep,
 } from '../lib/api';
 import {
-  EXPERIENCE_COPY,
+  experienceCopy,
   formatPracticeLabel,
   getBuildExperienceKind,
   getBuildExperienceLabel,
@@ -20,6 +20,8 @@ import { formatBand } from '@schood/ielts-core';
 import { AnnotatedWritingRetro } from '../components/AnnotatedWritingRetro';
 import { ConversationalCoach, ModelAnswerComparator } from '../components/PracticeAdaptiveExtras';
 import { MistakeCauseTagger } from '../components/MistakeCauseInsights';
+import { LocaleSwitcher } from '../../../../packages/service-i18n/src/i18n.tsx';
+import { sectionLabel, useAppT, useErrorText, useFormat, type AppKey } from '../i18n';
 
 // IELTS writing criteria. grade-writing returns the score under any of
 // these aliases depending on the model — accept all, render none if missing.
@@ -69,8 +71,8 @@ const titleCase = (value: unknown): string =>
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (token) => token.toUpperCase());
 
-const percent = (value: number | null): string =>
-  value == null ? '-' : `${Math.round(Math.max(0, Math.min(1, value)) * 100)}%`;
+const percentWidth = (value: number | null): string =>
+  value == null ? '0%' : `${Math.round(Math.max(0, Math.min(1, value)) * 100)}%`;
 
 const sectionRowsFromOutcome = (outcome: Json | null) => {
   const scores = isRecord(outcome?.section_scores) ? (outcome?.section_scores as Json) : {};
@@ -95,6 +97,10 @@ const writingTasksFromEvaluation = (evaluation: Json | null): Json[] => {
 };
 
 export const SessionResultsPage = () => {
+  const t = useAppT();
+  const fmt = useFormat();
+  const errorText = useErrorText();
+  const pct = (value: number | null): string => (value == null ? '–' : fmt.percent(Math.max(0, Math.min(1, value))));
   const navigate = useNavigate();
   const location = useLocation();
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -126,7 +132,7 @@ export const SessionResultsPage = () => {
           const existing = await practiceSessionResultsGet(accessToken, sessionId);
           setData({ ...existing, scoring_refresh: null });
         } catch {
-          setError(scoreErr instanceof Error ? scoreErr.message : 'Unable to load practice results');
+          setError(errorText(scoreErr));
         }
       } finally {
         setLoading(false);
@@ -134,6 +140,7 @@ export const SessionResultsPage = () => {
     };
 
     void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accessToken, sessionId]);
 
   const outcome = isRecord(data?.results?.outcome) ? (data?.results?.outcome as Json) : null;
@@ -148,7 +155,7 @@ export const SessionResultsPage = () => {
   const build = data?.delivery_build ?? null;
   const buildSummary = isRecord(build?.build_summary) ? build?.build_summary as Json : {};
   const experienceKind = getBuildExperienceKind(build);
-  const experienceInfo = EXPERIENCE_COPY[experienceKind];
+  const experienceInfo = experienceCopy(experienceKind, t);
   const resultSection = String(data?.blueprint?.section_type ?? buildSummary.section_type ?? 'reading');
   const targetTypes = Array.isArray(data?.blueprint?.target_question_types) ? data.blueprint.target_question_types : [];
   const masteryUpdates = Array.isArray(data?.scoring_refresh?.mastery_updates) ? data.scoring_refresh.mastery_updates : [];
@@ -175,7 +182,7 @@ export const SessionResultsPage = () => {
       const response = await practiceLabCoach(accessToken, sessionId, getCoachLang());
       setCoachSteps(response.steps);
     } catch (err) {
-      setCoachError(err instanceof Error ? err.message : 'Coaching unavailable right now');
+      setCoachError(errorText(err));
     } finally {
       setCoachLoading(false);
     }
@@ -188,7 +195,7 @@ export const SessionResultsPage = () => {
       await practiceGeneratePlan(accessToken, { refresh_diagnostics: true });
       navigate('/plan');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to regenerate plan');
+      setError(errorText(err));
     } finally {
       setRegenerating(false);
     }
@@ -198,94 +205,97 @@ export const SessionResultsPage = () => {
     <div className="practice-root">
       <PracticeTopNav
         compact
-        title="Practice Results"
-        subtitle={`${getBuildExperienceLabel(build)} feedback and next action`}
+        title={t('res.title')}
+        subtitle={t('res.subtitle', { kind: getBuildExperienceLabel(build, t) })}
+        leadingNode={<LocaleSwitcher label={t('shell.language')} />}
         actions={[
-          { id: 'back', label: 'Back', onClick: () => navigate(backPath) },
-          { id: 'review', label: 'Review Answers', to: `/session/${encodeURIComponent(runtimeSessionId)}/review?${reviewQuery}` },
-          { id: 'next-plan', label: regenerating ? 'Updating...' : 'Next Plan', onClick: () => void regenerateNext(), variant: 'solid', disabled: regenerating },
+          { id: 'back', label: t('res.back'), onClick: () => navigate(backPath) },
+          { id: 'review', label: t('res.reviewAnswers'), to: `/session/${encodeURIComponent(runtimeSessionId)}/review?${reviewQuery}` },
+          { id: 'next-plan', label: regenerating ? t('res.updating') : t('res.nextPlan'), onClick: () => void regenerateNext(), variant: 'solid', disabled: regenerating },
         ]}
       />
 
       <main className="dashboard-grid results-layout">
         <section className="glass stat-card">
-          <h3>Score</h3>
+          <h3>{t('res.score')}</h3>
           <div className="band-row">
-            <strong>{summaryBand != null ? summaryBand.toFixed(1) : '-'}</strong>
+            <strong>{summaryBand != null ? fmt.band(summaryBand) : '–'}</strong>
           </div>
           <p className="muted">
-            {outcome ? `Computed ${String(outcome.computed_at ?? '').slice(0, 16).replace('T', ' ')}` : 'Scoring is being prepared.'}
+            {outcome && outcome.computed_at ? t('res.computed', { date: fmt.dateTime(String(outcome.computed_at)) }) : t('res.preparing')}
           </p>
         </section>
 
         <section className="glass stat-card">
-          <h3>Focus</h3>
-          <p>{targetTypes.length > 0 ? targetTypes.slice(0, 3).map(formatPracticeLabel).join(', ') : titleCase(data?.blueprint?.section_type ?? 'IELTS')}</p>
+          <h3>{t('res.focus')}</h3>
+          <p>{targetTypes.length > 0 ? targetTypes.slice(0, 3).map(formatPracticeLabel).join(', ') : sectionLabel(t, data?.blueprint?.section_type ?? 'IELTS')}</p>
           <p className="muted">{experienceInfo.description}</p>
           <div className="task-feature-row compact">
-            {getExperienceSteps(experienceKind, resultSection).map((step) => (
+            {getExperienceSteps(experienceKind, resultSection, t).map((step) => (
               <span className="feature-pill" key={step}>{step}</span>
             ))}
           </div>
         </section>
 
         <section className="glass stat-card">
-          <h3>Mastery Updated</h3>
+          <h3>{t('res.mastery')}</h3>
           <div className="band-row secondary">
             <strong>{masteryUpdates.length}</strong>
           </div>
-          <p className="muted">Question-type records refreshed from this session.</p>
+          <p className="muted">{t('res.masteryLead')}</p>
         </section>
 
         <section className="glass stat-card wide">
           <div className="task-card-head">
             <div>
-              <h3>Mistake Pattern</h3>
-              <p className="muted">A concise read of what this attempt says about your next practice step.</p>
+              <h3>{t('res.pattern')}</h3>
+              <p className="muted">{t('res.patternLead')}</p>
             </div>
           </div>
 
-          {loading ? <p>Scoring practice session...</p> : null}
-          {error ? <p className="error-text">{error}</p> : null}
+          {loading ? <p>{t('res.scoring')}</p> : null}
+          {error ? <p className="error-text" role="alert">{error}</p> : null}
           {!loading && !error ? (
             <div className="result-insight">
               <h4>
                 {firstWritingImprovement
-                  ? 'Writing improvement target'
+                  ? t('res.writingTarget')
                   : weakestSection
-                    ? `${titleCase(weakestSection.type)} needs the next repair pass`
-                    : 'No major mistake pattern detected yet'}
+                    ? t('res.sectionNeeds', { section: sectionLabel(t, weakestSection.type) })
+                    : t('res.noPattern')}
               </h4>
               <p>
                 {firstWritingImprovement
                   ? firstWritingImprovement
                   : weakestSection
-                    ? `Accuracy is ${percent(weakestSection.accuracy)}${weakestSection.band != null ? ` with band ${weakestSection.band.toFixed(1)}` : ''}. Start with the next recommended transformed task instead of repeating this test.`
-                    : 'Complete the review once, then regenerate the plan so the next task targets a fresh weakness.'}
+                    ? weakestSection.band != null
+                      ? t('res.sectionDetailBand', { accuracy: pct(weakestSection.accuracy), band: fmt.band(weakestSection.band) })
+                      : t('res.sectionDetail', { accuracy: pct(weakestSection.accuracy) })
+                    : t('res.noPatternLead')}
               </p>
             </div>
           ) : null}
         </section>
 
         <section className="glass stat-card wide">
-          <h3>Section Breakdown</h3>
+          <h3>{t('res.breakdown')}</h3>
           <div className="section-result-list">
             {sectionRows.map((row) => (
               <div className="section-progress-row" key={row.id}>
                 <div className="section-progress-head">
-                  <span className={`chip ${row.type}`}>{row.type}</span>
-                  <span className="muted">{row.raw ?? '-'} / {row.max ?? '-'}</span>
+                  <span className={`chip ${row.type}`}>{sectionLabel(t, row.type)}</span>
+                  <span className="muted">{row.raw ?? '–'} / {row.max ?? '–'}</span>
                 </div>
                 <div className="progress-track">
-                  <div className={`progress-fill ${row.type}`} style={{ width: row.accuracy == null ? '0%' : percent(row.accuracy) }} />
+                  <div className={`progress-fill ${row.type}`} style={{ width: percentWidth(row.accuracy) }} />
                 </div>
                 <div className="section-progress-meta">
-                  <span>Accuracy {percent(row.accuracy)}</span>
-                  <span>Band {row.band != null ? row.band.toFixed(1) : '-'}</span>
+                  <span>{t('res.accuracy', { value: pct(row.accuracy) })}</span>
+                  <span>{t('res.band', { value: row.band != null ? fmt.band(row.band) : '–' })}</span>
                 </div>
               </div>
             ))}
-            {sectionRows.length === 0 && !loading ? <p className="muted">No objective section scores yet.</p> : null}
+            {sectionRows.length === 0 && !loading ? <p className="muted">{t('res.noScores')}</p> : null}
           </div>
         </section>
 
@@ -303,7 +313,7 @@ export const SessionResultsPage = () => {
 
         {writingTasks.length > 0 ? (
           <section className="glass stat-card wide">
-            <h3>Writing Feedback</h3>
+            <h3>{t('res.writing')}</h3>
             <div className="writing-feedback-list">
               {writingTasks.map((task, index) => {
                 const criteria = (task as Json).criteria;
@@ -314,11 +324,11 @@ export const SessionResultsPage = () => {
                 return (
                   <article className="feedback-panel" key={String(task.content_unit_id ?? index)}>
                     <div className="task-card-head">
-                      <h4>{titleCase(task.task_type ?? `Task ${index + 1}`)}</h4>
-                      <strong>Band {formatBand(asNumber(task.band))}</strong>
+                      <h4>{task.task_type ? titleCase(task.task_type) : t('res.task', { n: index + 1 })}</h4>
+                      <strong>{t('res.band', { value: formatBand(asNumber(task.band)) })}</strong>
                     </div>
                     {criterionRows.length > 0 ? (
-                      <div className="writing-criteria-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, margin: '12px 0' }}>
+                      <div className="writing-criteria-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(140px, 100%), 1fr))', gap: 12, margin: '12px 0' }}>
                         {criterionRows.map((row) => (
                           <div key={row.short}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
@@ -342,7 +352,7 @@ export const SessionResultsPage = () => {
                         if (values.length === 0) return null;
                         return (
                           <div key={key}>
-                            <h5>{titleCase(key)}</h5>
+                            <h5>{t((key === 'strengths' ? 'res.strengths' : key === 'improvements' ? 'res.improvements' : 'res.actionable') as AppKey)}</h5>
                             <ul>
                               {values.map((value, itemIndex) => <li key={`${key}-${itemIndex}`}>{value}</li>)}
                             </ul>
@@ -360,11 +370,8 @@ export const SessionResultsPage = () => {
         <section className="glass stat-card wide">
           <div className="task-card-head">
             <div>
-              <h3>Per-question coaching</h3>
-              <p className="muted">
-                AI-generated explanation for the items you missed: the trap pattern, the correct approach,
-                and a direct link to the playbook strategy.
-              </p>
+              <h3>{t('res.coach.title')}</h3>
+              <p className="muted">{t('res.coach.lead')}</p>
             </div>
             {coachSteps == null ? (
               <button
@@ -373,13 +380,13 @@ export const SessionResultsPage = () => {
                 onClick={() => void requestCoaching()}
                 disabled={coachLoading}
               >
-                {coachLoading ? 'Generating…' : 'Get coaching'}
+                {coachLoading ? t('res.coach.loading') : t('res.coach.get')}
               </button>
             ) : null}
           </div>
-          {coachError ? <p className="error-text">{coachError}</p> : null}
+          {coachError ? <p className="error-text" role="alert">{coachError}</p> : null}
           {coachSteps != null && coachSteps.length === 0 ? (
-            <p className="muted">Nothing to coach — every step in this attempt was above the coaching threshold.</p>
+            <p className="muted">{t('res.coach.none')}</p>
           ) : null}
           {coachSteps != null && coachSteps.length > 0 ? (
             <ul className="srs-review-list">
@@ -389,15 +396,15 @@ export const SessionResultsPage = () => {
                     <div>
                       <h4>{formatPracticeLabel(step.question_type)}</h4>
                       <span className="muted" style={{ fontSize: 12 }}>
-                        Accuracy {Math.round(step.accuracy_ratio * 100)}% · Trap: {step.trap_pattern}
+                        {t('res.coach.meta', { value: pct(step.accuracy_ratio), trap: step.trap_pattern })}
                       </span>
                     </div>
                   </div>
-                  <p><strong>Why it’s wrong:</strong> {step.what_went_wrong}</p>
-                  <p><strong>Correct approach:</strong> {step.correct_approach}</p>
+                  <p><strong>{t('res.coach.wrong')}</strong> {step.what_went_wrong}</p>
+                  <p><strong>{t('res.coach.approach')}</strong> {step.correct_approach}</p>
                   <div className="inline-actions" style={{ flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
                     <a className="btn ghost compact" href={step.strategy_url} target="_blank" rel="noreferrer">
-                      Open playbook strategy
+                      {t('res.coach.playbook')}
                     </a>
                     <MistakeCauseTagger
                       accessToken={accessToken}
@@ -414,20 +421,18 @@ export const SessionResultsPage = () => {
 
         <section className="glass stat-card wide next-action-card">
           <div>
-            <h3>Next Recommended Exercise</h3>
-            <p className="muted">
-              Regenerate the plan now to use the refreshed diagnostics and mastery records from this result.
-            </p>
+            <h3>{t('res.next.title')}</h3>
+            <p className="muted">{t('res.next.lead')}</p>
           </div>
           <div className="inline-actions">
             <button className="btn solid" type="button" onClick={() => void regenerateNext()} disabled={regenerating}>
-              {regenerating ? 'Updating...' : 'Generate Next 3 Tasks'}
+              {regenerating ? t('res.updating') : t('res.next.build')}
             </button>
             <a
               className="btn ghost"
               href={`${PLAYBOOK_URL}/diagnostic?source=practice&session_id=${encodeURIComponent(runtimeSessionId)}&weak_skill=${encodeURIComponent(String(weakestSection?.type ?? data?.blueprint?.section_type ?? 'writing'))}`}
             >
-              Open Playbook
+              {t('res.next.playbook')}
             </a>
           </div>
         </section>

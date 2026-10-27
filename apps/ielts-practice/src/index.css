@@ -3293,3 +3293,466 @@ h1, h2, h3, h4 {
   }
 }
 
+
+/* ------------------------------------------------------------------
+   2026-10 shell, i18n and phone-layout additions
+   ------------------------------------------------------------------ */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sidebar-nav-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  padding: 8px 0 2px;
+}
+
+.sidebar-account-panel {
+  gap: 10px;
+}
+
+.sidebar-account-state {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.sidebar-account-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.locale-switcher select {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  background: #ffffff;
+  color: var(--text);
+  font: inherit;
+}
+
+/* Two-column dashboard rows that collapse on narrow screens. */
+.dash-two-col {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+}
+
+.dash-two-col.wide-first {
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+}
+
+.dash-card {
+  padding: 22px;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.dash-card h3 {
+  margin: 0 0 4px;
+}
+
+.dash-card p {
+  margin: 0;
+}
+
+.context-banner {
+  display: grid;
+  gap: 8px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  border-left: 3px solid #b6512c;
+}
+
+.context-banner p {
+  margin: 0;
+}
+
+.empty-catalogue {
+  display: grid;
+  gap: 10px;
+}
+
+.access-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: var(--card-subtle);
+  border: 1px solid var(--card-border);
+}
+
+.access-pill.ok {
+  color: #166534;
+  border-color: color-mix(in srgb, #166534 30%, transparent);
+}
+
+/* Practice forms (generator, speaking, review items) */
+.practice-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+  gap: 16px;
+}
+
+.field-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 6px;
+}
+
+.segmented {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.practice-input,
+.practice-textarea,
+.practice-select {
+  width: 100%;
+  max-width: 100%;
+  min-height: 40px;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+  background: #ffffff;
+  color: var(--text);
+}
+
+.practice-textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.content-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--ink-2, var(--text));
+}
+
+.question-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 14px;
+}
+
+.question-card {
+  padding: 16px;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  background: var(--card);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.question-card.correct {
+  border-color: #166534;
+  background: color-mix(in srgb, #166534 5%, white);
+}
+
+.question-card.wrong {
+  border-color: #9b2c2c;
+  background: color-mix(in srgb, #9b2c2c 5%, white);
+}
+
+.question-card .option-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  padding: 4px 0;
+}
+
+.history-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.history-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  background: var(--card-subtle);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.recorder-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.recorder-timer {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.feedback-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  gap: 12px;
+}
+
+.feedback-grid article {
+  padding: 14px;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  background: var(--card-subtle);
+  overflow-wrap: anywhere;
+}
+
+audio.practice-audio {
+  width: 100%;
+  max-width: 420px;
+}
+
+@media (max-width: 760px) {
+  .dash-two-col,
+  .dash-two-col.wide-first {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dash-card {
+    padding: 16px;
+  }
+}
+
+.review-section {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 22px;
+  min-width: 0;
+}
+
+.review-section h2 {
+  margin: 0;
+}
+
+.review-item-body {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.review-item-prompt {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.review-item-excerpt,
+.review-item-source {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.review-options {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.review-option-legend {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13.5px;
+}
+
+.review-item-outcome {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--card-subtle);
+  overflow-wrap: anywhere;
+}
+
+.review-item-outcome p {
+  margin: 0;
+}
+
+.srs-review-row.review-correct {
+  border-color: color-mix(in srgb, #166534 35%, transparent);
+}
+
+.srs-review-row.review-wrong {
+  border-color: color-mix(in srgb, #9b2c2c 35%, transparent);
+}
+
+.srs-review-row-head {
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.srs-review-row-head h3 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.srs-review-row-box {
+  margin-left: auto;
+}
+
+.onboarding-card {
+  padding: 32px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+
+.plan-goals label {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.listening-player {
+  display: grid;
+  gap: 10px;
+}
+
+.speaking-feedback {
+  display: grid;
+  gap: 12px;
+}
+
+.speaking-feedback h4 {
+  margin: 0 0 6px;
+}
+
+.speaking-feedback ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.context-banner .inline-actions,
+.empty-catalogue .inline-actions {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 760px) {
+  .onboarding-card {
+    padding: 20px;
+  }
+
+  .cards-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* A single column must not grow to the widest child's min-content width. */
+@media (max-width: 1120px) {
+  .practice-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.practice-main {
+  min-width: 0;
+}
+
+.task-card-head {
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.task-card-head > * {
+  min-width: 0;
+}
+
+/* Cards on phones: flex/grid children may shrink below their content, and
+   headings and copy wrap instead of widening the card (fonts differ by OS). */
+.dash-card > *,
+.task-card-head > *,
+.coach-panel-copy {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.task-card-head h3,
+.task-card-head h4,
+.task-card-head p,
+.dash-card h2,
+.dash-card h3,
+.dash-card p {
+  overflow-wrap: anywhere;
+}
+
+.practice-root .eyebrow {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+@media (max-width: 520px) {
+  .coach-panel-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .coach-lang-toggle {
+    align-self: flex-start;
+  }
+}
+
+.srs-filter-row .filter-sort-group {
+  flex-wrap: wrap;
+}
+
+.practice-page-head > *,
+.landing-grid > *,
+.top-nav-row > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* On phones nothing may widen the page: long words (Uzbek/Russian labels,
+   AI text, URLs) break only when they would not otherwise fit. */
+@media (max-width: 520px) {
+  .practice-root :is(h1, h2, h3, h4, h5, p, li, label, summary, strong, span, a, button, legend) {
+    overflow-wrap: anywhere;
+  }
+
+  .practice-root .btn {
+    max-width: 100%;
+    white-space: normal;
+  }
+}

@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PracticeTopNav } from '../components/PracticeTopNav';
+import { PracticeShell } from '../components/PracticeShell';
+import { EmptyCatalogueCard } from '../components/PracticeContextBanner';
+import { sectionLabel, useAppT, useErrorText } from '../i18n';
 import {
   practiceGeneratePlan,
   practiceGoalsGet,
@@ -38,12 +40,14 @@ const hasLabPayload = (value: { delivery_build?: { metadata?: unknown } | null }
 };
 
 export const PlanPage = () => {
+  const t = useAppT();
+  const errorText = useErrorText();
   const navigate = useNavigate();
   const { accessToken } = useAccess();
   const [targetBand, setTargetBand] = useState('6.5');
-  const [readingBand, setReadingBand] = useState('6.5');
-  const [listeningBand, setListeningBand] = useState('6.5');
-  const [writingBand, setWritingBand] = useState('6.5');
+  const [sectionBands, setSectionBands] = useState<Record<'reading' | 'listening' | 'writing' | 'speaking', string>>({ reading: '6.5', listening: '6.5', writing: '6.5', speaking: '6.5' });
+  const [emptyCatalogue, setEmptyCatalogue] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const [practiceStartDate, setPracticeStartDate] = useState(todayLocalDate());
   const [programDurationDays, setProgramDurationDays] = useState('30');
   const [dailyPracticeMinutes, setDailyPracticeMinutes] = useState('60');
@@ -65,16 +69,21 @@ export const PlanPage = () => {
       ]);
       const goals = goalsRes.goals;
       setTargetBand(String(goals.target_overall_band ?? 6.5));
-      setReadingBand(String((goals.target_section_bands as Record<string, unknown> | undefined)?.reading ?? goals.target_overall_band ?? 6.5));
-      setListeningBand(String((goals.target_section_bands as Record<string, unknown> | undefined)?.listening ?? goals.target_overall_band ?? 6.5));
-      setWritingBand(String((goals.target_section_bands as Record<string, unknown> | undefined)?.writing ?? goals.target_overall_band ?? 6.5));
+      const bands = (goals.target_section_bands ?? {}) as Record<string, unknown>;
+      const fallback = goals.target_overall_band ?? 6.5;
+      setSectionBands({
+        reading: String(bands.reading ?? fallback),
+        listening: String(bands.listening ?? fallback),
+        writing: String(bands.writing ?? fallback),
+        speaking: String(bands.speaking ?? fallback),
+      });
       setPracticeStartDate(goals.practice_start_date || todayLocalDate());
       setProgramDurationDays(String(goals.program_duration_days ?? 30));
       setDailyPracticeMinutes(String(goals.daily_practice_minutes ?? 60));
       setTimezone(goals.timezone || browserTimezone());
       setPlanItems(planRes.items ?? []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load plan page');
+      setError(errorText(err));
     } finally {
       setLoading(false);
     }
@@ -82,6 +91,7 @@ export const PlanPage = () => {
 
   useEffect(() => {
     void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accessToken]);
 
   const saveGoals = async (): Promise<void> => {
@@ -92,9 +102,10 @@ export const PlanPage = () => {
       await practiceGoalsPatch(accessToken, {
         target_overall_band: Number(targetBand),
         target_section_bands: {
-          reading: Number(readingBand),
-          listening: Number(listeningBand),
-          writing: Number(writingBand),
+          reading: Number(sectionBands.reading),
+          listening: Number(sectionBands.listening),
+          writing: Number(sectionBands.writing),
+          speaking: Number(sectionBands.speaking),
         },
         practice_start_date: practiceStartDate || todayLocalDate(),
         program_duration_days: Number(programDurationDays),
@@ -102,8 +113,9 @@ export const PlanPage = () => {
         timezone: timezone || browserTimezone(),
       });
       await load();
+      setNotice(t('plan.saved'));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save goals');
+      setError(errorText(err));
     } finally {
       setSaving(false);
     }
@@ -114,14 +126,15 @@ export const PlanPage = () => {
     setSaving(true);
     setError(null);
     try {
-      await practiceGeneratePlan(accessToken, {
+      const result = await practiceGeneratePlan(accessToken, {
         refresh_diagnostics: true,
         daily_minutes: Number(dailyPracticeMinutes),
         timezone: timezone || browserTimezone(),
       });
+      setEmptyCatalogue(Boolean(result.empty_reason) && result.items.length === 0);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to regenerate plan');
+      setError(errorText(err));
     } finally {
       setSaving(false);
     }
@@ -169,9 +182,9 @@ export const PlanPage = () => {
           timezone: timezone || browserTimezone(),
         }).catch(() => null);
         await load();
-        setError('That lab was from an older generated plan, so I refreshed today\'s plan.');
+        setError(t('plan.stale'));
       } else {
-        setError(message);
+        setError(errorText(err));
       }
     } finally {
       setLaunchingId((current) => (current === item.id ? null : current));
@@ -191,91 +204,91 @@ export const PlanPage = () => {
   }, [planItems]);
 
   return (
-    <div className="practice-root">
-      <PracticeTopNav
-        compact
-        title="Daily Practice Plan"
-        subtitle="Configure goals and generate today's focused IELTS sessions"
-        actions={[
-          { id: 'back', label: 'Back', to: '/dashboard' },
-          { id: 'playbook', label: 'Playbook', href: `${PLAYBOOK_URL}/study-plans?source=practice` },
-          { id: 'regenerate', label: saving ? 'Working...' : 'Regenerate', onClick: () => void regenerate(), variant: 'solid', disabled: saving },
-        ]}
-      />
-
-      <main className="dashboard-grid">
-        <section className="glass stat-card">
-          <h3>Goal bands</h3>
-          <label>Overall target band<input value={targetBand} onChange={(event) => setTargetBand(event.target.value)} /></label>
-          <label>Reading target<input value={readingBand} onChange={(event) => setReadingBand(event.target.value)} /></label>
-          <label>Listening target<input value={listeningBand} onChange={(event) => setListeningBand(event.target.value)} /></label>
-          <label>Writing target<input value={writingBand} onChange={(event) => setWritingBand(event.target.value)} /></label>
-          <label>Start date<input type="date" value={practiceStartDate} onChange={(event) => setPracticeStartDate(event.target.value)} /></label>
-          <label>Program duration days<input type="number" min="1" max="365" value={programDurationDays} onChange={(event) => setProgramDurationDays(event.target.value)} /></label>
-          <label>Daily practice minutes<input type="number" min="10" max="360" step="5" value={dailyPracticeMinutes} onChange={(event) => setDailyPracticeMinutes(event.target.value)} /></label>
-          <label>Timezone<input value={timezone} onChange={(event) => setTimezone(event.target.value)} /></label>
-          <button className="btn ghost" type="button" onClick={() => void saveGoals()} disabled={saving}>
-            Save goals
+    <PracticeShell>
+      <header className="practice-page-head">
+        <div>
+          <span className="eyebrow">{t('plan.eyebrow')}</span>
+          <h1>{t('plan.title')}</h1>
+          <p className="muted">{t('plan.lead')}</p>
+        </div>
+        <div className="inline-actions">
+          <a className="btn ghost compact" href={`${PLAYBOOK_URL}/study-plans?source=practice`}>{t('plan.playbook')}</a>
+          <button className="btn solid compact" type="button" onClick={() => void regenerate()} disabled={saving}>
+            {saving ? t('plan.working') : t('plan.regenerate')}
           </button>
+        </div>
+      </header>
+
+      {emptyCatalogue ? <EmptyCatalogueCard /> : null}
+
+      <div className="dash-two-col plan-layout">
+        <section className="glass dash-card plan-goals">
+          <h3>{t('plan.goals')}</h3>
+          <label>{t('plan.overall')}<input className="practice-input" inputMode="decimal" value={targetBand} onChange={(event) => setTargetBand(event.target.value)} /></label>
+          {(['reading', 'listening', 'writing', 'speaking'] as const).map((section) => (
+            <label key={section}>
+              {t('plan.sectionTarget', { section: sectionLabel(t, section) })}
+              <input className="practice-input" inputMode="decimal" value={sectionBands[section]} onChange={(event) => setSectionBands((prev) => ({ ...prev, [section]: event.target.value }))} />
+            </label>
+          ))}
+          <label>{t('plan.start')}<input className="practice-input" type="date" value={practiceStartDate} onChange={(event) => setPracticeStartDate(event.target.value)} /></label>
+          <label>{t('plan.duration')}<input className="practice-input" type="number" min="1" max="365" value={programDurationDays} onChange={(event) => setProgramDurationDays(event.target.value)} /></label>
+          <label>{t('plan.minutes')}<input className="practice-input" type="number" min="10" max="360" step="5" value={dailyPracticeMinutes} onChange={(event) => setDailyPracticeMinutes(event.target.value)} /></label>
+          <label>{t('plan.timezone')}<input className="practice-input" value={timezone} onChange={(event) => setTimezone(event.target.value)} /></label>
+          <button className="btn ghost" type="button" onClick={() => void saveGoals()} disabled={saving}>{t('plan.save')}</button>
+          {notice ? <p className="muted" role="status">{notice}</p> : null}
         </section>
 
-        <section className="glass stat-card wide">
+        <section className="glass dash-card">
           <div className="task-card-head">
             <div>
-              <h3>Today's generated plan</h3>
-              <p className="muted">Transformed sessions are picked from your target band, simulator result, mastery, and recency.</p>
+              <h3>{t('plan.today')}</h3>
+              <p className="muted">{t('plan.todayLead')}</p>
             </div>
             <div className="task-summary">
-              <span>Total {planSummary.total}</span>
-              <span>Done {planSummary.completed}</span>
-              <span>Active {planSummary.inProgress}</span>
-              <span>Pending {planSummary.pending}</span>
+              <span>{t('plan.total', { count: planSummary.total })}</span>
+              <span>{t('plan.done', { count: planSummary.completed })}</span>
+              <span>{t('plan.active', { count: planSummary.inProgress })}</span>
+              <span>{t('plan.pending', { count: planSummary.pending })}</span>
             </div>
           </div>
 
-          {loading ? <p>Loading...</p> : null}
-          {error ? <p className="error-text">{error}</p> : null}
-          {!loading && planItems.length === 0 ? <p>No plan items generated for today yet.</p> : null}
+          {loading ? <p>{t('plan.loading')}</p> : null}
+          {error ? <p className="error-text" role="alert">{error}</p> : null}
+          {!loading && planItems.length === 0 && !emptyCatalogue ? <p>{t('plan.empty')}</p> : null}
 
           <ul className="task-list">
             {planItems.map((item) => (
               <li className="task-item" key={item.id}>
                 <div>
-                  <span className={`chip ${item.section_type}`}>{item.section_type}</span>
-                  <h4>{getPlanItemTitle(item)}</h4>
-                  <p>{getPlanItemDescription(item)}</p>
-                  <p className="task-why">{getPlanWhyCopy(item)}</p>
+                  <span className={`chip ${item.section_type}`}>{sectionLabel(t, item.section_type)}</span>
+                  <h4>{getPlanItemTitle(item, t)}</h4>
+                  <p>{getPlanItemDescription(item, t)}</p>
+                  <p className="task-why">{getPlanWhyCopy(item, t)}</p>
                   <div className="task-feature-row">
-                    {getPlanExperienceSteps(item).map((step) => (
+                    {getPlanExperienceSteps(item, t).map((step) => (
                       <span className="feature-pill" key={step}>{step}</span>
                     ))}
                   </div>
                   <div className="task-meta-row">
-                    {getPlanPersonalizationChips(item).map((chip) => (
+                    {getPlanPersonalizationChips(item, t).map((chip) => (
                       <span key={chip}>{chip}</span>
                     ))}
                   </div>
-                  {item.blueprint_id || item.delivery_build_id ? <p className="source-note">{getPlanSourceCopy(item)}</p> : null}
+                  {item.blueprint_id || item.delivery_build_id ? <p className="source-note">{getPlanSourceCopy(item, t)}</p> : null}
                 </div>
                 {item.blueprint_id || item.delivery_build_id ? (
-                  <button
-                    className="btn ghost"
-                    type="button"
-                    onClick={() => void launchPlanItem(item)}
-                    disabled={launchingId === item.id}
-                  >
-                    {launchingId === item.id ? 'Opening...' : item.status === 'completed' ? 'Review' : 'Open'}
+                  <button className="btn ghost" type="button" onClick={() => void launchPlanItem(item)} disabled={launchingId === item.id}>
+                    {launchingId === item.id ? t('common.opening') : item.status === 'completed' ? t('plan.review') : t('plan.open')}
                   </button>
                 ) : (
-                  <button className="btn ghost" type="button" onClick={() => void regenerate()} disabled={saving}>
-                    Replace
-                  </button>
+                  <button className="btn ghost" type="button" onClick={() => void regenerate()} disabled={saving}>{t('plan.replace')}</button>
                 )}
               </li>
             ))}
           </ul>
         </section>
-      </main>
-    </div>
+      </div>
+    </PracticeShell>
   );
 };

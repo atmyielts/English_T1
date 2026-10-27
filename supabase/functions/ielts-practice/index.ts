@@ -5,8 +5,6 @@ import {
   dailyCountFromPracticeMinutes,
   daysUntilDate,
   deriveTargetDate,
-  hasActiveProductEntitlement,
-  hasActiveSponsoredProductAccess,
   PLAN_REGENERATION_PRESERVED_STATUSES,
   PLAN_REGENERATION_REPLACEABLE_STATUSES,
   normalizeDailyPracticeMinutes,
@@ -27,6 +25,33 @@ import {
   buildPracticeTrajectory as buildPracticeTrajectoryShared,
 } from "../_shared/ielts-insights.ts";
 import { logFunctionError } from "../_shared/error-log.ts";
+import { practiceAccessRequired, userHasPracticeAccess as userHasPracticeAccessShared } from "../_shared/ielts-practice-access.ts";
+import {
+  gradeMock,
+  normalizeMockQuestions,
+  practiceQuestionTypeFor,
+  publicMockQuestions,
+  type NormalizedMockQuestion,
+} from "../_shared/ielts-practice-mock.ts";
+import {
+  describeAnswerKey,
+  gradeItemStep,
+  missedItemsFromLab,
+  passedStepIds,
+  publicItemStep,
+  scheduleItemReview,
+  scheduleMissedInLab,
+  type ItemReviewState,
+} from "../_shared/ielts-practice-item-srs.ts";
+import {
+  isSpeakingPart,
+  normalizeSpeakingFeedback,
+  orderSpeakingPrompts,
+  parseSpeakingSubmission,
+  SPEAKING_SYSTEM_PROMPT,
+  speakingLangInstruction,
+  wordsPerMinute,
+} from "../_shared/ielts-practice-speaking.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -403,60 +428,9 @@ const authUser = async (authSb: any, req: Request): Promise<AuthedContext | null
   };
 };
 
-const userHasPracticeAccess = async (sb: any, userId: string, scope: ResolvedScope): Promise<boolean> => {
-  const { data: userRow, error: userError } = await sb
-    .from("users")
-    .select("role")
-    .eq("id", userId)
-    .maybeSingle();
-  if (userError) throw new Error("Failed to load user role");
-  if (String((userRow as any)?.role ?? "").toLowerCase() === "admin") return true;
-
-  const { data: memberships, error: membershipError } = await sb
-    .from("tenant_memberships")
-    .select("tenant_id")
-    .eq("user_id", userId)
-    .eq("status", "active")
-    .order("created_at", { ascending: true })
-    .limit(1);
-  if (membershipError) throw new Error("Failed to load tenant memberships");
-
-  const tenantId = Array.isArray(memberships) ? toNullableText((memberships[0] as any)?.tenant_id, 80) : null;
-  if (tenantId) {
-    const { data: entitlements, error: entitlementError } = await sb
-      .from("entitlements")
-      .select("id,starts_at,ends_at,is_active")
-      .eq("tenant_id", tenantId)
-      .eq("resource_type", "product")
-      .eq("resource_id", scope.practiceProductId)
-      .eq("is_active", true)
-      .limit(10);
-    if (entitlementError) throw new Error("Failed to load product entitlements");
-
-    const hasPersonalAccess = hasActiveProductEntitlement(
-      (Array.isArray(entitlements) ? entitlements : []).map((row: any) => ({
-        ...row,
-        resource_type: "product",
-        resource_id: scope.practiceProductId,
-      })),
-      scope.practiceProductId,
-    );
-    if (hasPersonalAccess) return true;
-  }
-
-  const { data: sponsored, error: sponsoredError } = await sb
-    .from("academy_entitlements")
-    .select("id,grant_type,resource_type,resource_id,starts_at,expires_at,status")
-    .eq("user_id", userId)
-    .eq("status", "active")
-    .eq("grant_type", "product_access")
-    .eq("resource_type", "product")
-    .eq("resource_id", scope.practiceProductId)
-    .limit(10);
-  if (sponsoredError) throw new Error("Failed to load sponsored product access");
-
-  return hasActiveSponsoredProductAccess(sponsored, scope.practiceProductId);
-};
+// Personal, sponsored and bundle (e.g. IELTS Complete) access, shared with ielts-srs.
+const userHasPracticeAccess = (sb: any, userId: string, scope: ResolvedScope): Promise<boolean> =>
+  userHasPracticeAccessShared(sb, userId, scope.practiceProductId);
 
 const resolveProductIdBySlug = async (sb: any, slug: string): Promise<string | null> => {
   const { data, error } = await sb
@@ -561,7 +535,7 @@ const patchGoals = async (sb: any, userId: string, scope: ResolvedScope, body: J
   const incomingSectionBands = isObject(body.target_section_bands) ? body.target_section_bands : {};
 
   const nextSectionBands: JsonRecord = { ...currentSectionBands };
-  for (const section of ["reading", "listening", "writing"]) {
+  for (const section of ["reading", "listening", "writing", "speaking"]) {
     const value = toNumber(incomingSectionBands[section]);
     if (value == null) continue;
     nextSectionBands[section] = clamp(roundTo(value, 1), 0, 9);
@@ -2826,10 +2800,11 @@ const upsertMistakeNotebookFromLab = async (
   sb: any,
   scope: ResolvedScope,
   userId: string,
-  labAttemptId: string,
+  labAttemptId: string | null,
   sectionType: "reading" | "listening" | "writing",
   scoredSteps: JsonRecord[],
   nowIso: string,
+  extraMetadata: JsonRecord = {},
 ): Promise<JsonRecord[]> => {
   const rows: JsonRecord[] = [];
   for (const step of scoredSteps) {
@@ -2866,11 +2841,12 @@ const upsertMistakeNotebookFromLab = async (
       priority: roundTo(1 - accuracy, 4),
       next_review_at: nextReview,
       last_seen_at: nowIso,
-      last_lab_attempt_id: labAttemptId,
+      ...(labAttemptId ? { last_lab_attempt_id: labAttemptId } : {}),
       metadata: {
         ...(isObject((existing as any)?.metadata) ? (existing as any).metadata : {}),
         last_accuracy_ratio: accuracy,
         last_step_id: toText(step.step_id, 120),
+        ...extraMetadata,
       },
     };
 
@@ -3037,6 +3013,10 @@ const PLAYBOOK_STRATEGY_SLUG: Record<string, string> = {
 };
 
 const PLAYBOOK_BASE_URL = "https://playbook.ielts.schood.online";
+
+const MOCK_QUESTION_STYLES = ["multiple_choice", "true_false_not_given", "matching_headings", "gap_fill"];
+const MOCK_JSON_CONTRACT =
+  "Use the requested question_style for most questions. Return strict JSON: {passage: {title: 5-10 words, body: the full passage or script}, questions: array of 5 objects {prompt: the question text, type: 'multiple_choice'|'true_false_not_given'|'matching_headings'|'gap_fill', options: array of 3-5 option strings WITHOUT letter prefixes (for true_false_not_given use exactly [\"True\", \"False\", \"Not Given\"]; omit options for gap_fill), correct_answer: for choice questions the EXACT text of the correct option copied from options; for gap_fill the answer word(s), at most three words taken from the text, with acceptable alternatives separated by ' / ', explanation: 1-2 sentences quoting the exact phrase in the passage or script that justifies the answer}, estimated_band: number}. Every question must have exactly one defensible answer.";
 
 const strategyUrlForQuestionType = (questionType: string, sectionType: string): string => {
   const slug = PLAYBOOK_STRATEGY_SLUG[questionType];
@@ -3366,6 +3346,161 @@ const loadRoadmapItems = async (sb: any, scope: ResolvedScope, userId: string, l
   return (Array.isArray(data) ? data : []).filter(isObject) as JsonRecord[];
 };
 
+// exam_outcomes.section_scores is keyed by section id with { type, band }.
+const sectionBandsFromScores = (raw: unknown): Record<string, number> | null => {
+  if (!isObject(raw)) return null;
+  const bands: Record<string, number> = {};
+  for (const value of Object.values(raw)) {
+    if (!isObject(value)) continue;
+    const section = toText(value.type, 40).toLowerCase();
+    const band = toNumber(value.band);
+    if (section && band != null) bands[section] = band;
+  }
+  return Object.keys(bands).length > 0 ? bands : null;
+};
+
+type ReviewItemSource = {
+  publicView: JsonRecord;
+  grade: (response: unknown) => { correct: boolean } | null;
+  correctAnswer: string;
+  explanation: string;
+};
+
+/** Load the real question behind an item review (lab step or generated mock question). */
+const loadReviewItemSource = async (sb: any, userId: string, item: JsonRecord): Promise<ReviewItemSource | null> => {
+  if (item.source_kind === "generated_mock") {
+    const { data: mock } = await sb
+      .from("ielts_practice_generated_mocks")
+      .select("id,section_type,passage,questions")
+      .eq("id", toText(item.generated_mock_id, 80))
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (!mock) return null;
+    const index = Math.floor(toNumber((isObject(item.metadata) ? item.metadata : {}).question_index) ?? -1);
+    const questions = (Array.isArray((mock as JsonRecord).questions) ? (mock as JsonRecord).questions : []) as NormalizedMockQuestion[];
+    const question = questions[index];
+    if (!question) return null;
+    return {
+      publicView: {
+        source_kind: "generated_mock",
+        section_type: (mock as JsonRecord).section_type,
+        passage: (mock as JsonRecord).passage,
+        question: publicMockQuestions([question])[0],
+      },
+      grade: (response) => {
+        const value = isObject(response) ? response.answer : response;
+        const graded = gradeMock([question], [typeof value === "number" || typeof value === "string" ? value : null]);
+        return { correct: graded.results[0]?.correct === true };
+      },
+      correctAnswer: question.correct_index != null ? question.options[question.correct_index] ?? "" : question.accepted.join(" / "),
+      explanation: question.explanation,
+    };
+  }
+
+  const { data: build } = await sb
+    .from("ielts_practice_delivery_builds")
+    .select("id,metadata")
+    .eq("id", toText(item.delivery_build_id, 80))
+    .maybeSingle();
+  const labPayload = isObject((build as JsonRecord | null)?.metadata) && isObject(((build as JsonRecord).metadata as JsonRecord).lab_payload)
+    ? (((build as JsonRecord).metadata as JsonRecord).lab_payload as JsonRecord)
+    : null;
+  if (!labPayload) return null;
+  const stepId = toText(String(item.item_key ?? "").split(":").slice(1).join(":"), 120);
+  const step = (Array.isArray(labPayload.steps) ? labPayload.steps.filter(isObject) as JsonRecord[] : [])
+    .find((entry) => toText(entry.id, 120) === stepId);
+  if (!step) return null;
+  const hydrated = await hydrateLabPayloadMedia(sb, userId, { ...labPayload, steps: [step] });
+  const hydratedStep = (Array.isArray(hydrated.steps) ? hydrated.steps.filter(isObject) as JsonRecord[] : [])[0] ?? step;
+  const evidence = isObject(step.evidence) ? (step.evidence as JsonRecord).target : null;
+  return {
+    publicView: {
+      source_kind: "lab",
+      section_type: labPayload.section_type,
+      lab_title: toText(labPayload.title, 200),
+      step: publicItemStep(hydratedStep),
+    },
+    grade: (response) => gradeItemStep(step, response),
+    correctAnswer: describeAnswerKey(step),
+    explanation: typeof evidence === "string" ? toText(evidence, 600) : "",
+  };
+};
+
+/**
+ * After a lab is scored: every missed objective question enters the item
+ * queue (box 1, due tomorrow); questions already queued that were answered
+ * correctly this time move up a box.
+ */
+const upsertItemReviewsFromLab = async (
+  sb: any,
+  scope: ResolvedScope,
+  userId: string,
+  practiceSession: JsonRecord,
+  labPayload: JsonRecord,
+  scoredSteps: JsonRecord[],
+  nowIso: string,
+): Promise<number> => {
+  const buildId = toNullableText(practiceSession.delivery_build_id, 80);
+  if (!buildId) return 0;
+  const sectionType = toSectionType(labPayload.section_type) ?? "reading";
+  const steps = Array.isArray(labPayload.steps) ? labPayload.steps.filter(isObject) as JsonRecord[] : [];
+  const missed = missedItemsFromLab(steps, scoredSteps, sectionType);
+  const passed = passedStepIds(scoredSteps);
+  const keys = [...missed.map((entry) => `${buildId}:${entry.step_id}`), ...passed.map((id) => `${buildId}:${id}`)];
+  if (keys.length === 0) return 0;
+
+  const { data: existingRows } = await sb
+    .from("ielts_practice_item_reviews")
+    .select("id,item_key,leitner_box,review_count,correct_count,incorrect_count,is_archived")
+    .eq("user_id", userId)
+    .eq("source_kind", "lab")
+    .in("item_key", keys);
+  const existing = new Map<string, JsonRecord>(
+    (Array.isArray(existingRows) ? existingRows : []).map((row: JsonRecord) => [toText(row.item_key, 200), row]),
+  );
+  const stateOf = (row: JsonRecord | undefined): ItemReviewState | null => row
+    ? {
+      leitner_box: Math.floor(toNumber(row.leitner_box) ?? 1),
+      review_count: Math.floor(toNumber(row.review_count) ?? 0),
+      correct_count: Math.floor(toNumber(row.correct_count) ?? 0),
+      incorrect_count: Math.floor(toNumber(row.incorrect_count) ?? 0),
+      is_archived: row.is_archived === true,
+    }
+    : null;
+  const now = new Date(nowIso);
+  let touched = 0;
+
+  for (const entry of missed) {
+    const key = `${buildId}:${entry.step_id}`;
+    const schedule = scheduleMissedInLab(stateOf(existing.get(key)), now);
+    const { error } = await sb.from("ielts_practice_item_reviews").upsert({
+      user_id: userId,
+      language_id: scope.languageId,
+      product_id: scope.practiceProductId,
+      source_kind: "lab",
+      delivery_build_id: buildId,
+      practice_session_id: toNullableText(practiceSession.id, 80),
+      item_key: key,
+      section_type: sectionType,
+      question_type: entry.question_type,
+      title: entry.title || null,
+      prompt_excerpt: entry.prompt_excerpt || null,
+      ...schedule,
+      metadata: { step_id: entry.step_id, last_lab_accuracy: entry.accuracy_ratio },
+    }, { onConflict: "user_id,source_kind,item_key" });
+    if (!error) touched += 1;
+  }
+
+  for (const stepId of passed) {
+    const row = existing.get(`${buildId}:${stepId}`);
+    if (!row || row.is_archived === true) continue;
+    const schedule = scheduleItemReview(stateOf(row), true, now);
+    const { error } = await sb.from("ielts_practice_item_reviews").update(schedule).eq("id", toText(row.id, 80));
+    if (!error) touched += 1;
+  }
+  return touched;
+};
+
 const submitLabAttempt = async (
   sb: any,
   supabaseUrl: string,
@@ -3468,6 +3603,13 @@ const submitLabAttempt = async (
     delivery_build_id: toNullableText(practiceSession.delivery_build_id, 80),
   });
   const notebookItems = await upsertMistakeNotebookFromLab(sb, scope, userId, toText(updatedAttempt.id, 80), sectionType, scoredSteps, nowIso);
+  // Missed questions come back as the same questions in the item review queue.
+  let reviewItemsQueued = 0;
+  try {
+    reviewItemsQueued = await upsertItemReviewsFromLab(sb, scope, userId, practiceSession, labPayload, scoredSteps, nowIso);
+  } catch {
+    // Additive: never fail a lab submit because the review queue could not be updated.
+  }
 
   // Best-effort vocabulary capture for missed gap-style questions.
   let vocabCaptured = 0;
@@ -3530,6 +3672,7 @@ const submitLabAttempt = async (
     roadmap_items: roadmapItems,
     diagnostics_snapshot_id: diagnosticsSnapshotId,
     vocab_captured: vocabCaptured,
+    review_items_queued: reviewItemsQueued,
   };
 };
 
@@ -4442,10 +4585,13 @@ const buildPlanNarrative = async (
       const bands = ((rows ?? []) as JsonRecord[])
         .map((r) => toNumber(r.overall_band))
         .filter((v): v is number => v != null);
-      if (bands.length > 0) {
-        const currentBand = bands.reduce((a, b) => a + b, 0) / bands.length;
-        const ratio = dayN / totalDays;
-        const baseline = 5.5;
+      // Baseline: the learner's earliest measured band in the window, or the
+      // band they rated themselves at during setup. Without one, pace is unknown.
+      const selfRated = toNumber((isObject(goals.metadata) ? goals.metadata : {}).current_band_self_rated);
+      const baseline = bands.length > 1 ? bands[bands.length - 1]! : selfRated;
+      if (bands.length > 0 && baseline != null) {
+        const currentBand = bands.slice(0, Math.min(3, bands.length)).reduce((a, b) => a + b, 0) / Math.min(3, bands.length);
+        const ratio = clamp(dayN / totalDays, 0, 1);
         const expected = baseline + (goals.target_overall_band - baseline) * ratio;
         if (currentBand >= expected + 0.25) paceLabel = "ahead";
         else if (currentBand >= expected - 0.25) paceLabel = "on_track";
@@ -4500,12 +4646,7 @@ serve(async (req) => {
 
     const hasPracticeAccess = await userHasPracticeAccess(sb, auth.userId, scope);
     if (!hasPracticeAccess) {
-      return json(403, {
-        error: "IELTS Practice access is required",
-        code: "product_access_required",
-        product_id: scope.practiceProductId,
-        product_slug: PRACTICE_PRODUCT_SLUG,
-      });
+      return json(403, practiceAccessRequired(scope.practiceProductId));
     }
 
     if (req.method === "GET" && route === "/goals") {
@@ -4603,14 +4744,10 @@ serve(async (req) => {
       return jsonCached(200, { ok: true, ...data });
     }
 
-    // Universal score-impact prediction. Takes the user's top 3 weak (or active)
-    // mistake-notebook entries plus their mastery rolling-accuracy, runs the
-    // expectedBandImpact heuristic per area, sums conservative+optimistic ranges
-    // capped to a sensible overall lift (1.5 bands max — no honest claim
-    // beyond that), returns a single range like { conservative: 0.5, optimistic: 1.0 }
-    // for the dashboard ScoreImpactCallout card.
+    // Biggest repair targets: the learner's most frequent open mistake
+    // patterns with their measured accuracy. No projected band gain is
+    // returned: a "+0.5 band" figure would be a guess, not a measurement.
     if (req.method === "GET" && route === "/insights/score-impact") {
-      // Pull top weak/active mistake-notebook entries.
       const { data: notebookRows } = await sb
         .from("ielts_practice_mistake_notebook")
         .select("question_type,section_type,review_count,last_seen_at,status")
@@ -4619,10 +4756,7 @@ serve(async (req) => {
         .order("priority", { ascending: false })
         .order("last_seen_at", { ascending: false })
         .limit(8);
-
       const entries = Array.isArray(notebookRows) ? notebookRows as Array<Record<string, unknown>> : [];
-
-      // Pull mastery rows for the affected question types to grab rolling accuracy.
       const questionTypes = [...new Set(entries.map((r) => String(r.question_type ?? "")))].filter(Boolean);
       const masteryByType = new Map<string, { rolling_accuracy: number | null; attempts: number }>();
       if (questionTypes.length > 0) {
@@ -4633,50 +4767,23 @@ serve(async (req) => {
           .in("question_type", questionTypes);
         for (const row of (masteryRows ?? []) as Array<Record<string, unknown>>) {
           masteryByType.set(String(row.question_type ?? ""), {
-            rolling_accuracy: typeof row.rolling_accuracy_ratio === "number" ? row.rolling_accuracy_ratio : null,
-            attempts: typeof row.attempts === "number" ? row.attempts : 0,
+            rolling_accuracy: toNumber(row.rolling_accuracy_ratio),
+            attempts: Math.floor(toNumber(row.attempts) ?? 0),
           });
         }
       }
-
-      // Compute per-area expected impact, take top 3 by optimistic gain.
-      const areaImpacts = entries.map((entry) => {
+      const byKey = new Map<string, { question_type: string; section_type: string; error_frequency: number; rolling_accuracy: number | null; attempts: number }>();
+      for (const entry of entries) {
         const qt = String(entry.question_type ?? "");
+        const key = `${entry.section_type}::${qt}`;
         const mastery = masteryByType.get(qt) ?? { rolling_accuracy: null, attempts: 0 };
-        const frequency = Math.max(1, Number(entry.review_count) || 1);
-        // Inline the heuristic to avoid edge-function import of frontend package.
-        const accuracy = typeof mastery.rolling_accuracy === "number" && Number.isFinite(mastery.rolling_accuracy)
-          ? Math.max(0, Math.min(1, mastery.rolling_accuracy))
-          : 0.5;
-        const gap = Math.max(0.15, 1 - accuracy);
-        const freqClamped = Math.max(1, Math.min(10, frequency));
-        const base = 0.25 * gap * (0.5 + freqClamped * 0.07);
-        const conservative = Math.min(1.0, Math.round(base * 10) / 10);
-        const optimistic = Math.min(1.0, Math.round(base * 1.7 * 10) / 10);
-        return {
-          question_type: qt,
-          section_type: String(entry.section_type ?? ""),
-          conservative,
-          optimistic: Math.max(optimistic, conservative + 0.1),
-          rolling_accuracy: mastery.rolling_accuracy,
-          error_frequency: frequency,
-        };
-      })
-        .sort((a, b) => b.optimistic - a.optimistic)
-        .slice(0, 3);
-
-      const totalConservative = Math.min(1.5, Math.round(areaImpacts.reduce((s, a) => s + a.conservative, 0) * 10) / 10);
-      const totalOptimistic = Math.min(1.5, Math.round(areaImpacts.reduce((s, a) => s + a.optimistic, 0) * 10) / 10);
-
-      return jsonCached(200, {
-        ok: true,
-        areas: areaImpacts,
-        total: {
-          conservative: totalConservative,
-          optimistic: Math.max(totalOptimistic, totalConservative + 0.1),
-        },
-        sample_size: entries.length,
-      });
+        const current = byKey.get(key);
+        const frequency = Math.max(1, Math.floor(toNumber(entry.review_count) ?? 1));
+        if (current) current.error_frequency += frequency;
+        else byKey.set(key, { question_type: qt, section_type: String(entry.section_type ?? ""), error_frequency: frequency, rolling_accuracy: mastery.rolling_accuracy, attempts: mastery.attempts });
+      }
+      const areas = [...byKey.values()].sort((a, b) => b.error_frequency - a.error_frequency).slice(0, 3);
+      return jsonCached(200, { ok: true, areas, sample_size: entries.length });
     }
 
     // AI Writing prep — outline + band-8 sample for a user-supplied prompt.
@@ -4787,6 +4894,11 @@ serve(async (req) => {
     // AI study coach — daily insights derived from trajectory + activity +
     // mastery + goals. One small per-user payload; cached 8h client-side.
     if (req.method === "GET" && route === "/insights/coach-summary") {
+      const summaryLang = toText(url.searchParams.get("lang"), 8).toLowerCase();
+      // Same per-learner AI cap as the other coaching calls (cost guardrail).
+      if (isOpenRouterConfigured() && !(await enforcePracticeAiCap(sb, auth.userId))) {
+        return json(200, { ok: true, ai_available: true, limited: true, summary: "", insights: [], generated_at: new Date().toISOString() });
+      }
       const [trajectory, activity, mastery] = await Promise.all([
         buildPracticeTrajectoryShared(sb, scope.practiceProductId, auth.userId).catch(() => null),
         buildPracticeActivityShared(sb, scope.languageId, scope.practiceProductId, auth.userId).catch(() => null),
@@ -4826,7 +4938,7 @@ serve(async (req) => {
         insights?: unknown;
       }>(
         {
-          systemPrompt: "You are an IELTS study coach reviewing a student's recent activity. From the JSON context, generate 3-4 SPECIFIC actionable insights. Each insight names a concrete observation tied to the data and a single next action. Return strict JSON: {summary: 1-2 sentence overall read, insights: array (3-4 items) of {type: 'progress'|'risk'|'recommendation'|'celebration', title: 5-8 words, body: 1-2 sentences citing the actual numbers, action_label: 3-5 word CTA, action_route: relative URL like '/today' or '/practice/reviews' or '/plan'}}. Do NOT use generic IELTS advice — every insight must reference data from the context.",
+          systemPrompt: "You are an IELTS study coach reviewing a student's recent activity. From the JSON context, generate 3-4 SPECIFIC actionable insights. Each insight names a concrete observation tied to the data and a single next action. Return strict JSON: {summary: 1-2 sentence overall read, insights: array (3-4 items) of {type: 'progress'|'risk'|'recommendation'|'celebration', title: 5-8 words, body: 1-2 sentences citing the actual numbers, action_label: 3-5 word CTA, action_route: relative URL like '/today' or '/practice/reviews' or '/plan'}}. Do NOT use generic IELTS advice — every insight must reference data from the context." + coachLangInstruction(summaryLang),
           userPayload: JSON.stringify(context),
           temperature: 0.4,
         },
@@ -5067,71 +5179,462 @@ serve(async (req) => {
       return json(200, { ok: true, ai_available: true, lesson });
     }
 
-    // AI mock generator — produces a one-off IELTS-style passage + questions
-    // calibrated to the student's target band. Returned for in-memory practice;
-    // not persisted as a delivery_build (those go through the admin pipeline).
+    // AI mock generator: an unseen IELTS-style passage + questions calibrated
+    // to the learner's target band. The model's answer key is normalised
+    // (letter / number / option text / T-F-NG) on the server and stored; the
+    // learner only receives the questions, submits answers here, and missed
+    // questions reach the mistake notebook and the item review queue.
     if (req.method === "POST" && route === "/generator/mock-passage") {
       const body = await parseBody(req);
       const sectionType = toText((body as JsonRecord).section_type, 32).toLowerCase();
       if (!["reading", "listening"].includes(sectionType)) {
         return json(400, { error: "section_type must be reading or listening" });
       }
-      const targetBand = toNumber((body as JsonRecord).target_band) ?? 7;
+      const targetBand = clamp(roundTo(toNumber((body as JsonRecord).target_band) ?? 7, 1), 4, 9);
       const topicHint = toText((body as JsonRecord).topic_hint, 200);
-      const questionType = toText((body as JsonRecord).question_type, 64) || "matching_headings";
+      const requestedStyle = toText((body as JsonRecord).question_type, 64).toLowerCase();
+      const questionStyle = MOCK_QUESTION_STYLES.includes(requestedStyle) ? requestedStyle : "multiple_choice";
+      const unavailable = (code: string) => json(200, {
+        ok: true,
+        ai_available: code !== "ai_unconfigured",
+        mock_id: null,
+        passage: null,
+        questions: [],
+        section_type: sectionType,
+        target_band: targetBand,
+        message_code: code,
+      });
 
-      const result = await callOpenRouterJsonOrFallback<{
-        passage?: unknown;
-        questions?: unknown;
-        estimated_band?: unknown;
-      }>(
+      if (!isOpenRouterConfigured()) return unavailable("ai_unconfigured");
+      if (!(await enforcePracticeAiCap(sb, auth.userId))) return unavailable("ai_daily_limit");
+
+      const result = await callOpenRouterJsonOrFallback<{ passage?: unknown; questions?: unknown; estimated_band?: unknown }>(
         {
-          systemPrompt: "You are an IELTS test writer. Generate an IELTS-style passage and 5 questions calibrated to the target band. Reading passages: 200-350 words, academic register. Return strict JSON: {passage: {title: 5-10 words, body: full passage text}, questions: array of 5 objects each {prompt: question text, type: 'matching_headings'|'true_false_not_given'|'gap_fill'|'multiple_choice', options: array of strings (3-5 for choice questions, omit for gap_fill), correct_answer: string or number index, explanation: 1-2 sentences citing the exact phrase in the passage that justifies the answer}, estimated_band: 0-9 numeric calibration of the passage difficulty}.",
+          systemPrompt: sectionType === "listening"
+            ? "You are an IELTS Listening test writer. Write the SCRIPT of an IELTS-style listening recording (a monologue or a two-speaker conversation, 220-320 words, natural spoken English; label speakers like 'Speaker A:' if there are two) and 5 questions about it calibrated to the target band. The script will be read aloud by a speech synthesiser; questions must be answerable only by listening. " + MOCK_JSON_CONTRACT
+            : "You are an IELTS Academic Reading test writer. Write an original IELTS-style passage (250-350 words, academic register, 3-5 paragraphs; when the style is matching_headings label paragraphs A, B, C...) and 5 questions calibrated to the target band. " + MOCK_JSON_CONTRACT,
           userPayload: JSON.stringify({
             section_type: sectionType,
             target_band: targetBand,
             topic_hint: topicHint || "general academic interest",
-            question_type: questionType,
+            question_style: questionStyle,
           }),
           temperature: 0.6,
         },
-        { passage: null, questions: [], estimated_band: targetBand },
+        { passage: null, questions: [], estimated_band: null },
       );
 
-      if (!isObject(result.passage) || !Array.isArray(result.questions)) {
-        return json(200, {
-          ok: true,
-          ai_available: isOpenRouterConfigured(),
-          passage: null,
-          questions: [],
-          estimated_band: targetBand,
-          message: "Mock generation is unavailable right now. Try again in a moment or use a curated lab from your plan.",
-        });
-      }
+      const passageRaw = isObject(result.passage) ? (result.passage as JsonRecord) : null;
+      const passage = passageRaw
+        ? { title: toText(passageRaw.title, 200), body: toText(passageRaw.body ?? passageRaw.text ?? passageRaw.script, 6000) }
+        : null;
+      const questions = normalizeMockQuestions(result.questions, 6);
+      if (!passage || passage.body.length < 200 || questions.length < 3) return unavailable("generation_failed");
+
+      const estimatedBand = toNumber(result.estimated_band);
+      const { data: inserted, error: insertError } = await sb
+        .from("ielts_practice_generated_mocks")
+        .insert({
+          user_id: auth.userId,
+          language_id: scope.languageId,
+          product_id: scope.practiceProductId,
+          section_type: sectionType,
+          question_style: questionStyle,
+          target_band: targetBand,
+          topic_hint: topicHint || null,
+          estimated_band: estimatedBand != null ? clamp(roundTo(estimatedBand, 1), 0, 9) : null,
+          passage,
+          questions,
+          status: "generated",
+        })
+        .select("id,created_at")
+        .maybeSingle();
+      if (insertError || !inserted) throw new Error("Failed to save generated mock");
 
       return json(200, {
         ok: true,
         ai_available: true,
-        passage: {
-          title: toText((result.passage as JsonRecord).title, 200),
-          body: toText((result.passage as JsonRecord).body, 5000),
-        },
-        questions: (result.questions as unknown[])
-          .filter((q): q is JsonRecord => isObject(q))
-          .map((q) => ({
-            prompt: toText(q.prompt, 600),
-            type: toText(q.type, 64).toLowerCase() || "multiple_choice",
-            options: Array.isArray(q.options)
-              ? (q.options as unknown[]).map((o) => toText(o, 200)).filter(Boolean).slice(0, 6)
-              : [],
-            correct_answer: q.correct_answer == null ? "" : String(q.correct_answer),
-            explanation: toText(q.explanation, 600),
-          }))
-          .filter((q) => q.prompt && (q.options.length > 0 || q.correct_answer))
-          .slice(0, 6),
-        estimated_band: toNumber(result.estimated_band) ?? targetBand,
+        mock_id: String((inserted as JsonRecord).id),
+        created_at: (inserted as JsonRecord).created_at,
+        passage,
+        questions: publicMockQuestions(questions),
         section_type: sectionType,
-        generated_at: new Date().toISOString(),
+        question_style: questionStyle,
+        target_band: targetBand,
+      });
+    }
+
+    if (req.method === "GET" && route === "/generator/mocks") {
+      const { data: rows, error } = await sb
+        .from("ielts_practice_generated_mocks")
+        .select("id,section_type,question_style,target_band,topic_hint,passage,questions,status,raw_score,max_score,accuracy_ratio,created_at,submitted_at")
+        .eq("user_id", auth.userId)
+        .eq("language_id", scope.languageId)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (error) throw new Error("Failed to load generated mocks");
+      return json(200, {
+        ok: true,
+        items: (Array.isArray(rows) ? rows : []).map((row: JsonRecord) => ({
+          id: row.id,
+          section_type: row.section_type,
+          question_style: row.question_style,
+          target_band: toNumber(row.target_band),
+          topic_hint: row.topic_hint ?? null,
+          title: isObject(row.passage) ? toText((row.passage as JsonRecord).title, 200) : "",
+          question_count: Array.isArray(row.questions) ? row.questions.length : 0,
+          status: row.status,
+          raw_score: toNumber(row.raw_score),
+          max_score: toNumber(row.max_score),
+          accuracy_ratio: toNumber(row.accuracy_ratio),
+          created_at: row.created_at,
+          submitted_at: row.submitted_at ?? null,
+        })),
+      });
+    }
+
+    if (route.startsWith("/generator/mocks/")) {
+      const [mockId, mockAction] = route.replace("/generator/mocks/", "").split("/", 2);
+      const id = toText(mockId, 80);
+      if (!/^[0-9a-f-]{36}$/i.test(id)) return json(404, { error: "Generated mock not found" });
+      const { data: mockRow } = await sb
+        .from("ielts_practice_generated_mocks")
+        .select("*")
+        .eq("id", id)
+        .eq("user_id", auth.userId)
+        .maybeSingle();
+      if (!mockRow) return json(404, { error: "Generated mock not found" });
+      const mock = mockRow as JsonRecord;
+      const storedQuestions = (Array.isArray(mock.questions) ? mock.questions : []) as NormalizedMockQuestion[];
+      const detail = (extra: JsonRecord = {}) => ({
+        ok: true,
+        mock_id: id,
+        section_type: mock.section_type,
+        question_style: mock.question_style,
+        target_band: toNumber(mock.target_band),
+        passage: mock.passage,
+        questions: publicMockQuestions(storedQuestions),
+        status: mock.status,
+        created_at: mock.created_at,
+        submitted_at: mock.submitted_at ?? null,
+        answers: mock.status === "submitted" ? mock.answers_json : [],
+        results: mock.status === "submitted" ? mock.results_json : [],
+        raw_score: toNumber(mock.raw_score),
+        max_score: toNumber(mock.max_score),
+        accuracy_ratio: toNumber(mock.accuracy_ratio),
+        ...extra,
+      });
+
+      if (req.method === "GET" && !mockAction) return json(200, detail());
+
+      if (req.method === "POST" && mockAction === "submit") {
+        // Idempotent: a second submit returns the first result.
+        if (mock.status === "submitted") return json(200, detail({ already_submitted: true }));
+        const body = await parseBody(req);
+        const answers = Array.isArray(body.answers) ? (body.answers as unknown[]).slice(0, storedQuestions.length) : [];
+        const graded = gradeMock(storedQuestions, answers);
+        const nowIso = new Date().toISOString();
+        const { error: updateError } = await sb
+          .from("ielts_practice_generated_mocks")
+          .update({
+            status: "submitted",
+            answers_json: answers,
+            results_json: graded.results,
+            raw_score: graded.raw_score,
+            max_score: graded.max_score,
+            accuracy_ratio: graded.accuracy_ratio,
+            submitted_at: nowIso,
+          })
+          .eq("id", id)
+          .eq("user_id", auth.userId);
+        if (updateError) throw new Error("Failed to save generated mock answers");
+
+        const sectionType = toSectionType(mock.section_type) ?? "reading";
+        const missed = graded.results.filter((row) => !row.correct);
+        const notebookItems = await upsertMistakeNotebookFromLab(
+          sb,
+          scope,
+          auth.userId,
+          null,
+          sectionType,
+          missed.map((row) => ({
+            step_id: `mock:${id}:${row.index}`,
+            question_type: practiceQuestionTypeFor(row.type),
+            trap_type: "unknown",
+            accuracy_ratio: 0,
+          })),
+          nowIso,
+          { source: "generated_mock", generated_mock_id: id },
+        ).catch(() => []);
+        let itemsQueued = 0;
+        for (const row of missed) {
+          const question = storedQuestions[row.index];
+          if (!question) continue;
+          const schedule = scheduleMissedInLab(null, new Date(nowIso));
+          const { error } = await sb.from("ielts_practice_item_reviews").upsert({
+            user_id: auth.userId,
+            language_id: scope.languageId,
+            product_id: scope.practiceProductId,
+            source_kind: "generated_mock",
+            generated_mock_id: id,
+            item_key: `${id}:${row.index}`,
+            section_type: sectionType,
+            question_type: practiceQuestionTypeFor(question.type),
+            title: toText(isObject(mock.passage) ? (mock.passage as JsonRecord).title : "", 160) || null,
+            prompt_excerpt: toText(question.prompt, 280),
+            ...schedule,
+            metadata: { question_index: row.index },
+          }, { onConflict: "user_id,source_kind,item_key" });
+          if (!error) itemsQueued += 1;
+        }
+        return json(200, {
+          ...detail({ status: "submitted", submitted_at: nowIso, answers, results: graded.results }),
+          raw_score: graded.raw_score,
+          max_score: graded.max_score,
+          accuracy_ratio: graded.accuracy_ratio,
+          notebook_items_added: Array.isArray(notebookItems) ? notebookItems.length : 0,
+          review_items_queued: itemsQueued,
+        });
+      }
+      return json(404, { error: "Generated mock route not found" });
+    }
+
+    // Context passed from the IELTS Simulator / Playbook (?session_id=...).
+    // Returns the date and section bands of that mock only when it belongs to
+    // the signed-in learner, so the app can say "From your mock on <date>".
+    if (req.method === "GET" && route === "/context") {
+      const sessionId = toText(url.searchParams.get("session_id"), 80);
+      if (!/^[0-9a-f-]{36}$/i.test(sessionId)) return json(200, { ok: true, session: null });
+      const { data: sessionRow } = await sb
+        .from("sessions")
+        .select("id,user_id,experience_id,status,started_at,completed_at,created_at")
+        .eq("id", sessionId)
+        .maybeSingle();
+      if (!sessionRow || String((sessionRow as JsonRecord).user_id ?? "") !== auth.userId) {
+        return json(200, { ok: true, session: null });
+      }
+      const row = sessionRow as JsonRecord;
+      const [{ data: experience }, { data: outcome }] = await Promise.all([
+        sb.from("experiences").select("id,name").eq("id", toText(row.experience_id, 80)).maybeSingle(),
+        sb.from("exam_outcomes").select("overall_band,section_scores,computed_at").eq("session_id", sessionId).order("computed_at", { ascending: false }).limit(1).maybeSingle(),
+      ]);
+      return json(200, {
+        ok: true,
+        session: {
+          id: sessionId,
+          experience_name: toNullableText((experience as JsonRecord | null)?.name, 200),
+          status: toText(row.status, 40),
+          taken_at: toNullableText(row.completed_at ?? row.started_at ?? row.created_at, 80),
+          overall_band: toNumber((outcome as JsonRecord | null)?.overall_band),
+          section_bands: sectionBandsFromScores((outcome as JsonRecord | null)?.section_scores),
+        },
+      });
+    }
+
+    // ------------------------------------------------------------------
+    // Item-level review queue: the exact questions the learner missed.
+    // ------------------------------------------------------------------
+    if (req.method === "GET" && route === "/reviews/items") {
+      const mode = toText(url.searchParams.get("mode") ?? "due", 20).toLowerCase();
+      const limit = clamp(Math.floor(toNumber(url.searchParams.get("limit")) ?? 20), 1, 100);
+      const nowIso = new Date().toISOString();
+      let query = sb
+        .from("ielts_practice_item_reviews")
+        .select("id,source_kind,delivery_build_id,practice_session_id,generated_mock_id,section_type,question_type,title,prompt_excerpt,leitner_box,next_review_at,last_reviewed_at,last_result,review_count,correct_count,incorrect_count,is_archived,created_at")
+        .eq("user_id", auth.userId)
+        .eq("language_id", scope.languageId);
+      if (mode === "due") query = query.eq("is_archived", false).lte("next_review_at", nowIso).order("next_review_at", { ascending: true });
+      else if (mode === "upcoming") query = query.eq("is_archived", false).gt("next_review_at", nowIso).order("next_review_at", { ascending: true });
+      else if (mode === "mastered") query = query.eq("is_archived", true).order("updated_at", { ascending: false });
+      else query = query.order("updated_at", { ascending: false });
+      const { data: rows, error } = await query.limit(limit);
+      if (error) throw new Error("Failed to load review items");
+      const count = async (build: (q: any) => any): Promise<number> => {
+        const { count: value } = await build(
+          sb.from("ielts_practice_item_reviews").select("id", { count: "exact", head: true }).eq("user_id", auth.userId).eq("language_id", scope.languageId),
+        );
+        return value ?? 0;
+      };
+      const [due, upcoming, mastered] = await Promise.all([
+        count((q) => q.eq("is_archived", false).lte("next_review_at", nowIso)),
+        count((q) => q.eq("is_archived", false).gt("next_review_at", nowIso)),
+        count((q) => q.eq("is_archived", true)),
+      ]);
+      const { data: nextRow } = await sb
+        .from("ielts_practice_item_reviews")
+        .select("next_review_at")
+        .eq("user_id", auth.userId)
+        .eq("language_id", scope.languageId)
+        .eq("is_archived", false)
+        .gt("next_review_at", nowIso)
+        .order("next_review_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      return json(200, {
+        ok: true,
+        items: Array.isArray(rows) ? rows : [],
+        summary: { due, upcoming, mastered, total: due + upcoming + mastered, next_due_at: (nextRow as JsonRecord | null)?.next_review_at ?? null },
+      });
+    }
+
+    if (route.startsWith("/reviews/items/")) {
+      const [itemIdRaw, itemAction] = route.replace("/reviews/items/", "").split("/", 2);
+      const itemId = toText(itemIdRaw, 80);
+      if (!/^[0-9a-f-]{36}$/i.test(itemId)) return json(404, { error: "Review item not found" });
+      const { data: itemRow } = await sb
+        .from("ielts_practice_item_reviews")
+        .select("*")
+        .eq("id", itemId)
+        .eq("user_id", auth.userId)
+        .maybeSingle();
+      if (!itemRow) return json(404, { error: "Review item not found" });
+      const item = itemRow as JsonRecord;
+      const loaded = await loadReviewItemSource(sb, auth.userId, item);
+      if (!loaded) {
+        // The source build or mock is gone: retire the item instead of showing a broken question.
+        await sb.from("ielts_practice_item_reviews").update({ is_archived: true, metadata: { ...(isObject(item.metadata) ? item.metadata : {}), retired: "source_missing" } }).eq("id", itemId);
+        return json(410, { error: "This question is no longer available", code: "review_item_source_missing" });
+      }
+
+      if (req.method === "GET" && !itemAction) {
+        return json(200, { ok: true, item, ...loaded.publicView });
+      }
+
+      if (req.method === "POST" && itemAction === "answer") {
+        const body = await parseBody(req);
+        const graded = loaded.grade(body.response);
+        if (graded == null) return json(422, { error: "This question cannot be graded automatically", code: "review_item_ungradable" });
+        const previous: ItemReviewState = {
+          leitner_box: Math.floor(toNumber(item.leitner_box) ?? 1),
+          review_count: Math.floor(toNumber(item.review_count) ?? 0),
+          correct_count: Math.floor(toNumber(item.correct_count) ?? 0),
+          incorrect_count: Math.floor(toNumber(item.incorrect_count) ?? 0),
+          is_archived: item.is_archived === true,
+        };
+        const schedule = scheduleItemReview(previous, graded.correct);
+        const { data: updated, error: updateError } = await sb
+          .from("ielts_practice_item_reviews")
+          .update(schedule)
+          .eq("id", itemId)
+          .eq("user_id", auth.userId)
+          .select("*")
+          .maybeSingle();
+        if (updateError || !updated) throw new Error("Failed to save review answer");
+        return json(200, {
+          ok: true,
+          correct: graded.correct,
+          correct_answer: loaded.correctAnswer,
+          explanation: loaded.explanation,
+          item: updated,
+        });
+      }
+      return json(404, { error: "Review item route not found" });
+    }
+
+    // ------------------------------------------------------------------
+    // Speaking practice (Parts 1-3): prompts, transcript-only AI feedback.
+    // ------------------------------------------------------------------
+    if (req.method === "GET" && route === "/speaking/prompts") {
+      const partRaw = toText(url.searchParams.get("part") ?? "part1", 10);
+      const part = isSpeakingPart(partRaw) ? partRaw : "part1";
+      const { data: recent } = await sb
+        .from("ielts_practice_speaking_attempts")
+        .select("prompt_id")
+        .eq("user_id", auth.userId)
+        .eq("part", part)
+        .order("created_at", { ascending: false })
+        .limit(40);
+      const practised = (Array.isArray(recent) ? recent : []).map((row: JsonRecord) => toText(row.prompt_id, 80));
+      return json(200, { ok: true, part, prompts: orderSpeakingPrompts(part, practised) });
+    }
+
+    if (req.method === "GET" && route === "/speaking/attempts") {
+      const { data: rows, error } = await sb
+        .from("ielts_practice_speaking_attempts")
+        .select("id,part,prompt_id,topic,transcript,transcript_source,duration_seconds,word_count,words_per_minute,feedback,feedback_status,feedback_lang,created_at")
+        .eq("user_id", auth.userId)
+        .eq("language_id", scope.languageId)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (error) throw new Error("Failed to load speaking attempts");
+      return json(200, { ok: true, items: Array.isArray(rows) ? rows : [] });
+    }
+
+    if (req.method === "POST" && route === "/speaking/attempts") {
+      const body = await parseBody(req);
+      let submission;
+      try {
+        submission = parseSpeakingSubmission(body);
+      } catch (cause) {
+        const code = cause instanceof Error ? cause.message : "invalid_submission";
+        return json(400, { error: "Invalid speaking submission", code });
+      }
+      const lang = ["uz", "ru"].includes(toText(body.lang, 8).toLowerCase()) ? toText(body.lang, 8).toLowerCase() : "en";
+      const wpm = wordsPerMinute(submission);
+      const { data: inserted, error: insertError } = await sb
+        .from("ielts_practice_speaking_attempts")
+        .insert({
+          user_id: auth.userId,
+          language_id: scope.languageId,
+          product_id: scope.practiceProductId,
+          part: submission.prompt.part,
+          prompt_id: submission.prompt.id,
+          topic: submission.prompt.topic,
+          transcript: submission.transcript,
+          transcript_source: submission.transcript_source,
+          duration_seconds: submission.duration_seconds,
+          word_count: submission.word_count,
+          words_per_minute: wpm,
+          feedback_status: "pending",
+          feedback_lang: lang,
+        })
+        .select("id")
+        .maybeSingle();
+      if (insertError || !inserted) throw new Error("Failed to save speaking attempt");
+      const attemptId = String((inserted as JsonRecord).id);
+
+      let feedback = null as ReturnType<typeof normalizeSpeakingFeedback>;
+      let feedbackStatus: "ready" | "unavailable" = "unavailable";
+      let messageCode: string | null = null;
+      if (!isOpenRouterConfigured()) messageCode = "ai_unconfigured";
+      else if (!(await enforcePracticeAiCap(sb, auth.userId))) messageCode = "ai_daily_limit";
+      else {
+        const raw = await callOpenRouterJsonOrFallback<unknown>(
+          {
+            systemPrompt: SPEAKING_SYSTEM_PROMPT + speakingLangInstruction(lang),
+            userPayload: JSON.stringify({
+              part: submission.prompt.part,
+              topic: submission.prompt.topic,
+              questions: submission.prompt.questions,
+              cue_points: submission.prompt.cue_points,
+              transcript: submission.transcript,
+            }),
+            temperature: 0.3,
+          },
+          null,
+        );
+        feedback = normalizeSpeakingFeedback(raw, submission.prompt.part);
+        if (feedback) feedbackStatus = "ready";
+        else messageCode = "feedback_failed";
+      }
+      await sb.from("ielts_practice_speaking_attempts").update({ feedback, feedback_status: feedbackStatus }).eq("id", attemptId);
+      return json(200, {
+        ok: true,
+        attempt: {
+          id: attemptId,
+          part: submission.prompt.part,
+          prompt_id: submission.prompt.id,
+          topic: submission.prompt.topic,
+          transcript: submission.transcript,
+          transcript_source: submission.transcript_source,
+          duration_seconds: submission.duration_seconds,
+          word_count: submission.word_count,
+          words_per_minute: wpm,
+          feedback,
+          feedback_status: feedbackStatus,
+          feedback_lang: lang,
+        },
+        message_code: messageCode,
       });
     }
 
@@ -5145,10 +5648,18 @@ serve(async (req) => {
         .eq("source_label", "Missed in practice")
         .order("created_at", { ascending: false })
         .limit(20);
+      // The real number of captured words, not just the page of 20 returned.
+      const { count: capturedTotal } = await sb
+        .from("user_vocabulary_notebook_entries")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", auth.userId)
+        .eq("language_id", scope.languageId)
+        .eq("is_archived", false)
+        .eq("source_label", "Missed in practice");
       return jsonCached(200, {
         ok: true,
         items: (rows ?? []) as JsonRecord[],
-        total: (rows ?? []).length,
+        total: capturedTotal ?? (rows ?? []).length,
       });
     }
 
@@ -5191,6 +5702,12 @@ serve(async (req) => {
     if (req.method === "POST" && route === "/plans/generate") {
       const body = await parseBody(req);
       const refreshDiagnostics = String(body.refresh_diagnostics ?? "").toLowerCase() === "true";
+      // Optional focus from the learner's context (weak skill from the simulator
+      // or Playbook, or a question type from the review queue). Preferred when a
+      // published build matches; otherwise the plan falls back to other builds.
+      const focusSection = toSectionType(body.focus_section);
+      const focusQuestionType = toText(body.focus_question_type, 120).toLowerCase().replace(/^question_/, "").replace(/[^a-z0-9_]+/g, "_");
+      const focusRequested = focusSection != null;
 
       const goals = await getGoals(sb, auth.userId, scope);
       const timezone = safeTimezone(body.timezone ?? goals.timezone ?? "UTC");
@@ -5245,7 +5762,7 @@ serve(async (req) => {
       const retainedBuildIds = new Set(
         retainedRows.map((row) => toText(row.delivery_build_id, 80)).filter(Boolean),
       );
-      const generationCount = Math.max(0, dailyCount - retainedRows.length);
+      const generationCount = Math.max(focusRequested ? 1 : 0, dailyCount - retainedRows.length);
       const quotas = createSectionQuota(generationCount, normalizedMix);
 
       const { error: cleanupError } = await sb
@@ -5309,6 +5826,26 @@ serve(async (req) => {
 
         const selectedBlueprints: SessionPlanCandidate[] = [];
         const usedBuilds = new Set<string>(retainedBuildIds);
+        let focusResult: { section: string; question_type: string | null; matched: "question_type" | "section" | "none" } | null = null;
+        if (focusSection) {
+          const candidateTypes = (candidate: SessionPlanCandidate): string[] =>
+            (Array.isArray(candidate.rationaleJson.question_types) ? candidate.rationaleJson.question_types as unknown[] : [])
+              .map((entry) => toText(entry, 120).toLowerCase().replace(/^question_/, ""));
+          const fresh = rankedBlueprints.filter((candidate) => !usedBuilds.has(toText(candidate.build.id, 80)));
+          const byType = focusQuestionType
+            ? fresh.find((candidate) => candidate.sectionType === focusSection && candidateTypes(candidate).some((type) => type.includes(focusQuestionType) || focusQuestionType.includes(type)))
+            : undefined;
+          const bySection = byType ?? fresh.find((candidate) => candidate.sectionType === focusSection);
+          focusResult = {
+            section: focusSection,
+            question_type: focusQuestionType || null,
+            matched: byType ? "question_type" : bySection ? "section" : "none",
+          };
+          if (bySection) {
+            selectedBlueprints.push({ ...bySection, rationaleJson: { ...bySection.rationaleJson, focus: true } });
+            usedBuilds.add(toText(bySection.build.id, 80));
+          }
+        }
         for (const section of ["reading", "listening", "writing"] as const) {
           const needed = quotas[section];
           if (needed <= 0) continue;
@@ -5334,6 +5871,7 @@ serve(async (req) => {
         const selectedWithinBudget = limitSessionCandidatesByMinutes(selectedBlueprints, dailyPracticeMinutes);
 
         if (selectedWithinBudget.length > 0) {
+          const topScore = selectedWithinBudget.reduce((max, candidate) => Math.max(max, candidate.score), 0);
           const insertRows = selectedWithinBudget.map((candidate, index) => ({
             user_id: auth.userId,
             language_id: scope.languageId,
@@ -5344,7 +5882,8 @@ serve(async (req) => {
             blueprint_id: toText(candidate.blueprint.id, 80),
             delivery_build_id: toText(candidate.build.id, 80),
             status: "planned",
-            priority: roundTo(candidate.score, 6),
+            // The focus item leads today's plan.
+            priority: roundTo(candidate.rationaleJson.focus === true ? topScore + 1 : candidate.score, 6),
             due_at: null,
             rationale: candidate.rationale,
             rationale_json: candidate.rationaleJson,
@@ -5354,6 +5893,7 @@ serve(async (req) => {
               runtime: "transformed_sessions",
               experience_kind: toText(candidate.rationaleJson.experience_kind, 80),
               estimated_minutes: estimatedMinutesForSessionCandidate(candidate),
+              ...(candidate.rationaleJson.focus === true ? { focus: true } : {}),
               question_types: Array.isArray((candidate.build.build_summary as any)?.target_question_types)
                 ? (candidate.build.build_summary as any).target_question_types
                 : Array.isArray((candidate.build.build_summary as any)?.question_types)
@@ -5385,6 +5925,7 @@ serve(async (req) => {
             retained_count: retainedRows.length,
             daily_practice_minutes: dailyPracticeMinutes,
             quotas,
+            focus: focusResult,
             diagnostics_snapshot_id: diagnosticsSnapshot.id,
             items: planItems,
           });
@@ -5406,10 +5947,19 @@ serve(async (req) => {
         });
       }
 
-      return json(422, {
-        error: "No published transformed IELTS Practice experiences are available for this learner yet",
-        hint: "Use Admin Content Factory to build and publish transformed Reading, Listening, and Writing coverage from simulator sources.",
+      // Nothing is published (or nothing could be selected): an honest empty
+      // plan, not an error. The app shows a clear empty state and the tools
+      // that do not depend on the catalogue (reviews, speaking, generator).
+      return json(200, {
+        ok: true,
         runtime: "transformed_sessions",
+        plan_date: planDate,
+        generated_count: 0,
+        retained_count: 0,
+        daily_practice_minutes: dailyPracticeMinutes,
+        quotas,
+        items: [],
+        empty_reason: publishedBlueprints.length === 0 ? "no_published_content" : "nothing_selectable",
         published_transformed_builds: publishedBlueprints.length,
       });
     }
