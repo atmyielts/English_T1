@@ -7,6 +7,7 @@ import { IntegrityLogPanel } from '../components/admin/IntegrityLogPanel';
 
 const toHalfBand = (value: number): number => Math.round(value * 2) / 2;
 const PLAYBOOK_URL = 'https://playbook.ielts.schood.online';
+const PRACTICE_URL = 'https://practice.ielts.schood.online';
 const humanizeSectionType = (value: string): string => {
   const first = value.charAt(0).toUpperCase();
   return first ? `${first}${value.slice(1)}` : value;
@@ -302,12 +303,20 @@ export const SessionResultsPage: React.FC = () => {
               Open the IELTS Playbook with this scored session and turn the weakest skill into a study order.
             </div>
           </div>
-          <a
-            href={`${PLAYBOOK_URL}/diagnostic?source=${encodeURIComponent(playbookSource)}&session_id=${encodeURIComponent(sessionId ?? '')}&overall_band=${encodeURIComponent(String(summaryBand ?? ''))}&weak_skill=${encodeURIComponent(weakestSkill)}`}
-            className="px-4 py-2 rounded-lg bg-emerald-700 text-white font-semibold text-center"
-          >
-            Open playbook
-          </a>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <a
+              href={`${PLAYBOOK_URL}/diagnostic?source=${encodeURIComponent(playbookSource)}&session_id=${encodeURIComponent(sessionId ?? '')}&overall_band=${encodeURIComponent(String(summaryBand ?? ''))}&weak_skill=${encodeURIComponent(weakestSkill)}`}
+              className="px-4 py-2 rounded-lg bg-emerald-700 text-white font-semibold text-center"
+            >
+              Open playbook
+            </a>
+            <a
+              href={`${PRACTICE_URL}/today?source=simulator&session_id=${encodeURIComponent(sessionId ?? '')}&weak_skill=${encodeURIComponent(weakestSkill)}`}
+              className="px-4 py-2 rounded-lg border border-emerald-700 text-emerald-800 bg-white font-semibold text-center"
+            >
+              Practise {weakestSkill}
+            </a>
+          </div>
         </div>
 
         <div className="mt-8">
