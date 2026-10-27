@@ -2,12 +2,11 @@ import { RecoveryBoundary, recoveryRootOptions } from '../../../packages/ui-reco
 import { observeGuideArrival } from '../../../packages/journey-analytics/src/guide-arrival';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { PlaybookApp } from '../../../packages/exam-playbook-web/src/App';
-import { SAT_CONFIG } from '../../../packages/exam-playbook-web/src/config';
+import App from './App';
 
 createRoot(document.getElementById('root')!, recoveryRootOptions).render(
   <StrictMode>
-    <RecoveryBoundary app="sat-playbook"><PlaybookApp config={SAT_CONFIG} /></RecoveryBoundary>
+    <RecoveryBoundary app="sat-playbook"><App /></RecoveryBoundary>
   </StrictMode>,
 );
 
