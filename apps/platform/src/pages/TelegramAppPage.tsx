@@ -16,6 +16,7 @@ import {
   User2,
 } from 'lucide-react';
 import { edgeBase } from '../lib/supabase';
+import { ExamFamilyCards } from '../components/platform/ExamFamilyCards';
 import { TelegramHomeworkPanel } from '../components/telegram/TelegramHomeworkPanel';
 import { TelegramEnglishSection } from '../components/telegram/english/TelegramEnglishSection';
 
@@ -653,6 +654,8 @@ export const TelegramAppPage: React.FC = () => {
                 ))}
               </div>
             </Card>
+
+            <ExamFamilyCards compact onOpen={openExternal} />
           </div>
         )}
 

@@ -149,6 +149,8 @@ function App() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/updates" element={<UpdatesPage />} />
           <Route path="/plans" element={<PlansPage />} />
+          {/* Public: anyone can compare prices; buying (/checkout) asks for sign-in. */}
+          <Route path="/pricing" element={<PricingPage />} />
           <Route path="/ielts" element={<DiscoveryPage pageKey="ielts" />} />
           <Route path="/ielts-mock-test" element={<DiscoveryPage pageKey="ieltsMockTest" />} />
           <Route path="/ielts-writing-practice" element={<DiscoveryPage pageKey="ieltsWritingPractice" />} />
@@ -175,7 +177,6 @@ function App() {
           <Route path="/courses/:slug" element={<CoursesCatalogPage />} />
 
           <Route element={<RequireAuth />}>
-            <Route path="/pricing" element={<PricingPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/account" element={<AccountPage />} />
             <Route path="/admin-mfa" element={<AdminMfaPage />} />
