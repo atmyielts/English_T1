@@ -274,7 +274,7 @@ export const AskCoachPanel = ({ accessToken }: { accessToken: string | null }) =
   };
 
   return (
-    <section className="glass" style={{ padding: 24, display: 'grid', gap: 12 }}>
+    <section className="glass dash-card">
       <div className="task-card-head" style={{ alignItems: 'flex-start' }}>
         <div>
           <p className="eyebrow"><MessageSquare size={11} style={{ verticalAlign: -2, marginRight: 4 }} aria-hidden="true" /> {t('adapt.ask.eyebrow')}</p>

@@ -3678,3 +3678,23 @@ audio.practice-audio {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* A single column must not grow to the widest child's min-content width. */
+@media (max-width: 1120px) {
+  .practice-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.practice-main {
+  min-width: 0;
+}
+
+.task-card-head {
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.task-card-head > * {
+  min-width: 0;
+}
