@@ -1,30 +1,42 @@
 {
   "schemaVersion": 1,
-  "releaseId": "sat-playbook-function-region",
+  "releaseId": "academy-nodemailer-npm-pin",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [
-    "sat-playbook"
-  ],
+  "frontends": [],
   "migrations": [],
-  "edgeFunctions": [],
+  "edgeFunctions": [
+    "academy"
+  ],
   "workers": [],
-  "sharedEdgeConsumers": [],
-  "requiredSecrets": [],
+  "requiredSecrets": [
+    "ACADEMY_AUDIO_ENCRYPTION_KEY",
+    "GMAIL_SMTP_APP_PASSWORD",
+    "GMAIL_SMTP_EMAIL",
+    "SITE_URL"
+  ],
   "rolloutOrder": [
-    "pages"
+    "secret:ACADEMY_AUDIO_ENCRYPTION_KEY",
+    "secret:GMAIL_SMTP_APP_PASSWORD",
+    "secret:GMAIL_SMTP_EMAIL",
+    "secret:SITE_URL",
+    "function:academy",
+    "function:teacher-studio"
   ],
   "manualFollowUps": [
-    "Pages: merging publishes sat-playbook. Every SAT Playbook function call now adds ?forceFunctionRegion=ap-southeast-1 so the Edge Function runs next to the Singapore database instead of at the learner's nearest edge (eu-central-1 for Uzbekistan). Override with VITE_SUPABASE_FUNCTION_REGION if the database ever moves. No function or database change."
+    "nodemailer is upgraded from 7.0.6 to 10.2.1: npm audit reports high-severity advisories for every version <=10.1.3 (GHSA-mm7p-fcc7-pg87, GHSA-c7w3-x93f-qmm8, GHSA-vvjj-xcjg-gr5g, GHSA-268h-hp4c-crq3), and production already ran 7.0.6 through esm.sh. nodemailer 10 races IPv4/IPv6 inside tls.connect, which Deno drops on port 465, so academy now resolves smtp.gmail.com to one IPv4 address (node:dns resolve4, falling back to the hostname) and keeps tls.servername=smtp.gmail.com for the certificate check. Verified under Deno 2.5.6: with fake credentials Gmail answers 535 (TLS and SMTP reached) for 7.0.6 and for 10.2.1 with this setting; 10.x without it fails the TLS handshake.",
+    "Pages: merging unblocks the schood-academy deploy, whose 'deno check supabase/functions/academy/index.ts' step has failed on every main push since 481bf696. esm.sh served GitHub's runners a different build of https://esm.sh/nodemailer@10.2.1/denonext/nodemailer.mjs (0f8c29b0...) than the one in deno.lock (d58fbe8e...). academy now imports npm:nodemailer@10.2.1, installed from package-lock.json with a registry integrity hash, with @types/nodemailer@7.0.12 for types; the stale esm.sh entries are removed from deno.lock. No Academy frontend code changes.",
+    "Secrets: none are new. supabase secrets set GMAIL_SMTP_EMAIL=, supabase secrets set GMAIL_SMTP_APP_PASSWORD=, supabase secrets set SITE_URL= and supabase secrets set ACADEMY_AUDIO_ENCRYPTION_KEY= are not run: the lookups already exist in academy and are unchanged.",
+    "Edge: supabase functions deploy academy --project-ref bbjawctnqrufvnesdsel. The SMTP transport options are unchanged (smtp.gmail.com:465, TLS, pool of 1); only where nodemailer 7.0.6 is fetched from changes.",
+    "Edge: supabase functions deploy teacher-studio --project-ref bbjawctnqrufvnesdsel. teacher-studio is only 'import \"../academy/index.ts\"', so it bundles the same nodemailer import."
   ],
   "verification": [
-    "In the browser network tab on playbook.sat.schood.online, sat-playbook requests carry forceFunctionRegion=ap-southeast-1 and responses have x-sb-edge-region: ap-southeast-1.",
-    "Median first-byte for a public module page drops from about 1.96 s to about 1.2 s (measured 18 loads each before the change)."
+    "GitHub Actions deploy-pages run for the merge commit: the deploy (academy, ...) job passes 'Academy Edge typecheck' and publishes schood-academy.",
+    "After the Edge deploy, queue one Academy email notification to a test address (or trigger the queued-notification dispatch) and confirm it arrives and academy_notification_delivery_attempts records status sent.",
+    "supabase functions list --project-ref bbjawctnqrufvnesdsel shows new versions of academy and teacher-studio."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-sat-playbook.",
-    "migration": "None.",
-    "edge": "None.",
-    "worker": "None."
+    "pages": "No frontend changes; nothing to roll back on Pages.",
+    "edge": "Redeploy academy and teacher-studio from 82fe9032 (the previous esm.sh import still works at runtime; only CI's lock check rejected it)."
   }
 }
