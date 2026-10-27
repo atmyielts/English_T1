@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Sparkles, Crosshair, ChevronDown, ChevronUp } from 'lucide-react';
 import { playbookBandRender, type PlaybookBandRenderResponse } from '../lib/api';
+import { useT } from '../i18n';
 
 interface Props {
   accessToken: string | null;
@@ -11,6 +12,7 @@ interface Props {
 const BAND_OPTIONS = [5, 5.5, 6, 6.5, 7, 7.5, 8];
 
 export const PlaybookBandRender: React.FC<Props> = ({ accessToken, pageSlug, defaultBand = 6.5 }) => {
+  const t = useT();
   const [targetBand, setTargetBand] = useState<number>(defaultBand);
   const [data, setData] = useState<PlaybookBandRenderResponse | null>(null);
   const [busy, setBusy] = useState(false);
@@ -26,7 +28,7 @@ export const PlaybookBandRender: React.FC<Props> = ({ accessToken, pageSlug, def
       setData(res);
       setOpen(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not generate framing');
+      setError(t('band.error'));
     } finally {
       setBusy(false);
     }
@@ -48,12 +50,12 @@ export const PlaybookBandRender: React.FC<Props> = ({ accessToken, pageSlug, def
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <Crosshair size={18} color="#6c4ab8" />
           <strong style={{ fontFamily: 'Fraunces, serif', fontSize: 16 }}>
-            Re-frame for my band
+            {t('band.title')}
           </strong>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <label style={{ fontSize: 13, color: '#3b352a' }}>
-            Target band:
+            {t('band.target')}
             <select
               value={String(targetBand)}
               onChange={(e) => setTargetBand(Number(e.target.value))}
@@ -78,7 +80,7 @@ export const PlaybookBandRender: React.FC<Props> = ({ accessToken, pageSlug, def
             disabled={busy}
             style={{ padding: '8px 14px', fontSize: 13 }}
           >
-            {busy ? 'Generating…' : data ? 'Re-frame' : 'Frame for me'} <Sparkles size={13} style={{ marginLeft: 4 }} />
+            {busy ? t('common.generating') : data ? t('band.reframe') : t('band.frame')} <Sparkles size={13} style={{ marginLeft: 4 }} />
           </button>
           {data ? (
             <button
@@ -106,7 +108,7 @@ export const PlaybookBandRender: React.FC<Props> = ({ accessToken, pageSlug, def
           }}
         >
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#6c4ab8', margin: '0 0 8px' }}>
-            Framing for band {data.target_band}
+            {t('band.framingFor', { band: data.target_band })}
           </p>
           <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.6, color: '#1a1814' }}>
             {data.framing}
@@ -114,7 +116,7 @@ export const PlaybookBandRender: React.FC<Props> = ({ accessToken, pageSlug, def
           {data.focus_points.length > 0 ? (
             <>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#6c4ab8', margin: '14px 0 6px' }}>
-                Priorities at this band
+                {t('band.priorities')}
               </p>
               <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, lineHeight: 1.55, color: '#3b352a' }}>
                 {data.focus_points.map((point, i) => (

@@ -116,7 +116,7 @@ jobs:
           - group: platform-workflows
             suites: test:platform:return test:marketplace test:peer-review:privacy test:score-cache:privacy test:pages:security
           - group: learning-integrations
-            suites: test:exam test:sat test:shared test:telegram test:sat:completion test:sat:bank test:sat:start test:ai:security test:sat:tutor test:sat:engine test:sat:routes
+            suites: test:exam test:sat test:shared test:telegram test:sat:completion test:sat:bank test:sat:start test:ai:security test:sat:tutor test:sat:engine test:sat:routes test:ielts-playbook
     steps:
       - name: Checkout
         uses: actions/checkout@v4

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Sparkles, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { playbookWorkedExampleGenerate, type PlaybookWorkedExampleStep } from '../lib/api';
+import { useT } from '../i18n';
 
 interface Props {
   accessToken: string | null;
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export const PlaybookWorkedExample: React.FC<Props> = ({ accessToken, pageSlug }) => {
+  const t = useT();
   const [busy, setBusy] = useState(false);
   const [setup, setSetup] = useState<string | null>(null);
   const [steps, setSteps] = useState<PlaybookWorkedExampleStep[]>([]);
@@ -26,7 +28,7 @@ export const PlaybookWorkedExample: React.FC<Props> = ({ accessToken, pageSlug }
       setRevealedCount(0);
       setOpen(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not generate worked example');
+      setError(t('worked.error'));
     } finally {
       setBusy(false);
     }
@@ -46,21 +48,21 @@ export const PlaybookWorkedExample: React.FC<Props> = ({ accessToken, pageSlug }
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
         <div>
-          <p className="eyebrow" style={{ color: '#1f5a4d', marginBottom: 4 }}>Worked example</p>
+          <p className="eyebrow" style={{ color: '#1f5a4d', marginBottom: 4 }}>{t('worked.eyebrow')}</p>
           <strong style={{ display: 'block', fontFamily: 'Fraunces, serif', fontSize: 19, fontWeight: 600 }}>
-            See the technique on a real example
+            {t('worked.title')}
           </strong>
           <p style={{ margin: '4px 0 0', fontSize: 14, color: '#3b352a', maxWidth: 540 }}>
-            Step-by-step walk-through of the strategy applied to a realistic prompt. Reveal one step at a time.
+            {t('worked.lead')}
           </p>
         </div>
         {!setup ? (
           <button type="button" className="button button-primary" onClick={() => void generate()} disabled={busy}>
-            {busy ? 'Generating…' : 'Generate'} <Sparkles size={14} style={{ marginLeft: 4 }} />
+            {busy ? t('common.generating') : t('common.generate')} <Sparkles size={14} style={{ marginLeft: 4 }} />
           </button>
         ) : (
           <button type="button" className="button button-secondary" onClick={() => setOpen((o) => !o)}>
-            {open ? <>Hide <ChevronUp size={13} /></> : <>Show <ChevronDown size={13} /></>}
+            {open ? <>{t('common.hide')} <ChevronUp size={13} /></> : <>{t('common.show')} <ChevronDown size={13} /></>}
           </button>
         )}
       </div>
@@ -78,7 +80,7 @@ export const PlaybookWorkedExample: React.FC<Props> = ({ accessToken, pageSlug }
             }}
           >
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#1f5a4d', margin: '0 0 8px' }}>
-              Setup
+              {t('worked.setup')}
             </p>
             <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.6, color: '#1a1814', whiteSpace: 'pre-wrap' }}>
               {setup}
@@ -97,7 +99,7 @@ export const PlaybookWorkedExample: React.FC<Props> = ({ accessToken, pageSlug }
               }}
             >
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#1f5a4d', margin: '0 0 6px' }}>
-                Step {idx + 1}: {step.reveal_label}
+                {t('worked.step', { n: idx + 1 })}: {step.reveal_label}
               </p>
               <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: '#1a1814' }}>
                 {step.explanation}
@@ -126,11 +128,11 @@ export const PlaybookWorkedExample: React.FC<Props> = ({ accessToken, pageSlug }
               className="button button-secondary"
               onClick={() => setRevealedCount((n) => Math.min(steps.length, n + 1))}
             >
-              Reveal next step <ChevronRight size={14} />
+              {t('worked.next')} <ChevronRight size={14} />
             </button>
           ) : (
             <p style={{ margin: 0, fontSize: 13, color: '#7a7263' }}>
-              All {steps.length} steps revealed.
+              {t('worked.allRevealed', { count: steps.length })}
             </p>
           )}
         </div>
