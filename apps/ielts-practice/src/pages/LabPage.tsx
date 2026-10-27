@@ -19,6 +19,8 @@ import { IELTS_PRACTICE_PRODUCT_ID } from '../lib/constants';
 import { getPlanItemDescription, getPlanItemTitle } from '../lib/practiceExperience';
 import { useAccess } from '../lib/useAccess';
 import { pingUserStreak } from '../lib/useUserStreak';
+import { LocaleSwitcher } from '../../../../packages/service-i18n/src/i18n.tsx';
+import { sectionLabel, statusLabel, useAppT, useErrorText, useFormat, type AppKey, type AppTranslate } from '../i18n';
 
 type AnswerMap = Record<string, Record<string, unknown>>;
 
@@ -39,10 +41,18 @@ const titleCase = (value: unknown): string =>
     .replace(/\b\w/g, (char) => char.toUpperCase())
     .trim() || 'Practice Lab';
 
-const percent = (value: unknown): string => {
-  const number = typeof value === 'number' ? value : Number(value);
-  if (!Number.isFinite(number)) return '-';
-  return `${Math.round(number * 100)}%`;
+const KNOWN_TRAPS = ['word_match', 'opposite_meaning', 'too_broad', 'nearby_but_wrong', 'wrong_number', 'wrong_speaker', 'not_given'];
+const KNOWN_KINDS = ['evidence_locator', 'distractor_elimination', 'listening_replay', 'writing_rewrite', 'mastery_response', 'timed_response'];
+const trapLabel = (t: AppTranslate, trap: string): string => (KNOWN_TRAPS.includes(trap) ? t(`lab.trap.${trap}` as AppKey) : titleCase(trap));
+const kindLabel = (t: AppTranslate, kind: unknown): string => {
+  const value = String(kind ?? '');
+  return KNOWN_KINDS.includes(value) ? t(`lab.kind.${value}` as AppKey) : titleCase(value);
+};
+/** Step feedback from the measured accuracy (same thresholds as the server's scoreLabStep). */
+const stepFeedback = (t: AppTranslate, accuracy: unknown): string => {
+  const value = Number(accuracy);
+  if (!Number.isFinite(value)) return '';
+  return value >= 0.85 ? t('lab.fb.strong') : value >= 0.55 ? t('lab.fb.partial') : t('lab.fb.repair');
 };
 
 const sectionChipClass = (section: unknown): string => {
@@ -107,7 +117,7 @@ const updateNestedMapAnswer = (
   },
 });
 
-type LabResult = Awaited<ReturnType<typeof practiceLabSubmit>>;
+type LabResult = Awaited<ReturnType<typeof practiceLabSubmit>> & { review_items_queued?: number };
 
 const hasLabPayload = (item: { delivery_build?: { metadata?: unknown } | null }): boolean => {
   const metadata = asRecord(item.delivery_build?.metadata);
@@ -116,6 +126,13 @@ const hasLabPayload = (item: { delivery_build?: { metadata?: unknown } | null })
 };
 
 export const LabPage = () => {
+  const t = useAppT();
+  const fmt = useFormat();
+  const errorText = useErrorText();
+  const percent = (value: unknown): string => {
+    const number = typeof value === 'number' ? value : Number(value);
+    return Number.isFinite(number) ? fmt.percent(Math.max(0, Math.min(1, number))) : '–';
+  };
   const navigate = useNavigate();
   const { practiceSessionId = '' } = useParams();
   const [searchParams] = useSearchParams();
@@ -188,7 +205,7 @@ export const LabPage = () => {
           });
         }
       } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load practice lab');
+        if (!cancelled) setError(errorText(err));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -198,6 +215,7 @@ export const LabPage = () => {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accessToken, practiceSessionId]);
 
   useEffect(() => {
@@ -206,11 +224,11 @@ export const LabPage = () => {
       setSaving(true);
       practiceLabSave(accessToken, practiceSessionId, { answers, current_step_index: activeStepIndex })
         .then(() => setDirty(false))
-        .catch((err: unknown) => setError(err instanceof Error ? err.message : 'Autosave failed'))
+        .catch((err: unknown) => setError(errorText(err)))
         .finally(() => setSaving(false));
     }, 900);
     return () => window.clearTimeout(timer);
-  }, [accessToken, activeStepIndex, answers, dirty, isScored, practiceSessionId]);
+  }, [accessToken, activeStepIndex, answers, dirty, isScored, practiceSessionId, errorText]);
 
   const updateStepAnswer = (stepId: string, patch: Record<string, unknown>): void => {
     setAnswers((prev) => ({
@@ -230,8 +248,8 @@ export const LabPage = () => {
     try {
       const res = await practiceLabHint(accessToken, practiceSessionId, toText(activeStep.id));
       setHint(res.hint);
-    } catch (err) {
-      setHint(err instanceof Error ? err.message : 'Hint unavailable right now.');
+    } catch {
+      setHint(t('lab.hintUnavailable'));
     } finally {
       setHintBusy(false);
     }
@@ -245,7 +263,7 @@ export const LabPage = () => {
       await practiceLabSave(accessToken, practiceSessionId, { answers, current_step_index: activeStepIndex });
       setDirty(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Save failed');
+      setError(errorText(err));
     } finally {
       setSaving(false);
     }
@@ -317,13 +335,16 @@ export const LabPage = () => {
 
       // Cross-app streak ping: a completed lab counts as today's activity.
       // Fire-and-forget; the streak badge re-fetches itself on next mount.
+      const startedAt = Date.parse(String(response.lab_attempt?.started_at ?? ''));
+      const minutes = Number.isFinite(startedAt) ? Math.max(1, Math.round((Date.now() - startedAt) / 60000)) : undefined;
       void pingUserStreak(accessToken, {
         activity_type: 'practice_lab_completed',
         xp: 25,
-        minutes: 10,
+        // Real time spent on this attempt; omitted when the start time is unknown.
+        ...(minutes != null && minutes <= 240 ? { minutes } : {}),
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Submit failed');
+      setError(errorText(err));
     } finally {
       setSubmitting(false);
     }
@@ -348,7 +369,7 @@ export const LabPage = () => {
       await practiceGeneratePlan(accessToken, { refresh_diagnostics: false });
       await reloadPlan();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to regenerate today\'s labs');
+      setError(errorText(err));
     } finally {
       setGeneratingPlan(false);
     }
@@ -394,12 +415,12 @@ export const LabPage = () => {
       }).toString();
       navigate(`/session/${encodeURIComponent(sessionId)}/${encodeURIComponent(firstSectionId)}?${runtimeQuery}`);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to open lab';
+      const message = err instanceof Error ? err.message : '';
       if (message.toLowerCase().includes('plan item not found')) {
         await regeneratePlan();
-        setError('That lab was stale, so I refreshed today\'s Reading, Listening, and Writing labs.');
+        setError(t('lab.stale'));
       } else {
-        setError(message);
+        setError(errorText(err));
       }
     } finally {
       setLaunchingPlanItemId(null);
@@ -431,32 +452,32 @@ export const LabPage = () => {
       return (
         <div className="lab-answer-stack">
           <label>
-            Task analysis
+            {t('lab.w.analysis')}
             <textarea
               rows={3}
               value={toText(response.task_analysis)}
               onChange={(event) => updateStepAnswer(stepId, { task_analysis: event.target.value })}
-              placeholder="Identify the task, audience, position, and limits."
+              placeholder={t('lab.w.analysisPh')}
               disabled={isScored}
             />
           </label>
           <label>
-            Plan builder
+            {t('lab.w.plan')}
             <textarea
               rows={4}
               value={toText(response.plan)}
               onChange={(event) => updateStepAnswer(stepId, { plan: event.target.value })}
-              placeholder="Outline introduction, body points, examples, and conclusion."
+              placeholder={t('lab.w.planPh')}
               disabled={isScored}
             />
           </label>
           <label>
-            Full rewrite
+            {t('lab.w.rewrite')}
             <textarea
               rows={10}
               value={toText(response.full_rewrite)}
               onChange={(event) => updateStepAnswer(stepId, { full_rewrite: event.target.value })}
-              placeholder="Write the improved answer here."
+              placeholder={t('lab.w.rewritePh')}
               disabled={isScored}
             />
           </label>
@@ -599,10 +620,7 @@ export const LabPage = () => {
                 lineHeight: 1.45,
               }}
             >
-              <strong>Old gap-fill format.</strong> This lab was generated before we shipped the
-              inline-sentence renderer, so each blank only shows a number. Refresh today's labs
-              (sidebar → <em>Generate</em>) to get a new gap-fill with the sentence shown around
-              each blank.
+              {t('lab.legacyGap')}
             </div>
           ) : null}
           {mapKeysForStep(step).map((key) => (
@@ -621,7 +639,7 @@ export const LabPage = () => {
 
     return (
       <label>
-        Answer
+        {t('lab.answer')}
         <textarea
           rows={4}
           value={toText(response.answer)}
@@ -639,12 +657,12 @@ export const LabPage = () => {
     if (step.kind === 'evidence_locator') {
       return (
         <label>
-          Evidence sentence or paragraph
+          {t('lab.evidence')}
           <textarea
             rows={4}
             value={toText(response.evidence)}
             onChange={(event) => updateStepAnswer(stepId, { evidence: event.target.value })}
-            placeholder="Paste or summarize the exact sentence that proves the answer."
+            placeholder={t('lab.evidencePh')}
             disabled={isScored}
           />
         </label>
@@ -658,23 +676,23 @@ export const LabPage = () => {
       return (
         <div className="lab-answer-stack">
           <label>
-            Distractor trap
+            {t('lab.trap')}
             <select
               value={toText(response.trap_type)}
               onChange={(event) => updateStepAnswer(stepId, { trap_type: event.target.value })}
               disabled={isScored}
             >
-              <option value="">Choose trap type</option>
-              {trapTypes.map((trap) => <option value={trap} key={trap}>{titleCase(trap)}</option>)}
+              <option value="">{t('lab.trapChoose')}</option>
+              {trapTypes.map((trap) => <option value={trap} key={trap}>{trapLabel(t, trap)}</option>)}
             </select>
           </label>
           <label>
-            Why the distractor is wrong
+            {t('lab.trapWhy')}
             <textarea
               rows={4}
               value={toText(response.reason)}
               onChange={(event) => updateStepAnswer(stepId, { reason: event.target.value })}
-              placeholder="Explain what makes the tempting answer incorrect."
+              placeholder={t('lab.trapWhyPh')}
               disabled={isScored}
             />
           </label>
@@ -686,21 +704,21 @@ export const LabPage = () => {
       return (
         <div className="lab-answer-stack">
           <label>
-            Prediction
+            {t('lab.prediction')}
             <input
               value={toText(response.prediction)}
               onChange={(event) => updateStepAnswer(stepId, { prediction: event.target.value })}
-              placeholder="Predict grammar, number, name, or meaning before answering."
+              placeholder={t('lab.predictionPh')}
               disabled={isScored}
             />
           </label>
           <label>
-            Paraphrase or signpost
+            {t('lab.paraphrase')}
             <textarea
               rows={3}
               value={toText(response.paraphrase)}
               onChange={(event) => updateStepAnswer(stepId, { paraphrase: event.target.value })}
-              placeholder="Note the signpost, correction, or paraphrase that leads to the answer."
+              placeholder={t('lab.paraphrasePh')}
               disabled={isScored}
             />
           </label>
@@ -718,8 +736,8 @@ export const LabPage = () => {
           <div className="lab-loading-card glass">
             <div className="lab-loading-spinner" aria-hidden="true" />
             <div>
-              <strong>Loading practice lab…</strong>
-              <p className="muted">Preparing your transformed simulator material.</p>
+              <strong>{t('lab.loading')}</strong>
+              <p className="muted">{t('lab.loadingLead')}</p>
             </div>
           </div>
         </div>
@@ -733,7 +751,7 @@ export const LabPage = () => {
         <div className="lab-loading-shell">
           <div className="lab-loading-card glass" role="alert">
             <strong style={{ color: 'var(--danger)' }}>{error}</strong>
-            <Link className="btn ghost compact" to={backPath} style={{ marginTop: 12 }}>Back</Link>
+            <Link className="btn ghost compact" to={backPath} style={{ marginTop: 12 }}>{t('lab.back')}</Link>
           </div>
         </div>
       </div>
@@ -743,8 +761,8 @@ export const LabPage = () => {
   if (!lab || lab.version !== LAB_SCHEMA_VERSION || steps.length === 0) {
     return (
       <div className="practice-root">
-        <div className="glass dashboard-alert error">This practice session is not lab-ready yet. Rebuild it in Content Factory.</div>
-        <Link className="btn ghost" to={backPath}>Back</Link>
+        <div className="glass dashboard-alert error" role="alert">{t('lab.notReady')}</div>
+        <Link className="btn ghost" to={backPath}>{t('lab.back')}</Link>
       </div>
     );
   }
@@ -754,6 +772,10 @@ export const LabPage = () => {
   const transcript = contextText(activeContext, ['transcript']);
   const audioUrl = contextText(activeContext, ['audio_url']);
   const scoredSteps = Array.isArray(result?.scored_steps) ? result.scored_steps.map(asRecord) : [];
+  const correctSteps = scoredSteps.filter((step) => Number(step.accuracy_ratio ?? 0) >= 0.75).length;
+  const writingEvaluation = asRecord(asRecord(result?.lab_attempt?.score_artifacts).writing_evaluation);
+  const writingBandRaw = Number(asRecord(writingEvaluation.result).overall_band);
+  const writingBand = Number.isFinite(writingBandRaw) && writingBandRaw > 0 ? writingBandRaw : null;
 
   return (
     <div className="practice-root lab-root">
@@ -761,25 +783,26 @@ export const LabPage = () => {
         <Link className="brand" to={backPath}>
           <img src="/schood-logo.png" alt="Schood" />
           <div>
-            <strong>Practice Labs</strong>
+            <strong>{t('lab.brand')}</strong>
             <span>{labKind}</span>
           </div>
         </Link>
         <div className="top-nav-actions">
-          <span className={sectionChipClass(lab.section_type)}>{lab.section_type}</span>
-          <span className="status-pill">{saving ? 'Saving...' : dirty ? 'Unsaved' : 'Saved'}</span>
+          <LocaleSwitcher label={t('shell.language')} />
+          <span className={sectionChipClass(lab.section_type)}>{sectionLabel(t, lab.section_type)}</span>
+          <span className="status-pill" role="status">{saving ? t('lab.saving') : dirty ? t('lab.unsaved') : t('lab.saved')}</span>
           <button
             className="btn ghost"
             type="button"
             onClick={() => void getHint()}
             disabled={hintBusy || isScored || !activeStep}
-            title="Get a one-sentence strategy hint without revealing the answer"
+            title={t('lab.stuckTitle')}
           >
-            {hintBusy ? 'Thinking…' : 'Stuck?'}
+            {hintBusy ? t('lab.thinking') : t('lab.stuck')}
           </button>
-          <button className="btn ghost" type="button" onClick={() => void saveNow()} disabled={saving || isScored}>Save</button>
+          <button className="btn ghost" type="button" onClick={() => void saveNow()} disabled={saving || isScored}>{t('lab.save')}</button>
           <button className="btn solid" type="button" onClick={() => void submit()} disabled={submitting || isScored}>
-            {submitting ? 'Scoring...' : isScored ? 'Scored' : 'Submit'}
+            {submitting ? t('lab.scoring') : isScored ? t('lab.scored') : t('lab.submit')}
           </button>
         </div>
       </header>
@@ -799,26 +822,26 @@ export const LabPage = () => {
             gap: 12,
           }}
         >
-          <span><strong style={{ color: 'var(--accent)' }}>Hint:</strong> {hint}</span>
+          <span style={{ minWidth: 0, overflowWrap: 'anywhere' }}><strong style={{ color: 'var(--accent)' }}>{t('lab.hint')}</strong> {hint}</span>
           <button
             type="button"
             className="btn ghost compact"
             onClick={() => setHint(null)}
             style={{ flex: '0 0 auto' }}
           >
-            Dismiss
+            {t('lab.dismiss')}
           </button>
         </div>
       ) : null}
 
-      {error ? <div className="dashboard-alert error">{error}</div> : null}
+      {error ? <div className="dashboard-alert error" role="alert">{error}</div> : null}
 
       <main className="lab-layout">
         <aside className="lab-sidebar">
           <section className="lab-panel coach-panel">
-            <p className="eyebrow">Mistake Coach</p>
+            <p className="eyebrow">{t('lab.coach')}</p>
             <h2>{toText(coach.headline) || labKind}</h2>
-            <p>{toText(coach.body) || 'This lab is selected from your diagnostics, mastery gaps, and target band.'}</p>
+            <p>{toText(coach.body) || t('lab.coachDefault')}</p>
             <div className="lab-watch-list">
               {coachList(coach, 'watch_for').slice(0, 4).map((item) => <span key={item}>{item}</span>)}
             </div>
@@ -827,22 +850,22 @@ export const LabPage = () => {
           <section className="lab-panel today-labs-panel">
             <div className="lab-panel-head">
               <div>
-                <h3>Today&apos;s Labs</h3>
-                <p className="muted">Switch between Reading, Listening, and Writing.</p>
+                <h3>{t('lab.today')}</h3>
+                <p className="muted">{t('lab.todayLead')}</p>
               </div>
               <button className="btn ghost compact" type="button" onClick={() => void regeneratePlan()} disabled={generatingPlan}>
-                {generatingPlan ? 'Refreshing...' : 'Refresh'}
+                {generatingPlan ? t('lab.refreshing') : t('lab.refresh')}
               </button>
             </div>
             <div className="today-lab-list">
               {dailySectionLabs.map((row) => (
                 <article className={`today-lab-card ${row.section}${row.isCurrent ? ' active' : ''}`} key={row.section}>
                   <div className="today-lab-card-head">
-                    <span className={sectionChipClass(row.section)}>{row.section}</span>
-                    <span className={`status-pill ${row.item?.status ?? 'missing'}`}>{row.isCurrent ? 'current' : row.item?.status?.replace('_', ' ') ?? 'missing'}</span>
+                    <span className={sectionChipClass(row.section)}>{sectionLabel(t, row.section)}</span>
+                    <span className={`status-pill ${row.item?.status ?? 'missing'}`}>{row.isCurrent ? t('lab.current') : row.item?.status ? statusLabel(t, row.item.status) : t('lab.missing')}</span>
                   </div>
-                  <strong>{row.item ? getPlanItemTitle(row.item) : `${titleCase(row.section)} lab not generated`}</strong>
-                  <p>{row.item ? getPlanItemDescription(row.item) : 'Refresh today\'s labs to add this section.'}</p>
+                  <strong>{row.item ? getPlanItemTitle(row.item, t) : t('lab.notGenerated', { section: sectionLabel(t, row.section) })}</strong>
+                  <p>{row.item ? getPlanItemDescription(row.item, t) : t('lab.addSection')}</p>
                   {row.item ? (
                     <button
                       className={row.isCurrent ? 'btn ghost full' : 'btn solid full'}
@@ -850,11 +873,11 @@ export const LabPage = () => {
                       onClick={() => { if (row.item) void launchPlanItem(row.item); }}
                       disabled={row.isCurrent || launchingPlanItemId === row.item.id}
                     >
-                      {row.isCurrent ? 'Open now' : launchingPlanItemId === row.item.id ? 'Opening...' : row.item.practice_session_id ? 'Resume lab' : `Open ${titleCase(row.section)}`}
+                      {row.isCurrent ? t('lab.openNow') : launchingPlanItemId === row.item.id ? t('common.opening') : row.item.practice_session_id ? t('lab.resume') : t('lab.openSection', { section: sectionLabel(t, row.section) })}
                     </button>
                   ) : (
                     <button className="btn ghost full" type="button" onClick={() => void regeneratePlan()} disabled={generatingPlan}>
-                      Generate
+                      {t('lab.generate')}
                     </button>
                   )}
                 </article>
@@ -863,7 +886,7 @@ export const LabPage = () => {
           </section>
 
           <section className="lab-panel">
-            <h3>Steps</h3>
+            <h3>{t('lab.steps')}</h3>
             <div className="lab-stepper">
               {steps.map((step, index) => (
                 <button
@@ -873,20 +896,20 @@ export const LabPage = () => {
                   onClick={() => goToStep(index)}
                 >
                   <span>{index + 1}</span>
-                  <strong>{titleCase(step.kind || step.question_type)}</strong>
+                  <strong>{step.kind ? kindLabel(t, step.kind) : titleCase(step.question_type)}</strong>
                 </button>
               ))}
             </div>
           </section>
 
           <section className="lab-panel">
-            <h3>Mistake Notebook</h3>
-            {notebook.length === 0 ? <p className="muted">Mistakes will appear here after scoring.</p> : (
+            <h3>{t('lab.notebook')}</h3>
+            {notebook.length === 0 ? <p className="muted">{t('lab.notebookEmpty')}</p> : (
               <ul className="lab-mini-list">
                 {notebook.slice(0, 4).map((item) => (
                   <li key={item.id}>
                     <strong>{item.mistake_pattern}</strong>
-                    <span>{titleCase(item.status)} | next {item.next_review_at ? new Date(item.next_review_at).toLocaleDateString() : '-'}</span>
+                    <span>{t('lab.notebookNext', { status: titleCase(item.status), date: item.next_review_at ? fmt.date(item.next_review_at) : '–' })}</span>
                   </li>
                 ))}
               </ul>
@@ -894,13 +917,13 @@ export const LabPage = () => {
           </section>
 
           <section className="lab-panel">
-            <h3>Band Roadmap</h3>
-            {roadmap.length === 0 ? <p className="muted">Roadmap updates after diagnostics refresh.</p> : (
+            <h3>{t('lab.roadmap')}</h3>
+            {roadmap.length === 0 ? <p className="muted">{t('lab.roadmapEmpty')}</p> : (
               <ul className="lab-mini-list">
                 {roadmap.slice(0, 4).map((item) => (
                   <li key={item.id}>
                     <strong>{item.title}</strong>
-                    <span>{titleCase(item.linked_lab_kind)} | priority {Math.round(Number(item.priority ?? 0))}</span>
+                    <span>{t('lab.roadmapMeta', { kind: titleCase(item.linked_lab_kind), n: Math.round(Number(item.priority ?? 0)) })}</span>
                   </li>
                 ))}
               </ul>
@@ -912,33 +935,41 @@ export const LabPage = () => {
           {isScored && result ? (
             <section className="lab-result-panel">
               <div>
-                <p className="eyebrow">Lab Result</p>
-                <h1>{result.score.estimated_band.toFixed(1)} estimated band</h1>
-                <p className="muted">{percent(result.score.accuracy_ratio)} accuracy across answer and process checks.</p>
+                <p className="eyebrow">{t('lab.result')}</p>
+                {lab.section_type === 'writing' ? (
+                  writingBand != null
+                    ? <h1>{t('lab.resultWritingBand', { band: fmt.band(writingBand) })}</h1>
+                    : <><h1>{t('lab.resultCorrect', { correct: correctSteps, total: scoredSteps.length })}</h1><p className="muted">{t('lab.resultWritingNoBand')}</p></>
+                ) : (
+                  <h1>{t('lab.resultCorrect', { correct: correctSteps, total: scoredSteps.length })}</h1>
+                )}
+                <p className="muted">{t('lab.resultAccuracy', { value: percent(result.score.accuracy_ratio) })}</p>
+                {(result.review_items_queued ?? 0) > 0 ? (
+                  <p>
+                    {t('lab.queued', { count: result.review_items_queued ?? 0 })}{' '}
+                    <Link to="/practice/reviews">{t('lab.openReviews')}</Link>
+                  </p>
+                ) : null}
               </div>
               <div className="lab-result-actions">
-                <Link className="btn solid" to="/dashboard">Dashboard</Link>
-                <Link className="btn ghost" to="/plan">Next Plan</Link>
+                <Link className="btn solid" to="/dashboard">{t('lab.dashboard')}</Link>
+                <Link className="btn ghost" to="/plan">{t('lab.nextPlan')}</Link>
                 {notebook.length > 0 ? (
-                  <Link className="btn ghost" to="/practice/reviews">Open notebook ({notebook.length})</Link>
+                  <Link className="btn ghost" to="/practice/reviews">{t('lab.openNotebook', { count: notebook.length })}</Link>
                 ) : null}
               </div>
               <div className="lab-feedback-list">
                 {scoredSteps.map((step) => (
                   <article key={toText(step.step_id)} className="lab-feedback-item">
                     <strong>{titleCase(step.question_type)}</strong>
-                    <span>{percent(step.accuracy_ratio)} | {toText(step.feedback)}</span>
+                    <span>{percent(step.accuracy_ratio)} · {stepFeedback(t, step.accuracy_ratio)}</span>
                   </article>
                 ))}
               </div>
               {notebook.length > 0 ? (
                 <div className="lab-notebook-callout">
-                  <p className="eyebrow">Added to your mistake notebook</p>
-                  <p className="muted" style={{ marginTop: 4 }}>
-                    {notebook.length === 1
-                      ? "1 weakness was auto-saved for spaced review. Tag the reason or open it now."
-                      : `${notebook.length} weaknesses were auto-saved for spaced review. Tag the reasons or open them now.`}
-                  </p>
+                  <p className="eyebrow">{t('lab.nbAdded')}</p>
+                  <p className="muted" style={{ marginTop: 4 }}>{t('lab.nbAddedLead', { count: notebook.length })}</p>
                   <ul className="lab-notebook-list">
                     {notebook.slice(0, 6).map((item) => (
                       <li key={item.id}>
@@ -948,8 +979,8 @@ export const LabPage = () => {
                     ))}
                   </ul>
                   <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-                    <Link className="btn solid" to="/practice/reviews">Open notebook</Link>
-                    <Link className="btn ghost" to="/dashboard#dashboard-review">Review on dashboard</Link>
+                    <Link className="btn solid" to="/practice/reviews">{t('lab.openReviews')}</Link>
+                    <Link className="btn ghost" to="/dashboard#dashboard-review">{t('lab.reviewDashboard')}</Link>
                   </div>
                 </div>
               ) : null}
@@ -960,12 +991,12 @@ export const LabPage = () => {
             <article className="lab-task-panel">
               <div className="lab-task-head">
                 <div>
-                  <p className="eyebrow">Step {activeStepIndex + 1} of {steps.length}</p>
-                  <h1>{toText(activeStep.title) || titleCase(activeStep.kind)}</h1>
+                  <p className="eyebrow">{t('lab.step', { n: activeStepIndex + 1, total: steps.length })}</p>
+                  <h1 style={{ overflowWrap: 'anywhere' }}>{toText(activeStep.title) || kindLabel(t, activeStep.kind)}</h1>
                   <p>{toText(activeStep.instructions)}</p>
                 </div>
                 {(lab.experience_kind === 'timed_mini' || lab.lab_kind === 'timed_mini' || lab.lab_kind === 'mastery_check') ? (
-                  <span className="status-pill">No hints mode</span>
+                  <span className="status-pill">{t('lab.noHints')}</span>
                 ) : null}
               </div>
 
@@ -973,23 +1004,23 @@ export const LabPage = () => {
                 <section className="lab-context-grid">
                   {passageText ? (
                     <article className="lab-context-panel">
-                      <h3>{toText(activeContext.passage_title) || 'Passage'}</h3>
+                      <h3>{toText(activeContext.passage_title) || t('lab.passage')}</h3>
                       <div className="lab-scroll-text">{passageText}</div>
                     </article>
                   ) : null}
                   {audioUrl || transcript ? (
                     <article className="lab-context-panel">
-                      <h3>Replay Trainer</h3>
-                      {audioUrl ? <audio controls src={audioUrl} className="lab-audio" /> : <p className="muted">Audio is not attached to this source.</p>}
-                      {transcript ? <div className="lab-scroll-text transcript">{transcript}</div> : <p className="muted">Transcript fallback: use prediction and answer reasoning.</p>}
+                      <h3>{t('lab.replay')}</h3>
+                      {audioUrl ? <audio controls src={audioUrl} className="lab-audio" /> : <p className="muted">{t('lab.noAudio')}</p>}
+                      {transcript ? <div className="lab-scroll-text transcript">{transcript}</div> : <p className="muted">{t('lab.noTranscript')}</p>}
                     </article>
                   ) : null}
                 </section>
               ) : null}
 
               <section className="lab-question-panel">
-                <h3>Task</h3>
-                <p>{toText(activeStep.prompt)}</p>
+                <h3>{t('lab.task')}</h3>
+                <p style={{ overflowWrap: 'anywhere' }}>{toText(activeStep.prompt)}</p>
                 <div className="lab-answer-stack">
                   {renderAnswerSurface(activeStep)}
                   {renderProcessFields(activeStep)}
@@ -997,12 +1028,12 @@ export const LabPage = () => {
               </section>
 
               <footer className="lab-footer-actions">
-                <button className="btn ghost" type="button" onClick={() => goToStep(activeStepIndex - 1)} disabled={activeStepIndex === 0}>Previous</button>
+                <button className="btn ghost" type="button" onClick={() => goToStep(activeStepIndex - 1)} disabled={activeStepIndex === 0}>{t('lab.previous')}</button>
                 {activeStepIndex < steps.length - 1 ? (
-                  <button className="btn solid" type="button" onClick={() => goToStep(activeStepIndex + 1)}>Next</button>
+                  <button className="btn solid" type="button" onClick={() => goToStep(activeStepIndex + 1)}>{t('lab.next')}</button>
                 ) : (
                   <button className="btn solid" type="button" onClick={() => void submit()} disabled={submitting || isScored}>
-                    {submitting ? 'Scoring...' : 'Submit Lab'}
+                    {submitting ? t('lab.scoring') : t('lab.submitLab')}
                   </button>
                 )}
               </footer>

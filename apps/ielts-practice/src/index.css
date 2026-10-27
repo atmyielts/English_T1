@@ -3554,3 +3554,127 @@ audio.practice-audio {
     padding: 16px;
   }
 }
+
+.review-section {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 22px;
+  min-width: 0;
+}
+
+.review-section h2 {
+  margin: 0;
+}
+
+.review-item-body {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.review-item-prompt {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.review-item-excerpt,
+.review-item-source {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.review-options {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.review-option-legend {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13.5px;
+}
+
+.review-item-outcome {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--card-subtle);
+  overflow-wrap: anywhere;
+}
+
+.review-item-outcome p {
+  margin: 0;
+}
+
+.srs-review-row.review-correct {
+  border-color: color-mix(in srgb, #166534 35%, transparent);
+}
+
+.srs-review-row.review-wrong {
+  border-color: color-mix(in srgb, #9b2c2c 35%, transparent);
+}
+
+.srs-review-row-head {
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.srs-review-row-head h3 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.srs-review-row-box {
+  margin-left: auto;
+}
+
+.onboarding-card {
+  padding: 32px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+
+.plan-goals label {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.listening-player {
+  display: grid;
+  gap: 10px;
+}
+
+.speaking-feedback {
+  display: grid;
+  gap: 12px;
+}
+
+.speaking-feedback h4 {
+  margin: 0 0 6px;
+}
+
+.speaking-feedback ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.context-banner .inline-actions,
+.empty-catalogue .inline-actions {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 760px) {
+  .onboarding-card {
+    padding: 20px;
+  }
+
+  .cards-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
