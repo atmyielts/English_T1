@@ -24,13 +24,13 @@
   "rolloutOrder": [
     "pages",
     "migration:20261026150900_sat_playbook_learner_engine.sql",
-    "function:sat-playbook",
-    "function:admin-exam-playbook",
     "migration:20261026160900_sat_playbook_public_modules_core.sql",
     "migration:20261026160910_sat_playbook_public_modules_reading_writing.sql",
     "migration:20261026160920_sat_playbook_public_modules_math.sql",
     "migration:20261026161000_sat_playbook_premium_guides.sql",
-    "migration:20261026161100_sat_playbook_plan_templates.sql"
+    "migration:20261026161100_sat_playbook_plan_templates.sql",
+    "function:sat-playbook",
+    "function:admin-exam-playbook"
   ],
   "manualFollowUps": [
     "Pages: merging publishes sat-playbook (shared exam-playbook web package: public landing with real module links, grouped catalog, public modules readable without sign-in, GFM tables in scroll wrappers, diagnostic, plan templates with day-by-day tasks/hours/checkpoints and adoption, dashboard, notes/highlights, section coach, admin console at /admin, en/uz/ru UI). Until the function and migration ship, signed-in Premium panels show their error/empty states; public pages keep working against the old catalog/pages endpoints, which are unchanged.",
