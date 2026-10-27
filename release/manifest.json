@@ -1,54 +1,48 @@
 {
   "schemaVersion": 1,
-  "releaseId": "sat-practice-engine-v2",
+  "releaseId": "sat-playbook-content",
   "status": "code_ready",
   "backwardCompatible": true,
-  "frontends": [
-    "sat-practice"
-  ],
+  "frontends": [],
   "migrations": [
-    "20261026130900_sat_practice_engine_v2.sql"
+    "20261026160900_sat_playbook_public_modules_core.sql",
+    "20261026160910_sat_playbook_public_modules_reading_writing.sql",
+    "20261026160920_sat_playbook_public_modules_math.sql",
+    "20261026161000_sat_playbook_premium_guides.sql",
+    "20261026161100_sat_playbook_plan_templates.sql"
   ],
-  "edgeFunctions": [
-    "admin-sat-practice",
-    "sat-practice"
-  ],
-  "sharedEdgeConsumers": [],
+  "edgeFunctions": [],
   "workers": [],
-  "requiredSecrets": [
-    "AI_ADDON_PRODUCT_ID",
-    "OPENROUTER_API_KEY",
-    "OPENROUTER_BASE_URL",
-    "OPENROUTER_MODEL",
-    "SAT_TUTOR_SERVICE_DAILY_LIMIT"
-  ],
+  "sharedEdgeConsumers": [],
+  "requiredSecrets": [],
   "rolloutOrder": [
-    "pages",
-    "migration:20261026130900_sat_practice_engine_v2.sql",
-    "secret:OPENROUTER_API_KEY",
-    "secret:OPENROUTER_MODEL",
-    "secret:OPENROUTER_BASE_URL",
-    "secret:AI_ADDON_PRODUCT_ID",
-    "secret:SAT_TUTOR_SERVICE_DAILY_LIMIT",
-    "function:sat-practice",
-    "function:admin-sat-practice"
+    "requires:SAT Playbook learner engine (PR #313: migration 20261026150900, sat-playbook + admin-exam-playbook functions, Pages) live first",
+    "migration:20261026160900_sat_playbook_public_modules_core.sql",
+    "migration:20261026160910_sat_playbook_public_modules_reading_writing.sql",
+    "migration:20261026160920_sat_playbook_public_modules_math.sql",
+    "migration:20261026161000_sat_playbook_premium_guides.sql",
+    "migration:20261026161100_sat_playbook_plan_templates.sql"
   ],
   "manualFollowUps": [
-    "Merge, then let CI ship schood-sat-practice. The new app tolerates the old sat-practice function for the short window until the function is deployed (new pages show a retryable error instead of breaking).",
-    "Apply the migration: supabase db push --linked (only 20261026130900_sat_practice_engine_v2.sql from this release). It must run BEFORE the SAT content migrations 20261026140xxx-20261026143xxx, which rely on draft exclusion and the catalog. It is additive: create-or-replace of select/start/complete RPCs with identical signatures, a new catalog RPC, admin import RPCs and one widened check constraint; the currently deployed sat-practice function keeps working against it.",
-    "Secrets (existing ones only need checking with supabase secrets list): OPENROUTER_API_KEY is already set (only if missing: supabase secrets set OPENROUTER_API_KEY=<existing key>); OPENROUTER_MODEL and OPENROUTER_BASE_URL are optional (defaults google/gemma-4-31b-it:free and https://openrouter.ai/api/v1; never a paid model) — if set, keep supabase secrets set OPENROUTER_MODEL=google/gemma-4-31b-it:free and supabase secrets set OPENROUTER_BASE_URL=https://openrouter.ai/api/v1; AI_ADDON_PRODUCT_ID is unchanged (supabase secrets set AI_ADDON_PRODUCT_ID=<existing add-on product id> only if missing). Turn the tutor on with supabase secrets set SAT_TUTOR_SERVICE_DAILY_LIMIT=300.",
-    "Deploy the functions after the migration: supabase functions deploy sat-practice --project-ref <prod>, then supabase functions deploy admin-sat-practice --project-ref <prod> (new function; config.toml verify_jwt=false, authorised by the shared admin check admin.products.manage).",
-    "Then deploy the SAT content migrations (sat-math-a/b, sat-rw-a/b) with supabase db push --linked; content uses content_status published and appears immediately in bank, plans and modules."
+    "Combines PRs #310 (14 public modules, 27 sources, 403 sections) and #304 (6 premium guides, 5 plan templates). Modules migrations sort before the premium ones so guides find their parent modules.",
+    "Order: only after #313 (SAT Playbook learner engine) is live; its renderer parses every section as GFM Markdown, renders plan templates day by day and resolves guide parents by module_key.",
+    "Database: supabase db push --linked --include-all only from an isolated copy of the installed migrations plus these five files, keeping Codex's 9 pending payment migrations from #220 (20261010162000-20261010174000) excluded. Dry run first, then supabase migration list --linked. Every insert is on conflict do nothing with deterministic ids.",
+    "No Pages, Edge Function, worker or secret changes in this release."
   ],
   "verification": [
-    "Local: deno tests (contract-A validator, SPR grading, SVG sanitiser, selection/plan/module builder, insights, goals, admin handler, tutor, existing completion/start/bank suites), deno check of both functions, app typecheck and build, uz/ru catalog completeness, 6 Playwright route tests with mocked network (bank filters, drill with mcq+spr+table+figure+KaTeX, timed module with navigator/flags/calculator, plan start, dashboard/onboarding, locale; 320/375px no horizontal overflow), and 13 PostgreSQL checks of the migration (scripts/test-sat-practice-engine-db.mjs) on a local PostgreSQL 18 cluster.",
-    "After deploy: open practice.sat.schood.online/bank and filter by official domain and skill; start a plan drill and confirm it holds the promised number of questions (or says honestly how many the bank has); start a Math module and check 22 questions/35:00 timer, navigator and calculator; submit and confirm the plan item turns Done and the dashboard minutes equal real elapsed time; score impact shows 'Not enough data yet' for a new learner.",
-    "Admin: open practice.sat.schood.online/admin as a content admin, validate a contract-A JSON file, import as draft (not visible in the learner bank), publish, then unpublish.",
-    "SQL: select count(*) from select_sat_practice_catalog('<test user>') equals the published SAT Practice questions; select_sat_practice_questions excludes content_status draft."
+    "supabase migration list --linked shows 20261026160900, 20261026160910 and 20261026160920 applied and the 9 #220 payment migrations still pending.",
+    "select count(*) from sat_playbook_pages where metadata->>'seeded_by' = 'sat-pb-modules' returns 14; sections with metadata->>'seeded_by' = 'sat-pb-modules' return 403.",
+    "GET /functions/v1/sat-playbook/catalog with the anon key lists 14 modules in sort_order 1-14, starting with sat-essentials.",
+    "https://playbook.sat.schood.online/math-algebra and /test-day-guide open signed out and show sections and the Official references list.",
+    "supabase migration list --linked shows 20261026161000 and 20261026161100 applied.",
+    "GET /functions/v1/sat-playbook/catalog lists the 6 premium_guides (guide-rw-hard-module-traps, guide-math-hard-module-traps, guide-1200-to-1400-roadmap, guide-1400-to-1550-roadmap, guide-desmos-power-moves, guide-final-14-days).",
+    "GET /functions/v1/sat-playbook/pages/guide-final-14-days without a token returns 401/403 (premium); with a premium entitlement it returns 34 sections and 8 sources.",
+    "As a premium user, https://playbook.sat.schood.online/plans/four-week-sprint shows 4 phases and 4 weeks; the dashboard lists all 5 plan templates."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-sat-practice to the previous deployment.",
-    "functions": "Redeploy the previous sat-practice function from main before this merge; the migration stays compatible with it. Delete or ignore admin-sat-practice (no other caller).",
-    "migration": "Additive; leave in place. Previous function versions call the same RPC signatures. Learner history, receipts and frozen attempt snapshots are untouched. Drafted items can be republished with admin_set_sat_practice_item_status."
+    "pages": "Nothing deployed.",
+    "migration": "Unpublish instead of deleting: update sat_playbook_pages set status='draft' where metadata->>'seeded_by' like '20261026160%' or metadata->>'seeded_by' like '20261026161%'.",
+    "edge": "Nothing deployed.",
+    "worker": "Nothing deployed."
   }
 }
