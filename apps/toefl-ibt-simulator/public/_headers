@@ -5,3 +5,5 @@
   Strict-Transport-Security: max-age=86400
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), camera=(self), microphone=(self)
+/media/toefl-2026/*
+  Cache-Control: public, max-age=604800

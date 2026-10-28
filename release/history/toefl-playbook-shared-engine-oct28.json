@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "toefl-playbook-shared-engine-oct28",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": [
+    "toefl-playbook"
+  ],
+  "migrations": [
+    "20261028100000_toefl_playbook_learner_engine.sql",
+    "20261028100900_toefl_playbook_public_modules.sql",
+    "20261028100910_toefl_playbook_premium_guides.sql",
+    "20261028101000_toefl_playbook_plan_templates.sql"
+  ],
+  "edgeFunctions": [
+    "toefl-playbook"
+  ],
+  "workers": [],
+  "sharedEdgeConsumers": [
+    "admin-exam-playbook",
+    "sat-playbook"
+  ],
+  "requiredSecrets": [],
+  "rolloutOrder": [
+    "pages",
+    "migration:20261028100000_toefl_playbook_learner_engine.sql",
+    "migration:20261028100900_toefl_playbook_public_modules.sql",
+    "migration:20261028100910_toefl_playbook_premium_guides.sql",
+    "migration:20261028101000_toefl_playbook_plan_templates.sql",
+    "function:toefl-playbook"
+  ],
+  "manualFollowUps": [
+    "Pages: merging publishes toefl-playbook as a thin shell over packages/exam-playbook-web (same engine and look as the live SAT Playbook: public modules readable signed out, grouped catalog, all section kinds, 2026 1-6 bands with CEFR and the 0-120 comparison, diagnostic, dated plans with band checkpoints, notes, coach, admin at /admin, en/uz/ru). Pages also rebuilds sat-playbook from the shared package on every deploy (the shared code gained TOEFL branches only; SAT route tests unchanged and passing). Until the migrations and toefl-playbook function ship, the TOEFL app shows its empty/error states against the old toefl-playbook function.",
+    "Database: supabase db push --linked (dry run first; keep the #220 payment migrations excluded as before). 20261028100000 adds the TOEFL learner tables (plans, items, section progress, notes, coach threads), band profile columns (existing profiles marked score_scale = legacy_120) and widens the toefl_playbook_events check. 20261028100900 / 100910 / 101000 are content only (13 public modules, 6 premium guides, 5 plan templates, 27 ETS sources), all on conflict do nothing; they replace PRs #307 and #306, whose 20261026170000/171000 files must not be applied.",
+    "Edge, after the migrations (--project-ref bbjawctnqrufvnesdsel): supabase functions deploy toefl-playbook. Shared files changed, so also redeploy: supabase functions deploy admin-exam-playbook (enables ?exam=toefl) and supabase functions deploy sat-playbook (same shared engine; no SAT behaviour change). No new secrets: the TOEFL coach/AI summary reuse OPENROUTER_API_KEY through _shared/sat-ai.ts (free model).",
+    "Practice deep links go to https://toefl.schood.online/practice?source=playbook&task=<task id> using the task ids of the toefl-sim scorer (complete_the_words, build_sentence, ...). The current simulator practice page has no task filter yet (unverified whether it uses ?task once toefl-sim ships its frontend); if toefl-sim adds task filtering under another name, update config.moduleTasks / practiceHref in packages/exam-playbook-web.",
+    "Pricing (integration) goes last, after this content is live."
+  ],
+  "verification": [
+    "supabase migration list --linked shows the four 20261028100000-20261028101000 migrations applied.",
+    "GET /functions/v1/toefl-playbook/catalog returns 13 modules, 6 premium_guides and 5 plan_templates with Cache-Control public, max-age=300.",
+    "GET /functions/v1/toefl-playbook/pages/reading-complete-the-words returns sections signed out; /pages/guide-band-4-to-5-roadmap returns 401 auth_required with a teaser.",
+    "GET /functions/v1/admin-exam-playbook/qa?exam=toefl as an admin lists all 13 modules, 6 guides and 5 templates as published.",
+    "playbook.toefl.schood.online: landing links Reading/Listening/Writing/Speaking modules; no SAT wording; 375px has no horizontal scroll; ?lang=uz shows Uzbek navigation; a Premium learner can run the diagnostic and sees bands with CEFR and the 0-120 comparison.",
+    "playbook.sat.schood.online still loads modules and the diagnostic as before."
+  ],
+  "rollback": {
+    "pages": "Cloudflare Pages rollback of schood-toefl-playbook (and schood-sat-playbook if needed) to the previous deployment.",
+    "migration": "Additive tables/columns and content inserts; leave in place. Content rows can be unpublished in the admin console.",
+    "edge": "Redeploy toefl-playbook, admin-exam-playbook and sat-playbook from the previous main commit."
+  }
+}

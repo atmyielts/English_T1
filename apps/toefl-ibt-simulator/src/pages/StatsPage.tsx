@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useAppT } from '../i18n';
 import { useNavigate } from 'react-router-dom';
 import { BarChart3, PieChart } from 'lucide-react';
 import { MainLayout } from '../components/layout/MainLayout';
@@ -31,6 +32,7 @@ const formatDateTime = (iso: string | null): string => {
 };
 
 const getRlwComposite = (result: any): number | null => {
+  if (result?.toefl?.format === 'toefl-2026') return null;
   const n = result?.toefl?.rlw_composite_score;
   if (typeof n === 'number') return n;
   const fallback = result?.overall_score;
@@ -59,6 +61,7 @@ const clampPct = (n: number): number => Math.max(0, Math.min(100, n));
 
 export const StatsPage: React.FC = () => {
   const navigate = useNavigate();
+  const t = useAppT();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -271,7 +274,7 @@ export const StatsPage: React.FC = () => {
               <div>
                 <div className="text-xs font-semibold tracking-wider uppercase text-[#64748b]">Score distribution</div>
                 <div className="text-lg font-semibold text-[#0f172a] mt-1">
-                  Average RLW composite
+                  Average RLW composite (pre-2026 format)
                   {overview.avgMetric !== null ? (
                     <span className="text-emerald-700">
                       {' '}
@@ -372,7 +375,9 @@ export const StatsPage: React.FC = () => {
                       Completed: <span className="font-semibold">{formatDateTime(s.completed_at)}</span>
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
-                      {score !== null ? (hasToeflComposite ? `Estimated RLW composite: ${score}/90` : `Estimated score: ${score}`) : 'Estimated score: n/a'}
+                      {ev?.result?.toefl?.format === 'toefl-2026'
+                        ? `${t('dash.band', { band: typeof ev.result.toefl.overall_band === 'number' ? ev.result.toefl.overall_band.toFixed(1) : t('results.pending') })} · ${t('format.2026')}`
+                        : score !== null ? (hasToeflComposite ? t('dash.legacy_score', { score }) : `Estimated score: ${score}`) : 'Estimated score: n/a'}
                     </div>
                   </div>
                   <div className="shrink-0 flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">

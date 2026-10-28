@@ -878,7 +878,7 @@ export type ExamStateResponse = {
     completed_at: string | null;
     created_at: string;
   };
-  experience: { id: string; name: string; product_id: string };
+  experience: { id: string; name: string; product_id: string; metadata?: Json | null };
   sections: { id: string; name: string; display_order: number; metadata: Json | null }[];
   current_section: { id: string; name: string; display_order: number; metadata: Json | null };
   next_section_id: string | null;
@@ -1668,4 +1668,34 @@ export const gradeWriting = async (
     throw err;
   }
   return (await res.json()) as GradeWritingResponse;
+};
+
+export type ToeflSpeakingResponse = {
+  evaluation: { id: string; method: string; status: string; result: Json; evaluated_at: string } | null;
+};
+
+/** TOEFL iBT 2026: transcript-based Speaking estimate (stored as the `ai_speaking` evaluation). */
+export const toeflSpeaking = async (
+  accessToken: string,
+  sessionId: string,
+  opts?: { force?: boolean },
+): Promise<ToeflSpeakingResponse> => {
+  const res = await fetchWithTokenRetry(
+    accessToken,
+    (token) =>
+      fetch(`${edgeBase}/toefl-speaking`, {
+        method: 'POST',
+        headers: { ...apiHeaders(token), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: sessionId, force: opts?.force === true }),
+      }),
+    { label: 'POST /toefl-speaking' },
+  );
+  if (!res.ok) {
+    const details = await readJsonOrText(res);
+    const err = new Error('Speaking estimate request failed');
+    (err as any).status = res.status;
+    (err as any).details = details;
+    throw err;
+  }
+  return (await res.json()) as ToeflSpeakingResponse;
 };

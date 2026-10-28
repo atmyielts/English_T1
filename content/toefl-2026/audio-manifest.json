@@ -1,0 +1,1814 @@
+{
+ "voices": {
+  "f_uk": "en_GB-cori-medium",
+  "f_us1": "en_US-ljspeech-medium",
+  "f_us2": "en_US-kristin-medium",
+  "m_us1": "en_US-john-medium",
+  "m_us2": "en_US-norman-medium",
+  "m_us3": "en_US-joe-medium"
+ },
+ "files": [
+  {
+   "file": "lcr-router-1.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us1",
+     "text": "Do you know if the bookstore is still open?"
+    }
+   ]
+  },
+  {
+   "file": "lcr-router-2.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us1",
+     "text": "Weren't you supposed to present in seminar today?"
+    }
+   ]
+  },
+  {
+   "file": "lcr-router-3.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "I can't believe the shuttle was late again."
+    }
+   ]
+  },
+  {
+   "file": "lcr-router-4.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us2",
+     "text": "Would you mind if I borrowed your lab notes?"
+    }
+   ]
+  },
+  {
+   "file": "lcr-router-5.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_uk",
+     "text": "So the essay's due Monday, not Friday?"
+    }
+   ]
+  },
+  {
+   "file": "lcr-router-6.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us3",
+     "text": "You haven't seen my blue umbrella anywhere, have you?"
+    }
+   ]
+  },
+  {
+   "file": "lcr-router-7.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us1",
+     "text": "How did the interview for the library job go?"
+    }
+   ]
+  },
+  {
+   "file": "lcr-router-8.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us1",
+     "text": "Should I sign up for the morning or evening lab section?"
+    }
+   ]
+  },
+  {
+   "file": "lcr-router-9.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "I'm thinking of dropping statistics."
+    }
+   ]
+  },
+  {
+   "file": "conv-router-1.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us2",
+     "text": "Listen to a conversation between a student and a housing office employee."
+    },
+    {
+     "voice": "m_us1",
+     "text": "Hi, I'd like to ask about switching rooms. My roommate and I have really different schedules."
+    },
+    {
+     "voice": "f_us2",
+     "text": "I see. Is it a conflict, or just a scheduling issue?"
+    },
+    {
+     "voice": "m_us1",
+     "text": "Mostly scheduling. He practices guitar late at night, and I have early shifts at the lab."
+    },
+    {
+     "voice": "f_us2",
+     "text": "Well, room changes don't open until the third week of the semester. Before that, we usually suggest a roommate agreement."
+    },
+    {
+     "voice": "m_us1",
+     "text": "What's that, exactly?"
+    },
+    {
+     "voice": "f_us2",
+     "text": "It's a form you fill out together. You agree on quiet hours, guests, that kind of thing. Your resident advisor helps."
+    },
+    {
+     "voice": "m_us1",
+     "text": "Okay. And if it doesn't work?"
+    },
+    {
+     "voice": "f_us2",
+     "text": "Then come back after the third week, and we'll look at open rooms."
+    }
+   ]
+  },
+  {
+   "file": "conv-router-2.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to a conversation between two students."
+    },
+    {
+     "voice": "f_uk",
+     "text": "Are you coming to dinner at the dining hall tonight?"
+    },
+    {
+     "voice": "m_us3",
+     "text": "I don't think so. I've used up almost all my meal swipes for the month."
+    },
+    {
+     "voice": "f_uk",
+     "text": "Already? It's only the middle of October."
+    },
+    {
+     "voice": "m_us3",
+     "text": "I know. I picked the smallest plan to save money, but I eat on campus more than I thought."
+    },
+    {
+     "voice": "f_uk",
+     "text": "You can add swipes online, you know. It's cheaper per meal than paying at the door."
+    },
+    {
+     "voice": "m_us3",
+     "text": "Really? I didn't realize that. How do I do it?"
+    },
+    {
+     "voice": "f_uk",
+     "text": "Log into the student portal and look under dining services. It only takes a minute."
+    },
+    {
+     "voice": "m_us3",
+     "text": "Great, I'll do it right after my next class."
+    }
+   ]
+  },
+  {
+   "file": "conv-router-3.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to a conversation between a student and a librarian."
+    },
+    {
+     "voice": "m_us2",
+     "text": "Excuse me, I booked a group study room for three o'clock, but someone's in it."
+    },
+    {
+     "voice": "f_us1",
+     "text": "Let me check. What's your name?"
+    },
+    {
+     "voice": "m_us2",
+     "text": "Daniel Okafor."
+    },
+    {
+     "voice": "f_us1",
+     "text": "Hmm, your booking is for three o'clock tomorrow, not today."
+    },
+    {
+     "voice": "m_us2",
+     "text": "Oh no. My group is already on the way."
+    },
+    {
+     "voice": "f_us1",
+     "text": "Well, room four on the second floor is free until five. I can put you in there now."
+    },
+    {
+     "voice": "m_us2",
+     "text": "That would be perfect. And could I keep tomorrow's booking too?"
+    },
+    {
+     "voice": "f_us1",
+     "text": "Sure, but you'll need to check in within fifteen minutes of the start time, or the room is released."
+    }
+   ]
+  },
+  {
+   "file": "ann-router-1.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to an announcement in a classroom."
+    },
+    {
+     "voice": "f_uk",
+     "text": "Before we start, a quick change to the midterm. Instead of the in-class exam we planned for next Wednesday, you'll write a take-home essay. I'll post the questions online on Monday morning, and you'll have until Friday at noon to submit. The essay should be about four pages. Since you'll have more time, I'll be looking closely at how well you use evidence from the readings, so start reviewing your notes now."
+    }
+   ]
+  },
+  {
+   "file": "ann-router-2.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to an announcement in the campus library."
+    },
+    {
+     "voice": "m_us2",
+     "text": "Attention, library users. Starting Monday, the third floor will be closed for about six weeks while we replace the carpets and lighting. The quiet study area will move to the reading room on the first floor. Books from the third floor can still be requested at the front desk, and staff will bring them down within an hour. We apologize for the noise and thank you for your patience."
+    }
+   ]
+  },
+  {
+   "file": "talk-router-1.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to a talk in a biology class."
+    },
+    {
+     "voice": "m_us3",
+     "text": "Let's talk about hummingbirds and a problem they face every single night. A hummingbird's heart can beat more than a thousand times a minute while it's flying, and it burns energy faster than almost any other animal its size. During the day, that's fine, because it can feed on nectar every few minutes. But at night it can't feed at all. So how does it make it to morning without running out of fuel? The answer is something called torpor. Torpor is a bit like a very short hibernation. The bird's body temperature drops sharply, and its heartbeat slows to a fraction of its daytime rate. In this state, it uses only a tiny amount of energy. Now, torpor isn't free. A bird in torpor is almost completely unresponsive, so it can't escape from a predator. And waking up takes time, often twenty minutes or more, as the bird shivers its muscles to warm itself back up. That's why hummingbirds don't seem to enter torpor every night. They use it mainly when their energy reserves are low, for example, after a cold, rainy day when flowers were hard to find. In other words, it's an emergency tool, not a nightly habit."
+    }
+   ]
+  },
+  {
+   "file": "talk-router-2.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us2",
+     "text": "Listen to a talk in a business class."
+    },
+    {
+     "voice": "f_us2",
+     "text": "Today I want to look at a pricing strategy you've almost certainly experienced without noticing: the loss leader. A loss leader is a product that a store sells at a very low price, sometimes below what the store paid for it. That sounds like a bad business decision, right? Why would anyone sell something at a loss? The logic is that the cheap item gets customers through the door. Think of a supermarket that advertises milk or eggs at an unusually low price. People come in for the bargain, but once they're inside, very few walk out with only milk. They pick up bread, snacks, and cleaning supplies, and those items carry normal or even high profit margins. So the store loses a little on the milk and makes it back on everything else. Notice that stores usually choose everyday items for this, things people buy often and know the price of. If the price of milk drops, shoppers notice right away. A discount on something unusual, like a specialty spice, wouldn't attract nearly as many people. Of course, the strategy has risks. Some shoppers, sometimes called cherry pickers, buy only the discounted item and leave. If too many customers do that, the store really does just lose money."
+    }
+   ]
+  },
+  {
+   "file": "lcr-lower-1.mp3",
+   "length_scale": 1.1,
+   "segments": [
+    {
+     "voice": "m_us2",
+     "text": "Where can I get a parking permit?"
+    }
+   ]
+  },
+  {
+   "file": "lcr-lower-2.mp3",
+   "length_scale": 1.1,
+   "segments": [
+    {
+     "voice": "f_uk",
+     "text": "What time does the dining hall open for breakfast?"
+    }
+   ]
+  },
+  {
+   "file": "lcr-lower-3.mp3",
+   "length_scale": 1.1,
+   "segments": [
+    {
+     "voice": "m_us1",
+     "text": "Can you help me carry these boxes upstairs?"
+    }
+   ]
+  },
+  {
+   "file": "lcr-lower-4.mp3",
+   "length_scale": 1.1,
+   "segments": [
+    {
+     "voice": "f_us1",
+     "text": "How long is the walk to the science building?"
+    }
+   ]
+  },
+  {
+   "file": "lcr-lower-5.mp3",
+   "length_scale": 1.1,
+   "segments": [
+    {
+     "voice": "m_us3",
+     "text": "Is this seat taken?"
+    }
+   ]
+  },
+  {
+   "file": "lcr-lower-6.mp3",
+   "length_scale": 1.1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Did you finish the reading for today?"
+    }
+   ]
+  },
+  {
+   "file": "lcr-lower-7.mp3",
+   "length_scale": 1.1,
+   "segments": [
+    {
+     "voice": "m_us2",
+     "text": "Who's teaching biology this semester?"
+    }
+   ]
+  },
+  {
+   "file": "lcr-lower-8.mp3",
+   "length_scale": 1.1,
+   "segments": [
+    {
+     "voice": "f_uk",
+     "text": "Thanks for lending me your calculator."
+    }
+   ]
+  },
+  {
+   "file": "conv-lower-1.mp3",
+   "length_scale": 1.1,
+   "segments": [
+    {
+     "voice": "m_us2",
+     "text": "Listen to a conversation between two students."
+    },
+    {
+     "voice": "f_us2",
+     "text": "Hi, Sam. Why are you walking? Where's your bike?"
+    },
+    {
+     "voice": "m_us1",
+     "text": "It has a flat tire. I think I rode over some glass."
+    },
+    {
+     "voice": "f_us2",
+     "text": "Oh no. Do you know about the bike shop in the student center?"
+    },
+    {
+     "voice": "m_us1",
+     "text": "No. Is it expensive?"
+    },
+    {
+     "voice": "f_us2",
+     "text": "It's free for students. They give you the tools and show you how to fix it."
+    },
+    {
+     "voice": "m_us1",
+     "text": "That's great. When is it open?"
+    },
+    {
+     "voice": "f_us2",
+     "text": "Every afternoon from one to six."
+    },
+    {
+     "voice": "m_us1",
+     "text": "Perfect. I'll take my bike there after lunch."
+    }
+   ]
+  },
+  {
+   "file": "conv-lower-2.mp3",
+   "length_scale": 1.1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to a conversation between a student and a receptionist at the campus health clinic."
+    },
+    {
+     "voice": "m_us3",
+     "text": "Hello, I'd like to make an appointment with a doctor. I've had a sore throat for three days."
+    },
+    {
+     "voice": "f_uk",
+     "text": "Okay. Do you have a fever?"
+    },
+    {
+     "voice": "m_us3",
+     "text": "A little, last night."
+    },
+    {
+     "voice": "f_uk",
+     "text": "We have an opening tomorrow at ten in the morning. Is that all right?"
+    },
+    {
+     "voice": "m_us3",
+     "text": "I have a class then. Is there anything later?"
+    },
+    {
+     "voice": "f_uk",
+     "text": "Yes, tomorrow there's one at two thirty."
+    },
+    {
+     "voice": "m_us3",
+     "text": "That works. Should I bring anything?"
+    },
+    {
+     "voice": "f_uk",
+     "text": "Just your student card and a list of any medicine you're taking."
+    }
+   ]
+  },
+  {
+   "file": "ann-lower-1.mp3",
+   "length_scale": 1.1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to an announcement in a classroom."
+    },
+    {
+     "voice": "f_us1",
+     "text": "Good morning, everyone. Don't forget that next Tuesday we're visiting the city art museum instead of meeting in class. The bus will leave from the front of the library at nine o'clock, so please arrive ten minutes early. Bring a notebook and a pencil, because you'll be sketching one painting. We should be back on campus by one."
+    }
+   ]
+  },
+  {
+   "file": "ann-lower-2.mp3",
+   "length_scale": 1.1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to an announcement on campus."
+    },
+    {
+     "voice": "m_us1",
+     "text": "Hello, students. This Friday, the main dining hall is having an international food night. Students from the cultural clubs will cook dishes from more than ten countries. Dinner is from five to eight, and it's free with your meal plan. If you'd like to help cook, please sign up at the dining hall entrance by Wednesday."
+    }
+   ]
+  },
+  {
+   "file": "talk-lower-1.mp3",
+   "length_scale": 1.1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to a talk in a history class."
+    },
+    {
+     "voice": "f_us1",
+     "text": "Today we're going to talk about early lighthouses. For thousands of years, sailors needed a way to find safe harbors at night. The first lighthouses were very simple. People lit large wood fires on hills or on top of stone towers near the coast. Sailors could see the fire from far away and know where land was. But fires had problems. They used a lot of wood, and they were hard to keep burning in wind and rain. Later, people used oil lamps and candles inside glass rooms at the top of the towers. These were easier to protect from the weather. Then, in the eighteen twenties, a French scientist designed a special glass lens. It made the light much brighter, so ships could see it from more than twenty miles away. This lens changed lighthouses all over the world."
+    }
+   ]
+  },
+  {
+   "file": "lcr-upper-1.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "m_us1",
+     "text": "I could've sworn the meeting was in this room."
+    }
+   ]
+  },
+  {
+   "file": "lcr-upper-2.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "f_us1",
+     "text": "You'd think they'd fix the heating before winter."
+    }
+   ]
+  },
+  {
+   "file": "lcr-upper-3.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "m_us3",
+     "text": "Don't tell me the printer's jammed again."
+    }
+   ]
+  },
+  {
+   "file": "lcr-upper-4.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "I wouldn't count on the professor accepting late work."
+    }
+   ]
+  },
+  {
+   "file": "lcr-upper-5.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "m_us2",
+     "text": "Any chance you could cover my shift at the cafe Saturday?"
+    }
+   ]
+  },
+  {
+   "file": "lcr-upper-6.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "f_uk",
+     "text": "Funny, I thought you'd already graduated."
+    }
+   ]
+  },
+  {
+   "file": "lcr-upper-7.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "m_us1",
+     "text": "That presentation could have gone a lot worse, couldn't it?"
+    }
+   ]
+  },
+  {
+   "file": "lcr-upper-8.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "f_us1",
+     "text": "I'm not sure the research grant is worth the paperwork."
+    }
+   ]
+  },
+  {
+   "file": "conv-upper-1.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to a conversation between two students working on a group project."
+    },
+    {
+     "voice": "f_us1",
+     "text": "Have you heard from Marcus about his section of the report?"
+    },
+    {
+     "voice": "m_us2",
+     "text": "Not a word. I've sent him three messages since Monday."
+    },
+    {
+     "voice": "f_us1",
+     "text": "We present on Thursday. I'm starting to think we should split his part between us."
+    },
+    {
+     "voice": "m_us2",
+     "text": "I'd rather not step on his toes, though. He did say he was working on it."
+    },
+    {
+     "voice": "f_us1",
+     "text": "Saying and doing are two different things. If he shows up with nothing, we're the ones who look bad."
+    },
+    {
+     "voice": "m_us2",
+     "text": "Fair enough. How about this: if we don't have a draft from him by tomorrow night, we divide it up."
+    },
+    {
+     "voice": "f_us1",
+     "text": "Deal. And maybe we mention it to the professor afterward."
+    }
+   ]
+  },
+  {
+   "file": "conv-upper-2.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "m_us2",
+     "text": "Listen to a conversation between a student and a study abroad advisor."
+    },
+    {
+     "voice": "m_us3",
+     "text": "I was hoping to study in Lisbon next spring, but the program page says applications closed last week."
+    },
+    {
+     "voice": "f_us2",
+     "text": "That's for the university exchange. There's also a direct enrollment option that runs on a later cycle."
+    },
+    {
+     "voice": "m_us3",
+     "text": "What's the catch?"
+    },
+    {
+     "voice": "f_us2",
+     "text": "Your credits don't transfer automatically. You'd need each course approved by your department beforehand."
+    },
+    {
+     "voice": "m_us3",
+     "text": "That sounds like a lot of running around."
+    },
+    {
+     "voice": "f_us2",
+     "text": "It can be, but students who plan ahead usually manage. The deadline isn't until the first of November."
+    },
+    {
+     "voice": "m_us3",
+     "text": "Then I'd better get my advisor's signature this week."
+    }
+   ]
+  },
+  {
+   "file": "ann-upper-1.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to an announcement in a biology lab."
+    },
+    {
+     "voice": "m_us3",
+     "text": "One more thing before you go. Several groups have been leaving the microscopes on the benches with the lights still running. Those bulbs aren't cheap, and the department won't keep replacing them forever. From now on, each group will sign out a microscope and sign it back in at the end of the session. If one comes back damaged or left on, that group loses bench time next week. I'd rather not have to enforce that, so let's make it a non-issue."
+    }
+   ]
+  },
+  {
+   "file": "ann-upper-2.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "m_us2",
+     "text": "Listen to an announcement on the campus radio station."
+    },
+    {
+     "voice": "f_us2",
+     "text": "The psychology department is recruiting volunteers for a study on sleep and memory. Participants will wear a light wrist monitor for two weeks and complete a short online puzzle each morning. There's no lab visit beyond the first briefing. Those who finish the full two weeks receive a forty dollar bookstore voucher; partial completion, unfortunately, doesn't qualify. Spaces are limited, and the last round filled within days, so if you're interested, don't sit on it. The sign-up link is on the department's homepage."
+    }
+   ]
+  },
+  {
+   "file": "talk-upper-1.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to a talk in an earth science class."
+    },
+    {
+     "voice": "m_us1",
+     "text": "I'd like to clear up a misconception that trips up a lot of students: the idea that water always freezes at zero degrees Celsius. Pure water can actually stay liquid well below that point, down to around minus forty in some cases. We call this supercooled water. So what's going on? For ice to form, water molecules need to line up into a crystal, and that process has to start somewhere. In everyday life it almost always starts on something else, like a speck of dust, a scratch in a container, or a grain of pollen. These starting points are called nuclei. Without them, the molecules jostle around but never quite lock into place. This matters enormously for weather. Clouds high in the atmosphere are often full of supercooled droplets, simply because there aren't enough suitable particles for ice to form on. When a few ice crystals do appear, they grow at the expense of the surrounding droplets and can eventually become heavy enough to fall. In fact, much of the rain that reaches the ground begins its life as snow up there. And here's where it gets practical. Supercooled droplets that strike an airplane's wing can freeze on contact, which is why icing is taken so seriously in aviation. The wing itself, in effect, becomes the nucleus."
+    }
+   ]
+  },
+  {
+   "file": "lr-test-1-s1.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us1",
+     "text": "Welcome to the campus greenhouse."
+    }
+   ]
+  },
+  {
+   "file": "lr-test-1-s2.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us1",
+     "text": "Please stay on the marked paths."
+    }
+   ]
+  },
+  {
+   "file": "lr-test-1-s3.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us1",
+     "text": "The tropical room is kept very warm."
+    }
+   ]
+  },
+  {
+   "file": "lr-test-1-s4.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us1",
+     "text": "Visitors may take photos but should not touch the plants."
+    }
+   ]
+  },
+  {
+   "file": "lr-test-1-s5.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us1",
+     "text": "The tallest palm in this room was planted over forty years ago."
+    }
+   ]
+  },
+  {
+   "file": "lr-test-1-s6.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us1",
+     "text": "If anyone feels too hot, the cooler desert room is just through that door."
+    }
+   ]
+  },
+  {
+   "file": "lr-test-1-s7.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us1",
+     "text": "Before you leave, remember to collect a free seed packet from the table near the main entrance."
+    }
+   ]
+  },
+  {
+   "file": "iv-test-1-q1.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us1",
+     "text": "Thanks for joining us today. To start, could you tell me about a typical weekday for you? What do you usually do in the morning, and when do you find time to study?"
+    }
+   ]
+  },
+  {
+   "file": "iv-test-1-q2.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us1",
+     "text": "Can you describe a time when you had several deadlines at once? How did you decide what to work on first, and how did things turn out in the end?"
+    }
+   ]
+  },
+  {
+   "file": "iv-test-1-q3.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us1",
+     "text": "Some people believe that schools should teach time management as a separate subject, just like math or writing. Do you think a class like that would be useful for students? Why or why not?"
+    }
+   ]
+  },
+  {
+   "file": "iv-test-1-q4.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us1",
+     "text": "Many students now use apps that block social media while they study. In your opinion, do tools like these really help people focus, or is self-discipline more important? Please explain your view."
+    }
+   ]
+  },
+  {
+   "file": "lcr-practice-1.mp3",
+   "length_scale": 1.1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Do you want to get lunch after class?"
+    }
+   ]
+  },
+  {
+   "file": "lcr-practice-2.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us3",
+     "text": "Hasn't the gym extended its hours?"
+    }
+   ]
+  },
+  {
+   "file": "lcr-practice-3.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "f_uk",
+     "text": "I'd hold off on buying the textbook if I were you."
+    }
+   ]
+  },
+  {
+   "file": "lcr-practice-4.mp3",
+   "length_scale": 1.1,
+   "segments": [
+    {
+     "voice": "m_us1",
+     "text": "Excuse me, is the post office near here?"
+    }
+   ]
+  },
+  {
+   "file": "lcr-practice-5.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us1",
+     "text": "Why don't we study together for the midterm?"
+    }
+   ]
+  },
+  {
+   "file": "lcr-practice-6.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "m_us2",
+     "text": "I'd have called, but my phone died on the train."
+    }
+   ]
+  },
+  {
+   "file": "lcr-practice-7.mp3",
+   "length_scale": 1.1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "How much is a ticket to the concert?"
+    }
+   ]
+  },
+  {
+   "file": "lcr-practice-8.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us3",
+     "text": "The registration office closes early on Fridays, doesn't it?"
+    }
+   ]
+  },
+  {
+   "file": "lcr-practice-9.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "f_uk",
+     "text": "So much for my plan to finish the project this weekend."
+    }
+   ]
+  },
+  {
+   "file": "lcr-practice-10.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us1",
+     "text": "Could you tell me where the language lab is?"
+    }
+   ]
+  },
+  {
+   "file": "lcr-practice-11.mp3",
+   "length_scale": 1.1,
+   "segments": [
+    {
+     "voice": "f_us1",
+     "text": "I lost my student ID card."
+    }
+   ]
+  },
+  {
+   "file": "lcr-practice-12.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "m_us2",
+     "text": "I'm surprised you're not more upset about your grade."
+    }
+   ]
+  },
+  {
+   "file": "conv-practice-1.mp3",
+   "length_scale": 1.1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to a conversation between two students."
+    },
+    {
+     "voice": "f_us1",
+     "text": "Hey, Leo. Are you still selling your chemistry textbook?"
+    },
+    {
+     "voice": "m_us2",
+     "text": "Yes, I am. Are you taking intro chemistry next term?"
+    },
+    {
+     "voice": "f_us1",
+     "text": "I am. How much do you want for it?"
+    },
+    {
+     "voice": "m_us2",
+     "text": "Twenty dollars. It's in good condition, just a few notes in pencil."
+    },
+    {
+     "voice": "f_us1",
+     "text": "That's much cheaper than the bookstore. Does it come with the workbook?"
+    },
+    {
+     "voice": "m_us2",
+     "text": "No, sorry. I lost the workbook. But you can buy one on its own for about ten dollars."
+    },
+    {
+     "voice": "f_us1",
+     "text": "That's fine. Can I pick up the book tomorrow?"
+    },
+    {
+     "voice": "m_us2",
+     "text": "Sure, I'll bring it to class."
+    }
+   ]
+  },
+  {
+   "file": "conv-practice-2.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to a conversation between a student and an employee at the campus recreation center."
+    },
+    {
+     "voice": "m_us1",
+     "text": "Hi, I wanted to sign up for the beginner swimming class, but the website says it's full."
+    },
+    {
+     "voice": "f_uk",
+     "text": "Yes, the Tuesday class filled up in a day. But we keep a waiting list."
+    },
+    {
+     "voice": "m_us1",
+     "text": "Do people actually drop out?"
+    },
+    {
+     "voice": "f_uk",
+     "text": "Usually two or three every term. And we're adding a Saturday morning class next month."
+    },
+    {
+     "voice": "m_us1",
+     "text": "Saturday could work. Can I sign up for that now?"
+    },
+    {
+     "voice": "f_uk",
+     "text": "Not yet. Registration opens on the first. If you join the waiting list, though, we'll email you before it opens."
+    },
+    {
+     "voice": "m_us1",
+     "text": "Okay, put me on the list, then."
+    }
+   ]
+  },
+  {
+   "file": "conv-practice-3.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us2",
+     "text": "Listen to a conversation between two students."
+    },
+    {
+     "voice": "f_us2",
+     "text": "I saw a flyer saying the campus radio station needs volunteers. Want to apply with me?"
+    },
+    {
+     "voice": "m_us3",
+     "text": "Maybe. What would we actually do?"
+    },
+    {
+     "voice": "f_us2",
+     "text": "Mostly help with the evening news show. Writing short stories, checking facts, that kind of thing."
+    },
+    {
+     "voice": "m_us3",
+     "text": "I'm a journalism minor, so that could look good on my resume."
+    },
+    {
+     "voice": "f_us2",
+     "text": "Exactly. And after a semester, volunteers can host their own show."
+    },
+    {
+     "voice": "m_us3",
+     "text": "Now that's tempting. Is there an interview?"
+    },
+    {
+     "voice": "f_us2",
+     "text": "Just a short writing test on Friday afternoon."
+    },
+    {
+     "voice": "m_us3",
+     "text": "Hmm, I've got a lab until four on Fridays. I'll ask if there's another time."
+    }
+   ]
+  },
+  {
+   "file": "conv-practice-4.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to a conversation between a student and her professor."
+    },
+    {
+     "voice": "f_us1",
+     "text": "Professor Hale, do you have a minute? It's about the research proposal."
+    },
+    {
+     "voice": "m_us2",
+     "text": "Of course. Come in."
+    },
+    {
+     "voice": "f_us1",
+     "text": "I've been reading for weeks, but my topic keeps getting bigger. Every article leads to three more."
+    },
+    {
+     "voice": "m_us2",
+     "text": "That's a common trap. You're casting the net too wide. What's the one question you really care about?"
+    },
+    {
+     "voice": "f_us1",
+     "text": "I guess how bilingual signs affect tourism in small towns."
+    },
+    {
+     "voice": "m_us2",
+     "text": "There you go. Focus on that, and set aside anything that doesn't speak to it directly."
+    },
+    {
+     "voice": "f_us1",
+     "text": "So I don't need to cover every angle?"
+    },
+    {
+     "voice": "m_us2",
+     "text": "Not in a proposal. Pick one town, and come back with an outline next week."
+    }
+   ]
+  },
+  {
+   "file": "conv-practice-5.mp3",
+   "length_scale": 1.1,
+   "segments": [
+    {
+     "voice": "m_us2",
+     "text": "Listen to a conversation between two friends."
+    },
+    {
+     "voice": "m_us1",
+     "text": "Are we still going hiking on Saturday?"
+    },
+    {
+     "voice": "f_us2",
+     "text": "I hope so, but I just checked the weather. It might rain in the afternoon."
+    },
+    {
+     "voice": "m_us1",
+     "text": "Then let's start early. If we leave at seven, we'll be back by noon."
+    },
+    {
+     "voice": "f_us2",
+     "text": "Seven is early, but okay. Should we take the bus to the park?"
+    },
+    {
+     "voice": "m_us1",
+     "text": "My cousin can lend me his car, so we can drive."
+    },
+    {
+     "voice": "f_us2",
+     "text": "Even better. I'll bring sandwiches and water."
+    },
+    {
+     "voice": "m_us1",
+     "text": "Great. Don't forget a rain jacket, just in case."
+    }
+   ]
+  },
+  {
+   "file": "conv-practice-6.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to a conversation between a student and a technology help desk worker."
+    },
+    {
+     "voice": "f_uk",
+     "text": "Hi, I can't log into the course website. It keeps saying my password is wrong."
+    },
+    {
+     "voice": "m_us3",
+     "text": "Did you change your password recently?"
+    },
+    {
+     "voice": "f_uk",
+     "text": "Yes, last week. The system told me to."
+    },
+    {
+     "voice": "m_us3",
+     "text": "Ah, the course site sometimes takes a while to update. Try logging in with your old password."
+    },
+    {
+     "voice": "f_uk",
+     "text": "Really? Let me see. Oh, it worked!"
+    },
+    {
+     "voice": "m_us3",
+     "text": "Good. It should switch over to the new one by tomorrow. If it doesn't, come back and I'll reset it."
+    },
+    {
+     "voice": "f_uk",
+     "text": "Thanks. I was worried I'd miss tonight's quiz."
+    }
+   ]
+  },
+  {
+   "file": "conv-practice-7.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to a conversation between two students."
+    },
+    {
+     "voice": "m_us2",
+     "text": "I'm thinking of moving off campus next year. Rent in town is cheaper than the dorms."
+    },
+    {
+     "voice": "f_us1",
+     "text": "On paper, maybe. Have you added up utilities, internet, and the bus pass?"
+    },
+    {
+     "voice": "m_us2",
+     "text": "Not really. I just compared the monthly rent."
+    },
+    {
+     "voice": "f_us1",
+     "text": "When I moved out, my heating bill alone was a nasty surprise. And I had to buy furniture."
+    },
+    {
+     "voice": "m_us2",
+     "text": "So you're saying it's not the bargain it looks like."
+    },
+    {
+     "voice": "f_us1",
+     "text": "It can be, if you share with a couple of roommates. Just do the math first."
+    },
+    {
+     "voice": "m_us2",
+     "text": "Okay. I'll make a full budget before I sign anything."
+    }
+   ]
+  },
+  {
+   "file": "conv-practice-8.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us2",
+     "text": "Listen to a conversation between a student and a clerk at the campus bookstore."
+    },
+    {
+     "voice": "f_us2",
+     "text": "Hi, I'd like to return this book. I bought it for a class I ended up dropping."
+    },
+    {
+     "voice": "m_us1",
+     "text": "Sure. Do you have the receipt?"
+    },
+    {
+     "voice": "f_us2",
+     "text": "Yes, here it is."
+    },
+    {
+     "voice": "m_us1",
+     "text": "Hmm, it says you bought it five weeks ago. Our full refund period is only three weeks."
+    },
+    {
+     "voice": "f_us2",
+     "text": "Oh. Is there anything I can do?"
+    },
+    {
+     "voice": "m_us1",
+     "text": "We can give you store credit instead. Or you could try the buyback program at the end of the term, but you'd get less."
+    },
+    {
+     "voice": "f_us2",
+     "text": "Store credit is fine. I still need supplies for my art class."
+    }
+   ]
+  },
+  {
+   "file": "conv-practice-9.mp3",
+   "length_scale": 1.1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to a conversation between two students."
+    },
+    {
+     "voice": "f_uk",
+     "text": "You're in the photography club, right?"
+    },
+    {
+     "voice": "m_us2",
+     "text": "Yes, I joined last year. Why?"
+    },
+    {
+     "voice": "f_uk",
+     "text": "I just got a camera for my birthday, and I'd like to learn how to use it."
+    },
+    {
+     "voice": "m_us2",
+     "text": "You should come to our next meeting. It's on Wednesday evening in the art building."
+    },
+    {
+     "voice": "f_uk",
+     "text": "Do I need to be good at photography?"
+    },
+    {
+     "voice": "m_us2",
+     "text": "Not at all. Most new members are beginners. We go on photo walks around town on weekends, too."
+    },
+    {
+     "voice": "f_uk",
+     "text": "That sounds fun. I'll be there on Wednesday."
+    }
+   ]
+  },
+  {
+   "file": "conv-practice-10.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to a conversation between a student and an academic advisor."
+    },
+    {
+     "voice": "m_us3",
+     "text": "I need one more science course to graduate, and I'm stuck between astronomy and geology."
+    },
+    {
+     "voice": "f_us1",
+     "text": "Both count toward the requirement. What's making it hard to choose?"
+    },
+    {
+     "voice": "m_us3",
+     "text": "Astronomy sounds more interesting, but it has a night lab on Thursdays."
+    },
+    {
+     "voice": "f_us1",
+     "text": "Do you work in the evenings?"
+    },
+    {
+     "voice": "m_us3",
+     "text": "Yes, at a hotel downtown, three nights a week, including Thursday."
+    },
+    {
+     "voice": "f_us1",
+     "text": "Could you swap that shift?"
+    },
+    {
+     "voice": "m_us3",
+     "text": "Maybe. My manager's pretty flexible."
+    },
+    {
+     "voice": "f_us1",
+     "text": "Then talk to her before registration closes on Friday. If it doesn't work out, geology's a solid backup."
+    }
+   ]
+  },
+  {
+   "file": "ann-practice-1.mp3",
+   "length_scale": 1.1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to an announcement in a classroom."
+    },
+    {
+     "voice": "m_us2",
+     "text": "Hi, everyone. On Thursday we'll have a guest speaker, Maria Rivera, who works as an engineer at a solar energy company. She'll talk about her job and how she chose her career. Please think of one question to ask her. Also, class will start fifteen minutes earlier than usual that day, so please don't be late."
+    }
+   ]
+  },
+  {
+   "file": "ann-practice-2.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to an announcement from campus transportation services."
+    },
+    {
+     "voice": "f_uk",
+     "text": "This is a message from campus transportation. Because of road work on Elm Street, the blue shuttle line will skip the north parking lot stop for the next two weeks. Riders who usually board there can walk to the stop outside the stadium, about five minutes away. The shuttle will also run every fifteen minutes instead of every twenty during the morning rush, to make up for the detour."
+    }
+   ]
+  },
+  {
+   "file": "ann-practice-3.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to an announcement in a business class."
+    },
+    {
+     "voice": "f_us1",
+     "text": "Okay, listen up. For the final project, you'll work in groups of four. I've already assigned the groups, and you'll find the list on the course website this afternoon. Each group will choose a local business and analyze how it uses social media. Your first task is to meet with your group before next Monday and agree on which business to study. Send me your choice by email so I can make sure there aren't any duplicates."
+    }
+   ]
+  },
+  {
+   "file": "ann-practice-4.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to an announcement from the campus career center."
+    },
+    {
+     "voice": "m_us1",
+     "text": "Just a heads-up for anyone thinking about summer internships. The fall career fair is coming up on the twelfth in the student union ballroom, and over sixty employers have registered. Recruiters tend to remember students who've done their homework, so look at the employer list beforehand and pick a handful to target rather than wandering from table to table. We're also running resume checks all next week. Walk-ins are welcome, but the lines get long toward the end of the week."
+    }
+   ]
+  },
+  {
+   "file": "ann-practice-5.mp3",
+   "length_scale": 1.1,
+   "segments": [
+    {
+     "voice": "m_us2",
+     "text": "Listen to an announcement in a classroom."
+    },
+    {
+     "voice": "f_us2",
+     "text": "Hello, class. Starting next week, we won't meet in this room anymore. Our new room is two oh five in the Carter Building, right across from the library. The room is bigger and has better computers. The class time stays the same, ten in the morning. Please check the course website if you forget the room number."
+    }
+   ]
+  },
+  {
+   "file": "ann-practice-6.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to an announcement on the campus radio station."
+    },
+    {
+     "voice": "m_us3",
+     "text": "The student health center is holding a blood drive next Tuesday and Wednesday in the gym lobby. Donating takes about forty-five minutes, including a short health check. Please eat a full meal and drink plenty of water beforehand. You can book a time online, but walk-ins are welcome. Every donor gets a free T-shirt, and the residence hall with the most donors will win a pizza party."
+    }
+   ]
+  },
+  {
+   "file": "ann-practice-7.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to an announcement in a history class."
+    },
+    {
+     "voice": "f_uk",
+     "text": "A couple of you have asked whether the review session on Sunday is worth giving up a weekend afternoon for. I won't take attendance, and I won't introduce anything new. That said, the teaching assistant who runs it also helps write the exam, so she has a pretty good sense of where people tend to slip up. Draw your own conclusions. It's from two to four in room one twelve, and you're welcome to drop in for part of it."
+    }
+   ]
+  },
+  {
+   "file": "ann-practice-8.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to an announcement in a residence hall."
+    },
+    {
+     "voice": "m_us2",
+     "text": "Good evening, residents. Starting this month, our building is joining the campus composting program. You'll find small green bins in every kitchen for food scraps like fruit peels and coffee grounds. Please don't put plastic or meat in them. The bins are emptied every Monday and Thursday. If your bin is missing or damaged, let the front desk know, and we'll replace it."
+    }
+   ]
+  },
+  {
+   "file": "ann-practice-9.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to an announcement in a sociology class."
+    },
+    {
+     "voice": "f_us1",
+     "text": "I want to clarify something about participation, since there's been some confusion. It's not about how often you speak; it's about whether what you say moves the discussion forward. Someone who makes one thoughtful point that builds on a classmate's idea will do better than someone who talks constantly without engaging. And if speaking up in a big group isn't your strong suit, our online forum counts just as much. Next week I'll post an example of a strong forum reply."
+    }
+   ]
+  },
+  {
+   "file": "ann-practice-10.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to an announcement from the campus art gallery."
+    },
+    {
+     "voice": "m_us1",
+     "text": "The campus gallery invites everyone to the opening of this year's student art exhibition on Friday at six. More than forty students are showing paintings, photographs, and sculptures. Several pieces will be for sale, and the money goes directly to the artists. Light snacks will be served. The exhibition stays open for three weeks, but the artists will only be there to talk about their work on opening night."
+    }
+   ]
+  },
+  {
+   "file": "talk-practice-1.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to a talk in an art history class."
+    },
+    {
+     "voice": "f_uk",
+     "text": "Today we're looking at a painting technique called true fresco, used in many of the great wall paintings of Renaissance Italy. In true fresco, the artist paints onto wet plaster. As the plaster dries, a chemical reaction locks the pigment into the wall itself, so the color becomes part of the surface rather than sitting on top of it. That's why some frescoes have lasted for five hundred years. But this technique put enormous pressure on the painter. Plaster stays workable for only about a day, so artists spread fresh plaster over just the section they could finish before it dried. Art historians call each of these sections a giornata, which is Italian for a day's work. If you look closely at some famous ceilings, you can actually see faint lines where one day's patch meets the next, and by counting them, scholars can estimate how long a painting took. Mistakes were also hard to fix. An error couldn't simply be painted over. The painter had to chip away the plaster and redo that section. Some artists added final details on dry plaster for convenience, but those touches tend to flake off over the centuries."
+    }
+   ]
+  },
+  {
+   "file": "talk-practice-2.mp3",
+   "length_scale": 1.1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to a talk in a music class."
+    },
+    {
+     "voice": "m_us2",
+     "text": "Have you ever wondered why, at the start of a concert, the whole orchestra tunes to a single note played by the oboe? There are a few reasons, and they're partly practical and partly historical. First, the practical side. The oboe has a bright, penetrating sound that cuts through the room, so every player can hear it clearly, even from the back of the stage. Its pitch is also quite stable. Many string instruments drift out of tune as the hall warms up, but the oboe is less affected, and it's hard for an oboist to adjust its pitch much anyway. So it makes sense for everyone else to match the oboe rather than the other way around. Now the historical side. In the seventeenth century, when orchestras were taking shape, the oboe was one of the few wind instruments commonly included, and it often played the main melody. It became the natural reference point, and the habit stuck. Interestingly, when an orchestra performs with a piano, the situation changes. A piano can't be retuned in the middle of a concert, so the oboist tunes to the piano first and then passes that note on to everyone else."
+    }
+   ]
+  },
+  {
+   "file": "talk-practice-3.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to a talk in an urban studies class."
+    },
+    {
+     "voice": "f_us1",
+     "text": "Walk across almost any college campus and you'll find narrow dirt trails cutting across the grass, often right next to a paved sidewalk. Urban planners have a name for these: desire paths. They form when enough people decide that the official route isn't the one they actually want to take, usually because it's longer or less direct. Over time, the grass wears away and a path appears. For a long time, planners treated desire paths as a nuisance. They put up fences or planted bushes to block them. But more recently, many designers have started to see them as free information. A desire path is basically a record of how people really move through a space, which is something no survey can capture quite as honestly. Some universities have taken this idea to its logical conclusion. When they build a new quad, they plant grass everywhere and wait a year before laying any sidewalks. Then they pave the paths that students have worn into the ground. The result is a layout that matches real behavior, and people tend to stay on those sidewalks. Of course, not every desire path should be paved. Some cut through areas that are dangerous or ecologically sensitive, and there, redirecting people still makes sense."
+    }
+   ]
+  },
+  {
+   "file": "talk-practice-4.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to a talk in a geology class."
+    },
+    {
+     "voice": "m_us3",
+     "text": "So where do caves come from? Most of the large cave systems in the world form in limestone, and the main tool that carves them is surprisingly gentle: rainwater. As rain falls through the air and soaks through soil, it picks up carbon dioxide, which turns it into a very weak acid. On its own, this water wouldn't harm most kinds of rock. But limestone is different. It dissolves slowly in weak acid. The water seeps into tiny cracks in the limestone and widens them, very gradually. We're talking about a process that can take hundreds of thousands of years. Eventually, the cracks become channels, and the channels become passages large enough to walk through. Now, once a cave has formed, the process can partly run in reverse. When water carrying dissolved limestone drips from a cave ceiling, it releases some of its carbon dioxide into the air. That makes it deposit a tiny bit of the mineral it was carrying. Drip by drip, those deposits build up into the icicle-shaped formations called stalactites. Where the drops hit the floor, matching columns called stalagmites grow upward. So the same water that hollows out a cave also decorates it."
+    }
+   ]
+  },
+  {
+   "file": "talk-practice-5.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us2",
+     "text": "Listen to a talk in an economics class."
+    },
+    {
+     "voice": "f_us2",
+     "text": "Today's concept is the network effect. A product has a network effect when it becomes more valuable to each user as more people use it. The classic example is the telephone. If you owned the only telephone in the world, it would be useless. Who would you call? But every new phone owner made everyone else's phone a little more useful. You see the same pattern today with messaging apps and online marketplaces. A marketplace with lots of sellers attracts buyers, and lots of buyers attract more sellers. Network effects have some important consequences. One is that markets with strong network effects often end up dominated by one or two big players. Once a platform has most of the users, it's very hard for a newcomer to compete, even with a better product, because people don't want to leave the place where everyone else already is. Economists call this lock-in. Another consequence is that companies in these markets are often willing to lose money for years. They give the product away or sell it cheaply, hoping to grow big enough that the network effect takes over. It's a risky bet. If they never reach that size, the money is simply gone."
+    }
+   ]
+  },
+  {
+   "file": "talk-practice-6.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to a talk in a botany class."
+    },
+    {
+     "voice": "m_us1",
+     "text": "Carnivorous plants, like the Venus flytrap or the pitcher plant, tend to fascinate people because they turn the usual food chain upside down. But I want you to think about why a plant would evolve to eat insects in the first place. After all, these plants still have green leaves and still make their own sugar through photosynthesis. They don't need insects for energy. What they need is nutrients, especially nitrogen. Carnivorous plants almost always grow in places like bogs and wet sandy soils, where nitrogen is extremely scarce. In those conditions, an insect is basically a tiny package of fertilizer. Catching and digesting one gives the plant nitrogen that its roots simply can't find in the ground. This also explains why you don't see carnivorous plants taking over forests or fields. Building traps and producing digestive fluids costs the plant a lot of energy. In rich soil, ordinary plants can get the same nutrients cheaply through their roots, and they grow faster. So carnivory only pays off where the soil is poor. Here's a practical tip if you ever keep one at home: don't give it regular plant fertilizer. Its roots aren't adapted to rich soil, and too much can actually kill it."
+    }
+   ]
+  },
+  {
+   "file": "talk-practice-7.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to a talk in a world history class."
+    },
+    {
+     "voice": "f_uk",
+     "text": "When people hear the term Silk Road, they often picture a single highway with caravans traveling all the way from China to the Mediterranean. That image is misleading in a couple of ways. First, it wasn't one road. It was a shifting web of routes, over land and by sea, that changed as empires rose and fell and as some passes became too dangerous to use. Second, very few individual traders ever traveled the whole length. Goods moved in relays. A merchant might carry silk a few hundred miles to a market town, sell it to another merchant, and head home. The silk would change hands many times before it reached its final buyer, getting more expensive at every stage. Oh, and the name itself is fairly recent. It was coined by a German geographer in the nineteenth century. The people who actually used these routes didn't call them that. And silk was only one item among many. Spices, glass, paper, horses, and metals all moved along the same networks. Arguably, the most important things that traveled weren't goods at all, but ideas: religions, technologies, and even diseases spread along these routes. So when historians talk about the Silk Road today, they really mean a whole system of exchange."
+    }
+   ]
+  },
+  {
+   "file": "talk-practice-8.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to a talk in an astronomy class."
+    },
+    {
+     "voice": "m_us2",
+     "text": "Here's a question that might seem simple: why do we always see the same side of the Moon? The Moon does rotate, but it turns exactly once for every trip it makes around Earth. Because those two motions match, the same face always points toward us. Astronomers call this tidal locking. It didn't start out this way. Billions of years ago, the Moon spun faster. But Earth's gravity pulls slightly harder on the near side of the Moon than on the far side, stretching it into a very slightly oval shape. These bulges acted like a brake. As the Moon rotated, Earth's pull kept tugging the bulge back into line, gradually slowing the spin until the rotation matched the orbit. Once that happened, there was nothing left to slow down, and the Moon settled into the state we see now. This isn't unusual, by the way. Many moons in our solar system are tidally locked to their planets. And the effect works both ways. The Moon is slowly lengthening Earth's day, too, though only by a tiny fraction of a second every century. So in the very distant future, Earth's days will be noticeably longer than they are today."
+    }
+   ]
+  },
+  {
+   "file": "talk-practice-9.mp3",
+   "length_scale": 0.96,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to a talk in a psychology class."
+    },
+    {
+     "voice": "f_us1",
+     "text": "I want to talk about a bias that shows up constantly in negotiations, and that's anchoring. Anchoring describes our tendency to rely too heavily on the first number we hear when making a judgment. In a common type of experiment, people are asked to estimate something, say the price of a used car, right after seeing a random number. Those who saw a high number tend to give higher estimates, even when they know the number had nothing to do with the car. The first figure acts like an anchor. People adjust away from it, but not nearly enough. In negotiation, this has a clear implication. Whoever names the first price often shapes the whole conversation. If a seller opens high, the final deal tends to land higher than it otherwise would, because the buyer's counteroffers are pulled toward that opening figure. That's why some negotiation coaches advise making the first offer, as long as you've done your research. But there's a catch. If your opening number is wildly unrealistic, you can lose credibility, and the other side may simply walk away. So the advice isn't to be outrageous; it's to be ambitious but defensible. And if the other party anchors first, one tactic is to openly set their number aside and refocus the discussion on objective information, like market prices."
+    }
+   ]
+  },
+  {
+   "file": "talk-practice-10.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Listen to a talk in an architecture class."
+    },
+    {
+     "voice": "m_us3",
+     "text": "Let's look at how Gothic cathedrals managed to have such tall walls and enormous windows. Earlier churches in Europe, in what we call the Romanesque style, had thick, heavy walls with fairly small windows. That wasn't just a matter of taste. A stone roof, especially a vaulted one, pushes outward on the walls, and thick walls were needed to resist that push. If you cut big openings for windows, you weakened the walls, and the building could collapse. Gothic builders solved this with a few innovations working together. One was the pointed arch, which directs more of the weight downward rather than outward. Another was the flying buttress. Picture a stone arm reaching from the upper wall out to a heavy pillar standing outside the building. The buttress catches the outward push and carries it down to the ground, away from the wall. With the walls no longer doing all the work, builders could open them up and fill them with stained glass. So when you stand inside a great cathedral and see walls that seem to be made of colored light, remember that the secret is mostly on the outside, in those stone arms you can't see from within."
+    }
+   ]
+  },
+  {
+   "file": "lr-practice-1-s1.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us2",
+     "text": "Good morning, how can I help?"
+    }
+   ]
+  },
+  {
+   "file": "lr-practice-1-s2.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us2",
+     "text": "Laptops can be borrowed for four hours."
+    }
+   ]
+  },
+  {
+   "file": "lr-practice-1-s3.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us2",
+     "text": "The quiet study floor is on the third level."
+    }
+   ]
+  },
+  {
+   "file": "lr-practice-1-s4.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us2",
+     "text": "You will need your student card to check out any equipment."
+    }
+   ]
+  },
+  {
+   "file": "lr-practice-1-s5.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us2",
+     "text": "Group study rooms can be reserved online up to one week in advance."
+    }
+   ]
+  },
+  {
+   "file": "lr-practice-1-s6.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us2",
+     "text": "If a printer runs out of paper, please let someone at this desk know."
+    }
+   ]
+  },
+  {
+   "file": "lr-practice-1-s7.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us2",
+     "text": "Books that are returned after the library closes can be left in the drop box outside."
+    }
+   ]
+  },
+  {
+   "file": "lr-practice-2-s1.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_uk",
+     "text": "This is the main sports hall."
+    }
+   ]
+  },
+  {
+   "file": "lr-practice-2-s2.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_uk",
+     "text": "Towels are available at the front desk."
+    }
+   ]
+  },
+  {
+   "file": "lr-practice-2-s3.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_uk",
+     "text": "Please wipe down each machine after you use it."
+    }
+   ]
+  },
+  {
+   "file": "lr-practice-2-s4.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_uk",
+     "text": "The swimming pool is closed for cleaning every Monday morning."
+    }
+   ]
+  },
+  {
+   "file": "lr-practice-2-s5.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_uk",
+     "text": "Beginners are welcome to join the free fitness classes on weekday evenings."
+    }
+   ]
+  },
+  {
+   "file": "lr-practice-2-s6.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_uk",
+     "text": "Lockers must be emptied before closing time, or the contents will be removed."
+    }
+   ]
+  },
+  {
+   "file": "lr-practice-2-s7.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_uk",
+     "text": "If you want to book a tennis court, just ask at the reception desk downstairs."
+    }
+   ]
+  },
+  {
+   "file": "iv-practice-1-q1.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Thank you for coming in today. Let's begin with your studies. Which subject do you enjoy the most at the moment, and what first made you interested in it?"
+    }
+   ]
+  },
+  {
+   "file": "iv-practice-1-q2.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Tell me about a challenge you faced at school or in your community. What did you do to overcome it, and what did you learn from the experience?"
+    }
+   ]
+  },
+  {
+   "file": "iv-practice-1-q3.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Some people think scholarships should be awarded mainly for high grades, while others think financial need should matter more. Which do you think is more important, and why?"
+    }
+   ]
+  },
+  {
+   "file": "iv-practice-1-q4.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "f_us2",
+     "text": "Many universities are now offering more of their courses online. Do you think this is a positive change for students in general? Please give reasons and examples to support your opinion."
+    }
+   ]
+  },
+  {
+   "file": "iv-practice-2-q1.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us3",
+     "text": "Thanks for helping with our study. First, could you tell me about the kinds of things you usually read in a typical week, both for school and just for fun?"
+    }
+   ]
+  },
+  {
+   "file": "iv-practice-2-q2.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us3",
+     "text": "Think about a book or an article that made a strong impression on you. What was it about, and why do you think it stayed with you?"
+    }
+   ]
+  },
+  {
+   "file": "iv-practice-2-q3.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us3",
+     "text": "Some people say that reading on a screen is just as good as reading a printed book, while others disagree. What is your opinion, and what makes you feel that way?"
+    }
+   ]
+  },
+  {
+   "file": "iv-practice-2-q4.mp3",
+   "length_scale": 1,
+   "segments": [
+    {
+     "voice": "m_us3",
+     "text": "Some schools now ask every student to read for twenty minutes a day, even outside of class. Do you think a rule like this encourages a love of reading, or could it have the opposite effect? Why?"
+    }
+   ]
+  }
+ ]
+}

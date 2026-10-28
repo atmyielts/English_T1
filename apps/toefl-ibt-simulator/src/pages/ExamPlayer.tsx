@@ -9,12 +9,14 @@ import { InputRenderer } from '../features/exam/InputRenderer';
 import { getExamState } from '../lib/platformClient';
 import { supabase } from '../lib/supabase';
 import { useAccess } from '../lib/useAccess';
+import { Toefl2026Runner } from '../features/toefl2026/Toefl2026Runner';
+import { is2026Metadata } from '../features/toefl2026/tasks';
 
 type Json = Record<string, unknown>;
 
-type ExperienceRow = { id: string; name: string };
+type ExperienceRow = { id: string; name: string; metadata?: Json | null };
 type SectionRow = { id: string; name: string; display_order: number; metadata: Json | null };
-type ExamUnit = ContentUnit & { partName?: string | null; partOrder?: number | null };
+type ExamUnit = ContentUnit & { partName?: string | null; partOrder?: number | null; metadata?: Json | null };
 
 const sectionType = (s: SectionRow | null): string => String((s?.metadata as any)?.type ?? 'unknown');
 
@@ -484,15 +486,16 @@ export const ExamPlayer: React.FC = () => {
           type: u.type as any,
           data: u.data as any,
           displayOrder: u.display_order,
+          metadata: (u.metadata ?? null) as Json | null,
         }));
-        const normalizedUnits = withWritingFallbackPrompts(mappedUnits, state.current_section as any);
+        const normalizedUnits = is2026Metadata(state.experience.metadata) ? mappedUnits : withWritingFallbackPrompts(mappedUnits, state.current_section as any);
 
         lastSavedRef.current = {};
         for (const [unitId, value] of Object.entries(state.answers ?? {})) {
           lastSavedRef.current[unitId] = JSON.stringify(value);
         }
 
-        setExperience({ id: state.experience.id, name: state.experience.name });
+        setExperience({ id: state.experience.id, name: state.experience.name, metadata: (state.experience.metadata ?? null) as Json | null });
         setSections(state.sections as any);
         setSection(state.current_section as any);
         setNextSectionId(state.next_section_id);
@@ -879,8 +882,8 @@ export const ExamPlayer: React.FC = () => {
     );
   }
 
-  return (
-    <div className={`${themeClass} ${textSizeClass} h-[100dvh] md:h-screen flex flex-col bg-[var(--inspera-bg)] text-[var(--inspera-text)] overflow-hidden`}>
+  const statusBanners = (
+    <>
       {draftRecovery && (
         <div role="alert" className="shrink-0 border-b border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
           <p>This tab has {Object.keys(draftRecovery.answers).length} answer draft(s) that the server has not confirmed.
@@ -916,6 +919,38 @@ export const ExamPlayer: React.FC = () => {
           )}
         </div>
       )}
+    </>
+  );
+
+  if (is2026Metadata(experience?.metadata) && section) {
+    return (
+      <Toefl2026Runner
+        sessionId={sessionId}
+        section={section}
+        sections={sections}
+        units={units.map((u) => ({ ...u, partId: u.partId, data: (u.data ?? {}) as Json, metadata: u.metadata ?? null }))}
+        answers={answers}
+        onAnswer={(unit, value) => {
+          const target = units.find((u) => u.id === unit.id);
+          if (target) queueSave(target, value);
+        }}
+        onSubmit={() => void handleNext()}
+        submitting={submitting || loading}
+        readOnly={submitting || loading || timeLeftSeconds === 0 || Boolean(draftRecovery)}
+        timeLeftSeconds={timeLeftSeconds}
+        isLastSection={isLastSection}
+        accessToken={accessToken}
+        isCandidate={isCandidate}
+        onLeave={() => void handleAbandon()}
+        banners={statusBanners}
+        experienceName={experience?.name ?? null}
+      />
+    );
+  }
+
+  return (
+    <div className={`${themeClass} ${textSizeClass} h-[100dvh] md:h-screen flex flex-col bg-[var(--inspera-bg)] text-[var(--inspera-text)] overflow-hidden`}>
+      {statusBanners}
       <header
         className={`h-12 shrink-0 border-b border-[var(--inspera-border)] bg-[var(--inspera-panel)] flex items-center px-4 gap-4 ${
           oneMinuteWarning ? 'bg-amber-50 border-amber-200' : ''

@@ -164,6 +164,9 @@ verify_jwt = false
 [functions.grade-writing]
 verify_jwt = false
 
+[functions.toefl-speaking]
+verify_jwt = false
+
 [functions.audio-playback]
 verify_jwt = false
 
