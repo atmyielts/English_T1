@@ -1,0 +1,451 @@
+{
+  "build_sentence": [
+    {
+      "slug": "bs-test-1",
+      "use": "test",
+      "difficulty": "easy",
+      "context": "Where can I find a printer for students?",
+      "frame": ["There", "_", "_", "_", "_", "_", "library."],
+      "answer": ["is", "one", "on the", "second floor", "of the"],
+      "tiles": ["of the", "one", "second floor", "is", "on the"]
+    },
+    {
+      "slug": "bs-test-2",
+      "use": "test",
+      "difficulty": "easy",
+      "context": "Did you finish the reading for this week's seminar?",
+      "frame": ["Not yet, but", "_", "_", "_", "_", "_", "_", "after dinner."],
+      "answer": ["I", "am", "planning", "to", "read", "it"],
+      "tiles": ["planning", "read", "it", "I", "reading", "to", "am"]
+    },
+    {
+      "slug": "bs-test-3",
+      "use": "test",
+      "difficulty": "easy",
+      "context": "How do you usually get to campus?",
+      "frame": ["I usually", "_", "_", "_", "_", "_", "cheaper."],
+      "answer": ["take", "the bus", "because", "it is", "much"],
+      "tiles": ["because", "much", "take", "it is", "the bus"]
+    },
+    {
+      "slug": "bs-test-4",
+      "use": "test",
+      "difficulty": "medium",
+      "context": "Which professor are you asking for a reference letter?",
+      "frame": ["The", "_", "_", "_", "_", "_", "_", "last year."],
+      "answer": ["one", "who", "taught", "my", "research methods", "course"],
+      "tiles": ["course", "taught", "whom", "one", "research methods", "my", "who"]
+    },
+    {
+      "slug": "bs-test-5",
+      "use": "test",
+      "difficulty": "medium",
+      "context": "Do you need any help with the lab equipment?",
+      "frame": ["Could you", "_", "_", "_", "_", "_", "_", "_", "microscope?"],
+      "answer": ["tell me", "how", "I", "should", "adjust", "the focus", "on this"],
+      "tiles": ["adjust", "should", "on this", "the focus", "do", "tell me", "how", "I"]
+    },
+    {
+      "slug": "bs-test-6",
+      "use": "test",
+      "difficulty": "medium",
+      "context": "Why was the chemistry exam moved to Friday?",
+      "frame": ["The original room", "_", "_", "_", "_", "_", "conference."],
+      "answer": ["had", "been", "reserved", "for", "an outside"],
+      "tiles": ["reserved", "an outside", "had", "for", "been"]
+    },
+    {
+      "slug": "bs-test-7",
+      "use": "test",
+      "difficulty": "medium",
+      "context": "Is the new study room any better than the old one?",
+      "frame": ["Yes, it is", "_", "_", "_", "_", "_", "downstairs."],
+      "answer": ["far", "less", "crowded", "than", "the one"],
+      "tiles": ["than", "crowded", "most", "far", "the one", "less"]
+    },
+    {
+      "slug": "bs-test-8",
+      "use": "test",
+      "difficulty": "hard",
+      "context": "Did you make it to the career fair yesterday?",
+      "frame": ["No, I", "_", "_", "_", "_", "_", "_", "_", "late."],
+      "answer": ["would", "have", "gone", "if", "my lab", "had not", "run"],
+      "tiles": ["had not", "if", "gone", "will", "my lab", "would", "run", "have"]
+    },
+    {
+      "slug": "bs-test-9",
+      "use": "test",
+      "difficulty": "hard",
+      "context": "What did your advisor say when you mentioned changing your major?",
+      "frame": ["She", "_", "_", "_", "_", "_", "_", "next semester."],
+      "answer": ["asked", "whether", "I", "had", "considered", "waiting until"],
+      "tiles": ["considered", "I", "waiting until", "asked", "had", "whether"]
+    },
+    {
+      "slug": "bs-test-10",
+      "use": "test",
+      "difficulty": "hard",
+      "context": "Have you heard anything about the new library hours?",
+      "frame": ["Nobody", "_", "_", "_", "_", "_", "_", "to students."],
+      "answer": ["knows", "when", "the changes", "will", "be", "announced"],
+      "tiles": ["will", "announced", "the changes", "are", "knows", "be", "when"]
+    },
+    {
+      "slug": "bs-practice-1",
+      "use": "practice",
+      "difficulty": "easy",
+      "context": "When does the campus gym open on weekends?",
+      "frame": ["I think", "_", "_", "_", "_", "_", "mornings."],
+      "answer": ["it", "opens", "at nine", "on", "Saturday"],
+      "tiles": ["on", "Saturday", "it", "at nine", "opens"]
+    },
+    {
+      "slug": "bs-practice-2",
+      "use": "practice",
+      "difficulty": "easy",
+      "context": "Would you like to join our study group?",
+      "frame": ["Yes, I", "_", "_", "_", "_", "_", "_", "meeting."],
+      "answer": ["would", "love", "to", "come", "to the", "next"],
+      "tiles": ["come", "next", "loving", "would", "to the", "to", "love"]
+    },
+    {
+      "slug": "bs-practice-3",
+      "use": "practice",
+      "difficulty": "easy",
+      "context": "What are you doing after class today?",
+      "frame": ["I am", "_", "_", "_", "_", "_", "cafe."],
+      "answer": ["meeting", "my", "lab", "partner", "at the"],
+      "tiles": ["partner", "at the", "my", "meeting", "lab"]
+    },
+    {
+      "slug": "bs-practice-4",
+      "use": "practice",
+      "difficulty": "medium",
+      "context": "I am not sure how to register for the elective course.",
+      "frame": ["Have you", "_", "_", "_", "_", "_", "help?"],
+      "answer": ["asked", "the", "department", "office", "for"],
+      "tiles": ["office", "for", "ask", "the", "asked", "department"]
+    },
+    {
+      "slug": "bs-practice-5",
+      "use": "practice",
+      "difficulty": "medium",
+      "context": "Which book on the reading list should I start with?",
+      "frame": ["Start with", "_", "_", "_", "_", "_", "_", "in class."],
+      "answer": ["the", "one", "that", "our", "professor", "mentioned"],
+      "tiles": ["professor", "mention", "that", "the", "mentioned", "our", "one"]
+    },
+    {
+      "slug": "bs-practice-6",
+      "use": "practice",
+      "difficulty": "medium",
+      "context": "Can I bring my backpack into the reading room?",
+      "frame": ["No, you", "_", "_", "_", "_", "_", "outside."],
+      "answer": ["must", "leave", "it", "in", "the lockers"],
+      "tiles": ["it", "the lockers", "must", "in", "leave"]
+    },
+    {
+      "slug": "bs-practice-7",
+      "use": "practice",
+      "difficulty": "medium",
+      "context": "Who is organizing the welcome event for new students?",
+      "frame": ["It", "_", "_", "_", "_", "_", "this year."],
+      "answer": ["is", "being", "planned", "by", "the student council"],
+      "tiles": ["planned", "the student council", "been", "is", "by", "being"]
+    },
+    {
+      "slug": "bs-practice-8",
+      "use": "practice",
+      "difficulty": "medium",
+      "context": "I heard the evening statistics section is really hard.",
+      "frame": ["The evening section", "_", "_", "_", "_", "_", "_", "say."],
+      "answer": ["is", "not", "as", "difficult", "as", "people"],
+      "tiles": ["difficult", "as", "people", "is", "as", "not"]
+    },
+    {
+      "slug": "bs-practice-9",
+      "use": "practice",
+      "difficulty": "hard",
+      "context": "Are you still planning to apply for the summer research program?",
+      "frame": ["I wonder", "_", "_", "_", "_", "_", "_", "extended."],
+      "answer": ["whether", "the deadline", "for", "applications", "has", "been"],
+      "tiles": ["has", "applications", "been", "whether", "for", "the deadline"]
+    },
+    {
+      "slug": "bs-practice-10",
+      "use": "practice",
+      "difficulty": "hard",
+      "context": "Are you worried about the group presentation tomorrow?",
+      "frame": ["If we had more time,", "_", "_", "_", "_", "_", "_", "again."],
+      "answer": ["we", "could", "rehearse", "the", "whole", "presentation"],
+      "tiles": ["whole", "rehearsing", "presentation", "could", "the", "we", "rehearse"]
+    },
+    {
+      "slug": "bs-practice-11",
+      "use": "practice",
+      "difficulty": "hard",
+      "context": "What did the librarian tell you about your overdue books?",
+      "frame": ["She said", "_", "_", "_", "_", "_", "_", "_", "fee."],
+      "answer": ["that", "I", "would", "have to", "pay", "a", "small"],
+      "tiles": ["pay", "small", "had", "I", "have to", "a", "that", "would"]
+    },
+    {
+      "slug": "bs-practice-12",
+      "use": "practice",
+      "difficulty": "hard",
+      "context": "Why is everyone talking about that article in the campus newspaper?",
+      "frame": ["It was written by", "_", "_", "_", "_", "_", "_", "a national prize."],
+      "answer": ["a", "student", "whose", "research", "recently", "won"],
+      "tiles": ["research", "won", "a", "recently", "whose", "student"]
+    }
+  ],
+  "write_email": [
+    {
+      "slug": "email-test-1",
+      "use": "test",
+      "scenario": "You borrowed a portable audio recorder from your university's media center for a class project. Halfway through an interview, the recorder stopped saving files and you lost part of your recording. Your project is due next week.",
+      "to": "Daniel Reyes",
+      "to_address": "d.reyes@university.example",
+      "subject": "Problem with a borrowed recorder",
+      "goals": [
+        "Explain what happened with the recorder.",
+        "Ask whether you can borrow a replacement before your deadline.",
+        "Suggest a way the media center could help other students avoid this problem."
+      ]
+    },
+    {
+      "slug": "email-practice-1",
+      "use": "practice",
+      "scenario": "You signed up to volunteer at your campus book swap next Saturday. You have just learned that a make-up exam has been scheduled for the same morning.",
+      "to": "Hana Kim",
+      "to_address": "h.kim@university.example",
+      "subject": "Volunteering at the book swap",
+      "goals": [
+        "Explain why you cannot attend the full event.",
+        "Offer another way you could help.",
+        "Ask about future volunteer opportunities."
+      ]
+    },
+    {
+      "slug": "email-practice-2",
+      "use": "practice",
+      "scenario": "Professor Okafor gave you detailed comments on your seminar paper about water use on local farms. You would like to develop the paper into a poster for the undergraduate research showcase next month.",
+      "to": "Professor Samuel Okafor",
+      "to_address": "s.okafor@university.example",
+      "subject": "Turning my seminar paper into a poster",
+      "goals": [
+        "Thank the professor for the feedback.",
+        "Describe your plan for the poster.",
+        "Ask whether you could meet to discuss it."
+      ]
+    },
+    {
+      "slug": "email-practice-3",
+      "use": "practice",
+      "scenario": "The heating in the shared study lounge of your residence hall has not worked for a week. Many residents use the lounge in the evenings, especially now that exams are approaching.",
+      "to": "Jonas Berg",
+      "to_address": "j.berg@housing.university.example",
+      "subject": "Heating problem in the study lounge",
+      "goals": [
+        "Describe the problem.",
+        "Explain how it is affecting residents.",
+        "Suggest a temporary solution until it is repaired."
+      ]
+    },
+    {
+      "slug": "email-practice-4",
+      "use": "practice",
+      "scenario": "Your friend Leo, who lives in another city, is coming to visit you for a weekend next month. He has never been to your town before and has asked what you might do together.",
+      "to": "Leo Martins",
+      "to_address": "leo.martins@mail.example",
+      "subject": "Your visit next month",
+      "goals": [
+        "Tell Leo you are looking forward to his visit.",
+        "Recommend two places you could visit together and explain why.",
+        "Ask about his travel plans."
+      ]
+    }
+  ],
+  "write_academic_discussion": [
+    {
+      "slug": "disc-test-1",
+      "use": "test",
+      "course": "public policy",
+      "professor": {
+        "name": "Dr. Lindqvist",
+        "text": "This week we have been looking at how cities pay for public services. A few cities have made buses and trains completely free for everyone, covering the cost through general taxes instead of fares. Supporters say this reduces traffic and helps residents with lower incomes. Critics argue that the money would do more good if it were spent on improving the service itself, for example by running buses more often. What do you think? Is making public transportation free a good use of a city's money? Why or why not?"
+      },
+      "students": [
+        {
+          "name": "Amara",
+          "text": "I think free transit is worth it. In my hometown, many people drive short distances simply because buying a ticket feels like a hassle. If riding were free, more people would leave their cars at home, which would cut pollution and make the streets safer. Those benefits help everyone, not only the riders."
+        },
+        {
+          "name": "Jonah",
+          "text": "I see the appeal, but I disagree. The buses near my apartment come only every forty minutes, so making them free would not change much for me. I would gladly pay a fare if the city used that money to add more routes and keep them on schedule. Reliable service matters more than price."
+        }
+      ]
+    },
+    {
+      "slug": "disc-practice-1",
+      "use": "practice",
+      "course": "education",
+      "professor": {
+        "name": "Dr. Varga",
+        "text": "Many universities require first-year students to live in campus housing. The idea is that living on campus helps new students make friends, get involved in activities, and adjust to academic life more quickly. However, campus housing can be expensive, and some students would rather live at home with their families or find cheaper options nearby. What is your view? Should universities require first-year students to live on campus? Explain your reasoning."
+      },
+      "students": [
+        {
+          "name": "Lucia",
+          "text": "I support the requirement. During my first semester, I met almost all of my close friends in the dormitory, often just by chatting in the hallway or studying together late at night. Students who commute miss many of those small moments, and they may end up feeling isolated."
+        },
+        {
+          "name": "Kenji",
+          "text": "I understand the social benefits, but I think the rule is unfair to students with limited budgets. Living at home allowed my older sister to graduate without much debt. Universities could offer more evening events and study spaces for commuters instead of pushing everyone into expensive housing."
+        }
+      ]
+    },
+    {
+      "slug": "disc-practice-2",
+      "use": "practice",
+      "course": "business management",
+      "professor": {
+        "name": "Professor Adeyemi",
+        "text": "Several companies have experimented with a four-day work week, in which employees work fewer days but receive the same salary. Some managers report that workers are happier and just as productive. Others worry that customers will be frustrated when offices are closed, or that employees will feel pressure to fit five days of work into four. Do you think a four-day work week is a good idea for most businesses? Why or why not?"
+      },
+      "students": [
+        {
+          "name": "Sofia",
+          "text": "I think it could work well for many businesses. When people have an extra day to rest, run errands, or spend time with family, they come back to work more focused. A rested team usually makes fewer mistakes, so the company may actually save money in the long run."
+        },
+        {
+          "name": "Malik",
+          "text": "It sounds attractive, but I doubt it suits most businesses. My uncle runs a small repair shop, and his customers expect him to be available throughout the week. If he closed an extra day, they would simply go somewhere else. It may fit office jobs, but not service work."
+        }
+      ]
+    },
+    {
+      "slug": "disc-practice-3",
+      "use": "practice",
+      "course": "media studies",
+      "professor": {
+        "name": "Dr. Petrov",
+        "text": "These days, people can follow the news through short updates on their phones throughout the day, or they can read fewer but longer articles that explain events in depth. Short updates keep us informed quickly, while long articles provide background and context that brief summaries often leave out. Which approach do you think helps people understand the world better: following many short updates, or reading a smaller number of in-depth articles? Explain why."
+      },
+      "students": [
+        {
+          "name": "Nadia",
+          "text": "I prefer in-depth articles. Short updates often report only the most dramatic part of a story, and the full picture comes out later. When I read a longer article, I learn why something happened and what experts think about it, so I am less likely to misunderstand the situation."
+        },
+        {
+          "name": "Ravi",
+          "text": "For me, short updates are more useful. I am busy with classes and a part-time job, so I rarely have time for long articles. Quick updates at least keep me aware of what is happening, and if a story seems important, I can always look for more detail later."
+        }
+      ]
+    },
+    {
+      "slug": "disc-practice-4",
+      "use": "practice",
+      "course": "psychology",
+      "professor": {
+        "name": "Dr. Moreau",
+        "text": "In our unit on motivation, we have discussed two approaches to setting goals. Some researchers recommend very specific goals, such as studying for exactly two hours every evening. Others suggest flexible goals, such as studying more this month than last month, because they allow people to adjust when life becomes busy. In your opinion, which type of goal is more effective for students who want to improve their study habits? Why?"
+      },
+      "students": [
+        {
+          "name": "Ama",
+          "text": "Specific goals work better for me. When my plan says exactly what to do and when, I cannot easily find excuses. Flexible goals feel too vague, so I tend to postpone my work until the last minute. A clear target also makes it easy to check whether I am making progress."
+        },
+        {
+          "name": "Lukas",
+          "text": "I prefer flexible goals. Last year I set a strict schedule, and when I missed a single day because I was sick, I felt like a failure and gave up completely. A flexible goal lets me recover from bad days without losing motivation, which matters more over a whole semester."
+        }
+      ]
+    }
+  ],
+  "listen_repeat": [
+    {
+      "slug": "lr-test-1",
+      "use": "test",
+      "scenario": "You are training to guide visitors around your university's botanical greenhouse. Listen to your supervisor and repeat what she says. Repeat only once.",
+      "voice": "f_us1",
+      "sentences": [
+        "Welcome to the campus greenhouse.",
+        "Please stay on the marked paths.",
+        "The tropical room is kept very warm.",
+        "Visitors may take photos but should not touch the plants.",
+        "The tallest palm in this room was planted over forty years ago.",
+        "If anyone feels too hot, the cooler desert room is just through that door.",
+        "Before you leave, remember to collect a free seed packet from the table near the main entrance."
+      ]
+    },
+    {
+      "slug": "lr-practice-1",
+      "use": "practice",
+      "scenario": "You are training to work at the help desk of a university library. Listen to your supervisor and repeat what he says. Repeat only once.",
+      "voice": "m_us2",
+      "sentences": [
+        "Good morning, how can I help?",
+        "Laptops can be borrowed for four hours.",
+        "The quiet study floor is on the third level.",
+        "You will need your student card to check out any equipment.",
+        "Group study rooms can be reserved online up to one week in advance.",
+        "If a printer runs out of paper, please let someone at this desk know.",
+        "Books that are returned after the library closes can be left in the drop box outside."
+      ]
+    },
+    {
+      "slug": "lr-practice-2",
+      "use": "practice",
+      "scenario": "You are training to show new members around your campus recreation center. Listen to your supervisor and repeat what she says. Repeat only once.",
+      "voice": "f_uk",
+      "sentences": [
+        "This is the main sports hall.",
+        "Towels are available at the front desk.",
+        "Please wipe down each machine after you use it.",
+        "The swimming pool is closed for cleaning every Monday morning.",
+        "Beginners are welcome to join the free fitness classes on weekday evenings.",
+        "Lockers must be emptied before closing time, or the contents will be removed.",
+        "If you want to book a tennis court, just ask at the reception desk downstairs."
+      ]
+    }
+  ],
+  "take_interview": [
+    {
+      "slug": "iv-test-1",
+      "use": "test",
+      "scenario": "You have agreed to take part in a research study about how university students manage their time. The researcher will ask you some questions.",
+      "voice": "m_us1",
+      "questions": [
+        "Thanks for joining us today. To start, could you tell me about a typical weekday for you? What do you usually do in the morning, and when do you find time to study?",
+        "Can you describe a time when you had several deadlines at once? How did you decide what to work on first, and how did things turn out in the end?",
+        "Some people believe that schools should teach time management as a separate subject, just like math or writing. Do you think a class like that would be useful for students? Why or why not?",
+        "Many students now use apps that block social media while they study. In your opinion, do tools like these really help people focus, or is self-discipline more important? Please explain your view."
+      ]
+    },
+    {
+      "slug": "iv-practice-1",
+      "use": "practice",
+      "scenario": "You are being interviewed for a scholarship offered by a local education foundation. The interviewer will ask you some questions.",
+      "voice": "f_us2",
+      "questions": [
+        "Thank you for coming in today. Let's begin with your studies. Which subject do you enjoy the most at the moment, and what first made you interested in it?",
+        "Tell me about a challenge you faced at school or in your community. What did you do to overcome it, and what did you learn from the experience?",
+        "Some people think scholarships should be awarded mainly for high grades, while others think financial need should matter more. Which do you think is more important, and why?",
+        "Many universities are now offering more of their courses online. Do you think this is a positive change for students in general? Please give reasons and examples to support your opinion."
+      ]
+    },
+    {
+      "slug": "iv-practice-2",
+      "use": "practice",
+      "scenario": "You have agreed to take part in a research study about people's reading habits. The researcher will ask you some questions.",
+      "voice": "m_us3",
+      "questions": [
+        "Thanks for helping with our study. First, could you tell me about the kinds of things you usually read in a typical week, both for school and just for fun?",
+        "Think about a book or an article that made a strong impression on you. What was it about, and why do you think it stayed with you?",
+        "Some people say that reading on a screen is just as good as reading a printed book, while others disagree. What is your opinion, and what makes you feel that way?",
+        "Some schools now ask every student to read for twenty minutes a day, even outside of class. Do you think a rule like this encourages a love of reading, or could it have the opposite effect? Why?"
+      ]
+    }
+  ]
+}
