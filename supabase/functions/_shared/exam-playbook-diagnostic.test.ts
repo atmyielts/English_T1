@@ -3,13 +3,19 @@ import {
   SAT_PLAN_TEMPLATES,
   SAT_PREMIUM_GUIDES,
   SAT_PUBLIC_MODULES,
+  TOEFL_PLAN_TEMPLATES,
+  TOEFL_PREMIUM_GUIDES,
+  TOEFL_PUBLIC_MODULES,
   buildSatDiagnostic,
+  buildToeflDiagnostic,
   parseSatOutcome,
+  parseToeflOutcome,
 } from "./exam-playbook-diagnostic.ts";
 import { normalizeTemplateMeta, normalizeTemplateWeeks, planItemsFromSchedule, scheduleTemplateWeeks } from "./exam-playbook-plan.ts";
 
 const today = new Date("2026-10-24T09:00:00Z");
 const satSlugs = new Set<string>([...SAT_PUBLIC_MODULES, ...SAT_PREMIUM_GUIDES]);
+const toeflSlugs = new Set<string>([...TOEFL_PUBLIC_MODULES, ...TOEFL_PREMIUM_GUIDES]);
 
 const satOutcome = (rw: number, math: number, at = "2026-10-20T10:00:00Z") => ({
   id: crypto.randomUUID(),
@@ -144,7 +150,7 @@ Deno.test("Plan templates: day-by-day tasks, hours and checkpoints (content cont
   assertEquals(weeks[0].days.map((d) => [d.day, d.minutes]), [[1, 180], [3, 105]]);
   assertEquals(weeks[0].tasks[0].url, "https://sat.schood.online");
   assertEquals(weeks[0].tasks[1].page_slug, "reading-writing-conventions");
-  assertEquals(weeks[0].checkpoint, { title: "Baseline and targets", pass_rule: "Two targets chosen.", if_not: "Do not start week 2.", text: "Pass: fewer misses. If not: repeat week 1." });
+  assertEquals(weeks[0].checkpoint, { title: "Baseline and targets", pass_rule: "Two targets chosen.", if_not: "Do not start week 2.", text: "Pass: fewer misses. If not: repeat week 1.", measure: null, target_band: null });
   const meta = normalizeTemplateMeta(schedule);
   assertEquals(meta.resources.length, 1);
   assertEquals(meta.weekly_hours, { min: 8.6, max: 13.3, total: 47.4 });
@@ -166,4 +172,124 @@ Deno.test("Plan templates: day-by-day tasks, hours and checkpoints (content cont
   const dates = squeezed.weeks[0].tasks.map((t) => t.date);
   assertEquals([...dates].sort(), dates);
   assert(dates.every((d) => d <= "2026-11-02"));
+});
+Deno.test("TOEFL: legacy 0-30 and 2026 band simulator results are both read", () => {
+  const legacy = parseToeflOutcome({ raw_result: { toefl: { reading_score: 22, listening_score: 18, writing_score: 24, score_version: "toefl-rlw-estimate-v1" } } });
+  assertEquals(legacy.format, "legacy_0_30");
+  assertEquals(legacy.bands, { reading: 4.5, listening: 4, writing: 5 });
+  assertEquals(legacy.overall, null); // speaking missing -> no overall
+  const banded = parseToeflOutcome({ raw_result: { toefl: { reading_band: 5, listening_band: 4.5, writing_band: 4, speaking_band: 3.5, overall_band: 4.5 } } });
+  assertEquals(banded.format, "band_2026");
+  assertEquals(banded.overall, 4.5);
+  const nested = parseToeflOutcome({ raw_result: { toefl: { bands: { reading: 3, listening: 3.5, writing: 4, speaking: 4 } } } });
+  assertEquals(nested.overall, 3.5); // 3.625 -> 3.5
+  const perSection = parseToeflOutcome({ section_scores: { s1: { type: "speaking", scaled_score_6: 4.5 }, s2: { type: "reading", scaled_score_30: 12 } } });
+  assertEquals(perSection.bands, { speaking: 4.5 });
+});
+
+Deno.test("TOEFL: bottlenecks rank by band gap and the overall impact is projected with ETS rounding", () => {
+  const result = buildToeflDiagnostic({
+    profile: { target_band: 5, deadline_date: "2027-02-20" },
+    outcomes: [{ id: "o1", computed_at: "2026-10-01T00:00:00Z", raw_result: { toefl: { reading_band: 5, listening_band: 4.5, writing_band: 4, speaking_band: 3.5 } } }],
+    templates: [],
+    today,
+  });
+  assertEquals(result.current.overall, 4.5); // 4.25 rounds up
+  assertEquals(result.bottlenecks.map((b) => b.section), ["speaking", "writing", "listening"]);
+  // Speaking 3.5 -> 5 makes the mean 4.625 -> 4.5: overall does not move.
+  assertEquals(result.bottlenecks[0].estimated_impact, 0);
+  assertEquals(result.bottlenecks[0].gap, 1.5);
+  assertEquals(result.bottlenecks[0].evidence[0].detail?.legacy_range, { min: 18, max: 19 });
+  assertEquals(result.plan_suggestion.template_slug, "speaking-writing-priority");
+  assertEquals(result.target.overall_legacy_range, { min: 95, max: 106 });
+  for (const p of result.module_priorities) assert(toeflSlugs.has(p.slug), p.slug);
+  assert((TOEFL_PLAN_TEMPLATES as readonly string[]).includes(result.plan_suggestion.template_slug!));
+});
+
+Deno.test("TOEFL: legacy profile inputs are converted and flagged; missing sections are untested", () => {
+  const result = buildToeflDiagnostic({
+    profile: { score_scale: "legacy_120", target_total_score: 100, legacy_section_scores: { reading: 20, listening: 19 } },
+    outcomes: [],
+    templates: [],
+    today,
+  });
+  assertEquals(result.target.overall, 5); // 100 -> band 5
+  assertEquals(result.untested.map((u) => u.section), ["writing", "speaking"]);
+  assertEquals(result.module_priorities.slice(0, 2).map((p) => p.slug), ["toefl-essentials", "score-scale-2026"]);
+  assertEquals(result.current.overall, null);
+  assertEquals(result.data_quality.legacy_inputs, true);
+});
+
+Deno.test("TOEFL: the simulator's 2026 result (sections.*.band + tasks) drives task-level module order and practice links", () => {
+  // Shape written by score-session for experiences with format "toefl-2026" (toefl-2026-session.ts).
+  const outcome = {
+    id: "o2026",
+    computed_at: "2026-10-27T08:00:00Z",
+    status: "completed",
+    raw_result: {
+      toefl: {
+        format: "toefl-2026",
+        score_version: "toefl-2026-band-estimate-v1",
+        sections: {
+          reading: { section: "reading", band: 4, cefr: "B2", module_path: "upper" },
+          listening: { section: "listening", band: 4.5, cefr: "B2" },
+          writing: { section: "writing", band: 3.5, cefr: "B1" },
+          speaking: { section: "speaking", band: null, pending_reason: "speaking_not_scored" },
+        },
+        overall_band: null,
+        tasks: [
+          { task: "complete_the_words", section: "reading", raw: 18, max: 20, items: 20, scale: "points" },
+          { task: "read_academic_passage", section: "reading", raw: 3, max: 10, items: 10, scale: "points" },
+          { task: "build_sentence", section: "writing", raw: 4, max: 10, items: 10, scale: "points" },
+          { task: "write_email", section: "writing", raw: 4, max: 5, items: 1, scale: "0-5" },
+        ],
+        reading_score: null,
+        listening_score: null,
+      },
+    },
+  };
+  const parsed = parseToeflOutcome(outcome);
+  assertEquals(parsed.format, "band_2026");
+  assertEquals(parsed.bands, { reading: 4, listening: 4.5, writing: 3.5 });
+  assertEquals(parsed.tasks.map((t) => [t.task, t.accuracy]), [["complete_the_words", 0.9], ["read_academic_passage", 0.3], ["build_sentence", 0.4], ["write_email", 0.8]]);
+
+  const result = buildToeflDiagnostic({ profile: { target_band: 5 }, outcomes: [outcome], templates: [], today });
+  const reading = result.bottlenecks.find((b) => b.section === "reading")!;
+  assertEquals(reading.module_slugs[0], "reading-daily-life-and-academic"); // weakest task first
+  assertEquals(reading.practice_tasks, ["read_academic_passage", "complete_the_words"]);
+  assertEquals(reading.evidence.find((e) => e.metric === "task_accuracy_pct")?.value, 30);
+  const writing = result.bottlenecks.find((b) => b.section === "writing")!;
+  assertEquals(writing.module_slugs[0], "writing-build-a-sentence");
+  // Speaking has no band yet: reported as untested, not guessed; no overall band without all four.
+  assert(result.untested.some((u) => u.section === "speaking"));
+  assertEquals(result.current.overall, null);
+  assertEquals(result.current.overall_partial, true);
+  for (const p of result.module_priorities) assert(toeflSlugs.has(p.slug), p.slug);
+});
+
+Deno.test("TOEFL plan templates: task day prefixes, simulator actions and band checkpoints are kept", () => {
+  const weeks = normalizeTemplateWeeks({
+    weeks: [{
+      week: 1, label: "Week 1 · Baseline", phase: "Diagnose", hours: 12,
+      tasks: ["Day 1: full mock in the TOEFL simulator", "Days 3–4: 75 minutes on your largest error category"],
+      modules: ["toefl-essentials"], guides: ["guide-band-4-to-5-roadmap"],
+      simulator: { url: "https://toefl.schood.online/practice", action: "Task-type sets" },
+      checkpoint: { measure: "Baseline bands recorded", target: "Profile identified" },
+    }],
+    checkpoints: [{ week: 1, check: "Full mock 1", target_band: "Entry 4–5 overall" }],
+    daily_routine: ["20 minutes: one Complete the Words paragraph"],
+    decision_rules: ["Never schedule a full mock in the last three days before the test."],
+  }, 28, toeflSlugs);
+  const w = weeks[0];
+  assertEquals([w.phase, w.hours], ["Diagnose", 12]);
+  assertEquals(w.tasks.map((t) => t.day), [1, 3, null]);
+  assertEquals(w.tasks[2], { title: "Task-type sets", page_slug: null, url: "https://toefl.schood.online/practice", minutes: null, day: null, weekday: null });
+  assertEquals(w.modules, ["toefl-essentials", "guide-band-4-to-5-roadmap"]);
+  assertEquals(w.checkpoint, { title: "Full mock 1", pass_rule: "Profile identified", if_not: null, text: null, measure: "Baseline bands recorded", target_band: "Entry 4–5 overall" });
+  const meta = normalizeTemplateMeta({ daily_routine: ["a"], decision_rules: ["b"], weekly_hours: { min: 10, max: 14 } });
+  assertEquals([meta.daily_routine, meta.decision_rules, meta.weekly_hours], [["a"], ["b"], { min: 10, max: 14, total: null }]);
+  const items = planItemsFromSchedule(scheduleTemplateWeeks(weeks, { startDate: "2026-11-02" }));
+  assertEquals(items.find((i) => i.metadata.checkpoint)?.metadata.target_band, "Entry 4–5 overall");
+  assertEquals(items[0].due_date, "2026-11-02");
+  assertEquals(items[1].due_date, "2026-11-04");
 });
