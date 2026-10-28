@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { examKeyOf, loadSisterSignals } from "../_shared/sister-signals.ts";
-import { mockExamType, predictSeries } from "./logic.ts";
+import { mockExamType, predictSeries, seriesPoint } from "./logic.ts";
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -11,12 +11,6 @@ const corsHeaders: Record<string, string> = {
 
 const getEnv = (k: string) => { const v = Deno.env.get(k); if (!v) throw new Error(`Missing ${k}`); return v; };
 const json = (s: number, b: unknown) => new Response(JSON.stringify(b), { status: s, headers: { "Content-Type": "application/json", ...corsHeaders } });
-
-const toNumber = (value: unknown): number | null => {
-  if (value === null || value === undefined || value === "") return null;
-  const n = typeof value === "number" ? value : Number(value);
-  return Number.isFinite(n) ? n : null;
-};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -44,7 +38,7 @@ serve(async (req) => {
     const [{ data: outcomes, error }, signals] = await Promise.all([
       sb
         .from("exam_outcomes")
-        .select("id, product_id, overall_band, overall_score, computed_at, products(name, metadata)")
+        .select("id, product_id, overall_band, overall_score, computed_at, toefl:raw_result->toefl, products(name, metadata)")
         .eq("user_id", userId)
         .eq("status", "completed")
         .order("computed_at", { ascending: false })
@@ -57,16 +51,17 @@ serve(async (req) => {
     // Newest 60 were loaded; walk them oldest first so series run in time order.
     for (const row of ((outcomes ?? []) as Array<Record<string, unknown>>).slice().reverse()) {
       const product = (row.products ?? null) as { metadata?: Record<string, unknown> | null } | null;
-      const examType = mockExamType(product?.metadata ?? null);
-      if (!examType || (examTypeFilter && examType !== examTypeFilter)) continue;
-      const list = byType.get(examType) ?? [];
-      list.push({ band: toNumber(row.overall_band), score: toNumber(row.overall_score), date: String(row.computed_at ?? "") });
-      byType.set(examType, list);
+      const productType = mockExamType(product?.metadata ?? null);
+      const point = productType ? seriesPoint(productType, row) : null;
+      if (!point || (examTypeFilter && point.examType !== examTypeFilter)) continue;
+      const list = byType.get(point.examType) ?? [];
+      list.push({ band: point.band, score: point.score, date: String(row.computed_at ?? "") });
+      byType.set(point.examType, list);
     }
 
     const practiceSignals = examTypeFilter
-      ? { [examTypeFilter]: examKeyOf(examTypeFilter) ? signals[examKeyOf(examTypeFilter)!] : null }
-      : { ielts: signals.ielts, sat: signals.sat };
+      ? { [examTypeFilter]: examKeyOf(examTypeFilter) ? signals[examKeyOf(examTypeFilter)!] ?? null : null }
+      : { ielts: signals.ielts, sat: signals.sat, toefl: signals.toefl };
 
     const predictions: Array<Record<string, unknown>> = [];
     let totalExams = 0;

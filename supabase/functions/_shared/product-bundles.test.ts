@@ -15,6 +15,9 @@ import {
   SAT_PLAYBOOK_PRODUCT_ID,
   SAT_PRACTICE_PRODUCT_ID,
   SAT_SIMULATOR_PRODUCT_ID,
+  TOEFL_COMPLETE_PRODUCT_ID,
+  TOEFL_PLAYBOOK_PRODUCT_ID,
+  TOEFL_SIMULATOR_PRODUCT_ID,
   withExamBundleMemberEntitlements,
 } from "./product-bundles.ts";
 
@@ -23,13 +26,20 @@ const md5Uuid = (input: string) => {
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
 };
 
-const migration = await Deno.readTextFile(
-  new URL("../../migrations/20261026100900_exam_plans_and_complete_bundles.sql", import.meta.url),
-);
+// IELTS/SAT shipped first; TOEFL has its own migration.
+const migrations = [
+  await Deno.readTextFile(new URL("../../migrations/20261026100900_exam_plans_and_complete_bundles.sql", import.meta.url)),
+  await Deno.readTextFile(new URL("../../migrations/20261028110000_toefl_plans_and_complete_bundle.sql", import.meta.url)),
+];
+const migration = migrations.join(String.fromCharCode(10));
+const toeflMigration = migrations[1];
 
 Deno.test("bundle ids are md5('schood-product:<slug>') like the migration", () => {
-  assertEquals(EXAM_BUNDLES.map((bundle) => bundle.slug), ["ielts-complete", "sat-complete"]);
-  assert(!/toefl/i.test(migration.replace(/^--.*$/gm, "")), "this release must not touch TOEFL rows");
+  assertEquals(EXAM_BUNDLES.map((bundle) => bundle.slug), ["ielts-complete", "sat-complete", "toefl-complete"]);
+  assert(!/toefl/i.test(migrations[0].replace(/^--.*$/gm, "")), "the IELTS/SAT migration has no TOEFL rows");
+  assert(!/ielts|sat-/i.test(toeflMigration.replace(/^--.*$/gm, "")), "the TOEFL migration touches only TOEFL rows");
+  // The inactive hand-made "test" plan is never touched.
+  assert(!toeflMigration.replace(/^--.*$/gm, "").includes("5f49a588"));
   for (const bundle of EXAM_BUNDLES) {
     assertEquals(bundle.productId, md5Uuid(`schood-product:${bundle.slug}`));
     assert(migration.includes(`md5('schood-product:${bundle.slug}')::uuid`), bundle.slug);
@@ -60,8 +70,12 @@ Deno.test("expansion adds every member of a held bundle and nothing else", () =>
     SAT_PRACTICE_PRODUCT_ID,
     SAT_PLAYBOOK_PRODUCT_ID,
   ]);
-  // TOEFL has no bundle in this release.
-  assertEquals(expandExamBundleProductIds(["49f0661d-0933-361c-6c4b-67316ba29b4e"]), ["49f0661d-0933-361c-6c4b-67316ba29b4e"]);
+  assertEquals(expandExamBundleProductIds([TOEFL_COMPLETE_PRODUCT_ID]), [
+    TOEFL_COMPLETE_PRODUCT_ID,
+    TOEFL_SIMULATOR_PRODUCT_ID,
+    TOEFL_PLAYBOOK_PRODUCT_ID,
+  ]);
+  assertEquals(productIdsGrantingAccess(TOEFL_SIMULATOR_PRODUCT_ID), [TOEFL_SIMULATOR_PRODUCT_ID, TOEFL_COMPLETE_PRODUCT_ID]);
   assertEquals(expandExamBundleProductIds([SAT_PRACTICE_PRODUCT_ID, ""]), [SAT_PRACTICE_PRODUCT_ID]);
   assertEquals(expandExamBundleProductIds([]), []);
 });

@@ -1,5 +1,6 @@
 import {
   adjustInterval,
+  readToeflOutcome,
   type ConfidenceAdjustment,
   examKeyOf,
   type PracticeSummary,
@@ -54,7 +55,9 @@ export const mockExamType = (meta: ProductMeta): string | null => {
 
 export const scaleFor = (examType: string, usesBand: boolean): { max: number; step: number } => {
   if (examType === "sat") return { max: 1600, step: 10 };
-  if (examType === "toefl") return { max: 120, step: 1 };
+  // TOEFL 2026 reports 1-6 bands; legacy RLW estimates are scores out of 120.
+  if (examType === "toefl") return usesBand ? { max: 6, step: 0.5 } : { max: 120, step: 1 };
+  if (examType === "toefl_legacy") return { max: 120, step: 1 };
   return { max: 9, step: 0.5 };
 };
 
@@ -103,4 +106,22 @@ export const predictSeries = (
     r2: Math.round(r2 * 100) / 100,
     confidence_adjustment: adjustment,
   };
+};
+
+export type SeriesPoint = { examType: string; band: number | null; score: number | null };
+
+/**
+ * One prediction point for an outcome. TOEFL outcomes are split by format:
+ * the 2026 band scale ("toefl", full tests only) and the legacy RLW estimate
+ * ("toefl_legacy", a score), so the two scales are never mixed in one series.
+ */
+export const seriesPoint = (examType: string, row: Record<string, unknown>): SeriesPoint | null => {
+  const num = (v: unknown) => (v === null || v === undefined || v === "" || !Number.isFinite(Number(v)) ? null : Number(v));
+  if (examType !== "toefl") return { examType, band: num(row.overall_band), score: num(row.overall_score) };
+  const toefl = readToeflOutcome(row);
+  if (toefl.scale === "band_2026") {
+    if (!toefl.fullTest || toefl.overall === null) return null;
+    return { examType: "toefl", band: toefl.overall, score: null };
+  }
+  return toefl.overall === null ? null : { examType: "toefl_legacy", band: null, score: toefl.overall };
 };

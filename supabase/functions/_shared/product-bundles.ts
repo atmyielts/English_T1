@@ -1,5 +1,6 @@
-// Exam "Complete" bundles (IELTS and SAT): one product that stands for every
-// product of an exam family (seeded by migration 20261026100900_exam_plans_and_complete_bundles).
+// Exam "Complete" bundles (IELTS, SAT, TOEFL): one product that stands for every
+// product of an exam family (seeded by migrations 20261026100900_exam_plans_and_complete_bundles
+// and 20261028110000_toefl_plans_and_complete_bundle).
 //
 // Two layers make a bundle real:
 //   1. Purchases: each bundle plan lists its member products in
@@ -17,11 +18,15 @@ export const IELTS_PLAYBOOK_PRODUCT_ID = "9de6c9e7-31df-4d1d-9574-1f8f84a53b54";
 export const SAT_SIMULATOR_PRODUCT_ID = "5cf6e8e2-e6b1-4f8f-9d35-1c932866d6ef";
 export const SAT_PRACTICE_PRODUCT_ID = "2cf7b1a7-4df9-4de8-99e8-5b9d5bb85010";
 export const SAT_PLAYBOOK_PRODUCT_ID = "a8b41e2c-9a36-4caf-9bba-7212e35a8b8c";
+export const TOEFL_SIMULATOR_PRODUCT_ID = "b262ffa8-9912-4eba-93d7-58af3164d1cc";
+export const TOEFL_PLAYBOOK_PRODUCT_ID = "f9512c15-ec1c-4fcb-a5ec-a2c6ac3a020e";
 
 /** md5('schood-product:ielts-complete')::uuid */
 export const IELTS_COMPLETE_PRODUCT_ID = "50dab6d9-5345-ce1e-0e66-853450737e39";
 /** md5('schood-product:sat-complete')::uuid */
 export const SAT_COMPLETE_PRODUCT_ID = "056db74c-0bc5-32f7-9997-654e3f31611f";
+/** md5('schood-product:toefl-complete')::uuid */
+export const TOEFL_COMPLETE_PRODUCT_ID = "49f0661d-0933-361c-6c4b-67316ba29b4e";
 
 export type ExamBundle = {
   productId: string;
@@ -39,6 +44,11 @@ export const EXAM_BUNDLES: readonly ExamBundle[] = Object.freeze([
     productId: SAT_COMPLETE_PRODUCT_ID,
     slug: "sat-complete",
     members: Object.freeze([SAT_SIMULATOR_PRODUCT_ID, SAT_PRACTICE_PRODUCT_ID, SAT_PLAYBOOK_PRODUCT_ID]),
+  },
+  {
+    productId: TOEFL_COMPLETE_PRODUCT_ID,
+    slug: "toefl-complete",
+    members: Object.freeze([TOEFL_SIMULATOR_PRODUCT_ID, TOEFL_PLAYBOOK_PRODUCT_ID]),
   },
 ]);
 
