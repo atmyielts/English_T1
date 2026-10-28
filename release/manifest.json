@@ -1,34 +1,86 @@
 {
   "schemaVersion": 1,
-  "releaseId": "function-region-ielts-sat",
+  "releaseId": "toefl-ibt-2026-format",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "ielts-playbook",
-    "ielts-practice",
-    "ielts-simulator",
-    "sat-practice",
-    "sat-simulator"
+    "toefl-ibt-simulator"
   ],
-  "migrations": [],
-  "edgeFunctions": [],
+  "migrations": [
+    "20261028120000_toefl_2026_speaking_evaluations.sql",
+    "20261028120100_toefl_2026_full_test.sql",
+    "20261028120200_toefl_2026_practice_bank.sql"
+  ],
+  "edgeFunctions": [
+    "exam-state",
+    "grade-writing",
+    "grade-writing-v2",
+    "review-session",
+    "score-session",
+    "score-session-v2",
+    "toefl-speaking"
+  ],
+  "sharedEdgeConsumers": [
+    "exam-state",
+    "grade-writing",
+    "grade-writing-v2",
+    "review-session",
+    "score-session",
+    "score-session-v2",
+    "toefl-speaking"
+  ],
   "workers": [],
-  "sharedEdgeConsumers": [],
-  "requiredSecrets": [],
+  "requiredSecrets": [
+    "OPENAI_API_KEY",
+    "OPENAI_MODEL",
+    "OPENROUTER_API_KEY",
+    "OPENROUTER_APP_NAME",
+    "OPENROUTER_BASE_URL",
+    "OPENROUTER_FALLBACK_MODELS",
+    "OPENROUTER_MODEL",
+    "OPENROUTER_REFERER",
+    "TOEFL_SPEAKING_MODEL"
+  ],
   "rolloutOrder": [
-    "pages"
+    "pages",
+    "migration:20261028120000_toefl_2026_speaking_evaluations.sql",
+    "migration:20261028120100_toefl_2026_full_test.sql",
+    "migration:20261028120200_toefl_2026_practice_bank.sql",
+    "secret:OPENROUTER_API_KEY",
+    "secret:OPENROUTER_MODEL",
+    "secret:OPENROUTER_BASE_URL",
+    "secret:OPENROUTER_FALLBACK_MODELS",
+    "secret:OPENROUTER_REFERER",
+    "secret:OPENROUTER_APP_NAME",
+    "secret:OPENAI_API_KEY",
+    "secret:OPENAI_MODEL",
+    "secret:TOEFL_SPEAKING_MODEL",
+    "function:toefl-speaking",
+    "function:score-session",
+    "function:score-session-v2",
+    "function:exam-state",
+    "function:review-session",
+    "function:grade-writing",
+    "function:grade-writing-v2"
   ],
   "manualFollowUps": [
-    "Pages: merging publishes ielts-playbook, ielts-practice, ielts-simulator, sat-practice and sat-simulator. Each entry point now first imports packages/edge-region, which adds ?forceFunctionRegion=ap-southeast-1 to requests for this project's Edge Functions so they run next to the Singapore database instead of at the learner's nearest edge (eu-central-1 for Uzbekistan). Auth, REST and storage calls are unchanged. VITE_SUPABASE_FUNCTION_REGION overrides it; an empty value turns it off. SAT Playbook already does this (#320). No function or database change."
+    "Pages: merging publishes schood-toefl (toefl.schood.online) with the 2026 runner, results, practice page and the 117 MP3s (12 MB) copied from content/toefl-2026/audio into /media/toefl-2026/ by the Vite build. No audio upload is needed. Until the migrations run nothing 2026 is listed; pre-2026 tests keep working and are labelled pre-2026 format.",
+    "Database: supabase db push --linked (only 20261028120000_toefl_2026_speaking_evaluations.sql, 20261028120100_toefl_2026_full_test.sql, 20261028120200_toefl_2026_practice_bank.sql from this release). 120000 widens evaluations_method_check to allow 'ai_speaking' (not valid + validate). 120100/120200 insert one 2026 test and the 12-section practice bank with deterministic ids and on conflict do nothing.",
+    "Secrets: nothing new is required. These existing ones only need checking with supabase secrets list: OPENROUTER_API_KEY (only if missing: supabase secrets set OPENROUTER_API_KEY=<existing key>); OPENROUTER_MODEL, OPENROUTER_BASE_URL, OPENROUTER_FALLBACK_MODELS, OPENROUTER_REFERER, OPENROUTER_APP_NAME, OPENAI_API_KEY and OPENAI_MODEL are read by grade-writing exactly as before. TOEFL writing and speaking default to google/gemma-4-31b-it:free when OPENROUTER_MODEL is unset; to pin TOEFL to the free model regardless use supabase secrets set TOEFL_SPEAKING_MODEL=google/gemma-4-31b-it:free (and optionally supabase secrets set TOEFL_WRITING_MODEL=google/gemma-4-31b-it:free). Never set a paid model. Optional, unchanged: supabase secrets set OPENROUTER_MODEL=google/gemma-4-31b-it:free, supabase secrets set OPENROUTER_BASE_URL=https://openrouter.ai/api/v1, supabase secrets set OPENROUTER_FALLBACK_MODELS=google/gemma-4-31b-it:free, supabase secrets set OPENROUTER_REFERER=https://schood.online, supabase secrets set OPENROUTER_APP_NAME=Schood, supabase secrets set OPENAI_API_KEY=<existing only if used>, supabase secrets set OPENAI_MODEL=<existing only if used>.",
+    "Functions, after the migrations: supabase functions deploy toefl-speaking --project-ref <prod> (new; config.toml verify_jwt=false, authenticates the bearer token itself), then supabase functions deploy score-session --project-ref <prod>, supabase functions deploy score-session-v2 --project-ref <prod>, supabase functions deploy exam-state --project-ref <prod>, supabase functions deploy review-session --project-ref <prod>, supabase functions deploy grade-writing --project-ref <prod>, supabase functions deploy grade-writing-v2 --project-ref <prod>. Every change is a branch entered only for experiences with metadata.format = toefl-2026 or for the four new unit types; golden tests prove IELTS, SAT, iTEP and pre-2026 TOEFL scoring output is byte-identical.",
+    "Optional private audio: node scripts/content/toefl-sim-2026-upload-audio.mjs uploads the MP3s through admin-assets and writes a SQL file that switches the units to S3 storage refs; only if public Pages hosting of practice audio is not wanted."
   ],
   "verification": [
-    "In each app's browser network tab, requests to /functions/v1/ carry forceFunctionRegion=ap-southeast-1 and responses have x-sb-edge-region: ap-southeast-1.",
-    "IELTS Playbook public module median first-byte drops from about 1.5 s to about 1.1 s (measured 18 loads each); signed-in Practice and simulator calls improve at least as much since they make more database queries."
+    "Local: npm run test:toefl (generator check; 20 Deno tests for scorers/routing/bands/legacy table/writing/speaking; 13 handler tests: golden IELTS/SAT/iTEP/TOEFL-legacy score-session and score-session-v2 output unchanged plus end-to-end TOEFL 2026 bands through toefl-speaking and both score-session versions; deno check of all touched functions; 8 Playwright tests at 375px/320px with mocked network), npm --workspace apps/toefl-ibt-simulator run build and lint.",
+    "After deploy: toefl.schood.online/practice lists 12 task types; /practice?task=academic_passage highlights Read an Academic Passage; start Complete the Words and check inline letter boxes and saving; take the full 2026 test: Reading Module 2 changes with Module 1 accuracy (>= 60% -> upper), Listening Module 2 timer is 7 min (lower) or 11 min (upper); Writing task timers 6/7/10 min; Speaking records and saves a transcript in Chrome.",
+    "Results show four 1-6 bands with CEFR and legacy 0-30 ranges, overall band = mean rounded to the nearest 0.5 with legacy 0-120 '+' value, and a Playbook diagnostic link with source=toefl-simulator&session_id=<id>. Old attempts still open in their 0-120 form labelled pre-2026 format.",
+    "SQL: select count(*) from content_units cu join parts p on p.id = cu.part_id join sections s on s.id = p.section_id where s.experience_id in (select id from experiences where metadata->>'format' = 'toefl-2026') returns the inserted units; select distinct method from evaluations where method = 'ai_speaking' after a speaking attempt."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of the five apps, or set VITE_SUPABASE_FUNCTION_REGION to an empty value and redeploy.",
-    "migration": "None.",
-    "edge": "None.",
+    "pages": "Cloudflare Pages rollback of schood-toefl to the previous deployment; the old player still runs pre-2026 tests.",
+    "functions": "Redeploy the previous versions from main; 2026 experiences would then score with the legacy TOEFL formula, so also deactivate them: update experiences set is_active = false where metadata->>'format' = 'toefl-2026'. toefl-speaking can be left deployed or deleted (no other caller).",
+    "migration": "Additive. To hide the content: update experiences set is_active = false where metadata->>'format' = 'toefl-2026'. The widened evaluations check stays (strictly more permissive).",
+    "edge": "See functions.",
     "worker": "None."
   }
 }

@@ -2,12 +2,12 @@
 // writes the speaking estimate, score-session (v1 and v2) reads it together
 // with the AI writing scores and the adaptive route decisions.
 //
-// Run with --import-map=supabase/functions/_testing/import-map.json
+// Run with --import-map=supabase/functions/_shared/testing/import-map.json
 
 import { assert, assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { installFakeDb } from "../_testing/fake-supabase.ts";
-import { loadHandler } from "../_testing/serve-capture.ts";
-import { buildDb, TOEFL_2026, TOKEN } from "../_testing/exam-fixtures.ts";
+import { installFakeDb } from "../_shared/testing/fake-supabase.ts";
+import { loadHandler } from "../_shared/testing/serve-capture.ts";
+import { buildDb, TOEFL_2026, TOKEN } from "../_shared/testing/exam-fixtures.ts";
 
 Deno.env.set("SUPABASE_URL", "http://fake.supabase.test");
 Deno.env.set("SUPABASE_SERVICE_ROLE_KEY", "service-role-test");

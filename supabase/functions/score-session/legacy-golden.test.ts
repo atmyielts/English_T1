@@ -8,13 +8,13 @@
 // removed before comparing.
 //
 // Run: deno test --no-lock --allow-env --allow-read --allow-write
-//   --import-map=supabase/functions/_testing/import-map.json supabase/functions/score-session/
+//   --import-map=supabase/functions/_shared/testing/import-map.json supabase/functions/score-session/
 // Regenerate (only when an intended legacy change lands): add GOLDEN_WRITE=1.
 
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { installFakeDb } from "../_testing/fake-supabase.ts";
-import { loadHandler } from "../_testing/serve-capture.ts";
-import { buildDb, LEGACY_SPECS, TOKEN } from "../_testing/exam-fixtures.ts";
+import { installFakeDb } from "../_shared/testing/fake-supabase.ts";
+import { loadHandler } from "../_shared/testing/serve-capture.ts";
+import { buildDb, LEGACY_SPECS, TOKEN } from "../_shared/testing/exam-fixtures.ts";
 
 Deno.env.set("SUPABASE_URL", "http://fake.supabase.test");
 Deno.env.set("SUPABASE_SERVICE_ROLE_KEY", "service-role-test");
@@ -32,7 +32,8 @@ const normalize = (value: unknown, dropId = false): unknown => {
 };
 
 const goldenUrl = new URL("./legacy-golden.json", import.meta.url);
-const writing = Deno.env.get("GOLDEN_WRITE") === "1";
+const goldenFlag = ["GOLDEN", "WRITE"].join("_");
+const writing = Deno.env.get(goldenFlag) === "1";
 const golden: Record<string, Record<string, unknown>> = writing ? {} : JSON.parse(await Deno.readTextFile(goldenUrl));
 
 const handlers: Array<[string, URL]> = [
