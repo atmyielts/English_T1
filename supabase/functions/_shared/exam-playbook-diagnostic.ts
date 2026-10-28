@@ -928,10 +928,10 @@ export const buildToeflDiagnostic = (input: ToeflDiagnosticInput) => {
   if (legacyInputs) pushUnique(priorities, { slug: "score-scale-2026", kind: "module", reason: "legacy_scores", params: {} });
   for (const b of bottlenecks) {
     for (const slug of b.module_slugs) {
-      pushUnique(priorities, { slug, kind: "module", reason: "section_gap", params: { section: b.section, gap: b.gap ?? 0 } });
+      pushUnique(priorities, { slug, kind: "module", reason: "section_gap_band", params: { section: b.section, gap: b.gap ?? 0 } });
     }
     const guide = TOEFL_SKILL_GUIDES[b.section as ToeflSkill];
-    if (guide && (b.gap ?? 0) >= 0.5) pushUnique(priorities, { slug: guide, kind: "guide", reason: "section_gap", params: { section: b.section, gap: b.gap ?? 0 } });
+    if (guide && (b.gap ?? 0) >= 0.5) pushUnique(priorities, { slug: guide, kind: "guide", reason: "section_gap_band", params: { section: b.section, gap: b.gap ?? 0 } });
   }
   for (const u of untested) {
     for (const slug of u.module_slugs) pushUnique(priorities, { slug, kind: "module", reason: "untested_section", params: { section: u.section } });
