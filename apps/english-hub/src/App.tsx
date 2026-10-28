@@ -3,6 +3,7 @@ import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { HubFrame, SkillWorkspace } from './app/Chrome';
 import { useEnglish } from './app/EnglishContext';
 import { OfflineBanner } from './components/OfflineBanner';
+import { OfflineSync } from './components/offline/OfflineSync';
 import { UpdatePrompt } from './components/InstallApp';
 import { applyManifest } from './lib/pwa';
 import { useT } from './i18n';
@@ -22,7 +23,17 @@ const CertificatePage = lazy(() => import('./pages/CertificatePage').then((m) =>
 const PublicCertificatePage = lazy(() => import('./pages/PublicCertificatePage').then((m) => ({ default: m.PublicCertificatePage })));
 const RolePlaysPage = lazy(() => import('./pages/RolePlaysPage').then((m) => ({ default: m.RolePlaysPage })));
 const RolePlayPage = lazy(() => import('./pages/RolePlaysPage').then((m) => ({ default: m.RolePlayPage })));
+const ClassesPage = lazy(() => import('./pages/ClassesPage').then((m) => ({ default: m.ClassesPage })));
+const ClassDashboardPage = lazy(() => import('./pages/ClassDashboardPage').then((m) => ({ default: m.ClassDashboardPage })));
 const SpeakingMockPage = lazy(() => import('./pages/SpeakingMockPage').then((m) => ({ default: m.SpeakingMockPage })));
+const OfflineSessionPage = lazy(() => import('./pages/OfflineSessionPage').then((m) => ({ default: m.OfflineSessionPage })));
+const JourneyPage = lazy(() => import('./pages/JourneyPage').then((m) => ({ default: m.JourneyPage })));
+const InboxPage = lazy(() => import('./pages/InboxPage').then((m) => ({ default: m.InboxPage })));
+const DuelsPage = lazy(() => import('./pages/DuelPage').then((m) => ({ default: m.DuelsPage })));
+const DuelPage = lazy(() => import('./pages/DuelPage').then((m) => ({ default: m.DuelPage })));
+const PublicProgressPage = lazy(() => import('./pages/PublicProgressPage').then((m) => ({ default: m.PublicProgressPage })));
+const ExamPage = lazy(() => import('./pages/ExamPage').then((m) => ({ default: m.ExamPage })));
+const DailyStoryPage = lazy(() => import('./pages/DailyStoryPage').then((m) => ({ default: m.DailyStoryPage })));
 
 const SKILL_APPS = {
   reading: lazy(() => import('./skills/reading')),
@@ -98,6 +109,10 @@ const App = () => {
             <Route path="/" element={<LandingPage />} />
             {/* A shared certificate link works for anyone. */}
             <Route path="/c/:code" element={<Page><PublicCertificatePage /></Page>} />
+            {/* Offline, an expired session cannot be refreshed: saved activities still open. */}
+            <Route path="/offline" element={<Page><OfflineSessionPage /></Page>} />
+            {/* A parent's or teacher's progress link works for anyone. */}
+            <Route path="/p/:token" element={<Page><PublicProgressPage /></Page>} />
             <Route path="*" element={<SignedOutGate />} />
           </Routes>
         </HubFrame>
@@ -111,6 +126,7 @@ const App = () => {
   return (
     <>
       <OfflineBanner />
+      <OfflineSync />
       <UpdatePrompt />
       <Routes>
         <Route path="/" element={<Navigate to="/today" replace />} />
@@ -127,6 +143,17 @@ const App = () => {
         <Route path="/roleplay" element={hub(<RolePlaysPage />)} />
         <Route path="/roleplay/:id" element={hub(<RolePlayPage />)} />
         <Route path="/speaking-mock" element={hub(<SpeakingMockPage />)} />
+        <Route path="/classes" element={hub(<ClassesPage />)} />
+        <Route path="/classes/:id" element={hub(<ClassDashboardPage />)} />
+        <Route path="/offline" element={hub(<OfflineSessionPage />)} />
+        <Route path="/journey" element={hub(<JourneyPage />)} />
+        <Route path="/inbox" element={hub(<InboxPage />)} />
+        <Route path="/duel" element={hub(<DuelsPage />)} />
+        <Route path="/duel/:code" element={hub(<DuelPage />)} />
+        <Route path="/p/:token" element={hub(<PublicProgressPage />)} />
+        <Route path="/exam" element={hub(<ExamPage />)} />
+        <Route path="/stories" element={hub(<DailyStoryPage />)} />
+        <Route path="/stories/:id" element={hub(<DailyStoryPage />)} />
         {SKILLS.map((skill) => {
           const SkillApp = SKILL_APPS[skill.key];
           return (

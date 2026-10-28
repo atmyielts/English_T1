@@ -11,6 +11,7 @@ import { GoalPlanPanel } from './goal/GoalPlanPanel';
 import { BadgesPanel } from '../components/Badges';
 import { SkillRatingsPanel } from './SkillRatingsPanel';
 import { TrapsPanel } from './TrapsPanel';
+import { ShareCardButton } from '../components/ShareCardButton';
 import { EmptyState, ErrorState, LevelBadge, Loading, PageHeader, Panel, ProgressBar, SkillDot, Stat, Tag } from '../ui/kit';
 
 const Heatmap = ({ days }: { days: ProgressResponse['days'] }) => {
@@ -135,11 +136,12 @@ export const ProgressPage = () => {
             </div>
           ) : null}
           {moved ? <p className="en-notice">{t('progress.skills.moved', { skill: t(`skill.${moved.skill}`), level: moved.level })}</p> : null}
+          {moved ? <ShareCardButton card={{ kind: 'level_up', label: t('social.card.levelUp.label'), big: moved.level, headline: t('social.card.levelUp.headline', { skill: t(`skill.${moved.skill}`), level: moved.level }), detail: t('social.card.levelUp.detail') }} /> : null}
           {moveError ? <ErrorState error={moveError} /> : null}
           <p className="hint">{t('progress.skills.barExplain')}</p>
         </Panel>
 
-        <Panel title={t('progress.history.title')}>
+        <Panel title={t('progress.history.title')} aside={<Link to="/journey">{t('glue.journey.fromProgress')}</Link>}>
           {history.loading && !history.data ? <Loading lines={5} /> : null}
           {history.error ? <ErrorState error={history.error} onRetry={history.reload} /> : null}
           {history.data && history.data.attempts.length === 0 ? (

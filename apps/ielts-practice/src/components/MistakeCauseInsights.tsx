@@ -6,15 +6,11 @@ import {
   type MistakeCause,
   type MistakeCausesResponse,
 } from '../lib/api';
+import { useAppT, useFormat, type AppKey } from '../i18n';
 
-const CAUSE_META: Record<MistakeCause, { short: string; label: string }> = {
-  misread: { short: 'Misread', label: 'Misread the question' },
-  vocabulary: { short: 'Vocabulary', label: 'Vocabulary gap' },
-  distractor: { short: 'Distractor', label: 'Fell for a distractor' },
-  timing: { short: 'Timing', label: 'Ran out of time' },
-  careless: { short: 'Careless', label: 'Careless slip' },
-  other: { short: 'Other', label: 'Other reason' },
-};
+const CAUSES: MistakeCause[] = ['misread', 'vocabulary', 'distractor', 'timing', 'careless', 'other'];
+const causeKey = (cause: string, part: 'short' | 'label'): AppKey =>
+  `cause.${(CAUSES as string[]).includes(cause) ? cause : 'other'}.${part}` as AppKey;
 
 const TAG_OPTIONS: MistakeCause[] = ['misread', 'vocabulary', 'distractor', 'timing', 'careless'];
 
@@ -30,6 +26,7 @@ export const MistakeCauseTagger = ({
   sectionType: string;
   questionType: string;
 }) => {
+  const t = useAppT();
   const [chosen, setChosen] = useState<MistakeCause | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -52,12 +49,12 @@ export const MistakeCauseTagger = ({
   };
 
   if (chosen) {
-    return <span className="muted" style={{ fontSize: 12 }}>✓ Logged: {CAUSE_META[chosen].label}</span>;
+    return <span className="muted" style={{ fontSize: 12 }}>✓ {t('cause.logged', { label: t(causeKey(chosen, 'label')) })}</span>;
   }
 
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-      <span className="muted" style={{ fontSize: 12 }}>Why did you miss it?</span>
+      <span className="muted" style={{ fontSize: 12 }}>{t('cause.ask')}</span>
       {TAG_OPTIONS.map((c) => (
         <button
           key={c}
@@ -67,7 +64,7 @@ export const MistakeCauseTagger = ({
           disabled={saving}
           onClick={() => void tag(c)}
         >
-          {CAUSE_META[c].short}
+          {t(causeKey(c, 'short'))}
         </button>
       ))}
     </span>
@@ -77,6 +74,8 @@ export const MistakeCauseTagger = ({
 // Dashboard "where you lose marks" breakdown. Plain glass section — safe in the
 // single-column .practice-main grid (no stat-card grid-column classes).
 export const MistakeCausesCard = ({ accessToken }: { accessToken: string | null }) => {
+  const t = useAppT();
+  const fmt = useFormat();
   const [data, setData] = useState<MistakeCausesResponse | null>(null);
 
   useEffect(() => {
@@ -91,24 +90,24 @@ export const MistakeCausesCard = ({ accessToken }: { accessToken: string | null 
   return (
     <section className="glass" style={{ padding: 22, marginBottom: 20, display: 'grid', gap: 12 }}>
       <div>
-        <p className="eyebrow"><Target size={11} style={{ verticalAlign: -2, marginRight: 4 }} /> Where you lose marks</p>
-        <h3 style={{ margin: '4px 0 0' }}>Your mistake patterns (last 30 days)</h3>
+        <p className="eyebrow"><Target size={11} style={{ verticalAlign: -2, marginRight: 4 }} aria-hidden="true" /> {t('cause.card.eyebrow')}</p>
+        <h3 style={{ margin: '4px 0 0' }}>{t('cause.card.title')}</h3>
       </div>
 
       {data.total === 0 ? (
         <p className="muted" style={{ margin: 0, fontSize: 14 }}>
-          Tag a missed question with "Why did you miss it?" on any results page, and your patterns will show up here —
-          so you can target the real cause (misreading, vocabulary, traps, timing).
+          {t('cause.card.empty')}
         </p>
       ) : (
         <div style={{ display: 'grid', gap: 8 }}>
           {data.breakdown.map((row) => {
             const pct = Math.round((row.count / data.total) * 100);
+            const ratio = row.count / data.total;
             return (
               <div key={row.cause} style={{ display: 'grid', gap: 4 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
-                  <span>{CAUSE_META[row.cause]?.label ?? row.cause}</span>
-                  <span className="muted">{row.count} ({pct}%)</span>
+                  <span>{t(causeKey(row.cause, 'label'))}</span>
+                  <span className="muted">{t('cause.card.count', { count: row.count, pct: fmt.percent(ratio) })}</span>
                 </div>
                 <div className="progress-track" style={{ height: 6 }}>
                   <div className="progress-fill" style={{ width: `${pct}%` }} />

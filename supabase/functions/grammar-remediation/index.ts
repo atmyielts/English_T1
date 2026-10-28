@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { guardActivity } from "../_shared/english-allowance.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { dedupeSubmits, isSubmitPath } from "../_shared/english-client-attempt.ts";
 import {
   authUser,
   buildFeedbackPayload,
@@ -20,6 +21,7 @@ import {
 import { queueReviewItems } from "../_shared/english-review.ts";
 import { checkGrammarAnswer } from "../_shared/english-grammar.ts";
 import { buildHandbook, HANDBOOK_COLUMNS } from "../_shared/english-handbook.ts";
+import { masteryOverview, unitMasteryFor } from "./mastery.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -171,7 +173,13 @@ const loadUnit = async (sb: any, productId: string, languageId: string, identifi
   return data as Record<string, unknown>;
 };
 
-serve(async (req) => {
+// Offline answers synced later carry a client attempt id and are recorded once.
+serve(dedupeSubmits({
+  serviceKey: "grammar",
+  routeMarker: routeMarker,
+  isSubmitRoute: (route) => isSubmitPath(route, "units"),
+  client: () => createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "", { auth: { persistSession: false } }),
+}, async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
@@ -250,6 +258,11 @@ serve(async (req) => {
       });
     }
 
+    // Mastery of every unit (from the learner's lesson results) and the re-checks due now.
+    if (req.method === "GET" && route === "/mastery") {
+      return json(200, await masteryOverview(sb, { userId: auth.userId, languageId: scope.languageId, productId }));
+    }
+
     if (req.method === "POST" && route === "/assignments/rebuild") {
       const assignments = await rebuildAssignments(sb, { userId: auth.userId, languageId: scope.languageId, productId });
       return json(200, { ok: true, assignments });
@@ -266,9 +279,11 @@ serve(async (req) => {
         .eq("grammar_unit_id", String(unit.id))
         .eq("status", "published")
         .order("sort_order", { ascending: true });
+      const mastery = await unitMasteryFor(sb, auth.userId, scope.languageId, toText(unit.slug, 120)).catch(() => null);
       return json(200, {
         unit,
         drills: ((drillsRes.data ?? []) as Array<Record<string, unknown>>).map(publicDrill),
+        mastery,
       });
     }
 
@@ -411,10 +426,15 @@ serve(async (req) => {
         practisedMistakes = Array.isArray(improved) ? improved.length : 0;
       }
 
+      // Mastery after this lesson, including its re-check schedule.
+      const mastery = await unitMasteryFor(sb, auth.userId, scope.languageId, toText(unit.slug, 120)).catch(() => null);
+
       return json(200, {
         ok: true,
         attempt_id: String(recorded.attempt.id ?? ""),
         practised_mistakes: practisedMistakes,
+        mastery,
+        focus_area: toText(unit.focus_area, 80) || null,
         score: Math.round(correctnessRatio * 100),
         correct: correctCount,
         total: results.length,
@@ -562,4 +582,4 @@ serve(async (req) => {
   } catch (error) {
     return json(500, { error: error instanceof Error ? error.message : "Unknown error" });
   }
-});
+}));

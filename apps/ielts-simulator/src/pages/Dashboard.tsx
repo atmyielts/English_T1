@@ -290,6 +290,7 @@ export const Dashboard: React.FC = () => {
         <IeltsEcosystemPanel
           accessToken={accessToken}
           latestBand={recentCompleted[0] ? getOverallBand(evaluations[recentCompleted[0].id]?.result) : null}
+          latestSessionId={recentCompleted[0]?.id ?? null}
         />
 
         {loading ? <div className="text-gray-600">Loading dashboard...</div> : null}

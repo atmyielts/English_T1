@@ -6,7 +6,7 @@ const tenantId = '00000000-0000-4000-8000-000000000002';
 
 async function withBackend(
   test: (calls: string[], pending: Set<string>) => Promise<void>,
-  options: { unauthorized?: boolean; noMembership?: boolean; failedTable?: string } = {},
+  options: { unauthorized?: boolean; noMembership?: boolean; failedTable?: string; entitlements?: unknown[] } = {},
 ) {
   const originalFetch = globalThis.fetch;
   const env = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY'];
@@ -35,7 +35,7 @@ async function withBackend(
     }
     pending.delete(table);
     if (table === options.failedTable) return Response.json({ message: 'Database unavailable' }, { status: 500 });
-    if (table === 'users') return Response.json({ role: 'user' });
+    if (table === 'users') return Response.json({ role: 'user', is_active: true });
     if (table === 'tenant_memberships') {
       assertEquals(url.searchParams.get('user_id'), `eq.${userId}`);
       return Response.json(options.noMembership ? [] : [{ tenant_id: tenantId, role: 'student', status: 'active' }]);
@@ -46,6 +46,7 @@ async function withBackend(
     }
     if (table === 'entitlements') {
       assertEquals(url.searchParams.get('tenant_id'), `eq.${tenantId}`);
+      if (options.entitlements) return Response.json(options.entitlements);
       return Response.json([
         { id: 'active', resource_type: 'product', resource_id: 'ielts', starts_at: null, ends_at: null, value: null },
         { id: 'expired', resource_type: 'product', resource_id: 'sat', starts_at: null, ends_at: '2020-01-01', value: null },
@@ -86,3 +87,24 @@ Deno.test('user without membership never queries tenant data', () => withBackend
 Deno.test('entitlement failure does not return an apparently complete account', () => withBackend(async () => {
   assertEquals((await handleMe(request())).status, 500);
 }, { failedTable: 'entitlements' }));
+
+Deno.test('an exam Complete bundle also shows its member products to frontends', () => withBackend(async () => {
+  const body = await (await handleMe(request())).json();
+  const productIds = body.entitlements.map((row: { resource_id: string }) => row.resource_id);
+  assertEquals(productIds, [
+    '056db74c-0bc5-32f7-9997-654e3f31611f',
+    '2cf7b1a7-4df9-4de8-99e8-5b9d5bb85010',
+    '5cf6e8e2-e6b1-4f8f-9d35-1c932866d6ef',
+    'a8b41e2c-9a36-4caf-9bba-7212e35a8b8c',
+  ]);
+  for (const row of body.entitlements.slice(2)) {
+    assertEquals(row.value, { via_bundle_product_id: '056db74c-0bc5-32f7-9997-654e3f31611f' });
+    assertEquals(row.ends_at, '2999-01-01T00:00:00Z');
+  }
+}, {
+  entitlements: [
+    { id: 'bundle', resource_type: 'product', resource_id: '056db74c-0bc5-32f7-9997-654e3f31611f', starts_at: null, ends_at: '2999-01-01T00:00:00Z', value: { plan_id: 'p' } },
+    { id: 'direct', resource_type: 'product', resource_id: '2cf7b1a7-4df9-4de8-99e8-5b9d5bb85010', starts_at: null, ends_at: null, value: null },
+    { id: 'old-bundle', resource_type: 'product', resource_id: '56db74c0-0000-0000-0000-000000000000', starts_at: null, ends_at: '2020-01-01', value: null },
+  ],
+}));

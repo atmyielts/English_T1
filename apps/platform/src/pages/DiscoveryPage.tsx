@@ -13,6 +13,7 @@ import {
 } from '../components/seo/SeoHead';
 import { discoveryPagesByKey, type DiscoveryLink, type DiscoveryPageKey } from '../content/discoveryPages';
 import { platformJourney } from '../lib/journeyAnalytics';
+import { ExamFamilyCards } from '../components/platform/ExamFamilyCards';
 
 type DiscoveryPageProps = {
   pageKey: DiscoveryPageKey;
@@ -195,6 +196,12 @@ export const DiscoveryPage: React.FC<DiscoveryPageProps> = ({ pageKey }) => {
                 ))}
               </div>
             </section>
+
+            {page.family === 'ielts' || page.family === 'sat' ? (
+              <section className="rounded-[2rem] border border-gray-900 bg-white/70 p-4 md:p-6">
+                <ExamFamilyCards families={[page.family]} onOpen={(href) => void openHref(navigate, href)} />
+              </section>
+            ) : null}
 
             <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {page.features.map((feature) => (

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "teacher-studio-serve-fix",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": [],
+  "migrations": [],
+  "edgeFunctions": [
+    "teacher-studio"
+  ],
+  "workers": [],
+  "sharedEdgeConsumers": [],
+  "requiredSecrets": [],
+  "rolloutOrder": [
+    "function:teacher-studio"
+  ],
+  "manualFollowUps": [
+    "Edge: supabase functions deploy teacher-studio --project-ref bbjawctnqrufvnesdsel. teacher-studio only did `import \"../academy/index.ts\"`, but since 2026-06-18 academy calls serve() only when it is the entry module (import.meta.main), so the redeploy of 2026-10-27 (#318) started no server and requests hung (546 / timeout). It now serves the exported handleAcademyRequest itself. academy is unchanged and was never affected."
+  ],
+  "verification": [
+    "POST /functions/v1/teacher-studio with the anon key answers within a couple of seconds with academy's own JSON (e.g. 401 Unauthorized), the same as /functions/v1/academy, instead of hanging."
+  ],
+  "rollback": {
+    "pages": "None.",
+    "migration": "None.",
+    "edge": "Redeploy teacher-studio from the previous main commit (it hangs; prefer fixing forward).",
+    "worker": "None."
+  }
+}

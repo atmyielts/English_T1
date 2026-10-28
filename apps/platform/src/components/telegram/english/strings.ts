@@ -64,6 +64,11 @@ const en = {
   'rv.done.body': '{correct} of {total} correct. Your next cards come back on schedule.',
   'rv.done.empty': 'Nothing is due right now.',
   'rv.done.back': 'Back to English',
+  'rv.done.score': 'Score',
+  'rv.done.xp': '+{xp} XP',
+  'rv.done.saved': 'Cards you missed come back sooner, here and in the English app.',
+  'rv.done.next': 'See what to do next',
+  'rv.done.journey': 'Your journey',
 } as const;
 
 export type TgEnglishKey = keyof typeof en;
@@ -128,6 +133,11 @@ const ru: Dictionary = {
   'rv.done.body': 'Верно {correct} из {total}. Следующие карточки вернутся по расписанию.',
   'rv.done.empty': 'Сейчас повторять нечего.',
   'rv.done.back': 'Назад в English',
+  'rv.done.score': 'Результат',
+  'rv.done.xp': '+{xp} XP',
+  'rv.done.saved': 'Карточки с ошибками вернутся раньше, здесь и в приложении English.',
+  'rv.done.next': 'Что делать дальше',
+  'rv.done.journey': 'Ваш путь',
 };
 
 const uz: Dictionary = {
@@ -189,6 +199,11 @@ const uz: Dictionary = {
   'rv.done.body': '{total} tadan {correct} tasi toʻgʻri. Keyingi kartalar oʻz vaqtida qaytadi.',
   'rv.done.empty': 'Hozircha takrorlash yoʻq.',
   'rv.done.back': 'English ga qaytish',
+  'rv.done.score': 'Natija',
+  'rv.done.xp': '+{xp} XP',
+  'rv.done.saved': 'Xato qilingan kartalar bu yerda ham, English ilovasida ham tezroq qaytadi.',
+  'rv.done.next': 'Keyin nima qilish kerak',
+  'rv.done.journey': 'Sizning yoʻlingiz',
 };
 
 const dictionaries: Record<LocaleCode, Dictionary> = { en, ru, uz };

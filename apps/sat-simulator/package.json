@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "test": "node --experimental-strip-types --test src/components/platform/adminAccess.test.ts",
+    "test": "node --experimental-strip-types --test src/components/platform/adminAccess.test.ts src/lib/resultLinks.test.ts",
     "preview": "vite preview"
   },
   "dependencies": {

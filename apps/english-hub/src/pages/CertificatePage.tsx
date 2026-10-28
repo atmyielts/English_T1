@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useEnglish } from '../app/EnglishContext';
 import { CertificateSheet, CertificateShare } from '../components/CertificateSheet';
+import { ShareCardButton } from '../components/ShareCardButton';
 import { useI18n, useT } from '../i18n';
 import {
   formatCode,
@@ -176,6 +177,7 @@ export const CertificatePage = () => {
           <CertificateSheet certificate={current} />
           <Panel title={t('certificate.share.title')}>
             <CertificateShare certificate={current} />
+            <ShareCardButton card={{ kind: 'certificate', label: t('social.card.certificate.label'), big: current.overall, headline: t('social.card.certificate.headline', { level: current.overall }), detail: t('social.card.certificate.detail') }} />
             <Revoke certificate={current} onDone={() => { setRevokedNotice(true); resource.reload(); }} />
           </Panel>
         </>

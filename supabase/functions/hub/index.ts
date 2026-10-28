@@ -46,7 +46,6 @@ import {
   type TodayTask,
   weekStrip,
 } from "../_shared/english-today.ts";
-import { loadPracticeWords } from "../_shared/english-words.ts";
 import { checkActivityAccess } from "../_shared/english-allowance.ts";
 import { checkReviewAnswer, parseReviewPayload, publicReviewPayload, RETIRED_BOX, scheduleAfterAnswer } from "../_shared/english-review.ts";
 import { topicFromSubskill } from "../_shared/english-mistakes.ts";
@@ -61,6 +60,17 @@ import { appendLevelHistory, levelCheckStatus, perSkillLevels, readLevelHistory 
 import { handleCertificateRoute, handlePublicCertificate, isPublicCertificateRoute } from "./certificate.ts";
 import { measurementMethod, testResultRecord } from "../_shared/english-certificate.ts";
 import { handlePracticeRoute } from "./practice.ts";
+import { handleClassesRoute, runClassReminders } from "./classes.ts";
+import { handleShadowingRoute } from "./shadowing.ts";
+import { handleGlueRoute } from "./glue.ts";
+import { duelContext, handleDuelRoute } from "./duel.ts";
+import { sweepDuels } from "../_shared/english-duel-service.ts";
+import { handleProgressLinkRoute, handlePublicProgress, isPublicProgressRoute } from "./progress-link.ts";
+import { handleSocialBotUpdate } from "./social-bot.ts";
+import { runWeeklyReportCycle } from "./weekly-report.ts";
+import { handleExamRoute } from "./exam.ts";
+import { handleTutorRoute } from "./tutor.ts";
+import { handleDailyStoryRoute } from "./daily-story.ts";
 
 const routeMarker = "/hub";
 
@@ -75,100 +85,6 @@ const PRIMARY_CONTENT_TYPES = [
   "immersion.mission",
   "vocabulary.deck",
 ];
-
-/**
- * Mistakes for Review. Grammar mistakes are grouped by topic (all the different
- * sentences where the learner made the same kind of error) and linked to the
- * lesson that practises it; other mistakes are listed one by one.
- */
-const TUTOR_MEMORY_KINDS = ["goal", "preference", "struggle", "win", "context", "deadline"];
-type TutorMemory = { id: string; kind: string; text: string; added_at: string };
-
-const loadTutorMemories = async (sb: any, userId: string, languageId: string): Promise<TutorMemory[]> => {
-  const { data } = await sb.from("learner_language_goals")
-    .select("metadata")
-    .eq("user_id", userId)
-    .eq("language_id", languageId)
-    .maybeSingle();
-  const raw = ((data as Record<string, unknown> | null)?.metadata as Record<string, unknown> | undefined)?.tutor_memories;
-  return (Array.isArray(raw) ? raw : [])
-    .filter((m): m is Record<string, unknown> => !!m && typeof m === "object" && !Array.isArray(m))
-    .map((m) => ({ id: String(m.id ?? ""), kind: String(m.kind ?? "context"), text: String(m.text ?? ""), added_at: String(m.added_at ?? "") }))
-    .filter((m) => m.id && m.text)
-    .slice(-30);
-};
-
-const saveTutorMemories = async (sb: any, userId: string, languageId: string, memories: TutorMemory[]): Promise<void> => {
-  const { data } = await sb.from("learner_language_goals")
-    .select("metadata")
-    .eq("user_id", userId)
-    .eq("language_id", languageId)
-    .maybeSingle();
-  const meta = ((data as Record<string, unknown> | null)?.metadata ?? {}) as Record<string, unknown>;
-  const row = { user_id: userId, language_id: languageId, metadata: { ...meta, tutor_memories: memories.slice(-30) } };
-  const { error } = await sb.from("learner_language_goals").upsert(row, { onConflict: "user_id,language_id" });
-  if (error) throw new Error(`Failed to save tutor memory: ${error.message}`);
-};
-
-/** A compact, factual picture of the learner for the tutor: no invented numbers. */
-const buildTutorProfile = async (sb: any, userId: string, languageId: string) => {
-  const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
-  const [goalRes, errorsRes, attemptsRes, words] = await Promise.all([
-    sb.from("learner_language_goals")
-      .select("current_cefr_estimate, target_cefr, goal_keys, daily_time_minutes, metadata")
-      .eq("user_id", userId)
-      .eq("language_id", languageId)
-      .maybeSingle(),
-    sb.from("learner_language_errors")
-      .select("service_key, subskill_key, error_type, error_frequency, mastery_status, last_seen_at")
-      .eq("user_id", userId)
-      .eq("language_id", languageId)
-      .in("mastery_status", ["open", "reopened"])
-      .gte("last_seen_at", since)
-      .order("error_frequency", { ascending: false })
-      .limit(40),
-    sb.from("learning_attempts")
-      .select("service_key, correctness_ratio, overall_score, submitted_at, content_item_id")
-      .eq("user_id", userId)
-      .eq("language_id", languageId)
-      .not("submitted_at", "is", null)
-      .order("submitted_at", { ascending: false })
-      .limit(8),
-    loadPracticeWords(sb, userId, languageId, 5).catch(() => []),
-  ]);
-  const goal = (goalRes.data ?? {}) as Record<string, unknown>;
-  const placement = ((goal.metadata as Record<string, unknown> | undefined)?.placement ?? {}) as Record<string, unknown>;
-  const perSkillRaw = (placement.per_skill ?? {}) as Record<string, unknown>;
-  const perSkill: Record<string, string> = {};
-  for (const [skill, entry] of Object.entries(perSkillRaw)) {
-    const level = typeof entry === "string" ? entry : (entry as Record<string, unknown> | undefined)?.level;
-    if (typeof level === "string") perSkill[skill] = level;
-  }
-  const topics = new Map<string, { count: number; examples: string[] }>();
-  for (const row of (errorsRes.data ?? []) as Array<Record<string, unknown>>) {
-    const topic = topicFromSubskill(String(row.subskill_key ?? "")) ?? String(row.subskill_key ?? "other");
-    const entry = topics.get(topic) ?? { count: 0, examples: [] };
-    entry.count += Number(row.error_frequency ?? 1);
-    if (entry.examples.length < 2) entry.examples.push(String(row.error_type ?? "").slice(0, 120));
-    topics.set(topic, entry);
-  }
-  return {
-    level: goal.current_cefr_estimate ?? null,
-    level_by_skill: perSkill,
-    target_level: goal.target_cefr ?? null,
-    goals: Array.isArray(goal.goal_keys) ? goal.goal_keys : [],
-    daily_minutes: goal.daily_time_minutes ?? null,
-    recurring_mistakes: [...topics.entries()]
-      .sort((a, b) => b[1].count - a[1].count)
-      .slice(0, 4)
-      .map(([topic, entry]) => ({ topic, times: entry.count, examples: entry.examples })),
-    recent_results: ((attemptsRes.data ?? []) as Array<Record<string, unknown>>).map((row) => {
-      const score = Number(row.correctness_ratio ?? row.overall_score);
-      return { skill: String(row.service_key ?? ""), score: Number.isFinite(score) ? Math.round(score * 100) : null, when: String(row.submitted_at ?? "").slice(0, 10) };
-    }),
-    words_to_practise: words.map((word) => word.word),
-  };
-};
 
 /** How the learner is doing at their own level in each skill (scored attempts, newest first). */
 const statusesByLevel = (
@@ -194,6 +110,11 @@ const statusesByLevel = (
 const mistakeSkill = (row: Record<string, unknown>): string =>
   row.service_key === "academy_homework" ? String(row.skill_key ?? "grammar") : String(row.service_key ?? "");
 
+/**
+ * Mistakes for Review. Grammar mistakes are grouped by topic (all the different
+ * sentences where the learner made the same kind of error) and linked to the
+ * lesson that practises it; other mistakes are listed one by one.
+ */
 const groupMistakes = (
   rows: Array<Record<string, unknown>>,
   units: Array<Record<string, unknown>>,
@@ -276,7 +197,42 @@ serve(async (req) => {
         onlyUserIds: Array.isArray(body.user_ids) ? body.user_ids.map(String).slice(0, 20) : undefined,
       });
       console.log(JSON.stringify({ event: "english_reminder_cycle", hour: result.hour, considered: result.considered, sent: result.sent.length }));
-      return json(200, { ok: true, ...result });
+      // Class assignment reminders and teachers' Monday digests (./classes.ts); never fails the cycle.
+      const classes = await runClassReminders({
+        sb,
+        languageId: workerScope.languageId,
+        appUrl: Deno.env.get("ENGLISH_APP_URL") ?? "https://english.schood.online",
+        dryRun: body.dry_run === true,
+        now: body.dry_run === true && typeof body.now === "string" && Number.isFinite(Date.parse(body.now)) ? new Date(body.now) : undefined,
+        onlyUserIds: Array.isArray(body.user_ids) ? body.user_ids.map(String).slice(0, 20) : undefined,
+        forceDigest: body.dry_run === true && body.force_digest === true,
+        send: async (message) => {
+          const response = await fetch(`${supabaseUrl}/functions/v1/send-telegram`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${serviceRoleKey}` },
+            body: JSON.stringify(message),
+          });
+          await response.body?.cancel();
+          return { status: response.status };
+        },
+      }).catch((error) => ({ error: error instanceof Error ? error.message.slice(0, 200) : "unknown" }));
+      // === Sunday weekly report, same cron (./weekly-report.ts) ===
+      const weekly = await runWeeklyReportCycle({
+        sb,
+        languageId: workerScope.languageId,
+        supabaseUrl,
+        serviceRoleKey,
+        appUrl: Deno.env.get("ENGLISH_APP_URL") ?? "https://english.schood.online",
+        dryRun: body.dry_run === true,
+        now: body.dry_run === true && typeof body.now === "string" && Number.isFinite(Date.parse(body.now)) ? new Date(body.now) : undefined,
+        onlyUserIds: body.weekly_report === true && Array.isArray(body.user_ids) ? body.user_ids.map(String).slice(0, 20) : undefined,
+      }).catch((error) => ({ ran: false, considered: 0, sent: [], error: error instanceof Error ? error.message : "unknown" }));
+      if (weekly.ran) console.log(JSON.stringify({ event: "english_weekly_report_cycle", considered: weekly.considered, sent: weekly.sent.length }));
+      // === Duels nobody is looking at: results for players who stopped tapping (./duel.ts) ===
+      const duels = body.dry_run === true
+        ? { checked: 0 }
+        : await sweepDuels(duelContext({ sb, languageId: workerScope.languageId, supabaseUrl, serviceRoleKey })).catch(() => ({ checked: 0 }));
+      return json(200, { ok: true, ...result, classes, weekly_report: weekly, duels });
     }
 
     // === Telegram review quiz answers (student bot Worker; no learner session) ===
@@ -284,6 +240,18 @@ serve(async (req) => {
       if (!(await isQuizWorker(req, serviceRoleKey))) return json(401, { error: "Unauthorized" });
       const workerScope = await resolveLanguageScope(sb, "en");
       return json(200, await answerTelegramQuiz({ sb, languageId: workerScope.languageId, body: await parseBody(req) as Record<string, unknown> }));
+    }
+
+    // === Duels and parent progress links from the student bot Worker (./social-bot.ts) ===
+    if (req.method === "POST" && extractRoute(new URL(req.url), routeMarker) === "/internal/telegram-social") {
+      if (!(await isQuizWorker(req, serviceRoleKey))) return json(401, { error: "Unauthorized" });
+      const workerScope = await resolveLanguageScope(sb, "en");
+      return json(200, await handleSocialBotUpdate({ sb, languageId: workerScope.languageId, supabaseUrl, serviceRoleKey, body: await parseBody(req) as Record<string, unknown> }));
+    }
+
+    // === Public progress page for parents and teachers (/p/:token; no learner session) ===
+    if (isPublicProgressRoute(req.method, extractRoute(new URL(req.url), routeMarker))) {
+      return await handlePublicProgress(sb, extractRoute(new URL(req.url), routeMarker));
     }
 
     // === Public certificate lookup (anyone with the link; no learner session) ===
@@ -331,10 +299,20 @@ serve(async (req) => {
     const certificateResponse = await handleCertificateRoute({ sb, req, route, userId: auth.userId, languageId: scope.languageId });
     if (certificateResponse) return certificateResponse;
 
+    // === Vocabulary duels (./duel.ts) and parent progress links (./progress-link.ts) ===
+    const duelResponse = await handleDuelRoute({ sb, req, route, userId: auth.userId, languageId: scope.languageId, supabaseUrl, serviceRoleKey });
+    if (duelResponse) return duelResponse;
+    const progressLinkResponse = await handleProgressLinkRoute({ sb, req, route, userId: auth.userId, languageId: scope.languageId });
+    if (progressLinkResponse) return progressLinkResponse;
+
     // === Tap-to-translate: one word's meaning, for every signed-in learner ===
     if (req.method === "GET" && route === "/word") {
       return await handleWordLookup({ sb, userId: auth.userId, languageId: scope.languageId, url });
     }
+
+    // === Story of the day at the learner's level (./daily-story.ts) ===
+    const storyResponse = await handleDailyStoryRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId });
+    if (storyResponse) return storyResponse;
 
     const products = await resolveEnglishProducts(sb);
 
@@ -390,6 +368,25 @@ serve(async (req) => {
     // === Role-plays, speaking mock, first-language traps (./practice.ts) ===
     const practiceResponse = await handlePracticeRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId, products });
     if (practiceResponse) return practiceResponse;
+
+    // === Classes for teachers and learning centres (./classes.ts) ===
+    const classesResponse = await handleClassesRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId, products });
+    if (classesResponse) return classesResponse;
+
+    // === Shadowing sentence sets and light speaking logs (./shadowing.ts) ===
+    const shadowingResponse = await handleShadowingRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId, products });
+    if (shadowingResponse) return shadowingResponse;
+
+    // === Journey, inbox, content search, continue anywhere (./glue.ts) ===
+    const glueResponse = await handleGlueRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId, products });
+    if (glueResponse) return glueResponse;
+    // === National exam track: readiness, exam date, timed mocks (./exam.ts) ===
+    const examResponse = await handleExamRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId, products });
+    if (examResponse) return examResponse;
+
+    // === AI tutor: threads, context, chat turns, mini-lessons, memory (./tutor.ts) ===
+    const tutorResponse = await handleTutorRoute({ sb, req, url, route, userId: auth.userId, languageId: scope.languageId, products, aiCall: callEnglishAIWithStatus, requestId });
+    if (tutorResponse) return tutorResponse;
 
     // === Today, catalog and history (learner home) ===
     // Built only from the learner's placement, real attempts and due reviews.
@@ -815,7 +812,7 @@ serve(async (req) => {
         if (!goalRes.data) return json(409, { error: "Finish the level test first", code: "english_onboarding_required" });
         const body = await parseBody(req) as Record<string, unknown>;
         const next = mergeReminderSettings(settings, body);
-        if ((next.enabled || next.quiz) && !linked) {
+        if ((next.enabled || next.quiz || next.report) && !linked) {
           return json(409, { error: "Link Telegram on your Schood account first", code: "telegram_not_linked" });
         }
         const { error } = await sb.from("learner_language_goals")
@@ -831,36 +828,6 @@ serve(async (req) => {
     // === Goal date plan: target level by a date, paced from real practice time ===
     if (route === "/goal" && (req.method === "GET" || req.method === "POST")) {
       return await handleGoalRoute(req, { sb, userId: auth.userId, languageId: scope.languageId });
-    }
-
-    // === Tutor memory: notes the learner chose to keep, on every device ===
-    if (route === "/tutor/memory" && (req.method === "GET" || req.method === "POST")) {
-      if (req.method === "GET") {
-        return json(200, { ok: true, memories: await loadTutorMemories(sb, auth.userId, scope.languageId) });
-      }
-      const body = await parseBody(req) as Record<string, unknown>;
-      const action = toText(body.action, 16);
-      const current = await loadTutorMemories(sb, auth.userId, scope.languageId);
-      let next = current;
-      if (action === "add") {
-        const items = (Array.isArray(body.memories) ? body.memories : [body.memory])
-          .filter((m): m is Record<string, unknown> => !!m && typeof m === "object" && !Array.isArray(m))
-          .map((m) => ({
-            id: `mem_${crypto.randomUUID().slice(0, 12)}`,
-            kind: TUTOR_MEMORY_KINDS.includes(toText(m.kind, 24)) ? toText(m.kind, 24) : "context",
-            text: toText(m.text, 320),
-            added_at: new Date().toISOString(),
-          }))
-          .filter((m) => m.text && !current.some((existing) => existing.text.toLowerCase() === m.text.toLowerCase()));
-        next = [...current, ...items].slice(-30);
-      } else if (action === "remove") {
-        const id = toText(body.id, 64);
-        next = current.filter((memory) => memory.id !== id);
-      } else {
-        return json(422, { error: "action must be add or remove" });
-      }
-      await saveTutorMemories(sb, auth.userId, scope.languageId, next);
-      return json(200, { ok: true, memories: next });
     }
 
     // === Moving up a level in one skill ===
@@ -2572,107 +2539,6 @@ serve(async (req) => {
         per_skill: perSkill,
         narrative: toText(result.narrative, 1200),
         next_steps: nextSteps,
-        generated_at: new Date().toISOString(),
-      });
-    }
-
-    // Tier A #8 — Personal AI tutor with cross-session memory.
-    // Stateless backend; the frontend persists chat history + a list of
-    // "memories" (facts the learner has chosen to remember about themselves)
-    // in localStorage and passes both on every turn. The AI uses memories
-    // as context AND proposes new memories to add — the learner approves.
-    // This avoids a new RLS-gated table while still giving genuine
-    // cross-session continuity for as long as the browser holds storage.
-    if (req.method === "POST" && route === "/ai/tutor-chat") {
-      const body = await parseBody(req);
-      const messagesRaw = (body as Record<string, unknown>).messages;
-      const memoriesRaw = (body as Record<string, unknown>).memories;
-
-      const messages = Array.isArray(messagesRaw)
-        ? (messagesRaw as unknown[])
-            .filter((m): m is Record<string, unknown> => !!m && typeof m === "object" && !Array.isArray(m))
-            .map((m) => ({
-              role: ["user", "assistant"].includes(String(m.role ?? "")) ? String(m.role) : "user",
-              content: toText(m.content, 4000),
-            }))
-            .filter((m) => m.content)
-            .slice(-12)
-        : [];
-      if (messages.length === 0) {
-        return json(400, { error: "messages must contain at least one entry with role/content" });
-      }
-
-      const memories = Array.isArray(memoriesRaw)
-        ? (memoriesRaw as unknown[])
-            .filter((m): m is Record<string, unknown> => !!m && typeof m === "object" && !Array.isArray(m))
-            .map((m) => ({
-              id: toText(m.id, 64),
-              text: toText(m.text, 600),
-              kind: toText(m.kind, 24),
-            }))
-            .filter((m) => m.text)
-            .slice(0, 30)
-        : [];
-
-      // Everything the tutor should know about this learner, built on the server.
-      const profile = await buildTutorProfile(sb, auth.userId, scope.languageId);
-      const savedMemories = await loadTutorMemories(sb, auth.userId, scope.languageId);
-      const knownTexts = new Set(savedMemories.map((memory) => memory.text.toLowerCase()));
-      const allMemories = [
-        ...savedMemories.map((memory) => ({ id: memory.id, text: memory.text, kind: memory.kind })),
-        ...memories.filter((memory) => !knownTexts.has(memory.text.toLowerCase())),
-      ].slice(0, 30);
-
-      const { data: result, status: aiStatus, error: aiError } = await callEnglishAIWithStatus<{
-        reply?: unknown;
-        suggested_memories?: unknown;
-        suggested_actions?: unknown;
-      }>(
-        {
-          systemPrompt:
-            "You are an English study tutor with personal continuity. The learner's message history and a list of MEMORIES (facts they previously asked you to remember about them — goals, preferences, struggles, wins, context) are provided. Use the memories naturally; do NOT recite them. A LEARNER_PROFILE built from their real activity is also provided: their level per skill, goal, the grammar mistakes they keep making (with examples), recent results and saved words they are practising. Personalise with it: when a question touches a recurring mistake, point it out kindly and give a short example; weave their saved words into examples; never invent progress that is not in the profile. Reply in 1-3 paragraphs, warm but concise, in the same language they wrote in (default English). When something in the conversation looks worth remembering long-term — a stated goal, a recurring weakness, a deadline, a preference about how they want to be coached, a notable win — propose 1-3 NEW memories to add. Do NOT suggest memories that duplicate what's already saved. Optionally suggest 1-2 short next-actions with relative routes ('/reading', '/writing', '/grammar', '/vocabulary', '/speaking', '/listening', '/immersion', '/review', '/progress', '/today', or a specific lesson like '/grammar/<lesson-slug>' taken from the profile). Return strict JSON: {reply: the assistant message, suggested_memories: array (max 3) of {kind: 'goal'|'preference'|'struggle'|'win'|'context'|'deadline', text: 1-sentence fact in second person ('You prefer...', 'You aim to...')}, suggested_actions: array (max 2) of {label: 3-5 word CTA, route: relative URL, why: 1 short sentence}}.",
-          userPayload: JSON.stringify({
-            learner_profile: profile,
-            existing_memories: allMemories,
-            messages,
-          }),
-          temperature: 0.6,
-        },
-        { reply: "", suggested_memories: [], suggested_actions: [] },
-      );
-      if (aiStatus === "failed") console.error(JSON.stringify({ event: "english_ai_failed", route, request_id: requestId, error: String(aiError ?? "").slice(0, 300) }));
-
-      const allowedKinds = ["goal", "preference", "struggle", "win", "context", "deadline"];
-      const suggestedMemories = Array.isArray(result.suggested_memories)
-        ? (result.suggested_memories as unknown[])
-            .filter((m): m is Record<string, unknown> => !!m && typeof m === "object" && !Array.isArray(m))
-            .map((m) => ({
-              kind: allowedKinds.includes(String(m.kind ?? "").toLowerCase()) ? String(m.kind).toLowerCase() : "context",
-              text: toText(m.text, 320),
-            }))
-            .filter((m) => m.text)
-            .slice(0, 3)
-        : [];
-
-      const suggestedActions = Array.isArray(result.suggested_actions)
-        ? (result.suggested_actions as unknown[])
-            .filter((a): a is Record<string, unknown> => !!a && typeof a === "object" && !Array.isArray(a))
-            .map((a) => ({
-              label: toText(a.label, 120),
-              route: toText(a.route, 200) || "/",
-              why: toText(a.why, 240),
-            }))
-            .filter((a) => a.label)
-            .slice(0, 3)
-        : [];
-
-      return json(200, {
-        ok: true,
-        ai_available: isEnglishAIConfigured(),
-        ai_status: aiStatus,
-        reply: toText(result.reply, 4000),
-        suggested_memories: suggestedMemories,
-        suggested_actions: suggestedActions,
         generated_at: new Date().toISOString(),
       });
     }

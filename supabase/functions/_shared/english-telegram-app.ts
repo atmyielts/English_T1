@@ -7,7 +7,7 @@
 // 1-5 with english-words.ts spacing), so a card answered in Telegram is
 // answered everywhere.
 import { parseReviewPayload, publicReviewPayload, RETIRED_BOX, scheduleAfterAnswer } from "./english-review.ts";
-import { intervalDaysForBox } from "./english-words.ts";
+import { gradeFromOutcome, type NotebookSrsRow, notebookReviewPatch } from "./english-srs.ts";
 
 export type TgLocale = "en" | "ru" | "uz";
 
@@ -21,7 +21,6 @@ export const tgLocale = (code: unknown): TgLocale => {
 export const escapeTelegramHtml = (value: unknown): string =>
   String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-const DAY_MS = 86_400_000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const isUuid = (value: unknown): value is string => typeof value === "string" && UUID.test(value);
 
@@ -151,23 +150,13 @@ export const reviewAnswerWasDue = (box: unknown, nextDueAt: unknown, now: Date):
   return (Number(box ?? 1) || 1) < RETIRED_BOX && Number.isFinite(due) && due <= now.getTime();
 };
 
-/** user_vocabulary_notebook_entries after a flashcard answer: same as vocabulary-notebook "review". */
-export const wordReviewPatch = (
-  entry: { leitner_box?: unknown; review_count?: unknown; correct_count?: unknown; incorrect_count?: unknown },
-  correct: boolean,
-  now: Date,
-) => {
-  const current = Number(entry.leitner_box ?? 1) || 1;
-  const box = correct ? Math.min(5, Math.max(1, current + 1)) : 1;
-  return {
-    leitner_box: box,
-    next_review_at: new Date(now.getTime() + intervalDaysForBox(box) * DAY_MS).toISOString(),
-    last_reviewed_at: now.toISOString(),
-    review_count: (Number(entry.review_count ?? 0) || 0) + 1,
-    correct_count: (Number(entry.correct_count ?? 0) || 0) + (correct ? 1 : 0),
-    incorrect_count: (Number(entry.incorrect_count ?? 0) || 0) + (correct ? 0 : 1),
-  };
-};
+/**
+ * user_vocabulary_notebook_entries after a flashcard answer: the same FSRS
+ * schedule as every other place a word is reviewed (english-srs.ts).
+ * Pass the entry with metadata and last_reviewed_at so its memory state is kept.
+ */
+export const wordReviewPatch = (entry: NotebookSrsRow, correct: boolean, now: Date) =>
+  notebookReviewPatch(entry, gradeFromOutcome(correct), now);
 
 // === /english in the student bot ===
 

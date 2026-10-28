@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { canRecognize, listen, type Listener } from '../../lib/speech';
+import type { SpeechMark } from '../../../../../supabase/functions/_shared/english-fluency.ts';
 
 /**
  * Captures a spoken answer: live transcript from browser speech recognition,
- * honest speaking time (Record → Stop), and, where it is safe, a local audio
- * copy the learner can replay. The audio never leaves the browser.
+ * honest speaking time (Record → Stop), a timeline of when words were
+ * recognised (for pauses), and, where it is safe, a local audio copy the
+ * learner can replay. The audio never leaves the browser.
  */
 
 export type CaptureProblem = 'unsupported' | 'denied' | 'no-mic' | 'network' | 'failed';
@@ -21,6 +23,7 @@ const canRecordAudio = (): boolean =>
 const isPhone = (): boolean => typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 
 const join = (a: string, b: string): string => `${a} ${b}`.replace(/\s+/g, ' ').trim();
+const countWords = (text: string): number => text.split(/\s+/).filter(Boolean).length;
 
 export const useSpeakingCapture = (maxSeconds: number) => {
   const supported = canRecognize();
@@ -44,6 +47,7 @@ export const useSpeakingCapture = (maxSeconds: number) => {
   const finishTimer = useRef<number | null>(null);
   const restarts = useRef(0);
   const urlRef = useRef<string | null>(null);
+  const marks = useRef<SpeechMark[]>([]);
   const beginRef = useRef<() => void>(() => undefined);
 
   const setPhaseBoth = (next: CapturePhase) => {
@@ -123,7 +127,15 @@ export const useSpeakingCapture = (maxSeconds: number) => {
       next = listen({
         onText: (text) => {
           session.current = text;
-          if (mounted.current) setTranscript(join(committed.current, text));
+          const full = join(committed.current, text);
+          // Timeline: when the number of recognised words grows (pauses are gaps in it).
+          // Only while recording: words that arrive after Stop would look like a pause.
+          const words = countWords(full);
+          const last = marks.current[marks.current.length - 1];
+          if (phaseRef.current === 'recording' && startedAt.current !== null && words > (last?.words ?? 0) && marks.current.length < 600) {
+            marks.current.push({ at: Date.now() - startedAt.current, words });
+          }
+          if (mounted.current) setTranscript(full);
         },
         onEnd: (error) => {
           committed.current = join(committed.current, session.current);
@@ -160,6 +172,7 @@ export const useSpeakingCapture = (maxSeconds: number) => {
     revokeAudio();
     committed.current = '';
     session.current = '';
+    marks.current = [];
     restarts.current = 0;
     startedAt.current = null;
     stoppedAt.current = null;
@@ -245,6 +258,7 @@ export const useSpeakingCapture = (maxSeconds: number) => {
     revokeAudio();
     committed.current = '';
     session.current = '';
+    marks.current = [];
     startedAt.current = null;
     stoppedAt.current = null;
     setTranscript('');
@@ -272,5 +286,8 @@ export const useSpeakingCapture = (maxSeconds: number) => {
       ? Math.max(1, Math.round((stoppedAt.current - startedAt.current) / 1000))
       : null;
 
-  return { supported, phase, transcript, problem, seconds, audioUrl, start, stop, reset, speakingSeconds };
+  /** When words were recognised, ms since Record. */
+  const timeline = (): SpeechMark[] => [...marks.current];
+
+  return { supported, phase, transcript, problem, seconds, audioUrl, start, stop, reset, speakingSeconds, timeline };
 };

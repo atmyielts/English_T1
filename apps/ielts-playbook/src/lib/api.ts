@@ -104,12 +104,14 @@ const callPublic = async <T>(path: string): Promise<T> => {
 const callAuthed = async <T>(
   accessToken: string,
   path: string,
-  opts?: { method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'; body?: unknown },
+  opts?: { method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'; body?: unknown; fresh?: boolean },
 ): Promise<T> => {
   const method = opts?.method ?? 'GET';
   const send = (token: string) =>
     fetch(`${edgeBase}${path}`, {
       method,
+      // Reads right after a change must not come from the short private cache.
+      ...(opts?.fresh ? { cache: 'no-store' as RequestCache } : {}),
       headers: authHeaders(token, opts?.body != null),
       body: opts?.body != null ? JSON.stringify(opts.body) : undefined,
     });
@@ -134,7 +136,10 @@ export const getAccessEffective = (accessToken: string): Promise<AccessEffective
 
 export const playbookCatalogGet = (): Promise<PlaybookCatalog> => callPublic('/ielts-playbook/catalog');
 export const playbookUpdatesGet = (): Promise<Record<string, unknown>> => callPublic('/ielts-playbook/updates');
-export const playbookMarketGuidanceGet = (countryCode?: string, providerKey?: string): Promise<Record<string, unknown>> => {
+export const playbookMarketGuidanceGet = (
+  countryCode?: string,
+  providerKey?: string,
+): Promise<{ market_guidance: PlaybookMarket; sources: Array<{ sort_order: number; source: Record<string, unknown> | null }> }> => {
   const qs = new URLSearchParams();
   if (countryCode) qs.set('country_code', countryCode);
   if (providerKey) qs.set('provider_key', providerKey);
@@ -145,11 +150,73 @@ export const playbookPageGet = (slug: string, accessToken?: string | null): Prom
     ? callAuthed(accessToken, `/ielts-playbook/pages/${encodeURIComponent(slug)}`)
     : callPublic(`/ielts-playbook/pages/${encodeURIComponent(slug)}`);
 
-export const playbookDashboardGet = (accessToken: string): Promise<Record<string, unknown>> =>
-  callAuthed(accessToken, '/ielts-playbook/dashboard');
+export const playbookDashboardGet = (
+  accessToken: string,
+  opts?: { sessionId?: string | null },
+): Promise<Record<string, unknown>> =>
+  callAuthed(
+    accessToken,
+    `/ielts-playbook/dashboard${opts?.sessionId ? `?session_id=${encodeURIComponent(opts.sessionId)}` : ''}`,
+    { fresh: true },
+  );
 
-export const playbookProfileGet = (accessToken: string): Promise<{ profile: Record<string, unknown> }> =>
-  callAuthed(accessToken, '/ielts-playbook/profile');
+export type ApiError = Error & { status?: number; details?: unknown };
+
+export const apiErrorStatus = (error: unknown): number | null => {
+  const status = (error as ApiError | null)?.status;
+  return typeof status === 'number' ? status : null;
+};
+
+/** A locked premium page answers 401/403 with a teaser describing what is inside. */
+export type PlaybookPageTeaser = {
+  slug: string;
+  title: string;
+  summary: string;
+  module_key: string | null;
+  page_type: string | null;
+  section_count: number;
+  headings: string[];
+};
+
+export const pageTeaserFromError = (error: unknown): PlaybookPageTeaser | null => {
+  const details = (error as ApiError | null)?.details;
+  if (!details || typeof details !== 'object') return null;
+  const teaser = (details as Record<string, unknown>).teaser;
+  if (!teaser || typeof teaser !== 'object') return null;
+  const row = teaser as Record<string, unknown>;
+  return {
+    slug: String(row.slug ?? ''),
+    title: String(row.title ?? ''),
+    summary: String(row.summary ?? ''),
+    module_key: row.module_key ? String(row.module_key) : null,
+    page_type: row.page_type ? String(row.page_type) : null,
+    section_count: Number(row.section_count ?? 0) || 0,
+    headings: Array.isArray(row.headings) ? row.headings.map((h) => String(h ?? '')).filter(Boolean) : [],
+  };
+};
+
+export type PlaybookMarket = {
+  id: string;
+  country_code: string;
+  provider_key: string;
+  summary: string;
+  ukvi_available: boolean;
+  computer_available: boolean;
+  writing_on_paper_available: boolean;
+  one_skill_retake_available: boolean;
+  result_timing_note: string | null;
+  booking_url: string | null;
+  verified_at: string | null;
+  metadata: Record<string, unknown>;
+};
+
+export const playbookMarketsGet = (): Promise<{ markets: PlaybookMarket[] }> => callPublic('/ielts-playbook/markets');
+
+export const playbookProfileGet = (
+  accessToken: string,
+  opts?: { fresh?: boolean },
+): Promise<{ profile: Record<string, unknown> }> =>
+  callAuthed(accessToken, '/ielts-playbook/profile', { fresh: opts?.fresh });
 
 export const playbookProfilePatch = (
   accessToken: string,

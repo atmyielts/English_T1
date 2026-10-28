@@ -1,0 +1,128 @@
+[
+  {
+    "url": "https://satsuite.collegeboard.org/sat/whats-on-the-test/structure",
+    "title": "College Board: SAT Structure",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official overview of SAT sections, modules, question counts, timing, the break and multistage adaptive routing."
+  },
+  {
+    "url": "https://satsuite.collegeboard.org/sat/whats-on-the-test/reading-writing",
+    "title": "College Board: The SAT Reading and Writing Section",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official description of Reading and Writing domains, passage length and subjects, one question per passage, and question ordering."
+  },
+  {
+    "url": "https://satsuite.collegeboard.org/sat/whats-on-the-test/math/overview",
+    "title": "College Board: The SAT Math Section Overview",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official Math overview: domains with question counts, ordering within modules and the share of questions set in context."
+  },
+  {
+    "url": "https://satsuite.collegeboard.org/sat/whats-on-the-test/math/student-produced",
+    "title": "College Board: SAT Math Student-Produced Responses",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official note on the share of student-produced response questions and how answers are entered."
+  },
+  {
+    "url": "https://satsuite.collegeboard.org/media/pdf/english-sat-test-directions-bb.pdf",
+    "title": "College Board: SAT Bluebook Test Directions (PDF)",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official Bluebook directions: module timing and navigation, Reading and Writing and Math directions, and student-produced response entry rules."
+  },
+  {
+    "url": "https://satsuite.collegeboard.org/media/pdf/digital-sat-test-spec-overview.pdf",
+    "title": "College Board: Digital SAT Suite Specifications Overview (PDF)",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official specifications overview: operational and pretest questions per module, domain weighting, question formats and the multistage adaptive design."
+  },
+  {
+    "url": "https://satsuite.collegeboard.org/in-school-assessments/calculator-policy",
+    "title": "College Board: SAT Suite Calculator Policy",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official calculator policy: built-in Desmos graphing and scientific calculator, calculator use throughout Math, and handheld rules."
+  },
+  {
+    "url": "https://bluebook.collegeboard.org/students/tools",
+    "title": "College Board Bluebook: Testing Tools",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official list of Bluebook tools: timer, calculator, reference sheet, highlights and notes, mark for review, line reader, option eliminator, question menu and zoom."
+  },
+  {
+    "url": "https://satsuite.collegeboard.org/sat/what-to-bring-do/what-to-bring",
+    "title": "College Board: What to Bring on SAT Test Day",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official test-day checklist: testing device with Bluebook and exam setup, admission ticket, photo ID, scratch-work pencils or pens, calculator and optional items."
+  },
+  {
+    "url": "https://satsuite.collegeboard.org/scores/what-scores-mean",
+    "title": "College Board: What Do My SAT Suite Scores Mean?",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official explanation of score ranges, score ranges as measurement uncertainty, percentiles and the Knowledge and Skills section of score reports."
+  },
+  {
+    "url": "https://satsuite.collegeboard.org/help-center/how-many-times-can-student-take-sat-and-when-should-they-take-it",
+    "title": "College Board: How Many Times Can a Student Take the SAT?",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official guidance on retakes, timing of attempts and how many colleges consider highest section scores."
+  },
+  {
+    "url": "https://satsuite.collegeboard.org/practice",
+    "title": "College Board: SAT Practice and Preparation",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official practice resources: full-length Bluebook practice tests, the Student Question Bank, My Practice and paper practice tests."
+  },
+  {
+    "url": "https://satsuite.collegeboard.org/practice/student-question-bank",
+    "title": "College Board: Student Question Bank",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official question bank with filters for assessment, test, domain, skill and difficulty."
+  },
+  {
+    "url": "https://satsuite.collegeboard.org/media/pdf/assessment-framework-for-digital-sat-suite.pdf",
+    "title": "College Board: Assessment Framework for the Digital SAT Suite (PDF)",
+    "provider_key": "college-board",
+    "source_type": "official_url",
+    "summary": "Official assessment framework, including the scoring approach: no guessing penalty and advice to answer every question."
+  },
+  {
+    "url": "https://help.desmos.com/hc/en-us/articles/360042428612-Nonlinear-Regressions",
+    "title": "Desmos Help: Nonlinear Regressions",
+    "provider_key": "desmos",
+    "source_type": "provider_url",
+    "summary": "Desmos documentation on regression models with the tilde and restricting parameter values with curly brackets."
+  },
+  {
+    "url": "https://help.desmos.com/hc/en-us/articles/4407889068557-Lists",
+    "title": "Desmos Help: Lists",
+    "provider_key": "desmos",
+    "source_type": "provider_url",
+    "summary": "Desmos documentation on creating lists with square brackets and using them in expressions."
+  },
+  {
+    "url": "https://help.desmos.com/hc/en-us/articles/4405633253389-Statistics",
+    "title": "Desmos Help: Statistics",
+    "provider_key": "desmos",
+    "source_type": "provider_url",
+    "summary": "Desmos documentation on statistics functions, including sample and population standard deviation."
+  },
+  {
+    "url": "https://help.desmos.com/hc/en-us/articles/4407885334285-Inequalities-and-Restrictions",
+    "title": "Desmos Help: Inequalities and Restrictions",
+    "provider_key": "desmos",
+    "source_type": "provider_url",
+    "summary": "Desmos documentation on graphing inequalities and restricting domain and range with curly brackets."
+  }
+]

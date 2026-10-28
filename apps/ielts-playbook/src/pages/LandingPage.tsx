@@ -18,165 +18,85 @@ import { Link } from 'react-router-dom';
 import { playbookCatalogGet, playbookUpdatesGet, type PlaybookCatalog } from '../lib/api';
 import { PRACTICE_APP_URL, SIMULATOR_APP_URL } from '../lib/constants';
 import { SiteChrome } from '../components/content/SiteChrome';
-
-const fallbackModules: PlaybookCatalog['modules'] = [
-  {
-    id: 'fallback-essentials',
-    slug: 'essentials',
-    module_key: 'essentials',
-    title: 'IELTS Essentials',
-    summary: 'Understand the exam, the score report, test formats, and what actually moves a band score.',
-    sort_order: 1,
-    metadata: { hero_kicker: 'Start here' },
-    published_at: null,
-  },
-  {
-    id: 'fallback-test-path',
-    slug: 'test-types-booking',
-    module_key: 'test-types-booking',
-    title: 'Test Path Finder',
-    summary: 'Choose Academic, General Training, UKVI, delivery mode, and retake path with fewer expensive mistakes.',
-    sort_order: 2,
-    metadata: { hero_kicker: 'Decision' },
-    published_at: null,
-  },
-  {
-    id: 'fallback-listening',
-    slug: 'listening-master-guide',
-    module_key: 'listening',
-    title: 'Listening Master Guide',
-    summary: 'Fix distractors, answer transfer, spelling pressure, and note-taking before speed becomes the problem.',
-    sort_order: 3,
-    metadata: { hero_kicker: 'Skill' },
-    published_at: null,
-  },
-  {
-    id: 'fallback-writing',
-    slug: 'writing-master-guide',
-    module_key: 'writing',
-    title: 'Writing Master Guide',
-    summary: 'Move from template habits to task response, development, coherence, and criteria-based improvement.',
-    sort_order: 4,
-    metadata: { hero_kicker: 'Skill' },
-    published_at: null,
-  },
-  {
-    id: 'fallback-study-plans',
-    slug: 'study-plans',
-    module_key: 'study-plans',
-    title: 'Study Plans',
-    summary: 'Pick crash, balanced, improvement, or weak-skill recovery routines based on deadline and evidence.',
-    sort_order: 5,
-    metadata: { hero_kicker: 'Routine' },
-    published_at: null,
-  },
-];
-
-const fallbackSources = [
-  {
-    title: 'Official IELTS policy checks',
-    summary: 'Booking, delivery, result timing, and retake notes should be checked against current provider guidance.',
-    url: '/updates-policy',
-  },
-  {
-    title: 'Simulator evidence loop',
-    summary: 'Use scored outcomes to replace vague confidence with a concrete module order.',
-    url: `${SIMULATOR_APP_URL}?source=playbook`,
-  },
-  {
-    title: 'Practice handoff',
-    summary: 'Move from diagnosis into targeted reps when a weak skill or question type becomes clear.',
-    url: `${PRACTICE_APP_URL}/dashboard?source=playbook`,
-  },
-];
+import { useT } from '../i18n';
 
 const moduleIcons: LucideIcon[] = [BookOpenCheck, Compass, Headphones, PenLine, ClipboardCheck, FileText];
 
 export const LandingPage: React.FC = () => {
+  const t = useT();
   const [catalog, setCatalog] = useState<PlaybookCatalog | null>(null);
   const [updates, setUpdates] = useState<Record<string, unknown> | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     let active = true;
-    Promise.all([playbookCatalogGet(), playbookUpdatesGet()])
-      .then(([catalogPayload, updatesPayload]) => {
-        if (!active) return;
-        setCatalog(catalogPayload);
-        setUpdates(updatesPayload);
+    playbookCatalogGet()
+      .then((data) => {
+        if (active) setCatalog(data);
       })
-      .catch((err: Error) => {
-        if (!active) return;
-        setError(err.message);
+      .catch(() => {
+        if (active) setError(true);
       });
+    playbookUpdatesGet()
+      .then((data) => {
+        if (active) setUpdates(data);
+      })
+      .catch(() => null);
     return () => {
       active = false;
     };
   }, []);
 
-  const modules = catalog?.modules.length ? catalog.modules : fallbackModules;
-  const recentSources = Array.isArray(updates?.recent_sources) ? updates.recent_sources.slice(0, 3) : fallbackSources;
-  const moduleCount = catalog?.modules.length ?? 12;
-  const guideCount = catalog?.premium_guides.length ?? 18;
+  const modules = catalog?.modules ?? [];
+  const recentSources = Array.isArray(updates?.recent_sources) ? (updates!.recent_sources as Array<Record<string, unknown>>).slice(0, 3) : [];
+  const skills = [t('skill.listening'), t('skill.reading'), t('skill.writing'), t('skill.speaking')];
 
   return (
     <SiteChrome>
       <section className="playbook-hero">
         <div className="hero-copy">
-          <p className="eyebrow">IELTS strategy operating system</p>
+          <p className="eyebrow">{t('landing.eyebrow')}</p>
           <h1>IELTS Playbook</h1>
-          <p className="hero-summary">
-            Understand the exam, choose the right test path, and turn scored simulator evidence into a realistic study
-            sequence. Public guides explain the system; premium diagnostics decide what deserves your next hour.
-          </p>
+          <p className="hero-summary">{t('landing.lead')}</p>
           <div className="hero-actions">
             <Link to="/onboarding" className="button button-primary">
               <Sparkles size={17} />
-              Start Diagnostic
+              {t('landing.start')}
             </Link>
             <a href={`${SIMULATOR_APP_URL}?source=playbook`} className="button button-secondary">
               <Gauge size={17} />
-              Open Simulator
+              {t('landing.openSimulator')}
             </a>
           </div>
         </div>
 
-        <div className="hero-board" aria-label="IELTS Playbook overview">
+        <div className="hero-board" aria-label={t('landing.boardLabel')}>
           <article className="board-panel board-primary">
             <div className="board-topline">
-              <span>Today</span>
-              <span>Live strategy</span>
+              <span>{t('landing.board.today')}</span>
+              <span>{t('landing.board.live')}</span>
             </div>
-            <h2>Band evidence becomes a study order.</h2>
-            <p>Target band, deadline, weak skill, market rules, and simulator outcomes feed one recommendation.</p>
-            <div className="skill-meter-list" aria-label="IELTS skill focus">
-              {[
-                ['Listening', 78],
-                ['Reading', 70],
-                ['Writing', 54],
-                ['Speaking', 64],
-              ].map(([label, value]) => (
-                <div key={label} className="skill-meter">
-                  <span>{label}</span>
-                  <div>
-                    <i style={{ width: `${value}%` }} />
-                  </div>
-                </div>
+            <h2>{t('landing.board.title')}</h2>
+            <p>{t('landing.board.lead')}</p>
+            {/* Illustration only: no scores are shown until the learner has real evidence. */}
+            <ul className="skill-chip-list" aria-label={t('landing.board.skills')}>
+              {skills.map((label) => (
+                <li key={label}>{label}</li>
               ))}
-            </div>
+            </ul>
           </article>
 
           <Link to="/diagnostic" className="board-panel board-action">
             <Target size={22} />
-            <span>Next best action</span>
-            <strong>Generate a priority map</strong>
+            <span>{t('landing.board.next')}</span>
+            <strong>{t('landing.board.priorityMap')}</strong>
             <ArrowRight size={18} className="panel-arrow" />
           </Link>
 
           <Link to="/test-types-booking" className="board-panel board-route">
             <Route size={22} />
-            <span>Before booking</span>
-            <strong>Academic, General, UKVI, OSR</strong>
+            <span>{t('landing.board.beforeBooking')}</span>
+            <strong>{t('landing.board.paths')}</strong>
           </Link>
 
           <article className="board-panel board-tags">
@@ -189,79 +109,82 @@ export const LandingPage: React.FC = () => {
 
       <section className="section-band" id="modules">
         <div className="section-heading">
-          <p className="eyebrow">Playbook library</p>
-          <h2>Start with the module that removes the biggest uncertainty.</h2>
-          <p>
-            The structure is intentionally practical: exam decisions first, skill mechanics second, and study planning
-            only after the bottleneck is visible.
-          </p>
+          <p className="eyebrow">{t('landing.library.eyebrow')}</p>
+          <h2>{t('landing.library.title')}</h2>
+          <p>{t('landing.library.lead')}</p>
         </div>
-        {error ? <p className="notice-banner">Live catalog unavailable, showing the core structure.</p> : null}
+        {error ? <p className="notice-banner" role="status">{t('landing.catalogError')}</p> : null}
         <div className="module-showcase">
-          {modules.map((module, index) => {
-            const Icon = moduleIcons[index % moduleIcons.length] ?? BookOpenCheck;
-            return (
-              <Link key={module.id} to={`/${module.slug}`} className={`module-card${index === 0 ? ' module-card-featured' : ''}`}>
-                <span className="card-icon">
-                  <Icon size={18} />
-                </span>
-                <span className="card-kicker">{module.metadata?.hero_kicker ? String(module.metadata.hero_kicker) : 'Module'}</span>
-                <h3>{module.title}</h3>
-                <p>{module.summary}</p>
-                <span className="card-link">
-                  Open module
-                  <ArrowRight size={15} />
-                </span>
-              </Link>
-            );
-          })}
+          {!catalog && !error
+            ? [0, 1, 2, 3].map((i) => <span key={i} className="module-card p2-skeleton" style={{ minHeight: 180 }} aria-hidden="true" />)
+            : modules.map((module, index) => {
+                const Icon = moduleIcons[index % moduleIcons.length] ?? BookOpenCheck;
+                return (
+                  <Link key={module.id} to={`/${module.slug}`} className={`module-card${index === 0 ? ' module-card-featured' : ''}`}>
+                    <span className="card-icon"><Icon size={18} /></span>
+                    <span className="card-kicker">{module.metadata?.hero_kicker ? String(module.metadata.hero_kicker) : t('landing.module')}</span>
+                    <h3>{module.title}</h3>
+                    <p>{module.summary}</p>
+                    <span className="card-link">
+                      {t('landing.openModule')}
+                      <ArrowRight size={15} />
+                    </span>
+                  </Link>
+                );
+              })}
         </div>
       </section>
 
       <section className="workflow-band">
         <article className="workflow-copy">
-          <p className="eyebrow">Connected workflow</p>
-          <h2>Strategy, simulation, and practice are one loop.</h2>
-          <p>
-            Run a scored mock, read the playbook interpretation, then move into targeted practice. The point is not more
-            content; it is less guessing.
-          </p>
-          <div className="stat-strip">
-            <article>
-              <strong>{moduleCount}</strong>
-              <span>core modules</span>
-            </article>
-            <article>
-              <strong>{guideCount}</strong>
-              <span>premium deep dives</span>
-            </article>
-            <article>
-              <strong>4</strong>
-              <span>skills mapped</span>
-            </article>
-          </div>
+          <p className="eyebrow">{t('landing.workflow.eyebrow')}</p>
+          <h2>{t('landing.workflow.title')}</h2>
+          <p>{t('landing.workflow.lead')}</p>
+          {catalog ? (
+            <div className="stat-strip">
+              <article>
+                <strong>{catalog.modules.length}</strong>
+                <span>{t('landing.stat.modules')}</span>
+              </article>
+              <article>
+                <strong>{catalog.premium_guides.length}</strong>
+                <span>{t('landing.stat.guides')}</span>
+              </article>
+              <article>
+                <strong>4</strong>
+                <span>{t('landing.stat.skills')}</span>
+              </article>
+            </div>
+          ) : null}
           <div className="inline-actions">
             <a href={`${SIMULATOR_APP_URL}?source=playbook`} className="button button-secondary">
               <Gauge size={17} />
-              Simulator
+              {t('service.simulator')}
             </a>
             <a href={`${PRACTICE_APP_URL}/dashboard?source=playbook`} className="button button-primary">
               <TrendingUp size={17} />
-              Practice
+              {t('service.practice')}
             </a>
           </div>
         </article>
 
         <article className="source-panel">
-          <p className="eyebrow">Verified updates</p>
-          <h2>Source-linked IELTS guidance</h2>
+          <p className="eyebrow">{t('landing.sources.eyebrow')}</p>
+          <h2>{t('landing.sources.title')}</h2>
           <div className="mini-feed">
-            {recentSources.map((source, index) => (
-              <a key={index} href={String((source as Record<string, unknown>).url ?? '#')} className="feed-item">
-                <strong>{String((source as Record<string, unknown>).title ?? 'Source')}</strong>
-                <span>{String((source as Record<string, unknown>).summary ?? '')}</span>
-              </a>
-            ))}
+            {recentSources.length === 0 ? (
+              <Link to="/updates-policy" className="feed-item">
+                <strong>{t('landing.sources.fallbackTitle')}</strong>
+                <span>{t('landing.sources.fallbackBody')}</span>
+              </Link>
+            ) : (
+              recentSources.map((source, index) => (
+                <a key={index} href={String(source.url ?? '#')} className="feed-item" target="_blank" rel="noreferrer noopener">
+                  <strong>{String(source.title ?? '')}</strong>
+                  <span>{String(source.summary ?? '')}</span>
+                </a>
+              ))
+            )}
           </div>
         </article>
       </section>

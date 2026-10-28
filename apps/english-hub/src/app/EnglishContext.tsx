@@ -3,6 +3,7 @@ import type { Session } from '@supabase/supabase-js';
 import { supabase, platformUrl } from '../lib/supabase';
 import { edge, ApiError } from '../lib/api';
 import { buildPlatformHref } from '../lib/navigation';
+import { deletePack } from '../lib/offline/store';
 import { ENGLISH_BUNDLE, SKILLS, isCefr, type CefrLevel, type SkillKey } from '../lib/skills';
 
 type Entitlement = {
@@ -216,7 +217,12 @@ export const EnglishProvider = ({ children }: { children: ReactNode }) => {
       refreshAccess,
       onboarding,
       refreshOnboarding,
-      signOut: async () => { await supabase.auth.signOut({ scope: 'local' }); },
+      signOut: async () => {
+        // Downloaded offline lessons belong to this learner; don't leave them on a shared device.
+        const userId = session?.user?.id;
+        if (userId) await deletePack(userId).catch(() => undefined);
+        await supabase.auth.signOut({ scope: 'local' });
+      },
       signInHref: (returnPath = '/today') =>
         buildPlatformHref(platformUrl, '/auth', { mode: 'signin', returnTo: `${origin}${returnPath}` }),
       pricingHref: (skill) =>

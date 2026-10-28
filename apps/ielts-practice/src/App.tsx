@@ -1,5 +1,6 @@
 import { Suspense, lazy, type ReactNode } from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { useAppT } from './i18n';
 import { IELTS_PRACTICE_PRODUCT_SLUG } from './lib/constants';
 import { PlatformRedirect } from './components/platform/PlatformRedirect';
 import { RequireProductEntitlement } from './components/platform/RequireProductEntitlement';
@@ -12,8 +13,7 @@ const WritingPrepPage = lazy(async () => ({ default: (await import('./pages/Writ
 const MockGeneratorPage = lazy(async () => ({ default: (await import('./pages/MockGeneratorPage')).MockGeneratorPage }));
 const PlanPage = lazy(async () => ({ default: (await import('./pages/PlanPage')).PlanPage }));
 const LabPage = lazy(async () => ({ default: (await import('./pages/LabPage')).LabPage }));
-const ExercisePage = lazy(async () => ({ default: (await import('./pages/ExercisePage')).ExercisePage }));
-const ResultsPage = lazy(async () => ({ default: (await import('./pages/ResultsPage')).ResultsPage }));
+const SpeakingPage = lazy(async () => ({ default: (await import('./pages/SpeakingPage')).SpeakingPage }));
 const SessionResultsPage = lazy(async () => ({ default: (await import('./pages/SessionResultsPage')).SessionResultsPage }));
 const ReviewsDuePage = lazy(async () => ({ default: (await import('./pages/ReviewsDuePage')).ReviewsDuePage }));
 const StatsByTypePage = lazy(async () => ({ default: (await import('./pages/StatsByTypePage')).StatsByTypePage }));
@@ -29,20 +29,34 @@ const SharedReviewSessionPage = lazy(async () => {
   return { default: module.ReviewSessionPage };
 });
 
-const sessionRuntimeFallback = (
-  <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-    <div className="glass dashboard-alert">Loading practice session...</div>
-  </div>
-);
+const SessionRuntimeFallback = () => {
+  const t = useAppT();
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+      <div className="glass dashboard-alert">{t('shell.loadingSession')}</div>
+    </div>
+  );
+};
 
-const pageFallback = (
-  <div className="practice-root">
-    <div className="route-loading">Loading IELTS Practice...</div>
-  </div>
-);
+const PageFallback = () => {
+  const t = useAppT();
+  return (
+    <div className="practice-root">
+      <div className="route-loading">{t('shell.loadingPage')}</div>
+    </div>
+  );
+};
+
+const sessionRuntimeFallback = <SessionRuntimeFallback />;
+
+/** Redirect that keeps the query string (deep-link context such as focus or source). */
+const RedirectKeepingSearch = ({ to }: { to: string }) => {
+  const { search } = useLocation();
+  return <Navigate to={`${to}${search}`} replace />;
+};
 
 const lazyPage = (node: ReactNode) => (
-  <Suspense fallback={pageFallback}>
+  <Suspense fallback={<PageFallback />}>
     {node}
   </Suspense>
 );
@@ -87,8 +101,11 @@ function App() {
               </Suspense>
             )}
           />
-          <Route path="/exercise/:id" element={lazyPage(<ExercisePage />)} />
-          <Route path="/results/:attempt_id" element={lazyPage(<ResultsPage />)} />
+          <Route path="/speaking" element={lazyPage(<SpeakingPage />)} />
+          {/* Retired single-exercise pages: old links land on today's session / progress. */}
+          <Route path="/exercise/:id" element={<RedirectKeepingSearch to="/today" />} />
+          <Route path="/results/:attempt_id" element={<RedirectKeepingSearch to="/dashboard" />} />
+          <Route path="/practice/today" element={<RedirectKeepingSearch to="/today" />} />
           <Route path="/practice/reviews" element={lazyPage(<ReviewsDuePage />)} />
           <Route path="/practice/stats/by-type" element={lazyPage(<StatsByTypePage />)} />
         </Route>

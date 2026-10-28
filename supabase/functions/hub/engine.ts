@@ -5,7 +5,8 @@
 //                             learner_language_goals.metadata.skill_ratings
 //   GET  /next                the single best next step across all skills
 //                             (?date=&skill=&slug= of the activity just
-//                             finished, ?from_skill= the skill open now)
+//                             finished, ?from_skill= the skill open now,
+//                             ?locale= for the title of a role-play to continue)
 //   GET  /streak              streak with freezes and "Win it back"
 //   POST /ai/progress-check   the monthly check: a 2-round placement test
 //
@@ -19,6 +20,8 @@ import { testResultRecord } from "../_shared/english-certificate.ts";
 import { perSkillLevels, readLevelHistory } from "../_shared/english-levels.ts";
 import { topicFromSubskill } from "../_shared/english-mistakes.ts";
 import { pickNextStep } from "../_shared/english-next.ts";
+import { examNextContext } from "../_shared/english-exam-next.ts";
+import { dueRechecks, unitMastery } from "../_shared/english-grammar-mastery.ts";
 import {
   CHECK_FINAL_PROMPT,
   CHECK_ROUND_PROMPT,
@@ -46,6 +49,8 @@ import {
   type TodayTask,
 } from "../_shared/english-today.ts";
 import { learnerDate } from "../_shared/english-xp.ts";
+import { loadAssignmentNextSteps } from "./classes.ts";
+import { loadResumeItems } from "./resume.ts";
 
 type Row = Record<string, unknown>;
 type Ctx = { sb: any; userId: string; languageId: string };
@@ -60,6 +65,9 @@ const PRIMARY_CONTENT_TYPES = [
   "immersion.mission",
   "vocabulary.deck",
 ];
+// Days with any practice keep the streak: primary activities plus finished
+// role-plays, speaking mocks and shadowing takes (they are not rated).
+const STREAK_CONTENT_TYPES = [...PRIMARY_CONTENT_TYPES, "speaking.roleplay", "speaking.mock", "speaking.shadowing"];
 const DONE_STATUSES = ["submitted", "scored", "failed"];
 const DAY_MS = 86_400_000;
 const RATING_LOOKBACK_DAYS = 120;
@@ -82,7 +90,7 @@ const relation = (row: Row): Row => {
   return (Array.isArray(value) ? value[0] : value) as Row ?? {};
 };
 
-const loadGoal = async (ctx: Ctx): Promise<Row | null> => {
+export const loadGoal = async (ctx: Ctx): Promise<Row | null> => {
   const { data, error } = await ctx.sb.from("learner_language_goals")
     .select("current_cefr_estimate, target_cefr, goal_keys, metadata")
     .eq("user_id", ctx.userId)
@@ -97,7 +105,7 @@ const loadGoal = async (ctx: Ctx): Promise<Row | null> => {
  * there; until that migration is applied, falls back to re-reading the row
  * just before writing, which keeps the window for overwriting other keys tiny.
  */
-const setMetaKey = async (ctx: Ctx, key: string, value: unknown): Promise<void> => {
+export const setMetaKey = async (ctx: Ctx, key: string, value: unknown): Promise<void> => {
   const { error } = await ctx.sb.rpc("english_set_goal_metadata_key", {
     p_user_id: ctx.userId,
     p_language_id: ctx.languageId,
@@ -161,7 +169,7 @@ const lastLevelChangeAt = (meta: Row): string | null => readLevelHistory(meta).a
  * Ratings from the cache while nothing changed, otherwise recomputed and
  * cached. Pass `attempts` when they are already loaded.
  */
-const ratingsFor = async (ctx: Ctx, goal: Row | null, attempts?: EngineAttempt[]): Promise<RatingSummary> => {
+export const ratingsFor = async (ctx: Ctx, goal: Row | null, attempts?: EngineAttempt[]): Promise<RatingSummary> => {
   const meta = metaOf(goal);
   const cached = readRatingSummary(meta.skill_ratings);
   let latestAt = attempts ? attempts[0]?.submitted_at ?? null : null;
@@ -238,7 +246,7 @@ const loadCatalog = async (ctx: Ctx): Promise<CatalogItem[]> => {
 
 const getNext = async (ctx: Ctx, url: URL, products: Record<string, { productId?: string | null }>): Promise<Response> => {
   const date = planDateFrom(url);
-  const [goal, items, attempts, mistakesRes, unitsRes, notebook, reviewDueRes, access, planRes] = await Promise.all([
+  const [goal, items, attempts, mistakesRes, unitsRes, notebook, reviewDueRes, access, planRes, resume] = await Promise.all([
     loadGoal(ctx),
     loadCatalog(ctx),
     loadRecentAttempts(ctx, RATING_LOOKBACK_DAYS, RATING_ATTEMPT_LIMIT),
@@ -268,6 +276,8 @@ const getNext = async (ctx: Ctx, url: URL, products: Record<string, { productId?
       .eq("language_id", ctx.languageId)
       .eq("plan_date", date)
       .maybeSingle(),
+    // Something started on any device and not finished comes first ("Continue").
+    loadResumeItems(ctx.sb, ctx.userId, ctx.languageId, url.searchParams.get("locale")),
   ]);
 
   const stored = levelsFrom(goal);
@@ -298,6 +308,13 @@ const getNext = async (ctx: Ctx, url: URL, products: Record<string, { productId?
     attempts,
   });
 
+  // Grammar units due for a spaced re-check, from the learner's lesson results.
+  const grammarItems = items.filter((item) => item.skill === "grammar");
+  const rechecks = dueRechecks(grammarItems.map((item) => ({
+    item,
+    mastery: unitMastery(attempts.filter((attempt) => attempt.content_item_id === item.id).map((attempt) => ({ score: attempt.score, submitted_at: attempt.submitted_at }))),
+  }))).map((entry) => entry.item);
+
   const summary = (planRes.data?.summary ?? {}) as Row;
   const doneToday = new Set(attempts.filter((attempt) => attempt.submitted_at.slice(0, 10) === date).map((attempt) => attempt.content_item_id));
   const planTasks = (summary.generated_by === "hub.today.v1" && Array.isArray(summary.today_tasks) ? summary.today_tasks as TodayTask[] : [])
@@ -307,13 +324,17 @@ const getNext = async (ctx: Ctx, url: URL, products: Record<string, { productId?
   const slug = toText(url.searchParams.get("slug"), 160);
   const finished = slug && isSkill(fromSkill) ? items.find((item) => item.skill === fromSkill && item.slug === slug) : undefined;
 
-  const ratings = await ratingsFor(ctx, goal, attempts);
+  const [ratings, assignments] = await Promise.all([
+    ratingsFor(ctx, goal, attempts),
+    loadAssignmentNextSteps({ ...ctx, items, attempts, levelFor }),
+  ]);
   const owned = access.entitled_skills.filter(isSkill);
   const result = pickNextStep({
     items,
     attempts,
     dueReviews: (Number(notebook.dueCount ?? 0) || 0) + (Number(reviewDueRes.count ?? 0) || 0),
     fixes,
+    rechecks,
     ratings: ratings.skills,
     targetLevel: isCefr(goal?.target_cefr) ? goal!.target_cefr as Cefr : null,
     levelFor,
@@ -322,6 +343,9 @@ const getNext = async (ctx: Ctx, url: URL, products: Record<string, { productId?
     excludeItemId: finished?.id ?? null,
     fromSkill: isSkill(fromSkill) ? fromSkill : null,
     goalKeys: Array.isArray(goal?.goal_keys) ? (goal!.goal_keys as unknown[]).map(String) : [],
+    assignments,
+    resume,
+    exam: examNextContext(goal?.metadata, ratings.skills),
   });
   return json(200, { ok: true, date, ...result });
 };
@@ -336,7 +360,7 @@ const getStreak = async (ctx: Ctx): Promise<Response> => {
       .eq("language_id", ctx.languageId)
       .in("status", DONE_STATUSES)
       .gte("submitted_at", since)
-      .in("learning_content_registry_items.content_type", PRIMARY_CONTENT_TYPES)
+      .in("learning_content_registry_items.content_type", STREAK_CONTENT_TYPES)
       .order("submitted_at", { ascending: false })
       .order("id", { ascending: true })
       .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);

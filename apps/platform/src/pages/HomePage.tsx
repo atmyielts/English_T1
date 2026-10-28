@@ -17,6 +17,7 @@ import {
   createWebSiteSchema,
 } from '../components/seo/SeoHead';
 import { discoveryPageCards, getDiscoveryPageForProductSlug } from '../content/discoveryPages';
+import { ExamFamilyCards } from '../components/platform/ExamFamilyCards';
 import { useI18n } from '../i18n';
 import { guideRequest } from '../lib/guideClient';
 import { guideCopy } from '../components/guide/copy';
@@ -250,6 +251,12 @@ export const HomePage: React.FC = () => {
   const showGoogleSignInError = React.useCallback(() => {
     setGoogleSignInError(t('auth.error.googleUnavailable'));
   }, [t]);
+
+  const productsBySlug = useMemo(() => new Map(products.map((product) => [productSlug(product), product])), [products]);
+  const openFamilyService = (url: string) => {
+    if (isAuthed) navigate(`/auth?returnTo=${encodeURIComponent(url)}`);
+    else window.location.assign(url);
+  };
 
   const featuredProduct = products[0] ?? null;
   const startingPathCount = 3;
@@ -565,6 +572,10 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
         </div>
+      </section>
+
+      <section id="exam-families" className="px-4 md:px-10 pb-14">
+        <ExamFamilyCards className="max-w-6xl mx-auto" productsBySlug={productsBySlug} onOpen={openFamilyService} />
       </section>
 
       <section id="services" className="px-6 md:px-10 pb-14">

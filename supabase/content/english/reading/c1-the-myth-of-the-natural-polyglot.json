@@ -9,7 +9,11 @@
     "theme": "language learning",
     "tone": "mint",
     "is_hot": false,
-    "metadata": { "genre": "opinion", "writing_tone": "persuasive", "word_count": 501 },
+    "metadata": {
+      "genre": "opinion",
+      "writing_tone": "persuasive",
+      "word_count": 501
+    },
     "questions": [
       {
         "id": "q1",
@@ -75,6 +79,42 @@
         ],
         "answer_index": 2,
         "explanation": "\"A learner who decides early that she is 'bad at languages' gives up at the first difficulty, and her failure then seems to confirm the diagnosis.\""
+      },
+      {
+        "id": "y1",
+        "type": "tfng",
+        "variant": "yes_no",
+        "prompt": "The writer believes that all learners have exactly the same natural ability.",
+        "answer": "false",
+        "explanation": "\"I do not mean that people are identical. Some learners clearly have a better ear for sounds…\"",
+        "skill": "reading.inference"
+      },
+      {
+        "id": "y2",
+        "type": "tfng",
+        "variant": "yes_no",
+        "prompt": "The writer thinks the child from Tashkent owes her languages more to her environment than to talent.",
+        "answer": "true",
+        "explanation": "\"Talent did not create those hours; her environment did.\"",
+        "skill": "reading.inference"
+      },
+      {
+        "id": "y3",
+        "type": "tfng",
+        "variant": "yes_no",
+        "prompt": "The writer suggests the myth of talent survives partly because it is flattering.",
+        "answer": "true",
+        "explanation": "\"It is more flattering to believe that the successful have been touched by something special…\"",
+        "skill": "reading.inference"
+      },
+      {
+        "id": "y4",
+        "type": "tfng",
+        "variant": "yes_no",
+        "prompt": "The writer has taught languages in Tashkent for many years.",
+        "answer": "not_given",
+        "explanation": "The writer says \"in my experience\" but never says where, or for how long, they have taught.",
+        "skill": "reading.inference"
       }
     ]
   }

@@ -11,6 +11,7 @@ import { useAccess } from '../lib/useAccess';
 import { IELTS_PRACTICE_PRODUCT_ID } from '../lib/constants';
 import { PracticeShell } from '../components/PracticeShell';
 import { TeachSkillButton } from '../components/TeachSkillButton';
+import { sectionLabel, useAppT, useErrorText, useFormat, type AppKey } from '../i18n';
 
 type SectionType = 'reading' | 'listening' | 'writing';
 
@@ -58,6 +59,9 @@ const accuracyClass = (accuracy: number | null): string => {
 };
 
 export const StatsByTypePage = () => {
+  const t = useAppT();
+  const fmt = useFormat();
+  const errorText = useErrorText();
   const { accessToken } = useAccess();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -106,7 +110,7 @@ export const StatsByTypePage = () => {
       setSrsByKey(map);
       setReviewsDueCount(srsRes.summary?.due ?? 0);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load stats');
+      setError(errorText(err));
     } finally {
       setLoading(false);
     }
@@ -140,7 +144,7 @@ export const StatsByTypePage = () => {
       });
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not add to queue');
+      setError(errorText(err));
     } finally {
       setBusyKey(null);
     }
@@ -150,16 +154,13 @@ export const StatsByTypePage = () => {
     <PracticeShell reviewsDueCount={reviewsDueCount}>
       <header className="practice-page-head">
         <div>
-          <span className="eyebrow">Stats</span>
-          <h1>Per-question-type breakdown</h1>
-          <p className="muted">
-            Every IELTS question type you&apos;ve attempted, its accuracy, and your current SRS box.
-            Click <strong>Add to queue</strong> to start tracking a type without waiting for a fresh lab attempt.
-          </p>
+          <span className="eyebrow">{t('stats.eyebrow')}</span>
+          <h1>{t('stats.title')}</h1>
+          <p className="muted">{t('stats.lead')}</p>
         </div>
         <div className="kpi-row">
-          <Link to="/practice/reviews" className="btn solid compact">Reviews due</Link>
-          <Link to="/dashboard" className="btn ghost compact">Dashboard</Link>
+          <Link to="/practice/reviews" className="btn solid compact">{t('stats.reviews')}</Link>
+          <Link to="/dashboard" className="btn ghost compact">{t('stats.progress')}</Link>
         </div>
       </header>
 
@@ -170,73 +171,78 @@ export const StatsByTypePage = () => {
             type="button"
             className={`btn ${filter === value ? 'solid' : 'ghost'} compact`}
             onClick={() => setFilter(value)}
+            aria-pressed={filter === value}
           >
-            {value === 'all' ? 'All' : `${value.charAt(0).toUpperCase()}${value.slice(1)}`}
+            {value === 'all' ? t('stats.all') : sectionLabel(t, value)}
           </button>
         ))}
         <span className="filter-sort-group">
-          <span className="muted" style={{ fontSize: 12 }}>Sort by</span>
+          <span className="muted" style={{ fontSize: 12 }}>{t('stats.sortBy')}</span>
           {(['weakness', 'accuracy', 'samples'] as const).map((value) => (
             <button
               key={value}
               type="button"
               className={`btn ${sort === value ? 'solid' : 'ghost'} compact`}
               onClick={() => setSort(value)}
+              aria-pressed={sort === value}
             >
-              {`${value.charAt(0).toUpperCase()}${value.slice(1)}`}
+              {t(`stats.sort.${value}` as AppKey)}
             </button>
           ))}
         </span>
       </nav>
 
-      {error ? <div className="glass dashboard-alert error">{error}</div> : null}
+      {error ? <div className="glass dashboard-alert error" role="alert">{error}</div> : null}
 
       {loading ? (
-        <article className="glass practice-card">Loading stats...</article>
+        <article className="glass practice-card">{t('stats.loading')}</article>
       ) : filtered.length === 0 ? (
         <article className="glass practice-card">
-          <h3>No question-type data yet</h3>
-          <p className="muted">
-            Complete a few practice labs or simulator attempts. Your per-type stats will populate once your
-            diagnostics snapshot has data.
-          </p>
+          <h3>{t('stats.empty.title')}</h3>
+          <p className="muted">{t('stats.empty.lead')}</p>
         </article>
       ) : (
         <ul className="srs-review-list">
           {filtered.map((row) => {
             const key = `${row.section_type}::${row.question_type}`;
             const srs = srsByKey.get(key) ?? null;
-            const accuracyPct = row.accuracy_ratio != null ? `${Math.round(row.accuracy_ratio * 100)}%` : '-';
-            const masteryPct = row.mastery_level != null ? `${Math.round(row.mastery_level * 100)}%` : (row.mastery_status ?? '-');
+            const accuracyPct = row.accuracy_ratio != null ? fmt.percent(row.accuracy_ratio) : '–';
+            const masteryPct = row.mastery_level != null ? fmt.percent(row.mastery_level) : (row.mastery_status ?? '–');
             const isBusy = busyKey === key;
 
             return (
               <li key={key} className="glass practice-card srs-review-row">
                 <div className="srs-review-row-head">
-                  <span className={sectionChipClass(row.section_type)}>{row.section_type}</span>
+                  <span className={sectionChipClass(row.section_type)}>{sectionLabel(t, row.section_type)}</span>
                   <h3>{formatPracticeLabel(row.question_type)}</h3>
                   <span className={`status-pill ${accuracyClass(row.accuracy_ratio)}`} style={{ marginLeft: 'auto' }}>
-                    Accuracy {accuracyPct}
+                    {t('stats.accuracy', { value: accuracyPct })}
                   </span>
                 </div>
                 <div className="srs-review-row-meta">
-                  <span>Samples: {row.samples}</span>
-                  <span>Weakness: {row.weakness_score.toFixed(2)}</span>
-                  <span>Mastery: {masteryPct}</span>
+                  <span>{t('stats.samples', { count: row.samples })}</span>
+                  <span>{t('stats.weakness', { value: row.weakness_score.toFixed(2) })}</span>
+                  <span>{t('stats.mastery', { value: masteryPct })}</span>
                   {srs ? (
                     <>
-                      <span>SRS box: {srs.leitner_box}/5</span>
-                      <span>Reviews: {srs.review_count}</span>
-                      {srs.is_archived ? <span style={{ color: 'var(--success, #047857)' }}>Mastered</span> : null}
+                      <span>{t('stats.box', { box: srs.leitner_box })}</span>
+                      <span>{t('stats.reviewCount', { count: srs.review_count })}</span>
+                      {srs.is_archived ? <span style={{ color: 'var(--success, #047857)' }}>{t('stats.mastered')}</span> : null}
                     </>
                   ) : (
-                    <span className="muted">Not in SRS queue</span>
+                    <span className="muted">{t('stats.notQueued')}</span>
                   )}
                 </div>
                 <div className="srs-review-row-actions">
                   <TeachSkillButton accessToken={accessToken} sectionType={row.section_type} questionType={row.question_type} />
+                  <Link
+                    to={`/today?focus_section=${encodeURIComponent(row.section_type)}&focus_question_type=${encodeURIComponent(row.question_type)}&source=reviews`}
+                    className="btn ghost compact"
+                  >
+                    {t('stats.drill')}
+                  </Link>
                   {srs ? (
-                    <Link to="/practice/reviews" className="btn ghost compact">Open in queue</Link>
+                    <Link to="/practice/reviews" className="btn ghost compact">{t('stats.openQueue')}</Link>
                   ) : (
                     <button
                       type="button"
@@ -244,7 +250,7 @@ export const StatsByTypePage = () => {
                       disabled={isBusy}
                       onClick={() => void addToQueue(row)}
                     >
-                      {isBusy ? 'Adding...' : 'Add to queue'}
+                      {isBusy ? t('stats.adding') : t('stats.add')}
                     </button>
                   )}
                 </div>

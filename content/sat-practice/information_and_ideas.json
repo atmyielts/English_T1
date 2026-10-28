@@ -1,0 +1,3753 @@
+[
+  {
+    "slug": "ii-cid-001",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Many desert plants open their stomata, the tiny pores used for gas exchange, only at night. Because the air is cooler and more humid after sunset, less water evaporates through the open pores. The plants store the carbon dioxide they absorb in the dark as an acid and then use it for photosynthesis during the day, when the stomata are closed. This strategy, known as CAM photosynthesis, lets plants such as cacti grow in places where conserving water matters more than growing quickly.",
+    "prompt": "Which choice best states the main idea of the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Cacti grow more quickly than most other plants because they carry out photosynthesis both day and night."
+      },
+      {
+        "id": "B",
+        "label": "Some desert plants limit water loss by taking in carbon dioxide at night and using it for photosynthesis during the day."
+      },
+      {
+        "id": "C",
+        "label": "Desert air becomes more humid at night, and this humidity forces the stomata of desert plants to open."
+      },
+      {
+        "id": "D",
+        "label": "Plants that use CAM photosynthesis are unable to survive outside desert environments."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the text explains that CAM plants open their pores at night to reduce evaporation, store the carbon dioxide, and use it for photosynthesis by day, a strategy that conserves water. Choice A is incorrect because the text says photosynthesis happens during the day and that conserving water matters more than growing quickly for these plants. Choice C is incorrect because the text presents cooler, more humid night air as the reason the strategy saves water, not as something that forces the pores open. Choice D is incorrect because the text never discusses whether CAM plants can live outside deserts."
+  },
+  {
+    "slug": "ii-cid-002",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Before free public libraries became common, many readers in nineteenth-century Britain and the United States borrowed books from subscription libraries, which charged members an annual fee. Because these fees were often too high for laborers, some groups of factory workers pooled small weekly payments to buy books that were then passed around among the group. These cooperative collections were modest, but they show that working people actively sought out reading material long before cities offered it for free.",
+    "prompt": "Which choice best states the main idea of the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Groups of workers created shared book collections, showing an interest in reading before free public libraries were widespread."
+      },
+      {
+        "id": "B",
+        "label": "Subscription libraries were established mainly to serve factory workers who could not afford books."
+      },
+      {
+        "id": "C",
+        "label": "Cities created free public libraries because cooperative book collections had grown too large to manage."
+      },
+      {
+        "id": "D",
+        "label": "Factory workers preferred cooperative collections to subscription libraries because the books were of higher quality."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the text describes workers pooling money to share books and concludes that these collections show working people sought reading material before free libraries existed. Choice B is incorrect because the text says subscription fees were often too high for laborers, so these libraries did not mainly serve factory workers. Choice C is incorrect because the text calls the cooperative collections modest and gives no reason for why cities founded free libraries. Choice D is incorrect because the text says workers formed cooperatives because of cost, not because of the quality of the books."
+  },
+  {
+    "slug": "ii-cid-003",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Ilse had promised herself she would not look back at the farmhouse as the wagon pulled away. She kept her eyes on the road, counting fence posts, naming the birds on the wires, reciting the multiplication tables her brother had drilled into her. But when the road curved at the top of the hill, she turned anyway, and the small white house, already shrinking, seemed to her the only fixed point in a world that had begun to move.",
+    "prompt": "Which choice best states the main idea of the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Ilse is eager to leave the farmhouse and begin a new life somewhere else."
+      },
+      {
+        "id": "B",
+        "label": "Ilse is worried that she will forget the lessons her brother taught her."
+      },
+      {
+        "id": "C",
+        "label": "Although Ilse tries to distract herself, she cannot resist looking back at the home she is leaving."
+      },
+      {
+        "id": "D",
+        "label": "Ilse realizes that the farmhouse is much smaller than she had remembered."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because Ilse counts posts, names birds, and recites tables to keep from looking back, yet she turns anyway and sees the house as the only fixed point in her changing world. Choice A is incorrect because her effort not to look back and her final glance suggest attachment to the home, not eagerness to leave it. Choice B is incorrect because reciting the tables is one of her distractions; the text does not suggest she fears forgetting them. Choice D is incorrect because the house seems to shrink only because the wagon is moving away from it, not because Ilse misremembered its size."
+  },
+  {
+    "slug": "ii-cid-004",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Urban planners have long assumed that people choose a grocery store mainly by how close it is to home. A survey of shoppers in three midsize cities, however, found that fewer than half regularly shopped at the store nearest to them. Many respondents said they traveled farther for lower prices, a wider selection of fresh produce, or a store located on their route to work. The findings suggest that distance alone may be a poor predictor of where people buy food.",
+    "prompt": "Which choice best states the main idea of the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Most shoppers in midsize cities pass several grocery stores on their way to work."
+      },
+      {
+        "id": "B",
+        "label": "Grocery stores located close to homes tend to charge higher prices than stores farther away."
+      },
+      {
+        "id": "C",
+        "label": "Urban planners have begun designing cities so that every home is near a grocery store."
+      },
+      {
+        "id": "D",
+        "label": "A survey indicates that factors other than distance strongly influence where people buy groceries."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the text reports that fewer than half of shoppers used their nearest store and that many chose stores for price, selection, or convenience, suggesting distance alone is a poor predictor. Choice A is incorrect because the text mentions a route to work as only one of several reasons and says nothing about passing several stores. Choice B is incorrect because the text does not compare prices at nearby and distant stores. Choice C is incorrect because the text describes planners' assumption, not any new city designs."
+  },
+  {
+    "slug": "ii-cid-005",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "The ruby-throated hummingbird weighs only a few grams, yet each fall many individuals fly across the Gulf of Mexico without stopping, a journey of roughly 800 kilometers. To prepare, the birds feed heavily in late summer and can nearly double their body mass, storing the extra energy as fat. This fat serves as fuel during the crossing, when there are no flowers or insects for the birds to eat.",
+    "prompt": "According to the text, why do ruby-throated hummingbirds feed heavily in late summer?",
+    "options": [
+      {
+        "id": "A",
+        "label": "To grow large enough to defend their feeding areas from other birds"
+      },
+      {
+        "id": "B",
+        "label": "Because flowers and insects disappear from their summer range in late summer"
+      },
+      {
+        "id": "C",
+        "label": "To gain enough weight to fly at higher altitudes during migration"
+      },
+      {
+        "id": "D",
+        "label": "To build up fat that supplies energy during a long flight without food"
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the text says the birds nearly double their mass by storing fat, which fuels the nonstop Gulf crossing when no food is available. Choice A is incorrect because the text never mentions defending feeding areas. Choice B is incorrect because the text says food is missing during the crossing over water, not that it disappears from the summer range. Choice C is incorrect because the text does not connect weight gain to flight altitude."
+  },
+  {
+    "slug": "ii-cid-006",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "The Japanese practice of kintsugi repairs broken pottery with lacquer mixed with powdered gold. Rather than hiding the cracks, the method highlights them, turning the lines of breakage into bright seams. Many writers have described kintsugi as expressing an attitude toward damage: an object's history, including the moment it broke, is treated as part of its value rather than as a flaw to be concealed.",
+    "prompt": "Which choice best states the main idea of the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Kintsugi was developed because gold lacquer is stronger than other materials used to repair pottery."
+      },
+      {
+        "id": "B",
+        "label": "Kintsugi repairs pottery in a way that makes its damage visible, reflecting a view that an object's history adds to its value."
+      },
+      {
+        "id": "C",
+        "label": "Pottery repaired with kintsugi is always more valuable than pottery that has never been broken."
+      },
+      {
+        "id": "D",
+        "label": "Writers disagree about whether kintsugi should be used to repair valuable objects."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the text explains that kintsugi highlights cracks with gold and that writers see this as treating an object's history, including its breaking, as part of its value. Choice A is incorrect because the text says nothing about the strength of gold lacquer. Choice C is incorrect because the text says the history is part of the object's value; it does not compare repaired pottery with unbroken pottery. Choice D is incorrect because the writers mentioned share a similar interpretation; no disagreement is described."
+  },
+  {
+    "slug": "ii-cid-007",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Coral reefs cover less than 1 percent of the ocean floor, yet they support roughly a quarter of all known marine species. Much of this diversity depends on a partnership between corals and microscopic algae living in their tissues. The algae produce sugars through photosynthesis that feed the coral, and the coral provides the algae with shelter and nutrients. When water becomes too warm, corals expel the algae, losing both their color and their main food source, an event known as bleaching.",
+    "prompt": "Based on the text, what happens during coral bleaching?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Algae grow so quickly that they crowd out the coral."
+      },
+      {
+        "id": "B",
+        "label": "Corals begin producing their own sugars through photosynthesis."
+      },
+      {
+        "id": "C",
+        "label": "Corals lose the algae that supply much of their food."
+      },
+      {
+        "id": "D",
+        "label": "Reefs spread to cover a larger area of the ocean floor."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the text says that in warm water corals expel their algae and so lose their color and their main food source, which is called bleaching. Choice A is incorrect because the algae are expelled, not growing out of control. Choice B is incorrect because the text says the algae, not the corals, produce sugars, and bleaching removes that supply. Choice D is incorrect because the text gives the reefs' small area only as background and does not link bleaching to reef growth."
+  },
+  {
+    "slug": "ii-cid-008",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "For much of the nineteenth century, lighthouses along the coasts of Britain and the United States depended on keepers who lived on site. Keepers trimmed wicks, polished lenses, and wound the clockwork that turned the lights, often working through the night. The job was isolated and demanding, and a single lapse could leave ships without warning of dangerous rocks. As automated lamps spread during the twentieth century, the number of keepers steadily declined, and most remaining stations eventually ran with no one living there.",
+    "prompt": "Which choice best states the main idea of the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Lighthouse keepers once did demanding work that was essential to ships' safety, but automation gradually made the job unnecessary."
+      },
+      {
+        "id": "B",
+        "label": "Lighthouse keepers were blamed for many shipwrecks during the nineteenth century."
+      },
+      {
+        "id": "C",
+        "label": "Clockwork mechanisms were more reliable than the automated lamps that replaced them."
+      },
+      {
+        "id": "D",
+        "label": "Most lighthouses were built during the twentieth century to replace older warning systems."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the text describes the keepers' isolated, demanding duties, notes that ships depended on them, and then explains how automation reduced their numbers. Choice B is incorrect because the text says a lapse could endanger ships but never says keepers were blamed for wrecks. Choice C is incorrect because the text does not compare the reliability of clockwork and automated lamps. Choice D is incorrect because the text describes lighthouses already operating in the nineteenth century and says nothing about when most were built."
+  },
+  {
+    "slug": "ii-cid-009",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Adapted from Louisa May Alcott, Little Women, 1868.\n\n\"Christmas won't be Christmas without any presents,\" grumbled Jo, lying on the rug.\n\"It's so dreadful to be poor!\" sighed Meg, looking down at her old dress.\n\"I don't think it's fair for some girls to have plenty of pretty things, and other girls nothing at all,\" added little Amy, with an injured sniff.\n\"We've got Father and Mother, and each other,\" said Beth contentedly from her corner.",
+    "prompt": "Which choice best states the main idea of the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "While several sisters complain about having little money, one points out what the family still has."
+      },
+      {
+        "id": "B",
+        "label": "The sisters disagree about whether they should buy Christmas presents for one another."
+      },
+      {
+        "id": "C",
+        "label": "Meg is embarrassed that her sisters complain so openly about being poor."
+      },
+      {
+        "id": "D",
+        "label": "Amy believes that the family will soon have plenty of pretty things."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because Jo, Meg, and Amy each lament their lack of money or presents, while Beth contentedly reminds them that they have their parents and one another. Choice B is incorrect because the sisters are not debating whether to buy gifts; they are complaining that they have none. Choice C is incorrect because Meg herself complains about being poor. Choice D is incorrect because Amy complains that it is unfair to have nothing; she expresses no expectation of future wealth."
+  },
+  {
+    "slug": "ii-cid-010",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "For much of the twentieth century, foresters treated dead trees as waste, often removing them to reduce fire risk or to tidy managed stands. Later research, however, has shown that standing dead trees, called snags, and fallen logs provide nesting cavities for birds, shelter for amphibians, and food for fungi and insects that return nutrients to the soil. As a result, some forest managers now deliberately leave a portion of dead wood in place, treating it not as debris but as habitat.",
+    "prompt": "Which choice best states the main idea of the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Removing dead trees remains the most effective way to reduce the risk of forest fires."
+      },
+      {
+        "id": "B",
+        "label": "Birds and amphibians depend more on fallen logs than on living trees for shelter."
+      },
+      {
+        "id": "C",
+        "label": "Research showing the ecological value of dead wood has led some forest managers to change how they treat it."
+      },
+      {
+        "id": "D",
+        "label": "Fungi and insects are the main cause of the deaths of trees that become snags."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the text contrasts the old view of dead trees as waste with research on their value as habitat and then notes that some managers now leave dead wood in place. Choice A is incorrect because fire risk is mentioned only as a past reason for removal; the text does not evaluate it as the most effective method. Choice B is incorrect because the text never compares the importance of dead and living trees to these animals. Choice D is incorrect because the text says fungi and insects feed on dead wood and recycle nutrients, not that they kill trees."
+  },
+  {
+    "slug": "ii-cid-011",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "When a retirement savings plan requires employees to sign up, many never do, even when they say they intend to. Some companies have instead made enrollment automatic: workers are placed in the plan unless they choose to opt out. Because leaving the plan takes only a simple form, the change does not restrict anyone's options, yet participation in such plans tends to be far higher. Researchers argue that this pattern reveals how strongly the default option shapes behavior, even when people can easily choose otherwise.",
+    "prompt": "Which choice best states the main idea of the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Employees who are enrolled automatically usually opt out once they learn about the plan."
+      },
+      {
+        "id": "B",
+        "label": "Companies adopted automatic enrollment mainly to limit the choices available to their workers."
+      },
+      {
+        "id": "C",
+        "label": "Most workers do not intend to save for retirement unless they are required to do so."
+      },
+      {
+        "id": "D",
+        "label": "Making enrollment the default greatly increases participation, showing that defaults influence decisions even when alternatives are easy to choose."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the text reports that automatic enrollment produces much higher participation even though opting out is easy, and researchers conclude that defaults strongly shape behavior. Choice A is incorrect because high participation in automatic plans indicates that most workers do not opt out. Choice B is incorrect because the text stresses that the change does not restrict anyone's options. Choice C is incorrect because the text says many workers do intend to enroll but fail to sign up."
+  },
+  {
+    "slug": "ii-cid-012",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Gothic cathedrals are famous for their soaring height and vast windows, but these features created an engineering problem: tall, thin walls pierced by glass could not easily resist the outward push of heavy stone vaults. Builders solved the problem with flying buttresses, external arches that carried the thrust of the vaults away from the walls to massive piers outside the building. Freed from much of their load-bearing role, the walls could be opened up for the stained glass that filled interiors with colored light.",
+    "prompt": "Which choice best states the main idea of the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Gothic builders preferred stained glass to stone because glass was lighter and less expensive."
+      },
+      {
+        "id": "B",
+        "label": "Flying buttresses allowed Gothic builders to construct tall walls with large windows by redirecting the force of the vaults."
+      },
+      {
+        "id": "C",
+        "label": "Flying buttresses were added to older cathedrals after their walls began to collapse."
+      },
+      {
+        "id": "D",
+        "label": "Gothic cathedrals were designed mainly to impress people viewing them from outside."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the text identifies the problem of thin walls under heavy vaults and explains that flying buttresses carried the thrust outward, freeing the walls for large windows. Choice A is incorrect because the text does not compare the weight or cost of glass and stone. Choice C is incorrect because the text presents buttresses as part of the original solution, not as later repairs to collapsing walls. Choice D is incorrect because the text emphasizes the colored light filling the interiors and says nothing about designs aimed at outside viewers."
+  },
+  {
+    "slug": "ii-cid-013",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Mr. Okafor kept the shop's accounts in a green ledger long after his daughter installed software that could do the work in seconds. Each evening he copied the day's figures by hand, checking them against the screen, and each evening they matched. Ngozi once asked why he bothered. He closed the ledger, smoothed its cover, and said that a number he had written himself was a number he understood.",
+    "prompt": "Based on the text, why does Mr. Okafor continue to keep the ledger?",
+    "options": [
+      {
+        "id": "A",
+        "label": "He suspects that the software frequently makes errors."
+      },
+      {
+        "id": "B",
+        "label": "He wants to teach his daughter how to keep accounts by hand."
+      },
+      {
+        "id": "C",
+        "label": "He values the understanding he gains from recording the figures himself."
+      },
+      {
+        "id": "D",
+        "label": "He does not know how to operate the software his daughter installed."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because, when asked why he bothers, Mr. Okafor says that a number he wrote himself is one he understands. Choice A is incorrect because the text says the figures matched the screen every evening, so he has no evidence of errors. Choice B is incorrect because nothing suggests he is teaching Ngozi; she is puzzled by the habit. Choice D is incorrect because he checks his figures against the screen, which suggests he can read the software's results."
+  },
+  {
+    "slug": "ii-cid-014",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "In one common type of experiment, participants learn a list of word pairs in the evening and are tested the next morning. Those who sleep normally between learning and testing typically recall more pairs than those kept awake for the same period, even when the awake group is allowed to rest quietly. Because both groups spend the same amount of time between learning and testing, many researchers conclude that sleep does not merely pass the time harmlessly but actively helps stabilize new memories.",
+    "prompt": "Which choice best states the main idea of the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Experiments comparing sleeping and waking participants suggest that sleep plays an active role in strengthening new memories."
+      },
+      {
+        "id": "B",
+        "label": "Participants who rest quietly recall more word pairs than participants who sleep."
+      },
+      {
+        "id": "C",
+        "label": "Learning word pairs in the evening is more effective than learning them in the morning."
+      },
+      {
+        "id": "D",
+        "label": "Memory tests given in the morning are less reliable than tests given later in the day."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the text reports that sleepers recall more than people kept awake for the same time and that researchers conclude sleep actively stabilizes memories. Choice B is incorrect because the text says sleepers typically recall more than the awake group, even when that group rests. Choice C is incorrect because the experiments compare sleeping and waking after evening learning; they do not compare evening and morning learning. Choice D is incorrect because the text does not question the reliability of morning tests."
+  },
+  {
+    "slug": "ii-cid-015",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Historians once described the medieval Silk Road as a single highway linking China to the Mediterranean. More recent scholarship presents a different picture: a shifting web of shorter routes along which goods typically passed through many hands, with few merchants traveling the entire distance. A bolt of silk might change owners many times before reaching a distant market, and ideas, technologies, and religions spread through these same local exchanges.",
+    "prompt": "Which choice best states the main idea of the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Few goods traveled between China and the Mediterranean because the routes were too dangerous."
+      },
+      {
+        "id": "B",
+        "label": "Recent scholarship portrays the Silk Road as a network of local exchanges rather than one continuous route traveled from end to end."
+      },
+      {
+        "id": "C",
+        "label": "Merchants who traveled the entire Silk Road were mainly responsible for spreading religions."
+      },
+      {
+        "id": "D",
+        "label": "Historians now believe that silk was rarely traded along the Silk Road."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the text contrasts the older image of a single highway with newer research describing many shorter routes along which goods, ideas, and religions moved through local exchanges. Choice A is incorrect because the text says goods did reach distant markets, passing through many hands; it does not mention danger. Choice C is incorrect because the text says few merchants traveled the whole distance and that religions spread through local exchanges. Choice D is incorrect because the text uses silk as an example of a traded good that changed owners many times."
+  },
+  {
+    "slug": "ii-cid-016",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Linguists studying sign languages have found that when deaf children who share no common language are brought together, they often create a shared system of signs on their own. Over time, younger children who join the community tend to make the system more regular and complex than the version used by those who first developed it. This pattern has led researchers to argue that children do not simply absorb language from adults but can actively build and refine its structure.",
+    "prompt": "Which choice best states the main idea of the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Sign languages develop more slowly than spoken languages because children lack adult models."
+      },
+      {
+        "id": "B",
+        "label": "Younger children have difficulty learning the sign systems created by older children."
+      },
+      {
+        "id": "C",
+        "label": "Deaf children learn sign languages most effectively when they are taught by linguists."
+      },
+      {
+        "id": "D",
+        "label": "Observations of deaf children creating sign systems suggest that children can play an active role in shaping the structure of a language."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the text describes children inventing a sign system and younger children making it more regular, leading researchers to conclude that children actively build language structure. Choice A is incorrect because the text never compares the speed of sign and spoken language development. Choice B is incorrect because younger children are said to improve the system, not to struggle with it. Choice C is incorrect because linguists in the text study the children; they do not teach them."
+  },
+  {
+    "slug": "ii-cid-017",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "An octopus has roughly 500 million neurons, but about two-thirds of them are located not in its central brain but in its eight arms. Each arm can carry out complex movements, such as grasping objects and probing crevices, with relatively little direction from the brain. In some experiments, arms whose nerve connection to the brain had been cut still reached toward and grasped objects when touched.",
+    "prompt": "According to the text, what is notable about the nervous system of the octopus?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Its neurons are divided evenly between its central brain and each of its arms."
+      },
+      {
+        "id": "B",
+        "label": "Its arms coordinate their movements only when the brain sends specific instructions."
+      },
+      {
+        "id": "C",
+        "label": "Most of its neurons are in its arms, which can act with considerable independence from the brain."
+      },
+      {
+        "id": "D",
+        "label": "It requires more neurons than other animals do because it has eight arms."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the text says about two-thirds of the neurons are in the arms and that the arms can act with little direction from the brain, even when cut off from it. Choice A is incorrect because two-thirds of the neurons are in the arms, so they are not divided evenly with the brain. Choice B is incorrect because the text describes arms grasping objects even when disconnected from the brain. Choice D is incorrect because the text does not compare the octopus's neuron count with other animals or explain it by the number of arms."
+  },
+  {
+    "slug": "ii-cid-018",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Adapted from Henry David Thoreau, Walden, 1854.\n\nI went to the woods because I wished to live deliberately, to front only the essential facts of life, and see if I could not learn what it had to teach, and not, when I came to die, discover that I had not lived. I did not wish to live what was not life, living is so dear; nor did I wish to practise resignation, unless it was quite necessary.",
+    "prompt": "Which choice best states the main idea of the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "The narrator moved to the woods because he had become resigned to an unhappy life."
+      },
+      {
+        "id": "B",
+        "label": "The narrator moved to the woods to focus on what is essential in life and avoid wasting his life."
+      },
+      {
+        "id": "C",
+        "label": "The narrator believes that everyone should leave society and live alone in nature."
+      },
+      {
+        "id": "D",
+        "label": "The narrator went to the woods mainly to study the plants and animals that live there."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the narrator says he went to the woods to live deliberately, face only the essential facts of life, and avoid discovering at death that he had not truly lived. Choice A is incorrect because the narrator says he did not wish to practice resignation unless it was necessary. Choice C is incorrect because he explains his own choice and does not prescribe it for everyone. Choice D is incorrect because the lessons he seeks are about life itself, not about studying plants and animals."
+  },
+  {
+    "slug": "ii-cid-019",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Geologists once expected large earthquakes on a given fault to occur at fairly regular intervals, as stress built up and was released like a spring. Long records from several faults now show a messier pattern: large earthquakes sometimes cluster within a few decades and are then followed by centuries of quiet. One explanation is that a rupture on one fault can change the stresses on neighboring faults, making them more or less likely to slip.",
+    "prompt": "Which choice best states the main idea of the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Records show that large earthquakes do not occur at regular intervals, possibly because ruptures change the stresses on nearby faults."
+      },
+      {
+        "id": "B",
+        "label": "Large earthquakes have become more frequent in recent centuries than they were in the past."
+      },
+      {
+        "id": "C",
+        "label": "Geologists can now predict when a fault will rupture by monitoring neighboring faults."
+      },
+      {
+        "id": "D",
+        "label": "Stress on a fault builds up and is released at fixed intervals, like a spring."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the text replaces the older expectation of regular intervals with evidence of clustering and offers interactions between faults as one explanation. Choice B is incorrect because the text describes clusters followed by quiet periods, not an overall increase over time. Choice C is incorrect because the text says ruptures make neighboring faults more or less likely to slip, which is far from exact prediction. Choice D is incorrect because this is the older view that the long records call into question."
+  },
+  {
+    "slug": "ii-cid-020",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Historians of science have sometimes portrayed the adoption of new instruments as a straightforward matter of improved measurement displacing cruder estimates. The early history of the thermometer complicates this narrative. For decades, competing scales coexisted, and instruments built to the same design often disagreed with one another; what investigators lacked was not a device that responded to heat but agreement about which phenomena, such as the freezing of water or the temperature of the human body, were stable enough to anchor a scale. The instrument's authority, in other words, depended on a prior consensus that it could not itself supply.",
+    "prompt": "Which choice best states the main idea of the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Competing temperature scales persisted because instrument makers refused to build thermometers to a common design."
+      },
+      {
+        "id": "B",
+        "label": "Historians of science have accurately described the thermometer as a clear case of better measurement replacing estimation."
+      },
+      {
+        "id": "C",
+        "label": "The freezing point of water proved to be the only reliable reference point for a temperature scale."
+      },
+      {
+        "id": "D",
+        "label": "The early history of the thermometer shows that a measuring instrument's acceptance depended on agreement about reference points rather than on the instrument alone."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the text argues that early thermometers lacked authority until investigators agreed on stable phenomena to anchor a scale, a consensus the instrument could not provide by itself. Choice A is incorrect because the text says that even instruments built to the same design disagreed, so the problem was not a refusal to share a design. Choice B is incorrect because the text says the thermometer's history complicates that straightforward narrative. Choice C is incorrect because the freezing of water is offered only as one example of a possible reference point; the text does not single it out as the only reliable one."
+  },
+  {
+    "slug": "ii-cid-021",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Accounts of nineteenth-century urban sanitation reform often credit the triumph of germ theory. Yet many of the most consequential reforms, including sewers, piped clean water, and the removal of refuse from streets, were championed by advocates of miasma theory, who held that disease arose from foul air produced by decaying matter. Though mistaken about how disease spreads, these reformers targeted the very conditions in which waterborne and filth-borne pathogens flourished, so their interventions reduced illness for reasons they did not understand.",
+    "prompt": "Which choice best states the main idea of the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Miasma theory was abandoned after reformers observed that sewers did not reduce disease."
+      },
+      {
+        "id": "B",
+        "label": "Germ theory was developed by sanitation reformers who studied foul air in cities."
+      },
+      {
+        "id": "C",
+        "label": "Sanitation reforms based on an incorrect theory of disease nonetheless reduced illness because they addressed conditions that allowed pathogens to spread."
+      },
+      {
+        "id": "D",
+        "label": "Historians have exaggerated how much nineteenth-century sanitation reforms improved public health."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the text argues that miasma theorists, though wrong about the mechanism, promoted reforms that eliminated the conditions where pathogens thrived and therefore reduced illness. Choice A is incorrect because the text says the reforms did reduce illness. Choice B is incorrect because the text distinguishes the miasma-minded reformers from germ theory and never says they developed it. Choice D is incorrect because the text questions who gets credit for the reforms, not how effective they were; it says the reforms reduced illness."
+  },
+  {
+    "slug": "ii-cid-022",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Adapted from Kate Chopin, \"The Story of an Hour,\" 1894.\n\nThere was something coming to her and she was waiting for it, fearfully. What was it? She did not know; it was too subtle and elusive to name. But she felt it, creeping out of the sky, reaching toward her through the sounds, the scents, the color that filled the air. Now her bosom rose and fell tumultuously. She was beginning to recognize this thing that was approaching to possess her, and she was striving to beat it back with her will, as powerless as her two white slender hands would have been.",
+    "prompt": "Which choice best describes what happens in the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "A character senses an unnamed feeling approaching and tries, without success, to resist it."
+      },
+      {
+        "id": "B",
+        "label": "A character eagerly welcomes a feeling that she has long expected."
+      },
+      {
+        "id": "C",
+        "label": "A character struggles to identify a feeling and finally concludes that it is fear."
+      },
+      {
+        "id": "D",
+        "label": "A character uses the strength of her will to suppress an unwanted emotion."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the woman waits for something \"too subtle and elusive to name,\" feels it approaching, and tries to beat it back with her will, which is described as powerless. Choice B is incorrect because she waits fearfully and tries to resist the feeling rather than welcome it. Choice C is incorrect because fear describes how she waits, not what the approaching thing is; she is only \"beginning to recognize\" it and never names it. Choice D is incorrect because the text compares her will to her powerless hands, indicating that her resistance fails."
+  },
+  {
+    "slug": "ii-cid-023",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Because the fossil record preserves hard parts far more readily than soft tissue, estimates of how diverse ancient ecosystems were depend heavily on which organisms happened to have shells or bones. Sites of exceptional preservation, where rapid burial in fine sediment captured soft-bodied animals, routinely reveal that most of the species present lacked mineralized skeletons. Such sites are rare, however, and their rarity forces paleontologists to decide whether to treat them as windows onto typical communities or as records of unusual environments whose richness was itself atypical.",
+    "prompt": "Which choice best states the main idea of the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Sites of exceptional preservation show that soft-bodied animals were less common in ancient ecosystems than once thought."
+      },
+      {
+        "id": "B",
+        "label": "Paleontologists have concluded that ancient ecosystems were less diverse than modern ones."
+      },
+      {
+        "id": "C",
+        "label": "Rapid burial in fine sediment is the most common way that fossils form."
+      },
+      {
+        "id": "D",
+        "label": "Rare sites that preserve soft-bodied organisms suggest that ordinary fossils undercount ancient diversity, but how representative those sites are is uncertain."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the text explains that exceptional sites reveal many soft-bodied species missing from the usual record, then notes that their rarity leaves open whether they represent typical communities. Choice A is incorrect because such sites show that most species present lacked skeletons, which suggests soft-bodied animals were common. Choice B is incorrect because the text makes no comparison between ancient and modern diversity. Choice C is incorrect because the text calls sites formed by rapid burial in fine sediment rare."
+  },
+  {
+    "slug": "ii-cid-024",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "When the Rosetta Stone was found in 1799, scholars could already read its Greek inscription, and because the stone appeared to present the same decree in three scripts, it promised a key to Egyptian hieroglyphs. Yet decipherment took more than two decades. Early investigators assumed that hieroglyphs were purely symbolic, each sign standing for an idea. Progress came only when Jean-François Champollion showed that many signs represented sounds, an insight he reached partly through his knowledge of Coptic, a late form of the Egyptian language.",
+    "prompt": "Based on the text, why was Champollion's knowledge of Coptic most likely useful in deciphering hieroglyphs?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Coptic was the script on the Rosetta Stone that scholars could already read."
+      },
+      {
+        "id": "B",
+        "label": "As a later form of the Egyptian language, Coptic could help reveal the sounds that many hieroglyphic signs represented."
+      },
+      {
+        "id": "C",
+        "label": "Coptic texts supported the early investigators' view that each hieroglyphic sign stood for an idea."
+      },
+      {
+        "id": "D",
+        "label": "Coptic showed that the three inscriptions on the Rosetta Stone recorded the same decree."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the text links Champollion's knowledge of Coptic, \"a late form of the Egyptian language,\" to his insight that many signs represented sounds; knowing how the language sounded would help match signs to sounds. Choice A is incorrect because the text says the inscription scholars could already read was the Greek one. Choice C is incorrect because the purely symbolic view is the assumption that held decipherment back and that Champollion's insight overturned. Choice D is incorrect because the stone appeared to present the same decree from the start, and the text connects Coptic only to the sound values of signs."
+  },
+  {
+    "slug": "ii-cid-025",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "central_ideas_and_details",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Survey researchers distinguish between the attitudes people report and the behaviors those attitudes are supposed to predict. The gap between the two is often attributed to dishonesty, but a subtler explanation holds that many respondents construct an answer at the moment they are asked, drawing on whatever considerations the question happens to bring to mind. On this view, a reported attitude is less a stored opinion retrieved from memory than a summary assembled on the spot, one that can shift with the wording or order of the questions that precede it.",
+    "prompt": "Which choice best states the main idea of the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Most survey respondents deliberately misrepresent their opinions in order to appear agreeable."
+      },
+      {
+        "id": "B",
+        "label": "The wording of survey questions has little effect on the answers respondents give."
+      },
+      {
+        "id": "C",
+        "label": "Differences between reported attitudes and behavior may arise because people form survey answers when asked, influenced by the context of the questions."
+      },
+      {
+        "id": "D",
+        "label": "People's attitudes are stable opinions that surveys can reliably retrieve from memory."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the text presents an explanation in which respondents assemble answers on the spot from considerations the questions bring to mind, so answers can shift with wording and order. Choice A is incorrect because dishonesty is the common explanation that the text sets aside in favor of a subtler one. Choice B is incorrect because the text says answers can shift with the wording or order of questions. Choice D is incorrect because the view described treats a reported attitude as something assembled on the spot rather than a stored opinion."
+  },
+  {
+    "slug": "ii-cet-001",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Biologists studying lizards on a small island noticed that individuals living along the island's rocky shore had longer hind legs than those living in its grassy interior. One biologist hypothesized that longer legs help lizards run quickly across open rock, where they are exposed to predatory birds.",
+    "prompt": "Which finding, if true, would most directly support the biologist's hypothesis?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Lizards in the grassy interior eat more insects than lizards on the rocky shore."
+      },
+      {
+        "id": "B",
+        "label": "Predatory birds hunt in both the rocky and the grassy areas of the island."
+      },
+      {
+        "id": "C",
+        "label": "Lizards on the rocky shore are more brightly colored than lizards in the interior."
+      },
+      {
+        "id": "D",
+        "label": "In trials on rocky surfaces, lizards with longer hind legs escaped approaching predators more often than lizards with shorter hind legs."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because it directly links longer legs to escaping predators on rock, which is exactly what the hypothesis proposes. Choice A is incorrect because diet says nothing about leg length or escaping predators. Choice B is incorrect because the presence of birds in both habitats does not show that long legs help on rock; if anything, it fails to explain the difference. Choice C is incorrect because coloration is unrelated to the hypothesis about legs and running."
+  },
+  {
+    "slug": "ii-cet-002",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "A town council member claims that a new bike lane on Main Street caused a decline in sales at nearby shops. As evidence, the council member notes that total sales on Main Street fell in the six months after the lane opened.",
+    "prompt": "Which finding, if true, would most directly weaken the council member's claim?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Some shop owners on Main Street publicly opposed the bike lane before it was built."
+      },
+      {
+        "id": "B",
+        "label": "The number of cyclists using Main Street increased after the bike lane opened."
+      },
+      {
+        "id": "C",
+        "label": "Sales fell by a similar amount during the same period on nearby streets that did not get bike lanes."
+      },
+      {
+        "id": "D",
+        "label": "Sales on Main Street had been steady for the three years before the bike lane opened."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because a similar drop on streets without bike lanes suggests that something other than the lane, such as a general slowdown, caused the decline. Choice A is incorrect because shop owners' earlier opinions do not show what caused the sales change. Choice B is incorrect because more cyclists does not address whether the lane caused lower sales. Choice D is incorrect because steady sales before the lane opened make the timing of the drop look more connected to the lane, which would strengthen rather than weaken the claim."
+  },
+  {
+    "slug": "ii-cet-003",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "\"I Wandered Lonely as a Cloud\" is a poem by William Wordsworth, first published in 1807 and revised in 1815. In the poem, the speaker suggests that the memory of a natural scene can bring him joy long after the experience itself.",
+    "prompt": "Which quotation from \"I Wandered Lonely as a Cloud\" most effectively illustrates the claim?",
+    "options": [
+      {
+        "id": "A",
+        "label": "\"For oft, when on my couch I lie / In vacant or in pensive mood, / They flash upon that inward eye / Which is the bliss of solitude\""
+      },
+      {
+        "id": "B",
+        "label": "\"I wandered lonely as a cloud / That floats on high o'er vales and hills\""
+      },
+      {
+        "id": "C",
+        "label": "\"Continuous as the stars that shine / And twinkle on the milky way\""
+      },
+      {
+        "id": "D",
+        "label": "\"The waves beside them danced; but they / Out-did the sparkling waves in glee\""
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the speaker describes the scene returning to his \"inward eye\" later, while he lies on his couch, and calls this memory \"the bliss of solitude,\" showing joy long after the experience. Choice B is incorrect because these lines describe the speaker wandering before he sees the scene, not remembering it. Choice C is incorrect because these lines describe the flowers during the original experience. Choice D is incorrect because these lines also describe the scene as it happened rather than a later memory of it."
+  },
+  {
+    "slug": "ii-cet-004",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "A nutrition researcher hypothesizes that students who eat breakfast perform better on morning math quizzes than students who skip breakfast, because breakfast provides energy that helps them concentrate.",
+    "prompt": "Which finding, if true, would most directly support the researcher's hypothesis?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Students who skipped breakfast reported feeling hungry by midmorning."
+      },
+      {
+        "id": "B",
+        "label": "Across several schools, students who ate breakfast scored higher on morning math quizzes, on average, than students who did not."
+      },
+      {
+        "id": "C",
+        "label": "Most students who ate breakfast chose cereal or fruit."
+      },
+      {
+        "id": "D",
+        "label": "Many students who skipped breakfast said they did not have enough time to eat in the morning."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because it shows the exact pattern the hypothesis predicts: higher morning quiz scores among breakfast eaters. Choice A is incorrect because feeling hungry says nothing about quiz performance. Choice C is incorrect because the type of breakfast eaten is unrelated to whether breakfast improves scores. Choice D is incorrect because students' reasons for skipping breakfast do not show any difference in quiz performance."
+  },
+  {
+    "slug": "ii-cet-005",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "A historian claims that a collection of letters attributed to an eighteenth-century merchant was actually written several decades after the merchant's death, perhaps by a relative hoping to enhance the family's reputation.",
+    "prompt": "Which finding, if true, would most directly weaken the historian's claim?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Several of the letters are addressed to the merchant's business partners."
+      },
+      {
+        "id": "B",
+        "label": "Other merchants of the same period also wrote letters about trade."
+      },
+      {
+        "id": "C",
+        "label": "The letters contain a word that did not come into use until a century after the merchant died."
+      },
+      {
+        "id": "D",
+        "label": "Chemical analysis shows that the paper and ink of the letters match materials made only during the merchant's lifetime."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because materials made only during the merchant's lifetime would be hard to reconcile with letters written decades after his death. Choice A is incorrect because a later writer could also address letters to the merchant's partners, so this detail does not settle the date. Choice B is incorrect because other merchants' letters reveal nothing about when these letters were written. Choice C is incorrect because a word that appeared only after the merchant's death would support the historian's claim rather than weaken it."
+  },
+  {
+    "slug": "ii-cet-006",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Sonnet 18 is a poem by William Shakespeare, published in 1609. In the poem, the speaker claims that the poem itself will preserve the beauty of the person it addresses.",
+    "prompt": "Which quotation from Sonnet 18 most effectively illustrates the claim?",
+    "options": [
+      {
+        "id": "A",
+        "label": "\"Shall I compare thee to a summer's day? / Thou art more lovely and more temperate\""
+      },
+      {
+        "id": "B",
+        "label": "\"So long as men can breathe or eyes can see, / So long lives this, and this gives life to thee.\""
+      },
+      {
+        "id": "C",
+        "label": "\"Rough winds do shake the darling buds of May, / And summer's lease hath all too short a date\""
+      },
+      {
+        "id": "D",
+        "label": "\"Sometime too hot the eye of heaven shines, / And often is his gold complexion dimmed\""
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because \"this\" refers to the poem, which the speaker says will live as long as people can read it and will give life to the person addressed. Choice A is incorrect because these lines praise the person's beauty without saying the poem will preserve it. Choice C is incorrect because these lines describe how summer fades, not how the poem endures. Choice D is incorrect because these lines describe the sun's imperfections rather than the poem's lasting power."
+  },
+  {
+    "slug": "ii-cet-007",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "A sociologist argues that residents of neighborhoods with more public seating, such as benches and low walls, are more likely to know their neighbors. The sociologist reasons that seating encourages people to linger outdoors, where they can strike up conversations.",
+    "prompt": "Which finding, if true, would most directly support the sociologist's argument?",
+    "options": [
+      {
+        "id": "A",
+        "label": "In a survey of similar neighborhoods, residents of those with more public seating could name more of their neighbors and reported spending more time outdoors."
+      },
+      {
+        "id": "B",
+        "label": "Benches in some neighborhoods are made from recycled materials."
+      },
+      {
+        "id": "C",
+        "label": "Residents of neighborhoods with little public seating said they would like more parks."
+      },
+      {
+        "id": "D",
+        "label": "Older residents were more likely than younger residents to use public benches."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because it shows both that residents with more seating knew more neighbors and that they spent more time outdoors, matching the argument and its reasoning. Choice B is incorrect because the material of benches has nothing to do with knowing neighbors. Choice C is incorrect because a wish for parks does not show any link between seating and social ties. Choice D is incorrect because it describes who uses benches without connecting seating to knowing neighbors."
+  },
+  {
+    "slug": "ii-cet-008",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "An ecologist who has monitored a mountain lake for many years claims that a recent decline in the lake's frog population was caused by a fungus that infects frogs' skin.",
+    "prompt": "Which finding, if true, would most directly weaken the ecologist's claim?",
+    "options": [
+      {
+        "id": "A",
+        "label": "The fungus has caused declines in frog populations in other parts of the world."
+      },
+      {
+        "id": "B",
+        "label": "The lake's frog population had been stable for decades before the decline."
+      },
+      {
+        "id": "C",
+        "label": "Tests found no trace of the fungus on frogs collected from the lake during the decline."
+      },
+      {
+        "id": "D",
+        "label": "Several species of fish also live in the lake."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because if the fungus was absent from the lake's frogs during the decline, it could not have caused that decline. Choice A is incorrect because declines caused elsewhere make the claim more plausible, not less. Choice B is incorrect because a long period of stability does not show what caused the recent change. Choice D is incorrect because the presence of fish says nothing about the fungus."
+  },
+  {
+    "slug": "ii-cet-009",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "\"Hope is the thing with feathers\" is a poem by Emily Dickinson, first published in 1891. In the poem, the speaker presents hope as something that gives comfort without asking for anything in return.",
+    "prompt": "Which quotation from \"Hope is the thing with feathers\" most effectively illustrates the claim?",
+    "options": [
+      {
+        "id": "A",
+        "label": "\"Hope is the thing with feathers – / That perches in the soul –\""
+      },
+      {
+        "id": "B",
+        "label": "\"And sings the tune without the words – / And never stops – at all –\""
+      },
+      {
+        "id": "C",
+        "label": "\"Yet – never – in Extremity, / It asked a crumb – of Me.\""
+      },
+      {
+        "id": "D",
+        "label": "\"I've heard it in the chillest land – / And on the strangest Sea –\""
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the speaker says that even in the worst circumstances hope never asked for even a crumb, showing that it asks nothing in return. Choice A is incorrect because these lines introduce hope as a bird in the soul but say nothing about what it asks. Choice B is incorrect because these lines stress hope's persistence, not that it requires nothing. Choice D is incorrect because these lines describe where the speaker has heard hope, not what it demands."
+  },
+  {
+    "slug": "ii-cet-010",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Archaeologists excavating a site in the Andes found guinea pig bones in household refuse dating back several thousand years. One archaeologist argues that the people living at the site raised guinea pigs as livestock rather than hunting wild ones.",
+    "prompt": "Which finding, if true, would most directly support the archaeologist's argument?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Guinea pig remains were found in the refuse of many households across the site."
+      },
+      {
+        "id": "B",
+        "label": "The guinea pig bones are consistently larger than those of wild guinea pigs from the region and come mostly from young adult animals."
+      },
+      {
+        "id": "C",
+        "label": "Wild guinea pigs still live in grasslands near the site today."
+      },
+      {
+        "id": "D",
+        "label": "The site also contains the bones of deer, which the residents are known to have hunted."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because a consistent difference from wild animals in size and a narrow, selected age range are what one would expect from managed breeding and slaughter rather than hunting. Choice A is incorrect because widespread remains show that guinea pigs were eaten but are consistent with either hunting or raising them. Choice C is incorrect because the presence of wild guinea pigs today does not show whether ancient residents raised them. Choice D is incorrect because evidence that residents hunted deer does not indicate how they obtained guinea pigs and, if anything, highlights that they hunted."
+  },
+  {
+    "slug": "ii-cet-011",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "A psychologist hypothesizes that people remember the content of long texts better when they read them in printed books than when they read the same texts on tablets.",
+    "prompt": "Which finding, if true, would most directly weaken the psychologist's hypothesis?",
+    "options": [
+      {
+        "id": "A",
+        "label": "In a large study, participants recalled the same amount of information whether they read a long text in a printed book or on a tablet."
+      },
+      {
+        "id": "B",
+        "label": "Participants said they preferred printed books for reading long texts."
+      },
+      {
+        "id": "C",
+        "label": "Readers of printed books could often point to where on a page a passage had appeared."
+      },
+      {
+        "id": "D",
+        "label": "Participants who read on tablets finished the texts more quickly than those who read printed books."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because equal recall in both formats contradicts the prediction that printed books lead to better memory of long texts. Choice B is incorrect because preference is not the same as recall. Choice C is incorrect because remembering a passage's location on a page is a memory advantage for print readers, which would tend to support the hypothesis. Choice D is incorrect because reading speed does not show how much readers remembered."
+  },
+  {
+    "slug": "ii-cet-012",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "\"The Road Not Taken\" is a poem by Robert Frost, published in 1916 in the collection Mountain Interval. A student claims that in the poem, the speaker admits that the two paths he chose between were in fact nearly the same.",
+    "prompt": "Which quotation from \"The Road Not Taken\" most effectively illustrates the student's claim?",
+    "options": [
+      {
+        "id": "A",
+        "label": "\"Two roads diverged in a yellow wood, / And sorry I could not travel both\""
+      },
+      {
+        "id": "B",
+        "label": "\"I shall be telling this with a sigh / Somewhere ages and ages hence\""
+      },
+      {
+        "id": "C",
+        "label": "\"Two roads diverged in a wood, and I— / I took the one less traveled by\""
+      },
+      {
+        "id": "D",
+        "label": "\"Though as for that the passing there / Had worn them really about the same\""
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the speaker says that the traffic on the paths had worn them \"really about the same,\" admitting that they were nearly identical. Choice A is incorrect because these lines introduce the choice and the speaker's regret without comparing the paths. Choice B is incorrect because these lines look ahead to how the speaker will tell the story, not to whether the paths differed. Choice C is incorrect because calling one road \"less traveled\" suggests a difference between the paths, the opposite of the claim."
+  },
+  {
+    "slug": "ii-cet-013",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Astronomers have proposed that a distant star dims irregularly because clouds of dust periodically pass between the star and Earth, rather than because the star itself becomes less luminous.",
+    "prompt": "Which finding, if true, would most directly support the astronomers' proposal?",
+    "options": [
+      {
+        "id": "A",
+        "label": "During dimming episodes, the star's light fades more at blue wavelengths than at red wavelengths, a pattern produced when light passes through fine dust."
+      },
+      {
+        "id": "B",
+        "label": "The star is in a region of the galaxy where many new stars are forming."
+      },
+      {
+        "id": "C",
+        "label": "The dimming episodes vary in length from a few days to several weeks."
+      },
+      {
+        "id": "D",
+        "label": "The star's brightness has been recorded by telescopes for more than a century."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the finding describes a dimming pattern that, as the choice states, is produced when light passes through dust, which matches the proposed cause. Choice B is incorrect because the star's location does not show whether dust is responsible for its dimming. Choice C is incorrect because varied episode lengths are consistent with either explanation and do not point to dust. Choice D is incorrect because a long observation record says nothing about the cause of the dimming."
+  },
+  {
+    "slug": "ii-cet-014",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "A city official argues that a program offering free public transit on weekends increased ridership mainly by attracting people who previously drove, and that it therefore reduced weekend traffic.",
+    "prompt": "Which finding, if true, would most directly weaken the official's argument?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Weekend ridership increased by 30 percent after the program began."
+      },
+      {
+        "id": "B",
+        "label": "The program was paid for by a temporary increase in parking fees."
+      },
+      {
+        "id": "C",
+        "label": "Many riders said they would keep using transit on weekends even if fares returned."
+      },
+      {
+        "id": "D",
+        "label": "Surveys found that most new weekend riders had previously made the same trips on foot or by bicycle, and weekend traffic volumes did not change."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because it shows that new riders did not come mainly from driving and that traffic did not fall, contradicting both parts of the argument. Choice A is incorrect because rising ridership is consistent with the argument. Choice B is incorrect because how the program was funded does not reveal where new riders came from. Choice C is incorrect because riders' future plans do not address whether they used to drive or whether traffic fell."
+  },
+  {
+    "slug": "ii-cet-015",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "\"Ozymandias\" is an 1818 poem by Percy Bysshe Shelley. A student claims that the poem emphasizes the contrast between a ruler's proud boast and the ruin of his works.",
+    "prompt": "Which quotation from \"Ozymandias\" most effectively illustrates the student's claim?",
+    "options": [
+      {
+        "id": "A",
+        "label": "\"I met a traveller from an antique land, / Who said—'Two vast and trunkless legs of stone / Stand in the desert...'\""
+      },
+      {
+        "id": "B",
+        "label": "\"'My name is Ozymandias, King of Kings; / Look on my Works, ye Mighty, and despair!' / Nothing beside remains.\""
+      },
+      {
+        "id": "C",
+        "label": "\"Tell that its sculptor well those passions read / Which yet survive, stamped on these lifeless things\""
+      },
+      {
+        "id": "D",
+        "label": "\"The hand that mocked them, and the heart that fed\""
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because it places the ruler's boast directly beside the statement that nothing remains, creating the contrast the student describes. Choice A is incorrect because these lines show the ruined statue but not the ruler's boast. Choice C is incorrect because these lines praise the sculptor's skill in capturing the ruler's expression rather than contrasting boast and ruin. Choice D is incorrect because this line refers to the sculptor and the ruler's passions without mentioning the boast or the ruin."
+  },
+  {
+    "slug": "ii-cet-016",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "A historian of language argues that a particular English word entered the language through sailors rather than through scholars. The historian notes that the word's earliest known appearances are in ship logs and port records.",
+    "prompt": "Which finding, if true, would most directly support the historian's argument?",
+    "options": [
+      {
+        "id": "A",
+        "label": "The word is now commonly used in scientific writing."
+      },
+      {
+        "id": "B",
+        "label": "Many scholars of the period traveled by ship."
+      },
+      {
+        "id": "C",
+        "label": "The word appears in sailors' writings several decades before its earliest known use in any scholarly text, and it first referred only to an object used aboard ships."
+      },
+      {
+        "id": "D",
+        "label": "Ship logs from the period were often written in a mixture of languages."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because a much earlier appearance among sailors and an original meaning tied to ships both point to a nautical rather than scholarly origin. Choice A is incorrect because the word's present-day use does not show how it entered English. Choice B is incorrect because scholars traveling by ship could have been exposed to the word too, which blurs rather than supports the distinction. Choice D is incorrect because the languages used in logs do not show that this word entered English through sailors."
+  },
+  {
+    "slug": "ii-cet-017",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Researchers observed that a species of songbird built its nests higher in trees in years when snakes were abundant. They concluded that the birds raise their nests in response to the presence of snakes.",
+    "prompt": "Which finding, if true, would most directly weaken the researchers' conclusion?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Snakes in the study area are able to climb trees."
+      },
+      {
+        "id": "B",
+        "label": "Nests built higher in trees were raided by snakes less often than lower nests."
+      },
+      {
+        "id": "C",
+        "label": "In some other regions, the same songbird species nests in shrubs."
+      },
+      {
+        "id": "D",
+        "label": "In years when snakes were abundant, the trees also had denser upper foliage, and the birds nested higher in dense foliage regardless of the number of snakes."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because it offers another explanation for the pattern: foliage density, not snakes, could account for the higher nests. Choice A is incorrect because snakes' ability to climb does not show that the birds' nest height is unrelated to snakes. Choice B is incorrect because it suggests a benefit to nesting higher when snakes are present, which supports the conclusion. Choice C is incorrect because nesting behavior in other regions does not explain the pattern observed in this study."
+  },
+  {
+    "slug": "ii-cet-018",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Frankenstein is an 1818 novel by Mary Shelley. In the novel, the narrator, Victor Frankenstein, describes how his ambition drove him to work beyond the limits of his own health.",
+    "prompt": "Which quotation from Frankenstein most effectively illustrates the claim?",
+    "options": [
+      {
+        "id": "A",
+        "label": "\"I am by birth a Genevese; and my family is one of the most distinguished of that republic.\""
+      },
+      {
+        "id": "B",
+        "label": "\"My cheek had grown pale with study, and my person had become emaciated with confinement.\""
+      },
+      {
+        "id": "C",
+        "label": "\"Learn from me, if not by my precepts, at least by my example, how dangerous is the acquirement of knowledge . . .\""
+      },
+      {
+        "id": "D",
+        "label": "\"It was on a dreary night of November that I beheld the accomplishment of my toils.\""
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because Victor describes becoming pale and emaciated from study and confinement, showing that his work damaged his health. Choice A is incorrect because this sentence describes his birthplace and family, not his work. Choice C is incorrect because this sentence warns about the dangers of knowledge in general without describing harm to his health. Choice D is incorrect because this sentence marks the completion of his work without mentioning its physical toll on him."
+  },
+  {
+    "slug": "ii-cet-019",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "A historian argues that the decline of a waterborne disease in a nineteenth-century city resulted mainly from improvements to the water supply rather than from advances in medical treatment.",
+    "prompt": "Which finding, if true, would most directly support the historian's argument?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Doctors in the city published many articles about treating the disease during the period."
+      },
+      {
+        "id": "B",
+        "label": "The city's population grew rapidly during the nineteenth century."
+      },
+      {
+        "id": "C",
+        "label": "Death rates from the disease fell sharply in neighborhoods connected to a new filtered water system years before effective treatments existed, while unconnected neighborhoods saw little change."
+      },
+      {
+        "id": "D",
+        "label": "The disease was also common in rural areas that lacked public water systems."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because it ties the decline to the water system and shows it happened before effective treatment was available, ruling out the alternative explanation. Choice A is incorrect because published articles on treatment suggest medical attention but do not show what caused the decline. Choice B is incorrect because population growth is unrelated to the cause of the decline. Choice D is incorrect because the disease's presence in rural areas does not show what reduced it in the city."
+  },
+  {
+    "slug": "ii-cet-020",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "A psychologist hypothesizes that readers remember long texts better on paper than on screens because a printed book offers physical cues, such as the growing thickness of the pages already read, that help readers build a mental map of where information appears.",
+    "prompt": "Which finding, if true, would most directly weaken the psychologist's explanation?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Paper readers' advantage in recall was just as large for single-page texts, which offer no cues about position within a book, as it was for long texts."
+      },
+      {
+        "id": "B",
+        "label": "Readers who used e-readers that displayed a thickness-like progress bar recalled long texts about as well as readers of printed books."
+      },
+      {
+        "id": "C",
+        "label": "Readers of printed books recalled more than screen readers did, and the difference was greatest for the longest texts."
+      },
+      {
+        "id": "D",
+        "label": "Many readers reported that they found printed books more comfortable to read for long periods."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because if paper's advantage is equally large when there are no positional cues, those cues cannot explain the advantage, which undermines the proposed mechanism. Choice B is incorrect because restoring a thickness-like cue on screens closed the gap, which supports the explanation. Choice C is incorrect because a larger advantage for longer texts, where position cues matter most, fits the explanation. Choice D is incorrect because comfort is a separate preference that does not show whether position cues affect recall."
+  },
+  {
+    "slug": "ii-cet-021",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Some ecologists suggest that the earlier spring flowering of many plants in a region reflects rising temperatures rather than changes in rainfall. Because both temperature and rainfall in the region have shifted over the past century, separating their effects is difficult.",
+    "prompt": "Which finding, if true, would most directly support the ecologists' suggestion?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Plants in the region now flower about two weeks earlier, on average, than they did a century ago."
+      },
+      {
+        "id": "B",
+        "label": "Both spring temperature and spring rainfall in the region have increased steadily over the past century."
+      },
+      {
+        "id": "C",
+        "label": "Plants grown in warm greenhouses with abundant water flowered earlier than plants grown outdoors."
+      },
+      {
+        "id": "D",
+        "label": "Across decades, flowering dates closely tracked year-to-year changes in spring temperature but showed no consistent relationship with spring rainfall, even in years when rainfall was unusual and temperature was typical."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because it separates the two factors: flowering followed temperature, and unusual rainfall without unusual temperature did not shift it. Choice A is incorrect because earlier flowering is the pattern to be explained; it does not indicate which factor caused it. Choice B is incorrect because it restates the problem that both factors changed together. Choice C is incorrect because the greenhouse plants received both more warmth and more water, so the result cannot isolate temperature."
+  },
+  {
+    "slug": "ii-cet-022",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Sonnet 73 is a poem by William Shakespeare, published in 1609. A literary critic argues that in the poem, the speaker suggests that his listener's devotion deepens precisely because their remaining time together is limited.",
+    "prompt": "Which quotation from Sonnet 73 most effectively illustrates the critic's claim?",
+    "options": [
+      {
+        "id": "A",
+        "label": "\"That time of year thou mayst in me behold / When yellow leaves, or none, or few, do hang\""
+      },
+      {
+        "id": "B",
+        "label": "\"In me thou see'st the twilight of such day / As after sunset fadeth in the west\""
+      },
+      {
+        "id": "C",
+        "label": "\"This thou perceiv'st, which makes thy love more strong, / To love that well which thou must leave ere long.\""
+      },
+      {
+        "id": "D",
+        "label": "\"Consumed with that which it was nourished by.\""
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the lines state that perceiving the speaker's decline makes the listener's love \"more strong,\" since the listener must soon lose him. Choice A is incorrect because these lines compare the speaker's age to late autumn without mentioning love. Choice B is incorrect because these lines describe the speaker's fading life as twilight but say nothing about how this affects love. Choice D is incorrect because this line describes a fire burning out on its own fuel, an image of decline that does not address love."
+  },
+  {
+    "slug": "ii-cet-023",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "A historian claims that the spread of a heavy new plow in medieval northern Europe caused population growth. The historian points out that regions where the plow appeared earliest later had the densest populations.",
+    "prompt": "Which finding, if true, would most directly weaken the historian's claim?",
+    "options": [
+      {
+        "id": "A",
+        "label": "The plow was adopted first in regions whose populations were already growing, because it required teams of draft animals that only larger communities could assemble."
+      },
+      {
+        "id": "B",
+        "label": "The new plow was better suited than older plows to the heavy, wet soils of northern Europe."
+      },
+      {
+        "id": "C",
+        "label": "Population growth in northern Europe slowed during periods of widespread disease."
+      },
+      {
+        "id": "D",
+        "label": "Some regions that adopted the plow late eventually reached population densities similar to those of early adopters."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because it suggests that population growth came first and made the plow possible, reversing the proposed cause and effect. Choice B is incorrect because a plow suited to local soils would plausibly raise harvests, which supports the claim. Choice C is incorrect because disease slowing growth does not address whether the plow caused growth. Choice D is incorrect because late adopters catching up after adopting the plow is consistent with the plow contributing to growth."
+  },
+  {
+    "slug": "ii-cet-024",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Researchers hypothesize that newborns' preference for hearing their mother's native language comes from sounds heard before birth. Low-pitched features of speech, such as rhythm and melody, pass through the womb, while many other details of speech are muffled.",
+    "prompt": "Which finding, if true, would most directly support the researchers' hypothesis?",
+    "options": [
+      {
+        "id": "A",
+        "label": "Newborns preferred their mother's voice to the voice of an unfamiliar woman."
+      },
+      {
+        "id": "B",
+        "label": "Newborns preferred recordings of their mother's native language over a language with a different rhythm but showed no preference when the two languages had similar rhythms."
+      },
+      {
+        "id": "C",
+        "label": "Six-month-old infants preferred their native language more strongly than newborns did."
+      },
+      {
+        "id": "D",
+        "label": "Newborns showed a preference for their native language only after several days of hearing it after birth."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the preference depends on rhythm, one of the features the hypothesis says can be heard before birth. Choice A is incorrect because preferring the mother's voice concerns a particular speaker, not a language. Choice C is incorrect because a stronger preference at six months could come from experience after birth. Choice D is incorrect because a preference that appears only after days of exposure after birth points to postnatal learning and would weaken the hypothesis."
+  },
+  {
+    "slug": "ii-cet-025",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_textual",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Pride and Prejudice is an 1813 novel by Jane Austen. A critic argues that the novel's narrator portrays Mrs. Bennet as a character whose concerns are wholly absorbed by a single domestic project.",
+    "prompt": "Which quotation from Pride and Prejudice most effectively illustrates the critic's claim?",
+    "options": [
+      {
+        "id": "A",
+        "label": "\"The business of her life was to get her daughters married; its solace was visiting and news.\""
+      },
+      {
+        "id": "B",
+        "label": "\"She was a woman of mean understanding, little information, and uncertain temper.\""
+      },
+      {
+        "id": "C",
+        "label": "\"It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.\""
+      },
+      {
+        "id": "D",
+        "label": "\"Mr. Bennet was so odd a mixture of quick parts, sarcastic humour, reserve, and caprice, that the experience of three-and-twenty years had been insufficient to make his wife understand his character.\""
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the narrator calls getting her daughters married \"the business of her life,\" presenting that one project as the purpose of her existence, with gossip as her only relief. Choice B is incorrect because it describes Mrs. Bennet's limitations without mentioning her daughters' marriages. Choice C is incorrect because it states a general belief about wealthy single men, not anything specific to Mrs. Bennet's aims. Choice D is incorrect because it mainly characterizes Mr. Bennet and mentions his wife only as failing to understand him."
+  },
+  {
+    "slug": "ii-ceq-001",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "A student researching recycling in her town compiled data on the average weight of four materials collected from each household per month. Reviewing the data, she noted that, of the four materials listed, ______",
+    "prompt": "Which choice most effectively uses data from the table to complete the statement?",
+    "table": {
+      "headers": [
+        "Material",
+        "Average monthly weight per household (kg)"
+      ],
+      "rows": [
+        [
+          "Paper",
+          "6.2"
+        ],
+        [
+          "Glass",
+          "3.8"
+        ],
+        [
+          "Plastic",
+          "2.1"
+        ],
+        [
+          "Metal",
+          "1.4"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "glass made up the greatest weight collected per household."
+      },
+      {
+        "id": "B",
+        "label": "plastic and metal together outweighed glass."
+      },
+      {
+        "id": "C",
+        "label": "metal outweighed plastic."
+      },
+      {
+        "id": "D",
+        "label": "paper made up the greatest weight collected per household."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because paper, at 6.2 kilograms, has the highest average monthly weight in the table. Choice A is incorrect because glass, at 3.8 kilograms, is less than paper. Choice B is incorrect because plastic and metal together total 3.5 kilograms, which is less than glass at 3.8 kilograms. Choice C is incorrect because metal, at 1.4 kilograms, weighs less than plastic, at 2.1 kilograms."
+  },
+  {
+    "slug": "ii-ceq-002",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Volunteers counted monarch butterflies at a city park during the first week of September in each of four consecutive years. Comparing the totals, the volunteers observed that the count ______",
+    "prompt": "Which choice most effectively uses data from the table to complete the statement?",
+    "table": {
+      "headers": [
+        "Year",
+        "Monarchs counted"
+      ],
+      "rows": [
+        [
+          "Year 1",
+          "240"
+        ],
+        [
+          "Year 2",
+          "310"
+        ],
+        [
+          "Year 3",
+          "185"
+        ],
+        [
+          "Year 4",
+          "205"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "was lowest in Year 3."
+      },
+      {
+        "id": "B",
+        "label": "increased every year from Year 1 to Year 4."
+      },
+      {
+        "id": "C",
+        "label": "was higher in Year 4 than in Year 2."
+      },
+      {
+        "id": "D",
+        "label": "was highest in Year 1."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the Year 3 count of 185 is lower than every other count in the table. Choice B is incorrect because the count fell from 310 in Year 2 to 185 in Year 3. Choice C is incorrect because the Year 4 count of 205 is lower than the Year 2 count of 310. Choice D is incorrect because the highest count, 310, occurred in Year 2, not Year 1."
+  },
+  {
+    "slug": "ii-ceq-003",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "A school health committee surveyed students about how many hours they sleep on school nights and calculated the average for each grade. Based on the results, the committee concluded that older students at the school tend to sleep less than younger students.",
+    "prompt": "Which choice best describes data from the table that support the committee's conclusion?",
+    "table": {
+      "headers": [
+        "Grade",
+        "Average nightly sleep on school nights (hours)"
+      ],
+      "rows": [
+        [
+          "9th",
+          "8.1"
+        ],
+        [
+          "10th",
+          "7.6"
+        ],
+        [
+          "11th",
+          "7.2"
+        ],
+        [
+          "12th",
+          "6.9"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "Eleventh graders slept an average of 7.2 hours per night."
+      },
+      {
+        "id": "B",
+        "label": "Tenth and eleventh graders together slept a combined average of 14.8 hours."
+      },
+      {
+        "id": "C",
+        "label": "Average nightly sleep decreased with each grade, from 8.1 hours for ninth graders to 6.9 hours for twelfth graders."
+      },
+      {
+        "id": "D",
+        "label": "Twelfth graders slept more than ninth graders, on average."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because it shows a steady decline in sleep from the youngest grade to the oldest, which is the pattern the conclusion describes. Choice A is incorrect because one grade's average cannot show a difference between older and younger students. Choice B is incorrect because adding two grades' averages produces a number that says nothing about how sleep changes with age. Choice D is incorrect because twelfth graders averaged 6.9 hours, less than the 8.1 hours for ninth graders."
+  },
+  {
+    "slug": "ii-ceq-004",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "An agricultural researcher tested three fertilizers on plots of wheat and left one plot unfertilized for comparison. The researcher claims that all three fertilizers increased the yield compared with no fertilizer but that Fertilizer B was the most effective.",
+    "prompt": "Which choice most effectively uses data from the table to support the researcher's claim?",
+    "table": {
+      "headers": [
+        "Treatment",
+        "Yield (tons per hectare)"
+      ],
+      "rows": [
+        [
+          "No fertilizer",
+          "2.9"
+        ],
+        [
+          "Fertilizer A",
+          "3.4"
+        ],
+        [
+          "Fertilizer B",
+          "4.1"
+        ],
+        [
+          "Fertilizer C",
+          "3.2"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "The plot with Fertilizer B yielded 4.1 tons per hectare, while the plot with Fertilizer A yielded 3.4 tons per hectare."
+      },
+      {
+        "id": "B",
+        "label": "Every fertilized plot yielded more than the 2.9 tons per hectare of the unfertilized plot, and the plot with Fertilizer B yielded the most, 4.1 tons per hectare."
+      },
+      {
+        "id": "C",
+        "label": "The plot with Fertilizer C yielded 3.2 tons per hectare, more than the unfertilized plot."
+      },
+      {
+        "id": "D",
+        "label": "The unfertilized plot yielded 2.9 tons per hectare, less than the plot with Fertilizer A."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because it supports both parts of the claim: each fertilizer beat the unfertilized plot, and Fertilizer B produced the highest yield. Choice A is incorrect because it compares only two fertilizers and does not show that all of them beat the unfertilized plot. Choice C is incorrect because it addresses only Fertilizer C. Choice D is incorrect because it addresses only Fertilizer A and says nothing about Fertilizer B being the most effective."
+  },
+  {
+    "slug": "ii-ceq-005",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "A city's library system tracked how many books were borrowed at each of its four branches during March. According to the table, the Central branch ______",
+    "prompt": "Which choice most effectively uses data from the table to complete the statement?",
+    "table": {
+      "headers": [
+        "Branch",
+        "Books borrowed in March"
+      ],
+      "rows": [
+        [
+          "North",
+          "4,820"
+        ],
+        [
+          "Central",
+          "7,150"
+        ],
+        [
+          "East",
+          "3,960"
+        ],
+        [
+          "West",
+          "5,310"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "had fewer books borrowed than the West branch."
+      },
+      {
+        "id": "B",
+        "label": "had about twice as many books borrowed as the North branch."
+      },
+      {
+        "id": "C",
+        "label": "had about the same number of books borrowed as the East branch."
+      },
+      {
+        "id": "D",
+        "label": "had more books borrowed than any other branch."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because Central's 7,150 books borrowed is the highest total in the table. Choice A is incorrect because West had 5,310 books borrowed, fewer than Central. Choice B is incorrect because twice North's 4,820 would be 9,640, far more than Central's 7,150. Choice C is incorrect because East had 3,960 books borrowed, roughly half of Central's total."
+  },
+  {
+    "slug": "ii-ceq-006",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "A geography student compared average monthly temperatures in four European and African cities. She observed that the city with the coldest January average was not the city with the coolest July average.",
+    "prompt": "Which choice best describes data from the table that support the student's observation?",
+    "table": {
+      "headers": [
+        "City",
+        "Average January temperature (°C)",
+        "Average July temperature (°C)"
+      ],
+      "rows": [
+        [
+          "Oslo",
+          "−4",
+          "17"
+        ],
+        [
+          "Lisbon",
+          "11",
+          "23"
+        ],
+        [
+          "Cairo",
+          "14",
+          "28"
+        ],
+        [
+          "Moscow",
+          "−7",
+          "19"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "Cairo had the warmest average temperature in both January and July."
+      },
+      {
+        "id": "B",
+        "label": "Lisbon's July average was 12 degrees warmer than its January average."
+      },
+      {
+        "id": "C",
+        "label": "Moscow had the coldest January average (−7°C), but Oslo had the coolest July average (17°C)."
+      },
+      {
+        "id": "D",
+        "label": "Oslo had both the coldest January average and the coolest July average."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because it identifies two different cities: Moscow for the coldest January and Oslo for the coolest July. Choice A is incorrect because, although true, it is about the warmest averages and does not address the observation. Choice B is incorrect because, although 23 minus 11 is 12, Lisbon's seasonal range is unrelated to the observation. Choice D is incorrect because Moscow's January average of −7°C is colder than Oslo's −4°C."
+  },
+  {
+    "slug": "ii-ceq-007",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "A company surveyed all of its employees about how they usually travel to work. Each employee chose one option. Summarizing the results for a newsletter, a manager wrote that ______",
+    "prompt": "Which choice most effectively uses data from the table to complete the statement?",
+    "table": {
+      "headers": [
+        "Usual way of commuting",
+        "Percentage of employees"
+      ],
+      "rows": [
+        [
+          "Car",
+          "46%"
+        ],
+        [
+          "Public transit",
+          "28%"
+        ],
+        [
+          "Walking",
+          "17%"
+        ],
+        [
+          "Bicycle",
+          "9%"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "more employees walk to work than take public transit."
+      },
+      {
+        "id": "B",
+        "label": "fewer than half of the employees usually commute by car."
+      },
+      {
+        "id": "C",
+        "label": "about a quarter of the employees usually bicycle to work."
+      },
+      {
+        "id": "D",
+        "label": "bicycling is the second most common way employees commute."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because 46% of employees drive, which is less than half. Choice A is incorrect because 17% walk while 28% take public transit. Choice C is incorrect because only 9% bicycle, far less than a quarter. Choice D is incorrect because bicycling, at 9%, is the least common option; public transit is second."
+  },
+  {
+    "slug": "ii-ceq-008",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Conservationists reintroduced a species of falcon to a mountain region in the late 1990s and estimated the number of breeding pairs every five years. By the end of the period shown, they reported, the program had established a steadily growing population.",
+    "prompt": "Which choice best describes data from the table that support the conservationists' report?",
+    "table": {
+      "headers": [
+        "Survey year",
+        "Estimated breeding pairs"
+      ],
+      "rows": [
+        [
+          "2000",
+          "12"
+        ],
+        [
+          "2005",
+          "31"
+        ],
+        [
+          "2010",
+          "58"
+        ],
+        [
+          "2015",
+          "94"
+        ],
+        [
+          "2020",
+          "140"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "The estimated number of breeding pairs rose in every five-year interval, from 12 to 140."
+      },
+      {
+        "id": "B",
+        "label": "There were an estimated 58 breeding pairs in the third survey year."
+      },
+      {
+        "id": "C",
+        "label": "The number of breeding pairs increased by 19 between the first and second surveys."
+      },
+      {
+        "id": "D",
+        "label": "The number of breeding pairs was lower in the fourth survey than in the third."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because an increase in every interval shows the steady growth the conservationists describe. Choice B is incorrect because a single estimate cannot show growth over time. Choice C is incorrect because, although 31 minus 12 is 19, one interval does not show that growth continued throughout. Choice D is incorrect because the estimate rose from 58 to 94 between the third and fourth surveys."
+  },
+  {
+    "slug": "ii-ceq-009",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "A book club recorded the length of four novels its members read and the average time members took to finish each one. One member noted that the longest of the four novels also took members the most time to read.",
+    "prompt": "Which choice most effectively uses data from the table to support the member's note?",
+    "table": {
+      "headers": [
+        "Novel",
+        "Pages",
+        "Average reading time (hours)"
+      ],
+      "rows": [
+        [
+          "A",
+          "220",
+          "6"
+        ],
+        [
+          "B",
+          "410",
+          "12"
+        ],
+        [
+          "C",
+          "305",
+          "8"
+        ],
+        [
+          "D",
+          "150",
+          "5"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "Novel D had the fewest pages, 150, and the shortest average reading time, 5 hours."
+      },
+      {
+        "id": "B",
+        "label": "Novel C took an average of 8 hours to read, longer than Novel A."
+      },
+      {
+        "id": "C",
+        "label": "Novel A had more pages than Novel C."
+      },
+      {
+        "id": "D",
+        "label": "Novel B had the most pages, 410, and the longest average reading time, 12 hours."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because it shows that the novel with the most pages also had the longest reading time. Choice A is incorrect because it describes the shortest novel, not the longest. Choice B is incorrect because it compares two novels that are not the longest. Choice C is incorrect because Novel A has 220 pages, fewer than Novel C's 305."
+  },
+  {
+    "slug": "ii-ceq-010",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Researchers measured the percentage of seeds that germinated for two plant species at three soil temperatures. They concluded that the two species respond differently to warmer soil: germination of Species X ______",
+    "prompt": "Which choice most effectively uses data from the table to complete the statement?",
+    "table": {
+      "headers": [
+        "Soil temperature (°C)",
+        "Species X germination (%)",
+        "Species Y germination (%)"
+      ],
+      "rows": [
+        [
+          "10",
+          "22",
+          "48"
+        ],
+        [
+          "20",
+          "65",
+          "71"
+        ],
+        [
+          "30",
+          "81",
+          "52"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "rose as temperature increased from 10°C to 30°C, whereas germination of Species Y was highest at 20°C and lower at 30°C."
+      },
+      {
+        "id": "B",
+        "label": "and Species Y both rose steadily as temperature increased from 10°C to 30°C."
+      },
+      {
+        "id": "C",
+        "label": "was higher than that of Species Y at every temperature tested."
+      },
+      {
+        "id": "D",
+        "label": "fell as temperature increased, whereas germination of Species Y rose."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because Species X went from 22% to 65% to 81%, while Species Y peaked at 71% at 20°C and dropped to 52% at 30°C, a difference in response. Choice B is incorrect because Species Y fell between 20°C and 30°C, and the statement would not show a difference anyway. Choice C is incorrect because Species X was lower than Species Y at 10°C and 20°C. Choice D is incorrect because Species X rose with temperature rather than falling."
+  },
+  {
+    "slug": "ii-ceq-011",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "A nutrition scientist compared the protein and calorie content of single servings of four snacks. She claims that, among these snacks, the one with the most protein per serving was not the one with the most calories per serving.",
+    "prompt": "Which choice best describes data from the table that support the scientist's claim?",
+    "table": {
+      "headers": [
+        "Snack (one serving)",
+        "Protein (g)",
+        "Calories"
+      ],
+      "rows": [
+        [
+          "Almonds",
+          "6",
+          "164"
+        ],
+        [
+          "Greek yogurt",
+          "10",
+          "100"
+        ],
+        [
+          "Granola bar",
+          "3",
+          "190"
+        ],
+        [
+          "Cheese stick",
+          "7",
+          "80"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "Almonds had 6 grams of protein and 164 calories per serving."
+      },
+      {
+        "id": "B",
+        "label": "The cheese stick had the fewest calories (80) and more protein than almonds."
+      },
+      {
+        "id": "C",
+        "label": "Greek yogurt had the most protein (10 grams), but the granola bar had the most calories (190)."
+      },
+      {
+        "id": "D",
+        "label": "The granola bar had both the most calories and the most protein."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because it names different snacks as highest in protein and highest in calories. Choice A is incorrect because it describes one snack without comparing it with the others. Choice B is incorrect because, although true, it concerns the lowest-calorie snack and does not identify which snack has the most protein or calories. Choice D is incorrect because the granola bar had only 3 grams of protein, the least of the four."
+  },
+  {
+    "slug": "ii-ceq-012",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "A transit agency tracked average weekday ridership on four bus routes before and after it increased service frequency on Routes 2 and 4 only. An analyst claims that the routes with more frequent service gained riders while the other routes did not.",
+    "prompt": "Which choice best describes data from the table that support the analyst's claim?",
+    "table": {
+      "headers": [
+        "Route",
+        "Average weekday riders before",
+        "Average weekday riders after"
+      ],
+      "rows": [
+        [
+          "1",
+          "1,200",
+          "1,180"
+        ],
+        [
+          "2",
+          "950",
+          "1,240"
+        ],
+        [
+          "3",
+          "1,500",
+          "1,490"
+        ],
+        [
+          "4",
+          "700",
+          "860"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "Route 3 had the most riders both before and after the change."
+      },
+      {
+        "id": "B",
+        "label": "Ridership on Routes 2 and 4 rose by 290 and 160 riders, respectively, while ridership on Routes 1 and 3 fell slightly."
+      },
+      {
+        "id": "C",
+        "label": "Route 4 had fewer riders than Route 2 after the change."
+      },
+      {
+        "id": "D",
+        "label": "Ridership increased on all four routes after the change."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because Route 2 rose from 950 to 1,240 and Route 4 from 700 to 860, while Route 1 fell from 1,200 to 1,180 and Route 3 from 1,500 to 1,490. Choice A is incorrect because Route 3's ranking does not show which routes gained or lost riders. Choice C is incorrect because comparing two routes after the change does not show any change in ridership. Choice D is incorrect because Routes 1 and 3 lost riders."
+  },
+  {
+    "slug": "ii-ceq-013",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Sociologists asked residents of a city whether they trusted various sources of news about their community. The researchers argue that residents tend to trust sources they see as local more than sources based elsewhere.",
+    "prompt": "Which choice most effectively uses data from the table to support the researchers' argument?",
+    "table": {
+      "headers": [
+        "News source",
+        "Residents who trust it \"a great deal\" or \"somewhat\""
+      ],
+      "rows": [
+        [
+          "Neighborhood newsletter",
+          "74%"
+        ],
+        [
+          "Local TV station",
+          "68%"
+        ],
+        [
+          "National cable network",
+          "41%"
+        ],
+        [
+          "Social media posts",
+          "22%"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "Social media posts were trusted by 22% of residents, the lowest share of any source."
+      },
+      {
+        "id": "B",
+        "label": "The neighborhood newsletter and the local TV station were trusted by 74% and 68% of residents, respectively, compared with 41% for the national cable network."
+      },
+      {
+        "id": "C",
+        "label": "More than half of residents trusted the local TV station."
+      },
+      {
+        "id": "D",
+        "label": "The national cable network was trusted by more residents than social media posts were."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because it directly compares the two local sources with the nonlocal national network and shows higher trust for the local ones. Choice A is incorrect because social media posts are not identified as either local or nonlocal, so their low trust does not test the argument. Choice C is incorrect because it gives one local source's share without comparing it with a nonlocal source. Choice D is incorrect because it compares two sources without involving any local source."
+  },
+  {
+    "slug": "ii-ceq-014",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "A marine biologist recorded how often sea otters at two sites used rocks to crack open prey during hour-long observation sessions. Otters at Site 1 ate mostly hard-shelled snails, while those at Site 2 ate mostly soft-bodied prey. The biologist concluded that otters' tool use depends on diet, citing the finding that ______",
+    "prompt": "Which choice most effectively uses data from the table to complete the statement?",
+    "table": {
+      "headers": [
+        "Site",
+        "Main prey",
+        "Observation sessions",
+        "Total tool-use events"
+      ],
+      "rows": [
+        [
+          "1",
+          "Hard-shelled snails",
+          "20",
+          "340"
+        ],
+        [
+          "2",
+          "Soft-bodied prey",
+          "25",
+          "50"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "the biologist conducted more observation sessions at Site 2 than at Site 1."
+      },
+      {
+        "id": "B",
+        "label": "otters at Site 2 used tools 50 times in total."
+      },
+      {
+        "id": "C",
+        "label": "otters at Site 1 used tools an average of 17 times per session, compared with 2 times per session at Site 2."
+      },
+      {
+        "id": "D",
+        "label": "otters at Site 1 used tools about 7 times as often per session as otters at Site 2."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because dividing totals by sessions gives 340 ÷ 20 = 17 and 50 ÷ 25 = 2, showing far more frequent tool use where prey had hard shells. Choice A is incorrect because the number of sessions does not show how often otters used tools. Choice B is incorrect because one site's total, without the other site's rate, cannot show a difference related to diet. Choice D is incorrect because 17 is 8.5 times 2; \"about 7\" comes from dividing the totals (340 ÷ 50) without accounting for the different numbers of sessions."
+  },
+  {
+    "slug": "ii-ceq-015",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "A historian studying immigration to a port city compiled the number of arrivals by decade from the northern and southern provinces of a single country. The historian claims that during the period shown, the southern provinces replaced the northern provinces as the leading source of these arrivals.",
+    "prompt": "Which choice best describes data from the table that support the historian's claim?",
+    "table": {
+      "headers": [
+        "Decade",
+        "Arrivals from northern provinces",
+        "Arrivals from southern provinces"
+      ],
+      "rows": [
+        [
+          "1880s",
+          "12,400",
+          "3,100"
+        ],
+        [
+          "1890s",
+          "9,800",
+          "7,600"
+        ],
+        [
+          "1900s",
+          "6,200",
+          "11,900"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "Arrivals from the southern provinces rose from 3,100 to 11,900, surpassing northern arrivals, which fell to 6,200 by the 1900s."
+      },
+      {
+        "id": "B",
+        "label": "Arrivals from the northern provinces exceeded those from the southern provinces in the 1880s and 1890s."
+      },
+      {
+        "id": "C",
+        "label": "Total arrivals from both regions were higher in the 1890s than in the 1880s."
+      },
+      {
+        "id": "D",
+        "label": "Arrivals from the southern provinces exceeded those from the northern provinces in every decade shown."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because it shows the northern provinces leading at first and the southern provinces leading by the 1900s, which is what \"replaced\" requires. Choice B is incorrect because it shows only that the north led early, not that the south later overtook it. Choice C is incorrect because, although 17,400 is greater than 15,500, total arrivals say nothing about which region led. Choice D is incorrect because southern arrivals were lower than northern arrivals in the 1880s and 1890s."
+  },
+  {
+    "slug": "ii-ceq-016",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "To test whether a new coating reduces corrosion, engineers exposed coated and uncoated steel samples to salt spray for different lengths of time and measured the mass each sample lost. The engineers concluded that the coating reduced corrosion substantially throughout the test and that its benefit did not diminish over time.",
+    "prompt": "Which choice best describes data from the table that support the engineers' conclusion?",
+    "table": {
+      "headers": [
+        "Exposure (days)",
+        "Mass lost, uncoated (mg)",
+        "Mass lost, coated (mg)"
+      ],
+      "rows": [
+        [
+          "10",
+          "14",
+          "4"
+        ],
+        [
+          "20",
+          "29",
+          "9"
+        ],
+        [
+          "40",
+          "61",
+          "18"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "Uncoated samples lost 61 milligrams of mass after 40 days."
+      },
+      {
+        "id": "B",
+        "label": "Coated samples lost more mass after 40 days than after 10 days."
+      },
+      {
+        "id": "C",
+        "label": "The difference in mass lost between coated and uncoated samples was smallest at 40 days."
+      },
+      {
+        "id": "D",
+        "label": "At every exposure length, coated samples lost less than a third as much mass as uncoated samples."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the ratios 4/14, 9/29, and 18/61 are all below one-third, showing a large and consistent benefit at every length of exposure. Choice A is incorrect because it gives only the uncoated result, with nothing to compare it to. Choice B is incorrect because, although true, increasing loss for coated samples alone does not show that the coating helped. Choice C is incorrect because the differences were 10, 20, and 43 milligrams, so the difference was largest, not smallest, at 40 days."
+  },
+  {
+    "slug": "ii-ceq-017",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "A linguist studying a bilingual community recorded which of the community's two languages residents of different ages most often speak at home. The linguist suggests that the community is undergoing a gradual shift from Language A to Language B across generations.",
+    "prompt": "Which choice best describes data from the table that support the linguist's suggestion?",
+    "table": {
+      "headers": [
+        "Age group",
+        "Speak Language A most often (%)",
+        "Speak Language B most often (%)"
+      ],
+      "rows": [
+        [
+          "60 and older",
+          "82",
+          "18"
+        ],
+        [
+          "40–59",
+          "61",
+          "39"
+        ],
+        [
+          "20–39",
+          "37",
+          "63"
+        ],
+        [
+          "Under 20",
+          "19",
+          "81"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "Among residents aged 40–59, a majority most often speak Language A at home."
+      },
+      {
+        "id": "B",
+        "label": "Residents aged 20–39 speak Language B at home more often than Language A."
+      },
+      {
+        "id": "C",
+        "label": "More residents aged 60 and older than residents under 20 most often speak Language B at home."
+      },
+      {
+        "id": "D",
+        "label": "The share of residents who most often speak Language A at home is smaller in each younger age group, falling from 82% among those 60 and older to 19% among those under 20."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because a steady decline in Language A across successively younger groups is the generational pattern the linguist describes. Choice A is incorrect because one age group cannot show a change across generations. Choice B is incorrect because it also describes only one age group. Choice C is incorrect because only 18% of residents 60 and older speak Language B most often, compared with 81% of those under 20."
+  },
+  {
+    "slug": "ii-ceq-018",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "A student measured the height of four bean plants grown in identical conditions and counted the seeds each plant produced. The student hypothesized that taller bean plants produce more seeds.",
+    "prompt": "Which choice best describes data from the table that weaken the student's hypothesis?",
+    "table": {
+      "headers": [
+        "Plant",
+        "Height (cm)",
+        "Seeds produced"
+      ],
+      "rows": [
+        [
+          "1",
+          "42",
+          "310"
+        ],
+        [
+          "2",
+          "55",
+          "290"
+        ],
+        [
+          "3",
+          "61",
+          "350"
+        ],
+        [
+          "4",
+          "74",
+          "270"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "Plant 3, at 61 centimeters, was taller than Plant 1 and produced 40 more seeds."
+      },
+      {
+        "id": "B",
+        "label": "Plant 1 was the shortest of the four plants."
+      },
+      {
+        "id": "C",
+        "label": "The tallest plant, at 74 centimeters, produced the fewest seeds, 270."
+      },
+      {
+        "id": "D",
+        "label": "Plant 3 was taller than Plant 2 and produced more seeds."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the hypothesis predicts that the tallest plant should produce many seeds, yet Plant 4 produced the fewest. Choice A is incorrect because a taller plant producing more seeds (350 versus 310) fits the hypothesis rather than weakening it. Choice B is incorrect because Plant 1's height alone says nothing about seeds. Choice D is incorrect because a taller plant producing more seeds is consistent with the hypothesis."
+  },
+  {
+    "slug": "ii-ceq-019",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "A museum tracked visitors to a new exhibit on three days. Organizers hoped that offering free admission on Thursday evenings would attract people who had never visited the museum before.",
+    "prompt": "Which choice most effectively uses data from the table to support the claim that the free Thursday evenings attracted first-time visitors?",
+    "table": {
+      "headers": [
+        "Day",
+        "Total visitors",
+        "First-time visitors"
+      ],
+      "rows": [
+        [
+          "Tuesday",
+          "820",
+          "205"
+        ],
+        [
+          "Thursday evening (free)",
+          "1,140",
+          "627"
+        ],
+        [
+          "Saturday",
+          "2,300",
+          "690"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "More than half of Thursday evening visitors (627 of 1,140) were first-time visitors, a larger share than on Tuesday or Saturday."
+      },
+      {
+        "id": "B",
+        "label": "Saturday had more first-time visitors (690) than Thursday evening (627)."
+      },
+      {
+        "id": "C",
+        "label": "Thursday evening had more total visitors than Tuesday."
+      },
+      {
+        "id": "D",
+        "label": "Saturday had the most total visitors of the three days."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because 627 of 1,140 is about 55%, compared with about 25% on Tuesday (205 of 820) and 30% on Saturday (690 of 2,300), so first-time visitors made up an unusually large share on Thursday. Choice B is incorrect because this comparison makes Thursday look less successful at attracting first-time visitors. Choice C is incorrect because total visitors do not show how many were first-time visitors. Choice D is incorrect because Saturday's crowd size says nothing about the Thursday program."
+  },
+  {
+    "slug": "ii-ceq-020",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Ecologists counted bird species in forest fragments of different sizes. They hypothesized that larger fragments support more bird species but that the benefit of additional area diminishes as fragments become very large.",
+    "prompt": "Which choice best describes data from the table that support both parts of the ecologists' hypothesis?",
+    "table": {
+      "headers": [
+        "Fragment area (hectares)",
+        "Bird species recorded"
+      ],
+      "rows": [
+        [
+          "5",
+          "14"
+        ],
+        [
+          "20",
+          "27"
+        ],
+        [
+          "80",
+          "38"
+        ],
+        [
+          "320",
+          "44"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "The 320-hectare fragment had 44 species, the most of any fragment surveyed."
+      },
+      {
+        "id": "B",
+        "label": "Species counts rose with each larger fragment, but the gain from 80 to 320 hectares (6 species) was smaller than the gain from 5 to 20 hectares (13 species) despite involving far more added area."
+      },
+      {
+        "id": "C",
+        "label": "Each fragment was four times the area of the next smaller one, and each had more species than the one before."
+      },
+      {
+        "id": "D",
+        "label": "The gain from 20 to 80 hectares (11 species) was greater than the gain from 5 to 20 hectares."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because it shows more species in larger fragments and a smaller gain for a much larger added area (240 hectares versus 15), which is the diminishing benefit. Choice A is incorrect because it supports, at most, the first part of the hypothesis. Choice C is incorrect because it shows only that species increase with area, not that the benefit diminishes. Choice D is incorrect because 11 species is fewer than the 13-species gain from 5 to 20 hectares."
+  },
+  {
+    "slug": "ii-ceq-021",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "A historian analyzing census records claims that the rapid growth of a nineteenth-century city's textile mills drew workers away from farming in the surrounding county, rather than simply reflecting growth in the county's overall population.",
+    "prompt": "Which choice best describes data from the table that support the historian's claim?",
+    "table": {
+      "headers": [
+        "Year",
+        "Textile mill workers in city",
+        "Farm laborers in county",
+        "County population"
+      ],
+      "rows": [
+        [
+          "1840",
+          "1,200",
+          "8,900",
+          "31,000"
+        ],
+        [
+          "1850",
+          "3,800",
+          "7,100",
+          "33,500"
+        ],
+        [
+          "1860",
+          "7,400",
+          "5,300",
+          "36,200"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "Between 1840 and 1860, the number of mill workers rose by 6,200 while the number of farm laborers fell by 3,600, even though the county's population grew."
+      },
+      {
+        "id": "B",
+        "label": "The county's population grew by 5,200 between 1840 and 1860."
+      },
+      {
+        "id": "C",
+        "label": "In 1860, there were more mill workers in the city than farm laborers in the county."
+      },
+      {
+        "id": "D",
+        "label": "The number of farm laborers fell by 1,800 in each decade shown."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because it pairs growth in mill employment with a decline in farm labor while population rose, so the shift cannot be explained by population growth alone. Choice B is incorrect because overall growth by itself does not connect the mills to a loss of farm labor. Choice C is incorrect because comparing the two totals in a single year does not show movement from one kind of work to the other. Choice D is incorrect because, although true, the farm decline alone does not link it to the mills or rule out the population explanation."
+  },
+  {
+    "slug": "ii-ceq-022",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Researchers compared reading-score gains of students who did and did not use a new reading program at two schools. A critic argued that the program was ineffective because, with both schools combined, students who did not use the program gained more on average than those who did. The researchers countered that the program was beneficial, noting that ______",
+    "prompt": "Which choice most effectively uses data from the table to complete the statement?",
+    "table": {
+      "headers": [
+        "School",
+        "Group",
+        "Number of students",
+        "Average score gain (points)"
+      ],
+      "rows": [
+        [
+          "Lakeview",
+          "Used program",
+          "40",
+          "12"
+        ],
+        [
+          "Lakeview",
+          "Did not use program",
+          "160",
+          "8"
+        ],
+        [
+          "Riverside",
+          "Used program",
+          "160",
+          "5"
+        ],
+        [
+          "Riverside",
+          "Did not use program",
+          "40",
+          "3"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "more students used the program at Riverside than at Lakeview."
+      },
+      {
+        "id": "B",
+        "label": "at each school, students who used the program had a larger average gain than students who did not."
+      },
+      {
+        "id": "C",
+        "label": "students at Lakeview gained more on average than students at Riverside, regardless of group."
+      },
+      {
+        "id": "D",
+        "label": "with both schools combined, students who used the program had a larger average gain than those who did not."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because program users gained more within each school (12 vs. 8 at Lakeview, 5 vs. 3 at Riverside); the combined result reverses only because most program users attended Riverside, where all gains were lower. Choice A is incorrect because, although true and part of why the combined averages mislead, it does not by itself show that the program helped. Choice C is incorrect because a difference between schools says nothing about the program's effect. Choice D is incorrect because the combined averages are about 6.4 for users ((40 × 12 + 160 × 5) ÷ 200) and 7.0 for nonusers ((160 × 8 + 40 × 3) ÷ 200), so users gained less."
+  },
+  {
+    "slug": "ii-ceq-023",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "An energy analyst claims that in one region, solar generation grew much faster in relative terms than wind generation from 2016 to 2024, even though wind still produced more electricity than solar in 2024.",
+    "prompt": "Which choice most effectively uses data from the table to support the analyst's claim?",
+    "table": {
+      "headers": [
+        "Year",
+        "Solar generation (terawatt-hours)",
+        "Wind generation (terawatt-hours)"
+      ],
+      "rows": [
+        [
+          "2016",
+          "4",
+          "30"
+        ],
+        [
+          "2020",
+          "11",
+          "41"
+        ],
+        [
+          "2024",
+          "25",
+          "52"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "Wind generation increased by 22 terawatt-hours, while solar generation increased by 21 terawatt-hours."
+      },
+      {
+        "id": "B",
+        "label": "Solar generation exceeded wind generation in 2024."
+      },
+      {
+        "id": "C",
+        "label": "Solar generation rose more than sixfold, from 4 to 25 terawatt-hours, while wind generation rose from 30 to 52 terawatt-hours, less than doubling."
+      },
+      {
+        "id": "D",
+        "label": "Combined solar and wind generation exceeded 75 terawatt-hours in 2024."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because 25 ÷ 4 is about 6.3 while 52 ÷ 30 is about 1.7, showing much faster relative growth for solar, and the figures also show wind still ahead in 2024. Choice A is incorrect because it compares absolute increases, which makes the two sources look similar and does not address relative growth. Choice B is incorrect because wind (52) exceeded solar (25) in 2024. Choice D is incorrect because, although 25 + 52 = 77, the combined total does not compare the sources' growth."
+  },
+  {
+    "slug": "ii-ceq-024",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "A researcher studying a city's tree-planting program claims that the program reduced average July surface temperatures most in the neighborhoods that began with the least tree cover.",
+    "prompt": "Which choice best describes data from the table that support the researcher's claim?",
+    "table": {
+      "headers": [
+        "Neighborhood",
+        "Tree cover 2014 (%)",
+        "Tree cover 2024 (%)",
+        "Change in average July surface temperature (°C)"
+      ],
+      "rows": [
+        [
+          "Eastfield",
+          "8",
+          "19",
+          "−2.1"
+        ],
+        [
+          "Harbor",
+          "15",
+          "22",
+          "−1.2"
+        ],
+        [
+          "Millbrook",
+          "27",
+          "31",
+          "−0.5"
+        ],
+        [
+          "Oakridge",
+          "35",
+          "37",
+          "−0.2"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "Eastfield gained 11 percentage points of tree cover, the largest gain of any neighborhood."
+      },
+      {
+        "id": "B",
+        "label": "Oakridge had the most tree cover of any neighborhood in both 2014 and 2024."
+      },
+      {
+        "id": "C",
+        "label": "Every neighborhood had at least 19% tree cover in 2024."
+      },
+      {
+        "id": "D",
+        "label": "Eastfield, which had the least tree cover in 2014, had the largest temperature decrease, and the decrease was smaller in each neighborhood that began with more tree cover."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because it ranks the neighborhoods by starting tree cover (8%, 15%, 27%, 35%) and shows temperature decreases shrinking in the same order (2.1, 1.2, 0.5, 0.2°C), which is exactly the claim. Choice A is incorrect because it concerns the amount of tree cover gained, not starting tree cover, and does not mention temperature. Choice B is incorrect because it describes tree cover only, not temperature change. Choice C is incorrect because, although true, it says nothing about temperature or starting tree cover."
+  },
+  {
+    "slug": "ii-ceq-025",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "command_of_evidence_quantitative",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Researchers recorded the average body length of a fish species in a lake before and after a predator was introduced. They hypothesized that predation would favor fish that mature at smaller sizes. Because water temperatures, which can also reduce fish size, rose during the same period, they compared the lake with a nearby lake that warmed similarly but received no predator. The data suggest that ______",
+    "prompt": "Which choice most effectively uses data from the table to complete the statement?",
+    "table": {
+      "headers": [
+        "Lake",
+        "Average body length, earlier survey (cm)",
+        "Average body length, later survey (cm)"
+      ],
+      "rows": [
+        [
+          "Predator introduced",
+          "24",
+          "18"
+        ],
+        [
+          "No predator",
+          "24",
+          "22"
+        ]
+      ]
+    },
+    "options": [
+      {
+        "id": "A",
+        "label": "warming alone may account for some decrease in body length, but the larger decrease in the lake with the predator is consistent with the researchers' hypothesis."
+      },
+      {
+        "id": "B",
+        "label": "the predator had no effect on body length, since fish in both lakes became smaller."
+      },
+      {
+        "id": "C",
+        "label": "warming had no effect on body length, since the decrease occurred only in the lake with the predator."
+      },
+      {
+        "id": "D",
+        "label": "fish in the lake without the predator were longer in the later survey than in the earlier one."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because fish shrank by 2 centimeters in the lake without the predator (24 to 22), suggesting a warming effect, but by 6 centimeters in the lake with it (24 to 18), an extra decline consistent with predation. Choice B is incorrect because the decrease was three times larger with the predator, so the shared decline does not rule out a predator effect. Choice C is incorrect because fish also became smaller in the lake without the predator. Choice D is incorrect because those fish decreased from 24 to 22 centimeters."
+  },
+  {
+    "slug": "ii-inf-001",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Most bats locate insects by echolocation: they emit high-pitched calls and listen for the echoes. Some moths can hear these calls and respond by diving toward the ground or flying erratically. Researchers have found that moths of one such species are rarely caught by bats that hunt using echolocation. This finding suggests that ______",
+    "prompt": "Which choice most logically completes the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "bats that hunt these moths do not rely on echolocation."
+      },
+      {
+        "id": "B",
+        "label": "most species of moths cannot hear sounds of any kind."
+      },
+      {
+        "id": "C",
+        "label": "moths that fly erratically are easier for bats to detect."
+      },
+      {
+        "id": "D",
+        "label": "the moths' ability to hear bat calls helps them avoid being caught."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the moths can hear bat calls, react by evading, and are rarely caught by echolocating bats, which points to hearing as a defense. Choice A is incorrect because the finding specifically concerns bats that hunt by echolocation. Choice B is incorrect because the text discusses moths that can hear and says nothing about most moth species. Choice C is incorrect because erratic flight is presented as an escape response, and the moths are rarely caught."
+  },
+  {
+    "slug": "ii-inf-002",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Many public libraries now offer services beyond lending books, such as job-search workshops and free internet access. One library director noted that attendance at the job-search workshops is highest at branches in neighborhoods where fewer households have internet access at home. The director's observation suggests that ______",
+    "prompt": "Which choice most logically completes the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "residents of those neighborhoods borrow more books than other residents do."
+      },
+      {
+        "id": "B",
+        "label": "the workshops should be discontinued in neighborhoods where most homes have internet access."
+      },
+      {
+        "id": "C",
+        "label": "the workshops may be especially valuable to residents who lack internet access at home."
+      },
+      {
+        "id": "D",
+        "label": "most households in the city have no internet access at home."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because high attendance where home internet is scarce suggests the workshops meet a need for residents without it. Choice A is incorrect because the observation concerns workshops, not book borrowing. Choice B is incorrect because the observation shows lower attendance elsewhere, not that the workshops should end there. Choice D is incorrect because the observation is about some neighborhoods and does not describe the whole city."
+  },
+  {
+    "slug": "ii-inf-003",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "In the 1600s, Dutch merchants bought many paintings of everyday scenes, such as kitchens, markets, and households, rather than the religious and mythological subjects favored by many earlier European patrons. Because these merchants bought art to display in their own homes, historians have argued that the shift in subject matter ______",
+    "prompt": "Which choice most logically completes the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "reflected the tastes of a new group of buyers."
+      },
+      {
+        "id": "B",
+        "label": "occurred because religious paintings had been banned."
+      },
+      {
+        "id": "C",
+        "label": "made paintings less popular among merchants."
+      },
+      {
+        "id": "D",
+        "label": "was caused by a shortage of trained painters."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the text links the new subjects to merchants buying art for their homes, so the shift follows the preferences of these buyers. Choice B is incorrect because the text never mentions a ban. Choice C is incorrect because the merchants bought many paintings. Choice D is incorrect because nothing in the text suggests a shortage of painters."
+  },
+  {
+    "slug": "ii-inf-004",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Seeds of many desert wildflowers can lie dormant in the soil for years. They germinate only after heavy rains soak the ground, not after light showers. Because a seedling needs moisture for several weeks to grow and flower, this pattern likely ______",
+    "prompt": "Which choice most logically completes the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "allows the plants to flower during long dry periods."
+      },
+      {
+        "id": "B",
+        "label": "keeps seeds from sprouting when there is not enough water for the plants to survive."
+      },
+      {
+        "id": "C",
+        "label": "shows that desert wildflowers need less water than other plants."
+      },
+      {
+        "id": "D",
+        "label": "causes the seeds to lose their ability to germinate."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because seedlings need weeks of moisture, so waiting for a soaking rain avoids sprouting when the water would run out. Choice A is incorrect because the plants germinate after heavy rain, not during dry periods. Choice C is incorrect because the text stresses that seedlings need sustained moisture and makes no comparison with other plants. Choice D is incorrect because the seeds remain able to germinate for years."
+  },
+  {
+    "slug": "ii-inf-005",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "When the letter arrived, Tomas set it on the kitchen table, unopened, and went out to feed the chickens. He fed the goats, too, and then mended a fence post that had been leaning for a month, glancing toward the kitchen window each time he passed the house. By the time he came back inside, the sun was setting, and the envelope lay exactly where he had left it.",
+    "prompt": "Based on the text, what can most reasonably be inferred about Tomas?",
+    "options": [
+      {
+        "id": "A",
+        "label": "He has forgotten that the letter arrived."
+      },
+      {
+        "id": "B",
+        "label": "He is reluctant to read the letter."
+      },
+      {
+        "id": "C",
+        "label": "He wants someone else to read the letter to him."
+      },
+      {
+        "id": "D",
+        "label": "He usually neglects his farm chores."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because he leaves the letter unopened, keeps busy with chores (including a repair that had waited a month), and keeps glancing toward the house, all signs that he is putting off reading it. Choice A is incorrect because his repeated glances toward the kitchen window show that the letter is on his mind. Choice C is incorrect because nothing in the text mentions anyone else reading it. Choice D is incorrect because the text shows him doing many chores, not neglecting them."
+  },
+  {
+    "slug": "ii-inf-006",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "A café tested two ways of displaying its pastries. Customers were more likely to buy a pastry when the pastries were displayed beside the register than when they were displayed on a shelf near the entrance. The pastries and their prices were the same in both arrangements. This finding suggests that ______",
+    "prompt": "Which choice most logically completes the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "customers prefer pastries that cost less."
+      },
+      {
+        "id": "B",
+        "label": "customers visit the café mainly to buy pastries."
+      },
+      {
+        "id": "C",
+        "label": "the shelf near the entrance displayed more kinds of pastries."
+      },
+      {
+        "id": "D",
+        "label": "the place where an item is displayed can affect whether customers buy it."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because only the location changed, yet purchases changed, so placement influenced buying. Choice A is incorrect because the prices were the same in both arrangements. Choice B is incorrect because the finding says nothing about why customers visit. Choice C is incorrect because the pastries were the same in both arrangements."
+  },
+  {
+    "slug": "ii-inf-007",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Ice is less dense than liquid water, so it floats. In winter, lakes in cold regions freeze from the top down, and the layer of ice on the surface insulates the water beneath it from the frigid air. As a result, fish in such lakes ______",
+    "prompt": "Which choice most logically completes the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "must swim to the surface of the lake to avoid freezing."
+      },
+      {
+        "id": "B",
+        "label": "are frozen into the ice until spring."
+      },
+      {
+        "id": "C",
+        "label": "can survive the winter in liquid water below the ice."
+      },
+      {
+        "id": "D",
+        "label": "live mostly in lakes that never freeze."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because ice forms on top and insulates the water below, leaving liquid water where fish can live. Choice A is incorrect because the surface is where the ice forms. Choice B is incorrect because the water beneath the ice stays liquid. Choice D is incorrect because the text describes fish in lakes that do freeze."
+  },
+  {
+    "slug": "ii-inf-008",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "Construction of many medieval cathedrals stretched over several generations. Masons who laid the foundations often died long before the towers were finished, and later builders sometimes revised the original designs according to newer ideas. Visitors today may therefore notice that some cathedrals ______",
+    "prompt": "Which choice most logically completes the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "combine architectural styles from different periods."
+      },
+      {
+        "id": "B",
+        "label": "were built more quickly than modern buildings."
+      },
+      {
+        "id": "C",
+        "label": "were designed entirely by a single architect."
+      },
+      {
+        "id": "D",
+        "label": "have foundations that are newer than their towers."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because construction spanned generations and later builders revised designs according to newer ideas, so a building could mix styles. Choice B is incorrect because the text says construction took generations. Choice C is incorrect because designs were revised by later builders. Choice D is incorrect because the foundations were laid first and the towers finished later."
+  },
+  {
+    "slug": "ii-inf-009",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "easy",
+    "format": "mcq",
+    "passage": "When houseplants are placed near a window, their stems often bend toward the glass over several days. Experiments show that cells on the shaded side of a stem grow longer than cells on the side facing the light. This uneven growth ______",
+    "prompt": "Which choice most logically completes the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "causes the stem to curve toward the light."
+      },
+      {
+        "id": "B",
+        "label": "prevents the plant from absorbing sunlight."
+      },
+      {
+        "id": "C",
+        "label": "occurs only in plants that are kept outdoors."
+      },
+      {
+        "id": "D",
+        "label": "means the lit side of the stem grows faster than the shaded side."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because when the shaded side lengthens more than the lit side, the stem bends toward the lit side, which matches the observed bending. Choice B is incorrect because bending toward the window helps the plant reach light. Choice C is incorrect because the text describes houseplants indoors. Choice D is incorrect because the text says the shaded side grows longer."
+  },
+  {
+    "slug": "ii-inf-010",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Linguists have observed that when two words in a language come to be pronounced identically, speakers sometimes replace one of them with a longer phrase or a different word, especially if both could appear in similar sentences and cause confusion. Words that sound alike but are used in very different contexts, by contrast, often coexist for centuries. This pattern suggests that ______",
+    "prompt": "Which choice most logically completes the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "words that come to sound alike are always eventually replaced."
+      },
+      {
+        "id": "B",
+        "label": "longer words are easier for speakers to remember than shorter words."
+      },
+      {
+        "id": "C",
+        "label": "identical pronunciations rarely arise in languages."
+      },
+      {
+        "id": "D",
+        "label": "the risk of misunderstanding in context, rather than identical sound alone, influences whether a word is replaced."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because replacement is more likely when the words could be confused in similar sentences, while identical words used in different contexts survive, so context and confusion matter. Choice A is incorrect because the text says some such words coexist for centuries. Choice B is incorrect because the text gives longer phrases as replacements without comparing how easy words are to remember. Choice C is incorrect because the text describes identical pronunciations arising and says nothing about how rare that is."
+  },
+  {
+    "slug": "ii-inf-011",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Periodical cicadas spend 13 or 17 years underground before emerging together in enormous numbers. Some researchers have noted that a predator whose population rises and falls in a regular 2- or 3-year cycle would reach a peak in the same year as a cicada emergence less often than if the cicadas emerged every 12 or 18 years, because 13 and 17, unlike 12 and 18, share no common factors with 2 or 3. If this idea is correct, the cicadas' long, unusual cycle lengths ______",
+    "prompt": "Which choice most logically completes the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "allow cicadas to emerge in years when their own food is most abundant."
+      },
+      {
+        "id": "B",
+        "label": "reduce the chance that cicada emergences coincide with peaks in predator populations."
+      },
+      {
+        "id": "C",
+        "label": "guarantee that no predators are present when cicadas emerge."
+      },
+      {
+        "id": "D",
+        "label": "cause predator populations to follow 13- or 17-year cycles."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the researchers' reasoning is that such cycles line up with short predator cycles less often than other cycle lengths would, so emergences meet predator peaks less often. Choice A is incorrect because the text discusses predators, not the cicadas' food. Choice C is incorrect because predators would still exist; they would just rarely be at a peak. Choice D is incorrect because the predators are described as having 2- or 3-year cycles."
+  },
+  {
+    "slug": "ii-inf-012",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "In the early nineteenth century, many British towns kept their own local time, set by the position of the sun, so that noon in a western town arrived several minutes after noon in London. These differences caused few problems when travel between towns was slow. Once railways began running scheduled trains across the country, however, ______",
+    "prompt": "Which choice most logically completes the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "towns stopped using clocks altogether."
+      },
+      {
+        "id": "B",
+        "label": "trains could no longer travel between western towns and London."
+      },
+      {
+        "id": "C",
+        "label": "differences in local time made timetables confusing, encouraging the adoption of a single standard time."
+      },
+      {
+        "id": "D",
+        "label": "local times became more accurate because trains carried clocks."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because \"however\" signals that the differences began to matter, and scheduled trains crossing many towns would make conflicting local times a practical problem. Choice A is incorrect because nothing suggests towns abandoned clocks. Choice B is incorrect because time differences would complicate schedules, not prevent travel. Choice D is incorrect because the issue was inconsistency between towns, not accuracy."
+  },
+  {
+    "slug": "ii-inf-013",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Every Sunday, Grandmother praised the neighbors' garden: the roses, the tidy beds, the beans climbing their strings. She never praised her own, which was wild with volunteer seedlings and half swallowed by mint. Yet when the neighbors offered to send their gardener to tidy it, she thanked them warmly and said that the mint had been there longer than she had, and she would not dream of evicting it.",
+    "prompt": "Based on the text, what can most reasonably be inferred about Grandmother?",
+    "options": [
+      {
+        "id": "A",
+        "label": "She is embarrassed by her garden and hopes the neighbors will improve it."
+      },
+      {
+        "id": "B",
+        "label": "She resents the neighbors and is offended by their offer."
+      },
+      {
+        "id": "C",
+        "label": "She plans to replace her mint with roses like the neighbors'."
+      },
+      {
+        "id": "D",
+        "label": "She admires orderly gardens but values her own garden as it is."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because she praises the tidy garden next door yet politely refuses help, saying she would not \"evict\" the long-established mint, which suggests she values her garden's wild state. Choice A is incorrect because she declines the offer to tidy it. Choice B is incorrect because she thanks the neighbors warmly. Choice C is incorrect because she refuses to remove the mint."
+  },
+  {
+    "slug": "ii-inf-014",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "When tickets for a popular concert go on sale, they often sell out within minutes and then reappear on resale sites at several times their original price. Some economists argue that this pattern shows the original price was set below what many fans were willing to pay. If that argument is correct, then a promoter who raised the original price ______",
+    "prompt": "Which choice most logically completes the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "would necessarily sell fewer tickets than before."
+      },
+      {
+        "id": "B",
+        "label": "would cause resale prices to rise even higher."
+      },
+      {
+        "id": "C",
+        "label": "might still sell out the concert while collecting revenue that would otherwise have gone to resellers."
+      },
+      {
+        "id": "D",
+        "label": "would show that fans are unwilling to pay high prices."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because if many fans would pay more, a higher price could still sell every ticket, and the extra money would go to the promoter instead of resellers. Choice A is incorrect because the argument implies demand exceeds supply at the current price, so fewer sales are not certain. Choice B is incorrect because a higher original price would narrow, not widen, the gap resellers exploit. Choice D is incorrect because the resale prices show that many fans do pay high prices."
+  },
+  {
+    "slug": "ii-inf-015",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "In laboratory studies, zebrafish can regrow damaged heart tissue, whereas adult mice cannot. Newborn mice, however, can regenerate heart tissue during roughly their first week of life, after which the ability fades. Researchers studying this window have found that heart muscle cells in newborn mice still divide, while those in older mice largely stop dividing. These findings suggest that ______",
+    "prompt": "Which choice most logically completes the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "zebrafish hearts are structurally identical to the hearts of newborn mice."
+      },
+      {
+        "id": "B",
+        "label": "the ability of heart muscle cells to divide may be important for regenerating heart tissue."
+      },
+      {
+        "id": "C",
+        "label": "adult mice could regenerate heart tissue if they lived in water."
+      },
+      {
+        "id": "D",
+        "label": "heart regeneration in newborn mice depends on cells from zebrafish."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because the regenerative window in mice coincides with the period when heart muscle cells still divide, linking division to regeneration. Choice A is incorrect because the text never compares heart structures. Choice C is incorrect because nothing suggests that living in water matters. Choice D is incorrect because the mice and zebrafish are separate examples; no transfer of cells is mentioned."
+  },
+  {
+    "slug": "ii-inf-016",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Researchers studying tool libraries, where residents can borrow drills, ladders, and saws much as they borrow books, found that many borrowers had previously bought tools they used only once or twice. Many borrowers also reported meeting neighbors for the first time through the library. Supporters argue that such programs therefore ______",
+    "prompt": "Which choice most logically completes the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "may both reduce unnecessary purchases and strengthen connections among residents."
+      },
+      {
+        "id": "B",
+        "label": "are used mainly by professional builders."
+      },
+      {
+        "id": "C",
+        "label": "will soon replace hardware stores."
+      },
+      {
+        "id": "D",
+        "label": "succeed only in neighborhoods where residents already know one another."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because the two findings point to two benefits: fewer purchases of rarely used tools and new connections between neighbors. Choice B is incorrect because the text describes ordinary residents who bought tools for occasional use. Choice C is incorrect because nothing suggests the programs will replace stores. Choice D is incorrect because borrowers met neighbors for the first time, so they did not already know them."
+  },
+  {
+    "slug": "ii-inf-017",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Before recording technology, a composer's reputation depended largely on live performances and printed sheet music, and only people who could read musical notation could study a work in detail on their own. The spread of recordings in the twentieth century allowed listeners without musical training to hear the same performance again and again. Some historians therefore argue that recordings ______",
+    "prompt": "Which choice most logically completes the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "broadened the audience able to become closely familiar with particular musical works."
+      },
+      {
+        "id": "B",
+        "label": "made printed sheet music impossible to sell."
+      },
+      {
+        "id": "C",
+        "label": "caused composers to stop writing music for live performance."
+      },
+      {
+        "id": "D",
+        "label": "reduced the number of people who listened to music."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because recordings let people who could not read notation hear a work repeatedly, giving more people a way to know it well. Choice B is incorrect because the text does not discuss sheet music sales after recordings appeared. Choice C is incorrect because nothing suggests composers abandoned live performance. Choice D is incorrect because the text implies recordings expanded listening."
+  },
+  {
+    "slug": "ii-inf-018",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Bacteria exposed to an antibiotic sometimes survive not because they carry genes for resistance but because they are in a dormant state, in which the processes the drug targets slow down. Once the antibiotic is gone, these dormant cells, called persisters, can resume growing, and their offspring are as vulnerable to the drug as the original population. This suggests that infections that return after treatment ______",
+    "prompt": "Which choice most logically completes the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "always require a different antibiotic to cure."
+      },
+      {
+        "id": "B",
+        "label": "are not always caused by bacteria that have become genetically resistant to the antibiotic."
+      },
+      {
+        "id": "C",
+        "label": "occur only when bacteria carry genes for resistance."
+      },
+      {
+        "id": "D",
+        "label": "could be prevented by encouraging bacteria to become dormant."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because persisters survive without resistance genes and can regrow, so a returning infection may come from them rather than from resistant bacteria. Choice A is incorrect because persisters' offspring remain vulnerable to the same drug. Choice C is incorrect because persisters are a nongenetic route to survival. Choice D is incorrect because dormancy is what lets bacteria survive the drug."
+  },
+  {
+    "slug": "ii-inf-019",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "medium",
+    "format": "mcq",
+    "passage": "Many surviving ancient Greek marble statues appear pure white today, an appearance that later European artists admired and imitated. Analyses of microscopic traces on some statues' surfaces, however, have detected pigments, indicating that the statues were originally painted in vivid colors. This finding suggests that later artists who imitated the white statues ______",
+    "prompt": "Which choice most logically completes the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "used the same pigments that the Greek sculptors had used."
+      },
+      {
+        "id": "B",
+        "label": "knew that the statues had once been painted."
+      },
+      {
+        "id": "C",
+        "label": "were imitating an appearance that the original sculptors had not intended."
+      },
+      {
+        "id": "D",
+        "label": "preferred bronze sculpture to marble sculpture."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the statues were originally painted, so their white appearance, which later artists copied, is not what the sculptors created. Choice A is incorrect because the later artists imitated the white appearance, not the original paint. Choice B is incorrect because the text says the pigments were detected through modern analysis of microscopic traces, which does not suggest earlier artists knew. Choice D is incorrect because bronze is never mentioned."
+  },
+  {
+    "slug": "ii-inf-020",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Classical economic models assume that money is fungible: a dollar is a dollar regardless of its source. Yet studies of household spending find that people often treat windfalls, such as tax refunds, differently from regular income, spending refunds on discretionary purchases while budgeting wages tightly for necessities. If such \"mental accounting\" is widespread, then programs that deliver identical support either as a single lump-sum payment or as a small increase in each paycheck ______",
+    "prompt": "Which choice most logically completes the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "would have identical effects on household spending, as classical models predict."
+      },
+      {
+        "id": "B",
+        "label": "would have no effect, since households budget necessities tightly regardless of income."
+      },
+      {
+        "id": "C",
+        "label": "would lead households to save the entire lump-sum payment."
+      },
+      {
+        "id": "D",
+        "label": "might lead to different spending patterns even though the total amount is the same."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because a lump sum resembles a windfall and a paycheck increase resembles regular income, so mental accounting predicts the two could be spent differently. Choice A is incorrect because it assumes the very fungibility that the studies call into question. Choice B is incorrect because the text says people do spend windfalls and wages, just in different ways. Choice C is incorrect because the text says windfalls tend to be spent on discretionary purchases, not saved."
+  },
+  {
+    "slug": "ii-inf-021",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Conservationists once expected that removing an invasive predator from an island would allow native prey to recover. On several islands, however, eradicating feral cats was followed by an explosion of introduced rats that the cats had been holding in check, and the rats then ate large numbers of native seabirds' eggs. Such outcomes indicate that ______",
+    "prompt": "Which choice most logically completes the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "the effects of removing one invasive species can depend on its interactions with other introduced species."
+      },
+      {
+        "id": "B",
+        "label": "removal programs fail because they rarely reduce invasive predator numbers enough to matter."
+      },
+      {
+        "id": "C",
+        "label": "the feral cats had mainly been eating seabirds' eggs rather than rats."
+      },
+      {
+        "id": "D",
+        "label": "native prey cannot recover on any island where an introduced species remains."
+      }
+    ],
+    "answer": "A",
+    "explanation": "Choice A is the best answer because removing the cats released the rats they had suppressed, and the rats harmed seabirds, so the outcome hinged on the interaction between two introduced species. Choice B is incorrect because the cats were eradicated, so the problem was not that removal fell short. Choice C is incorrect because the text says the cats had been holding the rats in check. Choice D is incorrect because the text describes particular cases and does not support a claim about every island."
+  },
+  {
+    "slug": "ii-inf-022",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Adapted from Charlotte Brontë, Jane Eyre, 1847.\n\nThere was no possibility of taking a walk that day. We had been wandering, indeed, in the leafless shrubbery an hour in the morning; but since dinner the cold winter wind had brought with it clouds so sombre, and a rain so penetrating, that further out-door exercise was now out of the question. I was glad of it: I never liked long walks, especially on chilly afternoons: dreadful to me was the coming home in the raw twilight, with nipped fingers and toes, and a heart saddened by the chidings of Bessie, the nurse, and humbled by the consciousness of my physical inferiority to Eliza, John, and Georgiana Reed.",
+    "prompt": "Based on the text, what can most reasonably be inferred about the narrator?",
+    "options": [
+      {
+        "id": "A",
+        "label": "She is disappointed that the weather has prevented an afternoon walk."
+      },
+      {
+        "id": "B",
+        "label": "She prefers walking in the rain to walking on dry afternoons."
+      },
+      {
+        "id": "C",
+        "label": "She enjoys the company of Eliza, John, and Georgiana on walks."
+      },
+      {
+        "id": "D",
+        "label": "Her relief at the cancelled walk stems partly from the discomfort she feels in comparison with the Reed children."
+      }
+    ],
+    "answer": "D",
+    "explanation": "Choice D is the best answer because the narrator is \"glad\" there will be no walk and explains that returning from walks left her scolded and \"humbled\" by her physical inferiority to the Reed children. Choice A is incorrect because she says she was glad of the cancellation. Choice B is incorrect because she dislikes chilly walks and is relieved that the rain has ruled one out. Choice C is incorrect because the walks leave her feeling humbled beside these children, which does not suggest enjoyment of their company."
+  },
+  {
+    "slug": "ii-inf-023",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Historians of literacy caution against equating the ability to sign one's name with the ability to read. In some early modern European communities, reading was taught before writing, often at home or in church, and many people who learned to read never went on to learn to write. Signatures on marriage registers, a common source for estimates of past literacy, therefore ______",
+    "prompt": "Which choice most logically completes the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "may overestimate the share of people in such communities who could read."
+      },
+      {
+        "id": "B",
+        "label": "may underestimate the share of people in such communities who could read."
+      },
+      {
+        "id": "C",
+        "label": "show that most people in such communities learned to write before they learned to read."
+      },
+      {
+        "id": "D",
+        "label": "are unreliable because many people signed marriage registers more than once."
+      }
+    ],
+    "answer": "B",
+    "explanation": "Choice B is the best answer because people who could read but not write would be unable to sign, so counting signatures would miss them and understate reading ability. Choice A is incorrect because it reverses the direction of the error. Choice C is incorrect because the text says reading was taught before writing. Choice D is incorrect because the text never mentions repeated signatures."
+  },
+  {
+    "slug": "ii-inf-024",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "A gene variant that increases the risk of a disease would ordinarily be expected to become rarer over generations, since people who carry it may leave fewer descendants. Some such variants persist, however. In one well-studied case, carrying a single copy of a variant protects against a dangerous infection, while carrying two copies causes a serious illness. In regions where the infection is common, the variant is therefore likely to ______",
+    "prompt": "Which choice most logically completes the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "disappear quickly, because people with two copies become seriously ill."
+      },
+      {
+        "id": "B",
+        "label": "become rarer than it is in regions where the infection is absent."
+      },
+      {
+        "id": "C",
+        "label": "remain relatively common, because the advantage to carriers of one copy offsets the harm to people with two copies."
+      },
+      {
+        "id": "D",
+        "label": "protect only people who carry two copies against the infection."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because where the infection is common, one-copy carriers benefit, which can balance the cost to two-copy carriers and keep the variant from disappearing. Choice A is incorrect because it ignores the protective benefit that the text says explains why the variant persists. Choice B is incorrect because the logic runs the other way: where the infection is absent, the variant brings only harm, so it should be rarer there, not more common. Choice D is incorrect because the text says protection comes from a single copy and two copies cause illness."
+  },
+  {
+    "slug": "ii-inf-025",
+    "section": "reading_writing",
+    "official_domain": "information_and_ideas",
+    "skill": "inferences",
+    "sat_domain": "command_of_evidence",
+    "difficulty": "hard",
+    "format": "mcq",
+    "passage": "Translators of poetry face a choice that translators of technical manuals rarely confront: whether to preserve a poem's literal meaning or its sound, including its rhyme, meter, and patterns of repetition, since the two can seldom be carried into another language at once. A translator who reproduces every image and statement faithfully may produce a text that is accurate yet flat, while one who recreates the music of the original must often alter what it says. It follows that any single translation of a poem ______",
+    "prompt": "Which choice most logically completes the text?",
+    "options": [
+      {
+        "id": "A",
+        "label": "will be more precise than the original poem."
+      },
+      {
+        "id": "B",
+        "label": "should give priority to sound over literal meaning."
+      },
+      {
+        "id": "C",
+        "label": "is likely to convey some qualities of the original at the expense of others."
+      },
+      {
+        "id": "D",
+        "label": "can preserve both sound and literal meaning if the translator is skilled enough."
+      }
+    ],
+    "answer": "C",
+    "explanation": "Choice C is the best answer because the text says meaning and sound can seldom both be carried over, so a translation usually gains one at the cost of the other. Choice A is incorrect because the text never suggests a translation surpasses the original. Choice B is incorrect because the author describes the trade-off without favoring either side. Choice D is incorrect because the text says the two can seldom be preserved together."
+  }
+]

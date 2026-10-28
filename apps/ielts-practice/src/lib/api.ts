@@ -199,29 +199,6 @@ export type PracticePlanItem = {
   practice_session?: PracticeSessionSummary | null;
 };
 
-export type PracticeAttempt = {
-  id: string;
-  exercise_id: string;
-  plan_item_id: string | null;
-  section_type: "reading" | "listening" | "writing";
-  question_type: string;
-  status: "started" | "submitted" | "scored" | "failed";
-  answers_json: Json;
-  score_artifacts: Json;
-  raw_score: number | null;
-  max_score: number | null;
-  accuracy_ratio: number | null;
-  estimated_band: number | null;
-  writing_session_id: string | null;
-  writing_evaluation_id: string | null;
-  started_at: string;
-  submitted_at: string | null;
-  scored_at: string | null;
-  metadata: Json;
-  created_at: string;
-  updated_at: string;
-};
-
 export type PracticeRule = {
   id: string;
   rule_key: string;
@@ -289,6 +266,17 @@ const resolveApiErrorMessage = (status: number, details: unknown): string => {
   return `Request failed (${status}). Please try again.`;
 };
 
+export class ApiError extends Error {
+  status: number;
+  code: string | null;
+  constructor(message: string, status: number, code: string | null) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
 const call = async <T>(
   accessToken: string,
   path: string,
@@ -314,7 +302,10 @@ const call = async <T>(
 
   if (!res.ok) {
     const details = await readBody(res);
-    throw new Error(resolveApiErrorMessage(res.status, details));
+    const code = details && typeof details === "object" && !Array.isArray(details) && typeof (details as Record<string, unknown>).code === "string"
+      ? String((details as Record<string, unknown>).code)
+      : null;
+    throw new ApiError(resolveApiErrorMessage(res.status, details), res.status, code);
   }
   return (await res.json()) as T;
 };
@@ -371,7 +362,15 @@ export const practiceDiagnosticsGet = (
 
 export const practiceGeneratePlan = (
   accessToken: string,
-  body?: { plan_date?: string; timezone?: string; daily_minutes?: number; daily_count?: number; refresh_diagnostics?: boolean },
+  body?: {
+    plan_date?: string;
+    timezone?: string;
+    daily_minutes?: number;
+    daily_count?: number;
+    refresh_diagnostics?: boolean;
+    focus_section?: "reading" | "listening" | "writing";
+    focus_question_type?: string;
+  },
 ): Promise<{
   ok: boolean;
   plan_date: string;
@@ -380,6 +379,8 @@ export const practiceGeneratePlan = (
   daily_practice_minutes?: number;
   quotas: Json;
   items: PracticePlanItem[];
+  focus?: { section: string; question_type: string | null; matched: "question_type" | "section" | "none" } | null;
+  empty_reason?: "no_published_content" | "nothing_selectable";
 }> => call(accessToken, "/ielts-practice/plans/generate", { method: "POST", body: body ?? {} });
 
 export const practiceTodayPlan = (
@@ -576,24 +577,6 @@ export const practiceRoadmapList = (
   if (opts?.refresh) qs.set("refresh", "true");
   return call(accessToken, `/ielts-practice/roadmap${qs.toString() ? `?${qs.toString()}` : ""}`);
 };
-
-export const practiceAttemptStart = (
-  accessToken: string,
-  body: { exercise_id?: string; plan_item_id?: string },
-): Promise<{ ok: boolean; attempt: PracticeAttempt; exercise: PracticeExercise }> =>
-  call(accessToken, "/ielts-practice/attempts/start", { method: "POST", body });
-
-export const practiceAttemptSubmit = (
-  accessToken: string,
-  body: { attempt_id: string; answers: unknown; metadata?: Json; force?: boolean },
-): Promise<{ ok: boolean; attempt: PracticeAttempt; exercise: PracticeExercise; signals_enqueued: number }> =>
-  call(accessToken, "/ielts-practice/attempts/submit", { method: "POST", body });
-
-export const practiceAttemptGet = (
-  accessToken: string,
-  attemptId: string,
-): Promise<{ attempt: PracticeAttempt; exercise: PracticeExercise | null }> =>
-  call(accessToken, `/ielts-practice/attempts/${encodeURIComponent(attemptId)}`);
 
 export const adminPracticeExercisesList = (
   accessToken: string,
@@ -946,16 +929,14 @@ export const practiceNarrativeGet = (accessToken: string): Promise<PracticeNarra
 export type ScoreImpactArea = {
   question_type: string;
   section_type: string;
-  conservative: number;
-  optimistic: number;
   rolling_accuracy: number | null;
+  attempts: number;
   error_frequency: number;
 };
 
 export type ScoreImpactResponse = {
   ok: boolean;
   areas: ScoreImpactArea[];
-  total: { conservative: number; optimistic: number };
   sample_size: number;
 };
 
@@ -1018,12 +999,25 @@ export type CoachLang = 'en' | 'uz' | 'ru';
 // One choice (set in the tutor) follows the learner across every coaching surface.
 const COACH_LANG_KEY = 'ielts_coach_lang';
 export const getCoachLang = (): CoachLang => {
-  if (typeof localStorage === 'undefined') return 'en';
-  const v = localStorage.getItem(COACH_LANG_KEY);
-  return v === 'uz' || v === 'ru' ? v : 'en';
+  const pick = (value: string | null | undefined): CoachLang | null =>
+    value === 'uz' || value === 'ru' || value === 'en' ? value : null;
+  try {
+    const chosen = pick(localStorage.getItem(COACH_LANG_KEY));
+    if (chosen) return chosen;
+    const appLocale = pick(localStorage.getItem('schood.locale'));
+    if (appLocale) return appLocale;
+  } catch {
+    // storage unavailable: fall through to the page language
+  }
+  if (typeof document !== 'undefined') return pick(document.documentElement.lang.slice(0, 2)) ?? 'en';
+  return 'en';
 };
 export const setCoachLang = (lang: CoachLang): void => {
-  if (typeof localStorage !== 'undefined') localStorage.setItem(COACH_LANG_KEY, lang);
+  try {
+    localStorage.setItem(COACH_LANG_KEY, lang);
+  } catch {
+    // preference stays for this page only
+  }
 };
 
 export const practiceCoachAsk = (
@@ -1167,31 +1161,81 @@ export type CoachInsight = {
 export type CoachSummaryResponse = {
   ok: boolean;
   ai_available: boolean;
+  limited?: boolean;
   summary: string;
   insights: CoachInsight[];
   generated_at: string;
 };
 
-export const practiceCoachSummaryGet = (accessToken: string): Promise<CoachSummaryResponse> =>
-  call(accessToken, '/ielts-practice/insights/coach-summary');
+export const practiceCoachSummaryGet = (accessToken: string, lang: CoachLang = 'en'): Promise<CoachSummaryResponse> =>
+  call(accessToken, `/ielts-practice/insights/coach-summary?lang=${lang}`);
 
-// AI mock generator
+// AI mock generator: the server stores the mock with a normalised answer key
+// and grades submissions; the learner never receives the key before submitting.
+export type MockQuestionType = 'multiple_choice' | 'true_false_not_given' | 'yes_no_not_given' | 'matching_headings' | 'gap_fill';
+
 export type MockGeneratorQuestion = {
   prompt: string;
-  type: string;
+  type: MockQuestionType;
   options: string[];
-  correct_answer: string;
-  explanation: string;
 };
 
 export type MockGeneratorResponse = {
   ok: boolean;
   ai_available: boolean;
+  mock_id: string | null;
+  created_at?: string;
   passage: { title: string; body: string } | null;
   questions: MockGeneratorQuestion[];
-  estimated_band: number;
   section_type: 'reading' | 'listening';
-  message?: string;
+  question_style?: string;
+  target_band: number;
+  message_code?: 'ai_unconfigured' | 'ai_daily_limit' | 'generation_failed';
+};
+
+export type MockResultRow = {
+  index: number;
+  correct: boolean;
+  given: string | null;
+  correct_answer: string;
+  explanation: string;
+  type: MockQuestionType;
+};
+
+export type MockDetailResponse = {
+  ok: boolean;
+  mock_id: string;
+  section_type: 'reading' | 'listening';
+  question_style: string;
+  target_band: number | null;
+  passage: { title: string; body: string } | null;
+  questions: MockGeneratorQuestion[];
+  status: 'generated' | 'submitted';
+  created_at: string;
+  submitted_at: string | null;
+  answers: Array<number | string | null>;
+  results: MockResultRow[];
+  raw_score: number | null;
+  max_score: number | null;
+  accuracy_ratio: number | null;
+  notebook_items_added?: number;
+  review_items_queued?: number;
+};
+
+export type MockHistoryItem = {
+  id: string;
+  section_type: 'reading' | 'listening';
+  question_style: string;
+  target_band: number | null;
+  topic_hint: string | null;
+  title: string;
+  question_count: number;
+  status: 'generated' | 'submitted';
+  raw_score: number | null;
+  max_score: number | null;
+  accuracy_ratio: number | null;
+  created_at: string;
+  submitted_at: string | null;
 };
 
 export const practiceMockGenerate = (
@@ -1204,6 +1248,149 @@ export const practiceMockGenerate = (
   },
 ): Promise<MockGeneratorResponse> =>
   call(accessToken, '/ielts-practice/generator/mock-passage', { method: 'POST', body });
+
+export const practiceMockList = (accessToken: string): Promise<{ ok: boolean; items: MockHistoryItem[] }> =>
+  call(accessToken, '/ielts-practice/generator/mocks');
+
+export const practiceMockGet = (accessToken: string, mockId: string): Promise<MockDetailResponse> =>
+  call(accessToken, `/ielts-practice/generator/mocks/${encodeURIComponent(mockId)}`);
+
+export const practiceMockSubmit = (
+  accessToken: string,
+  mockId: string,
+  answers: Array<number | string | null>,
+): Promise<MockDetailResponse> =>
+  call(accessToken, `/ielts-practice/generator/mocks/${encodeURIComponent(mockId)}/submit`, { method: 'POST', body: { answers } });
+
+// Item-level review queue: the exact questions the learner missed.
+export type ReviewItem = {
+  id: string;
+  source_kind: 'lab' | 'generated_mock';
+  section_type: 'reading' | 'listening' | 'writing';
+  question_type: string;
+  title: string | null;
+  prompt_excerpt: string | null;
+  leitner_box: number;
+  next_review_at: string;
+  last_reviewed_at: string | null;
+  last_result: 'correct' | 'incorrect' | null;
+  review_count: number;
+  correct_count: number;
+  incorrect_count: number;
+  is_archived: boolean;
+  created_at: string;
+};
+
+export type ReviewItemsResponse = {
+  ok: boolean;
+  items: ReviewItem[];
+  summary: { due: number; upcoming: number; mastered: number; total: number; next_due_at: string | null };
+};
+
+export type ReviewItemDetail = {
+  ok: boolean;
+  item: ReviewItem;
+  source_kind: 'lab' | 'generated_mock';
+  section_type: string;
+  lab_title?: string;
+  step?: PracticeLabStep;
+  passage?: { title: string; body: string } | null;
+  question?: MockGeneratorQuestion;
+};
+
+export const practiceReviewItemsList = (
+  accessToken: string,
+  mode: 'due' | 'upcoming' | 'mastered' | 'all' = 'due',
+  limit = 20,
+): Promise<ReviewItemsResponse> =>
+  call(accessToken, `/ielts-practice/reviews/items?mode=${mode}&limit=${limit}`);
+
+export const practiceReviewItemGet = (accessToken: string, itemId: string): Promise<ReviewItemDetail> =>
+  call(accessToken, `/ielts-practice/reviews/items/${encodeURIComponent(itemId)}`);
+
+export const practiceReviewItemAnswer = (
+  accessToken: string,
+  itemId: string,
+  response: unknown,
+): Promise<{ ok: boolean; correct: boolean; correct_answer: string; explanation: string; item: ReviewItem }> =>
+  call(accessToken, `/ielts-practice/reviews/items/${encodeURIComponent(itemId)}/answer`, { method: 'POST', body: { response } });
+
+// Context passed from the IELTS Simulator / Playbook.
+export type PracticeContextSession = {
+  id: string;
+  experience_name: string | null;
+  status: string;
+  taken_at: string | null;
+  overall_band: number | null;
+  section_bands: Record<string, number> | null;
+};
+
+export const practiceContextGet = (
+  accessToken: string,
+  sessionId: string,
+): Promise<{ ok: boolean; session: PracticeContextSession | null }> =>
+  call(accessToken, `/ielts-practice/context?session_id=${encodeURIComponent(sessionId)}`);
+
+// Speaking practice
+export type SpeakingPart = 'part1' | 'part2' | 'part3';
+
+export type SpeakingPrompt = {
+  id: string;
+  part: SpeakingPart;
+  topic: string;
+  questions: string[];
+  cue_points: string[];
+  prep_seconds: number;
+  target_seconds: number;
+};
+
+export type SpeakingFeedback = {
+  assessment_scope: 'transcript_only';
+  fluency_and_coherence: string;
+  lexical_resource: string;
+  grammatical_range: string;
+  strengths: string[];
+  improvements: string[];
+  upgrades: Array<{ original: string; better: string; why: string }>;
+  part2_coverage: string[];
+};
+
+export type SpeakingAttempt = {
+  id: string;
+  part: SpeakingPart;
+  prompt_id: string;
+  topic: string;
+  transcript: string;
+  transcript_source: 'speech_recognition' | 'typed' | 'mixed';
+  duration_seconds: number | null;
+  word_count: number;
+  words_per_minute: number | null;
+  feedback: SpeakingFeedback | null;
+  feedback_status: 'pending' | 'ready' | 'unavailable';
+  feedback_lang: CoachLang;
+  created_at?: string;
+};
+
+export const practiceSpeakingPrompts = (
+  accessToken: string,
+  part: SpeakingPart,
+): Promise<{ ok: boolean; part: SpeakingPart; prompts: SpeakingPrompt[] }> =>
+  call(accessToken, `/ielts-practice/speaking/prompts?part=${part}`);
+
+export const practiceSpeakingAttempts = (accessToken: string): Promise<{ ok: boolean; items: SpeakingAttempt[] }> =>
+  call(accessToken, '/ielts-practice/speaking/attempts');
+
+export const practiceSpeakingSubmit = (
+  accessToken: string,
+  body: {
+    prompt_id: string;
+    transcript: string;
+    transcript_source: SpeakingAttempt['transcript_source'];
+    duration_seconds: number | null;
+    lang: CoachLang;
+  },
+): Promise<{ ok: boolean; attempt: SpeakingAttempt; message_code: string | null }> =>
+  call(accessToken, '/ielts-practice/speaking/attempts', { method: 'POST', body });
 
 export type NotebookRetestResponse = {
   ok: boolean;

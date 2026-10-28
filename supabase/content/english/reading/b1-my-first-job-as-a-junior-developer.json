@@ -9,7 +9,11 @@
     "theme": "first job in IT",
     "tone": "lavender",
     "is_hot": false,
-    "metadata": { "genre": "blog post", "writing_tone": "reflective", "word_count": 255 },
+    "metadata": {
+      "genre": "blog post",
+      "writing_tone": "reflective",
+      "word_count": 255
+    },
     "questions": [
       {
         "id": "q1",
@@ -75,6 +79,88 @@
         ],
         "answer_index": 3,
         "explanation": "Dilshod \"has become my mentor\": he regularly helps the writer and looks at his code."
+      },
+      {
+        "id": "t1",
+        "type": "tfng",
+        "prompt": "The writer studied programming at university.",
+        "answer": "false",
+        "explanation": "\"I had studied programming online for two years.\"",
+        "skill": "reading.detail"
+      },
+      {
+        "id": "t2",
+        "type": "tfng",
+        "prompt": "Android users could not log in because of the writer's change.",
+        "answer": "true",
+        "explanation": "\"Nobody on Android could log in for almost an hour.\"",
+        "skill": "reading.detail"
+      },
+      {
+        "id": "t3",
+        "type": "tfng",
+        "prompt": "Dilshod has worked at the company for many years.",
+        "answer": "not_given",
+        "explanation": "The text says Dilshod is the team lead and the writer's mentor, but not how long he has worked there.",
+        "skill": "reading.detail"
+      },
+      {
+        "id": "h1",
+        "type": "headings",
+        "prompt": "Choose the best heading for each paragraph. There are more headings than paragraphs.",
+        "options": [
+          "Learning by being asked",
+          "Moving to a bigger company",
+          "A small fix, a big problem",
+          "Don't stay silent",
+          "Not as ready as I thought",
+          "Why I almost quit programming",
+          "A meeting I expected to end badly"
+        ],
+        "items": [
+          {
+            "paragraph": 1,
+            "answer_index": 4
+          },
+          {
+            "paragraph": 2,
+            "answer_index": 2
+          },
+          {
+            "paragraph": 3,
+            "answer_index": 6
+          },
+          {
+            "paragraph": 4,
+            "answer_index": 0
+          },
+          {
+            "paragraph": 5,
+            "answer_index": 3
+          }
+        ],
+        "explanation": "1: \"I thought I was ready. I wasn't.\" 2: a simple bug fix stopped Android logins. 3: he was sure he would be fired. 4: Dilshod asks questions until he finds the answer. 5: \"Don't be afraid to ask questions.\"",
+        "skill": "reading.main_idea"
+      },
+      {
+        "id": "g1",
+        "type": "gap",
+        "prompt": "Complete the summary. Use ONE word from the text in each gap.",
+        "text": "After a bug in his first week, the writer expected to be ___, but his team lead helped him write a ___ that he still uses. Now they look at his code together every ___.",
+        "answers": [
+          [
+            "fired"
+          ],
+          [
+            "checklist"
+          ],
+          [
+            "friday",
+            "fridays"
+          ]
+        ],
+        "explanation": "Paragraph 3: \"I was sure he was going to fire me… we wrote a checklist.\" Paragraph 4: \"Every Friday, we spend thirty minutes looking at my code.\"",
+        "skill": "reading.detail"
       }
     ]
   }

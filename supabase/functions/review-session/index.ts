@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { signStorageRef } from "../_shared/media-storage.ts";
 import { scoreToefl2026Unit } from "../_shared/toefl-2026.ts";
 import { toefl2026TierFilterFor } from "../_shared/toefl-2026-session.ts";
+import { productIdsGrantingAccess } from "../_shared/product-bundles.ts";
 
 type Json = Record<string, unknown>;
 
@@ -425,7 +426,8 @@ serve(async (req) => {
         .select("id, tenant_id, starts_at, ends_at, is_active")
         .in("tenant_id", tenantIds)
         .eq("resource_type", "product")
-        .eq("resource_id", productId)
+        // The product itself or an exam "Complete" bundle that contains it.
+        .in("resource_id", productIdsGrantingAccess(productId))
         .eq("is_active", true);
 
       if (entitlementError) {

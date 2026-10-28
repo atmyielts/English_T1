@@ -1,0 +1,213 @@
+{
+  "slug": "guide-retake-decision-premium",
+  "sections": [
+    {
+      "block_type": "rich_text",
+      "heading": "Advanced Lab: How to Use This Section",
+      "content": {
+        "markdown": "The earlier sections of this guide set out the basic choice: Enquiry on Results, One Skill Retake or a full retake. This Advanced Lab turns that choice into a repeatable procedure. It is designed for the hours and days after a disappointing result, when emotion is high and decisions are expensive.\n\nWork through it in order:\n\n1. **Pause and gather facts** using the 72-hour rule.\n2. **Analyse the result** with the overall-band arithmetic and the requirement you actually need to meet.\n3. **Test each path** against its fine print: the Enquiry on Results window, One Skill Retake availability and acceptance, and full retake timing.\n4. **Run the master decision tree**, then check your reasoning against the worked cases.\n5. **Practise the logic** with the three timed drills before you make your own decision.\n\nPolicy details differ by provider, country and test centre, and they change. Wherever this Lab mentions a rule, treat it as a prompt to check the official page of your test provider and of the organisation receiving your result. Nothing here guarantees a score change or an acceptance decision."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "The 72-Hour Rule: What to Do Before Deciding",
+      "content": {
+        "markdown": "For the first seventy-two hours after a result, do not book anything and do not pay for anything. Use that time to collect five facts, each written down with its source.\n\n1. **The exact requirement.** Copy the overall and section minimums from the receiving organisation's official page or your offer letter. Note the date you checked.\n2. **Your deadline.** When must the result reach the organisation? Is there any flexibility, and who decides it?\n3. **The gap.** Which sections are below their floor, and by how many half-band steps?\n4. **Your options at your centre.** Is One Skill Retake offered at your test centre for your test type and delivery mode? What is the provider's Enquiry on Results window?\n5. **Acceptance.** Does the organisation accept a One Skill Retake result? Does it accept results combined from more than one sitting? (Some organisations do; many do not. Never assume.)\n\nOnly after all five facts are written down should you move to the decision tree. Candidates who skip this step often pay for a path the organisation will not accept, or miss a deadline while waiting for a process that was never likely to help."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Reading Your Result Like an Analyst",
+      "content": {
+        "markdown": "A result is four measurements and one calculation. Read it from the bottom up.\n\n**Start with the sections, not the overall.** List each section band next to its requirement. Mark each one as \"safe\" (at or above the floor by at least half a band), \"on the line\" (exactly at the floor) or \"short\" (below the floor).\n\n**Then compare with your preparation evidence.** For each section, note your typical score in timed practice in the final three weeks before the test. A section that came in well below your consistent evidence is worth a closer look. A section that matched your evidence is probably an accurate measurement, however disappointing.\n\n**Then look at the shape.**\n\n- **One short section, the rest safe:** the classic One Skill Retake shape.\n- **Two or more short sections:** usually a full retake shape, after further preparation.\n- **No short sections, overall too low:** you need extra total points; check which single skill can supply them most cheaply.\n- **One section dramatically out of line with your evidence:** consider whether an Enquiry on Results is worth investigating.\n\nWrite the shape in one sentence at the top of your notebook. That sentence drives every later decision."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Overall Band Arithmetic for Retake Decisions",
+      "content": {
+        "markdown": "Your overall band is the mean of the four section bands, rounded to the nearest whole or half band. A mean ending in .25 rounds up to the next half band, and a mean ending in .75 rounds up to the next whole band. Means ending in .125 or .625 round down; means ending in .375 or .875 round up.\n\nThe quickest method is to add the four bands. For these common targets, the minimum totals are:\n\n| Target overall | Minimum total of four bands |\n|---|---|\n| 6.0 | 23.0 |\n| 6.5 | 25.0 |\n| 7.0 | 27.0 |\n| 7.5 | 29.0 |\n| 8.0 | 31.0 |\n\nEach half band gained in one section adds 0.5 to the total. So if one section is retaken and improves:\n\n- **L 7.0, R 7.0, W 6.0, S 6.5:** total 26.5, overall 6.5. Writing up to 6.5 makes the total 27.0, overall 7.0.\n- **L 8.0, R 7.5, W 6.5, S 6.5:** total 28.5, mean 7.125, overall 7.0. One half band in any section makes 29.0, mean 7.25, overall 7.5.\n- **L 6.0, R 6.5, W 6.5, S 6.5:** total 25.5, overall 6.5. Listening up to 7.0 makes 26.5, mean 6.625, still overall 6.5.\n\nThe third example shows the danger of retaking one skill to lift the overall: if the gap to the next threshold is more than one half-band step, a single-skill improvement of half a band will not be enough. Calculate before you book."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Enquiry on Results: When It Is Worth Considering",
+      "content": {
+        "markdown": "An Enquiry on Results (EOR) asks the provider to re-mark one or more sections. Key points to confirm on your provider's official page:\n\n- **The window.** An EOR must be requested within a limited period after the test date; many providers set this at around six weeks, but check yours.\n- **The fee.** There is a fee, which varies by provider and country. It is typically refunded if the band for a section changes. Confirm the exact terms before applying.\n- **Which sections.** You can usually choose specific sections rather than the whole test.\n- **Timing of the outcome.** Re-marking takes time. Check how long your provider indicates, and compare it with your deadline.\n\n### When an EOR is a reasonable bet\n\n- One section is far below your consistent, well-evidenced practice performance in that skill.\n- The section is Writing or Speaking, where judgement plays a larger role, and your practice was assessed against the criteria by someone reliable.\n- A single half-band change in that section would satisfy the requirement.\n\n### When it is unlikely to help\n\n- The section matched your practice evidence.\n- You need more than one half band in that section, or improvements in two sections.\n- Your evidence is mostly self-assessment.\n\nAn EOR is a review of marking, not a second attempt. Treat its outcome as uncertain and plan your preparation as if the band will not change."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "EOR Green Flags and Red Flags",
+      "content": {
+        "markdown": "| Signal | Green flag (EOR worth considering) | Red flag (probably not) |\n|---|---|---|\n| Evidence | Several recent, externally marked tasks at a higher band | Mostly self-assessed practice |\n| Size of gap | One half-band step closes the requirement | Two or more steps needed |\n| Consistency | Other sections matched practice; one is clearly out of line | All sections a little lower than practice |\n| Test-day account | Nothing unusual affected your performance in that section | You ran out of time, misread a task or went off-topic |\n| Deadline | Re-marking time fits before the organisation's deadline | Deadline too close for the review to finish |\n\nThe fourth row is the one candidates find hardest to accept. If you know you wrote fewer words than required, left a task unfinished, or misunderstood the question, the mark probably reflects that, and re-marking is unlikely to change it. Be honest with yourself here; it saves both time and money."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "One Skill Retake: The Fine Print to Check",
+      "content": {
+        "markdown": "One Skill Retake (OSR) lets eligible candidates retake a single section rather than the whole test. Before relying on it, confirm each of these points on the official provider page and with your receiving organisation:\n\n1. **Availability.** OSR is not offered at every test centre, for every test type or for every delivery mode. Check whether your centre offers it for the test you took.\n2. **Timing.** The retake must usually be taken within 60 days of the original test date. Count the days carefully from your actual test date.\n3. **One attempt per test.** In general you can take one OSR for each original test. Confirm the current rule.\n4. **Acceptance.** The receiving organisation must accept OSR results. Some universities, employers and visa schemes do; others require all four sections from a single sitting. Ask in writing if their page is unclear.\n5. **What happens to the old result.** In general your original result remains valid, and the OSR produces a new result that combines the retaken section with your other three. Confirm how your provider issues it.\n6. **Fee and format.** There is a fee, which varies by provider. Check the format details for your section, as delivery may differ from your original test.\n\nIf any of points 1, 2 or 4 cannot be confirmed, OSR is not yet a real option. Plan around a full retake until it is."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Which Skill Should You Retake?",
+      "content": {
+        "markdown": "When more than one skill could lift your overall, choose using these questions in order.\n\n1. **Is any section below its floor?** If exactly one is, that is your OSR skill. The decision is made.\n2. **If no section is short, which skill gives the required total most reliably?** Prefer the skill where your practice evidence is consistently above the score you received. A skill that came in at your normal level is unlikely to rise in a few weeks.\n3. **Which skill responds fastest to focused preparation for you?** Receptive skills can sometimes improve through discipline fixes (timing, transfer, spelling); productive skills often need longer feedback cycles. Use your own error logs rather than general rules.\n4. **Which skill carries the least risk on the day?** If your Speaking performance varies a lot with nerves, a Speaking OSR is a higher-variance bet than its average suggests.\n\nNever choose a skill simply because it is your favourite or because you feel unlucky in it. Choose the skill with the best combination of evidence and need."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Full Retake: When It Is the Safer Bet",
+      "content": {
+        "markdown": "A full retake is the default when the shape of your result does not fit a narrower path. It is usually the safer bet when:\n\n- **Two or more sections are below their floor.** One Skill Retake cannot fix two sections from one test.\n- **The organisation does not accept OSR results** or does not accept results combined across sittings.\n- **OSR is unavailable** at your centre, for your test type, or within the 60-day window.\n- **Your overall gap is more than one half-band step**, and no single section can realistically supply it.\n- **You need a fresh, clean result** for several organisations with different rules.\n\nA full retake has one hidden advantage: it gives you time to rebuild properly. Candidates who rush a full retake within a couple of weeks often reproduce the same profile. If your deadline allows it, use the gap to change the behaviours that produced the result, then book when your evidence says you are ready."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Combining Paths Without Losing Time",
+      "content": {
+        "markdown": "Paths can overlap, but only if you plan the calendar first. Draw a timeline with these dates:\n\n- Original test date.\n- Last day to request an EOR (from your provider's page).\n- Last day for an OSR, 60 days from the original test date (confirm with your provider).\n- The receiving organisation's deadline.\n- Realistic dates for the next full test at your centre.\n\n### Common combinations\n\n- **EOR while preparing for OSR or a full retake.** Reasonable when the EOR meets the green-flag tests and your deadline is far enough away. Prepare as if the EOR will not change anything.\n- **OSR first, full retake as backup.** Reasonable when one section is short and OSR is available and accepted. Pencil in a full test date in case the OSR does not reach the floor.\n- **Full retake only.** Simplest when two sections are short or OSR is not accepted.\n\nThe mistake to avoid is waiting for one process to finish before starting the next, then discovering the OSR window has closed. Put every deadline on a calendar on day one."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "The Master Decision Tree",
+      "content": {
+        "markdown": "Use this tree after the 72-hour rule. Answer every question with written facts.\n\n**Q1. How many sections are below their required floor?**\n- Two or more: go to Q6 (full retake path).\n- Exactly one: go to Q2.\n- None (overall too low): go to Q4.\n\n**Q2. Is One Skill Retake offered at your centre for your test, within 60 days of your test date, and accepted by the receiving organisation?**\n- Yes: go to Q3.\n- No, or unconfirmed: go to Q6.\n\n**Q3. Is the short section clearly below your consistent, externally assessed practice evidence, and would one half band fix it?**\n- Yes: consider an EOR for that section if the green flags apply, and prepare for an OSR in parallel.\n- No: prepare for an OSR in that section; skip the EOR.\n\n**Q4. Can one half-band step in a single section reach the overall threshold?** (Check the totals table.)\n- Yes: go to Q5.\n- No: go to Q6.\n\n**Q5. Is OSR available and accepted?**\n- Yes: OSR in the skill chosen with the \"Which skill should you retake?\" questions.\n- No: go to Q6.\n\n**Q6. Full retake path.** Rebuild with targeted preparation, book when two consecutive timed practice tests meet every requirement, and check the next available dates against your deadline."
+      }
+    },
+    {
+      "block_type": "callout",
+      "heading": "Decision Rules Card",
+      "content": {
+        "label": "Five rules to apply before you pay for anything",
+        "body": "If two or more sections are short, plan a full retake. If exactly one section is short and OSR is available and accepted, plan an OSR for that section. If the overall is short but no section is, calculate whether one half band in one section is enough before booking an OSR. If a section is far below strong external evidence and one half band would fix it, an EOR may be worth checking, but prepare as if it will not change. If you cannot confirm acceptance in writing, do not rely on the path."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Worked Case 1: One Half Band Short in Writing",
+      "content": {
+        "markdown": "**Candidate R** (fictional): L 7.5, R 7.0, W 6.0, S 7.0. Needs 7.0 overall with no band below 6.5. Deadline in ten weeks. OSR is offered at their centre and the university's admissions page confirms it accepts OSR results.\n\n**Arithmetic.** Total 27.5, overall 7.0. Only Writing is short, by one half band.\n\n**Evidence check.** Candidate R's three most recent teacher-marked essays were all at 6.0 or 6.5 on the criteria. The test result matches their evidence, so an EOR is unlikely to help.\n\n**Decision.** Skip the EOR. Book an OSR in Writing, leaving at least four weeks of preparation within the 60-day window. Training focus: task response and development in Task 2, overview and selection in Task 1. Book only after two consecutive marked essays reach 6.5 or above.\n\n**Backup.** Pencil in a full test date before the university deadline in case the OSR does not reach 6.5."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Worked Case 2: Two Skills Below Minimum",
+      "content": {
+        "markdown": "**Candidate S** (fictional): L 7.0, R 6.5, W 6.0, S 6.0. Needs 6.5 overall with no band below 6.5. Deadline in four months.\n\n**Arithmetic.** Total 25.5, mean 6.375, overall 6.5. The overall is met, but Writing and Speaking are both short by one half band.\n\n**Temptation.** \"If I retake Writing, I only need Speaking.\" That is true in principle but cannot be done with one OSR, because OSR covers one section per original test.\n\n**Decision.** Full retake path. With four months available, Candidate S spends the first six weeks on Writing development and Speaking extension, using recorded mock interviews and marked essays as evidence, then books a full test when two consecutive mocks meet every floor. Reading and Listening receive maintenance practice only, with a careful eye on Reading, which sits exactly on the floor.\n\n**Why not an EOR?** Two sections are short. Even if one changed, the other would still block the result."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Worked Case 3: Overall Fine, Deadline Tight",
+      "content": {
+        "markdown": "**Candidate T** (fictional): L 8.0, R 7.5, W 6.5, S 6.5. Needs 7.5 overall with no band below 6.5. Deadline in seven weeks.\n\n**Arithmetic.** Total 28.5, mean 7.125, overall 7.0. Every section meets its floor; the overall is one threshold short. A total of 29.0 gives a mean of 7.25, which rounds to 7.5. So one half band in any single section is enough.\n\n**Choosing the skill.** Candidate T's Reading practice evidence was consistently 8.0 in the last month, half a band above the result. Writing and Speaking practice matched the result. Reading is the best-evidenced candidate for a gain.\n\n**Acceptance and availability.** The employer accepts OSR results, and the centre offers OSR within the window.\n\n**Decision.** OSR in Reading after three weeks of timed passage practice with a strict time budget and an evidence-first approach to TFNG and YNNG questions. Because the deadline is tight, Candidate T also checks the dates of the next full test as a backup."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Worked Case 4: The Score That Does Not Fit the Evidence",
+      "content": {
+        "markdown": "**Candidate U** (fictional): L 7.5, R 7.5, W 7.0, S 6.0. Needs 7.0 overall with no band below 6.5. Deadline in three months.\n\n**Evidence check.** Over the previous two months, Candidate U recorded six mock interviews assessed against the public descriptors by an experienced teacher, with consistent results of 7.0. On test day nothing unusual happened, and Candidate U recalls speaking at length in every part.\n\n**Arithmetic.** Total 28.0, overall 7.0. Only Speaking is short, by one half band.\n\n**Decision.** This is a reasonable EOR case: strong external evidence, a single section clearly out of line, a half band would satisfy the requirement, and the deadline allows time for re-marking. Candidate U checks the EOR window and fee terms on the provider page, applies for Speaking only, and prepares for a Speaking OSR in parallel in case the band does not change.\n\n**What makes it different from Case 1:** the evidence. Candidate R's result matched their practice; Candidate U's did not."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Error Diagnosis After a Disappointing Result",
+      "content": {
+        "markdown": "Use this table to turn a disappointing section into a preparation plan, whichever path you choose.\n\n| Symptom on the result | Likely cause | Fix before the next attempt |\n|---|---|---|\n| Writing lower than expected | Under length, off-topic or unclear position | Timed tasks with a word check and a one-sentence position |\n| Writing on the floor repeatedly | Ideas listed, not developed | Claim, explanation, example, link in every paragraph |\n| Speaking lower than practice | Short answers under nerves | Rehearse extending answers in unfamiliar settings |\n| Reading lower than practice | Time ran out on the last passage | Fixed exit times for earlier passages |\n| Reading consistently stuck | TFNG and YNNG logic errors | Evidence-first routine; reject world knowledge |\n| Listening lower than practice | Lost place, then several answers missed | Read ahead; skip and recover quickly |\n| Listening marks lost on correct ideas | Spelling, plurals, word limits | Slow transfer check against the instructions |\n| All sections slightly lower | Fatigue or unfamiliar conditions | Full-length practice at the same time of day |"
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Drill 1: Path Triage (10 minutes)",
+      "content": {
+        "markdown": "Set a timer for ten minutes. For each fictional profile, choose EOR, OSR, full retake, or a combination, and write one sentence of reasoning. Assume OSR is available at the centre unless stated otherwise. Answers are in the Drill Answers section.\n\n1. L 7.0, R 7.0, W 6.0, S 7.0. Needs 7.0 overall, no band below 6.5. University accepts OSR. Writing practice evidence: consistently 6.0 to 6.5.\n2. L 6.5, R 6.0, W 6.0, S 6.5. Needs 6.5 overall, no band below 6.5.\n3. L 7.5, R 7.0, W 6.5, S 6.5. Needs 7.0 overall, no band below 7.0 in Writing. Organisation does not accept OSR.\n4. L 8.0, R 8.0, W 7.0, S 6.0. Needs 7.0 overall, no band below 6.5. Speaking practice evidence: consistently 7.0, externally assessed. Deadline in four months.\n5. L 7.0, R 6.5, W 6.5, S 6.5. Needs 7.0 overall, no band below 6.5. Accepts OSR."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Drill 2: What Does the Overall Become? (8 minutes)",
+      "content": {
+        "markdown": "For each profile, calculate the current overall, then the overall after the stated retake result. Say whether the new result meets the target.\n\n1. L 6.5, R 7.0, W 6.0, S 7.0. Target 7.0 overall. Writing OSR result: 6.5.\n2. L 6.0, R 6.5, W 6.5, S 6.5. Target 7.0 overall. Listening OSR result: 7.0.\n3. L 8.0, R 7.5, W 6.5, S 6.5. Target 7.5 overall. Speaking OSR result: 7.0.\n4. L 7.0, R 6.5, W 6.0, S 6.5. Target 6.5 overall, no band below 6.5. Writing OSR result: 6.5.\n5. L 7.5, R 7.5, W 6.5, S 6.0. Target 7.0 overall, no band below 6.5. Speaking OSR result: 6.0."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Drill 3: Spot the Risky Assumption (6 minutes)",
+      "content": {
+        "markdown": "Each fictional statement contains an assumption that could cost a candidate time or money. Name the assumption and the fact that should be checked.\n\n1. \"My university accepts IELTS, so it must accept One Skill Retake.\"\n2. \"I'll request a re-mark next month when I have more time.\"\n3. \"If my OSR score is lower, I'll lose my original result.\"\n4. \"I need 7.0 overall and I'm at 6.5, so retaking my weakest skill will definitely get me there.\"\n5. \"Re-marking almost always raises Writing scores, so it's worth it.\""
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Drill Answers",
+      "content": {
+        "markdown": "### Drill 1\n\n1. **OSR in Writing.** One section short, OSR accepted, and the result matches practice evidence, so an EOR is unlikely to help.\n2. **Full retake.** Reading and Writing are both short. Total 25.0 gives overall 6.5, but two sections are below the floor.\n3. **Full retake.** Writing is below the 7.0 requirement and the organisation does not accept OSR.\n4. **EOR for Speaking, with OSR preparation in parallel.** One section short, strong external evidence well above the result, a half band would fix it, and time allows.\n5. **OSR, after calculation.** Total 26.5 gives overall 6.5. One half band in any section makes 27.0 and overall 7.0, so OSR can work. Choose the skill with the strongest evidence of a quick gain.\n\n### Drill 2\n\n1. Current total 26.5, overall 6.5. New total 27.0, overall 7.0. **Meets** the target.\n2. Current total 25.5, overall 6.5. New total 26.5, mean 6.625, overall 6.5. **Does not meet** the target; one more half band elsewhere would be needed.\n3. Current total 28.5, mean 7.125, overall 7.0. New total 29.0, mean 7.25, overall 7.5. **Meets** the target.\n4. Current total 26.0, overall 6.5, Writing short. New total 26.5, overall 6.5, every section at 6.5 or above. **Meets** the target.\n5. Current total 27.5, overall 7.0, Speaking short. The OSR did not improve Speaking, so the requirement is still not met. In general the original result is not cancelled by a lower or equal OSR score, but confirm with the provider. Next step: full retake planning.\n\n### Drill 3\n\n1. Acceptance of OSR is a separate decision. Check the organisation's page or ask in writing.\n2. The EOR window is limited. Check the provider's deadline today.\n3. In general the original result remains valid. Confirm how your provider issues OSR results.\n4. A single half-band gain may not cross the threshold. Add up the four bands and check the totals table.\n5. No outcome is guaranteed. Decide using your own evidence, not general beliefs about re-marking."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "The 21-Day Targeted Retake Block",
+      "content": {
+        "markdown": "Use this block when you are preparing for a One Skill Retake or a full retake with a clear single focus. About ninety minutes a day; adjust volume, not sequence.\n\n**Week 1: Rebuild the diagnosis**\n\n- Day 1: Write the 72-hour facts and the shape sentence.\n- Day 2: Timed practice in the target skill under real conditions.\n- Day 3: Tag every error or criterion gap; choose two fixes only.\n- Days 4 to 6: Drill fix one daily, with one short timed task each day.\n- Day 7: Rest, or review your rules for fifteen minutes.\n\n**Week 2: Apply under pressure**\n\n- Day 8: Full timed task or section in the target skill; get it marked.\n- Days 9 to 11: Drill fix two daily; rewrite or redo the day 8 task using feedback.\n- Day 12: Timed task or section; compare with day 8 using the same marking approach.\n- Day 13: Maintenance practice in one other skill (for a full retake, rotate).\n- Day 14: Rest.\n\n**Week 3: Stabilise**\n\n- Days 15 to 17: One timed task or section each day; no new techniques.\n- Day 18: Full test (for a full retake) or two timed target-skill sessions (for an OSR).\n- Day 19: Review errors only; update your rules.\n- Day 20: Light practice and logistics: ID, centre location, timing.\n- Day 21: Book or confirm only if your last two assessed results meet the requirement. If not, repeat weeks two and three."
+      }
+    },
+    {
+      "block_type": "rich_text",
+      "heading": "Managing Deadlines with Receiving Organisations",
+      "content": {
+        "markdown": "The receiving organisation often has more flexibility than candidates expect, and less than they hope. Manage the relationship actively.\n\n- **Ask early.** As soon as you know your result does not meet the requirement, ask the organisation whether its deadline can move, whether it accepts OSR results, and whether a conditional arrangement is possible.\n- **Ask in writing.** Keep the replies. Verbal assurances are hard to rely on later.\n- **Give dates, not hopes.** \"I am taking a One Skill Retake in Writing on a specific date and expect the result by a specific date\" is more persuasive than \"I will improve soon\". Confirm result timing on your provider's page before quoting it.\n- **Check how results are sent.** Many organisations verify results directly with the provider. Make sure you know how to send or authorise the new result.\n- **Keep alternatives in view.** If one organisation cannot accept your timeline, note which others on your list might, and what they require.\n\nBeing organised does not change an organisation's rules, but it often makes the difference between a missed deadline and a workable plan."
+      }
+    },
+    {
+      "block_type": "faq",
+      "heading": "Advanced FAQ",
+      "content": {
+        "items": [
+          {
+            "question": "Can I request an EOR and book a One Skill Retake at the same time?",
+            "answer": "Often you can prepare for both in parallel, but check your provider's rules on combining them and on what happens if the EOR changes the band in the section you planned to retake. Put both deadlines on a calendar before acting."
+          },
+          {
+            "question": "Should I retake the skill I am weakest in or the one closest to the next band?",
+            "answer": "If one section is below its floor, retake that one. If none is, choose the skill with the strongest evidence that it can rise by half a band soon, and confirm with the totals table that half a band is enough."
+          },
+          {
+            "question": "How soon should I take a full retake?",
+            "answer": "When two consecutive timed practice tests meet every requirement under real conditions, not when the next date happens to be available. Rushing a retake without changing the underlying behaviours often repeats the original profile."
+          },
+          {
+            "question": "Will a re-mark lower my score?",
+            "answer": "A re-mark reviews your performance and the band can change, so do not request one on the assumption that it can only go up. Read your provider's terms carefully before applying."
+          },
+          {
+            "question": "My result is valid for two years. Does that affect my decision?",
+            "answer": "Validity periods are set by receiving organisations, and many use two years as a guide. Check the organisation's rule, because an older result or an OSR combined with an older test may be treated differently."
+          }
+        ]
+      }
+    },
+    {
+      "block_type": "checklist",
+      "heading": "Advanced Retake Checklist",
+      "content": {
+        "items": [
+          "I waited 72 hours and wrote down the five facts, each with its source.",
+          "I copied the exact requirement, including every section minimum, from the official source.",
+          "I have written the shape of my result in one sentence.",
+          "I added my four bands and checked the totals table for my target.",
+          "I confirmed whether OSR is offered at my centre, for my test, within 60 days of my test date.",
+          "I confirmed in writing whether the receiving organisation accepts OSR results.",
+          "I checked the EOR window and fee terms on my provider's official page.",
+          "I ran the master decision tree with written facts, not feelings.",
+          "All relevant deadlines are on one calendar, including a backup full test date.",
+          "I will book only when my last two assessed results meet the requirement."
+        ]
+      }
+    }
+  ]
+}

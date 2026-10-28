@@ -19,7 +19,7 @@ Deno.test("Telegram Mini App exposes guardian-scoped academy sections", () => {
 });
 
 Deno.test("Guardian Telegram identity requires secure account and numeric Telegram linkage", () => {
-  const guardianLoader = source.slice(source.indexOf("const loadGuardianDashboard"), source.indexOf("const getOrCreateVocabDeck"));
+  const guardianLoader = source.slice(source.indexOf("const loadGuardianDashboard"), source.indexOf("const loadVocabStats"));
   assert(guardianLoader.includes('.eq("user_id", ctx.user.id)'));
   assert(guardianLoader.includes('.eq("telegram_user_id", ctx.telegram.telegram_user_id)'));
   assert(guardianLoader.includes('.eq("status", "verified")'));

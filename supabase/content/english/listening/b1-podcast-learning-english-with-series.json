@@ -32,7 +32,8 @@
           "How to become a TV presenter"
         ],
         "answer_index": 1,
-        "explanation": "\"Today I want to talk about ... learning English with TV series.\""
+        "explanation": "\"Today I want to talk about ... learning English with TV series.\"",
+        "focus": "gist"
       },
       {
         "prompt": "Why should you choose a series you enjoy?",

@@ -1,29 +1,38 @@
-import { Fragment, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { TapScope, TapWords } from '../../components/WordLookup';
 import { useT } from '../../i18n';
 import { saveWords } from '../../lib/notebook';
 import { canSpeak } from '../../lib/speech';
 import { useElapsedSeconds, useResource } from '../../lib/useResource';
-import { Panel, ProgressBar, Segmented, Tag, useErrorMessage } from '../../ui/kit';
+import { Panel, ProgressBar, Tag, useErrorMessage } from '../../ui/kit';
 import { ActivityFrame, ResultPanel } from '../ActivityKit';
+import { getResumePoint, saveResume } from '../../lib/glue';
 import { RepeatAfterMe } from '../RepeatAfterMe';
+import { ShadowButton } from '../../components/shadow/ShadowButton';
 import { getItem, submitItem, type DiffToken, type ListeningSubmitResponse } from './api';
-import { parseScript, speakersOf, speechChunks, type ScriptLine } from './script';
+import { parseScript, sentences, speakersOf, speechChunks, type ScriptLine } from './script';
 import { usePlayer } from './usePlayer';
+import { DictationAdvice, ListenControls, RATE, SegmentReplay, useAccents, withAccent, type AccentChoice, type Speed } from './Depth';
 
-type Speed = 'normal' | 'slow';
-const RATE: Record<Speed, number> = { normal: 1, slow: 0.75 };
 const letter = (index: number) => String.fromCharCode(65 + index);
 
-/** The script, line by line, with speaker names for dialogues. Words can be tapped for their meaning. */
-const Transcript = ({ lines, title, slug }: { lines: ScriptLine[]; title: string | null; slug: string }) => (
+/**
+ * The script, line by line, with speaker names for dialogues. Words can be
+ * tapped for their meaning; with `shadow`, each line can be shadowed.
+ */
+const Transcript = ({ lines, title, slug, shadow = false }: { lines: ScriptLine[]; title: string | null; slug: string; shadow?: boolean }) => (
   <TapScope className="en-passage" source={{ type: 'english-listening', label: title, ref: slug }}>
     {lines.map((line, index) => (
-      <p key={index}>
-        {line.speaker ? <strong>{line.speaker}: </strong> : null}
-        <TapWords text={line.text} />
-      </p>
+      <Fragment key={index}>
+        <p>
+          {line.speaker ? <strong>{line.speaker}: </strong> : null}
+          <TapWords text={line.text} />
+        </p>
+        {shadow && line.text.split(/\s+/).length >= 3 ? (
+          <div className="sh-paragraph-action"><ShadowButton text={line.text} source="listening" /></div>
+        ) : null}
+      </Fragment>
     ))}
   </TapScope>
 );
@@ -53,6 +62,11 @@ export const ListeningActivity = () => {
 
   const [readingMode, setReadingMode] = useState(() => !canSpeak());
   const [speed, setSpeed] = useState<Speed>('normal');
+  const [accent, setAccent] = useState<AccentChoice>('auto');
+  const accents = useAccents();
+  // Gist first: one question about the whole recording after the first listen, then the details.
+  const [gistMode, setGistMode] = useState(true);
+  const [phase, setPhase] = useState<'gist' | 'detail'>('gist');
   const [plays, setPlays] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [typed, setTyped] = useState<Record<number, string>>({});
@@ -63,6 +77,11 @@ export const ListeningActivity = () => {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<unknown>(null);
 
+  // Answers and dictation saved on another device (or earlier here), to carry on where the learner stopped.
+  const remote = useResource((signal) => getResumePoint('listening', slug, signal), [slug]);
+  const restoredFor = useRef<string | null>(null);
+  const lastSaved = useRef('');
+
   const item = activity.data?.item;
   const targets = activity.data?.dictation ?? [];
   const questions = item?.questions ?? [];
@@ -71,9 +90,54 @@ export const ListeningActivity = () => {
     [item],
   );
   const speakers = speakersOf(lines);
-  const chunks = useMemo(() => speechChunks(lines), [lines]);
+  const chunks = useMemo(() => withAccent(speechChunks(lines), accent), [lines, accent]);
+  const gistIds = useMemo(() => {
+    const marked = questions.filter((question) => question.focus === 'gist').map((question) => question.id);
+    return new Set(marked.length ? marked : questions.slice(0, 1).map((question) => question.id));
+  }, [questions]);
+  // Sentences to replay one by one: the authored segments, or the script split into sentences.
+  const segmentRows = useMemo(() => {
+    const authored = (activity.data?.segments ?? []).filter((segment) => segment.segment_text.trim());
+    if (authored.length) return authored.map((segment, index) => ({ index, text: segment.segment_text }));
+    return lines.flatMap((line) => sentences(line.text)).map((text, index) => ({ index, text }));
+  }, [activity.data?.segments, lines]);
+  const gistActive = gistMode && !readingMode && !result && questions.length >= 2 && phase === 'gist';
+  const visibleQuestions = gistActive ? questions.filter((question) => gistIds.has(question.id)) : questions;
+  const gistAnswered = [...gistIds].every((id) => answers[id] !== undefined);
   const hasAudioFile = Boolean(item?.audio_url);
   const useDictation = !readingMode && targets.length > 0;
+
+  useEffect(() => {
+    if (!item || remote.loading || restoredFor.current === slug) return;
+    restoredFor.current = slug;
+    const position = remote.data?.position;
+    if (!position) return;
+    const ids = new Set(questions.map((question) => question.id));
+    const saved = Object.fromEntries(Object.entries(position.answers ?? {}).filter(([id]) => ids.has(id)));
+    const typedBack = Object.fromEntries(Object.entries(position.typed ?? {}).map(([index, text]) => [Number(index), text]));
+    if (Object.keys(saved).length) setAnswers(saved);
+    if (Object.keys(typedBack).length) setTyped(typedBack);
+    if (position.plays) setPlays(position.plays);
+    lastSaved.current = JSON.stringify({ answers: saved, typed: position.typed ?? {}, plays: position.plays ?? 0 });
+  }, [item, questions, remote.loading, remote.data, slug]);
+
+  // Save where the learner is (answers, dictation so far), a few seconds after each change.
+  useEffect(() => {
+    if (restoredFor.current !== slug || result) return;
+    const typedOut = Object.fromEntries(Object.entries(typed).filter(([, text]) => text.trim()).map(([index, text]) => [String(index), text]));
+    const snapshot = JSON.stringify({ answers, typed: typedOut, plays });
+    if (snapshot === lastSaved.current || (!Object.keys(answers).length && !Object.keys(typedOut).length)) return;
+    const timer = window.setTimeout(() => {
+      lastSaved.current = snapshot;
+      const done = Object.keys(answers).length + Object.keys(typedOut).length;
+      void saveResume({
+        skill: 'listening',
+        slug,
+        position: { answers, typed: typedOut, plays, step: done, total: Math.max(done, questions.length + targets.length) },
+      });
+    }, 3000);
+    return () => window.clearTimeout(timer);
+  }, [answers, typed, plays, result, slug, questions.length, targets.length]);
 
   const answered = questions.filter((question) => answers[question.id] !== undefined).length;
   const written = targets.filter((target) => (typed[target.segment_index] ?? '').trim()).length;
@@ -96,7 +160,16 @@ export const ListeningActivity = () => {
       player.stop();
       return;
     }
-    void player.play(key, [{ text, accent: 'us' }], rate);
+    void player.play(key, [{ text, accent: accent === 'auto' ? 'us' : accent }], rate);
+  };
+
+  const playSegment = (segment: { index: number; text: string }, slow: boolean) => {
+    const key = slow ? `seg${segment.index}-slow` : `seg${segment.index}`;
+    if (player.state.key === key) {
+      player.stop();
+      return;
+    }
+    void player.play(key, [{ text: segment.text, accent: accent === 'auto' ? 'us' : accent }], slow ? RATE.slow : RATE[speed]);
   };
 
   const switchToReading = () => {
@@ -127,6 +200,7 @@ export const ListeningActivity = () => {
 
   const retry = () => {
     player.stop();
+    setPhase('gist');
     setAnswers({});
     setTyped({});
     setPlays(0);
@@ -200,6 +274,10 @@ export const ListeningActivity = () => {
           fix={fix}
           onRetry={retry}
           savedWords={saved}
+          savedQuestions={result.recorded
+            ? Math.max(0, result.questions.total - result.questions.correct) + result.dictation.results.filter((entry) => entry.accuracy < 90).length
+            : 0}
+          title={item?.title}
         >
           {result.mode === 'reading' ? <p className="en-notice" style={{ margin: 0 }}>{t('listening.result.readingMode')}</p> : null}
 
@@ -220,6 +298,8 @@ export const ListeningActivity = () => {
               ))}
             </div>
           ) : null}
+
+          <DictationAdvice issues={result.dictation.feedback} />
 
           {result.mode !== 'reading' && result.dictation.results.length ? (
             <RepeatAfterMe
@@ -250,7 +330,13 @@ export const ListeningActivity = () => {
 
       {result ? (
         <Panel title={t('listening.transcript.title')}>
-          <Transcript lines={lines} title={item?.title ?? null} slug={slug} />
+          <Transcript lines={lines} title={item?.title ?? null} slug={slug} shadow />
+          {result.mode === 'listening' && canSpeak() && segmentRows.length > 1 ? (
+            <details className="ls-replay">
+              <summary>{t('depth.listen.replayBySentence')}</summary>
+              <SegmentReplay segments={segmentRows} showText playingKey={player.state.key} onPlay={playSegment} source={{ label: item?.title ?? null, ref: slug }} />
+            </details>
+          ) : null}
         </Panel>
       ) : null}
 
@@ -261,7 +347,7 @@ export const ListeningActivity = () => {
               <p className="en-notice" style={{ margin: 0 }}>
                 {canSpeak() ? t('listening.reading.chosen') : t('listening.reading.noAudio')}
               </p>
-              <Transcript lines={lines} title={item?.title ?? null} slug={slug} />
+              <Transcript lines={lines} title={item?.title ?? null} slug={slug} shadow />
             </>
           ) : (
             <>
@@ -273,12 +359,19 @@ export const ListeningActivity = () => {
                 </audio>
               ) : (
                 <>
-                  <Segmented<Speed>
-                    label={t('listening.listen.speed')}
-                    value={speed}
-                    onChange={(value) => { player.stop(); setSpeed(value); }}
-                    options={[{ value: 'normal', label: t('listening.listen.normal') }, { value: 'slow', label: t('listening.listen.slow') }]}
+                  <ListenControls
+                    speed={speed}
+                    onSpeed={(value) => { player.stop(); setSpeed(value); }}
+                    accent={accent}
+                    onAccent={(value) => { player.stop(); setAccent(value); }}
+                    accents={accents}
                   />
+                  {questions.length >= 2 ? (
+                    <label className="ls-gist-toggle">
+                      <input type="checkbox" checked={gistMode} disabled={answered > 0} onChange={(event) => { setGistMode(event.target.checked); setPhase('gist'); }} />
+                      <span>{t('depth.listen.gistToggle')}</span>
+                    </label>
+                  ) : null}
                   <div className="en-actions">
                     <button type="button" className="is-large" onClick={playScript} aria-pressed={scriptPlaying}>
                       {scriptPlaying ? t('listening.listen.stop') : plays ? t('listening.listen.again') : t('listening.listen.play')}
@@ -292,6 +385,15 @@ export const ListeningActivity = () => {
                   ) : null}
                 </>
               )}
+              {gistActive ? (
+                <p className="en-notice" style={{ margin: 0 }}>{t('depth.listen.gistIntro')}</p>
+              ) : null}
+              {!hasAudioFile && !gistActive && plays > 0 && segmentRows.length > 1 ? (
+                <div className="en-stack" style={{ gap: '.4rem' }}>
+                  <p className="hint" style={{ margin: 0 }}>{t('depth.listen.replayHint')}</p>
+                  <SegmentReplay segments={segmentRows} showText={false} playingKey={player.state.key} onPlay={playSegment} source={{ label: item?.title ?? null, ref: slug }} />
+                </div>
+              ) : null}
               <p className="hint" style={{ margin: 0 }}>
                 <button type="button" className="is-link" onClick={switchToReading}>{t('listening.reading.switch')}</button>
               </p>
@@ -305,11 +407,16 @@ export const ListeningActivity = () => {
           title={t('listening.questions.title')}
           aside={!result ? <span>{t('listening.questions.answered', { done: answered, total: questions.length })}</span> : null}
         >
-          {questions.map((question, index) => {
+          {visibleQuestions.map((question) => {
+            const index = questions.indexOf(question);
             const checked = questionResult(question.id);
+            const lockedGist = gistMode && !gistActive && !result && phase === 'detail' && gistIds.has(question.id);
             return (
               <div key={question.id} className="en-question" role="group" aria-labelledby={`ls-q-${question.id}`}>
-                <p className="eyebrow" style={{ margin: 0 }}>{t('listening.questions.item', { number: index + 1 })}</p>
+                <p className="eyebrow" style={{ margin: 0 }}>
+                  {t('listening.questions.item', { number: index + 1 })}
+                  {gistMode && questions.length >= 2 && gistIds.has(question.id) ? <> · {t('depth.listen.gistLabel')}</> : null}
+                </p>
                 <p className="en-question-prompt" id={`ls-q-${question.id}`} lang="en">{question.prompt}</p>
                 <div className="en-options">
                   {question.options.map((option, optionIndex) => {
@@ -323,7 +430,7 @@ export const ListeningActivity = () => {
                         type="button"
                         className={`en-option ${state}`.trim()}
                         aria-pressed={chosen}
-                        disabled={Boolean(result) || busy}
+                        disabled={Boolean(result) || busy || lockedGist}
                         onClick={() => setAnswers((current) => ({ ...current, [question.id]: optionIndex }))}
                       >
                         <span className="en-option-key" aria-hidden="true">{letter(optionIndex)}</span>
@@ -350,7 +457,18 @@ export const ListeningActivity = () => {
         </Panel>
       ) : null}
 
-      {!result && useDictation ? (
+      {gistActive ? (
+        <section className="en-panel">
+          <div className="en-actions">
+            <button type="button" className="is-large" disabled={!gistAnswered || !heard} onClick={() => { player.stop(); setPhase('detail'); }}>
+              {t('depth.listen.toDetails')}
+            </button>
+            {!heard ? <span className="hint">{t('listening.check.playFirst')}</span> : null}
+          </div>
+        </section>
+      ) : null}
+
+      {!result && useDictation && !gistActive ? (
         <Panel title={t('listening.dictation.title')}>
           <p className="hint" style={{ margin: 0 }}>{t('listening.dictation.hint')}</p>
           {targets.map((target, index) => {
@@ -386,7 +504,7 @@ export const ListeningActivity = () => {
         </Panel>
       ) : null}
 
-      {!result ? (
+      {!result && !gistActive ? (
         <section className="en-panel">
           {error ? <div className="error" role="alert">{errorText(error)}</div> : null}
           <div className="en-actions">

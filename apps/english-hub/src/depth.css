@@ -1,0 +1,95 @@
+/* Depth for the output skills: draft comparison, criteria history, fluency,
+   personal targets, projects and the tutor's mini-lessons. Uses the hub's
+   tokens so it keeps the original look. */
+
+/* ---------- Side-by-side text diff ---------- */
+.dp-diff { display: grid; gap: 0.5rem; }
+.dp-diff-grid { display: grid; gap: 0.75rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.dp-diff-side { min-width: 0; border: 1px solid var(--soft-line, var(--line)); border-radius: var(--radius-inner, 16px); background: var(--card, #fff); padding: 0.75rem 0.9rem; }
+.dp-diff-side h4 { margin: 0 0 0.35rem; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.dp-diff-text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.95rem; line-height: 1.65; color: var(--ink); }
+.dp-diff-text del, .dp-legend del { background: #fee2e2; color: #991b1b; text-decoration: line-through; border-radius: 4px; padding: 0 0.1rem; }
+.dp-diff-text ins, .dp-legend ins { background: #dcfce7; color: #166534; text-decoration: none; border-radius: 4px; padding: 0 0.1rem; }
+.dp-legend { display: flex; gap: 0.6rem; margin: 0; }
+
+/* ---------- Small tables (criteria, attempts) ---------- */
+.dp-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.dp-table th, .dp-table td { padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--soft-line, var(--line)); text-align: right; }
+.dp-table th:first-child, .dp-table td:first-child { text-align: left; }
+.dp-table thead th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 800; }
+.dp-table .is-up, .dp-history-trend.is-up { color: var(--good); font-weight: 700; }
+.dp-table .is-down, .dp-history-trend.is-down { color: var(--bad); font-weight: 700; }
+
+/* ---------- Criteria history ---------- */
+.dp-history { display: grid; gap: 0.6rem; }
+.dp-history-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
+.dp-history-rows li { display: grid; grid-template-columns: minmax(6.5rem, 1fr) minmax(0, 2fr) 2.5rem 3.5rem; align-items: center; gap: 0.6rem; font-size: 0.9rem; }
+.dp-history-last { font-family: var(--heading-font); font-weight: 700; text-align: right; }
+.dp-history-trend { font-size: 0.8rem; color: var(--muted); }
+.dp-spark { width: 100%; height: 2.6rem; overflow: visible; }
+.dp-spark-guide { stroke: var(--soft-line, var(--line)); stroke-dasharray: 3 3; }
+.dp-spark-line { fill: none; stroke: var(--skill-writing, var(--accent)); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.dp-spark-dot { fill: var(--skill-writing, var(--accent)); }
+
+/* ---------- Writing extras ---------- */
+.dp-model-text p { margin: 0 0 0.6rem; }
+.dp-model-text p:last-child { margin-bottom: 0; }
+.dp-model-notes { margin: 0; }
+.dp-strip { overflow-wrap: anywhere; }
+.dp-save-state { font-size: 0.8rem; color: var(--muted); }
+.dp-save-state.is-account { color: var(--good); }
+.dp-save-state.is-device { color: var(--warn); }
+.dp-save, .dp-saved { font-size: 0.8rem; }
+.dp-saved { color: var(--good); font-weight: 700; }
+
+/* ---------- Speaking fluency ---------- */
+.dp-fluency-grid { display: grid; gap: 0.75rem; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.dp-fluency-grid .en-stat { border: 1px solid var(--soft-line, var(--line)); border-radius: var(--radius-inner, 16px); padding: 0.6rem 0.75rem; background: var(--card, #fff); }
+.dp-fluency-grid .en-stat strong { font-size: 1.3rem; }
+
+/* ---------- Personal targets and summaries ---------- */
+.dp-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.dp-words-live .is-used { color: var(--good); font-weight: 700; }
+.dp-step-scores { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
+.dp-step-scores li { display: grid; grid-template-columns: minmax(0, 2fr) minmax(4rem, 1fr) 3rem; gap: 0.6rem; align-items: center; font-size: 0.88rem; }
+.dp-step-scores strong { text-align: right; }
+.dp-step-bar { display: block; height: 0.5rem; border-radius: 999px; background: var(--highlight-bg, rgba(0, 0, 0, 0.06)); overflow: hidden; }
+.dp-step-bar span { display: block; height: 100%; background: var(--skill-immersion, var(--accent)); border-radius: inherit; }
+
+/* ---------- Projects ---------- */
+.dp-projects { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.dp-project-card { display: grid; gap: 0.35rem; height: 100%; padding: 0.85rem 1rem; border: 1px solid var(--soft-line, var(--line)); border-radius: var(--radius-inner, 16px); background: var(--card, #fff); color: var(--ink); text-decoration: none; }
+.dp-project-card:hover, .dp-project-card:focus-visible { border-color: var(--skill-immersion, var(--accent)); }
+.dp-project-status { font-size: 0.82rem; font-weight: 700; color: var(--skill-immersion, var(--accent)); }
+.dp-plan { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.3rem; }
+
+/* ---------- Tutor ---------- */
+.dp-thread-bar { gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end; }
+.dp-thread-bar select { max-width: 14rem; min-height: 2.2rem; padding: 0.2rem 0.5rem; font-size: 0.85rem; }
+.dp-thread-note { margin: 0.25rem 0 0; }
+.dp-knows dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 0.3rem 0.75rem; margin: 0; font-size: 0.88rem; }
+.dp-knows dt { font-weight: 700; color: var(--ink); }
+.dp-knows dd { margin: 0; overflow-wrap: anywhere; }
+.dp-mistakes li { display: grid; gap: 0.1rem; font-size: 0.88rem; }
+.dp-lesson { justify-self: stretch; display: grid; gap: 0.75rem; padding: 0.9rem 1rem; border: 1px solid var(--soft-line, var(--line)); border-left: 4px solid var(--accent); border-radius: 18px; background: #fff; }
+.dp-lesson header h3 { margin: 0.15rem 0 0; font-size: 1.05rem; }
+.dp-lesson section { display: grid; gap: 0.35rem; }
+.dp-lesson h4 { margin: 0; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.dp-lesson-items { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.6rem; }
+.dp-lesson-item { display: grid; gap: 0.4rem; padding: 0.6rem 0.75rem; border-radius: 12px; background: var(--highlight-bg, rgba(0, 0, 0, 0.04)); }
+.dp-lesson-item.is-right { background: var(--good-bg); }
+.dp-lesson-item.is-wrong { background: var(--warn-bg); }
+.dp-lesson-prompt { margin: 0; display: grid; gap: 0.15rem; font-size: 0.95rem; color: var(--ink); }
+.dp-lesson-prompt .eyebrow { margin: 0; }
+
+@media (max-width: 720px) {
+  .dp-diff-grid { grid-template-columns: minmax(0, 1fr); }
+  .dp-fluency-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dp-history-rows li { grid-template-columns: minmax(0, 1fr) 2.5rem 3rem; }
+  .dp-history-rows li .dp-spark { grid-column: 1 / -1; grid-row: 2; }
+  .dp-step-scores li { grid-template-columns: minmax(0, 1fr) 3rem; }
+  .dp-step-scores .dp-step-bar { grid-column: 1 / -1; grid-row: 2; }
+  .dp-table { font-size: 0.82rem; }
+  .dp-table th, .dp-table td { padding: 0.35rem 0.3rem; }
+  .dp-thread-bar select { max-width: 9rem; }
+}

@@ -20,6 +20,11 @@ export const ENGLISH_SERVICES = [
   "vocabulary",
   "immersion",
   "tutor",
+  // Teacher classes (/classes): off hides joining, dashboards and class reminders.
+  "classes",
+  // Vocabulary duels (english-duel.ts): pausing stops new duels and new starts.
+  "duels",
+  "exam",
 ] as const;
 export type EnglishService = (typeof ENGLISH_SERVICES)[number];
 
@@ -48,6 +53,13 @@ export const KNOWN_ENGLISH_AI_FEATURES = [
   "writing-feedback",
   "immersion-judge",
   "content-draft",
+  "exam-writing",
+  "exam-speaking",
+  "writing-model-answer",
+  "writing-free-check",
+  "tutor-lesson",
+  "immersion-project-judge",
+  "daily-story",
 ] as const;
 
 export type EnglishSettings = {
@@ -62,14 +74,20 @@ export type EnglishSettings = {
     /** Per-feature switches; a feature missing here is enabled. */
     features: Record<string, boolean>;
   };
+  /** Teacher classes: caps (the on/off switch is services.classes). */
+  classes: { max_classes_per_teacher: number; max_students_per_class: number };
 };
 
-export const SETTINGS_KEYS = ["services", "free_activities_per_day", "ai"] as const;
+export const SETTINGS_KEYS = ["services", "free_activities_per_day", "ai", "classes"] as const;
 export type SettingsKey = (typeof SETTINGS_KEYS)[number];
 
 export const FREE_PER_DAY_MAX = 20;
 export const AI_DAILY_LIMIT_MAX = 500;
 export const WORD_LOOKUP_LIMIT_MAX = 500;
+export const CLASS_CAPS = {
+  max_classes_per_teacher: { min: 1, max: 50, default: 10 },
+  max_students_per_class: { min: 2, max: 300, default: 60 },
+} as const;
 const FEATURE_KEY = /^[a-z][a-z0-9-]{1,47}$/;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -104,6 +122,10 @@ export const defaultEnglishSettings = (
     word_lookup_daily_limit: intIn(env.wordLookupLimit, 0, WORD_LOOKUP_LIMIT_MAX) ?? 60,
     features: {},
   },
+  classes: {
+    max_classes_per_teacher: CLASS_CAPS.max_classes_per_teacher.default,
+    max_students_per_class: CLASS_CAPS.max_students_per_class.default,
+  },
 });
 
 /**
@@ -118,6 +140,7 @@ export const parseEnglishSettingsRows = (
     services: { ...defaults.services },
     free_activities_per_day: defaults.free_activities_per_day,
     ai: { ...defaults.ai, features: { ...defaults.ai.features } },
+    classes: { ...defaults.classes },
   };
   for (const row of rows ?? []) {
     const key = String(row?.key ?? "");
@@ -137,6 +160,10 @@ export const parseEnglishSettingsRows = (
         for (const [feature, on] of Object.entries(value.features)) {
           if (FEATURE_KEY.test(feature) && typeof on === "boolean") out.ai.features[feature] = on;
         }
+      }
+    } else if (key === "classes" && isRecord(value)) {
+      for (const field of Object.keys(CLASS_CAPS) as Array<keyof typeof CLASS_CAPS>) {
+        out.classes[field] = intIn(value[field], CLASS_CAPS[field].min, CLASS_CAPS[field].max) ?? out.classes[field];
       }
     }
   }
@@ -160,6 +187,7 @@ export const validateEnglishSettingsPatch = (current: EnglishSettings, body: unk
     services: { ...current.services },
     free_activities_per_day: current.free_activities_per_day,
     ai: { ...current.ai, features: { ...current.ai.features } },
+    classes: { ...current.classes },
   };
   const touched = new Set<SettingsKey>();
 
@@ -223,6 +251,25 @@ export const validateEnglishSettingsPatch = (current: EnglishSettings, body: unk
         }
       }
       touched.add("ai");
+    }
+  }
+
+  if ("classes" in body) {
+    const classes = body.classes;
+    if (!isRecord(classes)) {
+      errors.push("classes must be an object.");
+    } else {
+      for (const [field, raw] of Object.entries(classes)) {
+        if (!(field in CLASS_CAPS)) {
+          errors.push(`Unknown classes setting "${field}".`);
+          continue;
+        }
+        const cap = CLASS_CAPS[field as keyof typeof CLASS_CAPS];
+        const value = intIn(raw, cap.min, cap.max);
+        if (value === null) errors.push(`classes.${field} must be a whole number from ${cap.min} to ${cap.max}.`);
+        else next.classes[field as keyof typeof CLASS_CAPS] = value;
+      }
+      touched.add("classes");
     }
   }
 

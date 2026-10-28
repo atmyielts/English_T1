@@ -13,7 +13,23 @@
       "definition": "to travel regularly between your home and your work or school",
       "example": "I commute to the university by metro.",
       "translation_ru": "ездить на работу или учёбу",
-      "translation_uz": "(ishga yoki oʻqishga) qatnamoq"
+      "translation_uz": "(ishga yoki oʻqishga) qatnamoq",
+      "collocations": [
+        "a daily commute",
+        "a long commute",
+        "commute to work",
+        "commute by train"
+      ],
+      "word_family": [
+        {
+          "word": "commuter",
+          "part_of_speech": "noun"
+        },
+        {
+          "word": "commute",
+          "part_of_speech": "noun"
+        }
+      ]
     },
     {
       "word": "rush hour",
@@ -21,7 +37,12 @@
       "definition": "the busy time when most people travel to or from work",
       "example": "The metro is very crowded during rush hour.",
       "translation_ru": "час пик",
-      "translation_uz": "tigʻiz soatlar"
+      "translation_uz": "tigʻiz soatlar",
+      "collocations": [
+        "during rush hour",
+        "rush-hour traffic",
+        "avoid the rush hour"
+      ]
     },
     {
       "word": "traffic jam",
@@ -29,7 +50,12 @@
       "definition": "a long line of cars that cannot move or move very slowly",
       "example": "We were stuck in a traffic jam for an hour.",
       "translation_ru": "пробка",
-      "translation_uz": "tirbandlik"
+      "translation_uz": "tirbandlik",
+      "collocations": [
+        "stuck in a traffic jam",
+        "a huge traffic jam",
+        "cause a traffic jam"
+      ]
     },
     {
       "word": "crowded",
@@ -37,7 +63,22 @@
       "definition": "full of people",
       "example": "The bus was so crowded that I had to stand.",
       "translation_ru": "переполненный",
-      "translation_uz": "gavjum, tiqilinch"
+      "translation_uz": "gavjum, tiqilinch",
+      "collocations": [
+        "a crowded bus",
+        "crowded with people",
+        "get crowded"
+      ],
+      "word_family": [
+        {
+          "word": "crowd",
+          "part_of_speech": "noun"
+        },
+        {
+          "word": "overcrowded",
+          "part_of_speech": "adjective"
+        }
+      ]
     },
     {
       "word": "fare",
@@ -45,7 +86,13 @@
       "definition": "the money you pay for a journey by bus, train or taxi",
       "example": "How much is the taxi fare to the airport?",
       "translation_ru": "плата за проезд",
-      "translation_uz": "yoʻl haqi"
+      "translation_uz": "yoʻl haqi",
+      "collocations": [
+        "a bus fare",
+        "pay the fare",
+        "a single fare",
+        "fare increase"
+      ]
     },
     {
       "word": "route",
@@ -53,7 +100,18 @@
       "definition": "the way that a bus, train or person goes from one place to another",
       "example": "This bus route goes past the Chorsu Bazaar.",
       "translation_ru": "маршрут",
-      "translation_uz": "yoʻnalish"
+      "translation_uz": "yoʻnalish",
+      "collocations": [
+        "a bus route",
+        "the quickest route",
+        "take a different route"
+      ],
+      "word_family": [
+        {
+          "word": "reroute",
+          "part_of_speech": "verb"
+        }
+      ]
     },
     {
       "word": "delay",
@@ -61,7 +119,23 @@
       "definition": "a time when something happens later than planned",
       "example": "There was a thirty-minute delay because of the snow.",
       "translation_ru": "задержка",
-      "translation_uz": "kechikish"
+      "translation_uz": "kechikish",
+      "collocations": [
+        "a long delay",
+        "without delay",
+        "cause a delay",
+        "a delay of ten minutes"
+      ],
+      "word_family": [
+        {
+          "word": "delay",
+          "part_of_speech": "verb"
+        },
+        {
+          "word": "delayed",
+          "part_of_speech": "adjective"
+        }
+      ]
     },
     {
       "word": "miss",
@@ -69,7 +143,18 @@
       "definition": "to be too late to get on a bus, train or plane",
       "example": "Hurry up or we'll miss the train!",
       "translation_ru": "опоздать (на поезд, автобус)",
-      "translation_uz": "(poyezddan, avtobusdan) qolib ketmoq"
+      "translation_uz": "(poyezddan, avtobusdan) qolib ketmoq",
+      "collocations": [
+        "miss the bus",
+        "miss your stop",
+        "just miss"
+      ],
+      "word_family": [
+        {
+          "word": "missed",
+          "part_of_speech": "adjective"
+        }
+      ]
     },
     {
       "word": "platform",
@@ -77,7 +162,12 @@
       "definition": "the place in a station where you get on and off trains",
       "example": "The train to Samarkand leaves from platform 2.",
       "translation_ru": "платформа, перрон",
-      "translation_uz": "platforma, perron"
+      "translation_uz": "platforma, perron",
+      "collocations": [
+        "on platform 4",
+        "the train leaves from platform 2",
+        "wait on the platform"
+      ]
     },
     {
       "word": "passenger",
@@ -85,7 +175,12 @@
       "definition": "a person who is travelling in a car, bus, train or plane but is not driving it",
       "example": "Passengers must show their tickets before they get on.",
       "translation_ru": "пассажир",
-      "translation_uz": "yoʻlovchi"
+      "translation_uz": "yoʻlovchi",
+      "collocations": [
+        "passenger seat",
+        "airline passengers",
+        "passenger numbers"
+      ]
     },
     {
       "word": "get off",
@@ -93,7 +188,18 @@
       "definition": "to leave a bus, train or plane",
       "example": "Get off at the next stop for the museum.",
       "translation_ru": "выходить (из транспорта)",
-      "translation_uz": "tushmoq"
+      "translation_uz": "tushmoq",
+      "collocations": [
+        "get off the bus",
+        "get off at the next stop",
+        "get off the train"
+      ],
+      "word_family": [
+        {
+          "word": "get on",
+          "part_of_speech": "phrasal verb"
+        }
+      ]
     },
     {
       "word": "on foot",
@@ -101,7 +207,12 @@
       "definition": "walking, not using any transport",
       "example": "The office is close, so I usually go on foot.",
       "translation_ru": "пешком",
-      "translation_uz": "piyoda"
+      "translation_uz": "piyoda",
+      "collocations": [
+        "go on foot",
+        "ten minutes on foot",
+        "travel on foot"
+      ]
     }
   ]
 }

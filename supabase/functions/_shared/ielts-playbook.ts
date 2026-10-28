@@ -1,3 +1,5 @@
+import { looksLikeUserToken } from "./ielts-playbook-routes.ts";
+
 type JsonRecord = Record<string, unknown>;
 
 export type AuthedContext = {
@@ -121,7 +123,9 @@ export type OutcomeRow = {
 export const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-user-jwt",
-  "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
+  // DELETE is needed by the notes page (removing a highlight); without it the
+  // browser preflight fails and the Remove button silently does nothing.
+  "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
 };
 
 export const PLAYBOOK_PRODUCT_SLUG = "ielts-playbook";
@@ -146,10 +150,10 @@ export const MODULE_ORDER = [
   "retake-results-strategy",
 ];
 
-export const json = (status: number, body: unknown): Response =>
+export const json = (status: number, body: unknown, extraHeaders: Record<string, string> = {}): Response =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { "Content-Type": "application/json", ...corsHeaders },
+    headers: { "Content-Type": "application/json", ...corsHeaders, ...extraHeaders },
   });
 
 export const getEnv = (key: string): string => {
@@ -224,19 +228,39 @@ const resolveLanguageIdByCode = async (sb: any, code: string): Promise<string | 
 
 export const authUser = async (sb: any, req: Request): Promise<AuthedContext | null> => {
   const token = getBearerToken(req);
-  if (!token) return null;
+  // Anonymous visitors send the public anon key as the bearer token. Asking
+  // the auth server about it always fails, so skip that round trip.
+  if (!token || !looksLikeUserToken(token)) return null;
   const { data, error } = await sb.auth.getUser(token);
   if (error || !data?.user) return null;
   return { userId: data.user.id, token, email: data.user.email ?? null };
 };
 
-export const resolveScope = async (sb: any): Promise<PlaybookScope> => ({
-  playbookProductId: (await resolveProductIdBySlug(sb, PLAYBOOK_PRODUCT_SLUG)) ?? PLAYBOOK_PRODUCT_ID_FALLBACK,
-  simulatorProductId: (await resolveProductIdBySlug(sb, SIMULATOR_PRODUCT_SLUG)) ?? SIMULATOR_PRODUCT_ID_FALLBACK,
-  practiceProductId: (await resolveProductIdBySlug(sb, PRACTICE_PRODUCT_SLUG)) ?? PRACTICE_PRODUCT_ID_FALLBACK,
-  languageCode: "en",
-  languageId: await resolveLanguageIdByCode(sb, "en"),
-});
+// Product and language ids practically never change, but resolving them took
+// four sequential database round trips on every request. Resolve them in
+// parallel once per isolate and reuse the result for a few minutes.
+const SCOPE_TTL_MS = 10 * 60 * 1000;
+let scopeCache: { value: PlaybookScope; expiresAt: number } | null = null;
+
+export const resolveScope = async (sb: any): Promise<PlaybookScope> => {
+  if (scopeCache && scopeCache.expiresAt > Date.now()) return scopeCache.value;
+  const [playbookId, simulatorId, practiceId, languageId] = await Promise.all([
+    resolveProductIdBySlug(sb, PLAYBOOK_PRODUCT_SLUG),
+    resolveProductIdBySlug(sb, SIMULATOR_PRODUCT_SLUG),
+    resolveProductIdBySlug(sb, PRACTICE_PRODUCT_SLUG),
+    resolveLanguageIdByCode(sb, "en"),
+  ]);
+  const value: PlaybookScope = {
+    playbookProductId: playbookId ?? PLAYBOOK_PRODUCT_ID_FALLBACK,
+    simulatorProductId: simulatorId ?? SIMULATOR_PRODUCT_ID_FALLBACK,
+    practiceProductId: practiceId ?? PRACTICE_PRODUCT_ID_FALLBACK,
+    languageCode: "en",
+    languageId,
+  };
+  // Only cache a complete lookup so a transient failure is retried next time.
+  if (playbookId && languageId) scopeCache = { value, expiresAt: Date.now() + SCOPE_TTL_MS };
+  return value;
+};
 
 export const resolveEffectiveProductIds = async (
   supabaseUrl: string,
@@ -397,6 +421,47 @@ export const loadLatestOutcomeForProduct = async (
     ...(data as OutcomeRow),
     section_scores: isObject((data as any).section_scores) ? ((data as any).section_scores as JsonRecord) : {},
   };
+};
+
+/** The scored outcome of one specific simulator/practice session, if it belongs to the user. */
+export const loadOutcomeForSession = async (
+  sb: any,
+  scope: PlaybookScope,
+  userId: string,
+  sessionId: string,
+): Promise<OutcomeRow | null> => {
+  const { data } = await sb
+    .from("exam_outcomes")
+    .select("id,session_id,product_id,overall_band,section_scores,computed_at")
+    .eq("user_id", userId)
+    .eq("session_id", sessionId)
+    .in("product_id", [scope.simulatorProductId, scope.practiceProductId])
+    .order("computed_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!data) return null;
+  return {
+    ...(data as OutcomeRow),
+    section_scores: isObject((data as any).section_scores) ? ((data as any).section_scores as JsonRecord) : {},
+  };
+};
+
+/** Lightweight page lookup for routes that only need the id and visibility. */
+export const loadPageRef = async (
+  sb: any,
+  scope: PlaybookScope,
+  slug: string,
+): Promise<{ id: string; slug: string; visibility: string } | null> => {
+  const { data } = await sb
+    .from("ielts_playbook_pages")
+    .select("id,slug,visibility")
+    .eq("product_id", scope.playbookProductId)
+    .eq("locale_code", "en")
+    .eq("slug", slug)
+    .eq("status", "published")
+    .maybeSingle();
+  if (!data?.id) return null;
+  return { id: String(data.id), slug: String(data.slug), visibility: String(data.visibility ?? "public") };
 };
 
 export const extractSectionBands = (outcome: OutcomeRow | null): Record<string, number> => {
@@ -774,15 +839,42 @@ export const resolveMarketGuidance = async (
     .from("ielts_playbook_market_guidance")
     .select("*")
     .eq("product_id", scope.playbookProductId)
-    .eq("provider_key", provider)
     .eq("status", "published")
-    .in("country_code", candidates)
-    .order("country_code", { ascending: false });
+    .in("country_code", candidates);
 
-  if (!Array.isArray(data) || data.length === 0) return null;
-  const exact = data.find((row: any) => String(row.country_code) === requestedCountry);
-  const row = (exact ?? data[0]) as MarketGuidanceRow;
+  const row = pickMarketGuidance(Array.isArray(data) ? data : [], requestedCountry, provider);
+  if (!row) return null;
   return { ...row, metadata: isObject((row as any).metadata) ? ((row as any).metadata as JsonRecord) : {} };
+};
+
+/**
+ * Preference order: the requested country with the requested provider, then
+ * the requested country with any provider (a local guide beats a generic one),
+ * then GLOBAL with the provider, then any GLOBAL guide.
+ */
+export const pickMarketGuidance = <T extends { country_code?: unknown; provider_key?: unknown }>(
+  rows: T[],
+  country: string,
+  provider: string,
+): T | null => {
+  const find = (c: string, p?: string) =>
+    rows.find((row) => String(row.country_code) === c && (p == null || String(row.provider_key) === p));
+  return find(country, provider) ?? find(country) ?? find("GLOBAL", provider) ?? find("GLOBAL") ?? null;
+};
+
+/** Published markets for the "where will you sit the test" selector. */
+export const listMarkets = async (sb: any, scope: PlaybookScope): Promise<JsonRecord[]> => {
+  const { data } = await sb
+    .from("ielts_playbook_market_guidance")
+    .select("id,country_code,provider_key,summary,ukvi_available,computer_available,writing_on_paper_available,one_skill_retake_available,result_timing_note,booking_url,verified_at,metadata")
+    .eq("product_id", scope.playbookProductId)
+    .eq("status", "published")
+    .order("country_code", { ascending: true })
+    .order("provider_key", { ascending: true });
+  return (Array.isArray(data) ? data : []).map((row: any) => ({
+    ...row,
+    metadata: isObject(row.metadata) ? row.metadata : {},
+  }));
 };
 
 export const loadPlanTemplates = async (sb: any, scope: PlaybookScope): Promise<PlanTemplateRow[]> => {
@@ -957,16 +1049,22 @@ export const generateRecommendation = async (
   scope: PlaybookScope,
   userId: string,
   profile: PlaybookProfileRow,
+  opts: { anchorSessionId?: string | null } = {},
 ): Promise<JsonRecord> => {
-  const [rules, templates, simulatorOutcome, practiceOutcome, practiceEvidence, market] = await Promise.all([
+  const anchorSessionId = toNullableText(opts.anchorSessionId, 80);
+  const [rules, templates, latestSimulatorOutcome, anchorOutcome, practiceOutcome, practiceEvidence, market] = await Promise.all([
     loadRules(sb, scope),
     loadPlanTemplates(sb, scope),
     loadLatestOutcome(sb, scope, userId),
+    anchorSessionId ? loadOutcomeForSession(sb, scope, userId, anchorSessionId) : Promise.resolve(null),
     loadLatestOutcomeForProduct(sb, userId, scope.practiceProductId),
     loadPracticeEvidence(sb, scope, userId),
     resolveMarketGuidance(sb, scope, profile.test_market_country_code, profile.provider_key),
   ]);
 
+  // A learner arriving from a finished simulator test (?source=simulator&session_id=)
+  // gets the plan anchored to that exact result instead of whatever is latest.
+  const simulatorOutcome = anchorOutcome ?? latestSimulatorOutcome;
   const simulatorSectionBands = extractSectionBands(simulatorOutcome);
   const practiceOutcomeSectionBands = extractSectionBands(practiceOutcome);
   const practiceDiagnosticSectionBands = isObject(practiceEvidence.diagnostic_section_bands)
@@ -1092,6 +1190,16 @@ export const generateRecommendation = async (
       eor_note: "Enquiry on Results should be treated as informational only, not as guaranteed score movement.",
     },
     market_guidance: market,
+    simulator_anchor: anchorSessionId
+      ? {
+        session_id: anchorSessionId,
+        found: Boolean(anchorOutcome),
+        outcome_id: anchorOutcome?.id ?? null,
+        computed_at: anchorOutcome?.computed_at ?? null,
+        overall_band: anchorOutcome?.overall_band ?? null,
+        section_bands: anchorOutcome ? extractSectionBands(anchorOutcome) : {},
+      }
+      : null,
   };
 };
 
@@ -1237,56 +1345,65 @@ export const listCatalog = async (sb: any, scope: PlaybookScope): Promise<JsonRe
   };
 };
 
+// One PostgREST request returns the page with its sections, child guides and
+// sources. The edge runtime is often far from the database, so every extra
+// sequential query used to add hundreds of milliseconds to a public page.
+export const PAGE_DETAIL_SELECT = [
+  "id,parent_page_id,page_type,module_key,slug,title,summary,status,visibility,locale_code,country_scope,variant_scope,sort_order,seo_title,seo_description,published_at,metadata",
+  "sections:ielts_playbook_page_sections(id,page_id,block_type,heading,status,sort_order,content,metadata)",
+  "child_pages:ielts_playbook_pages!parent_page_id(id,parent_page_id,page_type,module_key,slug,title,summary,status,visibility,sort_order,published_at,metadata)",
+  "sources:ielts_playbook_page_sources(sort_order,citation_note,is_primary,source:ielts_playbook_sources(id,source_type,provider_key,title,url,summary,status,verified_at,published_at,last_checked_at,metadata))",
+].join(",");
+
 export const loadPageDetail = async (sb: any, scope: PlaybookScope, slug: string): Promise<JsonRecord | null> => {
   const { data: pageData } = await sb
     .from("ielts_playbook_pages")
-    .select("*")
+    .select(PAGE_DETAIL_SELECT)
     .eq("product_id", scope.playbookProductId)
     .eq("locale_code", "en")
     .eq("slug", slug)
     .eq("status", "published")
+    .eq("sections.status", "published")
+    .eq("child_pages.status", "published")
+    .order("sort_order", { referencedTable: "sections", ascending: true })
+    .order("sort_order", { referencedTable: "child_pages", ascending: true })
+    .order("sort_order", { referencedTable: "sources", ascending: true })
     .maybeSingle();
 
   if (!pageData) return null;
-  const page = {
-    ...(pageData as PageRow),
-    variant_scope: isObject((pageData as any).variant_scope) ? ((pageData as any).variant_scope as JsonRecord) : {},
-    metadata: isObject((pageData as any).metadata) ? ((pageData as any).metadata as JsonRecord) : {},
-    country_scope: Array.isArray((pageData as any).country_scope) ? ((pageData as any).country_scope as string[]) : [],
-  };
+  return shapePageDetail(pageData as JsonRecord);
+};
 
-  const [{ data: sectionData }, { data: childPages }, { data: pageSources }] = await Promise.all([
-    sb
-      .from("ielts_playbook_page_sections")
-      .select("*")
-      .eq("page_id", page.id)
-      .eq("status", "published")
-      .order("sort_order", { ascending: true }),
-    sb
-      .from("ielts_playbook_pages")
-      .select("id,parent_page_id,page_type,module_key,slug,title,summary,visibility,sort_order,published_at,metadata")
-      .eq("parent_page_id", page.id)
-      .eq("status", "published")
-      .order("sort_order", { ascending: true }),
-    sb
-      .from("ielts_playbook_page_sources")
-      .select("sort_order,citation_note,is_primary,source:ielts_playbook_sources(*)")
-      .eq("page_id", page.id)
-      .order("sort_order", { ascending: true }),
-  ]);
+export const shapePageDetail = (pageData: JsonRecord): JsonRecord => {
+  const { sections: sectionData, child_pages: childPages, sources: pageSources, ...pageRow } = pageData as Record<string, any>;
+  const page = {
+    ...(pageRow as PageRow),
+    variant_scope: isObject(pageRow.variant_scope) ? (pageRow.variant_scope as JsonRecord) : {},
+    metadata: isObject(pageRow.metadata) ? (pageRow.metadata as JsonRecord) : {},
+    country_scope: Array.isArray(pageRow.country_scope) ? (pageRow.country_scope as string[]) : [],
+  };
+  const bySortOrder = (a: any, b: any) => Number(a?.sort_order ?? 0) - Number(b?.sort_order ?? 0);
 
   return {
     page,
-    sections: (Array.isArray(sectionData) ? sectionData : []).map((row: any) => ({
-      ...(row as PageSectionRow),
-      content: isObject(row.content) ? row.content : {},
-      metadata: isObject(row.metadata) ? row.metadata : {},
-    })),
-    child_pages: (Array.isArray(childPages) ? childPages : []).map((row: any) => ({
-      ...row,
-      metadata: isObject(row.metadata) ? row.metadata : {},
-    })),
-    sources: (Array.isArray(pageSources) ? pageSources : []).map((row: any) => ({
+    // The embedded filters already restrict to published rows; the extra
+    // filter and sort keep the shape stable if a filter is ever dropped.
+    sections: (Array.isArray(sectionData) ? sectionData : [])
+      .filter((row: any) => !row?.status || row.status === "published")
+      .sort(bySortOrder)
+      .map((row: any) => ({
+        ...(row as PageSectionRow),
+        content: isObject(row.content) ? row.content : {},
+        metadata: isObject(row.metadata) ? row.metadata : {},
+      })),
+    child_pages: (Array.isArray(childPages) ? childPages : [])
+      .filter((row: any) => !row?.status || row.status === "published")
+      .sort(bySortOrder)
+      .map(({ status: _status, ...row }: any) => ({
+        ...row,
+        metadata: isObject(row.metadata) ? row.metadata : {},
+      })),
+    sources: (Array.isArray(pageSources) ? pageSources : []).sort(bySortOrder).map((row: any) => ({
       sort_order: Number(row.sort_order ?? 0),
       citation_note: row.citation_note ? String(row.citation_note) : null,
       is_primary: Boolean(row.is_primary),

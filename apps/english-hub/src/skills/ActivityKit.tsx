@@ -1,15 +1,15 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useEnglish } from '../app/EnglishContext';
 import { useT } from '../i18n';
+import { clearResume, saveResume } from '../lib/glue';
 import { getCatalog } from '../lib/hub';
 import type { SkillKey } from '../lib/skills';
 import { useResource } from '../lib/useResource';
-import { ErrorState, FeedbackList, LevelBadge, Loading, LockedPanel, PageHeader, ScoreBadge, SkillDot, Tag } from '../ui/kit';
+import { ErrorState, FeedbackList, LevelBadge, Loading, LockedPanel, PageHeader, SkillDot, Tag } from '../ui/kit';
 import { NewBadges } from '../components/Badges';
 import { ServicePaused } from '../components/ServicePaused';
-import { XpEarned } from '../components/XpWidgets';
-import { UpNextCard } from '../components/UpNext';
+import { ResultSummary, type MainMistake } from '../components/ResultSummary';
 import { pickNext } from './SkillHome';
 
 /** Frame for one activity: back link, title, level and time, then the exercise. */
@@ -43,6 +43,14 @@ export const ActivityFrame = ({
   // A paused skill shows a calm notice instead of the activity (submitting would be refused).
   const locked = paused || !canPractise(skill, slug);
   const usingFree = !paused && access.status === 'ready' && !access.unlocked.has(skill) && access.freeLeft > 0;
+  const ready = !locked && !loading && !error && access.status === 'ready';
+  // "Continue anywhere": remember the activity opened in this skill, once per visit.
+  const remembered = useRef<string | null>(null);
+  useEffect(() => {
+    if (!ready || !slug || remembered.current === slug) return;
+    remembered.current = slug;
+    void saveResume({ skill, slug });
+  }, [ready, skill, slug]);
   return (
     <>
       <PageHeader
@@ -82,8 +90,12 @@ const NextLink = ({ skill, currentSlug }: { skill: SkillKey; currentSlug?: strin
 };
 
 /**
- * Result after submitting. `score` is 0..100. `good` and `fix` are short
- * learner-facing points; `children` holds skill-specific detail (answers, corrections).
+ * Result after submitting, through the shared ResultSummary so every skill's
+ * result reads the same way. `score` is 0..100. `good` and `fix` are short
+ * learner-facing points; `children` holds skill-specific detail (answers,
+ * corrections). `savedWords` / `savedQuestions` / `savedMistakes` say what
+ * went to Review; `mainMistake` shows its first-language note; `shareSlot`
+ * replaces the default share slot.
  */
 export const ResultPanel = ({
   skill,
@@ -95,6 +107,11 @@ export const ResultPanel = ({
   onRetry,
   children,
   savedWords,
+  savedQuestions,
+  savedMistakes,
+  mainMistake,
+  shareSlot,
+  title,
 }: {
   skill: SkillKey;
   slug?: string | null;
@@ -105,35 +122,46 @@ export const ResultPanel = ({
   onRetry?: () => void;
   children?: ReactNode;
   savedWords?: number;
+  /** Missed questions queued for Review. */
+  savedQuestions?: number;
+  /** Corrections kept in Review → your mistakes. */
+  savedMistakes?: number;
+  mainMistake?: MainMistake | null;
+  shareSlot?: ReactNode;
+  title?: string | null;
 }) => {
   const t = useT();
   const { refreshAccess } = useEnglish();
   // A free learner's allowance changes once an activity is submitted.
   useEffect(() => { void refreshAccess(); }, [refreshAccess]);
+  // Finished: nothing to continue here any more, on any device.
+  useEffect(() => { if (slug) void clearResume(skill, slug); }, [skill, slug]);
   return (
     <section className="en-panel" aria-live="polite">
-      <div className="en-result">
-        {score !== null ? <ScoreBadge score={score} /> : null}
-        <div className="en-stack" style={{ gap: '.5rem' }}>
-          <h2 style={{ margin: 0 }}>{t('activity.result.title')}</h2>
-          {summary ? <p style={{ margin: 0 }}>{summary}</p> : null}
-          <XpEarned skill={skill} slug={slug} />
-          {savedWords ? <p className="en-notice">{t('activity.result.savedWords', { count: savedWords })}</p> : null}
+      <ResultSummary
+        score={score}
+        summary={summary}
+        xp={{ skill, slug }}
+        saved={{ words: savedWords, questions: savedQuestions, mistakes: savedMistakes }}
+        mainMistake={mainMistake}
+        share={{ kind: 'activity', skill, slug, title: title ?? null, score }}
+        shareSlot={shareSlot}
+        upNext={{ skill, slug }}
+        actions={(
+          <>
+            <Link className="en-button-quiet" to="/today">{t('activity.result.today')}</Link>
+            <NextLink skill={skill} currentSlug={slug} />
+            {onRetry ? <button type="button" className="quiet" onClick={onRetry}>{t('activity.result.retry')}</button> : null}
+          </>
+        )}
+      >
+        <div className="en-grid-cards" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(260px, 100%), 1fr))' }}>
+          <FeedbackList title={t('activity.result.good')} items={good} tone="good" />
+          <FeedbackList title={t('activity.result.fix')} items={fix} tone="fix" />
         </div>
-      </div>
-      <div className="en-grid-cards" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
-        <FeedbackList title={t('activity.result.good')} items={good} tone="good" />
-        <FeedbackList title={t('activity.result.fix')} items={fix} tone="fix" />
-      </div>
-      <NewBadges showLink />
-      {children}
-      <UpNextCard skill={skill} slug={slug} />
-      <div className="en-actions">
-        <Link className="en-button-quiet" to="/today">{t('activity.result.today')}</Link>
-        <NextLink skill={skill} currentSlug={slug} />
-        {onRetry ? <button type="button" className="quiet" onClick={onRetry}>{t('activity.result.retry')}</button> : null}
-      </div>
+        <NewBadges showLink />
+        {children}
+      </ResultSummary>
     </section>
   );
 };
-

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { useT } from '../../i18n';
+import { useI18n, useT } from '../../i18n';
 import { getNotebook, saveWords, type NotebookCard } from '../../lib/notebook';
 import { useResource } from '../../lib/useResource';
 import { EmptyState, ErrorState, Loading, Panel, Stat, Tag, useErrorMessage } from '../../ui/kit';
@@ -63,6 +63,19 @@ const AddWordForm = ({ onAdded }: { onAdded: () => void }) => {
   );
 };
 
+/** How well the word is known, from its FSRS stability, and when it comes back. */
+const WordStrength = ({ card }: { card: NotebookCard }) => {
+  const t = useT();
+  const { date } = useI18n();
+  const stability = Number((card.srs as { s?: unknown } | null | undefined)?.s ?? Number.NaN);
+  const level = !card.review_count ? 'new' : Number.isFinite(stability) ? (stability >= 21 ? 'strong' : stability >= 4 ? 'growing' : 'weak') : 'growing';
+  return (
+    <small className="hint">
+      {t(`depth.strength.${level}`)} · {t('depth.strength.next', { date: date(card.next_review_at, { day: 'numeric', month: 'short' }) })}
+    </small>
+  );
+};
+
 const WordRow = ({ card, onRemoved }: { card: NotebookCard; onRemoved: (id: string) => void }) => {
   const t = useT();
   const errorText = useErrorMessage();
@@ -88,6 +101,7 @@ const WordRow = ({ card, onRemoved }: { card: NotebookCard; onRemoved: (id: stri
         <span className="en-item-main">
           <strong lang="en">{card.word}</strong>
           {card.definition ? <span lang="en">{card.definition}</span> : null}
+          <WordStrength card={card} />
           {error ? <span className="error" role="alert">{errorText(error)}</span> : null}
         </span>
         <span className="en-item-meta">
@@ -136,6 +150,8 @@ export const MyWordsPanel = () => {
             {summary.due_count > 0
               ? <Link className="en-button" to="/review">{t('vocabulary.words.reviewNow')}</Link>
               : <span className="hint">{t('vocabulary.words.nothingDue')}</span>}
+            {summary.total_count > 0 ? <Link className="en-button-quiet" to="/vocabulary/practice?mode=typed">{t('depth.practice.typeCta')}</Link> : null}
+            {summary.total_count > 0 ? <Link className="en-button-quiet" to="/vocabulary/practice?mode=listen">{t('depth.practice.listenCta')}</Link> : null}
           </div>
         </div>
       ) : null}

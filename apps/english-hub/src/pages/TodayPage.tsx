@@ -9,11 +9,19 @@ import { Onboarding } from './Onboarding';
 import { TopicWeekPanel } from './TopicWeekPanel';
 import { GoalCard } from './goal/GoalCard';
 import { NewBadges } from '../components/Badges';
+import { ContinueCard } from '../components/ContinueCard';
 import { TodayXpPanel } from '../components/XpWidgets';
 import { FocusSkillCard } from '../components/FocusSkillCard';
+import { DailyStoryCard } from '../components/DailyStoryCard';
 import { InstallCard } from '../components/InstallApp';
+import { OfflineDownloadCard } from '../components/offline/OfflineDownloadCard';
 import { ComebackCard, StreakFreezes } from '../components/StreakGuard';
 import { getStreak } from '../lib/engine';
+import { ClassAssignmentsCard } from '../components/ClassAssignmentsCard';
+import { ShareCardButton } from '../components/ShareCardButton';
+
+/** Streak lengths worth a share card on the day they are reached. */
+const STREAK_MILESTONES = [7, 30, 100];
 
 const greetingKey = (): string => {
   const hour = new Date().getHours();
@@ -113,9 +121,13 @@ export const TodayPage = () => {
         </div>
       </div>
 
+      <ContinueCard />
+
       <NewBadges />
 
       {guard.data ? <ComebackCard streak={guard.data} /> : null}
+
+      <ClassAssignmentsCard />
 
       {data?.level_check?.due ? (
         <section className="en-panel en-tone-lime">
@@ -202,10 +214,12 @@ export const TodayPage = () => {
         <div className="en-stack">
           <FocusSkillCard />
           <GoalCard />
+          <DailyStoryCard />
 
           <Panel title={t('today.week.title')} aside={data ? <span>{t('today.week.streak', { count: streakCount })}</span> : null}>
             {data ? <WeekStrip week={data.week} /> : <Loading lines={1} />}
             <p className="hint">{data && streakCount > 0 ? t('today.week.keepGoing') : t('today.week.start')}</p>
+            {STREAK_MILESTONES.includes(streakCount) ? <ShareCardButton card={{ kind: 'streak', label: t('social.card.streak.label'), big: String(streakCount), headline: t('social.card.streak.headline', { count: streakCount }), detail: t('social.card.streak.detail') }} /> : null}
             {guard.data ? <StreakFreezes streak={guard.data} /> : null}
           </Panel>
 
@@ -231,6 +245,7 @@ export const TodayPage = () => {
           </Panel>
 
           <InstallCard />
+          <OfflineDownloadCard />
 
           <Panel title={t('today.tutor.title')} tone="teal">
             <p>{t('today.tutor.body')}</p>

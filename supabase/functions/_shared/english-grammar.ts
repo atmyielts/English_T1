@@ -114,3 +114,20 @@ export const isSpellingSlip = (target: string, response: string, prompt: string)
   while (first < Math.min(expected.length, given.length) && expected[first] === given[first]) first += 1;
   return first < Math.min(expected.length, given.length) - 2;
 };
+
+// ---------------------------------------------------------------------------
+// Word order: "put the words in order"
+// ---------------------------------------------------------------------------
+
+/** The tiles of a word-order prompt, written with slashes: "always / she / breakfast / has" (a tile may be a phrase). */
+export const wordOrderTiles = (prompt: string): string[] =>
+  String(prompt ?? "").split("/").map((tile) => tile.trim()).filter(Boolean);
+
+const multiset = (items: string[]): string => [...items].sort().join("|");
+
+/** Whether an answer uses exactly the words of the tiles, each once (case and punctuation aside). */
+export const usesAllTiles = (prompt: string, answer: string): boolean => {
+  const tiles = wordOrderTiles(prompt);
+  if (tiles.length < 2) return false;
+  return multiset(words(tiles.join(" "))) === multiset(words(answer));
+};

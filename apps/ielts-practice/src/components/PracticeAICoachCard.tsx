@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Brain, RefreshCw, Sparkles, TrendingUp, AlertTriangle, PartyPopper } from 'lucide-react';
-import { practiceCoachSummaryGet, type CoachInsight, type CoachSummaryResponse } from '../lib/api';
+import { getCoachLang, practiceCoachSummaryGet, type CoachInsight, type CoachSummaryResponse } from '../lib/api';
+import { useAppT, useErrorText, useFormat } from '../i18n';
 import { useLazyVisible } from '../lib/useLazyVisible';
 
 interface Props {
@@ -16,6 +17,9 @@ const INSIGHT_TONES: Record<string, { color: string; Icon: typeof Sparkles }> = 
 };
 
 export const PracticeAICoachCard = ({ accessToken }: Props) => {
+  const t = useAppT();
+  const fmt = useFormat();
+  const errorText = useErrorText();
   const [data, setData] = useState<CoachSummaryResponse | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,13 +30,12 @@ export const PracticeAICoachCard = ({ accessToken }: Props) => {
     setBusy(true);
     setError(null);
     try {
-      const res = await practiceCoachSummaryGet(accessToken);
+      const res = await practiceCoachSummaryGet(accessToken, getCoachLang());
       setData(res);
-      if (!res.ai_available) {
-        setError('AI coach is offline right now. Insights will resume when the model is reachable.');
-      }
+      if (res.limited) setError(t('coach.limited'));
+      else if (!res.ai_available) setError(t('coach.offline'));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load coach insights');
+      setError(errorText(err));
     } finally {
       setBusy(false);
     }
@@ -48,8 +51,8 @@ export const PracticeAICoachCard = ({ accessToken }: Props) => {
     return (
       <section ref={ref} className="glass" style={{ padding: 24, display: 'grid', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Brain size={18} style={{ color: 'var(--accent)' }} />
-          <p className="eyebrow" style={{ margin: 0 }}>Your AI coach</p>
+          <Brain size={18} style={{ color: 'var(--accent)' }} aria-hidden="true" />
+          <p className="eyebrow" style={{ margin: 0 }}>{t('coach.eyebrow')}</p>
         </div>
         <span className="p2-skeleton p2-skeleton-line long" />
         <span className="p2-skeleton p2-skeleton-line medium" />
@@ -62,8 +65,8 @@ export const PracticeAICoachCard = ({ accessToken }: Props) => {
     <section ref={ref} className="glass" style={{ padding: 24, display: 'grid', gap: 14 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Brain size={18} style={{ color: 'var(--accent)' }} />
-          <p className="eyebrow" style={{ margin: 0 }}>Your AI coach</p>
+          <Brain size={18} style={{ color: 'var(--accent)' }} aria-hidden="true" />
+          <p className="eyebrow" style={{ margin: 0 }}>{t('coach.eyebrow')}</p>
         </div>
         <button
           type="button"
@@ -71,7 +74,7 @@ export const PracticeAICoachCard = ({ accessToken }: Props) => {
           onClick={() => void load()}
           disabled={busy || !accessToken}
         >
-          {busy ? 'Thinking…' : 'Refresh'} <RefreshCw size={11} style={{ marginLeft: 4 }} />
+          {busy ? t('coach.thinking') : t('coach.refresh')} <RefreshCw size={11} style={{ marginLeft: 4 }} />
         </button>
       </div>
 
@@ -84,7 +87,7 @@ export const PracticeAICoachCard = ({ accessToken }: Props) => {
       {error ? <p className="error-text" style={{ margin: 0 }}>{error}</p> : null}
 
       {data && data.insights.length > 0 ? (
-        <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12 }}>
+        <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(260px, 100%), 1fr))', gap: 12 }}>
           {data.insights.map((ins: CoachInsight, i) => {
             const tone = INSIGHT_TONES[ins.type] ?? INSIGHT_TONES.recommendation!;
             const Icon = tone.Icon;
@@ -131,13 +134,13 @@ export const PracticeAICoachCard = ({ accessToken }: Props) => {
 
       {data && data.insights.length === 0 && !error ? (
         <p className="muted" style={{ margin: 0 }}>
-          The coach doesn’t have enough recent activity to write insights yet. Complete a lab or two and check back.
+          {t('coach.empty')}
         </p>
       ) : null}
 
       {data?.generated_at ? (
         <p className="muted" style={{ margin: 0, fontSize: 11 }}>
-          Refreshed {new Date(data.generated_at).toLocaleTimeString()}
+          {t('coach.refreshed', { time: fmt.dateTime(data.generated_at) })}
         </p>
       ) : null}
     </section>

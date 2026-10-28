@@ -8,6 +8,7 @@ import { Panel, ProgressBar, Tag, useErrorMessage } from '../../ui/kit';
 import { ActivityFrame, ResultPanel } from '../ActivityKit';
 import { getDeck, submitDeck, type DeckSubmitResponse, type DeckWord, type VocabularyDeck } from './api';
 import { buildQuiz } from './quiz';
+import { WordKnowledge } from '../../components/WordKnowledge';
 
 type Step = 'learn' | 'quiz' | 'finish';
 
@@ -63,6 +64,7 @@ const LearnStep = ({ words, onDone }: { words: DeckWord[]; onDone: () => void })
           </p>
         ) : null}
         <Translation word={word} />
+        <WordKnowledge word={word} />
       </div>
       <div className="en-actions">
         <button type="button" className="quiet" disabled={index === 0} onClick={() => setIndex(index - 1)}>{t('vocabulary.learn.prev')}</button>

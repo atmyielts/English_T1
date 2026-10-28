@@ -9,6 +9,10 @@ import { YourWordsHint, YourWordsResult } from '../YourWords';
 import { ActivityFrame, ResultPanel } from '../ActivityKit';
 import { getPrompt, submitAnswer, type SpeakingMode, type SpeakingPrompt, type SpeakingSubmitResponse } from './api';
 import { useSpeakingCapture, type CaptureProblem } from './capture';
+import { AttemptCompare, FluencyPanel, LastTries } from './Depth';
+import { SavePhrase } from '../../components/SavePhrase';
+import { changedPhrase } from '../../../../../supabase/functions/_shared/english-text-diff.ts';
+import { fluencySignals } from '../../../../../supabase/functions/_shared/english-fluency.ts';
 
 const MIN_WORDS = 5;
 
@@ -152,12 +156,18 @@ export const SpeakingActivity = () => {
     setBusy(true);
     setError(null);
     try {
+      const speakingSeconds = mode === 'speech' ? capture.speakingSeconds() : null;
+      // Pauses from when words were recognised (speech only; the server checks the numbers).
+      const signals = mode === 'speech' ? fluencySignals({ transcript, speakingSeconds, marks: capture.timeline() }) : null;
       const response = await submitAnswer(slug, {
         transcript,
         mode,
-        speakingSeconds: mode === 'speech' ? capture.speakingSeconds() : null,
+        speakingSeconds,
         timeSpentSeconds: elapsed(),
         yourWordIds: yourWords.map((entry) => entry.id),
+        fluency: signals && signals.first_word_seconds !== null
+          ? { long_pauses: signals.long_pauses, longest_pause_seconds: signals.longest_pause_seconds, first_word_seconds: signals.first_word_seconds }
+          : null,
       });
       setResult(response);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -209,6 +219,7 @@ export const SpeakingActivity = () => {
 
           <Panel title={t('speaking.answer.title')}>
             <YourWordsHint words={yourWords} />
+            {stage === 'brief' ? <LastTries slug={slug} /> : null}
             {stage === 'brief' ? (
               <div className="en-stack">
                 {speechAvailable ? (
@@ -372,6 +383,9 @@ const SpeakingResult = ({
       good={feedback.strengths}
       fix={fix}
       onRetry={onRetry}
+      savedMistakes={feedback.corrections.length}
+      mainMistake={feedback.corrections[0] ? { original: feedback.corrections[0].said, corrected: feedback.corrections[0].better, explanation: feedback.corrections[0].explanation } : null}
+      title={prompt.title}
     >
       {result.mode === 'typed' ? (
         <p className="en-notice" style={{ margin: 0 }}><strong>{t('speaking.typed.label')}</strong> {t('speaking.typed.note')}</p>
@@ -401,6 +415,10 @@ const SpeakingResult = ({
           <audio controls src={audioUrl} className="sp-audio" aria-label={t('speaking.record.replay')} />
         </div>
       ) : null}
+
+      {result.previous_attempt ? <AttemptCompare previous={result.previous_attempt} result={result} /> : null}
+
+      {result.mode === 'speech' ? <FluencyPanel feedback={feedback} fluency={result.fluency ?? null} transcript={result.transcript} level={prompt.level} /> : null}
 
       <div className="en-stack" style={{ gap: '.35rem' }}>
         <h3 style={{ margin: 0, fontSize: '.95rem' }}>{result.mode === 'speech' ? t('speaking.result.transcriptSpeech') : t('speaking.result.transcriptTyped')}</h3>
@@ -436,6 +454,15 @@ const SpeakingResult = ({
               <li key={index} className="en-stack" style={{ gap: '.25rem' }}>
                 <span className="en-diff" lang="en"><del>{correction.said}</del> <ins>{correction.better}</ins></span>
                 {correction.explanation ? <span className="hint">{correction.explanation}</span> : null}
+                <span>
+                  <SavePhrase
+                    phrase={changedPhrase(correction.said, correction.better)}
+                    context={correction.better}
+                    source="speaking-feedback"
+                    label={prompt.title}
+                    refId={prompt.slug}
+                  />
+                </span>
                 <L1Why original={correction.said} corrected={correction.better} explanation={correction.explanation} />
               </li>
             ))}

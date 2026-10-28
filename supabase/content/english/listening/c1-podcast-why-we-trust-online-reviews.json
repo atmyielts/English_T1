@@ -32,7 +32,8 @@
           "To complain about a bad hotel"
         ],
         "answer_index": 1,
-        "explanation": "The host asks \"why we trust the opinions of complete strangers\" and then \"how do you read reviews without being fooled?\""
+        "explanation": "The host asks \"why we trust the opinions of complete strangers\" and then \"how do you read reviews without being fooled?\"",
+        "focus": "gist"
       },
       {
         "prompt": "What does 'social proof' refer to?",

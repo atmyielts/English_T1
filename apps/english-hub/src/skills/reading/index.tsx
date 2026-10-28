@@ -4,6 +4,7 @@ import { useEnglish } from '../../app/EnglishContext';
 import { useT } from '../../i18n';
 import { SkillHome } from '../SkillHome';
 import { ReadingArticle } from './Article';
+import { ReadingSpeedPanel } from './SpeedPanel';
 import './reading.css';
 
 const ContentRecommendCard = lazy(() => import('../../components/AIIter6Cards').then((m) => ({ default: m.ContentRecommendCard })));
@@ -20,6 +21,7 @@ const ReadingApp = () => {
         element={(
           <SkillHome
             skill="reading"
+            extra={<ReadingSpeedPanel />}
             tools={[
               { id: 'recommend', title: t('reading.tool.recommend'), hint: t('reading.tool.recommendHint'), render: () => <ContentRecommendCard accessToken={accessToken} /> },
               { id: 'idioms', title: t('reading.tool.idioms'), hint: t('reading.tool.idiomsHint'), render: () => <IdiomExplorerCard accessToken={accessToken} /> },

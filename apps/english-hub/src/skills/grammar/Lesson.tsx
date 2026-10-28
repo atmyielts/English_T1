@@ -6,6 +6,7 @@ import { useElapsedSeconds, useResource } from '../../lib/useResource';
 import { Panel, useErrorMessage } from '../../ui/kit';
 import { ActivityFrame, ResultPanel } from '../ActivityKit';
 import { getUnit, submitLesson, type GrammarSubmitResponse } from './api';
+import { MasteryLine, MistakeLinks, orderedSentence, WordOrderInput } from './Depth';
 
 export const GrammarLesson = () => {
   const t = useT();
@@ -14,6 +15,8 @@ export const GrammarLesson = () => {
   const lesson = useResource((signal) => getUnit(slug, signal), [slug]);
   const elapsed = useElapsedSeconds();
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  // Word-order items: the tiles placed, in order.
+  const [orders, setOrders] = useState<Record<string, number[]>>({});
   const [result, setResult] = useState<GrammarSubmitResponse | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>(null);
@@ -21,13 +24,16 @@ export const GrammarLesson = () => {
   const unit = lesson.data?.unit;
   const drills = lesson.data?.drills ?? [];
   const examples = (unit?.examples_json ?? []).filter((example) => example.good);
-  const answered = drills.filter((drill) => (answers[drill.id] ?? '').trim()).length;
+  const responseFor = (drill: { id: string; drill_type: string; prompt_text: string }) =>
+    drill.drill_type === 'word_order' ? orderedSentence(drill.prompt_text, orders[drill.id] ?? []) : answers[drill.id] ?? '';
+  const answered = drills.filter((drill) => responseFor(drill).trim()).length;
+  const mastery = result?.mastery ?? lesson.data?.mastery ?? null;
 
   const check = async () => {
     setBusy(true);
     setError(null);
     try {
-      const response = await submitLesson(slug, drills.map((drill) => ({ drill_id: drill.id, response: answers[drill.id] ?? '' })), elapsed());
+      const response = await submitLesson(slug, drills.map((drill) => ({ drill_id: drill.id, response: responseFor(drill) })), elapsed());
       setResult(response);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (cause) {
@@ -39,6 +45,7 @@ export const GrammarLesson = () => {
 
   const retry = () => {
     setAnswers({});
+    setOrders({});
     setResult(null);
   };
 
@@ -65,8 +72,17 @@ export const GrammarLesson = () => {
             ...(result.practised_mistakes ? [t('grammar.result.practisedMistakes', { count: result.practised_mistakes })] : []),
           ]}
           fix={result.correct < result.total ? [unit?.common_error_pattern ?? t('grammar.result.fixDefault')] : []}
+          savedQuestions={Math.max(0, result.total - result.correct)}
+          mainMistake={result.correct < result.total && unit?.focus_area ? { topic: unit.focus_area, explanation: unit.common_error_pattern } : null}
+          title={unit?.title}
           onRetry={retry}
-        />
+        >
+          <MasteryLine mastery={result.mastery} />
+        </ResultPanel>
+      ) : null}
+
+      {!result && mastery?.recheck_due ? (
+        <p className="en-notice">{t('depth.mastery.recheckNow')}</p>
       ) : null}
 
       <Panel
@@ -100,6 +116,16 @@ export const GrammarLesson = () => {
           return (
             <div key={drill.id} className="en-question">
               <p className="eyebrow">{t('grammar.practice.item', { number: index + 1 })} · {drill.instructions ?? drill.title}</p>
+              {drill.drill_type === 'word_order' ? (
+                <WordOrderInput
+                  prompt={drill.prompt_text}
+                  value={orders[drill.id] ?? []}
+                  onChange={(next) => setOrders((current) => ({ ...current, [drill.id]: next }))}
+                  disabled={Boolean(result) || busy}
+                  label={t('grammar.practice.answerLabel', { number: index + 1 })}
+                />
+              ) : (
+              <>
               <p className="en-question-prompt" lang="en">{drill.prompt_text}</p>
               <input
                 type="text"
@@ -114,12 +140,17 @@ export const GrammarLesson = () => {
                 placeholder={drill.prompt_text.includes('___') ? t('grammar.practice.fillPlaceholder') : t('grammar.practice.rewritePlaceholder')}
                 style={checked ? { borderColor: checked.correct ? 'var(--good)' : '#dc2626' } : undefined}
               />
+              </>
+              )}
               {checked ? (
                 <p className={checked.correct ? 'en-notice' : 'error'} style={{ margin: 0 }}>
                   {checked.correct
                     ? checked.typo ? t('grammar.practice.typo', { answer: checked.expected }) : t('grammar.practice.correct')
                     : t('grammar.practice.wrong', { answer: checked.expected })}
                 </p>
+              ) : null}
+              {checked && !checked.correct ? (
+                <MistakeLinks unitSlug={slug} topic={result?.focus_area ?? unit?.focus_area ?? null} given={checked.response} expected={checked.expected} />
               ) : null}
             </div>
           );

@@ -1,0 +1,51 @@
+/* Shadowing and Read aloud: the practice panel, its dialog and the two envelopes. */
+.sh-panel { display: grid; gap: 0.75rem; min-width: 0; }
+.sh-text { margin: 0; font-size: 1.08rem; line-height: 1.6; overflow-wrap: anywhere; }
+.sh-text.is-long { font-size: 1rem; }
+.sh-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; }
+.sh-controls .en-segmented button { min-width: 3.25rem; }
+.sh-pager { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; font-size: 0.85rem; color: var(--muted); }
+.sh-live { margin: 0; color: var(--muted); font-style: italic; overflow-wrap: anywhere; }
+.sh-score { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.35rem 0.75rem; margin: 0; }
+.sh-score strong { font-family: var(--heading-font, inherit); font-size: 1.35rem; }
+.sh-extra { margin: 0; font-size: 0.9rem; color: var(--muted); overflow-wrap: anywhere; }
+.sh-extra del { background: #fee2e2; color: #991b1b; border-radius: 4px; padding: 0 0.15rem; }
+.sh-hints { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.25rem; font-size: 0.92rem; }
+
+.sh-wave { display: grid; gap: 0.35rem; margin: 0; }
+.sh-wave-row { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); align-items: center; gap: 0.5rem; }
+.sh-wave-row > span { font-size: 0.78rem; font-weight: 700; color: var(--muted); }
+.sh-wave svg { display: block; width: 100%; height: 44px; border-radius: 10px; background: var(--highlight-bg, rgba(0, 0, 0, 0.04)); }
+.sh-wave .is-model rect { fill: var(--accent); opacity: 0.55; }
+.sh-wave .is-you rect { fill: var(--accent); }
+.sh-wave .is-you rect.is-pause { fill: #d97706; opacity: 0.9; }
+.sh-wave figcaption { font-size: 0.8rem; color: var(--muted); }
+
+.sh-dialog {
+  width: min(40rem, calc(100vw - 24px)); max-height: calc(100dvh - 24px); box-sizing: border-box;
+  padding: 0; border: 1px solid var(--line, rgba(0, 0, 0, 0.15)); border-radius: 20px;
+  background: var(--card, #fff); color: var(--ink, #241a13); box-shadow: 0 24px 60px rgba(30, 20, 10, 0.25);
+}
+.sh-dialog::backdrop { background: rgba(20, 14, 8, 0.45); }
+.sh-dialog-body { display: grid; gap: 0.75rem; padding: 1rem 1.1rem 1.2rem; overflow-y: auto; max-height: calc(100dvh - 26px); box-sizing: border-box; }
+.sh-dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.sh-dialog-head h2 { margin: 0; font-size: 1.1rem; }
+.sh-inline { padding: 0.9rem 1rem; border: 1px solid var(--soft-line, rgba(0, 0, 0, 0.1)); border-radius: var(--radius-inner, 14px); background: var(--card, #fff); }
+
+.sh-trigger { min-height: 32px; padding: 0 0.7rem; font-size: 0.82rem; }
+.sh-bubble-actions { display: flex; justify-content: flex-start; margin-top: -0.45rem; }
+.sh-paragraph-action { margin: -0.35rem 0 0.9rem; }
+
+.sh-set { display: grid; gap: 0.25rem; }
+.sh-sentence { padding: 0.85rem 0; border-top: 1px solid var(--soft-line); display: grid; gap: 0.6rem; min-width: 0; }
+.sh-sentence:first-child { border-top: 0; }
+.sh-best { font-size: 0.8rem; font-weight: 700; color: var(--muted); }
+
+@media (max-width: 520px) {
+  .sh-wave-row { grid-template-columns: 3.5rem minmax(0, 1fr); }
+  .sh-dialog { width: calc(100vw - 16px); border-radius: 16px; }
+  .sh-dialog-body { padding: 0.85rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sh-wave rect { transition: none; }
+}

@@ -1,6 +1,6 @@
 import { assert, assertEquals, assertStringIncludes } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import { scheduleAfterAnswer } from "./english-review.ts";
-import { intervalDaysForBox } from "./english-words.ts";
+import { notebookReviewPatch, RELEARN_MINUTES } from "./english-srs.ts";
 import {
   buildReviewCards,
   englishBotMessage,
@@ -41,20 +41,18 @@ Deno.test("tg english: missed questions follow the hub schedule (1, 3, 7 days, t
   });
 });
 
-Deno.test("tg english: saved words follow the notebook flashcard boxes", () => {
-  const right = wordReviewPatch({ leitner_box: 2, review_count: 3, correct_count: 2, incorrect_count: 1 }, true, NOW);
-  assertEquals(right.leitner_box, 3);
-  assertEquals(right.next_review_at, new Date(NOW.getTime() + intervalDaysForBox(3) * DAY).toISOString());
+Deno.test("tg english: saved words follow the shared FSRS schedule", () => {
+  const entry = { leitner_box: 2, review_count: 3, correct_count: 2, incorrect_count: 1, last_reviewed_at: "2026-10-22T10:00:00Z", metadata: { definition: "d" } };
+  const right = wordReviewPatch(entry, true, NOW);
+  assertEquals(right, notebookReviewPatch(entry, 3, NOW));
   assertEquals([right.review_count, right.correct_count, right.incorrect_count], [4, 3, 1]);
   assertEquals(right.last_reviewed_at, NOW.toISOString());
-
-  const top = wordReviewPatch({ leitner_box: 5 }, true, NOW);
-  assertEquals(top.leitner_box, 5);
-  assertEquals(top.next_review_at, new Date(NOW.getTime() + 16 * DAY).toISOString());
+  assertEquals(right.metadata.definition, "d");
+  assert(Date.parse(right.next_review_at) > NOW.getTime() + DAY);
 
   const wrong = wordReviewPatch({ leitner_box: 4, review_count: 1, correct_count: 1, incorrect_count: 0 }, false, NOW);
   assertEquals(wrong.leitner_box, 1);
-  assertEquals(wrong.next_review_at, new Date(NOW.getTime() + DAY).toISOString());
+  assertEquals(wrong.next_review_at, new Date(NOW.getTime() + RELEARN_MINUTES * 60_000).toISOString());
   assertEquals([wrong.review_count, wrong.correct_count, wrong.incorrect_count], [2, 1, 1]);
 });
 

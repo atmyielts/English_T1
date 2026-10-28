@@ -24,23 +24,31 @@ export type NavEntry = {
 export const DAY_ENTRIES: NavEntry[] = [
   { to: '/today', labelKey: 'nav.today', group: 'day', keywords: 'home plan daily' },
   { to: '/review', labelKey: 'nav.review', group: 'day', keywords: 'flashcards words mistakes spaced' },
+  { to: '/stories', labelKey: 'depth.nav.stories', group: 'day', keywords: 'daily story reading new text level listen' },
   { to: '/tutor', labelKey: 'nav.tutor', group: 'day', keywords: 'ai chat coach conversation voice' },
   { to: '/roleplay', labelKey: 'ws.roleplay', group: 'day', keywords: 'roleplay scenario interview visa conversation speaking' },
   { to: '/speaking-mock', labelKey: 'ws.mock', group: 'day', keywords: 'ielts mock exam test band speaking' },
+  { to: '/duel', labelKey: 'social.nav.duel', group: 'day', keywords: 'duel battle friend challenge words vocabulary game' },
+  { to: '/exam', labelKey: 'exam.nav', group: 'day', keywords: 'multilevel national exam cefr certificate mock test milliy sertifikat' },
   { to: '/practice', labelKey: 'nav.practice', group: 'day', keywords: 'skills catalog library lessons' },
 ];
 
 /** Personal pages, in sidebar order. */
 export const YOU_ENTRIES: NavEntry[] = [
   { to: '/progress', labelKey: 'nav.progress', group: 'you', keywords: 'level stats goal history' },
+  { to: '/journey', labelKey: 'glue.nav.journey', group: 'you', keywords: 'journey timeline history week diary activity telegram' },
+  { to: '/inbox', labelKey: 'glue.nav.inbox', group: 'you', keywords: 'inbox notifications notices bell messages' },
   { to: '/league', labelKey: 'nav.league', group: 'you', keywords: 'xp ranking leaderboard badges' },
   { to: '/certificate', labelKey: 'ws.certificate', group: 'you', keywords: 'certificate cefr share' },
+  { to: '/classes', labelKey: 'classes.nav', group: 'you', keywords: 'class teacher school group homework assignments join code' },
   { to: '/settings', labelKey: 'nav.settings', group: 'you', keywords: 'account language reminders telegram install' },
 ];
 
 /** A skill's own pages beyond its home, shown under the skill while you are in it. */
 export const SKILL_PAGES: Partial<Record<SkillKey, NavEntry[]>> = {
   grammar: [{ to: '/grammar/handbook', labelKey: 'ws.handbook', group: 'skills', skill: 'grammar', keywords: 'rules handbook explanations russian uzbek' }],
+  speaking: [{ to: '/speaking/shadowing', labelKey: 'shadow.nav', group: 'skills', skill: 'speaking', keywords: 'shadowing repeat pronunciation rhythm read aloud' }],
+  vocabulary: [{ to: '/vocabulary/practice', labelKey: 'depth.nav.wordPractice', group: 'skills', skill: 'vocabulary', keywords: 'flashcards spelling typing listen recall words practice' }],
 };
 
 export const skillEntries = (): NavEntry[] =>

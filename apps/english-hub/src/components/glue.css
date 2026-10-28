@@ -1,0 +1,91 @@
+/* The glue across skills and devices: the shared result summary, Continue,
+   the journey timeline, the inbox and its bell. Uses the existing tokens, so
+   hub pages keep the warm paper look and skill pages their accent colours. */
+
+/* === One result summary === */
+.en-result-summary { display: grid; gap: 1rem; min-width: 0; }
+.en-result-saved a { font-weight: 800; color: inherit; }
+.en-result-label { margin: 0; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.en-result-l1 {
+  display: grid; gap: 0.4rem; padding: 0.85rem 1rem; border-radius: var(--radius-inner);
+  border: 1px solid var(--highlight-line); background: var(--highlight-bg);
+}
+.en-result-l1 > strong { font-size: 0.92rem; color: var(--accent-strong); }
+.en-result-l1 .en-diff { margin: 0; }
+.en-result-share:empty { display: none; }
+.en-result-share { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.en-result-band {
+  display: inline-grid; justify-items: center; gap: 0.1rem; min-width: 6.5rem; padding: 0.6rem 0.9rem;
+  border-radius: var(--radius-inner); border: 1px solid var(--highlight-line); background: var(--highlight-bg);
+}
+.en-result-band small { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.en-result-band strong { font-family: var(--heading-font); font-size: 2.6rem; line-height: 1; color: var(--accent-strong); }
+
+/* === Continue === */
+.en-continue .en-panel-head { align-items: baseline; flex-wrap: wrap; gap: 0.4rem 1rem; }
+.en-continue-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+.en-continue-item {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.75rem; align-items: center;
+  padding: 0.8rem 1rem; border: 1px solid var(--soft-line); border-radius: var(--radius-inner); background: var(--card);
+}
+.en-continue-main { display: grid; gap: 0.25rem; min-width: 0; color: var(--ink); text-decoration: none; }
+.en-continue-main small { color: var(--muted); font-weight: 700; font-size: 0.75rem; }
+.en-continue-main strong { overflow-wrap: anywhere; }
+.en-continue-main > span:not(.en-row) { font-size: 0.82rem; color: var(--muted); }
+.en-continue-actions { display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.en-continue-dismiss { min-height: 36px; padding: 0 0.7rem; font-size: 0.8rem; }
+
+/* === Journey === */
+.en-journey-controls { display: grid; gap: 0.8rem; }
+.en-journey-weeks { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; }
+.en-journey-weeks strong { font-family: var(--heading-font); font-size: 1.05rem; text-align: center; flex: 1 1 10rem; }
+.en-journey-weeks button { min-height: 38px; padding: 0 0.8rem; font-size: 0.85rem; }
+.en-journey-totals { margin-top: 1rem; }
+.en-journey-daysum { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.4rem 1rem; margin: 0 0 0.75rem; color: var(--muted); font-size: 0.88rem; font-weight: 600; }
+.en-journey-dots { display: inline-flex; gap: 0.3rem; align-items: center; }
+.en-journey-mark { width: 0.65rem; height: 0.65rem; border-radius: 999px; background: var(--muted); display: inline-block; }
+.en-journey-mark.is-review, .en-journey-mark.is-telegram_quiz { background: #2b6cb0; }
+.en-journey-mark.is-words { background: #1f7a6b; }
+.en-journey-mark.is-placement, .en-journey-mark.is-check, .en-journey-mark.is-level_up { background: var(--accent); }
+.en-journey-mark.is-badge, .en-journey-mark.is-certificate { background: #c58a10; }
+
+/* === Inbox === */
+.en-inbox li.is-unread .en-item { border-color: var(--highlight-line); background: var(--highlight-bg); }
+.en-inbox li.is-unread .en-item-main strong { color: var(--accent-strong); }
+.en-inbox-item small.hint { font-size: 0.76rem; }
+.en-inbox-dot { width: 0.6rem; height: 0.6rem; border-radius: 999px; background: var(--soft-line); }
+.en-inbox li.is-unread .en-inbox-dot { background: var(--accent); }
+.en-inbox-read { min-height: 34px; padding: 0 0.7rem; font-size: 0.8rem; }
+
+/* The bell in the top bar, beside the XP chip. */
+.en-ws-bell {
+  position: relative; width: 36px; height: 36px; display: inline-grid; place-items: center; border-radius: 999px;
+  background: #fff; border: 1px solid var(--line); color: var(--ink);
+}
+.en-ws-bell:hover { border-color: var(--accent); color: var(--accent-strong); }
+.en-ws-bell:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.en-ws-bell-count {
+  position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 999px;
+  background: var(--accent); color: #fff; font-size: 0.68rem; font-weight: 800; line-height: 18px; text-align: center;
+}
+/* Hub pages hide an empty top bar; the bell alone is reason enough to show it. */
+@media (min-width: 721px) {
+  .en-workspace.is-hub .en-ws-main > .en-ws-topbar.en-ws-topbar:has(.en-ws-bell) { display: flex; }
+}
+@media (max-width: 720px) {
+  /* Phones hide the top bar; it comes back, compact, only while there is something unread. */
+  .en-workspace .en-ws-main > .en-ws-topbar.en-ws-topbar:has(.en-ws-bell.has-unread) {
+    display: flex; min-height: 0; padding: 8px 12px 0; border-bottom: none; justify-content: flex-end;
+  }
+  .en-ws-topbar:has(.en-ws-bell.has-unread) .en-ws-where { display: none; }
+}
+
+/* === Settings → Notifications === */
+.en-notify-channel { gap: 0.5rem; padding: 0.9rem 0; border-top: 1px solid var(--soft-line); }
+.en-notify-channel:first-of-type { border-top: none; padding-top: 0.25rem; }
+.en-notify-channel h3 { margin: 0; font-size: 1rem; }
+
+/* === Quick switcher: content results === */
+.en-switcher-status:empty { display: none; }
+.en-switcher-status { padding: 0 4px; font-size: 0.8rem; }
+.en-switcher-list li.is-locked small { color: #8a5a00; }

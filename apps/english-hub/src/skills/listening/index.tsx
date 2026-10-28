@@ -4,6 +4,7 @@ import { useEnglish } from '../../app/EnglishContext';
 import { useT } from '../../i18n';
 import { SkillHome } from '../SkillHome';
 import { ListeningActivity } from './Activity';
+import './listening.css';
 
 const DictationDrillCard = lazy(() => import('../../components/AIIter4Cards').then((m) => ({ default: m.DictationDrillCard })));
 const ShadowingPracticeCard = lazy(() => import('../../components/AIIter6Cards').then((m) => ({ default: m.ShadowingPracticeCard })));

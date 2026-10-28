@@ -1,6 +1,6 @@
 import { edge } from '../../lib/api';
 
-export type ListeningQuestion = { id: string; type: 'mcq'; prompt: string; options: string[] };
+export type ListeningQuestion = { id: string; type: 'mcq'; prompt: string; options: string[]; focus?: 'gist' | 'detail' };
 
 export type ListeningItem = {
   id: string;
@@ -20,6 +20,13 @@ export type ListeningItem = {
 };
 
 export type DictationTarget = { segment_index: number; segment_text: string; focus_phrase: string | null };
+export type Segment = DictationTarget;
+
+export type DictationIssue = {
+  kind: 'small_words' | 'endings' | 'contractions' | 'numbers' | 'spelling' | 'missed_words' | 'extra_words';
+  count: number;
+  examples: string[];
+};
 
 export type DiffToken = { kind: 'ok' | 'missed' | 'misspelled' | 'extra'; text: string; typed?: string };
 
@@ -56,7 +63,7 @@ export type ListeningSubmitResponse = {
   /** 0..100 */
   score: number;
   questions: { correct: number; total: number; results: QuestionResult[] };
-  dictation: { score: number | null; results: DictationResult[] };
+  dictation: { score: number | null; results: DictationResult[]; feedback?: DictationIssue[] };
   review_words: Array<{ word: string; context: string }>;
   transcript: string;
   plays: number;
@@ -71,7 +78,7 @@ export type ListeningSubmitBody = {
 };
 
 export const getItem = (slug: string, signal?: AbortSignal) =>
-  edge<{ item: ListeningItem; dictation: DictationTarget[] }>('listening-content', `/items/${encodeURIComponent(slug)}`, {
+  edge<{ item: ListeningItem; dictation: DictationTarget[]; segments?: Segment[] }>('listening-content', `/items/${encodeURIComponent(slug)}`, {
     query: { language_code: 'en' },
     signal,
   });

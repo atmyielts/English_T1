@@ -50,9 +50,19 @@ export type WritingFeedback = {
 export type WritingTaskResponse = {
   prompt: WritingPrompt;
   best_score: number | null;
-  draft: { text: string; revision_count: number; updated_at: string | null } | null;
+  draft: { text: string; revision_count: number; updated_at: string | null; status?: string | null } | null;
   /** Saved words to try in this task. */
   your_words?: YourWord[];
+  /** Submitted drafts of this task, oldest first. */
+  revisions?: Array<{ revision: number; overall: number | null; at: string }>;
+};
+
+export type PreviousRevision = {
+  revision: number;
+  text: string;
+  overall: number | null;
+  criteria: Partial<Record<WritingCriterionKey, number>>;
+  submitted_at: string | null;
 };
 
 export type WritingSubmitResponse = {
@@ -63,7 +73,29 @@ export type WritingSubmitResponse = {
   revision: number;
   feedback: WritingFeedback;
   your_words_used?: string[];
+  /** The draft this one improves on (null for a first submission). */
+  previous_revision?: PreviousRevision | null;
 };
+
+export type ModelAnswerResponse = {
+  ok: boolean;
+  level: string;
+  text: string | null;
+  notes: string[];
+  word_count: number;
+  cached: boolean;
+};
+
+export type RubricPoint = {
+  at: string;
+  overall: number | null;
+  criteria: Partial<Record<WritingCriterionKey, number>>;
+  title: string | null;
+  slug: string | null;
+  source: 'ai' | 'basic' | null;
+};
+
+export type FreeCheckResponse = { ok: boolean; level: string; over_limit: boolean; feedback: WritingFeedback };
 
 export const getWritingTask = (slug: string, signal?: AbortSignal) =>
   edge<WritingTaskResponse>('writing-workbench', `/prompts/${encodeURIComponent(slug)}`, {
@@ -93,3 +125,25 @@ export const usedWords = (text: string, words: string[]): string[] => {
     return new RegExp(`(^|[^\\p{L}])${escapeRegExp(stem).replace(/\s+/g, '\\s+')}`, 'u').test(haystack);
   });
 };
+
+/** Saves the draft to the account (autosave). */
+export const saveWritingDraft = (slug: string, text: string) =>
+  edge<{ ok: boolean; saved_at: string | null; unchanged?: boolean }>('writing-workbench', `/prompts/${encodeURIComponent(slug)}/draft`, {
+    query: { language_code: 'en' },
+    body: { text },
+  });
+
+/** A short model answer at the learner's level + 1 (after a first submission). */
+export const getModelAnswer = (slug: string) =>
+  edge<ModelAnswerResponse>('writing-workbench', `/prompts/${encodeURIComponent(slug)}/model-answer`, {
+    query: { language_code: 'en' },
+    body: {},
+  });
+
+/** The four criteria over the learner's recent submissions, oldest first. */
+export const getRubricHistory = (signal?: AbortSignal) =>
+  edge<{ points: RubricPoint[] }>('writing-workbench', '/rubric-history', { query: { language_code: 'en' }, signal });
+
+/** Feedback on any text, with the same engine as the writing tasks. */
+export const checkFreeText = (input: { text: string; task?: string; target_level?: string }) =>
+  edge<FreeCheckResponse>('writing-workbench', '/free/check', { query: { language_code: 'en' }, body: input });

@@ -1,0 +1,121 @@
+name: Configure IELTS Playbook Domain
+
+on:
+  workflow_dispatch:
+
+jobs:
+  configure-domain:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate required secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          missing=0
+          for key in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID; do
+            if [ -z "${!key}" ]; then
+              echo "Missing required secret: $key"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
+      - name: Upsert Pages project, custom domain, and DNS
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          ZONE_ID: ce7920583a44835203a0a1afc9a96c87
+          PAGES_PROJECT: schood-ielts-playbook
+          CUSTOM_DOMAIN: playbook.ielts.schood.online
+          CNAME_TARGET: schood-ielts-playbook.pages.dev
+        run: |
+          node <<'NODE'
+          const headers = {
+            Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
+            "Content-Type": "application/json",
+          };
+
+          const api = async (method, path, body) => {
+            const res = await fetch(`https://api.cloudflare.com/client/v4${path}`, {
+              method,
+              headers,
+              body: body ? JSON.stringify(body) : undefined,
+            });
+            const raw = await res.text();
+            let json;
+            try {
+              json = JSON.parse(raw);
+            } catch {
+              throw new Error(`${method} ${path} failed with non-JSON response: ${raw}`);
+            }
+            if (!res.ok || !json.success) {
+              throw new Error(`${method} ${path} failed: ${JSON.stringify(json.errors ?? json, null, 2)}`);
+            }
+            return json.result;
+          };
+
+          const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+          const zoneId = process.env.ZONE_ID;
+          const customDomain = process.env.CUSTOM_DOMAIN;
+          const cnameTarget = process.env.CNAME_TARGET;
+          const pagesProject = process.env.PAGES_PROJECT;
+
+          try {
+            await api("POST", `/accounts/${accountId}/pages/projects`, {
+              name: pagesProject,
+              production_branch: "main",
+            });
+            console.log(`Created Pages project ${pagesProject}`);
+          } catch (error) {
+            const msg = String(error?.message ?? "");
+            if (msg.includes("already exists") || msg.includes("already added")) {
+              console.log(`Pages project ${pagesProject} already exists`);
+            } else {
+              throw error;
+            }
+          }
+
+          try {
+            await api("POST", `/accounts/${accountId}/pages/projects/${pagesProject}/domains`, { name: customDomain });
+            console.log(`Added Pages custom domain ${customDomain}`);
+          } catch (error) {
+            const msg = String(error?.message ?? "");
+            if (msg.includes("already exists") || msg.includes("already added")) {
+              console.log(`Pages custom domain ${customDomain} already exists`);
+            } else {
+              throw error;
+            }
+          }
+
+          const existing = await api(
+            "GET",
+            `/zones/${zoneId}/dns_records?type=CNAME&name=${encodeURIComponent(customDomain)}`,
+          );
+
+          if (Array.isArray(existing) && existing.length > 0) {
+            await api("PUT", `/zones/${zoneId}/dns_records/${existing[0].id}`, {
+              type: "CNAME",
+              name: customDomain,
+              content: cnameTarget,
+              ttl: 1,
+              proxied: true,
+            });
+            console.log(`Updated CNAME ${customDomain} -> ${cnameTarget}`);
+          } else {
+            await api("POST", `/zones/${zoneId}/dns_records`, {
+              type: "CNAME",
+              name: customDomain,
+              content: cnameTarget,
+              ttl: 1,
+              proxied: true,
+            });
+            console.log(`Created CNAME ${customDomain} -> ${cnameTarget}`);
+          }
+
+          const domains = await api("GET", `/accounts/${accountId}/pages/projects/${pagesProject}/domains`);
+          const domain = Array.isArray(domains) ? domains.find((d) => d.name === customDomain) : null;
+          console.log(`Pages domain status for ${customDomain}: ${domain?.status ?? "unknown"}`);
+          NODE
