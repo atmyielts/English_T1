@@ -1,5 +1,5 @@
 import { assert, assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { mockExamType, predictSeries, scaleFor } from "./logic.ts";
+import { mockExamType, predictSeries, scaleFor, seriesPoint } from "./logic.ts";
 import type { PracticeSummary } from "../_shared/sister-signals.ts";
 
 const practice = (recent: number[]): PracticeSummary => ({
@@ -21,7 +21,9 @@ Deno.test("only simulator products count as mocks", () => {
 
 Deno.test("scales follow each exam", () => {
   assertEquals(scaleFor("sat", false), { max: 1600, step: 10 });
+  assertEquals(scaleFor("toefl", true), { max: 6, step: 0.5 });
   assertEquals(scaleFor("toefl", false), { max: 120, step: 1 });
+  assertEquals(scaleFor("toefl_legacy", false), { max: 120, step: 1 });
   assertEquals(scaleFor("ielts", true), { max: 9, step: 0.5 });
 });
 
@@ -50,4 +52,17 @@ Deno.test("too little practice changes nothing and no mocks means no prediction"
   const base = predictSeries("ielts", [6, 6.5], true, null)!;
   assertEquals(predictSeries("ielts", [6, 6.5], true, practice([0.9, 0.1]))!, base);
   assertEquals(predictSeries("sat", [], false, practice([0.7, 0.7, 0.7, 0.7, 0.7])), null);
+});
+
+Deno.test("TOEFL 2026 full tests and legacy RLW estimates form separate series", () => {
+  const band = { overall_band: 4.5, overall_score: 4.5, toefl: { score_version: "toefl-2026-band-estimate-v1", mode: "full_test", overall_band: 4.5, sections: {} } };
+  assertEquals(seriesPoint("toefl", band), { examType: "toefl", band: 4.5, score: null });
+  assertEquals(seriesPoint("toefl", { ...band, toefl: { ...band.toefl, mode: "section" } }), null);
+  const legacy = { overall_band: 6.5, overall_score: 70, toefl: { score_version: "toefl-rlw-estimate-v1", rlw_composite_score: 70 } };
+  assertEquals(seriesPoint("toefl", legacy), { examType: "toefl_legacy", band: null, score: 70 });
+  assertEquals(seriesPoint("sat", { overall_band: null, overall_score: 1200 }), { examType: "sat", band: null, score: 1200 });
+
+  const p = predictSeries("toefl", [3.5, 4, 4.5], true, null)!;
+  assert(p.predicted_next <= 6 && p.predicted_next * 2 === Math.round(p.predicted_next * 2));
+  assertEquals(p.max_score, 6);
 });

@@ -742,4 +742,8 @@ export const uz: Partial<Record<TranslationKey, string>> = {
   "examFamily.sat.practice": "Moslashuvchan mashqlar, xatolar daftari va takrorlash tizimi.",
   "examFamily.sat.playbook": "Strategiya modullari, diagnostika va shaxsiy o‘quv rejasi.",
   "examFamily.sat.complete": "Simulyator, Practice Lab va Playbook Premium bitta tarifda.",
+  "examFamily.toefl.title": "TOEFL iBT",
+  "examFamily.toefl.simulator": "Taxminiy ball bilan vaqtli TOEFL iBT mashq testlari.",
+  "examFamily.toefl.playbook": "2026-yilgi test formati uchun strategiya, diagnostika va o‘quv rejasi.",
+  "examFamily.toefl.complete": "Simulyator va Playbook Premium bitta tarifda.",
 };

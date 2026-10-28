@@ -9,6 +9,9 @@ import {
   IELTS_PLAYBOOK_PRODUCT_ID,
   IELTS_PRACTICE_PRODUCT_ID,
   IELTS_SIMULATOR_PRODUCT_ID,
+  TOEFL_COMPLETE_PRODUCT_ID,
+  TOEFL_PLAYBOOK_PRODUCT_ID,
+  TOEFL_SIMULATOR_PRODUCT_ID,
 } from "../_shared/product-bundles.ts";
 
 const now = Date.parse("2026-10-26T12:00:00Z");
@@ -53,4 +56,11 @@ Deno.test("plain product grants behave exactly as before", () => {
   assertEquals(access.effective_product_ids, [SAT_PRACTICE_PRODUCT_ID]);
   assertEquals(access.bundle_product_ids, []);
   assertEquals(access.has_access, false);
+});
+
+Deno.test("TOEFL Complete unlocks the TOEFL simulator and playbook", () => {
+  const access = computeEffectiveAccess([personal(TOEFL_COMPLETE_PRODUCT_ID, "2026-11-20T00:00:00Z")], [], TOEFL_PLAYBOOK_PRODUCT_ID, now);
+  assertEquals(access.effective_product_ids, [TOEFL_COMPLETE_PRODUCT_ID, TOEFL_SIMULATOR_PRODUCT_ID, TOEFL_PLAYBOOK_PRODUCT_ID]);
+  assertEquals(access.bundle_product_ids, [TOEFL_COMPLETE_PRODUCT_ID]);
+  assertEquals(access.has_access, true);
 });

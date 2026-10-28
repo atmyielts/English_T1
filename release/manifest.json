@@ -1,86 +1,59 @@
 {
   "schemaVersion": 1,
-  "releaseId": "toefl-ibt-2026-format",
+  "releaseId": "toefl-family-sellable-oct28",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "toefl-ibt-simulator"
+    "platform"
   ],
   "migrations": [
-    "20261028120000_toefl_2026_speaking_evaluations.sql",
-    "20261028120100_toefl_2026_full_test.sql",
-    "20261028120200_toefl_2026_practice_bank.sql"
+    "20261028110000_toefl_plans_and_complete_bundle.sql"
   ],
   "edgeFunctions": [
-    "exam-state",
-    "grade-writing",
-    "grade-writing-v2",
-    "review-session",
-    "score-session",
-    "score-session-v2",
-    "toefl-speaking"
-  ],
-  "sharedEdgeConsumers": [
-    "exam-state",
-    "grade-writing",
-    "grade-writing-v2",
-    "review-session",
-    "score-session",
-    "score-session-v2",
-    "toefl-speaking"
+    "score-prediction"
   ],
   "workers": [],
-  "requiredSecrets": [
-    "OPENAI_API_KEY",
-    "OPENAI_MODEL",
-    "OPENROUTER_API_KEY",
-    "OPENROUTER_APP_NAME",
-    "OPENROUTER_BASE_URL",
-    "OPENROUTER_FALLBACK_MODELS",
-    "OPENROUTER_MODEL",
-    "OPENROUTER_REFERER",
-    "TOEFL_SPEAKING_MODEL"
+  "sharedEdgeConsumers": [
+    "access-effective",
+    "exam-state",
+    "learning-profile",
+    "me",
+    "recommendations",
+    "review-session",
+    "start-session",
+    "trial-claim"
   ],
+  "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "migration:20261028120000_toefl_2026_speaking_evaluations.sql",
-    "migration:20261028120100_toefl_2026_full_test.sql",
-    "migration:20261028120200_toefl_2026_practice_bank.sql",
-    "secret:OPENROUTER_API_KEY",
-    "secret:OPENROUTER_MODEL",
-    "secret:OPENROUTER_BASE_URL",
-    "secret:OPENROUTER_FALLBACK_MODELS",
-    "secret:OPENROUTER_REFERER",
-    "secret:OPENROUTER_APP_NAME",
-    "secret:OPENAI_API_KEY",
-    "secret:OPENAI_MODEL",
-    "secret:TOEFL_SPEAKING_MODEL",
-    "function:toefl-speaking",
-    "function:score-session",
-    "function:score-session-v2",
+    "migration:20261028110000_toefl_plans_and_complete_bundle.sql",
+    "function:access-effective",
+    "function:me",
+    "function:start-session",
     "function:exam-state",
     "function:review-session",
-    "function:grade-writing",
-    "function:grade-writing-v2"
+    "function:trial-claim",
+    "function:learning-profile",
+    "function:score-prediction",
+    "function:recommendations"
   ],
   "manualFollowUps": [
-    "Pages: merging publishes schood-toefl (toefl.schood.online) with the 2026 runner, results, practice page and the 117 MP3s (12 MB) copied from content/toefl-2026/audio into /media/toefl-2026/ by the Vite build. No audio upload is needed. Until the migrations run nothing 2026 is listed; pre-2026 tests keep working and are labelled pre-2026 format.",
-    "Database: supabase db push --linked (only 20261028120000_toefl_2026_speaking_evaluations.sql, 20261028120100_toefl_2026_full_test.sql, 20261028120200_toefl_2026_practice_bank.sql from this release). 120000 widens evaluations_method_check to allow 'ai_speaking' (not valid + validate). 120100/120200 insert one 2026 test and the 12-section practice bank with deterministic ids and on conflict do nothing.",
-    "Secrets: nothing new is required. These existing ones only need checking with supabase secrets list: OPENROUTER_API_KEY (only if missing: supabase secrets set OPENROUTER_API_KEY=<existing key>); OPENROUTER_MODEL, OPENROUTER_BASE_URL, OPENROUTER_FALLBACK_MODELS, OPENROUTER_REFERER, OPENROUTER_APP_NAME, OPENAI_API_KEY and OPENAI_MODEL are read by grade-writing exactly as before. TOEFL writing and speaking default to google/gemma-4-31b-it:free when OPENROUTER_MODEL is unset; to pin TOEFL to the free model regardless use supabase secrets set TOEFL_SPEAKING_MODEL=google/gemma-4-31b-it:free (and optionally supabase secrets set TOEFL_WRITING_MODEL=google/gemma-4-31b-it:free). Never set a paid model. Optional, unchanged: supabase secrets set OPENROUTER_MODEL=google/gemma-4-31b-it:free, supabase secrets set OPENROUTER_BASE_URL=https://openrouter.ai/api/v1, supabase secrets set OPENROUTER_FALLBACK_MODELS=google/gemma-4-31b-it:free, supabase secrets set OPENROUTER_REFERER=https://schood.online, supabase secrets set OPENROUTER_APP_NAME=Schood, supabase secrets set OPENAI_API_KEY=<existing only if used>, supabase secrets set OPENAI_MODEL=<existing only if used>.",
-    "Functions, after the migrations: supabase functions deploy toefl-speaking --project-ref <prod> (new; config.toml verify_jwt=false, authenticates the bearer token itself), then supabase functions deploy score-session --project-ref <prod>, supabase functions deploy score-session-v2 --project-ref <prod>, supabase functions deploy exam-state --project-ref <prod>, supabase functions deploy review-session --project-ref <prod>, supabase functions deploy grade-writing --project-ref <prod>, supabase functions deploy grade-writing-v2 --project-ref <prod>. Every change is a branch entered only for experiences with metadata.format = toefl-2026 or for the four new unit types; golden tests prove IELTS, SAT, iTEP and pre-2026 TOEFL scoring output is byte-identical.",
-    "Optional private audio: node scripts/content/toefl-sim-2026-upload-audio.mjs uploads the MP3s through admin-assets and writes a SQL file that switches the units to S3 storage refs; only if public Pages hosting of practice audio is not wanted."
+    "Order: ship this LAST, after the TOEFL simulator (toefl-sim) and the TOEFL Playbook with its content (playbooks-engine) are live, so nothing empty goes on sale.",
+    "Pages: merging publishes platform: a TOEFL family card (TOEFL Simulator, TOEFL Playbook, TOEFL Complete) on home, /toefl, /toefl-practice-test (related links), the Telegram Mini App practice tab and the Telegram discover Exams tab; a TOEFL iBT group on the public /pricing page; en/uz/ru. Until the migration runs, /pricing?product=toefl-complete says the service was not found and the TOEFL group only lists what already has active plans.",
+    "Database: supabase db push --linked --include-all from an isolated copy that adds only 20261028110000_toefl_plans_and_complete_bundle.sql to the installed migrations, keeping the 9 pending #220 payment migrations (20261010162000-20261010174000) excluded. Dry run first. It adds TOEFL Playbook Premium (59,000 UZS / 30 days and 149,000 UZS / 90 days), TOEFL iBT Simulator Standard (69,000 UZS / 30 days; the simulator is paywalled and had no active plan, checked on prod 2026-10-28), and the TOEFL Complete product with a 109,000 UZS / 30-day plan whose metadata.included_product_ids grants the simulator and the playbook at purchase. The inactive TOEFL Playbook 'test' plan (5f49a588-34e9-4503-8233-86076d82f457) is not touched.",
+    "Edge, after the migration (--project-ref bbjawctnqrufvnesdsel): supabase functions deploy access-effective; supabase functions deploy me; supabase functions deploy start-session; supabase functions deploy exam-state; supabase functions deploy review-session; supabase functions deploy trial-claim (these six bundle _shared/product-bundles.ts, which now expands TOEFL Complete for admin/sponsor grants and refuses its trial); supabase functions deploy learning-profile; supabase functions deploy score-prediction; supabase functions deploy recommendations (these three bundle _shared/sister-signals.ts, which now reads TOEFL playbook diagnostics and TOEFL simulator results in both the 2026 1-6 band shape and the legacy RLW shape; score-prediction keeps the two TOEFL scales in separate series).",
+    "Owner of ielts-practice is unaffected; TOEFL has no practice app."
   ],
   "verification": [
-    "Local: npm run test:toefl (generator check; 20 Deno tests for scorers/routing/bands/legacy table/writing/speaking; 13 handler tests: golden IELTS/SAT/iTEP/TOEFL-legacy score-session and score-session-v2 output unchanged plus end-to-end TOEFL 2026 bands through toefl-speaking and both score-session versions; deno check of all touched functions; 8 Playwright tests at 375px/320px with mocked network), npm --workspace apps/toefl-ibt-simulator run build and lint.",
-    "After deploy: toefl.schood.online/practice lists 12 task types; /practice?task=academic_passage highlights Read an Academic Passage; start Complete the Words and check inline letter boxes and saving; take the full 2026 test: Reading Module 2 changes with Module 1 accuracy (>= 60% -> upper), Listening Module 2 timer is 7 min (lower) or 11 min (upper); Writing task timers 6/7/10 min; Speaking records and saves a transcript in Chrome.",
-    "Results show four 1-6 bands with CEFR and legacy 0-30 ranges, overall band = mean rounded to the nearest 0.5 with legacy 0-120 '+' value, and a Playbook diagnostic link with source=toefl-simulator&session_id=<id>. Old attempts still open in their 0-120 form labelled pre-2026 format.",
-    "SQL: select count(*) from content_units cu join parts p on p.id = cu.part_id join sections s on s.id = p.section_id where s.experience_id in (select id from experiences where metadata->>'format' = 'toefl-2026') returns the inserted units; select distinct method from evaluations where method = 'ai_speaking' after a speaking attempt."
+    "supabase migration list --linked shows 20261028110000 applied and the 9 #220 payment migrations still pending.",
+    "Anon REST: plans?is_active=eq.true&product_id=in.(b262ffa8-9912-4eba-93d7-58af3164d1cc,f9512c15-ec1c-4fcb-a5ec-a2c6ac3a020e,49f0661d-0933-361c-6c4b-67316ba29b4e) returns the 4 new plans; the 'test' plan stays inactive.",
+    "Signed out, https://schood.online/pricing shows a TOEFL iBT group; /pricing?product=toefl-playbook offers TOEFL Complete with 'Bought separately: 128,000 UZS'; Sign in to buy opens /auth?returnTo=/checkout?plan_id=...",
+    "With a test account holding only TOEFL Complete: access-effective effective_product_ids includes TOEFL iBT Simulator and TOEFL Playbook; /me lists derived member rows; toefl.schood.online opens tests.",
+    "GET /functions/v1/learning-profile and /score-prediction return 200 with sister_signals.toefl / practice_signals.toefl."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-toefl to the previous deployment; the old player still runs pre-2026 tests.",
-    "functions": "Redeploy the previous versions from main; 2026 experiences would then score with the legacy TOEFL formula, so also deactivate them: update experiences set is_active = false where metadata->>'format' = 'toefl-2026'. toefl-speaking can be left deployed or deleted (no other caller).",
-    "migration": "Additive. To hide the content: update experiences set is_active = false where metadata->>'format' = 'toefl-2026'. The widened evaluations check stays (strictly more permissive).",
-    "edge": "See functions.",
-    "worker": "None."
+    "pages": "Cloudflare Pages rollback of schood-platform to the previous deployment.",
+    "migration": "Set is_active=false on the 4 new TOEFL plans and status='disabled' on the TOEFL Complete product. Entitlements already bought stay valid.",
+    "edge": "Redeploy the nine functions from the previous main commit (87464c9f); TOEFL Complete grants made outside checkout stop expanding, purchased member entitlements keep working."
   }
 }

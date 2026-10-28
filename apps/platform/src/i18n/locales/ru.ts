@@ -763,4 +763,8 @@ export const ru: Partial<Record<TranslationKey, string>> = {
   "examFamily.sat.practice": "Адаптивные упражнения, тетрадь ошибок и интервальное повторение.",
   "examFamily.sat.playbook": "Стратегические модули, диагностика и личный план подготовки.",
   "examFamily.sat.complete": "Симулятор, Practice Lab и Playbook Premium в одном тарифе.",
+  "examFamily.toefl.title": "TOEFL iBT",
+  "examFamily.toefl.simulator": "Пробные тесты TOEFL iBT на время с оценкой балла.",
+  "examFamily.toefl.playbook": "Стратегия для формата 2026 года, диагностика и план подготовки.",
+  "examFamily.toefl.complete": "Симулятор и Playbook Premium в одном тарифе.",
 };

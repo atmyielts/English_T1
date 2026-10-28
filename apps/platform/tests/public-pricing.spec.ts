@@ -12,7 +12,10 @@ const P = {
   satPractice: '2cf7b1a7-4df9-4de8-99e8-5b9d5bb85010',
   satPlaybook: 'a8b41e2c-9a36-4caf-9bba-7212e35a8b8c',
   satComplete: '056db74c-0bc5-32f7-9997-654e3f31611f',
+  toeflSim: 'b262ffa8-9912-4eba-93d7-58af3164d1cc',
   toeflPlaybook: 'f9512c15-ec1c-4fcb-a5ec-a2c6ac3a020e',
+  toeflComplete: '49f0661d-0933-361c-6c4b-67316ba29b4e',
+  academy: '04b1782f-df7a-49e7-8e95-76e057900371',
   english: '3a7bd983-58c5-4c75-b5f8-5ac46c94a0fa',
   center: '00000000-0000-4000-8000-000000000701',
 };
@@ -30,8 +33,10 @@ const products = [
   product(P.satPractice, 'SAT Practice Lab', 'sat-practice', { app_url: 'https://practice.sat.schood.online', included_in_bundles: ['sat-complete'] }),
   product(P.satPlaybook, 'SAT Playbook', 'sat-playbook', { included_in_bundles: ['sat-complete'] }),
   product(P.satComplete, 'SAT Complete', 'sat-complete', { bundle_product_ids: [P.satSim, P.satPractice, P.satPlaybook] }),
-  // TOEFL is untouched by this release; its products fall into "More services".
-  product(P.toeflPlaybook, 'TOEFL Playbook', 'toefl-playbook'),
+  product(P.toeflSim, 'TOEFL iBT Simulator', 'toefl-ibt-simulator', { app_url: 'https://toefl.schood.online', included_in_bundles: ['toefl-complete'] }),
+  product(P.toeflPlaybook, 'TOEFL Playbook', 'toefl-playbook', { app_url: 'https://playbook.toefl.schood.online', included_in_bundles: ['toefl-complete'] }),
+  product(P.toeflComplete, 'TOEFL Complete', 'toefl-complete', { bundle_product_ids: [P.toeflSim, P.toeflPlaybook] }),
+  product(P.academy, 'Academy', 'academy'),
   product(P.english, 'English All Skills', 'english-all'),
   product(P.center, 'Schood Center Office', 'center-office', { catalog: 'center_tier' }),
 ];
@@ -54,7 +59,11 @@ const plans = [
   plan(P.satPractice, 'SAT Practice Monthly', 89000, 30, { display_order: 2, recommended: true }),
   plan(P.satPlaybook, 'SAT Playbook Premium', 59000, 30, { display_order: 1 }),
   plan(P.satComplete, 'SAT Complete', 159000, 30, { recommended: true, included_product_ids: [P.satSim, P.satPractice, P.satPlaybook] }),
-  plan(P.toeflPlaybook, 'TOEFL Playbook Monthly', 49000, 30),
+  plan(P.toeflSim, 'Standard', 69000, 30),
+  plan(P.toeflPlaybook, 'TOEFL Playbook Premium', 59000, 30, { display_order: 1 }),
+  plan(P.toeflPlaybook, 'TOEFL Playbook Premium (3 months)', 149000, 90, { display_order: 2, recommended: true }),
+  plan(P.toeflComplete, 'TOEFL Complete', 109000, 30, { recommended: true, included_product_ids: [P.toeflSim, P.toeflPlaybook] }),
+  plan(P.academy, 'Academy Monthly', 99000, 30),
   plan(P.english, 'All Skills Monthly Access', 199000, 30),
   plan(P.center, 'Growth Center Monthly', 490000, 30),
 ];
@@ -105,10 +114,10 @@ test('signed-out visitor sees every exam family, plan and bundle price on a phon
   await expect(page).toHaveURL(/\/pricing$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Prices for every Schood service');
   await expect(page.getByTestId('pricing-signin-hint')).toBeVisible();
-  for (const group of ['IELTS', 'Digital SAT', 'English', 'More services']) {
+  for (const group of ['IELTS', 'Digital SAT', 'TOEFL iBT', 'English', 'More services']) {
     await expect(page.getByRole('heading', { level: 2, name: group, exact: true })).toBeVisible();
   }
-  for (const name of ['IELTS Complete', 'SAT Complete', 'IELTS Playbook', 'SAT Playbook', 'SAT Exam Simulator']) {
+  for (const name of ['IELTS Complete', 'SAT Complete', 'TOEFL Complete', 'IELTS Playbook', 'SAT Playbook', 'TOEFL Playbook', 'TOEFL iBT Simulator']) {
     await expect(page.getByRole('heading', { level: 3, name, exact: true })).toBeVisible();
   }
   const overview = page.getByTestId('pricing-overview');
@@ -176,7 +185,8 @@ test('pricing is translated', async ({ page }) => {
 for (const [path, names] of [
   ['/sat', ['SAT Simulator', 'SAT Practice', 'SAT Playbook', 'SAT Complete']],
   ['/ielts', ['IELTS Simulator', 'IELTS Practice', 'IELTS Playbook', 'IELTS Complete']],
-  ['/', ['IELTS Complete', 'IELTS Playbook', 'SAT Playbook', 'SAT Complete']],
+  ['/toefl', ['TOEFL Simulator', 'TOEFL Playbook', 'TOEFL Complete']],
+  ['/', ['IELTS Complete', 'SAT Playbook', 'TOEFL Playbook', 'TOEFL Complete']],
 ] as const) {
   test(`${path} shows the full exam family on a phone`, async ({ page }) => {
     await mockCatalog(page);
@@ -191,3 +201,20 @@ for (const [path, names] of [
     await expect.poll(() => new URL(page.url()).pathname + new URL(page.url()).search).toBe(`/pricing?product=${slug}`);
   });
 }
+
+test('TOEFL Complete shows the real separate price and its members; its page has no trial', async ({ page }) => {
+  await mockCatalog(page);
+  await page.setViewportSize({ width: 375, height: 900 });
+  await page.goto('/pricing?product=toefl-playbook');
+  const offer = page.getByTestId('exam-bundle-offer');
+  await expect(offer).toContainText('Save with TOEFL Complete');
+  // 69,000 simulator + 59,000 playbook (30-day plans).
+  await expect(offer).toContainText(/Bought separately: 128[,\s.\u00a0\u202f]000 UZS/);
+  await offer.getByRole('button', { name: 'See TOEFL Complete' }).click();
+  await expect(page).toHaveURL(/product=toefl-complete/);
+  await expect(page.getByTestId('plan-card')).toHaveCount(1);
+  await expect(page.getByTestId('plan-card')).toContainText('Includes: TOEFL iBT Simulator, TOEFL Playbook');
+  await expect(page.getByTestId('plan-card')).toContainText(/109[,\s.\u00a0\u202f]000 UZS/);
+  await expect(page.getByTestId('trial-box')).toHaveCount(0);
+  expect(await noHorizontalOverflow(page)).toBe(true);
+});

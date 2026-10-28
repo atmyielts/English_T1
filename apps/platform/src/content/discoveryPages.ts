@@ -394,8 +394,8 @@ const pages: DiscoveryPageConfig[] = [
       'Schood gives TOEFL learners a focused online environment for realistic practice and preparation without burying them under generic course pages.',
     heroBullets: [
       'A direct path into the TOEFL simulator.',
-      'Practice that stays close to test conditions and pacing demands.',
-      'A platform-level route that helps searchers understand what the service is for.',
+      'The TOEFL Playbook for strategy, a diagnostic and a personal study plan.',
+      'TOEFL Complete: the simulator and Playbook Premium in one plan.',
     ],
     primaryCta: {
       label: 'Open TOEFL simulator',
@@ -404,9 +404,10 @@ const pages: DiscoveryPageConfig[] = [
       external: true,
     },
     secondaryCta: {
-      label: 'Explore plans',
-      href: '/plans',
-      description: 'Compare available plans and platform access paths.',
+      label: 'Read the TOEFL Playbook',
+      href: 'https://playbook.toefl.schood.online',
+      description: 'Use the TOEFL Playbook for strategy modules, a diagnostic and a study plan.',
+      external: true,
     },
     highlights: [
       { value: 'Online', label: 'practice access', detail: 'Learners can move from search to simulator without extra friction.' },
@@ -453,9 +454,15 @@ const pages: DiscoveryPageConfig[] = [
         description: 'Open the practice-test focused landing page.',
       },
       {
-        label: 'Platform plans',
-        href: '/plans',
-        description: 'See platform pricing and access structure.',
+        label: 'TOEFL Playbook',
+        href: 'https://playbook.toefl.schood.online',
+        description: 'Strategy modules, a diagnostic and a personal study plan for TOEFL iBT.',
+        external: true,
+      },
+      {
+        label: 'TOEFL Complete',
+        href: '/pricing?product=toefl-complete',
+        description: 'The TOEFL simulator and Playbook Premium in one plan.',
       },
       {
         label: 'Open TOEFL simulator',
@@ -551,9 +558,15 @@ const pages: DiscoveryPageConfig[] = [
         description: 'See the wider TOEFL platform landing page.',
       },
       {
-        label: 'Schood plans',
-        href: '/plans',
-        description: 'Open plans and shared platform access information.',
+        label: 'TOEFL Playbook',
+        href: 'https://playbook.toefl.schood.online',
+        description: 'Plan your preparation with strategy modules and a diagnostic.',
+        external: true,
+      },
+      {
+        label: 'TOEFL prices',
+        href: '/pricing?product=toefl-complete',
+        description: 'See TOEFL Complete and every TOEFL plan.',
       },
       {
         label: 'TOEFL simulator',

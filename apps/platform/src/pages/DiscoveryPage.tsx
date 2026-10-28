@@ -197,7 +197,7 @@ export const DiscoveryPage: React.FC<DiscoveryPageProps> = ({ pageKey }) => {
               </div>
             </section>
 
-            {page.family === 'ielts' || page.family === 'sat' ? (
+            {page.family === 'ielts' || page.family === 'sat' || page.family === 'toefl' ? (
               <section className="rounded-[2rem] border border-gray-900 bg-white/70 p-4 md:p-6">
                 <ExamFamilyCards families={[page.family]} onOpen={(href) => void openHref(navigate, href)} />
               </section>

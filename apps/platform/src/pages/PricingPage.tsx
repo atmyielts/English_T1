@@ -37,9 +37,9 @@ type LimitEntry = { key: string; label: string; value: number };
 type Translate = (key: TranslationKey, params?: Record<string, string | number>) => string;
 type SessionInfo = { accessToken: string; userId: string };
 
-const PRICING_TITLE = 'Schood Pricing | IELTS, SAT and English plans';
+const PRICING_TITLE = 'Schood Pricing | IELTS, SAT, TOEFL and English plans';
 const PRICING_DESCRIPTION =
-  'Prices for every Schood service: IELTS and SAT simulators, practice, playbooks, Complete bundles and English plans. Sign in only when you buy.';
+  'Prices for every Schood service: IELTS, SAT and TOEFL simulators, practice, playbooks, Complete bundles and English plans. Sign in only when you buy.';
 
 const metaOf = (p: ProductRow): ProductMeta => (p.metadata ?? {}) as ProductMeta;
 
@@ -160,11 +160,12 @@ const resolveProductLandingUrl = (p: ProductRow, fallbackReturnTo: string): stri
   return '/';
 };
 
-type GroupKey = 'ielts' | 'sat' | 'english' | 'other';
-const GROUP_ORDER: GroupKey[] = ['ielts', 'sat', 'english', 'other'];
+type GroupKey = 'ielts' | 'sat' | 'toefl' | 'english' | 'other';
+const GROUP_ORDER: GroupKey[] = ['ielts', 'sat', 'toefl', 'english', 'other'];
 const GROUP_TITLE: Record<GroupKey, TranslationKey> = {
   ielts: 'examFamily.ielts.title',
   sat: 'examFamily.sat.title',
+  toefl: 'examFamily.toefl.title',
   english: 'pricing.group.english',
   other: 'pricing.group.other',
 };
@@ -636,7 +637,7 @@ export const PricingPage: React.FC = () => {
         title={PRICING_TITLE}
         description={PRICING_DESCRIPTION}
         path="/pricing"
-        keywords={['Schood pricing', 'IELTS price', 'SAT price', 'IELTS Complete', 'SAT Complete']}
+        keywords={['Schood pricing', 'IELTS price', 'SAT price', 'TOEFL price', 'IELTS Complete', 'SAT Complete', 'TOEFL Complete']}
         schema={[
           createOrganizationSchema(),
           createWebPageSchema({ title: PRICING_TITLE, description: PRICING_DESCRIPTION, path: '/pricing' }),
