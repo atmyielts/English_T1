@@ -10,11 +10,11 @@ import {
   playbookDiagnosticUrl,
   playbookModuleUrl,
   TOEFL_2026_SECTIONS,
-  type Toefl2026Result,
   type Toefl2026Section,
   type Toefl2026Task,
 } from './tasks';
 import './toefl2026.css';
+import { toefl2026From } from './resultShape';
 
 type Json = Record<string, unknown>;
 type AiState = 'idle' | 'running' | 'done' | 'error';
@@ -40,10 +40,6 @@ const aiErrorKey = (err: unknown): AppKey => {
   return 'results.ai_failed';
 };
 
-export const toefl2026From = (data: ScoreSessionResponse | null): Toefl2026Result | null => {
-  const t = (data?.result as unknown as Json | undefined)?.toefl;
-  return isRecord(t) && t.format === 'toefl-2026' ? (t as unknown as Toefl2026Result) : null;
-};
 
 export const Toefl2026Results: React.FC<{
   sessionId: string;

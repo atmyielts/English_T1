@@ -1,6 +1,7 @@
 import React from 'react';
 import type { ContentUnit } from '../../domain/models';
 import { audioPlaybackEvent } from '../../lib/platformClient';
+import { renderToefl2026Unit } from '../toefl2026/preview';
 
 type Json = Record<string, unknown>;
 
@@ -437,6 +438,10 @@ export const InputRenderer: React.FC<InputRendererProps> = ({ unit, value, onCha
 
   const qPrefix = qPrefixFrom(questionNumber);
   const qStart = typeof questionNumber === 'number' ? questionNumber : questionNumber && typeof questionNumber === 'object' ? questionNumber.start : null;
+
+  // TOEFL iBT 2026 unit types (admin preview and review); null for every other type.
+  const toefl2026 = renderToefl2026Unit(unit, value, onChange, readOnly);
+  if (toefl2026) return toefl2026;
 
   switch (unit.type) {
     case 'instruction': {

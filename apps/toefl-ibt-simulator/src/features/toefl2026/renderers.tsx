@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useAppT } from '../../i18n';
 import { isRecord } from './tasks';
 
@@ -79,11 +79,6 @@ export const CompleteWords: React.FC<{
   );
 };
 
-export const completeWordsAnswered = (data: Json, value: unknown): { done: number; total: number } => {
-  const blanks = Array.isArray(data.blanks) ? (data.blanks as unknown[]).filter(isRecord) : [];
-  const answers = isRecord(value) && isRecord(value.blanks) ? value.blanks : {};
-  return { done: blanks.filter((b) => str(answers[str(b.id)]).length > 0).length, total: blanks.length };
-};
 
 // ---------------------------------------------------------------------------
 // Build a Sentence
@@ -100,10 +95,8 @@ export const BuildSentence: React.FC<{
   const frame = Array.isArray(data.frame) ? (data.frame as unknown[]).map(str) : [];
   const tiles: Tile[] = Array.isArray(data.tiles) ? (data.tiles as unknown[]).filter(isRecord).map((x) => ({ id: str(x.id), label: str(x.label) })) : [];
   const slotCount = frame.filter((f) => f === '_').length;
-  const current: Array<string | null> = useMemo(() => {
-    const raw = isRecord(value) && Array.isArray(value.order) ? (value.order as unknown[]) : [];
-    return Array.from({ length: slotCount }, (_, i) => (typeof raw[i] === 'string' && raw[i] ? String(raw[i]) : null));
-  }, [value, slotCount]);
+  const rawOrder = isRecord(value) && Array.isArray(value.order) ? (value.order as unknown[]) : [];
+  const current: Array<string | null> = Array.from({ length: slotCount }, (_, i) => (typeof rawOrder[i] === 'string' && rawOrder[i] ? String(rawOrder[i]) : null));
   const used = new Set(current.filter(Boolean) as string[]);
   const label = (id: string | null) => tiles.find((x) => x.id === id)?.label ?? '';
 
@@ -122,7 +115,7 @@ export const BuildSentence: React.FC<{
     onChange({ order: next });
   };
 
-  let slot = -1;
+  const slotIndex = frame.map((piece, i) => (piece === '_' ? frame.slice(0, i + 1).filter((f) => f === '_').length - 1 : -1));
   return (
     <div className="t26-bs" data-testid="build-sentence">
       <p className="t26-instructions">{t('bs.instructions')}</p>
@@ -135,8 +128,7 @@ export const BuildSentence: React.FC<{
         <p className="t26-bs-frame">
           {frame.map((piece, i) => {
             if (piece !== '_') return <span key={i} className="t26-bs-fixed">{piece}</span>;
-            slot += 1;
-            const s = slot;
+            const s = slotIndex[i];
             const id = current[s];
             return id ? (
               <button key={i} type="button" className="t26-bs-slot is-filled" disabled={readOnly} onClick={() => remove(s)} aria-label={t('bs.slot_filled', { n: s + 1, word: label(id) })}>
@@ -170,8 +162,6 @@ export const BuildSentence: React.FC<{
   );
 };
 
-export const buildSentenceAnswered = (value: unknown): boolean =>
-  isRecord(value) && Array.isArray(value.order) && (value.order as unknown[]).length > 0 && (value.order as unknown[]).every(Boolean);
 
 // ---------------------------------------------------------------------------
 // Multiple choice
@@ -206,8 +196,6 @@ export const ChoiceQuestion: React.FC<{
   );
 };
 
-export const choiceAnswered = (value: unknown): boolean =>
-  (isRecord(value) && str(value.selected_option).length > 0) || (typeof value === 'string' && value.length > 0);
 
 // ---------------------------------------------------------------------------
 // Reading stimuli

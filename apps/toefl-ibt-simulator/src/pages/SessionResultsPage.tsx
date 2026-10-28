@@ -3,7 +3,8 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { gradeWriting, scoreSession, type ScoreSessionResponse } from '../lib/platformClient';
 import { useAccess } from '../lib/useAccess';
-import { Toefl2026Results, toefl2026From } from '../features/toefl2026/Toefl2026Results';
+import { Toefl2026Results } from '../features/toefl2026/Toefl2026Results';
+import { toefl2026From } from '../features/toefl2026/resultShape';
 import { useAppT } from '../i18n';
 
 const asNumber = (value: unknown): number | null => {

@@ -98,6 +98,10 @@ const UNIT_TYPES: Array<{ value: string; label: string }> = [
   { value: 'question_table_completion', label: 'Question: Table completion' },
   { value: 'question_diagram_labeling', label: 'Question: Diagram labeling' },
   { value: 'question_drag_drop', label: 'Question: Drag and drop' },
+  { value: 'question_complete_words', label: 'Question: Complete the Words (TOEFL 2026)' },
+  { value: 'question_build_sentence', label: 'Question: Build a Sentence (TOEFL 2026)' },
+  { value: 'question_speaking_repeat', label: 'Question: Listen and Repeat (TOEFL 2026)' },
+  { value: 'question_speaking_interview', label: 'Question: Take an Interview (TOEFL 2026)' },
 ];
 
 const QUESTION_TEMPLATE_TYPES: Array<{ value: string; label: string }> = UNIT_TYPES.filter((type) =>
@@ -155,6 +159,41 @@ const SECTION_TYPES: Array<{ value: 'listening' | 'reading' | 'writing'; label: 
 ];
 
 const DEFAULT_UNIT_DATA: Record<string, Record<string, unknown>> = {
+  question_complete_words: {
+    prompt: 'Fill in the missing letters in the paragraph.',
+    text: 'Intact first sentence. Then {{1}} words with {{2}} missing letters.',
+    blanks: [
+      { id: '1', stem: 'th', length: 4 },
+      { id: '2', stem: 'mis', length: 4 },
+    ],
+  },
+  question_build_sentence: {
+    prompt: 'Make an appropriate sentence.',
+    context: 'Where can I find a printer?',
+    frame: ['There', '_', '_', '_', 'library.'],
+    tiles: [
+      { id: 't1', label: 'one' },
+      { id: 't2', label: 'is' },
+      { id: 't3', label: 'in the' },
+      { id: 't4', label: 'are' },
+    ],
+  },
+  question_speaking_repeat: {
+    prompt: 'Listen and repeat only once.',
+    scenario: 'You are training to welcome visitors. Listen and repeat what your supervisor says.',
+    index: 1,
+    of: 7,
+    audio: { url: '/media/toefl-2026/example.mp3', duration_seconds: 3 },
+    response_seconds: 8,
+  },
+  question_speaking_interview: {
+    prompt: "Answer the interviewer's question.",
+    scenario: 'You have agreed to take part in a short research interview.',
+    index: 1,
+    of: 4,
+    audio: { url: '/media/toefl-2026/example.mp3', duration_seconds: 12 },
+    response_seconds: 45,
+  },
   instruction: { text: 'Read the instructions carefully.' },
   reading_passage: { title: 'Passage title', text: 'Paste the passage text here.' },
   audio: { play_once: true, auto_start: true, storage: { bucket: '', path: '' } },
@@ -274,6 +313,10 @@ const DEFAULT_UNIT_DATA: Record<string, Record<string, unknown>> = {
 };
 
 const ANSWER_KEY_TEMPLATES: Record<string, Record<string, unknown>> = {
+  question_complete_words: { blanks: { '1': 'ese', '2': 'sing' }, stems: { '1': 'th', '2': 'mis' } },
+  question_build_sentence: { order: ['t2', 't1', 't3'], tiles: { t1: 'one', t2: 'is', t3: 'in the', t4: 'are' } },
+  question_speaking_repeat: { text: 'Exact sentence the audio says.' },
+  question_speaking_interview: { question_text: 'The interviewer question, used for AI rating and review.' },
   question_text: { answers: ['sample answer'] },
   question_single_choice: { option_id: 'A' },
   question_multi_choice: { option_ids: ['A', 'C'] },
@@ -300,6 +343,26 @@ const BUILDER_QUICK_STEPS: string[] = [
 ];
 
 const UNIT_GUIDANCE: Record<string, UnitGuide> = {
+  question_complete_words: {
+    overview: 'TOEFL 2026 Reading: a paragraph with 10 words missing their second half; 1 point per word (exact letters).',
+    dataTips: ['Keep the first sentence intact.', 'Put `{{id}}` where a damaged word goes and list each blank with `stem` and `length` (missing letters).', 'Or generate content with scripts/content/toefl-sim-2026.mjs.'],
+    answerTips: ['Use `blanks` map: id -> missing letters, and `stems` map: id -> stem (whole word is accepted too).'],
+  },
+  question_build_sentence: {
+    overview: 'TOEFL 2026 Writing: order word tiles into the slots of a reply; one correct order, 1 point.',
+    dataTips: ['`context` is what speaker A says.', '`frame` holds fixed words and "_" for each slot.', 'Optional single distractor tile.'],
+    answerTips: ['Use `order` (tile ids per slot) and `tiles` map: id -> text. Identical tile texts are interchangeable.'],
+  },
+  question_speaking_repeat: {
+    overview: 'TOEFL 2026 Speaking: learner repeats one sentence; scored 0-5 from the browser transcript by toefl-speaking.',
+    dataTips: ['Set `audio.url` / `audio.duration_seconds` and `response_seconds` (8-12).'],
+    answerTips: ['Use `text` with the exact sentence (used to score the repetition).'],
+  },
+  question_speaking_interview: {
+    overview: 'TOEFL 2026 Speaking: one interviewer question with a 45-second answer; rated 0-5 (AI, transcript only).',
+    dataTips: ['Set `audio.url` and `response_seconds: 45`.'],
+    answerTips: ['Use `question_text` with the interviewer question.'],
+  },
   instruction: {
     overview: 'Displays directions, task text, or notes for candidates. No scoring.',
     dataTips: ['Use `text` for the instruction body.', 'Keep each instruction short and section-specific.'],
@@ -564,6 +627,9 @@ const estimateUnitMaxScore = (unitType: string, correct: Record<string, unknown>
   if (unitType === 'question_drag_drop') {
     return countKeys((correct as any).targets);
   }
+
+  if (unitType === 'question_complete_words') return countKeys((correct as any).blanks);
+  if (unitType === 'question_build_sentence') return Array.isArray((correct as any).order) && (correct as any).order.length > 0 ? 1 : 0;
 
   return 0;
 };

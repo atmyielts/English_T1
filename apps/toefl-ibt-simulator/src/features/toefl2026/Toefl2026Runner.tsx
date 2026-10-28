@@ -4,36 +4,22 @@ import { audioPlaybackEvent } from '../../lib/platformClient';
 import {
   AcademicPassage,
   BuildSentence,
-  buildSentenceAnswered,
   ChoiceQuestion,
-  choiceAnswered,
   CompleteWords,
-  completeWordsAnswered,
   DailyText,
   DiscussionTask,
   EmailTask,
   PlayOnceAudio,
 } from './renderers';
 import { SpeakingItem } from './SpeakingItem';
+import { buildSentenceAnswered, choiceAnswered, completeWordsAnswered } from './answers';
+import { buildScreens, type RunnerUnit, type Screen } from './screens';
 import { canRecognize } from './speech';
-import { isRecord, TASK_TYPE_DISCUSSION, TOEFL_2026_TIMING } from './tasks';
+import { isRecord, TOEFL_2026_TIMING } from './tasks';
 import './toefl2026.css';
 
 type Json = Record<string, unknown>;
-export type RunnerUnit = {
-  id: string;
-  partId: string;
-  partName?: string | null;
-  partOrder?: number | null;
-  type: string;
-  data: Json;
-  displayOrder: number;
-  metadata?: Json | null;
-};
 type SectionRow = { id: string; name: string; display_order: number; metadata: Json | null };
-
-type ScreenKind = 'reading' | 'listening' | 'bs' | 'email' | 'discussion' | 'speaking';
-type Screen = { key: string; kind: ScreenKind; group: string; stimulus: RunnerUnit | null; questions: RunnerUnit[] };
 
 const lsGet = <T,>(key: string, fallback: T): T => {
   try {
@@ -50,38 +36,6 @@ const lsSet = (key: string, value: unknown) => {
 const clock = (seconds: number) => {
   const s = Math.max(0, Math.floor(seconds));
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
-};
-
-export const buildScreens = (units: RunnerUnit[]): Screen[] => {
-  const parts = new Map<string, RunnerUnit[]>();
-  const order: string[] = [];
-  const sorted = [...units].sort((a, b) => (a.partOrder ?? 0) - (b.partOrder ?? 0) || a.displayOrder - b.displayOrder);
-  for (const u of sorted) {
-    if (!parts.has(u.partId)) { parts.set(u.partId, []); order.push(u.partId); }
-    parts.get(u.partId)!.push(u);
-  }
-  const screens: Screen[] = [];
-  for (const partId of order) {
-    const list = parts.get(partId)!;
-    const questions = list.filter((u) => u.type.startsWith('question_'));
-    const audio = list.find((u) => u.type === 'audio') ?? null;
-    const passage = list.find((u) => u.type === 'reading_passage') ?? null;
-    const bs = questions.filter((u) => u.type === 'question_build_sentence');
-    const speaking = questions.filter((u) => u.type === 'question_speaking_repeat' || u.type === 'question_speaking_interview');
-    if (bs.length) {
-      bs.forEach((u) => screens.push({ key: u.id, kind: 'bs', group: `bs:${partId}`, stimulus: null, questions: [u] }));
-    } else if (speaking.length) {
-      speaking.forEach((u) => screens.push({ key: u.id, kind: 'speaking', group: `speaking:${partId}`, stimulus: null, questions: [u] }));
-    } else if (questions.length === 1 && questions[0].type === 'question_text') {
-      const taskType = String(questions[0].data.task_type ?? '');
-      screens.push({ key: questions[0].id, kind: taskType === TASK_TYPE_DISCUSSION ? 'discussion' : 'email', group: `text:${partId}`, stimulus: null, questions });
-    } else if (audio) {
-      screens.push({ key: partId, kind: 'listening', group: `part:${partId}`, stimulus: audio, questions });
-    } else if (questions.length) {
-      screens.push({ key: partId, kind: 'reading', group: `part:${partId}`, stimulus: passage, questions });
-    }
-  }
-  return screens;
 };
 
 const unitAnswered = (u: RunnerUnit, value: unknown): boolean => {
@@ -123,7 +77,8 @@ export const Toefl2026Runner: React.FC<{
   const moduleRole = String(meta.toefl_module ?? '');
   const screens = useMemo(() => buildScreens(units), [units]);
   const posKey = `toefl26:pos:${sessionId}:${section.id}`;
-  const [index, setIndex] = useState<number>(() => Math.min(lsGet<number>(posKey, 0), Math.max(0, screens.length)));
+  const [rawIndex, setIndex] = useState<number>(() => lsGet<number>(posKey, 0));
+  const index = Math.max(0, Math.min(rawIndex, screens.length));
   const listenedKey = `toefl26:listened:${sessionId}:${section.id}`;
   const [listened, setListened] = useState<Record<string, true>>(() => lsGet(listenedKey, {}));
   const [gestureGiven, setGestureGiven] = useState(false);
@@ -136,8 +91,7 @@ export const Toefl2026Runner: React.FC<{
 
   useEffect(() => { lsSet(posKey, index); }, [index, posKey]);
   useEffect(() => { lsSet(listenedKey, listened); }, [listened, listenedKey]);
-  useEffect(() => { if (index > screens.length) setIndex(screens.length); }, [index, screens.length]);
-  useEffect(() => { window.scrollTo?.(0, 0); setShowText(true); }, [index]);
+  useEffect(() => { window.scrollTo?.(0, 0); }, [index]);
 
   // Writing task timers (full test only): Build a Sentence block, Email, Academic Discussion.
   const groupSeconds = useCallback((s: Screen | null): number | null => {
@@ -150,14 +104,12 @@ export const Toefl2026Runner: React.FC<{
   useEffect(() => { const id = window.setInterval(() => setNow(Date.now()), 1000); return () => window.clearInterval(id); }, []);
   const groupLimit = groupSeconds(screen);
   const groupStartKey = screen ? `toefl26:task:${sessionId}:${screen.group}` : '';
-  const groupStart = useMemo(() => {
-    if (!screen || groupLimit == null) return null;
-    const existing = lsGet<number | null>(groupStartKey, null);
-    if (existing) return existing;
-    const started = Date.now();
-    lsSet(groupStartKey, started);
-    return started;
+  // The start time lives in localStorage so a reload cannot reset a task timer.
+  useEffect(() => {
+    if (!screen || groupLimit == null || lsGet<number | null>(groupStartKey, null)) return;
+    lsSet(groupStartKey, Date.now());
   }, [groupStartKey, groupLimit, screen]);
+  const groupStart = screen && groupLimit != null ? lsGet<number | null>(groupStartKey, null) : null;
   const taskLeft = groupStart != null && groupLimit != null ? Math.max(0, groupLimit - Math.floor((now - groupStart) / 1000)) : null;
 
   const nextGroupIndex = useCallback((from: number) => {
@@ -169,8 +121,11 @@ export const Toefl2026Runner: React.FC<{
 
   useEffect(() => {
     if (taskLeft !== 0 || !screen) return;
-    setNotice(t('runner.time_up'));
-    setIndex(nextGroupIndex(index));
+    const timer = window.setTimeout(() => {
+      setNotice(t('runner.time_up'));
+      setIndex(nextGroupIndex(index));
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [taskLeft, screen, index, nextGroupIndex, t]);
 
   const canGoBack = (() => {
@@ -184,7 +139,7 @@ export const Toefl2026Runner: React.FC<{
   })();
 
   const listeningLocked = screen?.kind === 'listening' && !listened[screen.key] && !(screen.stimulus?.data.locked === true);
-  const goNext = () => { setNotice(null); setIndex((i) => Math.min(screens.length, i + 1)); };
+  const goNext = () => { setNotice(null); setShowText(true); setIndex(Math.min(screens.length, index + 1)); };
 
   const audioEvent = (unitId: string, event: 'start' | 'end', duration: number | null) => {
     if (!accessToken) return;
@@ -209,24 +164,18 @@ export const Toefl2026Runner: React.FC<{
 
   const sectionLabel = sectionType === 'reading' ? t('section.reading') : sectionType === 'listening' ? t('section.listening') : sectionType === 'writing' ? t('section.writing') : sectionType === 'speaking' ? t('section.speaking') : section.name;
   const moduleLabel = moduleRole === 'router' ? t('section.module_router') : moduleRole === 'second' ? t('section.module_second') : null;
-  let qNumber = 0;
-  const numberFor = (s: Screen, u: RunnerUnit) => {
-    qNumber = 0;
-    for (let i = 0; i < screens.length; i += 1) {
-      for (const q of screens[i].questions) {
-        if (q.type === 'question_single_choice') qNumber += 1;
-        if (screens[i] === s && q.id === u.id) return qNumber;
-      }
-    }
-    return qNumber;
-  };
-
+  const numberByUnit = useMemo(() => {
+    const map = new Map<string, number>();
+    let n = 0;
+    for (const sc of screens) for (const q of sc.questions) if (q.type === 'question_single_choice') { n += 1; map.set(q.id, n); }
+    return map;
+  }, [screens]);
   const renderQuestions = (s: Screen) => s.questions.map((q) => {
     if (q.type === 'question_complete_words') {
       return <CompleteWords key={q.id} data={q.data} value={answers[q.id]} readOnly={readOnly} onChange={(v) => onAnswer(q, v)} />;
     }
     if (q.type === 'question_single_choice') {
-      return <ChoiceQuestion key={q.id} id={q.id} data={q.data} number={numberFor(s, q)} value={answers[q.id]} readOnly={readOnly} onChange={(v) => onAnswer(q, v)} />;
+      return <ChoiceQuestion key={q.id} id={q.id} data={q.data} number={numberByUnit.get(q.id)} value={answers[q.id]} readOnly={readOnly} onChange={(v) => onAnswer(q, v)} />;
     }
     return null;
   });
@@ -348,7 +297,7 @@ export const Toefl2026Runner: React.FC<{
         </div>
         <div className="t26-top-actions">
           {isCandidate ? <button type="button" className="t26-button-secondary" onClick={onLeave}>{t('runner.leave')}</button> : null}
-          {canGoBack ? <button type="button" className="t26-button-secondary" onClick={() => { setNotice(null); setIndex((i) => Math.max(0, i - 1)); }}>{t('common.back')}</button> : null}
+          {canGoBack ? <button type="button" className="t26-button-secondary" onClick={() => { setNotice(null); setShowText(true); setIndex(Math.max(0, index - 1)); }}>{t('common.back')}</button> : null}
           {!atEnd ? (
             <button ref={nextRef} type="button" className="t26-button" disabled={nextDisabled} onClick={goNext} data-testid="next">
               {t('common.next')}
