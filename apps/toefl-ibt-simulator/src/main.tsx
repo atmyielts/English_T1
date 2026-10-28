@@ -1,16 +1,22 @@
+// Must stay first: pins Edge Function calls to the database region before any Supabase client exists.
+import '../../../packages/edge-region/src/install';
 import { recoveryRootOptions } from '../../../packages/ui-recovery/src/RecoveryBoundary';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import './index.css';
 import { ErrorBoundary } from './ErrorBoundary';
+import { I18nProvider } from '../../../packages/service-i18n/src/i18n.tsx';
+import { catalogs } from './i18n';
 
 const root = document.getElementById('root');
 if (root) {
   createRoot(root, recoveryRootOptions).render(
     <StrictMode>
       <ErrorBoundary>
-        <App />
+        <I18nProvider catalogs={catalogs}>
+          <App />
+        </I18nProvider>
       </ErrorBoundary>
     </StrictMode>,
   );

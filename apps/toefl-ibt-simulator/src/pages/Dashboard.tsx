@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useAppT } from '../i18n';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, Clock, FileText, Play, Sparkles } from 'lucide-react';
 import { MainLayout } from '../components/layout/MainLayout';
@@ -40,8 +41,12 @@ const getExperience = (s: SessionRow): ExperienceLink | null => {
   return Array.isArray(e) ? (e[0] ?? null) : e;
 };
 
+const band2026 = (result: any): string | null =>
+  result?.toefl?.format === 'toefl-2026' ? (typeof result?.toefl?.overall_band === 'number' ? result.toefl.overall_band.toFixed(1) : '—') : null;
+
 const getRlwComposite = (result: any): number | null => {
   const toefl = result?.toefl;
+  if (toefl?.format === 'toefl-2026') return null;
   const composite = toefl?.rlw_composite_score;
   if (typeof composite === 'number') return composite;
   const fallback = result?.overall_score;
@@ -80,6 +85,7 @@ const clampPct = (n: number): number => Math.max(0, Math.min(100, n));
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const t = useAppT();
   const goPlatform = (path: string) => {
     const url = buildPlatformUrl(path, undefined, { product: TOEFL_IBT_PRODUCT_SLUG });
     if (hasPlatformBase) {
@@ -452,7 +458,9 @@ export const Dashboard: React.FC = () => {
                       <div className="text-xs text-gray-500">{fmt(s.completed_at)}</div>
                     </div>
                     <div className="text-sm font-semibold text-orange-800 bg-orange-600/10 border border-orange-700/10 rounded-full px-3 py-1">
-                      {composite != null ? (hasToeflComposite ? `${composite}/90` : composite) : 'n/a'}
+                      {band2026(evaluations[s.id]?.result) != null
+                        ? `${t('dash.band', { band: band2026(evaluations[s.id]?.result) ?? '' })} · ${t('format.2026')}`
+                        : composite != null ? (hasToeflComposite ? t('dash.legacy_score', { score: composite }) : composite) : 'n/a'}
                     </div>
                   </div>
                 );

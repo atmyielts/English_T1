@@ -1,0 +1,1475 @@
+{
+  "listen_choose_response": [
+    {
+      "slug": "lcr-router-1", "use": "test:router", "difficulty": "medium", "voice": "f_us1",
+      "utterance": "Do you know if the bookstore is still open?",
+      "options": ["Yes, I know where it is.", "I bought my textbooks online.", "It closed about ten minutes ago, I'm afraid.", "It's next to the student center."],
+      "answer": "C",
+      "explanation": "The speaker really wants to know whether the store is open now; C answers that. A answers the literal 'do you know' but about location, B is off topic, and D gives a location, not opening status."
+    },
+    {
+      "slug": "lcr-router-2", "use": "test:router", "difficulty": "medium", "voice": "m_us1",
+      "utterance": "Weren't you supposed to present in seminar today?",
+      "options": ["It got pushed to Thursday because the professor was sick.", "I'll present it if you want.", "Yes, the seminar room is on the third floor.", "I've never been to that seminar."],
+      "answer": "A",
+      "explanation": "The negative question expresses surprise that the presentation didn't happen; A explains why. B offers something unrelated, C talks about the room, and D contradicts the idea that the listener is in the seminar."
+    },
+    {
+      "slug": "lcr-router-3", "use": "test:router", "difficulty": "medium", "voice": "f_us2",
+      "utterance": "I can't believe the shuttle was late again.",
+      "options": ["The shuttle leaves from the main gate.", "Yes, I believe it.", "No, it was on time yesterday too.", "I know, I'll probably start biking to campus."],
+      "answer": "D",
+      "explanation": "The speaker is complaining; D shares the frustration and adds a reaction. B takes 'can't believe' literally, A gives unrelated information, and C contradicts 'again' and the speaker's experience."
+    },
+    {
+      "slug": "lcr-router-4", "use": "test:router", "difficulty": "medium", "voice": "m_us2",
+      "utterance": "Would you mind if I borrowed your lab notes?",
+      "options": ["Yes, they're very useful.", "Not at all. Just bring them back by Friday.", "I borrowed them from the library.", "The lab is closed on weekends."],
+      "answer": "B",
+      "explanation": "'Would you mind' is answered with 'Not at all' to give permission, as in B. A's 'Yes' would mean the listener does mind, which clashes with the rest of the reply; C and D do not respond to the request."
+    },
+    {
+      "slug": "lcr-router-5", "use": "test:router", "difficulty": "medium", "voice": "f_uk",
+      "utterance": "So the essay's due Monday, not Friday?",
+      "options": ["I usually write on Fridays.", "Right, she extended the deadline over the weekend.", "The essay is about climate policy.", "No, I'll be on time."],
+      "answer": "B",
+      "explanation": "The rising statement checks a changed deadline; B confirms it and explains. A and C mention Friday or the essay without confirming the date, and D answers a different question about being late."
+    },
+    {
+      "slug": "lcr-router-6", "use": "test:router", "difficulty": "medium", "voice": "m_us3",
+      "utterance": "You haven't seen my blue umbrella anywhere, have you?",
+      "options": ["It's supposed to rain all afternoon.", "No, I don't like blue.", "Yes, I have an umbrella too.", "I think someone left one in the lounge this morning."],
+      "answer": "D",
+      "explanation": "The speaker is looking for a lost umbrella; D gives a helpful lead. A is about weather, B responds to the color, and C talks about the listener's own umbrella."
+    },
+    {
+      "slug": "lcr-router-7", "use": "test:router", "difficulty": "medium", "voice": "f_us1",
+      "utterance": "How did the interview for the library job go?",
+      "options": ["Better than I expected. They want me back for a second round.", "It's at the main library downtown.", "I went by bus.", "They're hiring three students."],
+      "answer": "A",
+      "explanation": "'How did it go' asks about the result; A describes it. C misreads 'how' as means of travel, B gives a location, and D gives a fact about the job, not the interview."
+    },
+    {
+      "slug": "lcr-router-8", "use": "test:router", "difficulty": "medium", "voice": "m_us1",
+      "utterance": "Should I sign up for the morning or evening lab section?",
+      "options": ["Yes, you should sign up.", "The lab has twelve stations.", "Evening, if you work in the mornings like you said.", "I took that lab last year."],
+      "answer": "C",
+      "explanation": "A choice question needs one of the choices; C picks one with a reason. A answers yes or no, which doesn't fit a choice question, and B and D don't recommend a section."
+    },
+    {
+      "slug": "lcr-router-9", "use": "test:router", "difficulty": "medium", "voice": "f_us2",
+      "utterance": "I'm thinking of dropping statistics.",
+      "options": ["It meets on Tuesdays and Thursdays.", "I'll think about it tomorrow.", "I'd love to join you.", "Really? You might want to talk to your advisor first."],
+      "answer": "D",
+      "explanation": "The speaker shares a decision they are considering; D reacts and gives sensible advice. A gives a schedule, B confuses whose decision it is, and C treats dropping a class like an invitation."
+    },
+    {
+      "slug": "lcr-lower-1", "use": "test:lower", "difficulty": "easy", "voice": "m_us2",
+      "utterance": "Where can I get a parking permit?",
+      "options": ["At the campus security office, next to the gym.", "I usually park behind the library.", "It costs a lot this year.", "Yes, you can."],
+      "answer": "A",
+      "explanation": "A 'where' question needs a place where permits are sold; A gives it. B is where the listener parks, C is about cost, and D answers yes or no."
+    },
+    {
+      "slug": "lcr-lower-2", "use": "test:lower", "difficulty": "easy", "voice": "f_uk",
+      "utterance": "What time does the dining hall open for breakfast?",
+      "options": ["It's across from the dorms.", "I had eggs and toast.", "At seven, I think.", "It's open every day."],
+      "answer": "C",
+      "explanation": "'What time' asks for a time; only C gives one. A gives a place, B describes a meal, and D says which days but not what time."
+    },
+    {
+      "slug": "lcr-lower-3", "use": "test:lower", "difficulty": "easy", "voice": "m_us1",
+      "utterance": "Can you help me carry these boxes upstairs?",
+      "options": ["They're on the second floor.", "Sure, give me the heavy one.", "I bought boxes yesterday.", "No, it's downstairs."],
+      "answer": "B",
+      "explanation": "This is a request for help; B accepts it. A and D talk about location, and C is unrelated."
+    },
+    {
+      "slug": "lcr-lower-4", "use": "test:lower", "difficulty": "easy", "voice": "f_us1",
+      "utterance": "How long is the walk to the science building?",
+      "options": ["It's a very tall building.", "I walk every morning.", "The science classes are hard.", "About fifteen minutes from here."],
+      "answer": "D",
+      "explanation": "'How long' asks about time or distance; D answers it. A describes height, B talks about the listener's habits, and C is about classes."
+    },
+    {
+      "slug": "lcr-lower-5", "use": "test:lower", "difficulty": "easy", "voice": "m_us3",
+      "utterance": "Is this seat taken?",
+      "options": ["I'm taking a history class.", "Yes, I can take it.", "No, go ahead and sit down.", "The seats are blue."],
+      "answer": "C",
+      "explanation": "'Is this seat taken' asks if someone is using the seat; C says it is free and invites the speaker to sit. A and B use other meanings of 'take', and D describes the seats."
+    },
+    {
+      "slug": "lcr-lower-6", "use": "test:lower", "difficulty": "easy", "voice": "f_us2",
+      "utterance": "Did you finish the reading for today?",
+      "options": ["Almost. I have two pages left.", "I'm reading at the library.", "It's my favorite bookstore.", "Today is Wednesday."],
+      "answer": "A",
+      "explanation": "A answers whether the reading is finished. B gives a place, C is unrelated, and D answers a question about the day."
+    },
+    {
+      "slug": "lcr-lower-7", "use": "test:lower", "difficulty": "easy", "voice": "m_us2",
+      "utterance": "Who's teaching biology this semester?",
+      "options": ["It's on Monday mornings.", "Biology is my major.", "I'm teaching myself.", "Professor Grant, the same as last year."],
+      "answer": "D",
+      "explanation": "'Who' needs a person; D names the teacher. A gives a time, B talks about the listener's major, and C does not answer who teaches the course."
+    },
+    {
+      "slug": "lcr-lower-8", "use": "test:lower", "difficulty": "easy", "voice": "f_uk",
+      "utterance": "Thanks for lending me your calculator.",
+      "options": ["It's a very old calculator.", "No problem. Keep it until after the exam.", "I don't lend money.", "You're right, it's mine."],
+      "answer": "B",
+      "explanation": "The natural reply to thanks is something like 'No problem', as in B. A describes the calculator, C mentions money, and D answers a statement nobody made."
+    },
+    {
+      "slug": "lcr-upper-1", "use": "test:upper", "difficulty": "hard", "voice": "m_us1",
+      "utterance": "I could've sworn the meeting was in this room.",
+      "options": ["Please don't swear in the meeting.", "Yes, this room is very large.", "I'll meet you after the meeting.", "They moved it to the conference room upstairs at the last minute."],
+      "answer": "D",
+      "explanation": "'I could've sworn' means the speaker was sure but now seems wrong; D explains where the meeting went. A takes 'sworn' literally, and B and C don't address the confusion."
+    },
+    {
+      "slug": "lcr-upper-2", "use": "test:upper", "difficulty": "hard", "voice": "f_us1",
+      "utterance": "You'd think they'd fix the heating before winter.",
+      "options": ["I think so, winter starts in December.", "Tell me about it. My room's freezing every night.", "The heating bill is included in the rent.", "They'd better think about it."],
+      "answer": "B",
+      "explanation": "The speaker is complaining that the heating still isn't fixed; 'Tell me about it' in B agrees and adds the listener's own problem. A responds to 'think' literally, C is about cost, and D echoes the words without sharing the complaint."
+    },
+    {
+      "slug": "lcr-upper-3", "use": "test:upper", "difficulty": "hard", "voice": "m_us3",
+      "utterance": "Don't tell me the printer's jammed again.",
+      "options": ["Afraid so. I've already called the help desk.", "I won't tell anyone, I promise.", "I printed my essay yesterday.", "The printer is in the corner."],
+      "answer": "A",
+      "explanation": "'Don't tell me' shows the speaker suspects bad news; A confirms it and says what was done. B takes the words literally, and C and D don't respond to the jam."
+    },
+    {
+      "slug": "lcr-upper-4", "use": "test:upper", "difficulty": "hard", "voice": "f_us2",
+      "utterance": "I wouldn't count on the professor accepting late work.",
+      "options": ["I can count the pages for you.", "The professor teaches two courses.", "Then I'd better stay up and finish it tonight.", "I've never been late to class."],
+      "answer": "C",
+      "explanation": "'I wouldn't count on' is a warning not to expect something; C reacts to the warning sensibly. A uses 'count' literally, B is unrelated, and D is about arriving late, not late work."
+    },
+    {
+      "slug": "lcr-upper-5", "use": "test:upper", "difficulty": "hard", "voice": "m_us2",
+      "utterance": "Any chance you could cover my shift at the cafe Saturday?",
+      "options": ["I'm away that weekend, but try asking Dana.", "The cafe is popular on Saturdays.", "There's a good chance of rain.", "I'll pay for the coffee."],
+      "answer": "A",
+      "explanation": "The speaker is asking someone to work in their place; A politely declines and suggests someone else. B and D talk about the cafe, and C uses 'chance' in a different sense."
+    },
+    {
+      "slug": "lcr-upper-6", "use": "test:upper", "difficulty": "hard", "voice": "f_uk",
+      "utterance": "Funny, I thought you'd already graduated.",
+      "options": ["Yes, it was a very funny ceremony.", "I graduated from high school early.", "Not quite. I'm finishing one last course this summer.", "I'll think about graduate school."],
+      "answer": "C",
+      "explanation": "'Funny' here means 'surprising'; the speaker assumed the listener had graduated. C corrects the assumption. A takes 'funny' literally, B is about a different graduation, and D is off topic."
+    },
+    {
+      "slug": "lcr-upper-7", "use": "test:upper", "difficulty": "hard", "voice": "m_us1",
+      "utterance": "That presentation could have gone a lot worse, couldn't it?",
+      "options": ["Yes, it was the worst one I've seen.", "True, considering the projector broke halfway through.", "I'll present next week.", "No, it was much longer."],
+      "answer": "B",
+      "explanation": "'Could have gone a lot worse' means it went reasonably well despite problems; B agrees and names the problem. A contradicts the idea while saying yes, C changes the subject, and D talks about length."
+    },
+    {
+      "slug": "lcr-upper-8", "use": "test:upper", "difficulty": "hard", "voice": "f_us1",
+      "utterance": "I'm not sure the research grant is worth the paperwork.",
+      "options": ["The paperwork is on my desk.", "I'm sure it was granted.", "Research is very important to me.", "Maybe, but the funding would cover your whole summer."],
+      "answer": "D",
+      "explanation": "The speaker doubts the grant is worth the effort; D responds by pointing out a benefit. A and B pick up single words, and C states a general opinion without addressing the doubt."
+    },
+    {
+      "slug": "lcr-practice-1", "use": "practice", "difficulty": "easy", "voice": "f_us2",
+      "utterance": "Do you want to get lunch after class?",
+      "options": ["I had class this morning.", "Sure, how about the pizza place?", "Lunch is the best meal.", "Yes, I want a class."],
+      "answer": "B",
+      "explanation": "This is an invitation; B accepts and suggests a place. A and C don't answer the invitation, and D confuses lunch with class."
+    },
+    {
+      "slug": "lcr-practice-2", "use": "practice", "difficulty": "medium", "voice": "m_us3",
+      "utterance": "Hasn't the gym extended its hours?",
+      "options": ["Yes, it's open until midnight now.", "I go to the gym on weekends.", "The gym is very crowded.", "I extended my visa."],
+      "answer": "A",
+      "explanation": "The negative question checks a belief about new hours; A confirms it with details. B and C talk about the gym without answering, and D repeats the word 'extended'."
+    },
+    {
+      "slug": "lcr-practice-3", "use": "practice", "difficulty": "hard", "voice": "f_uk",
+      "utterance": "I'd hold off on buying the textbook if I were you.",
+      "options": ["I'll hold it for you.", "If I were you, I'd buy it.", "Why? Is the professor not using it much?", "The textbook is in the bookstore."],
+      "answer": "C",
+      "explanation": "'Hold off' means wait; C naturally asks why. A takes 'hold' literally, B repeats the phrase in a way that makes no sense as a reply, and D gives a location."
+    },
+    {
+      "slug": "lcr-practice-4", "use": "practice", "difficulty": "easy", "voice": "m_us1",
+      "utterance": "Excuse me, is the post office near here?",
+      "options": ["I sent a letter last week.", "Excuse me, I'm busy.", "It closes at five.", "Yes, it's just around the corner."],
+      "answer": "D",
+      "explanation": "The speaker asks about location; D answers. A is about the listener's past, B is rude and unhelpful, and C gives a closing time, not a location."
+    },
+    {
+      "slug": "lcr-practice-5", "use": "practice", "difficulty": "medium", "voice": "f_us1",
+      "utterance": "Why don't we study together for the midterm?",
+      "options": ["Good idea. Does Tuesday evening work for you?", "Because I didn't study.", "The midterm is next week.", "I studied alone last year."],
+      "answer": "A",
+      "explanation": "'Why don't we' is a suggestion, not a real question about reasons; A accepts it. B answers 'why' literally, and C and D don't respond to the suggestion."
+    },
+    {
+      "slug": "lcr-practice-6", "use": "practice", "difficulty": "hard", "voice": "m_us2",
+      "utterance": "I'd have called, but my phone died on the train.",
+      "options": ["I'm sorry your phone was stolen.", "The train is faster than the bus.", "You should call me now.", "Don't worry about it. I figured something came up."],
+      "answer": "D",
+      "explanation": "The speaker is apologizing for not calling; D accepts the apology. A misunderstands 'died', B is off topic, and C ignores that they are already talking."
+    },
+    {
+      "slug": "lcr-practice-7", "use": "practice", "difficulty": "easy", "voice": "f_us2",
+      "utterance": "How much is a ticket to the concert?",
+      "options": ["The concert starts at eight.", "Ten dollars for students.", "I love that band.", "Two tickets, please."],
+      "answer": "B",
+      "explanation": "'How much' asks for a price; B gives it. A gives a time, C an opinion, and D is what a buyer would say."
+    },
+    {
+      "slug": "lcr-practice-8", "use": "practice", "difficulty": "medium", "voice": "m_us3",
+      "utterance": "The registration office closes early on Fridays, doesn't it?",
+      "options": ["I registered last Friday.", "The office is very small.", "Yes, at three, so you'd better hurry.", "No, I close it every day."],
+      "answer": "C",
+      "explanation": "The tag question asks for confirmation; C confirms and gives the time. A and B are unrelated facts, and D makes no sense as a reply."
+    },
+    {
+      "slug": "lcr-practice-9", "use": "practice", "difficulty": "hard", "voice": "f_uk",
+      "utterance": "So much for my plan to finish the project this weekend.",
+      "options": ["That's a great plan.", "Yes, the project is very long.", "What happened? Did something come up?", "I'll plan my weekend too."],
+      "answer": "C",
+      "explanation": "'So much for my plan' means the plan has failed; C asks what went wrong. A praises a plan that has already failed, and B and D miss the meaning."
+    },
+    {
+      "slug": "lcr-practice-10", "use": "practice", "difficulty": "medium", "voice": "m_us1",
+      "utterance": "Could you tell me where the language lab is?",
+      "options": ["Sure, it's in the basement of Harper Hall.", "Yes, I could.", "I study Spanish there.", "It's open until nine."],
+      "answer": "A",
+      "explanation": "This is a polite request for directions; A gives the location. B answers the literal 'could you' without helping, C is personal information, and D gives hours."
+    },
+    {
+      "slug": "lcr-practice-11", "use": "practice", "difficulty": "easy", "voice": "f_us1",
+      "utterance": "I lost my student ID card.",
+      "options": ["My ID card is new.", "I found my keys.", "Student cards are blue.", "You can get a new one at the main office."],
+      "answer": "D",
+      "explanation": "The speaker has a problem; D offers a solution. A, B, and C don't help with the lost card."
+    },
+    {
+      "slug": "lcr-practice-12", "use": "practice", "difficulty": "hard", "voice": "m_us2",
+      "utterance": "I'm surprised you're not more upset about your grade.",
+      "options": ["I'm upset about the weather.", "Honestly, I expected worse, given how little I studied.", "My grade is in the system.", "Yes, I'm very surprised."],
+      "answer": "B",
+      "explanation": "The speaker wonders why the listener seems calm; B explains why. A changes the topic, C is a fact, and D repeats 'surprised' without explaining the calm reaction."
+    }
+  ],
+  "listen_conversation": [
+    {
+      "slug": "conv-router-1", "use": "test:router", "difficulty": "medium",
+      "context": "Listen to a conversation between a student and a housing office employee.",
+      "lines": [
+        { "speaker": "Man", "voice": "m_us1", "text": "Hi, I'd like to ask about switching rooms. My roommate and I have really different schedules." },
+        { "speaker": "Woman", "voice": "f_us2", "text": "I see. Is it a conflict, or just a scheduling issue?" },
+        { "speaker": "Man", "voice": "m_us1", "text": "Mostly scheduling. He practices guitar late at night, and I have early shifts at the lab." },
+        { "speaker": "Woman", "voice": "f_us2", "text": "Well, room changes don't open until the third week of the semester. Before that, we usually suggest a roommate agreement." },
+        { "speaker": "Man", "voice": "m_us1", "text": "What's that, exactly?" },
+        { "speaker": "Woman", "voice": "f_us2", "text": "It's a form you fill out together. You agree on quiet hours, guests, that kind of thing. Your resident advisor helps." },
+        { "speaker": "Man", "voice": "m_us1", "text": "Okay. And if it doesn't work?" },
+        { "speaker": "Woman", "voice": "f_us2", "text": "Then come back after the third week, and we'll look at open rooms." }
+      ],
+      "questions": [
+        {
+          "prompt": "Why does the man go to the housing office?",
+          "options": ["To complain about a noisy neighbor down the hall", "To ask about moving to a different room", "To apply for a job as a resident advisor", "To report a broken guitar"],
+          "answer": "B",
+          "explanation": "He opens by saying he wants to ask about switching rooms. The guitar and the resident advisor are details, not his purpose."
+        },
+        {
+          "prompt": "What will the man most likely do next?",
+          "options": ["Move into an open room this week", "Ask his roommate to stop playing guitar entirely", "Change his work shifts at the lab", "Fill out an agreement with his roommate"],
+          "answer": "D",
+          "explanation": "Room changes aren't possible yet, so the woman suggests a roommate agreement first; he only plans to return if that doesn't work."
+        }
+      ]
+    },
+    {
+      "slug": "conv-router-2", "use": "test:router", "difficulty": "medium",
+      "context": "Listen to a conversation between two students.",
+      "lines": [
+        { "speaker": "Woman", "voice": "f_uk", "text": "Are you coming to dinner at the dining hall tonight?" },
+        { "speaker": "Man", "voice": "m_us3", "text": "I don't think so. I've used up almost all my meal swipes for the month." },
+        { "speaker": "Woman", "voice": "f_uk", "text": "Already? It's only the middle of October." },
+        { "speaker": "Man", "voice": "m_us3", "text": "I know. I picked the smallest plan to save money, but I eat on campus more than I thought." },
+        { "speaker": "Woman", "voice": "f_uk", "text": "You can add swipes online, you know. It's cheaper per meal than paying at the door." },
+        { "speaker": "Man", "voice": "m_us3", "text": "Really? I didn't realize that. How do I do it?" },
+        { "speaker": "Woman", "voice": "f_uk", "text": "Log into the student portal and look under dining services. It only takes a minute." },
+        { "speaker": "Man", "voice": "m_us3", "text": "Great, I'll do it right after my next class." }
+      ],
+      "questions": [
+        {
+          "prompt": "What is the man's problem?",
+          "options": ["He has almost no meals left on his plan.", "He doesn't like the food in the dining hall.", "He lost his student card.", "He missed dinner last night."],
+          "answer": "A",
+          "explanation": "He says he has used up almost all his meal swipes for the month."
+        },
+        {
+          "prompt": "What does the woman imply about paying at the door?",
+          "options": ["It's the only option after October.", "It requires a student portal account.", "It costs more per meal than adding swipes.", "It's faster than using swipes."],
+          "answer": "C",
+          "explanation": "She says adding swipes online is cheaper per meal than paying at the door, so paying at the door costs more."
+        }
+      ]
+    },
+    {
+      "slug": "conv-router-3", "use": "test:router", "difficulty": "medium",
+      "context": "Listen to a conversation between a student and a librarian.",
+      "lines": [
+        { "speaker": "Man", "voice": "m_us2", "text": "Excuse me, I booked a group study room for three o'clock, but someone's in it." },
+        { "speaker": "Woman", "voice": "f_us1", "text": "Let me check. What's your name?" },
+        { "speaker": "Man", "voice": "m_us2", "text": "Daniel Okafor." },
+        { "speaker": "Woman", "voice": "f_us1", "text": "Hmm, your booking is for three o'clock tomorrow, not today." },
+        { "speaker": "Man", "voice": "m_us2", "text": "Oh no. My group is already on the way." },
+        { "speaker": "Woman", "voice": "f_us1", "text": "Well, room four on the second floor is free until five. I can put you in there now." },
+        { "speaker": "Man", "voice": "m_us2", "text": "That would be perfect. And could I keep tomorrow's booking too?" },
+        { "speaker": "Woman", "voice": "f_us1", "text": "Sure, but you'll need to check in within fifteen minutes of the start time, or the room is released." }
+      ],
+      "questions": [
+        {
+          "prompt": "What mistake did the man make?",
+          "options": ["He went to the wrong floor.", "He forgot to invite his group.", "He came on the wrong day.", "He booked the room under the wrong name."],
+          "answer": "C",
+          "explanation": "The librarian finds that his booking is for tomorrow, not today."
+        },
+        {
+          "prompt": "What does the woman say about tomorrow's booking?",
+          "options": ["The man must check in on time or lose it.", "It has been cancelled.", "It has been moved to room four.", "It can be extended until five."],
+          "answer": "A",
+          "explanation": "He can keep it, but he must check in within fifteen minutes or the room is released. Room four and 'until five' refer to today."
+        }
+      ]
+    },
+    {
+      "slug": "conv-lower-1", "use": "test:lower", "difficulty": "easy",
+      "context": "Listen to a conversation between two students.",
+      "lines": [
+        { "speaker": "Woman", "voice": "f_us2", "text": "Hi, Sam. Why are you walking? Where's your bike?" },
+        { "speaker": "Man", "voice": "m_us1", "text": "It has a flat tire. I think I rode over some glass." },
+        { "speaker": "Woman", "voice": "f_us2", "text": "Oh no. Do you know about the bike shop in the student center?" },
+        { "speaker": "Man", "voice": "m_us1", "text": "No. Is it expensive?" },
+        { "speaker": "Woman", "voice": "f_us2", "text": "It's free for students. They give you the tools and show you how to fix it." },
+        { "speaker": "Man", "voice": "m_us1", "text": "That's great. When is it open?" },
+        { "speaker": "Woman", "voice": "f_us2", "text": "Every afternoon from one to six." },
+        { "speaker": "Man", "voice": "m_us1", "text": "Perfect. I'll take my bike there after lunch." }
+      ],
+      "questions": [
+        {
+          "prompt": "What is the conversation mainly about?",
+          "options": ["Buying a new bike", "A lost bicycle lock", "Walking to class in bad weather", "Getting a bike tire fixed"],
+          "answer": "D",
+          "explanation": "The man has a flat tire, and the woman tells him where he can fix it."
+        },
+        {
+          "prompt": "What does the woman say about the bike shop?",
+          "options": ["It's open in the mornings.", "Students can use it for free.", "It sells used bikes.", "It's far from campus."],
+          "answer": "B",
+          "explanation": "She says it's free for students. It is open in the afternoons and is in the student center."
+        }
+      ]
+    },
+    {
+      "slug": "conv-lower-2", "use": "test:lower", "difficulty": "easy",
+      "context": "Listen to a conversation between a student and a receptionist at the campus health clinic.",
+      "lines": [
+        { "speaker": "Man", "voice": "m_us3", "text": "Hello, I'd like to make an appointment with a doctor. I've had a sore throat for three days." },
+        { "speaker": "Woman", "voice": "f_uk", "text": "Okay. Do you have a fever?" },
+        { "speaker": "Man", "voice": "m_us3", "text": "A little, last night." },
+        { "speaker": "Woman", "voice": "f_uk", "text": "We have an opening tomorrow at ten in the morning. Is that all right?" },
+        { "speaker": "Man", "voice": "m_us3", "text": "I have a class then. Is there anything later?" },
+        { "speaker": "Woman", "voice": "f_uk", "text": "Yes, tomorrow there's one at two thirty." },
+        { "speaker": "Man", "voice": "m_us3", "text": "That works. Should I bring anything?" },
+        { "speaker": "Woman", "voice": "f_uk", "text": "Just your student card and a list of any medicine you're taking." }
+      ],
+      "questions": [
+        {
+          "prompt": "Why does the man talk to the receptionist?",
+          "options": ["To make an appointment for a sore throat", "To pick up some medicine", "To change his class schedule", "To ask about a fever in his family"],
+          "answer": "A",
+          "explanation": "He says he wants an appointment because he has had a sore throat for three days."
+        },
+        {
+          "prompt": "When will the man see the doctor?",
+          "options": ["Today at ten", "Tomorrow at ten", "Tomorrow at two thirty", "Today at two thirty"],
+          "answer": "C",
+          "explanation": "He can't come at ten because of a class, so he takes the two thirty opening tomorrow."
+        }
+      ]
+    },
+    {
+      "slug": "conv-upper-1", "use": "test:upper", "difficulty": "hard",
+      "context": "Listen to a conversation between two students working on a group project.",
+      "lines": [
+        { "speaker": "Woman", "voice": "f_us1", "text": "Have you heard from Marcus about his section of the report?" },
+        { "speaker": "Man", "voice": "m_us2", "text": "Not a word. I've sent him three messages since Monday." },
+        { "speaker": "Woman", "voice": "f_us1", "text": "We present on Thursday. I'm starting to think we should split his part between us." },
+        { "speaker": "Man", "voice": "m_us2", "text": "I'd rather not step on his toes, though. He did say he was working on it." },
+        { "speaker": "Woman", "voice": "f_us1", "text": "Saying and doing are two different things. If he shows up with nothing, we're the ones who look bad." },
+        { "speaker": "Man", "voice": "m_us2", "text": "Fair enough. How about this: if we don't have a draft from him by tomorrow night, we divide it up." },
+        { "speaker": "Woman", "voice": "f_us1", "text": "Deal. And maybe we mention it to the professor afterward." }
+      ],
+      "questions": [
+        {
+          "prompt": "Why is the man unwilling at first to take over Marcus's section?",
+          "options": ["He thinks the professor won't allow it.", "He doesn't want to offend Marcus.", "He is too busy with his own section.", "He believes the report is already finished."],
+          "answer": "B",
+          "explanation": "'I'd rather not step on his toes' means he doesn't want to upset Marcus by taking over his work."
+        },
+        {
+          "prompt": "What do the speakers decide to do?",
+          "options": ["Wait one more day before dividing Marcus's work", "Ask the professor to postpone the presentation", "Remove Marcus from the group immediately", "Present without Marcus's section"],
+          "answer": "A",
+          "explanation": "They agree to split his part only if no draft arrives by tomorrow night. They plan to talk to the professor afterward, not to postpone."
+        }
+      ]
+    },
+    {
+      "slug": "conv-upper-2", "use": "test:upper", "difficulty": "hard",
+      "context": "Listen to a conversation between a student and a study abroad advisor.",
+      "lines": [
+        { "speaker": "Man", "voice": "m_us3", "text": "I was hoping to study in Lisbon next spring, but the program page says applications closed last week." },
+        { "speaker": "Woman", "voice": "f_us2", "text": "That's for the university exchange. There's also a direct enrollment option that runs on a later cycle." },
+        { "speaker": "Man", "voice": "m_us3", "text": "What's the catch?" },
+        { "speaker": "Woman", "voice": "f_us2", "text": "Your credits don't transfer automatically. You'd need each course approved by your department beforehand." },
+        { "speaker": "Man", "voice": "m_us3", "text": "That sounds like a lot of running around." },
+        { "speaker": "Woman", "voice": "f_us2", "text": "It can be, but students who plan ahead usually manage. The deadline isn't until the first of November." },
+        { "speaker": "Man", "voice": "m_us3", "text": "Then I'd better get my advisor's signature this week." }
+      ],
+      "questions": [
+        {
+          "prompt": "What is the main purpose of the conversation?",
+          "options": ["To discuss the man's grades in Portuguese", "To arrange housing in Lisbon", "To complain about a missed deadline", "To explore another way to study abroad"],
+          "answer": "D",
+          "explanation": "The exchange deadline has passed, so the advisor explains a different option, direct enrollment, and its requirements."
+        },
+        {
+          "prompt": "What does the woman mean when she says students who plan ahead usually manage?",
+          "options": ["Most students give up on the direct enrollment option.", "The department rarely approves courses.", "The approval process is demanding but achievable.", "Planning ahead lets students skip approval."],
+          "answer": "C",
+          "explanation": "She agrees it can be a lot of work but says organized students succeed, so the process is hard but possible."
+        }
+      ]
+    },
+    {
+      "slug": "conv-practice-1", "use": "practice", "difficulty": "easy",
+      "context": "Listen to a conversation between two students.",
+      "lines": [
+        { "speaker": "Woman", "voice": "f_us1", "text": "Hey, Leo. Are you still selling your chemistry textbook?" },
+        { "speaker": "Man", "voice": "m_us2", "text": "Yes, I am. Are you taking intro chemistry next term?" },
+        { "speaker": "Woman", "voice": "f_us1", "text": "I am. How much do you want for it?" },
+        { "speaker": "Man", "voice": "m_us2", "text": "Twenty dollars. It's in good condition, just a few notes in pencil." },
+        { "speaker": "Woman", "voice": "f_us1", "text": "That's much cheaper than the bookstore. Does it come with the workbook?" },
+        { "speaker": "Man", "voice": "m_us2", "text": "No, sorry. I lost the workbook. But you can buy one on its own for about ten dollars." },
+        { "speaker": "Woman", "voice": "f_us1", "text": "That's fine. Can I pick up the book tomorrow?" },
+        { "speaker": "Man", "voice": "m_us2", "text": "Sure, I'll bring it to class." }
+      ],
+      "questions": [
+        {
+          "prompt": "What are the speakers mainly discussing?",
+          "options": ["Which chemistry class to take", "Where to buy a workbook", "Selling a used textbook", "Notes from a chemistry lecture"],
+          "answer": "C",
+          "explanation": "The woman wants to buy the man's used chemistry textbook."
+        },
+        {
+          "prompt": "What does the man say about the workbook?",
+          "options": ["It's included for free.", "He doesn't have it anymore.", "It costs twenty dollars.", "It has notes in pencil."],
+          "answer": "B",
+          "explanation": "He says he lost the workbook. Twenty dollars is the price of the textbook, which is also the one with pencil notes."
+        }
+      ]
+    },
+    {
+      "slug": "conv-practice-2", "use": "practice", "difficulty": "medium",
+      "context": "Listen to a conversation between a student and an employee at the campus recreation center.",
+      "lines": [
+        { "speaker": "Man", "voice": "m_us1", "text": "Hi, I wanted to sign up for the beginner swimming class, but the website says it's full." },
+        { "speaker": "Woman", "voice": "f_uk", "text": "Yes, the Tuesday class filled up in a day. But we keep a waiting list." },
+        { "speaker": "Man", "voice": "m_us1", "text": "Do people actually drop out?" },
+        { "speaker": "Woman", "voice": "f_uk", "text": "Usually two or three every term. And we're adding a Saturday morning class next month." },
+        { "speaker": "Man", "voice": "m_us1", "text": "Saturday could work. Can I sign up for that now?" },
+        { "speaker": "Woman", "voice": "f_uk", "text": "Not yet. Registration opens on the first. If you join the waiting list, though, we'll email you before it opens." },
+        { "speaker": "Man", "voice": "m_us1", "text": "Okay, put me on the list, then." }
+      ],
+      "questions": [
+        {
+          "prompt": "Why does the man talk to the woman?",
+          "options": ["He wants to join a class that is full.", "He wants to become a swimming instructor.", "He wants a refund for a class.", "He lost something at the pool."],
+          "answer": "A",
+          "explanation": "He wanted to sign up for the beginner swimming class, but it is full."
+        },
+        {
+          "prompt": "What is one advantage of joining the waiting list?",
+          "options": ["Members get a discount on classes.", "Members can choose any instructor.", "Members can swim on Tuesdays right away.", "Members hear about the new class early."],
+          "answer": "D",
+          "explanation": "The woman says people on the waiting list will get an email before registration for the Saturday class opens."
+        }
+      ]
+    },
+    {
+      "slug": "conv-practice-3", "use": "practice", "difficulty": "medium",
+      "context": "Listen to a conversation between two students.",
+      "lines": [
+        { "speaker": "Woman", "voice": "f_us2", "text": "I saw a flyer saying the campus radio station needs volunteers. Want to apply with me?" },
+        { "speaker": "Man", "voice": "m_us3", "text": "Maybe. What would we actually do?" },
+        { "speaker": "Woman", "voice": "f_us2", "text": "Mostly help with the evening news show. Writing short stories, checking facts, that kind of thing." },
+        { "speaker": "Man", "voice": "m_us3", "text": "I'm a journalism minor, so that could look good on my resume." },
+        { "speaker": "Woman", "voice": "f_us2", "text": "Exactly. And after a semester, volunteers can host their own show." },
+        { "speaker": "Man", "voice": "m_us3", "text": "Now that's tempting. Is there an interview?" },
+        { "speaker": "Woman", "voice": "f_us2", "text": "Just a short writing test on Friday afternoon." },
+        { "speaker": "Man", "voice": "m_us3", "text": "Hmm, I've got a lab until four on Fridays. I'll ask if there's another time." }
+      ],
+      "questions": [
+        {
+          "prompt": "What is the woman trying to do?",
+          "options": ["Find out where the radio station is", "Persuade the man to volunteer with her", "Ask the man to help her write a story", "Get the man to listen to her show"],
+          "answer": "B",
+          "explanation": "She invites him to apply with her and points out the benefits of volunteering."
+        },
+        {
+          "prompt": "What problem does the man mention?",
+          "options": ["He has no experience in journalism.", "He doesn't like the evening news.", "He has a schedule conflict with the test.", "He has already applied somewhere else."],
+          "answer": "C",
+          "explanation": "The writing test is on Friday afternoon, but he has a lab until four on Fridays."
+        }
+      ]
+    },
+    {
+      "slug": "conv-practice-4", "use": "practice", "difficulty": "hard",
+      "context": "Listen to a conversation between a student and her professor.",
+      "lines": [
+        { "speaker": "Woman", "voice": "f_us1", "text": "Professor Hale, do you have a minute? It's about the research proposal." },
+        { "speaker": "Man", "voice": "m_us2", "text": "Of course. Come in." },
+        { "speaker": "Woman", "voice": "f_us1", "text": "I've been reading for weeks, but my topic keeps getting bigger. Every article leads to three more." },
+        { "speaker": "Man", "voice": "m_us2", "text": "That's a common trap. You're casting the net too wide. What's the one question you really care about?" },
+        { "speaker": "Woman", "voice": "f_us1", "text": "I guess how bilingual signs affect tourism in small towns." },
+        { "speaker": "Man", "voice": "m_us2", "text": "There you go. Focus on that, and set aside anything that doesn't speak to it directly." },
+        { "speaker": "Woman", "voice": "f_us1", "text": "So I don't need to cover every angle?" },
+        { "speaker": "Man", "voice": "m_us2", "text": "Not in a proposal. Pick one town, and come back with an outline next week." }
+      ],
+      "questions": [
+        {
+          "prompt": "What is the student's problem?",
+          "options": ["She can't find enough articles.", "She missed the proposal deadline.", "She disagrees with the professor's comments.", "Her research topic has become too broad."],
+          "answer": "D",
+          "explanation": "She says her topic keeps getting bigger because every article leads to more."
+        },
+        {
+          "prompt": "What does the professor mean when he says the student is casting the net too wide?",
+          "options": ["She is trying to include too much.", "She should read more articles.", "She is working too quickly.", "She needs to visit more towns."],
+          "answer": "A",
+          "explanation": "The expression means trying to cover too much; he then tells her to focus on one question and one town."
+        }
+      ]
+    },
+    {
+      "slug": "conv-practice-5", "use": "practice", "difficulty": "easy",
+      "context": "Listen to a conversation between two friends.",
+      "lines": [
+        { "speaker": "Man", "voice": "m_us1", "text": "Are we still going hiking on Saturday?" },
+        { "speaker": "Woman", "voice": "f_us2", "text": "I hope so, but I just checked the weather. It might rain in the afternoon." },
+        { "speaker": "Man", "voice": "m_us1", "text": "Then let's start early. If we leave at seven, we'll be back by noon." },
+        { "speaker": "Woman", "voice": "f_us2", "text": "Seven is early, but okay. Should we take the bus to the park?" },
+        { "speaker": "Man", "voice": "m_us1", "text": "My cousin can lend me his car, so we can drive." },
+        { "speaker": "Woman", "voice": "f_us2", "text": "Even better. I'll bring sandwiches and water." },
+        { "speaker": "Man", "voice": "m_us1", "text": "Great. Don't forget a rain jacket, just in case." }
+      ],
+      "questions": [
+        {
+          "prompt": "Why do the speakers decide to leave early?",
+          "options": ["The bus leaves at seven.", "The park closes at noon.", "Rain is expected later in the day.", "The man has to work in the afternoon."],
+          "answer": "C",
+          "explanation": "The woman says it might rain in the afternoon, so the man suggests leaving at seven."
+        },
+        {
+          "prompt": "How will the speakers get to the park?",
+          "options": ["By bus", "By bike", "On foot", "By car"],
+          "answer": "D",
+          "explanation": "The man's cousin will lend him a car, so they will drive instead of taking the bus."
+        }
+      ]
+    },
+    {
+      "slug": "conv-practice-6", "use": "practice", "difficulty": "medium",
+      "context": "Listen to a conversation between a student and a technology help desk worker.",
+      "lines": [
+        { "speaker": "Woman", "voice": "f_uk", "text": "Hi, I can't log into the course website. It keeps saying my password is wrong." },
+        { "speaker": "Man", "voice": "m_us3", "text": "Did you change your password recently?" },
+        { "speaker": "Woman", "voice": "f_uk", "text": "Yes, last week. The system told me to." },
+        { "speaker": "Man", "voice": "m_us3", "text": "Ah, the course site sometimes takes a while to update. Try logging in with your old password." },
+        { "speaker": "Woman", "voice": "f_uk", "text": "Really? Let me see. Oh, it worked!" },
+        { "speaker": "Man", "voice": "m_us3", "text": "Good. It should switch over to the new one by tomorrow. If it doesn't, come back and I'll reset it." },
+        { "speaker": "Woman", "voice": "f_uk", "text": "Thanks. I was worried I'd miss tonight's quiz." }
+      ],
+      "questions": [
+        {
+          "prompt": "What is the woman's problem?",
+          "options": ["She can't get into a course website.", "She forgot to take a quiz.", "Her laptop is broken.", "She doesn't know her new password."],
+          "answer": "A",
+          "explanation": "She can't log into the course website. She knows her new password; the site simply hasn't updated."
+        },
+        {
+          "prompt": "Why does the woman's old password still work?",
+          "options": ["The man reset her account.", "The course site hasn't updated yet.", "She never actually changed it.", "The quiz uses a different system."],
+          "answer": "B",
+          "explanation": "The man explains that the course site sometimes takes a while to update after a password change."
+        }
+      ]
+    },
+    {
+      "slug": "conv-practice-7", "use": "practice", "difficulty": "hard",
+      "context": "Listen to a conversation between two students.",
+      "lines": [
+        { "speaker": "Man", "voice": "m_us2", "text": "I'm thinking of moving off campus next year. Rent in town is cheaper than the dorms." },
+        { "speaker": "Woman", "voice": "f_us1", "text": "On paper, maybe. Have you added up utilities, internet, and the bus pass?" },
+        { "speaker": "Man", "voice": "m_us2", "text": "Not really. I just compared the monthly rent." },
+        { "speaker": "Woman", "voice": "f_us1", "text": "When I moved out, my heating bill alone was a nasty surprise. And I had to buy furniture." },
+        { "speaker": "Man", "voice": "m_us2", "text": "So you're saying it's not the bargain it looks like." },
+        { "speaker": "Woman", "voice": "f_us1", "text": "It can be, if you share with a couple of roommates. Just do the math first." },
+        { "speaker": "Man", "voice": "m_us2", "text": "Okay. I'll make a full budget before I sign anything." }
+      ],
+      "questions": [
+        {
+          "prompt": "What is the woman's attitude toward the man's plan?",
+          "options": ["She thinks it's a terrible idea.", "She thinks he should consider all the costs.", "She wants to move in with him.", "She thinks the dorms are too expensive."],
+          "answer": "B",
+          "explanation": "She warns about extra costs but says it can work with roommates, so she isn't completely against it; she wants him to do the math."
+        },
+        {
+          "prompt": "What will the man probably do next?",
+          "options": ["Sign a lease in town", "Buy furniture", "Ask for a cheaper dorm room", "Calculate his total living costs"],
+          "answer": "D",
+          "explanation": "He says he'll make a full budget before he signs anything."
+        }
+      ]
+    },
+    {
+      "slug": "conv-practice-8", "use": "practice", "difficulty": "medium",
+      "context": "Listen to a conversation between a student and a clerk at the campus bookstore.",
+      "lines": [
+        { "speaker": "Woman", "voice": "f_us2", "text": "Hi, I'd like to return this book. I bought it for a class I ended up dropping." },
+        { "speaker": "Man", "voice": "m_us1", "text": "Sure. Do you have the receipt?" },
+        { "speaker": "Woman", "voice": "f_us2", "text": "Yes, here it is." },
+        { "speaker": "Man", "voice": "m_us1", "text": "Hmm, it says you bought it five weeks ago. Our full refund period is only three weeks." },
+        { "speaker": "Woman", "voice": "f_us2", "text": "Oh. Is there anything I can do?" },
+        { "speaker": "Man", "voice": "m_us1", "text": "We can give you store credit instead. Or you could try the buyback program at the end of the term, but you'd get less." },
+        { "speaker": "Woman", "voice": "f_us2", "text": "Store credit is fine. I still need supplies for my art class." }
+      ],
+      "questions": [
+        {
+          "prompt": "Why can't the woman get a full refund?",
+          "options": ["She lost the receipt.", "The book is damaged.", "She bought it at a different store.", "Too much time has passed since she bought it."],
+          "answer": "D",
+          "explanation": "She bought it five weeks ago, but the refund period is only three weeks. She does have the receipt."
+        },
+        {
+          "prompt": "What will the woman probably use the store credit for?",
+          "options": ["Art supplies", "A new textbook for the class she dropped", "The buyback program", "A gift card for a friend"],
+          "answer": "A",
+          "explanation": "She accepts store credit because she still needs supplies for her art class."
+        }
+      ]
+    },
+    {
+      "slug": "conv-practice-9", "use": "practice", "difficulty": "easy",
+      "context": "Listen to a conversation between two students.",
+      "lines": [
+        { "speaker": "Woman", "voice": "f_uk", "text": "You're in the photography club, right?" },
+        { "speaker": "Man", "voice": "m_us2", "text": "Yes, I joined last year. Why?" },
+        { "speaker": "Woman", "voice": "f_uk", "text": "I just got a camera for my birthday, and I'd like to learn how to use it." },
+        { "speaker": "Man", "voice": "m_us2", "text": "You should come to our next meeting. It's on Wednesday evening in the art building." },
+        { "speaker": "Woman", "voice": "f_uk", "text": "Do I need to be good at photography?" },
+        { "speaker": "Man", "voice": "m_us2", "text": "Not at all. Most new members are beginners. We go on photo walks around town on weekends, too." },
+        { "speaker": "Woman", "voice": "f_uk", "text": "That sounds fun. I'll be there on Wednesday." }
+      ],
+      "questions": [
+        {
+          "prompt": "Why is the woman interested in the club?",
+          "options": ["She wants to sell her photos.", "Her friends are members.", "She wants to learn to use her new camera.", "She needs it for an art class."],
+          "answer": "C",
+          "explanation": "She got a camera for her birthday and wants to learn how to use it."
+        },
+        {
+          "prompt": "What does the man say about new members?",
+          "options": ["They must bring their own computer.", "Many of them are beginners.", "They pay a fee each weekend.", "They meet on Fridays."],
+          "answer": "B",
+          "explanation": "He says most new members are beginners. Meetings are on Wednesday evenings."
+        }
+      ]
+    },
+    {
+      "slug": "conv-practice-10", "use": "practice", "difficulty": "medium",
+      "context": "Listen to a conversation between a student and an academic advisor.",
+      "lines": [
+        { "speaker": "Man", "voice": "m_us3", "text": "I need one more science course to graduate, and I'm stuck between astronomy and geology." },
+        { "speaker": "Woman", "voice": "f_us1", "text": "Both count toward the requirement. What's making it hard to choose?" },
+        { "speaker": "Man", "voice": "m_us3", "text": "Astronomy sounds more interesting, but it has a night lab on Thursdays." },
+        { "speaker": "Woman", "voice": "f_us1", "text": "Do you work in the evenings?" },
+        { "speaker": "Man", "voice": "m_us3", "text": "Yes, at a hotel downtown, three nights a week, including Thursday." },
+        { "speaker": "Woman", "voice": "f_us1", "text": "Could you swap that shift?" },
+        { "speaker": "Man", "voice": "m_us3", "text": "Maybe. My manager's pretty flexible." },
+        { "speaker": "Woman", "voice": "f_us1", "text": "Then talk to her before registration closes on Friday. If it doesn't work out, geology's a solid backup." }
+      ],
+      "questions": [
+        {
+          "prompt": "What are the speakers mainly discussing?",
+          "options": ["Which science course the man should take", "How the man can find a better job", "Why the man failed astronomy", "When the man will graduate"],
+          "answer": "A",
+          "explanation": "The man is choosing between astronomy and geology for his last science requirement."
+        },
+        {
+          "prompt": "What does the advisor suggest the man do?",
+          "options": ["Take geology instead of astronomy", "Quit his job at the hotel", "Ask his manager about changing a shift", "Register after Friday"],
+          "answer": "C",
+          "explanation": "She tells him to talk to his manager about swapping his Thursday shift; geology is only the backup."
+        }
+      ]
+    }
+  ],
+  "listen_announcement": [
+    {
+      "slug": "ann-router-1", "use": "test:router", "difficulty": "medium",
+      "context": "Listen to an announcement in a classroom.", "voice": "f_uk",
+      "text": "Before we start, a quick change to the midterm. Instead of the in-class exam we planned for next Wednesday, you'll write a take-home essay. I'll post the questions online on Monday morning, and you'll have until Friday at noon to submit. The essay should be about four pages. Since you'll have more time, I'll be looking closely at how well you use evidence from the readings, so start reviewing your notes now.",
+      "questions": [
+        {
+          "prompt": "What is the main purpose of the announcement?",
+          "options": ["To cancel the midterm", "To introduce a new reading list", "To explain a change in the midterm format", "To move the class to a different room"],
+          "answer": "C",
+          "explanation": "The in-class exam is being replaced with a take-home essay; the midterm still happens in a different form."
+        },
+        {
+          "prompt": "What does the professor suggest students do now?",
+          "options": ["Review their notes", "Start writing the essay", "Submit their questions online", "Meet with her on Monday"],
+          "answer": "A",
+          "explanation": "She ends by telling students to start reviewing their notes now. The essay questions won't be posted until Monday."
+        }
+      ]
+    },
+    {
+      "slug": "ann-router-2", "use": "test:router", "difficulty": "medium",
+      "context": "Listen to an announcement in the campus library.", "voice": "m_us2",
+      "text": "Attention, library users. Starting Monday, the third floor will be closed for about six weeks while we replace the carpets and lighting. The quiet study area will move to the reading room on the first floor. Books from the third floor can still be requested at the front desk, and staff will bring them down within an hour. We apologize for the noise and thank you for your patience.",
+      "questions": [
+        {
+          "prompt": "What is the announcement mainly about?",
+          "options": ["New library opening hours", "A temporary closure of part of the library", "A rule against noise in the library", "A new online book request system"],
+          "answer": "B",
+          "explanation": "The third floor will close for about six weeks for renovation."
+        },
+        {
+          "prompt": "How can students get books from the third floor?",
+          "options": ["By going upstairs with a staff member", "By waiting six weeks", "By ordering them online", "By asking at the front desk"],
+          "answer": "D",
+          "explanation": "Books can be requested at the front desk, and staff will bring them down within an hour."
+        }
+      ]
+    },
+    {
+      "slug": "ann-lower-1", "use": "test:lower", "difficulty": "easy",
+      "context": "Listen to an announcement in a classroom.", "voice": "f_us1",
+      "text": "Good morning, everyone. Don't forget that next Tuesday we're visiting the city art museum instead of meeting in class. The bus will leave from the front of the library at nine o'clock, so please arrive ten minutes early. Bring a notebook and a pencil, because you'll be sketching one painting. We should be back on campus by one.",
+      "questions": [
+        {
+          "prompt": "What is the announcement mainly about?",
+          "options": ["A class trip to a museum", "A new art class", "A change in the bus schedule", "A drawing competition"],
+          "answer": "A",
+          "explanation": "The class is visiting the city art museum next Tuesday."
+        },
+        {
+          "prompt": "What should students bring?",
+          "options": ["A camera", "Lunch and water", "A notebook and a pencil", "Their own paints"],
+          "answer": "C",
+          "explanation": "The teacher says to bring a notebook and a pencil for sketching."
+        }
+      ]
+    },
+    {
+      "slug": "ann-lower-2", "use": "test:lower", "difficulty": "easy",
+      "context": "Listen to an announcement on campus.", "voice": "m_us1",
+      "text": "Hello, students. This Friday, the main dining hall is having an international food night. Students from the cultural clubs will cook dishes from more than ten countries. Dinner is from five to eight, and it's free with your meal plan. If you'd like to help cook, please sign up at the dining hall entrance by Wednesday.",
+      "questions": [
+        {
+          "prompt": "What event is the speaker announcing?",
+          "options": ["A cooking class for beginners", "A new meal plan", "A club fair", "A special international dinner"],
+          "answer": "D",
+          "explanation": "The dining hall is having an international food night on Friday."
+        },
+        {
+          "prompt": "What should students do if they want to help cook?",
+          "options": ["Email the cultural clubs", "Sign up at the dining hall entrance", "Arrive at five on Friday", "Pay a small fee"],
+          "answer": "B",
+          "explanation": "Students who want to help should sign up at the dining hall entrance by Wednesday."
+        }
+      ]
+    },
+    {
+      "slug": "ann-upper-1", "use": "test:upper", "difficulty": "hard",
+      "context": "Listen to an announcement in a biology lab.", "voice": "m_us3",
+      "text": "One more thing before you go. Several groups have been leaving the microscopes on the benches with the lights still running. Those bulbs aren't cheap, and the department won't keep replacing them forever. From now on, each group will sign out a microscope and sign it back in at the end of the session. If one comes back damaged or left on, that group loses bench time next week. I'd rather not have to enforce that, so let's make it a non-issue.",
+      "questions": [
+        {
+          "prompt": "Why does the instructor make the announcement?",
+          "options": ["To announce that new microscopes have arrived", "To introduce a rule about using the microscopes", "To change the lab schedule for next week", "To ask students to buy replacement bulbs"],
+          "answer": "B",
+          "explanation": "Because groups have been leaving the lights on, each group must now sign microscopes out and back in."
+        },
+        {
+          "prompt": "What does the instructor imply when he says he'd rather not have to enforce the rule?",
+          "options": ["He hopes students will follow it so no penalty is needed.", "He doesn't think the rule is fair.", "Another instructor will enforce it instead.", "The rule only applies to some groups."],
+          "answer": "A",
+          "explanation": "'Let's make it a non-issue' shows he hopes everyone follows the rule so he never has to take away bench time."
+        }
+      ]
+    },
+    {
+      "slug": "ann-upper-2", "use": "test:upper", "difficulty": "hard",
+      "context": "Listen to an announcement on the campus radio station.", "voice": "f_us2",
+      "text": "The psychology department is recruiting volunteers for a study on sleep and memory. Participants will wear a light wrist monitor for two weeks and complete a short online puzzle each morning. There's no lab visit beyond the first briefing. Those who finish the full two weeks receive a forty dollar bookstore voucher; partial completion, unfortunately, doesn't qualify. Spaces are limited, and the last round filled within days, so if you're interested, don't sit on it. The sign-up link is on the department's homepage.",
+      "questions": [
+        {
+          "prompt": "What must participants do to receive the voucher?",
+          "options": ["Visit the lab every morning", "Score well on the puzzles", "Complete the entire two-week study", "Recruit another volunteer"],
+          "answer": "C",
+          "explanation": "Only those who finish the full two weeks get the voucher; partial completion doesn't qualify. The puzzles are done online, not in the lab."
+        },
+        {
+          "prompt": "What does the speaker mean when she says 'don't sit on it'?",
+          "options": ["Don't tell anyone else about the study.", "Don't stay seated during the briefing.", "Don't complete the puzzle too quickly.", "Don't wait long before signing up."],
+          "answer": "D",
+          "explanation": "Spaces fill within days, so 'don't sit on it' means act quickly instead of delaying."
+        }
+      ]
+    },
+    {
+      "slug": "ann-practice-1", "use": "practice", "difficulty": "easy",
+      "context": "Listen to an announcement in a classroom.", "voice": "m_us2",
+      "text": "Hi, everyone. On Thursday we'll have a guest speaker, Maria Rivera, who works as an engineer at a solar energy company. She'll talk about her job and how she chose her career. Please think of one question to ask her. Also, class will start fifteen minutes earlier than usual that day, so please don't be late.",
+      "questions": [
+        {
+          "prompt": "Who is coming to the class on Thursday?",
+          "options": ["An engineer from a solar energy company", "A new professor", "A student from another class", "A career counselor from the university"],
+          "answer": "A",
+          "explanation": "The guest speaker works as an engineer at a solar energy company."
+        },
+        {
+          "prompt": "What is different about Thursday's class?",
+          "options": ["It will be held in a different room.", "It will begin earlier than usual.", "It will end fifteen minutes early.", "It will be online."],
+          "answer": "B",
+          "explanation": "Class will start fifteen minutes earlier than usual. Nothing is said about ending early or changing rooms."
+        }
+      ]
+    },
+    {
+      "slug": "ann-practice-2", "use": "practice", "difficulty": "medium",
+      "context": "Listen to an announcement from campus transportation services.", "voice": "f_uk",
+      "text": "This is a message from campus transportation. Because of road work on Elm Street, the blue shuttle line will skip the north parking lot stop for the next two weeks. Riders who usually board there can walk to the stop outside the stadium, about five minutes away. The shuttle will also run every fifteen minutes instead of every twenty during the morning rush, to make up for the detour.",
+      "questions": [
+        {
+          "prompt": "Why is the shuttle route changing?",
+          "options": ["The north parking lot is being expanded.", "There are not enough drivers.", "A new stadium stop has opened.", "There is construction on a street."],
+          "answer": "D",
+          "explanation": "The change is because of road work on Elm Street."
+        },
+        {
+          "prompt": "What other change will riders notice?",
+          "options": ["The shuttle will stop running at night.", "Tickets will cost more during rush hour.", "Shuttles will come more often in the mornings.", "The blue line will be renamed."],
+          "answer": "C",
+          "explanation": "During the morning rush, the shuttle will run every fifteen minutes instead of every twenty."
+        }
+      ]
+    },
+    {
+      "slug": "ann-practice-3", "use": "practice", "difficulty": "medium",
+      "context": "Listen to an announcement in a business class.", "voice": "f_us1",
+      "text": "Okay, listen up. For the final project, you'll work in groups of four. I've already assigned the groups, and you'll find the list on the course website this afternoon. Each group will choose a local business and analyze how it uses social media. Your first task is to meet with your group before next Monday and agree on which business to study. Send me your choice by email so I can make sure there aren't any duplicates.",
+      "questions": [
+        {
+          "prompt": "What is the final project about?",
+          "options": ["Starting a new business", "How a local business uses social media", "Designing a website for the course", "Interviewing group members"],
+          "answer": "B",
+          "explanation": "Each group will analyze how a local business uses social media."
+        },
+        {
+          "prompt": "Why should groups email the instructor their choice?",
+          "options": ["So that no two groups study the same business", "So she can contact the business owners", "So she can assign them to new groups", "So they can get extra credit"],
+          "answer": "A",
+          "explanation": "She wants to make sure there aren't duplicates, meaning two groups choosing the same business."
+        }
+      ]
+    },
+    {
+      "slug": "ann-practice-4", "use": "practice", "difficulty": "hard",
+      "context": "Listen to an announcement from the campus career center.", "voice": "m_us1",
+      "text": "Just a heads-up for anyone thinking about summer internships. The fall career fair is coming up on the twelfth in the student union ballroom, and over sixty employers have registered. Recruiters tend to remember students who've done their homework, so look at the employer list beforehand and pick a handful to target rather than wandering from table to table. We're also running resume checks all next week. Walk-ins are welcome, but the lines get long toward the end of the week.",
+      "questions": [
+        {
+          "prompt": "What advice does the speaker give about the career fair?",
+          "options": ["Arrive early to avoid long lines", "Visit as many tables as possible", "Research employers and choose a few in advance", "Bring several copies of a cover letter"],
+          "answer": "C",
+          "explanation": "He advises looking at the employer list beforehand and targeting a handful instead of wandering. The long lines refer to resume checks."
+        },
+        {
+          "prompt": "What can be inferred about the resume checks?",
+          "options": ["They require an appointment.", "They are only for seniors.", "They take place at the career fair.", "Students should go earlier in the week."],
+          "answer": "D",
+          "explanation": "Since lines get long toward the end of the week, going earlier is the better choice. Walk-ins are welcome, so no appointment is needed."
+        }
+      ]
+    },
+    {
+      "slug": "ann-practice-5", "use": "practice", "difficulty": "easy",
+      "context": "Listen to an announcement in a classroom.", "voice": "f_us2",
+      "text": "Hello, class. Starting next week, we won't meet in this room anymore. Our new room is two oh five in the Carter Building, right across from the library. The room is bigger and has better computers. The class time stays the same, ten in the morning. Please check the course website if you forget the room number.",
+      "questions": [
+        {
+          "prompt": "What is the main purpose of the announcement?",
+          "options": ["To tell students about a new classroom", "To change the class time", "To introduce new computers", "To describe the library"],
+          "answer": "A",
+          "explanation": "The class is moving to a new room. The time stays the same."
+        },
+        {
+          "prompt": "Where is the new room?",
+          "options": ["Inside the library", "Next to the computer lab", "In the same building, on the second floor", "Across from the library"],
+          "answer": "D",
+          "explanation": "The new room is in the Carter Building, right across from the library."
+        }
+      ]
+    },
+    {
+      "slug": "ann-practice-6", "use": "practice", "difficulty": "medium",
+      "context": "Listen to an announcement on the campus radio station.", "voice": "m_us3",
+      "text": "The student health center is holding a blood drive next Tuesday and Wednesday in the gym lobby. Donating takes about forty-five minutes, including a short health check. Please eat a full meal and drink plenty of water beforehand. You can book a time online, but walk-ins are welcome. Every donor gets a free T-shirt, and the residence hall with the most donors will win a pizza party.",
+      "questions": [
+        {
+          "prompt": "What should donors do before giving blood?",
+          "options": ["Skip breakfast", "Book a time online", "Visit the health center", "Eat a meal and drink water"],
+          "answer": "D",
+          "explanation": "Donors are asked to eat a full meal and drink plenty of water. Booking online is optional because walk-ins are welcome."
+        },
+        {
+          "prompt": "Why might residence halls compete with each other?",
+          "options": ["To win free T-shirts", "To win a pizza party", "To host the next blood drive", "To get extra health checks"],
+          "answer": "B",
+          "explanation": "The hall with the most donors wins a pizza party. Every individual donor gets a T-shirt regardless."
+        }
+      ]
+    },
+    {
+      "slug": "ann-practice-7", "use": "practice", "difficulty": "hard",
+      "context": "Listen to an announcement in a history class.", "voice": "f_uk",
+      "text": "A couple of you have asked whether the review session on Sunday is worth giving up a weekend afternoon for. I won't take attendance, and I won't introduce anything new. That said, the teaching assistant who runs it also helps write the exam, so she has a pretty good sense of where people tend to slip up. Draw your own conclusions. It's from two to four in room one twelve, and you're welcome to drop in for part of it.",
+      "questions": [
+        {
+          "prompt": "What is the speaker mainly talking about?",
+          "options": ["Why attendance is required on Sunday", "New material that will be on the exam", "Whether students should attend a review session", "How the teaching assistant grades exams"],
+          "answer": "C",
+          "explanation": "She is answering students who asked whether the Sunday review session is worth attending. Attendance is not taken, and nothing new is introduced."
+        },
+        {
+          "prompt": "What does the speaker imply about the review session?",
+          "options": ["It would probably be useful for the exam.", "It will cover topics not taught in class.", "It is mainly for students who missed lectures.", "It might be cancelled."],
+          "answer": "A",
+          "explanation": "The assistant helps write the exam and knows where students slip up; 'draw your own conclusions' suggests the session is worth going to."
+        }
+      ]
+    },
+    {
+      "slug": "ann-practice-8", "use": "practice", "difficulty": "medium",
+      "context": "Listen to an announcement in a residence hall.", "voice": "m_us2",
+      "text": "Good evening, residents. Starting this month, our building is joining the campus composting program. You'll find small green bins in every kitchen for food scraps like fruit peels and coffee grounds. Please don't put plastic or meat in them. The bins are emptied every Monday and Thursday. If your bin is missing or damaged, let the front desk know, and we'll replace it.",
+      "questions": [
+        {
+          "prompt": "What is the announcement mainly about?",
+          "options": ["A new recycling bin for plastics", "A new food waste program in the building", "Kitchen cleaning rules", "A change in trash collection days"],
+          "answer": "B",
+          "explanation": "The building is joining the composting program for food scraps. Plastic is not allowed in the bins."
+        },
+        {
+          "prompt": "What should residents do if their bin is damaged?",
+          "options": ["Buy a new one at the bookstore", "Put their scraps in the trash", "Tell the front desk", "Email the composting program"],
+          "answer": "C",
+          "explanation": "Residents should let the front desk know, and the bin will be replaced."
+        }
+      ]
+    },
+    {
+      "slug": "ann-practice-9", "use": "practice", "difficulty": "hard",
+      "context": "Listen to an announcement in a sociology class.", "voice": "f_us1",
+      "text": "I want to clarify something about participation, since there's been some confusion. It's not about how often you speak; it's about whether what you say moves the discussion forward. Someone who makes one thoughtful point that builds on a classmate's idea will do better than someone who talks constantly without engaging. And if speaking up in a big group isn't your strong suit, our online forum counts just as much. Next week I'll post an example of a strong forum reply.",
+      "questions": [
+        {
+          "prompt": "What is the main point of the announcement?",
+          "options": ["Participation is judged by quality rather than quantity.", "Students must speak in every class.", "The online forum is being closed.", "Participation is no longer part of the grade."],
+          "answer": "A",
+          "explanation": "She says it's not how often you speak but whether your contributions move the discussion forward."
+        },
+        {
+          "prompt": "What will the professor do next week?",
+          "options": ["Grade students' participation", "Divide the class into small groups", "Lead a discussion online", "Share a model forum response"],
+          "answer": "D",
+          "explanation": "She says she'll post an example of a strong forum reply next week."
+        }
+      ]
+    },
+    {
+      "slug": "ann-practice-10", "use": "practice", "difficulty": "medium",
+      "context": "Listen to an announcement from the campus art gallery.", "voice": "m_us1",
+      "text": "The campus gallery invites everyone to the opening of this year's student art exhibition on Friday at six. More than forty students are showing paintings, photographs, and sculptures. Several pieces will be for sale, and the money goes directly to the artists. Light snacks will be served. The exhibition stays open for three weeks, but the artists will only be there to talk about their work on opening night.",
+      "questions": [
+        {
+          "prompt": "What is being announced?",
+          "options": ["A painting class for students", "The opening of a student art show", "A sale of used art supplies", "A new campus gallery building"],
+          "answer": "B",
+          "explanation": "The gallery is inviting people to the opening of the student art exhibition."
+        },
+        {
+          "prompt": "Why might someone want to attend on Friday in particular?",
+          "options": ["Admission is free only on Friday.", "The artwork will be cheaper that night.", "The artists will be there to discuss their work.", "Snacks are served every day except Friday."],
+          "answer": "C",
+          "explanation": "The artists will only be present to talk about their work on opening night, which is Friday."
+        }
+      ]
+    }
+  ],
+  "listen_academic_talk": [
+    {
+      "slug": "talk-router-1", "use": "test:router", "difficulty": "medium",
+      "subject": "biology", "context": "Listen to a talk in a biology class.", "voice": "m_us3",
+      "text": "Let's talk about hummingbirds and a problem they face every single night. A hummingbird's heart can beat more than a thousand times a minute while it's flying, and it burns energy faster than almost any other animal its size. During the day, that's fine, because it can feed on nectar every few minutes. But at night it can't feed at all. So how does it make it to morning without running out of fuel? The answer is something called torpor. Torpor is a bit like a very short hibernation. The bird's body temperature drops sharply, and its heartbeat slows to a fraction of its daytime rate. In this state, it uses only a tiny amount of energy. Now, torpor isn't free. A bird in torpor is almost completely unresponsive, so it can't escape from a predator. And waking up takes time, often twenty minutes or more, as the bird shivers its muscles to warm itself back up. That's why hummingbirds don't seem to enter torpor every night. They use it mainly when their energy reserves are low, for example, after a cold, rainy day when flowers were hard to find. In other words, it's an emergency tool, not a nightly habit.",
+      "questions": [
+        {
+          "prompt": "What is the talk mainly about?",
+          "options": ["How hummingbirds find nectar in bad weather", "How hummingbirds survive nights without feeding", "Why hummingbirds hibernate in the winter", "How predators hunt hummingbirds at night"],
+          "answer": "B",
+          "explanation": "The talk explains torpor as the way hummingbirds get through the night when they can't feed."
+        },
+        {
+          "prompt": "According to the speaker, what happens to a hummingbird in torpor?",
+          "options": ["It flies to a warmer location.", "Its heart rate increases to keep it warm.", "It feeds on stored nectar.", "Its body temperature and heart rate drop."],
+          "answer": "D",
+          "explanation": "The speaker says body temperature drops sharply and the heartbeat slows to a fraction of its daytime rate."
+        },
+        {
+          "prompt": "What can be inferred about a hummingbird that had plenty to eat during the day?",
+          "options": ["It probably will not enter torpor that night.", "It will enter torpor earlier than usual.", "It is more likely to be caught by a predator.", "It will wake up more slowly the next morning."],
+          "answer": "A",
+          "explanation": "Torpor is used mainly when energy reserves are low, so a well-fed bird probably doesn't need it."
+        },
+        {
+          "prompt": "Why does the speaker mention that waking up takes time?",
+          "options": ["To explain why hummingbirds sleep late", "To compare torpor with hibernation", "To point out a cost of using torpor", "To describe how hummingbirds find flowers"],
+          "answer": "C",
+          "explanation": "It comes right after 'torpor isn't free', as one of the disadvantages, along with being unable to escape predators."
+        }
+      ]
+    },
+    {
+      "slug": "talk-router-2", "use": "test:router", "difficulty": "medium",
+      "subject": "business", "context": "Listen to a talk in a business class.", "voice": "f_us2",
+      "text": "Today I want to look at a pricing strategy you've almost certainly experienced without noticing: the loss leader. A loss leader is a product that a store sells at a very low price, sometimes below what the store paid for it. That sounds like a bad business decision, right? Why would anyone sell something at a loss? The logic is that the cheap item gets customers through the door. Think of a supermarket that advertises milk or eggs at an unusually low price. People come in for the bargain, but once they're inside, very few walk out with only milk. They pick up bread, snacks, and cleaning supplies, and those items carry normal or even high profit margins. So the store loses a little on the milk and makes it back on everything else. Notice that stores usually choose everyday items for this, things people buy often and know the price of. If the price of milk drops, shoppers notice right away. A discount on something unusual, like a specialty spice, wouldn't attract nearly as many people. Of course, the strategy has risks. Some shoppers, sometimes called cherry pickers, buy only the discounted item and leave. If too many customers do that, the store really does just lose money.",
+      "questions": [
+        {
+          "prompt": "What is the main topic of the talk?",
+          "options": ["How supermarkets set the price of milk", "Why shoppers prefer specialty products", "A strategy of selling some products cheaply to attract customers", "How stores reduce the cost of everyday items"],
+          "answer": "C",
+          "explanation": "The whole talk explains the loss leader, a cheap item that brings customers into the store."
+        },
+        {
+          "prompt": "According to the speaker, how does a store make up for the money it loses on a loss leader?",
+          "options": ["Customers buy other items with higher profit margins.", "Suppliers pay the store for advertising.", "The store raises the price of milk later.", "Customers pay a membership fee."],
+          "answer": "A",
+          "explanation": "Shoppers pick up other products with normal or high margins, so the store makes the money back on everything else."
+        },
+        {
+          "prompt": "Why does the speaker mention a specialty spice?",
+          "options": ["To give an example of a high-profit item", "To show that shoppers enjoy unusual products", "To describe what cherry pickers usually buy", "To illustrate a poor choice for a loss leader"],
+          "answer": "D",
+          "explanation": "A discount on an unusual item wouldn't attract many people, unlike everyday items whose prices shoppers know."
+        },
+        {
+          "prompt": "What can be inferred about cherry pickers?",
+          "options": ["They help stores increase overall profits.", "They reduce the benefit of a loss leader for the store.", "They usually buy specialty spices.", "They prefer shopping at small stores."],
+          "answer": "B",
+          "explanation": "They buy only the discounted item, so the store loses money without making it back on other purchases."
+        }
+      ]
+    },
+    {
+      "slug": "talk-lower-1", "use": "test:lower", "difficulty": "easy",
+      "subject": "history", "context": "Listen to a talk in a history class.", "voice": "f_us1",
+      "text": "Today we're going to talk about early lighthouses. For thousands of years, sailors needed a way to find safe harbors at night. The first lighthouses were very simple. People lit large wood fires on hills or on top of stone towers near the coast. Sailors could see the fire from far away and know where land was. But fires had problems. They used a lot of wood, and they were hard to keep burning in wind and rain. Later, people used oil lamps and candles inside glass rooms at the top of the towers. These were easier to protect from the weather. Then, in the eighteen twenties, a French scientist designed a special glass lens. It made the light much brighter, so ships could see it from more than twenty miles away. This lens changed lighthouses all over the world.",
+      "questions": [
+        {
+          "prompt": "What is the talk mainly about?",
+          "options": ["How lighthouses developed over time", "Why sailors got lost at night", "How to build a stone tower", "Famous French scientists"],
+          "answer": "A",
+          "explanation": "The talk moves from wood fires to oil lamps to a new lens, showing how lighthouses changed."
+        },
+        {
+          "prompt": "What was one problem with using fires in early lighthouses?",
+          "options": ["They were too bright for sailors.", "They could not be seen from hills.", "They were difficult to keep burning in bad weather.", "They were only allowed in France."],
+          "answer": "C",
+          "explanation": "The speaker says fires used a lot of wood and were hard to keep burning in wind and rain."
+        },
+        {
+          "prompt": "Why were oil lamps placed inside glass rooms?",
+          "options": ["To make the light change color", "To protect them from the weather", "To save oil", "To keep sailors away"],
+          "answer": "B",
+          "explanation": "The glass rooms made the lamps easier to protect from the weather."
+        },
+        {
+          "prompt": "Why does the speaker mention a French scientist?",
+          "options": ["To explain who built the first lighthouse", "To describe a famous shipwreck", "To show that fires were still used in France", "To introduce an invention that made lighthouses brighter"],
+          "answer": "D",
+          "explanation": "The scientist designed a lens that made the light much brighter and visible from far away."
+        }
+      ]
+    },
+    {
+      "slug": "talk-upper-1", "use": "test:upper", "difficulty": "hard",
+      "subject": "earth science", "context": "Listen to a talk in an earth science class.", "voice": "m_us1",
+      "text": "I'd like to clear up a misconception that trips up a lot of students: the idea that water always freezes at zero degrees Celsius. Pure water can actually stay liquid well below that point, down to around minus forty in some cases. We call this supercooled water. So what's going on? For ice to form, water molecules need to line up into a crystal, and that process has to start somewhere. In everyday life it almost always starts on something else, like a speck of dust, a scratch in a container, or a grain of pollen. These starting points are called nuclei. Without them, the molecules jostle around but never quite lock into place. This matters enormously for weather. Clouds high in the atmosphere are often full of supercooled droplets, simply because there aren't enough suitable particles for ice to form on. When a few ice crystals do appear, they grow at the expense of the surrounding droplets and can eventually become heavy enough to fall. In fact, much of the rain that reaches the ground begins its life as snow up there. And here's where it gets practical. Supercooled droplets that strike an airplane's wing can freeze on contact, which is why icing is taken so seriously in aviation. The wing itself, in effect, becomes the nucleus.",
+      "questions": [
+        {
+          "prompt": "What is the main purpose of the talk?",
+          "options": ["To describe how airplanes are de-iced", "To compare snow and rain", "To explain how pollen affects clouds", "To explain why water can stay liquid below its usual freezing point"],
+          "answer": "D",
+          "explanation": "The speaker corrects the idea that water always freezes at zero and explains supercooling and why it matters. Airplanes, rain, and pollen are examples."
+        },
+        {
+          "prompt": "According to the speaker, what is usually needed for ice crystals to begin forming?",
+          "options": ["A temperature below minus forty", "A particle or surface for the crystal to start on", "Large amounts of rain", "Rapid movement of water molecules"],
+          "answer": "B",
+          "explanation": "Freezing almost always starts on something else, such as dust, a scratch, or pollen, called a nucleus."
+        },
+        {
+          "prompt": "What can be inferred about much of the rain that falls on the ground?",
+          "options": ["It forms only in clouds without ice.", "It is still supercooled when it lands.", "It was frozen at an earlier stage.", "It contains more dust than snow does."],
+          "answer": "C",
+          "explanation": "The speaker says much rain begins its life as snow high in the clouds, so it was frozen before it melted on the way down."
+        },
+        {
+          "prompt": "What does the speaker mean when he says ice crystals grow 'at the expense of' the surrounding droplets?",
+          "options": ["The crystals grow by taking water from the droplets.", "The crystals are expensive to study.", "The droplets grow faster than the crystals.", "The droplets protect the crystals from melting."],
+          "answer": "A",
+          "explanation": "'At the expense of' means one thing gains while another loses; the crystals get bigger while the droplets around them shrink."
+        }
+      ]
+    },
+    {
+      "slug": "talk-practice-1", "use": "practice", "difficulty": "medium",
+      "subject": "art history", "context": "Listen to a talk in an art history class.", "voice": "f_uk",
+      "text": "Today we're looking at a painting technique called true fresco, used in many of the great wall paintings of Renaissance Italy. In true fresco, the artist paints onto wet plaster. As the plaster dries, a chemical reaction locks the pigment into the wall itself, so the color becomes part of the surface rather than sitting on top of it. That's why some frescoes have lasted for five hundred years. But this technique put enormous pressure on the painter. Plaster stays workable for only about a day, so artists spread fresh plaster over just the section they could finish before it dried. Art historians call each of these sections a giornata, which is Italian for a day's work. If you look closely at some famous ceilings, you can actually see faint lines where one day's patch meets the next, and by counting them, scholars can estimate how long a painting took. Mistakes were also hard to fix. An error couldn't simply be painted over. The painter had to chip away the plaster and redo that section. Some artists added final details on dry plaster for convenience, but those touches tend to flake off over the centuries.",
+      "questions": [
+        {
+          "prompt": "What is the talk mainly about?",
+          "options": ["The life of a Renaissance painter", "How frescoes are restored today", "A painting technique that uses wet plaster", "Why Italian ceilings are curved"],
+          "answer": "C",
+          "explanation": "The talk describes true fresco, painting onto wet plaster, and the challenges it created."
+        },
+        {
+          "prompt": "Why have some true frescoes lasted so long?",
+          "options": ["They were covered with a protective varnish.", "They were painted indoors away from sunlight.", "Artists used unusually thick paint.", "The pigment became part of the wall as the plaster dried."],
+          "answer": "D",
+          "explanation": "A chemical reaction locks the pigment into the wall, so the color becomes part of the surface."
+        },
+        {
+          "prompt": "Why does the speaker mention the faint lines visible on some ceilings?",
+          "options": ["To show that the plaster was of poor quality", "To explain how scholars estimate the time a painting took", "To describe a mistake made by a famous artist", "To argue that dry plaster is better"],
+          "answer": "B",
+          "explanation": "Each line marks a day's section, so counting them lets scholars estimate how long the painting took."
+        },
+        {
+          "prompt": "What can be inferred about details added on dry plaster?",
+          "options": ["They are less durable than the rest of the fresco.", "They were added only by assistants.", "They took longer to paint.", "They were forbidden in some cities."],
+          "answer": "A",
+          "explanation": "The speaker says those touches tend to flake off over the centuries, unlike pigment locked into wet plaster."
+        }
+      ]
+    },
+    {
+      "slug": "talk-practice-2", "use": "practice", "difficulty": "easy",
+      "subject": "music", "context": "Listen to a talk in a music class.", "voice": "m_us2",
+      "text": "Have you ever wondered why, at the start of a concert, the whole orchestra tunes to a single note played by the oboe? There are a few reasons, and they're partly practical and partly historical. First, the practical side. The oboe has a bright, penetrating sound that cuts through the room, so every player can hear it clearly, even from the back of the stage. Its pitch is also quite stable. Many string instruments drift out of tune as the hall warms up, but the oboe is less affected, and it's hard for an oboist to adjust its pitch much anyway. So it makes sense for everyone else to match the oboe rather than the other way around. Now the historical side. In the seventeenth century, when orchestras were taking shape, the oboe was one of the few wind instruments commonly included, and it often played the main melody. It became the natural reference point, and the habit stuck. Interestingly, when an orchestra performs with a piano, the situation changes. A piano can't be retuned in the middle of a concert, so the oboist tunes to the piano first and then passes that note on to everyone else.",
+      "questions": [
+        {
+          "prompt": "What is the talk mainly about?",
+          "options": ["Why orchestras tune to the oboe", "How oboes are made", "The history of the piano", "How to become a professional oboist"],
+          "answer": "A",
+          "explanation": "The speaker gives practical and historical reasons that orchestras tune to the oboe."
+        },
+        {
+          "prompt": "According to the speaker, why is the oboe's sound useful for tuning?",
+          "options": ["It is very quiet and soft.", "It is bright and easy for everyone to hear.", "It changes with the temperature of the hall.", "It sounds like a piano."],
+          "answer": "B",
+          "explanation": "The oboe has a bright, penetrating sound that every player can hear clearly. String instruments, not the oboe, drift as the hall warms up."
+        },
+        {
+          "prompt": "Why does the speaker mention the seventeenth century?",
+          "options": ["To describe when the piano was invented", "To explain when oboes became cheaper", "To show that orchestras were once much larger", "To give historical background for the tuning tradition"],
+          "answer": "D",
+          "explanation": "In that period the oboe was a common wind instrument that often played the melody, so it became the reference point."
+        },
+        {
+          "prompt": "What can be inferred about a concert that includes a piano?",
+          "options": ["The oboe is not played at all.", "The piano is retuned to match the oboe.", "The piano becomes the main reference for tuning.", "Each musician tunes separately."],
+          "answer": "C",
+          "explanation": "The oboist tunes to the piano first and passes that note on, so the piano sets the pitch for everyone."
+        }
+      ]
+    },
+    {
+      "slug": "talk-practice-3", "use": "practice", "difficulty": "medium",
+      "subject": "urban studies", "context": "Listen to a talk in an urban studies class.", "voice": "f_us1",
+      "text": "Walk across almost any college campus and you'll find narrow dirt trails cutting across the grass, often right next to a paved sidewalk. Urban planners have a name for these: desire paths. They form when enough people decide that the official route isn't the one they actually want to take, usually because it's longer or less direct. Over time, the grass wears away and a path appears. For a long time, planners treated desire paths as a nuisance. They put up fences or planted bushes to block them. But more recently, many designers have started to see them as free information. A desire path is basically a record of how people really move through a space, which is something no survey can capture quite as honestly. Some universities have taken this idea to its logical conclusion. When they build a new quad, they plant grass everywhere and wait a year before laying any sidewalks. Then they pave the paths that students have worn into the ground. The result is a layout that matches real behavior, and people tend to stay on those sidewalks. Of course, not every desire path should be paved. Some cut through areas that are dangerous or ecologically sensitive, and there, redirecting people still makes sense.",
+      "questions": [
+        {
+          "prompt": "What is the talk mainly about?",
+          "options": ["How to plant grass that resists damage", "Why students prefer paved sidewalks", "The history of college campus design", "What informal walking paths reveal and how planners respond to them"],
+          "answer": "D",
+          "explanation": "The talk explains desire paths, what they show about real movement, and how planners now use or block them."
+        },
+        {
+          "prompt": "According to the speaker, why do desire paths usually form?",
+          "options": ["The official route is longer or less direct.", "The sidewalks are in poor condition.", "Planners create them on purpose.", "Students are not allowed on the grass."],
+          "answer": "A",
+          "explanation": "People leave the official route usually because it's longer or less direct."
+        },
+        {
+          "prompt": "Why does the speaker mention universities that wait a year before building sidewalks?",
+          "options": ["To criticize a slow construction process", "To show that grass grows better without sidewalks", "To give an example of using desire paths in design", "To explain why students ignore sidewalks"],
+          "answer": "C",
+          "explanation": "These universities pave the paths students wear into the grass, using desire paths as design information."
+        },
+        {
+          "prompt": "What does the speaker imply about blocking desire paths?",
+          "options": ["It is never a good idea.", "It may still be appropriate in some situations.", "It is the most effective solution.", "It is required by law."],
+          "answer": "B",
+          "explanation": "She says redirecting people still makes sense where paths cross dangerous or ecologically sensitive areas."
+        }
+      ]
+    },
+    {
+      "slug": "talk-practice-4", "use": "practice", "difficulty": "medium",
+      "subject": "geology", "context": "Listen to a talk in a geology class.", "voice": "m_us3",
+      "text": "So where do caves come from? Most of the large cave systems in the world form in limestone, and the main tool that carves them is surprisingly gentle: rainwater. As rain falls through the air and soaks through soil, it picks up carbon dioxide, which turns it into a very weak acid. On its own, this water wouldn't harm most kinds of rock. But limestone is different. It dissolves slowly in weak acid. The water seeps into tiny cracks in the limestone and widens them, very gradually. We're talking about a process that can take hundreds of thousands of years. Eventually, the cracks become channels, and the channels become passages large enough to walk through. Now, once a cave has formed, the process can partly run in reverse. When water carrying dissolved limestone drips from a cave ceiling, it releases some of its carbon dioxide into the air. That makes it deposit a tiny bit of the mineral it was carrying. Drip by drip, those deposits build up into the icicle-shaped formations called stalactites. Where the drops hit the floor, matching columns called stalagmites grow upward. So the same water that hollows out a cave also decorates it.",
+      "questions": [
+        {
+          "prompt": "What is the talk mainly about?",
+          "options": ["The dangers of exploring caves", "How limestone caves and their formations develop", "Why rainwater is harmful to soil", "The difference between limestone and other rocks"],
+          "answer": "B",
+          "explanation": "The talk explains how rainwater carves limestone caves and then builds stalactites and stalagmites."
+        },
+        {
+          "prompt": "What makes rainwater able to dissolve limestone?",
+          "options": ["It contains salt from the ocean.", "It is heated underground.", "It absorbs carbon dioxide and becomes slightly acidic.", "It moves very quickly through cracks."],
+          "answer": "C",
+          "explanation": "Rain picks up carbon dioxide from the air and soil, which turns it into a weak acid that dissolves limestone."
+        },
+        {
+          "prompt": "According to the speaker, why does water dripping from a cave ceiling leave a mineral deposit?",
+          "options": ["It releases some carbon dioxide into the air.", "It freezes in the cold cave air.", "It mixes with water from the floor.", "It absorbs more limestone from the ceiling."],
+          "answer": "A",
+          "explanation": "When the dripping water releases carbon dioxide, it deposits some of the mineral it was carrying."
+        },
+        {
+          "prompt": "What does the speaker mean by saying the process can 'partly run in reverse'?",
+          "options": ["Caves can close up completely over time.", "Water can flow back up into the ceiling.", "Rainwater becomes less acidic underground.", "Water can add rock to a cave as well as remove it."],
+          "answer": "D",
+          "explanation": "The same water that dissolved limestone also deposits it to form stalactites and stalagmites, so it 'decorates' the cave too."
+        }
+      ]
+    },
+    {
+      "slug": "talk-practice-5", "use": "practice", "difficulty": "medium",
+      "subject": "economics", "context": "Listen to a talk in an economics class.", "voice": "f_us2",
+      "text": "Today's concept is the network effect. A product has a network effect when it becomes more valuable to each user as more people use it. The classic example is the telephone. If you owned the only telephone in the world, it would be useless. Who would you call? But every new phone owner made everyone else's phone a little more useful. You see the same pattern today with messaging apps and online marketplaces. A marketplace with lots of sellers attracts buyers, and lots of buyers attract more sellers. Network effects have some important consequences. One is that markets with strong network effects often end up dominated by one or two big players. Once a platform has most of the users, it's very hard for a newcomer to compete, even with a better product, because people don't want to leave the place where everyone else already is. Economists call this lock-in. Another consequence is that companies in these markets are often willing to lose money for years. They give the product away or sell it cheaply, hoping to grow big enough that the network effect takes over. It's a risky bet. If they never reach that size, the money is simply gone.",
+      "questions": [
+        {
+          "prompt": "What is the talk mainly about?",
+          "options": ["The invention of the telephone", "How online marketplaces set prices", "Products that become more valuable as more people use them", "Why most companies lose money"],
+          "answer": "C",
+          "explanation": "The talk defines the network effect and describes its consequences."
+        },
+        {
+          "prompt": "Why does the speaker mention owning the only telephone in the world?",
+          "options": ["To illustrate that a product can be useless without other users", "To describe the history of telephone companies", "To show that early phones were expensive", "To compare telephones with messaging apps"],
+          "answer": "A",
+          "explanation": "With nobody to call, a single phone would be useless, which shows how value depends on other users."
+        },
+        {
+          "prompt": "According to the speaker, why is it hard for a new company to compete in these markets?",
+          "options": ["New companies are not allowed to give products away.", "Users don't want to leave a platform where most people already are.", "Big companies always have better products.", "Governments protect large companies."],
+          "answer": "B",
+          "explanation": "Even with a better product, newcomers struggle because people stay where everyone else is, which is called lock-in."
+        },
+        {
+          "prompt": "What does the speaker imply about companies that sell products cheaply to grow?",
+          "options": ["They always end up dominating the market.", "They are breaking economic rules.", "They usually have the best products.", "Their strategy may fail and lose all their investment."],
+          "answer": "D",
+          "explanation": "She calls it a risky bet: if they never get big enough, the money is simply gone."
+        }
+      ]
+    },
+    {
+      "slug": "talk-practice-6", "use": "practice", "difficulty": "medium",
+      "subject": "botany", "context": "Listen to a talk in a botany class.", "voice": "m_us1",
+      "text": "Carnivorous plants, like the Venus flytrap or the pitcher plant, tend to fascinate people because they turn the usual food chain upside down. But I want you to think about why a plant would evolve to eat insects in the first place. After all, these plants still have green leaves and still make their own sugar through photosynthesis. They don't need insects for energy. What they need is nutrients, especially nitrogen. Carnivorous plants almost always grow in places like bogs and wet sandy soils, where nitrogen is extremely scarce. In those conditions, an insect is basically a tiny package of fertilizer. Catching and digesting one gives the plant nitrogen that its roots simply can't find in the ground. This also explains why you don't see carnivorous plants taking over forests or fields. Building traps and producing digestive fluids costs the plant a lot of energy. In rich soil, ordinary plants can get the same nutrients cheaply through their roots, and they grow faster. So carnivory only pays off where the soil is poor. Here's a practical tip if you ever keep one at home: don't give it regular plant fertilizer. Its roots aren't adapted to rich soil, and too much can actually kill it.",
+      "questions": [
+        {
+          "prompt": "What is the main topic of the talk?",
+          "options": ["How to grow plants at home", "How insects avoid carnivorous plants", "The discovery of the Venus flytrap", "Why some plants evolved to catch insects"],
+          "answer": "D",
+          "explanation": "The speaker asks why a plant would evolve to eat insects and explains the answer: nitrogen in poor soil."
+        },
+        {
+          "prompt": "According to the speaker, what do carnivorous plants mainly get from insects?",
+          "options": ["Water", "Sugar for energy", "Nitrogen", "Protection from other plants"],
+          "answer": "C",
+          "explanation": "They make their own sugar through photosynthesis; what they need from insects is nutrients, especially nitrogen."
+        },
+        {
+          "prompt": "Why are carnivorous plants uncommon in rich soil?",
+          "options": ["Ordinary plants get nutrients more cheaply there and grow faster.", "Insects are rare in rich soil.", "Rich soil damages their traps.", "They cannot perform photosynthesis there."],
+          "answer": "A",
+          "explanation": "Traps are costly, and in rich soil ordinary plants get the same nutrients cheaply through their roots and grow faster."
+        },
+        {
+          "prompt": "Why does the speaker mention plant fertilizer at the end?",
+          "options": ["To recommend a fertilizer for home use", "To give advice that follows from how these plants are adapted", "To compare bogs with forests", "To explain how traps are built"],
+          "answer": "B",
+          "explanation": "Because their roots are adapted to poor soil, ordinary fertilizer can harm them, so the tip follows from the main explanation."
+        }
+      ]
+    },
+    {
+      "slug": "talk-practice-7", "use": "practice", "difficulty": "hard",
+      "subject": "history", "context": "Listen to a talk in a world history class.", "voice": "f_uk",
+      "text": "When people hear the term Silk Road, they often picture a single highway with caravans traveling all the way from China to the Mediterranean. That image is misleading in a couple of ways. First, it wasn't one road. It was a shifting web of routes, over land and by sea, that changed as empires rose and fell and as some passes became too dangerous to use. Second, very few individual traders ever traveled the whole length. Goods moved in relays. A merchant might carry silk a few hundred miles to a market town, sell it to another merchant, and head home. The silk would change hands many times before it reached its final buyer, getting more expensive at every stage. Oh, and the name itself is fairly recent. It was coined by a German geographer in the nineteenth century. The people who actually used these routes didn't call them that. And silk was only one item among many. Spices, glass, paper, horses, and metals all moved along the same networks. Arguably, the most important things that traveled weren't goods at all, but ideas: religions, technologies, and even diseases spread along these routes. So when historians talk about the Silk Road today, they really mean a whole system of exchange.",
+      "questions": [
+        {
+          "prompt": "What is the main purpose of the talk?",
+          "options": ["To correct a common image of the Silk Road", "To describe the life of a German geographer", "To explain how silk is produced", "To compare land and sea trade"],
+          "answer": "A",
+          "explanation": "The speaker says the popular picture is misleading and explains why, point by point."
+        },
+        {
+          "prompt": "According to the speaker, how did most goods travel along the routes?",
+          "options": ["In large caravans that made the full journey", "Mainly by sea", "Under the protection of government soldiers", "Through a series of traders over shorter distances"],
+          "answer": "D",
+          "explanation": "Goods moved in relays, with merchants carrying them part of the way and selling them on."
+        },
+        {
+          "prompt": "Why does the speaker mention a German geographer?",
+          "options": ["To explain who first mapped the routes", "To give an example of a long-distance traveler", "To point out that the name Silk Road is fairly modern", "To describe how the routes were protected"],
+          "answer": "C",
+          "explanation": "He coined the name in the nineteenth century, and the people who used the routes didn't call them that."
+        },
+        {
+          "prompt": "What can be inferred about the price of silk?",
+          "options": ["It was the same everywhere along the routes.", "It was higher by the time it reached distant buyers.", "It dropped when spices became popular.", "It was set by the Chinese government."],
+          "answer": "B",
+          "explanation": "The silk got more expensive every time it changed hands, so distant buyers paid more."
+        }
+      ]
+    },
+    {
+      "slug": "talk-practice-8", "use": "practice", "difficulty": "medium",
+      "subject": "astronomy", "context": "Listen to a talk in an astronomy class.", "voice": "m_us2",
+      "text": "Here's a question that might seem simple: why do we always see the same side of the Moon? The Moon does rotate, but it turns exactly once for every trip it makes around Earth. Because those two motions match, the same face always points toward us. Astronomers call this tidal locking. It didn't start out this way. Billions of years ago, the Moon spun faster. But Earth's gravity pulls slightly harder on the near side of the Moon than on the far side, stretching it into a very slightly oval shape. These bulges acted like a brake. As the Moon rotated, Earth's pull kept tugging the bulge back into line, gradually slowing the spin until the rotation matched the orbit. Once that happened, there was nothing left to slow down, and the Moon settled into the state we see now. This isn't unusual, by the way. Many moons in our solar system are tidally locked to their planets. And the effect works both ways. The Moon is slowly lengthening Earth's day, too, though only by a tiny fraction of a second every century. So in the very distant future, Earth's days will be noticeably longer than they are today.",
+      "questions": [
+        {
+          "prompt": "What is the talk mainly about?",
+          "options": ["How the Moon was formed", "Why the same side of the Moon always faces Earth", "The shape of Earth's orbit", "How tides affect the ocean"],
+          "answer": "B",
+          "explanation": "The talk explains tidal locking, which keeps one face of the Moon pointed toward Earth."
+        },
+        {
+          "prompt": "According to the speaker, what slowed the Moon's rotation?",
+          "options": ["Earth's gravity pulling on bulges in the Moon", "Collisions with other objects", "The Moon moving farther from the Sun", "Heat from the Moon's surface"],
+          "answer": "A",
+          "explanation": "Earth's pull kept tugging the Moon's bulge back into line, acting like a brake."
+        },
+        {
+          "prompt": "Why does the speaker say that tidal locking isn't unusual?",
+          "options": ["To show that Earth is also tidally locked", "To explain why the Moon is oval", "To suggest that the theory is uncertain", "To point out that many other moons behave the same way"],
+          "answer": "D",
+          "explanation": "He immediately adds that many moons in the solar system are tidally locked to their planets."
+        },
+        {
+          "prompt": "According to the speaker, what will happen to Earth's days in the very distant future?",
+          "options": ["They will be shorter than today.", "They will stay exactly the same.", "They will be noticeably longer than today.", "They will match the Moon's orbit within a century."],
+          "answer": "C",
+          "explanation": "The Moon is slowly lengthening Earth's day, so days will eventually be noticeably longer. The change per century is tiny."
+        }
+      ]
+    },
+    {
+      "slug": "talk-practice-9", "use": "practice", "difficulty": "hard",
+      "subject": "psychology", "context": "Listen to a talk in a psychology class.", "voice": "f_us1",
+      "text": "I want to talk about a bias that shows up constantly in negotiations, and that's anchoring. Anchoring describes our tendency to rely too heavily on the first number we hear when making a judgment. In a common type of experiment, people are asked to estimate something, say the price of a used car, right after seeing a random number. Those who saw a high number tend to give higher estimates, even when they know the number had nothing to do with the car. The first figure acts like an anchor. People adjust away from it, but not nearly enough. In negotiation, this has a clear implication. Whoever names the first price often shapes the whole conversation. If a seller opens high, the final deal tends to land higher than it otherwise would, because the buyer's counteroffers are pulled toward that opening figure. That's why some negotiation coaches advise making the first offer, as long as you've done your research. But there's a catch. If your opening number is wildly unrealistic, you can lose credibility, and the other side may simply walk away. So the advice isn't to be outrageous; it's to be ambitious but defensible. And if the other party anchors first, one tactic is to openly set their number aside and refocus the discussion on objective information, like market prices.",
+      "questions": [
+        {
+          "prompt": "What is the talk mainly about?",
+          "options": ["How to buy a used car", "Why negotiations often fail", "How the first number mentioned can influence judgments and deals", "The history of negotiation coaching"],
+          "answer": "C",
+          "explanation": "The talk explains anchoring and what it means for negotiations. The used car is only an example."
+        },
+        {
+          "prompt": "According to the speaker, what happens when people adjust away from an anchor?",
+          "options": ["They ignore it completely.", "They do not adjust enough.", "They move too far in the opposite direction.", "They ask for more information."],
+          "answer": "B",
+          "explanation": "She says people adjust away from it, but not nearly enough."
+        },
+        {
+          "prompt": "What does the speaker mean when she says an opening offer should be 'ambitious but defensible'?",
+          "options": ["It should be high but still supported by good reasons.", "It should be the lowest possible price.", "It should be kept secret until the end.", "It should be outrageous to surprise the other side."],
+          "answer": "A",
+          "explanation": "She warns against unrealistic offers that cost credibility, so the offer should be strong yet justifiable."
+        },
+        {
+          "prompt": "According to the speaker, what can a negotiator do if the other side anchors first?",
+          "options": ["Make an even more extreme offer", "End the negotiation immediately", "Accept the first offer to build trust", "Shift attention to objective information such as market prices"],
+          "answer": "D",
+          "explanation": "One tactic is to set their number aside openly and refocus on objective information like market prices."
+        }
+      ]
+    },
+    {
+      "slug": "talk-practice-10", "use": "practice", "difficulty": "medium",
+      "subject": "architecture", "context": "Listen to a talk in an architecture class.", "voice": "m_us3",
+      "text": "Let's look at how Gothic cathedrals managed to have such tall walls and enormous windows. Earlier churches in Europe, in what we call the Romanesque style, had thick, heavy walls with fairly small windows. That wasn't just a matter of taste. A stone roof, especially a vaulted one, pushes outward on the walls, and thick walls were needed to resist that push. If you cut big openings for windows, you weakened the walls, and the building could collapse. Gothic builders solved this with a few innovations working together. One was the pointed arch, which directs more of the weight downward rather than outward. Another was the flying buttress. Picture a stone arm reaching from the upper wall out to a heavy pillar standing outside the building. The buttress catches the outward push and carries it down to the ground, away from the wall. With the walls no longer doing all the work, builders could open them up and fill them with stained glass. So when you stand inside a great cathedral and see walls that seem to be made of colored light, remember that the secret is mostly on the outside, in those stone arms you can't see from within.",
+      "questions": [
+        {
+          "prompt": "What is the talk mainly about?",
+          "options": ["The history of stained glass making", "Why Romanesque churches were more popular", "How cathedrals were decorated inside", "How Gothic builders were able to create tall walls with large windows"],
+          "answer": "D",
+          "explanation": "The speaker explains the structural innovations, the pointed arch and flying buttress, that allowed tall walls and big windows."
+        },
+        {
+          "prompt": "According to the speaker, why did Romanesque churches have small windows?",
+          "options": ["Builders preferred dark interiors.", "Glass was too expensive.", "Large openings would have weakened the walls.", "Windows were reserved for royal buildings."],
+          "answer": "C",
+          "explanation": "The thick walls had to resist the roof's outward push, and big openings would have weakened them. The speaker says it wasn't just taste."
+        },
+        {
+          "prompt": "What is the purpose of a flying buttress?",
+          "options": ["To support the roof from inside", "To carry the outward push of the walls down to the ground", "To hold stained glass windows in place", "To make the building look taller"],
+          "answer": "B",
+          "explanation": "The buttress catches the outward push and carries it down to the ground, away from the wall."
+        },
+        {
+          "prompt": "Why does the speaker say that the secret is mostly on the outside?",
+          "options": ["The supports that make the large windows possible stand outside the building.", "The windows are cleaned from outside.", "Visitors usually enter from the side.", "The best decorations are on the outer walls."],
+          "answer": "A",
+          "explanation": "The flying buttresses stand outside the walls, and they are what allow the walls to be filled with glass."
+        }
+      ]
+    }
+  ]
+}

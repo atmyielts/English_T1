@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { ContentUnit } from '../domain/models';
 import { InputRenderer } from '../features/exam/InputRenderer';
+import { toefl2026CorrectSummary } from '../features/toefl2026/preview';
+import '../features/toefl2026/toefl2026.css';
 import { TOEFL_IBT_PRODUCT_ID } from '../lib/constants';
 import { getReviewSession, type ReviewSessionResponse } from '../lib/platformClient';
 import { useAccess } from '../lib/useAccess';
@@ -75,6 +77,9 @@ const questionSubIds = (u: UnitRow): string[] => {
 
 const correctSummary = (u: UnitRow): string | null => {
   if (!u.correct) return null;
+
+  const toefl2026 = toefl2026CorrectSummary(u.type, u.correct);
+  if (toefl2026) return toefl2026;
 
   if (u.type === 'question_single_choice') {
     const correctId = String((u.correct as any).option_id ?? '');

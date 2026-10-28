@@ -54,11 +54,25 @@ export const PlansPage = () => {
   );
 };
 
+/** A template task; tool tasks without a URL in their text get an explicit link. */
+const TaskLine = ({ task, titleOf }: { task: Json; titleOf: (slug: string) => string | null }) => {
+  const text = String(task.title ?? '');
+  const url = typeof task.url === 'string' && task.url.startsWith('https://') && !text.includes('https://') ? task.url : null;
+  return (
+    <>
+      <TaskText text={text} titleOf={titleOf} />
+      {url ? <> · <TaskText text={url} /></> : null}
+    </>
+  );
+};
+
 const Checkpoint = ({ cp }: { cp: Json }) => {
   const t = useT();
   return (
     <div className="checkpoint">
       <p><Flag size={14} aria-hidden="true" /> <strong>{t('plans.checkpoint')}{cp.title ? `: ${String(cp.title)}` : ''}</strong></p>
+      {cp.measure ? <p><span className="chip neutral">{t('plans.measure')}</span> {String(cp.measure)}</p> : null}
+      {cp.target_band ? <p><span className="chip premium">{t('plans.bandTarget')}</span> {String(cp.target_band)}</p> : null}
       {cp.pass_rule ? <p><span className="chip ok">{t('plans.pass')}</span> {String(cp.pass_rule)}</p> : null}
       {cp.if_not ? <p><span className="chip warn">{t('plans.ifNot')}</span> {String(cp.if_not)}</p> : null}
       {cp.text && cp.text !== cp.pass_rule ? <p>{String(cp.text)}</p> : null}
@@ -184,9 +198,16 @@ export const PlanPage = () => {
           <div className="chip-row">
             <span className="chip"><CalendarDays size={12} aria-hidden="true" /> {t('plans.weeks', { count: weeks.length || Math.ceil(Number(plan.duration_days ?? 7) / 7) })}</span>
             {hours.min != null && hours.max != null ? <span className="chip"><Clock size={12} aria-hidden="true" /> {t('plans.hoursRange', { min: Number(hours.min), max: Number(hours.max) })}</span> : null}
-            {plan.focus_section ? <span className="chip">{dt(`focus.${String(plan.focus_section)}`, humanize(plan.focus_section))}</span> : null}
+            {plan.focus_section && config.scale !== 'toefl_band' ? <span className="chip">{dt(`focus.${String(plan.focus_section)}`, humanize(plan.focus_section))}</span> : null}
             {plan.intensity ? <span className="chip">{dt(`intensity.${String(plan.intensity)}`, humanize(plan.intensity))}</span> : null}
-            {plan.score_min != null && plan.score_max != null ? <span className="chip">{t('plans.scoreWindow', { min: Number(plan.score_min), max: Number(plan.score_max) })}</span> : null}
+            {config.scale === 'toefl_band' ? (
+              <>
+                {templateMeta.band_entry_min != null ? <span className="chip">{t('plans.entryBand', { min: Number(templateMeta.band_entry_min).toFixed(1), max: Number(templateMeta.band_entry_max ?? templateMeta.band_entry_min).toFixed(1), cefr: String(templateMeta.cefr_entry ?? '') })}</span> : null}
+                {templateMeta.band_target_min != null ? <span className="chip premium">{t('plans.targetBand', { min: Number(templateMeta.band_target_min).toFixed(1), max: Number(templateMeta.band_target_max ?? templateMeta.band_target_min).toFixed(1), cefr: String(templateMeta.cefr_target ?? '') })}</span> : null}
+                {list(templateMeta.focus_sections).map((s) => <span key={s} className="chip">{dt(`section.${s}`, humanize(s))}</span>)}
+                {templateMeta.full_mocks != null ? <span className="chip">{t('plans.fullMocks', { count: Number(templateMeta.full_mocks) })}</span> : null}
+              </>
+            ) : plan.score_min != null && plan.score_max != null ? <span className="chip">{t('plans.scoreWindow', { min: Number(plan.score_min), max: Number(plan.score_max) })}</span> : null}
           </div>
         </div>
       </section>
@@ -218,7 +239,7 @@ export const PlanPage = () => {
         {weeks.length === 0 ? <p className="muted-note">{t('error.templateEmpty')}</p> : null}
       </section>
 
-      {meta.who_for || list(meta.rules).length || rows(meta.phases).length ? (
+      {meta.who_for || list(meta.rules).length || rows(meta.phases).length || list(meta.decision_rules).length || list(meta.daily_routine).length ? (
         <section className="panel two-col">
           <div>
             {meta.who_for ? <><h2>{t('plans.whoFor')}</h2><p>{String(meta.who_for)}</p></> : null}
@@ -233,9 +254,13 @@ export const PlanPage = () => {
           </div>
           <div>
             {list(meta.rules).length ? <><h3>{t('plans.rules')}</h3><ul>{list(meta.rules).map((r, i) => <li key={i}>{r}</li>)}</ul></> : null}
-            {list(templateMeta.decision_rules ?? rec(plan.schedule_json).decision_rules).length ? (
-              <><h3>{t('plans.decisionRules')}</h3><ul>{list(templateMeta.decision_rules ?? rec(plan.schedule_json).decision_rules).map((r, i) => <li key={i}>{r}</li>)}</ul></>
+            {list(meta.decision_rules).length ? (
+              <><h3>{t('plans.decisionRules')}</h3><ul>{list(meta.decision_rules).map((r, i) => <li key={i}>{r}</li>)}</ul></>
             ) : null}
+            {list(meta.daily_routine).length ? (
+              <><h3>{t('plans.dailyRoutine')}</h3><ul>{list(meta.daily_routine).map((r, i) => <li key={i}>{r}</li>)}</ul></>
+            ) : null}
+            {templateMeta.recommended_for ? <><h3>{t('plans.recommendedFor')}</h3><p>{String(templateMeta.recommended_for)}</p></> : null}
           </div>
         </section>
       ) : null}
@@ -280,9 +305,9 @@ export const PlanPage = () => {
                         </button>
                         <div>
                           <span className="task-date">{formatDate(item.due_date, locale)}{m.day ? ` · ${t('plans.day', { day: Number(m.day) })}` : ''}{m.minutes ? ` · ${t('plans.minutes', { count: Number(m.minutes) })}` : ''}</span>
-                          {isCheckpoint ? <Checkpoint cp={{ title: item.title, pass_rule: m.pass_rule, if_not: m.if_not, text: m.text }} /> : m.reading && item.page_slug ? (
+                          {isCheckpoint ? <Checkpoint cp={{ title: item.title, pass_rule: m.pass_rule, if_not: m.if_not, text: m.text, measure: m.measure, target_band: m.target_band }} /> : m.reading && item.page_slug ? (
                             <p><Link to={`/${item.page_slug}`}>{titleOf(item.page_slug) ?? item.page_slug}</Link></p>
-                          ) : <p><TaskText text={item.title} titleOf={titleOf} /></p>}
+                          ) : <p><TaskLine task={{ title: item.title, url: m.url }} titleOf={titleOf} /></p>}
                         </div>
                       </li>
                     );
@@ -299,16 +324,17 @@ export const PlanPage = () => {
             <details key={i} className="week-block" open={i === 0}>
               <summary>
                 <strong>{String(week.label ?? `${t('plans.week')} ${i + 1}`)}</strong>
+                {week.phase ? <span className="chip neutral">{String(week.phase)}</span> : null}
                 {week.hours != null ? <span className="muted-note"> · {t('plans.hours', { count: Number(week.hours) })}</span> : null}
               </summary>
               {list(week.focus).length ? <p className="muted-note">{t('plans.focus')}: {list(week.focus).join(' · ')}</p> : null}
               {rows(week.days).length ? rows(week.days).map((day, j) => (
                 <div key={j} className="day-block">
                   <p className="day-head">{t('plans.day', { day: Number(day.day ?? j + 1) })}{day.weekday ? ` · ${String(day.weekday)}` : ''}{day.minutes ? ` · ${t('plans.minutes', { count: Number(day.minutes) })}` : ''}</p>
-                  <ul>{rows(day.tasks).map((task, k) => <li key={k}><TaskText text={String(task.title ?? '')} titleOf={titleOf} /></li>)}</ul>
+                  <ul>{rows(day.tasks).map((task, k) => <li key={k}><TaskLine task={task} titleOf={titleOf} /></li>)}</ul>
                 </div>
               )) : rows(week.tasks).length ? (
-                <ul>{rows(week.tasks).map((task, k) => <li key={k}><TaskText text={String(task.title ?? '')} titleOf={titleOf} /></li>)}</ul>
+                <ul>{rows(week.tasks).map((task, k) => <li key={k}><TaskLine task={task} titleOf={titleOf} /></li>)}</ul>
               ) : null}
               {list(week.modules).length ? <p>{t('plans.read')}: {list(week.modules).map((s, k) => <span key={s}>{k ? ', ' : ''}<Link to={`/${s}`}>{titleOf(s) ?? s}</Link></span>)}</p> : null}
               {week.checkpoint ? <Checkpoint cp={rec(week.checkpoint)} /> : null}

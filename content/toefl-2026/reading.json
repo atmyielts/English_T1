@@ -1,0 +1,1716 @@
+{
+  "complete_the_words": [
+    {
+      "slug": "cw-router-1",
+      "use": "test:router",
+      "difficulty": "medium",
+      "topic": "archaeology",
+      "text": "Archaeologists often learn more from ancient rubbish than from grand monuments. When people threw away broken pots, animal bones, and burnt seeds, they created a record of daily life that nobody intended to keep. By studying the layers of a waste pit, researchers can tell which foods were common, how cooking methods changed, and even when trade with distant regions began. Because these objects were never meant to impress anyone, they often give a more honest picture of the past than official records do."
+    },
+    {
+      "slug": "cw-router-2",
+      "use": "test:router",
+      "difficulty": "medium",
+      "topic": "earth science",
+      "text": "Clouds form when warm, moist air rises and cools. As the air climbs higher, it expands because the pressure around it becomes lower, and this expansion makes the air lose heat. Cooler air cannot hold as much water vapor, so tiny droplets begin to gather around small particles of dust or salt. Millions of these droplets together become visible as a cloud. If the droplets keep growing and become too heavy to stay in the air, they finally fall to the ground as rain or snow."
+    },
+    {
+      "slug": "cw-lower-1",
+      "use": "test:lower",
+      "difficulty": "easy",
+      "topic": "daily life",
+      "text": "Many families keep a small garden behind their homes. Growing vegetables is a good way to save money and to eat fresh food every day. Most plants need sunlight, clean water, and soil that is rich in nutrients. Children often enjoy helping in the garden because they can watch seeds turn into tall green plants over a few weeks. When the vegetables are ready, the whole family can pick them together and cook a simple meal with food they grew themselves."
+    },
+    {
+      "slug": "cw-upper-1",
+      "use": "test:upper",
+      "difficulty": "hard",
+      "topic": "economics",
+      "text": "Economists distinguish between goods that are rivalrous and those that are not. A sandwich is rivalrous because when one person eats it, nobody else can consume the same sandwich. A piece of knowledge, by contrast, can be shared indefinitely without being depleted, since teaching a mathematical proof to another student does not erase it from the memory of the teacher. This characteristic explains why ideas can spread rapidly across societies, but it also complicates efforts to reward inventors, because others can often benefit from an innovation without paying for it."
+    },
+    {
+      "slug": "cw-practice-1",
+      "use": "practice",
+      "difficulty": "easy",
+      "topic": "life science",
+      "text": "Honeybees live together in large groups called colonies. Each colony has one queen, a few hundred males, and thousands of female workers. The workers have many different jobs during their short lives. Young bees clean the hive and feed the babies, while older bees fly outside to collect nectar and pollen from flowers. When a bee finds a good place full of flowers, it returns to the hive and performs a special dance that shows the other bees where to go."
+    },
+    {
+      "slug": "cw-practice-2",
+      "use": "practice",
+      "difficulty": "easy",
+      "topic": "campus life",
+      "text": "The university library offers many services for new students. Besides lending books, it provides quiet rooms where students can study alone or work on group projects. Librarians are always ready to help people find articles, use the online catalog, or learn how to cite sources correctly. The library also lends laptops and chargers for short periods. Many students say that spending a few hours there each week helps them stay organized and finish their assignments on time."
+    },
+    {
+      "slug": "cw-practice-3",
+      "use": "practice",
+      "difficulty": "easy",
+      "topic": "transportation",
+      "text": "Bicycles are becoming more popular in many cities around the world. Riding a bicycle is cheap, quiet, and good for your health. It also helps reduce traffic and air pollution because bicycles do not burn fuel. Many cities now build special lanes so that riders can travel safely away from cars and buses. Some places even offer public bicycles that people can rent for a short time and then return at a station near their destination."
+    },
+    {
+      "slug": "cw-practice-4",
+      "use": "practice",
+      "difficulty": "medium",
+      "topic": "music",
+      "text": "Musical instruments produce sound by making something vibrate. In a guitar, the strings move back and forth when they are plucked, and the hollow wooden body makes the sound louder. In a flute, the player blows across a small hole, which causes the air inside the tube to vibrate. Drums work in a similar way, since the stretched skin shakes after it is struck. The size and shape of each instrument decide whether its notes sound high or low."
+    },
+    {
+      "slug": "cw-practice-5",
+      "use": "practice",
+      "difficulty": "medium",
+      "topic": "history",
+      "text": "Paper was first developed in China roughly two thousand years ago. Before its invention, people wrote on materials such as silk, bamboo, and animal skin, which were either expensive or heavy. Early papermakers soaked plant fibers in water, beat them into a thin pulp, and spread the mixture across a screen to dry. The new material was light, cheap, and easy to produce in large amounts. Over many centuries, the technique slowly traveled along trade routes and eventually changed how knowledge was recorded almost everywhere."
+    },
+    {
+      "slug": "cw-practice-6",
+      "use": "practice",
+      "difficulty": "medium",
+      "topic": "psychology",
+      "text": "Many people believe that they can do several tasks at the same time without any loss of quality. Research suggests, however, that the brain usually switches rapidly between tasks rather than performing them together. Each switch costs a small amount of time and attention, and these costs add up over a long day. As a result, a student who reads while checking messages may need more time to finish and may remember less of the material than a student who focuses on one task."
+    },
+    {
+      "slug": "cw-practice-7",
+      "use": "practice",
+      "difficulty": "medium",
+      "topic": "geography",
+      "text": "Deserts are not always hot places. A desert is defined mainly by how little rain it receives, not by its temperature. Some of the largest deserts on the planet are actually located near the poles, where the air is extremely cold and dry. In these regions, snow falls only rarely, and the small amount that does fall may remain on the ground for many years. Plants and animals that live there must survive both freezing winds and a constant shortage of liquid water."
+    },
+    {
+      "slug": "cw-practice-8",
+      "use": "practice",
+      "difficulty": "hard",
+      "topic": "urban studies",
+      "text": "Urban planners increasingly recognize that the design of public spaces shapes how residents interact. Wide sidewalks, shaded benches, and small plazas encourage people to linger, and lingering creates opportunities for casual conversations between neighbors who might otherwise remain strangers. In contrast, neighborhoods dominated by fast roads and large parking areas tend to discourage walking, which reduces these informal encounters. Over time, such differences may influence not only physical health but also the level of trust that residents feel toward one another."
+    },
+    {
+      "slug": "cw-practice-9",
+      "use": "practice",
+      "difficulty": "hard",
+      "topic": "ecology",
+      "text": "Some plants have evolved remarkable strategies to defend themselves against hungry insects. Rather than relying only on thorns or bitter chemicals, certain species release particular scents when their leaves are damaged. These airborne signals attract predatory insects that feed on the attackers, effectively recruiting bodyguards from the surrounding environment. Neighboring plants may also detect the scents and begin producing protective compounds before they themselves are attacked. Such interactions reveal that plants respond to their surroundings in ways that are far more active than once assumed."
+    },
+    {
+      "slug": "cw-practice-10",
+      "use": "practice",
+      "difficulty": "hard",
+      "topic": "art history",
+      "text": "The development of portable paint tubes transformed the practice of landscape painting. Previously, artists had to grind pigments and mix them with oil in their studios, a process that made working outdoors difficult and inconvenient. Once paint could be stored in sealed metal containers, painters were able to carry a full range of colors into fields, forests, and coastal villages. This freedom encouraged them to observe changing light directly, and many began to favor quick, visible brushstrokes over the smooth finish that academic traditions had long demanded."
+    }
+  ],
+  "read_daily_life": [
+    {
+      "slug": "rdl-router-1",
+      "use": "test:router",
+      "difficulty": "medium",
+      "format": "notice",
+      "title": "Read a notice.",
+      "heading": "Makerspace: New Booking Rules",
+      "body": "Starting Monday, March 3, the 3D printers in the Riverside Library Makerspace can be used by appointment only. Book a time slot at the front desk or on the library website up to seven days in advance. Each person may reserve a maximum of two hours per week.\n\nIf you are more than 15 minutes late, your slot will be given to the next person on the waiting list. Printing materials are still free, but large projects that need more than one spool must be approved by staff first.",
+      "questions": [
+        {
+          "prompt": "What is the main purpose of the notice?",
+          "options": [
+            "To announce that the 3D printers are being replaced",
+            "To explain a new system for using the printers",
+            "To invite people to a printing workshop",
+            "To report that printing materials are no longer free"
+          ],
+          "answer": "B",
+          "explanation": "The notice explains that the printers can now be used 'by appointment only' and gives the booking rules, so B is correct. Nothing says the printers are being replaced (A) or mentions a workshop (C). D is the opposite of the text, which says materials 'are still free'."
+        },
+        {
+          "prompt": "What will happen if a user arrives 20 minutes after the start of a reserved slot?",
+          "options": [
+            "The user will have to pay a fee.",
+            "The user's weekly limit will be reduced.",
+            "The user will only be allowed to print small projects.",
+            "The time slot may go to someone else."
+          ],
+          "answer": "D",
+          "explanation": "Users who are more than 15 minutes late lose their slot to the next person on the waiting list, so D is correct. The notice mentions no late fee (A) and no change to the two-hour weekly limit (B). Project size (C) is connected to staff approval, not to lateness."
+        }
+      ]
+    },
+    {
+      "slug": "rdl-router-2",
+      "use": "test:router",
+      "difficulty": "medium",
+      "format": "email",
+      "title": "Read an email.",
+      "email": {
+        "from": "Priya Natarajan, Field Studies Coordinator",
+        "to": "Students in GEOL 105",
+        "subject": "Saturday trip: change of meeting point"
+      },
+      "body": "Hi everyone,\n\nA quick update about Saturday's trip to Cedar Ridge. Because of road repairs on Elm Avenue, the bus can't pick us up in front of the Science Building as planned. Instead, please meet at the north entrance of the Student Center (next to the bike racks). The departure time hasn't changed: we leave at 8:00 a.m. sharp, so aim to be there ten minutes early.\n\nThe forecast calls for rain in the afternoon, so bring a waterproof jacket and sturdy shoes. Lunch will be provided, but feel free to pack snacks.\n\nIf you can no longer attend, let me know by Thursday so I can offer your seat to someone on the waiting list.\n\nThanks,\nPriya",
+      "questions": [
+        {
+          "prompt": "Why did Priya write the email?",
+          "options": [
+            "To announce that the trip has been postponed",
+            "To ask students to suggest a departure time",
+            "To tell students about a different place to gather",
+            "To explain why the bus company was changed"
+          ],
+          "answer": "C",
+          "explanation": "The subject line and first paragraph explain that students must meet at the Student Center instead of the Science Building, so C is correct. The trip is still on Saturday (A), the departure time 'hasn't changed' (B), and no new bus company is mentioned (D)."
+        },
+        {
+          "prompt": "What are students advised to bring?",
+          "options": [
+            "Clothing suitable for wet weather",
+            "A packed lunch",
+            "Their own bicycle",
+            "A printed map of Cedar Ridge"
+          ],
+          "answer": "A",
+          "explanation": "Because rain is expected, Priya tells students to bring a waterproof jacket and sturdy shoes, so A is correct. Lunch will be provided, so B is wrong. The bike racks only describe the meeting place (C), and no map is mentioned (D)."
+        },
+        {
+          "prompt": "What can be inferred about the trip?",
+          "options": [
+            "It will end before the rain begins.",
+            "It was originally planned for Thursday.",
+            "Students must pay extra for the bus.",
+            "More students want to go than there are seats."
+          ],
+          "answer": "D",
+          "explanation": "Priya mentions a waiting list for seats, which suggests demand is greater than the number of places, so D is correct. She warns about afternoon rain, so A is not supported. Thursday is only the deadline for cancelling (B), and no cost is mentioned (C)."
+        }
+      ]
+    },
+    {
+      "slug": "rdl-lower-1",
+      "use": "test:lower",
+      "difficulty": "easy",
+      "format": "menu",
+      "title": "Read a menu.",
+      "heading": "Sunrise Corner Cafe: Breakfast Menu (served 7:00-11:00)",
+      "body": "All breakfast plates come with toast. Add a fresh juice to any plate for $1.50.",
+      "table": {
+        "headers": ["Item", "Description", "Price"],
+        "rows": [
+          ["Pancake Stack", "Three pancakes with honey and banana", "$6.00"],
+          ["Veggie Omelet", "Eggs, spinach, tomato and cheese", "$7.50"],
+          ["Morning Bowl", "Yogurt, oats, nuts and berries", "$5.50"],
+          ["Rice Porridge", "Warm rice porridge with ginger and spring onion", "$5.00"],
+          ["Breakfast Wrap", "Egg, beans and potato in a flatbread", "$6.50"]
+        ]
+      },
+      "questions": [
+        {
+          "prompt": "Which item is the cheapest?",
+          "options": [
+            "Morning Bowl",
+            "Rice Porridge",
+            "Pancake Stack",
+            "Breakfast Wrap"
+          ],
+          "answer": "B",
+          "explanation": "Rice Porridge costs $5.00, the lowest price on the menu, so B is correct. The Morning Bowl costs $5.50, the Pancake Stack $6.00 and the Breakfast Wrap $6.50, so A, C and D all cost more."
+        },
+        {
+          "prompt": "How much would a Veggie Omelet with a fresh juice cost?",
+          "options": [
+            "$7.50",
+            "$8.00",
+            "$9.00",
+            "$9.50"
+          ],
+          "answer": "C",
+          "explanation": "The omelet is $7.50 and juice adds $1.50, so the total is $9.00 (C). A is the price of the omelet without juice. B and D do not match any combination on the menu."
+        }
+      ]
+    },
+    {
+      "slug": "rdl-lower-2",
+      "use": "test:lower",
+      "difficulty": "easy",
+      "format": "text_messages",
+      "title": "Read a chain of text messages.",
+      "body": "",
+      "messages": [
+        { "sender": "Leila", "time": "15:02", "text": "Hey! Are we still meeting at the museum at 4?" },
+        { "sender": "Tomas", "time": "15:05", "text": "Yes! But my bus is running late. Can we say 4:30?" },
+        { "sender": "Leila", "time": "15:06", "text": "No problem. I'll wait in the cafe on the ground floor." },
+        { "sender": "Tomas", "time": "15:07", "text": "Great. Do you have the student discount card?" },
+        { "sender": "Leila", "time": "15:08", "text": "Yep, I have two. One is for you." },
+        { "sender": "Tomas", "time": "15:10", "text": "You're the best! See you soon." }
+      ],
+      "questions": [
+        {
+          "prompt": "Why does Tomas want to change the meeting time?",
+          "options": [
+            "He forgot about the plan.",
+            "His bus is delayed.",
+            "The museum closes early.",
+            "He has a class at 4:00."
+          ],
+          "answer": "B",
+          "explanation": "Tomas writes that his bus is running late, so B is correct. He clearly remembers the plan (A), and nothing is said about the museum's hours (C) or a class (D)."
+        },
+        {
+          "prompt": "Where will Leila wait for Tomas?",
+          "options": [
+            "At the bus stop",
+            "At the museum entrance",
+            "At Tomas's home",
+            "In a cafe inside the museum"
+          ],
+          "answer": "D",
+          "explanation": "Leila says she will wait in the cafe on the ground floor of the museum, so D is correct. The bus stop (A), the entrance (B) and Tomas's home (C) are not mentioned as waiting places."
+        },
+        {
+          "prompt": "What does Leila have for Tomas?",
+          "options": [
+            "A discount card",
+            "A bus ticket",
+            "A cup of coffee",
+            "A map of the museum"
+          ],
+          "answer": "A",
+          "explanation": "Leila has two student discount cards and says one is for Tomas, so A is correct. A bus ticket (B), coffee (C) and a map (D) are not mentioned."
+        }
+      ]
+    },
+    {
+      "slug": "rdl-upper-1",
+      "use": "test:upper",
+      "difficulty": "hard",
+      "format": "social_post",
+      "title": "Read a social media post.",
+      "heading": "Hollow Oak Community Garden",
+      "body": "Well, that's a wrap on our first Seed Swap! Huge shout-out to everyone who braved the drizzle on Saturday. We honestly expected a handful of die-hards, but more than 80 of you turned up, and the tomato table was cleaned out before noon. Lesson learned: next year we'll double the tomatoes and set up the tent BEFORE the clouds roll in.\n\nA few folks asked whether the leftover seeds will go to waste. Not a chance! Everything that didn't find a home is heading to the school garden club on Pine Street. Stay tuned for our spring planting day; details coming soon!",
+      "questions": [
+        {
+          "prompt": "What does the phrase 'that's a wrap' mean in the post?",
+          "options": [
+            "An event has come to an end.",
+            "A gift has been prepared.",
+            "The weather has cleared.",
+            "A plan has been canceled."
+          ],
+          "answer": "A",
+          "explanation": "'That's a wrap' is an informal way of saying something has finished; here the post looks back on a Seed Swap that already happened, so A is correct. Nothing is wrapped as a gift (B). It drizzled, so C is wrong, and the event took place, so D is wrong."
+        },
+        {
+          "prompt": "What can be inferred about the organizers?",
+          "options": [
+            "They plan to stop offering tomato seeds.",
+            "They held the event indoors because of the rain.",
+            "They underestimated how many people would come.",
+            "They will sell the remaining seeds to a school club."
+          ],
+          "answer": "C",
+          "explanation": "They 'expected a handful' of people, but more than 80 came, so they underestimated attendance (C). They plan to double the tomatoes, not stop (A). People 'braved the drizzle' and the tent was set up late, so the event was outdoors (B). The leftover seeds are being given, not sold (D)."
+        }
+      ]
+    },
+    {
+      "slug": "rdl-upper-2",
+      "use": "test:upper",
+      "difficulty": "hard",
+      "format": "web_page",
+      "title": "Read a web page.",
+      "heading": "Brightwater Coworking: Membership FAQ",
+      "body": "Can I bring a guest?\nFlex members may bring one guest per visit at no charge, provided the guest signs in at reception. Additional guests are billed at the day-pass rate.\n\nWhat happens if I don't use all my hours?\nUnused hours on the Flex plan roll over for one month only. Hours older than that expire automatically and cannot be refunded.\n\nCan I pause my membership?\nDedicated Desk members may freeze their membership for up to 60 days per year, for example during travel. Requests must be submitted at least one week before the billing date; otherwise, the freeze takes effect from the following billing cycle.\n\nIs parking included?\nStreet parking is free after 6 p.m. Monthly garage permits can be added to any plan for a fee.",
+      "questions": [
+        {
+          "prompt": "According to the page, what happens to Flex hours that are not used?",
+          "options": [
+            "They are refunded at the end of the month.",
+            "They can be transferred to a guest.",
+            "They are exchanged for a garage permit.",
+            "They stay available for one more month and then expire."
+          ],
+          "answer": "D",
+          "explanation": "Unused Flex hours 'roll over for one month only' and then expire, so D is correct. The page says they 'cannot be refunded' (A). Transferring hours to guests (B) or exchanging them for parking (C) is never mentioned."
+        },
+        {
+          "prompt": "A Dedicated Desk member submits a freeze request two days before the billing date. What will most likely happen?",
+          "options": [
+            "The request will be rejected permanently.",
+            "The freeze will begin one billing cycle later than the member wanted.",
+            "The member will be charged the day-pass rate.",
+            "The freeze will be limited to 30 days."
+          ],
+          "answer": "B",
+          "explanation": "Requests made less than a week before the billing date take effect from the following cycle, so the freeze will start later (B). The page does not say late requests are rejected (A). The day-pass rate applies to extra guests (C), and the limit is 60 days per year, not 30 (D)."
+        },
+        {
+          "prompt": "Which statement about guests is supported by the page?",
+          "options": [
+            "A Flex member who brings a second guest will pay the day-pass rate for that guest.",
+            "Guests must already be members of Brightwater.",
+            "Guests can visit for free only after 6 p.m.",
+            "Guests do not need to sign in."
+          ],
+          "answer": "A",
+          "explanation": "One guest is free and 'additional guests are billed at the day-pass rate', so A is correct. Nothing requires guests to be members (B). The 6 p.m. time refers to street parking, not guests (C). Guests must sign in at reception, so D contradicts the page."
+        }
+      ]
+    },
+    {
+      "slug": "rdl-practice-1",
+      "use": "practice",
+      "difficulty": "easy",
+      "format": "schedule",
+      "title": "Read a schedule.",
+      "heading": "Campus Shuttle: Weekday Timetable",
+      "body": "The shuttle does not run on weekends or public holidays. Show your student ID card when you board.",
+      "table": {
+        "headers": ["Stop", "Morning", "Midday", "Evening"],
+        "rows": [
+          ["Main Gate", "7:30", "12:00", "17:30"],
+          ["Library", "7:40", "12:10", "17:40"],
+          ["Sports Center", "7:50", "12:20", "17:50"],
+          ["North Dorms", "8:05", "12:35", "18:05"]
+        ]
+      },
+      "questions": [
+        {
+          "prompt": "When does the evening shuttle reach the Sports Center?",
+          "options": [
+            "17:30",
+            "17:40",
+            "18:05",
+            "17:50"
+          ],
+          "answer": "D",
+          "explanation": "In the Evening column, the Sports Center row shows 17:50, so D is correct. 17:30 is the Main Gate time (A), 17:40 is the Library time (B) and 18:05 is the North Dorms time (C)."
+        },
+        {
+          "prompt": "What must riders do to use the shuttle?",
+          "options": [
+            "Buy a ticket from the driver",
+            "Book a seat one day in advance",
+            "Show a student ID card",
+            "Board only at the Main Gate"
+          ],
+          "answer": "C",
+          "explanation": "The note says to show your student ID card when you board, so C is correct. Tickets (A) and bookings (B) are not mentioned, and the timetable lists four stops where riders can board, not only the Main Gate (D)."
+        }
+      ]
+    },
+    {
+      "slug": "rdl-practice-2",
+      "use": "practice",
+      "difficulty": "medium",
+      "format": "advertisement",
+      "title": "Read an advertisement.",
+      "heading": "Room Available: Share a Quiet House Near Campus",
+      "body": "Friendly two-person household looking for a third housemate from September 1. The room is furnished (bed, desk, wardrobe) and gets lots of morning sun. Rent is $520 a month, utilities and internet included. The house is a 10-minute walk from the east side of campus and right next to a grocery store.\n\nWe're both graduate students, so we're looking for someone who is tidy and keeps the noise down on weeknights. Sorry, no pets: one of us is allergic. Weekend get-togethers are welcome, though!\n\nInterested? Send a short message about yourself to arrange a viewing.\nPhone: 555-0147",
+      "questions": [
+        {
+          "prompt": "What is included in the rent?",
+          "options": [
+            "Internet service",
+            "Weekly cleaning",
+            "A parking space",
+            "Grocery delivery"
+          ],
+          "answer": "A",
+          "explanation": "The ad says rent includes 'utilities and internet', so A is correct. Cleaning (B) and parking (C) are not mentioned, and the grocery store is only described as being nearby (D)."
+        },
+        {
+          "prompt": "Why are pets not allowed?",
+          "options": [
+            "The landlord does not permit them.",
+            "The house is too small.",
+            "One of the current residents has an allergy.",
+            "The neighbors have complained."
+          ],
+          "answer": "C",
+          "explanation": "The ad says 'no pets: one of us is allergic', so C is correct. A landlord (A), the size of the house (B) and neighbors (D) are never mentioned."
+        },
+        {
+          "prompt": "What kind of housemate are the residents most likely hoping to find?",
+          "options": [
+            "Someone who wants to host large parties on weeknights",
+            "Someone who is considerate about noise during the week",
+            "Someone who works night shifts",
+            "Someone who can bring their own furniture"
+          ],
+          "answer": "B",
+          "explanation": "They want someone tidy who 'keeps the noise down on weeknights', so B is correct. A contradicts this request. Night shifts (C) are not mentioned, and the room is already furnished, so D is unnecessary."
+        }
+      ]
+    },
+    {
+      "slug": "rdl-practice-3",
+      "use": "practice",
+      "difficulty": "easy",
+      "format": "receipt",
+      "title": "Read a receipt.",
+      "heading": "GreenLeaf Hardware: Receipt",
+      "body": "Date: 14 May    Time: 16:22\nPaid by: card\nReturns accepted within 30 days with this receipt.",
+      "table": {
+        "headers": ["Item", "Qty", "Price"],
+        "rows": [
+          ["Paint brush set", "1", "$8.99"],
+          ["Wall paint, white (1 gallon)", "2", "$45.98"],
+          ["Masking tape", "3", "$6.00"],
+          ["Subtotal", "", "$60.97"],
+          ["Member discount (10%)", "", "-$6.10"],
+          ["Total", "", "$54.87"]
+        ]
+      },
+      "questions": [
+        {
+          "prompt": "How many rolls of masking tape did the customer buy?",
+          "options": [
+            "1",
+            "2",
+            "3",
+            "6"
+          ],
+          "answer": "C",
+          "explanation": "The Qty column shows 3 for masking tape, so C is correct. 1 is the quantity of brush sets (A), 2 is the number of paint cans (B), and 6 is the price in dollars, not the quantity (D)."
+        },
+        {
+          "prompt": "What is true about this purchase?",
+          "options": [
+            "The customer paid in cash.",
+            "The items cannot be returned.",
+            "The paint was the cheapest item.",
+            "The customer received a discount."
+          ],
+          "answer": "D",
+          "explanation": "The receipt shows a 10% member discount of $6.10, so D is correct. The customer paid by card (A), returns are accepted within 30 days (B), and the paint was the most expensive item, not the cheapest (C)."
+        }
+      ]
+    },
+    {
+      "slug": "rdl-practice-4",
+      "use": "practice",
+      "difficulty": "hard",
+      "format": "email",
+      "title": "Read an email.",
+      "email": {
+        "from": "Marcus Ojo, Volunteer Coordinator, Eastside Food Bank",
+        "to": "Weekend volunteer team",
+        "subject": "Saturday sorting shift: heads-up"
+      },
+      "body": "Hi all,\n\nJust a heads-up before Saturday. The delivery truck that usually arrives Friday night has been pushed back to Saturday morning, so the first hour of our shift will be pretty hectic. If you can come in at 8:30 instead of 9:00, I'd really appreciate it, but no pressure if that doesn't work for you.\n\nAlso, a reminder that closed-toe shoes are a must on the warehouse floor. Last week a couple of people showed up in sandals and had to sit out the sorting, which was a shame.\n\nFinally, we're short on drivers for the afternoon home deliveries. If you have a valid license and are comfortable driving a van, reply to this email and I'll add you to the roster.\n\nCheers,\nMarcus",
+      "questions": [
+        {
+          "prompt": "What is the main reason Marcus wrote this email?",
+          "options": [
+            "To cancel Saturday's shift",
+            "To prepare volunteers for changes and needs related to Saturday",
+            "To complain about volunteers who arrived late last week",
+            "To announce that the food bank has hired a new delivery company"
+          ],
+          "answer": "B",
+          "explanation": "Marcus explains the delayed truck, reminds volunteers about shoes and asks for drivers, all for Saturday, so B is correct. The shift is still happening (A). Last week's problem was sandals, not lateness (C), and no new company is mentioned (D)."
+        },
+        {
+          "prompt": "What does Marcus mean when he writes 'no pressure if that doesn't work for you'?",
+          "options": [
+            "Coming in early is optional.",
+            "The work will be easy.",
+            "Volunteers must explain why they cannot come early.",
+            "The shift has been shortened."
+          ],
+          "answer": "A",
+          "explanation": "'No pressure' means volunteers should not feel forced, so arriving at 8:30 is optional (A). Marcus actually says the first hour will be 'hectic', so B is wrong. He asks for no explanations (C), and the shift is not shortened (D)."
+        },
+        {
+          "prompt": "What can be inferred about the volunteers who wore sandals last week?",
+          "options": [
+            "They were asked to drive vans instead.",
+            "They left before the truck arrived.",
+            "They were given shoes by the food bank.",
+            "They could not take part in the sorting."
+          ],
+          "answer": "D",
+          "explanation": "To 'sit out' an activity means not to participate, so they could not help with sorting (D). Driving (A), leaving early (B) and receiving shoes (C) are not mentioned in connection with these volunteers."
+        }
+      ]
+    },
+    {
+      "slug": "rdl-practice-5",
+      "use": "practice",
+      "difficulty": "medium",
+      "format": "text_messages",
+      "title": "Read a chain of text messages.",
+      "body": "",
+      "messages": [
+        { "sender": "Sam", "time": "21:14", "text": "Did you take the laundry out of the machine? It's been sitting there since this afternoon." },
+        { "sender": "Ji-woo", "time": "21:20", "text": "Oops, totally slipped my mind. I'm at the library till 10." },
+        { "sender": "Sam", "time": "21:21", "text": "No worries, I'll hang it up. But we're out of detergent btw." },
+        { "sender": "Ji-woo", "time": "21:22", "text": "My bad. I'll grab some on my way home. Anything else we need?" },
+        { "sender": "Sam", "time": "21:23", "text": "Milk and bread, if the shop's still open." },
+        { "sender": "Ji-woo", "time": "21:24", "text": "On it." }
+      ],
+      "questions": [
+        {
+          "prompt": "What does Ji-woo mean when she writes 'totally slipped my mind'?",
+          "options": [
+            "She did the laundry incorrectly.",
+            "She was too tired to do it.",
+            "She forgot to do it.",
+            "She did not know how to do it."
+          ],
+          "answer": "C",
+          "explanation": "If something 'slips your mind', you forget it, so C is correct. Ji-woo says nothing about doing it badly (A), being tired (B) or not knowing how (D)."
+        },
+        {
+          "prompt": "What will Ji-woo probably do on her way home?",
+          "options": [
+            "Buy detergent and possibly some food",
+            "Hang up the laundry",
+            "Return books to the library",
+            "Meet Sam at the shop"
+          ],
+          "answer": "A",
+          "explanation": "Ji-woo says she will 'grab some' detergent, and when Sam adds milk and bread she replies 'On it', so A is correct. Sam will hang up the laundry (B). Returning books (C) and meeting Sam (D) are not mentioned."
+        }
+      ]
+    },
+    {
+      "slug": "rdl-practice-6",
+      "use": "practice",
+      "difficulty": "medium",
+      "format": "form",
+      "title": "Read a form.",
+      "heading": "Riverside Community Center: Class Registration Form",
+      "body": "Participant name: Amara Okafor\nAge group: Adult (18+)\nClass: Beginner Pottery (Tuesdays, 18:00-20:00)\nStart date: 7 October\nNumber of sessions: 8\nFee: $96 (materials included)\nPayment: [ ] Full payment now   [x] Two installments\nRiverside resident: [x] Yes   [ ] No\nEmergency contact: Chidi Okafor (brother)\n\nNote: Residents receive a 15% discount, applied at the second payment. Classes with fewer than 5 registrations by 30 September will be canceled and fully refunded.",
+      "questions": [
+        {
+          "prompt": "On which day does Amara's class meet?",
+          "options": [
+            "Monday",
+            "Wednesday",
+            "Saturday",
+            "Tuesday"
+          ],
+          "answer": "D",
+          "explanation": "The form lists the class as 'Beginner Pottery (Tuesdays, 18:00-20:00)', so D is correct. Monday (A), Wednesday (B) and Saturday (C) do not appear on the form."
+        },
+        {
+          "prompt": "How did Amara choose to pay?",
+          "options": [
+            "In full when registering",
+            "In two separate payments",
+            "By having her brother pay",
+            "After the class ends"
+          ],
+          "answer": "B",
+          "explanation": "The box marked with an x is 'Two installments', so B is correct. 'Full payment now' is not marked (A). Her brother is only her emergency contact (C), and nothing says she pays after the class (D)."
+        },
+        {
+          "prompt": "What will happen if only three people register by 30 September?",
+          "options": [
+            "The class will move to a smaller room.",
+            "The fee will be raised.",
+            "Amara will get all of her money back.",
+            "Residents will receive a larger discount."
+          ],
+          "answer": "C",
+          "explanation": "Classes with fewer than five registrations by 30 September are canceled and 'fully refunded', so C is correct. The form does not mention changing rooms (A), raising the fee (B) or increasing the discount (D)."
+        }
+      ]
+    },
+    {
+      "slug": "rdl-practice-7",
+      "use": "practice",
+      "difficulty": "hard",
+      "format": "invoice",
+      "title": "Read an invoice.",
+      "heading": "Invoice 2219: Northfield Print and Design",
+      "body": "Bill to: Lakeside Youth Theater\nInvoice date: 2 November\nPayment due: within 21 days of the invoice date\nA late fee of 5% is added to any balance unpaid after the due date. A deposit of $150 was received on 15 October.",
+      "table": {
+        "headers": ["Service", "Quantity", "Amount"],
+        "rows": [
+          ["Poster design", "1", "$180.00"],
+          ["Poster printing (A2)", "40", "$120.00"],
+          ["Program booklets", "200", "$250.00"],
+          ["Total charges", "", "$550.00"],
+          ["Less deposit", "", "-$150.00"],
+          ["Balance due", "", "$400.00"]
+        ]
+      },
+      "questions": [
+        {
+          "prompt": "By what date must the theater pay to avoid a late fee?",
+          "options": [
+            "15 October",
+            "2 November",
+            "23 November",
+            "30 November"
+          ],
+          "answer": "C",
+          "explanation": "Payment is due within 21 days of the 2 November invoice date, which is 23 November, so C is correct. 15 October is when the deposit was paid (A), 2 November is the invoice date itself (B), and 30 November is later than the deadline (D)."
+        },
+        {
+          "prompt": "If the theater pays the remaining balance one week after the due date, how much will it owe?",
+          "options": [
+            "$400.00",
+            "$420.00",
+            "$550.00",
+            "$577.50"
+          ],
+          "answer": "B",
+          "explanation": "The unpaid balance is $400, and a 5% late fee adds $20, giving $420 (B). A ignores the late fee. C is the total before the deposit, and D adds 5% to the total charges instead of to the remaining balance."
+        }
+      ]
+    },
+    {
+      "slug": "rdl-practice-8",
+      "use": "practice",
+      "difficulty": "hard",
+      "format": "schedule",
+      "title": "Read a schedule.",
+      "heading": "Regional Teaching Conference: Day 2 (Saturday)",
+      "body": "Sessions marked * require advance registration because space is limited. Lunch is served only to participants wearing a conference badge. Room changes will be posted on the screen in the lobby.",
+      "table": {
+        "headers": ["Time", "Session", "Room"],
+        "rows": [
+          ["9:00-10:00", "Keynote: Feedback That Students Actually Use", "Main Hall"],
+          ["10:15-11:30", "Workshop*: Designing Group Projects", "Room 204"],
+          ["10:15-11:30", "Panel: Teaching in Multilingual Classrooms", "Main Hall"],
+          ["11:30-12:30", "Lunch", "Courtyard"],
+          ["12:30-13:45", "Workshop*: Low-Cost Science Experiments", "Lab B"],
+          ["14:00-15:00", "Closing Discussion", "Main Hall"]
+        ]
+      },
+      "questions": [
+        {
+          "prompt": "Which two sessions take place at the same time?",
+          "options": [
+            "The group projects workshop and the multilingual classrooms panel",
+            "The keynote and the closing discussion",
+            "Lunch and the science experiments workshop",
+            "The panel and the closing discussion"
+          ],
+          "answer": "A",
+          "explanation": "Both the group projects workshop and the multilingual classrooms panel run from 10:15 to 11:30, so A is correct. The keynote and closing discussion are at 9:00 and 14:00 (B). Lunch ends at 12:30, when the science workshop starts (C), and the panel ends long before the closing discussion (D)."
+        },
+        {
+          "prompt": "A teacher who has not registered in advance wants to attend a session after lunch. Which session can she attend?",
+          "options": [
+            "Designing Group Projects",
+            "Low-Cost Science Experiments",
+            "Feedback That Students Actually Use",
+            "Closing Discussion"
+          ],
+          "answer": "D",
+          "explanation": "The Closing Discussion is after lunch and has no asterisk, so no registration is needed (D). The science workshop is after lunch but requires registration (B). The group projects workshop also requires registration and is before lunch (A), and the keynote is before lunch (C)."
+        },
+        {
+          "prompt": "Where should participants look to find out whether a session has moved to a different room?",
+          "options": [
+            "In the courtyard",
+            "On a screen in the lobby",
+            "On their conference badge",
+            "In Room 204"
+          ],
+          "answer": "B",
+          "explanation": "The schedule says room changes will be posted on the screen in the lobby, so B is correct. The courtyard is where lunch is served (A), badges are needed for lunch (C), and Room 204 is just one session room (D)."
+        }
+      ]
+    },
+    {
+      "slug": "rdl-practice-9",
+      "use": "practice",
+      "difficulty": "easy",
+      "format": "menu",
+      "title": "Read a menu.",
+      "heading": "Spice Route Food Truck: Today's Menu",
+      "body": "Open 11:00-15:00 in the Central Park parking lot. Items marked (V) are vegetarian. Cash and card accepted.",
+      "table": {
+        "headers": ["Dish", "Price"],
+        "rows": [
+          ["Chicken rice bowl", "$8"],
+          ["Lentil soup (V)", "$5"],
+          ["Falafel wrap (V)", "$7"],
+          ["Beef dumplings (6 pieces)", "$6"],
+          ["Mango lassi (drink)", "$3"]
+        ]
+      },
+      "questions": [
+        {
+          "prompt": "Which of these items is marked as vegetarian?",
+          "options": [
+            "Chicken rice bowl",
+            "Lentil soup",
+            "Beef dumplings",
+            "Mango lassi"
+          ],
+          "answer": "B",
+          "explanation": "Only the lentil soup and the falafel wrap have the (V) mark, and of these options only the lentil soup appears, so B is correct. The chicken bowl (A) and beef dumplings (C) contain meat, and the mango lassi (D) is not marked (V)."
+        },
+        {
+          "prompt": "When can customers buy food from the truck today?",
+          "options": [
+            "Before 11:00",
+            "Only after 15:00",
+            "In the evening",
+            "Between 11:00 and 15:00"
+          ],
+          "answer": "D",
+          "explanation": "The truck is open from 11:00 to 15:00, so D is correct. It is not open before 11:00 (A), after 15:00 (B) or in the evening (C)."
+        }
+      ]
+    },
+    {
+      "slug": "rdl-practice-10",
+      "use": "practice",
+      "difficulty": "medium",
+      "format": "notice",
+      "title": "Read a notice.",
+      "heading": "Water Shut-Off: Maple Court Apartments",
+      "body": "To all residents of Buildings A and B:\n\nThe city will replace a section of the main water pipe on Wednesday, 12 June. Water will be turned off in both buildings from 9:00 a.m. to approximately 3:00 p.m. Building C will not be affected.\n\nWe recommend filling containers with drinking water the night before. Please avoid using washing machines and dishwashers on Tuesday night, since water pressure may drop.\n\nWhen the water comes back on, it may look cloudy for a few minutes. This is normal; simply run the cold tap until the water is clear.\n\nQuestions? Contact the building office at extension 210.\nMaple Court Management",
+      "questions": [
+        {
+          "prompt": "Who is the notice mainly intended for?",
+          "options": [
+            "Residents of Buildings A and B",
+            "Residents of Building C",
+            "City pipe workers",
+            "Building office staff"
+          ],
+          "answer": "A",
+          "explanation": "The notice is addressed 'To all residents of Buildings A and B', whose water will be shut off, so A is correct. Building C 'will not be affected' (B). City workers (C) and office staff (D) are mentioned but are not the audience."
+        },
+        {
+          "prompt": "Why are residents asked not to use dishwashers on Tuesday night?",
+          "options": [
+            "The machines will be repaired.",
+            "The water pressure might be lower.",
+            "The water will be cloudy.",
+            "The machines would be too noisy."
+          ],
+          "answer": "B",
+          "explanation": "The notice says to avoid these machines 'since water pressure may drop', so B is correct. No repairs to machines are mentioned (A). Cloudy water is expected after the work, not on Tuesday night (C), and noise is not mentioned (D)."
+        },
+        {
+          "prompt": "What should residents do if their water looks cloudy after the work?",
+          "options": [
+            "Call the city immediately",
+            "Stop using the water for a whole day",
+            "Let the cold water run for a while",
+            "Get water from Building C"
+          ],
+          "answer": "C",
+          "explanation": "The notice says cloudy water is normal and to 'run the cold tap until the water is clear', so C is correct. There is no need to call the city (A) or stop using water for a day (B), and Building C is only mentioned as unaffected (D)."
+        }
+      ]
+    }
+  ],
+  "read_academic_passage": [
+    {
+      "slug": "ap-router-1",
+      "use": "test:router",
+      "difficulty": "medium",
+      "subject": "life science",
+      "title": "Why Many Songbirds Migrate at Night",
+      "text": "Every spring and autumn, millions of small songbirds travel thousands of kilometers between their breeding and wintering grounds. Surprisingly, many of these species, which are active only during the day for the rest of the year, make their long journeys at night. Researchers have proposed several explanations for this change in behavior.\n\nOne explanation concerns temperature and water. Flying requires intense muscular effort, which generates a great deal of heat. In the cooler night air, birds can release this heat more easily and lose less water through breathing, allowing them to fly longer without becoming dehydrated. Night air is also usually calmer, so birds spend less energy struggling against strong, unpredictable winds.\n\nA second explanation focuses on feeding. Small birds cannot carry large fat reserves, so they must stop regularly to refuel. By flying at night, they keep the daylight hours free for searching for insects and seeds. In addition, darkness offers some protection from hawks and falcons, which hunt by sight. Finally, the night sky itself may help: experiments suggest that young birds learn the pattern of stars around the point in the sky that does not appear to move, and later use it to hold their direction.",
+      "questions": [
+        {
+          "prompt": "According to paragraph 2, how does cooler night air help migrating birds?",
+          "options": [
+            "It makes insects easier to find.",
+            "It allows them to release body heat and lose less water.",
+            "It increases the strength of their muscles.",
+            "It helps them see the stars more clearly."
+          ],
+          "answer": "B",
+          "skill": "factual",
+          "explanation": "Paragraph 2 says that in cooler air birds 'release this heat more easily and lose less water through breathing', so B is correct. Insects are found during the day (A), muscle strength is not said to increase (C), and the stars are discussed in paragraph 3, not in connection with cool air (D)."
+        },
+        {
+          "prompt": "The word 'reserves' in the passage is closest in meaning to",
+          "options": [
+            "feathers",
+            "routes",
+            "appointments",
+            "stores"
+          ],
+          "answer": "D",
+          "skill": "vocabulary",
+          "explanation": "'Fat reserves' are stores of fat the body keeps for later use, which is why the birds must stop to 'refuel', so D is correct. Feathers (A) and routes (B) do not fit 'fat', and 'appointments' (C) relates to a different meaning of 'reserve'."
+        },
+        {
+          "prompt": "What can be inferred about hawks and falcons from paragraph 3?",
+          "options": [
+            "They are less successful at hunting in the dark.",
+            "They also migrate at night.",
+            "They feed mainly on seeds.",
+            "They use the stars to find their prey."
+          ],
+          "answer": "A",
+          "skill": "inference",
+          "explanation": "Because these birds 'hunt by sight', darkness protects small birds from them, which implies they hunt less successfully at night (A). Nothing says they migrate at night (B) or eat seeds (C), and the stars are linked to the songbirds' direction, not to hunting (D)."
+        },
+        {
+          "prompt": "How does paragraph 3 relate to paragraph 2?",
+          "options": [
+            "It challenges the evidence given in paragraph 2.",
+            "It gives an example of the problem described in paragraph 2.",
+            "It presents additional reasons for the same behavior.",
+            "It describes the history of the research in paragraph 2."
+          ],
+          "answer": "C",
+          "skill": "relationship",
+          "explanation": "Paragraph 2 gives one explanation for night migration and paragraph 3 begins 'A second explanation', adding more reasons, so C is correct. Paragraph 3 does not disagree with paragraph 2 (A), does not illustrate it (B), and does not discuss the history of research (D)."
+        },
+        {
+          "prompt": "Why does the author mention the point in the sky that does not appear to move?",
+          "options": [
+            "To explain why birds cannot migrate on cloudy nights",
+            "To describe a possible way birds keep their direction at night",
+            "To show that birds migrate only in the spring",
+            "To compare birds with human navigators"
+          ],
+          "answer": "B",
+          "skill": "purpose",
+          "explanation": "The author says young birds learn the stars around this point and 'later use it to hold their direction', so B is correct. Cloudy nights (A), the season of migration (C) and human navigators (D) are not discussed in this connection."
+        }
+      ]
+    },
+    {
+      "slug": "ap-lower-1",
+      "use": "test:lower",
+      "difficulty": "easy",
+      "subject": "physical science",
+      "title": "Why Metal Feels Colder Than Wood",
+      "text": "Imagine walking into a kitchen early on a winter morning. You touch a metal spoon and a wooden spoon that have been lying side by side on the counter all night. The metal spoon feels much colder. Many people are surprised to learn that both spoons are actually the same temperature. They have been in the same room for hours, so they have both reached the temperature of the air around them.\n\nThe difference comes from how quickly each material moves heat. Your hand is warmer than the room, so heat flows from your skin into anything you touch. Metal is a good conductor, which means it carries heat away from your skin very fast. Your nerves notice this quick loss of heat, and your brain reads it as cold. Wood is a poor conductor. It takes heat from your hand slowly, so your skin stays warm and the spoon feels less cold.\n\nThis idea is useful in everyday life. Cooking pots are often made of metal so that heat travels quickly from the stove to the food, while their handles are often made of wood or plastic so that people can hold them safely.",
+      "questions": [
+        {
+          "prompt": "According to the passage, why does the metal spoon feel colder than the wooden spoon?",
+          "options": [
+            "It was kept in a colder part of the kitchen.",
+            "Its temperature is lower than that of the wooden spoon.",
+            "It removes heat from the skin more quickly.",
+            "It sends cold into the hand through the nerves."
+          ],
+          "answer": "C",
+          "skill": "factual",
+          "explanation": "Paragraph 2 says metal 'carries heat away from your skin very fast', so C is correct. The spoons lay side by side (A) and are 'the same temperature' (B). Heat moves from the hand into the spoon, not cold into the hand (D)."
+        },
+        {
+          "prompt": "The word 'reached' in the passage is closest in meaning to",
+          "options": [
+            "arrived at",
+            "moved away from",
+            "stretched toward",
+            "increased"
+          ],
+          "answer": "A",
+          "skill": "vocabulary",
+          "explanation": "The spoons have 'reached the temperature of the air', meaning they have arrived at that temperature, so A is correct. B means the opposite. 'Stretched toward' (C) is a different, physical meaning of 'reach', and 'increased' (D) does not describe a level that has been achieved."
+        },
+        {
+          "prompt": "Based on the passage, which object would probably feel coldest to touch in a cool room?",
+          "options": [
+            "A wool blanket",
+            "A wooden table",
+            "A plastic cup",
+            "A metal door handle"
+          ],
+          "answer": "D",
+          "skill": "inference",
+          "explanation": "Metal is a good conductor, so it takes heat from the skin fastest and feels coldest (D). The passage describes wood as a poor conductor (B) and suggests plastic handles are safe to hold because they move heat slowly (C). A blanket (A) is not a material described as a good conductor."
+        },
+        {
+          "prompt": "How does paragraph 3 relate to paragraph 2?",
+          "options": [
+            "It disagrees with the explanation in paragraph 2.",
+            "It shows a practical use of the idea explained in paragraph 2.",
+            "It introduces a new problem that paragraph 2 did not solve.",
+            "It repeats the example of the spoons in more detail."
+          ],
+          "answer": "B",
+          "skill": "relationship",
+          "explanation": "Paragraph 3 applies the idea of good and poor conductors to cooking pots and their handles, so B is correct. It agrees with paragraph 2 (A), raises no new problem (C), and talks about pots rather than spoons (D)."
+        },
+        {
+          "prompt": "Why does the author begin the passage with the example of two spoons?",
+          "options": [
+            "To introduce a common experience that the passage will explain",
+            "To argue that wooden spoons are better for cooking",
+            "To describe how kitchens are kept warm in winter",
+            "To show that people often lose kitchen tools"
+          ],
+          "answer": "A",
+          "skill": "purpose",
+          "explanation": "The spoons present a familiar puzzle (one feels colder) that the rest of the passage explains, so A is correct. The author does not compare spoons for cooking (B), discuss heating kitchens (C) or mention lost tools (D)."
+        }
+      ]
+    },
+    {
+      "slug": "ap-upper-1",
+      "use": "test:upper",
+      "difficulty": "hard",
+      "subject": "social science",
+      "title": "Managing Shared Resources Without Outside Control",
+      "text": "For decades, many scholars assumed that resources owned by no single individual, such as grazing land, forests, or fishing grounds, were doomed to be overused. The reasoning seemed straightforward: each user gains the full benefit of taking a little more, while the cost of depletion is spread among everyone. Consequently, the argument went, only private ownership or strict government regulation could prevent collapse.\n\nField studies conducted in communities across several continents, however, complicated this pessimistic view. Researchers documented mountain villages that had shared pastures for centuries, coastal settlements that rotated access to fishing spots, and farming groups that allocated irrigation water through elaborate schedules. In none of these cases had an outside authority imposed the rules; the users themselves had devised them.\n\nComparing successful and unsuccessful cases, researchers identified recurring features. Durable arrangements tended to have clearly defined boundaries indicating who was entitled to use the resource. Users could take part in modifying the rules, which made the rules better suited to local conditions and more likely to be respected. Monitoring was typically carried out by the users or by people accountable to them, and penalties for violations began mildly, escalating only for repeated offenses. Such findings do not imply that community management always works, but they suggest that the choice is not simply between private property and state control.",
+      "questions": [
+        {
+          "prompt": "According to paragraph 3, how were rule violations typically handled in durable arrangements?",
+          "options": [
+            "Violators were permanently excluded from the resource.",
+            "Outside officials decided all punishments.",
+            "No penalties were used, since users trusted one another.",
+            "Penalties started small and became stronger for repeat offenders."
+          ],
+          "answer": "D",
+          "skill": "factual",
+          "explanation": "Penalties 'began mildly, escalating only for repeated offenses', so D is correct. Permanent exclusion (A) is not mentioned, monitoring was done by users or people accountable to them rather than outside officials (B), and penalties did exist (C)."
+        },
+        {
+          "prompt": "The word 'devised' in the passage is closest in meaning to",
+          "options": [
+            "rejected",
+            "invented",
+            "borrowed",
+            "recorded"
+          ],
+          "answer": "B",
+          "skill": "vocabulary",
+          "explanation": "The sentence contrasts rules 'imposed' by outsiders with rules the users 'devised' themselves, meaning they invented or created them (B). The users did not reject their own rules (A), and nothing suggests the rules were borrowed (C) or merely written down (D)."
+        },
+        {
+          "prompt": "What can be inferred about the scholars described in paragraph 1?",
+          "options": [
+            "They had carefully studied mountain villages and coastal settlements.",
+            "They believed that users of shared resources usually cooperated successfully.",
+            "They underestimated the ability of communities to create effective rules.",
+            "They opposed both private ownership and government regulation."
+          ],
+          "answer": "C",
+          "skill": "inference",
+          "explanation": "The scholars thought only private ownership or government control could prevent collapse, but later field studies found communities managing resources with their own rules, so the scholars underestimated communities (C). The field studies came later and challenged them (A). They expected overuse, not cooperation (B), and they supported, rather than opposed, ownership and regulation (D)."
+        },
+        {
+          "prompt": "What is the relationship between paragraph 1 and paragraph 2?",
+          "options": [
+            "Paragraph 2 presents evidence that challenges the view described in paragraph 1.",
+            "Paragraph 2 gives examples that support the argument in paragraph 1.",
+            "Paragraph 2 explains the historical origins of the view in paragraph 1.",
+            "Paragraph 2 proposes a government policy based on paragraph 1."
+          ],
+          "answer": "A",
+          "skill": "relationship",
+          "explanation": "Paragraph 2 begins by saying field studies 'complicated this pessimistic view' and describes communities that managed resources themselves, so A is correct. These examples work against, not for, the argument in paragraph 1 (B). Paragraph 2 does not discuss the history of the view (C) or propose a policy (D)."
+        },
+        {
+          "prompt": "Why does the author include the final sentence of the passage?",
+          "options": [
+            "To argue that community management should replace all government regulation",
+            "To admit that the field studies were poorly designed",
+            "To summarize the reasoning of the scholars in paragraph 1",
+            "To limit the claims made from the findings while stating their wider importance"
+          ],
+          "answer": "D",
+          "skill": "purpose",
+          "explanation": "The sentence admits that community management does not 'always work' but argues the findings widen the range of choices, so it both limits and states the significance of the findings (D). It does not call for replacing all regulation (A), criticize the studies (B), or restate the scholars' reasoning (C)."
+        }
+      ]
+    },
+    {
+      "slug": "ap-practice-1",
+      "use": "practice",
+      "difficulty": "medium",
+      "subject": "history",
+      "title": "Railways and the Standardization of Time",
+      "text": "Until the nineteenth century, most towns set their clocks by the sun. Noon was the moment when the sun stood highest in the sky, and because this moment arrives slightly later as one travels west, neighboring towns often kept times that differed by several minutes. For people who rarely traveled far, these small differences hardly mattered.\n\nThe spread of railways changed this situation dramatically. A train could pass through dozens of towns in a single day, and each station might display its own local time. Printed timetables became confusing, and passengers sometimes missed connections because they misunderstood which time a schedule referred to. More seriously, when trains shared a single track, an error of a few minutes could put two of them on a collision course.\n\nTo solve these problems, railway companies began adopting a common time for all their lines, usually based on the clock of a major city. Telegraph wires, which often ran beside the tracks, allowed the reference time to be sent quickly to distant stations. At first, many towns resisted, and some public clocks showed two sets of hands, one for local time and one for railway time. Gradually, however, the convenience of a shared standard won out.",
+      "questions": [
+        {
+          "prompt": "According to paragraph 1, why did neighboring towns keep slightly different times?",
+          "options": [
+            "Each town based its noon on the position of the sun.",
+            "Towns could not afford accurate clocks.",
+            "Local governments disagreed about the length of an hour.",
+            "Clocks were set according to train arrivals."
+          ],
+          "answer": "A",
+          "skill": "factual",
+          "explanation": "Towns set their clocks by the sun, and local noon arrives later farther west, so A is correct. The cost of clocks (B) and the length of an hour (C) are not mentioned, and setting clocks by trains (D) came later, with the railways."
+        },
+        {
+          "prompt": "The word 'dramatically' in the passage is closest in meaning to",
+          "options": [
+            "theatrically",
+            "temporarily",
+            "greatly",
+            "quietly"
+          ],
+          "answer": "C",
+          "skill": "vocabulary",
+          "explanation": "Railways changed the situation 'dramatically', that is, to a great degree, so C is correct. 'Theatrically' (A) relates to drama on a stage, not to the size of a change. The change was lasting, not temporary (B), and 'quietly' (D) does not fit a major change."
+        },
+        {
+          "prompt": "What can be inferred about the public clocks with two sets of hands?",
+          "options": [
+            "They were installed by telegraph companies.",
+            "They reflected a period when both local time and railway time were in use.",
+            "They showed the time in two different countries.",
+            "They were designed for passengers who could not read timetables."
+          ],
+          "answer": "B",
+          "skill": "inference",
+          "explanation": "These clocks showed local time and railway time at once while towns were still resisting the change, which suggests both systems were used during a transition (B). Telegraph companies (A), other countries (C) and passengers who could not read (D) are not mentioned."
+        },
+        {
+          "prompt": "How is paragraph 3 related to paragraph 2?",
+          "options": [
+            "It gives further examples of the confusion described in paragraph 2.",
+            "It argues that the problems in paragraph 2 were exaggerated.",
+            "It describes the effects of railways on town populations.",
+            "It explains how the problems described in paragraph 2 were addressed."
+          ],
+          "answer": "D",
+          "skill": "relationship",
+          "explanation": "Paragraph 3 begins 'To solve these problems' and describes the adoption of a common railway time, so D is correct. It describes a solution, not more confusion (A). It does not say the problems were exaggerated (B), and town populations are not discussed (C)."
+        },
+        {
+          "prompt": "Why does the author mention trains that shared a single track?",
+          "options": [
+            "To show that railways were cheaper than other forms of transport",
+            "To explain why telegraph wires ran beside the tracks",
+            "To emphasize that time differences could create real danger",
+            "To describe how passengers missed their connections"
+          ],
+          "answer": "C",
+          "skill": "purpose",
+          "explanation": "The author says 'More seriously' and explains that a few minutes' error could cause a collision, showing that time differences could be dangerous (C). Cost (A) is not discussed. Telegraph wires are mentioned later for a different reason (B), and missed connections are a separate, less serious problem (D)."
+        }
+      ]
+    },
+    {
+      "slug": "ap-practice-2",
+      "use": "practice",
+      "difficulty": "medium",
+      "subject": "art",
+      "title": "Painting on Wet Walls",
+      "text": "A fresco is a painting made directly on a freshly plastered wall. The word comes from an Italian term meaning 'fresh', and it describes the most demanding feature of the method: the artist must apply paint while the plaster is still damp. Pigments mixed only with water are brushed onto the surface, and as the plaster dries, a chemical reaction binds the color into the wall itself.\n\nBecause wet plaster stays workable for only a limited number of hours, painters divided large compositions into sections that could be completed in a single day. Each morning, an assistant spread a new patch of plaster just large enough for that day's work. Careful observers can sometimes still see the faint seams where one day's section meets the next, revealing the order in which a wall was painted.\n\nThe technique offered an important advantage: since the color becomes part of the wall, a well-made fresco can survive for centuries without peeling. Yet the method was unforgiving. Mistakes could not simply be painted over; the artist had to chip away the plaster and begin that section again. For this reason, fresco painters typically prepared detailed full-size drawings in advance and transferred the outlines to the wall before beginning.",
+      "questions": [
+        {
+          "prompt": "According to paragraph 1, what causes the color to become part of the wall?",
+          "options": [
+            "A layer of varnish applied after painting",
+            "A chemical reaction that happens as the plaster dries",
+            "Oil that is mixed with the pigments",
+            "Heat from lamps placed near the wall"
+          ],
+          "answer": "B",
+          "skill": "factual",
+          "explanation": "The passage states that 'as the plaster dries, a chemical reaction binds the color into the wall', so B is correct. Varnish (A) and lamps (D) are not mentioned, and the pigments are mixed 'only with water', not oil (C)."
+        },
+        {
+          "prompt": "The word 'unforgiving' in the passage is closest in meaning to",
+          "options": [
+            "allowing little room for error",
+            "unfriendly toward assistants",
+            "extremely slow",
+            "very expensive"
+          ],
+          "answer": "A",
+          "skill": "vocabulary",
+          "explanation": "The next sentence explains that mistakes could not simply be painted over, so 'unforgiving' means it allowed little room for error (A). The passage says nothing about how assistants were treated (B), and speed (C) and cost (D) are not the point of the sentence."
+        },
+        {
+          "prompt": "What can be inferred from paragraph 2 about the faint seams visible in some frescoes?",
+          "options": [
+            "They were added later to repair damage.",
+            "They show exactly where an artist made mistakes.",
+            "They were painted deliberately as decoration.",
+            "They can help experts work out how a painting was made."
+          ],
+          "answer": "D",
+          "skill": "inference",
+          "explanation": "The seams reveal 'the order in which a wall was painted', so they help experts reconstruct the process (D). They come from the daily patches of plaster, not from repairs (A) or decoration (C), and they mark day boundaries rather than mistakes (B)."
+        },
+        {
+          "prompt": "What is the relationship between the mistakes described in paragraph 3 and the drawings prepared in advance?",
+          "options": [
+            "The drawings were made after the mistakes had been corrected.",
+            "The drawings caused most of the mistakes.",
+            "The drawings were a way to reduce the chance of costly mistakes.",
+            "The drawings and the mistakes are unrelated."
+          ],
+          "answer": "C",
+          "skill": "relationship",
+          "explanation": "Because mistakes meant chipping away plaster, painters 'for this reason' prepared drawings beforehand, so the drawings helped prevent errors (C). They were made before painting, not after (A). Nothing says they caused errors (B), and the phrase 'For this reason' shows the two are connected (D)."
+        },
+        {
+          "prompt": "What is the main purpose of the passage?",
+          "options": [
+            "To explain how the fresco method works and what it demanded of artists",
+            "To argue that frescoes are better than all other kinds of painting",
+            "To describe the life of a famous fresco painter",
+            "To compare Italian and non-Italian painting traditions"
+          ],
+          "answer": "A",
+          "skill": "purpose",
+          "explanation": "The passage describes the steps of fresco painting, its daily sections, its advantage and its difficulties, so A is correct. It mentions one advantage but does not claim frescoes are best (B). No individual painter is described (C), and the Italian word is mentioned only to explain the name (D)."
+        }
+      ]
+    },
+    {
+      "slug": "ap-practice-3",
+      "use": "practice",
+      "difficulty": "easy",
+      "subject": "business",
+      "title": "Why Stores Sell Some Items at a Loss",
+      "text": "Most businesses want to earn money on everything they sell. However, some stores sometimes sell certain products for less than they paid for them. A supermarket, for example, might sell eggs or milk at a very low price, even though it loses a little money on each carton. Products sold this way are called loss leaders.\n\nThe idea behind a loss leader is simple. The low price attracts customers into the store. Once they are inside, most shoppers do not buy only the cheap item. They also pick up bread, fruit, cleaning products, and other things they need. The store earns a profit on these extra items, and this profit is usually much larger than the small loss on the advertised product. Stores often choose items that people buy regularly, so that shoppers notice the good price and remember it.\n\nLoss leaders do not always work, however. Some shoppers, sometimes called 'cherry pickers', visit several stores and buy only the items that are on sale. If too many customers behave this way, the store simply loses money. For this reason, some stores limit how many discounted items each customer can buy during a single visit.",
+      "questions": [
+        {
+          "prompt": "According to paragraph 2, how does a store make money with a loss leader?",
+          "options": [
+            "It raises the price of the item after a few weeks.",
+            "It sells the item only to its regular customers.",
+            "It earns profits on other products that customers buy.",
+            "It receives payments from the companies that make the item."
+          ],
+          "answer": "C",
+          "skill": "factual",
+          "explanation": "Shoppers also buy other items, and 'the store earns a profit on these extra items', so C is correct. Raising prices later (A), selling only to regular customers (B) and payments from producers (D) are not mentioned."
+        },
+        {
+          "prompt": "The word 'attracts' in the passage is closest in meaning to",
+          "options": [
+            "warns",
+            "confuses",
+            "charges",
+            "draws"
+          ],
+          "answer": "D",
+          "skill": "vocabulary",
+          "explanation": "The low price 'attracts customers into the store', meaning it draws them in (D). Warning (A) or confusing (B) customers would not bring them into the store, and 'charges' (C) means asking for payment."
+        },
+        {
+          "prompt": "What can be inferred about the 'cherry pickers' mentioned in paragraph 3?",
+          "options": [
+            "They make loss leaders less profitable for stores.",
+            "They usually shop at only one store.",
+            "They prefer to buy expensive products.",
+            "They are employees who choose the discounted items."
+          ],
+          "answer": "A",
+          "skill": "inference",
+          "explanation": "Cherry pickers buy only sale items, so the store does not earn profits on extra purchases and can lose money (A). They visit 'several stores' (B), they look for sale items rather than expensive ones (C), and they are described as shoppers, not employees (D)."
+        },
+        {
+          "prompt": "How does paragraph 3 relate to paragraph 2?",
+          "options": [
+            "It gives more examples of items used as loss leaders.",
+            "It describes a problem with the strategy explained in paragraph 2.",
+            "It explains why eggs and milk are popular.",
+            "It repeats the main idea of paragraph 2 in simpler words."
+          ],
+          "answer": "B",
+          "skill": "relationship",
+          "explanation": "Paragraph 2 explains how loss leaders earn money, and paragraph 3 starts 'Loss leaders do not always work', describing a weakness, so B is correct. It gives no new items (A), does not discuss eggs and milk (C), and adds a new idea rather than repeating one (D)."
+        },
+        {
+          "prompt": "Why does the author mention that some stores limit how many discounted items each customer can buy?",
+          "options": [
+            "To show that loss leaders are against the law",
+            "To explain why stores choose eggs and milk",
+            "To suggest that most shoppers dislike discounts",
+            "To give an example of how stores protect themselves from losses"
+          ],
+          "answer": "D",
+          "skill": "purpose",
+          "explanation": "The limit is introduced 'For this reason', that is, to prevent cherry pickers from causing losses, so D is correct. Laws (A) are not mentioned, the choice of eggs and milk is explained elsewhere (B), and nothing suggests shoppers dislike discounts (C)."
+        }
+      ]
+    },
+    {
+      "slug": "ap-practice-4",
+      "use": "practice",
+      "difficulty": "hard",
+      "subject": "life science",
+      "title": "The Internal Clocks of Plants",
+      "text": "Anyone who watches certain plants over the course of a day may notice that their leaves rise in the morning and droop at night. It would be natural to assume that these movements are simply responses to changing light. Yet when such plants are moved into a room kept in constant darkness, the leaves continue to rise and fall on a roughly daily cycle for several days. This persistence indicates that the rhythm is generated within the plant itself.\n\nBiologists now know that plants, like animals, possess internal timekeeping systems built from interacting genes whose activity rises and falls in a regular pattern. These internal clocks allow a plant to anticipate dawn rather than merely react to it. A plant that begins producing the molecules needed for photosynthesis shortly before sunrise can start capturing energy as soon as light appears, gaining an advantage over a neighbor that waits.\n\nAn internal clock is useful, however, only if it stays synchronized with the actual environment. Because the timing of sunrise shifts across the seasons, plants continually reset their clocks using signals such as light and temperature. Experiments have shown that plants whose internal cycle matches the length of the external day grow larger and survive better than genetically altered plants whose cycles are noticeably longer or shorter.",
+      "questions": [
+        {
+          "prompt": "According to paragraph 3, what signals do plants use to reset their internal clocks?",
+          "options": [
+            "Soil moisture and wind",
+            "Sounds made by animals",
+            "Movements of their own leaves",
+            "Light and temperature"
+          ],
+          "answer": "D",
+          "skill": "factual",
+          "explanation": "Paragraph 3 says plants reset their clocks 'using signals such as light and temperature', so D is correct. Soil moisture and wind (A) and animal sounds (B) are not mentioned, and leaf movements are a result of the clock, not a signal used to reset it (C)."
+        },
+        {
+          "prompt": "The word 'anticipate' in the passage is closest in meaning to",
+          "options": [
+            "resist",
+            "remember",
+            "prepare for in advance",
+            "slow down"
+          ],
+          "answer": "C",
+          "skill": "vocabulary",
+          "explanation": "The passage contrasts anticipating dawn with 'merely reacting' to it, and gives the example of preparing molecules before sunrise, so 'anticipate' means prepare for in advance (C). Resisting (A), remembering (B) and slowing down (D) do not fit this contrast."
+        },
+        {
+          "prompt": "What can be inferred about the genetically altered plants described in paragraph 3?",
+          "options": [
+            "They grew faster because their cycles were longer.",
+            "Their internal timing did not match the real day well.",
+            "They could no longer move their leaves.",
+            "They no longer needed light for photosynthesis."
+          ],
+          "answer": "B",
+          "skill": "inference",
+          "explanation": "Their cycles were 'noticeably longer or shorter' than the external day, so their timing was out of step with the environment (B). They grew less well, not faster (A), and leaf movement (C) and a lack of need for light (D) are not mentioned."
+        },
+        {
+          "prompt": "What is the relationship between the experiment in paragraph 1 and the claim that the rhythm 'is generated within the plant itself'?",
+          "options": [
+            "The experiment provides evidence for the claim.",
+            "The experiment contradicts the claim.",
+            "The claim explains why the experiment failed.",
+            "The claim is unrelated to the experiment."
+          ],
+          "answer": "A",
+          "skill": "relationship",
+          "explanation": "Because the leaves keep moving in constant darkness, light cannot be the cause, which supports the idea of an internal rhythm (A). The experiment supports rather than contradicts the claim (B), it did not fail (C), and the word 'persistence' directly links the two (D)."
+        },
+        {
+          "prompt": "Why does the author describe a plant that produces photosynthesis molecules shortly before sunrise?",
+          "options": [
+            "To argue that plants are more advanced than animals",
+            "To illustrate a benefit of anticipating changes in the environment",
+            "To explain why leaves droop at night",
+            "To describe how plants grow in constant darkness"
+          ],
+          "answer": "B",
+          "skill": "purpose",
+          "explanation": "The example shows how a plant with an internal clock gains 'an advantage over a neighbor that waits', illustrating the benefit of anticipation (B). Plants are compared with animals only to say both have clocks (A), drooping leaves are not explained here (C), and constant darkness belongs to the experiment in paragraph 1 (D)."
+        }
+      ]
+    },
+    {
+      "slug": "ap-practice-5",
+      "use": "practice",
+      "difficulty": "medium",
+      "subject": "physical science",
+      "title": "Why Sunsets Turn Red",
+      "text": "Sunlight appears white, but it is actually a mixture of many colors, each corresponding to a different wavelength. When this light enters the atmosphere, it collides with tiny gas molecules. These molecules scatter short wavelengths, such as blue and violet, far more strongly than longer wavelengths, such as red and orange. As a result, blue light is bounced in all directions across the sky, which is why a clear sky at midday looks blue from almost anywhere we stand.\n\nAt sunrise and sunset, the situation changes. The sun is low on the horizon, so its light must pass through a much thicker layer of air before reaching our eyes. Along this longer path, most of the blue light is scattered away to the sides long before it arrives. The light that remains is dominated by the longer wavelengths, giving the sun and nearby clouds their familiar orange and red colors.\n\nParticles in the air can intensify this effect. After dust storms, large fires, or volcanic eruptions, extra particles may remain in the atmosphere for days or even months. They scatter additional light and can produce unusually vivid sunsets far from the original event. Painters and photographers have long noticed these striking evening skies, often without knowing their cause.",
+      "questions": [
+        {
+          "prompt": "According to paragraph 1, why does the midday sky look blue?",
+          "options": [
+            "Gas molecules scatter blue light more strongly than red light.",
+            "The sun gives off more blue light at midday.",
+            "Clouds absorb every color except blue.",
+            "Blue light travels a longer path through the air."
+          ],
+          "answer": "A",
+          "skill": "factual",
+          "explanation": "Paragraph 1 says molecules scatter short wavelengths such as blue 'far more strongly' than red, spreading blue across the sky, so A is correct. The sun's output does not change at midday (B), clouds absorbing colors is not mentioned (C), and the longer path is part of the sunset explanation (D)."
+        },
+        {
+          "prompt": "The word 'intensify' in the passage is closest in meaning to",
+          "options": [
+            "explain",
+            "strengthen",
+            "hide",
+            "delay"
+          ],
+          "answer": "B",
+          "skill": "vocabulary",
+          "explanation": "Extra particles produce 'unusually vivid sunsets', so they make the effect stronger (B). Particles do not explain (A), hide (C) or delay (D) the colors."
+        },
+        {
+          "prompt": "What can be inferred about a sunset seen some weeks after a large volcanic eruption?",
+          "options": [
+            "It will probably look completely blue.",
+            "It will happen earlier in the evening than usual.",
+            "It may be more colorful than an ordinary sunset.",
+            "It can be seen only very close to the volcano."
+          ],
+          "answer": "C",
+          "skill": "inference",
+          "explanation": "Particles can remain for months and cause 'unusually vivid sunsets far from the original event', so C is correct. Nothing suggests a blue sunset (A) or a change in timing (B), and the effect can appear far away, not only nearby (D)."
+        },
+        {
+          "prompt": "How does paragraph 2 relate to paragraph 1?",
+          "options": [
+            "It rejects the explanation given in paragraph 1.",
+            "It describes a separate effect that has nothing to do with scattering.",
+            "It lists the colors that make up white light.",
+            "It applies the principle from paragraph 1 to a different situation."
+          ],
+          "answer": "D",
+          "skill": "relationship",
+          "explanation": "Paragraph 2 uses the same idea, that blue light is scattered more, to explain sunrise and sunset colors, so D is correct. It builds on paragraph 1 rather than rejecting it (A), it is based on scattering (B), and the colors of white light are introduced in paragraph 1 (C)."
+        },
+        {
+          "prompt": "Why does the author mention painters and photographers in paragraph 3?",
+          "options": [
+            "To argue that artists understand science better than scientists",
+            "To explain how scientists measure the colors of sunsets",
+            "To point out that people have observed these vivid skies for a long time",
+            "To suggest that photographs make sunsets look redder than they are"
+          ],
+          "answer": "C",
+          "skill": "purpose",
+          "explanation": "The author says painters and photographers 'have long noticed these striking evening skies', showing that the effect has been observed for a long time (C). In fact, they often did not know the cause, so A is wrong. Measuring colors (B) and photographs changing colors (D) are not discussed."
+        }
+      ]
+    },
+    {
+      "slug": "ap-practice-6",
+      "use": "practice",
+      "difficulty": "hard",
+      "subject": "social science",
+      "title": "Color Words Across Languages",
+      "text": "Languages differ considerably in how they divide the range of visible colors into named categories. Some languages use a single basic term for what English speakers would call both blue and green, while others distinguish two shades of blue as firmly as English distinguishes red from pink. Such variation raises a long-debated question: does the vocabulary of a language influence how its speakers perceive the world?\n\nEarly research tended to emphasize the universality of color perception. Investigators found that speakers of very different languages, when asked to select the best example of a color category, often chose remarkably similar shades. This suggested that human vision provides common reference points, regardless of the words available.\n\nMore recent experiments, however, have detected subtle effects of language. In one type of study, participants judge as quickly as possible whether two colored squares are identical. When the two shades fall on opposite sides of a boundary that the participants' language names, responses are slightly faster than when both shades belong to the same named category, even if the physical difference is equal. Notably, this advantage tends to disappear when participants must simultaneously repeat a string of numbers, a task that occupies verbal memory. The finding implies that language does not reshape vision itself but can influence judgments when words are readily available.",
+      "questions": [
+        {
+          "prompt": "According to paragraph 2, what did early researchers find?",
+          "options": [
+            "Speakers of different languages could not agree on any color names.",
+            "People from different language groups often chose similar shades as the best examples of colors.",
+            "Languages with more color words produced sharper eyesight.",
+            "Most languages have no word for green."
+          ],
+          "answer": "B",
+          "skill": "factual",
+          "explanation": "Paragraph 2 says speakers of very different languages 'often chose remarkably similar shades' as the best examples of a category, so B is correct. Disagreement on names (A), better eyesight (C) and missing words for green (D) are not reported."
+        },
+        {
+          "prompt": "The word 'subtle' in the passage is closest in meaning to",
+          "options": [
+            "obvious",
+            "harmful",
+            "permanent",
+            "slight"
+          ],
+          "answer": "D",
+          "skill": "vocabulary",
+          "explanation": "The effects found were small, with responses only 'slightly faster', so 'subtle' means slight (D). 'Obvious' (A) is the opposite. Nothing suggests the effects were harmful (B), and they disappear under some conditions, so they are not permanent (C)."
+        },
+        {
+          "prompt": "What can be inferred from the result involving repeating numbers?",
+          "options": [
+            "The faster responses depend on participants being able to use language during the task.",
+            "Repeating numbers improves people's ability to see colors.",
+            "Participants who repeated numbers could not see the squares at all.",
+            "The color boundaries are the same in every language."
+          ],
+          "answer": "A",
+          "skill": "inference",
+          "explanation": "The advantage disappears when verbal memory is busy, which suggests that it depends on access to words during the task (A). Repeating numbers removes an advantage rather than improving vision (B), participants could still judge the squares (C), and the passage says languages draw boundaries differently (D)."
+        },
+        {
+          "prompt": "How do the findings in paragraph 3 relate to the findings in paragraph 2?",
+          "options": [
+            "They prove that the findings in paragraph 2 came from faulty equipment.",
+            "They repeat the findings in paragraph 2 using different languages.",
+            "They add a qualification to the view suggested by the findings in paragraph 2.",
+            "They are unrelated to the findings in paragraph 2."
+          ],
+          "answer": "C",
+          "skill": "relationship",
+          "explanation": "Paragraph 2 suggests color perception is universal, and paragraph 3 ('however') shows that language still has small effects on judgments, adding a qualification to that view (C). No equipment problems are mentioned (A), the findings are different, not repeated (B), and both paragraphs address the same question (D)."
+        },
+        {
+          "prompt": "Why does the author mention languages that use a single term for blue and green?",
+          "options": [
+            "To illustrate how languages can divide colors differently",
+            "To argue that these languages are less precise than English",
+            "To explain why some people cannot see the color green",
+            "To show that all languages share the same basic color terms"
+          ],
+          "answer": "A",
+          "skill": "purpose",
+          "explanation": "The example supports the first sentence, which says languages differ in how they divide colors into categories (A). The author makes no judgment about precision (B), does not discuss inability to see green (C), and the example shows difference, not sameness (D)."
+        }
+      ]
+    },
+    {
+      "slug": "ap-practice-7",
+      "use": "practice",
+      "difficulty": "easy",
+      "subject": "education",
+      "title": "Spacing Out Study Time",
+      "text": "Many students prepare for exams by studying for many hours the night before. This habit, often called cramming, can help a student remember facts the next morning. However, research on memory shows that information learned this way is often forgotten within a few days.\n\nA more effective method is called spaced practice. Instead of studying a topic once for a long time, the learner studies it several times in shorter sessions, with breaks of a day or more in between. For example, a student might review new vocabulary for twenty minutes on Monday, Wednesday, and Saturday rather than for one hour on Saturday only. Although the total study time is the same, the student who spreads out the sessions usually remembers more words several weeks later.\n\nWhy does spacing help? One explanation is that each time we return to information we have partly forgotten, our brain must work harder to recall it. This extra effort makes the memory stronger. Spaced practice can feel more difficult at first, and some students think it is not working. In fact, that feeling of difficulty is often a sign that real learning is taking place.",
+      "questions": [
+        {
+          "prompt": "According to paragraph 1, what is a problem with cramming?",
+          "options": [
+            "It takes more time than other methods.",
+            "It makes students too tired to take the exam.",
+            "Students often forget the information within a few days.",
+            "It does not help students remember anything the next morning."
+          ],
+          "answer": "C",
+          "skill": "factual",
+          "explanation": "Paragraph 1 says information learned by cramming 'is often forgotten within a few days', so C is correct. Time (A) and tiredness (B) are not mentioned as problems, and the passage says cramming can help students remember facts the next morning, so D is wrong."
+        },
+        {
+          "prompt": "The word 'effective' in the passage is closest in meaning to",
+          "options": [
+            "successful",
+            "popular",
+            "expensive",
+            "relaxing"
+          ],
+          "answer": "A",
+          "skill": "vocabulary",
+          "explanation": "Spaced practice is called 'more effective' because students remember more, so it is more successful (A). The passage does not say it is more popular (B), costly (C) or relaxing (D); in fact, it can feel more difficult."
+        },
+        {
+          "prompt": "What can be inferred about a student who finds spaced practice difficult at first?",
+          "options": [
+            "The student should go back to cramming.",
+            "The student is studying the wrong subject.",
+            "The student needs longer breaks between sessions.",
+            "The student may still be learning well."
+          ],
+          "answer": "D",
+          "skill": "inference",
+          "explanation": "The passage says the feeling of difficulty 'is often a sign that real learning is taking place', so D is correct. The author does not recommend cramming (A), and nothing is said about the subject (B) or the length of breaks (C)."
+        },
+        {
+          "prompt": "How does the example of the vocabulary student in paragraph 2 relate to the description of spaced practice?",
+          "options": [
+            "It shows that spaced practice requires more total study time.",
+            "It illustrates how spaced practice can be used.",
+            "It contrasts spaced practice with group study.",
+            "It explains why vocabulary is difficult to learn."
+          ],
+          "answer": "B",
+          "skill": "relationship",
+          "explanation": "The example begins 'For example' and shows a real schedule of spaced sessions, so B is correct. The total time is 'the same', not greater (A). Group study (C) and the difficulty of vocabulary (D) are not discussed."
+        },
+        {
+          "prompt": "What is the main purpose of paragraph 3?",
+          "options": [
+            "To describe the history of memory research",
+            "To warn students about studying too often",
+            "To compare different kinds of exams",
+            "To explain why spaced practice works"
+          ],
+          "answer": "D",
+          "skill": "purpose",
+          "explanation": "Paragraph 3 begins 'Why does spacing help?' and gives an explanation, so D is correct. It does not discuss the history of research (A), warn against frequent study (B) or compare exams (C)."
+        }
+      ]
+    },
+    {
+      "slug": "ap-practice-8",
+      "use": "practice",
+      "difficulty": "medium",
+      "subject": "earth science",
+      "title": "How Limestone Caves Form",
+      "text": "Many of the world's largest caves have been carved out of limestone, a rock composed mainly of the remains of ancient sea creatures. What makes limestone special is that it slowly dissolves in weak acid. Rainwater becomes slightly acidic as it falls through the air and seeps through soil, where it absorbs carbon dioxide released by decaying plants.\n\nWhen this acidic water reaches limestone, it trickles into tiny cracks and gradually enlarges them. Over thousands of years, narrow fractures widen into channels, and channels merge into passages large enough for a person to walk through. The process is fastest just below the water table, the level beneath which the ground is completely filled with water. If the water table later drops, perhaps because a nearby river cuts its valley deeper, the passages drain and become air-filled caves.\n\nOnce a cave is filled with air, a new process can begin. Water dripping from the ceiling loses some of its carbon dioxide to the cave air, and as a result it can no longer hold all of its dissolved rock. Tiny amounts of mineral are left behind with each drop. Over time, these deposits build long, pointed formations hanging from the ceiling and matching columns rising from the floor.",
+      "questions": [
+        {
+          "prompt": "According to paragraph 1, how does rainwater become acidic?",
+          "options": [
+            "By flowing over limestone",
+            "By mixing with seawater",
+            "By freezing inside cracks",
+            "By absorbing carbon dioxide from the air and soil"
+          ],
+          "answer": "D",
+          "skill": "factual",
+          "explanation": "Rainwater becomes acidic as it falls through the air and seeps through soil, where it absorbs carbon dioxide, so D is correct. Flowing over limestone dissolves the rock rather than making the water acidic (A), and seawater (B) and freezing (C) are not mentioned."
+        },
+        {
+          "prompt": "The word 'merge' in the passage is closest in meaning to",
+          "options": [
+            "break apart",
+            "join together",
+            "dry out",
+            "become narrower"
+          ],
+          "answer": "B",
+          "skill": "vocabulary",
+          "explanation": "Channels 'merge into passages large enough for a person', meaning they join together into larger spaces (B). 'Break apart' (A) and 'become narrower' (D) are the opposite of growing larger, and drying out (C) happens later when the water table drops."
+        },
+        {
+          "prompt": "What can be inferred about a cave passage that is still below the water table?",
+          "options": [
+            "It already contains many hanging formations.",
+            "It has stopped growing.",
+            "It is filled with water rather than air.",
+            "It was formed by a river valley."
+          ],
+          "answer": "C",
+          "skill": "inference",
+          "explanation": "Below the water table the ground is completely filled with water, and passages become air-filled only after it drops, so C is correct. Hanging formations need an air-filled cave (A). Growth is fastest below the water table, not stopped (B), and the river only lowers the water table rather than forming the passage (D)."
+        },
+        {
+          "prompt": "How does the process described in paragraph 3 relate to the process described in paragraph 2?",
+          "options": [
+            "It builds up rock, whereas the earlier process removes it.",
+            "It happens before the process in paragraph 2.",
+            "It causes the drop in the water table.",
+            "It is identical to the process in paragraph 2."
+          ],
+          "answer": "A",
+          "skill": "relationship",
+          "explanation": "In paragraph 2 acidic water dissolves limestone, while in paragraph 3 dripping water leaves mineral deposits behind, so one removes rock and the other adds it (A). Paragraph 3's process begins only after the cave fills with air (B), a river is given as a cause of the drop (C), and the two processes are opposite rather than identical (D)."
+        },
+        {
+          "prompt": "Why does the author mention a river cutting its valley deeper?",
+          "options": [
+            "To explain how limestone was first created",
+            "To give a possible reason the water table might fall",
+            "To show that rivers flow through most caves",
+            "To describe how cave formations grow"
+          ],
+          "answer": "B",
+          "skill": "purpose",
+          "explanation": "The river is introduced with 'perhaps because' as one possible cause of a falling water table, so B is correct. Limestone comes from sea creatures (A), the passage does not claim rivers flow through most caves (C), and formations are explained in paragraph 3 (D)."
+        }
+      ]
+    },
+    {
+      "slug": "ap-practice-9",
+      "use": "practice",
+      "difficulty": "hard",
+      "subject": "astronomy",
+      "title": "Why the Moon Shows One Face",
+      "text": "Observers on Earth always see essentially the same face of the Moon. This is not because the Moon fails to rotate; rather, it turns on its axis exactly once in the time it takes to complete one orbit around Earth. Astronomers describe a body in this condition as tidally locked, and the phenomenon is common among moons throughout the solar system.\n\nThe explanation lies in the uneven pull of gravity. Because gravity weakens with distance, Earth pulls more strongly on the near side of the Moon than on its far side, stretching the Moon slightly into two bulges, one facing toward Earth and one facing away. Long ago, when the young Moon spun more rapidly, its rotation kept carrying these bulges out of line with Earth. Earth's gravity tugged back on them, acting like a gentle brake that gradually slowed the Moon's spin.\n\nThe braking stopped only when the rotation period matched the orbital period, so that the bulges stayed aligned with Earth. The same mechanism also works in reverse: tides raised by the Moon are lengthening Earth's day by a tiny fraction of a second each century. In principle, Earth could eventually become locked to the Moon as well, though this would take far longer than the expected lifetime of the Sun.",
+      "questions": [
+        {
+          "prompt": "According to paragraph 2, why does Earth pull more strongly on the near side of the Moon?",
+          "options": [
+            "Gravitational attraction becomes weaker with distance.",
+            "The near side contains more heavy rock.",
+            "The far side is shielded by the Moon's bulges.",
+            "The Moon rotates faster on its near side."
+          ],
+          "answer": "A",
+          "skill": "factual",
+          "explanation": "The passage states, 'Because gravity weakens with distance, Earth pulls more strongly on the near side', so A is correct. The composition of the rock (B), shielding by the bulges (C) and different rotation speeds for each side (D) are not mentioned."
+        },
+        {
+          "prompt": "The word 'aligned' in the passage is closest in meaning to",
+          "options": [
+            "compared",
+            "colliding",
+            "lined up",
+            "equal in weight"
+          ],
+          "answer": "C",
+          "skill": "vocabulary",
+          "explanation": "Earlier the bulges were 'out of line with Earth'; once braking stopped, they 'stayed aligned', meaning lined up with Earth (C). The bulges are not compared (A) or colliding with Earth (B), and weight (D) is not the point."
+        },
+        {
+          "prompt": "Which of the following can be inferred about the Moon's rotation in the distant past?",
+          "options": [
+            "It was slower than it is today.",
+            "It took less time than one orbit around Earth.",
+            "It had already stopped completely.",
+            "It was controlled by the Sun rather than by Earth."
+          ],
+          "answer": "B",
+          "skill": "inference",
+          "explanation": "The young Moon 'spun more rapidly' and was slowed until rotation matched the orbit, so earlier one rotation took less time than one orbit (B). It was faster, not slower (A), the Moon still rotates today (C), and the braking came from Earth's gravity, not the Sun (D)."
+        },
+        {
+          "prompt": "What is the relationship between the bulges described in paragraph 2 and the slowing of the Moon's spin?",
+          "options": [
+            "The slowing of the spin created the bulges for the first time.",
+            "The bulges prevented Earth's gravity from affecting the Moon.",
+            "The bulges and the slowing happened on different moons.",
+            "Earth's pull on the out-of-line bulges caused the spin to slow."
+          ],
+          "answer": "D",
+          "skill": "relationship",
+          "explanation": "Earth's gravity tugged on the misaligned bulges, 'acting like a gentle brake', so the bulges were the means by which the spin slowed (D). The bulges came from uneven gravity, not from the slowing (A). They allowed Earth's gravity to act rather than preventing it (B), and both refer to our Moon (C)."
+        },
+        {
+          "prompt": "Why does the author mention that Earth's day is getting longer?",
+          "options": [
+            "To show that the same process also affects Earth",
+            "To argue that the Moon will soon stop orbiting Earth",
+            "To explain why the Moon has two bulges",
+            "To prove that the Moon does not rotate"
+          ],
+          "answer": "A",
+          "skill": "purpose",
+          "explanation": "The author introduces this point by saying 'The same mechanism also works in reverse', showing that tidal braking acts on Earth too (A). Nothing says the Moon will stop orbiting (B), the bulges are explained earlier (C), and the passage states that the Moon does rotate (D)."
+        }
+      ]
+    },
+    {
+      "slug": "ap-practice-10",
+      "use": "practice",
+      "difficulty": "easy",
+      "subject": "music",
+      "title": "Drums That Speak",
+      "text": "In parts of West Africa, some drums are used not only to make music but also to send messages. These instruments are often called talking drums. A common type is shaped like an hourglass and has strings running from one end to the other. When the player squeezes the strings under one arm, the drum skin becomes tighter and the sound becomes higher. Relaxing the arm makes the sound lower.\n\nThe drums can 'talk' because many languages in the region are tonal. In a tonal language, the pitch of the voice can change the meaning of a word. Two words may have the same sounds but different meanings, depending on whether they are spoken with a high or a low tone. A skilled drummer copies the rise and fall of spoken words, so listeners who know the language can understand the message.\n\nBecause many words share the same tone pattern, drummers often add extra words or familiar phrases to make the meaning clear. In the past, talking drums announced important events, called people to meetings, and carried news between villages. Today they are still played at celebrations, and many young musicians are learning to play them.",
+      "questions": [
+        {
+          "prompt": "According to paragraph 1, how does a player make the drum sound higher?",
+          "options": [
+            "By hitting the drum harder",
+            "By turning the drum upside down",
+            "By squeezing the strings to tighten the skin",
+            "By relaxing the arm"
+          ],
+          "answer": "C",
+          "skill": "factual",
+          "explanation": "Squeezing the strings makes the skin tighter and the sound higher, so C is correct. Hitting harder (A) and turning the drum over (B) are not mentioned, and relaxing the arm makes the sound lower, not higher (D)."
+        },
+        {
+          "prompt": "The word 'skilled' in the passage is closest in meaning to",
+          "options": [
+            "young",
+            "famous",
+            "loud",
+            "expert"
+          ],
+          "answer": "D",
+          "skill": "vocabulary",
+          "explanation": "A 'skilled' drummer is one who has the expert ability to copy the tones of speech, so D is correct. 'Young' (A), 'famous' (B) and 'loud' (C) describe other qualities that are not about ability."
+        },
+        {
+          "prompt": "What can be inferred about a listener who does not know the local language?",
+          "options": [
+            "The listener would probably not understand the drum's message.",
+            "The listener could understand the message more easily than local people.",
+            "The listener would hear only high sounds.",
+            "The listener would be able to play the drum."
+          ],
+          "answer": "A",
+          "skill": "inference",
+          "explanation": "Only 'listeners who know the language can understand the message', so someone who does not know it probably would not understand (A). B is the opposite of what the passage suggests. The drum makes both high and low sounds (C), and nothing links listening with playing (D)."
+        },
+        {
+          "prompt": "How does paragraph 2 relate to paragraph 1?",
+          "options": [
+            "It describes a different instrument from the one in paragraph 1.",
+            "It explains why the changes in pitch described in paragraph 1 can carry meaning.",
+            "It argues against the description in paragraph 1.",
+            "It gives the history of the drum makers mentioned in paragraph 1."
+          ],
+          "answer": "B",
+          "skill": "relationship",
+          "explanation": "Paragraph 1 explains how the drum makes high and low sounds, and paragraph 2 explains that these pitches matter because the local languages are tonal (B). It discusses the same drums (A), supports rather than argues against paragraph 1 (C), and no drum makers are mentioned (D)."
+        },
+        {
+          "prompt": "Why does the author mention that drummers add extra words or familiar phrases?",
+          "options": [
+            "To show that drum messages are always very long",
+            "To explain why young musicians enjoy the drums",
+            "To describe how drummers avoid confusion between words with the same tones",
+            "To compare drums with written letters"
+          ],
+          "answer": "C",
+          "skill": "purpose",
+          "explanation": "Because many words share a tone pattern, the extra words 'make the meaning clear', so C is correct. The passage does not say messages are always long (A), give reasons young musicians enjoy the drums (B), or compare drums with letters (D)."
+        }
+      ]
+    }
+  ]
+}

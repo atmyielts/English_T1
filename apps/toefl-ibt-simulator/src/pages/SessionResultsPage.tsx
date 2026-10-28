@@ -3,6 +3,9 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { gradeWriting, scoreSession, type ScoreSessionResponse } from '../lib/platformClient';
 import { useAccess } from '../lib/useAccess';
+import { Toefl2026Results } from '../features/toefl2026/Toefl2026Results';
+import { toefl2026From } from '../features/toefl2026/resultShape';
+import { useAppT } from '../i18n';
 
 const asNumber = (value: unknown): number | null => {
   const n = Number(value);
@@ -46,6 +49,7 @@ export const SessionResultsPage: React.FC = () => {
   const location = useLocation();
   const { sessionId } = useParams<{ sessionId: string }>();
   const { accessToken } = useAccess();
+  const t = useAppT();
 
   const [data, setData] = useState<ScoreSessionResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -233,6 +237,7 @@ export const SessionResultsPage: React.FC = () => {
 
   useEffect(() => {
     if (!sessionId) return;
+    if (toefl2026From(data)) return;
     if (!hasWriting) return;
     if (!result) return;
     if (loading) return;
@@ -242,7 +247,7 @@ export const SessionResultsPage: React.FC = () => {
 
     aiRequestedRef.current = true;
     void runAiGrading(false);
-  }, [aiEval, aiLoading, hasWriting, loading, result, runAiGrading, sessionId]);
+  }, [aiEval, aiLoading, data, hasWriting, loading, result, runAiGrading, sessionId]);
 
   if (loading) {
     return <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">Scoring session...</div>;
@@ -267,13 +272,23 @@ export const SessionResultsPage: React.FC = () => {
     );
   }
 
+  if (data && sessionId && accessToken && toefl2026From(data)) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Toefl2026Results sessionId={sessionId} accessToken={accessToken} initial={data} backPath={backPath} isCandidate={isCandidate} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
       <div className="w-full max-w-5xl bg-white border border-gray-200 rounded-2xl shadow-sm p-8">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
             <div className="text-xs font-semibold tracking-wider uppercase text-emerald-700 mb-2">Results</div>
-            <h1 className="text-2xl font-bold text-gray-900">Session Results</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{t('results.legacy_title')}</h1>
+            <p className="mt-1 inline-block rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900" data-testid="legacy-format-badge">{t('format.legacy')}</p>
+            <p className="text-sm text-gray-500 mt-1">{t('format.legacy_note')}</p>
             <p className="text-sm text-gray-500 mt-1">Estimated TOEFL iBT scoring for Reading, Listening, and Writing (RLW).</p>
           </div>
           <button
