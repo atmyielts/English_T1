@@ -1,11 +1,11 @@
 import type { TranslationKey } from '../i18n/locales/en';
 
-// The exam families Schood sells (IELTS and SAT). Product slugs match products.metadata.slug;
+// The exam families Schood sells (IELTS, SAT and TOEFL). Product slugs match products.metadata.slug;
 // urls are the fallback when the live product row (metadata.app_url) is not
 // loaded. Complete bundles are bought on the platform pricing page.
 // Bundle membership mirrors supabase/functions/_shared/product-bundles.ts.
 
-export type ExamFamilyKey = 'ielts' | 'sat';
+export type ExamFamilyKey = 'ielts' | 'sat' | 'toefl';
 export type ExamFamilyRole = 'simulator' | 'practice' | 'playbook' | 'complete';
 
 export type ExamFamilyMember = {
@@ -45,6 +45,16 @@ export const EXAM_FAMILIES: ExamFamily[] = [
       { role: 'practice', slug: 'sat-practice', name: 'SAT Practice', url: 'https://practice.sat.schood.online', descKey: 'examFamily.sat.practice' },
       { role: 'playbook', slug: 'sat-playbook', name: 'SAT Playbook', url: 'https://playbook.sat.schood.online', descKey: 'examFamily.sat.playbook' },
       { role: 'complete', slug: 'sat-complete', name: 'SAT Complete', url: '/pricing?product=sat-complete', descKey: 'examFamily.sat.complete' },
+    ],
+  },
+  {
+    key: 'toefl',
+    titleKey: 'examFamily.toefl.title',
+    discoveryPath: '/toefl',
+    members: [
+      { role: 'simulator', slug: 'toefl-ibt-simulator', name: 'TOEFL Simulator', url: 'https://toefl.schood.online', descKey: 'examFamily.toefl.simulator' },
+      { role: 'playbook', slug: 'toefl-playbook', name: 'TOEFL Playbook', url: 'https://playbook.toefl.schood.online', descKey: 'examFamily.toefl.playbook' },
+      { role: 'complete', slug: 'toefl-complete', name: 'TOEFL Complete', url: '/pricing?product=toefl-complete', descKey: 'examFamily.toefl.complete' },
     ],
   },
 ];

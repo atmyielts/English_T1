@@ -745,6 +745,10 @@ export const en = {
   "examFamily.sat.practice": "Adaptive drills, a mistake notebook and spaced review.",
   "examFamily.sat.playbook": "Strategy modules, a diagnostic and a personal study plan.",
   "examFamily.sat.complete": "Simulator, Practice Lab and Playbook Premium in one plan.",
+  "examFamily.toefl.title": "TOEFL iBT",
+  "examFamily.toefl.simulator": "Timed TOEFL iBT practice tests with an estimated score.",
+  "examFamily.toefl.playbook": "Strategy for the 2026 test format, a diagnostic and a study plan.",
+  "examFamily.toefl.complete": "Simulator and Playbook Premium in one plan.",
 } as const;
 
 export type TranslationKey = keyof typeof en;
