@@ -235,7 +235,7 @@ export const ContentPage = () => {
               <BookmarkPlus size={16} aria-hidden="true" /> {t('content.addToPlanPremium')}
             </a>
           )}
-          <PracticeAccess source={`page:${slug}`} />
+          <PracticeAccess source={`page:${slug}`} task={config.moduleTasks[slug] ?? null} />
         </div>
       </section>
       {notice ? <p className="alert" role="status">{notice}</p> : null}

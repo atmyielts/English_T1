@@ -2,7 +2,7 @@ import { ArrowRight, Compass, RefreshCw, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Shell } from '../components/TopNav';
-import { EmptyState, ErrorPanel, PracticeAccess, Skeleton, formatDate, useErrorText } from '../components/ui';
+import { EmptyState, ErrorPanel, PracticeAccess, Skeleton, formatDate, practiceHref, useErrorText } from '../components/ui';
 import { humanize, useDynamicT, useT } from '../i18n';
 import { useI18n } from '../../../service-i18n/src/i18n.tsx';
 import type { Json } from '../lib/api';
@@ -95,6 +95,13 @@ export const DiagnosticPage = () => {
   const plan = rec(result.plan_suggestion);
   const weeks = rows(plan.weeks);
   const sections = rows(current.sections);
+  // TOEFL 2026: bands 1–6 with CEFR and the legacy 0–120 comparison alongside.
+  const bands = config.scale === 'toefl_band';
+  const range = (r: unknown) => {
+    const v = rec(r);
+    return v.min != null ? (v.min === v.max ? String(v.min) : `${String(v.min)}–${String(v.max)}`) : '';
+  };
+  const bandText = (band: unknown, cefr: unknown) => (num(band) != null ? `${Number(band).toFixed(1)}${cefr ? ` · ${String(cefr)}` : ''}` : '—');
 
   return (
     <Shell>
@@ -126,6 +133,29 @@ export const DiagnosticPage = () => {
             {t('diag.evidence', { sessions: num(quality.simulator_sessions) ?? 0, attempts: num(quality.practice_attempts) ?? 0 })}
           </p>
 
+          {bands ? (
+            <section className="kpi-grid">
+              <article className="kpi-card">
+                <span>{t('diag.currentBand')}</span>
+                <strong>{bandText(current.overall, current.overall_cefr)}</strong>
+                <p>
+                  {current.overall == null
+                    ? (current.overall_partial ? t('diag.overallPartial') : t('diag.noScore'))
+                    : t('diag.legacyEquivalent', { range: range(current.overall_legacy_range) })}
+                </p>
+              </article>
+              <article className="kpi-card">
+                <span>{t('diag.targetBand')}</span>
+                <strong>{bandText(target.overall, target.overall_cefr)}</strong>
+                <p>{target.overall == null ? t('diag.noTarget') : t('diag.legacyEquivalent', { range: range(target.overall_legacy_range) })}</p>
+              </article>
+              <article className="kpi-card">
+                <span>{t('diag.gap')}</span>
+                <strong>{num(gap.overall) != null ? (Number(gap.overall) > 0 ? `+${Number(gap.overall).toFixed(1)}` : Number(gap.overall).toFixed(1)) : '—'}</strong>
+                <p>{num(gap.overall) == null ? t('diag.gapUnknown') : Number(gap.overall) <= 0 ? t('diag.atTarget') : t('diag.bandsToGo')}</p>
+              </article>
+            </section>
+          ) : (
           <section className="kpi-grid">
             <article className="kpi-card">
               <span>{t('diag.current')}</span>
@@ -143,19 +173,21 @@ export const DiagnosticPage = () => {
               <p>{num(gap.total) == null ? t('diag.gapUnknown') : Number(gap.total) <= 0 ? t('diag.atTarget') : t('diag.pointsToGo')}</p>
             </article>
           </section>
+          )}
 
           {sections.length ? (
             <section className="panel">
               <h2>{t('diag.sections')}</h2>
               <div className="table-scroll" role="region" aria-label={t('diag.sections')} tabIndex={0}>
                 <table className="data-table">
-                  <thead><tr><th scope="col">{t('diag.section')}</th><th scope="col">{t('diag.current')}</th><th scope="col">{t('diag.target')}</th><th scope="col">{t('diag.gap')}</th><th scope="col">{t('diag.sourceCol')}</th></tr></thead>
+                  <thead><tr><th scope="col">{t('diag.section')}</th><th scope="col">{t('diag.current')}</th>{bands ? <th scope="col">{t('diag.legacyCol')}</th> : null}<th scope="col">{t('diag.target')}</th><th scope="col">{t('diag.gap')}</th><th scope="col">{t('diag.sourceCol')}</th></tr></thead>
                   <tbody>
                     {sections.map((s) => (
                       <tr key={String(s.section)}>
                         <th scope="row">{sectionName(s.section)}</th>
-                        <td>{num(s.current) ?? '—'}</td>
-                        <td>{num(s.target) ?? '—'}</td>
+                        <td>{bands ? bandText(s.current, s.current_cefr) : num(s.current) ?? '—'}</td>
+                        {bands ? <td>{range(s.current_legacy_range) || '—'}</td> : null}
+                        <td>{bands ? bandText(s.target, s.target_cefr) : num(s.target) ?? '—'}</td>
                         <td>{num(s.gap) ?? '—'}</td>
                         <td>{s.current_source ? dt(`source.${String(s.current_source)}`, String(s.current_source)) : t('diag.noData')}</td>
                       </tr>
@@ -181,18 +213,36 @@ export const DiagnosticPage = () => {
                           <h3>{b.kind === 'domain' ? domainName(b.domain) : sectionName(b.section)}</h3>
                           <p className="muted-note">{b.kind === 'domain' ? sectionName(b.section) : t('diag.wholeSection')}</p>
                         </div>
-                        {points != null ? <span className="impact">{t('diag.points', { points })}</span> : null}
+                        {points != null ? (
+                          <span className="impact">
+                            {b.impact_unit === 'overall_band'
+                              ? points > 0 ? t('diag.overallImpact', { band: points.toFixed(1) }) : t('diag.overallNoMove')
+                              : t('diag.points', { points })}
+                          </span>
+                        ) : null}
                       </div>
                       <p>
                         {b.kind === 'domain'
                           ? t('diag.domainLine', { current: num(b.current) ?? 0, target: num(b.target) ?? 0 })
-                          : t('diag.sectionLine', { current: num(b.current) ?? 0, target: num(b.target) ?? 0 })}
+                          : bands
+                            ? t('diag.bandLine', { current: (num(b.current) ?? 0).toFixed(1), target: (num(b.target) ?? 0).toFixed(1), gap: (num(b.gap) ?? 0).toFixed(1) })
+                            : t('diag.sectionLine', { current: num(b.current) ?? 0, target: num(b.target) ?? 0 })}
                       </p>
-                      <p className="muted-note">{t(b.impact_basis === 'domain_accuracy_gap' ? 'diag.basis.domain' : 'diag.basis.section')}</p>
+                      <p className="muted-note">{t(b.impact_basis === 'domain_accuracy_gap' ? 'diag.basis.domain' : b.impact_basis === 'overall_band_projection' ? 'diag.basis.overallBand' : b.impact_basis === 'section_band_gap' ? 'diag.basis.sectionBand' : 'diag.basis.section')}</p>
                       {evidence.length ? (
                         <ul className="evidence">
                           {evidence.map((e, j) => (
-                            <li key={j}>{dt(`evidence.${String(e.metric)}`, humanize(e.metric), { value: String(e.value ?? '—'), attempts: Number(rec(e.detail).attempts ?? 0) })} <span className="chip neutral">{dt(`source.${String(e.source)}`, String(e.source))}</span></li>
+                            <li key={j}>
+                              {dt(`evidence.${String(e.metric)}`, humanize(e.metric), {
+                                value: String(e.value ?? '—'),
+                                attempts: Number(rec(e.detail).attempts ?? 0),
+                                items: Number(rec(e.detail).items ?? 0),
+                                task: dt(`task.${String(rec(e.detail).task ?? '')}`, humanize(rec(e.detail).task)),
+                                cefr: String(rec(e.detail).cefr ?? ''),
+                                legacy: range(rec(e.detail).legacy_range),
+                              })}{' '}
+                              <span className="chip neutral">{dt(`source.${String(e.source)}`, String(e.source))}</span>
+                            </li>
                           ))}
                         </ul>
                       ) : null}
@@ -202,6 +252,11 @@ export const DiagnosticPage = () => {
                             ? <Link key={String(slug)} to={`/${String(slug)}`} className="btn ghost compact">{titleOf(String(slug))} <ArrowRight size={14} aria-hidden="true" /></Link>
                             : <span key={String(slug)} className="chip neutral">{titleOf(String(slug))} · {t('diag.comingSoon')}</span>
                         ))}
+                        {Array.isArray(b.practice_tasks) && b.practice_tasks.length && config.practice.kind === 'simulator_mode' ? (
+                          <a className="btn ghost compact" href={practiceHref(config, String(b.practice_tasks[0]))}>
+                            {t('practice.ctaTask', { exam: config.examName, task: dt(`task.${String(b.practice_tasks[0])}`, humanize(b.practice_tasks[0])) })}
+                          </a>
+                        ) : null}
                       </div>
                     </li>
                   );
@@ -235,9 +290,10 @@ export const DiagnosticPage = () => {
                   section: sectionName(params.section),
                   domain: params.domain ? domainName(params.domain) : '',
                   points: Number(params.points ?? 0),
+                  gap: Number(params.gap ?? 0).toFixed(1),
                   days: Number(params.days ?? 0),
-                  current: Number(params.current ?? 0),
-                  target: Number(params.target ?? 0),
+                  current: bands ? Number(params.current ?? 0).toFixed(1) : Number(params.current ?? 0),
+                  target: bands ? Number(params.target ?? 0).toFixed(1) : Number(params.target ?? 0),
                   score: Number(params.score ?? 0),
                 });
                 return (

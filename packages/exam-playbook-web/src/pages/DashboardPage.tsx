@@ -50,8 +50,13 @@ export const DashboardPage = () => {
   const profile = rec(data.profile);
   const result = rec(data.diagnostic?.recommendation_json);
   const hasDiagnostic = typeof result.version === 'string' && result.version.includes('diagnostic-v2');
-  const current = num(rec(result.current).total) ?? num(profile.current_score_or_estimate);
-  const target = num(profile.target_total_score);
+  const bands = config.scale === 'toefl_band';
+  // TOEFL: 1–6 bands (the legacy 0–120 columns are only a comparison).
+  const current = bands
+    ? num(rec(result.current).overall) ?? (profile.current_band != null ? Number(profile.current_band) : null)
+    : num(rec(result.current).total) ?? num(profile.current_score_or_estimate);
+  const target = bands ? (profile.target_band != null ? Number(profile.target_band) : null) : num(profile.target_total_score);
+  const show = (v: number | null) => (v == null ? '—' : bands ? v.toFixed(1) : String(v));
   const deadline = typeof profile.deadline_date === 'string' ? profile.deadline_date : null;
   const daysLeft = deadline ? Math.round((Date.parse(`${deadline}T00:00:00Z`) - Date.parse(`${todayIso()}T00:00:00Z`)) / 86400000) : null;
   const hasProfile = !!profile.user_id;
@@ -119,14 +124,20 @@ export const DashboardPage = () => {
 
       <section className="kpi-grid">
         <article className="kpi-card">
-          <span>{t('diag.target')}</span>
-          <strong>{target ?? '—'}</strong>
-          <p>{t('dash.targetHint')}</p>
+          <span>{bands ? t('diag.targetBand') : t('diag.target')}</span>
+          <strong>{show(target)}</strong>
+          <p>{bands ? t('dash.targetBandHint') : t('dash.targetHint')}</p>
         </article>
         <article className="kpi-card">
-          <span>{t('diag.current')}</span>
-          <strong>{current ?? '—'}</strong>
-          <p>{current != null && target != null ? (target > current ? t('dash.toGo', { points: target - current }) : t('diag.atTarget')) : t('dash.noCurrent')}</p>
+          <span>{bands ? t('diag.currentBand') : t('diag.current')}</span>
+          <strong>{show(current)}</strong>
+          <p>
+            {current != null && target != null
+              ? target > current
+                ? bands ? t('dash.bandsToGo', { bands: (target - current).toFixed(1) }) : t('dash.toGo', { points: target - current })
+                : t('diag.atTarget')
+              : t('dash.noCurrent')}
+          </p>
         </article>
         <article className="kpi-card">
           <span>{t('dash.testDate')}</span>
@@ -203,7 +214,9 @@ export const DashboardPage = () => {
               {bottlenecks.map((b) => (
                 <li key={String(b.key)}>
                   <strong>{b.kind === 'domain' ? dt(`domain.${String(b.domain)}`, humanize(b.domain)) : dt(`section.${String(b.section)}`, humanize(b.section))}</strong>
-                  {num(b.estimated_impact) != null ? ` · ${t('diag.points', { points: Number(b.estimated_impact) })}` : ''}
+                  {b.impact_unit === 'overall_band'
+                    ? num(b.gap) != null ? ` · ${t('dash.bandGap', { gap: Number(b.gap).toFixed(1) })}` : ''
+                    : num(b.estimated_impact) != null ? ` · ${t('diag.points', { points: Number(b.estimated_impact) })}` : ''}
                 </li>
               ))}
             </ol>
