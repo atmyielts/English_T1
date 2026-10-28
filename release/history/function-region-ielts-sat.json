@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "function-region-ielts-sat",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": [
+    "ielts-playbook",
+    "ielts-practice",
+    "ielts-simulator",
+    "sat-practice",
+    "sat-simulator"
+  ],
+  "migrations": [],
+  "edgeFunctions": [],
+  "workers": [],
+  "sharedEdgeConsumers": [],
+  "requiredSecrets": [],
+  "rolloutOrder": [
+    "pages"
+  ],
+  "manualFollowUps": [
+    "Pages: merging publishes ielts-playbook, ielts-practice, ielts-simulator, sat-practice and sat-simulator. Each entry point now first imports packages/edge-region, which adds ?forceFunctionRegion=ap-southeast-1 to requests for this project's Edge Functions so they run next to the Singapore database instead of at the learner's nearest edge (eu-central-1 for Uzbekistan). Auth, REST and storage calls are unchanged. VITE_SUPABASE_FUNCTION_REGION overrides it; an empty value turns it off. SAT Playbook already does this (#320). No function or database change."
+  ],
+  "verification": [
+    "In each app's browser network tab, requests to /functions/v1/ carry forceFunctionRegion=ap-southeast-1 and responses have x-sb-edge-region: ap-southeast-1.",
+    "IELTS Playbook public module median first-byte drops from about 1.5 s to about 1.1 s (measured 18 loads each); signed-in Practice and simulator calls improve at least as much since they make more database queries."
+  ],
+  "rollback": {
+    "pages": "Cloudflare Pages rollback of the five apps, or set VITE_SUPABASE_FUNCTION_REGION to an empty value and redeploy.",
+    "migration": "None.",
+    "edge": "None.",
+    "worker": "None."
+  }
+}
