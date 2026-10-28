@@ -1,5 +1,5 @@
-// Per-exam configuration for the shared exam playbook web app (SAT today).
-// apps/sat-playbook passes SAT_CONFIG to <PlaybookApp>. Slugs are the fixed content contract (section B).
+// Per-exam configuration for the shared exam playbook web app.
+// apps/sat-playbook passes SAT_CONFIG and apps/toefl-playbook TOEFL_CONFIG to <PlaybookApp>. Slugs are the fixed content contract (section B).
 
 export type ExamKey = 'sat' | 'toefl';
 
@@ -31,6 +31,10 @@ export type ExamConfig = {
   templates: string[];
   /** Module slug per section for landing cards. */
   sectionModules: Record<string, string[]>;
+  /** How scores are expressed: SAT scaled points or TOEFL 2026 bands (1–6). */
+  scale: 'sat_points' | 'toefl_band';
+  /** Practice deep links: module slug → simulator task id (sent as ?task=…). */
+  moduleTasks: Record<string, string>;
 };
 
 export const SAT_CONFIG: ExamConfig = {
@@ -79,6 +83,70 @@ export const SAT_CONFIG: ExamConfig = {
   sectionModules: {
     reading_writing: ['reading-writing-information-ideas', 'reading-writing-craft-structure', 'reading-writing-expression-of-ideas', 'reading-writing-conventions'],
     math: ['math-algebra', 'math-advanced-math', 'math-problem-solving-data-analysis', 'math-geometry-trigonometry'],
+  },
+  scale: 'sat_points',
+  moduleTasks: {},
+};
+
+export const TOEFL_CONFIG: ExamConfig = {
+  exam: 'toefl',
+  examName: 'TOEFL',
+  serviceName: 'TOEFL Playbook',
+  functionName: 'toefl-playbook',
+  productId: 'f9512c15-ec1c-4fcb-a5ec-a2c6ac3a020e',
+  productSlug: 'toefl-playbook',
+  appUrl: 'https://playbook.toefl.schood.online',
+  simulator: { url: 'https://toefl.schood.online', productId: 'b262ffa8-9912-4eba-93d7-58af3164d1cc', productSlug: 'toefl-ibt-simulator' },
+  // TOEFL practice is the simulator's practice mode, not a separate product.
+  practice: {
+    kind: 'simulator_mode',
+    url: 'https://toefl.schood.online/practice',
+    productId: 'b262ffa8-9912-4eba-93d7-58af3164d1cc',
+    productSlug: 'toefl-ibt-simulator',
+    nameKey: 'product.toeflSimulator',
+  },
+  completeBundleName: 'TOEFL Complete',
+  sections: ['reading', 'listening', 'writing', 'speaking'],
+  modules: [
+    'toefl-essentials',
+    'score-scale-2026',
+    'reading-complete-the-words',
+    'reading-daily-life-and-academic',
+    'listening-strategy',
+    'writing-build-a-sentence',
+    'writing-email',
+    'writing-academic-discussion',
+    'speaking-listen-and-repeat',
+    'speaking-take-an-interview',
+    'test-day-guide',
+    'score-goals-and-study-plans',
+    'retake-and-mybest-strategy',
+  ],
+  guides: [
+    'guide-band-4-to-5-roadmap',
+    'guide-band-5-to-6-roadmap',
+    'guide-complete-the-words-drills',
+    'guide-email-and-discussion-templates',
+    'guide-interview-answer-frameworks',
+    'guide-final-14-days',
+  ],
+  templates: ['four-week-sprint', 'eight-week-standard', 'twelve-week-foundation', 'speaking-writing-priority', 'reading-listening-priority'],
+  sectionModules: {
+    reading: ['reading-complete-the-words', 'reading-daily-life-and-academic'],
+    listening: ['listening-strategy'],
+    writing: ['writing-build-a-sentence', 'writing-email', 'writing-academic-discussion'],
+    speaking: ['speaking-listen-and-repeat', 'speaking-take-an-interview'],
+  },
+  scale: 'toefl_band',
+  // Task ids are the ones the TOEFL simulator scorer writes (toefl-2026.ts).
+  moduleTasks: {
+    'reading-complete-the-words': 'complete_the_words',
+    'reading-daily-life-and-academic': 'read_daily_life',
+    'writing-build-a-sentence': 'build_sentence',
+    'writing-email': 'write_email',
+    'writing-academic-discussion': 'write_academic_discussion',
+    'speaking-listen-and-repeat': 'listen_repeat',
+    'speaking-take-an-interview': 'take_interview',
   },
 };
 

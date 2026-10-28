@@ -1,5 +1,6 @@
 import { ArrowRight, Check, Crown, ExternalLink, Lock, LogIn } from 'lucide-react';
 import type { ReactNode } from 'react';
+import type { ExamConfig } from '../config';
 import { Link, Outlet } from 'react-router-dom';
 import { useT, type Key } from '../i18n';
 import { ApiError } from '../lib/api';
@@ -127,19 +128,24 @@ export const PremiumGate = ({ title, body, compact, source }: { title?: string; 
 };
 
 /** Practice link with an honest access label: included, or which product unlocks it. */
-export const PracticeAccess = ({ source, compact }: { source: string; compact?: boolean }) => {
+export const practiceHref = (config: ExamConfig, task?: string | null) =>
+  `${config.practice.url}${config.practice.kind === 'product' ? '/dashboard' : ''}?source=playbook${task ? `&task=${encodeURIComponent(task)}` : ''}`;
+
+export const PracticeAccess = ({ source, compact, task }: { source: string; compact?: boolean; task?: string | null }) => {
   const t = useT();
   const { config, access, api } = usePlaybook();
   const hasIt = access.hasProduct(config.practice.productId);
   const product = t(config.practice.nameKey as Key);
-  const href = `${config.practice.url}${config.practice.kind === 'product' ? '/dashboard' : ''}?source=playbook`;
-  const label = config.practice.kind === 'product' ? t('practice.cta') : t('practice.ctaSimulator', { exam: config.examName });
+  const href = practiceHref(config, task);
+  const label = config.practice.kind === 'product'
+    ? t('practice.cta')
+    : task ? t('practice.ctaTask', { exam: config.examName, task: t(`task.${task}` as Key) }) : t('practice.ctaSimulator', { exam: config.examName });
   return (
     <div className={`practice-access${compact ? ' compact' : ''}`}>
       <a
         className="btn ghost"
         href={href}
-        onClick={() => void api.track({ event_name: 'practice_click', metadata: { source, has_access: hasIt } }, access.token)}
+        onClick={() => void api.track({ event_name: 'practice_click', metadata: { source, has_access: hasIt, task: task ?? null } }, access.token)}
       >
         {label} <ExternalLink size={15} aria-hidden="true" />
       </a>

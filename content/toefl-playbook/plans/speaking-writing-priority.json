@@ -1,0 +1,168 @@
+{
+  "slug": "speaking-writing-priority",
+  "plan_type": "skill_recovery",
+  "title": "Speaking and Writing Priority",
+  "summary": "A 42-day recovery plan for learners whose Writing and/or Speaking bands sit at least half a band below their Reading and Listening (overall 3.5–5). Most hours go to Build a Sentence, the email, the discussion post, Listen and Repeat and the interview, with Reading and Listening kept in short maintenance sessions.",
+  "duration_days": 42,
+  "score_min": 58,
+  "score_max": 113,
+  "focus_section": "speaking",
+  "intensity": "moderate",
+  "schedule_json": {
+    "format": "toefl-ibt-2026",
+    "score_scale": "1-6",
+    "focus_sections": ["speaking", "writing"],
+    "weekly_hours": { "min": 8, "max": 11 },
+    "split": "About 70% Speaking and Writing, 30% Reading and Listening maintenance",
+    "daily_routine": [
+      "10 minutes: ten Listen and Repeat sentences, recorded and checked word by word",
+      "25–35 minutes: one timed writing task or one interview set",
+      "10 minutes: Build a Sentence items or a proofread of yesterday's writing",
+      "15 minutes (alternate days): Reading or Listening maintenance set"
+    ],
+    "weeks": [
+      {
+        "week": 1,
+        "label": "Week 1 · Baseline and productive audit",
+        "phase": "Diagnose",
+        "hours": 9,
+        "focus": ["Full mock baseline", "Writing and Speaking audit", "Personal error list"],
+        "tasks": [
+          "Full mock 1 in the TOEFL simulator; record all four section bands.",
+          "Audit Writing: Build a Sentence score, email bullets covered, discussion contribution, and every grammar error found.",
+          "Audit Speaking: Listen and Repeat sentences with any change, interview answers under about 35 seconds of content.",
+          "Write your personal top-five grammar errors on a card.",
+          "Remember the weight: Listen and Repeat is 35 of 55 raw Speaking points; Build a Sentence is 10 of 20 raw Writing points.",
+          "Weekly review: choose the first focus (Speaking or Writing) from the audit."
+        ],
+        "modules": ["score-scale-2026", "writing-build-a-sentence", "speaking-listen-and-repeat"],
+        "guides": ["guide-band-4-to-5-roadmap"],
+        "simulator": { "url": "https://toefl.schood.online/full-exam", "action": "Full mock 1" },
+        "checkpoint": { "measure": "Writing and Speaking audit complete", "target": "Gap between productive and receptive sections confirmed (0.5 band or more)" }
+      },
+      {
+        "week": 2,
+        "label": "Week 2 · Accuracy engines: Build a Sentence and Listen and Repeat",
+        "phase": "Repair",
+        "hours": 10,
+        "focus": ["Build a Sentence by structure", "Listen and Repeat exactness", "Thought groups"],
+        "tasks": [
+          "Three Build a Sentence sets; log each miss by structure (question order, relative clause, embedded question, passive).",
+          "Daily Listen and Repeat: ten sentences, one repetition each, function words and endings counted.",
+          "Thought-group routine: mark slashes and stress on five long sentences, repeat, record.",
+          "Two short Reading or Listening maintenance sets.",
+          "Weekly review: Build a Sentence accuracy and exact-repetition count."
+        ],
+        "modules": ["writing-build-a-sentence", "speaking-listen-and-repeat"],
+        "guides": ["guide-interview-answer-frameworks"],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Build a Sentence and Listen and Repeat sets" },
+        "checkpoint": { "measure": "Build a Sentence score and exact repetitions out of 10", "target": "Both higher than the week 1 audit" }
+      },
+      {
+        "week": 3,
+        "label": "Week 3 · The email and the interview",
+        "phase": "Repair",
+        "hours": 10,
+        "focus": ["Email frame and register", "Recall and Reaction frameworks", "Proofreading order"],
+        "tasks": [
+          "Three emails: one formal, one polite-efficient, one friendly, each in 7 minutes with the two-minute proofread.",
+          "Compare each email with the annotated models in the Email and Discussion Templates guide.",
+          "Two interviews focusing on the Recall and Reaction frameworks; record and self-score.",
+          "Shrinking-timer routine on two questions.",
+          "Section mock: Speaking in simulator practice; review.",
+          "Weekly review."
+        ],
+        "modules": ["writing-email", "speaking-take-an-interview"],
+        "guides": ["guide-email-and-discussion-templates", "guide-interview-answer-frameworks"],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Speaking section mock" },
+        "checkpoint": { "measure": "Speaking section mock band; emails with every bullet covered", "target": "Speaking at or above baseline; all bullets covered in 3 of 3 emails" }
+      },
+      {
+        "week": 4,
+        "label": "Week 4 · The discussion and opinion answers",
+        "phase": "Repair",
+        "hours": 10,
+        "focus": ["Discussion frame", "Position and Proposal frameworks", "Band 5–6 language"],
+        "tasks": [
+          "Three discussion posts in 10 minutes each; check that each one adds something new to the classmates' posts.",
+          "Rewrite one sentence per post with a limiting clause or precise contrast.",
+          "Two interviews focusing on the Position and Proposal frameworks.",
+          "Stress and intonation routine: contrast stress and new-information stress.",
+          "Section mock: Writing in simulator practice; review.",
+          "Weekly review."
+        ],
+        "modules": ["writing-academic-discussion", "speaking-take-an-interview"],
+        "guides": ["guide-email-and-discussion-templates", "guide-interview-answer-frameworks", "guide-band-5-to-6-roadmap"],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Writing section mock" },
+        "checkpoint": { "measure": "Writing section mock band", "target": "Writing at least half a band above baseline, or errors-found-later count halved" }
+      },
+      {
+        "week": 5,
+        "label": "Week 5 · Full mock 2 and fine-tuning",
+        "phase": "Check",
+        "hours": 10,
+        "focus": ["Full mock 2", "Productive error recount", "Receptive maintenance"],
+        "tasks": [
+          "Full mock 2 in the TOEFL simulator.",
+          "Recount productive error categories (W-grammar, W-word, W-task, S-exact, S-flow, S-develop).",
+          "Two sessions on the largest remaining category.",
+          "Check Reading and Listening have not dropped; add a maintenance session if they have.",
+          "Start the Final 14 Days guide if your test is two weeks away.",
+          "Weekly review."
+        ],
+        "modules": ["score-goals-and-study-plans"],
+        "guides": ["guide-band-4-to-5-roadmap", "guide-final-14-days"],
+        "simulator": { "url": "https://toefl.schood.online/full-exam", "action": "Full mock 2" },
+        "checkpoint": { "measure": "Mock 2 bands for all four sections", "target": "Gap between productive and receptive sections smaller than at baseline" }
+      },
+      {
+        "week": 6,
+        "label": "Week 6 · Consolidate and perform",
+        "phase": "Perform",
+        "hours": 8,
+        "focus": ["Timed productive pairs", "Top-ten error list", "Test-day routine"],
+        "tasks": [
+          "Two timed pairs: email plus discussion, and seven Listen and Repeat sentences plus one interview.",
+          "Write the top-ten error list, weighted toward Writing and Speaking.",
+          "Logistics: ID, recipients, equipment check (Home Edition) or route (test center).",
+          "Light practice only in the last three days.",
+          "Test day, or continue with the Eight-Week Standard plan if mock 2 showed the gap is still large."
+        ],
+        "modules": ["test-day-guide"],
+        "guides": ["guide-final-14-days"],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Timed productive pairs" },
+        "checkpoint": { "measure": "Final timed pairs reviewed", "target": "Every email bullet covered, every post adds a new point, Listen and Repeat mostly exact" }
+      }
+    ],
+    "checkpoints": [
+      { "week": 1, "check": "Full mock 1 and productive audit", "target_band": "Writing or Speaking ≥ 0.5 below Reading/Listening" },
+      { "week": 3, "check": "Speaking section mock", "target_band": "At or above Speaking baseline" },
+      { "week": 4, "check": "Writing section mock", "target_band": "+0.5 over Writing baseline" },
+      { "week": 5, "check": "Full mock 2", "target_band": "Productive gap narrower than baseline" }
+    ],
+    "decision_rules": [
+      "If Listen and Repeat exact repetitions do not rise by week 3, slow down: repeat shorter sentences perfectly before longer ones.",
+      "If the same grammar errors keep appearing, proofread only for your personal top five until they disappear.",
+      "If Reading or Listening drops by half a band, add two maintenance sessions a week."
+    ],
+    "simulator_cta": "https://toefl.schood.online/full-exam?source=playbook&plan=speaking-writing-priority",
+    "practice_cta": "https://toefl.schood.online/practice?source=playbook&plan=speaking-writing-priority"
+  },
+  "metadata": {
+    "band_entry_min": 3.5,
+    "band_entry_max": 5.0,
+    "band_target_min": 4.0,
+    "band_target_max": 5.5,
+    "cefr_entry": "B1–C1",
+    "cefr_target": "B2–C1",
+    "focus_sections": ["speaking", "writing"],
+    "primary_focus_note": "focus_section holds one value; this plan covers speaking and writing (see focus_sections)",
+    "entry_rule": "Writing and/or Speaking at least 0.5 band below Reading and Listening",
+    "weekly_hours_min": 8,
+    "weekly_hours_max": 11,
+    "full_mocks": 2,
+    "recommended_for": "Profile A learners: receptive skills strong, productive skills weaker.",
+    "score_window_basis": "score_min/score_max are the ETS 0-120 comparison totals for band 3.5 (58+) and the top of band 5.5 (113); band windows are in band_*",
+    "guarantee": "none: practice plan, not a score prediction"
+  }
+}

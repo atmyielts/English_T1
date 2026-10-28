@@ -33,11 +33,10 @@ const setup = (who: Who, db = new FakeDb()) => {
   return { call, db, authorizedFor };
 };
 
-Deno.test("admin: only enabled exams are accepted, checked before anything else", async () => {
+Deno.test("admin: only enabled exams (sat, toefl) are accepted, checked before anything else", async () => {
   const { call, authorizedFor } = setup("editor");
   assertEquals((await call("/pages")).status, 400);
   assertEquals((await call("/pages?exam=ielts")).body.code, "invalid_exam");
-  assertEquals((await call("/pages?exam=toefl")).body.code, "invalid_exam");
   assertEquals((await call("/pages?exam=__proto__")).body.code, "invalid_exam");
   assertEquals(authorizedFor, []);
 });
@@ -106,4 +105,23 @@ Deno.test("admin: diagnostic preview runs the engine without saving anything", a
   assertEquals(res.body.diagnostic.current.total, 1210);
   assert(res.body.diagnostic.bottlenecks.length > 0);
   assertEquals(db.calls.filter((c) => c.op !== "select").length, 0);
+});
+
+Deno.test("admin: exam=toefl authors the TOEFL tables with TOEFL block types and focus sections", async () => {
+  const { call, db, authorizedFor } = setup("editor");
+  const created = await call("/pages?exam=toefl", { method: "POST", body: { slug: "listening-strategy", title: "Listening strategy" } });
+  assertEquals(created.status, 200);
+  assertEquals(db.rows("toefl_playbook_pages")[0].product_id, "f9512c15-ec1c-4fcb-a5ec-a2c6ac3a020e");
+  assertEquals(db.rows("sat_playbook_pages").length, 0);
+  const pageId = created.body.page.id;
+  assertEquals((await call("/sections?exam=toefl", { method: "POST", body: { page_id: pageId, block_type: "domain_grid", content: {} } })).status, 400);
+  assertEquals((await call("/sections?exam=toefl", { method: "POST", body: { page_id: pageId, block_type: "skill_grid", content: { items: [] } } })).status, 200);
+  assertEquals((await call("/plan-templates?exam=toefl", { method: "POST", body: { slug: "x-plan", title: "x", duration_days: 28, focus_section: "math", schedule_json: {} } })).status, 400);
+  assertEquals((await call("/plan-templates?exam=toefl", { method: "POST", body: { slug: "x-plan", title: "x", duration_days: 28, focus_section: "speaking", score_max: 120, schedule_json: { weeks: [] } } })).status, 200);
+  const qa = await call("/qa?exam=toefl");
+  assertEquals(qa.body.modules.length, 13);
+  assertEquals(qa.body.modules.find((m: { slug: string }) => m.slug === "listening-strategy").status, "draft");
+  const diag = await call("/preview/diagnostic?exam=toefl", { method: "POST", body: { profile: { target_band: 5, section_current_bands: { reading: 4, listening: 4, writing: 4, speaking: 3 } } } });
+  assertEquals(diag.body.diagnostic.current.overall, 4);
+  assertEquals(authorizedFor.every((e) => e === "toefl"), true);
 });
