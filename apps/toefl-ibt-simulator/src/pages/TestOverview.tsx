@@ -5,6 +5,8 @@ import { MainLayout } from '../components/layout/MainLayout';
 import { supabase } from '../lib/supabase';
 import { createSession } from '../services/persistence';
 import { useAccess } from '../lib/useAccess';
+import { useAppT, type AppKey } from '../i18n';
+import { is2026Metadata } from '../features/toefl2026/tasks';
 
 type ExperienceRow = {
   id: string;
@@ -33,6 +35,7 @@ export const TestOverview: React.FC = () => {
   const location = useLocation();
   const { testId } = useParams<{ testId: string }>();
   const { userId, accessToken } = useAccess();
+  const t = useAppT();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -148,7 +151,7 @@ export const TestOverview: React.FC = () => {
     navigate(`${sessionBasePath}/${result.sessionId}/${firstSectionId}`);
   };
 
-  const startSectionOnly = async (sectionId: string) => {
+  const startSectionOnly = async (sectionId: string, groupIds?: string[]) => {
     if (!testId) return;
 
     setError(null);
@@ -160,7 +163,7 @@ export const TestOverview: React.FC = () => {
 
     const result = await createSession(accessToken, testId, {
       mode: 'section_only',
-      allowed_section_ids: [sectionId],
+      allowed_section_ids: groupIds && groupIds.length ? groupIds : [sectionId],
     });
 
     if (!result.sessionId) {
@@ -210,7 +213,31 @@ export const TestOverview: React.FC = () => {
             </div>
 
             <div className="p-8">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Sections</h2>
+              <h2 className="text-lg font-bold text-gray-900 mb-4">{t('overview.sections')}</h2>
+              {is2026Metadata(experience.metadata) ? (
+                <div className="space-y-3" data-testid="overview-2026">
+                  <p className="text-sm text-gray-600">{t('overview.intro')}</p>
+                  <p className="text-sm text-gray-600">{t('overview.adaptive')}</p>
+                  {Array.from(new Set(sections.map(sectionType))).map((type) => {
+                    const group = sections.filter((s) => sectionType(s) === type);
+                    const seconds = group.reduce((sum, s) => sum + (Number((s.metadata as any)?.duration_seconds) || 0), 0);
+                    return (
+                      <div key={type} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl border border-gray-100 bg-gray-50">
+                        <div className="min-w-0">
+                          <div className="font-bold text-gray-900">{t(`section.${type}` as AppKey)}</div>
+                          <div className="text-sm text-gray-600 break-words">{group.map((s) => s.name).join(' · ')}</div>
+                        </div>
+                        <div className="shrink-0 flex items-center gap-3">
+                          <div className="text-sm text-gray-600 flex items-center gap-2"><Clock size={16} /> {t('overview.minutes', { count: Math.round(seconds / 60) })}</div>
+                          <button onClick={() => void startSectionOnly(group[0].id, group.map((s) => s.id))} className="min-h-[44px] px-4 py-2 rounded-xl border border-gray-200 text-gray-900 font-semibold hover:bg-white transition-colors">
+                            {t('overview.take_skill')}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
               <div className="space-y-3">
                 {sections.map((s) => {
                   const duration = (s.metadata as any)?.duration_seconds as number | undefined;
@@ -237,6 +264,7 @@ export const TestOverview: React.FC = () => {
 
                 {sections.length === 0 ? <div className="text-gray-600">No sections found.</div> : null}
               </div>
+              )}
 
               <div className="mt-10 flex items-center justify-end gap-3 pt-6 border-t border-gray-100">
                 {resumeSession ? (
@@ -244,7 +272,7 @@ export const TestOverview: React.FC = () => {
                     onClick={() => startOrResume('resume')}
                     className="px-6 py-3 border border-gray-300 text-gray-900 font-bold rounded-xl hover:bg-gray-50 transition-colors"
                   >
-                    Resume
+                    {t('overview.resume')}
                   </button>
                 ) : null}
 
@@ -252,7 +280,7 @@ export const TestOverview: React.FC = () => {
                   onClick={() => startOrResume('new')}
                   className="px-8 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-2"
                 >
-                  <Play size={18} /> Start
+                  <Play size={18} /> {is2026Metadata(experience.metadata) ? t('overview.start') : 'Start'}
                 </button>
               </div>
             </div>
