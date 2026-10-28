@@ -1,0 +1,152 @@
+[
+  {
+    "key": "ets-test-overview-pdf",
+    "url": "https://www.ets.org/pdfs/toefl/toefl-ibt-test-overview.pdf",
+    "title": "ETS: Updated TOEFL iBT Test Overview (PDF)",
+    "summary": "Official overview of the updated test: section order, task types, item counts, approximate base times, sample tasks, the 1-6 band scale, CEFR mapping, the 0-120 concordance and the Writing and Speaking scoring guides."
+  },
+  {
+    "key": "ets-test-specifications-2026",
+    "url": "https://www.ets.org/content/dam/ets-org/pdfs/toefl/toefl-ibt-test-specifications-2026.pdf",
+    "title": "ETS: TOEFL iBT 2026 Update Test Blueprint and Specifications (PDF)",
+    "summary": "Official blueprint: claims per section, task types, CEFR ranges, target item counts, machine versus AI scoring, router and module timings, text and audio difficulty, and maximum points per item."
+  },
+  {
+    "key": "ets-score-scale-update-2026",
+    "url": "https://www.ets.org/content/dam/ets-org/pdfs/toefl/score-scale-update-2026.pdf",
+    "title": "ETS: A banded score scale for the TOEFL iBT test (April 2026, PDF)",
+    "summary": "ETS research report on the 1-6 banded scale: rationale, linking to the original 0-30/0-120 scale, CEFR mapping tables, performance descriptors and the IELTS score comparison."
+  },
+  {
+    "key": "ets-ibt-about",
+    "url": "https://www.ets.org/toefl/test-takers/ibt/about.html",
+    "title": "ETS: TOEFL iBT test resources and timing overview",
+    "summary": "Section and timing overview table, testing options, overall-score rounding example, note-taking, breaks, device rules and the rule that every section must be attempted for the test to be scored."
+  },
+  {
+    "key": "ets-ibt-content",
+    "url": "https://www.ets.org/toefl/test-takers/ibt/about/content.html",
+    "title": "ETS: What is on the TOEFL iBT test",
+    "summary": "Official entry point to the section-by-section description of the updated test content."
+  },
+  {
+    "key": "ets-ibt-content-reading",
+    "url": "https://www.ets.org/toefl/test-takers/ibt/about/content/reading.html",
+    "title": "ETS: TOEFL iBT Reading section",
+    "summary": "Official description of Complete the Words, Read in Daily Life and Read an Academic Passage."
+  },
+  {
+    "key": "ets-ibt-content-listening",
+    "url": "https://www.ets.org/toefl/test-takers/ibt/about/content/listening.html",
+    "title": "ETS: TOEFL iBT Listening section",
+    "summary": "Official description of Listen and Choose a Response, Listen to a Conversation, Listen to an Announcement and Listen to an Academic Talk, including note-taking and accents."
+  },
+  {
+    "key": "ets-ibt-content-writing",
+    "url": "https://www.ets.org/toefl/test-takers/ibt/about/content/writing.html",
+    "title": "ETS: TOEFL iBT Writing section",
+    "summary": "Official description of Build a Sentence, Write an Email and Write for an Academic Discussion."
+  },
+  {
+    "key": "ets-ibt-content-speaking",
+    "url": "https://www.ets.org/toefl/test-takers/ibt/about/content/speaking.html",
+    "title": "ETS: TOEFL iBT Speaking section",
+    "summary": "Official description of Listen and Repeat and Take an Interview."
+  },
+  {
+    "key": "ets-understand-scores",
+    "url": "https://www.ets.org/toefl/test-takers/ibt/scores/understand-scores.html",
+    "title": "ETS: TOEFL iBT scores - all you need to know",
+    "summary": "Score timing, validity, free and additional score reports, what changed on 21 January 2026, the 1-6 to 0-120 comparison table, MyBest scores on the new scale, cancellation, reinstatement and score review."
+  },
+  {
+    "key": "ets-get-scores",
+    "url": "https://www.ets.org/toefl/test-takers/ibt/scores/get-scores.html",
+    "title": "ETS: Getting your TOEFL iBT scores",
+    "summary": "When and how official scores, PDF score reports and mailed or express reports arrive."
+  },
+  {
+    "key": "ets-send-scores",
+    "url": "https://www.ets.org/toefl/test-takers/ibt/scores/send-scores.html",
+    "title": "ETS: Sending your TOEFL iBT scores",
+    "summary": "Free score recipients and their deadline, delivery times to institutions, and additional score reports."
+  },
+  {
+    "key": "ets-compare-scores",
+    "url": "https://www.ets.org/toefl/institutions/ibt/compare-scores.html",
+    "title": "ETS for institutions: Compare TOEFL iBT scores",
+    "summary": "Institution-facing tables for tests taken on or after 21 January 2026: 1-6 versus CEFR, 1-6 versus the 0-30/0-120 scales, and 1-6 versus IELTS."
+  },
+  {
+    "key": "ets-score-displays-blog",
+    "url": "https://www.ets.org/toefl/blog/understanding-toefl-ibt-score-displays.html",
+    "title": "ETS blog: Understanding TOEFL iBT score displays in 2026",
+    "summary": "ETS answers on the two-year transition: both formats on reports through January 2028, and why university pages show different formats."
+  },
+  {
+    "key": "ets-testing-options",
+    "url": "https://www.ets.org/toefl/test-takers/ibt/about/testing-options.html",
+    "title": "ETS: TOEFL iBT testing options",
+    "summary": "Test centre versus Home Edition: availability, dates and booking lead time."
+  },
+  {
+    "key": "ets-at-home-requirements",
+    "url": "https://www.ets.org/toefl/test-takers/ibt/register/at-home-requirements.html",
+    "title": "ETS: Equipment and environment requirements for at-home testing",
+    "summary": "Computer, speaker, microphone, camera and second-camera requirements, room rules, clothing rules and note-taking materials for the Home Edition."
+  },
+  {
+    "key": "ets-at-home-test-day",
+    "url": "https://www.ets.org/toefl/test-takers/ibt/test-day/at-home-test-day.html",
+    "title": "ETS: Your at-home test day",
+    "summary": "Home Edition check-in, identity verification, proctor interaction, behaviours that can invalidate a test and what to do about technical problems."
+  },
+  {
+    "key": "ets-test-center-test-day",
+    "url": "https://www.ets.org/toefl/test-takers/ibt/test-day/test-center-test-day.html",
+    "title": "ETS: What to expect at a test center",
+    "summary": "Arrival time, ID, prohibited items, security procedures and the report-or-cancel decision at a test centre."
+  },
+  {
+    "key": "ets-id-requirements",
+    "url": "https://www.ets.org/toefl/test-takers/ibt/register/id.html",
+    "title": "ETS: TOEFL iBT ID requirements",
+    "summary": "Acceptable identification by country and testing location."
+  },
+  {
+    "key": "ets-fees",
+    "url": "https://www.ets.org/toefl/test-takers/ibt/register/fees.html",
+    "title": "ETS: TOEFL iBT registration and service fees",
+    "summary": "Test fee by country and fees for late registration, rescheduling, reinstatement, additional score reports and score review."
+  },
+  {
+    "key": "ets-how-to-register",
+    "url": "https://www.ets.org/toefl/test-takers/ibt/register/how-to-register.html",
+    "title": "ETS: How to register for the TOEFL iBT test",
+    "summary": "Creating an ETS account and scheduling a test."
+  },
+  {
+    "key": "ets-faq-taking-the-test",
+    "url": "https://www.ets.org/toefl/test-takers/ibt/faq/taking-the-test.html",
+    "title": "ETS FAQ: Taking the test",
+    "summary": "Test length and check-in allowance, retake frequency (not more than once in a 3-day period) and the all-sections scoring rule."
+  },
+  {
+    "key": "ets-faq-score-reports",
+    "url": "https://www.ets.org/toefl/test-takers/ibt/faq/score-reports.html",
+    "title": "ETS FAQ: Scores and score reports",
+    "summary": "Unofficial Reading and Listening scores, MyBest scores, cancellation, reinstatement and what institutions see."
+  },
+  {
+    "key": "ets-bulletin",
+    "url": "https://www.ets.org/content/dam/ets-org/pdfs/toefl/toefl-ibt-bulletin.pdf",
+    "title": "ETS: TOEFL iBT Information Bulletin (PDF)",
+    "summary": "Complete registration, identification, testing, score reporting and policy rules."
+  },
+  {
+    "key": "ets-prepare",
+    "url": "https://www.ets.org/toefl/test-takers/ibt/prepare.html",
+    "title": "ETS: TOEFL iBT test preparation resources",
+    "summary": "Official preparation hub, including the self-paced sample test."
+  }
+]

@@ -23,11 +23,21 @@ export type TemplateTask = {
 
 export type TemplateDay = { day: number; weekday: string | null; minutes: number | null; tasks: TemplateTask[] };
 
-export type TemplateCheckpoint = { title: string | null; pass_rule: string | null; if_not: string | null; text: string | null };
+export type TemplateCheckpoint = {
+  title: string | null;
+  pass_rule: string | null;
+  if_not: string | null;
+  text: string | null;
+  /** What to measure (TOEFL plans). */
+  measure: string | null;
+  /** Band target for this checkpoint, e.g. "Overall +0.5 over mock 1" (TOEFL plans). */
+  target_band: string | null;
+};
 
 export type TemplateWeek = {
   index: number;
   label: string;
+  phase: string | null;
   focus: string[];
   hours: number | null;
   days: TemplateDay[];
@@ -48,6 +58,8 @@ export type TemplateMeta = {
   phases: Array<{ label: string; weeks: number[]; goal: string | null }>;
   modules: string[];
   guides: string[];
+  daily_routine: string[];
+  decision_rules: string[];
 };
 
 type Json = Record<string, unknown>;
@@ -109,7 +121,16 @@ const parseTask = (entry: unknown, knownSlugs?: ReadonlySet<string>, day: { day:
   if (typeof entry === "string") {
     const title = text(entry);
     if (!title) return null;
-    return { title, page_slug: linkedSlug(title) ?? findKnownSlug(title, knownSlugs), url: linkedUrl(title), minutes: null, ...day };
+    const prefix = day.day == null ? title.match(/^Days?\s+(\d)(?:\s*[–-]\s*\d)?\s*:/i) : null;
+    const dayFromText = prefix ? Number(prefix[1]) : null;
+    return {
+      title,
+      page_slug: linkedSlug(title) ?? findKnownSlug(title, knownSlugs),
+      url: linkedUrl(title),
+      minutes: null,
+      ...day,
+      day: day.day ?? (dayFromText != null && dayFromText >= 1 && dayFromText <= 7 ? dayFromText : null),
+    };
   }
   if (!isRecord(entry)) return null;
   const base = text(entry.title ?? entry.label ?? entry.task ?? entry.name ?? entry.activity ?? entry.description ?? entry.text ?? "");
@@ -128,27 +149,38 @@ const parseTask = (entry: unknown, knownSlugs?: ReadonlySet<string>, day: { day:
 };
 
 const parseCheckpoint = (value: unknown): TemplateCheckpoint | null => {
-  if (typeof value === "string") return value.trim() ? { title: null, pass_rule: null, if_not: null, text: text(value, 1200) } : null;
+  if (typeof value === "string") {
+    return value.trim() ? { title: null, pass_rule: null, if_not: null, text: text(value, 1200), measure: null, target_band: null } : null;
+  }
   if (!isRecord(value)) return null;
-  const cp = {
-    title: textOrNull(value.title ?? value.label, 200),
-    pass_rule: textOrNull(value.pass_rule ?? value.pass, 800),
+  const cp: TemplateCheckpoint = {
+    title: textOrNull(value.title ?? value.label ?? value.check, 200),
+    pass_rule: textOrNull(value.pass_rule ?? value.pass ?? value.target, 800),
     if_not: textOrNull(value.if_not ?? value.otherwise, 800),
     text: textOrNull(value.text ?? value.description, 1200),
+    measure: textOrNull(value.measure, 600),
+    target_band: textOrNull(value.target_band, 300),
   };
-  return cp.title || cp.pass_rule || cp.if_not || cp.text ? cp : null;
+  return Object.values(cp).some(Boolean) ? cp : null;
 };
 
 const mergeCheckpoints = (a: TemplateCheckpoint | null, b: TemplateCheckpoint | null): TemplateCheckpoint | null => {
   if (!a) return b;
   if (!b) return a;
-  return { title: b.title ?? a.title, pass_rule: b.pass_rule ?? a.pass_rule, if_not: b.if_not ?? a.if_not, text: a.text ?? b.text };
+  return {
+    title: b.title ?? a.title,
+    pass_rule: b.pass_rule ?? a.pass_rule,
+    if_not: b.if_not ?? a.if_not,
+    text: a.text ?? b.text,
+    measure: a.measure ?? b.measure,
+    target_band: b.target_band ?? a.target_band,
+  };
 };
 
 const parseWeek = (entry: unknown, index: number, knownSlugs?: ReadonlySet<string>): TemplateWeek | null => {
   if (typeof entry === "string") {
     const label = text(entry, 200);
-    return label ? { index, label, focus: [], hours: null, days: [], tasks: [], modules: [], checkpoint: null } : null;
+    return label ? { index, label, phase: null, focus: [], hours: null, days: [], tasks: [], modules: [], checkpoint: null } : null;
   }
   if (!isRecord(entry)) return null;
   let label = "";
@@ -189,7 +221,21 @@ const parseWeek = (entry: unknown, index: number, knownSlugs?: ReadonlySet<strin
     }
   }
   for (const key of ["practice", "simulator", "mock", "review"]) {
-    for (const value of asStringList(entry[key])) tasks.push({ title: value, page_slug: linkedSlug(value) ?? findKnownSlug(value, knownSlugs), url: linkedUrl(value), minutes: null, day: null, weekday: null });
+    const value = entry[key];
+    // { url, action } objects point at a tool (e.g. the simulator's practice mode).
+    if (isRecord(value) && (value.action || value.label || value.title)) {
+      const url = textOrNull(value.url, 800);
+      tasks.push({
+        title: text(value.action ?? value.label ?? value.title),
+        page_slug: null,
+        url: url && url.startsWith("https://") ? url : null,
+        minutes: null,
+        day: null,
+        weekday: null,
+      });
+      continue;
+    }
+    for (const item of asStringList(value)) tasks.push({ title: item, page_slug: linkedSlug(item) ?? findKnownSlug(item, knownSlugs), url: linkedUrl(item), minutes: null, day: null, weekday: null });
   }
   const modules: string[] = [];
   for (const key of MODULE_KEYS) {
@@ -203,6 +249,7 @@ const parseWeek = (entry: unknown, index: number, knownSlugs?: ReadonlySet<strin
   return {
     index,
     label: label || `#${index + 1}`,
+    phase: textOrNull(entry.phase, 120),
     focus,
     hours: numOrNull(entry.hours, 168),
     days,
@@ -294,6 +341,8 @@ export const normalizeTemplateMeta = (schedule: unknown): TemplateMeta => {
     })).filter((p) => p.label).slice(0, 12),
     modules: (Array.isArray(s.modules) ? s.modules : []).map(slugFrom).filter((x): x is string => !!x).slice(0, 30),
     guides: (Array.isArray(s.guides) ? s.guides : []).map(slugFrom).filter((x): x is string => !!x).slice(0, 30),
+    daily_routine: asStringList(s.daily_routine, 400).slice(0, 12),
+    decision_rules: asStringList(s.decision_rules, 600).slice(0, 12),
   };
 };
 
@@ -433,12 +482,12 @@ export const planItemsFromSchedule = (schedule: ScheduleResult, maxItems = 500):
     for (const cp of week.checkpoints) {
       items.push({
         kind: "task",
-        title: cp.title ?? cp.pass_rule ?? cp.text ?? week.label,
+        title: cp.title ?? cp.measure ?? cp.pass_rule ?? cp.text ?? week.label,
         page_slug: null,
         week_number: week.calendar_week,
         due_date: week.ends_on,
         sort_order: order++,
-        metadata: { checkpoint: true, pass_rule: cp.pass_rule, if_not: cp.if_not, text: cp.text },
+        metadata: { checkpoint: true, pass_rule: cp.pass_rule, if_not: cp.if_not, text: cp.text, measure: cp.measure, target_band: cp.target_band },
       });
     }
     if (week.tasks.length === 0 && week.modules.length === 0 && week.checkpoints.length === 0) {

@@ -2,6 +2,7 @@ import { assert, assertEquals } from "https://deno.land/std@0.224.0/assert/mod.t
 import { FakeDb } from "./exam-playbook-fake-db.test.ts";
 import { PUBLIC_CACHE, type PlaybookDeps, __resetEventThrottle, createPlaybookHandler } from "./exam-playbook.ts";
 import { SAT_PLAYBOOK_CONFIG } from "./sat-playbook.ts";
+import { TOEFL_PLAYBOOK_CONFIG } from "./toefl-playbook.ts";
 
 const learner = "11111111-1111-4111-8111-111111111111";
 const premiumLearner = "22222222-2222-4222-8222-222222222222";
@@ -255,4 +256,43 @@ Deno.test("section progress, notes and the AI coach are premium; coach reports u
   const answered = await call(aiHandler, `/pages/math-algebra/sections/${sectionId}/ask`, { method: "POST", token: "premium-token", body: { message: "Why reverse?" } });
   assertEquals(answered.body.messages.length, 2);
   assertEquals(answered.body.messages[1].ai, true);
+});
+
+Deno.test("TOEFL profile accepts 2026 bands and legacy 0-120 input, keeping both columns in sync", async () => {
+  const db = new FakeDb();
+  const { deps } = makeDeps(db);
+  const handler = createPlaybookHandler(TOEFL_PLAYBOOK_CONFIG, () => deps);
+  const patch = (body: unknown) => call(handler, "/profile", { method: "PATCH", token: "premium-token", fn: "toefl-playbook", body });
+  const band = await patch({ score_scale: "band_2026", target_band: 4.5, current_band: 4 });
+  assertEquals([band.body.profile.target_band, band.body.profile.target_total_score, band.body.profile.current_score_or_estimate], [4.5, 86, 72]);
+  const legacy = await patch({ score_scale: "legacy_120", target_total_score: 100, current_score_or_estimate: 80, legacy_section_scores: { reading: 22, speaking: 23 } });
+  assertEquals([legacy.body.profile.target_band, legacy.body.profile.current_band], [5, 4]);
+  assertEquals(legacy.body.profile.section_current_bands, { reading: 4.5, speaking: 4.5 });
+  assertEquals((await patch({ target_band: 7 })).status, 400);
+  assertEquals((await patch({ target_band: 4.3 })).body.profile.target_band, 4.5); // snapped to the half band
+  // A changed goal re-ran the diagnostic on the TOEFL tables.
+  assert(db.rows("toefl_playbook_recommendation_snapshots").length >= 1);
+  assertEquals(db.rows("sat_playbook_recommendation_snapshots").length, 0);
+});
+
+Deno.test("TOEFL diagnostic reads the TOEFL simulator's outcomes and writes TOEFL snapshots only", async () => {
+  const db = new FakeDb({
+    exam_outcomes: [{
+      id: "o1", user_id: premiumLearner, product_id: TOEFL_PLAYBOOK_CONFIG.simulatorProductId, status: "completed", computed_at: "2026-10-27T08:00:00Z",
+      raw_result: { toefl: { format: "toefl-2026", sections: { reading: { band: 4 }, listening: { band: 4 }, writing: { band: 3.5 }, speaking: { band: 3.5 } }, overall_band: 4, tasks: [] } },
+    }, {
+      id: "sat", user_id: premiumLearner, product_id: SAT_PLAYBOOK_CONFIG.simulatorProductId, status: "completed", computed_at: "2026-10-28T08:00:00Z",
+      raw_result: { sat: { reading_writing_score: 600, math_score: 600, total_score: 1200 } },
+    }],
+  });
+  const { deps } = makeDeps(db);
+  const handler = createPlaybookHandler(TOEFL_PLAYBOOK_CONFIG, () => deps);
+  await call(handler, "/profile", { method: "PATCH", token: "premium-token", fn: "toefl-playbook", body: { target_band: 5 } });
+  const run = await call(handler, "/diagnostic/run", { method: "POST", token: "premium-token", fn: "toefl-playbook" });
+  assertEquals(run.status, 200);
+  const rec = run.body.snapshot.recommendation_json;
+  assertEquals([rec.exam, rec.current.overall, rec.current.overall_cefr], ["toefl", 4, "B2"]);
+  assertEquals(rec.bottlenecks.map((b: { section: string }) => b.section), ["writing", "speaking", "reading", "listening"]);
+  assertEquals(run.body.snapshot.latest_exam_outcome_id, "o1");
+  assertEquals(db.rows("sat_playbook_recommendation_snapshots").length, 0);
 });

@@ -1,0 +1,138 @@
+{
+  "slug": "four-week-sprint",
+  "plan_type": "crash",
+  "title": "Four-Week Sprint",
+  "summary": "A high-intensity 28-day plan for learners within about half a band of their target (entry band 4–5, aiming up to 5.5). Two full mocks in the TOEFL simulator, two repair cycles driven by the error log, and a compressed final week.",
+  "duration_days": 28,
+  "score_min": 72,
+  "score_max": 113,
+  "focus_section": "all",
+  "intensity": "high",
+  "schedule_json": {
+    "format": "toefl-ibt-2026",
+    "score_scale": "1-6",
+    "weekly_hours": { "min": 10, "max": 14 },
+    "daily_routine": [
+      "20 minutes: one Complete the Words paragraph or one Listen and Repeat set (alternate days)",
+      "45–60 minutes: priority-category drills from the error log",
+      "20–30 minutes: maintenance for one strong section",
+      "10 minutes: log every miss with a category and a fix"
+    ],
+    "weeks": [
+      {
+        "week": 1,
+        "label": "Week 1 · Baseline and triage",
+        "phase": "Diagnose",
+        "hours": 12,
+        "focus": ["Full mock baseline", "Error log set-up", "Priority one drills"],
+        "tasks": [
+          "Day 1: full mock in the TOEFL simulator (full exam) at your test time of day, real section order, no pauses between sections.",
+          "Day 2: 90-minute review of the mock; record section bands and set up the error log with the 14 categories from the Band 4 to 5 Roadmap.",
+          "Days 3–4: 75 minutes a day on your largest error category, using the matching drill (Complete the Words, reply-type labelling, proofreading, or Listen and Repeat exactness).",
+          "Day 5: one timed email (7 minutes) and one academic discussion post (10 minutes), each with a two-minute proofread.",
+          "Day 6: ten Listen and Repeat sentences checked word by word, then one full four-question interview recorded and self-scored.",
+          "Day 7: weekly review: count categories, redo five old misses without answers, plan week 2."
+        ],
+        "modules": ["score-scale-2026", "toefl-essentials"],
+        "guides": ["guide-band-4-to-5-roadmap"],
+        "simulator": { "url": "https://toefl.schood.online/full-exam", "action": "Full mock 1" },
+        "checkpoint": {
+          "measure": "Baseline section bands and the overall band rounded to the nearest half; error log with 30+ entries",
+          "target": "Profile (A–D) identified and two priority categories chosen"
+        }
+      },
+      {
+        "week": 2,
+        "label": "Week 2 · Repair priority one",
+        "phase": "Repair",
+        "hours": 13,
+        "focus": ["Priority one repair", "Timed writing", "Speaking accuracy"],
+        "tasks": [
+          "Days 1–3: 60 minutes a day of priority-one drills; change the drill if accuracy has not moved by day 3.",
+          "Daily: one Complete the Words paragraph from the Complete the Words Drills guide, timed and logged.",
+          "Day 4: write one request to three readers (professor, office, classmate), then one timed email using the email frame.",
+          "Day 5: two interviews using the four answer frameworks; shrinking-timer routine on one question.",
+          "Day 6: section mock of the priority section in simulator practice, reviewed with the same protocol as a full mock.",
+          "Day 7: weekly review and plan; compare the section mock with the baseline band for that section."
+        ],
+        "modules": ["reading-complete-the-words", "writing-email", "speaking-take-an-interview"],
+        "guides": ["guide-complete-the-words-drills", "guide-email-and-discussion-templates", "guide-interview-answer-frameworks"],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Section mock of the priority section" },
+        "checkpoint": {
+          "measure": "Priority-section mock band compared with its baseline band; count of entries in the priority category",
+          "target": "Priority section at or above its baseline band and fewer priority-category misses than week 1"
+        }
+      },
+      {
+        "week": 3,
+        "label": "Week 3 · Full mock 2 and repair two",
+        "phase": "Repair",
+        "hours": 13,
+        "focus": ["Full mock 2", "Priority two repair", "Reschedule decision"],
+        "tasks": [
+          "Day 1: full mock 2 in the TOEFL simulator under the same conditions as mock 1.",
+          "Day 2: 90-minute review; compare both mocks section by section and recount the error categories.",
+          "Days 3–5: 60–75 minutes a day on the largest category from mock 2, plus 20 minutes of maintenance.",
+          "Day 5: decide whether to keep the test date; ETS requires rescheduling at least four full days before the test.",
+          "Day 6: one timed email, one discussion post, seven Listen and Repeat sentences and one interview.",
+          "Day 7: confirm free score recipients (the Bulletin deadline is 10 p.m. local test-center time the day before the test) and write your top-ten error list."
+        ],
+        "modules": ["score-goals-and-study-plans", "listening-strategy", "writing-academic-discussion"],
+        "guides": ["guide-band-4-to-5-roadmap", "guide-band-5-to-6-roadmap"],
+        "simulator": { "url": "https://toefl.schood.online/full-exam", "action": "Full mock 2" },
+        "checkpoint": {
+          "measure": "Mock 2 section bands and overall band versus mock 1",
+          "target": "Overall at target or within half a band of it, with no section more than one band below the target"
+        }
+      },
+      {
+        "week": 4,
+        "label": "Week 4 · Final days and test",
+        "phase": "Perform",
+        "hours": 8,
+        "focus": ["Light targeted practice", "Logistics", "Test-day routine"],
+        "tasks": [
+          "Days 1–2: 60 minutes a day: one short set of each section plus repair of your top-ten list.",
+          "Day 3: Home Edition: equipment check on the same weekday and time as the test, room set-up rehearsal; test center: route and arrival time (30 minutes early).",
+          "Day 4: 30 minutes of light mixed practice; ID checked against your ETS account name.",
+          "Day before the test: 20-minute warm-up only, read the top-ten list, pack, sleep at the usual time.",
+          "Test day: follow the test-center or Home Edition routine from the Final 14 Days guide; decide report or cancel by the rule you wrote in advance."
+        ],
+        "modules": ["test-day-guide", "retake-and-mybest-strategy"],
+        "guides": ["guide-final-14-days"],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Short warm-up sets only" },
+        "checkpoint": {
+          "measure": "Logistics checklist complete; top-ten error list written",
+          "target": "Test taken with the planned routine; report-or-cancel decision made by rule, not by mood"
+        }
+      }
+    ],
+    "checkpoints": [
+      { "week": 1, "check": "Full mock 1 bands recorded", "target_band": "Entry 4–5 overall" },
+      { "week": 2, "check": "Priority-section mock", "target_band": "Priority section at or above baseline" },
+      { "week": 3, "check": "Full mock 2", "target_band": "Within 0.5 of target overall" }
+    ],
+    "decision_rules": [
+      "If mock 2 is more than half a band below target overall, consider rescheduling and switching to the Eight-Week Standard plan.",
+      "If a priority category has not shrunk after one week, change the drill rather than adding hours.",
+      "Never schedule a full mock in the last three days before the test."
+    ],
+    "simulator_cta": "https://toefl.schood.online/full-exam?source=playbook&plan=four-week-sprint",
+    "practice_cta": "https://toefl.schood.online/practice?source=playbook&plan=four-week-sprint"
+  },
+  "metadata": {
+    "band_entry_min": 4.0,
+    "band_entry_max": 5.0,
+    "band_target_min": 4.5,
+    "band_target_max": 5.5,
+    "cefr_entry": "B2–C1",
+    "cefr_target": "B2–C1",
+    "focus_sections": ["reading", "listening", "writing", "speaking"],
+    "weekly_hours_min": 10,
+    "weekly_hours_max": 14,
+    "full_mocks": 2,
+    "recommended_for": "A test date about four weeks away and a gap of half a band or less.",
+    "score_window_basis": "score_min/score_max are the ETS 0-120 comparison totals for band 4 (72+) and the top of band 5.5 (113); band windows are in band_*",
+    "guarantee": "none: practice plan, not a score prediction"
+  }
+}

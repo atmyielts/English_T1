@@ -1,0 +1,209 @@
+{
+  "slug": "eight-week-standard",
+  "plan_type": "balanced",
+  "title": "Eight-Week Standard",
+  "summary": "A balanced 56-day plan for learners at band 3.5–4.5 aiming for 4.5–5. Three full mocks in the TOEFL simulator, two four-week repair cycles, every section in contact every week, and a final week built from the Final 14 Days guide.",
+  "duration_days": 56,
+  "score_min": 58,
+  "score_max": 106,
+  "focus_section": "all",
+  "intensity": "moderate",
+  "schedule_json": {
+    "format": "toefl-ibt-2026",
+    "score_scale": "1-6",
+    "weekly_hours": { "min": 8, "max": 12 },
+    "daily_routine": [
+      "15–20 minutes: one Complete the Words paragraph or ten Listen and Repeat sentences",
+      "40–50 minutes: priority-section drills",
+      "15–20 minutes: maintenance for another section (rotate)",
+      "10 minutes: error log"
+    ],
+    "weekly_rhythm": [
+      "Two heavier days (timed sets or a mock)",
+      "Three focused drill days",
+      "One review day (60 minutes, error-log counts and plan)",
+      "One rest day"
+    ],
+    "weeks": [
+      {
+        "week": 1,
+        "label": "Week 1 · Baseline and profile",
+        "phase": "Diagnose",
+        "hours": 9,
+        "focus": ["Full mock baseline", "Profile A–D", "Error log"],
+        "tasks": [
+          "Full mock 1 in the TOEFL simulator (full exam), real order, no pauses.",
+          "Review the mock and write section bands, timing notes and your profile (A–D) from the Band 4 to 5 Roadmap.",
+          "Set up the error log with the 14 categories and log every miss from the mock.",
+          "Read the Score Scale 2026 module and write your exact target: overall band, section minimums, deadline.",
+          "Two short drill sessions on the largest category.",
+          "Weekly review: choose priority section and maintenance section for weeks 2–4."
+        ],
+        "modules": ["toefl-essentials", "score-scale-2026", "score-goals-and-study-plans"],
+        "guides": ["guide-band-4-to-5-roadmap"],
+        "simulator": { "url": "https://toefl.schood.online/full-exam", "action": "Full mock 1" },
+        "checkpoint": { "measure": "Baseline bands and 30+ log entries", "target": "Priority section chosen with evidence" }
+      },
+      {
+        "week": 2,
+        "label": "Week 2 · Priority section foundations",
+        "phase": "Build",
+        "hours": 9,
+        "focus": ["Priority section drills", "Complete the Words routine", "Build a Sentence accuracy"],
+        "tasks": [
+          "Four sessions of priority-section drills matched to its largest category.",
+          "Daily Complete the Words paragraph using the five-step routine; log misses by type (SLOT, FAMILY, AGREE, PHRASE, SMALL, SPELL, VOCAB).",
+          "Two Build a Sentence sets in simulator practice; log every miss by sentence structure.",
+          "One listening session with reply-type labelling for Listen and Choose a Response.",
+          "One speaking session: Listen and Repeat exactness and one interview.",
+          "Weekly review: measure drill accuracy for the priority category."
+        ],
+        "modules": ["reading-complete-the-words", "writing-build-a-sentence", "listening-strategy"],
+        "guides": ["guide-complete-the-words-drills"],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Task-type sets" },
+        "checkpoint": { "measure": "Priority drill accuracy measured twice", "target": "Accuracy trend recorded (no change after two weeks means change the drill)" }
+      },
+      {
+        "week": 3,
+        "label": "Week 3 · Timed sets and productive feedback",
+        "phase": "Build",
+        "hours": 10,
+        "focus": ["Timed priority sets", "Email frame", "Interview frameworks"],
+        "tasks": [
+          "Three timed sets of the priority section.",
+          "Two timed emails (7 minutes) and one discussion post (10 minutes) with the two-minute proofread.",
+          "Two interviews using the Recall, Reaction, Position and Proposal frameworks, recorded and self-scored.",
+          "Thought-group and stress routine on one model answer.",
+          "Maintenance: one reading or listening set.",
+          "Weekly review."
+        ],
+        "modules": ["writing-email", "speaking-take-an-interview"],
+        "guides": ["guide-email-and-discussion-templates", "guide-interview-answer-frameworks"],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Timed sets" },
+        "checkpoint": { "measure": "Two timed writing tasks reviewed line by line", "target": "Every email bullet covered; proofread catches most errors" }
+      },
+      {
+        "week": 4,
+        "label": "Week 4 · Section mock and first re-check",
+        "phase": "Check",
+        "hours": 10,
+        "focus": ["Priority section mock", "Review protocol", "Plan cycle two"],
+        "tasks": [
+          "Section mock of the priority section in simulator practice.",
+          "Full review with the 90-minute protocol; recount categories.",
+          "Two drill sessions on whatever is still largest.",
+          "One academic discussion post and one interview.",
+          "Choose the second priority section for weeks 5–7.",
+          "Weekly review."
+        ],
+        "modules": ["reading-daily-life-and-academic", "writing-academic-discussion"],
+        "guides": ["guide-band-4-to-5-roadmap"],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Section mock" },
+        "checkpoint": { "measure": "Priority section band vs baseline", "target": "At least half a band above baseline in the priority section, or a clear drop in its error count" }
+      },
+      {
+        "week": 5,
+        "label": "Week 5 · Second priority",
+        "phase": "Build",
+        "hours": 10,
+        "focus": ["Second priority drills", "Maintain the first", "Listening structure"],
+        "tasks": [
+          "Four sessions on the second priority section.",
+          "Two short maintenance sessions for the first priority section.",
+          "Three academic talks with purpose-and-structure notes.",
+          "Ten Listen and Repeat sentences on three days.",
+          "One email to a new reader type (office or manager).",
+          "Weekly review."
+        ],
+        "modules": ["listening-strategy", "speaking-listen-and-repeat"],
+        "guides": ["guide-interview-answer-frameworks"],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Second-priority sets" },
+        "checkpoint": { "measure": "Error categories counted", "target": "Total misses per set falling in both priority sections" }
+      },
+      {
+        "week": 6,
+        "label": "Week 6 · Full mock 2 and re-profile",
+        "phase": "Check",
+        "hours": 11,
+        "focus": ["Full mock 2", "Re-profile", "Adjust plan"],
+        "tasks": [
+          "Full mock 2 in the TOEFL simulator under the same conditions as mock 1.",
+          "Review and compare with mock 1 section by section.",
+          "Re-check your profile; if it changed, change the priority for week 7.",
+          "Two drill sessions on the two largest categories.",
+          "One timed writing pair (email and discussion).",
+          "Weekly review."
+        ],
+        "modules": ["score-goals-and-study-plans"],
+        "guides": ["guide-band-4-to-5-roadmap"],
+        "simulator": { "url": "https://toefl.schood.online/full-exam", "action": "Full mock 2" },
+        "checkpoint": { "measure": "Full mock 2 bands", "target": "Overall at least half a band above mock 1, or within half a band of target" }
+      },
+      {
+        "week": 7,
+        "label": "Week 7 · Close the two biggest gaps",
+        "phase": "Repair",
+        "hours": 10,
+        "focus": ["Two largest categories", "Repeat-error rate", "Final 14 Days start"],
+        "tasks": [
+          "Start the Final 14 Days guide: run its Day 14 to Day 8 tasks this week.",
+          "Four drill sessions on the two largest categories from mock 2.",
+          "Redo ten old log entries without answers; count how many you now get right.",
+          "Reschedule decision by the end of the week if needed (ETS: at least four full days before the test).",
+          "Confirm score recipients.",
+          "Weekly review."
+        ],
+        "modules": ["test-day-guide"],
+        "guides": ["guide-final-14-days"],
+        "simulator": { "url": "https://toefl.schood.online/full-exam", "action": "Full mock 3 at the end of the week" },
+        "checkpoint": { "measure": "Repeat-error rate on old log entries", "target": "Most old entries now answered correctly" }
+      },
+      {
+        "week": 8,
+        "label": "Week 8 · Final week and test",
+        "phase": "Perform",
+        "hours": 8,
+        "focus": ["Final mock review", "Logistics", "Test-day routine"],
+        "tasks": [
+          "Review full mock 3 and write the top-ten error list.",
+          "Run the Final 14 Days guide's Day 6 to Day 1 tasks.",
+          "Home Edition: equipment check and room rehearsal; test center: route and 30-minute early arrival.",
+          "Light practice only in the last three days; no full mocks.",
+          "Test day: follow the routine and the report-or-cancel rule you wrote in advance."
+        ],
+        "modules": ["test-day-guide", "retake-and-mybest-strategy"],
+        "guides": ["guide-final-14-days"],
+        "simulator": { "url": "https://toefl.schood.online/practice", "action": "Warm-up sets" },
+        "checkpoint": { "measure": "Mock 3 bands and logistics checklist", "target": "Decision: test as planned, or extend with the Twelve-Week Foundation or a priority plan" }
+      }
+    ],
+    "checkpoints": [
+      { "week": 1, "check": "Full mock 1", "target_band": "Entry 3.5–4.5 overall" },
+      { "week": 4, "check": "Priority-section mock", "target_band": "Priority section +0.5 over baseline" },
+      { "week": 6, "check": "Full mock 2", "target_band": "Overall +0.5 over mock 1 or within 0.5 of target" },
+      { "week": 7, "check": "Full mock 3", "target_band": "At target or within a quarter band" }
+    ],
+    "decision_rules": [
+      "No movement in a priority section after two full mocks four weeks apart: re-label the last 30 log entries before changing anything else.",
+      "If one section drops while you push another, add two maintenance sessions a week for it.",
+      "If mock 2 shows Writing or Speaking at least half a band below Reading and Listening, switch weeks 7–8 to the Speaking and Writing Priority plan's final weeks."
+    ],
+    "simulator_cta": "https://toefl.schood.online/full-exam?source=playbook&plan=eight-week-standard",
+    "practice_cta": "https://toefl.schood.online/practice?source=playbook&plan=eight-week-standard"
+  },
+  "metadata": {
+    "band_entry_min": 3.5,
+    "band_entry_max": 4.5,
+    "band_target_min": 4.5,
+    "band_target_max": 5.0,
+    "cefr_entry": "B1–B2",
+    "cefr_target": "B2–C1",
+    "focus_sections": ["reading", "listening", "writing", "speaking"],
+    "weekly_hours_min": 8,
+    "weekly_hours_max": 12,
+    "full_mocks": 3,
+    "recommended_for": "A test date about two months away and a gap of up to one band.",
+    "score_window_basis": "score_min/score_max are the ETS 0-120 comparison totals for band 3.5 (58+) and the top of band 5 (106); band windows are in band_*",
+    "guarantee": "none: practice plan, not a score prediction"
+  }
+}

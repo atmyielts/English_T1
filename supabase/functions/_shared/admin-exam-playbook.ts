@@ -1,4 +1,4 @@
-// Admin authoring for the exam playbooks (one function, `?exam=<exam>`; only `sat` is enabled).
+// Admin authoring for the exam playbooks (one function, `?exam=sat|toefl`).
 // Modelled on admin-ielts-playbook: pages, sections, sources, plan templates,
 // publish/unpublish, preview (drafts included), QA coverage and analytics.
 // Authorisation uses the shared admin-access helper (MFA/session policy, rate
@@ -23,12 +23,14 @@ import {
 } from "./exam-playbook.ts";
 import { normalizeTemplateWeeks } from "./exam-playbook-plan.ts";
 import { SAT_PLAYBOOK_CONFIG } from "./sat-playbook.ts";
+import { TOEFL_PLAYBOOK_CONFIG } from "./toefl-playbook.ts";
 
 export const ADMIN_ROUTE_MARKER = "/admin-exam-playbook";
 
 /** Enabled exams. The engine is exam-parameterised; other playbooks are added here when they ship. */
 export const EXAM_CONFIGS: Record<string, ExamPlaybookConfig> = {
   sat: SAT_PLAYBOOK_CONFIG,
+  toefl: TOEFL_PLAYBOOK_CONFIG,
 };
 
 export const PAGE_TYPES = ["module", "guide", "study_plan", "resource", "myth", "update", "test_day", "result_strategy", "faq"];

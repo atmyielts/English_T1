@@ -1,0 +1,62 @@
+[
+  {
+    "key": "blueprint",
+    "title": "TOEFL iBT Test: 2026 Update. Test Blueprint and Specifications",
+    "url": "https://www.ets.org/content/dam/ets-org/pdfs/toefl/toefl-ibt-test-specifications-2026.pdf",
+    "summary": "ETS blueprint for the 2026 test: task types, item counts, CEFR ranges, timing, two-stage adaptive Reading and Listening, linear Writing and Speaking, and maximum points per item.",
+    "document_date": "2026",
+    "verified_at": "2026-10-24T00:00:00Z"
+  },
+  {
+    "key": "scale",
+    "title": "A banded score scale for the TOEFL iBT test: rationale, development, and score linking",
+    "url": "https://www.ets.org/content/dam/ets-org/pdfs/toefl/score-scale-update-2026.pdf",
+    "summary": "ETS report (April 2026) on the 1-6 band scale: CEFR alignment, the mapping to the 0-30 and 0-120 scales, how the overall band is averaged and rounded, and the performance descriptors per band.",
+    "document_date": "2026-04",
+    "verified_at": "2026-10-24T00:00:00Z"
+  },
+  {
+    "key": "overview",
+    "title": "Updated TOEFL iBT Test Overview",
+    "url": "https://www.ets.org/content/dam/ets-org/pdfs/toefl/toefl-ibt-test-at-a-glance.pdf",
+    "summary": "ETS overview of the updated test: section order, sample tasks for every task type, task timing for Write an Email, Write for an Academic Discussion and Take an Interview, and the Writing and Speaking scoring guides.",
+    "document_date": "2026",
+    "verified_at": "2026-10-24T00:00:00Z"
+  },
+  {
+    "key": "content",
+    "title": "TOEFL iBT Test Content: sections, timing and scoring",
+    "url": "https://www.ets.org/toefl/test-takers/ibt/about/content.html",
+    "summary": "ETS page listing items and approximate base time per section, test options (test center or Home Edition), overall-score rounding, the 0-120 transition score, breaks and note-taking.",
+    "verified_at": "2026-10-24T00:00:00Z"
+  },
+  {
+    "key": "scores",
+    "title": "TOEFL iBT Scores: all you need to know",
+    "url": "https://www.ets.org/toefl/test-takers/ibt/scores/understand-scores.html",
+    "summary": "ETS score guidance: score release timing, validity, free score reports, MyBest scores, the 1-6 to 0-30 / 0-120 comparison table and score reviews.",
+    "verified_at": "2026-10-24T00:00:00Z"
+  },
+  {
+    "key": "bulletin",
+    "title": "2026-2027 TOEFL iBT Information Bulletin",
+    "url": "https://www.ets.org/pdfs/toefl/toefl-ibt-bulletin.pdf",
+    "summary": "ETS policies in effect July 2026 to June 2027: retake rule, rescheduling, ID, test-center arrival, Home Edition check-in and note-taking, breaks, unofficial scores, score cancellation and reinstatement, score reports and score reviews.",
+    "document_date": "2026-07",
+    "verified_at": "2026-10-24T00:00:00Z"
+  },
+  {
+    "key": "home",
+    "title": "Equipment and Environment Requirements for At Home Testing",
+    "url": "https://www.ets.org/toefl/test-takers/ibt/register/at-home-requirements.html",
+    "summary": "ETS requirements for the TOEFL iBT Home Edition: computer and operating system, speaker and microphone (no headsets), camera, room, desk, clothing and note-taking materials.",
+    "verified_at": "2026-10-24T00:00:00Z"
+  },
+  {
+    "key": "homerules",
+    "title": "TOEFL iBT Home Edition Rules and Guidelines",
+    "url": "https://www.ets.org/toefl/test-takers/ibt/transcript/home-edition-rules-and-guidelines.html",
+    "summary": "ETS summary of Home Edition conduct rules: private room, clear desk, no headphones, erasable note-taking only, no breaks and no one else in the room.",
+    "verified_at": "2026-10-24T00:00:00Z"
+  }
+]
