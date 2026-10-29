@@ -140,15 +140,6 @@ export function createEngagePostgres(db: EngageDatabase): EngageRepository {
       return rows.length > 0;
     },
     async clearBirthDate(userId) { check(await db.from('ai_engage_profiles').update({ birth_date: null }).eq('user_id', userId)); },
-    async settings() {
-      const row = check<Row | null>(await db.from('ai_engage_settings').select('*').eq('id', 1).maybeSingle());
-      return { talentPoolEnabled: row?.talent_pool_enabled === true, updatedBy: str(row?.updated_by), updatedAt: str(row?.updated_at) };
-    },
-    async saveSettings(patch, actor) {
-      const row = check<Row>(await db.from('ai_engage_settings').upsert({ id: 1, ...(patch.talentPoolEnabled === undefined ? {} : { talent_pool_enabled: patch.talentPoolEnabled }), updated_by: actor, updated_at: new Date().toISOString() }, { onConflict: 'id' }).select('*').single());
-      return { talentPoolEnabled: row.talent_pool_enabled === true, updatedBy: str(row.updated_by), updatedAt: str(row.updated_at) };
-    },
-
     // --- XP -------------------------------------------------------------------------------------
     async ingest(userId, now) {
       const result = obj(await rpc('ai_engage_ingest', { p_user: userId, p_now: now.toISOString() }));

@@ -2,7 +2,7 @@ import type { LearningEvent, SchoodAIRepository } from '../types.ts';
 import { DAILY_XP_CAP, DEFAULT_NOTIFY_HOUR, DEFAULT_TIME_ZONE, eventXp, inQuietHours, localParts, weekStart } from './rules.ts';
 import type { EngageRepository, ProfilePatch } from './store.ts';
 import type {
-  BoardRow, CentreBoardRow, CertificateRow, DateRow, DayRow, EngageProfile, EngageSettings, EventRow, EventSponsor, FreezeBuy, GoalRow, JourneyRow,
+  BoardRow, CentreBoardRow, CertificateRow, DateRow, DayRow, EngageProfile, EventRow, EventSponsor, FreezeBuy, GoalRow, JourneyRow,
   LeagueGroup, LeagueMember, OutboxRow, PassportItem, PassportLink, PassportRow, SampleRow, SittingRow, SittingSignal, SquadMember, SquadRow,
   StoryEpisodeCache, StoryProgress, StoryResult, TalentAudit, TalentEmployer, TalentProfile, XpRow,
 } from './types.ts';
@@ -32,7 +32,6 @@ export function createEngageMemory(options: { core: SchoodAIRepository; now: () 
   const eventLog: EventRow[] = [];
   const profiles = new Map<string, EngageProfile>(), cursors = new Map<string, number>();
   const xp: XpRow[] = [], days = new Map<string, DayRow & { userId: string }>();
-  let settings: EngageSettings = { talentPoolEnabled: false, updatedBy: null, updatedAt: null };
   const freezes: FreezeBuy[] = [];
   const groups = new Map<string, LeagueGroup>(), members: LeagueMember[] = [];
   const journeys: JourneyRow[] = [], goals: GoalRow[] = [], dateRows: DateRow[] = [];
@@ -93,8 +92,6 @@ export function createEngageMemory(options: { core: SchoodAIRepository; now: () 
       return Promise.resolve(true);
     },
     clearBirthDate(userId) { profiles.set(userId, { ...profileOf(userId), birthDate: null }); return Promise.resolve(); },
-    settings: () => Promise.resolve(clone(settings)),
-    saveSettings(patch, actor) { settings = { ...settings, ...patch, updatedBy: actor, updatedAt: iso() }; return Promise.resolve(clone(settings)); },
 
     // --- XP ----------------------------------------------------------------------------
     ingest(userId) {

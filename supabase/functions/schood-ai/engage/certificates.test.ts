@@ -106,8 +106,10 @@ Deno.test('E13: the talent pool ships off; adults only; explicit consent; every 
   const f = engageFixture();
   equal((await f.get('talent')).body.enabled, false);
   equal((await f.post('talent-consent', { consent: true, version: 'talent-2026-10' })).body.code, 'feature_off');
-  equal((await f.post('talent-switch', { enabled: true }, 'tok-plus')).body.code, 'admin_required');
-  equal((await f.post('talent-switch', { enabled: true }, 'tok-admin')).body.enabled, true);
+  // The owner turns it on in the admin console (core switches; this one is off unless set).
+  const toggle = (on: boolean) => f.json('PATCH', 'admin/settings', { token: 'tok-admin', body: { features: { 'engage.talent_pool': on } } });
+  equal((await toggle(true)).status, 200);
+  equal((await f.get('talent')).body.enabled, true);
 
   equal((await f.post('talent-consent', { consent: true, version: 'talent-2026-10' })).body.code, 'adults_only', 'unknown age is never in the pool');
   await f.adult();
@@ -131,8 +133,8 @@ Deno.test('E13: the talent pool ships off; adults only; explicit consent; every 
   equal(seen.map((row: { organisation: string; action: string }) => [row.organisation, row.action]), [['Navro Tech', 'view']], 'the learner sees who looked');
   equal((await f.get('talent-audit', 'tok-outsider')).body.audit.map((row: { action: string }) => row.action), ['view', 'search']);
 
-  await f.post('talent-switch', { enabled: false }, 'tok-admin');
+  await toggle(false);
   equal((await f.post('talent-withdraw', {})).body.profile.opted_in, false, 'withdrawal works even while the pool is off');
-  await f.post('talent-switch', { enabled: true }, 'tok-admin');
+  await toggle(true);
   equal((await f.get('talent-search', 'tok-outsider', { skill: 'sales' })).body.results.length, 0, 'gone from every search at once');
 });

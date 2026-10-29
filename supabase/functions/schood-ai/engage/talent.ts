@@ -1,3 +1,4 @@
+import { switchState } from '../../../../packages/ai-core/src/mod.ts';
 import { bool, oneOf, optionalText, optionalUuid, record, stringList, text, uuid } from '../input.ts';
 import type { RequestContext } from '../types.ts';
 import { begin, refuse, requireSchoodAdmin, type Engage } from './base.ts';
@@ -7,6 +8,7 @@ import { isAdult, isRegion, REGIONS } from './rules.ts';
 // by employers, universities and centres through their Skill Passport.
 //   - Consent is explicit, versioned and can be withdrawn at any time, even while the
 //     pool is switched off. Withdrawal removes the person from every search at once.
+//   - The switch is the core admin console's `engage.talent_pool`; off until set to on.
 //   - Never minors: only people who told us a birth date 18 or more years ago, checked
 //     again at every search. Unknown age means not eligible.
 //   - Employers are granted by a Schood admin under a contract. Every search and every
@@ -18,7 +20,12 @@ export const CONSENT_VERSION = 'talent-2026-10';
 export const TALENT_SKILLS = ['english_speaking', 'english_writing', 'ielts', 'sales', 'customer_service', 'public_speaking', 'interviews', 'admission_maths'] as const;
 export const OPEN_TO = ['job', 'internship', 'university', 'centre'] as const;
 
-async function enabled(e: Engage) { return (await e.b.repo.settings()).talentPoolEnabled; }
+/**
+ * The pool is on only when a Schood admin set the core switch `engage.talent_pool` to on in
+ * the admin console. Core switches are on unless listed; this one is off unless listed as on.
+ */
+export const TALENT_SWITCH = 'engage.talent_pool';
+async function enabled(e: Engage) { return switchState((await e.ctx.repo.settings()).features, TALENT_SWITCH) === true; }
 async function activeEmployer(e: Engage) {
   const row = await e.b.repo.talentEmployer(e.userId);
   return row && (!row.activeUntil || Date.parse(row.activeUntil) > e.now.getTime()) ? row : null;
@@ -143,13 +150,4 @@ export async function grantEmployer(ctx: RequestContext) {
   const row = await e.b.repo.saveTalentEmployer({ userId: uuid(body.user_id, 'user_id'), organisation: text(body.organisation, 'organisation', { max: 120 }), kind: oneOf(body.kind, 'kind', ['employer', 'university', 'centre'] as const), grantedBy: e.userId, activeUntil: until });
   await ctx.audit('engage.talent_employer', { organisation: row.organisation, kind: row.kind, active_until: row.activeUntil }, { type: 'user', id: row.userId });
   return { employer: { organisation: row.organisation, kind: row.kind, active_until: row.activeUntil } };
-}
-
-export async function switchTalent(ctx: RequestContext) {
-  await requireSchoodAdmin(ctx);
-  const e = await begin(ctx, { locale: false });
-  const body = record(await ctx.body());
-  const settings = await e.b.repo.saveSettings({ talentPoolEnabled: bool(body.enabled, 'enabled') }, e.userId);
-  await ctx.audit('engage.talent_switch', { enabled: settings.talentPoolEnabled });
-  return { enabled: settings.talentPoolEnabled };
 }

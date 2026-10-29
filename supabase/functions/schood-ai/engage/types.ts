@@ -221,6 +221,5 @@ export interface OutboxRow {
   sentAt: string | null;
 }
 
-export interface EngageSettings { talentPoolEnabled: boolean; updatedBy: string | null; updatedAt: string | null }
 export interface BoardRow { userId: string; xp: number }
 export interface CentreBoardRow { workspaceId: string; name: string; active: number; xp: number }

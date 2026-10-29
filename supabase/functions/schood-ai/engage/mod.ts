@@ -17,7 +17,7 @@ import { addDate, engageMemoryContext, getMemory, memoryFacts, updateDate } from
 import { addVoiceSample, addWritingSample, deleteSample, sampleAudio, thenVsNow } from './samples.ts';
 import { createSquad, getSquad, joinSquad, leaveSquad, nudge, setSquadGoal } from './squads.ts';
 import { answerEpisode, fillEpisode, getEpisode, listStories } from './stories.ts';
-import { consentTalent, employerAudit, getTalent, grantEmployer, saveTalentProfile, searchTalent, switchTalent, viewCandidate, withdrawTalent } from './talent.ts';
+import { consentTalent, employerAudit, getTalent, grantEmployer, saveTalentProfile, searchTalent, viewCandidate, withdrawTalent } from './talent.ts';
 
 // The lifetime engagement layer (E1–E14). One engine for the web app and every
 // coach bot: areas report learning with ctx.events.emit, engage turns verified
@@ -174,7 +174,7 @@ export const engageModule: FeatureModule = {
     'review-queue': { GET: reviewQueue },
     'review-decide': { POST: decideSitting },
     'certificate-revoke': { POST: revokeCertificate },
-    // E13 talent pool (switched off until the owner turns it on)
+    // E13 talent pool (off until a Schood admin sets the engage.talent_pool switch on)
     talent: { GET: getTalent },
     'talent-consent': { POST: consentTalent },
     'talent-withdraw': { POST: withdrawTalent },
@@ -183,7 +183,6 @@ export const engageModule: FeatureModule = {
     'talent-candidate': { GET: viewCandidate },
     'talent-audit': { GET: employerAudit },
     'talent-employer': { POST: grantEmployer },
-    'talent-switch': { POST: switchTalent },
     // E14 win-back and delivery (the bots drain with the service secret)
     tick: { POST: tick, service: true },
     outbox: { POST: claimOutbox, service: true },

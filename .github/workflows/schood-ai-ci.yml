@@ -12,6 +12,13 @@ on:
       - 'supabase/migrations/2026103*'
       - 'supabase/tests/schood-ai-*'
       - 'scripts/test-schood-ai-db.mjs'
+      - 'scripts/test-schood-ai-engage-db.mjs'
+      - 'supabase/functions/_shared/english-xp.ts'
+      - 'supabase/functions/_shared/english-streak.ts'
+      - 'supabase/functions/_shared/english-certificate.ts'
+      - 'supabase/functions/_shared/media-storage.ts'
+      - 'packages/proctor-web/**'
+      - 'packages/assessment-core/src/mod.ts'
       - 'packages/service-i18n/**'
       - 'packages/assessment-web/src/client.ts'
       - 'packages/assessment-web/src/MathText.tsx'
@@ -56,5 +63,9 @@ jobs:
         env:
           SCHOOD_AI_DB_REQUIRE_DOCKER: '1'
         run: node scripts/test-schood-ai-db.mjs
+      - name: Engage migration on PGlite and an isolated Postgres with concurrent sessions (XP, leagues, squads, freezes, outbox)
+        env:
+          SCHOOD_AI_DB_REQUIRE_DOCKER: '1'
+        run: node scripts/test-schood-ai-engage-db.mjs
       - name: App build
         run: npm --workspace apps/schood-ai run build

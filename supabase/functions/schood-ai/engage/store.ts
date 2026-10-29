@@ -1,5 +1,5 @@
 import type {
-  BoardRow, CentreBoardRow, CertificateRow, DateRow, DayRow, EngageProfile, EngageSettings, EventRow, EventSponsor, FreezeBuy, GoalRow, IngestResult,
+  BoardRow, CentreBoardRow, CertificateRow, DateRow, DayRow, EngageProfile, EventRow, EventSponsor, FreezeBuy, GoalRow, IngestResult,
   JourneyRow, LeagueGroup, LeagueMember, LeagueTierName, LevelBand, OutboxRow, OutboxStatus, PassportItem, PassportLink, PassportRow, SampleRow, SittingRow,
   SittingSignal, SquadMember, SquadRow, StoryEpisodeCache, StoryProgress, StoryResult, TalentAudit, TalentEmployer, TalentProfile, XpRow,
 } from './types.ts';
@@ -23,8 +23,6 @@ export interface EngageRepository {
   setBirthDate(userId: string, date: string): Promise<boolean>;
   /** Clears a birth date (Schood support, for a correction). */
   clearBirthDate(userId: string): Promise<void>;
-  settings(): Promise<EngageSettings>;
-  saveSettings(patch: Partial<Pick<EngageSettings, 'talentPoolEnabled'>>, actor: string): Promise<EngageSettings>;
 
   // --- Verified learning → XP ------------------------------------------------------------
   /** Turns the person's verified learning events not yet counted into XP, once each, under a per-person lock. */
