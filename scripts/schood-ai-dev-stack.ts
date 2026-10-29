@@ -24,6 +24,15 @@ const users = {
 const memory = createMemoryRepository({ users });
 const centre = memory.seed.centre({ name: 'Registan Learning Centre', ownerId: users['dev-owner'].id, branding: { primary_color: '#2f6f4f' } });
 memory.seed.member(centre.id, users['dev-plus'].id, 'student', { creditBudget: 200 });
+memory.seed.member(centre.id, users['dev-teacher'].id, 'teacher');
+// A few library pages: the teacher's own, and one shared in the centre.
+const teacherHome = await memory.repository.ensurePersonalWorkspace(users['dev-teacher'].id, 'Malika');
+const seedPage = (workspaceId: string, ownerId: string, title: string, folder: string, body: string, visibility: 'private' | 'workspace' = 'private') =>
+  memory.repository.createPage({ workspaceId, ownerId, folder, kind: 'note', title, body, material: null, visibility, status: 'draft', sourceGenerationId: null });
+await seedPage(teacherHome.id, users['dev-teacher'].id, 'Present perfect: travel', 'Grammar/B1',
+  '## Warm-up\n\nHave you **ever** been to Samarkand?\n\n- yes\n- no\n\n| Form | Example |\n| --- | --- |\n| have + V3 | I have seen |\n\n- [ ] Check homework');
+await seedPage(teacherHome.id, users['dev-teacher'].id, 'Fractions warm-up', 'Maths', 'Simplify \\(\\tfrac{30}{40}\\).\n\n$$\\frac{3}{4}$$');
+await seedPage(centre.id, users['dev-teacher'].id, 'Mock test notes', 'IELTS/Listening', 'Section 3 cost most marks. Practise **two-option** questions.', 'workspace');
 
 const ANSWER = [
   'Good question. In your last mock, **Listening Section 3** cost you the most marks.',

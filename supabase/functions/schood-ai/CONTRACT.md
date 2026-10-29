@@ -125,7 +125,11 @@ Every saved material is a page in the library of a person's or a centre's worksp
 Only staff roles (owner, admin, teacher) use the library.
 
 - **Read and export:** your own pages, shared pages, and all pages for owners and admins. This needs no plan, so your library stays readable.
-- **Create, edit, restore, duplicate:** need T6 in the plan. Edit is for the page's owner, or owners and admins on a shared page.
+- **Create, edit, restore, duplicate, move folders:** need T6 in the plan. Edit is for the page's owner, or owners and admins on a shared page.
+- **Delete:** the page's owner, or owners and admins on a shared page. No plan needed.
+- **Sharing** (`visibility: 'workspace'`) exists only in centre workspaces. Sharing changes and deletes in a centre are written to the audit log.
+- **Linking a generation** (`sourceGenerationId`): only one from this workspace, and your own unless you are an owner or admin.
+- **Saves:** fields you leave out are kept. A new `material` without a `body` rebuilds the body with the kind's `toMarkdown`. A version of the previous state is kept when you pass `snapshot: true`, when someone else edited the page last, or when the last version is over ten minutes old; the newest 200 are kept. Search covers the title, folder names and body (whole words), plus partial matches in titles.
 
 ### Routes
 
