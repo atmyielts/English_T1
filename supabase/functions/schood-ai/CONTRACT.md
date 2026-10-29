@@ -198,7 +198,21 @@ registerMaterialKind({ ...worksheetKind, area: 'teacher' });
 
 - `DELETE core/history` deletes every conversation of the caller in every workspace they belong to (Settings → Your data).
 - **Retention:** messages older than 180 days, then conversations left empty, are deleted daily (`ai_purge_old_chats`, pg_cron job `schood-ai-chat-retention-v1`). Do not keep copies of chat text in your own tables.
-- **Account erasure:** `ai_threads`, `ai_generations`, `ai_learning_events`, `ai_notify_prefs`, `ai_notify_daily` and `ai_calls` are in `account_personal_erasure_tables()`, with the closed-account guard. If your area adds a table with personal data keyed on `user_id`, add it to the registry in your own migration with the same additive pattern (see `20261030130000_schood_ai_retention_and_erasure.sql`).
+- **Account erasure.** Closing a Schood account runs one database transaction (the `account_erasure_transaction` trigger on `auth.users`). Schood AI is part of it:
+  - The `user_id` tables in `account_personal_erasure_tables()` are deleted: `ai_threads` (and their messages), `ai_generations`, `ai_learning_events`, `ai_notify_prefs`, `ai_notify_daily` and `ai_calls`.
+  - Then `ai_erase_account(p_user)` runs as a service hook (`account_erasure_service_hooks()`, migration `20261030140000`):
+    - the personal workspace goes, with everything that cascades from it (pages and versions, conversations, jobs, actions, assistants, invites, balance);
+    - centre memberships and the invites the person issued go;
+    - pages they wrote in a centre stay in that centre;
+    - every `ai_credit_ledger` row stays, with `user_id` (and the deleted personal workspace's `workspace_id`) set to null;
+    - their reports lose the reporter and their note;
+    - a centre they own that others still use blocks the closure with `account_ownership_transfer_required`; a centre they own alone is suspended.
+  - **Registering your own tables.** Do it in your area's migration, using your range:
+    1. **Plain personal rows keyed on `user_id`:** append the table to `account_personal_erasure_tables()`, the same additive pattern as `20261030130000_schood_ai_retention_and_erasure.sql`. That installs the closed-account guard too.
+    2. **Rows inside a workspace** (`workspace_id … references ai_workspaces on delete cascade`) go with the personal workspace automatically and stay with a centre. Use `on delete set null` only for records that must outlive a workspace, such as financial ones.
+    3. **Anything else** (rows keyed on another column, unlinking instead of deleting, files, cross-table rules): write `public.<area>_erase_account(p_user uuid) returns jsonb`, `security definer`, revoked from `public`, `anon`, `authenticated` and `service_role`. Append its name to `account_erasure_service_hooks()` the way `20261030150000_schood_ai_account_erasure.sql` does.
+    - Hooks run in the closure transaction after the core erasure. They must be idempotent. Raising aborts the whole closure, so raise only to refuse it (`account_ownership_transfer_required`).
+  - Never delete append-only financial rows; unlink them. Add a test to your DB tests that closes an account through `auth.users` (see `supabase/tests/schood-ai-erasure.integration.sql`).
 
 ## Data and tables
 
