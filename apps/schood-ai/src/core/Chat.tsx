@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Check, Copy, Flag, RotateCcw, Send, Square } from 'lucide-react';
 import { quoteCredits } from '../../../../packages/ai-core/src/mod.ts';
 import { api, ApiError, stream } from './api.ts';
@@ -44,6 +44,7 @@ export function Chat({ specialist = 'assistant', threadId = null, onThread, init
   const input = useRef<HTMLTextAreaElement>(null);
   const end = useRef<HTMLDivElement>(null);
   const max = me?.limits.message_chars ?? 8000;
+  const inputId = useId(), hintId = useId();
 
   useEffect(() => {
     setThread(threadId);
@@ -155,13 +156,13 @@ export function Chat({ specialist = 'assistant', threadId = null, onThread, init
     </div>}
     <PlanGate feature={info ? quoteCredits(info.credit_key).feature : 'CORE'}>
       <form onSubmit={send} className="rounded-3xl border border-navy-line bg-white p-3 shadow-sm">
-        <label className="sr-only" htmlFor="chat-input">{t('chat.label')}</label>
-        <TextArea id="chat-input" ref={input} rows={3} value={draft} maxLength={max + 1} autoFocus={autoFocus} placeholder={t('chat.placeholder')}
-          aria-describedby="chat-hint" className="border-0 px-2 focus-visible:outline-offset-0"
+        <label className="sr-only" htmlFor={inputId}>{t('chat.label')}</label>
+        <TextArea id={inputId} ref={input} rows={3} value={draft} maxLength={max + 1} autoFocus={autoFocus} placeholder={t('chat.placeholder')}
+          aria-describedby={hintId} className="border-0 px-2 focus-visible:outline-offset-0"
           onChange={(event) => setDraft(event.target.value)}
           onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); send(); } }}/>
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2 px-1">
-          <div id="chat-hint" className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <div id={hintId} className="flex flex-wrap items-center gap-x-3 gap-y-1">
             {info && <CreditCost creditKey={info.credit_key}/>}
             {me && <span className="text-xs text-gray-600">{t('chat.balance', { count: me.credits.budget ? Math.min(me.credits.total, me.credits.budget.left) : me.credits.total })}</span>}
             {draft.length > max ? <span className="text-xs font-semibold text-red-700">{t('chat.tooLong', { max })}</span> : <span className="hidden text-xs text-gray-500 sm:inline">{t('chat.enterHint')}</span>}
