@@ -14,7 +14,8 @@ import type { SettingsRow } from './store.ts';
 const ORIGIN = /^https:\/\/([a-z0-9-]+\.)+[a-z]{2,}(:\d{2,5})?$/;
 const LANGS = ['uz', 'ru', 'en'] as const;
 
-export function embedView(settings: SettingsRow, appUrl: string) {
+export function embedView(settings: SettingsRow, appUrl: string, publicUrl: string | null = null) {
+  const api = publicUrl ? ` data-api="${publicUrl}"` : '';
   const widgets = asRecord(settings.widgets), white = asRecord(settings.white_label);
   return {
     public_key: settings.public_key, embed_domains: settings.embed_domains,
@@ -29,7 +30,7 @@ export const embed = {
   async GET(ctx: RequestContext) {
     const centre = await requireCentre(ctx, ['owner', 'admin']);
     const access = await ctx.access('C14');
-    return { embed: embedView(centre.settings, centre.deps.config.appUrl), allowed: access.allowed };
+    return { embed: embedView(centre.settings, centre.deps.config.appUrl, centre.deps.config.publicUrl), allowed: access.allowed };
   },
   /** { embed_domains?, widgets?, white_label?, rotate_key? } */
   async PATCH(ctx: RequestContext) {
@@ -65,6 +66,6 @@ export const embed = {
     if (body.rotate_key === true) patch.public_key = randomToken(18);
     const [row] = await centre.deps.store.table('settings').update({ workspace_id: ws.id }, patch);
     await ctx.audit('centre.embed_updated', { fields: Object.keys(patch).filter((key) => key !== 'updated_by') }, { type: 'workspace', id: ws.id });
-    return { embed: embedView(row, centre.deps.config.appUrl) };
+    return { embed: embedView(row, centre.deps.config.appUrl, centre.deps.config.publicUrl) };
   },
 };

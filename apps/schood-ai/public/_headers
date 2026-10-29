@@ -5,3 +5,7 @@
   Strict-Transport-Security: max-age=86400
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), camera=(self), microphone=(self)
+/embed/*
+  Access-Control-Allow-Origin: *
+  Cross-Origin-Resource-Policy: cross-origin
+  Cache-Control: public, max-age=300
