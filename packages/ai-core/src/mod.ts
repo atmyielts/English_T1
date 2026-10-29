@@ -7,6 +7,7 @@ export * from './models.ts';
 export * from './switches.ts';
 export * from './sse.ts';
 export * from './time.ts';
+export * from './materials.ts';
 export * as s from './schema.ts';
 export { SchemaError, type Infer, type JsonSchema, type Schema } from './schema.ts';
 export * from './materials/mod.ts';

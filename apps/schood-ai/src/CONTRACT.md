@@ -76,6 +76,32 @@ export const homeCards: HomeCard[] = [
 | `useWorkspace()` | `me`, `workspaceId`, `audience`, `access(featureId)`, `refresh()`. |
 | `askAssistant(prompt)` | Opens the assistant with a prefilled prompt, without putting it in the URL. |
 
+## Core screens you can link to
+
+- `/settings/assistants`: owners and admins tailor the assistants of the workspace (your specialists appear there automatically).
+- `/admin`: the Schood AI console, shown in the sidebar only to Schood admins.
+- `/library`, `/library/:id`, `/library/:id/print`: below.
+
+## The library (pages, editor, print)
+
+The library belongs to core. Teacher and centre save materials into it and link to it; they do not build their own.
+
+- **Routes:** `/library` (folders, search, list), `/library/:id` (the editor), `/library/:id/print` (print and PDF with the workspace's logo). They are in the sidebar for the teacher and centre audiences.
+- **Components:**
+  - `<LibraryView kind? folder? onOpen? readOnly?/>`: a list for your own screens, for example only `kind="worksheet"`;
+  - `<PageEditor pageId onSaved? onDeleted?/>`: TipTap with slash commands, revision-checked autosave, version history, sharing and export;
+  - `<PrintView pageId/>`.
+  - All three load on demand, so importing them adds almost nothing to your area's code; the document editor (TipTap) loads only when a page is edited.
+  - A body with maths, images, raw HTML or footnotes opens in Markdown source mode (the document editor would drop them); people can switch modes.
+- **Calls:** `createPage({ kind, title, material, folder, source_generation_id })`, `getPage`, `listPages`, `savePage(id, { expected_revision, … })`, `exportPage(id, 'telegram')`, `listFolders`, `pageRevisions`, `restorePage`, `duplicatePage`, `deletePage`. When a save hits a newer revision, `conflictPage(error)` returns the current page.
+- **Material kinds:** call `registerMaterialKind({ kind, label, icon?, toMarkdown, render?, fromMarkdown?, editing?, editorPath? })` in your `routes.tsx` at module load.
+  - `toMarkdown` is the same function the server uses; define it once in `packages/ai-core`.
+  - `render` draws the material read-only and for print: for people who may read but not edit, for `editing: 'readonly'` kinds, and on `/library/:id/print`. People who may edit a `document` kind see the document editor.
+  - `fromMarkdown` rebuilds the material after the document is edited. If it is absent, the document becomes the source and the material is kept as it was.
+  - `editing: 'readonly'` keeps a material out of the generic editor; give an `editorPath` to your own screen.
+- **Telegram:** export text comes from `toTelegramText()` in ai-core, or from your kind's `toTelegram`.
+- **Chat answers:** staff whose plan includes the library see "Save to library" under each assistant answer; it creates a `chat_answer` page.
+
 ## Look and feel (main platform)
 
 - **Colours:**
