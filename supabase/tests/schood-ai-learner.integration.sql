@@ -93,4 +93,37 @@ begin
   if exists (select 1 from public.ai_learner_consents where user_id = '00000000-0000-4000-8000-0000000000b5') then raise exception 'consent outlived the account'; end if;
 end $$;
 
+-- Account closure through auth.users (the fixture's stand-in for the closure
+-- transaction): learner rows keyed on user_id go, and the hook removes family links,
+-- AI duels and guardian references; other people's rows stay.
+insert into public.users (id) values ('00000000-0000-4000-8000-0000000000c7'), ('00000000-0000-4000-8000-0000000000c8') on conflict (id) do nothing;
+insert into auth.users (id) values ('00000000-0000-4000-8000-0000000000c7'), ('00000000-0000-4000-8000-0000000000c8') on conflict (id) do nothing;
+do $$
+declare
+  v_parent constant uuid := '00000000-0000-4000-8000-0000000000c7';
+  v_child constant uuid := '00000000-0000-4000-8000-0000000000c8';
+  v_ws uuid := (public.ai_ensure_personal_workspace(v_parent, 'Closing family')).id;
+  v_child_ws uuid := (public.ai_ensure_personal_workspace(v_child, 'Child')).id;
+  v_out jsonb;
+begin
+  assert 'learner_erase_account' = any(public.account_erasure_service_hooks()), 'the learner hook is registered';
+  v_out := public.ai_learner_family_invite(v_ws, v_parent, 'Kid', lpad('c7', 64, '0'), 'C7', now() + interval '7 days', 'v1', now(), 3);
+  v_out := public.ai_learner_family_accept(lpad('c7', 64, '0'), v_child, now(), 3);
+  assert (v_out->>'ok')::boolean, 'linked';
+  insert into public.ai_learner_consents (user_id, age_band, guardian_confirmed, guardian_user_id, text_version) values (v_child, '13_17', true, v_parent, 'v1');
+  insert into public.ai_learner_records (user_id, workspace_id, kind) values (v_parent, v_ws, 'writing'), (v_child, v_child_ws, 'reading');
+  insert into public.ai_learner_activity (user_id, workspace_id, feature, kind) values (v_parent, v_ws, 'P1', 'parent_brief');
+  insert into public.ai_learner_duels (duel_id, code, creator_id, workspace_id, topic) values (gen_random_uuid(), 'ABCDEFGHJK', v_parent, v_child_ws, 'travel');
+  update auth.users set deleted_at = now() where id = v_parent;
+  assert exists (select 1 from public.account_closure_receipts where user_id = v_parent), 'closed';
+  assert not exists (select 1 from public.ai_learner_records where user_id = v_parent), 'their records are gone';
+  assert not exists (select 1 from public.ai_learner_activity where user_id = v_parent), 'their activity is gone';
+  assert not exists (select 1 from public.ai_learner_family_links where parent_id = v_parent or child_id = v_parent), 'family links are gone';
+  assert not exists (select 1 from public.ai_learner_duels where creator_id = v_parent), 'their duels are gone';
+  assert (select guardian_user_id is null and not guardian_confirmed from public.ai_learner_consents where user_id = v_child), 'the child loses the guardian link';
+  assert exists (select 1 from public.ai_learner_records where user_id = v_child), 'the child keeps their own records';
+  -- Running the hook again changes nothing.
+  assert (public.learner_erase_account(v_parent)->>'family_links')::int = 0, 'idempotent';
+end $$;
+
 select 'schood ai learner: ok';

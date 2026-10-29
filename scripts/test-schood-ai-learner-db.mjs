@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const names = readdirSync(new URL('../supabase/migrations/', import.meta.url));
-const core = names.filter((name) => /^202610301\d{5}_schood_ai_.*\.sql$/.test(name)).sort().map((name) => read(`supabase/migrations/${name}`)).join('\n');
+const core = names.filter((name) => /^202610301\d{5}_.*\.sql$/.test(name)).sort().map((name) => read(`supabase/migrations/${name}`)).join('\n');
 const learnerNames = names.filter((name) => /^202610302\d{5}_schood_ai_.*\.sql$/.test(name)).sort();
 const learner = learnerNames.map((name) => read(`supabase/migrations/${name}`)).join('\n');
 const fixture = read('supabase/tests/schood-ai-core.fixture.sql');
@@ -30,7 +30,7 @@ const OK = 'schood ai learner: ok';
     await db.exec(learner);
     const results = await db.exec(integration);
     assert.equal(results.at(-1).rows[0]?.['?column?'], OK);
-    console.log(`PGlite (PostgreSQL 17): ${learnerNames.length} learner migration(s) apply twice; RLS and grants, family limits and invites, quiet-hour schedules, daily records, bounded summaries, 180-day retention, the erasure registry and account deletion passed.`);
+    console.log(`PGlite (PostgreSQL 17): ${learnerNames.length} learner migration(s) apply twice; RLS and grants, family limits and invites, quiet-hour schedules, daily records, bounded summaries, 180-day retention, the erasure registry and hook (an account closed through auth.users) and account deletion passed.`);
   } finally {
     await db.close();
   }

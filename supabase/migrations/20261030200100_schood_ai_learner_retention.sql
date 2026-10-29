@@ -62,6 +62,50 @@ begin
 end
 $$;
 
+-- 3. learner_erase_account(p_user): rows keyed on other columns, run by the
+--    account closure transaction after the user_id tables are erased
+--    (account_erasure_service_hooks(), 20261030140000). Idempotent; never raises.
+--    - family links where the person is the parent or the child are deleted (a
+--      Family parent's links in their personal workspace also go with it);
+--    - AI duels they created are deleted (english_duels keeps its own rules);
+--    - consents that name them as a guardian lose that guardian.
+create or replace function public.learner_erase_account(p_user uuid)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare
+  v_links integer;
+  v_duels integer;
+  v_guardian integer;
+begin
+  delete from public.ai_learner_family_links where parent_id = p_user or child_id = p_user;
+  get diagnostics v_links = row_count;
+  delete from public.ai_learner_duels where creator_id = p_user;
+  get diagnostics v_duels = row_count;
+  update public.ai_learner_consents set guardian_user_id = null, guardian_confirmed = false, updated_at = now()
+    where guardian_user_id = p_user;
+  get diagnostics v_guardian = row_count;
+  return jsonb_build_object('family_links', v_links, 'duels', v_duels, 'guardian_consents', v_guardian);
+end $$;
+revoke all on function public.learner_erase_account(uuid) from public, anon, authenticated, service_role;
+
+do $$
+declare
+  hooks text[];
+begin
+  if to_regprocedure('public.account_erasure_service_hooks()') is null then
+    raise notice 'account_erasure_service_hooks() is not installed; learner erasure hook not registered';
+    return;
+  end if;
+  hooks := public.account_erasure_service_hooks();
+  if not ('learner_erase_account' = any(hooks)) then
+    hooks := hooks || 'learner_erase_account'::text;
+    execute format(
+      'create or replace function public.account_erasure_service_hooks() returns text[] language sql immutable set search_path=pg_catalog,public as %L',
+      format('select %L::text[];', hooks::text)
+    );
+  end if;
+end
+$$;
+
 commit;
 
 do $$
