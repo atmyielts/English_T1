@@ -1,0 +1,25 @@
+/* Company English shell. Brand comes from service-design/platform.css; each area
+   keeps its own stylesheet next to its pages and prefixes classes with its area. */
+.company .company-main{max-width:1200px}
+.company-narrow{max-width:640px;margin:0 auto}
+.company-org-name{margin:0 0 1rem;font-size:.8rem;font-weight:650;color:var(--muted)}
+.company-actions{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center}
+.button-link{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:.65rem 1rem;border-radius:999px;border:1px solid var(--line);background:var(--navy);color:#fff;font-weight:600;font-size:.875rem;text-decoration:none}
+.button-link.quiet{background:rgb(255 255 255/.8);color:#111827}
+.button-link:hover{filter:brightness(.95)}
+.company-consent{border:1px solid var(--line);border-radius:20px;background:#fffdf7;padding:1.25rem 1.5rem;margin:0 0 1.5rem}
+.company-consent h2{margin:0 0 .5rem}
+/* Shared building blocks every area may use. */
+.company-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+.company-stat{background:rgb(255 255 255/.85);border:1px solid var(--control);border-radius:18px;padding:1rem 1.25rem}
+.company-stat strong{display:block;font-family:Sora,Manrope,sans-serif;font-size:1.6rem;line-height:1.2}
+.company-stat span{font-size:.8rem;color:var(--muted)}
+.company-table{width:100%;border-collapse:collapse;font-size:.875rem;background:rgb(255 255 255/.85);border-radius:16px;overflow:hidden}
+.company-table th,.company-table td{text-align:left;padding:.65rem .75rem;border-bottom:1px solid #e5e7eb;vertical-align:top}
+.company-table th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:rgb(239 230 216/.6)}
+.company-table-wrap{overflow-x:auto;border:1px solid var(--control);border-radius:16px}
+.company-badge{display:inline-block;border-radius:999px;padding:.15rem .6rem;font-size:.75rem;font-weight:650;background:#eef2ff;color:#1e3a8a;white-space:nowrap}
+.company-badge.good{background:#dcfce7;color:#166534}.company-badge.warn{background:#fef9c3;color:#854d0e}.company-badge.bad{background:#fee2e2;color:#991b1b}
+.company-toolbar{display:flex;flex-wrap:wrap;gap:.75rem;align-items:end;margin:0 0 1rem}
+.company-toolbar label{min-width:160px}
+@media print{.service-header,.workspace-nav,footer,.company-actions,.company-toolbar,.company-consent,.no-print{display:none!important}.workspace-layout{display:block;padding:0}section{border:0;box-shadow:none}}

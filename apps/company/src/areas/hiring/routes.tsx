@@ -1,0 +1,31 @@
+// hiring pages. Owned by the "hiring" workstream (docs/product/45_COMPANY_ENGLISH.md §3.1).
+import React from 'react';
+import { lazyPage } from '../lazy.ts';
+import type { AreaRoute } from '../types.ts';
+import './hiring.css';
+
+const CandidatePage = lazyPage(() => import('./CandidatePage.tsx'), 'CandidatePage');
+const CertificatePage = lazyPage(() => import('./CertificatePage.tsx'), 'CertificatePage');
+const HiringListPage = lazyPage(() => import('./HiringPages.tsx'), 'HiringListPage');
+const TestDetailPage = lazyPage(() => import('./HiringPages.tsx'), 'TestDetailPage');
+const MemberTestPage = lazyPage(() => import('./MemberPages.tsx'), 'MemberTestPage');
+const MyTestsPage = lazyPage(() => import('./MemberPages.tsx'), 'MyTestsPage');
+const PlacementDetailPage = lazyPage(() => import('./PlacementPages.tsx'), 'PlacementDetailPage');
+const PlacementListPage = lazyPage(() => import('./PlacementPages.tsx'), 'PlacementListPage');
+const ReportPage = lazyPage(() => import('./ReportPage.tsx'), 'ReportPage');
+
+const HR = ['owner', 'admin'] as const;
+const LEADS = ['owner', 'admin', 'manager'] as const;
+
+export const routes: AreaRoute[] = [
+  { path: '/w/:org/hiring', access: 'org', roles: HR, nav: { section: 'hiring', label: 'hiring.nav.tests', order: 10 }, render: () => <HiringListPage/> },
+  { path: '/w/:org/hiring/:assessment', access: 'org', roles: HR, render: ({ assessment }) => <TestDetailPage key={assessment} assessmentId={assessment}/> },
+  { path: '/w/:org/hiring/:assessment/:attempt', access: 'org', roles: HR, render: ({ assessment, attempt }) => <ReportPage key={attempt} assessmentId={assessment} attemptId={attempt} back="hiring"/> },
+  { path: '/w/:org/placement', access: 'org', roles: LEADS, nav: { section: 'hiring', label: 'hiring.nav.placement', order: 20 }, render: () => <PlacementListPage/> },
+  { path: '/w/:org/placement/:assessment', access: 'org', roles: LEADS, render: ({ assessment }) => <PlacementDetailPage key={assessment} assessmentId={assessment}/> },
+  { path: '/w/:org/placement/:assessment/:attempt', access: 'org', roles: LEADS, render: ({ assessment, attempt }) => <ReportPage key={attempt} assessmentId={assessment} attemptId={attempt} back="placement"/> },
+  { path: '/w/:org/tests', access: 'org', nav: { section: 'me', label: 'hiring.nav.myTests', order: 20 }, render: () => <MyTestsPage/> },
+  { path: '/w/:org/test/:assessment', access: 'org', render: ({ assessment }) => <MemberTestPage key={assessment} assessmentId={assessment}/> },
+  { path: '/t/:token', access: 'public', bare: true, render: ({ token }) => <CandidatePage key={token} token={token}/> },
+  { path: '/v/:code', access: 'public', render: ({ code }) => <CertificatePage key={code} code={code}/> },
+];

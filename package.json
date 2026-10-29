@@ -18,6 +18,7 @@
     "apps/exam",
     "apps/proctor",
     "apps/admission",
+    "apps/company",
     "apps/english-hub",
     "workers/*",
     "packages/*"
