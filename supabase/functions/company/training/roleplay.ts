@@ -162,7 +162,7 @@ export const routes: Route[] = [
       const turns = row.turns ?? [];
       const reply = await ctx.ai<{ reply?: unknown; done?: unknown; tip?: unknown } | null>({
         systemPrompt: turnPrompt(found.scenario, ctx.member!.level, locale),
-        userPayload: JSON.stringify({ conversation: transcript(turns), learner_says: said, turn: row.learner_turns + 1, max_turns: MAX_TURNS }),
+        userPayload: JSON.stringify({ conversation: transcript(turns), learner_says: said, turn: row.learner_turns + 1, max_turns: MAX_TURNS, scenario: found.scenario.code, locale }),
         temperature: 0.7, feature: FEATURE, userId: ctx.user,
       }, null);
       const answer = reply.status === 'ok' ? aiText(reply.data?.reply, 600) : '';
@@ -202,7 +202,7 @@ export const routes: Route[] = [
       if (!await consumeAi(ctx)) return { status: 'ai_limit', session: sessionView(row) };
       const result = await ctx.ai<unknown>({
         systemPrompt: feedbackPrompt(found.scenario, ctx.member!.level, locale),
-        userPayload: JSON.stringify({ transcript: transcript(row.turns ?? []) }),
+        userPayload: JSON.stringify({ transcript: transcript(row.turns ?? []), scenario: found.scenario.code, locale }),
         temperature: 0.2, feature: FEATURE, userId: ctx.user,
       }, null);
       const feedback = result.status === 'ok' ? readFeedback(result.data, found.scenario, locale) : null;

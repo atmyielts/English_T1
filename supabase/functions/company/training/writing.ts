@@ -109,7 +109,7 @@ export const routes: Route[] = [
       if (!await consumeAi(ctx)) return { status: 'ai_limit' };
       const reply = await ctx.ai<unknown>({
         systemPrompt: writingPrompt(template, locale),
-        userPayload: JSON.stringify({ text: draft }),
+        userPayload: JSON.stringify({ text: draft, template: template?.code ?? null, locale }),
         temperature: 0.2, feature: FEATURE, userId: ctx.user,
       }, null);
       const result = reply.status === 'ok' ? readResult(reply.data, template, locale) : null;
