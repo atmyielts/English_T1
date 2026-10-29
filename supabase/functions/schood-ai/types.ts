@@ -391,6 +391,8 @@ export interface ActionService {
   /** Queues an action for Approve & run. The stored payload is exactly what runs. */
   propose(input: { kind: string; payload: unknown; threadId?: string | null; messageId?: string | null }): Promise<ActionView>;
   list(options?: { statuses?: ActionStatus[]; limit?: number }): Promise<ActionView[]>;
+  /** One action, if you proposed it or may approve it; otherwise not_found. */
+  get(id: string): Promise<ActionView>;
   decide(id: string, decision: 'approve' | 'decline' | 'retry'): Promise<ActionView>;
 }
 

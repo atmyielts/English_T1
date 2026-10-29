@@ -1,0 +1,60 @@
+name: Schood AI CI
+on:
+  pull_request:
+    paths:
+      - 'apps/schood-ai/**'
+      - 'packages/ai-core/**'
+      - 'supabase/functions/schood-ai/**'
+      - 'supabase/functions/_shared/sat-ai.ts'
+      - 'supabase/functions/_shared/ai-response.ts'
+      - 'supabase/functions/_shared/admin-access.ts'
+      - 'supabase/functions/access-effective/logic.ts'
+      - 'supabase/migrations/2026103*'
+      - 'supabase/tests/schood-ai-*'
+      - 'scripts/test-schood-ai-db.mjs'
+      - 'packages/service-i18n/**'
+      - 'packages/assessment-web/src/client.ts'
+      - 'packages/assessment-web/src/MathText.tsx'
+      - '.github/workflows/schood-ai-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: schood-ai-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Plans, credit prices, model registry rules, schemas and SSE
+        run: deno test --no-lock packages/ai-core/src/
+      - name: ai-core type check
+        run: deno check --no-lock packages/ai-core/src/mod.ts
+  service:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: npm ci
+      - name: Function contracts (auth, roles, routing, chat, credits, gateway, providers, Approve & run)
+        run: deno test --no-lock supabase/functions/schood-ai/
+      - name: Function type check
+        run: deno check --no-lock supabase/functions/schood-ai/index.ts
+      - name: Core migration on PGlite and an isolated Postgres with concurrent sessions
+        env:
+          SCHOOD_AI_DB_REQUIRE_DOCKER: '1'
+        run: node scripts/test-schood-ai-db.mjs
+      - name: App build
+        run: npm --workspace apps/schood-ai run build

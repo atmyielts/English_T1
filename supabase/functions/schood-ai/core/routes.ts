@@ -104,7 +104,10 @@ export const credits = {
 };
 
 export const actions = {
+  /** `?id=` for one action (the card polls a running one), otherwise the list; `?status=open` for undecided ones. */
   async GET(ctx: RequestContext) {
+    const id = ctx.query.get('id');
+    if (id) return { action: actionJson(await ctx.actions.get(uuid(id, 'id')), ctx.user.id) };
     const status = ctx.query.get('status');
     const statuses = status === 'open' ? ['pending', 'running', 'failed'] as const : undefined;
     return { actions: (await ctx.actions.list({ statuses: statuses ? [...statuses] : undefined })).map((row) => actionJson(row, ctx.user.id)) };

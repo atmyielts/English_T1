@@ -90,6 +90,13 @@ export function createActionService(ctx: RequestContext): ActionService {
       // People see what they proposed and what they may approve.
       return rows.filter((row) => row.proposedBy === ctx.user.id || !!kinds.get(row.kind)?.approverRoles.includes(access.role)).map((row) => view(row, access.role));
     },
+    async get(id) {
+      const row = await ctx.repo.action(id);
+      if (!row) throw new SchoodAIError('not_found', 'Action not found.', 404);
+      const role = await memberRole(row.workspaceId);
+      if (row.proposedBy !== ctx.user.id && !kinds.get(row.kind)?.approverRoles.includes(role)) throw new SchoodAIError('not_found', 'Action not found.', 404);
+      return view(row, role);
+    },
     async decide(id, decision) {
       let row = await ctx.repo.action(id);
       if (!row) throw new SchoodAIError('not_found', 'Action not found.', 404);
