@@ -17,3 +17,7 @@ insert into public.users (id) values
   ('00000000-0000-4000-8000-0000000000a2'),
   ('00000000-0000-4000-8000-0000000000a3'),
   ('00000000-0000-4000-8000-0000000000a4');
+-- Stand-ins for the account erasure registry (20261010160000) so the registry
+-- extension in 20261030130000 is exercised; the real ones live in production.
+create or replace function public.account_personal_erasure_tables() returns text[] language sql immutable as $$ select array['user_profiles']::text[] $$;
+create or replace function public.guard_closed_personal_record() returns trigger language plpgsql as $$ begin return new; end $$;

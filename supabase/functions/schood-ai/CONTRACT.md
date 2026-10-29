@@ -1,6 +1,6 @@
 # Schood AI function: the contract for feature areas
 
-This is the brief for every agent building on `supabase/functions/schood-ai`. Read it with `docs/product/44_SCHOOD_AI.md`. The app has its own contract in `apps/schood-ai/src/CONTRACT.md`.
+This is the brief for every agent building on `supabase/functions/schood-ai`. Read it with `docs/product/44_SCHOOD_AI.md`. The app has its own contract in `apps/schood-ai/src/CONTRACT.md` (including its session client and how languages load).
 
 ## Shape
 
@@ -104,11 +104,26 @@ const { data, credits, balance } = await ctx.ai.json({
   - `CLOUDFLARE_AI_API_TOKEN` (a Workers AI token, never the Pages deploy token);
   - `SCHOOD_AI_KEY_*` for custom endpoints.
 
+### Admin console routes
+
+Every `admin/*` route needs the existing admin RBAC permission through `admin-access.ts`, including its MFA policy (a refusal is `403 mfa_required`). The app's `/admin` screen uses them.
+
+| Route | Permission | Use |
+|---|---|---|
+| `GET/PATCH admin/settings` | `admin.settings.manage` | The global switch, feature switches and daily caps |
+| `GET/POST admin/providers`, `admin/models`, `admin/routes` | `admin.settings.manage` | The registry (validated; secrets named, never stored) |
+| `POST admin/test` | `admin.settings.manage` | One prompt to one model: text, latency, tokens, cost. No credits. |
+| `GET admin/usage?days=` | `admin.analytics.view` | Calls, failures, error rate, cost and latency by model and by feature |
+| `GET admin/workspaces?q=` / `PATCH admin/workspaces` | `admin.settings.manage` | Find a workspace by id or name; `{ id, features?, status? }` sets its switches or suspends it |
+| `GET/PATCH admin/reports` | `admin.support.manage` | The report queue |
+| `GET admin/audit?event=&workspace_id=&before=` | `admin.activity.view` | The Schood AI audit log, newest first |
+| `POST admin/credits` | `admin.billing.manage` | A support or contract grant (once per reference) |
+
 ## Extension points
 
 | Registry | Where | Use it for |
 |---|---|---|
-| `registerSpecialist(def)` | `specialists.ts` | A chat assistant: key, names (uz/ru/en), role prompt, allowed context kinds, credit key, roles, starter prompts. `core/chat` serves it. Workspaces can override names and instructions, narrow context and roles, or switch it off (`ai_specialists`). |
+| `registerSpecialist(def)` | `specialists.ts` | A chat assistant: key, names (uz/ru/en), role prompt, allowed context kinds, credit key, roles, starter prompts. `core/chat` serves it. Workspace owners and admins can override names and instructions, narrow context and roles, or switch it off (`ai_specialists`, through `GET/PUT/DELETE core/specialists`); a null name keeps your translated names. |
 | `registerContextProvider(kind, fn, { allowCustom?, selfView?, timeoutMs?, maxChars? })` | `context.ts` | Data the model may see, for example `homework_open`, `group_weak_spots` or `coach_progress`. Check roles inside the provider. `selfView` only for data about the caller (shown in `core/context`). |
 | `registerActionKind({ kind, area, approverRoles, parse, summary, display?, run, retrySafe?, expiresInHours? })` | `actions.ts` | Approve & run: `send_parent_message`, `assign_homework`, `post_to_channel`, `book_trial`. `run` executes as the approver, with their token. |
 | `registerPlanSource(name, fn)` | `plan.ts` | Extra plans or directly granted features: children of a Family holder → `plus`, a coach pass → `features: ['B4']`, a team seat. |
@@ -125,7 +140,11 @@ Every saved material is a page in the library of a person's or a centre's worksp
 Only staff roles (owner, admin, teacher) use the library.
 
 - **Read and export:** your own pages, shared pages, and all pages for owners and admins. This needs no plan, so your library stays readable.
-- **Create, edit, restore, duplicate:** need T6 in the plan. Edit is for the page's owner, or owners and admins on a shared page.
+- **Create, edit, restore, duplicate, move folders:** need T6 in the plan. Edit is for the page's owner, or owners and admins on a shared page.
+- **Delete:** the page's owner, or owners and admins on a shared page. No plan needed.
+- **Sharing** (`visibility: 'workspace'`) exists only in centre workspaces. Sharing changes and deletes in a centre are written to the audit log.
+- **Linking a generation** (`sourceGenerationId`): only one from this workspace, and your own unless you are an owner or admin.
+- **Saves:** fields you leave out are kept. A new `material` without a `body` rebuilds the body with the kind's `toMarkdown`. A version of the previous state is kept when you pass `snapshot: true`, when someone else edited the page last, or when the last version is over ten minutes old; the newest 200 are kept. Search covers the title, folder names and body (whole words), plus partial matches in titles.
 
 ### Routes
 
@@ -174,6 +193,12 @@ registerMaterialKind({ ...worksheetKind, area: 'teacher' });
 - Mark a price the doc's table lacks with `assumed: true`.
 - `priceTableProblems()` must stay empty. It is tested, and checked when the function starts.
 - Edits to these two files must be additive: new keys and new rules. Never change an existing price or plan rule without the owner.
+
+## Your own data
+
+- `DELETE core/history` deletes every conversation of the caller in every workspace they belong to (Settings → Your data).
+- **Retention:** messages older than 180 days, then conversations left empty, are deleted daily (`ai_purge_old_chats`, pg_cron job `schood-ai-chat-retention-v1`). Do not keep copies of chat text in your own tables.
+- **Account erasure:** `ai_threads`, `ai_generations`, `ai_learning_events`, `ai_notify_prefs`, `ai_notify_daily` and `ai_calls` are in `account_personal_erasure_tables()`, with the closed-account guard. If your area adds a table with personal data keyed on `user_id`, add it to the registry in your own migration with the same additive pattern (see `20261030130000_schood_ai_retention_and_erasure.sql`).
 
 ## Data and tables
 

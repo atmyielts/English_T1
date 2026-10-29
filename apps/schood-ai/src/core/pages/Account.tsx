@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { Pin, PinOff, Trash2 } from 'lucide-react';
+import { Bot, Pin, PinOff, Trash2 } from 'lucide-react';
 import { useI18n } from '../../../../../packages/service-i18n/src/i18n.tsx';
 import { api } from '../api.ts';
 import { ApproveRunCard } from '../cards.tsx';
@@ -7,7 +7,7 @@ import { useT } from '../i18n/index.ts';
 import { Link, navigate } from '../router.tsx';
 import { ApiErrorState, EmptyState, LoadingState } from '../states.tsx';
 import type { ActionView, BalanceView, BudgetView, LedgerView, ThreadView } from '../types.ts';
-import { Button, Card, Field, PageHeader, TextInput } from '../ui.tsx';
+import { Button, Card, Dialog, Field, PageHeader, TextInput } from '../ui.tsx';
 import { useWorkspace } from '../workspace.tsx';
 
 // History, credits, approvals, workspace settings and not found.
@@ -125,12 +125,42 @@ export function SettingsPage() {
       </form>
       {state.error !== null && <div className="mt-4"><ApiErrorState error={state.error}/></div>}
     </Card>}
-    <Card>
-      <h2 className="m-0 font-display text-xl font-bold">{t('settings.data')}</h2>
-      <p className="m-0 mt-2 text-sm text-gray-700">{t('settings.dataLead')}</p>
-      <div className="mt-4"><Button variant="danger" onClick={() => navigate('/history')} icon={<Trash2 size={16} aria-hidden="true"/>}>{t('history.deleteAll')}</Button></div>
-    </Card>
+    {manager && <Card className="mb-6">
+      <h2 className="m-0 font-display text-xl font-bold">{t('assistants.title')}</h2>
+      <p className="m-0 mt-2 text-sm text-gray-700">{t('assistants.lead')}</p>
+      <div className="mt-4"><Button variant="secondary" onClick={() => navigate('/settings/assistants')} icon={<Bot size={16} aria-hidden="true"/>}>{t('assistants.open')}</Button></div>
+    </Card>}
+    <DeleteHistoryCard/>
   </>;
+}
+
+/** "Delete my history": every conversation of yours, in every workspace (core/history). */
+function DeleteHistoryCard() {
+  const t = useT();
+  const [open, setOpen] = useState(false), [state, setState] = useState<{ busy: boolean; error: unknown; deleted: number | null }>({ busy: false, error: null, deleted: null });
+  const remove = async () => {
+    setState({ busy: true, error: null, deleted: null });
+    try {
+      const { deleted } = await api<{ deleted: number }>('core/history', { method: 'DELETE', body: {} });
+      setState({ busy: false, error: null, deleted });
+      setOpen(false);
+    } catch (error) { setState({ busy: false, error, deleted: null }); }
+  };
+  return <Card>
+    <h2 className="m-0 font-display text-xl font-bold">{t('settings.data')}</h2>
+    <p className="m-0 mt-2 text-sm text-gray-700">{t('settings.deleteHistoryLead')}</p>
+    <p className="m-0 mt-2 text-xs text-gray-600">{t('settings.retention')}</p>
+    {state.deleted !== null && <p role="status" className="mb-0 mt-3 rounded-2xl border border-green-200 bg-green-50 p-3 text-sm text-green-800">{t('settings.historyDeleted', { count: state.deleted })}</p>}
+    <div className="mt-4"><Button variant="danger" onClick={() => setOpen(true)} icon={<Trash2 size={16} aria-hidden="true"/>}>{t('settings.deleteHistory')}</Button></div>
+    <Dialog open={open} title={t('settings.deleteHistory')} onClose={() => setOpen(false)} closeLabel={t('library.close')}>
+      <p className="mt-0 text-sm text-gray-700">{t('settings.deleteHistoryLead')}</p>
+      {state.error !== null && <div className="mb-3"><ApiErrorState error={state.error}/></div>}
+      <div className="flex flex-wrap justify-end gap-2">
+        <Button variant="secondary" onClick={() => setOpen(false)}>{t('library.cancel')}</Button>
+        <Button variant="danger" disabled={state.busy} onClick={() => void remove()} icon={<Trash2 size={16} aria-hidden="true"/>}>{t('settings.deleteHistoryConfirm')}</Button>
+      </div>
+    </Dialog>
+  </Card>;
 }
 
 export function NotFoundPage() {

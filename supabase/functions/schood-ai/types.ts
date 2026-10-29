@@ -163,6 +163,7 @@ export interface Message {
   errorCode: string | null;
   createdAt: string;
 }
+/** `name` is empty when a built-in keeps its own (translated) name. */
 export interface SpecialistRow { key: string; name: string; description: string | null; instructions: string; contextKinds: string[]; roles: Role[]; enabled: boolean }
 
 export type GenerationStatus = 'requested' | 'generating' | 'ready' | 'approved' | 'rejected' | 'failed';
@@ -246,6 +247,7 @@ export type PagePatch = Partial<Pick<PageRow, 'title' | 'body' | 'material' | 'f
 
 export interface ReportRow { id: string; messageId: string | null; workspaceId: string | null; reporterId: string | null; reason: string; note: string | null; excerpt: string; status: 'open' | 'reviewed' | 'dismissed'; createdAt: string }
 export interface AuditEvent { workspaceId: string | null; actorId: string | null; event: string; targetType?: string | null; targetId?: string | null; details?: Record<string, unknown> }
+export interface AuditRow extends AuditEvent { id: number; createdAt: string }
 
 // --- Learning events and notifications ------------------------------------------------------
 
@@ -316,7 +318,9 @@ export interface SchoodAIRepository {
   workspace(id: string): Promise<Workspace | null>;
   membership(workspaceId: string, userId: string): Promise<Member | null>;
   memberships(userId: string): Promise<{ workspace: Workspace; member: Member }[]>;
-  updateWorkspace(id: string, patch: Partial<Pick<Workspace, 'name' | 'branding' | 'houseStyle' | 'settings'>>): Promise<Workspace>;
+  updateWorkspace(id: string, patch: Partial<Pick<Workspace, 'name' | 'branding' | 'houseStyle' | 'settings' | 'status'>>): Promise<Workspace>;
+  /** Workspaces by exact id or by name (admin console), newest first. */
+  searchWorkspaces(query: string, limit: number): Promise<Workspace[]>;
 
   settings(): Promise<ServiceSettings>;
   updateSettings(patch: Partial<ServiceSettings>, actor: string): Promise<ServiceSettings>;
@@ -348,6 +352,9 @@ export interface SchoodAIRepository {
   deleteMessage(id: string): Promise<void>;
 
   specialists(workspaceId: string): Promise<SpecialistRow[]>;
+  /** Creates or replaces a workspace's override or custom specialist. */
+  saveSpecialist(workspaceId: string, row: SpecialistRow, actor: string): Promise<void>;
+  deleteSpecialist(workspaceId: string, key: string): Promise<boolean>;
 
   createAction(input: Pick<ActionRow, 'workspaceId' | 'kind' | 'payload' | 'summary' | 'proposedBy' | 'threadId' | 'messageId' | 'expiresAt'>): Promise<ActionRow>;
   action(id: string): Promise<ActionRow | null>;
@@ -365,6 +372,8 @@ export interface SchoodAIRepository {
   reports(status: ReportRow['status'], limit: number): Promise<ReportRow[]>;
   reviewReport(id: string, status: 'reviewed' | 'dismissed', actor: string): Promise<boolean>;
   audit(event: AuditEvent): Promise<void>;
+  /** The audit log, newest first (admin console). */
+  auditEvents(filter: { workspaceId?: string; prefix?: string; before?: number; limit: number }): Promise<AuditRow[]>;
 
   addLearningEvents(events: LearningEvent[]): Promise<void>;
 
