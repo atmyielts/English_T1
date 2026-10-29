@@ -85,7 +85,8 @@ export function fakeModel(knobs: ModelKnobs) {
       // The criterion ids the schema allows (the gateway appends the schema to the prompt).
       const ids = JSON.parse(/"id":\{"type":"string","enum":(\[[^\]]*\])/.exec(system)?.[1] ?? '[]') as string[];
       const quote = firstWords(said.replace(/^\[[^\]]*\]\s*/, ''), 5);
-      const goals = [...(/Goals: (.*)\.$/m.exec(system)?.[1] ?? '').matchAll(/([a-z_]+) —/g)].map((match) => ({ id: match[1], met: true, quote: firstWords(said, 4) }));
+      const goalIds = JSON.parse(/"goals":\{"type":"array","items":\{"type":"object","properties":\{"id":\{"type":"string","enum":(\[[^\]]*\])/.exec(system)?.[1] ?? '[]') as string[];
+      const goals = goalIds.map((id) => ({ id, met: true, quote: firstWords(said, 4) }));
       return completion(JSON.stringify({
         criteria: ids.map((id) => ({ id, score, evidence: [{ quote, comment: 'Clear and relevant.' }], next_step: 'Add one example.' })),
         errors: [{ quote: firstWords(said.replace(/^\[[^\]]*\]\s*/, ''), 3), correction: 'a corrected phrase', tag: 'articles', explanation: 'Use an article before a singular noun.' }],
@@ -144,7 +145,12 @@ export async function coachStack(options: { speech?: boolean; users?: typeof USE
       if (request.headers.get('x-worker-secret') !== 'internal-secret-0123456789') return Response.json({ error: 'Unauthorized' }, { status: 401 });
       if (body.action === 'status') { const id = chats.get(String(body.chat_id)); return Response.json({ linked: !!id, user: id ? { id, name: 'Learner' } : null }); }
       if (body.action === 'validate') {
-        if (body.token === 'a'.repeat(64)) { chats.set(String(body.chat_id), ID.outsider); return Response.json({ ok: true, user_id: ID.outsider, name: 'Outsider', confirmation_required: false }); }
+        if (body.token === 'a'.repeat(64)) {
+          // telegram-link sets users.telegram_chat_id; the memory repository reads the same user record.
+          chats.set(String(body.chat_id), ID.outsider);
+          USERS['tok-outsider'].telegramChatId = String(body.chat_id);
+          return Response.json({ ok: true, user_id: ID.outsider, name: 'Outsider', confirmation_required: false });
+        }
         return Response.json({ error: 'Invalid link token' }, { status: 404 });
       }
       return Response.json({ error: 'Unknown action' }, { status: 400 });
@@ -195,6 +201,8 @@ export async function coachStack(options: { speech?: boolean; users?: typeof USE
     const encoded = btoa(String.fromCharCode(...signature)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     return signTelegramInitDataForTest({ ...values, signature: encoded }, BOT[pack].token);
   }
-  return { f, now, advance, knobs, runtime, coach, worker, user, calls, fresh, texts, buttons, data, initData, gate, chats, send };
+  /** Undoes the link made by the fake telegram-link (USERS is shared by every test). */
+  const restore = () => { USERS['tok-outsider'].telegramChatId = null; };
+  return { f, now, advance, restore, knobs, runtime, coach, worker, user, calls, fresh, texts, buttons, data, initData, gate, chats, send };
 }
 
