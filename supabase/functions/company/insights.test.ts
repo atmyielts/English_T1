@@ -374,3 +374,16 @@ Deno.test('a seats request reaches the Schood pipeline once a day', async () => 
   const overview = await call('GET', `orgs/${ORG}/insights/overview`, { user: ADMIN });
   assertEquals(overview.body.seats_requested_at, lead.created_at);
 });
+
+Deno.test('someone first tested inside the period still counts as moving up on a retest', async () => {
+  const { db, call } = setup();
+  db.rows('company_attempts').push(
+    { id: 'b1', org_id: ORG, assessment_id: 'a0000000-0000-4000-8000-000000000001', member_id: member(5), status: 'graded', overall_level: 'a1', overall_score: 20, skill_results: {}, started_at: ago(15), graded_at: ago(15) },
+    { id: 'b2', org_id: ORG, assessment_id: 'a0000000-0000-4000-8000-000000000001', member_id: member(5), status: 'graded', overall_level: 'a2', overall_score: 35, skill_results: {}, started_at: ago(2), graded_at: ago(2) },
+  );
+  const report = await call('GET', `orgs/${ORG}/reports/monthly?from=2026-10-01&to=2026-10-20`, { user: OWNER });
+  // Anna (A2 before → B1) and Boris (first A1 in October → A2) moved up; Boris is also new.
+  assertEquals([report.body.movement.up, report.body.movement.first], [2, 1]);
+  assertEquals(report.body.improvers.map((row: { name: string }) => row.name).sort(), ['Anna Lee', 'Boris Popov']);
+  assertEquals(report.body.departments[0].moved_up, 2);
+});

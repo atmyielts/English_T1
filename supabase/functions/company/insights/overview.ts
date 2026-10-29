@@ -50,6 +50,18 @@ export const routes: Route[] = [
     },
   },
   {
+    // People to pick from (session invitations, attendance): active members in the viewer's scope.
+    method: 'GET', path: 'orgs/:org/insights/people', access: 'org', roles: LEAD_ROLES, allowSuspended: true,
+    async handle(ctx) {
+      const { members } = await loadScope(ctx);
+      return {
+        people: members.filter((member) => member.status === 'active')
+          .map((member) => ({ id: member.id, name: displayName(member), department_id: member.department_id }))
+          .sort((a, b) => a.name.localeCompare(b.name)),
+      };
+    },
+  },
+  {
     // "Talk to Schood about seats": a request in the Schood sales pipeline, at most once a day.
     method: 'POST', path: 'orgs/:org/insights/seats-request', access: 'org', roles: HR_ROLES, allowSuspended: true,
     async handle(ctx, _params, body) {

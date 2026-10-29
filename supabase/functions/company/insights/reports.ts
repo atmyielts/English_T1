@@ -43,6 +43,7 @@ export async function buildReport(ctx: Ctx, range: Range) {
   const before = levelsAt(attempts, range.start), after = levelsAt(attempts, range.end);
   const startCounts = emptyLevels(), endCounts = emptyLevels();
   let up = 0, same = 0, down = 0, first = 0;
+  const movedUp = new Set<string>();
   const improvers: { member: MemberRow; from: GradedAttempt | null; to: GradedAttempt; delta: number }[] = [];
   for (const member of active) {
     const from = before.get(member.id) ?? null, to = after.get(member.id) ?? null;
@@ -51,12 +52,14 @@ export async function buildReport(ctx: Ctx, range: Range) {
     else if (isLearner(member)) endCounts.none += 1;
     if (!from && isLearner(member)) startCounts.none += 1;
     if (!to) continue;
-    if (!from) { if (Date.parse(to.graded_at!) >= range.start.getTime()) first += 1; continue; }
-    if (from.id === to.id) { same += 1; continue; }
-    const change = levelIndex(to.overall_level as Level) - levelIndex(from.overall_level as Level);
-    if (change > 0) up += 1; else if (change < 0) down += 1; else same += 1;
-    const delta = Number(to.overall_score) - Number(from.overall_score);
-    if (Number.isFinite(delta) && (delta > 0 || change > 0)) improvers.push({ member, from, to, delta: Math.round(delta * 10) / 10 });
+    // Tested for the first time in the period: the first result in it is the baseline.
+    const baseline = from ?? attempts.find((attempt) => attempt.member_id === member.id && Date.parse(attempt.graded_at!) >= range.start.getTime());
+    if (!from) first += 1;
+    if (!baseline || baseline.id === to.id) { if (from) same += 1; continue; }
+    const change = levelIndex(to.overall_level as Level) - levelIndex(baseline.overall_level as Level);
+    if (change > 0) { up += 1; movedUp.add(member.id); } else if (change < 0) down += 1; else same += 1;
+    const delta = Number(to.overall_score) - Number(baseline.overall_score);
+    if (Number.isFinite(delta) && (delta > 0 || change > 0)) improvers.push({ member, from: baseline, to, delta: Math.round(delta * 10) / 10 });
   }
   improvers.sort((a, b) => (levelIndex(b.to.overall_level as Level) - levelIndex(b.from!.overall_level as Level)) - (levelIndex(a.to.overall_level as Level) - levelIndex(a.from!.overall_level as Level)) || b.delta - a.delta);
 
@@ -74,10 +77,7 @@ export async function buildReport(ctx: Ctx, range: Range) {
       lessons: people.reduce((sum, member) => sum + (totals.get(member.id)?.lessons ?? 0), 0),
       tested: ends.length,
       avg: averageScore(ends.map((attempt) => attempt.overall_score)),
-      moved_up: people.filter((member) => {
-        const from = before.get(member.id), to = after.get(member.id);
-        return from && to && levelIndex(to.overall_level as Level) > levelIndex(from.overall_level as Level);
-      }).length,
+      moved_up: people.filter((member) => movedUp.has(member.id)).length,
       with_target: targeted.length,
       at_target: targeted.filter((member) => meetsTarget(member.level, member.target_level)).length,
     };

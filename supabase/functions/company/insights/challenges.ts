@@ -5,7 +5,7 @@ import { HR_ROLES } from '../../../../packages/company-core/src/mod.ts';
 import { MEMBER_COLUMNS } from '../handler.ts';
 import { check, CompanyError, UUID, type Ctx, type MemberRow, type Route } from '../types.ts';
 import { obj, oneOf, text } from '../util.ts';
-import { activitySummary, addDays, dayStart, DAY, displayName, fetchAll, isDate, localDate, shortName, viewerOf, type Viewer } from './common.ts';
+import { activitySummary, addDays, dayStart, DAY, displayName, fetchAll, isDate, isLearner, localDate, shortName, viewerOf, type Viewer } from './common.ts';
 
 export const METRICS = ['points', 'minutes', 'lessons'] as const;
 export type Metric = (typeof METRICS)[number];
@@ -182,11 +182,13 @@ async function standings(ctx: Ctx, challenge: ChallengeRow) {
   const scoped = challenge.department_ids.length ? departments.filter((entry) => challenge.department_ids.includes(entry.id)) : departments;
   const inScope = (member: MemberRow) => !challenge.department_ids.length || (member.department_id !== null && challenge.department_ids.includes(member.department_id));
   // Participants share their progress with the company; others are not counted.
-  const participants = members.filter((member) => inScope(member) && member.consent_at);
+  // Owners and HR admins who run the workspace count only once they have learned.
+  const sharing = members.filter((member) => inScope(member) && member.consent_at);
   const status = challengeStatus(challenge, today);
   const { start, end } = challengeWindow(challenge);
-  const summary = status === 'upcoming' ? { members: [] } : await activitySummary(ctx.db, org.id, start, new Date(Math.min(end.getTime(), ctx.now().getTime() + 1)), participants.map((member) => member.id));
+  const summary = status === 'upcoming' ? { members: [] } : await activitySummary(ctx.db, org.id, start, new Date(Math.min(end.getTime(), ctx.now().getTime() + 1)), sharing.map((member) => member.id));
   const totals = new Map(summary.members.map((row) => [row.member_id, row]));
+  const participants = sharing.filter((member) => isLearner(member) || valueOf(challenge.metric, totals.get(member.id)) > 0);
   const departmentName = new Map(departments.map((entry) => [entry.id, entry.name]));
 
   const departmentRows = rank(scoped.map((entry) => {
