@@ -161,9 +161,63 @@ begin
   assert not has_function_privilege('anon', 'public.ai_centre_knowledge_search(uuid, text, integer)', 'execute'), 'browsers cannot search';
   assert has_function_privilege('service_role', 'public.ai_centre_usage(uuid, timestamptz)', 'execute'), 'the function can read usage';
   assert (select bool_and(relrowsecurity) from pg_class where relname like 'ai\_centre\_%' and relkind = 'r'), 'RLS on every centre table';
-  assert 'ai_centre_staff_chats' = any(public.account_personal_erasure_tables()) and 'ai_centre_resell_periods' = any(public.account_personal_erasure_tables()), 'personal rows join the erasure registry';
+  assert 'ai_centre_staff_chats' = any(public.account_personal_erasure_tables()) and 'ai_centre_staff_codes' = any(public.account_personal_erasure_tables()), 'personal rows join the erasure registry';
   raised := false;
   begin update public.ai_centre_settings set retention_days = 365 where workspace_id = ws; exception when check_violation then raised := true; end;
   assert raised, 'a centre cannot keep conversations longer than core''s 180 days';
 end $$;
+
+-- Account closure through auth.users (the fixture's stand-in for the closure
+-- transaction): the registry deletes plain personal rows, core's hook removes the
+-- memberships, then ai_centre_erase_account deletes attempts and observations and
+-- unlinks resell periods, which the wholesale charge still counts.
+insert into public.users (id, full_name) values
+  ('00000000-0000-4000-8000-0000000000e1', 'Leaving Student'), ('00000000-0000-4000-8000-0000000000e2', 'Leaving Teacher'),
+  ('00000000-0000-4000-8000-0000000000e3', 'Staying Owner'), ('00000000-0000-4000-8000-0000000000e4', 'Staying Teacher');
+insert into auth.users (id) values
+  ('00000000-0000-4000-8000-0000000000e1'), ('00000000-0000-4000-8000-0000000000e2'), ('00000000-0000-4000-8000-0000000000e3'), ('00000000-0000-4000-8000-0000000000e4');
+do $$
+declare
+  student constant uuid := '00000000-0000-4000-8000-0000000000e1';
+  teacher constant uuid := '00000000-0000-4000-8000-0000000000e2';
+  owner constant uuid := '00000000-0000-4000-8000-0000000000e3';
+  colleague constant uuid := '00000000-0000-4000-8000-0000000000e4';
+  ws uuid;
+  grp uuid;
+  kept uuid;
+begin
+  assert public.account_erasure_service_hooks() = array['ai_erase_account', 'ai_centre_erase_account'], 'the centre hook runs once, after core''s';
+  assert 'ai_centre_group_members' = any(public.account_personal_erasure_tables()) and not ('ai_centre_resell_periods' = any(public.account_personal_erasure_tables())), 'resell periods are unlinked, not deleted';
+  insert into public.ai_workspaces (kind, name, owner_id) values ('centre', 'Closure Centre', owner) returning id into ws;
+  insert into public.ai_workspace_members (workspace_id, user_id, role) values (ws, owner, 'owner'), (ws, student, 'student'), (ws, teacher, 'teacher'), (ws, colleague, 'teacher');
+  insert into public.ai_centre_groups (workspace_id, name) values (ws, '7A') returning id into grp;
+  insert into public.ai_centre_group_members (group_id, workspace_id, user_id) values (grp, ws, student);
+  insert into public.ai_centre_placement_attempts (workspace_id, taker_user_id, channel, answers) values (ws, student, 'web', '{"w": "My own essay"}');
+  insert into public.ai_centre_resell_periods (workspace_id, user_id, started_at, note) values (ws, student, now() - interval '3 days', 'paid in cash');
+  insert into public.ai_centre_staff_chats (workspace_id, user_id, chat_id) values (ws, teacher, '123456');
+  insert into public.ai_centre_staff_codes (code_hash, workspace_id, user_id, expires_at) values (repeat('e', 64), ws, teacher, now() + interval '1 hour');
+  insert into public.ai_centre_observations (workspace_id, teacher_id, observer_id, lesson_date, term, source, input) values
+    (ws, teacher, owner, current_date, '2026-T4', 'notes', 'The lesson notes of the leaving teacher.');
+  insert into public.ai_centre_observations (workspace_id, teacher_id, observer_id, lesson_date, term, source, input) values
+    (ws, colleague, teacher, current_date, '2026-T4', 'notes', 'The leaving teacher observed a colleague.') returning id into kept;
+
+  update auth.users set deleted_at = now() where id = student;
+  assert not exists (select 1 from public.ai_centre_group_members where user_id = student), 'group membership deleted';
+  assert not exists (select 1 from public.ai_centre_placement_attempts where taker_user_id = student), 'placement answers deleted';
+  assert (select count(*) from public.ai_centre_resell_periods where workspace_id = ws and user_id is null and note is null and ended_at is not null) = 1, 'resell period kept for the wholesale charge, unlinked and closed';
+  assert not exists (select 1 from public.ai_workspace_members where workspace_id = ws and user_id = student), 'centre membership gone (core)';
+
+  update auth.users set deleted_at = now() where id = teacher;
+  assert not exists (select 1 from public.ai_centre_staff_chats where user_id = teacher) and not exists (select 1 from public.ai_centre_staff_codes where user_id = teacher), 'staff Telegram links and codes deleted';
+  assert not exists (select 1 from public.ai_centre_observations where teacher_id = teacher), 'observations of the teacher''s lessons deleted';
+  assert (select observer_id is null and teacher_id = colleague from public.ai_centre_observations where id = kept), 'observations they made of others stay, unlinked';
+  assert exists (select 1 from public.ai_centre_groups where id = grp) and exists (select 1 from public.ai_workspace_members where workspace_id = ws and user_id = owner), 'the centre stays';
+  assert public.ai_centre_erase_account(teacher) = '{"observations": 0, "observer_links": 0, "placement_attempts": 0, "resell_periods_unlinked": 0}'::jsonb, 'running again changes nothing';
+end $$;
+set role service_role;
+do $$
+begin
+  begin perform public.ai_centre_erase_account('00000000-0000-4000-8000-0000000000e3'); raise exception 'service role erased centre data'; exception when insufficient_privilege then null; end;
+end $$;
+reset role;
 select 'schood ai centre: ok';

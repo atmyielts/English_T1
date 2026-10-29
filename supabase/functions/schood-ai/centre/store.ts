@@ -103,7 +103,7 @@ export interface ResellRow extends Row {
   workspace_id: string; enabled: boolean; price_uzs: number | null; period_days: number; gate_access: boolean; student_budget: number | null; note: string | null;
   wholesale_rate_uzs: number; updated_by: string | null; updated_at: string;
 }
-export interface ResellPeriodRow extends Row { id: string; workspace_id: string; user_id: string; started_at: string; ended_at: string | null; paid_until: string | null; note: string | null; created_by: string | null }
+export interface ResellPeriodRow extends Row { id: string; workspace_id: string; /** Null once the student's account was closed. */ user_id: string | null; started_at: string; ended_at: string | null; paid_until: string | null; note: string | null; created_by: string | null }
 export type LedgerStatus = 'open' | 'invoiced' | 'paid' | 'void';
 export interface WholesaleRow extends Row {
   id: string; workspace_id: string; period: string; active_students: number; rate_uzs: number; amount_uzs: number; status: LedgerStatus; invoice_ref: string | null; computed_at: string; updated_by: string | null;

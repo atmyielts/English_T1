@@ -19,12 +19,12 @@ async function resellRow(store: CentreStore, workspaceId: string): Promise<Resel
   return await store.table('resell').get({ workspace_id: workspaceId }) ?? await store.table('resell').insert({ workspace_id: workspaceId });
 }
 
-/** Distinct students whose resale overlapped the month (Tashkent). */
+/** Distinct students whose resale overlapped the month (Tashkent). A period unlinked by an account closure still counts, as its own student. */
 export async function activeInMonth(store: CentreStore, workspaceId: string, period: string): Promise<string[]> {
   const start = Date.parse(`${period}-01T00:00:00+05:00`);
   const end = new Date(start); end.setUTCMonth(end.getUTCMonth() + 1);
   const rows = await store.table('resell_periods').list({ workspace_id: workspaceId }, { lt: { started_at: end.toISOString() } });
-  return [...new Set(rows.filter((row) => !row.ended_at || Date.parse(row.ended_at) >= start).map((row) => row.user_id))];
+  return [...new Set(rows.filter((row) => !row.ended_at || Date.parse(row.ended_at) >= start).map((row) => row.user_id ?? `closed:${row.id}`))];
 }
 
 /** Computes (or recomputes, while still open) the wholesale row of a month. */

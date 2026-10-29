@@ -2,11 +2,12 @@ import { publicTest } from '../../../../packages/ai-core/src/materials/centre-pl
 import { tashkentDay } from '../../../../packages/ai-core/src/mod.ts';
 import { brandingView } from '../core/views.ts';
 import { createRequestContext } from '../context.ts';
+import type { Stores } from '../stores.ts';
 import type { HandlerDeps } from '../handler.ts';
 import { SchoodAIError, type Locale, type RequestContext, type Workspace } from '../types.ts';
 import { runRetention } from './admin.ts';
 import { agentTurn, LIMITS, openThread, say, T, type AgentMessage } from './admissions.ts';
-import { centreDeps, type CentreDeps } from './binding.ts';
+import { centreStore, type CentreDeps } from './binding.ts';
 import { botToken, sendText, webhookSecretHash } from './bot.ts';
 import { briefDue, buildBrief, deliverBrief } from './brief.ts';
 import { computeByokFees } from './byok.ts';
@@ -31,7 +32,8 @@ import type { AdmissionsRow, SettingsRow } from './store.ts';
 // centre's owner, so it is charged to the centre's pooled credits under its plan.
 
 export interface PublicOptions { serviceSecret?: string | null; now?: () => Date; after?: (work: Promise<unknown>) => void }
-type Deps = Pick<HandlerDeps, 'repository' | 'gateway' | 'plans' | 'isAdmin' | 'callFunction'>;
+/** The handler's own dependencies, with the same area stores (core passes `stores` in index.ts). */
+type Deps = Pick<HandlerDeps, 'repository' | 'gateway' | 'plans' | 'isAdmin' | 'callFunction'> & { stores: Stores };
 
 const PATH = /\/schood-ai\/public\/centre\/(telegram\/([A-Za-z0-9_-]{16,40})|embed\/(config|chat|poll|placement)|cron)\/?$/;
 const SESSION = /^[A-Za-z0-9_-]{16,64}$/;
@@ -41,7 +43,7 @@ const LANG = (value: unknown): Locale => (typeof value === 'string' && /^ru/i.te
 /** A request context acting as the centre's owner (the system actor for public and scheduled work). */
 export function systemContext(deps: Deps, workspace: Workspace, locale: Locale, action: string, options: { now: () => Date; after: (work: Promise<unknown>) => void }): RequestContext {
   return createRequestContext(
-    { repo: deps.repository, gateway: deps.gateway, plans: deps.plans, isAdmin: deps.isAdmin, callFunction: deps.callFunction, after: options.after, now: options.now, responseHeaders: {} },
+    { repo: deps.repository, gateway: deps.gateway, plans: deps.plans, stores: deps.stores, isAdmin: deps.isAdmin, callFunction: deps.callFunction, after: options.after, now: options.now, responseHeaders: {} },
     {
       url: new URL(`https://internal.invalid/functions/v1/schood-ai/centre/${action}?workspace_id=${workspace.id}`), headers: new Headers({ 'x-schood-locale': locale }),
       area: 'centre', action, method: 'POST', requestId: crypto.randomUUID(),
@@ -81,7 +83,7 @@ export function createCentrePublicHandler(deps: Deps, options: PublicOptions = {
 
   // --- Telegram ------------------------------------------------------------------------------
   async function telegram(req: Request, ref: string): Promise<Response> {
-    const cdeps = await centreDeps({ repo: deps.repository });
+    const cdeps = await deps.stores.get(centreStore).deps();
     const row = await cdeps.store.table('admissions').get({ bot_ref: ref });
     const presented = req.headers.get('x-telegram-bot-api-secret-token') ?? '';
     if (!row || !row.webhook_secret_hash || !timingSafeEqual(await webhookSecretHash(presented), row.webhook_secret_hash)) return new Response('unauthorized', { status: 401 });
@@ -133,7 +135,7 @@ export function createCentrePublicHandler(deps: Deps, options: PublicOptions = {
   // --- Widgets ---------------------------------------------------------------------------------
   async function widget(req: Request, op: string, url: URL): Promise<Response> {
     const origin = req.headers.get('origin');
-    const cdeps = await centreDeps({ repo: deps.repository });
+    const cdeps = await deps.stores.get(centreStore).deps();
     const found = await centreByKey(cdeps, url.searchParams.get('key'));
     const allowed = !!found && !!origin && found.settings.embed_domains.includes(origin.toLowerCase());
     const headers: Record<string, string> = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', Vary: 'Origin', ...(allowed ? { 'Access-Control-Allow-Origin': origin!, 'Access-Control-Allow-Headers': 'content-type', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Max-Age': '600' } : {}) };
@@ -225,7 +227,7 @@ export function createCentrePublicHandler(deps: Deps, options: PublicOptions = {
   async function cron(req: Request): Promise<Response> {
     const presented = req.headers.get('x-schood-service-secret');
     if (!secret || !presented || !timingSafeEqual(presented, secret) || req.headers.get('origin')) return new Response(JSON.stringify({ code: 'unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
-    const cdeps = await centreDeps({ repo: deps.repository });
+    const cdeps = await deps.stores.get(centreStore).deps();
     const at = now(), day = tashkentDay(at), month = monthOf(at), week = tashkentWeek(at);
     const previous = monthOf(new Date(Date.parse(`${month}-01T00:00:00+05:00`) - 86_400_000));
     const summary = { centres: 0, briefs: 0, delivered: 0, retention: 0, ledgers: 0, insights: 0, failed: 0 };

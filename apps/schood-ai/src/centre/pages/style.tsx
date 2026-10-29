@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Plus, RotateCcw, Trash2 } from 'lucide-react';
-import { api, BrandMark, Button, Field, PageHeader, PlanGate, TextArea, TextInput, useWorkspace } from '../../core/index.ts';
-import { ApiErrorState, CentreGate, CopyField, Loaded, Section, Select, Toggle, useCentreApi, useLoad, useSubmit, useT } from '../kit.tsx';
+import { api, ApiErrorState, BrandMark, Button, Field, PageHeader, PlanGate, TextArea, TextInput, useT, useWorkspace } from '../../core/index.ts';
+import { CentreGate, CopyField, Loaded, Section, Select, Toggle, useCentreApi, useLoad, useSubmit } from '../kit.tsx';
 
 // C1 house style and C14 white label and embed: name, logo, colours and the
 // assistant's name (core's workspace settings), instruction language, tone and

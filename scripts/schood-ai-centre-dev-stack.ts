@@ -14,7 +14,8 @@ import { CircuitBreaker, createGateway } from '../supabase/functions/schood-ai/g
 import { createSchoodAIHandler } from '../supabase/functions/schood-ai/handler.ts';
 import { createMemoryRepository, SEED_REGISTRY } from '../supabase/functions/schood-ai/memory-repository.ts';
 import { createPlanResolver } from '../supabase/functions/schood-ai/plan.ts';
-import { bindCentre } from '../supabase/functions/schood-ai/centre/binding.ts';
+import { createStores } from '../supabase/functions/schood-ai/stores.ts';
+import { centreRuntime, centreStore } from '../supabase/functions/schood-ai/centre/binding.ts';
 import { SecretBox, secretContext } from '../supabase/functions/schood-ai/centre/crypto.ts';
 import { createCentrePublicHandler } from '../supabase/functions/schood-ai/centre/public.ts';
 import { createMemoryCentreStore } from '../supabase/functions/schood-ai/centre/store-memory.ts';
@@ -26,10 +27,11 @@ const memory = createMemoryRepository({ users: USERS, registry: SEED_REGISTRY })
 const academy = fakeAcademy(), telegram = fakeTelegram();
 const store = createMemoryCentreStore(memory);
 const secrets = await SecretBox.create('dev', { dev: btoa(String.fromCharCode(...new Uint8Array(32).map((_, i) => 200 - i))) });
-bindCentre(memory.repository, {
+const stores = createStores({ kind: 'memory' }, { now: () => new Date() });
+stores.use(centreStore, centreRuntime({
   store, telegram: telegram.api, secrets, media: { put: (key) => Promise.resolve({ provider: 's3', bucket: 'dev', path: key }) },
   config: { appUrl: ORIGINS[0], publicUrl: `http://localhost:${PORT}/functions/v1/schood-ai/public`, schoodBotToken: null },
-});
+}));
 
 // --- The fake model: one answer per centre task, chosen from the system prompt ----------------
 const ANSWERS: [RegExp, (user: string) => unknown][] = [
@@ -73,8 +75,8 @@ const isAdmin = (userId: string) => Promise.resolve(userId === ID.schoodAdmin);
 const tokenProducts = new Map(Object.entries(USERS).map(([token, user]) => [token, user.products ?? []]));
 const plans = createPlanResolver({ productIds: PRODUCT, betaUserIds: new Set(), repo: memory.repository, isAdmin, now: () => new Date(), accessEffective: (token) => Promise.resolve(tokenProducts.get(token) ?? []) });
 const callFunction = (name: string, _path: string, token: string, init: Parameters<typeof academy.handle>[2]) => Promise.resolve(academy.handle(name, token, init));
-const handle = createSchoodAIHandler({ repository: memory.repository, gateway, plans, isAdmin, callFunction, adminGate: () => Promise.resolve({ ok: false, status: 403, code: 'forbidden' }) }, { allowedOrigins: ORIGINS, serviceSecret: null });
-const publicHandle = createCentrePublicHandler({ repository: memory.repository, gateway, plans, isAdmin, callFunction }, { serviceSecret: null });
+const handle = createSchoodAIHandler({ repository: memory.repository, gateway, plans, isAdmin, callFunction, stores, adminGate: () => Promise.resolve({ ok: false, status: 403, code: 'forbidden' }) }, { allowedOrigins: ORIGINS, serviceSecret: null });
+const publicHandle = createCentrePublicHandler({ repository: memory.repository, gateway, plans, isAdmin, callFunction, stores }, { serviceSecret: null });
 
 // --- Seed: a Centre Pro centre linked to the fake Academy ------------------------------------
 const { workspaceId: ws } = await store.createCentre({ name: 'Registan Learning Centre', ownerId: ID.owner, academyTenantId: ACADEMY, contractPlan: null, contractUntil: null, via: 'academy', createdBy: ID.owner, publicKey: 'dev_widget_key_0123456789' });

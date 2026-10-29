@@ -1,36 +1,13 @@
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Building2, Check, Copy, KeyRound } from 'lucide-react';
 import {
-  api, ApiError, ApiErrorState as CoreApiErrorState, ApproveRunCard, Button, Card, EmptyState, ErrorState, Link, LoadingState, useI18n, useT as useCoreT, useWorkspace,
-  type ActionView, type ApiOptions, type Role, type Translate,
+  api, ApiError, ApiErrorState, ApproveRunCard, Button, Card, EmptyState, Link, LoadingState, useI18n, useT, useWorkspace,
+  type ActionView, type ApiOptions, type Role,
 } from '../core/index.ts';
-import { format } from '../../../../packages/service-i18n/src/format.ts';
-import { enPages } from './i18n/en-pages.ts';
 
 // Building blocks for the centre screens, on top of core's primitives: data
 // loading with the workspace, a centre-only gate, tables that turn into cards
 // on a phone, toggles, tabs, copy fields and Approve & run lists.
-
-const screenEnglish = { en: enPages as Record<string, string>, uz: {}, ru: {} };
-/**
- * Core's `useT` plus the centre screens' English (i18n/en-pages.ts), which loads with
- * the screens instead of the first download. Uzbek and Russian come from core's
- * catalogs as usual; a key core does not know falls back to the screens' English.
- */
-export function useT(): Translate {
-  const t = useCoreT();
-  return useCallback<Translate>((key, params) => {
-    const text = t(key, params);
-    return text === key && key in enPages ? format(screenEnglish, 'en', key, params) : text;
-  }, [t]);
-}
-
-/** Core's ApiErrorState, with the centre's own refusals (`error.<code>` in en-pages.ts) worded. */
-export function ApiErrorState({ error, onRetry }: { error: unknown; onRetry?: () => void }) {
-  const t = useT();
-  if (error instanceof ApiError && `error.${error.code}` in enPages) return <ErrorState lead={t(`error.${error.code}`)} onRetry={onRetry}/>;
-  return <CoreApiErrorState error={error} onRetry={onRetry}/>;
-}
 
 export const MANAGER = ['owner', 'admin'] as const;
 export const STAFF = ['owner', 'admin', 'teacher'] as const;

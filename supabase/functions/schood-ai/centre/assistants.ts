@@ -71,7 +71,10 @@ export function registerCentreAssistants(): void {
     },
   });
 
-  registerContextProvider('centre_rules', async (ctx, { ref }) => rulesFor(ctx, ref), { selfView: true, maxChars: 4_000 });
+  registerContextProvider('centre_rules', async (ctx, { ref }) => rulesFor(ctx, ref), {
+    selfView: true, maxChars: 4_000,
+    label: { en: 'your centre’s homework rules', uz: 'markazingizning uy vazifasi qoidalari', ru: 'правила вашего центра для домашних заданий' },
+  });
 
   registerContextProvider('teacher_classes', async (ctx, { access }) => {
     if (access.workspace.kind !== 'centre' || !['owner', 'admin', 'teacher'].includes(access.role) || !access.workspace.academyTenantId || !ctx.user.token) return null;
@@ -87,7 +90,7 @@ export function registerCentreAssistants(): void {
         })),
       },
     };
-  }, { timeoutMs: 15_000, maxChars: 14_000 });
+  }, { timeoutMs: 15_000, maxChars: 14_000, label: { en: 'your classes in Academy', uz: 'Academy’dagi guruhlaringiz', ru: 'ваши группы в Academy' } });
 }
 
 /** GET centre/my-classes: the teacher's classes with missed homework and absences (no AI, no credits). */

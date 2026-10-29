@@ -14,7 +14,7 @@ import assert from 'node:assert/strict';
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const fixture = read('supabase/tests/schood-ai-core.fixture.sql') + '\n' + read('supabase/tests/schood-ai-centre.fixture.sql');
-const names = readdirSync(new URL('../supabase/migrations/', import.meta.url)).filter((name) => /^20261030[14]\d{5}_schood_ai_.*\.sql$/.test(name)).sort();
+const names = readdirSync(new URL('../supabase/migrations/', import.meta.url)).filter((name) => /^20261030[14]\d{5}_.*\.sql$/.test(name)).sort();
 const core = names.filter((name) => name.startsWith('202610301')), centre = names.filter((name) => name.startsWith('202610304'));
 assert.ok(centre.length >= 1, 'the centre migration exists');
 const migration = names.map((name) => read(`supabase/migrations/${name}`)).join('\n');
@@ -31,7 +31,7 @@ const integration = read('supabase/tests/schood-ai-centre.integration.sql');
     await db.exec(centreOnly);
     const results = await db.exec(integration);
     assert.equal(results.at(-1).rows[0]?.['?column?'], 'schood ai centre: ok');
-    console.log(`PGlite (PostgreSQL 17): ${core.length} core and ${centre.length} centre migrations apply twice; centre creation, invites with seats, places, expiry, revocation and uses, role budgets, member names, public counters, staff links, knowledge search, usage, sealed secrets and isolation passed.`);
+    console.log(`PGlite (PostgreSQL 17): ${core.length} core and ${centre.length} centre migrations apply twice; centre creation, invites with seats, places, expiry, revocation and uses, role budgets, member names, public counters, staff links, knowledge search, usage, sealed secrets, homework rules, account closure through auth.users and isolation passed.`);
   } finally {
     await db.close();
   }

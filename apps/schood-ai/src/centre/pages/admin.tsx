@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { KeyRound, Trash2 } from 'lucide-react';
-import { api, Badge, Button, Field, PageHeader, PlanGate, TextInput, useWorkspace } from '../../core/index.ts';
-import { ApiErrorState, CentreGate, Loaded, Section, Select, Stat, Table, Tabs, Toggle, useCentreApi, useFormat, useLoad, useSubmit, useT } from '../kit.tsx';
+import { api, ApiErrorState, Badge, Button, Field, PageHeader, PlanGate, TextInput, useT, useWorkspace } from '../../core/index.ts';
+import { CentreGate, Loaded, Section, Select, Stat, Table, Tabs, Toggle, useCentreApi, useFormat, useLoad, useSubmit } from '../kit.tsx';
 
 // C7 admin: feature switches, data retention, the usage and cost report and the
 // audit log; and C15 the centre's own model keys with the platform fee.

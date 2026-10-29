@@ -4,7 +4,8 @@ import { createSchoodAIHandler, MODULES } from '../handler.ts';
 import { createMemoryRepository, SEED_REGISTRY, type MemoryUser } from '../memory-repository.ts';
 import { createPlanResolver } from '../plan.ts';
 import type { FunctionCallInit } from '../types.ts';
-import { bindCentre, type CentreDeps, type TelegramResult } from './binding.ts';
+import { createStores } from '../stores.ts';
+import { centreRuntime, centreStore, type CentreDeps, type TelegramResult } from './binding.ts';
 import { SecretBox } from './crypto.ts';
 import { createCentrePublicHandler } from './public.ts';
 import { createMemoryCentreStore } from './store-memory.ts';
@@ -167,15 +168,16 @@ export async function centreFixture(options: { publicUrl?: string | null; secret
     media: { put: (key, bytes) => { media.push({ key, size: bytes.length }); return Promise.resolve({ provider: 's3', bucket: 'test', path: key }); } },
     config: { appUrl: 'https://ai.schood.online', publicUrl: options.publicUrl === undefined ? 'https://project.supabase.co/functions/v1/schood-ai/public' : options.publicUrl, schoodBotToken: '6000000000:SchoodStudentBotTokenForTests_abcdefgh' },
   };
-  bindCentre(memory.repository, deps);
+  const stores = createStores({ kind: 'memory' }, { now });
+  stores.use(centreStore, centreRuntime(deps));
   const pending: Promise<unknown>[] = [];
   const after = (work: Promise<unknown>) => { pending.push(work); };
   const callFunction = (name: string, _path: string, token: string, init: FunctionCallInit) => Promise.resolve(academy.handle(name, token, init));
   const handle = createSchoodAIHandler({
-    repository: memory.repository, gateway, plans, isAdmin, callFunction,
+    repository: memory.repository, gateway, plans, isAdmin, callFunction, stores,
     adminGate: () => Promise.resolve({ ok: false, status: 403, code: 'forbidden' }), modules: MODULES,
   }, { allowedOrigins: [ORIGIN], serviceSecret: SECRET, now, after });
-  const publicHandle = createCentrePublicHandler({ repository: memory.repository, gateway, plans, isAdmin, callFunction }, { serviceSecret: SECRET, now, after });
+  const publicHandle = createCentrePublicHandler({ repository: memory.repository, gateway, plans, isAdmin, callFunction, stores }, { serviceSecret: SECRET, now, after });
 
   type CallOptions = { token?: string | null; body?: unknown; query?: Record<string, string>; workspace?: string; headers?: Record<string, string> };
   const call = (method: string, path: string, opts: CallOptions = {}) => {

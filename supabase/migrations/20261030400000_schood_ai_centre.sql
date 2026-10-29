@@ -354,11 +354,13 @@ create table if not exists public.ai_centre_resell (
   updated_by uuid references public.users(id) on delete set null,
   updated_at timestamptz not null default now()
 );
--- Each period a student had the resold assistant switched on.
+-- Each period a student had the resold assistant switched on. They are the basis of
+-- the wholesale charge, so closing an account unlinks them (user_id null) instead
+-- of deleting them (ai_centre_erase_account below).
 create table if not exists public.ai_centre_resell_periods (
   id uuid primary key default gen_random_uuid(),
   workspace_id uuid not null references public.ai_workspaces(id) on delete cascade,
-  user_id uuid not null references public.users(id) on delete cascade,
+  user_id uuid references public.users(id) on delete set null,
   started_at timestamptz not null default now(),
   ended_at timestamptz,
   paid_until date,
@@ -712,15 +714,22 @@ grant execute on function public.ai_centre_usage(uuid, timestamptz) to service_r
 
 
 -- --- Account erasure ------------------------------------------------------------------------------
--- Rows keyed on user_id join the account erasure registry (the additive pattern of
--- 20261030130000_schood_ai_retention_and_erasure.sql). Placement attempts and
--- observations are keyed on taker_user_id and teacher_id and go with the users row
--- (on delete cascade); conversations with prospects are not linked to accounts and
--- follow the centre's retention.
+-- Closing a Schood account (the closure transaction on auth.users) anonymises the
+-- users row; it is not deleted, so nothing here may rely on "on delete cascade".
+--   1. Plain personal rows keyed on user_id join account_personal_erasure_tables()
+--      (the additive pattern of 20261030130000): group memberships, staff Telegram
+--      links and staff link codes.
+--   2. ai_centre_erase_account(p_user) runs as a service hook after core's
+--      ai_erase_account: the person's placement attempts (their answers and writing)
+--      and the observations of their lessons are deleted; resell periods are kept
+--      for the wholesale charge but unlinked; observer links are unlinked.
+--   Authorship columns (created_by, verified_by, author_id, ...) keep pointing at the
+--   anonymised users row; prospects of the admissions agent are not accounts and
+--   follow the centre's retention.
 do $$
 declare
   relations text[];
-  wanted text[] := array['ai_centre_group_members', 'ai_centre_resell_periods', 'ai_centre_staff_chats', 'ai_centre_staff_codes'];
+  wanted text[] := array['ai_centre_group_members', 'ai_centre_staff_chats', 'ai_centre_staff_codes'];
   relation_name text;
   guard_installed boolean := to_regprocedure('public.guard_closed_personal_record()') is not null;
 begin
@@ -743,6 +752,48 @@ begin
     'create or replace function public.account_personal_erasure_tables() returns text[] language sql immutable set search_path=pg_catalog,public as %L',
     format('select %L::text[];', relations::text)
   );
+end
+$$;
+
+create or replace function public.ai_centre_erase_account(p_user uuid)
+returns jsonb language plpgsql security definer
+set search_path = pg_catalog, public
+as $$
+declare
+  v_attempts integer;
+  v_observations integer;
+  v_observer integer;
+  v_periods integer;
+begin
+  if p_user is null then return '{}'::jsonb; end if;
+  delete from public.ai_centre_placement_attempts where taker_user_id = p_user;
+  get diagnostics v_attempts = row_count;
+  delete from public.ai_centre_observations where teacher_id = p_user;
+  get diagnostics v_observations = row_count;
+  update public.ai_centre_observations set observer_id = null where observer_id = p_user;
+  get diagnostics v_observer = row_count;
+  update public.ai_centre_resell_periods set user_id = null, note = null, ended_at = coalesce(ended_at, now()) where user_id = p_user;
+  get diagnostics v_periods = row_count;
+  return jsonb_build_object('placement_attempts', v_attempts, 'observations', v_observations, 'observer_links', v_observer, 'resell_periods_unlinked', v_periods);
+end;
+$$;
+revoke all on function public.ai_centre_erase_account(uuid) from public, anon, authenticated, service_role;
+
+do $$
+declare hooks text[];
+begin
+  if to_regprocedure('public.account_erasure_service_hooks()') is null then
+    raise notice 'account_erasure_service_hooks() is not installed; centre erasure hook not registered';
+    return;
+  end if;
+  hooks := public.account_erasure_service_hooks();
+  if not ('ai_centre_erase_account' = any(hooks)) then
+    hooks := hooks || 'ai_centre_erase_account'::text;
+    execute format(
+      'create or replace function public.account_erasure_service_hooks() returns text[] language sql immutable set search_path=pg_catalog,public as %L',
+      format('select %L::text[];', hooks::text)
+    );
+  end if;
 end
 $$;
 

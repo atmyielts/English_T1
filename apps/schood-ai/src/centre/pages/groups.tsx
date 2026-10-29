@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Plus, RefreshCw, X } from 'lucide-react';
-import { Badge, Button, Card, Dialog, EmptyState, Field, PageHeader, TextArea, TextInput } from '../../core/index.ts';
-import { ApiErrorState, CentreGate, Loaded, useCentre, useCentreApi, useLoad, useSubmit, useT } from '../kit.tsx';
+import { ApiErrorState, Badge, Button, Card, Dialog, EmptyState, Field, PageHeader, TextArea, TextInput, useT } from '../../core/index.ts';
+import { CentreGate, Loaded, useCentre, useCentreApi, useLoad, useSubmit } from '../kit.tsx';
 
 // C2: groups and the Student Assistant's rules for each one (hints only while a
 // homework is open, always, or off; topics to focus on; a note), and who is in it.

@@ -1,13 +1,13 @@
-import type { RequestContext, SchoodAIRepository } from '../types.ts';
+import type { RequestContext } from '../types.ts';
+import { defineStore, type ServiceDb, type StoreEnv } from '../stores.ts';
 import { SecretBox } from './crypto.ts';
 import type { CentreStore } from './store.ts';
 
 // What the centre area needs besides the core RequestContext: its own store, a
-// Telegram client, the secret box and the media store. Core has no `ctx` member for
-// an area's own tables yet (see docs/product/ai-requests/centre.md), so this is the
-// small adapter: tests and the dev stack bind a memory store to their repository;
-// the deployed function builds the Postgres store from its own environment on first
-// use. Delete it when core passes area stores through the context.
+// Telegram client, the secret box and the media store, as one area store
+// (core's defineStore). The deployed function builds it over core's service-role
+// client on first use; tests and the dev stack put a memory twin bound to their
+// memory repository in its place with stores.use(centreStore, centreRuntime(deps)).
 
 export interface TelegramResult { ok: boolean; result?: Record<string, unknown> & { message_id?: number }; description?: string; error_code?: number }
 export interface TelegramApi {
@@ -15,8 +15,8 @@ export interface TelegramApi {
   call(token: string, method: string, body: Record<string, unknown>): Promise<TelegramResult>;
 }
 export interface MediaStore {
-  /** Stores a file and returns its reference ({provider, bucket, path}). */
-  put(key: string, bytes: Uint8Array, mime: string): Promise<Record<string, string>>;
+  /** Stores a file and returns its reference ({provider, bucket, path}); null when no media store is configured. */
+  put(key: string, bytes: Uint8Array, mime: string): Promise<Record<string, string> | null>;
 }
 export interface CentreConfig {
   /** The app's origin, for invite links and messages (https://ai.schood.online). */
@@ -35,19 +35,24 @@ export interface CentreDeps {
   config: CentreConfig;
 }
 
-const bound = new WeakMap<SchoodAIRepository, CentreDeps>();
-let production: Promise<CentreDeps> | null = null;
+/** The area store: the centre's dependencies, built once per function instance. */
+export interface CentreRuntime { deps(): Promise<CentreDeps> }
+/** A runtime over fixed dependencies (tests and the dev stack). */
+export const centreRuntime = (deps: CentreDeps): CentreRuntime => ({ deps: () => Promise.resolve(deps) });
 
-/** Tests and the dev stack: use these dependencies for requests on this repository. */
-export function bindCentre(repo: SchoodAIRepository, deps: CentreDeps): void {
-  bound.set(repo, deps);
-}
+export const centreStore = defineStore<CentreRuntime>('centre', {
+  postgres: (db, env) => {
+    // Built on first use; a failure (for example a malformed key list) is retried on the next request.
+    let built: Promise<CentreDeps> | null = null;
+    return { deps: () => (built ??= productionDeps(db, env).catch((cause) => { built = null; throw cause; })) };
+  },
+  // The memory centre store keeps its rows next to the memory repository's, so it
+  // cannot be built from nothing; centreFixture() and the dev stack bind one.
+  memory: () => ({ deps: () => Promise.reject(new Error('Bind the centre memory store: stores.use(centreStore, centreRuntime(deps)).')) }),
+});
 
-export function centreDeps(ctx: Pick<RequestContext, 'repo'>): Promise<CentreDeps> {
-  const hit = bound.get(ctx.repo);
-  if (hit) return Promise.resolve(hit);
-  production ??= createProductionDeps().catch((cause) => { production = null; throw cause; });
-  return production;
+export function centreDeps(ctx: Pick<RequestContext, 'store'>): Promise<CentreDeps> {
+  return ctx.store(centreStore).deps();
 }
 
 export const fetchTelegram = (fetcher: typeof fetch = fetch): TelegramApi => ({
@@ -65,35 +70,30 @@ export const fetchTelegram = (fetcher: typeof fetch = fetch): TelegramApi => ({
   },
 });
 
-async function createProductionDeps(): Promise<CentreDeps> {
-  const env = (name: string) => Deno.env.get(name)?.trim() || undefined;
-  const url = env('SUPABASE_URL'), key = env('SUPABASE_SERVICE_ROLE_KEY');
-  if (!url || !key) throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
-  const [{ createClient }, { createPostgresCentreStore }] = await Promise.all([
-    import('https://esm.sh/@supabase/supabase-js@2.89.0'),
-    import('./store-postgres.ts'),
-  ]);
-  const db = createClient(url, key, { auth: { persistSession: false } });
-  let media: MediaStore | null = null;
-  if (env('S3_BUCKET') && env('S3_REGION') && env('AWS_ACCESS_KEY_ID') && env('AWS_SECRET_ACCESS_KEY')) {
-    media = {
-      async put(path, bytes, mime) {
-        const { uploadFileToS3 } = await import('../../_shared/media-storage.ts');
-        const stored = await uploadFileToS3(path, new File([new Uint8Array(bytes)], path.split('/').pop() ?? 'file', { type: mime }), mime, { route: 'schood-ai/centre' });
-        return { provider: 's3', bucket: stored.bucket, path: stored.path };
-      },
-    };
-  }
-  const publicUrl = env('SCHOOD_AI_CENTRE_PUBLIC_URL');
+async function productionDeps(db: ServiceDb, env: StoreEnv): Promise<CentreDeps> {
+  const read = (name: string) => env.env(name)?.trim() || undefined;
+  const { createPostgresCentreStore } = await import('./store-postgres.ts');
+  // Knowledge files go to the repo's media store (S3). It reads its own settings and
+  // loads the S3 client, so it is imported only when a file is stored.
+  const media: MediaStore = {
+    async put(path, bytes, mime) {
+      const storage = await import('../../_shared/media-storage.ts');
+      if (!storage.getS3Config()) return null;
+      const stored = await storage.uploadFileToS3(path, new File([new Uint8Array(bytes)], path.split('/').pop() ?? 'file', { type: mime }), mime, { route: 'schood-ai/centre' });
+      return { provider: 's3', bucket: stored.bucket, path: stored.path };
+    },
+  };
+  const publicUrl = read('SCHOOD_AI_CENTRE_PUBLIC_URL');
   return {
-    store: createPostgresCentreStore(db as unknown as Parameters<typeof createPostgresCentreStore>[0]),
+    store: createPostgresCentreStore(db),
     telegram: fetchTelegram(),
-    secrets: await SecretBox.fromEnv(env),
+    secrets: await SecretBox.fromEnv(read),
     media,
     config: {
-      appUrl: (env('SCHOOD_AI_APP_URL') ?? 'https://ai.schood.online').replace(/\/+$/, ''),
+      appUrl: (read('SCHOOD_AI_APP_URL') ?? 'https://ai.schood.online').replace(/\/+$/, ''),
       publicUrl: publicUrl && /^https:\/\/[^\s]+$/.test(publicUrl) ? publicUrl.replace(/\/+$/, '') : null,
-      schoodBotToken: env('TELEGRAM_BOT_TOKEN') ?? null,
+      // Optional (owner decision): the Schood student bot's token, for briefs to managers who have not linked the centre's own bot.
+      schoodBotToken: read('SCHOOD_AI_TELEGRAM_BOT_TOKEN') ?? null,
     },
   };
 }
