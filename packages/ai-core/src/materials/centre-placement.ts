@@ -1,5 +1,6 @@
 import type { MaterialKindDefinition } from '../materials.ts';
 import * as s from '../schema.ts';
+import type { Schema } from '../schema.ts';
 
 // The centre placement test (C5), a library material of kind `centre.placement_test`:
 // objective items (multiple choice and gap fill, each tagged with a CEFR level and
@@ -35,7 +36,11 @@ const section = s.object({
   min_words: s.optional(s.number({ min: 0, max: 600, integer: true })),
   criteria: s.optional(s.array(s.string({ min: 2, max: 60 }), { max: 6 })),
 });
-export const placementTestSchema = s.object({
+export interface PlacementItem { id: string; type: 'mcq' | 'gap'; level: CefrLevel; prompt: string; options?: string[]; answer?: number; accept?: string[] }
+export interface PlacementSection { id: string; title: string; kind: 'objective' | 'writing' | 'speaking'; instructions?: string; items?: PlacementItem[]; prompt?: string; min_words?: number; criteria?: string[] }
+export interface PlacementTest { title: string; from_level: CefrLevel; to_level: CefrLevel; minutes?: number; instructions?: string; sections: PlacementSection[]; bands: { level: CefrLevel; min_percent: number }[] }
+
+const testShape = s.object({
   title: s.string({ min: 3, max: 160 }),
   from_level: level,
   to_level: level,
@@ -45,9 +50,8 @@ export const placementTestSchema = s.object({
   /** Objective score cut-offs: the highest level whose min_percent is met. */
   bands: s.array(s.object({ level, min_percent: s.number({ min: 0, max: 100 }) }), { min: 1, max: 7 }),
 });
-export type PlacementTest = s.Infer<typeof placementTestSchema>;
-export type PlacementItem = s.Infer<typeof item>;
-export type PlacementSection = s.Infer<typeof section>;
+/** The builders mark optional fields at run time; the interfaces above say so to TypeScript. */
+export const placementTestSchema = testShape as unknown as Schema<PlacementTest>;
 
 export const DEFAULT_CRITERIA = { writing: ['Task response', 'Organisation', 'Vocabulary', 'Grammar'], speaking: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'] } as const;
 
