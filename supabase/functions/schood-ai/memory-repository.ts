@@ -47,7 +47,7 @@ export function createMemoryRepository(options: { users: Record<string, MemoryUs
     const a = account(workspaceId), t = now().getTime();
     if (grant <= 0) return a;
     const base = { workspaceId, userId: null, creditKey: null, chargeId: null };
-    const anchor = Math.min(planAnchor ? Date.parse(planAnchor) : a.anchor ?? t, t);
+    const anchor = planAnchor ? Date.parse(planAnchor) : a.anchor ?? t;
     const cycle = Math.max(0, Math.floor((t - anchor) / CYCLE_MS));
     if (a.anchor !== anchor || cycle > (a.cycle ?? 0)) {
       if (a.plan > 0) write({ ...base, kind: 'expire', bucket: 'plan', delta: -a.plan, balanceAfter: 0, reference: `expire:${a.anchor ?? 'none'}:${a.cycle}` });

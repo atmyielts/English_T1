@@ -42,6 +42,11 @@ export const uz: Record<CoreKey, string> = {
   'audience.parent': 'Ota-ona',
   'audience.teacher': 'O‘qituvchi',
   'audience.centre': 'Markaz',
+  'role.owner': 'Egasi',
+  'role.admin': 'Administrator',
+  'role.teacher': 'O‘qituvchi',
+  'role.student': 'O‘quvchi',
+  'role.parent': 'Ota-ona',
 
   'landing.badge': 'Schood AI',
   'landing.title': 'Natijalaringizni, sinfingizni va markazingizni biladigan sun’iy intellekt',
@@ -140,6 +145,7 @@ export const uz: Record<CoreKey, string> = {
   'report.send': 'Xabarni yuborish',
   'report.cancel': 'Bekor qilish',
   'report.thanks': 'Rahmat. Schood jamoasi uni ko‘rib chiqadi.',
+  'report.close': 'Yopish',
 
   'state.loading': 'Yuklanmoqda…',
   'state.retry': 'Qayta urinish',

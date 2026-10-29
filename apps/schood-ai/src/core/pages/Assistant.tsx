@@ -16,7 +16,7 @@ import { takePendingPrompt } from './Home.tsx';
 export function AssistantPage() {
   const t = useT(), workspace = useWorkspace(), { query } = useLocation();
   const threadId = query.get('thread');
-  const [threads, setThreads] = useState<ThreadView[]>([]);
+  const [threads, setThreads] = useState<ThreadView[]>([]), [current, setCurrent] = useState<string | null>(threadId);
   const [prompt] = useState(takePendingPrompt);
   useEffect(() => {
     let live = true;
@@ -24,7 +24,7 @@ export function AssistantPage() {
       .then((result) => { if (live) setThreads(result.threads.slice(0, 12)); })
       .catch(() => { if (live) setThreads([]); });
     return () => { live = false; };
-  }, [workspace.workspaceId, threadId]);
+  }, [workspace.workspaceId, current]);
   const open = (id: string | null) => navigate(id ? `/assistant?thread=${encodeURIComponent(id)}` : '/assistant');
   return <div className="grid gap-6 xl:grid-cols-[16rem_minmax(0,1fr)]">
     <aside className="order-2 xl:order-1" aria-label={t('nav.history')}>
@@ -33,8 +33,8 @@ export function AssistantPage() {
         <Button variant="secondary" size="sm" onClick={() => open(null)} icon={<MessageSquarePlus size={14} aria-hidden="true"/>}>{t('chat.newChat')}</Button>
       </div>
       {threads.length ? <ul className="m-0 grid list-none gap-1 p-0">
-        {threads.map((thread) => <li key={thread.id}><button type="button" onClick={() => open(thread.id)} aria-current={thread.id === threadId ? 'true' : undefined}
-          className={`flex min-h-11 w-full items-center gap-2 rounded-2xl px-3 py-2 text-left text-sm ${thread.id === threadId ? 'bg-navy text-white' : 'bg-white/70 text-gray-900 hover:bg-white'} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy`}>
+        {threads.map((thread) => <li key={thread.id}><button type="button" onClick={() => open(thread.id)} aria-current={thread.id === current ? 'true' : undefined}
+          className={`flex min-h-11 w-full items-center gap-2 rounded-2xl px-3 py-2 text-left text-sm ${thread.id === current ? 'bg-navy text-white' : 'bg-white/70 text-gray-900 hover:bg-white'} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy`}>
           {thread.pinned && <Pin size={14} aria-label={t('history.pinned')}/>}<span className="truncate">{thread.title || t('chat.newChat')}</span>
         </button></li>)}
       </ul> : <p className="m-0 text-sm text-gray-600">{t('history.empty')}</p>}
@@ -48,7 +48,7 @@ export function AssistantPage() {
         </div>
       </header>
       <Chat key={threadId ?? 'new'} threadId={threadId} initialMessage={prompt} autoFocus={!!prompt}
-        onThread={(id) => { if (id !== threadId) history.replaceState(null, '', `/assistant?thread=${encodeURIComponent(id)}`); }}/>
+        onThread={(id) => { setCurrent(id); if (id !== threadId) history.replaceState(null, '', `/assistant?thread=${encodeURIComponent(id)}`); }}/>
     </section>
   </div>;
 }

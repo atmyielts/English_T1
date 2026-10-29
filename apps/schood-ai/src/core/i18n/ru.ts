@@ -42,6 +42,11 @@ export const ru: Record<CoreKey, string> = {
   'audience.parent': 'Родитель',
   'audience.teacher': 'Преподаватель',
   'audience.centre': 'Центр',
+  'role.owner': 'Владелец',
+  'role.admin': 'Администратор',
+  'role.teacher': 'Преподаватель',
+  'role.student': 'Ученик',
+  'role.parent': 'Родитель',
 
   'landing.badge': 'Schood AI',
   'landing.title': 'ИИ, который знает ваши результаты, ваш класс и ваш центр',
@@ -140,6 +145,7 @@ export const ru: Record<CoreKey, string> = {
   'report.send': 'Отправить жалобу',
   'report.cancel': 'Отмена',
   'report.thanks': 'Спасибо. Команда Schood рассмотрит жалобу.',
+  'report.close': 'Закрыть',
 
   'state.loading': 'Загрузка…',
   'state.retry': 'Повторить',

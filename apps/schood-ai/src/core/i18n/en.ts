@@ -42,6 +42,11 @@ export const en = {
   'audience.parent': 'Parent',
   'audience.teacher': 'Teacher',
   'audience.centre': 'Centre',
+  'role.owner': 'Owner',
+  'role.admin': 'Admin',
+  'role.teacher': 'Teacher',
+  'role.student': 'Student',
+  'role.parent': 'Parent',
 
   'landing.badge': 'Schood AI',
   'landing.title': 'An AI that knows your results, your class and your centre',
@@ -140,6 +145,7 @@ export const en = {
   'report.send': 'Send report',
   'report.cancel': 'Cancel',
   'report.thanks': 'Thank you. The Schood team will review it.',
+  'report.close': 'Close',
 
   'state.loading': 'Loading…',
   'state.retry': 'Try again',

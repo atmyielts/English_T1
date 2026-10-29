@@ -157,7 +157,7 @@ export function NavGroups({ items }: { items: NavEntry[] }) {
 }
 
 function WorkspaceCard() {
-  const t = useT(), { me } = useWorkspace();
+  const t = useT(), workspace = useWorkspace(), me = workspace.me;
   if (!me) return null;
   const ws = me.workspace;
   const name = ws.kind === 'personal' ? t('header.personal') : ws.name;
@@ -165,7 +165,7 @@ function WorkspaceCard() {
     <BrandMark name={name} logo={ws.branding.logo_url} color={ws.branding.primary_color} size={36}/>
     <div className="min-w-0">
       <p className="m-0 truncate text-sm font-semibold text-gray-900">{name}</p>
-      <p className="m-0 text-xs text-gray-600">{t(`audience.${ws.kind === 'centre' && ['owner', 'admin'].includes(ws.role) ? 'centre' : ws.role === 'parent' ? 'parent' : ws.role === 'teacher' ? 'teacher' : 'learner'}`)}</p>
+      <p className="m-0 text-xs text-gray-600">{ws.kind === 'centre' ? t(`role.${ws.role}`) : t(`audience.${workspace.audience}`)}</p>
     </div>
   </div>;
 }

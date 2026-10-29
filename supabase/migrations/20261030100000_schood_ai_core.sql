@@ -539,8 +539,9 @@ begin
   insert into public.ai_credit_accounts (workspace_id) values (p_workspace) on conflict (workspace_id) do nothing;
   select * into a from public.ai_credit_accounts where workspace_id = p_workspace for update;
   if p_grant = 0 then return a; end if;
-  anchor := least(coalesce(p_anchor, a.plan_anchor, p_now), p_now);
-  -- Concurrent sessions carry slightly different transaction times: never a negative cycle.
+  -- The stored anchor is never replaced by a session's own clock: concurrent sessions
+  -- carry slightly different transaction times, and only a new entitlement start counts.
+  anchor := coalesce(p_anchor, a.plan_anchor, p_now);
   next_cycle := greatest(0, floor(extract(epoch from (p_now - anchor)) / 2592000)::integer);
   anchor_ref := extract(epoch from anchor)::bigint::text;
   if a.plan_anchor is distinct from anchor or next_cycle > a.plan_cycle then

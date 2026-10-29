@@ -1,59 +1,65 @@
 {
   "schemaVersion": 1,
-  "releaseId": "toefl-family-sellable-oct28",
+  "releaseId": "schood-ai-core-oct30",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "platform"
+    "schood-ai"
   ],
   "migrations": [
-    "20261028110000_toefl_plans_and_complete_bundle.sql"
+    "20261030100000_schood_ai_core.sql"
   ],
   "edgeFunctions": [
-    "score-prediction"
+    "schood-ai"
   ],
   "workers": [],
-  "sharedEdgeConsumers": [
-    "access-effective",
-    "exam-state",
-    "learning-profile",
-    "me",
-    "recommendations",
-    "review-session",
-    "start-session",
-    "trial-claim"
+  "requiredSecrets": [
+    "SCHOOD_AI_ALLOWED_ORIGINS",
+    "SCHOOD_AI_BETA_USER_IDS",
+    "SCHOOD_AI_CENTRE_PRODUCT_ID",
+    "SCHOOD_AI_CENTRE_PRO_PRODUCT_ID",
+    "SCHOOD_AI_FAMILY_PRODUCT_ID",
+    "SCHOOD_AI_GLOBAL_DAILY_CALLS",
+    "SCHOOD_AI_PLUS_PRODUCT_ID",
+    "SCHOOD_AI_SERVICE_SECRET",
+    "SCHOOD_AI_TEACHER_PRODUCT_ID",
+    "SCHOOD_AI_TEACHER_PRO_PRODUCT_ID"
   ],
-  "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "migration:20261028110000_toefl_plans_and_complete_bundle.sql",
-    "function:access-effective",
-    "function:me",
-    "function:start-session",
-    "function:exam-state",
-    "function:review-session",
-    "function:trial-claim",
-    "function:learning-profile",
-    "function:score-prediction",
-    "function:recommendations"
+    "migration:20261030100000_schood_ai_core.sql",
+    "secret:SCHOOD_AI_ALLOWED_ORIGINS",
+    "secret:SCHOOD_AI_BETA_USER_IDS",
+    "secret:SCHOOD_AI_GLOBAL_DAILY_CALLS",
+    "secret:SCHOOD_AI_SERVICE_SECRET",
+    "secret:SCHOOD_AI_PLUS_PRODUCT_ID",
+    "secret:SCHOOD_AI_FAMILY_PRODUCT_ID",
+    "secret:SCHOOD_AI_TEACHER_PRODUCT_ID",
+    "secret:SCHOOD_AI_TEACHER_PRO_PRODUCT_ID",
+    "secret:SCHOOD_AI_CENTRE_PRODUCT_ID",
+    "secret:SCHOOD_AI_CENTRE_PRO_PRODUCT_ID",
+    "function:schood-ai"
   ],
   "manualFollowUps": [
-    "Order: ship this LAST, after the TOEFL simulator (toefl-sim) and the TOEFL Playbook with its content (playbooks-engine) are live, so nothing empty goes on sale.",
-    "Pages: merging publishes platform: a TOEFL family card (TOEFL Simulator, TOEFL Playbook, TOEFL Complete) on home, /toefl, /toefl-practice-test (related links), the Telegram Mini App practice tab and the Telegram discover Exams tab; a TOEFL iBT group on the public /pricing page; en/uz/ru. Until the migration runs, /pricing?product=toefl-complete says the service was not found and the TOEFL group only lists what already has active plans.",
-    "Database: supabase db push --linked --include-all from an isolated copy that adds only 20261028110000_toefl_plans_and_complete_bundle.sql to the installed migrations, keeping the 9 pending #220 payment migrations (20261010162000-20261010174000) excluded. Dry run first. It adds TOEFL Playbook Premium (59,000 UZS / 30 days and 149,000 UZS / 90 days), TOEFL iBT Simulator Standard (69,000 UZS / 30 days; the simulator is paywalled and had no active plan, checked on prod 2026-10-28), and the TOEFL Complete product with a 109,000 UZS / 30-day plan whose metadata.included_product_ids grants the simulator and the playbook at purchase. The inactive TOEFL Playbook 'test' plan (5f49a588-34e9-4503-8233-86076d82f457) is not touched.",
-    "Edge, after the migration (--project-ref bbjawctnqrufvnesdsel): supabase functions deploy access-effective; supabase functions deploy me; supabase functions deploy start-session; supabase functions deploy exam-state; supabase functions deploy review-session; supabase functions deploy trial-claim (these six bundle _shared/product-bundles.ts, which now expands TOEFL Complete for admin/sponsor grants and refuses its trial); supabase functions deploy learning-profile; supabase functions deploy score-prediction; supabase functions deploy recommendations (these three bundle _shared/sister-signals.ts, which now reads TOEFL playbook diagnostics and TOEFL simulator results in both the 2026 1-6 band shape and the legacy RLW shape; score-prediction keeps the two TOEFL scales in separate series).",
-    "Owner of ielts-practice is unaffected; TOEFL has no practice app."
+    "Before merging: create the free Cloudflare Pages project schood-ai (the same way schood-admission was created), so the first deploy-pages run can publish it. After merging, run the 'Configure Schood AI Domain' workflow to bind ai.schood.online.",
+    "Pages: merging publishes schood-ai (new app; nothing else changes visually). ai.schood.online is added to VITE_ALLOWED_RETURN_HOSTS, so every app is rebuilt and the platform's sign-in can return there. Until the function is deployed the app shows the landing page and a connection error after sign-in.",
+    "Database: supabase db push --linked from an isolated copy that adds only 20261030100000_schood_ai_core.sql to the installed migrations, keeping the 9 pending #220 payment migrations (20261010162000-20261010174000) excluded. Dry run first. It creates the ai_* tables (RLS on, no browser policies), the credit, caps and notification functions, and seeds one settings row (AI on, 1000 calls a day, 300 per person, 5000 per workspace), the OpenRouter provider, the free google/gemma-4-31b-it:free model and the default route. It touches no existing table.",
+    "Secrets (--project-ref bbjawctnqrufvnesdsel): supabase secrets set SCHOOD_AI_ALLOWED_ORIGINS=https://ai.schood.online; supabase secrets set SCHOOD_AI_BETA_USER_IDS=<comma-separated Schood user ids of the testers>; supabase secrets set SCHOOD_AI_GLOBAL_DAILY_CALLS=1000 (a ceiling the admin settings can only lower).",
+    "Secrets left unset on purpose for now: supabase secrets set SCHOOD_AI_SERVICE_SECRET=<openssl rand -hex 32> only when the Telegram coach worker ships (the same value goes into the worker); supabase secrets set SCHOOD_AI_PLUS_PRODUCT_ID=<id>, supabase secrets set SCHOOD_AI_FAMILY_PRODUCT_ID=<id>, supabase secrets set SCHOOD_AI_TEACHER_PRODUCT_ID=<id>, supabase secrets set SCHOOD_AI_TEACHER_PRO_PRODUCT_ID=<id>, supabase secrets set SCHOOD_AI_CENTRE_PRODUCT_ID=<id> and supabase secrets set SCHOOD_AI_CENTRE_PRO_PRODUCT_ID=<id> in the pricing release, when the products exist. With them unset only Schood admins and the beta allowlist can use AI; everyone else sees the examples and plans.",
+    "Model keys: no new secret. The seeded provider reads the existing OPENROUTER_API_KEY. Other providers are added later in the registry and name their own secret (for example supabase secrets set CLOUDFLARE_AI_API_TOKEN=<Workers AI token> for Whisper speech to text; never the Pages deploy token).",
+    "Edge, after the migration and secrets: supabase functions deploy schood-ai --project-ref bbjawctnqrufvnesdsel (verify_jwt = false is in supabase/config.toml; the function verifies every session itself)."
   ],
   "verification": [
-    "supabase migration list --linked shows 20261028110000 applied and the 9 #220 payment migrations still pending.",
-    "Anon REST: plans?is_active=eq.true&product_id=in.(b262ffa8-9912-4eba-93d7-58af3164d1cc,f9512c15-ec1c-4fcb-a5ec-a2c6ac3a020e,49f0661d-0933-361c-6c4b-67316ba29b4e) returns the 4 new plans; the 'test' plan stays inactive.",
-    "Signed out, https://schood.online/pricing shows a TOEFL iBT group; /pricing?product=toefl-playbook offers TOEFL Complete with 'Bought separately: 128,000 UZS'; Sign in to buy opens /auth?returnTo=/checkout?plan_id=...",
-    "With a test account holding only TOEFL Complete: access-effective effective_product_ids includes TOEFL iBT Simulator and TOEFL Playbook; /me lists derived member rows; toefl.schood.online opens tests.",
-    "GET /functions/v1/learning-profile and /score-prediction return 200 with sister_signals.toefl / practice_signals.toefl."
+    "supabase migration list --linked shows 20261030100000 applied and the 9 #220 payment migrations still pending.",
+    "Anon REST: GET /rest/v1/ai_settings and /rest/v1/ai_providers return 401/permission denied (no browser access).",
+    "OPTIONS https://<project>.supabase.co/functions/v1/schood-ai/core/me with Origin https://ai.schood.online answers 204 with that origin allowed; without a token GET answers 401 unauthorized.",
+    "Signed in as a tester in SCHOOD_AI_BETA_USER_IDS on ai.schood.online: Home shows beta access and 2,000 credits; the Assistant streams an answer from the free model; Credits shows the 1-credit charge; ai_calls has the row with cost 0.",
+    "Signed in as a person not on the allowlist: Home shows the paywall, the Assistant shows 'This needs a Schood AI plan', and no ai_calls row is written.",
+    "ai.schood.online at 375px in uz, ru and en: landing, sign-in return, home, assistant, credits."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-platform to the previous deployment.",
-    "migration": "Set is_active=false on the 4 new TOEFL plans and status='disabled' on the TOEFL Complete product. Entitlements already bought stay valid.",
-    "edge": "Redeploy the nine functions from the previous main commit (87464c9f); TOEFL Complete grants made outside checkout stop expanding, purchased member entitlements keep working."
+    "pages": "Cloudflare Pages: leave schood-ai on its previous deployment or unbind ai.schood.online. Other apps only gained a return host; rolling them back is not needed.",
+    "migration": "Additive and isolated: to switch AI off, update ai_settings set ai_enabled = false. To remove entirely, drop the ai_* tables and functions (nothing else references them).",
+    "edge": "supabase functions delete schood-ai, or redeploy a previous version; no other function depends on it."
   }
 }

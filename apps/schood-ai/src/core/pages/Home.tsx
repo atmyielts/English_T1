@@ -115,14 +115,14 @@ export function HomePage({ cards }: { cards: HomeCard[] }) {
       <p className="m-0 mt-3 max-w-2xl text-base leading-7 text-gray-700">{t(`home.lead.${audience}`)}</p>
     </header>
     <div className="grid gap-4 md:grid-cols-2">
-      {audience === 'learner' && <><AskCard lead={t('home.lead.learner')}/><PlanSummary me={me}/><CreditBalance/><KnowsCard/></>}
+      {audience === 'learner' && <><AskCard lead={t('chat.empty.lead')}/><PlanSummary me={me}/><CreditBalance/><KnowsCard/></>}
       {audience === 'parent' && <><PlanSummary me={me}/><CreditBalance/><Card className="md:col-span-2"><p className="m-0 text-sm text-gray-700">{t('home.parent.lead')}</p></Card></>}
       {audience === 'teacher' && <><AskCard lead={t('home.teacher.start')} prompts={[t('home.teacher.prompt1'), t('home.teacher.prompt2'), t('home.teacher.prompt3')]}/><PlanSummary me={me}/><CreditBalance/><ApprovalsSummary/></>}
       {audience === 'centre' && <>
         <Card className="flex flex-col gap-2">
           <Eyebrow>{t('home.centre.workspace')}</Eyebrow>
           <p className="m-0 font-display text-xl font-bold">{ws.name}</p>
-          <p className="m-0 text-sm text-gray-700">{t('home.centre.members')}: {t(`audience.${['owner', 'admin'].includes(ws.role) ? 'centre' : 'teacher'}`)}</p>
+          <p className="m-0 text-sm text-gray-700">{t('home.centre.members')}: {t(`role.${ws.role}`)}</p>
         </Card>
         <CreditBalance/>
         <PlanSummary me={me}/>

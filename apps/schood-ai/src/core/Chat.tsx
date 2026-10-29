@@ -212,7 +212,7 @@ export function ReportDialog({ messageId, onClose }: { messageId: string | null;
   };
   return <Dialog open={!!messageId} title={t('report.title')} onClose={onClose} closeLabel={t('report.cancel')}>
     {state === 'sent'
-      ? <div className="flex flex-col gap-4"><p className="m-0 text-sm text-gray-800" role="status">{t('report.thanks')}</p><Button onClick={onClose}>{t('report.cancel')}</Button></div>
+      ? <div className="flex flex-col gap-4"><p className="m-0 text-sm text-gray-800" role="status">{t('report.thanks')}</p><Button onClick={onClose}>{t('report.close')}</Button></div>
       : <form onSubmit={submit} className="flex flex-col gap-4">
           <p className="m-0 text-sm text-gray-700">{t('report.lead')}</p>
           <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
