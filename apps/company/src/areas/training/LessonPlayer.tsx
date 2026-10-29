@@ -95,11 +95,11 @@ function Player({ org, view, reload }: { org: string; view: LessonView; reload: 
     <section className="training-card" aria-labelledby="training-step-title">
       <h2 id="training-step-title" ref={heading} tabIndex={-1}>{t(`training.step.${step}` as AppKey)}</h2>
       {(step === 'phrases' || step === 'words' || step === 'dialogue') && <div className="training-options">
-        <label>{t('training.lesson.translation')}
+        {step !== 'dialogue' && <label>{t('training.lesson.translation')}
           <select value={translation} onChange={(event) => setTranslation(event.target.value as Translation)}>
             <option value="ru">Русский</option><option value="uz">O‘zbekcha</option><option value="off">{t('training.lesson.translationOff')}</option>
           </select>
-        </label>
+        </label>}
         <RateToggle rate={rate} onChange={setRate}/>
         {!canSpeak() && <p className="hint">{t('training.listen.unavailable')}</p>}
       </div>}

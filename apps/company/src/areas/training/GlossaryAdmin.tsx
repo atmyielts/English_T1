@@ -19,9 +19,9 @@ function TermForm({ initial, departments, busy, onSubmit, onCancel, submitLabel 
   return <form className="training-term-form" onSubmit={(event: FormEvent) => { event.preventDefault(); onSubmit(form); }}>
     <label>{t('training.glossary.term')}<input required maxLength={120} lang="en" value={form.term} onChange={set('term')}/></label>
     <label>{t('training.glossary.meaning')}<textarea required rows={2} maxLength={400} lang="en" value={form.meaning} onChange={set('meaning')}/></label>
-    <label>{t('training.glossary.ru')} <span className="hint">{t('common.optional')}</span><input maxLength={200} lang="ru" value={form.ru} onChange={set('ru')}/></label>
-    <label>{t('training.glossary.uz')} <span className="hint">{t('common.optional')}</span><input maxLength={200} lang="uz" value={form.uz} onChange={set('uz')}/></label>
-    <label>{t('training.glossary.example')} <span className="hint">{t('common.optional')}</span><input maxLength={400} lang="en" value={form.example} onChange={set('example')}/></label>
+    <label><span>{t('training.glossary.ru')} <span className="hint">{t('common.optional')}</span></span><input maxLength={200} lang="ru" value={form.ru} onChange={set('ru')}/></label>
+    <label><span>{t('training.glossary.uz')} <span className="hint">{t('common.optional')}</span></span><input maxLength={200} lang="uz" value={form.uz} onChange={set('uz')}/></label>
+    <label><span>{t('training.glossary.example')} <span className="hint">{t('common.optional')}</span></span><input maxLength={400} lang="en" value={form.example} onChange={set('example')}/></label>
     <label>{t('training.glossary.department')}
       <select value={form.department_id} onChange={set('department_id')}>
         <option value="">{t('training.glossary.everyone')}</option>

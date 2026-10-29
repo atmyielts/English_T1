@@ -129,7 +129,7 @@ function AssignForm({ overview, onDone }: { overview: Overview; onDone: () => Pr
           {people.length === 0 && <p className="hint">{t('training.glossary.noMatch')}</p>}
         </div>
       </fieldset>}
-      <label>{t('training.plan.note')} <span className="hint">{t('common.optional')}</span><textarea rows={2} maxLength={1000} value={form.note} onChange={(event) => setForm({ ...form, note: event.target.value })}/></label>
+      <label><span>{t('training.plan.note')} <span className="hint">{t('common.optional')}</span></span><textarea rows={2} maxLength={1000} value={form.note} onChange={(event) => setForm({ ...form, note: event.target.value })}/></label>
       {failure && <p className="error" role="alert">{failure}</p>}
       {notice && <p className="notice" role="status">{notice}</p>}
       <button disabled={busy || (!form.track_code && !form.target_level) || (form.scope === 'departments' && !chosenDepartments.length) || (form.scope === 'people' && !chosenPeople.length)}>{t('training.plan.assignButton')}</button>

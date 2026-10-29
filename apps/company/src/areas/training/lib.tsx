@@ -124,8 +124,25 @@ export function useMinutes() {
 
 export const DIFFICULTY_CLASS: Record<string, string> = { easy: 'good', medium: 'warn', hard: 'bad' };
 
+// Browsers format uz-Latn dates as "2026 M12 13", so Uzbek is written out by hand.
+const UZ_MONTHS = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'];
+const UZ_WEEKDAYS = ['Ya', 'Du', 'Se', 'Ch', 'Pa', 'Ju', 'Sh'];
+const asDate = (value: string) => new Date(value.length === 10 ? `${value}T12:00:00` : value);
+
 /** Formats a date (YYYY-MM-DD or ISO) in the interface language. */
 export function useDate() {
-  const { date } = useI18n();
-  return (value: string | null | undefined) => value ? date(value.length === 10 ? `${value}T12:00:00` : value, { dateStyle: 'medium' }) : '';
+  const { date, locale } = useI18n();
+  return (value: string | null | undefined) => {
+    if (!value) return '';
+    if (locale === 'uz') {
+      const day = asDate(value);
+      return `${day.getDate()}-${UZ_MONTHS[day.getMonth()]}, ${day.getFullYear()}`;
+    }
+    return date(asDate(value), { dateStyle: 'medium' });
+  };
+}
+/** Short weekday name ("Mon", "Пн", "Du") for a YYYY-MM-DD day. */
+export function useWeekday() {
+  const { date, locale } = useI18n();
+  return (day: string) => locale === 'uz' ? UZ_WEEKDAYS[asDate(day).getDay()] : date(asDate(day), { weekday: 'short' });
 }

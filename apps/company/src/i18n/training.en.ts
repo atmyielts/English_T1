@@ -77,7 +77,7 @@ export const trainingEn = {
   'training.me.weekChart': 'Minutes of practice for each of the last 7 days',
   'training.me.minutes': '{count|one:minute|other:minutes} of practice',
   'training.me.lessonsWeek': '{count|one:lesson completed|other:lessons completed}',
-  'training.me.totals': 'In total: {lessons} lessons, {roleplays} role-plays, {writing} writing checks.',
+  'training.me.totals': 'In total: {lessons|one:# lesson|other:# lessons}, {roleplays|one:# role-play|other:# role-plays}, {writing|one:# writing check|other:# writing checks}.',
   'training.me.practice': 'Practise',
   'training.me.lessonsHint': 'Phrases, dialogues and exercises for your job.',
   'training.me.roleplayHint': 'Talk to an AI guest, client or colleague.',

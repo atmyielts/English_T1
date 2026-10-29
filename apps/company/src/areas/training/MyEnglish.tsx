@@ -2,12 +2,11 @@
 // take, assignments, where to continue, this week, Schood English and certificates.
 import React, { useEffect, useState } from 'react';
 import { LEVEL_LABEL, isLevel } from '../../../../../packages/company-core/src/mod.ts';
-import { useI18n } from '../../../../../packages/service-i18n/src/i18n.tsx';
 import { api } from '../../api.ts';
 import { useAppT, type AppKey } from '../../i18n/index.ts';
 import { Link } from '../../router.tsx';
 import { useWorkspace } from '../../session.tsx';
-import { LevelBadge, Loading, Progress, useDate, useLoad, useLocalized, type Localized } from './lib.tsx';
+import { LevelBadge, Loading, Progress, useDate, useLoad, useLocalized, useWeekday, type Localized } from './lib.tsx';
 
 interface LessonRef { code: string; track_code: string; track_title: Localized; title: Localized; stage: string; level: string; step: string | null }
 interface Home {
@@ -53,8 +52,7 @@ function TestsToTake({ org }: { org: string }) {
 
 function WeekChart({ days }: { days: Home['week']['days'] }) {
   const t = useAppT();
-  const i18n = useI18n();
-  const date = (day: string) => i18n.date(`${day}T12:00:00`, { weekday: 'short' });
+  const date = useWeekday();
   const max = Math.max(15, ...days.map((day) => day.minutes));
   return <figure className="training-week" aria-label={t('training.me.weekChart')}>
     <ol>
@@ -119,8 +117,8 @@ export function MyEnglish() {
           <div>
             <strong>{item.track_title ? pick(item.track_title) : t('training.me.levelGoal', { level: levelText(item.target_level) })}</strong>
             <span>
-              {item.target_level && t('training.me.assignmentTarget', { level: levelText(item.target_level) })}
-              {item.target_level && item.due_date && ' · '}
+              {item.target_level && item.track_title && t('training.me.assignmentTarget', { level: levelText(item.target_level) })}
+              {item.target_level && item.track_title && item.due_date && ' · '}
               {item.due_date && t('training.me.due', { date: when(item.due_date) })}
               {' '}{item.overdue && <span className="company-badge bad">{t('training.me.overdue')}</span>}
               {item.meets_target && <span className="company-badge good">{t('training.me.targetMet')}</span>}
