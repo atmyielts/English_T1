@@ -82,6 +82,10 @@ begin
   assert rated.rating_sum = 2 and rated.rating_count = 1, 'a second rating replaces the first';
   rated := public.ai_teacher_rate_listing(listing.id, student, 5, null);
   assert rated.rating_sum = 7 and rated.rating_count = 2, 'another person adds';
+  -- Erasing a rater's row keeps the totals exact.
+  delete from public.ai_teacher_listing_ratings where listing_id = listing.id and user_id = student;
+  assert (select rating_sum from public.ai_teacher_listings where id = listing.id) = 2 and (select rating_count from public.ai_teacher_listings where id = listing.id) = 1, 'an erased rating leaves the totals exact';
+  rated := public.ai_teacher_rate_listing(listing.id, student, 5, null);
   raised := false;
   begin
     perform public.ai_teacher_rate_listing(listing.id, buyer, 6, null);

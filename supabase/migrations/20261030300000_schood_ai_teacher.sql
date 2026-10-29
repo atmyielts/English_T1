@@ -372,6 +372,51 @@ begin
   return true;
 end $$;
 
+-- A rating removed by account erasure (or a users cascade) leaves the listing's totals exact.
+create or replace function public.ai_teacher_rating_removed() returns trigger
+language plpgsql security definer set search_path = public, pg_temp as $$
+begin
+  update public.ai_teacher_listings
+     set rating_sum = greatest(0, rating_sum - old.stars), rating_count = greatest(0, rating_count - 1)
+   where id = old.listing_id;
+  return old;
+end $$;
+drop trigger if exists ai_teacher_rating_removed on public.ai_teacher_listing_ratings;
+create trigger ai_teacher_rating_removed after delete on public.ai_teacher_listing_ratings for each row execute function public.ai_teacher_rating_removed();
+
+-- --- Account erasure ------------------------------------------------------------------------------------------
+-- Players' nicknames and raters' comments are personal data keyed on user_id: they join
+-- account_personal_erasure_tables() with the closed-account guard, the same additive
+-- pattern as 20261030130000_schood_ai_retention_and_erasure.sql. Everything else here
+-- belongs to the teacher (owner_id, host_id) and goes with the users cascade.
+do $$
+declare
+  relations text[];
+  wanted text[] := array['ai_teacher_quiz_players', 'ai_teacher_listing_ratings'];
+  relation_name text;
+  guard_installed boolean := to_regprocedure('public.guard_closed_personal_record()') is not null;
+begin
+  if to_regprocedure('public.account_personal_erasure_tables()') is null then
+    raise notice 'account_personal_erasure_tables() is not installed; erasure registry not extended';
+    return;
+  end if;
+  relations := public.account_personal_erasure_tables();
+  foreach relation_name in array wanted loop
+    if not (relation_name = any(relations)) then
+      relations := relations || relation_name;
+      if guard_installed then
+        execute format('drop trigger if exists account_closed_personal_guard on public.%I', relation_name);
+        execute format('create trigger account_closed_personal_guard before insert or update on public.%I for each row execute function public.guard_closed_personal_record(%L)', relation_name, 'user_id');
+      end if;
+    end if;
+  end loop;
+  execute format(
+    'create or replace function public.account_personal_erasure_tables() returns text[] language sql immutable set search_path=pg_catalog,public as %L',
+    format('select %L::text[];', relations::text)
+  );
+end
+$$;
+
 -- --- Access -----------------------------------------------------------------------------------------------------
 alter table public.ai_teacher_handouts enable row level security;
 alter table public.ai_teacher_quiz_sessions enable row level security;
@@ -405,6 +450,7 @@ revoke all on function public.ai_teacher_rate_listing(uuid, uuid, integer, text)
 revoke all on function public.ai_teacher_add_copy(uuid, uuid, uuid, uuid, integer) from public, anon, authenticated;
 revoke all on function public.ai_teacher_record_use(uuid, uuid, text) from public, anon, authenticated;
 revoke all on function public.ai_teacher_ledger_guard() from public, anon, authenticated;
+revoke all on function public.ai_teacher_rating_removed() from public, anon, authenticated;
 grant execute on function public.ai_teacher_quiz_answer(uuid, uuid, integer, text, boolean, integer) to service_role;
 grant execute on function public.ai_teacher_rate_listing(uuid, uuid, integer, text) to service_role;
 grant execute on function public.ai_teacher_add_copy(uuid, uuid, uuid, uuid, integer) to service_role;
