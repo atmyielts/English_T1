@@ -30,7 +30,7 @@ const OK = 'schood ai learner: ok';
     await db.exec(learner);
     const results = await db.exec(integration);
     assert.equal(results.at(-1).rows[0]?.['?column?'], OK);
-    console.log(`PGlite (PostgreSQL 17): ${learnerNames.length} learner migration(s) apply twice; RLS and grants, family limits and invites, quiet-hour schedules, daily records, bounded summaries and account deletion passed.`);
+    console.log(`PGlite (PostgreSQL 17): ${learnerNames.length} learner migration(s) apply twice; RLS and grants, family limits and invites, quiet-hour schedules, daily records, bounded summaries, 180-day retention, the erasure registry and account deletion passed.`);
   } finally {
     await db.close();
   }

@@ -221,7 +221,8 @@ const INTERVIEW_SCHEMA = {
   required: ['criteria'],
 };
 
-const FILLERS = /\b(u+m+|u+h+|e+r+m*|e{2,}|a{2,}|like|you know|i mean|tipa|типа|anu)\b/giu;
+// Hesitation sounds and set fillers only: "like" and "I mean" are usually real words.
+const FILLERS = /(?<!\p{L})(u+m+|u+h+|e+r+m+|e{2,}|a{2,}h*|you know|tipa|типа|anu)(?!\p{L})/giu;
 /** Words per minute (spoken answers with a duration), fillers and the longest answer. */
 export function fluencyNumbers(answers: Answer[]) {
   const timed = answers.filter((answer) => answer.mode !== 'typed' && answer.seconds && answer.seconds >= 5);

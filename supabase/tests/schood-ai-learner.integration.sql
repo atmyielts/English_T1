@@ -72,6 +72,21 @@ begin
   begin insert into public.ai_learner_duels (duel_id, code, creator_id, workspace_id, topic) values (gen_random_uuid(), 'bad', v_parent, v_ws, 'x'); exception when check_violation then v_failed := true; end;
   if not v_failed then raise exception 'duel codes are checked'; end if;
 
+  -- 180-day retention: old records and activity go, an active study plan stays.
+  insert into public.ai_learner_records (user_id, workspace_id, kind, status, updated_at) values
+    (v_parent, v_ws, 'writing', 'ready', now() - interval '200 days'),
+    (v_parent, v_ws, 'plan', 'active', now() - interval '200 days'),
+    (v_parent, v_ws, 'reading', 'ready', now() - interval '10 days');
+  insert into public.ai_learner_activity (user_id, workspace_id, feature, kind, created_at) values (v_parent, v_ws, 'L3', 'writing', now() - interval '200 days');
+  v_out := public.ai_learner_purge_old(180);
+  if (v_out->>'records')::int <> 1 or (v_out->>'activity')::int <> 1 then raise exception 'retention purge: %', v_out; end if;
+  if not exists (select 1 from public.ai_learner_records where user_id = v_parent and kind = 'plan' and status = 'active') then raise exception 'an active plan must stay'; end if;
+  if has_function_privilege('authenticated', 'public.ai_learner_purge_old(integer, integer, timestamptz)', 'execute') then raise exception 'purge is open to browsers'; end if;
+  -- The account erasure registry knows the learner tables keyed on user_id.
+  if not (array['ai_learner_consents', 'ai_learner_activity', 'ai_learner_records', 'ai_learner_briefs', 'ai_learner_snapshots', 'ai_learner_telegram'] <@ public.account_personal_erasure_tables()) then
+    raise exception 'erasure registry misses learner tables: %', public.account_personal_erasure_tables();
+  end if;
+
   -- Deleting the person removes their learner data.
   insert into public.ai_learner_consents (user_id, age_band, text_version) values ('00000000-0000-4000-8000-0000000000b5', 'adult', 'v1');
   delete from public.users where id = '00000000-0000-4000-8000-0000000000b5';

@@ -137,6 +137,8 @@ export function registerTutor(): void {
     contextKinds: TUTOR_CONTEXT,
     creditKey: 'tutor.reply',
     roles: ['owner', 'student'],
+    // In a centre the branded Student Assistant (C2, centre area) is the tutor; it can list these context kinds.
+    workspaceKinds: ['personal'],
     suggestions: {
       en: ['What should I work on this week to reach my target?', 'Explain my weakest skill and give me one exercise.', 'Make me a 20-minute plan for today.'],
       uz: ['Maqsadimga yetish uchun bu hafta nima ustida ishlashim kerak?', 'Eng zaif tomonimni tushuntirib, bitta mashq bering.', 'Bugun uchun 20 daqiqalik reja tuzib bering.'],
@@ -147,7 +149,7 @@ export function registerTutor(): void {
   registerContextProvider('learner_prediction', async (ctx) => {
     const summary = await loadPrediction(ctx);
     return summary ? { kind: 'learner_prediction', title: 'Your predicted scores', data: summary } : null;
-  }, { allowCustom: true, selfView: true, maxChars: 3_000 });
+  }, { selfView: true, maxChars: 3_000 });
 
   // The web path already has learner_profile from core; this keeps a summary for
   // the Telegram path and for linked parents, and serves it when there is no token.
@@ -166,19 +168,19 @@ export function registerTutor(): void {
   registerContextProvider('learner_activity', async (ctx) => {
     const list = await recentActivity(ctx, ctx.user.id);
     return list.length ? { kind: 'learner_activity', title: 'What you did with Schood AI lately', data: list } : null;
-  }, { allowCustom: true, selfView: true, maxChars: 4_000 });
+  }, { selfView: true, maxChars: 4_000 });
 
   registerContextProvider('centre_homework', async (ctx, { access }) => {
     const payload = await centreAssignments(ctx, access);
     if (!payload) return null;
     const open = openAssignments(payload, ctx.now()).slice(0, 8).map((row) => ({ ...row, instructions: row.instructions.slice(0, 400) }));
     return { kind: 'centre_homework', title: 'Your open homework', data: { open, count: open.length } };
-  }, { allowCustom: true, selfView: true, maxChars: 5_000 });
+  }, { selfView: true, maxChars: 5_000 });
 
   registerContextProvider('centre_feedback', async (ctx, { access }) => {
     const data = await centreFeedback(ctx, access);
     return data ? { kind: 'centre_feedback', title: 'Your teacher\'s feedback', data } : null;
-  }, { allowCustom: true, selfView: true, maxChars: 5_000 });
+  }, { selfView: true, maxChars: 5_000 });
 }
 
 // --- Telegram ---------------------------------------------------------------------------
