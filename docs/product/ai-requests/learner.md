@@ -49,3 +49,71 @@ These core tests assumed no area registers specialists or context providers:
 
 - **Need:** P1 and P2 in a centre need the centre to switch them on. The learner area reads `settings.features.parent === true` or `settings.features['parent.brief'] === true`. Switches default to on, but the doc says "when the centre enables it", so the learner area requires an explicit `true`.
 - **Ask:** the centre admin should expose that switch.
+
+## 9. Release manifest for this PR (for the coordinator)
+
+- **Why:** CI's "Release manifest drift check" compares `release/manifest.json` with the diff against `claude/ai-core`. This PR doesn't edit that file, as the brief asks. So the `checks` job, and `validate` which depends on it, stay red until the manifest describes this release.
+- **Check:** the manifest below passes `node scripts/verify-release-manifest.mjs --base origin/claude/ai-core --manifest <file>`.
+
+```json
+{
+  "schemaVersion": 1,
+  "releaseId": "schood-ai-learner-oct30",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": [
+    "english-hub",
+    "ielts-simulator",
+    "itep-simulator",
+    "sat-practice",
+    "sat-simulator",
+    "schood-ai",
+    "toefl-ibt-simulator"
+  ],
+  "migrations": [
+    "20261030200000_schood_ai_learner.sql",
+    "20261030200100_schood_ai_learner_retention.sql"
+  ],
+  "edgeFunctions": [
+    "schood-ai"
+  ],
+  "workers": [
+    "schood-bot"
+  ],
+  "sharedEdgeConsumers": [
+    "hub",
+    "telegram-app"
+  ],
+  "requiredSecrets": [
+    "SCHOOD_AI_FAMILY_PRODUCT_ID"
+  ],
+  "rolloutOrder": [
+    "pages",
+    "migration:20261030200000_schood_ai_learner.sql",
+    "migration:20261030200100_schood_ai_learner_retention.sql",
+    "secret:SCHOOD_AI_FAMILY_PRODUCT_ID",
+    "function:schood-ai",
+    "worker:schood-bot"
+  ],
+  "manualFollowUps": [
+    "Pages: merging publishes schood-ai (learner screens) and the other six apps with an 'Ask Schood AI' link; no new Pages project or domain.",
+    "Database: supabase db push --linked applies 20261030200000_schood_ai_learner.sql and 20261030200100_schood_ai_learner_retention.sql (additive ai_learner_* tables, RLS on, no grants; the retention job schood-ai-learner-retention-v1 is scheduled when pg_cron exists).",
+    "Secrets: supabase secrets set SCHOOD_AI_FAMILY_PRODUCT_ID=<Plus Family product id> --project-ref <prod> (already listed by core; children of a Family holder get Plus only when it is set).",
+    "Function: supabase functions deploy schood-ai --project-ref <prod> (learner area; also hub and telegram-app if redeployed, for the duel join change in _shared/english-duel-service.ts).",
+    "Worker: set the schood-bot Worker secret SCHOOD_AI_SERVICE_SECRET to the same value as the schood-ai function secret, then deploy schood-bot (adds the 15-minute brief cron). Without the secret, Schood AI commands stay off and homework hand-in is unchanged."
+  ],
+  "verification": [
+    "supabase migration list --linked shows 20261030200000 and 20261030200100 applied.",
+    "select jobname, schedule from cron.job where jobname = 'schood-ai-learner-retention-v1' returns one row at 41 3 * * *.",
+    "select public.account_erasure_service_hooks() includes learner_erase_account; select public.account_personal_erasure_tables() includes the six ai_learner_* user tables.",
+    "In @schoodstudentbot, /help lists /ai, /brief, /aiduel and /child; a plain text homework answer still reaches Homework OS.",
+    "On ai.schood.online as a beta tester: /learn lists the tools, the consent step appears once, and /explain opened from an IELTS review loads the question."
+  ],
+  "rollback": {
+    "pages": "Cloudflare Pages: roll schood-ai and the six apps back to their previous deployments; the links are additive.",
+    "migration": "Additive and isolated: leave the ai_learner_* tables; to stop the job, select cron.unschedule('schood-ai-learner-retention-v1').",
+    "function": "Redeploy the previous schood-ai function; the learner routes then answer not_found.",
+    "worker": "Unset SCHOOD_AI_SERVICE_SECRET on schood-bot (Schood AI commands switch off) or redeploy the previous worker."
+  }
+}
+```
