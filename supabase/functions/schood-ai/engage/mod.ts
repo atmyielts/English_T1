@@ -1,5 +1,7 @@
 import { registerContextProvider } from '../context.ts';
-import type { FeatureModule, RequestContext, RouteHandler } from '../types.ts';
+import { SchoodAIError, type FeatureModule, type RequestContext, type RouteHandler } from '../types.ts';
+import { engage } from './binding.ts';
+import { DAILY_LIMIT_CHOICES } from './rules.ts';
 import { begin } from './base.ts';
 import { getBoards, getCentreLeague, setCentreLeague } from './boards.ts';
 import {
@@ -84,6 +86,18 @@ async function usage(ctx: RequestContext) {
 export async function engageUsageFor(ctx: RequestContext, childUserId: string, days = 7) {
   const e = await begin(ctx, { locale: false });
   return await usageSummary(e, childUserId, Math.max(1, Math.min(28, days)));
+}
+
+/**
+ * A parent sets or clears a child's daily time limit (P1). The learner area checks the
+ * parent–child link first; once a parent sets it, the child cannot change it.
+ */
+export async function setChildDailyLimit(ctx: RequestContext, childUserId: string, minutes: number | null) {
+  if (minutes !== null && !(DAILY_LIMIT_CHOICES as readonly number[]).includes(minutes)) throw new SchoodAIError('invalid_request', 'minutes is not one of the choices.', 400, { field: 'daily_limit_minutes' });
+  const b = await engage(ctx);
+  const profile = await b.repo.saveProfile(childUserId, { dailyLimitMinutes: minutes, limitSetBy: minutes === null ? null : 'parent' });
+  await ctx.audit('engage.child_limit', { minutes }, { type: 'user', id: childUserId });
+  return { daily_limit_minutes: profile.dailyLimitMinutes, limit_set_by: profile.limitSetBy };
 }
 
 /** Whether the person reached the daily time limit they (or a parent) set; other areas can respect it. */

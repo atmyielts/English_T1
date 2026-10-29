@@ -110,6 +110,18 @@ Deno.test('rule: an optional daily time limit stops engage practice for the day;
   equal((await f.get('state')).body.wellbeing.enough_today, true);
 });
 
+Deno.test('P1 seam: a limit a parent sets cannot be changed by the child', async () => {
+  const f = engageFixture();
+  await f.get('settings');
+  const memory = await f.store();
+  const { setChildDailyLimit } = await import('./mod.ts');
+  const ctx = { repo: f.memory.repository, now: () => new Date(), audit: () => Promise.resolve() } as unknown as Parameters<typeof setChildDailyLimit>[0];
+  equal(await setChildDailyLimit(ctx, ID.plus, 30), { daily_limit_minutes: 30, limit_set_by: 'parent' });
+  equal((await memory.profile(ID.plus)).dailyLimitMinutes, 30);
+  equal((await f.post('settings', { daily_limit_minutes: null })).body.code, 'limit_locked');
+  equal((await f.get('settings')).body.settings.limit_set_by, 'parent');
+});
+
 Deno.test('parents see time, not content (P1 seam); the person sees the same in usage', async () => {
   const f = engageFixture();
   await f.learn('tok-plus', [f.scored('B1', 'ielts.speaking', 7)]);
