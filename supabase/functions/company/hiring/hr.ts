@@ -76,8 +76,15 @@ async function validateAudience(ctx: Ctx, settings: Record<string, unknown>) {
   if (rows.length !== audience.ids.length) throw new CompanyError('invalid_field', 'Some of the chosen people or departments are not in this workspace.', 400, { field: 'audience' });
 }
 
+type Graded = { id: string; member_id: string | null; overall_level: string | null; submitted_at: string | null };
+
+/** Every graded staff test in the workspace, newest first, to show each person's level before a campaign. */
+async function gradedHistory(ctx: Ctx): Promise<Graded[]> {
+  return check<Graded[]>(await ctx.db.from('company_attempts').select('id,member_id,overall_level,submitted_at').eq('org_id', ctx.org!.id).eq('status', 'graded').not('member_id', 'is', null).order('submitted_at', { ascending: false }).limit(5000));
+}
+
 /** Per-member progress of a placement or progress campaign. */
-async function campaignRows(ctx: Ctx, assessment: AssessmentRow, members: MemberRow[], attempts: AttemptRow[]) {
+function campaignRows(assessment: AssessmentRow, members: MemberRow[], attempts: AttemptRow[], history: Graded[]) {
   const latest = new Map<string, AttemptRow>();
   for (const attempt of attempts) if (attempt.member_id && !latest.has(attempt.member_id)) latest.set(attempt.member_id, attempt);
   return members.filter((member) => inAudience(assessment, member)).map((member) => {
@@ -88,7 +95,11 @@ async function campaignRows(ctx: Ctx, assessment: AssessmentRow, members: Member
       status: !attempt || attempt.status === 'expired' ? 'todo' : attempt.status === 'started' ? 'in_progress' : attempt.status === 'submitted' ? 'pending' : 'done',
       attempt_id: attempt?.id ?? null, started_at: attempt?.started_at ?? null, submitted_at: attempt?.submitted_at ?? null,
       level: graded?.overall_level ?? null, score: graded?.overall_score === undefined || graded?.overall_score === null ? null : Number(graded.overall_score),
-      graded_attempt_id: graded?.id ?? null, previous_level: member.level,
+      graded_attempt_id: graded?.id ?? null,
+      // The level before this test: the member's previous graded test, or their current level if they have not taken this one.
+      previous_level: graded
+        ? history.find((entry) => entry.member_id === member.id && entry.id !== graded.id && (entry.submitted_at ?? '') < (graded.submitted_at ?? ''))?.overall_level ?? null
+        : member.level,
     };
   });
 }
@@ -269,7 +280,7 @@ export const routes: Route[] = [
       const attempts = rows.length ? check<AttemptRow[]>(await ctx.db.from('company_attempts').select('id,assessment_id,member_id,status,overall_level,overall_score,started_at,submitted_at').eq('org_id', ctx.org!.id).in('assessment_id', rows.map((row) => row.id)).order('started_at', { ascending: false })) : [];
       const campaigns = [];
       for (const row of rows) {
-        const people = await campaignRows(ctx, row, members, attempts.filter((attempt) => attempt.assessment_id === row.id) as AttemptRow[]);
+        const people = campaignRows(row, members, attempts.filter((attempt) => attempt.assessment_id === row.id) as AttemptRow[], []);
         campaigns.push({
           ...assessmentView(row),
           progress: {
@@ -312,7 +323,7 @@ export const routes: Route[] = [
       if (row.kind === 'hiring') throw new CompanyError('assessment_not_found', 'This test was not found.', 404);
       const members = await visibleMembers(ctx);
       const attempts = await attemptsOf(ctx, row.id);
-      const people = await campaignRows(ctx, row, members, attempts);
+      const people = campaignRows(row, members, attempts, await gradedHistory(ctx));
       return { assessment: assessmentView(row), people, stats: stats(attempts.filter((attempt) => !attempt.member_id || people.some((person) => person.member_id === attempt.member_id)), row), can_edit: isHr(ctx) };
     },
   },
