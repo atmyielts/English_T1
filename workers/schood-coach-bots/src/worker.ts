@@ -201,21 +201,22 @@ export function createWorker(deps: WorkerDeps) {
     if (!allowed) return reply(403, { code: 'origin_denied' });
     if (request.method !== 'POST') return reply(405, { code: 'method_not_allowed' });
     const body = await request.json().catch(() => ({})) as { pack?: string; init_data?: string };
-    const pack = typeof body.pack === 'string' ? packs.get(body.pack) : undefined;
     const initData = typeof body.init_data === 'string' ? body.init_data.slice(0, 12000) : '';
-    if (!pack || !active(pack.manifest.id) || !initData) return reply(400, { code: 'invalid_request' });
-    let identity;
-    try {
-      // Checked with this coach bot's own token: data from another bot never passes.
-      identity = await validateTelegramInitData(initData, tokenOf(pack.manifest.id)!, { maxAgeSeconds: 86_400, nowSeconds: Math.floor((deps.now?.() ?? new Date()).getTime() / 1000) });
-    } catch {
-      return reply(401, { code: 'telegram_invalid' });
+    const named = typeof body.pack === 'string' && body.pack ? packs.get(body.pack) : undefined;
+    if (!initData || (body.pack && (!named || !active(named.manifest.id)))) return reply(400, { code: 'invalid_request' });
+    // Checked with the coach bot's own token: data signed for another bot never passes. A page that
+    // names no coach (/coach) is matched to the bot whose token verifies it.
+    const nowSeconds = Math.floor((deps.now?.() ?? new Date()).getTime() / 1000);
+    let pack: CoachPack | undefined, identity: Awaited<ReturnType<typeof validateTelegramInitData>> | undefined;
+    for (const candidate of named ? [named] : [...packs.values()].filter((entry) => active(entry.manifest.id))) {
+      try { identity = await validateTelegramInitData(initData, tokenOf(candidate.manifest.id)!, { maxAgeSeconds: 86_400, nowSeconds }); pack = candidate; break; } catch { /* the next bot */ }
     }
+    if (!pack || !identity) return reply(401, { code: 'telegram_invalid' });
     const linked = await linkedUser(identity.telegram_user_id);
-    if (!linked.userId) return reply(200, { linked: false, link_url: linkUrl(pack.manifest.id) });
+    if (!linked.userId) return reply(200, { linked: false, pack: pack.manifest.id, link_url: linkUrl(pack.manifest.id) });
     const result = await relay<{ session?: unknown; code?: string }>('miniapp-session', linked.userId, identity.telegram_user_id, { pack: pack.manifest.id, init_data: initData });
     if (result.status !== 200 || !result.data?.session) return reply(result.status === 200 ? 502 : result.status, { code: result.data?.code ?? 'session_unavailable' });
-    return reply(200, { linked: true, session: result.data.session });
+    return reply(200, { linked: true, pack: pack.manifest.id, session: result.data.session });
   }
 
   // --- the cron ------------------------------------------------------------------------------------------------
