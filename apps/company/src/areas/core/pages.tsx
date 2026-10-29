@@ -66,42 +66,12 @@ export function Picker() {
   </section>;
 }
 
+// The guided pilot onboarding (company, departments, people, first test) lives with the
+// people area of the gtm workstream and loads on demand.
+const StartPilot = React.lazy(() => import('../people/Onboarding.tsx').then((module) => ({ default: module.StartPilot })));
 export function CreateWorkspace() {
-  const t = useAppT(), problem = useErrorText();
-  const { locale } = useI18n();
-  const { me, refresh } = useSession();
-  const [form, setForm] = useState({ name: '', industry: 'other', size_band: '1-50', city: '', contact_phone: '', full_name: '', locale });
-  const [busy, setBusy] = useState(false), [error, setError] = useState('');
-  if (me && !me.self_serve && !me.staff) return <section className="company-narrow"><h1>{t('create.title')}</h1><p>{t('create.closed')}</p></section>;
-  const set = (key: keyof typeof form) => (event: { target: { value: string } }) => setForm({ ...form, [key]: event.target.value });
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    setBusy(true); setError('');
-    try {
-      const { org } = await api<{ org: Org; member: Member }>('orgs', { method: 'POST', body: form });
-      await refresh();
-      navigate(`/w/${org.id}`);
-    } catch (cause) {
-      setError(problem(cause));
-    } finally {
-      setBusy(false);
-    }
-  }
-  return <section className="company-narrow">
-    <h1>{t('create.title')}</h1>
-    <p>{t('create.lead', { tests: 10 })}</p>
-    <form onSubmit={submit}>
-      <label>{t('create.name')}<input required minLength={2} maxLength={120} value={form.name} onChange={set('name')}/></label>
-      <label>{t('create.fullName')}<input maxLength={120} autoComplete="name" value={form.full_name} onChange={set('full_name')}/></label>
-      <label>{t('create.industry')}<select value={form.industry} onChange={set('industry')}>{INDUSTRIES.map((code) => <option key={code} value={code}>{t(`industry.${code}` as AppKey)}</option>)}</select></label>
-      <label>{t('create.size')}<select value={form.size_band} onChange={set('size_band')}>{SIZE_BANDS.map((code) => <option key={code} value={code}>{t(`size.${code}` as AppKey)}</option>)}</select></label>
-      <label>{t('create.city')}<input maxLength={80} value={form.city} onChange={set('city')}/></label>
-      <label>{t('create.phone')}<input type="tel" maxLength={40} autoComplete="tel" value={form.contact_phone} onChange={set('contact_phone')}/></label>
-      <label>{t('create.locale')}<select value={form.locale} onChange={set('locale')}><option value="ru">Русский</option><option value="uz">O‘zbekcha</option><option value="en">English</option></select></label>
-      <button disabled={busy}>{t('create.submit')}</button>
-    </form>
-    {error && <p className="error" role="alert">{error}</p>}
-  </section>;
+  const t = useAppT();
+  return <React.Suspense fallback={<p role="status">{t('app.loading')}</p>}><StartPilot/></React.Suspense>;
 }
 
 /** Asks a member, once, to share their English progress with the company. */

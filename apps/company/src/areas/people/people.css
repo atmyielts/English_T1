@@ -1,0 +1,178 @@
+/* People, departments, settings, join and onboarding (gtm). Classes start with "people-". */
+.people{display:grid;grid-template-columns:minmax(0,1fr);gap:1.25rem;min-width:0}
+.people .page-heading{margin-bottom:0;align-items:flex-end;flex-wrap:wrap}
+.people h1{margin-bottom:.25rem}
+.people-sub{margin:0;font-size:.9rem}
+.people-heading-actions{justify-content:flex-end}
+.people-optional{font-weight:500;color:var(--muted);font-size:.8rem}
+.people-muted{color:var(--muted);font-size:.8rem}
+.people-linkish{background:none;border:0;padding:0;min-height:0;color:var(--navy);font-weight:650;text-decoration:underline;text-underline-offset:3px;border-radius:4px;font-size:inherit}
+.people-linkish:hover:not(:disabled){filter:none;text-decoration-thickness:2px}
+.people-danger{color:#991b1b!important;border-color:#fca5a5!important}
+.people-danger-solid{background:#991b1b;border-color:#7f1d1d}
+.people-subhead{font-size:.95rem;margin:1.25rem 0 .5rem}
+.people-empty{border:1px dashed var(--control);border-radius:16px;padding:1.5rem;text-align:center;background:rgb(255 255 255/.6)}
+
+/* Usage meters */
+.people-usage{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.75rem 1.5rem;background:rgb(255 255 255/.7);border:1px solid var(--control);border-radius:18px;padding:1rem 1.25rem}
+.people-usage .hint{grid-column:1/-1}
+.people-meter{display:grid;gap:.4rem;margin:0 0 .75rem}
+.people-usage .people-meter{margin:0}
+.people-meter-head{display:flex;justify-content:space-between;gap:1rem;font-size:.8rem;color:var(--muted)}
+.people-meter-head strong{color:#111827;font-size:.85rem}
+.people-meter-bar{height:8px;border-radius:999px;background:#e5e7eb;overflow:hidden}
+.people-meter-bar span{display:block;height:100%;background:var(--navy);border-radius:inherit;transition:width .3s}
+.people-meter-bar span.high{background:#b45309}.people-meter-bar span.full{background:#991b1b}
+
+/* Panels and forms */
+.people-panel{display:grid;grid-template-columns:minmax(0,1fr);gap:.75rem}
+.people-panel>p{margin:0}
+.people-panel-head{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.people-panel-head h2{margin:0}
+.people-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.9rem 1rem;align-items:end}
+.people-form-grid .people-span,.people-form-grid .hint.people-span{grid-column:1/-1}
+.people-form-grid.people-compact{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.people-form-actions{display:flex;gap:.75rem;flex-wrap:wrap;align-items:center}
+.people-inline-form{display:flex;flex-wrap:wrap;gap:.75rem;align-items:end}
+.people-inline-form label{flex:1 1 240px}
+.people-link-result{border:1px solid #bbf7d0;background:#f0fdf4;border-radius:16px;padding:1rem 1.1rem;display:grid;gap:.6rem}
+.people-link-result p{margin:0}
+.people-link-title strong{color:#14532d}
+.people-link-input{font-family:ui-monospace,monospace;font-size:.8rem;background:#fff}
+.people-confirm{border:1px solid #fecaca;background:#fef2f2;border-radius:14px;padding:.9rem 1rem;display:grid;gap:.6rem}
+.people-confirm p{margin:0;color:#7f1d1d}
+
+/* Getting started */
+.people-start{border:1px solid var(--line);background:#fffdf7;border-radius:20px;padding:1.1rem 1.4rem}
+.people-start h2{margin:0 0 .5rem}
+.people-start ol{margin:0;padding-left:1.25rem;display:grid;gap:.4rem;font-size:.9rem}
+.people-start li.done{text-decoration:line-through;color:var(--muted)}
+.people-start a{color:var(--navy);font-weight:650}
+
+/* The people table: a table on wide screens, cards on phones */
+.people-list{display:grid;grid-template-columns:minmax(0,1fr);gap:.75rem;padding:1.25rem;container-type:inline-size}
+.people-toolbar{margin:0}
+.people-toolbar label{min-width:140px;flex:1 1 140px}
+.people-toolbar .people-search{flex:2 1 220px}
+.people-count{margin:0}
+.people-table td{vertical-align:middle}
+.people-table td:first-child{min-width:170px}
+.people-name{display:block}
+.people-email,.people-job,.people-target,.people-consent{display:block;font-size:.78rem;color:var(--muted);overflow-wrap:anywhere}
+.people-target{margin-top:.25rem}
+.people-row-actions .company-actions{gap:.4rem;flex-wrap:nowrap;justify-content:flex-end}
+.people-row-actions button{min-height:34px;padding:.4rem .7rem;font-size:.78rem;white-space:nowrap}
+.people-removed td{opacity:.65}
+.people-detail-row td{background:#fafaf9}
+.people-edit{padding:.25rem 0}
+.people-seat{display:inline-flex;align-items:center;gap:.45rem;background:#fff;color:#374151;border:1px solid var(--control);min-height:32px;padding:.3rem .7rem .3rem .35rem;font-size:.78rem;font-weight:600;white-space:nowrap}
+.people-seat span{width:28px;height:16px;border-radius:999px;background:#d1d5db;position:relative;flex-shrink:0;transition:background .2s}
+.people-seat span::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;transition:transform .2s}
+.people-seat.on{border-color:#16a34a;color:#166534}
+.people-seat.on span{background:#16a34a}
+.people-seat.on span::after{transform:translateX(12px)}
+.people-row-bad td{background:#fef2f2}
+.people-import-preview{display:grid;grid-template-columns:minmax(0,1fr);gap:.5rem}
+.people-import-preview p{margin:0}
+@media (max-width:600px){.people-list{padding:1rem}}
+@container (max-width:820px){
+  .people-table-wrap{border:0;overflow:visible}
+  .people-table,.people-table tbody,.people-table tr,.people-table td{display:block;width:100%}
+  .people-table{background:transparent}
+  .people-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+  .people-table tr{background:#fff;border:1px solid var(--control);border-radius:16px;margin:0 0 .75rem;padding:.6rem .9rem}
+  .people-table td{border:0;padding:.35rem 0;display:flex;flex-wrap:wrap;align-items:center;gap:.25rem .5rem}
+  .people-table td::before{content:attr(data-label);flex:0 0 7.5rem;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  .people-table td .people-target,.people-table td .people-consent{margin:0}
+  .people-table td:first-child{display:block;padding-bottom:.5rem;border-bottom:1px solid #eee;margin-bottom:.25rem}
+  .people-table td:first-child::before,.people-table td.people-row-actions::before{content:none}
+  .people-table td.people-row-actions{display:block;padding-top:.5rem}
+  .people-row-actions .company-actions{justify-content:flex-start;flex-wrap:wrap}
+  .people-table tr.people-detail-row{margin-top:-.5rem;border-top-left-radius:0;border-top-right-radius:0}
+  .people-table tr.people-detail-row td{display:block;background:transparent}
+  .people-table tr.people-detail-row td::before{content:none}
+}
+
+/* Team links */
+.people-links{list-style:none;margin:0;padding:0;display:grid;gap:.5rem}
+.people-links li{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:.75rem;align-items:center;background:#fff;border:1px solid var(--control);border-radius:14px;padding:.7rem .9rem}
+.people-links li>div:first-child{display:grid;gap:.15rem;min-width:0}
+.people-links li span{font-size:.8rem;color:var(--muted)}
+.people-links .company-actions{gap:.4rem}
+.people-links button{min-height:34px;padding:.4rem .75rem;font-size:.78rem}
+@media (max-width:600px){.people-links li{grid-template-columns:1fr}}
+
+/* Departments */
+.people-departments{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
+.people-departments>li{background:rgb(255 255 255/.85);border:1px solid var(--control);border-radius:16px;padding:.85rem 1rem;display:grid;gap:.6rem}
+.people-department-line{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.people-department-line>div:first-child{display:grid;gap:.15rem}
+.people-department-line span{font-size:.8rem;color:var(--muted)}
+.people-department-line .company-actions{gap:.4rem}
+.people-department-line .company-actions>*{min-height:34px;padding:.4rem .8rem;font-size:.8rem}
+.people-unassigned{margin:0}
+
+/* Settings */
+.people-settings{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:1.25rem;align-items:start}
+.people-settings section{display:grid;grid-template-columns:minmax(0,1fr);gap:.75rem;min-width:0}
+.people-settings h2{margin:0}
+.people-span-section{grid-column:1/-1}
+.people-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem;margin:0}
+.people-facts div{display:grid;gap:.15rem}
+.people-facts dt{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.people-facts dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+.people-admins{list-style:none;margin:0;padding:0;display:grid;gap:.5rem}
+.people-admins li{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;border-bottom:1px solid #e5e7eb;padding:.5rem 0}
+.people-admins li>div{display:grid;flex:1 1 180px;min-width:0}
+.people-admins li span:not(.company-badge){font-size:.8rem;color:var(--muted);overflow-wrap:anywhere}
+.people-leave{border-color:#fecaca}
+@media (max-width:900px){.people-settings{grid-template-columns:1fr}}
+
+/* Join */
+.people-join{display:grid;grid-template-columns:minmax(0,1fr);gap:1rem}
+.people-join h1{margin-bottom:0}
+.people-join-facts{background:#fff;border:1px solid var(--control);border-radius:16px;padding:1rem}
+.people-join-what h2,.people-join-signin h2,.people-join-closed h2{font-size:1rem;margin:0 0 .4rem}
+.people-join-what ul{margin:0;padding-left:1.2rem;display:grid;gap:.3rem;font-size:.9rem;color:#374151}
+.people-join-form{display:grid;gap:1rem}
+.people-join-consent{margin:0}
+.people-join-consent .check{margin-top:.5rem}
+.people-join-closed{border:1px solid #fde68a;background:#fffbeb;border-radius:16px;padding:1rem}
+.people-join-closed p{margin:0;color:#78350f}
+.people-join-signin{border:1px solid var(--line);border-radius:20px;background:#fff;padding:1.25rem;display:grid;gap:.75rem}
+.people-join-signin p{margin:0}
+
+/* Onboarding */
+.people-steps{list-style:none;margin:0 auto;padding:0;display:flex;gap:.5rem;flex-wrap:wrap;max-width:960px;width:100%}
+.people-steps li{display:flex;align-items:center;gap:.5rem;font-size:.82rem;font-weight:600;color:var(--muted);background:rgb(255 255 255/.6);border:1px solid var(--control);border-radius:999px;padding:.35rem .8rem .35rem .4rem}
+.people-step-number{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#e5e7eb;color:#374151;font-size:.75rem}
+.people-steps li.current{color:#111827;border-color:var(--line);background:#fff}
+.people-steps li.current .people-step-number{background:var(--navy);color:#fff}
+.people-steps li.done .people-step-number{background:#16a34a;color:#fff}
+.people-onboarding{max-width:960px;margin:0 auto;width:100%}
+.people-onboarding-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:1.25rem;align-items:start}
+.people-onboarding-grid section{display:grid;gap:.5rem}
+.people-onboarding-grid h1{margin-bottom:.25rem}
+.people-onboarding-aside{background:var(--navy);color:#f8fafc;border-color:var(--navy)}
+.people-onboarding-aside h2{color:#fff}
+.people-onboarding-aside .hint{color:#cbd5e1}
+.people-checklist{list-style:none;margin:0 0 1rem;padding:0;display:grid;gap:.55rem;font-size:.9rem}
+.people-checklist li{position:relative;padding-left:1.6rem;line-height:1.5}
+.people-checklist li::before{content:'';position:absolute;left:0;top:.2rem;width:1rem;height:1rem;border-radius:50%;background:#16a34a url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.5 7 11l5-6' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/100% no-repeat}
+.people-onboarding-step{display:grid;gap:.75rem}
+.people-onboarding-step h1{margin-bottom:0}
+.people-onboarding-step>p{margin:0}
+.people-chips{display:flex;flex-wrap:wrap;gap:.5rem}
+.people-chip{flex-direction:row;align-items:center;gap:.45rem;border:1px solid var(--control);background:#fff;border-radius:999px;padding:.45rem .85rem;font-weight:600;cursor:pointer}
+.people-chip input{width:auto;margin:0}
+.people-chip.on{border-color:var(--navy);background:#eef2ff}
+.people-chip:focus-within{outline:3px solid #0f172a;outline-offset:2px}
+.people-onboarding-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}
+.people-onboarding-options>div{border:1px solid var(--control);border-radius:18px;padding:1rem 1.1rem;background:#fff;display:grid;gap:.6rem;align-content:start}
+.people-onboarding-options h2{margin:0;font-size:1rem}
+.people-onboarding-options p{margin:0}
+.people-step-actions{margin-top:.5rem}
+@media (max-width:800px){.people-onboarding-grid{grid-template-columns:1fr}}
+@media (max-width:420px){.people-steps li span:not(.people-step-number){display:none}.people-steps li.current span:not(.people-step-number){display:inline}}
+/* Screen-reader-only headers are absolutely positioned: keep them inside the scrolling wrapper. */
+.people .company-table-wrap,.staff .company-table-wrap{position:relative}
