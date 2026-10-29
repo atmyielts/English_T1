@@ -104,7 +104,10 @@ All messages go through `ai_engage_outbox`. At most two a day per person across 
 - **The talent pool is off.** It turns on when a Schood admin adds the switch `engage.talent_pool` = on in the admin console (core switches; this one stays off unless it is set). Employers are granted with `POST engage/talent-employer` by a Schood admin.
 - **Sponsors** are set with `POST engage/event-sponsor`: name, https logo and prize text, by contract. No payment flow exists.
 - **Certificate reviews** are at `/certificates/review` for Schood admins. A reviewer never marks their own sitting.
-- **Audio** for samples and sittings is stored under `schood-ai/engage/` in the media bucket. Account erasure removes the rows, but the S3 objects need a lifecycle rule or a delete job for that prefix.
+- **Account closure.** The 24 engage tables keyed on `user_id` are in `account_personal_erasure_tables()`, with the closed-account guard: the Passport, its links and items, samples, XP and days, league rows, sittings and certificates, journeys, goals, dates, squad memberships, the talent profile and the outbox among them.
+  - `ai_engage_erase_account` (a service hook) hands an owned squad to the longest-standing member, or deletes it when nobody is left.
+  - It also clears the person's id from the talent audit and from sponsor, centre-league, employer-grant and reviewer fields.
+- **Audio** for samples and sittings is stored under `schood-ai/engage/` in the media bucket. Closure removes the rows, but the S3 objects need a lifecycle rule or a delete job for that prefix.
 - **Decisions marked `[ASSUMPTION]` in code:**
   - E-feature plan rules in `plans.ts`;
   - `story.episode` 3 credits;

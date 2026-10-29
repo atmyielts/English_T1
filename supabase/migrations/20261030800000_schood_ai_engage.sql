@@ -897,6 +897,65 @@ begin
 end
 $$;
 
+-- What the registry cannot do on account closure (run by account_erasure_service_hooks(),
+-- 20261030140000, after the registry tables above are erased): squads the person owned go
+-- to their longest-standing member or are deleted when nobody is left; their id is cleared
+-- from the talent audit (as employer and as candidate), sponsor and centre-league records,
+-- employer grants and reviewed sittings. Idempotent; never raises for a normal closure.
+-- Their audio files under schood-ai/engage/ in the media bucket are not reachable from SQL.
+create or replace function public.ai_engage_erase_account(p_user uuid)
+returns jsonb
+language plpgsql security definer set search_path = pg_catalog, public as $$
+declare
+  v_squad uuid; heir uuid; v_deleted integer := 0; v_handed integer := 0; v_audit integer; v_target integer; v_refs integer := 0; n integer;
+begin
+  if p_user is null then raise exception 'p_user is required' using errcode = '22023'; end if;
+  for v_squad in select id from public.ai_engage_squads where owner_id = p_user order by id for update loop
+    select m.user_id into heir from public.ai_engage_squad_members m
+      where m.squad_id = v_squad and m.user_id <> p_user and m.left_at is null order by m.joined_at, m.user_id limit 1;
+    if heir is null then
+      delete from public.ai_engage_squads where id = v_squad;
+      v_deleted := v_deleted + 1;
+    else
+      update public.ai_engage_squads set owner_id = heir where id = v_squad;
+      update public.ai_engage_squad_members set role = 'owner' where squad_id = v_squad and user_id = heir;
+      v_handed := v_handed + 1;
+    end if;
+  end loop;
+  update public.ai_engage_talent_audit set employer_id = null where employer_id = p_user;
+  get diagnostics v_audit = row_count;
+  update public.ai_engage_talent_audit set target_user_id = null where target_user_id = p_user;
+  get diagnostics v_target = row_count;
+  update public.ai_engage_sponsors set updated_by = null where updated_by = p_user;
+  get diagnostics n = row_count; v_refs := v_refs + n;
+  update public.ai_engage_centre_league set opted_by = null where opted_by = p_user;
+  get diagnostics n = row_count; v_refs := v_refs + n;
+  update public.ai_engage_talent_employers set granted_by = null where granted_by = p_user;
+  get diagnostics n = row_count; v_refs := v_refs + n;
+  update public.ai_engage_sittings set reviewer_id = null where reviewer_id = p_user;
+  get diagnostics n = row_count; v_refs := v_refs + n;
+  return jsonb_build_object('squads_deleted', v_deleted, 'squads_handed_over', v_handed, 'audit_as_employer', v_audit, 'audit_as_candidate', v_target, 'references_cleared', v_refs);
+end $$;
+revoke all on function public.ai_engage_erase_account(uuid) from public, anon, authenticated, service_role;
+
+do $$
+declare hooks text[];
+begin
+  if to_regprocedure('public.account_erasure_service_hooks()') is null then
+    raise notice 'account_erasure_service_hooks() is not installed; engage erasure hook not registered';
+    return;
+  end if;
+  hooks := public.account_erasure_service_hooks();
+  if not ('ai_engage_erase_account' = any(hooks)) then
+    hooks := hooks || 'ai_engage_erase_account'::text;
+    execute format(
+      'create or replace function public.account_erasure_service_hooks() returns text[] language sql immutable set search_path=pg_catalog,public as %L',
+      format('select %L::text[];', hooks::text)
+    );
+  end if;
+end
+$$;
+
 commit;
 
 -- Counting new verified learning every five minutes (boards, squads and leagues stay current

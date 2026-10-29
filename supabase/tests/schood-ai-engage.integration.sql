@@ -196,6 +196,44 @@ begin
 end $$;
 drop table engage_erasure_probe;
 
+
+-- Closing an account through the closure transaction (auth.users, the fixture's stand-in):
+-- the registry erases the engage rows, then ai_engage_erase_account hands the squad over and
+-- clears the person from the talent audit.
+insert into public.users (id) values ('00000000-0000-4000-8000-0000000000c1'), ('00000000-0000-4000-8000-0000000000c2') on conflict do nothing;
+insert into auth.users (id) values ('00000000-0000-4000-8000-0000000000c1'), ('00000000-0000-4000-8000-0000000000c2') on conflict do nothing;
+do $$
+declare
+  leaver constant uuid := '00000000-0000-4000-8000-0000000000c1';
+  friend constant uuid := '00000000-0000-4000-8000-0000000000c2';
+  squad uuid;
+begin
+  assert 'ai_engage_erase_account' = any(public.account_erasure_service_hooks()), 'engage registered its hook';
+  insert into public.ai_learning_events (user_id, area, kind, verified, feature, verified_minutes) values (leaver, 'coach', 'turn_scored', true, 'B1', 5);
+  perform public.ai_engage_ingest(leaver, now());
+  perform public.ai_engage_award_bonus(leaver, 'quest', 'x:closure', 10, current_date, current_date);
+  squad := public.ai_engage_squad_create('Leavers', leaver, 'CLSQUADA', 100, null);
+  perform public.ai_engage_squad_join(squad, friend, 5, null);
+  insert into public.ai_engage_passports (user_id, display_name) values (leaver, 'Leaver');
+  insert into public.ai_engage_talent (user_id, candidate_key, consent_version, consented_at) values (leaver, 'cccccccccccccccccccccccc', 'talent-2026-10', now());
+  insert into public.ai_engage_talent_audit (employer_id, action, target_user_id) values (friend, 'view', leaver), (leaver, 'search', null);
+end $$;
+update auth.users set deleted_at = now() where id = '00000000-0000-4000-8000-0000000000c1';
+do $$
+declare
+  leaver constant uuid := '00000000-0000-4000-8000-0000000000c1';
+  friend constant uuid := '00000000-0000-4000-8000-0000000000c2';
+begin
+  assert not exists (select 1 from public.ai_engage_xp where user_id = leaver), 'XP erased (bonus rows too)';
+  assert not exists (select 1 from public.ai_engage_days where user_id = leaver), 'days erased';
+  assert not exists (select 1 from public.ai_engage_passports where user_id = leaver), 'Passport erased';
+  assert not exists (select 1 from public.ai_engage_talent where user_id = leaver), 'talent profile erased';
+  assert (select owner_id from public.ai_engage_squads where invite_code = 'CLSQUADA') = friend, 'the squad passed to the friend';
+  assert (select role from public.ai_engage_squad_members m join public.ai_engage_squads s on s.id = m.squad_id where s.invite_code = 'CLSQUADA' and m.user_id = friend) = 'owner', 'with the owner role';
+  assert not exists (select 1 from public.ai_engage_talent_audit where target_user_id = leaver or employer_id = leaver), 'cleared from the audit';
+  assert (select count(*) from public.ai_engage_talent_audit where action = 'view' and employer_id = friend) >= 1, 'the act stays';
+end $$;
+
 -- Browsers get nothing; the function's role cannot write XP directly.
 set role authenticated;
 do $$ begin

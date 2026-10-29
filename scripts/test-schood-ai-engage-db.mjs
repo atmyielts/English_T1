@@ -17,7 +17,7 @@ const coreFixture = read('supabase/tests/schood-ai-core.fixture.sql');
 const engageFixture = read('supabase/tests/schood-ai-engage.fixture.sql');
 // Every core migration (20261030100000-199999) in order, then engage's.
 const core = readdirSync(new URL('../supabase/migrations/', import.meta.url))
-  .filter((name) => /^202610301\d{5}_schood_ai_.*\.sql$/.test(name)).sort()
+  .filter((name) => /^202610301\d{5}_.*\.sql$/.test(name)).sort()
   .map((name) => read(`supabase/migrations/${name}`)).join('\n');
 const migration = read('supabase/migrations/20261030800000_schood_ai_engage.sql');
 const integration = read('supabase/tests/schood-ai-engage.integration.sql');
@@ -33,7 +33,7 @@ const integration = read('supabase/tests/schood-ai-engage.integration.sql');
     await db.exec(migration);
     const results = await db.exec(integration).catch((cause) => { throw new Error(`${cause.message} (${cause.where ?? 'no location'})`); });
     assert.equal(results.at(-1).rows[0]?.['?column?'], 'schood ai engage: ok');
-    console.log('PGlite (PostgreSQL 17): engage migration applies twice; XP rule, verified-only ingest, daily cap, local days, bonuses, freezes, league groups and settling, journeys, squads, outbox, due people, boards, append-only rows, the erasure registry and erasure, account deletion and isolation passed.');
+    console.log('PGlite (PostgreSQL 17): engage migration applies twice; XP rule, verified-only ingest, daily cap, local days, bonuses, freezes, league groups and settling, journeys, squads, outbox, due people, boards, append-only rows, the erasure registry, account closure through auth.users with the engage hook, account deletion and isolation passed.');
   } finally {
     await db.close();
   }
