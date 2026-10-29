@@ -23,6 +23,36 @@ export interface CreditPrice {
 
 const price = (feature: string, credits: number, tier: ModelTier = 'standard', extra: Partial<CreditPrice> = {}): CreditPrice => ({ feature, credits, tier, ...extra });
 
+// Schood Coaches (Telegram bots B1–B6): the same eight engine actions for every
+// coach, keyed `coach_b<n>.<action>`, so a new coach pack needs no new prices. The
+// doc's table has no coach rows, so every price reuses its closest row (assumed):
+//   turn    a scored practice answer or role-play turn (speaking turn, 1)
+//   review  a full mock or role-play review with report (full mock with report, 10)
+//   writing feedback on one draft (writing feedback, 5)
+//   ladder  the essay ladder (essay ladder, 8)
+//   photo   reading a photo of handwriting or a problem (photo explain, 3)
+//   drill   five fresh checked drill items (explain a mistake with items, 2)
+//   voice   a spoken persona line or listening audio (pronunciation drill, 1)
+//   shadow  a shadowing attempt checked by speech recognition (pronunciation drill, 1)
+export const COACH_ACTIONS = ['turn', 'review', 'writing', 'ladder', 'photo', 'drill', 'voice', 'shadow'] as const;
+export type CoachAction = (typeof COACH_ACTIONS)[number];
+type CoachCreditKey = `coach_b${1 | 2 | 3 | 4 | 5 | 6}.${CoachAction}`;
+const COACH_PRICES = Object.fromEntries((['B1', 'B2', 'B3', 'B4', 'B5', 'B6'] as const).flatMap((feature) => {
+  const prefix = `coach_${feature.toLowerCase()}`;
+  return [
+    [`${prefix}.turn`, price(feature, 1, 'standard', { assumed: true })],
+    [`${prefix}.review`, price(feature, 10, 'premium', { assumed: true })],
+    [`${prefix}.writing`, price(feature, 5, 'premium', { assumed: true })],
+    [`${prefix}.ladder`, price(feature, 8, 'premium', { assumed: true })],
+    [`${prefix}.photo`, price(feature, 3, 'vision', { requires: ['vision'], assumed: true })],
+    [`${prefix}.drill`, price(feature, 2, 'standard', { assumed: true })],
+    [`${prefix}.voice`, price(feature, 1, 'standard', { assumed: true })],
+    [`${prefix}.shadow`, price(feature, 1, 'standard', { assumed: true })],
+  ];
+})) as Record<CoachCreditKey, CreditPrice>;
+/** The credit key of a coach action, for example `coach_b1.turn`. */
+export const coachCreditKey = (feature: string, action: CoachAction) => `coach_${feature.toLowerCase()}.${action}`;
+
 export const CREDIT_PRICES = {
   // Replies: tutor or assistant (L1, C2, T7, P2, C8, C13) and the core assistant.
   'assistant.reply': price('CORE', 1),
@@ -76,6 +106,8 @@ export const CREDIT_PRICES = {
   'winback.message': price('C11', 1, 'standard', { assumed: true }),
   'curriculum.unit': price('C12', 20, 'premium'),
   'observation.feedback': price('C16', 5, 'standard', { assumed: true }),
+  // Schood Coaches, generated above.
+  ...COACH_PRICES,
 } satisfies Record<string, CreditPrice>;
 
 export type CreditKey = keyof typeof CREDIT_PRICES;
