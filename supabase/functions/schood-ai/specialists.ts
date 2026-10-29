@@ -38,7 +38,8 @@ export interface ResolvedSpecialist {
   roles: Role[];
   custom: boolean;
   suggestions: Record<Locale, string[]>;
-  guard: SpecialistDefinition['guard'] | null;
+  /** The specialist's own guard, if it has one (optional, so code that builds a ResolvedSpecialist keeps compiling). */
+  guard?: SpecialistDefinition['guard'] | null;
 }
 
 const builtIns = new Map<string, SpecialistDefinition>();
