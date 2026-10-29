@@ -37,6 +37,7 @@ export const ru: Record<CoreKey, string> = {
   'nav.plans': 'Тарифы',
   'nav.examples': 'Примеры',
   'nav.settings': 'Настройки',
+  'nav.library': 'Библиотека',
 
   'audience.learner': 'Ученик',
   'audience.parent': 'Родитель',
@@ -297,6 +298,7 @@ export const ru: Record<CoreKey, string> = {
   'settings.data': 'Ваши данные',
   'settings.dataLead': 'Удалите все свои переписки в этом рабочем пространстве.',
 
+  'library.soon': 'Библиотека скоро откроется здесь.',
   'notFound.title': 'Страница не найдена',
   'notFound.lead': 'Такой страницы нет или она закрыта для вашей роли.',
   'notFound.home': 'На главную',

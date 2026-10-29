@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
-import { BookOpenCheck, ChevronDown, CircleCheck, Coins, History, Home, Languages, LayoutGrid, Menu, MessageSquareText, Settings, X } from 'lucide-react';
+import { BookOpenCheck, ChevronDown, CircleCheck, Coins, FolderOpen, History, Home, Languages, LayoutGrid, Menu, MessageSquareText, Settings, X } from 'lucide-react';
 import { LOCALE_NAMES, SUPPORTED_LOCALES, type Locale } from '../../../../packages/service-i18n/src/format.ts';
 import { useI18n } from '../../../../packages/service-i18n/src/i18n.tsx';
 import type { Audience, AreaNavItem } from './areas.ts';
@@ -127,6 +127,7 @@ export const CORE_NAV: (NavEntry & { audiences?: Audience[] })[] = [
   { id: 'home', path: '/', label: 'nav.home', icon: Home, group: 'core' },
   { id: 'assistant', path: '/assistant', label: 'nav.assistant', icon: MessageSquareText, group: 'core' },
   { id: 'history', path: '/history', label: 'nav.history', icon: History, group: 'core' },
+  { id: 'library', path: '/library', label: 'nav.library', icon: FolderOpen, group: 'core', audiences: ['teacher', 'centre'] },
   { id: 'approvals', path: '/approvals', label: 'nav.approvals', icon: CircleCheck, group: 'core', audiences: ['teacher', 'centre'] },
   { id: 'credits', path: '/credits', label: 'nav.credits', icon: Coins, group: 'core' },
   { id: 'examples', path: '/examples', label: 'nav.examples', icon: LayoutGrid, group: 'core' },

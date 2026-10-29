@@ -37,6 +37,7 @@ export const uz: Record<CoreKey, string> = {
   'nav.plans': 'Tariflar',
   'nav.examples': 'Namunalar',
   'nav.settings': 'Sozlamalar',
+  'nav.library': 'Kutubxona',
 
   'audience.learner': 'O‘quvchi',
   'audience.parent': 'Ota-ona',
@@ -297,6 +298,7 @@ export const uz: Record<CoreKey, string> = {
   'settings.data': 'Ma’lumotlaringiz',
   'settings.dataLead': 'Bu ish maydonidagi barcha suhbatlaringizni o‘chiring.',
 
+  'library.soon': 'Kutubxona tez orada shu yerda ochiladi.',
   'notFound.title': 'Sahifa topilmadi',
   'notFound.lead': 'Bu sahifa mavjud emas yoki rolingiz uchun ochiq emas.',
   'notFound.home': 'Bosh sahifaga qaytish',

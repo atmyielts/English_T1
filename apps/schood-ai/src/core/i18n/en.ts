@@ -37,6 +37,7 @@ export const en = {
   'nav.plans': 'Plans',
   'nav.examples': 'Examples',
   'nav.settings': 'Settings',
+  'nav.library': 'Library',
 
   'audience.learner': 'Learner',
   'audience.parent': 'Parent',
@@ -297,6 +298,7 @@ export const en = {
   'settings.data': 'Your data',
   'settings.dataLead': 'Delete all your conversations in this workspace.',
 
+  'library.soon': 'The library opens here shortly.',
   'notFound.title': 'Page not found',
   'notFound.lead': 'This page does not exist or is not open for your role.',
   'notFound.home': 'Back to Home',

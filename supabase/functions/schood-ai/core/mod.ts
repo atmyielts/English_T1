@@ -1,3 +1,4 @@
+import { libraryRoutes } from '../library.ts';
 import type { FeatureModule } from '../types.ts';
 import { registerAssistant } from './assistant.ts';
 import { chat } from './chat.ts';
@@ -20,5 +21,7 @@ export const coreModule: FeatureModule = {
     settings,
     generations,
     context: { GET: context },
+    // The library (T6): see library.ts and CONTRACT.md.
+    ...libraryRoutes,
   },
 };

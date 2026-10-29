@@ -25,6 +25,8 @@ const AssistantPage = page(() => import('./core/pages/Assistant.tsx'), 'Assistan
 const HistoryPage = page(account, 'HistoryPage'), CreditsPage = page(account, 'CreditsPage'), ApprovalsPage = page(account, 'ApprovalsPage');
 const SettingsPage = page(account, 'SettingsPage'), NotFoundPage = page(account, 'NotFoundPage');
 const ExamplesPage = page(catalog, 'ExamplesPage'), LandingPage = page(catalog, 'LandingPage'), PlansPage = page(catalog, 'PlansPage');
+const library = () => import('./core/library/pages.tsx');
+const LibraryPage = page(library, 'LibraryPage'), LibraryPageEditor = page(library, 'LibraryPageEditor'), LibraryPrintPage = page(library, 'LibraryPrintPage');
 
 const AREAS = [learner, teacher, centre, coach, engage];
 const areaRoutes: AreaRoute[] = AREAS.flatMap((area) => area.routes);
@@ -40,6 +42,9 @@ const CORE_ROUTES: CoreRoute[] = [
   { path: '/history', title: 'nav.history', component: HistoryPage },
   { path: '/credits', title: 'nav.credits', component: CreditsPage },
   { path: '/approvals', title: 'nav.approvals', component: ApprovalsPage },
+  { path: '/library', title: 'nav.library', component: LibraryPage, audiences: ['teacher', 'centre'] },
+  { path: '/library/:id', title: 'nav.library', component: LibraryPageEditor, audiences: ['teacher', 'centre'] },
+  { path: '/library/:id/print', title: 'nav.library', component: LibraryPrintPage, audiences: ['teacher', 'centre'] },
   { path: '/settings', title: 'nav.settings', component: SettingsPage },
   { path: '/plans', title: 'nav.plans', component: PlansPage, public: true },
   { path: '/examples', title: 'nav.examples', component: ExamplesPage, public: true },

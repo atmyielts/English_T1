@@ -76,6 +76,23 @@ export const homeCards: HomeCard[] = [
 | `useWorkspace()` | `me`, `workspaceId`, `audience`, `access(featureId)`, `refresh()`. |
 | `askAssistant(prompt)` | Opens the assistant with a prefilled prompt, without putting it in the URL. |
 
+## The library (pages, editor, print)
+
+The library belongs to core. Teacher and centre save materials into it and link to it; they do not build their own.
+
+- **Routes:** `/library` (folders, search, list), `/library/:id` (the editor), `/library/:id/print` (print and PDF with the workspace's logo). They are in the sidebar for the teacher and centre audiences.
+- **Components:**
+  - `<LibraryView kind? folder? onOpen? readOnly?/>`: a list for your own screens, for example only `kind="worksheet"`;
+  - `<PageEditor pageId onSaved? onDeleted?/>`: TipTap with slash commands, revision-checked autosave, version history, sharing and export;
+  - `<PrintView pageId/>`.
+- **Calls:** `createPage({ kind, title, material, folder, source_generation_id })`, `getPage`, `listPages`, `savePage(id, { expected_revision, … })`, `exportPage(id, 'telegram')`, `listFolders`, `pageRevisions`, `restorePage`, `duplicatePage`, `deletePage`. When a save hits a newer revision, `conflictPage(error)` returns the current page.
+- **Material kinds:** call `registerMaterialKind({ kind, label, icon?, toMarkdown, render?, fromMarkdown?, editing?, editorPath? })` in your `routes.tsx` at module load.
+  - `toMarkdown` is the same function the server uses; define it once in `packages/ai-core`.
+  - `render` draws the material read-only and for print.
+  - `fromMarkdown` rebuilds the material after the document is edited. If it is absent, the document becomes the source and the material is kept as it was.
+  - `editing: 'readonly'` keeps a material out of the generic editor; give an `editorPath` to your own screen.
+- **Telegram:** export text comes from `toTelegramText()` in ai-core, or from your kind's `toTelegram`.
+
 ## Look and feel (main platform)
 
 - **Colours:**

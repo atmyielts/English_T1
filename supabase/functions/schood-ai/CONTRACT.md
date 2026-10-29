@@ -48,6 +48,7 @@ export const learnerModule: FeatureModule = {
 | `ctx.ai` | Charged AI calls (below). The only way a route uses a model. |
 | `ctx.context(kinds, { ref?, specialist? })` | Runs registered context providers. A failing or slow provider is skipped. |
 | `ctx.actions` | The Approve & run queue: `propose`, `list`, `get`, `decide`. |
+| `ctx.library` | Library pages: `create`, `get`, `save`, `list`, with the same rules as the routes (see The library). |
 | `ctx.events.emit(event)` | Learning events. Written after the response; never fails the request. |
 | `ctx.notify.allowed(userId, channel)` / `take(...)` | The notification budget: 2 a day per person across all bots, quiet 22:00–08:00 local. |
 | `ctx.functions.call(name, path, init)` | Another Schood Edge Function, called with the person's own token, for Academy or Assessment Cloud. Throws `user_token_required` on the worker path. |
@@ -111,6 +112,60 @@ const { data, credits, balance } = await ctx.ai.json({
 | `registerContextProvider(kind, fn, { allowCustom?, selfView?, timeoutMs?, maxChars? })` | `context.ts` | Data the model may see, for example `homework_open`, `group_weak_spots` or `coach_progress`. Check roles inside the provider. `selfView` only for data about the caller (shown in `core/context`). |
 | `registerActionKind({ kind, area, approverRoles, parse, summary, display?, run, retrySafe?, expiresInHours? })` | `actions.ts` | Approve & run: `send_parent_message`, `assign_homework`, `post_to_channel`, `book_trial`. `run` executes as the approver, with their token. |
 | `registerPlanSource(name, fn)` | `plan.ts` | Extra plans or directly granted features: children of a Family holder → `plus`, a coach pass → `features: ['B4']`, a team seat. |
+
+## The library (pages)
+
+Every saved material is a page in the library of a person's or a centre's workspace. A page has:
+
+- a Markdown `body`, which is the editable document;
+- an optional structured `material` of a registered kind;
+- `folder`, `kind`, `title`, `status` (`draft`, `approved`, `archived`) and `visibility` (`private`, or shared with the workspace's staff);
+- a `revision` number and version history.
+
+Only staff roles (owner, admin, teacher) use the library.
+
+- **Read and export:** your own pages, shared pages, and all pages for owners and admins. This needs no plan, so your library stays readable.
+- **Create, edit, restore, duplicate:** need T6 in the plan. Edit is for the page's owner, or owners and admins on a shared page.
+
+### Routes
+
+| Route | Use |
+|---|---|
+| `GET core/pages?folder=&kind=&status=&q=&scope=mine\|workspace\|all&limit=&before=` | List and full-text search. Returns `{ pages: PageSummary[] }`. |
+| `POST core/pages` | Create: `{ title, kind?, folder?, body?, material?, visibility?, status?, source_generation_id? }`. Returns `{ page }`. |
+| `GET core/page?id=` | One page: `{ page: PageView }`. |
+| `PATCH core/page` | Revision-checked save: `{ id, expected_revision, title?, body?, material?, folder?, visibility?, status?, snapshot? }`. Returns `{ page }`, or **409 `revision_conflict`** with the current `page`. |
+| `DELETE core/page` | `{ id }`, for the owner or managers. |
+| `GET core/page-revisions?id=` / `GET core/page-revision?id=&revision=` | Version history and one snapshot. |
+| `POST core/page-restore` | `{ id, revision, expected_revision }`. Restoring is itself a new revision. |
+| `POST core/page-duplicate` | `{ id }` copies a page you can see into your own pages. |
+| `GET core/page-export?id=&format=markdown\|telegram\|json` | `{ export: { format, filename, mime, parts } }`. Telegram text is split into messages of at most 4,000 characters. |
+| `GET core/folders` / `POST core/folders` | Folders with counts; `{ from, to }` renames a folder for the pages you can edit. |
+
+Print is done in the app: `/library/:id/print` uses the browser print stylesheet with the workspace's logo and colour.
+
+### From your area
+
+`ctx.library.create / get / save / list` apply the same rules as the routes. For example, the teacher area saves an approved generation:
+
+```ts
+const page = await ctx.library.create({
+  kind: 'worksheet', title, material, folder: 'Worksheets/B1', sourceGenerationId: job.id,
+});
+```
+
+### Material kinds
+
+Define the kind once in `packages/ai-core/src/materials/<kind>.ts` (a `MaterialKindDefinition` with a `schema`, `toMarkdown` and an optional `toTelegram`). Then register it on the function side at module load:
+
+```ts
+registerMaterialKind({ ...worksheetKind, area: 'teacher' });
+```
+
+- A page's `material` is validated with the kind's schema on every create and save.
+- A page created without a `body` gets `toMarkdown(material)`.
+- Unknown kinds are refused.
+- The built-in kinds are `note` (a free document) and `chat_answer` (a saved assistant answer).
 
 ## Credit keys and plans
 
@@ -198,6 +253,7 @@ The handler checks that this chat is linked to that user (`users.telegram_chat_i
 |---|---|
 | `packages/ai-core/src/credits.ts`, `plans.ts` | New keys and rules |
 | `packages/ai-core/src/schema.ts` | New builders, if you need them |
+| `packages/ai-core/src/materials/<kind>.ts` | New files for your material kinds (re-export them from your own module; `mod.ts` stays core's) |
 | `supabase/functions/schood-ai/<your area>/**` | Your own code |
 | `handler.ts` | Nothing: your `mod.ts` is already registered |
 | `.github/workflows/schood-ai-ci.yml` | New test paths |
