@@ -1,0 +1,81 @@
+-- Integration test for 20261030200000_schood_ai_learner.sql, run after the core
+-- migrations on an isolated database (scripts/test-schood-ai-learner-db.mjs).
+-- Every check raises on failure; the last line is the success marker.
+insert into public.users (id) values
+  ('00000000-0000-4000-8000-0000000000b1'), ('00000000-0000-4000-8000-0000000000b2'), ('00000000-0000-4000-8000-0000000000b3'),
+  ('00000000-0000-4000-8000-0000000000b4'), ('00000000-0000-4000-8000-0000000000b5')
+on conflict (id) do nothing;
+
+do $$
+declare
+  v_table text;
+  v_ws uuid;
+  v_out jsonb;
+  v_now timestamptz := now();
+  v_parent uuid := '00000000-0000-4000-8000-0000000000b1';
+  v_failed boolean;
+begin
+  -- RLS on, nothing for browsers.
+  foreach v_table in array array['ai_learner_consents', 'ai_learner_family_links', 'ai_learner_activity', 'ai_learner_records', 'ai_learner_briefs', 'ai_learner_snapshots', 'ai_learner_telegram', 'ai_learner_duels'] loop
+    if not (select relrowsecurity from pg_class where oid = ('public.' || v_table)::regclass) then raise exception '% has no RLS', v_table; end if;
+    if has_table_privilege('anon', 'public.' || v_table, 'select') or has_table_privilege('authenticated', 'public.' || v_table, 'select')
+      or has_table_privilege('authenticated', 'public.' || v_table, 'insert') then raise exception '% is open to browsers', v_table; end if;
+  end loop;
+  if has_function_privilege('authenticated', 'public.ai_learner_family_accept(text, uuid, timestamptz, integer)', 'execute')
+    or has_function_privilege('anon', 'public.ai_learner_family_invite(uuid, uuid, text, text, text, timestamptz, text, timestamptz, integer)', 'execute') then
+    raise exception 'family functions are open to browsers';
+  end if;
+
+  -- Family: up to 3 children, counting open invites.
+  select id into v_ws from public.ai_ensure_personal_workspace(v_parent, 'Family');
+  for i in 1..3 loop
+    v_out := public.ai_learner_family_invite(v_ws, v_parent, 'Child ' || i, lpad(to_hex(i), 64, '0'), 'AB' || i, v_now + interval '7 days', 'v1', v_now, 3);
+    if (v_out->>'ok')::boolean is not true then raise exception 'invite % refused: %', i, v_out; end if;
+  end loop;
+  v_out := public.ai_learner_family_invite(v_ws, v_parent, 'Fourth', lpad('ff', 64, '0'), 'ZZ', v_now + interval '7 days', 'v1', v_now, 3);
+  if v_out->>'code' is distinct from 'limit' then raise exception 'a fourth open invite must be refused: %', v_out; end if;
+
+  v_out := public.ai_learner_family_accept(lpad(to_hex(1), 64, '0'), v_parent, v_now, 3);
+  if v_out->>'code' is distinct from 'own_invite' then raise exception 'a parent cannot accept their own invite: %', v_out; end if;
+  v_out := public.ai_learner_family_accept(lpad(to_hex(1), 64, '0'), '00000000-0000-4000-8000-0000000000b2', v_now, 3);
+  if (v_out->>'ok')::boolean is not true or (v_out->>'parent_id')::uuid <> v_parent then raise exception 'accept failed: %', v_out; end if;
+  v_out := public.ai_learner_family_accept(lpad(to_hex(1), 64, '0'), '00000000-0000-4000-8000-0000000000b3', v_now, 3);
+  if v_out->>'code' is distinct from 'not_found' then raise exception 'a used code must not work again: %', v_out; end if;
+  v_out := public.ai_learner_family_accept(lpad(to_hex(2), 64, '0'), '00000000-0000-4000-8000-0000000000b2', v_now, 3);
+  if v_out->>'code' is distinct from 'already_linked' then raise exception 'the same child twice: %', v_out; end if;
+  v_out := public.ai_learner_family_accept(lpad(to_hex(3), 64, '0'), '00000000-0000-4000-8000-0000000000b3', v_now + interval '8 days', 3);
+  if v_out->>'code' is distinct from 'expired' then raise exception 'an old invite must expire: %', v_out; end if;
+  if (select count(*) from public.ai_learner_family_links where parent_id = v_parent and status = 'active') <> 1 then raise exception 'one active link expected'; end if;
+  if exists (select 1 from public.ai_learner_family_links where status <> 'invited' and invite_hash is not null) then raise exception 'used invites keep no hash'; end if;
+
+  -- A brief inside quiet hours is refused; a weekday only for the parent brief.
+  v_failed := false;
+  begin insert into public.ai_learner_briefs (user_id, kind, send_time) values (v_parent, 'daily', '23:00'); exception when check_violation then v_failed := true; end;
+  if not v_failed then raise exception 'quiet hours must be refused'; end if;
+  v_failed := false;
+  begin insert into public.ai_learner_briefs (user_id, kind, send_time, weekday) values (v_parent, 'daily', '08:30', 1); exception when check_violation then v_failed := true; end;
+  if not v_failed then raise exception 'a daily brief has no weekday'; end if;
+  insert into public.ai_learner_briefs (user_id, kind, send_time, weekday, next_due_at) values (v_parent, 'parent', '10:00', 0, v_now);
+
+  -- One brief record per learner and day; summaries stay small.
+  insert into public.ai_learner_records (user_id, workspace_id, kind, day) values (v_parent, v_ws, 'brief', current_date);
+  v_failed := false;
+  begin insert into public.ai_learner_records (user_id, workspace_id, kind, day) values (v_parent, v_ws, 'brief', current_date); exception when unique_violation then v_failed := true; end;
+  if not v_failed then raise exception 'two briefs on one day'; end if;
+  v_failed := false;
+  begin insert into public.ai_learner_activity (user_id, workspace_id, feature, kind, summary) values (v_parent, v_ws, 'L2', 'mistake', jsonb_build_object('text', repeat('x', 5000))); exception when check_violation then v_failed := true; end;
+  if not v_failed then raise exception 'activity summaries are bounded'; end if;
+  v_failed := false;
+  begin insert into public.ai_learner_records (user_id, workspace_id, kind) values (v_parent, v_ws, 'secret_notes'); exception when check_violation then v_failed := true; end;
+  if not v_failed then raise exception 'unknown record kinds are refused'; end if;
+  v_failed := false;
+  begin insert into public.ai_learner_duels (duel_id, code, creator_id, workspace_id, topic) values (gen_random_uuid(), 'bad', v_parent, v_ws, 'x'); exception when check_violation then v_failed := true; end;
+  if not v_failed then raise exception 'duel codes are checked'; end if;
+
+  -- Deleting the person removes their learner data.
+  insert into public.ai_learner_consents (user_id, age_band, text_version) values ('00000000-0000-4000-8000-0000000000b5', 'adult', 'v1');
+  delete from public.users where id = '00000000-0000-4000-8000-0000000000b5';
+  if exists (select 1 from public.ai_learner_consents where user_id = '00000000-0000-4000-8000-0000000000b5') then raise exception 'consent outlived the account'; end if;
+end $$;
+
+select 'schood ai learner: ok';

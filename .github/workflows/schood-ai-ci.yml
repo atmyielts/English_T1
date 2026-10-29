@@ -16,6 +16,11 @@ on:
       - 'packages/assessment-web/src/client.ts'
       - 'packages/assessment-web/src/MathText.tsx'
       - '.github/workflows/schood-ai-ci.yml'
+      - 'scripts/test-schood-ai-learner-db.mjs'
+      - 'workers/schood-bot/**'
+      - 'supabase/functions/_shared/english-*.ts'
+      - 'supabase/functions/_shared/homework-ai.ts'
+      - 'supabase/functions/_shared/toefl-2026-writing.ts'
   workflow_dispatch:
 permissions:
   contents: read
@@ -56,5 +61,11 @@ jobs:
         env:
           SCHOOD_AI_DB_REQUIRE_DOCKER: '1'
         run: node scripts/test-schood-ai-db.mjs
+      - name: Learner migration on PGlite and an isolated Postgres with racing family invites
+        env:
+          SCHOOD_AI_DB_REQUIRE_DOCKER: '1'
+        run: node scripts/test-schood-ai-learner-db.mjs
+      - name: Student bot with Schood AI (relay, homework untouched, brief cron)
+        run: deno test --no-lock --no-check workers/schood-bot/src/schood-ai.test.ts
       - name: App build
         run: npm --workspace apps/schood-ai run build

@@ -8,6 +8,10 @@ routes = [
   { pattern = "bot.schood.online", custom_domain = true },
 ]
 
+# Schood AI daily and weekly parent briefs that are due (src/schood-ai.ts).
+[triggers]
+crons = ["*/15 * * * *"]
+
 [vars]
 SITE_URL = "https://schood.online"
 TELEGRAM_BOT_NAME = "schoodstudentbot"
@@ -18,4 +22,5 @@ TELEGRAM_BOT_NAME = "schoodstudentbot"
 # SUPABASE_SERVICE_KEY    (service role key — Worker is server-side only)
 # TELEGRAM_INTERNAL_SECRET (must match the Edge Function secret)
 # WEBHOOK_SECRET          (any random string — verify Telegram is the caller)
+# SCHOOD_AI_SERVICE_SECRET (optional; must match the schood-ai Edge Function secret; Schood AI commands are off without it)
 # WEBHOOK_SECRET_PREVIOUS (optional rotation overlap; remove after Telegram confirms the new secret)
