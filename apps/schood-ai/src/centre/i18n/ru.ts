@@ -919,7 +919,7 @@ export const ru: Record<CentreKey, string> = {
   'error.attempt_closed': 'Этот тест уже сдан.',
   'error.attempt_open': 'Тест ещё не сдан.',
   'error.nothing_to_mark': 'Нет ответов на письменное или устное задание, которые нужно оценить.',
-  'error.not_ready': 'Это ещё не готово к проверке.',
+ 
   'error.not_approved': 'Сначала нужно утвердить каждый раздел.',
   'error.curriculum_locked': 'Этот курс уже утверждён.',
   'error.secrets_unconfigured': 'Хранение ключей пока не настроено. Обратитесь в поддержку Schood.',
@@ -939,4 +939,18 @@ export const ru: Record<CentreKey, string> = {
   'error.ai_disabled': 'ИИ выключен',
   'error.ai_unavailable': 'не настроена модель ИИ',
   'error.plan_required': 'тариф этого не включает',
+  // Homework rules and the parent switch
+  'centre.admin.parents': "Сводка и вопросы родителей (P1, P2)",
+  'centre.admin.parentsHint': "Выключено, пока вы не включите: привязанные родители получают еженедельную сводку и могут спрашивать только о своём ребёнке.",
+  'centre.area.parent.message': "Черновики сообщений родителям",
+  'centre.groups.homeworkRule': "Помощник по домашним заданиям",
+  'centre.groups.homeworkRuleHint': "Как помощник помогает с домашними заданиями этой группы. Учитель может изменить правило для отдельного задания ниже.",
+  'centre.groups.ruleFollow': "Как в правиле подсказок выше",
+  'centre.groups.rule.hints_only': "Только подсказки",
+  'centre.groups.rule.explain': "Можно объяснять",
+  'centre.groups.rule.off': "Выключен для домашних заданий",
+  'centre.groups.perHomework': "Правила для каждого задания",
+  'centre.groups.noHomework': "В Academy нет домашних заданий для этой группы.",
+  'centre.groups.ruleFor': "Правило для «{title}»",
+  'centre.groups.ruleDefault': "Правило группы ({rule})",
 };

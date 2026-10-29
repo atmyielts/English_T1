@@ -1,7 +1,7 @@
 import { useId, useState, type FormEvent } from 'react';
 import { Plus, Trash2, UserMinus } from 'lucide-react';
-import { ApiErrorState, Badge, Button, Dialog, Field, PageHeader, TextInput, useT } from '../../core/index.ts';
-import { CentreGate, CopyField, Loaded, Section, Select, Table, Tabs, useCentre, useCentreApi, useFormat, useLoad, useSubmit } from '../kit.tsx';
+import { Badge, Button, Dialog, Field, PageHeader, TextInput } from '../../core/index.ts';
+import { ApiErrorState, CentreGate, CopyField, Loaded, Section, Select, Table, Tabs, useCentre, useCentreApi, useFormat, useLoad, useSubmit, useT } from '../kit.tsx';
 
 // C1 seats and invites, C7 budgets: who is in the centre, how many seats are used,
 // invites by code or link, and monthly credit budgets.

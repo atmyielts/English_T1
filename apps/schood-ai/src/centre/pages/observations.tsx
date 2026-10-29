@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Check, Eye, Plus, Share2, Sparkles, Trash2 } from 'lucide-react';
-import { ApiErrorState, Badge, Button, Card, CreditCost, Dialog, EmptyState, Field, PageHeader, TextArea, TextInput, useT } from '../../core/index.ts';
-import { CentreGate, Loaded, Section, Select, Tabs, newKey, useCentre, useCentreApi, useFormat, useLoad, useSubmit } from '../kit.tsx';
+import { Badge, Button, Card, CreditCost, Dialog, EmptyState, Field, PageHeader, TextArea, TextInput } from '../../core/index.ts';
+import { ApiErrorState, CentreGate, Loaded, newKey, Section, Select, Tabs, useCentre, useCentreApi, useFormat, useLoad, useSubmit, useT } from '../kit.tsx';
 
 // C16 lesson observation coach: an observer's notes or a lesson plan become
 // feedback against the centre's own standards, shared with the teacher after the

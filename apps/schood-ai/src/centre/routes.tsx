@@ -3,7 +3,7 @@ import {
   BarChart3, BookMarked, ClipboardCheck, Eye, GraduationCap, HandCoins, KeyRound, Layers, LibraryBig, LayoutDashboard, Megaphone, MessagesSquare,
   Newspaper, Palette, School, Settings2, Sparkles, Users, UsersRound,
 } from 'lucide-react';
-import { placementKind, type PlacementTest } from '../../../../packages/ai-core/src/materials/centre-placement.ts';
+import { PLACEMENT_KIND, placementMarkdown, type PlacementTest } from '../../../../packages/ai-core/src/materials/centre-placement-markdown.ts';
 import { registerMaterialKind, type AreaNavItem, type AreaRoute, type HomeCard } from '../core/index.ts';
 import { CentreHomeCard, SetupHomeCard, StudentHomeCard, TeacherHomeCard } from './cards.tsx';
 
@@ -16,7 +16,7 @@ const page = <K extends string>(load: () => Promise<Record<K, ComponentType<neve
 const setup = () => import('./pages/setup.tsx'), teach = () => import('./pages/teach.tsx'), admin = () => import('./pages/admin.tsx');
 const placement = () => import('./pages/placement.tsx'), curriculum = () => import('./pages/curriculum.tsx'), business = () => import('./pages/business.tsx');
 
-registerMaterialKind<PlacementTest>({ kind: placementKind.kind, label: 'centre.kind.placement', icon: ClipboardCheck, toMarkdown: placementKind.toMarkdown, editing: 'readonly', editorPath: (id) => `/centre/placement?test=${id}` });
+registerMaterialKind<PlacementTest>({ kind: PLACEMENT_KIND, label: 'centre.kind.placement', icon: ClipboardCheck, toMarkdown: placementMarkdown, editing: 'readonly', editorPath: (id) => `/centre/placement?test=${id}` });
 
 const CENTRE = ['centre'] as const, TEACHER = ['teacher'] as const, LEARNER = ['learner'] as const;
 export const routes: AreaRoute[] = [

@@ -1,12 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { KeyRound, Trash2 } from 'lucide-react';
-import { api, ApiErrorState, Badge, Button, Field, PageHeader, PlanGate, TextInput, useT, useWorkspace } from '../../core/index.ts';
-import { CentreGate, Loaded, Section, Select, Stat, Table, Tabs, Toggle, useCentreApi, useFormat, useLoad, useSubmit } from '../kit.tsx';
+import { api, Badge, Button, Field, PageHeader, PlanGate, TextInput, useWorkspace } from '../../core/index.ts';
+import { ApiErrorState, CentreGate, Loaded, Section, Select, Stat, Table, Tabs, Toggle, useCentreApi, useFormat, useLoad, useSubmit, useT } from '../kit.tsx';
 
 // C7 admin: feature switches, data retention, the usage and cost report and the
 // audit log; and C15 the centre's own model keys with the platform fee.
 
-interface Admin { retention_days: number; switches: Record<string, boolean>; areas: { area: string; features: string[]; keys: string[] }[]; add_ons: { extra_teacher_seats: number; extra_students: number } }
+interface Admin { retention_days: number; parent_features: boolean; switches: Record<string, boolean>; areas: { area: string; features: string[]; keys: string[] }[]; add_ons: { extra_teacher_seats: number; extra_students: number } }
 interface Usage {
   days: number; credits: { total: number }; grant: number;
   features: { key: string; credits: number; charges: number; feature: string | null }[];
@@ -41,12 +41,13 @@ function Switches() {
     return <div className="grid gap-6 lg:grid-cols-2">
       <Section title={t('centre.admin.switches')} lead={t('centre.admin.switchesLead')}>
         {submit.error !== null && <div className="mb-3"><ApiErrorState error={submit.error}/></div>}
+        <div className="mb-3 rounded-2xl border border-navy-line/30 bg-cream-soft px-3"><Toggle label={t('centre.admin.parents')} description={t('centre.admin.parentsHint')} checked={data.parent_features} disabled={submit.busy} onChange={(on) => void submit.run(async () => { await call('admin', { method: 'PATCH', body: { parent_features: on } }); await state.reload(); await workspace.refresh(); })}/></div>
         <div className="divide-y divide-navy-line/10">{data.areas.map((area) => <Toggle key={area.area} label={t(`centre.area.${area.area}`)} description={area.features.join(' · ')} checked={data.switches[area.area] !== false} disabled={submit.busy} onChange={(on) => void toggle(area.area, on)}/>)}</div>
       </Section>
       <div className="grid content-start gap-6">
         <Section title={t('centre.admin.retention')} lead={t('centre.admin.retentionLead')}>
           <form className="flex flex-wrap items-end gap-3" onSubmit={(event: FormEvent) => { event.preventDefault(); void retention.run(async () => { await call('admin', { method: 'PATCH', body: { retention_days: Number(days ?? data.retention_days) } }); setDays(null); await state.reload(); }); }}>
-            <Field label={t('centre.admin.retentionDays')}>{(id) => <TextInput id={id} type="number" min={30} max={730} value={days ?? String(data.retention_days)} onChange={(event) => setDays(event.target.value)} className="w-32"/>}</Field>
+            <Field label={t('centre.admin.retentionDays')}>{(id) => <TextInput id={id} type="number" min={30} max={180} value={days ?? String(data.retention_days)} onChange={(event) => setDays(event.target.value)} className="w-32"/>}</Field>
             <Button type="submit" disabled={retention.busy}>{t('centre.common.save')}</Button>
             <Button variant="secondary" disabled={purge.busy} onClick={() => void purge.run(async () => setPurged(await call('retention-run', { method: 'POST', body: {} })))}>{t('centre.admin.runNow')}</Button>
           </form>

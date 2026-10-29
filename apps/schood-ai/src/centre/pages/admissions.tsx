@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Bot, Link2Off, Plus, Send, Trash2, UserRound } from 'lucide-react';
-import { ApiErrorState, Badge, Button, Card, EmptyState, Field, LoadingState, PageHeader, TextArea, TextInput, useT } from '../../core/index.ts';
-import { ApprovalList, CentreGate, CopyField, Loaded, Section, Select, Table, Tabs, Toggle, useCentreApi, useFormat, useLoad, useSubmit } from '../kit.tsx';
+import { Badge, Button, Card, EmptyState, Field, LoadingState, PageHeader, TextArea, TextInput } from '../../core/index.ts';
+import { ApiErrorState, ApprovalList, CentreGate, CopyField, Loaded, Section, Select, Table, Tabs, Toggle, useCentreApi, useFormat, useLoad, useSubmit, useT } from '../kit.tsx';
 
 // C8 AI Admissions Agent: the centre's own Telegram bot and website chat answer
 // from the FAQ and price list, run the placement test, book trial lessons within

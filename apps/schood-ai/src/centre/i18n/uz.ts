@@ -937,7 +937,7 @@ export const uz: Record<CentreKey, string> = {
   'error.attempt_closed': 'Bu test allaqachon topshirilgan.',
   'error.attempt_open': 'Test hali topshirilmagan.',
   'error.nothing_to_mark': 'Baholanadigan yozish yoki gapirish javobi yo‘q.',
-  'error.not_ready': 'Bu hali ko‘rib chiqishga tayyor emas.',
+ 
   'error.not_approved': 'Avval har bir bo‘lim tasdiqlanishi kerak.',
   'error.curriculum_locked': 'Bu kurs allaqachon tasdiqlangan.',
   'error.secrets_unconfigured': 'Kalitlarni saqlash hali sozlanmagan. Schood yordam xizmatidan so‘rang.',
@@ -957,4 +957,18 @@ export const uz: Record<CentreKey, string> = {
   'error.ai_disabled': 'AI o‘chirilgan',
   'error.ai_unavailable': 'AI modeli sozlanmagan',
   'error.plan_required': 'tarifga bu kirmaydi',
+  // Homework rules and the parent switch
+  'centre.admin.parents': "Ota-onalar xulosasi va savollari (P1, P2)",
+  'centre.admin.parentsHint': "Siz yoqmaguningizcha o‘chiq: bog‘langan ota-onalar har hafta xulosa oladi va faqat o‘z farzandi haqida so‘rashi mumkin.",
+  'centre.area.parent.message': "Ota-onalarga xabar qoralamalari",
+  'centre.groups.homeworkRule': "Uy vazifasi yordamchisi",
+  'centre.groups.homeworkRuleHint': "Uy vazifasi yordamchisi bu guruh vazifalarida qanday yordam beradi. O‘qituvchi quyida alohida vazifa uchun o‘zgartirishi mumkin.",
+  'centre.groups.ruleFollow': "Yuqoridagi ishora qoidasiga amal qilish",
+  'centre.groups.rule.hints_only': "Faqat ishoralar",
+  'centre.groups.rule.explain': "Tushuntirishi mumkin",
+  'centre.groups.rule.off': "Uy vazifasi uchun o‘chiq",
+  'centre.groups.perHomework': "Har bir uy vazifasi uchun qoida",
+  'centre.groups.noHomework': "Academy’da bu guruh uchun uy vazifasi yo‘q.",
+  'centre.groups.ruleFor': "{title} uchun qoida",
+  'centre.groups.ruleDefault': "Guruh qoidasi ({rule})",
 };

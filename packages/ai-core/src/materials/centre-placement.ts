@@ -1,6 +1,10 @@
 import type { MaterialKindDefinition } from '../materials.ts';
 import * as s from '../schema.ts';
 import type { Schema } from '../schema.ts';
+import { CEFR_LEVELS, PLACEMENT_KIND as PLACEMENT_KIND_ID, placementMarkdown, type CefrLevel, type PlacementItem, type PlacementTest } from './centre-placement-markdown.ts';
+
+export { CEFR_LEVELS, LEVEL_LABEL, placementMarkdown, PLACEMENT_KIND } from './centre-placement-markdown.ts';
+export type { CefrLevel, PlacementItem, PlacementSection, PlacementTest } from './centre-placement-markdown.ts';
 
 // The centre placement test (C5), a library material of kind `centre.placement_test`:
 // objective items (multiple choice and gap fill, each tagged with a CEFR level and
@@ -9,9 +13,6 @@ import type { Schema } from '../schema.ts';
 // Shared by the app (builder, test screen, print) and the function (marking).
 // The objective item format is the centre's own until the teacher area's quiz
 // schema in packages/ai-core/src/materials/ is available to map onto.
-
-export const CEFR_LEVELS = ['pre_a1', 'a1', 'a2', 'b1', 'b2', 'c1', 'c2'] as const;
-export type CefrLevel = (typeof CEFR_LEVELS)[number];
 
 const level = s.enumOf(CEFR_LEVELS);
 const item = s.object({
@@ -36,10 +37,6 @@ const section = s.object({
   min_words: s.optional(s.number({ min: 0, max: 600, integer: true })),
   criteria: s.optional(s.array(s.string({ min: 2, max: 60 }), { max: 6 })),
 });
-export interface PlacementItem { id: string; type: 'mcq' | 'gap'; level: CefrLevel; prompt: string; options?: string[]; answer?: number; accept?: string[] }
-export interface PlacementSection { id: string; title: string; kind: 'objective' | 'writing' | 'speaking'; instructions?: string; items?: PlacementItem[]; prompt?: string; min_words?: number; criteria?: string[] }
-export interface PlacementTest { title: string; from_level: CefrLevel; to_level: CefrLevel; minutes?: number; instructions?: string; sections: PlacementSection[]; bands: { level: CefrLevel; min_percent: number }[] }
-
 const testShape = s.object({
   title: s.string({ min: 3, max: 160 }),
   from_level: level,
@@ -131,27 +128,9 @@ export function publicTest(test: PlacementTest) {
     })),
   };
 }
-export const LEVEL_LABEL: Record<CefrLevel, string> = { pre_a1: 'Pre-A1', a1: 'A1', a2: 'A2', b1: 'B1', b2: 'B2', c1: 'C1', c2: 'C2' };
 
 export const placementKind: MaterialKindDefinition<PlacementTest> = {
-  kind: 'centre.placement_test',
+  kind: PLACEMENT_KIND_ID,
   schema: placementTestSchema,
-  toMarkdown(test) {
-    const lines = [`# ${test.title}`, '', `Levels ${LEVEL_LABEL[test.from_level]}–${LEVEL_LABEL[test.to_level]}${test.minutes ? ` · ${test.minutes} minutes` : ''}`, ''];
-    if (test.instructions) lines.push(test.instructions, '');
-    const key: string[] = [];
-    for (const sec of test.sections) {
-      lines.push(`## ${sec.title}`, '');
-      if (sec.instructions) lines.push(sec.instructions, '');
-      if (sec.prompt) lines.push(sec.prompt, ...(sec.min_words ? ['', `At least ${sec.min_words} words.`] : []), '');
-      (sec.items ?? []).forEach((entry, index) => {
-        lines.push(`${index + 1}. ${entry.prompt}`);
-        if (entry.type === 'mcq') (entry.options ?? []).forEach((option, at) => lines.push(`   ${String.fromCharCode(65 + at)}. ${option}`));
-        key.push(`${sec.title} ${index + 1}: ${entry.type === 'mcq' ? String.fromCharCode(65 + (entry.answer ?? 0)) : (entry.accept ?? []).join(' / ')} (${LEVEL_LABEL[entry.level]})`);
-      });
-      lines.push('');
-    }
-    lines.push('## Answer key (staff only)', '', ...key.map((entry) => `- ${entry}`), '', '## Levels', '', ...test.bands.map((band) => `- ${LEVEL_LABEL[band.level]}: ${band.min_percent}% or more`));
-    return lines.join('\n');
-  },
+  toMarkdown: placementMarkdown,
 };

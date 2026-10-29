@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { FileText, Search, Trash2, Upload } from 'lucide-react';
-import { ApiErrorState, Badge, Button, Card, CreditCost, EmptyState, Field, PageHeader, TextArea, TextInput, Thinking, useT } from '../../core/index.ts';
-import { CentreGate, Loaded, Section, Table, newKey, useCentre, useCentreApi, useFormat, useLoad, useSubmit } from '../kit.tsx';
+import { Badge, Button, Card, CreditCost, EmptyState, Field, PageHeader, TextArea, TextInput, Thinking } from '../../core/index.ts';
+import { ApiErrorState, CentreGate, Loaded, newKey, Section, Table, useCentre, useCentreApi, useFormat, useLoad, useSubmit, useT } from '../kit.tsx';
 
 // C13 staff knowledge assistant: the office uploads policies and procedures (PDF,
 // text or Markdown; text is taken out page by page in the browser), staff ask

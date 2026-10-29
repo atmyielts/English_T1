@@ -1,6 +1,6 @@
 import { CheckCircle2, Circle, RefreshCw } from 'lucide-react';
-import { ApiErrorState, Badge, Button, Link, PageHeader, useT } from '../../core/index.ts';
-import { CentreGate, Loaded, Section, Stat, useCentreApi, useFormat, useLoad, useSubmit } from '../kit.tsx';
+import { Badge, Button, Link, PageHeader } from '../../core/index.ts';
+import { ApiErrorState, CentreGate, Loaded, Section, Stat, useCentreApi, useFormat, useLoad, useSubmit, useT } from '../kit.tsx';
 
 // The owner's dashboard: pool, seats, setup checklist, Academy numbers, approvals.
 

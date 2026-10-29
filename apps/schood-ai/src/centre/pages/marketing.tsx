@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { BadgeCheck, Copy, Save, Sparkles } from 'lucide-react';
-import { ApiErrorState, Badge, Button, Card, createPage, CreditCost, Field, Link, PageHeader, TextArea, TextInput, useT } from '../../core/index.ts';
-import { CentreGate, Loaded, Section, Select, Table, Tabs, Toggle, newKey, useCentre, useCentreApi, useFormat, useLoad, useSubmit } from '../kit.tsx';
+import { Badge, Button, Card, createPage, CreditCost, Field, Link, PageHeader, TextArea, TextInput } from '../../core/index.ts';
+import { ApiErrorState, CentreGate, Loaded, newKey, Section, Select, Table, Tabs, Toggle, useCentre, useCentreApi, useFormat, useLoad, useSubmit, useT } from '../kit.tsx';
 
 // C4 marketing studio: posts, ad copy, event announcements and results posts in
 // the centre's voice. Results come only from the register below, verified by the

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { BookOpenCheck, CheckCircle2, Pause, Play, RotateCcw, Send, Sparkles } from 'lucide-react';
 import { quoteCredits } from '../../../../../packages/ai-core/src/mod.ts';
-import { ApiErrorState, Badge, Button, Card, Field, Link, navigate, PageHeader, TextArea, TextInput, Thinking, useT } from '../../core/index.ts';
-import { ApprovalList, CEFR, CentreGate, LEVEL, Loaded, Section, Select, Table, newKey, useCentre, useCentreApi, useFormat, useLoad, useSubmit } from '../kit.tsx';
+import { Badge, Button, Card, Field, Link, navigate, PageHeader, TextArea, TextInput, Thinking } from '../../core/index.ts';
+import { ApiErrorState, ApprovalList, CEFR, CentreGate, LEVEL, Loaded, newKey, Section, Select, Table, useCentre, useCentreApi, useFormat, useLoad, useSubmit, useT } from '../kit.tsx';
 
 // C12 curriculum in a box: plan a multi-level course, generate it unit by unit
 // (each unit is one job; the screen runs the next one until all are done), the

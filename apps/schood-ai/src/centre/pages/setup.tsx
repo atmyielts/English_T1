@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Building2, CheckCircle2, Link2, Ticket } from 'lucide-react';
-import { api, ApiErrorState, BrandMark, Button, Card, EmptyState, Field, LoadingState, PageHeader, TextInput, navigate, useLocation, useT, useWorkspace } from '../../core/index.ts';
-import { useSubmit } from '../kit.tsx';
+import { api, BrandMark, Button, Card, EmptyState, Field, LoadingState, PageHeader, TextInput, navigate, useLocation, useWorkspace } from '../../core/index.ts';
+import { ApiErrorState, useSubmit, useT } from '../kit.tsx';
 
 // C1: create the centre workspace (from an Academy tenant the person owns or runs)
 // and join a centre with an invite code or link.

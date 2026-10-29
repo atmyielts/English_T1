@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { ClipboardCheck, Mail, Sparkles } from 'lucide-react';
-import { api, ApiErrorState, Badge, BrandMark, Button, Card, Chat, CreditCost, Dialog, EmptyState, Field, Link, LoadingState, PageHeader, PlanGate, TextArea, useT, useWorkspace } from '../../core/index.ts';
-import { ApprovalList, CentreGate, Loaded, Section, Select, newKey, useCentreApi, useLoad, useSubmit } from '../kit.tsx';
+import { api, Badge, BrandMark, Button, Card, Chat, CreditCost, Dialog, EmptyState, Field, Link, LoadingState, PageHeader, PlanGate, TextArea, useWorkspace } from '../../core/index.ts';
+import { ApiErrorState, ApprovalList, CentreGate, Loaded, newKey, Section, Select, useCentreApi, useLoad, useSubmit, useT } from '../kit.tsx';
 
 // T7 the teacher's classes and their read-only assistant, T8 parent message drafts
 // (sent after the office approves), and C2 the branded Student Assistant.
