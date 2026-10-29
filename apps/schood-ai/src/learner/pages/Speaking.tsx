@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
-import { Badge, Button, CreditCost, Field, LoadingState, TextInput, Thinking, useI18n, useLocation, useT } from '../../core/index.ts';
-import { ConsentGate, Countdown, Failure, ListenButton, Quote, Section, SpeechInput, ToolHeader, speakAloud, useLearnerApi, useLoad, useRun, type Spoken } from '../kit.tsx';
+import { Badge, Button, Field, LoadingState, TextInput, Thinking, useI18n, useLocation, useT } from '../../core/index.ts';
+import { ConsentGate, Countdown, Failure, ListenButton, Quote, Section, SpeechInput, ToolHeader, speakAloud, useLearnerApi, useLoad, useRun, type Spoken, Cost } from '../kit.tsx';
 
 // L4 speaking partner (conversation, role-plays, IELTS and Multilevel mocks) and
 // L12 interview simulator, on one session engine. Speech: the provider's when set
@@ -47,8 +47,8 @@ function ReportView({ report }: { report: Report }) {
       {report.kind === 'review' && <><p className="m-0 font-display text-3xl font-bold">{String(report.score)}<span className="text-base font-normal text-gray-700"> / 100</span></p>{typeof report.summary === 'string' && <p className="m-0 text-sm">{report.summary}</p>}</>}
       {fluency && <p className="m-0 text-sm text-gray-700">{fluency.words_per_minute ? t('learner.speak.wpm', { wpm: fluency.words_per_minute }) : ''} {t('learner.speak.fillers', { count: fluency.fillers })}</p>}
     </Section>
-    {fixes.length > 0 && <Section title={t('learner.speak.better')}><ul className="m-0 grid gap-2 pl-5 text-sm">{fixes.map((fix, index) => <li key={index}><Quote>{fix.said}</Quote> → <strong>{fix.better}</strong>{fix.why ? <span className="text-gray-600"> — {fix.why}</span> : null}</li>)}</ul></Section>}
-    {priorities.length > 0 && <Section title={t('learner.speak.priorities')}><ol className="m-0 pl-5 text-sm">{priorities.map((entry, index) => <li key={index}>{entry.text}</li>)}</ol></Section>}
+    {fixes.length > 0 && <Section title={t('learner.speak.better')}><ul className="m-0 grid gap-2 list-disc pl-5 text-sm">{fixes.map((fix, index) => <li key={index}><Quote>{fix.said}</Quote> → <strong>{fix.better}</strong>{fix.why ? <span className="text-gray-600"> — {fix.why}</span> : null}</li>)}</ul></Section>}
+    {priorities.length > 0 && <Section title={t('learner.speak.priorities')}><ol className="m-0 list-decimal pl-5 text-sm">{priorities.map((entry, index) => <li key={index}>{entry.text}</li>)}</ol></Section>}
   </div>;
 }
 
@@ -69,14 +69,14 @@ function Conversation({ session, server, voice, onChange }: { session: Session; 
       </li>)}</ol>
       {turn.busy && <Thinking label={t('learner.speak.listening')}/>}
       {session.status === 'active' && <><SpeechInput server={server} onDone={(spoken) => void send(spoken)} disabled={turn.busy || finish.busy}/>
-        <div className="flex flex-wrap items-center gap-3"><CreditCost creditKey={session.mode === 'interview' ? 'interview.turn' : 'speaking.turn'}/>
-          <Button variant="secondary" disabled={learnerTurns < 2 || finish.busy} onClick={() => void finish.run(() => call<{ session: Session }>('speaking-finish', { method: 'POST', body: { id: session.id } }).then((out) => { onChange(out.session); return out; }))}>{t('learner.speak.finish')}</Button><CreditCost creditKey={reportKey}/></div></>}
+        <div className="flex flex-wrap items-center gap-3"><Cost creditKey={session.mode === 'interview' ? 'interview.turn' : 'speaking.turn'}/>
+          <Button variant="secondary" disabled={learnerTurns < 2 || finish.busy} onClick={() => void finish.run(() => call<{ session: Session }>('speaking-finish', { method: 'POST', body: { id: session.id } }).then((out) => { onChange(out.session); return out; }))}>{t('learner.speak.finish')}</Button><Cost creditKey={reportKey}/></div></>}
       <Failure error={turn.error ?? finish.error}/>
     </Section>
     <aside className="grid content-start gap-3">
       {session.situation && <Section title={t('learner.speak.situation')}><p className="m-0 text-sm">{pick(session.situation, locale)}</p><p className="m-0 text-xs text-gray-700">{pick(session.role_card, locale)}</p></Section>}
       {session.goals.length > 0 && <Section title={t('learner.speak.goals')}><ul className="m-0 grid list-none gap-1 p-0 text-sm">{session.goals.map((goal) => <li key={goal.id}>{goal.met ? '✓' : '○'} {pick(goal.text, locale)}</li>)}</ul></Section>}
-      {session.tips.length > 0 && <Section title={t('learner.speak.tips')}><ul className="m-0 pl-5 text-sm">{session.tips.slice(-4).map((tip, index) => <li key={index}><Quote>{tip.said}</Quote> → {tip.better}</li>)}</ul></Section>}
+      {session.tips.length > 0 && <Section title={t('learner.speak.tips')}><ul className="m-0 list-disc pl-5 text-sm">{session.tips.slice(-4).map((tip, index) => <li key={index}><Quote>{tip.said}</Quote> → {tip.better}</li>)}</ul></Section>}
       {session.practice_note && <p className="m-0 text-xs text-gray-600">{pick(session.practice_note, locale)}</p>}
     </aside>
   </div>;
@@ -94,13 +94,13 @@ function Mock({ session, server, onChange }: { session: Session; server: boolean
   const begin = () => { if (!item) return; speakAloud(item.question); setPhase(item.prep ? 'prep' : 'talk'); };
   if (!item) return <Section title={t('learner.speak.allDone')}>
     <p className="m-0 text-sm">{t('learner.speak.allDoneLead')}</p>
-    <div className="flex flex-wrap items-center gap-3"><Button variant="spark" disabled={finish.busy} onClick={() => void finish.run(() => call<{ session: Session }>('speaking-finish', { method: 'POST', body: { id: session.id } }).then((out) => { onChange(out.session); return out; }))}>{finish.busy ? t('chat.thinking') : t('learner.speak.getReport')}</Button><CreditCost creditKey="speaking.mock_report"/></div>
+    <div className="flex flex-wrap items-center gap-3"><Button variant="spark" disabled={finish.busy} onClick={() => void finish.run(() => call<{ session: Session }>('speaking-finish', { method: 'POST', body: { id: session.id } }).then((out) => { onChange(out.session); return out; }))}>{finish.busy ? t('chat.thinking') : t('learner.speak.getReport')}</Button><Cost creditKey="speaking.mock_report"/></div>
     <Failure error={finish.error}/>
   </Section>;
   return <Section title={t('learner.speak.part', { part: item.part, n: session.step + 1, total: session.plan.length })}>
     {item.scene && <p className="m-0 rounded-2xl bg-cream-soft p-3 text-sm">{item.scene}</p>}
     <p className="m-0 font-display text-lg font-semibold">{item.question}</p>
-    {item.points && <ul className="m-0 pl-5 text-sm">{item.points.map((point) => <li key={point}>{point}</li>)}</ul>}
+    {item.points && <ul className="m-0 list-disc pl-5 text-sm">{item.points.map((point) => <li key={point}>{point}</li>)}</ul>}
     <div className="flex flex-wrap items-center gap-3">
       {phase === 'ready' && <Button onClick={begin}>{item.prep ? t('learner.speak.startPrep', { seconds: item.prep }) : t('learner.speak.startTalk')}</Button>}
       {phase === 'prep' && <><Countdown seconds={item.prep} running onEnd={() => setPhase('talk')} label={t('learner.speak.prep')}/><span className="text-sm">{t('learner.speak.prep')}</span><Button variant="secondary" size="sm" onClick={() => setPhase('talk')}>{t('learner.speak.skipPrep')}</Button></>}

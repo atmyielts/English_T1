@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { AskSchoodAI } from '../../../../packages/schood-ai-link/src/index.tsx';
 import { useI18n, useT } from '../i18n';
 import { useL1Library } from '../lib/l1';
 import type { SkillKey } from '../lib/skills';
@@ -120,6 +121,7 @@ export const ResultSummary = ({
       {shareContent ? <div className="en-result-share">{shareContent}</div> : null}
       {upNext ? <UpNextCard skill={upNext.skill} slug={upNext.slug} /> : null}
       {actions ? <div className="en-actions">{actions}</div> : null}
+      <p className="en-ask-ai"><AskSchoodAI source="english"/></p>
     </div>
   );
 };

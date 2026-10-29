@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
-import { CheckCircle2, Keyboard, Mic, Square, Volume2, XCircle } from 'lucide-react';
-import { api, ApiError, ApiErrorState, Badge, Button, Card, CreditCost, ErrorState, Eyebrow, LoadingState, PageHeader, SparkMark, TextArea, useT, useWorkspace, type ApiOptions } from '../core/index.ts';
+import { CheckCircle2, Coins, Keyboard, Mic, Square, Volume2, XCircle } from 'lucide-react';
+import { quoteCredits } from '../../../../packages/ai-core/src/mod.ts';
+import { api, ApiError, ApiErrorState, Badge, Button, Card, ErrorState, Eyebrow, LoadingState, PageHeader, SparkMark, TextArea, useT, useWorkspace, type ApiOptions } from '../core/index.ts';
 
 // Shared pieces of the learner screens: calls in this workspace, the under-18
 // consent step, speech input (the provider's speech-to-text when the owner set it
@@ -46,9 +47,17 @@ export function useLoad<T>(load: () => Promise<T>, key = '') {
   return { ...state, reload: () => setTick((value) => value + 1), setData: (data: T) => setState({ data, error: null, loading: false }) };
 }
 
-export function ToolHeader({ title, lead, creditKey, addOns }: { title: ReactNode; lead?: ReactNode; creditKey?: string; addOns?: string[] }) {
+/** What one use costs, from the ai-core price table: the same number the function charges. */
+export function Cost({ creditKey, addOns = [] }: { creditKey: string; addOns?: string[] }) {
   const t = useT();
-  return <PageHeader eyebrow={<Eyebrow icon={<SparkMark size={18}/>}>{t('learner.eyebrow')}</Eyebrow>} title={title} lead={lead} actions={creditKey ? <CreditCost creditKey={creditKey} addOns={addOns}/> : undefined}/>;
+  let credits = 0;
+  try { credits = quoteCredits(creditKey, addOns).credits; } catch { return null; }
+  return <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700"><Coins size={14} aria-hidden="true"/>{t('learner.cost', { count: credits })}</span>;
+}
+
+export function ToolHeader({ title, lead, creditKey, addOns, parent = false }: { title: ReactNode; lead?: ReactNode; creditKey?: string; addOns?: string[]; parent?: boolean }) {
+  const t = useT();
+  return <PageHeader eyebrow={<Eyebrow icon={<SparkMark size={18}/>}>{t(parent ? 'learner.eyebrowParent' : 'learner.eyebrow')}</Eyebrow>} title={title} lead={lead} actions={creditKey ? <Cost creditKey={creditKey} addOns={addOns}/> : undefined}/>;
 }
 
 /** Errors from the function as proper states: the learner area's own codes first, then core's. */
@@ -96,7 +105,7 @@ export function ConsentStep({ current, onDone }: { current: ConsentView | null; 
     {band === 'under_13' && <p className="mt-4 rounded-2xl bg-cream-soft p-3 text-sm leading-6 text-gray-800">{t('learner.consent.childNote')}</p>}
     <div className="mt-4 rounded-2xl border border-navy-line/30 bg-white/70 p-3 text-sm leading-6 text-gray-700">
       <p className="m-0 font-semibold text-gray-900">{t('learner.consent.termsTitle')}</p>
-      <ul className="mb-0 mt-1 pl-5">{['learner.consent.term1', 'learner.consent.term2', 'learner.consent.term3', 'learner.consent.term4'].map((key) => <li key={key}>{t(key)}</li>)}</ul>
+      <ul className="mb-0 mt-1 list-disc pl-5">{['learner.consent.term1', 'learner.consent.term2', 'learner.consent.term3', 'learner.consent.term4'].map((key) => <li key={key}>{t(key)}</li>)}</ul>
     </div>
     <label className="mt-4 flex items-start gap-3 text-sm leading-6"><input type="checkbox" className="mt-1" checked={accept} onChange={(event) => setAccept(event.target.checked)}/>{t('learner.consent.accept')}</label>
     {blocked && <p role="alert" className="mt-3 text-sm font-semibold text-amber-800">{t('learner.consent.needParent')}</p>}

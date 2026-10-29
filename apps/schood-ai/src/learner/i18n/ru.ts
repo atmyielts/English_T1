@@ -1,7 +1,15 @@
 import type { LearnerKey } from './en.ts';
 
 export const ru: Record<LearnerKey, string> = {
+  // Core's chat names its sources `context.<kind>`; these kinds are the learner area's own.
+  'context.learner_prediction': 'ваши прогнозируемые баллы',
+  'context.learner_activity': 'ваши действия в Schood AI',
+  'context.learner_snapshot': 'сохранённые результаты Schood',
+  'context.centre_homework': 'ваши открытые домашние задания',
+  'context.centre_feedback': 'отзывы вашего учителя',
   'learner.eyebrow': 'Schood AI для учеников',
+  'learner.eyebrowParent': 'Schood AI для семей',
+  'learner.cost': '{count|one:# кредит|few:# кредита|many:# кредитов|other:# кредита} за использование',
   'learner.nav.learn': 'Все инструменты',
   'learner.exam': 'Экзамен',
   'learner.level': 'Уровень',

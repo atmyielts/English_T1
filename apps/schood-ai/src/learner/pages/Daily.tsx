@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Copy, Send, Swords } from 'lucide-react';
-import { Badge, Button, ButtonLink, CreditCost, EmptyState, Field, LoadingState, TextArea, TextInput, Thinking, signInUrl, useI18n, useLocation, useSession, useT } from '../../core/index.ts';
-import { ConsentGate, Failure, Mcq, Section, ToolHeader, useLearnerApi, useLoad, useRun, type McqResult } from '../kit.tsx';
+import { Badge, Button, ButtonLink, EmptyState, Field, LoadingState, TextArea, TextInput, Thinking, signInUrl, useI18n, useLocation, useSession, useT } from '../../core/index.ts';
+import { ConsentGate, Failure, Mcq, Section, ToolHeader, useLearnerApi, useLoad, useRun, type McqResult, Cost } from '../kit.tsx';
 
 // L7 homework helper, L14 daily brief settings and today's brief, L17 duels and the duel landing page.
 
@@ -35,9 +35,9 @@ export function HomeworkPage() {
           <p className="m-0 rounded-2xl bg-cream-soft p-3 text-sm">{t(`learner.homework.ruleLead.${open.rule}`)}</p>
           <Field label={t('learner.homework.question')}>{(id) => <TextArea id={id} rows={3} value={question} maxLength={2000} onChange={(event) => setQuestion(event.target.value)}/>}</Field>
           <Field label={t('learner.homework.attempt')}>{(id) => <TextArea id={id} rows={3} value={attempt} maxLength={2000} onChange={(event) => setAttempt(event.target.value)}/>}</Field>
-          <div className="flex flex-wrap items-center gap-3"><Button variant="spark" disabled={!question.trim() || hint.busy} onClick={() => void ask()}>{t(`learner.homework.step${step}`)}</Button><CreditCost creditKey="homework.hint"/></div>
+          <div className="flex flex-wrap items-center gap-3"><Button variant="spark" disabled={!question.trim() || hint.busy} onClick={() => void ask()}>{t(`learner.homework.step${step}`)}</Button><Cost creditKey="homework.hint"/></div>
           {hint.busy && <Thinking label={t('chat.thinking')}/>}
-          <ol className="m-0 grid gap-2 pl-5 text-sm">{history.map((entry, index) => <li key={index}><span className="whitespace-pre-wrap">{entry.text}</span>{entry.check && <span className="mt-1 block text-gray-700">{t('learner.homework.check')}: {entry.check}</span>}</li>)}</ol>
+          <ol className="m-0 grid gap-2 list-decimal pl-5 text-sm">{history.map((entry, index) => <li key={index}><span className="whitespace-pre-wrap">{entry.text}</span>{entry.check && <span className="mt-1 block text-gray-700">{t('learner.homework.check')}: {entry.check}</span>}</li>)}</ol>
           <Failure error={hint.error}/>
         </>}
       </Section> : <p className="m-0 rounded-3xl border border-dashed border-navy-line/40 bg-white/60 p-6 text-sm">{t('learner.homework.pick')}</p>}
@@ -87,7 +87,7 @@ export function BriefPage() {
           {today.answered === today.questions.length && <p role="status" className="m-0 font-semibold">{t('learner.brief.done', { score: today.score, total: today.questions.length })}</p>}
         </> : <Section title={t('learner.brief.today')}>
           <p className="m-0 text-sm">{t('learner.brief.none')}</p>
-          <div className="flex flex-wrap items-center gap-3"><Button variant="spark" disabled={now.busy} onClick={() => void now.run(() => call('brief', { method: 'POST' }))}>{now.busy ? t('chat.thinking') : t('learner.brief.now')}</Button><CreditCost creditKey="daily.brief"/></div>
+          <div className="flex flex-wrap items-center gap-3"><Button variant="spark" disabled={now.busy} onClick={() => void now.run(() => call('brief', { method: 'POST' }))}>{now.busy ? t('chat.thinking') : t('learner.brief.now')}</Button><Cost creditKey="daily.brief"/></div>
           <Failure error={now.error}/>
         </Section>}
       </div>

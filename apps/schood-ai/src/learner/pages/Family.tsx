@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Copy, UserPlus } from 'lucide-react';
-import { Badge, Button, CreditCost, Field, LoadingState, PlanGate, TextArea, TextInput, Thinking, useI18n, useLocation, useT } from '../../core/index.ts';
-import { Failure, Section, ToolHeader, useLearnerApi, useLoad, useRun } from '../kit.tsx';
+import { Badge, Button, Field, LoadingState, PlanGate, TextArea, TextInput, Thinking, useI18n, useLocation, useT } from '../../core/index.ts';
+import { Failure, Section, ToolHeader, useLearnerApi, useLoad, useRun, Cost } from '../kit.tsx';
 
 // Plus Family: link up to 3 children, P1 weekly brief (web and Telegram) and P2
 // questions about my child; and the child's side: accept an invite, see who sees
@@ -34,9 +34,9 @@ function ChildPanel({ child, onChange }: { child: Child; onChange(): void }) {
   return <li className="grid gap-3 rounded-3xl border border-navy-line bg-white/85 p-4">
     <h3 className="m-0 font-display text-lg font-bold">{name}</h3>
     {latest ? <BriefCard brief={latest}/> : <p className="m-0 text-sm text-gray-700">{t('learner.family.noBrief')}</p>}
-    <div className="flex flex-wrap items-center gap-3"><Button variant="secondary" size="sm" disabled={brief.busy} onClick={() => void brief.run(() => call('parent-brief', { method: 'POST', body: { child_id: child.child_id } }))}>{brief.busy ? t('chat.thinking') : t('learner.family.briefNow')}</Button><CreditCost creditKey="parent.brief"/></div>
+    <div className="flex flex-wrap items-center gap-3"><Button variant="secondary" size="sm" disabled={brief.busy} onClick={() => void brief.run(() => call('parent-brief', { method: 'POST', body: { child_id: child.child_id } }))}>{brief.busy ? t('chat.thinking') : t('learner.family.briefNow')}</Button><Cost creditKey="parent.brief"/></div>
     <Field label={t('learner.family.ask', { name })} hint={t('learner.family.askHint')}>{(id) => <TextArea id={id} rows={2} value={question} maxLength={1000} onChange={(event) => setQuestion(event.target.value)}/>}</Field>
-    <div className="flex flex-wrap items-center gap-3"><Button variant="spark" disabled={!question.trim() || ask.busy} onClick={() => void ask.run(() => call('parent-ask', { method: 'POST', idempotencyKey: crypto.randomUUID(), body: { child_id: child.child_id, question } }))}>{t('learner.family.askGo')}</Button><CreditCost creditKey="parent.ask"/></div>
+    <div className="flex flex-wrap items-center gap-3"><Button variant="spark" disabled={!question.trim() || ask.busy} onClick={() => void ask.run(() => call('parent-ask', { method: 'POST', idempotencyKey: crypto.randomUUID(), body: { child_id: child.child_id, question } }))}>{t('learner.family.askGo')}</Button><Cost creditKey="parent.ask"/></div>
     {ask.busy && <Thinking label={t('chat.thinking')}/>}
     {ask.data && <p className="m-0 whitespace-pre-wrap rounded-2xl bg-cream-soft p-3 text-sm">{ask.data.answer}</p>}
     <div><Button variant="ghost" size="sm" onClick={() => { if (confirm(t('learner.family.unlinkConfirm', { name }))) void unlink.run(() => call('family-link', { method: 'DELETE', body: { id: child.id } })).then(onChange); }}>{t('learner.family.unlink')}</Button></div>
@@ -53,7 +53,7 @@ export function FamilyPage() {
   const data = family.data;
   const days = [0, 1, 2, 3, 4, 5, 6];
   return <div>
-    <ToolHeader title={t('learner.tool.family')} lead={t('learner.family.lead')}/>
+    <ToolHeader parent title={t('learner.tool.family')} lead={t('learner.family.lead')}/>
     {family.loading && !data && <LoadingState/>}
     <Failure error={family.error} onRetry={family.reload}/>
     {data && <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
@@ -110,7 +110,7 @@ export function FamilyJoinPage() {
     {join.data ? <Section title={t('learner.join.done', { name: join.data.linked.parent ?? '' })}><p className="m-0 text-sm">{t('learner.join.doneLead')}</p></Section> : <Section title={t('learner.join.code')}>
       <Field label={t('learner.join.code')}>{(id) => <TextInput id={id} value={code} autoComplete="off" maxLength={11} onChange={(event) => setCode(event.target.value.toUpperCase())}/>}</Field>
       {/* [VERIFY: owner review] what the child agrees to share */}
-      <ul className="m-0 pl-5 text-sm text-gray-700"><li>{t('learner.join.shares')}</li><li>{t('learner.join.notShares')}</li><li>{t('learner.join.unlink')}</li></ul>
+      <ul className="m-0 list-disc pl-5 text-sm text-gray-700"><li>{t('learner.join.shares')}</li><li>{t('learner.join.notShares')}</li><li>{t('learner.join.unlink')}</li></ul>
       <label className="flex items-start gap-3 text-sm leading-6"><input type="checkbox" className="mt-1" checked={agree} onChange={(event) => setAgree(event.target.checked)}/>{t('learner.join.agree')}</label>
       <div><Button disabled={code.replace(/[\s-]/g, '').length !== 10 || !agree || join.busy} onClick={() => void join.run(() => call('family-accept', { method: 'POST', body: { code } }))}>{t('learner.join.go')}</Button></div>
       <Failure error={join.error}/>

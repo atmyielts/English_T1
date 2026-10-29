@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
-import { Badge, Button, CreditCost, Field, TextArea, TextInput, Thinking, useLocation, useT } from '../../core/index.ts';
-import { ConsentGate, Failure, Quote, Section, ToolHeader, options, useLearnerApi, useLoad, useRun } from '../kit.tsx';
+import { Badge, Button, Field, TextArea, TextInput, Thinking, useLocation, useT } from '../../core/index.ts';
+import { ConsentGate, Failure, Quote, Section, ToolHeader, options, useLearnerApi, useLoad, useRun, Cost } from '../kit.tsx';
 
 // L3 writing coach with model answers, L11 essay ladder and L8 application essays.
 
@@ -75,13 +75,13 @@ export function WritePage() {
           </Section>
           {fb.line_comments.length > 0 && <Section title={t('learner.write.lines')}>
             <Highlighted text={item.input.draft} quotes={fb.line_comments.map((entry) => entry.quote)}/>
-            <ul className="m-0 grid gap-2 pl-5 text-sm">{fb.line_comments.map((entry, index) => <li key={index}><Quote>{entry.quote}</Quote> — {entry.issue} <strong>→ {entry.suggestion}</strong></li>)}</ul>
+            <ul className="m-0 grid gap-2 list-disc pl-5 text-sm">{fb.line_comments.map((entry, index) => <li key={index}><Quote>{entry.quote}</Quote> — {entry.issue} <strong>→ {entry.suggestion}</strong></li>)}</ul>
           </Section>}
           {fb.rewrite && <Section title={t('learner.write.rewrite')}><p className="m-0 text-sm text-gray-700"><s>{fb.rewrite.original}</s></p><p className="m-0 text-sm font-semibold">{fb.rewrite.improved}</p><p className="m-0 text-xs text-gray-600">{fb.rewrite.why}</p></Section>}
-          {fb.next_steps.length > 0 && <Section title={t('learner.write.next')}><ul className="m-0 pl-5 text-sm">{fb.next_steps.map((step) => <li key={step}>{step}</li>)}</ul></Section>}
+          {fb.next_steps.length > 0 && <Section title={t('learner.write.next')}><ul className="m-0 list-disc pl-5 text-sm">{fb.next_steps.map((step) => <li key={step}>{step}</li>)}</ul></Section>}
           <Section title={t('learner.write.model')}>
-            {item.model_answer ? <><Badge tone="warn">{t('learner.write.modelLabel')}</Badge><p className="m-0 whitespace-pre-wrap text-sm leading-7">{item.model_answer.text}</p><ul className="m-0 pl-5 text-sm">{item.model_answer.notes.map((note) => <li key={note}>{note}</li>)}</ul></>
-              : <div className="flex flex-wrap items-center gap-3"><Button variant="secondary" disabled={model.busy} onClick={() => void model.run(() => call('writing-model', { method: 'POST', idempotencyKey: crypto.randomUUID(), body: { id: item.id } }))}>{t('learner.write.modelGo')}</Button><CreditCost creditKey="writing.model"/></div>}
+            {item.model_answer ? <><Badge tone="warn">{t('learner.write.modelLabel')}</Badge><p className="m-0 whitespace-pre-wrap text-sm leading-7">{item.model_answer.text}</p><ul className="m-0 list-disc pl-5 text-sm">{item.model_answer.notes.map((note) => <li key={note}>{note}</li>)}</ul></>
+              : <div className="flex flex-wrap items-center gap-3"><Button variant="secondary" disabled={model.busy} onClick={() => void model.run(() => call('writing-model', { method: 'POST', idempotencyKey: crypto.randomUUID(), body: { id: item.id } }))}>{t('learner.write.modelGo')}</Button><Cost creditKey="writing.model"/></div>}
             <Failure error={model.error}/>
           </Section>
         </> : !feedback.busy && <p className="m-0 rounded-3xl border border-dashed border-navy-line/40 bg-white/60 p-6 text-sm text-gray-700">{t('learner.write.empty')}</p>}
@@ -92,7 +92,7 @@ export function WritePage() {
           {ladder.data.ladder.rungs.map((rung) => <Section key={rung.level} title={t('learner.write.rung', { level: rung.level })}>
             <Badge tone="warn">{t('learner.write.modelLabel')}</Badge>
             <p className="m-0 whitespace-pre-wrap text-sm leading-7">{rung.text}</p>
-            {rung.changes.length > 0 && <ul className="m-0 pl-5 text-sm text-gray-700">{rung.changes.map((change, index) => <li key={index}><strong>{change.what}</strong> — {change.why}</li>)}</ul>}
+            {rung.changes.length > 0 && <ul className="m-0 list-disc pl-5 text-sm text-gray-700">{rung.changes.map((change, index) => <li key={index}><strong>{change.what}</strong> — {change.why}</li>)}</ul>}
           </Section>)}
         </> : !ladder.busy && <p className="m-0 rounded-3xl border border-dashed border-navy-line/40 bg-white/60 p-6 text-sm text-gray-700">{t('learner.write.ladderEmpty')}</p>}
       </div>}
@@ -129,9 +129,9 @@ export function EssaysPage() {
         {essay ? <>
           <Section title={t('learner.essays.overall')}><p className="m-0 text-sm leading-6">{essay.overall}</p>{essay.word_limit && <Badge tone={essay.words > essay.word_limit ? 'warn' : 'lime'}>{essay.words} / {essay.word_limit}</Badge>}</Section>
           <Section title={t('learner.essays.structure')}><ul className="m-0 grid list-none gap-2 p-0">{essay.structure.map((part) => <li key={part.part} className="rounded-2xl bg-white/80 p-3 text-sm"><span className="flex items-center gap-2 font-semibold">{part.part}<Badge tone={tone(part.status)}>{t(`learner.essays.status.${part.status}`)}</Badge></span>{part.comment}</li>)}</ul></Section>
-          {essay.issues.length > 0 && <Section title={t('learner.essays.issues')}><ul className="m-0 pl-5 text-sm">{essay.issues.map((issue, index) => <li key={index}><strong>{issue.issue}</strong> — {issue.why} <em>{issue.fix}</em></li>)}</ul></Section>}
-          {essay.line_edits.length > 0 && <Section title={t('learner.essays.edits')}><ul className="m-0 pl-5 text-sm">{essay.line_edits.map((edit, index) => <li key={index}><Quote>{edit.quote}</Quote> → {edit.suggestion} <span className="text-gray-600">({edit.why})</span></li>)}</ul></Section>}
-          {essay.questions.length > 0 && <Section title={t('learner.essays.questions')}><ul className="m-0 pl-5 text-sm">{essay.questions.map((question) => <li key={question}>{question}</li>)}</ul></Section>}
+          {essay.issues.length > 0 && <Section title={t('learner.essays.issues')}><ul className="m-0 list-disc pl-5 text-sm">{essay.issues.map((issue, index) => <li key={index}><strong>{issue.issue}</strong> — {issue.why} <em>{issue.fix}</em></li>)}</ul></Section>}
+          {essay.line_edits.length > 0 && <Section title={t('learner.essays.edits')}><ul className="m-0 list-disc pl-5 text-sm">{essay.line_edits.map((edit, index) => <li key={index}><Quote>{edit.quote}</Quote> → {edit.suggestion} <span className="text-gray-600">({edit.why})</span></li>)}</ul></Section>}
+          {essay.questions.length > 0 && <Section title={t('learner.essays.questions')}><ul className="m-0 list-disc pl-5 text-sm">{essay.questions.map((question) => <li key={question}>{question}</li>)}</ul></Section>}
         </> : !review.busy && <p className="m-0 rounded-3xl border border-dashed border-navy-line/40 bg-white/60 p-6 text-sm text-gray-700">{t('learner.essays.empty')}</p>}
       </div>
     </div>

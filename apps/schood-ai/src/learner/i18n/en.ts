@@ -1,6 +1,14 @@
 // learner text in English. Keys start with `learner.`; uz.ts and ru.ts must have the same keys.
 export const en = {
+  // Core's chat names its sources `context.<kind>`; these kinds are the learner area's own.
+  'context.learner_prediction': 'your predicted scores',
+  'context.learner_activity': 'your Schood AI activity',
+  'context.learner_snapshot': 'your saved Schood results',
+  'context.centre_homework': 'your open homework',
+  'context.centre_feedback': "your teacher's feedback",
   'learner.eyebrow': 'Schood AI for learners',
+  'learner.eyebrowParent': 'Schood AI for families',
+  'learner.cost': '{count|one:# credit|other:# credits} per use',
   'learner.nav.learn': 'All learning tools',
   'learner.exam': 'Exam',
   'learner.level': 'Level',

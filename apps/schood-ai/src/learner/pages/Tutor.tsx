@@ -72,15 +72,19 @@ function Knows() {
   return <Card as="div" className="text-sm">
     <h2 className="m-0 font-display text-base font-bold">{t('learner.tutor.knows')}</h2>
     {blocks === null ? <p className="mb-0 mt-2 text-gray-600">{t('state.loading')}</p> : blocks.length
-      ? <ul className="mb-0 mt-2 grid gap-1 pl-5 text-gray-800">{blocks.map((block) => <li key={block.kind}>{t(`learner.context.${block.kind}`)}</li>)}</ul>
+      ? <ul className="mb-0 mt-2 grid gap-1 list-disc pl-5 text-gray-800">{blocks.map((block) => <li key={block.kind}>{t(`learner.context.${block.kind}`)}</li>)}</ul>
       : <p className="mb-0 mt-2 text-gray-700">{t('learner.tutor.knowsNone')}</p>}
     <p className="mb-0 mt-3 text-xs text-gray-600">{t('learner.tutor.knowsNote')}</p>
   </Card>;
 }
 
+/** The tutor here: Schood AI's own in a personal workspace, the centre's assistant in a centre. */
+const TUTORS = ['tutor', 'student_assistant', 'assistant'];
 export function TutorPage() {
-  const t = useT(), { query } = useLocation();
-  const [thread, setThread] = useState<string | null>(query.get('thread'));
+  const t = useT(), { query } = useLocation(), workspace = useWorkspace();
+  const specialist = TUTORS.find((key) => workspace.me?.specialists.some((entry) => entry.key === key && entry.available)) ?? 'tutor';
+  // The thread from the URL only: a new thread's id must not remount the chat mid-answer.
+  const thread = query.get('thread');
   // A deep link from a results screen opens with a starter question (ids only in the URL).
   const source = query.get('source');
   const starter = source ? t('learner.tutor.fromResults', { app: t(`learner.source.${source}`) === `learner.source.${source}` ? source : t(`learner.source.${source}`) }) : '';
@@ -88,7 +92,7 @@ export function TutorPage() {
     <ToolHeader title={t('learner.tool.tutor')} lead={t('learner.tutor.lead')} creditKey="tutor.reply"/>
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]">
       <section className="min-w-0" aria-label={t('learner.tool.tutor')}>
-        <Chat key={thread ?? 'new'} specialist="tutor" threadId={thread} initialMessage={starter} onThread={(id) => { setThread(id); history.replaceState(null, '', `/tutor?thread=${encodeURIComponent(id)}`); }}
+        <Chat key={`${specialist}:${thread ?? 'new'}`} specialist={specialist} threadId={thread} initialMessage={starter} onThread={(id) => { if (id !== thread) history.replaceState(null, '', `/tutor?thread=${encodeURIComponent(id)}`); }}
           heading={<div className="mb-3 flex items-center gap-2"><SparkMark size={28}/><span className="font-semibold">{t('learner.tool.tutor')}</span></div>}/>
       </section>
       <aside className="grid content-start gap-3"><Knows/>

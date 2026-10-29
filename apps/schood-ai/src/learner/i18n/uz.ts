@@ -1,7 +1,15 @@
 import type { LearnerKey } from './en.ts';
 
 export const uz: Record<LearnerKey, string> = {
+  // Core's chat names its sources `context.<kind>`; these kinds are the learner area's own.
+  'context.learner_prediction': 'bashorat qilingan ballaringiz',
+  'context.learner_activity': 'Schood AI dagi faolligingiz',
+  'context.learner_snapshot': 'saqlangan Schood natijalaringiz',
+  'context.centre_homework': 'ochiq uy vazifalaringiz',
+  'context.centre_feedback': 'o‘qituvchingiz fikri',
   'learner.eyebrow': 'O‘quvchilar uchun Schood AI',
+  'learner.eyebrowParent': 'Oilalar uchun Schood AI',
+  'learner.cost': 'Har safar {count|one:# kredit|other:# kredit}',
   'learner.nav.learn': 'Barcha o‘quv vositalari',
   'learner.exam': 'Imtihon',
   'learner.level': 'Daraja',

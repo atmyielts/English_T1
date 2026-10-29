@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Flame } from 'lucide-react';
-import { Answer, Badge, Button, CreditCost, Field, LoadingState, TextArea, TextInput, Thinking, useT } from '../../core/index.ts';
-import { ConsentGate, Failure, ListenButton, Mcq, Section, SpeechInput, ToolHeader, options, useLearnerApi, useLoad, useRun, type McqResult, type Spoken } from '../kit.tsx';
+import { Answer, Badge, Button, Field, LoadingState, TextArea, TextInput, Thinking, useT } from '../../core/index.ts';
+import { ConsentGate, Failure, ListenButton, Mcq, Section, SpeechInput, ToolHeader, options, useLearnerApi, useLoad, useRun, type McqResult, type Spoken, Cost } from '../kit.tsx';
 
 // L13 pronunciation, L6 words from my texts, L10 graded reading, L9 photo explain.
 
@@ -36,7 +36,7 @@ export function PronouncePage() {
           {result && <div className="grid gap-2" aria-live="polite">
             <p className="m-0 flex flex-wrap gap-1 text-base">{result.words.map((word, index) => <span key={index} className={`rounded px-1 ${word.status === 'ok' ? 'bg-green-50 text-green-900' : word.status === 'changed' ? 'bg-amber-100 text-amber-900' : 'bg-red-50 text-red-800 line-through'}`} title={word.heard ? t('learner.pronounce.heardAs', { word: word.heard }) : undefined}>{word.word}</span>)}</p>
             <p className="m-0 text-sm"><strong>{result.score}%</strong> {result.passed ? t('learner.pronounce.passed') : t('learner.pronounce.again')}{result.pauses ? ` · ${t('learner.pronounce.pauses', { count: result.pauses })}` : ''}</p>
-            {result.tips.length > 0 && <ul className="m-0 pl-5 text-sm">{result.tips.map((tip) => <li key={tip.word}><strong>{tip.word}</strong>: {tip.tip}</li>)}</ul>}
+            {result.tips.length > 0 && <ul className="m-0 list-disc pl-5 text-sm">{result.tips.map((tip) => <li key={tip.word}><strong>{tip.word}</strong>: {tip.tip}</li>)}</ul>}
           </div>}
         </Section>;
       })}
@@ -124,7 +124,7 @@ export function ReadingPage() {
         {!current.result && <Button disabled={answers.filter((value) => value !== undefined).length < current.questions.length || check.busy} onClick={() => void check.run(() => call('reading-check', { method: 'POST', body: { id: current.id, answers } }))}>{t('learner.reading.check')}</Button>}
         {current.result && <p role="status" className="m-0 font-semibold">{t('learner.reading.score', { correct: current.result.correct, total: current.result.total })}</p>}
         {current.words.length > 0 && <Section title={t('learner.reading.words')}>
-          <ul className="m-0 pl-5 text-sm">{current.words.map((word) => <li key={word.word}><strong>{word.word}</strong> — {word.meaning_en} · {word.meaning_uz} · {word.meaning_ru}</li>)}</ul>
+          <ul className="m-0 list-disc pl-5 text-sm">{current.words.map((word) => <li key={word.word}><strong>{word.word}</strong> — {word.meaning_en} · {word.meaning_uz} · {word.meaning_ru}</li>)}</ul>
           <div><Button variant="secondary" size="sm" disabled={save.busy || !!save.data} onClick={() => void save.run(() => call('words-save', { method: 'POST', body: { id: current.id, kind: 'reading', indices: current.words.map((_word, index) => index) } }))}>{save.data ? t('learner.words.saved', { added: save.data.added, already: 0 }) : t('learner.reading.saveWords')}</Button></div>
         </Section>}
         <Failure error={check.error ?? save.error}/>
@@ -157,17 +157,17 @@ export function PhotoPage() {
         {current && <>
           <Section title={t('learner.photo.problem')}><Answer text={current.problem}/></Section>
           <Section title={t('learner.photo.hints')}>
-            <ol className="m-0 grid gap-2 pl-5 text-sm">{current.hints.slice(0, shown).map((hint, index) => <li key={index}><Answer text={hint}/></li>)}</ol>
+            <ol className="m-0 grid gap-2 list-decimal pl-5 text-sm">{current.hints.slice(0, shown).map((hint, index) => <li key={index}><Answer text={hint}/></li>)}</ol>
             <div className="flex flex-wrap gap-2">
               {shown < current.hints.length && <Button variant="secondary" size="sm" onClick={() => setShown((value) => value + 1)}>{t('learner.photo.nextHint')}</Button>}
               {!current.revealed && <Button size="sm" disabled={solve.busy} onClick={() => void solve.run(() => call('photo-solution', { method: 'POST', body: { id: current.id } }))}>{t('learner.photo.solution')}</Button>}
             </div>
             <Failure error={solve.error}/>
           </Section>
-          {current.solution && <Section title={t('learner.photo.worked')}><ol className="m-0 grid gap-2 pl-5 text-sm">{current.solution.steps.map((step, index) => <li key={index}><Answer text={step.text}/></li>)}</ol><p className="m-0 font-semibold"><Answer text={current.solution.answer}/></p></Section>}
+          {current.solution && <Section title={t('learner.photo.worked')}><ol className="m-0 grid gap-2 list-decimal pl-5 text-sm">{current.solution.steps.map((step, index) => <li key={index}><Answer text={step.text}/></li>)}</ol><p className="m-0 font-semibold"><Answer text={current.solution.answer}/></p></Section>}
         </>}
         {!current && !photo.busy && <p className="m-0 rounded-3xl border border-dashed border-navy-line/40 bg-white/60 p-6 text-sm text-gray-700">{t('learner.photo.empty')}</p>}
-        <CreditCost creditKey="photo.explain"/>
+        <Cost creditKey="photo.explain"/>
       </div>
     </div>
   </ConsentGate>;

@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { ExternalLink } from 'lucide-react';
-import { Badge, Button, CreditCost, Field, LoadingState, TextInput, Thinking, useI18n, useT } from '../../core/index.ts';
-import { ConsentGate, Failure, OutLink, Section, ToolHeader, options, useLearnerApi, useLoad, useRun } from '../kit.tsx';
+import { Badge, Button, Field, LoadingState, TextInput, Thinking, useI18n, useT } from '../../core/index.ts';
+import { ConsentGate, Failure, OutLink, Section, ToolHeader, options, useLearnerApi, useLoad, useRun, Cost } from '../kit.tsx';
 
 // L5 study plan, L15 gap-to-target and L16 study-abroad copilot.
 
@@ -38,10 +38,10 @@ export function PlanPage() {
           <p className="m-0 text-sm text-gray-700">{t('learner.gap.lead')}</p>
           {gapView && <>
             <p className="m-0 text-sm font-semibold">{gapView.days_left !== null ? t('learner.gap.headline', { current: gapView.current, target: gapView.target, days: gapView.days_left }) : t('learner.gap.headlineNoDate', { current: gapView.current, target: gapView.target })}</p>
-            <ol className="m-0 grid gap-2 pl-5 text-sm">{gapView.drivers.map((driver, index) => <li key={index}><strong>{driver.title}</strong> — {driver.why} <em>{driver.action}</em>{driver.link && <> · <OutLink href={driver.link.url}>{driver.link.label}</OutLink></>}</li>)}</ol>
+            <ol className="m-0 grid gap-2 list-decimal pl-5 text-sm">{gapView.drivers.map((driver, index) => <li key={index}><strong>{driver.title}</strong> — {driver.why} <em>{driver.action}</em>{driver.link && <> · <OutLink href={driver.link.url}>{driver.link.label}</OutLink></>}</li>)}</ol>
             <p className="m-0 text-xs text-gray-600">{gapView.note} {gapView.next_check_at && t('learner.gap.recheck', { date: date(gapView.next_check_at, { dateStyle: 'medium' }) })}</p>
           </>}
-          <div className="flex flex-wrap items-center gap-3"><Button variant={gapView?.due === false ? 'secondary' : 'spark'} disabled={gap.busy} onClick={() => void gap.run(() => call('gap', { method: 'POST', idempotencyKey: crypto.randomUUID(), body: { exam: plan?.exam ?? exam, target: plan?.target ?? (target || undefined), exam_date: plan?.exam_date ?? (examDate || undefined) } }))}>{gap.busy ? t('chat.thinking') : gapView ? t('learner.gap.again') : t('learner.gap.go')}</Button><CreditCost creditKey="gap.replan"/></div>
+          <div className="flex flex-wrap items-center gap-3"><Button variant={gapView?.due === false ? 'secondary' : 'spark'} disabled={gap.busy} onClick={() => void gap.run(() => call('gap', { method: 'POST', idempotencyKey: crypto.randomUUID(), body: { exam: plan?.exam ?? exam, target: plan?.target ?? (target || undefined), exam_date: plan?.exam_date ?? (examDate || undefined) } }))}>{gap.busy ? t('chat.thinking') : gapView ? t('learner.gap.again') : t('learner.gap.go')}</Button><Cost creditKey="gap.replan"/></div>
           <Failure error={gap.error}/>
         </Section>
       </div>
@@ -51,7 +51,7 @@ export function PlanPage() {
           <Section title={t('learner.plan.yours', { exam: t(`learner.exam.${plan.exam}`), target: plan.target })}>
             <p className="m-0 text-sm">{plan.summary}</p>
             <p className="m-0 text-sm text-gray-700">{t('learner.plan.progress', { done: plan.progress.done, total: plan.progress.total })}{plan.exam_date ? ` · ${date(plan.exam_date, { dateStyle: 'medium' })}` : ''}</p>
-            <div className="flex flex-wrap items-center gap-3"><Button variant="secondary" size="sm" disabled={build.busy} onClick={() => void make(true)}>{t('learner.plan.replan')}</Button><CreditCost creditKey="study_plan.build"/></div>
+            <div className="flex flex-wrap items-center gap-3"><Button variant="secondary" size="sm" disabled={build.busy} onClick={() => void make(true)}>{t('learner.plan.replan')}</Button><Cost creditKey="study_plan.build"/></div>
           </Section>
           {plan.weeks.map((week) => <Section key={week.week} title={t('learner.plan.week', { n: week.week, theme: week.theme })}>
             <p className="m-0 text-sm text-gray-700">{week.goal}</p>
