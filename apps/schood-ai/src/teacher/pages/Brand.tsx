@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AlertTriangle, Copy, Plus, Trash2, Wand2 } from 'lucide-react';
-import { ApiErrorState, Badge, Button, Card, CreditCost, EmptyState, Field, LoadingState, PageHeader, PlanGate, TextArea, TextInput, useI18n, useT, useWorkspace } from '../../core/index.ts';
+import { ApiErrorState, Badge, Button, Card, EmptyState, Field, LoadingState, PageHeader, PlanGate, TextArea, TextInput, useI18n, useT, useWorkspace } from '../../core/index.ts';
+import { TeacherCost } from '../Cost.tsx';
 import { addResult, deleteResult, getBrand, saveBrand, writeBrand, type BrandProfileView, type TutorResultView } from '../api.ts';
 
 // T13 tutor brand kit: your profile and your students' real results, then course
@@ -102,7 +103,7 @@ function Writer({ results, hasProfile }: { results: TutorResultView[]; hasProfil
         {(['title', 'level', 'schedule', 'price', 'starts'] as const).map((key) => <TextInput key={key} aria-label={t(`teacher.brand.course.${key}`)} placeholder={t(`teacher.brand.course.${key}`)} value={course[key]} onChange={(event) => setCourse({ ...course, [key]: event.target.value })} maxLength={key === 'schedule' ? 200 : 120}/>)}
         <p className="m-0 text-xs text-gray-600 sm:col-span-2">{t('teacher.brand.courseHint')}</p>
       </fieldset>}
-      <div className="flex flex-wrap items-center gap-3"><Button type="submit" variant="spark" disabled={busy} icon={<Wand2 size={16} aria-hidden="true"/>}>{busy ? t('teacher.brand.writing') : t('teacher.brand.writeButton')}</Button><CreditCost creditKey="brand.post"/></div>
+      <div className="flex flex-wrap items-center gap-3"><Button type="submit" variant="spark" disabled={busy} icon={<Wand2 size={16} aria-hidden="true"/>}>{busy ? t('teacher.brand.writing') : t('teacher.brand.writeButton')}</Button><TeacherCost creditKey="brand.post"/></div>
       {error !== null && <ApiErrorState error={error}/>}
     </form>}
     {out && <section className="mt-4 grid gap-2" aria-live="polite">

@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Camera, Check, Download, Mic, Plus, ShieldQuestion, Square, Trash2, Wand2 } from 'lucide-react';
 import {
-  ApiError, ApiErrorState, Badge, Button, Card, CreditCost, EmptyState, Field, Link, LoadingState, PageHeader, PlanGate, TextArea, TextInput, navigate, useI18n, useT, useWorkspace,
+  ApiError, ApiErrorState, Badge, Button, Card, EmptyState, Field, Link, LoadingState, PageHeader, PlanGate, TextArea, TextInput, navigate, useI18n, useT, useWorkspace,
 } from '../../core/index.ts';
+import { TeacherCost } from '../Cost.tsx';
 import {
   addScript, base64Of, createBatch, deleteScript, getBatch, imageDataUrl, listBatches, markRecording, markScript, saveScript, scriptSignals,
   type BatchView, type Rubric, type ScriptView,
@@ -98,7 +99,7 @@ export function BatchPage({ params }: { params: Record<string, string> }) {
       <section className="grid content-start gap-4" aria-label={t('teacher.marking.scripts')}>
         <div className="flex flex-wrap items-center gap-3 rounded-3xl border border-navy-line bg-white p-3">
           <Button variant="spark" onClick={() => void markAll()} disabled={running || !toMark.length} icon={<Wand2 size={16} aria-hidden="true"/>}>{running ? t('teacher.marking.running') : t('teacher.marking.markAll', { count: toMark.length })}</Button>
-          <CreditCost creditKey={rubric.mode === 'speaking' ? 'speaking.marking' : 'marking.script'}/><span className="text-xs text-gray-600">{t('teacher.marking.perScript')}</span>
+          <TeacherCost creditKey={rubric.mode === 'speaking' ? 'speaking.marking' : 'marking.script'}/><span className="text-xs text-gray-600">{t('teacher.marking.perScript')}</span>
         </div>
         {runError !== null && <ApiErrorState error={runError}/>}
         {!scripts.length ? <EmptyState title={t('teacher.marking.noScripts')}/> : scripts.map((script) => <ScriptCard key={script.id} script={script} rubric={rubric} workspaceId={workspace.workspaceId} onChange={replace} onDelete={() => setData({ ...data, scripts: data.scripts.filter((entry) => entry.id !== script.id) })}/>)}
@@ -191,7 +192,7 @@ function ScriptCard({ script, rubric, workspaceId, onChange, onDelete }: { scrip
         {script.draft?.transcript_note && <p className="m-0 mt-2 text-xs text-gray-600">{script.draft.transcript_note}</p>}
         {rubric.mode === 'writing' && script.text && <div className="mt-3 grid gap-2">
           <Button size="sm" variant="secondary" disabled={busy} icon={<ShieldQuestion size={14} aria-hidden="true"/>} onClick={() => void act(async () => (await scriptSignals(workspaceId, script.id)).script)}>{script.signals ? t('teacher.signal.again') : t('teacher.signal.check')}</Button>
-          <CreditCost creditKey="writing.signal"/>
+          <TeacherCost creditKey="writing.signal"/>
           {script.signals && <Signals signals={script.signals}/>}
         </div>}
       </div>

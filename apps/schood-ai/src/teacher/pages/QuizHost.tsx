@@ -60,7 +60,7 @@ export default function QuizHost({ params }: { params: Record<string, string> })
           const right = quiz.status === 'reveal' && option.id === quiz.question!.answer;
           const share = quiz.status === 'reveal' && total ? Math.round(((quiz.counts?.[option.id] ?? 0) / total) * 100) : null;
           return <li key={option.id} className={`relative overflow-hidden rounded-3xl p-4 text-lg font-semibold ${COLORS[index % COLORS.length]} ${quiz.status === 'reveal' && !right ? 'opacity-40' : ''} ${right ? 'ring-4 ring-white' : ''}`}>
-            <span className="relative z-10 flex items-center gap-3"><span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/60 text-sm">{option.id}</span><span className="min-w-0">{option.text}</span>{share !== null && <span className="ml-auto text-sm">{t('teacher.quiz.share', { share, count: quiz.counts?.[option.id] ?? 0 })}</span>}</span>
+            <span className="relative z-10 flex items-center gap-3"><span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/60 text-sm">{option.id}</span><span className="min-w-0 flex-1 break-words">{option.text}</span>{share !== null && <span className="shrink-0 whitespace-nowrap text-sm tabular-nums">{t('teacher.quiz.share', { share, count: quiz.counts?.[option.id] ?? 0 })}</span>}</span>
           </li>;
         })}</ul>
         {quiz.status === 'reveal' && quiz.question.explanation && <p className="m-0 mt-4 rounded-2xl bg-white/10 p-3 text-white/90">{quiz.question.explanation}</p>}
@@ -78,7 +78,7 @@ export default function QuizHost({ params }: { params: Record<string, string> })
       <h2 className="m-0 text-center font-display text-3xl font-bold">{t('teacher.quiz.final')}</h2>
       <Leaderboard rows={quiz.leaderboard} big/>
       <p className="m-0 text-center text-white/80">{t('teacher.quiz.saved', { label: quiz.class_label ?? t('teacher.quiz.noClass') })}</p>
-      <div className="flex justify-center"><Link to={`/studio/quizzes/${quiz.id}`} className="inline-flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-semibold text-gray-950 no-underline">{t('teacher.quiz.results')}</Link></div>
+      <div className="flex justify-center"><Link to={`/studio/quizzes/${quiz.id}`} className="inline-flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-semibold !text-gray-950 no-underline">{t('teacher.quiz.results')}</Link></div>
     </section>}
 
     {error !== null && <div className="mt-4"><ApiErrorState error={error}/></div>}

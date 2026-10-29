@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { CalendarDays, CheckCircle2, Plus, RefreshCw, Send, Trash2, Wand2 } from 'lucide-react';
 import {
-  ApiError, ApiErrorState, ApproveRunCard, Badge, Button, Card, CreditCost, EmptyState, Field, LoadingState, PageHeader, PlanGate, TextArea, TextInput,
+  ApiError, ApiErrorState, ApproveRunCard, Badge, Button, Card, EmptyState, Field, LoadingState, PageHeader, PlanGate, TextArea, TextInput,
   useI18n, useT, useWorkspace, type ActionView,
 } from '../../core/index.ts';
+import { TeacherCost } from '../Cost.tsx';
 import {
   connectChannel, dispatchPosts, editPost, listChannels, planWeek, proposeWeek, removeChannel, updateChannel, verifyChannel, writePost,
   type ChannelPostView, type ChannelView, type ChannelWeek,
@@ -129,7 +130,7 @@ function Week({ week, onChange }: { week: ChannelWeek; onChange(): void }) {
   return <div className="mt-4 grid gap-3">
     <div className="flex flex-wrap items-center gap-2">
       <h3 className="m-0 flex-1 text-sm font-semibold">{t('teacher.channel.week', { week: date(week.week_start, { dateStyle: 'medium' }) })} · {t(`teacher.channel.weekStatus.${week.status}`)}</h3>
-      {editable && empty.length > 0 && <><Button size="sm" variant="spark" disabled={running} icon={<Wand2 size={14} aria-hidden="true"/>} onClick={() => void writeAll()}>{running ? t('teacher.channel.writing') : t('teacher.channel.writeAll', { count: empty.length })}</Button><CreditCost creditKey="channel.post"/></>}
+      {editable && empty.length > 0 && <><Button size="sm" variant="spark" disabled={running} icon={<Wand2 size={14} aria-hidden="true"/>} onClick={() => void writeAll()}>{running ? t('teacher.channel.writing') : t('teacher.channel.writeAll', { count: empty.length })}</Button><TeacherCost creditKey="channel.post"/></>}
     </div>
     <ol className="m-0 grid list-none gap-2 p-0">{posts.map((post) => <PostRow key={post.id} post={post} editable={editable} onChange={(next) => setPosts((current) => current.map((entry) => (entry.id === next.id ? next : entry)))}/>)}</ol>
     {editable && !empty.length && posts.some((post) => post.status === 'draft') && <Button onClick={async () => { setError(null); try { setAction(await proposeWeek(workspace.workspaceId, week.id)); } catch (cause) { setError(cause); } }} icon={<CheckCircle2 size={16} aria-hidden="true"/>}>{t('teacher.channel.approveWeek')}</Button>}

@@ -33,8 +33,8 @@ What the teacher area (T1–T6, T9–T15, branch `claude/ai-teacher`) needs from
 
 ## 6. Print: an independent teacher's own logo
 
-- **Need:** `core/library/PrintPage.tsx` shows the logo only in centre workspaces. Independent teachers can set `branding.logo_url` in Settings for their personal workspace, and the teacher test asks to print "with their logo".
-- **Until then:** teacher materials print from the Studio's own print view (`/studio/page/:id/print`). It shows the personal or centre logo and offers the student copy, the teacher copy, and the key on its own page. Core's `/library/:id/print` still works and prints the teacher copy with the key at the end.
+- **Need:** `core/library/PrintPage.tsx` shows the logo only in centre workspaces, and Settings shows the branding form only to centres. The teacher test asks independent teachers to print "with their logo".
+- **Until then:** teacher materials print from the Studio's own print view (`/studio/page/:id/print`). It shows the personal or centre logo and offers the student copy, the teacher copy, and the key on its own page. In a personal workspace it also has a small logo field that saves `branding.logo_url` through `PATCH core/settings`, which already accepts branding from any workspace owner. Core's `/library/:id/print` still works and prints the teacher copy with the key at the end.
 
 ## 7. Approving a generation from an area
 

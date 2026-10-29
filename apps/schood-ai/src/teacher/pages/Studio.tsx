@@ -3,9 +3,10 @@ import { BookOpen, Camera, ClipboardCheck, FileText, Gamepad2, Library, Megaphon
 import { creditPrice } from '../../../../../packages/ai-core/src/mod.ts';
 import { ADMISSION_MATH_TOPICS, CEFR_LEVELS, EXAM_TARGETS, MATERIAL_KINDS, materialCredit, satDomainLabel, type MaterialBrief, type MaterialGroup, type MaterialKindSpec, type SatOfficialDomain } from '../../../../../packages/ai-core/src/materials/mod.ts';
 import {
-  ApiErrorState, Badge, Button, Card, CreditCost, EmptyState, Eyebrow, Field, Link, LoadingState, PageHeader, PlanGate, SparkMark, TextArea, TextInput,
+  ApiErrorState, Badge, Button, Card, EmptyState, Eyebrow, Field, Link, LoadingState, PageHeader, PlanGate, SparkMark, TextArea, TextInput,
   navigate, useI18n, useLocation, useT, useWorkspace,
 } from '../../core/index.ts';
+import { TeacherCost } from '../Cost.tsx';
 import { academyGroups, createMaterial, imageDataUrl, listMaterials, weakSpots, type AcademyGroup, type MaterialSummary, type WeakSpot } from '../api.ts';
 import { pendingImages, takeBriefDraft } from '../state.ts';
 
@@ -173,7 +174,7 @@ export function StudioPage({ initialGroup }: { initialGroup?: MaterialGroup }) {
           <PlanGate feature={feature}>
             <div className="flex flex-wrap items-center gap-3">
               <Button type="submit" variant="spark" disabled={!ready || busy} icon={<Wand2 size={16} aria-hidden="true"/>}>{busy ? t('teacher.studio.starting') : t('teacher.studio.generate')}</Button>
-              <CreditCost creditKey={credit.key} addOns={credit.addOns}/>
+              <TeacherCost creditKey={credit.key} addOns={credit.addOns}/>
               <span className="text-xs text-gray-600">{t('teacher.studio.reviewNote')}</span>
             </div>
           </PlanGate>

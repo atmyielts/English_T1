@@ -54,7 +54,9 @@ const LINK_LABEL: Record<Locale, string> = { en: 'Open the full task', uz: 'Tops
 export function homeworkDescription(material: Material, instructions: string | null, url: string, locale: Locale): string {
   const link = `\n\n${LINK_LABEL[locale]}: ${url}`;
   const intro = instructions ? `${instructions}\n\n` : '';
-  const body = materialText(studentView(material));
+  // The assignment has the title already, so the description starts with the material itself.
+  const text = materialText(studentView(material));
+  const body = text.startsWith(material.title) ? text.slice(material.title.length).trimStart() : text;
   const room = 4000 - intro.length - link.length;
   return `${intro}${body.length <= room ? body : `${body.slice(0, Math.max(0, room - 1)).trimEnd()}…`}${link}`;
 }
@@ -81,7 +83,8 @@ export function registerExportActions(): void {
     parse(value) {
       const p = record(value, 'payload');
       const handout = text(p.handout_url, 'handout_url', { max: 300 });
-      if (!/^https:\/\/[a-z0-9.-]+\/handout\/[A-Za-z0-9_-]{20,64}$/i.test(handout)) throw new SchoodAIError('invalid_request', 'The handout link is not valid.', 400, { field: 'handout_url' });
+      // https, or the local dev app (http on localhost or 127.0.0.1); the server builds this link itself.
+      if (!/^(https:\/\/[a-z0-9.-]+|http:\/\/(localhost|127\.0\.0\.1)(:\d{2,5})?)\/handout\/[A-Za-z0-9_-]{20,64}$/i.test(handout)) throw new SchoodAIError('invalid_request', 'The handout link is not valid.', 400, { field: 'handout_url' });
       return {
         page_id: uuid(p.page_id, 'page_id'), revision: Number.isInteger(p.revision) ? Number(p.revision) : 0,
         academy_id: uuid(p.academy_id, 'academy_id'), classroom_id: text(p.classroom_id, 'classroom_id', { max: 64 }), classroom_name: text(p.classroom_name, 'classroom_name', { max: 200 }),

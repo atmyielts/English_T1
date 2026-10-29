@@ -59,7 +59,9 @@ function KeyEditor({ question, block, onChange }: { question: Question; block: Q
     <TextInput id={id} value={question.answer.join(' / ')} onChange={(event) => onChange(event.target.value.split('/').map((part) => part.trim()).filter(Boolean))}/>}</Field>;
 }
 
-function QuestionsEditor({ block, onChange }: { block: QuestionsBlock; onChange(next: QuestionsBlock): void }) {
+// `first` is the number of the block's first question in the whole material, so the
+// numbers match the preview, the checks panel and the printed copy.
+function QuestionsEditor({ block, first, onChange }: { block: QuestionsBlock; first: number; onChange(next: QuestionsBlock): void }) {
   const t = useT();
   const setQuestion = (index: number, next: Question) => onChange({ ...block, questions: block.questions.map((question, i) => (i === index ? next : question)) });
   const move = (index: number, by: number) => {
@@ -77,7 +79,7 @@ function QuestionsEditor({ block, onChange }: { block: QuestionsBlock; onChange(
     {block.options && <OptionsEditor label={t('teacher.editor.sharedOptions')} options={block.options} onChange={(options) => onChange({ ...block, options })}/>}
     <ol className="m-0 grid list-none gap-3 p-0">{block.questions.map((question, index) => <li key={question.id} className="rounded-2xl border border-navy-line/30 bg-cream-soft/50 p-3">
       <div className="mb-2 flex flex-wrap items-center gap-2">
-        <strong className="text-sm">{t('teacher.checks.question', { number: index + 1 })}</strong>
+        <strong className="text-sm">{t('teacher.checks.question', { number: first + index })}</strong>
         <Badge>{t(`teacher.qtype.${question.type}`)}</Badge>
         <span className="flex-1"/>
         <button type="button" className={iconButton} aria-label={t('teacher.editor.up')} disabled={index === 0} onClick={() => move(index, -1)}><ArrowUp size={14} aria-hidden="true"/></button>
@@ -111,7 +113,7 @@ function RowControls({ onRemove, disabled, label }: { onRemove(): void; disabled
   return <button type="button" className={iconButton} aria-label={label} disabled={disabled} onClick={onRemove}><Trash2 size={14} aria-hidden="true"/></button>;
 }
 
-function BlockEditor({ block, onChange }: { block: Block; onChange(next: Block): void }) {
+function BlockEditor({ block, first, onChange }: { block: Block; first: number; onChange(next: Block): void }) {
   const t = useT();
   const title = <Field label={t('teacher.editor.blockTitle')}>{(id) => <TextInput id={id} value={block.title ?? ''} onChange={(event) => onChange({ ...block, title: event.target.value || undefined })}/>}</Field>;
   switch (block.type) {
@@ -128,7 +130,7 @@ function BlockEditor({ block, onChange }: { block: Block; onChange(next: Block):
       </div>)}
       <Button size="sm" variant="ghost" icon={<Plus size={14} aria-hidden="true"/>} onClick={() => onChange({ ...block, lines: [...block.lines, { speaker: block.lines.at(-1)?.speaker ?? 'A', text: '' }] })}>{t('teacher.editor.addLine')}</Button>
     </div>;
-    case 'questions': return <div className="grid gap-3">{title}<QuestionsEditor block={block} onChange={onChange}/></div>;
+    case 'questions': return <div className="grid gap-3">{title}<QuestionsEditor block={block} first={first} onChange={onChange}/></div>;
     case 'words': return <div className="grid gap-3">{title}{block.words.map((word, index) => <div key={index} className="grid gap-2 rounded-2xl border border-navy-line/20 p-2 sm:grid-cols-[1fr_1.5fr_1fr_1fr_auto]">
       {(['term', 'meaning', 'meaning_uz', 'meaning_ru'] as const).map((key) => <TextInput key={key} aria-label={t(`teacher.editor.word.${key}`)} placeholder={t(`teacher.editor.word.${key}`)} value={word[key] ?? ''} onChange={(event) => onChange({ ...block, words: block.words.map((entry, i) => (i === index ? { ...entry, [key]: event.target.value } : entry)) })}/>)}
       <RowControls label={t('teacher.editor.removeRow')} disabled={block.words.length <= 1} onRemove={() => onChange({ ...block, words: block.words.filter((_, i) => i !== index) })}/>
@@ -192,6 +194,7 @@ export function MaterialEditor({ material, onSave, saving, saveLabel }: { materi
   const [problem, setProblem] = useState<string | null>(null);
   const checks = useMemo(() => { try { return checkMaterial(draft); } catch { return null; } }, [draft]);
   const blocks = blocksOf(draft, version);
+  const firsts = blocks.reduce<number[]>((list, block, index) => [...list, (list[index - 1] ?? 1) + (index && blocks[index - 1].type === 'questions' ? (blocks[index - 1] as QuestionsBlock).questions.length : 0)], []);
   const dirty = JSON.stringify(draft) !== JSON.stringify(material);
   const save = async () => {
     setProblem(null);
@@ -211,7 +214,7 @@ export function MaterialEditor({ material, onSave, saving, saveLabel }: { materi
     </div> : null}
     {blocks.map((block, index) => <section key={block.id} aria-label={t(`teacher.block.${block.type}`)} className="rounded-3xl border border-navy-line bg-white p-4">
       <p className="m-0 mb-3 text-xs font-semibold uppercase tracking-wider text-gray-600">{t(`teacher.block.${block.type}`)}</p>
-      <BlockEditor block={block} onChange={(next) => setDraft(withBlocks(draft, version, blocks.map((entry, i) => (i === index ? next : entry))))}/>
+      <BlockEditor block={block} first={firsts[index]} onChange={(next) => setDraft(withBlocks(draft, version, blocks.map((entry, i) => (i === index ? next : entry))))}/>
     </section>)}
     <div className="sticky bottom-3 z-10 flex flex-wrap items-center gap-3 rounded-3xl border border-navy-line bg-cream-soft/95 p-3 shadow-sm backdrop-blur">
       <Button onClick={() => void save()} disabled={saving || !dirty}>{saving ? t('teacher.editor.saving') : saveLabel ?? t('teacher.editor.save')}</Button>

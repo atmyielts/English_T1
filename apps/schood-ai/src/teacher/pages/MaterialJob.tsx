@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Check, Eye, PenLine, RotateCcw, X } from 'lucide-react';
+import { MATERIAL_KIND_CATALOG, type MaterialKindId } from '../../../../../packages/ai-core/src/materials/catalog.ts';
 import type { MaterialBrief } from '../../../../../packages/ai-core/src/materials/mod.ts';
 import { ApiError, ApiErrorState, Badge, Button, Dialog, ErrorState, Eyebrow, LoadingState, PageHeader, SparkMark, Thinking, navigate, useT, useWorkspace } from '../../core/index.ts';
 import { decideMaterial, editMaterial, getMaterial, recheckMaterial, stepMaterial, type MaterialJob } from '../api.ts';
@@ -14,37 +15,43 @@ import { StatusBadge } from './Studio.tsx';
 // what the checker disagreed with, the teacher's edits, and Approve & save, which
 // puts it in the library. Nothing reaches students before that.
 
+// Academy mistake tags (`tfng_not_given`) read as words, as the Studio shows them.
+const readableTags = (tags: string[]) => tags.map((tag) => tag.replace(/[_-]+/g, ' ')).join(', ');
+
 export default function MaterialJobPage({ params }: { params: Record<string, string> }) {
   const t = useT(), workspace = useWorkspace();
   const [job, setJob] = useState<MaterialJob | null>(null), [error, setError] = useState<unknown>(null);
   const [tab, setTab] = useState<'preview' | 'edit'>('preview');
   const [busy, setBusy] = useState(false), [confirm, setConfirm] = useState(false), [actionError, setActionError] = useState<unknown>(null);
-  const running = useRef(false);
+  const running = useRef(false), mounted = useRef(true);
+  // A refusal (credits, cap, paywall) pauses the driving until the person retries.
+  const [paused, setPaused] = useState(false);
   const id = params.id;
 
-  const load = useCallback(() => { setError(null); getMaterial(workspace.workspaceId, id).then(setJob).catch(setError); }, [id, workspace.workspaceId]);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  const load = useCallback(() => { getMaterial(workspace.workspaceId, id).then((next) => { if (mounted.current) setJob(next); }).catch((cause) => { if (mounted.current) setError(cause); }); }, [id, workspace.workspaceId]);
   useEffect(load, [load]);
 
-  // Drive the job: one step per request until it is ready or something stops it.
+  // Drive the job: one step per request until it is ready or something stops it. The
+  // result is kept even if the effect re-ran meanwhile (StrictMode runs effects twice).
   useEffect(() => {
-    if (!job || !['requested', 'generating'].includes(job.status) || running.current) return;
-    let live = true;
+    if (!job || paused || !['requested', 'generating'].includes(job.status) || running.current) return;
+    running.current = true;
     const tick = async () => {
-      if (job.progress.running) { await new Promise((resolve) => setTimeout(resolve, 3000)); if (live) load(); return; }
-      running.current = true;
       try {
+        if (job.progress.running) { await new Promise((resolve) => setTimeout(resolve, 3000)); load(); return; }
         const next = await stepMaterial(workspace.workspaceId, job.id, pendingImages.get(job.id));
-        if (live) setJob(next);
+        if (mounted.current) { setError(null); setJob(next); }
       } catch (cause) {
-        if (!live) return;
+        if (!mounted.current) return;
         if (cause instanceof ApiError && cause.code === 'timeout') { load(); return; }
         setError(cause);
+        setPaused(true);
         load();
       } finally { running.current = false; }
     };
     void tick();
-    return () => { live = false; };
-  }, [job, load, workspace.workspaceId]);
+  }, [job, paused, load, workspace.workspaceId]);
   useEffect(() => { if (job?.status === 'ready' || job?.status === 'failed') pendingImages.delete(id); }, [job?.status, id]);
 
   if (!job) return error ? <ApiErrorState error={error} onRetry={load}/> : <LoadingState/>;
@@ -61,9 +68,9 @@ export default function MaterialJobPage({ params }: { params: Record<string, str
           <div className="h-full rounded-full bg-gradient-to-r from-lime to-sky-ai transition-all" style={{ width: `${Math.round((done / Math.max(1, total || job.progress.total)) * 100)}%` }}/>
         </div>
         <p className="m-0 mt-3 text-sm text-gray-700">{t('teacher.job.lead')}</p>
-        {job.focus && <p className="m-0 mt-2 text-sm text-gray-700">{t('teacher.job.focus', { group: job.focus.classroom_name ?? '', tags: job.focus.tags.join(', ') })}</p>}
+        {job.focus && <p className="m-0 mt-2 text-sm text-gray-700">{t('teacher.job.focus', { group: job.focus.classroom_name ?? '', tags: readableTags(job.focus.tags) })}</p>}
         {job.focus_unavailable && <p className="m-0 mt-2 text-sm text-amber-900">{t('teacher.job.focusUnavailable')}</p>}
-        {error !== null && <div className="mt-4"><ApiErrorState error={error} onRetry={() => { setError(null); load(); }}/></div>}
+        {error !== null && <div className="mt-4"><ApiErrorState error={error} onRetry={() => { setError(null); setPaused(false); load(); }}/></div>}
       </section>
     </>;
   }
@@ -77,10 +84,13 @@ export default function MaterialJobPage({ params }: { params: Record<string, str
 
   const material = job.material!;
   const errors = job.verification?.checks.errors ?? 0, disagreements = job.verification?.solver?.disagreements.length ?? 0;
+  // The library folder in the teacher's language: "Exam practice/IELTS Reading/B2".
+  const group = MATERIAL_KIND_CATALOG[material.kind as MaterialKindId] ?? 'general';
+  const folder = [t(`teacher.folder.${group}`), t(`teacher.kind.${material.kind}`), material.level.replace('band:', 'Band ')].map((part) => part.replace(/\//g, '-').trim()).join('/');
   const decide = async (decision: 'approve' | 'reject') => {
     setBusy(true); setActionError(null);
     try {
-      const result = await decideMaterial(workspace.workspaceId, job.id, decision);
+      const result = await decideMaterial(workspace.workspaceId, job.id, decision, decision === 'approve' ? folder : undefined);
       if (decision === 'approve' && result.page_id) navigate(`/studio/page/${result.page_id}`); else load();
     } catch (cause) { setActionError(cause); } finally { setBusy(false); setConfirm(false); }
   };
@@ -105,7 +115,7 @@ export default function MaterialJobPage({ params }: { params: Record<string, str
         {job.verification && <ChecksPanel checks={job.verification.checks} solver={job.verification.solver} stale={job.verification.stale} clean={job.verification.clean} busy={busy}
           rechecksLeft={job.progress.rechecks_left} onRecheck={async () => { setBusy(true); try { setJob(await recheckMaterial(workspace.workspaceId, job.id)); } catch (cause) { setActionError(cause); } finally { setBusy(false); } }}/>}
         {!job.verification && <p className="m-0 rounded-3xl border border-navy-line bg-white p-4 text-sm text-gray-700">{t('teacher.checks.noQuestions')}</p>}
-        {job.focus && <p className="m-0 rounded-3xl border border-navy-line bg-white p-4 text-sm text-gray-700">{t('teacher.job.focus', { group: job.focus.classroom_name ?? '', tags: job.focus.tags.join(', ') })}</p>}
+        {job.focus && <p className="m-0 rounded-3xl border border-navy-line bg-white p-4 text-sm text-gray-700">{t('teacher.job.focus', { group: job.focus.classroom_name ?? '', tags: readableTags(job.focus.tags) })}</p>}
         <section className="rounded-3xl border border-navy-line bg-white p-4">
           <h2 className="m-0 font-display text-lg font-bold">{t('teacher.job.decideTitle')}</h2>
           <p className="m-0 mt-1 text-sm text-gray-700">{t('teacher.job.decideLead')}</p>

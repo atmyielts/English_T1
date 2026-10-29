@@ -191,10 +191,17 @@ export async function playQuiz(ctx: RequestContext) {
   const player = await playerFor(ctx, session, body.token);
   session = await autoReveal(ctx, session);
   const { store } = await teacherDeps();
-  const players = await store.quizPlayers(session.id);
-  const rank = players.findIndex((entry) => entry.id === player.id) + 1;
   const question = session.questions[session.currentIndex] ?? null;
-  const mine = session.currentIndex >= 0 ? (await store.quizAnswers(session.id, session.currentIndex)).find((answer) => answer.playerId === player.id) ?? null : null;
+  const current = session.currentIndex >= 0 ? await store.quizAnswers(session.id, session.currentIndex) : [];
+  const mine = current.find((answer) => answer.playerId === player.id) ?? null;
+  // While a question is open, scores stand as they were before it: a jump in points
+  // would tell the player, and whoever sits next to them, the answer before the reveal.
+  const open = session.status === 'question' ? new Map(current.map((answer) => [answer.playerId, answer])) : new Map<string, QuizAnswer>();
+  const players = (await store.quizPlayers(session.id)).map((entry) => {
+    const answer = open.get(entry.id);
+    return answer ? { ...entry, score: entry.score - answer.points, correct: entry.correct - (answer.correct ? 1 : 0) } : entry;
+  }).sort((a, b) => b.score - a.score);
+  const rank = players.findIndex((entry) => entry.id === player.id) + 1;
   const me = players.find((entry) => entry.id === player.id) ?? player;
   return {
     play: {

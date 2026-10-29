@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Copy, Plus, Trash2, Wand2 } from 'lucide-react';
-import { ApiError, ApiErrorState, Button, Card, CreditCost, Field, PageHeader, PlanGate, TextArea, TextInput, useI18n, useT, useWorkspace } from '../../core/index.ts';
+import { ApiError, ApiErrorState, Button, Card, Field, PageHeader, PlanGate, TextArea, TextInput, useI18n, useT, useWorkspace } from '../../core/index.ts';
+import { TeacherCost } from '../Cost.tsx';
 import { writeFeedback } from '../api.ts';
 
 // T4 feedback and report writer: one comment per student from the teacher's own
@@ -65,7 +66,7 @@ export default function FeedbackPage() {
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <Button variant="secondary" icon={<Plus size={16} aria-hidden="true"/>} onClick={() => setRows([...rows, blank()])} disabled={rows.length >= 40}>{t('teacher.feedback.add')}</Button>
         <Button variant="spark" icon={<Wand2 size={16} aria-hidden="true"/>} disabled={running || !pending} onClick={() => void run()}>{running ? t('teacher.feedback.writing') : t('teacher.feedback.write', { count: pending })}</Button>
-        <CreditCost creditKey="feedback.comment"/><span className="text-xs text-gray-600">{t('teacher.feedback.each')}</span>
+        <TeacherCost creditKey="feedback.comment"/><span className="text-xs text-gray-600">{t('teacher.feedback.each')}</span>
       </div>
     </PlanGate>
   </>;

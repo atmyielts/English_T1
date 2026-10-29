@@ -148,6 +148,8 @@ Deno.test('teacher test: IELTS Reading B2 with a checked key → edit → print 
     equal((await f.json('POST', 'teacher/quiz-answer', { token: 'tok-free', body: { session_id: session, token: playerToken, index: 0, choice: 'T' } })).status, 200);
     equal((await f.json('POST', 'teacher/quiz-answer', { token: 'tok-free', body: { session_id: session, token: playerToken, index: 0, choice: 'F' } })).body.code, 'already_answered');
     await f.json('POST', 'teacher/quiz-answer', { token: 'tok-student', body: { session_id: session, index: 0, choice: 'F' } });
+    const waiting = await f.json('POST', 'teacher/quiz-play', { token: 'tok-free', body: { session_id: session, token: playerToken } });
+    equal([waiting.body.play.my_answer, waiting.body.play.me.score, waiting.body.play.me.correct], [{ choice: 'T' }, 0, 0], 'points wait for the reveal, so they do not give the answer away');
     const host = await f.json('GET', 'teacher/quiz', { token: T, query: { id: quiz.body.quiz.id } });
     equal([host.body.quiz.answered, host.body.quiz.counts], [2, null], 'counts stay hidden until the reveal');
     const revealed = await f.json('POST', 'teacher/quiz-control', { token: T, body: { id: quiz.body.quiz.id, command: 'reveal' } });

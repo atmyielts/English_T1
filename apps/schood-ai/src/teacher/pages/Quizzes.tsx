@@ -55,7 +55,7 @@ export function QuizResultsPage({ params }: { params: Record<string, string> }) 
           const share = question.answered ? Math.round((question.correct / question.answered) * 100) : 0;
           return <li key={question.index} className="rounded-2xl border border-navy-line/20 p-3 text-sm">
             <p className="m-0 font-semibold">{question.index + 1}. {question.prompt}</p>
-            <p className="m-0 mt-1 text-gray-700">{t('teacher.quizzes.questionStat', { correct: question.correct, answered: question.answered, share })}</p>
+            <p className="m-0 mt-1 text-gray-700">{question.answered ? t('teacher.quizzes.questionStat', { correct: question.correct, answered: question.answered, share }) : t('teacher.quizzes.noAnswers')}</p>
             <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-cream-deep" aria-hidden="true"><div className={`h-full ${share < 50 ? 'bg-amber-400' : 'bg-lime'}`} style={{ width: `${share}%` }}/></div>
           </li>;
         })}</ol>
