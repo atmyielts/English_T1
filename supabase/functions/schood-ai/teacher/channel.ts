@@ -3,7 +3,7 @@ import { registerActionKind } from '../actions.ts';
 import { oneOf, optionalText, record, text, uuid } from '../input.ts';
 import { dataBlock, neutralise } from '../prompt.ts';
 import { SchoodAIError, type Locale, type RequestContext } from '../types.ts';
-import { teacherDeps, type TelegramApi } from './deps.ts';
+import { teacherDeps, teacherStore, type TelegramApi } from './deps.ts';
 import { actionView } from './views.ts';
 import type { Channel, ChannelBatch, ChannelPost, ChannelSchedule, PostContent, PostKind } from './store.ts';
 
@@ -59,7 +59,7 @@ export function nextMonday(now: Date): string {
 
 async function ownChannel(ctx: RequestContext, id: unknown): Promise<Channel> {
   const access = await ctx.workspace();
-  const { store } = await teacherDeps();
+  const store = ctx.store(teacherStore);
   const channel = await store.channel(uuid(id, 'channel_id'));
   if (!channel || channel.workspaceId !== access.workspace.id) throw new SchoodAIError('not_found', 'Channel not found.', 404);
   return channel;
@@ -84,7 +84,7 @@ async function verify(channel: Channel, telegram: TelegramApi | null): Promise<P
 export const channels = {
   async GET(ctx: RequestContext) {
     const access = await ctx.workspace();
-    const { store, telegram } = await teacherDeps();
+    const store = ctx.store(teacherStore), { telegram } = await teacherDeps();
     const rows = await store.channels(access.workspace.id);
     const out = [];
     for (const channel of rows) {
@@ -99,7 +99,7 @@ export const channels = {
     const raw = text(body.chat, 'chat', { max: 40 }).replace(/^https?:\/\/t\.me\//i, '@').replace(/^t\.me\//i, '@');
     const chatId = /^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(raw) ? `@${raw}` : raw;
     if (!CHAT_ID.test(chatId)) throw new SchoodAIError('invalid_request', 'Enter the channel as @username or its -100… id.', 400, { field: 'chat' });
-    const { store, telegram } = await teacherDeps();
+    const store = ctx.store(teacherStore), { telegram } = await teacherDeps();
     if ((await store.channels(access.workspace.id)).length >= 5) throw new SchoodAIError('channel_limit', 'Up to five channels per workspace.', 409);
     const created = await store.createChannel({
       workspaceId: access.workspace.id, ownerId: ctx.user.id, chatId, title: optionalText(body.title, 'title', { max: 128 }) ?? chatId, username: chatId.startsWith('@') ? chatId.slice(1) : null,
@@ -114,7 +114,7 @@ export const channels = {
   async PATCH(ctx: RequestContext) {
     const body = record(await ctx.body());
     const channel = await ownChannel(ctx, body.id);
-    const { store } = await teacherDeps();
+    const store = ctx.store(teacherStore);
     const updated = await store.updateChannel(channel.id, {
       ...(body.voice !== undefined ? { voice: optionalText(body.voice, 'voice', { max: 1000 }) ?? '' } : {}),
       ...(body.language !== undefined ? { language: oneOf(body.language, 'language', ['en', 'uz', 'ru'] as const) } : {}),
@@ -127,7 +127,7 @@ export const channels = {
   async DELETE(ctx: RequestContext) {
     const body = record(await ctx.body());
     const channel = await ownChannel(ctx, body.id);
-    const { store } = await teacherDeps();
+    const store = ctx.store(teacherStore);
     await store.deleteChannel(channel.id);
     await ctx.audit('channel.removed', {}, { type: 'channel', id: channel.id });
     return { deleted: true };
@@ -138,7 +138,7 @@ export const channels = {
 export async function verifyChannel(ctx: RequestContext) {
   const body = record(await ctx.body());
   const channel = await ownChannel(ctx, body.id);
-  const { store, telegram } = await teacherDeps();
+  const store = ctx.store(teacherStore), { telegram } = await teacherDeps();
   return { channel: channelJson((await store.updateChannel(channel.id, await verify(channel, telegram)))!) };
 }
 
@@ -149,7 +149,7 @@ export async function planWeek(ctx: RequestContext) {
   const channel = await ownChannel(ctx, body.channel_id);
   const weekStart = typeof body.week_start === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(body.week_start) ? body.week_start : nextMonday(ctx.now());
   if (new Date(`${weekStart}T00:00:00Z`).getUTCDay() !== 1) throw new SchoodAIError('invalid_request', 'A week starts on a Monday.', 400, { field: 'week_start' });
-  const { store } = await teacherDeps();
+  const store = ctx.store(teacherStore);
   const open = (await store.channelBatches(channel.id, 10)).find((batch) => batch.weekStart === weekStart && batch.status !== 'cancelled');
   if (open) return { batch: batchJson(open, await store.channelPosts(open.id)) };
   const batch = await store.createChannelBatch({ channelId: channel.id, workspaceId: channel.workspaceId, weekStart, createdBy: ctx.user.id });
@@ -180,7 +180,7 @@ const pollSchema: Schema<{ question: string; options: string[]; correct: number;
 /** POST teacher/channel-post-write: writes one post (3 credits). Earlier posts of the week are passed so nothing repeats. */
 export async function writePost(ctx: RequestContext) {
   const body = record(await ctx.body());
-  const { store } = await teacherDeps();
+  const store = ctx.store(teacherStore);
   const post = await store.channelPost(uuid(body.post_id, 'post_id'));
   if (!post) throw new SchoodAIError('not_found', 'Post not found.', 404);
   const channel = await ownChannel(ctx, post.channelId);
@@ -232,7 +232,7 @@ function readContent(kind: PostKind, value: unknown): PostContent {
 /** PATCH teacher/channel-post: the teacher's edit of a draft post, or a cancel of a scheduled one. */
 export async function editPost(ctx: RequestContext) {
   const body = record(await ctx.body());
-  const { store } = await teacherDeps();
+  const store = ctx.store(teacherStore);
   const post = await store.channelPost(uuid(body.id, 'id'));
   if (!post) throw new SchoodAIError('not_found', 'Post not found.', 404);
   await ownChannel(ctx, post.channelId);
@@ -271,7 +271,7 @@ export function registerChannelActions(): void {
     summary: (p, locale) => SUMMARY[locale].replace('{count}', String(p.posts.length)).replace('{channel}', p.channel_title).replace('{week}', p.week_start),
     display: (p) => Object.fromEntries([['channel', `${p.channel_title} (${p.chat_id})`], ...p.posts.map((post, index) => [`${index + 1}. ${post.kind} · ${post.at.slice(0, 16).replace('T', ' ')} UTC`, post.preview])]),
     async run(ctx, p) {
-      const { store } = await teacherDeps();
+      const store = ctx.store(teacherStore);
       const channel = await store.channel(p.channel_id);
       if (!channel || channel.workspaceId !== (await ctx.workspace()).workspace.id) throw new SchoodAIError('not_found', 'Channel not found.', 404);
       if (channel.status !== 'verified') throw new SchoodAIError('channel_not_verified', 'Add the Schood bot as an admin of the channel, then check it again.', 409);
@@ -294,7 +294,7 @@ export function registerChannelActions(): void {
 export async function proposeWeek(ctx: RequestContext) {
   await ctx.requireFeature('T11');
   const body = record(await ctx.body());
-  const { store } = await teacherDeps();
+  const store = ctx.store(teacherStore);
   const batch = await store.channelBatch(uuid(body.batch_id, 'batch_id'));
   if (!batch) throw new SchoodAIError('not_found', 'Week not found.', 404);
   const channel = await ownChannel(ctx, batch.channelId);
@@ -314,7 +314,7 @@ export async function proposeWeek(ctx: RequestContext) {
 
 /** Sends due posts for these workspaces, within Telegram's limits. Never throws. */
 export async function dispatchDue(ctx: RequestContext, workspaceIds: string[] | null, limit = 10): Promise<{ sent: number; failed: number; deferred: number }> {
-  const { store, telegram } = await teacherDeps();
+  const store = ctx.store(teacherStore), { telegram } = await teacherDeps();
   const out = { sent: 0, failed: 0, deferred: 0 };
   if (!telegram) return out;
   const now = ctx.now();

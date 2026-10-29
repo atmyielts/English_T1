@@ -1,11 +1,11 @@
 import { completion, fixture, type FixtureOptions } from '../fixture.test.ts';
 import type { FunctionCallInit, RequestContext } from '../types.ts';
-import { setTeacherDeps, type TelegramApi, type TelegramFailure, type TelegramReply } from './deps.ts';
+import { setTeacherDeps, teacherStore, type TelegramApi, type TelegramFailure, type TelegramReply } from './deps.ts';
 import { createMemoryTeacherStore } from './memory-store.ts';
 
 // Shared kit for the teacher area's route tests: core's fixture (real handler,
 // gateway, plans and memory repository with a fake model behind fetch) plus the
-// teacher deps: the memory teacher store, a fake Academy / Assessment Cloud reached
+// teacher deps: a fake Academy / Assessment Cloud reached
 // only with the person's own token, and a fake Telegram Bot API.
 
 export const ACADEMY = '30000000-0000-4000-8000-000000000001';
@@ -16,7 +16,9 @@ export interface RemoteRecord { token: string | null; name: string; path: string
 
 export function teacherFixture(options: FixtureOptions & { academy?: 'ok' | 'down' } = {}) {
   const f = fixture(options);
+  // The teacher tables: a memory twin the tests can read (f.teacher.sessions and so on).
   const teacher = createMemoryTeacherStore();
+  f.stores.use(teacherStore, teacher.store);
   const remote: RemoteRecord[] = [];
   const assignments: Record<string, unknown>[] = [];
   const items: { key: string; body: Record<string, unknown> }[] = [];
@@ -35,7 +37,6 @@ export function teacherFixture(options: FixtureOptions & { academy?: 'ok' | 'dow
   };
   const academyDown = options.academy === 'down';
   setTeacherDeps({
-    store: teacher.store,
     telegram,
     appOrigin: 'https://ai.schood.online',
     async callFunction<T>(ctx: RequestContext, name: string, path: string, init: FunctionCallInit & { headers?: Record<string, string> }): Promise<T> {

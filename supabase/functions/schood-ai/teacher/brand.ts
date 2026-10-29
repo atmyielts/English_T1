@@ -2,7 +2,7 @@ import { s } from '../../../../packages/ai-core/src/mod.ts';
 import { integer, oneOf, optionalText, record, stringList, text, uuid } from '../input.ts';
 import { dataBlock } from '../prompt.ts';
 import { SchoodAIError, type Locale, type RequestContext } from '../types.ts';
-import { teacherDeps } from './deps.ts';
+import { teacherStore } from './deps.ts';
 import type { BrandProfile, TutorResult } from './store.ts';
 
 // T13 tutor brand kit: course landing text, Instagram and Telegram posts and results
@@ -18,14 +18,14 @@ const resultJson = (result: TutorResult) => ({ id: result.id, student_label: res
 export const brand = {
   async GET(ctx: RequestContext) {
     const access = await ctx.workspace();
-    const { store } = await teacherDeps();
+    const store = ctx.store(teacherStore);
     const [profile, results] = await Promise.all([store.brandProfile(access.workspace.id), store.results(access.workspace.id)]);
     return { profile: profileJson(profile), results: results.map(resultJson) };
   },
   async PUT(ctx: RequestContext) {
     const access = await ctx.workspace({ roles: ['owner', 'admin', 'teacher'] });
     const body = record(await ctx.body());
-    const { store } = await teacherDeps();
+    const store = ctx.store(teacherStore);
     const profile = await store.saveBrandProfile({
       workspaceId: access.workspace.id, ownerId: ctx.user.id, displayName: text(body.display_name, 'display_name', { max: 120 }),
       subjects: optionalText(body.subjects, 'subjects', { max: 300 }) ?? '', city: optionalText(body.city, 'city', { max: 120 }) ?? '',
@@ -43,7 +43,7 @@ export const results = {
     const body = record(await ctx.body());
     const achieved = text(body.achieved_on, 'achieved_on', { max: 10 });
     if (!/^\d{4}-\d{2}-\d{2}$/.test(achieved) || Number.isNaN(Date.parse(achieved)) || Date.parse(achieved) > ctx.now().getTime()) throw new SchoodAIError('invalid_request', 'Give the date the result was achieved (not in the future).', 400, { field: 'achieved_on' });
-    const { store } = await teacherDeps();
+    const store = ctx.store(teacherStore);
     if ((await store.results(access.workspace.id)).length >= 200) throw new SchoodAIError('results_limit', 'Up to 200 results.', 409);
     const result = await store.addResult({
       workspaceId: access.workspace.id, ownerId: ctx.user.id, studentLabel: text(body.student_label, 'student_label', { max: 60 }), consent: body.consent === true,
@@ -56,7 +56,7 @@ export const results = {
   async DELETE(ctx: RequestContext) {
     const access = await ctx.workspace({ roles: ['owner', 'admin', 'teacher'] });
     const body = record(await ctx.body());
-    const { store } = await teacherDeps();
+    const store = ctx.store(teacherStore);
     return { deleted: await store.deleteResult(access.workspace.id, uuid(body.id, 'id')) };
   },
 };
@@ -85,7 +85,7 @@ export async function writeBrand(ctx: RequestContext) {
   const access = await ctx.requireFeature('T13');
   const kind = oneOf(body.kind, 'kind', ['landing', 'instagram', 'telegram', 'results'] as const);
   const language = oneOf(body.language ?? ctx.locale, 'language', ['en', 'uz', 'ru'] as const);
-  const { store } = await teacherDeps();
+  const store = ctx.store(teacherStore);
   const [profile, all] = await Promise.all([store.brandProfile(access.workspace.id), store.results(access.workspace.id)]);
   if (!profile) throw new SchoodAIError('profile_required', 'Fill in your profile first.', 409);
   const picked = Array.isArray(body.result_ids) ? stringList(body.result_ids, 'result_ids', { max: 12, pattern: /^[0-9a-f-]{36}$/ }) : [];

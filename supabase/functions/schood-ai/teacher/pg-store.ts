@@ -73,7 +73,8 @@ const listing = (row: Row): Listing => ({
 const rating = (row: Row): ListingRating => ({ listingId: String(row.listing_id), userId: String(row.user_id), stars: Number(row.stars), comment: str(row.comment), createdAt: String(row.created_at) });
 const copyRow = (row: Row): ListingCopy => ({ id: String(row.id), listingId: String(row.listing_id), workspaceId: String(row.workspace_id), userId: String(row.user_id), pageId: str(row.page_id), priceUzs: Number(row.price_uzs ?? 0), createdAt: String(row.created_at) });
 const ledgerRow = (row: Row): SellerLedgerRow => ({
-  id: Number(row.id), listingId: String(row.listing_id), sellerWorkspaceId: String(row.seller_workspace_id), buyerWorkspaceId: String(row.buyer_workspace_id), grossUzs: Number(row.gross_uzs),
+  id: Number(row.id), listingId: row.listing_id == null ? null : String(row.listing_id), listingTitle: String(row.listing_title),
+  sellerWorkspaceId: row.seller_workspace_id == null ? null : String(row.seller_workspace_id), buyerWorkspaceId: row.buyer_workspace_id == null ? null : String(row.buyer_workspace_id), grossUzs: Number(row.gross_uzs),
   commissionUzs: row.commission_uzs === null || row.commission_uzs === undefined ? null : Number(row.commission_uzs), netUzs: row.net_uzs === null || row.net_uzs === undefined ? null : Number(row.net_uzs),
   status: row.status as SellerLedgerRow['status'], reference: String(row.reference), createdAt: String(row.created_at),
 });
@@ -262,7 +263,7 @@ export function createPgTeacherStore(db: TeacherDatabase): TeacherStore {
     },
     async addLedger(row) {
       const res = await db.from('ai_teacher_seller_ledger').insert({
-        listing_id: row.listingId, seller_workspace_id: row.sellerWorkspaceId, buyer_workspace_id: row.buyerWorkspaceId, gross_uzs: row.grossUzs,
+        listing_id: row.listingId, listing_title: row.listingTitle, seller_workspace_id: row.sellerWorkspaceId, buyer_workspace_id: row.buyerWorkspaceId, gross_uzs: row.grossUzs,
         commission_uzs: row.commissionUzs, net_uzs: row.netUzs, status: row.status, reference: row.reference,
       }).select('*').single();
       if (unique(res)) return null;

@@ -15,7 +15,7 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf
 const fixture = read('supabase/tests/schood-ai-core.fixture.sql');
 // Every core migration first (20261030100000-199999, in order), as the core test applies them.
 const core = readdirSync(new URL('../supabase/migrations/', import.meta.url))
-  .filter((name) => /^202610301\d{5}_schood_ai_.*\.sql$/.test(name)).sort()
+  .filter((name) => /^202610301\d{5}_.*\.sql$/.test(name)).sort()
   .map((name) => read(`supabase/migrations/${name}`)).join('\n');
 const migration = read('supabase/migrations/20261030300000_schood_ai_teacher.sql');
 const integration = read('supabase/tests/schood-ai-teacher.integration.sql');
@@ -30,7 +30,7 @@ const integration = read('supabase/tests/schood-ai-teacher.integration.sql');
     await db.exec(migration);
     const results = await db.exec(integration);
     assert.equal(results.at(-1).rows[0]?.['?column?'], 'schood ai teacher: ok');
-    console.log('PGlite (PostgreSQL 17): teacher migration applies twice; quiz codes, nicknames and one answer per question, channel ids, ratings, copies, verified use, the append-only ledger and isolation passed.');
+    console.log('PGlite (PostgreSQL 17): teacher migration applies twice; quiz codes, nicknames and one answer per question, channel ids, ratings, copies, verified use, the append-only ledger, account closure through auth.users and isolation passed.');
   } finally {
     await db.close();
   }

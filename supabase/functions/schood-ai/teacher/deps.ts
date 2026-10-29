@@ -1,12 +1,18 @@
 import { classifyTelegramFailure, type TelegramFailureDecision } from '../../_shared/telegram-delivery.ts';
 import { SchoodAIError, type FunctionCallInit, type RequestContext } from '../types.ts';
+import { defineStore } from '../stores.ts';
 import { createMemoryTeacherStore } from './memory-store.ts';
 import { createPgTeacherStore, type TeacherDatabase } from './pg-store.ts';
 import type { TeacherStore } from './store.ts';
 
+/** The teacher tables (ai_teacher_*): Postgres when deployed, the memory twin in tests and dev stacks. Use ctx.store(teacherStore). */
+export const teacherStore = defineStore<TeacherStore>('teacher', {
+  postgres: (db) => createPgTeacherStore(db as unknown as TeacherDatabase),
+  memory: ({ now }) => createMemoryTeacherStore({ now }).store,
+});
+
 // What the teacher area needs beyond RequestContext, behind one small adapter that
 // can be deleted when core offers it (see docs/product/ai-requests/teacher.md):
-//   store         the teacher tables (core has no repository hook for an area's own tables);
 //   telegram      the Bot API for channel autopilot (T11), posting as the Schood bot;
 //   callFunction  another Schood Edge Function with the person's own token; it adds
 //                 request headers that ctx.functions.call cannot send yet (Assessment
@@ -22,7 +28,6 @@ export interface TelegramApi {
 }
 export type RemoteCall = <T = unknown>(ctx: RequestContext, name: string, path: string, init: FunctionCallInit & { headers?: Record<string, string> }) => Promise<T>;
 export interface TeacherDeps {
-  store: TeacherStore;
   /** Null until the owner sets a channel bot token (SCHOOD_AI_CHANNEL_BOT_TOKEN, else TELEGRAM_BOT_TOKEN). */
   telegram: TelegramApi | null;
   callFunction: RemoteCall;
@@ -100,29 +105,14 @@ export function botApi(token: string, fetcher: typeof fetch = fetch): TelegramAp
   return api;
 }
 
-async function fromEnvironment(): Promise<TeacherDeps> {
-  const url = env('SUPABASE_URL'), key = env('SUPABASE_SERVICE_ROLE_KEY');
-  let store: TeacherStore;
-  if (url && key) {
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.89.0');
-    store = createPgTeacherStore(createClient(url, key, { auth: { persistSession: false } }) as unknown as TeacherDatabase);
-  } else {
-    // Only the local dev stack runs without a project; production always has both.
-    console.warn(JSON.stringify({ event: 'schood_ai_teacher_memory_store' }));
-    store = createMemoryTeacherStore().store;
-  }
+function fromEnvironment(): TeacherDeps {
   const token = env('SCHOOD_AI_CHANNEL_BOT_TOKEN') ?? env('TELEGRAM_BOT_TOKEN');
   const origins = (env('SCHOOD_AI_ALLOWED_ORIGINS') ?? '').split(',').map((origin) => origin.trim()).filter((origin) => /^https:\/\/[a-z0-9.-]+$/i.test(origin));
-  return { store, telegram: token ? botApi(token) : null, callFunction: remoteCall, appOrigin: origins[0] ?? 'https://ai.schood.online' };
+  return { telegram: token ? botApi(token) : null, callFunction: remoteCall, appOrigin: origins[0] ?? 'https://ai.schood.online' };
 }
 
 /** The deps in force: what setTeacherDeps gave, filled in from the environment. */
 export function teacherDeps(): Promise<TeacherDeps> {
-  built ??= (async () => {
-    if (configured?.store && configured.callFunction && 'telegram' in configured && configured.appOrigin) return configured as TeacherDeps;
-    const base = configured?.store && configured.callFunction ? { store: configured.store, telegram: null, callFunction: configured.callFunction, appOrigin: 'https://ai.schood.online' } : await fromEnvironment();
-    return { ...base, ...configured } as TeacherDeps;
-  })();
-  built.catch(() => { built = null; });
+  built ??= Promise.resolve({ ...fromEnvironment(), ...configured } as TeacherDeps);
   return built;
 }

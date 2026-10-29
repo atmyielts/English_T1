@@ -2,10 +2,9 @@
 
 What the teacher area (T1–T6, T9–T15, branch `claude/ai-teacher`) needs from core. Each item says what the teacher area does until then. Every workaround lives in the teacher area and can be deleted when core ships the item.
 
-## 1. A repository hook for an area's own tables
+## 1. A repository hook for an area's own tables (done in core)
 
-- **Need:** a way for an area to reach its own tables through the service client, for example `ctx.db` (the same `{ from, rpc }` client `repository.ts` uses) or a `registerRepository(area, factory)` hook in `index.ts`.
-- **Until then:** `teacher/deps.ts` creates its own service-role client from `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` on first use, and falls back to an in-memory store when they are missing (the local dev stack only). Tests replace it with `setTeacherDeps()`.
+- Core shipped `defineStore` and `ctx.store` in 5571577e. The teacher tables now go through `ctx.store(teacherStore)` (`teacher/deps.ts`); the teacher area's own service-role client is gone.
 
 ## 2. Request headers in `ctx.functions.call`
 
@@ -25,11 +24,9 @@ What the teacher area (T1–T6, T9–T15, branch `claude/ai-teacher`) needs from
 - **Need:** a route flag such as `anonymous: true` (rate-limited by IP), and an app `api()` option to call it without a token. Students should be able to join a Live Quiz (T10) with a code and a nickname, without a Schood account.
 - **Until then:** `/play` is a public page that asks students to sign in (a free account is enough; playing uses no AI). The player routes already identify a player by a per-game token, so they work as anonymous routes as soon as the flag exists.
 
-## 5. Lazy English catalogs for areas
+## 5. Lazy English catalogs for areas (done in core)
 
-- **Need:** load an area's English with its first route, or let an area mark part of its catalog as lazy. Core's `i18n/index.ts` bundles every area's English into the first download.
-- **Cost today:** the teacher English catalog is about 12 KB gzip of the main chunk (main chunk 128.9 KB with the teacher area, against core's 112 KB). The rest of the teacher area's first-download cost is about 5 KB: routes, navigation and the kind registrations.
-- **Already done in the teacher area:** the materials package is no longer re-exported from ai-core's `mod.ts`. As a static dependency of the entry, it put about 13 KB gzip of exam formats, topic data and schemas into the main chunk. Import it from `packages/ai-core/src/materials/mod.ts`.
+- Core loads every area's catalog on demand since 5571577e. The materials package is still imported from `packages/ai-core/src/materials/mod.ts` (not ai-core's `mod.ts`), which keeps its exam formats and schemas out of the first download.
 
 ## 6. Print: an independent teacher's own logo
 

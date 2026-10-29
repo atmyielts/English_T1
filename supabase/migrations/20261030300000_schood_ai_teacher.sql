@@ -241,12 +241,15 @@ create table if not exists public.ai_teacher_listing_uses (
 );
 
 -- Seller earnings for paid listings. Append-only; commission stays null until the
--- owner sets the rate. Nothing here pays anyone out.
+-- owner sets the rate. Nothing here pays anyone out. Like ai_credit_ledger, rows
+-- outlive a closed account: a deleted listing or workspace is unlinked (set null),
+-- never deleted, and the listing's title stays on the row.
 create table if not exists public.ai_teacher_seller_ledger (
   id bigint generated always as identity primary key,
-  listing_id uuid not null references public.ai_teacher_listings(id) on delete restrict,
-  seller_workspace_id uuid not null references public.ai_workspaces(id) on delete cascade,
-  buyer_workspace_id uuid not null references public.ai_workspaces(id) on delete cascade,
+  listing_id uuid references public.ai_teacher_listings(id) on delete set null,
+  listing_title text not null check (char_length(btrim(listing_title)) between 1 and 160),
+  seller_workspace_id uuid references public.ai_workspaces(id) on delete set null,
+  buyer_workspace_id uuid references public.ai_workspaces(id) on delete set null,
   gross_uzs integer not null check (gross_uzs >= 0),
   commission_uzs integer check (commission_uzs is null or commission_uzs >= 0),
   net_uzs integer check (net_uzs is null or net_uzs >= 0),
@@ -296,9 +299,17 @@ begin
   end loop;
 end $$;
 
--- The earnings ledger only grows.
-create or replace function public.ai_teacher_ledger_guard() returns trigger language plpgsql as $$
+-- The earnings ledger only grows. The one change allowed is unlinking a deleted
+-- listing or workspace (the foreign keys' set null), as ai_credit_ledger_guard does.
+create or replace function public.ai_teacher_ledger_guard() returns trigger language plpgsql set search_path = public, pg_temp as $$
 begin
+  if tg_op = 'UPDATE'
+    and (new.listing_id is null or new.listing_id is not distinct from old.listing_id)
+    and (new.seller_workspace_id is null or new.seller_workspace_id is not distinct from old.seller_workspace_id)
+    and (new.buyer_workspace_id is null or new.buyer_workspace_id is not distinct from old.buyer_workspace_id)
+    and (to_jsonb(new) - 'listing_id' - 'seller_workspace_id' - 'buyer_workspace_id') = (to_jsonb(old) - 'listing_id' - 'seller_workspace_id' - 'buyer_workspace_id') then
+    return new;
+  end if;
   raise exception 'ai_teacher_seller_ledger is append-only' using errcode = '42501';
 end $$;
 drop trigger if exists ai_teacher_seller_ledger_guard on public.ai_teacher_seller_ledger;

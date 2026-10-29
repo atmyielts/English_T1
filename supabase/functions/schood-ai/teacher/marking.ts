@@ -6,7 +6,7 @@ import { speakingScore, writingScore } from '../../_shared/english-exam-format.t
 import { integer, oneOf, optionalText, record, text, uuid } from '../input.ts';
 import { dataBlock, neutralise, wrapUserMessage } from '../prompt.ts';
 import { SchoodAIError, type ChatMessage, type Locale, type RequestContext } from '../types.ts';
-import { teacherDeps } from './deps.ts';
+import { teacherStore } from './deps.ts';
 import type { MarkingBatch, Script } from './store.ts';
 
 // T3 marking assistant and T14 speaking marking from recordings: batches of scripts
@@ -117,13 +117,13 @@ const batchJson = (batch: MarkingBatch) => ({ id: batch.id, title: batch.title, 
 
 async function ownBatch(ctx: RequestContext, id: unknown): Promise<MarkingBatch> {
   const access = await ctx.workspace();
-  const { store } = await teacherDeps();
+  const store = ctx.store(teacherStore);
   const batch = await store.batch(uuid(id, 'batch_id'));
   if (!batch || batch.workspaceId !== access.workspace.id || batch.ownerId !== ctx.user.id) throw new SchoodAIError('not_found', 'Batch not found.', 404);
   return batch;
 }
 async function ownScript(ctx: RequestContext, id: unknown): Promise<{ script: Script; batch: MarkingBatch }> {
-  const { store } = await teacherDeps();
+  const store = ctx.store(teacherStore);
   const script = await store.script(uuid(id, 'script_id'));
   if (!script) throw new SchoodAIError('not_found', 'Script not found.', 404);
   return { script, batch: await ownBatch(ctx, script.batchId) };
@@ -135,7 +135,7 @@ export const batches = {
   /** Your marking batches, or one batch with its scripts (?id=). */
   async GET(ctx: RequestContext) {
     const id = ctx.query.get('id');
-    const { store } = await teacherDeps();
+    const store = ctx.store(teacherStore);
     if (id) {
       const batch = await ownBatch(ctx, id);
       return { batch: batchJson(batch), rubric: RUBRICS[batch.rubric] ?? null, scripts: (await store.scripts(batch.id)).map(scriptJson) };
@@ -147,7 +147,7 @@ export const batches = {
     const access = await ctx.requireFeature('T3');
     const body = record(await ctx.body());
     const rubric = oneOf(body.rubric, 'rubric', Object.keys(RUBRICS) as [string, ...string[]]);
-    const { store } = await teacherDeps();
+    const store = ctx.store(teacherStore);
     const batch = await store.createBatch({
       workspaceId: access.workspace.id, ownerId: ctx.user.id, title: text(body.title, 'title', { max: 200 }), rubric,
       task: optionalText(body.task, 'task', { max: 6000 }) ?? '', level: optionalText(body.level, 'level', { max: 20 }),
@@ -158,7 +158,7 @@ export const batches = {
   async PATCH(ctx: RequestContext) {
     const body = record(await ctx.body());
     const batch = await ownBatch(ctx, body.id);
-    const { store } = await teacherDeps();
+    const store = ctx.store(teacherStore);
     const updated = await store.updateBatch(batch.id, {
       ...(body.title !== undefined ? { title: text(body.title, 'title', { max: 200 }) } : {}),
       ...(body.task !== undefined ? { task: optionalText(body.task, 'task', { max: 6000 }) ?? '' } : {}),
@@ -176,7 +176,7 @@ export const scripts = {
     const batch = await ownBatch(ctx, body.batch_id);
     const source = oneOf(body.source, 'source', SOURCES);
     if (source === 'recording') throw new SchoodAIError('invalid_request', 'Upload recordings with marking-audio.', 400, { field: 'source' });
-    const { store } = await teacherDeps();
+    const store = ctx.store(teacherStore);
     if ((await store.scripts(batch.id)).length >= 60) throw new SchoodAIError('batch_full', 'A batch holds up to 60 scripts.', 409);
     const meta = body.meta && typeof body.meta === 'object' ? record(body.meta, 'meta') : {};
     const cleanMeta = {
@@ -194,7 +194,7 @@ export const scripts = {
     const body = record(await ctx.body());
     const { script, batch } = await ownScript(ctx, body.id);
     const rubric = RUBRICS[batch.rubric];
-    const { store } = await teacherDeps();
+    const store = ctx.store(teacherStore);
     const patch: Partial<Script> = {};
     if (body.text !== undefined) patch.text = text(body.text, 'text', { max: 20_000, min: 20 });
     if (body.student_label !== undefined) patch.studentLabel = text(body.student_label, 'student_label', { max: 80 });
@@ -222,7 +222,7 @@ export const scripts = {
   async DELETE(ctx: RequestContext) {
     const body = record(await ctx.body());
     const { script } = await ownScript(ctx, body.id);
-    const { store } = await teacherDeps();
+    const store = ctx.store(teacherStore);
     await store.deleteScript(script.id);
     return { deleted: true };
   },
@@ -242,7 +242,7 @@ export async function markScript(ctx: RequestContext) {
       throw new SchoodAIError('invalid_request', 'Add up to three photos of the script (PNG, JPEG or WebP, under 3 MB each).', 400, { field: 'images' });
     }
   }
-  const { store } = await teacherDeps();
+  const store = ctx.store(teacherStore);
   const workspace = (await ctx.workspace()).workspace;
   const key = rubric.mode === 'speaking' ? 'speaking.marking' : 'marking.script';
   const photo = script.source === 'photo' && !script.text;
@@ -280,7 +280,7 @@ export async function markRecording(ctx: RequestContext) {
   if (!/^audio\/(webm|ogg|mpeg|mp4|wav|x-wav|m4a|aac)$/.test(mime)) throw new SchoodAIError('invalid_request', 'Upload WebM, OGG, MP3, M4A or WAV audio.', 400, { field: 'mime' });
   const audio = decodeAudio(body.audio);
   if (audio.length < 1000) throw new SchoodAIError('invalid_request', 'The recording is empty.', 400, { field: 'audio' });
-  const { store } = await teacherDeps();
+  const store = ctx.store(teacherStore);
   const workspace = (await ctx.workspace()).workspace;
   const reference = `speaking-marking:${batch.id}:${ctx.idempotencyKey ?? crypto.randomUUID()}`;
   // Throws ai_unavailable until the owner sets up a speech provider; the app then asks for a typed transcript.
@@ -349,7 +349,7 @@ export async function writingSignals(ctx: RequestContext) {
   const body = record(await ctx.body());
   const { script, batch } = await ownScript(ctx, body.script_id);
   if (RUBRICS[batch.rubric].mode !== 'writing' || !script.text) throw new SchoodAIError('invalid_request', 'Signals are for written scripts with text.', 400, { field: 'script_id' });
-  const { store } = await teacherDeps();
+  const store = ctx.store(teacherStore);
   const others = await store.scripts(batch.id);
   const signals = deterministicSignals(script, others);
   const result = await ctx.ai.json({

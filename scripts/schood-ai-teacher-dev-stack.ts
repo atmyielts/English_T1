@@ -1,5 +1,5 @@
 // Local dev stack for the teacher screens of apps/schood-ai: the real schood-ai
-// handler over the memory repository and the memory teacher store, with a fake model
+// handler over the memory repository and memory area stores, with a fake model
 // that writes teaching materials, checks, marks and posts, a fake Academy and
 // Assessment Cloud, and a fake Telegram Bot API. No network, no Supabase project,
 // no keys. (The core dev stack's fake model writes chat answers only.)
@@ -16,7 +16,6 @@ import { createSchoodAIHandler } from '../supabase/functions/schood-ai/handler.t
 import { createMemoryRepository } from '../supabase/functions/schood-ai/memory-repository.ts';
 import { createPlanResolver } from '../supabase/functions/schood-ai/plan.ts';
 import { setTeacherDeps, type TelegramApi } from '../supabase/functions/schood-ai/teacher/deps.ts';
-import { createMemoryTeacherStore } from '../supabase/functions/schood-ai/teacher/memory-store.ts';
 
 const PORT = Number(Deno.env.get('SCHOOD_AI_DEV_PORT') ?? '54332');
 const ORIGINS = (Deno.env.get('SCHOOD_AI_DEV_ORIGINS') ?? 'http://127.0.0.1:5202').split(',');
@@ -30,7 +29,6 @@ const users = {
   'dev-free': { id: '00000000-0000-4000-8000-0000000000e5', email: 'free@example.com', name: 'Free Learner' },
 };
 const memory = createMemoryRepository({ users });
-const teacher = createMemoryTeacherStore();
 
 const PASSAGE = 'A few years ago, a group of office workers in a large city began keeping bees on the rooftops of their building. At first their neighbours worried about stings, but the hives proved calm and productive.\n\nThe workers now collect around forty kilograms of honey each summer. They sell it in the building\'s café and give the money to a local school garden. Some of the wax is used to make candles.\n\nScientists say city bees can be healthier than country bees, because parks and balconies offer many kinds of flowers. However, they warn that too many hives in one area may leave too little food for wild pollinators.';
 const QUESTIONS = { sets: [
@@ -119,7 +117,7 @@ const telegram: TelegramApi = {
   },
 };
 setTeacherDeps({
-  store: teacher.store, telegram, appOrigin: ORIGINS[0],
+  telegram, appOrigin: ORIGINS[0],
   callFunction<T>(_ctx: unknown, name: string, path: string, init: { body?: unknown; headers?: Record<string, string> }): Promise<T> {
     const body = (init.body ?? {}) as Record<string, unknown>;
     console.log(`[remote] ${name}${path} ${String(body.action ?? '')}`);

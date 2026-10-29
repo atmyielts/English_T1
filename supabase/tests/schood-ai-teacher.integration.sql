@@ -109,7 +109,7 @@ begin
   assert (select usage_count from public.ai_teacher_listings where id = listing.id) = 1, 'usage counts distinct workspaces';
 
   -- The earnings ledger only grows.
-  insert into public.ai_teacher_seller_ledger (listing_id, seller_workspace_id, buyer_workspace_id, gross_uzs, reference) values (listing.id, ws, buyer_ws, 15000, 'sale-1');
+  insert into public.ai_teacher_seller_ledger (listing_id, listing_title, seller_workspace_id, buyer_workspace_id, gross_uzs, reference) values (listing.id, listing.title, ws, buyer_ws, 15000, 'sale-1');
   raised := false;
   begin
     update public.ai_teacher_seller_ledger set gross_uzs = 0 where reference = 'sale-1';
@@ -124,7 +124,13 @@ begin
   assert raised, 'ledger rows cannot be deleted';
   raised := false;
   begin
-    insert into public.ai_teacher_seller_ledger (listing_id, seller_workspace_id, buyer_workspace_id, gross_uzs, reference) values (listing.id, ws, buyer_ws, 15000, 'sale-1');
+    update public.ai_teacher_seller_ledger set buyer_workspace_id = null, gross_uzs = 1 where reference = 'sale-1';
+  exception when insufficient_privilege then raised := true;
+  end;
+  assert raised, 'unlinking cannot carry another change';
+  raised := false;
+  begin
+    insert into public.ai_teacher_seller_ledger (listing_id, listing_title, seller_workspace_id, buyer_workspace_id, gross_uzs, reference) values (listing.id, listing.title, ws, buyer_ws, 15000, 'sale-1');
   exception when unique_violation then raised := true;
   end;
   assert raised, 'a sale is recorded once';
@@ -148,6 +154,58 @@ begin
   assert has_function_privilege('service_role', 'public.ai_teacher_quiz_answer(uuid, uuid, integer, text, boolean, integer)', 'execute'), 'the function can';
   assert not has_table_privilege('service_role', 'public.ai_teacher_quiz_answers', 'insert'), 'answers only through the function';
   assert (select count(*) from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and c.relkind = 'r' and c.relname like 'ai\_teacher\_%') = 16, 'sixteen teacher tables';
+end $$;
+
+-- Account closure through auth.users (the core fixture's stand-in for the real
+-- closure transaction): the teacher area's personal rows go, the personal
+-- workspace's teacher rows go with it, the seller ledger stays unlinked with the
+-- listing's title, centre rows stay, and listing totals stay exact.
+insert into public.users (id) values ('00000000-0000-4000-8000-0000000000c1'), ('00000000-0000-4000-8000-0000000000c2'), ('00000000-0000-4000-8000-0000000000c3');
+insert into auth.users (id) values ('00000000-0000-4000-8000-0000000000c1'), ('00000000-0000-4000-8000-0000000000c2'), ('00000000-0000-4000-8000-0000000000c3');
+do $$
+declare
+  leaver constant uuid := '00000000-0000-4000-8000-0000000000c1';
+  boss constant uuid := '00000000-0000-4000-8000-0000000000c2';
+  rater constant uuid := '00000000-0000-4000-8000-0000000000c3';
+  personal uuid := (public.ai_ensure_personal_workspace(leaver, 'Leaver')).id;
+  rater_ws uuid := (public.ai_ensure_personal_workspace(rater, 'Rater')).id;
+  centre uuid;
+  own_listing uuid;
+  other_listing uuid;
+  own_game uuid;
+  centre_game uuid;
+  centre_batch uuid;
+begin
+  assert 'ai_teacher_quiz_players' = any(public.account_personal_erasure_tables()) and 'ai_teacher_listing_ratings' = any(public.account_personal_erasure_tables()), 'teacher personal tables registered';
+  insert into public.ai_workspaces (kind, name, owner_id) values ('centre', 'Registan', boss) returning id into centre;
+  insert into public.ai_workspace_members (workspace_id, user_id, role) values (centre, boss, 'owner'), (centre, leaver, 'teacher');
+
+  -- In the personal workspace: a published listing with a paid sale, a game, a channel.
+  insert into public.ai_teacher_listings (seller_workspace_id, seller_id, seller_name, title, kind, level, language, material, price_uzs, status)
+  values (personal, leaver, 'Leaver', 'Paid set', 'ielts_reading', 'B2', 'en', '{"title":"Paid set"}', 15000, 'published') returning id into own_listing;
+  insert into public.ai_teacher_seller_ledger (listing_id, listing_title, seller_workspace_id, buyer_workspace_id, gross_uzs, reference) values (own_listing, 'Paid set', personal, rater_ws, 15000, 'sale-leaver');
+  insert into public.ai_teacher_quiz_sessions (workspace_id, host_id, title, code, questions) values (personal, leaver, 'Own game', '700001', '[{"id":"q1"}]') returning id into own_game;
+  insert into public.ai_teacher_channels (workspace_id, owner_id, chat_id, title) values (personal, leaver, '-1009990001', 'Leaver channel');
+  -- In the centre: a game and a marking batch the leaver ran stay with the centre.
+  insert into public.ai_teacher_quiz_sessions (workspace_id, host_id, title, code, questions) values (centre, leaver, 'Centre game', '700002', '[{"id":"q1"}]') returning id into centre_game;
+  insert into public.ai_teacher_marking_batches (workspace_id, owner_id, title, rubric) values (centre, leaver, 'Mock 3', 'ielts_task2') returning id into centre_batch;
+  -- As a player and a rater elsewhere: a nickname in the boss's game and a rating of someone else's listing.
+  insert into public.ai_teacher_listings (seller_workspace_id, seller_id, seller_name, title, kind, level, language, material, status)
+  values (rater_ws, rater, 'Rater', 'Free set', 'quiz', 'A2', 'en', '{"title":"Free set"}', 'published') returning id into other_listing;
+  perform public.ai_teacher_rate_listing(other_listing, leaver, 4, 'Useful');
+  perform public.ai_teacher_rate_listing(other_listing, rater, 2, null);
+  insert into public.ai_teacher_quiz_players (session_id, user_id, nickname, token_hash) values (centre_game, leaver, 'Leaver', repeat('c', 64));
+
+  update auth.users set deleted_at = now() where id = leaver;
+  assert exists (select 1 from public.account_closure_receipts where user_id = leaver), 'closed';
+  assert not exists (select 1 from public.ai_workspaces where id = personal), 'personal workspace deleted';
+  assert not exists (select 1 from public.ai_teacher_listings where id = own_listing), 'own listing gone with it';
+  assert not exists (select 1 from public.ai_teacher_quiz_sessions where id = own_game) and not exists (select 1 from public.ai_teacher_channels where workspace_id = personal), 'personal games and channels gone';
+  assert (select listing_id is null and seller_workspace_id is null and buyer_workspace_id = rater_ws and listing_title = 'Paid set' and gross_uzs = 15000 from public.ai_teacher_seller_ledger where reference = 'sale-leaver'), 'the sale stays, unlinked';
+  assert exists (select 1 from public.ai_teacher_quiz_sessions where id = centre_game) and exists (select 1 from public.ai_teacher_marking_batches where id = centre_batch), 'centre work stays with the centre';
+  assert not exists (select 1 from public.ai_teacher_quiz_players where user_id = leaver), 'their nicknames are gone';
+  assert not exists (select 1 from public.ai_teacher_listing_ratings where user_id = leaver), 'their ratings are gone';
+  assert (select rating_count = 1 and rating_sum = 2 from public.ai_teacher_listings where id = other_listing), 'listing totals stay exact';
 end $$;
 
 select 'schood ai teacher: ok';

@@ -2,7 +2,7 @@ import { checkMaterial, parseMaterial, studentView, type Block, type Material } 
 import { registerActionKind } from '../actions.ts';
 import { integer, oneOf, optionalText, record, stringList, text, uuid } from '../input.ts';
 import { SchoodAIError, type Locale, type RequestContext } from '../types.ts';
-import { teacherDeps } from './deps.ts';
+import { teacherStore } from './deps.ts';
 import { actionView } from './views.ts';
 import { approvedPage, saveApprovedCopy } from './library.ts';
 import type { PageView } from '../library.ts';
@@ -28,7 +28,7 @@ const paidEnabled = async (ctx: RequestContext) => (await ctx.repo.settings()).f
 /** Counts a verified use when the page is a marketplace copy. */
 export async function recordListingUse(ctx: RequestContext, page: PageView, kind: 'homework' | 'live_quiz' | 'print' | 'assessment'): Promise<void> {
   try {
-    const { store } = await teacherDeps();
+    const store = ctx.store(teacherStore);
     const copy = await store.copyByPage(page.id);
     if (copy && copy.workspaceId === page.workspace_id) await store.recordUse(copy.listingId, copy.workspaceId, kind);
     void ctx;
@@ -59,7 +59,7 @@ const card = (listing: Listing) => ({
 /** GET teacher/market: search published listings. */
 export async function searchMarket(ctx: RequestContext) {
   await ctx.workspace();
-  const { store } = await teacherDeps();
+  const store = ctx.store(teacherStore);
   const page = Math.max(0, Math.min(50, Number(ctx.query.get('page') ?? '0') || 0));
   const price = ctx.query.get('price');
   const sort = ctx.query.get('sort');
@@ -73,7 +73,7 @@ export async function searchMarket(ctx: RequestContext) {
 /** GET teacher/market-listing?id= */
 export async function getListing(ctx: RequestContext) {
   const access = await ctx.workspace();
-  const { store } = await teacherDeps();
+  const store = ctx.store(teacherStore);
   const listing = await store.listing(uuid(ctx.query.get('id'), 'id'));
   const seller = listing && listing.sellerWorkspaceId === access.workspace.id;
   if (!listing || (listing.status !== 'published' && !seller)) throw new SchoodAIError('not_found', 'Listing not found.', 404);
@@ -90,7 +90,7 @@ export async function getListing(ctx: RequestContext) {
 export async function acquireListing(ctx: RequestContext) {
   const body = record(await ctx.body());
   const access = await ctx.requireFeature('T6');
-  const { store } = await teacherDeps();
+  const store = ctx.store(teacherStore);
   const listing = await store.listing(uuid(body.id, 'id'));
   if (!listing || listing.status !== 'published') throw new SchoodAIError('not_found', 'Listing not found.', 404);
   if (listing.sellerWorkspaceId === access.workspace.id) throw new SchoodAIError('own_listing', 'This is your own listing.', 409);
@@ -116,7 +116,7 @@ export async function acquireListing(ctx: RequestContext) {
 export async function rateListing(ctx: RequestContext) {
   const body = record(await ctx.body());
   const access = await ctx.workspace();
-  const { store } = await teacherDeps();
+  const store = ctx.store(teacherStore);
   const listing = await store.listing(uuid(body.id, 'id'));
   if (!listing || listing.status !== 'published') throw new SchoodAIError('not_found', 'Listing not found.', 404);
   if (!(await store.copyFor(listing.id, access.workspace.id))) throw new SchoodAIError('copy_required', 'Take a copy before rating it.', 409);
@@ -153,7 +153,7 @@ export function registerMarketActions(): void {
       const { page, access, material } = await approvedPage(ctx, p.page_id);
       if (page.revision !== p.revision) throw new SchoodAIError('material_changed', 'The material was edited after this was proposed. Propose it again.', 409);
       if (p.price_uzs > 0 && !(await paidEnabled(ctx))) throw new SchoodAIError('paid_listings_off', 'Paid listings are not open yet.', 409);
-      const { store } = await teacherDeps();
+      const store = ctx.store(teacherStore);
       if (await store.copyByPage(page.id)) throw new SchoodAIError('not_original', 'Only your own materials can be listed.', 409);
       const listing = await store.createListing({
         sellerWorkspaceId: access.workspace.id, sellerId: ctx.user.id, sellerName: p.seller_name, sourcePageId: page.id, title: p.title, description: p.description,
@@ -170,7 +170,7 @@ export async function proposeListing(ctx: RequestContext) {
   const body = record(await ctx.body());
   await ctx.requireFeature('T12');
   const { page, access, material } = await approvedPage(ctx, body.page_id);
-  const { store } = await teacherDeps();
+  const store = ctx.store(teacherStore);
   if (await store.copyByPage(page.id)) throw new SchoodAIError('not_original', 'Only your own materials can be listed.', 409);
   const price = body.price_uzs === undefined ? 0 : integer(body.price_uzs, 'price_uzs', 0, 10_000_000);
   if (price > 0 && !(await paidEnabled(ctx))) throw new SchoodAIError('paid_listings_off', 'Paid listings are not open yet. List it for free, or wait.', 409);
@@ -191,7 +191,7 @@ export async function proposeListing(ctx: RequestContext) {
 /** GET teacher/market-mine: your listings, their status and the earnings ledger. */
 export async function myListings(ctx: RequestContext) {
   const access = await ctx.workspace();
-  const { store } = await teacherDeps();
+  const store = ctx.store(teacherStore);
   const [listings, ledger] = await Promise.all([store.sellerListings(access.workspace.id), store.ledger(access.workspace.id, 100)]);
   const pending = ledger.filter((row) => row.status === 'pending');
   return {
@@ -206,7 +206,7 @@ export async function myListings(ctx: RequestContext) {
 export async function withdrawListing(ctx: RequestContext) {
   const body = record(await ctx.body());
   const access = await ctx.workspace({ roles: ['owner', 'admin', 'teacher'] });
-  const { store } = await teacherDeps();
+  const store = ctx.store(teacherStore);
   const listing = await store.listing(uuid(body.id, 'id'));
   if (!listing || listing.sellerWorkspaceId !== access.workspace.id) throw new SchoodAIError('not_found', 'Listing not found.', 404);
   if (access.workspace.kind === 'centre' && access.role === 'teacher' && listing.sellerId !== ctx.user.id) throw new SchoodAIError('role_required', 'Ask the centre owner to withdraw this listing.', 403);
@@ -224,7 +224,7 @@ export const moderation = {
   /** The queue, oldest first, with each material's key checks. */
   async GET(ctx: RequestContext) {
     await requireModerator(ctx);
-    const { store } = await teacherDeps();
+    const store = ctx.store(teacherStore);
     const queue = await store.moderationQueue(50);
     return {
       queue: queue.map((listing) => {
@@ -240,7 +240,7 @@ export const moderation = {
     const decision = oneOf(body.decision, 'decision', ['publish', 'reject'] as const);
     const note = optionalText(body.note, 'note', { max: 1000 });
     if (decision === 'reject' && !note) throw new SchoodAIError('invalid_request', 'Tell the seller what to fix.', 400, { field: 'note' });
-    const { store } = await teacherDeps();
+    const store = ctx.store(teacherStore);
     const now = ctx.now().toISOString();
     const updated = await store.updateListing(uuid(body.id, 'id'), {
       status: decision === 'publish' ? 'published' : 'rejected', moderationNote: note, moderatedBy: ctx.user.id, moderatedAt: now, ...(decision === 'publish' ? { publishedAt: now } : {}),
@@ -255,11 +255,11 @@ export const moderation = {
  * Records a paid sale in the seller's earnings ledger. Called by checkout once the owner
  * builds it; nothing calls it today. The commission stays empty until its rate is set.
  */
-export async function recordSale(input: { listing: Listing; copy: ListingCopy; reference: string }): Promise<SellerLedgerRow | null> {
-  const { store } = await teacherDeps();
+export async function recordSale(ctx: RequestContext, input: { listing: Listing; copy: ListingCopy; reference: string }): Promise<SellerLedgerRow | null> {
+  const store = ctx.store(teacherStore);
   const commission = MARKETPLACE_COMMISSION_RATE === null ? null : Math.round(input.copy.priceUzs * MARKETPLACE_COMMISSION_RATE);
   return store.addLedger({
-    listingId: input.listing.id, sellerWorkspaceId: input.listing.sellerWorkspaceId, buyerWorkspaceId: input.copy.workspaceId, grossUzs: input.copy.priceUzs,
+    listingId: input.listing.id, listingTitle: input.listing.title, sellerWorkspaceId: input.listing.sellerWorkspaceId, buyerWorkspaceId: input.copy.workspaceId, grossUzs: input.copy.priceUzs,
     commissionUzs: commission, netUzs: commission === null ? null : input.copy.priceUzs - commission, status: 'pending', reference: input.reference,
   });
 }

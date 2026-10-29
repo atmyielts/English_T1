@@ -4,7 +4,7 @@ import { isUuid, oneOf, optionalText, record, text, uuid } from '../input.ts';
 import { SchoodAIError, type Locale, type RequestContext } from '../types.ts';
 import { brandingView } from '../core/views.ts';
 import { academyGroups, createAssignment, weakSpots } from './academy.ts';
-import { teacherDeps } from './deps.ts';
+import { teacherDeps, teacherStore } from './deps.ts';
 import { approvedPage } from './library.ts';
 import type { PageView } from '../library.ts';
 import { recordListingUse } from './market.ts';
@@ -27,7 +27,7 @@ function token(): string {
 
 /** A link to the student version of an approved page; students sign in with Schood to open it. */
 export async function createHandout(ctx: RequestContext, page: PageView): Promise<{ id: string; url: string }> {
-  const { store, appOrigin } = await teacherDeps();
+  const store = ctx.store(teacherStore), { appOrigin } = await teacherDeps();
   const secret = token();
   const handout = await store.createHandout({ workspaceId: page.workspace_id, pageId: page.id, tokenHash: await sha256(secret), createdBy: ctx.user.id });
   return { id: handout.id, url: `${appOrigin}/handout/${secret}` };
@@ -37,7 +37,7 @@ export async function createHandout(ctx: RequestContext, page: PageView): Promis
 export async function getHandout(ctx: RequestContext) {
   const secret = ctx.query.get('token') ?? '';
   if (!/^[A-Za-z0-9_-]{20,64}$/.test(secret)) throw new SchoodAIError('not_found', 'This link is not valid.', 404);
-  const { store } = await teacherDeps();
+  const store = ctx.store(teacherStore);
   const handout = await store.handoutByHash(await sha256(secret));
   if (!handout || handout.revokedAt) throw new SchoodAIError('not_found', 'This link is not valid.', 404);
   // The link is the permission: the page itself stays in the teacher's library.

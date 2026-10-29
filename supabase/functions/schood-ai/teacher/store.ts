@@ -142,7 +142,8 @@ export interface Listing {
 }
 export interface ListingRating { listingId: string; userId: string; stars: number; comment: string | null; createdAt: string }
 export interface ListingCopy { id: string; listingId: string; workspaceId: string; userId: string; pageId: string | null; priceUzs: number; createdAt: string }
-export interface SellerLedgerRow { id: number; listingId: string; sellerWorkspaceId: string; buyerWorkspaceId: string; grossUzs: number; commissionUzs: number | null; netUzs: number | null; status: 'pending' | 'cleared' | 'reversed'; reference: string; createdAt: string }
+/** Ids are null once a listing or workspace is deleted (the row stays, unlinked). */
+export interface SellerLedgerRow { id: number; listingId: string | null; listingTitle: string; sellerWorkspaceId: string | null; buyerWorkspaceId: string | null; grossUzs: number; commissionUzs: number | null; netUzs: number | null; status: 'pending' | 'cleared' | 'reversed'; reference: string; createdAt: string }
 export interface ListingQuery { text?: string; kind?: string; level?: string; exam?: string; language?: string; price?: 'free' | 'paid' | 'any'; sort?: 'rating' | 'usage' | 'new'; limit: number; offset: number }
 
 export interface BrandProfile { workspaceId: string; ownerId: string; displayName: string; subjects: string; city: string; experienceYears: number | null; format: string; contact: string; about: string; updatedAt: string }
