@@ -9,3 +9,4 @@ export * from './sse.ts';
 export * from './time.ts';
 export * as s from './schema.ts';
 export { SchemaError, type Infer, type JsonSchema, type Schema } from './schema.ts';
+export * from './materials/mod.ts';
