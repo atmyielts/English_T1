@@ -3,7 +3,7 @@ import { SchoodAIError, type ContextBlock, type RequestContext } from '../types.
 import { centreAcademy } from './academy.ts';
 import { centreDeps } from './binding.ts';
 import { asList, isManager, requireCentre, type Centre } from './shared.ts';
-import type { GroupRow, HintPolicy } from './store.ts';
+import type { GroupRow, HintPolicy, HomeworkRule } from './store.ts';
 
 // Groups and the Student Assistant's per-group rules (C2): hints only while a
 // homework is open (the default), always, or off, plus topics to focus on and a
@@ -13,11 +13,18 @@ import type { GroupRow, HintPolicy } from './store.ts';
 // homework helper (L7) and the Student Assistant; see README.md for its shape.
 
 const POLICIES = ['during_homework', 'always', 'off'] as const;
+const RULES = ['hints_only', 'explain', 'off'] as const;
 const STRICTNESS: Record<HintPolicy, number> = { off: 0, during_homework: 1, always: 2 };
+/** Homework rules, least to most restrictive: may explain, hints only, helper off. */
+const RULE_STRICTNESS: Record<HomeworkRule, number> = { explain: 0, hints_only: 1, off: 2 };
+/** A group's homework rule: its own, or the one its hint policy implies. */
+export const groupHomeworkRule = (group: Pick<GroupRow, 'homework_rule' | 'hint_policy'>): HomeworkRule => group.homework_rule ?? (group.hint_policy === 'off' ? 'explain' : 'hints_only');
+const stricter = (a: HomeworkRule, b: HomeworkRule) => (RULE_STRICTNESS[b] > RULE_STRICTNESS[a] ? b : a);
 const TOPIC = /^[\p{L}\p{N}][\p{L}\p{N} '’‘\-.,/()]{0,59}$/u;
 
 const groupJson = (row: GroupRow, members: number) => ({
   id: row.id, name: row.name, level: row.level, teacher_ids: row.teacher_ids, hint_policy: row.hint_policy, focus_topics: row.focus_topics, note: row.note,
+  homework_rule: row.homework_rule, homework_effective: groupHomeworkRule(row),
   academy_linked: !!row.academy_classroom_id, archived: row.archived, members, updated_at: row.updated_at,
 });
 
@@ -36,6 +43,7 @@ function rules(body: Record<string, unknown>) {
     ...(body.hint_policy !== undefined ? { hint_policy: oneOf(body.hint_policy, 'hint_policy', POLICIES) } : {}),
     ...(body.focus_topics !== undefined ? { focus_topics: stringList(body.focus_topics, 'focus_topics', { max: 12, pattern: TOPIC }) } : {}),
     ...(body.note !== undefined ? { note: optionalText(body.note, 'note', { max: 500 }) } : {}),
+    ...(body.homework_rule !== undefined ? { homework_rule: body.homework_rule === null ? null : oneOf(body.homework_rule, 'homework_rule', RULES) } : {}),
   };
 }
 
@@ -150,15 +158,27 @@ export async function syncGroups(ctx: RequestContext) {
   return { classrooms: classrooms.length, created, linked };
 }
 
-/** The rules for a student, strictest policy first; null outside a centre or without groups. */
-export async function rulesFor(ctx: RequestContext): Promise<ContextBlock | null> {
+/**
+ * The `centre_rules` context for a student (README.md has the shape). The learner's
+ * homework helper (L7) reads `homework.default` and `homework.assignments`; the
+ * Student Assistant also reads the hint policy, focus topics and teachers' notes.
+ * With several groups the strictest rule wins. A student in no group gets the
+ * centre default: hints only while a homework is open.
+ */
+export async function rulesFor(ctx: RequestContext, ref?: string): Promise<ContextBlock | null> {
   const access = await ctx.workspace();
   if (access.workspace.kind !== 'centre') return null;
   const deps = await centreDeps(ctx);
   const memberships = await deps.store.table('group_members').list({ workspace_id: access.workspace.id, user_id: ctx.user.id });
-  const rows = memberships.length ? (await deps.store.table('groups').list({ workspace_id: access.workspace.id, archived: false }, { in: { id: memberships.map((row) => row.group_id) } })) : [];
-  // A student in no group still gets the centre default: hints while homework is open.
+  const ids = memberships.map((row) => row.group_id);
+  const rows = ids.length ? (await deps.store.table('groups').list({ workspace_id: access.workspace.id, archived: false }, { in: { id: ids } })) : [];
   const policy: HintPolicy = rows.reduce<HintPolicy>((strictest, row) => (STRICTNESS[row.hint_policy] > STRICTNESS[strictest] ? row.hint_policy : strictest), rows.length ? 'off' : 'during_homework');
+  const homeworkDefault: HomeworkRule = rows.length ? rows.map(groupHomeworkRule).reduce(stricter) : 'hints_only';
+  const overrides = rows.length ? await deps.store.table('assignment_rules').list({ workspace_id: access.workspace.id }, { in: { group_id: rows.map((row) => row.id) }, order: 'updated_at', desc: true, limit: 200 }) : [];
+  const assignments: Record<string, HomeworkRule> = {};
+  for (const row of overrides) assignments[row.assignment_id] = assignments[row.assignment_id] ? stricter(assignments[row.assignment_id], row.rule) : row.rule;
+  // The asked-for assignment is always answered, even when the list is long.
+  const picked = ref && assignments[ref] ? { [ref]: assignments[ref] } : {};
   const describe: Record<HintPolicy, string> = {
     always: 'Give hints and guiding questions, never the final answers, for any exercise.',
     during_homework: 'While a homework of this centre is open, give hints and guiding questions, never the final answers to that homework. Otherwise teach normally.',
@@ -168,11 +188,52 @@ export async function rulesFor(ctx: RequestContext): Promise<ContextBlock | null
     kind: 'centre_rules',
     title: `${access.workspace.name}: rules for this student`,
     data: {
+      homework: { default: homeworkDefault, assignments: { ...Object.fromEntries(Object.entries(assignments).slice(0, 50)), ...picked } },
+      focus_topics: [...new Set(rows.flatMap((row) => row.focus_topics))].slice(0, 12),
       centre: access.workspace.name,
       hint_policy: policy,
       rule: describe[policy],
-      focus_topics: [...new Set(rows.flatMap((row) => row.focus_topics))].slice(0, 12),
-      groups: rows.map((row) => ({ name: row.name, level: row.level, hint_policy: row.hint_policy, focus_topics: row.focus_topics, teacher_note: row.note })),
+      groups: rows.map((row) => ({ name: row.name, level: row.level, hint_policy: row.hint_policy, homework: groupHomeworkRule(row), focus_topics: row.focus_topics, teacher_note: row.note })),
     },
   };
 }
+
+/**
+ * GET centre/assignment-rules?group_id=: the group's Academy homework (read with the
+ * person's own token) and the rule for each. PUT { group_id, assignment_id, rule | null, title? }.
+ */
+export const assignmentRules = {
+  async GET(ctx: RequestContext) {
+    const centre = await requireCentre(ctx, ['owner', 'admin', 'teacher']);
+    const group = await centre.deps.store.table('groups').get({ id: uuid(ctx.query.get('group_id'), 'group_id'), workspace_id: centre.access.workspace.id });
+    if (!group) throw new SchoodAIError('not_found', 'Group not found.', 404);
+    await teachesOr403(ctx, centre, group);
+    const overrides = await centre.deps.store.table('assignment_rules').list({ group_id: group.id });
+    let assignments: { id: string; title: string; due_at: string | null; status: string | null }[] = [];
+    if (group.academy_classroom_id && centre.access.workspace.academyTenantId) {
+      const result = await centreAcademy(ctx, centre.access.workspace).get('assignments', { classroom_id: group.academy_classroom_id });
+      assignments = asList(result.assignments).filter((row) => row.status !== 'archived').slice(0, 100).map((row) => ({ id: String(row.id), title: String(row.title ?? ''), due_at: typeof row.due_at === 'string' ? row.due_at : null, status: typeof row.status === 'string' ? row.status : null }));
+    }
+    const rule = new Map(overrides.map((row) => [row.assignment_id, row.rule]));
+    return {
+      default: groupHomeworkRule(group), academy_linked: !!group.academy_classroom_id,
+      assignments: assignments.map((row) => ({ ...row, rule: rule.get(row.id) ?? null })),
+      others: overrides.filter((row) => !assignments.some((entry) => entry.id === row.assignment_id)).map((row) => ({ id: row.assignment_id, title: row.title, rule: row.rule })),
+    };
+  },
+  async PUT(ctx: RequestContext) {
+    const centre = await requireCentre(ctx, ['owner', 'admin', 'teacher']);
+    const body = record(await ctx.body());
+    const group = await centre.deps.store.table('groups').get({ id: uuid(body.group_id, 'group_id'), workspace_id: centre.access.workspace.id });
+    if (!group) throw new SchoodAIError('not_found', 'Group not found.', 404);
+    await teachesOr403(ctx, centre, group);
+    const assignmentId = uuid(body.assignment_id, 'assignment_id');
+    if (body.rule === null) {
+      await centre.deps.store.table('assignment_rules').remove({ group_id: group.id, assignment_id: assignmentId });
+    } else {
+      await centre.deps.store.table('assignment_rules').upsert({ group_id: group.id, workspace_id: group.workspace_id, assignment_id: assignmentId, rule: oneOf(body.rule, 'rule', RULES), title: optionalText(body.title, 'title', { max: 200 }), set_by: ctx.user.id, updated_at: ctx.now().toISOString() }, ['group_id', 'assignment_id']);
+    }
+    await ctx.audit('centre.assignment_rule', { rule: body.rule ?? null }, { type: 'group', id: group.id });
+    return { ok: true };
+  },
+};

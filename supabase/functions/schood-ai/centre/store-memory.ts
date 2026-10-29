@@ -25,8 +25,9 @@ export function createMemoryCentreStore(memory: Memory, now: () => Date = () => 
   let serial = 0;
   const DEFAULTS: { [N in TableName]: () => Partial<TableMap[N]> } = {
     settings: () => ({ created_by: null, embed_domains: [], widgets: {}, white_label: {}, retention_days: 180, extra_teacher_seats: 0, extra_students: 0, limits: {}, budget_defaults: {}, observation_standards: [], brief: {}, byok_fee: {}, updated_by: null, created_at: iso(), updated_at: iso() }),
-    groups: () => ({ id: id(), academy_classroom_id: null, level: null, teacher_ids: [], hint_policy: 'during_homework', focus_topics: [], note: null, archived: false, created_by: null, created_at: iso(), updated_at: iso() }),
+    groups: () => ({ id: id(), academy_classroom_id: null, level: null, teacher_ids: [], hint_policy: 'during_homework', focus_topics: [], homework_rule: null, note: null, archived: false, created_by: null, created_at: iso(), updated_at: iso() }),
     group_members: () => ({ added_at: iso() }),
+    assignment_rules: () => ({ title: null, set_by: null, updated_at: iso() }),
     invites: () => ({ id: id(), label: null, max_uses: 1, uses: 0, created_by: null, revoked_at: null, created_at: iso() }),
     results: () => ({ id: id(), result_date: null, source: 'entered', verified: false, verified_by: null, verified_at: null, evidence_note: null, consent: false, created_by: null, created_at: iso() }),
     attempts: () => ({ id: id(), test_page_id: null, test_revision: null, taker_user_id: null, prospect: {}, thread_id: null, status: 'in_progress', answers: {}, objective: null, ai_marks: null, level: null, report: null, reviewed_by: null, reviewed_at: null, submitted_at: null, created_at: iso(), updated_at: iso() }),
@@ -54,7 +55,7 @@ export function createMemoryCentreStore(memory: Memory, now: () => Date = () => 
   };
   /** Primary and unique keys, as in the migration. */
   const UNIQUE: Partial<Record<TableName, string[][]>> = {
-    settings: [['workspace_id'], ['public_key']], groups: [['id']], group_members: [['group_id', 'user_id']], invites: [['id'], ['code_hash']],
+    settings: [['workspace_id'], ['public_key']], groups: [['id']], group_members: [['group_id', 'user_id']], assignment_rules: [['group_id', 'assignment_id']], invites: [['id'], ['code_hash']],
     insights: [['group_id', 'period', 'topic']], admissions: [['workspace_id'], ['bot_ref']], threads: [['id'], ['workspace_id', 'channel', 'external_id']],
     tg_updates: [['workspace_id', 'update_id']], staff_chats: [['workspace_id', 'user_id']], staff_codes: [['code_hash']], resell: [['workspace_id']],
     wholesale: [['workspace_id', 'period']], briefs: [['workspace_id', 'week']], byok_fees: [['workspace_id', 'period']], units: [['curriculum_id', 'position']],
@@ -121,7 +122,7 @@ export function createMemoryCentreStore(memory: Memory, now: () => Date = () => 
         if (name === 'knowledge_docs' || name === 'groups' || name === 'curricula' || name === 'threads') {
           const gone = new Set(list.filter((row) => !keep.includes(row)).map((row) => row.id));
           if (name === 'knowledge_docs') rows.set('knowledge_chunks', data('knowledge_chunks').filter((row) => !gone.has(row.doc_id)));
-          if (name === 'groups') { rows.set('group_members', data('group_members').filter((row) => !gone.has(row.group_id))); rows.set('insights', data('insights').filter((row) => !gone.has(row.group_id))); }
+          if (name === 'groups') { rows.set('group_members', data('group_members').filter((row) => !gone.has(row.group_id))); rows.set('insights', data('insights').filter((row) => !gone.has(row.group_id))); rows.set('assignment_rules', data('assignment_rules').filter((row) => !gone.has(row.group_id))); }
           if (name === 'curricula') rows.set('units', data('units').filter((row) => !gone.has(row.curriculum_id)));
           if (name === 'threads') rows.set('admissions_messages', data('admissions_messages').filter((row) => !gone.has(row.thread_id)));
         }

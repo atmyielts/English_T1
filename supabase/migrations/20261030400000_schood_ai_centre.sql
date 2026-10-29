@@ -62,6 +62,8 @@ create table if not exists public.ai_centre_groups (
   -- Hints, not answers: while a homework is open (the default), always, or off.
   hint_policy text not null default 'during_homework' check (hint_policy in ('during_homework', 'always', 'off')),
   focus_topics text[] not null default '{}' check (cardinality(focus_topics) <= 12),
+  -- The homework helper's rule for this group's homework (learner L7); null follows hint_policy.
+  homework_rule text check (homework_rule is null or homework_rule in ('hints_only', 'explain', 'off')),
   note text check (note is null or char_length(note) <= 500),
   archived boolean not null default false,
   created_by uuid references public.users(id) on delete set null,
@@ -79,6 +81,19 @@ create table if not exists public.ai_centre_group_members (
   primary key (group_id, user_id)
 );
 create index if not exists ai_centre_group_members_user_idx on public.ai_centre_group_members (workspace_id, user_id);
+
+-- A teacher's rule for one Academy homework of a group, over the group's default.
+create table if not exists public.ai_centre_assignment_rules (
+  group_id uuid not null references public.ai_centre_groups(id) on delete cascade,
+  workspace_id uuid not null references public.ai_workspaces(id) on delete cascade,
+  assignment_id text not null check (assignment_id ~ '^[0-9a-f-]{36}$'),
+  rule text not null check (rule in ('hints_only', 'explain', 'off')),
+  title text check (title is null or char_length(title) <= 200),
+  set_by uuid references public.users(id) on delete set null,
+  updated_at timestamptz not null default now(),
+  primary key (group_id, assignment_id)
+);
+create index if not exists ai_centre_assignment_rules_workspace_idx on public.ai_centre_assignment_rules (workspace_id, assignment_id);
 
 -- --- Verified results for marketing (C4) --------------------------------------------------
 -- Results posts use only these rows; nothing is ever invented by the model.
@@ -640,6 +655,7 @@ $$;
 alter table public.ai_centre_settings enable row level security;
 alter table public.ai_centre_groups enable row level security;
 alter table public.ai_centre_group_members enable row level security;
+alter table public.ai_centre_assignment_rules enable row level security;
 alter table public.ai_centre_results enable row level security;
 alter table public.ai_centre_placement_attempts enable row level security;
 alter table public.ai_centre_curricula enable row level security;
@@ -665,7 +681,7 @@ alter table public.ai_centre_byok_fees enable row level security;
 alter table public.ai_centre_observations enable row level security;
 alter table public.ai_centre_campaigns enable row level security;
 
-revoke all on public.ai_centre_settings, public.ai_centre_groups, public.ai_centre_group_members, public.ai_centre_results,
+revoke all on public.ai_centre_settings, public.ai_centre_groups, public.ai_centre_group_members, public.ai_centre_assignment_rules, public.ai_centre_results,
   public.ai_centre_placement_attempts, public.ai_centre_curricula, public.ai_centre_curriculum_units, public.ai_centre_insights,
   public.ai_centre_secrets, public.ai_centre_admissions, public.ai_centre_admissions_threads, public.ai_centre_admissions_messages,
   public.ai_centre_bookings, public.ai_centre_tg_updates, public.ai_centre_staff_chats, public.ai_centre_staff_codes,

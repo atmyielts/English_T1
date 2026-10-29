@@ -32,8 +32,24 @@ Deno.test('groups: the office makes them, the group’s teacher sets the rules, 
   const context = await f.json('GET', 'core/context', { token: 'tok-s1', workspace: ws, query: { kind: 'centre_rules' } });
   const data = context.body.blocks[0].data;
   equal([data.hint_policy, data.focus_topics, data.groups[0].teacher_note], ['always', ['present perfect', 'articles'], 'Exam in two weeks.'], 'centre_rules for the student');
+  equal(data.homework, { default: 'hints_only', assignments: {} }, 'the learner homework helper’s shape: hints only by default');
   const ungrouped = await f.json('GET', 'core/context', { token: 'tok-s3', workspace: ws, query: { kind: 'centre_rules' } });
-  equal(ungrouped.body.blocks[0].data.hint_policy, 'during_homework', 'without a group, the centre default applies');
+  equal([ungrouped.body.blocks[0].data.hint_policy, ungrouped.body.blocks[0].data.homework.default], ['during_homework', 'hints_only'], 'without a group, the centre default applies');
+
+  // Per-homework rules from the group's teacher, read from Academy with their token.
+  await f.store.table('groups').update({ id }, { academy_classroom_id: CLASS.b5 });
+  const homework = await f.json('GET', 'centre/assignment-rules', { token: 'tok-t1', workspace: ws, query: { group_id: id } });
+  equal([homework.body.default, homework.body.assignments.map((row: { title: string }) => row.title)], ['hints_only', ['Present perfect worksheet', 'Unit test']], 'the group’s Academy homework');
+  const test = homework.body.assignments[1].id, sheet = homework.body.assignments[0].id;
+  equal((await f.json('PUT', 'centre/assignment-rules', { token: 'tok-t2', workspace: ws, body: { group_id: id, assignment_id: test, rule: 'explain' } })).status, 403, 'only the group’s teacher');
+  await f.json('PUT', 'centre/assignment-rules', { token: 'tok-t1', workspace: ws, body: { group_id: id, assignment_id: test, rule: 'off', title: 'Unit test' } });
+  await f.json('PUT', 'centre/assignment-rules', { token: 'tok-t1', workspace: ws, body: { group_id: id, assignment_id: sheet, rule: 'explain' } });
+  await f.json('PATCH', 'centre/groups', { token: 'tok-t1', workspace: ws, body: { id, homework_rule: 'explain' } });
+  const withRules = (await f.json('GET', 'core/context', { token: 'tok-s1', workspace: ws, query: { kind: 'centre_rules' } })).body.blocks[0].data.homework;
+  equal(withRules, { default: 'explain', assignments: { [test]: 'off', [sheet]: 'explain' } }, 'group default and per-homework overrides');
+  await f.json('PUT', 'centre/assignment-rules', { token: 'tok-t1', workspace: ws, body: { group_id: id, assignment_id: sheet, rule: null } });
+  await f.json('PATCH', 'centre/groups', { token: 'tok-t1', workspace: ws, body: { id, homework_rule: null } });
+  equal((await f.json('GET', 'core/context', { token: 'tok-s1', workspace: ws, query: { kind: 'centre_rules' } })).body.blocks[0].data.homework, { default: 'hints_only', assignments: { [test]: 'off' } }, 'cleared rules fall back');
 
   // The Student Assistant reads the rules and answers under the centre's name.
   await f.json('PATCH', 'core/settings', { workspace: ws, body: { branding: { assistant_name: 'Registan Buddy', primary_color: '#2f6f4f' } } });

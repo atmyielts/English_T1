@@ -71,7 +71,7 @@ export function registerCentreAssistants(): void {
     },
   });
 
-  registerContextProvider('centre_rules', async (ctx) => rulesFor(ctx), { selfView: true, maxChars: 3_000 });
+  registerContextProvider('centre_rules', async (ctx, { ref }) => rulesFor(ctx, ref), { selfView: true, maxChars: 4_000 });
 
   registerContextProvider('teacher_classes', async (ctx, { access }) => {
     if (access.workspace.kind !== 'centre' || !['owner', 'admin', 'teacher'].includes(access.role) || !access.workspace.academyTenantId || !ctx.user.token) return null;

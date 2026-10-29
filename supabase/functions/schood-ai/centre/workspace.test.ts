@@ -89,6 +89,13 @@ Deno.test('admin: switchable areas, retention, Schood add-on grants, audit and t
   equal((await f.json('PATCH', 'centre/admin', { workspace: ws, body: { retention_days: 365 } })).status, 400, 'core keeps conversations at most 180 days');
   equal((await f.json('PATCH', 'centre/admin', { workspace: ws, body: { retention_days: 60 } })).body.retention_days, 60);
   equal((await f.json('PATCH', 'centre/admin', { token: 'tok-s1', workspace: ws, body: { retention_days: 60 } })).status, 403, 'students cannot');
+  // Parent features (P1, P2) are off until the centre switches them on (features.parent = true, read by the learner area).
+  equal([admin.body.parent_features, admin.body.areas.some((area: { area: string }) => area.area === 'parent'), admin.body.areas.some((area: { area: string }) => area.area === 'parent.message')], [false, false, true], 'opt-in parent switch, separate from T8 drafts');
+  equal((await f.json('PATCH', 'centre/admin', { workspace: ws, body: { parent_features: true } })).body.parent_features, true);
+  equal((f.memory.workspaces.get(ws)!.settings as { features: Record<string, boolean> }).features.parent, true, 'stored as features.parent = true');
+  equal((await f.json('GET', 'centre/admin', { workspace: ws })).body.parent_features, true);
+  await f.json('PATCH', 'centre/admin', { workspace: ws, body: { parent_features: false } });
+  equal('parent' in (f.memory.workspaces.get(ws)!.settings as { features: Record<string, boolean> }).features, false, 'switched off again');
   // Switching a feature off uses core's settings route; the student assistant then refuses.
   equal((await f.json('PATCH', 'core/settings', { workspace: ws, body: { features: { student_assistant: false } } })).status, 200);
   f.model(/study assistant/, 'Hint: look at the time word.');

@@ -8,7 +8,7 @@ import { brief } from './brief.ts';
 import { byok } from './byok.ts';
 import { curricula, publish, registerCurriculumActions, retryUnit, reviewUnit, run } from './curriculum.ts';
 import { embed } from './embed.ts';
-import { groupMembers, groups, syncGroups } from './groups.ts';
+import { assignmentRules, groupMembers, groups, syncGroups } from './groups.ts';
 import { insights } from './insights.ts';
 import { ask, knowledge } from './knowledge.ts';
 import { marketing, results } from './marketing.ts';
@@ -48,6 +48,7 @@ export const centreModule: FeatureModule = {
     groups,
     'group-members': { PUT: groupMembers },
     'groups-sync': { POST: syncGroups },
+    'assignment-rules': assignmentRules,
     'my-classes': { GET: myClasses },
     'student-assistant': { GET: studentAssistant, service: true },
     // T8 parent messages, C3 office, C11 campaigns

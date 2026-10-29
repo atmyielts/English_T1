@@ -37,11 +37,14 @@ export interface SettingsRow extends Row {
   updated_by: string | null; created_at: string; updated_at: string;
 }
 export type HintPolicy = 'during_homework' | 'always' | 'off';
+/** The learner homework helper's rule (L7): hints only, may explain, or off. */
+export type HomeworkRule = 'hints_only' | 'explain' | 'off';
 export interface GroupRow extends Row {
   id: string; workspace_id: string; academy_classroom_id: string | null; name: string; level: string | null; teacher_ids: string[];
-  hint_policy: HintPolicy; focus_topics: string[]; note: string | null; archived: boolean; created_by: string | null; created_at: string; updated_at: string;
+  hint_policy: HintPolicy; focus_topics: string[]; homework_rule: HomeworkRule | null; note: string | null; archived: boolean; created_by: string | null; created_at: string; updated_at: string;
 }
 export interface GroupMemberRow extends Row { group_id: string; workspace_id: string; user_id: string; added_at: string }
+export interface AssignmentRuleRow extends Row { group_id: string; workspace_id: string; assignment_id: string; rule: HomeworkRule; title: string | null; set_by: string | null; updated_at: string }
 export interface InviteRow extends Row {
   id: string; workspace_id: string; role: Exclude<Role, 'owner'>; code_hash: string; label: string | null; max_uses: number; uses: number;
   expires_at: string; created_by: string | null; revoked_at: string | null; created_at: string;
@@ -128,7 +131,7 @@ export interface CampaignRow extends Row {
 export interface AuditRow { id: number; actor_id: string | null; event: string; target_type: string | null; target_id: string | null; details: Record<string, unknown>; created_at: string }
 
 export interface TableMap {
-  settings: SettingsRow; groups: GroupRow; group_members: GroupMemberRow; invites: InviteRow; results: ResultRow; attempts: AttemptRow;
+  settings: SettingsRow; groups: GroupRow; group_members: GroupMemberRow; assignment_rules: AssignmentRuleRow; invites: InviteRow; results: ResultRow; attempts: AttemptRow;
   curricula: CurriculumRow; units: UnitRow; insights: InsightRow; secrets: SecretRow; admissions: AdmissionsRow; threads: ThreadRow;
   admissions_messages: AdmissionsMessageRow; bookings: BookingRow; tg_updates: TgUpdateRow; staff_chats: StaffChatRow; staff_codes: StaffCodeRow;
   resell: ResellRow; resell_periods: ResellPeriodRow; wholesale: WholesaleRow; briefs: BriefRow; snapshots: SnapshotRow;
@@ -136,7 +139,7 @@ export interface TableMap {
 }
 export type TableName = keyof TableMap;
 export const TABLES: Record<TableName, string> = {
-  settings: 'ai_centre_settings', groups: 'ai_centre_groups', group_members: 'ai_centre_group_members', invites: 'ai_workspace_invites',
+  settings: 'ai_centre_settings', groups: 'ai_centre_groups', group_members: 'ai_centre_group_members', assignment_rules: 'ai_centre_assignment_rules', invites: 'ai_workspace_invites',
   results: 'ai_centre_results', attempts: 'ai_centre_placement_attempts', curricula: 'ai_centre_curricula', units: 'ai_centre_curriculum_units',
   insights: 'ai_centre_insights', secrets: 'ai_centre_secrets', admissions: 'ai_centre_admissions', threads: 'ai_centre_admissions_threads',
   admissions_messages: 'ai_centre_admissions_messages', bookings: 'ai_centre_bookings', tg_updates: 'ai_centre_tg_updates', staff_chats: 'ai_centre_staff_chats',

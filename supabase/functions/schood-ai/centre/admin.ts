@@ -1,6 +1,6 @@
 import { CREDIT_PRICES, FEATURES, quoteCredits } from '../../../../packages/ai-core/src/mod.ts';
 import { balanceView, switchesOf } from '../ai.ts';
-import { integer, record, uuid } from '../input.ts';
+import { bool, integer, record, uuid } from '../input.ts';
 import { SchoodAIError, type RequestContext } from '../types.ts';
 import { centreDeps } from './binding.ts';
 import { requireCentre, type Centre } from './shared.ts';
@@ -10,13 +10,18 @@ import { requireCentre, type Centre } from './shared.ts';
 // report. Add-ons granted by Schood support (extra seats, student places, the
 // bring-your-own-key fee) are set by Schood admins only.
 
+/** Whether the parent features (P1, P2) are on: the centre opted in. */
+export const parentFeaturesOn = (switches: Record<string, boolean> | null) => switches?.parent === true || switches?.['parent.brief'] === true;
+
 /** Centre features that can be switched off for the centre's members, by credit-key area. */
 export function switchableAreas() {
   const areas = new Map<string, { area: string; features: string[]; keys: string[] }>();
   for (const [key, price] of Object.entries(CREDIT_PRICES)) {
     const feature = FEATURES[price.feature];
     if (!feature || !['centre', 'learner', 'teacher', 'core'].includes(feature.audience) || !feature.plans.some((plan) => ['centre', 'centre_pro', 'enterprise'].includes(plan))) continue;
-    const area = key.split('.')[0];
+    // Parent brief and questions (P1, P2) are opt-in for a centre: the parent switch below.
+    if (price.feature === 'P1' || price.feature === 'P2') continue;
+    const area = key === 'parent.message' ? key : key.split('.')[0];
     const entry = areas.get(area) ?? { area, features: [], keys: [] };
     if (!entry.features.includes(price.feature)) entry.features.push(price.feature);
     entry.keys.push(key);
@@ -32,21 +37,39 @@ export const admin = {
     return {
       retention_days: centre.settings.retention_days,
       switches: switchesOf(centre.access) ?? {},
+      parent_features: parentFeaturesOn(switchesOf(centre.access)),
       areas: switchableAreas(),
       budget_defaults: centre.settings.budget_defaults,
       add_ons: { extra_teacher_seats: centre.settings.extra_teacher_seats, extra_students: centre.settings.extra_students },
       plan: { plans: plan.plans, beta: plan.beta },
     };
   },
-  /** { retention_days } (30-180): chats of students and parents and admissions conversations older than this are deleted. */
+  /**
+   * { retention_days? (30-180), parent_features? }. Parent features (P1 parent brief, P2
+   * ask about my child) are off until the centre switches them on: `features.parent = true`.
+   */
   async PATCH(ctx: RequestContext) {
     const centre = await requireCentre(ctx, ['owner', 'admin']);
     const body = record(await ctx.body());
-    // Core deletes every conversation after 180 days, so a centre can only shorten it.
-    const days = integer(body.retention_days, 'retention_days', 30, 180);
-    await centre.deps.store.table('settings').update({ workspace_id: centre.access.workspace.id }, { retention_days: days, updated_by: ctx.user.id });
-    await ctx.audit('centre.retention', { retention_days: days }, { type: 'workspace', id: centre.access.workspace.id });
-    return { retention_days: days };
+    const ws = centre.access.workspace, out: Record<string, unknown> = {};
+    if (body.retention_days !== undefined) {
+      // Core deletes every conversation after 180 days, so a centre can only shorten it.
+      const days = integer(body.retention_days, 'retention_days', 30, 180);
+      await centre.deps.store.table('settings').update({ workspace_id: ws.id }, { retention_days: days, updated_by: ctx.user.id });
+      await ctx.audit('centre.retention', { retention_days: days }, { type: 'workspace', id: ws.id });
+      out.retention_days = days;
+    }
+    if (body.parent_features !== undefined) {
+      const on = bool(body.parent_features, 'parent_features');
+      const features = { ...(switchesOf(centre.access) ?? {}) };
+      delete features.parent; delete features['parent.brief']; delete features['parent.ask'];
+      if (on) features.parent = true;
+      await ctx.repo.updateWorkspace(ws.id, { settings: { ...ws.settings, features } });
+      await ctx.audit('centre.parent_features', { on }, { type: 'workspace', id: ws.id });
+      out.parent_features = on;
+    }
+    if (!Object.keys(out).length) throw new SchoodAIError('invalid_request', 'Nothing to change.', 400);
+    return out;
   },
 };
 

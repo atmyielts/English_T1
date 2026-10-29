@@ -136,6 +136,22 @@ begin
   begin insert into public.ai_centre_insights (workspace_id, group_id, period, topic, questions, students, group_size) values (ws, secret, '2026-11', 'grammar.tenses', 4, 2, 4); exception when check_violation then raised := true; end;
   assert raised, 'small groups are not stored';
 
+  -- Homework rules: one of three values, one row per group and homework, gone with the group.
+  update public.ai_centre_groups set homework_rule = 'explain' where id = secret;
+  raised := false;
+  begin update public.ai_centre_groups set homework_rule = 'answers' where id = secret; exception when check_violation then raised := true; end;
+  assert raised, 'unknown group homework rule refused';
+  insert into public.ai_centre_assignment_rules (group_id, workspace_id, assignment_id, rule, title, set_by)
+    values (secret, ws, 'f0000000-0000-4000-8000-0000000000a1', 'off', 'Essay 3', t1);
+  raised := false;
+  begin insert into public.ai_centre_assignment_rules (group_id, workspace_id, assignment_id, rule) values (secret, ws, 'f0000000-0000-4000-8000-0000000000a1', 'explain'); exception when unique_violation then raised := true; end;
+  assert raised, 'one rule per group and homework';
+  raised := false;
+  begin insert into public.ai_centre_assignment_rules (group_id, workspace_id, assignment_id, rule) values (secret, ws, 'f0000000-0000-4000-8000-0000000000a2', 'all'); exception when check_violation then raised := true; end;
+  assert raised, 'unknown homework rule refused';
+  delete from public.ai_centre_groups where id = secret;
+  assert (select count(*) from public.ai_centre_assignment_rules where group_id = secret) = 0, 'homework rules go with their group';
+
   -- Browsers have no access to any centre table or function.
   assert not has_table_privilege('anon', 'public.ai_centre_settings', 'select'), 'anon cannot read settings';
   assert not has_table_privilege('authenticated', 'public.ai_centre_secrets', 'select'), 'authenticated cannot read secrets';
