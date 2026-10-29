@@ -4,9 +4,10 @@ import { equal, fixture, ID, ok, streamOf } from './fixture.test.ts';
 // switches and audit log (admin/workspaces, admin/audit).
 
 const chat = (body: Record<string, unknown>) => ({ client_message_id: crypto.randomUUID(), ...body });
-// Feature areas register their own assistants (the centre's student and teacher assistants), so
-// this test looks only at the assistants it works with.
-const own = (list: { key: string; name: string }[]) => list.filter((entry) => entry.key === 'assistant' || entry.key === 'ielts_helper');
+// Areas register specialists and context providers of their own; these tests only look at core's.
+type Listed = { key: string; name: string };
+const keys = (body: { specialists: Listed[] }) => body.specialists.map((s) => s.key);
+const named = (body: { specialists: Listed[] }, key = 'assistant') => body.specialists.find((s) => s.key === key)?.name;
 
 Deno.test('owners and admins tailor assistants without widening what the code allows', async () => {
   const f = fixture();
@@ -17,14 +18,14 @@ Deno.test('owners and admins tailor assistants without widening what the code al
   equal((await f.json('GET', 'core/specialists', { token: 'tok-teacher', query: at })).body.code, 'role_required', 'teachers cannot change assistants');
   const list = (await f.json('GET', 'core/specialists', { token: 'tok-owner', query: at })).body;
   const assistant = list.specialists.find((s: { key: string }) => s.key === 'assistant');
-  equal([assistant.built_in, assistant.override, assistant.default.name, list.custom_context_kinds, list.roles.length], [true, null, 'Schood AI', ['learner_profile'], 5]);
+  equal([assistant.built_in, assistant.override, assistant.default.name, list.custom_context_kinds.includes('learner_profile'), list.roles.length], [true, null, 'Schood AI', true, 5]);
 
   // Instructions only: the built-in keeps its own name in every language.
   const tuned = await f.json('PUT', 'core/specialists', { token: 'tok-owner', query: at, body: { key: 'assistant', instructions: 'Answer in Uzbek first, then English.', roles: ['teacher', 'student', 'superuser'] } });
   equal(tuned.body.field, 'roles', 'unknown roles are refused');
   const saved = await f.json('PUT', 'core/specialists', { token: 'tok-owner', query: at, body: { key: 'assistant', instructions: 'Answer in Uzbek first, then English.', roles: ['teacher', 'student'], context_kinds: ['learner_profile', 'payments'] } });
   equal([saved.status, saved.body.specialist.override.name, saved.body.specialist.override.context_kinds], [200, null, ['learner_profile']], 'kinds outside the built-in are dropped');
-  equal(own((await f.json('GET', 'core/me', { token: 'tok-student', query: at, headers: { 'x-schood-locale': 'ru' } })).body.specialists)[0].name, 'Schood AI');
+  equal(named((await f.json('GET', 'core/me', { token: 'tok-student', query: at, headers: { 'x-schood-locale': 'ru' } })).body), 'Schood AI');
   // The workspace instructions reach the model below the core rules.
   f.setProvider(() => streamOf(['Salom!']));
   await f.call('POST', 'core/chat', { token: 'tok-student', query: at, body: chat({ message: 'Hi' }) });
@@ -33,22 +34,24 @@ Deno.test('owners and admins tailor assistants without widening what the code al
   ok(prompt.includes('Answer in Uzbek first') && prompt.indexOf('Answer in Uzbek first') > prompt.indexOf('Schood'), 'workspace instructions are in the prompt');
 
   await f.json('PUT', 'core/specialists', { token: 'tok-owner', query: at, body: { key: 'assistant', name: 'Registan helper', roles: ['owner', 'admin', 'teacher'] } });
-  equal(own((await f.json('GET', 'core/me', { token: 'tok-teacher', query: at })).body.specialists)[0].name, 'Registan helper');
-  equal(own((await f.json('GET', 'core/me', { token: 'tok-student', query: at })).body.specialists).length, 0, 'narrowed roles apply');
+  equal(named((await f.json('GET', 'core/me', { token: 'tok-teacher', query: at })).body), 'Registan helper');
+  equal(keys((await f.json('GET', 'core/me', { token: 'tok-student', query: at })).body).includes('assistant'), false, 'narrowed roles apply');
   equal((await f.json('POST', 'core/chat', { token: 'tok-student', query: at, body: chat({ message: 'Hi' }) })).body.code, 'specialist_not_found');
 
   // Custom assistants: named, limited to the kinds custom assistants may read.
   equal((await f.json('PUT', 'core/specialists', { token: 'tok-owner', query: at, body: { key: 'ielts_helper' } })).body.field, 'name');
   equal((await f.json('PUT', 'core/specialists', { token: 'tok-owner', query: at, body: { key: 'Bad Key', name: 'x' } })).body.field, 'key');
-  const custom = await f.json('PUT', 'core/specialists', { token: 'tok-owner', query: at, body: { key: 'ielts_helper', name: 'IELTS helper', description: 'Band 7 practice', instructions: 'Focus on IELTS writing.', context_kinds: ['learner_profile', 'centre_finance'] } });
+  const custom = await f.json('PUT', 'core/specialists', { token: 'tok-owner', query: at, body: { key: 'ielts_helper', name: 'IELTS helper', description: 'Band 7 practice', instructions: 'Focus on IELTS writing.', context_kinds: ['learner_profile', 'zz_not_a_provider'] } });
   equal([custom.body.specialist.built_in, custom.body.specialist.override.context_kinds, custom.body.specialist.override.roles], [false, ['learner_profile'], ['owner', 'admin', 'teacher']]);
-  equal(own((await f.json('GET', 'core/me', { token: 'tok-teacher', query: at })).body.specialists).map((s: { key: string }) => s.key).sort(), ['assistant', 'ielts_helper']);
+  const teacherKeys = keys((await f.json('GET', 'core/me', { token: 'tok-teacher', query: at })).body);
+  ok(teacherKeys.includes('assistant') && teacherKeys.includes('ielts_helper'), 'custom assistants are listed');
 
   // Switching off and back to the defaults.
   await f.json('PUT', 'core/specialists', { token: 'tok-owner', query: at, body: { key: 'ielts_helper', name: 'IELTS helper', enabled: false } });
-  equal(own((await f.json('GET', 'core/me', { token: 'tok-teacher', query: at })).body.specialists).map((s: { key: string }) => s.key), ['assistant']);
+  const afterOff = keys((await f.json('GET', 'core/me', { token: 'tok-teacher', query: at })).body);
+  equal([afterOff.includes('assistant'), afterOff.includes('ielts_helper')], [true, false]);
   equal((await f.json('DELETE', 'core/specialists', { token: 'tok-owner', query: at, body: { key: 'assistant' } })).body.deleted, true);
-  equal(own((await f.json('GET', 'core/me', { token: 'tok-student', query: at })).body.specialists)[0].name, 'Schood AI', 'the built-in is back as it was');
+  equal(named((await f.json('GET', 'core/me', { token: 'tok-student', query: at })).body), 'Schood AI', 'the built-in is back as it was');
   ok(f.memory.audit.filter((event) => event.event === 'specialist.saved').length >= 4 && f.memory.audit.some((event) => event.event === 'specialist.deleted'), 'changes are audited');
   // A personal workspace's owner may tailor their own, with no roles to choose.
   equal((await f.json('GET', 'core/specialists', { token: 'tok-plus' })).body.roles, ['owner']);

@@ -1,49 +1,63 @@
 import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { format, type Catalogs, type Locale, type Params } from '../../../../../packages/service-i18n/src/format.ts';
 import { useI18n } from '../../../../../packages/service-i18n/src/i18n.tsx';
-import { en as centreEn } from '../../centre/i18n/en.ts';
-import { en as coachEn } from '../../coach/i18n/en.ts';
-import { en as engageEn } from '../../engage/i18n/en.ts';
-import { en as learnerEn } from '../../learner/i18n/en.ts';
-import { en as teacherEn } from '../../teacher/i18n/en.ts';
 import { en } from './en.ts';
 
 // Core text plus every area's catalog. Area keys carry their area prefix, so the
 // merge cannot collide; a missing translation falls back to English, never to blank.
-// English ships with the app; Uzbek and Russian load on demand (main.tsx waits for
-// the first one), so the first download carries one language, not three.
-export const catalogs: Catalogs<string> = {
-  en: { ...en, ...learnerEn, ...teacherEn, ...centreEn, ...coachEn, ...engageEn },
-  uz: {},
-  ru: {},
-};
-const loaders: Record<Exclude<Locale, 'en'>, () => Promise<Record<string, string>[]>> = {
-  uz: () => Promise.all([
-    import('./uz.ts').then((m) => m.uz), import('../../learner/i18n/uz.ts').then((m) => m.uz), import('../../teacher/i18n/uz.ts').then((m) => m.uz),
-    import('../../centre/i18n/uz.ts').then((m) => m.uz), import('../../coach/i18n/uz.ts').then((m) => m.uz), import('../../engage/i18n/uz.ts').then((m) => m.uz),
-  ]),
-  ru: () => Promise.all([
-    import('./ru.ts').then((m) => m.ru), import('../../learner/i18n/ru.ts').then((m) => m.ru), import('../../teacher/i18n/ru.ts').then((m) => m.ru),
-    import('../../centre/i18n/ru.ts').then((m) => m.ru), import('../../coach/i18n/ru.ts').then((m) => m.ru), import('../../engage/i18n/ru.ts').then((m) => m.ru),
-  ]),
-};
-const loaded = new Set<Locale>(['en']), pending = new Map<Locale, Promise<void>>(), listeners = new Set<() => void>();
-let version = 0;
+//
+// Only core's English ships in the first download. Every area's catalog for the
+// person's language (and Uzbek or Russian for core) loads on demand, one small
+// chunk per file, in parallel; main.tsx waits for it before the first paint, so
+// nothing flashes untranslated. For Uzbek and Russian, the areas' English loads
+// right after, as the fallback. However many areas merge, the main chunk keeps
+// the same size. Strings only some screens need can load with those screens
+// (useCatalog below).
+export const catalogs: Catalogs<string> = { en: { ...en }, uz: {}, ru: {} };
 
-/** Loads a language's text (core and every area). Resolves when it is in; failures leave English in place. */
-export function loadLocale(locale: Locale): Promise<void> {
-  if (loaded.has(locale)) return Promise.resolve();
-  let promise = pending.get(locale);
+type Part = () => Promise<Record<string, string>>;
+const parts: Record<Locale, Part[]> = {
+  en: [
+    () => import('../../learner/i18n/en.ts').then((m) => m.en), () => import('../../teacher/i18n/en.ts').then((m) => m.en),
+    () => import('../../centre/i18n/en.ts').then((m) => m.en), () => import('../../coach/i18n/en.ts').then((m) => m.en),
+    () => import('../../engage/i18n/en.ts').then((m) => m.en),
+  ],
+  uz: [
+    () => import('./uz.ts').then((m) => m.uz), () => import('../../learner/i18n/uz.ts').then((m) => m.uz), () => import('../../teacher/i18n/uz.ts').then((m) => m.uz),
+    () => import('../../centre/i18n/uz.ts').then((m) => m.uz), () => import('../../coach/i18n/uz.ts').then((m) => m.uz), () => import('../../engage/i18n/uz.ts').then((m) => m.uz),
+  ],
+  ru: [
+    () => import('./ru.ts').then((m) => m.ru), () => import('../../learner/i18n/ru.ts').then((m) => m.ru), () => import('../../teacher/i18n/ru.ts').then((m) => m.ru),
+    () => import('../../centre/i18n/ru.ts').then((m) => m.ru), () => import('../../coach/i18n/ru.ts').then((m) => m.ru), () => import('../../engage/i18n/ru.ts').then((m) => m.ru),
+  ],
+};
+
+const loaded = new Set<string>(), pending = new Map<string, Promise<void>>(), listeners = new Set<() => void>();
+let version = 0;
+const changed = () => { version++; for (const listener of listeners) listener(); };
+
+/** Loads catalog parts once under a name; failures leave what is there and may be retried. */
+function loadParts(name: string, locale: Locale, loaders: Part[]): Promise<void> {
+  const id = `${name}:${locale}`;
+  if (loaded.has(id)) return Promise.resolve();
+  let promise = pending.get(id);
   if (!promise) {
-    promise = loaders[locale as Exclude<Locale, 'en'>]().then((parts) => {
-      catalogs[locale] = Object.assign({}, ...parts);
-      loaded.add(locale);
-      version++;
-      for (const listener of listeners) listener();
-    }).catch(() => { pending.delete(locale); });
-    pending.set(locale, promise);
+    promise = Promise.all(loaders.map((load) => load())).then((results) => {
+      // English fallback strings never overwrite a translation that is already in.
+      catalogs[locale] = locale === 'en' ? { ...catalogs.en, ...Object.assign({}, ...results) } : { ...catalogs[locale], ...Object.assign({}, ...results) };
+      loaded.add(id);
+      changed();
+    }).catch(() => { pending.delete(id); });
+    pending.set(id, promise);
   }
   return promise;
+}
+
+/** Loads a language: core (Uzbek, Russian) and every area. Resolves when it is in; English fallbacks follow in the background. */
+export function loadLocale(locale: Locale): Promise<void> {
+  const ready = loadParts('app', locale, parts[locale]);
+  if (locale !== 'en') void ready.then(() => loadParts('app', 'en', parts.en));
+  return ready;
 }
 const subscribe = (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; };
 
@@ -54,6 +68,29 @@ export function useT(): Translate {
   const loadedVersion = useSyncExternalStore(subscribe, () => version);
   useEffect(() => { void loadLocale(locale); }, [locale]);
   return useCallback<Translate>((key, params) => format(catalogs, locale, key, params), [locale, loadedVersion]);
+}
+
+/**
+ * Strings only some screens need, loaded with those screens instead of at start:
+ *
+ *   const ready = useCatalog('learner.essay', {
+ *     en: () => import('./i18n/essay.en.ts').then((m) => m.en),
+ *     uz: () => import('./i18n/essay.uz.ts').then((m) => m.uz),
+ *     ru: () => import('./i18n/essay.ru.ts').then((m) => m.ru),
+ *   });
+ *   if (!ready) return <LoadingState/>;
+ *
+ * Keys keep your area prefix. English always loads too, as the fallback.
+ */
+export function useCatalog(name: string, loaders: Record<Locale, Part>): boolean {
+  const { locale } = useI18n();
+  useSyncExternalStore(subscribe, () => version);
+  // The loaders are module-level imports; the name identifies them.
+  useEffect(() => {
+    void loadParts(name, locale, [loaders[locale]]);
+    if (locale !== 'en') void loadParts(name, 'en', [loaders.en]);
+  }, [name, locale]);
+  return loaded.has(`${name}:${locale}`);
 }
 export { useI18n };
 export type { CoreKey } from './en.ts';

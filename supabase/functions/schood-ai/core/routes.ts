@@ -1,6 +1,6 @@
 import { cleanSwitches, featureAccess, isCreditKey, MANAGER_ROLES, quoteCredits, STAFF_ROLES } from '../../../../packages/ai-core/src/mod.ts';
 import { switchesOf } from '../ai.ts';
-import { selfViewKinds } from '../context.ts';
+import { contextLabels, selfViewKinds } from '../context.ts';
 import { bool, isUuid, jsonObject, oneOf, optionalText, record, stringList, text, uuid } from '../input.ts';
 import { listSpecialists } from '../specialists.ts';
 import { SchoodAIError, type RequestContext } from '../types.ts';
@@ -34,6 +34,8 @@ export async function me(ctx: RequestContext) {
       suggestions: specialist.suggestions[ctx.locale] ?? [], custom: specialist.custom,
     })),
     limits: { message_chars: MAX_MESSAGE_CHARS },
+    // Names of the context sources areas registered, for "Used: …" under answers.
+    context_labels: contextLabels(ctx.locale),
   };
 }
 

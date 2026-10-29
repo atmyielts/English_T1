@@ -2,6 +2,7 @@ import { adminModule } from './admin/mod.ts';
 import { centreModule } from './centre/mod.ts';
 import { coachModule } from './coach/mod.ts';
 import { createRequestContext, type ContextDeps } from './context.ts';
+import { createStores, type Stores } from './stores.ts';
 import { coreModule } from './core/mod.ts';
 import { engageModule } from './engage/mod.ts';
 import type { Gateway } from './gateway.ts';
@@ -33,6 +34,8 @@ export interface HandlerDeps {
   /** The repo's admin RBAC check for admin routes (admin-access.ts in production). */
   adminGate(req: Request, permission: string): Promise<{ ok: true } | { ok: false; status: number; code: string }>;
   modules?: FeatureModule[];
+  /** Area stores; tests and dev stacks get memory twins when left out. */
+  stores?: Stores;
 }
 export interface HandlerOptions {
   allowedOrigins: string[];
@@ -82,6 +85,7 @@ export function createSchoodAIHandler(deps: HandlerDeps, options: HandlerOptions
   const after = options.after ?? ((work: Promise<unknown>) => { void work; });
   const secret = options.serviceSecret && options.serviceSecret.length >= 32 ? options.serviceSecret : null;
   const routes = new Map<string, RouteHandler>();
+  const stores = deps.stores ?? createStores({ kind: 'memory' }, { now });
   for (const module of deps.modules ?? MODULES) {
     if (!(AREAS as readonly string[]).includes(module.area)) throw new Error(`unknown area ${module.area}`);
     for (const [action, handler] of Object.entries(module.routes)) {
@@ -146,7 +150,7 @@ export function createSchoodAIHandler(deps: HandlerDeps, options: HandlerOptions
       // --- the route ---------------------------------------------------------------
       const maxBody = handler.maxBody ?? DEFAULT_MAX_BODY;
       const ctx = createRequestContext(
-        { repo: deps.repository, gateway: deps.gateway, plans: deps.plans, isAdmin: deps.isAdmin, callFunction: deps.callFunction, after, now, responseHeaders: { ...headers } },
+        { repo: deps.repository, gateway: deps.gateway, plans: deps.plans, stores, isAdmin: deps.isAdmin, callFunction: deps.callFunction, after, now, responseHeaders: { ...headers } },
         { url, headers: req.headers, area, action, method, requestId, user, readBody: () => readLimited(req, maxBody) },
       );
       const result = await run(ctx);

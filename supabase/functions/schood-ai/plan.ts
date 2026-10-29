@@ -1,4 +1,5 @@
 import { BETA_CREDITS, isPlanCode, monthlyGrant, PLAN_CODES, PLAN_SCOPE, type PlanCode } from '../../../packages/ai-core/src/mod.ts';
+import { createStores, type StoreHandle, type Stores } from './stores.ts';
 import type { PlanState, RequestUser, Role, SchoodAIRepository, Workspace } from './types.ts';
 
 // Which plans are in force for a request. There is no free AI:
@@ -11,7 +12,19 @@ import type { PlanState, RequestUser, Role, SchoodAIRepository, Workspace } from
 // same logic runs on the entitlement rows (repository.productsHeldBy).
 // Areas add plan sources (Family children, coach passes, team seats) with registerPlanSource.
 
-export interface PlanSourceInput { user: RequestUser; workspace: Workspace; role: Role; repo: SchoodAIRepository; now: Date }
+export interface PlanSourceInput {
+  user: RequestUser;
+  workspace: Workspace;
+  role: Role;
+  repo: SchoodAIRepository;
+  now: Date;
+  /** Your area's store (stores.ts), for example family links. */
+  store<T>(handle: StoreHandle<T>): T;
+  /** Plan → Schood product id, only for plans whose product id is configured. */
+  productIds: Readonly<Partial<Record<PlanCode, string>>>;
+  /** The personal plans another person holds through their own products (for example a parent's Family). Sources are not consulted. */
+  plansOf(userId: string): Promise<PlanCode[]>;
+}
 export type PlanSource = (input: PlanSourceInput) => Promise<{ plans?: PlanCode[]; features?: string[] } | null>;
 const sources = new Map<string, PlanSource>();
 
@@ -60,11 +73,12 @@ export function createPlanResolver(config: PlanConfig) {
   const plansFrom = (ids: string[], scope: 'personal' | 'workspace') =>
     [...new Set(ids.map((id) => byProduct.get(id)).filter((plan): plan is PlanCode => !!plan && PLAN_SCOPE[plan] === scope))];
   const isBeta = async (userId: string) => config.betaUserIds.has(userId) || await config.isAdmin(userId);
+  const fallbackStores = createStores({ kind: 'memory' }, { now: config.now });
 
   return {
     /** True when the person is a Schood admin or on the beta allowlist. */
     isBeta,
-    async resolve(user: RequestUser, workspace: Workspace, role: Role): Promise<PlanState> {
+    async resolve(user: RequestUser, workspace: Workspace, role: Role, stores: Stores = fallbackStores): Promise<PlanState> {
       const now = config.now();
       let plans: PlanCode[], beta: boolean;
       if (workspace.kind === 'personal') {
@@ -79,7 +93,11 @@ export function createPlanResolver(config: PlanConfig) {
       const features: string[] = [];
       for (const [name, source] of sources) {
         try {
-          const extra = await source({ user, workspace, role, repo: config.repo, now });
+          const extra = await source({
+            user, workspace, role, repo: config.repo, now, productIds: config.productIds,
+            store: (handle) => stores.get(handle),
+            plansOf: async (userId) => plansFrom(await config.repo.productsHeldBy(userId), 'personal'),
+          });
           for (const plan of extra?.plans ?? []) if (isPlanCode(plan) && PLAN_SCOPE[plan] === (workspace.kind === 'personal' ? 'personal' : 'workspace')) plans.push(plan);
           features.push(...(extra?.features ?? []));
         } catch (cause) {
