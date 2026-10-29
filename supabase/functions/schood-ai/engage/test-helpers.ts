@@ -1,7 +1,7 @@
 import { fixture, type FixtureOptions } from '../fixture.test.ts';
 import { MODULES } from '../handler.ts';
 import type { FeatureModule, LearningEventInput } from '../types.ts';
-import { memoryFor } from './binding.ts';
+import { engageStore } from './binding.ts';
 import type { EngageMemory } from './memory.ts';
 
 // Shared helpers for the engage tests: the real handler and memory repository, plus
@@ -28,7 +28,7 @@ export function engageFixture(options: FixtureOptions = {}) {
   const store = async () => {
     if (!memory) {
       await f.json('GET', 'engage/settings', { token: 'tok-plus' });
-      memory = memoryFor(f.memory.repository, () => new Date()).memory!;
+      memory = f.stores.get(engageStore).bind(f.memory.repository).memory!;
     }
     return memory;
   };

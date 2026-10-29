@@ -115,7 +115,7 @@ Deno.test('P1 seam: a limit a parent sets cannot be changed by the child', async
   await f.get('settings');
   const memory = await f.store();
   const { setChildDailyLimit } = await import('./mod.ts');
-  const ctx = { repo: f.memory.repository, now: () => new Date(), audit: () => Promise.resolve() } as unknown as Parameters<typeof setChildDailyLimit>[0];
+  const ctx = { repo: f.memory.repository, store: f.stores.get.bind(f.stores), now: () => new Date(), audit: () => Promise.resolve() } as unknown as Parameters<typeof setChildDailyLimit>[0];
   equal(await setChildDailyLimit(ctx, ID.plus, 30), { daily_limit_minutes: 30, limit_set_by: 'parent' });
   equal((await memory.profile(ID.plus)).dailyLimitMinutes, 30);
   equal((await f.post('settings', { daily_limit_minutes: null })).body.code, 'limit_locked');
@@ -145,4 +145,30 @@ Deno.test('routes: the public pages are marked public for the core router; deliv
   equal([routes['passport-view'].public, routes.verify.public], [true, true]);
   equal([routes.tick.service, routes.outbox.service, routes['outbox-ack'].service], [true, true, true]);
   ok(!routes['freeze-buy'].service && !routes['passport-link'].service && !routes['talent-consent'].service, 'nothing that spends or shares is open to the worker');
+});
+
+Deno.test('the coach chats name engage context in the person’s language (core/me context_labels)', async () => {
+  const f = engageFixture();
+  const uz = (await f.json('GET', 'core/me', { token: 'tok-plus', headers: { 'x-schood-locale': 'uz' } })).body;
+  equal([uz.context_labels.engage_progress, uz.context_labels.engage_memory], ['Seriyangiz va ligangiz', 'Sanalaringiz va zaif joyingiz']);
+  const ru = (await f.json('GET', 'core/me', { token: 'tok-plus', headers: { 'x-schood-locale': 'ru' } })).body;
+  equal(ru.context_labels.engage_progress, 'Ваша серия и лига');
+});
+
+Deno.test('rule: the daily time limit covers the tutor chats too, refused before anything is charged', async () => {
+  const f = engageFixture();
+  const chat = () => ({ client_message_id: crypto.randomUUID(), message: 'Hi' });
+  equal((await f.call('POST', 'core/chat', { token: 'tok-plus', body: chat() })).status, 200, 'no limit, no guard');
+  await f.settle();
+  await f.post('settings', { daily_limit_minutes: 20 });
+  await f.learn('tok-plus', [f.scored('B2', 'speaking.roleplay', 12)]);
+  equal((await f.call('POST', 'core/chat', { token: 'tok-plus', body: chat() })).status, 200, 'under the limit');
+  await f.settle();
+  await f.learn('tok-plus', [f.scored('B2', 'speaking.roleplay', 10)]);
+  const before = (await f.json('GET', 'core/me')).body.credits.total;
+  const refused = await f.json('POST', 'core/chat', { token: 'tok-plus', body: chat() });
+  equal([refused.status, refused.body.code, refused.body.limit_minutes], [403, 'daily_limit_reached', 20]);
+  equal((await f.json('GET', 'core/me')).body.credits.total, before, 'nothing charged');
+  f.advance(DAY);
+  equal((await f.call('POST', 'core/chat', { token: 'tok-plus', body: chat() })).status, 200, 'a new day');
 });

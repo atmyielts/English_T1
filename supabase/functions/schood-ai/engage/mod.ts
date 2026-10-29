@@ -1,7 +1,8 @@
 import { registerContextProvider } from '../context.ts';
+import { registerChatGuard } from '../specialists.ts';
 import { SchoodAIError, type FeatureModule, type RequestContext, type RouteHandler } from '../types.ts';
 import { engage } from './binding.ts';
-import { DAILY_LIMIT_CHOICES } from './rules.ts';
+import { DAILY_LIMIT_CHOICES, limitReached } from './rules.ts';
 import { begin } from './base.ts';
 import { getBoards, getCentreLeague, setCentreLeague } from './boards.ts';
 import {
@@ -112,14 +113,38 @@ let registered = false;
 function registerProviders() {
   if (registered) return;
   registered = true;
-  registerContextProvider('engage_memory', async (ctx) => await engageMemoryContext(ctx), { selfView: true, maxChars: 3_000 });
+  registerContextProvider('engage_memory', async (ctx) => await engageMemoryContext(ctx), {
+    selfView: true, maxChars: 3_000,
+    label: { en: 'Your dates and weak spot', uz: 'Sanalaringiz va zaif joyingiz', ru: 'Ваши даты и слабое место' },
+  });
   registerContextProvider('engage_progress', async (ctx) => {
     const e = await begin(ctx, { locale: false });
     const { view } = await progressState(e);
     return { kind: 'engage_progress', title: 'Your Schood streak and league', data: { streak: view.streak.current, xp_this_week: view.xp.week, league: view.league.joined ? { tier: view.league.tier, rank: view.league.rank } : null, quests_left: view.quests.filter((quest) => !quest.done).map((quest) => quest.key), enough_today: view.wellbeing.enough_today } };
-  }, { selfView: true, maxChars: 1_500 });
+  }, { selfView: true, maxChars: 1_500, label: { en: 'Your streak and league', uz: 'Seriyangiz va ligangiz', ru: 'Ваша серия и лига' } });
 }
 registerProviders();
+
+/**
+ * The daily time limit a person (or their parent) set covers the tutor and coach chats
+ * too: once today's verified minutes reach it, every core/chat turn is refused before
+ * anything is read, stored or charged. Only people with a limit pay for more than one
+ * profile read. A failure here never blocks a chat; it is logged instead.
+ */
+registerChatGuard('engage.daily_limit', async (ctx) => {
+  let limit: number | null = null;
+  try {
+    const e = await begin(ctx, { locale: false });
+    if (!e.profile.dailyLimitMinutes) return;
+    await e.b.repo.ingest(e.userId, e.now);
+    const today = (await e.b.repo.allDays(e.userId)).find((day) => day.day === e.today);
+    if (limitReached(e.profile, today)) limit = e.profile.dailyLimitMinutes;
+  } catch (cause) {
+    console.error(JSON.stringify({ event: 'engage_limit_guard_failed', request_id: ctx.requestId, error: String(cause) }));
+    return;
+  }
+  if (limit) throw new SchoodAIError('daily_limit_reached', 'The daily limit for today is reached. See you tomorrow.', 403, { limit_minutes: limit });
+});
 
 export const engageModule: FeatureModule = {
   area: 'engage',

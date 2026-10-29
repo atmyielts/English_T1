@@ -40,6 +40,7 @@ The lifetime engagement layer lives in `supabase/functions/schood-ai/engage/` (f
   - `setChildDailyLimit(ctx, childUserId, minutes | null)` sets a limit the child cannot change.
   - Check the parent–child link before calling either; engage does not know it.
 - **Daily time limit:** `dailyLimitState(ctx)` returns `{ limitMinutes, minutesToday, reached }`. Please refuse new practice when `reached` is true, as engage's own screens do.
+  - Chats are covered already: engage's chat guard `engage.daily_limit` refuses every `core/chat` turn with `daily_limit_reached` (403, `limit_minutes`) once the limit is reached, before anything is charged.
 
 ### Coach engine (B1–B6)
 
@@ -84,6 +85,8 @@ All messages go through `ai_engage_outbox`. At most two a day per person across 
 
 ## 4. Requests to core
 
+Answered by core and now used: area stores (`defineStore`, `ctx.store`) replaced engage's own service-role client, and `useCatalog` loads the engage page text (`i18n/pages.<locale>.ts`) with the pages. Engage adds 2.9 KB gzip to the main chunk (115.0 against 112.1 KB for core alone): the route table, nav icons and the page preload map.
+
 1. **Public routes.** Please let a `RouteHandler` carry `public: true` and run without a user. Engage already marks `engage/passport-view` and `engage/verify` this way (`publicRoute` in `engage/mod.ts`), and neither uses who is asking.
    - Today the handler requires sign-in, so a shared Passport link and a certificate QR open only for signed-in viewers. Signed-out viewers see the sign-in state.
    - Suggested shape:
@@ -91,13 +94,14 @@ All messages go through `ai_engage_outbox`. At most two a day per person across 
      - no `ctx.ai`, no workspace;
      - a per-IP rate limit.
    - The coach agent will need the same for its certificate links.
-2. **Area repositories.** Please add `ctx.db` (the service client) or a registry for an area's repository. Until then, `engage/binding.ts` creates its own service-role client from `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`, once per isolate. In tests and the dev stack it wraps the memory repository's `addLearningEvents` to see events.
-3. **Learning events in the memory repository.** Please add a read method, such as `learningEvents(userId, afterId)`, so the tap above can go.
-4. **Notification preferences.** Please add a route to set `ai_notify_prefs` (time zone, quiet hours). Engage keeps its own zone and hour in `ai_engage_profiles` and checks quiet hours as well as `ai_notify`. The stricter of the two wins.
-5. **Non-AI credit spends.** Please bless `ctx.repo.charge` for a priced action that makes no model call (`streak.freeze`), or add `ctx.credits.spend(key, reference)`.
-6. **A daily time limit in core.** Please have `ctx.ai` and `core/chat` respect `dailyLimitState(ctx)`, so a limit a parent sets also covers the tutor.
-7. **Lazy area text.** Please add a core hook to load an area's page text on demand. Engage keeps only nav labels and page titles in `i18n/en.ts`. Its pages read `i18n/pages.<locale>.ts`, which load with the page chunks (`i18n/lazy.ts`), so the first download grows by 3.4 KB gzip instead of 12 KB.
-8. **`retryAt` in the memory `notify`.** It reports "today 08:00" for a used-up day. Engage clamps it to the next local morning; Postgres is right already.
+2. **Learning events in the memory repository.** Engage's tables go through core's area store (`engageStore` in `engage/binding.ts`, `ctx.store`). Its memory twin taps the core memory repository's `addLearningEvents` to see events. Please add a read method, such as `learningEvents(userId, afterId)`, so the tap can go.
+3. **Notification preferences.** Please add a route to set `ai_notify_prefs` (time zone, quiet hours). Engage keeps its own zone and hour in `ai_engage_profiles` and checks quiet hours as well as `ai_notify`. The stricter of the two wins.
+4. **Non-AI credit spends.** Please bless `ctx.repo.charge` for a priced action that makes no model call (`streak.freeze`), or add `ctx.credits.spend(key, reference)`.
+5. **Wording for the chat's daily-limit refusal.** The `engage.daily_limit` chat guard (`registerChatGuard`) refuses chats once the limit is reached. Core's chat shows `error.<code>`, and engage keeps its own keys under its prefix, so please add `error.daily_limit_reached`. Until then the chat shows the generic error. Suggested text:
+   - en: "You reached your daily limit. Practice opens again tomorrow."
+   - uz: "Kunlik chegaraga yetdingiz. Mashq ertaga yana ochiladi."
+   - ru: "Дневной лимит достигнут. Практика снова откроется завтра."
+6. **`retryAt` in the memory `notify`.** It reports "today 08:00" for a used-up day. Engage clamps it to the next local morning; Postgres is right already.
 
 ## 5. For the owner and operations
 
