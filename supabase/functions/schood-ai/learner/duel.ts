@@ -32,7 +32,8 @@ export function duelQuestions(raw: { prompt: string; options: string[]; answer_i
 }
 
 const links = (ctx: RequestContext, code: string, referral: string | null, created: { webUrl?: string; botUrl?: string } = {}) => {
-  const landing = `${config(ctx).appUrl.replace(/\/$/, '')}/duel/${code}`;
+  // The referral code is public (it is how sign-ups are attributed), never student data.
+  const landing = `${config(ctx).appUrl.replace(/\/$/, '')}/duel/${code}${referral ? `?ref=${encodeURIComponent(referral)}` : ''}`;
   return {
     landing,
     bot: created.botUrl ?? `https://t.me/schoodstudentbot?start=duel_${code}`,
