@@ -331,10 +331,10 @@ export function TestDetailPage({ assessmentId }: { assessmentId: string }) {
           </tr></thead>
           <tbody>
             {rows.map((row) => <tr key={row.id}>
-              <td className="no-print"><input type="checkbox" aria-label={t('hiring.compare.pick', { name: row.name ?? '' })} checked={picked.includes(row.id)} disabled={!picked.includes(row.id) && picked.length >= 3} onChange={() => togglePick(row.id)}/></td>
+              <td className="no-print"><input type="checkbox" aria-label={t('hiring.compare.pick', { name: row.name ?? '' })} checked={picked.includes(row.id)} disabled={(row.status !== 'graded' && row.status !== 'submitted') || (!picked.includes(row.id) && picked.length >= 3)} onChange={() => togglePick(row.id)}/></td>
               <td><Link to={`/w/${org.id}/hiring/${assessment.id}/${row.id}`}><strong>{row.name ?? '—'}</strong></Link><br/><span className="hiring-muted">{row.email}</span></td>
               <td>{row.overall_level ? <><LevelBadge level={row.overall_level} short/> <span className="hiring-muted">{format.score(row.overall_score)}</span></> : <span className="hiring-muted">—</span>}{row.meets !== null && <><br/><MeetsBadge meets={row.meets}/></>}</td>
-              <td><SkillChips skills={assessment.skills} row={row}/></td>
+              <td>{row.status === 'expired' ? <span className="hiring-muted">—</span> : <SkillChips skills={assessment.skills} row={row}/>}</td>
               <td><StatusBadge status={row.status}/>{row.pending.length > 0 && <><br/><span className="hiring-muted">{t('hiring.detail.waiting', { skills: row.pending.map((skill) => skillText(t, skill)).join(', ') })}</span></>}</td>
               <td><DecisionBadge decision={row.decision}/></td>
               <td>{row.flags.length ? <span className={`company-badge ${row.flags.some((flag) => flag.severity === 'warn') ? 'warn' : ''}`} title={row.flags.map((flag) => flag.code).join(', ')}>{t('hiring.detail.flagCount', { count: row.flags.length })}</span> : <span className="hiring-muted">—</span>}</td>
@@ -359,13 +359,15 @@ function SkillChips({ skills, row }: { skills: Skill[]; row: AttemptRow }) {
 
 export function LevelSpread({ levels, total, min }: { levels: Partial<Record<Level, number>>; total: number; min?: Level | null }) {
   const t = useAppT();
+  const top = Math.max(0, ...Object.values(levels).map((value) => value ?? 0));
+  void total;
   return <div className="hiring-spread" role="img" aria-label={t('hiring.stats.spread')}>
     {LEVELS.map((level) => {
       const count = levels[level] ?? 0;
       const below = min ? levelIndex(level) < levelIndex(min) : false;
       return <div key={level} className={`hiring-spread-col${below ? ' below' : ''}`}>
         <span className="hiring-spread-count">{count || ''}</span>
-        <span className="hiring-spread-bar"><b style={{ height: `${total ? Math.max(count ? 6 : 0, count / total * 100) : 0}%` }}/></span>
+        <span className="hiring-spread-bar"><b style={{ height: `${top ? Math.max(count ? 6 : 0, count / top * 100) : 0}%` }}/></span>
         <span className="hiring-spread-label">{shortLevel(level)}</span>
       </div>;
     })}

@@ -5,8 +5,15 @@
 
 export const canSpeak = (): boolean => typeof window !== 'undefined' && 'speechSynthesis' in window;
 
-const englishVoices = (): SpeechSynthesisVoice[] =>
-  canSpeak() ? window.speechSynthesis.getVoices().filter((voice) => voice.lang.toLowerCase().replace('_', '-').startsWith('en')) : [];
+/** English voices, British and American first (the clearest for a test), local voices before network ones. */
+const englishVoices = (): SpeechSynthesisVoice[] => {
+  if (!canSpeak()) return [];
+  const rank = (voice: SpeechSynthesisVoice) => {
+    const lang = voice.lang.toLowerCase().replace('_', '-');
+    return (lang === 'en-gb' || lang === 'en-us' ? 0 : 2) + (voice.localService ? 0 : 1);
+  };
+  return window.speechSynthesis.getVoices().filter((voice) => voice.lang.toLowerCase().startsWith('en')).sort((a, b) => rank(a) - rank(b));
+};
 
 /** Speaks one utterance in English. Resolves when it ends (or at once if unsupported). */
 export const speak = (text: string, options: { rate?: number; pitch?: number; voice?: SpeechSynthesisVoice | null } = {}): Promise<void> =>

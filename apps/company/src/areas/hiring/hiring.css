@@ -54,7 +54,7 @@
 .hiring-form .hint{font-weight:400}
 .hiring-form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
 .hiring-skill-picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.6rem}
-.hiring-skill-pick{border:1px solid #d1d5db;border-radius:14px;padding:.65rem .75rem;align-items:flex-start;gap:.6rem;background:white;cursor:pointer}
+.check.hiring-skill-pick{border:1px solid #d1d5db;border-radius:14px;padding:.65rem .75rem;align-items:flex-start;gap:.6rem;background:white;cursor:pointer}
 .hiring-skill-pick.on{border-color:var(--navy);box-shadow:inset 0 0 0 1px var(--navy)}
 .hiring-skill-pick span{display:flex;flex-direction:column;gap:.15rem}
 .hiring-skill-pick small{font-weight:400;color:var(--muted);font-size:.75rem;line-height:1.4}
@@ -69,6 +69,7 @@
 /* Link panel. */
 .hiring-link{display:grid;gap:.6rem}
 .hiring-link h2{margin:0}
+.hiring-link>button{justify-self:start}
 .hiring-link-row{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
 .hiring-link-field{flex:1 1 260px;min-width:0}
 .hiring-link-field input{font-family:ui-monospace,monospace;font-size:.8rem}
@@ -76,7 +77,7 @@
 .hiring-confirm p{margin:0;color:#78350f}
 
 /* Stats, distribution, compare. */
-.hiring-stats{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.company-grid.hiring-stats{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
 .hiring-spread{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.4rem;align-items:end;height:150px;background:rgb(255 255 255/.85);border:1px solid var(--control);border-radius:18px;padding:.9rem 1rem .6rem}
 .hiring-spread-col{display:grid;grid-template-rows:auto 1fr auto;height:100%;text-align:center;gap:.25rem;min-width:0}
 .hiring-spread-count{font-size:.75rem;font-weight:700;min-height:1em}
@@ -86,7 +87,7 @@
 .hiring-spread-label{font-size:.72rem;color:var(--muted)}
 .hiring-table td{min-width:5rem}
 .hiring-table td:first-child{min-width:0}
-.hiring-chips{display:flex;flex-wrap:wrap;gap:.25rem;max-width:16rem}
+.hiring-chips{display:grid;grid-template-columns:repeat(3,max-content);gap:.25rem;min-width:11rem}
 .hiring-chip{font-size:.72rem;border:1px solid #e5e7eb;border-radius:8px;padding:.05rem .35rem;white-space:nowrap;background:white}
 .hiring-chip abbr{text-decoration:none;font-weight:700;color:var(--muted)}
 .hiring-compare{border:1px solid var(--navy);border-radius:18px;padding:1rem;margin:0 0 1rem;background:#f8fafc}
@@ -99,7 +100,7 @@
 .hiring-report-head h1{margin-bottom:.4rem}
 .hiring-report-summary{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:1.5rem;align-items:start}
 .hiring-overall{display:flex;flex-direction:column;align-items:flex-start;gap:.45rem;padding:1rem;border-radius:18px;background:#f8fafc;border:1px solid #e5e7eb}
-.hiring-overall .hiring-level{font-size:1.05rem;padding:.3rem .8rem}
+.hiring-overall .hiring-level{font-size:1.05rem;padding:.3rem .8rem;white-space:normal}
 .hiring-overall strong{font-family:Sora,Manrope,sans-serif;font-size:1.4rem}
 .hiring-overall .eyebrow{margin:0}
 .hiring-pending{border-color:#f59e0b;background:#fffbeb}
@@ -153,7 +154,7 @@
 .hiring-meter b{display:block;height:100%;background:#22c55e;transition:width .08s}
 .hiring-details{margin-top:.75rem;border-top:1px solid #e5e7eb;padding-top:1rem}
 .hiring-details h2{margin:0}
-.hiring-consent{align-items:flex-start;font-weight:500;line-height:1.5}
+.check.hiring-consent{align-items:flex-start;font-weight:500;line-height:1.5}
 .hiring-consent input{margin-top:.25rem}
 .hiring-thanks{text-align:center;display:grid;gap:.75rem;justify-items:center}
 .hiring-thanks .hiring-result{width:100%;text-align:left}
@@ -207,11 +208,11 @@
 .hiring-task-prompt{font-size:.98rem;color:#111827;margin:0;line-height:1.65}
 .hiring-task-points-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0}
 .hiring-task-points{margin:0;padding-left:1.2rem;font-size:.9rem;line-height:1.6}
-.hiring-writing{font-family:Manrope,sans-serif;font-size:1rem;line-height:1.7;min-height:14rem}
+.hiring-writing{font-family:Manrope,sans-serif;font-weight:400;font-size:1rem;line-height:1.7;min-height:14rem}
 .hiring-count{margin:0;font-size:.8rem}
 .hiring-count.ok{color:#166534;font-weight:600}
 .hiring-speak{display:grid;gap:.6rem}
-.hiring-speak textarea{font-family:Manrope,sans-serif;font-size:1rem}
+.hiring-speak textarea{font-family:Manrope,sans-serif;font-weight:400;font-size:1rem}
 .hiring-rec{display:inline-flex;align-items:center;gap:.4rem;font-size:.85rem;font-weight:700;color:#991b1b}
 .hiring-rec i{width:10px;height:10px;border-radius:50%;background:#dc2626;animation:hiring-pulse 1s infinite}
 @keyframes hiring-pulse{50%{opacity:.3}}

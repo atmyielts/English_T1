@@ -40,12 +40,20 @@ export const levelText = (t: AppTranslate, level: Level | string | null | undefi
 export const shortLevel = (level: Level | string | null | undefined) => level ? level === 'pre_a1' ? 'Pre-A1' : level.toUpperCase() : '—';
 export const skillText = (t: AppTranslate, skill: Skill | string) => t(`skill.${skill}` as AppKey);
 
+const UZ_MONTHS = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'];
+/** Uzbek dates by hand: many browsers ship no Uzbek calendar data and print "2026 M10 4". Tashkent time. */
+function uzDate(value: string, withTime: boolean): string {
+  const local = new Date(new Date(value).getTime() + 5 * 3_600_000);
+  const day = `${local.getUTCDate()}-${UZ_MONTHS[local.getUTCMonth()]}, ${local.getUTCFullYear()}`;
+  return withTime ? `${day}, ${String(local.getUTCHours()).padStart(2, '0')}:${String(local.getUTCMinutes()).padStart(2, '0')}` : day;
+}
+
 export function useFormat() {
   const { date, number, locale } = useI18n();
   return {
     locale,
-    date: (value: string | null | undefined) => value ? date(value, { dateStyle: 'medium' }) : '—',
-    dateTime: (value: string | null | undefined) => value ? date(value, { dateStyle: 'medium', timeStyle: 'short' }) : '—',
+    date: (value: string | null | undefined) => !value ? '—' : locale === 'uz' ? uzDate(value, false) : date(value, { dateStyle: 'medium' }),
+    dateTime: (value: string | null | undefined) => !value ? '—' : locale === 'uz' ? uzDate(value, true) : date(value, { dateStyle: 'medium', timeStyle: 'short' }),
     score: (value: number | null | undefined) => value === null || value === undefined ? '—' : number(value, { maximumFractionDigits: 0 }),
   };
 }

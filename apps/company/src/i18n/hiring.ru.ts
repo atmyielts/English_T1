@@ -248,7 +248,7 @@ export const hiringRu: Record<HiringKey, string> = {
   'hiring.my.certificates': 'Мои сертификаты',
 
   'hiring.take.timeLimit': 'на весь тест',
-  'hiring.take.sectionsCount': 'разделов',
+  'hiring.take.sectionsCount': '{count|one:раздел|few:раздела|many:разделов|other:раздела}',
   'hiring.take.closes': 'закрывается',
   'hiring.take.sections': 'Из чего состоит тест',
   'hiring.take.rules': 'Перед началом',
@@ -264,7 +264,7 @@ export const hiringRu: Record<HiringKey, string> = {
   'hiring.take.retake': 'Пройти ещё раз',
   'hiring.take.done': 'Вы прошли этот тест.',
   'hiring.take.pending': 'Письмо и устная часть проверяются. Результат появится здесь.',
-  'hiring.take.retestAt': 'Пройти снова можно с {date}.',
+  'hiring.take.retestAt': 'Пройти снова можно с {date}',
   'hiring.take.result': 'Ваш результат',
   'hiring.take.certificate': 'Сертификат',
 

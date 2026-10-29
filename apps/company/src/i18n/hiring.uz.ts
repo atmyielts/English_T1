@@ -135,7 +135,7 @@ export const hiringUz: Record<HiringKey, string> = {
   'hiring.report.back': 'Ro‘yxatga qaytish',
   'hiring.report.taken': 'Boshlangan: {started} · yuborilgan: {submitted}',
   'hiring.report.overall': 'Umumiy daraja',
-  'hiring.report.score': '100 dan {score}',
+  'hiring.report.score': '{score} / 100',
   'hiring.report.noScore': 'Baholanmagan',
   'hiring.report.estimateNote': 'Darajalar CEFR shkalasi bo‘yicha Schood bahosi, rasmiy sertifikat emas.',
   'hiring.report.source.auto': 'Avtomatik tekshirilgan',
@@ -264,7 +264,7 @@ export const hiringUz: Record<HiringKey, string> = {
   'hiring.take.retake': 'Qayta topshirish',
   'hiring.take.done': 'Siz bu testni topshirdingiz.',
   'hiring.take.pending': 'Yozma va og‘zaki javoblaringiz tekshirilmoqda. Natija shu yerda chiqadi.',
-  'hiring.take.retestAt': '{date} dan boshlab qayta topshirishingiz mumkin.',
+  'hiring.take.retestAt': '{date} dan boshlab qayta topshirishingiz mumkin',
   'hiring.take.result': 'Natijangiz',
   'hiring.take.certificate': 'Sertifikat',
 

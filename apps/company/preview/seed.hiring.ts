@@ -23,21 +23,53 @@ function seeded(seed: number) {
   };
 }
 
-const WRITING: Record<'strong' | 'mid' | 'weak', string> = {
-  strong: 'Dear Mr Lee,\n\nThank you for choosing Silk Road Hotels. I am pleased to confirm your booking of a deluxe double room from 14 to 17 November, three nights in total, with breakfast included.\n\nAs requested, we have arranged an airport transfer on your arrival day; our driver will be waiting at the exit with a sign showing your name. Check-in is from 2 p.m., but if your flight lands early we will do our best to have the room ready.\n\nPlease let me know if you need anything else before your stay. We look forward to welcoming you to Tashkent.\n\nKind regards,\nFront office',
-  mid: 'Dear Mr Lee,\n\nThank you for your booking. Your room is booked from 14 November to 17 November, it is double room with breakfast. We can organise taxi from the airport, the price is 15 dollars. Check-in time is 2 pm and check-out is 12.\n\nIf you have questions please write me.\n\nBest regards',
-  weak: 'Hello. Your room is ready for 14 November. Breakfast is have. Taxi is possible. Thank you.',
+type Tier = 'strong' | 'mid' | 'weak';
+/** Sample answers for the hospitality tasks, in three qualities; other tasks get a general answer. */
+const ANSWERS: Record<string, Record<Tier, string>> = {
+  'w-hos-1': {
+    strong: 'Dear Ms Kim,\n\nThank you for choosing our hotel. I am pleased to confirm your booking of a double room from 12 to 15 May, three nights at $70 per night, so $210 in total, breakfast included.\n\nWe would be happy to collect you from Samarkand airport. Our driver will wait at the exit with a sign showing your name; the transfer costs $10, which you can pay at check-in. Please send me your flight number.\n\nCheck-in is from 2 p.m. The Registan is a ten-minute walk away, and our reception can book guided tours for you.\n\nKind regards,\nFront office',
+    mid: 'Dear Ms Kim,\n\nThank you for your booking. Your double room is booked from 12 May to 15 May, it is $70 for one night, total $210. We can organise taxi from the airport, please send your flight number. Check-in time is 2 pm and check-out is 12.\n\nIf you have questions please write me.\n\nBest regards',
+    weak: 'Hello Ms Kim. Your room is ready 12 May. Price 70 dollar. Airport taxi is possible. Check in 2 pm. Thank you.',
+  },
+  'w-hos-2': {
+    strong: 'Incident report: water leak, third floor\n\nAt about 11.40 p.m. yesterday a water pipe above room 305 broke, and water came through the ceiling into rooms 305, 306 and 307. The night porter noticed it within a few minutes and called me.\n\nWe turned off the water supply to the third floor at 11.50 p.m. and called the on-call plumber, who repaired the pipe by 2 a.m. The guests in rooms 305 and 306 were moved to suites on the fifth floor at midnight; we apologised, carried their luggage and offered a complimentary breakfast. Room 307 was empty.\n\nThe three rooms need two days to dry, so they should be blocked in the booking system until Friday.\n\nRecommendations: the pipes on the third floor are original and should be inspected this month, and night staff should be shown where the floor valves are.',
+    mid: 'Report about the water problem\n\nYesterday night a pipe broke on third floor. Water was in rooms 305, 306 and 307. The porter called me and we closed the water. The plumber came and repaired it in the night. Two guests moved to other rooms on fifth floor, we said sorry and gave them free breakfast.\n\nThe rooms are wet now so we cannot sell them for two days. I think we need to check all old pipes and teach night staff how to close the water.',
+    weak: 'Yesterday pipe is broken. Water in three room. Guests go other room. Plumber come. Now ok.',
+  },
+  's-hos-1': {
+    strong: 'The place I know best is a small family hotel in the old town of Bukhara. It is a traditional house with a courtyard, blue tiles and a fountain in the middle. It has only twelve rooms, so it feels quiet and personal. Breakfast is served outside, with fresh bread, fruit and green tea. Guests love it because the staff remember their names and it is close to all the main sights.',
+    mid: 'I know a hotel in Bukhara. It is old house with a courtyard. There are twelve rooms. They have breakfast with bread and tea. Guests like it because it is near the old city and the staff is friendly.',
+    weak: 'Hotel in Bukhara. Is old. Breakfast good. Guests like.',
+  },
+  's-hos-2': {
+    strong: 'Tomorrow I would start at the Registan early in the morning, before it gets busy and hot. After that you could walk to the Bibi-Khanym mosque and the Siab bazaar, which are close to each other. In the afternoon take a taxi to Shah-i-Zinda; it costs about twenty thousand sums from here. One tip: buy the combined ticket at the Registan, it saves time and money.',
+    mid: 'You can visit Registan, it is very beautiful, and also Siab bazaar. You can go by taxi, it is not expensive. My tip is go in the morning because in the afternoon it is very hot.',
+    weak: 'Registan good. Bazaar. Taxi. Morning better.',
+  },
+  's-hos-3': {
+    strong: 'I am really sorry about the noise and the air conditioner, that is not the stay we want you to have. Although we are full tonight, I can send our engineer up in the next ten minutes to repair the air conditioner. I can also give you earplugs and a fan, and move you to a quieter room tomorrow morning with breakfast on us. I think that is the quickest way to make you comfortable tonight.',
+    mid: 'I am sorry for the problem. Today the hotel is full so I cannot change your room. But I can send engineer to repair the air conditioner now, and tomorrow we can give you another room. Also breakfast is free for you.',
+    weak: 'Sorry. Hotel full. Engineer come. Tomorrow other room.',
+  },
 };
-const SPEAKING: Record<'strong' | 'mid' | 'weak', string> = {
-  strong: 'Good evening and welcome to Silk Road Hotels. I am really sorry you had to wait. Let me check your reservation straight away. I can see your room was booked for tonight, but there was a problem with the cleaning, so I would like to offer you an upgrade to a suite at no extra cost, and a complimentary dinner in our restaurant while it is prepared.',
-  mid: 'Good evening, welcome. I am sorry for the waiting. I will check your booking now. Your room is not ready yet because cleaning is late, so please wait maybe twenty minutes in the lobby, we can give you tea or coffee free.',
-  weak: 'Hello welcome sorry room not ready please wait we give tea',
+const GENERAL: Record<'writing' | 'speaking', Record<Tier, string>> = {
+  writing: {
+    strong: 'Dear colleagues,\n\nI would like to update you on the new check-in procedure, which starts on Monday. From now on, guests will be able to fill in their details online before arrival, so the desk only needs to check passports and hand over keys. This should cut waiting times by half during busy evenings.\n\nPlease read the attached guide and let me know by Friday if anything is unclear.\n\nBest regards',
+    mid: 'Dear team,\n\nFrom Monday we have new check-in procedure. Guests fill the form online before they arrive, so at the desk we only check passport and give keys. Please read the guide and ask me if something is not clear.\n\nThanks',
+    weak: 'Hello team. Monday new check-in. Guest fill form online. Read guide please.',
+  },
+  speaking: {
+    strong: 'In my job I usually start by checking the reservations for the day, then I welcome guests, answer their questions and solve any problems quickly. What I enjoy most is helping people from different countries feel at home in Tashkent.',
+    mid: 'In my work I check bookings, I meet guests and I help them with questions. I like it because I meet people from many countries.',
+    weak: 'I work hotel. I meet guest. Is good.',
+  },
 };
+const answerFor = (skill: 'writing' | 'speaking', id: string, tier: Tier) => ANSWERS[id]?.[tier] ?? GENERAL[skill][tier];
 
 interface Played { sections: Section[]; answers: Answers; results: Results }
 
 /** Plays a whole test through the engine, answering each objective question right with probability `accuracy`. */
-function play(skills: Skill[], jobRole: JobRole, accuracy: number, seed: number, tier: 'strong' | 'mid' | 'weak', now: Date, stopAfter = 99): Played {
+function play(skills: Skill[], jobRole: JobRole, accuracy: number, seed: number, tier: Tier, now: Date, stopAfter = 99): Played {
   const rng = seeded(seed), coin = seeded(seed * 7 + 1);
   const options = { jobRole, rng, now: now.toISOString(), fallback: 'b1' as const };
   let sections = createSections(skills, options), results: Results = {}, answers: Answers = {};
@@ -51,7 +83,7 @@ function play(skills: Skill[], jobRole: JobRole, accuracy: number, seed: number,
     };
     for (const stage of active.stages ?? []) for (const item of stage.items) answers[item.id] ??= pick(item.id, item.options);
     for (const passage of active.passages ?? []) for (const question of passage.questions) answers[question.id] ??= pick(question.id, question.options);
-    for (const task of active.tasks ?? []) answers[task.id] = active.skill === 'writing' ? WRITING[tier] : { transcript: SPEAKING[tier], mode: tier === 'weak' ? 'typed' : 'speech' };
+    for (const task of active.tasks ?? []) answers[task.id] = active.skill === 'writing' ? answerFor('writing', task.id, tier) : { transcript: answerFor('speaking', task.id, tier), mode: tier === 'weak' ? 'typed' : 'speech' };
     const moved = advance(sections, answers, results, options);
     sections = moved.sections;
     results = moved.results;
@@ -74,7 +106,7 @@ function grade(payload: unknown, speaking: boolean) {
   const target = tasks.reduce((sum, task) => sum + (speaking ? Math.round((task.suggested_seconds ?? 60) * 1.1) : task.suggested_words ?? 100), 0) || 1;
   const unique = new Set(text.toLowerCase().match(/[a-z']+/g) ?? []).size;
   const variety = count ? unique / count : 0;
-  const base = Math.max(8, Math.min(90, Math.round(18 + 42 * Math.min(1, count / target) + 30 * variety + (/\b(would|could|which|although|arranged|complimentary)\b/i.test(text) ? 8 : 0))));
+  const base = Math.max(8, Math.min(90, Math.round(18 + 42 * Math.min(1, count / target) + 30 * variety * Math.min(1, count / target) + (/\b(would|could|which|although|arranged|complimentary)\b/i.test(text) ? 8 : 0))));
   const criteria: Record<string, number> = { task: base + 4, organisation: base - 2, grammar: base - 4, vocabulary: base + 2 };
   if (speaking) Object.assign(criteria, { fluency: base, pronunciation: base - 3 });
   for (const key of Object.keys(criteria)) criteria[key] = Math.max(0, Math.min(100, criteria[key]));
@@ -140,7 +172,7 @@ export function seed(db: FakeDb, world: World) {
   });
   try { localStorage.setItem(`company-hiring-link:${testId}`, `${location.origin}/t/${PREVIEW_LINK}`); } catch { /* preview only */ }
 
-  const candidates: { name: string; email: string; phone: string; accuracy: number; tier: 'strong' | 'mid' | 'weak'; state: 'graded' | 'pending' | 'started' | 'expired'; decision?: string; notes?: string; days: number; integrity?: Record<string, unknown>; code?: string }[] = [
+  const candidates: { name: string; email: string; phone: string; accuracy: number; tier: Tier; state: 'graded' | 'pending' | 'started' | 'expired'; decision?: string; notes?: string; days: number; integrity?: Record<string, unknown>; code?: string }[] = [
     { name: 'Madina Yuldasheva', email: 'madina.yu@mail.uz', phone: '+998 90 412 33 18', accuracy: 0.93, tier: 'strong', state: 'graded', decision: 'shortlist', notes: 'Сильная устная часть. Пригласить на интервью в четверг.', days: 6, code: 'SRH7K2M9QX', integrity: { tab_hidden: 0, paste: 0, copy: 0, fullscreen_exit: 0 } },
     { name: 'Javohir Rasulov', email: 'javohir.r@gmail.com', phone: '+998 93 551 07 42', accuracy: 0.72, tier: 'mid', state: 'graded', decision: 'hold', notes: 'Хорошо по чтению, письмо слабее. Рассмотреть на ночную смену.', days: 5, code: 'SRH4T8N2WP', integrity: { tab_hidden: 3, paste: 1, copy: 0, fullscreen_exit: 1, ip_hash: 'preview-net-a' } },
     { name: 'Dilshod Ergashev', email: 'dilshod.erg@mail.ru', phone: '+998 97 300 64 11', accuracy: 0.38, tier: 'weak', state: 'graded', decision: 'reject', days: 4, code: 'SRH9C3L6ZD', integrity: { tab_hidden: 9, paste: 0, copy: 2, fullscreen_exit: 0, ip_hash: 'preview-net-a' } },

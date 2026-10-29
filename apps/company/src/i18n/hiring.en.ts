@@ -35,7 +35,7 @@ export const hiringEn = {
   'hiring.flag.extra_plays': 'Audio played more than twice',
   'hiring.flag.late': 'Submitted after the time limit',
   'hiring.flag.auto_submitted': 'Time ran out; submitted automatically',
-  'hiring.flag.same_network': 'Same network as {value} other candidates today',
+  'hiring.flag.same_network': 'Same network as {count|one:# other candidate|other:# other candidates} today',
   'hiring.flags.none': 'No integrity flags',
   'hiring.flags.note': 'Flags are signals worth a look, not proof of cheating. Nobody is rejected automatically.',
 
@@ -247,7 +247,7 @@ export const hiringEn = {
   'hiring.my.certificates': 'My certificates',
 
   'hiring.take.timeLimit': 'time limit',
-  'hiring.take.sectionsCount': 'sections',
+  'hiring.take.sectionsCount': '{count|one:section|other:sections}',
   'hiring.take.closes': 'closes',
   'hiring.take.sections': 'What is in the test',
   'hiring.take.rules': 'Before you start',
@@ -263,7 +263,7 @@ export const hiringEn = {
   'hiring.take.retake': 'Take it again',
   'hiring.take.done': 'You have finished this test.',
   'hiring.take.pending': 'Your writing and speaking are being checked. Your result will appear here.',
-  'hiring.take.retestAt': 'You can take it again from {date}.',
+  'hiring.take.retestAt': 'You can take it again from {date}',
   'hiring.take.result': 'Your result',
   'hiring.take.certificate': 'Certificate',
 

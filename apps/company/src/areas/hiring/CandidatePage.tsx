@@ -86,7 +86,7 @@ export function CandidatePage({ token }: { token: string }) {
       submit: async (body) => (await call('submit', body)).attempt!,
     };
     return <Frame company={test.company}>
-      <TestRunner initial={view} transport={transport} storageKey={`company-test:${token}`} onDone={(done) => { setView(done); setPhase('done'); }}/>
+      <TestRunner initial={view} transport={transport} storageKey={`company-test:${token}`} onDone={(done) => { setView(done); setPhase('done'); scrollTo(0, 0); }}/>
     </Frame>;
   }
 
@@ -101,14 +101,14 @@ export function CandidatePage({ token }: { token: string }) {
       <p>{t('hiring.candidate.forRole', { role: t(`job.${test.job_role}` as AppKey) })}</p>
       <div className="hiring-facts">
         <div className="company-stat"><strong>{t('common.minutes', { count: test.time_limit_minutes })}</strong><span>{t('hiring.take.timeLimit')}</span></div>
-        <div className="company-stat"><strong>{test.skills.length}</strong><span>{t('hiring.take.sectionsCount')}</span></div>
+        <div className="company-stat"><strong>{test.skills.length}</strong><span>{t('hiring.take.sectionsCount', { count: test.skills.length })}</span></div>
       </div>
       <h2>{t('hiring.take.sections')}</h2>
       <ol className="hiring-section-list">{test.skills.map((skill) => <li key={skill}><strong>{skillText(t, skill)}</strong> <span>{t(`hiring.skillInfo.${skill}` as AppKey)}</span></li>)}</ol>
       <Rules skills={test.skills}/>
       {phase === 'intro'
         ? <div className="company-actions"><button type="button" onClick={() => setPhase('details')}>{t('hiring.candidate.begin')}</button></div>
-        : <Details token={token} intro={intro} onStarted={(newKey, attempt) => { writeKey(token, newKey); setKey(newKey); setView(attempt); setPhase('running'); }}/>}
+        : <Details token={token} intro={intro} onStarted={(newKey, attempt) => { writeKey(token, newKey); setKey(newKey); setView(attempt); setPhase('running'); scrollTo(0, 0); }}/>}
     </section>
   </Frame>;
 }

@@ -87,7 +87,7 @@ export function MemberTestPage({ assessmentId }: { assessmentId: string }) {
       next: async (body) => (await call('next', body)).attempt!,
       submit: async (body) => (await call('submit', body)).attempt!,
     };
-    return <TestRunner initial={running} transport={transport} storageKey={`company-staff-test:${org.id}`} onDone={() => { setRunning(null); void info.reload(); }}/>;
+    return <TestRunner initial={running} transport={transport} storageKey={`company-staff-test:${org.id}`} onDone={() => { setRunning(null); scrollTo(0, 0); void info.reload(); }}/>;
   }
 
   if (info.error) return <section><p className="error" role="alert">{info.error}</p><p><Link to={`/w/${org.id}/tests`}>{t('hiring.my.back')}</Link></p></section>;
@@ -100,7 +100,7 @@ export function MemberTestPage({ assessmentId }: { assessmentId: string }) {
       <h1>{test.title}</h1>
       <div className="hiring-facts">
         <div className="company-stat"><strong>{t('common.minutes', { count: test.time_limit_minutes })}</strong><span>{t('hiring.take.timeLimit')}</span></div>
-        <div className="company-stat"><strong>{test.skills.length}</strong><span>{t('hiring.take.sectionsCount')}</span></div>
+        <div className="company-stat"><strong>{test.skills.length}</strong><span>{t('hiring.take.sectionsCount', { count: test.skills.length })}</span></div>
         {test.closes_at && <div className="company-stat"><strong>{format.date(test.closes_at)}</strong><span>{t('hiring.take.closes')}</span></div>}
       </div>
       {info.data.status !== 'done' && <>
