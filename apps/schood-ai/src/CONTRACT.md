@@ -59,7 +59,11 @@ export const homeCards: HomeCard[] = [
 - Use `useT()` from core: `t('learner.write.cost', { count })`. Plurals are `{count|one:# credit|other:# credits}`; Russian also has `few` and `many`.
 - Uzbek uses Latin script with `‘` for o‘ and g‘ and `’` for the tutuq belgisi.
 - Core keys you can reuse include `state.*`, `chat.*`, `review.*` and `approvals.*`, plus `plans.<plan>.name`, `role.<role>` and `audience.<audience>`.
-- English ships in the first download; Uzbek and Russian load on demand (core's `i18n/index.ts` imports your `uz.ts` and `ru.ts` lazily, and the first paint waits for the person's language). Keep the named exports `en`, `uz` and `ru`, and never import your `uz.ts` or `ru.ts` from code, or they join the first download.
+- Only core's English ships in the first download. Your `en.ts`, `uz.ts` and `ru.ts` load on demand: core's `i18n/index.ts` imports the person's language from every area in parallel, and the first paint waits for it. For Uzbek and Russian, English follows as the fallback. So however many areas merge, the main chunk stays about 112 KB gzip.
+  - Keep the named exports `en`, `uz` and `ru`.
+  - Never import your catalog files from code; that pulls them into the first download.
+- **Strings only some screens need** can load with those screens: `const ready = useCatalog('learner.essay', { en: () => import('./i18n/essay.en.ts').then((m) => m.en), uz: …, ru: … })`, and render `LoadingState` until `ready`. Use your area prefix for these keys too.
+- **Context sources** under answers are named by the provider's `label` (function `CONTRACT.md`); use `contextLabel(me, t, kind)`. Core keeps `context.<kind>` keys only for its own kinds.
 
 ## Building blocks from core
 

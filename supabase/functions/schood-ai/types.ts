@@ -6,6 +6,7 @@ export type { PlanCode, Role, WorkspaceKind } from '../../../packages/ai-core/sr
 export type { ChatMessage, ContentPart, SpeechAudio, Transcript } from './providers/types.ts';
 import type { Gateway } from './gateway.ts';
 import type { LibraryService } from './library.ts';
+import type { StoreHandle } from './stores.ts';
 
 // The shared types of the Schood AI function: what a route receives (RequestContext),
 // how an area registers its routes (FeatureModule) and what the repository stores.
@@ -478,6 +479,8 @@ export interface RequestContext {
   actions: ActionService;
   /** The library: create, get, save and list pages with the same rules as the core/page routes. */
   library: LibraryService;
+  /** Your area's own tables (stores.ts defineStore): Postgres when deployed, the memory twin in tests. */
+  store<T>(handle: StoreHandle<T>): T;
   events: { emit(event: LearningEventInput): void };
   notify: { allowed(userId: string, channel: string): Promise<NotifyDecision>; take(userId: string, channel: string): Promise<NotifyDecision> };
   /** The workspace in `?workspace_id=` (or the personal one) with the caller's active membership. */

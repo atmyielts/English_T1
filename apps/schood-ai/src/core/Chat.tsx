@@ -9,7 +9,7 @@ import { Link } from './router.tsx';
 import { ApiErrorState, CreditCost, PlanGate } from './states.tsx';
 import type { MessageView } from './types.ts';
 import { Button, Dialog, SparkMark, TextArea, Thinking, VisuallyHidden } from './ui.tsx';
-import { useWorkspace } from './workspace.tsx';
+import { contextLabel, useWorkspace } from './workspace.tsx';
 
 // A streaming chat with one specialist. Shows the cost before sending, streams the
 // answer, lets the person stop it (the part so far is kept) or try again (failed
@@ -198,7 +198,7 @@ function AssistantTurn({ turn, onReport }: { turn: Turn; onReport(): void }) {
       setSaved({ id: page.id });
     } catch { setSaved('failed'); }
   };
-  const sources = turn.context.map((kind) => t(`context.${kind}`)).join(', ');
+  const sources = turn.context.map((kind) => contextLabel(workspace.me, t, kind)).join(', ');
   return <article className="flex max-w-full gap-3" aria-label={t('chat.assistant')}>
     <SparkMark size={30}/>
     <div className={`min-w-0 flex-1 rounded-3xl rounded-tl-lg border border-navy-line bg-white px-4 py-3 ${turn.status === 'streaming' ? 'ai-streaming' : ''}`}>

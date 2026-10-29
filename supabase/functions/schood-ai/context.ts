@@ -5,6 +5,7 @@ import { createLibraryService } from './library.ts';
 import type { Gateway } from './gateway.ts';
 import { isUuid } from './input.ts';
 import type { PlanResolver } from './plan.ts';
+import type { Stores } from './stores.ts';
 import { sseResponse } from './stream.ts';
 import {
   AREAS, LEARNING_EVENT_KINDS, SchoodAIError,
@@ -17,19 +18,27 @@ import {
 // --- Context providers -------------------------------------------------------------
 /** Reads one kind of context for the model (results, homework, group data). Return null when there is nothing. */
 export type ContextProvider = (ctx: RequestContext, input: { access: WorkspaceAccess; ref?: string; specialist?: string }) => Promise<ContextBlock | null>;
-interface ProviderEntry { provider: ContextProvider; allowCustom: boolean; selfView: boolean; timeoutMs: number; maxChars: number }
+interface ProviderEntry { provider: ContextProvider; allowCustom: boolean; selfView: boolean; timeoutMs: number; maxChars: number; label: Record<Locale, string> | null }
 const providers = new Map<string, ProviderEntry>();
+const LOCALES: readonly Locale[] = ['en', 'uz', 'ru'];
 const KIND = /^[a-z][a-z0-9_]{1,40}$/;
 
 /**
  * allowCustom: a workspace's custom specialist may read it. selfView: it only ever
  * describes the caller, so `core/context` may show it to them ("what Schood AI knows about you").
+ * label: how the app names this source under an answer ("Used: your study plan"), in uz, ru and en.
  */
-export function registerContextProvider(kind: string, provider: ContextProvider, options: { allowCustom?: boolean; selfView?: boolean; timeoutMs?: number; maxChars?: number } = {}): void {
+export function registerContextProvider(kind: string, provider: ContextProvider, options: { allowCustom?: boolean; selfView?: boolean; timeoutMs?: number; maxChars?: number; label?: Record<Locale, string> } = {}): void {
   if (!KIND.test(kind)) throw new Error(`context kind ${kind} is invalid`);
   if (providers.has(kind)) throw new Error(`context provider ${kind} is already registered`);
-  providers.set(kind, { provider, allowCustom: options.allowCustom ?? false, selfView: options.selfView ?? false, timeoutMs: options.timeoutMs ?? 6_000, maxChars: options.maxChars ?? 6_000 });
+  if (options.label && !LOCALES.every((locale) => typeof options.label![locale] === 'string' && options.label![locale].trim().length > 0 && options.label![locale].length <= 80)) {
+    throw new Error(`context provider ${kind}: label needs uz, ru and en (at most 80 characters)`);
+  }
+  providers.set(kind, { provider, allowCustom: options.allowCustom ?? false, selfView: options.selfView ?? false, timeoutMs: options.timeoutMs ?? 6_000, maxChars: options.maxChars ?? 6_000, label: options.label ?? null });
 }
+/** Labels of the context sources that registered one, in this language (kind → label). */
+export const contextLabels = (locale: Locale): Record<string, string> =>
+  Object.fromEntries([...providers].filter(([, entry]) => entry.label).map(([kind, entry]) => [kind, entry.label![locale]]));
 /** Kinds a workspace's custom specialist may be given. */
 export const customContextKinds = () => [...providers].filter(([, entry]) => entry.allowCustom).map(([kind]) => kind);
 export const contextProviderKinds = () => [...providers.keys()];
@@ -61,6 +70,8 @@ export interface ContextDeps {
   repo: SchoodAIRepository;
   gateway: Gateway;
   plans: PlanResolver;
+  /** Area stores (stores.ts). */
+  stores: Stores;
   isAdmin(userId: string): Promise<boolean>;
   /** Another Edge Function with the person's token: status and parsed JSON. */
   callFunction(name: string, path: string, token: string, init: FunctionCallInit): Promise<{ status: number; data: unknown }>;
@@ -81,7 +92,6 @@ export interface ContextInput {
   readBody(): Promise<Uint8Array>;
 }
 
-const LOCALES: readonly Locale[] = ['en', 'uz', 'ru'];
 const FUNCTION_NAME = /^[a-z0-9][a-z0-9-]{1,60}$/;
 
 export function createRequestContext(deps: ContextDeps, input: ContextInput): RequestContext {
@@ -131,6 +141,7 @@ export function createRequestContext(deps: ContextDeps, input: ContextInput): Re
     ai: undefined as never,
     actions: undefined as never,
     library: undefined as never,
+    store: (handle) => deps.stores.get(handle),
     bytes: () => (bytes ??= input.readBody()),
     body<T>() {
       parsed ??= ctx.bytes().then((raw) => {
@@ -150,7 +161,7 @@ export function createRequestContext(deps: ContextDeps, input: ContextInput): Re
       return access;
     },
     async plan() {
-      plan ??= ctx.workspace().then((access) => deps.plans.resolve(user, access.workspace, access.role));
+      plan ??= ctx.workspace().then((access) => deps.plans.resolve(user, access.workspace, access.role, deps.stores));
       return plan;
     },
     async access(featureOrKey): Promise<AccessDecision> {
