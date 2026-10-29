@@ -32,7 +32,7 @@ export const DEPTH = {
 } as const;
 
 const ID = /^[a-z0-9][a-z0-9_.-]{1,80}$/;
-const PACK_ID = /^[a-z][a-z0-9-]{1,30}$/;
+const PACK_ID = /^[a-z][a-z0-9-]{1,15}$/;
 const COMMAND = /^[a-z][a-z0-9_]{0,31}$/;
 const PLACEHOLDERS = new Set(['name', 'task', 'minutes', 'streak', 'delta', 'days', 'coach', 'level', 'target']);
 
@@ -374,6 +374,8 @@ export function validatePack(source: PackSource): string[] {
           for (const locale of languages) if (locale !== m.practiceLanguage && !card.translations?.[locale]?.trim()) bad(`${cpath}.translations`, `missing ${locale}`);
           const wrong = (card.distractors ?? []).map((value) => value.trim().toLowerCase());
           if (wrong.length < 3 || new Set(wrong).size !== wrong.length) bad(`${cpath}.distractors`, 'needs three distinct wrong options');
+          // Cards are reviewed as Telegram quiz polls: options are at most 100 characters.
+          for (const option of [activity.cardType === 'word' ? card.meaning : card.front, ...(card.distractors ?? [])]) if ((option ?? '').length > 100) bad(`${cpath}`, 'a quiz option is longer than 100 characters');
           const right = (activity.cardType === 'word' ? card.meaning : card.front).trim().toLowerCase();
           if (wrong.includes(right)) bad(`${cpath}.distractors`, 'a wrong option equals the right one');
           if (activity.cardType === 'phrase') textOk(`${cpath}.situation`, card.situation, 300);
@@ -515,6 +517,15 @@ export function validatePack(source: PackSource): string[] {
       if (!activities.has(p.weeklyMock.activity)) bad('plan.weeklyMock.activity', `unknown ${p.weeklyMock.activity}`);
       if (!(Number.isInteger(p.weeklyMock.weekday) && p.weeklyMock.weekday >= 0 && p.weeklyMock.weekday <= 6)) bad('plan.weeklyMock.weekday', 'must be 0 to 6');
       localized('plan.weeklyMock.title', p.weeklyMock.title, 80);
+    }
+    for (const [mode, table] of Object.entries(p.estimates ?? {})) {
+      let last = -1;
+      for (const [accuracy, value] of table ?? []) {
+        if (!(accuracy >= 0 && accuracy <= 1) || accuracy <= last) bad(`plan.estimates.${mode}`, 'accuracies rise from 0 to 1');
+        last = accuracy;
+        level(`plan.estimates.${mode}`, value);
+      }
+      if (!sets(mode)) bad(`plan.estimates.${mode}`, `the pack has no ${mode} sets`);
     }
     for (const link of p.links ?? []) {
       localized(`plan.links.${link.id}`, link.label, 80);

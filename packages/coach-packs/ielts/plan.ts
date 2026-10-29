@@ -1,4 +1,10 @@
+import { bandFromRaw40 } from '../../ielts-core/src/scoring.ts';
 import type { FluencyConfig, Milestone, PlanRules, Reminders } from '../src/types.ts';
+
+/** The repo's own raw-40 → band tables (packages/ielts-core), as accuracy → band for mini-sets. */
+const fromRaw40 = (section: 'reading' | 'listening'): [number, number][] =>
+  Array.from({ length: 40 }, (_, index) => index + 1).map((raw) => [raw / 40, bandFromRaw40(section, raw) ?? 1] as [number, number])
+    .filter(([, band], index, all) => band >= 1 && (index === 0 || band !== all[index - 1][1]));
 
 // Fluency analysis settings, the study planner, reminder texts and level-up
 // milestones for the IELTS coach.
@@ -63,6 +69,7 @@ export const plan: PlanRules = {
       url: 'https://practice.ielts.schood.online',
     },
   ],
+  estimates: { reading: fromRaw40('reading'), listening: fromRaw40('listening') },
 };
 
 // Warm and short. No guilt, no fake urgency. Russian avoids number agreement with

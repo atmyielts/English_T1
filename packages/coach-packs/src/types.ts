@@ -64,7 +64,7 @@ export type MenuAction = (typeof MENU_ACTIONS)[number];
 export interface MenuItem { action: MenuAction; label: Localized; emoji?: string }
 
 export interface PackManifest {
-  /** URL and bot id: `/tg/<id>`, `/coach/<id>`. `^[a-z][a-z0-9-]{1,30}$`. */
+  /** URL and bot id: `/tg/<id>`, `/coach/<id>`. `^[a-z][a-z0-9-]{1,15}$`. */
   id: string;
   /** The plan-matrix feature this coach is sold as; also the credit-key prefix (`coach_b1.turn`). */
   feature: CoachFeature;
@@ -443,6 +443,12 @@ export interface PlanRules {
   weeklyMock?: { activity: string; weekday: number; title: Localized };
   /** Links out (the Schood IELTS simulator). Only https://*.schood.online. */
   links: { id: string; label: Localized; url: string }[];
+  /**
+   * Accuracy on timed sets → level, per set mode: `[accuracy 0–1, level]`, rising.
+   * The engine reads the level at the highest accuracy reached over recent sets
+   * (at least 18 questions), and calls it an estimate.
+   */
+  estimates?: Partial<Record<'reading' | 'listening' | 'practice', [number, number][]>>;
 }
 
 export interface Reminders {
