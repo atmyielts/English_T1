@@ -1,0 +1,194 @@
+/* Training area (My English, lessons, role-play, writing, glossary, training plan).
+   Builds on platform.css and the shared company-* blocks; works down to 360 px. */
+.training-page{display:grid;gap:1.25rem;min-width:0}
+.training-head h1{margin-bottom:.4rem}
+.training-head p{margin:0 0 .4rem}
+.training-card{display:grid;gap:.75rem;min-width:0}
+.training-card>h2,.training-card>h3{margin:0}
+.training-card p{margin:0}
+.training-card h3{font-size:1rem;margin:.5rem 0 0}
+.training-crumbs{margin:0;font-size:.8rem}
+.training-crumbs a,.training-page a:not(.button-link){color:var(--navy);font-weight:600;text-underline-offset:3px}
+.training-note{font-style:italic}
+.training-two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:1.25rem;align-items:start}
+
+/* Lists of things with an action on the right; the action wraps under on phones. */
+.training-list{list-style:none;margin:0;padding:0;display:grid}
+.training-list>li{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;justify-content:space-between;padding:.85rem 0;border-bottom:1px solid #e5e7eb;overflow-wrap:anywhere}
+.training-list>li:last-child{border-bottom:0}
+.training-list>li>div{display:grid;gap:.3rem;flex:1 1 240px;min-width:0}
+.training-list>li span{font-size:.8rem;color:var(--muted)}
+.training-excerpt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+
+.training-progress{min-width:0}
+.training-progress-bar{height:8px;border-radius:999px;background:#e5e7eb;overflow:hidden}
+.training-progress-bar>span{display:block;height:100%;background:var(--navy);border-radius:inherit;transition:width .3s}
+
+/* My English */
+.training-levels .company-stat{display:grid;gap:.2rem}
+.training-continue{background:#0f172a;color:#fff;border-color:#0f172a}
+.training-continue p,.training-continue .eyebrow{color:#cbd5e1}
+.training-continue .button-link{background:#fff;color:#0f172a;justify-self:start}
+.training-continue .company-badge{background:#1e293b;color:#e2e8f0}
+.training-week-row{display:flex;flex-wrap:wrap;gap:1.5rem;align-items:flex-end}
+.training-week-stats{display:grid;gap:.25rem;flex:1 1 180px}
+.training-week-stats strong{font-family:Sora,Manrope,sans-serif;font-size:1.5rem;color:#111827}
+.training-week{margin:0;flex:1 1 260px;max-width:420px}
+.training-week ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(7,1fr);gap:.4rem;height:120px;align-items:end}
+.training-week li{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:.3rem}
+.training-week-bar{display:block;width:100%;min-height:3px;background:var(--navy);border-radius:6px 6px 2px 2px}
+.training-week-day{font-size:.7rem;color:var(--muted)}
+.training-shortcuts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:.75rem}
+.training-shortcuts a{display:grid;gap:.25rem;padding:1rem;border:1px solid var(--control);border-radius:16px;background:#fff;text-decoration:none;color:#111827}
+.training-shortcuts a:hover{border-color:var(--line)}
+.training-shortcuts a span{font-size:.8rem;color:var(--muted);font-weight:500}
+.training-english{background:#fffdf7}
+.training-english .button-link,.training-continue .button-link{justify-self:start}
+
+/* Tracks and lessons */
+.training-tracks{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:.75rem}
+.training-tracks li{display:grid;gap:.5rem;padding:.85rem 1rem;border:1px solid var(--control);border-radius:16px;background:#fff}
+.training-tracks li[aria-current]{border-color:var(--line);box-shadow:inset 0 0 0 1px var(--line)}
+.training-tracks a{display:grid;gap:.2rem;text-decoration:none;color:#111827}
+.training-tracks a span{font-size:.8rem;color:var(--muted);font-weight:500}
+.training-stage h3{margin:.75rem 0 .5rem;font-size:1rem}
+.training-lessons{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
+.training-lesson a{display:flex;gap:.85rem;padding:.85rem 1rem;border:1px solid var(--control);border-radius:16px;background:#fff;text-decoration:none;color:#111827;align-items:flex-start}
+.training-lesson a:hover{border-color:var(--line)}
+.training-lesson.is-completed a{background:#f0fdf4;border-color:#bbf7d0}
+.training-lesson-number{flex:0 0 2rem;height:2rem;border-radius:50%;display:grid;place-items:center;background:#eef2ff;color:#1e3a8a;font-weight:700;font-size:.85rem}
+.training-lesson.is-completed .training-lesson-number{background:#166534;color:#fff}
+.training-lesson-body{display:grid;gap:.3rem;min-width:0}
+.training-lesson-body>span{font-size:.85rem;color:var(--muted)}
+.training-lesson-meta{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center}
+
+/* Lesson player */
+.training-steps ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
+.training-steps button{min-height:38px;padding:.45rem .85rem}
+.training-steps button span{display:inline-grid;place-items:center;width:1.3rem;height:1.3rem;border-radius:50%;background:rgb(255 255 255/.2);font-size:.75rem;margin-right:.15rem}
+.training-steps button.quiet span{background:#e5e7eb}
+.training-options{display:flex;flex-wrap:wrap;gap:1rem;align-items:end}
+.training-options label:not(.check){min-width:160px}
+.training-rate{margin-bottom:.55rem}
+.training-phrases,.training-words,.training-terms{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
+.training-phrases li{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;justify-content:space-between;padding:.75rem 1rem;border:1px solid #e5e7eb;border-radius:14px;background:#fff}
+.training-phrases li>div{display:grid;gap:.2rem;flex:1 1 220px;min-width:0}
+.training-phrases li span{font-size:.85rem;color:var(--muted)}
+.training-words{grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr))}
+.training-words li,.training-terms li{display:grid;gap:.3rem;padding:.75rem 1rem;border:1px solid #e5e7eb;border-radius:14px;background:#fff;align-content:start;overflow-wrap:anywhere}
+.training-words li span{font-size:.85rem;color:var(--muted)}
+.training-words .training-listen,.training-terms .training-listen{justify-self:start}
+.training-listen{min-height:34px;padding:.3rem .75rem;font-size:.8rem;flex-shrink:0}
+.training-dialogue{list-style:none;margin:0;padding:0;display:grid;gap:.5rem}
+.training-dialogue li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.15rem .6rem;padding:.65rem .9rem;border-radius:14px;background:#f8fafc;border:1px solid #e5e7eb;max-width:92%}
+.training-dialogue li strong{grid-column:1;font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.training-dialogue li span{grid-column:1;font-size:.95rem;color:#111827}
+.training-dialogue li button{grid-column:2;grid-row:1/span 2;align-self:center}
+.training-dialogue li.speaker-1{justify-self:end;background:#eef2ff}
+.training-dialogue li.speaker-2{background:#fef9c3}
+.training-dialogue li.is-playing{outline:3px solid #0f172a;outline-offset:1px}
+.training-blur{filter:blur(5px);user-select:none}
+.training-step-nav{justify-content:space-between}
+
+/* Exercises */
+.training-exercises{display:grid;gap:1rem}
+.training-exercise{gap:.75rem;background:#fff}
+.training-exercise legend{font-weight:700;padding:0 .25rem}
+.training-items{margin:0;padding-left:1.25rem;display:grid;gap:.85rem}
+.training-items>li{display:grid;gap:.35rem;min-width:0}
+.training-choice{border:0;padding:0;gap:.35rem}
+.training-choice legend{font-weight:600;font-size:.9rem;margin-bottom:.25rem;padding:0;white-space:normal}
+.training-choice .check{font-size:.9rem;gap:.5rem;align-items:flex-start}
+.training-choice .check input{margin-top:.2rem}
+.training-gap{display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;gap:.35rem;font-weight:500;font-size:.95rem;color:#111827}
+.training-gap input{width:auto;min-width:7rem;max-width:12rem;flex:0 1 9rem;padding:.4rem .6rem}
+.training-bank{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center}
+.training-order{margin:0;padding-left:1.5rem;display:grid;gap:.4rem}
+.training-order li{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;justify-content:space-between;padding:.5rem .75rem;border:1px solid #e5e7eb;border-radius:12px;background:#f8fafc}
+.training-order li>span:first-child{flex:1 1 200px;min-width:0}
+.training-order-buttons{display:flex;gap:.3rem}
+.training-order-buttons button{min-height:36px;min-width:40px;padding:.3rem .6rem}
+.training-match{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:.6rem;align-items:center;font-weight:500;color:#111827}
+.training-mark{font-size:.85rem}
+.training-mark.good{color:#166534;font-weight:700}
+.training-mark.bad{color:#991b1b}
+.training-score-line{font-size:.85rem;font-weight:600}
+.training-mission{display:grid;gap:.6rem}
+.training-mission h3{margin:0}
+
+/* Role-play */
+.training-scenarios{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:.75rem}
+.training-scenario{display:grid;gap:.5rem;padding:1rem;border:1px solid var(--control);border-radius:16px;background:#fff;align-content:start}
+.training-scenario>div{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;justify-content:space-between}
+.training-scenario button{justify-self:start}
+.training-featured{border-width:2px}
+.training-brief{border:1px solid var(--control);border-radius:16px;background:#fff;padding:.75rem 1rem}
+.training-brief summary{cursor:pointer;font-weight:650;font-size:.9rem}
+.training-brief p,.training-brief ul{margin:.5rem 0 0;font-size:.875rem}
+.training-chat-head{display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:center}
+.training-chat-head h2{margin:0;flex:1 1 auto}
+.training-turns{list-style:none;margin:0;padding:.25rem;display:grid;gap:.6rem;max-height:min(60vh,560px);overflow-y:auto}
+.training-turn{display:grid;gap:.3rem;max-width:88%;padding:.7rem .9rem;border-radius:16px;background:#f1f5f9;justify-self:start}
+.training-turn.is-learner{justify-self:end;background:#0f172a;color:#fff}
+.training-turn.is-learner .training-turn-who{color:#cbd5e1}
+.training-turn p{margin:0;color:inherit;font-size:.95rem;line-height:1.5;overflow-wrap:anywhere}
+.training-turn-who{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700}
+.training-turn .training-listen{justify-self:start}
+.training-tip{font-size:.8rem!important;background:#fef9c3;color:#713f12!important;border-radius:10px;padding:.4rem .6rem}
+.is-typing p{letter-spacing:.2em}
+.training-reply{display:grid;gap:.6rem}
+.training-reply textarea,.training-page textarea[lang=en]{font-family:inherit;font-size:.95rem}
+.training-feedback{outline:none}
+.training-feedback-score{display:flex;align-items:baseline;gap:.4rem;flex-wrap:wrap}
+.training-feedback-score strong{font-family:Sora,Manrope,sans-serif;font-size:2.4rem;line-height:1}
+.training-feedback-score .company-badge{margin-left:.5rem}
+.training-good,.training-better,.training-checklist{margin:0;padding-left:1.1rem;display:grid;gap:.5rem;font-size:.9rem}
+.training-better{list-style:none;padding:0}
+.training-better li{display:grid;gap:.2rem;padding:.6rem .8rem;border-radius:12px;background:#f8fafc;border:1px solid #e5e7eb;overflow-wrap:anywhere}
+.training-better li>span:last-child:not(.training-said){font-size:.85rem;color:var(--muted)}
+.training-said{color:#991b1b;font-size:.85rem}
+.training-checklist{list-style:none;padding:0}
+.training-checklist li.is-done span[aria-hidden]{color:#166534;font-weight:700}
+
+/* Writing */
+.training-template{display:grid;gap:.5rem;padding:1rem;border:1px solid var(--control);border-radius:16px;background:#fff}
+.training-template h3{margin:0}
+.training-template ul{margin:0;padding-left:1.2rem;font-size:.875rem}
+.training-template button{justify-self:start}
+.training-corrected{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font-family:inherit;font-size:.95rem;line-height:1.6;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:1rem}
+.training-result{outline:none}
+.training-result details summary{cursor:pointer;font-weight:600;font-size:.875rem}
+
+/* Glossary */
+.training-tabs{display:flex;flex-wrap:wrap;gap:.4rem}
+.training-flashcards{display:grid;gap:.75rem;justify-items:center;text-align:center}
+.training-flashcard{display:grid;gap:.6rem;justify-items:center;width:100%;max-width:520px;min-height:200px;align-content:center;padding:1.5rem;border:1px solid var(--line);border-radius:20px;background:#fff;box-shadow:0 4px 14px rgb(15 23 42/.06)}
+.training-flashcard.is-flipped{background:#fffdf7}
+.training-flashcard-term{font-family:Sora,Manrope,sans-serif;font-size:1.5rem;font-weight:700;color:#111827!important;overflow-wrap:anywhere}
+.training-flashcards .company-actions{justify-content:center}
+.training-round-end{display:grid;gap:.6rem;justify-items:start}
+.training-round-end h2{margin:0}
+.training-terms li>div{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
+.training-term-form{gap:.75rem}
+
+/* Training plan */
+.training-form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:1rem}
+.training-people-pick{display:grid;gap:.35rem;max-height:260px;overflow-y:auto;padding:.25rem}
+.training-people-pick .check{align-items:flex-start;gap:.5rem}
+.training-assignments{list-style:none;margin:0;padding:0;display:grid;gap:.75rem}
+.training-assignment{display:grid;gap:.75rem;padding:1rem;border:1px solid var(--control);border-radius:16px;background:#fff;min-width:0}
+.training-assignment-head{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:space-between;align-items:flex-start}
+.training-assignment-head>div{display:grid;gap:.25rem;min-width:0;flex:1 1 220px}
+.training-assignment-head span{font-size:.85rem;color:var(--muted)}
+.training-assignment-badges{display:flex;gap:.35rem;flex-wrap:wrap}
+.training-assignment-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:.5rem 1rem;font-size:.85rem;color:var(--muted);align-items:end}
+.training-assignment-stats>div{display:grid;gap:.3rem}
+
+@media(max-width:600px){
+  .training-match{grid-template-columns:1fr}
+  .training-dialogue li{max-width:100%}
+  .training-turn{max-width:95%}
+  .training-feedback-score strong{font-size:2rem}
+  .training-step-nav button{flex:1 1 auto}
+}
+@media(prefers-reduced-motion:reduce){.training-progress-bar>span{transition:none}}
