@@ -519,16 +519,19 @@ begin
 end $$;
 
 -- Locks the workspace's account and rolls its plan credits forward. p_grant is
--- the credits per 30-day cycle of the plans in force now (0 without a plan).
--- A cycle run starts when a plan is first seen, or again after a lapse of more
--- than two days; each new cycle expires the unused plan credits and grants
--- afresh; an upgrade inside a cycle adds the difference once. Internal: called
--- by the charge and balance functions only.
-create or replace function public.ai_credit_sync(p_workspace uuid, p_grant integer, p_now timestamptz)
+-- the credits per 30-day cycle of the plans in force now (0 without a plan) and
+-- p_anchor the start of the entitlement that grants them, so cycles follow the
+-- purchase: a 30-day plan earns one grant, a 90-day plan three. A new anchor (a
+-- first plan or a renewal with a new start) expires what is left and grants
+-- afresh; each new cycle does the same; an upgrade inside a cycle adds the
+-- difference once. Without an anchor (beta, a contract) cycles run from the first
+-- sighting. Internal: called by the charge and balance functions only.
+create or replace function public.ai_credit_sync(p_workspace uuid, p_grant integer, p_anchor timestamptz, p_now timestamptz)
 returns public.ai_credit_accounts
 language plpgsql security definer set search_path = public, pg_temp as $$
 declare
   a public.ai_credit_accounts;
+  anchor timestamptz;
   next_cycle integer;
   anchor_ref text;
 begin
@@ -536,33 +539,23 @@ begin
   insert into public.ai_credit_accounts (workspace_id) values (p_workspace) on conflict (workspace_id) do nothing;
   select * into a from public.ai_credit_accounts where workspace_id = p_workspace for update;
   if p_grant = 0 then return a; end if;
-  -- Concurrent sessions carry slightly different transaction times, so a time
-  -- before the anchor or the last sighting counts as the current cycle.
-  if a.plan_anchor is null or a.plan_seen_at is null or p_now - a.plan_seen_at > interval '2 days' then
+  anchor := least(coalesce(p_anchor, a.plan_anchor, p_now), p_now);
+  -- Concurrent sessions carry slightly different transaction times: never a negative cycle.
+  next_cycle := greatest(0, floor(extract(epoch from (p_now - anchor)) / 2592000)::integer);
+  anchor_ref := extract(epoch from anchor)::bigint::text;
+  if a.plan_anchor is distinct from anchor or next_cycle > a.plan_cycle then
     if a.plan_balance > 0 then
       insert into public.ai_credit_ledger (workspace_id, kind, bucket, delta, balance_after, reference, created_at)
-        values (p_workspace, 'expire', 'plan', -a.plan_balance, 0, format('expire:%s:%s', extract(epoch from a.plan_anchor)::bigint, a.plan_cycle), p_now);
+        values (p_workspace, 'expire', 'plan', -a.plan_balance, 0, format('expire:%s:%s', coalesce(extract(epoch from a.plan_anchor)::bigint::text, 'none'), a.plan_cycle), p_now);
     end if;
-    a.plan_anchor := p_now; a.plan_cycle := 0; a.plan_grant := p_grant; a.plan_balance := p_grant;
+    a.plan_anchor := anchor; a.plan_cycle := next_cycle; a.plan_grant := p_grant; a.plan_balance := p_grant;
     insert into public.ai_credit_ledger (workspace_id, kind, bucket, delta, balance_after, reference, created_at)
-      values (p_workspace, 'grant', 'plan', p_grant, p_grant, format('grant:%s:0', extract(epoch from p_now)::bigint), p_now);
-  else
-    next_cycle := greatest(0, floor(extract(epoch from (p_now - a.plan_anchor)) / 2592000)::integer);
-    anchor_ref := extract(epoch from a.plan_anchor)::bigint::text;
-    if next_cycle > a.plan_cycle then
-      if a.plan_balance > 0 then
-        insert into public.ai_credit_ledger (workspace_id, kind, bucket, delta, balance_after, reference, created_at)
-          values (p_workspace, 'expire', 'plan', -a.plan_balance, 0, format('expire:%s:%s', anchor_ref, a.plan_cycle), p_now);
-      end if;
-      a.plan_cycle := next_cycle; a.plan_grant := p_grant; a.plan_balance := p_grant;
-      insert into public.ai_credit_ledger (workspace_id, kind, bucket, delta, balance_after, reference, created_at)
-        values (p_workspace, 'grant', 'plan', p_grant, p_grant, format('grant:%s:%s', anchor_ref, next_cycle), p_now);
-    elsif p_grant > a.plan_grant then
-      a.plan_balance := a.plan_balance + (p_grant - a.plan_grant);
-      insert into public.ai_credit_ledger (workspace_id, kind, bucket, delta, balance_after, reference, created_at)
-        values (p_workspace, 'grant', 'plan', p_grant - a.plan_grant, a.plan_balance, format('grant:%s:%s:to:%s', anchor_ref, a.plan_cycle, p_grant), p_now);
-      a.plan_grant := p_grant;
-    end if;
+      values (p_workspace, 'grant', 'plan', p_grant, p_grant, format('grant:%s:%s', anchor_ref, next_cycle), p_now);
+  elsif p_grant > a.plan_grant then
+    a.plan_balance := a.plan_balance + (p_grant - a.plan_grant);
+    insert into public.ai_credit_ledger (workspace_id, kind, bucket, delta, balance_after, reference, created_at)
+      values (p_workspace, 'grant', 'plan', p_grant - a.plan_grant, a.plan_balance, format('grant:%s:%s:to:%s', anchor_ref, a.plan_cycle, p_grant), p_now);
+    a.plan_grant := p_grant;
   end if;
   a.plan_seen_at := greatest(a.plan_seen_at, p_now);
   update public.ai_credit_accounts set plan_balance = a.plan_balance, plan_grant = a.plan_grant, plan_anchor = a.plan_anchor,
@@ -579,11 +572,11 @@ language sql immutable set search_path = public, pg_temp as $$
 $$;
 
 -- The workspace's balance after rolling its plan credits forward.
-create or replace function public.ai_credit_balance(p_workspace uuid, p_grant integer, p_now timestamptz default now())
+create or replace function public.ai_credit_balance(p_workspace uuid, p_grant integer, p_anchor timestamptz, p_now timestamptz default now())
 returns jsonb
 language plpgsql security definer set search_path = public, pg_temp as $$
 begin
-  return public.ai_credit_view(public.ai_credit_sync(p_workspace, p_grant, p_now));
+  return public.ai_credit_view(public.ai_credit_sync(p_workspace, p_grant, p_anchor, p_now));
 end $$;
 
 -- Charges an action before its model call. Plan credits go first, then packs.
@@ -591,7 +584,7 @@ end $$;
 -- returns the original charge instead of charging twice. Never raises for an
 -- empty balance: returns {ok:false, code}.
 create or replace function public.ai_credit_charge(
-  p_workspace uuid, p_user uuid, p_cost integer, p_credit_key text, p_reference text, p_grant integer, p_now timestamptz default now()
+  p_workspace uuid, p_user uuid, p_cost integer, p_credit_key text, p_reference text, p_grant integer, p_anchor timestamptz, p_now timestamptz default now()
 ) returns jsonb
 language plpgsql security definer set search_path = public, pg_temp as $$
 declare
@@ -609,7 +602,7 @@ begin
   if p_reference is null or char_length(p_reference) not between 1 and 200 then raise exception 'invalid_reference' using errcode = '22023'; end if;
   select * into ws from public.ai_workspaces where id = p_workspace;
   if not found then raise exception 'workspace_not_found' using errcode = 'P0002'; end if;
-  a := public.ai_credit_sync(p_workspace, p_grant, p_now);
+  a := public.ai_credit_sync(p_workspace, p_grant, p_anchor, p_now);
   -- Checked under the account lock, so a concurrent duplicate sees the first charge.
   select charge_id, sum(-delta)::integer as cost into previous from public.ai_credit_ledger
     where workspace_id = p_workspace and kind = 'charge' and reference = p_reference group by charge_id;
@@ -835,10 +828,10 @@ revoke insert, update, delete, truncate on public.ai_credit_accounts, public.ai_
 revoke update, delete, truncate on public.ai_calls, public.ai_audit_events, public.ai_learning_events from service_role;
 
 revoke all on function public.ai_ensure_personal_workspace(uuid, text) from public, anon, authenticated;
-revoke all on function public.ai_credit_sync(uuid, integer, timestamptz) from public, anon, authenticated, service_role;
+revoke all on function public.ai_credit_sync(uuid, integer, timestamptz, timestamptz) from public, anon, authenticated, service_role;
 revoke all on function public.ai_credit_view(public.ai_credit_accounts) from public, anon, authenticated;
-revoke all on function public.ai_credit_balance(uuid, integer, timestamptz) from public, anon, authenticated;
-revoke all on function public.ai_credit_charge(uuid, uuid, integer, text, text, integer, timestamptz) from public, anon, authenticated;
+revoke all on function public.ai_credit_balance(uuid, integer, timestamptz, timestamptz) from public, anon, authenticated;
+revoke all on function public.ai_credit_charge(uuid, uuid, integer, text, text, integer, timestamptz, timestamptz) from public, anon, authenticated;
 revoke all on function public.ai_credit_refund(uuid) from public, anon, authenticated;
 revoke all on function public.ai_credit_grant(uuid, integer, text, text, uuid) from public, anon, authenticated;
 revoke all on function public.ai_take_call(date, uuid, uuid, integer, integer, integer, numeric) from public, anon, authenticated;
@@ -848,8 +841,8 @@ revoke all on function public.ai_calls_accrue_cost() from public, anon, authenti
 revoke all on function public.ai_learning_events_guard() from public, anon, authenticated;
 revoke all on function public.ai_notify(uuid, text, boolean, timestamptz) from public, anon, authenticated;
 grant execute on function public.ai_ensure_personal_workspace(uuid, text) to service_role;
-grant execute on function public.ai_credit_balance(uuid, integer, timestamptz) to service_role;
-grant execute on function public.ai_credit_charge(uuid, uuid, integer, text, text, integer, timestamptz) to service_role;
+grant execute on function public.ai_credit_balance(uuid, integer, timestamptz, timestamptz) to service_role;
+grant execute on function public.ai_credit_charge(uuid, uuid, integer, text, text, integer, timestamptz, timestamptz) to service_role;
 grant execute on function public.ai_credit_refund(uuid) to service_role;
 grant execute on function public.ai_credit_grant(uuid, integer, text, text, uuid) to service_role;
 grant execute on function public.ai_take_call(date, uuid, uuid, integer, integer, integer, numeric) to service_role;

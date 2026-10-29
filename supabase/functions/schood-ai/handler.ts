@@ -1,0 +1,166 @@
+import { adminModule } from './admin/mod.ts';
+import { centreModule } from './centre/mod.ts';
+import { coachModule } from './coach/mod.ts';
+import { createRequestContext, type ContextDeps } from './context.ts';
+import { coreModule } from './core/mod.ts';
+import { engageModule } from './engage/mod.ts';
+import type { Gateway } from './gateway.ts';
+import { isUuid } from './input.ts';
+import { learnerModule } from './learner/mod.ts';
+import type { PlanResolver } from './plan.ts';
+import { teacherModule } from './teacher/mod.ts';
+import { AREAS, SchoodAIError, type Area, type FeatureModule, type Method, type RequestUser, type RouteHandler, type SchoodAIRepository } from './types.ts';
+
+// Schood AI API router: /schood-ai/<area>/<action>. Pure: everything it talks to is
+// injected, so tests run it against the memory repository and a fake gateway fetch.
+//
+// Two ways in:
+//   - a browser with the person's Supabase session (Authorization: Bearer <jwt>),
+//     from an allowed origin;
+//   - the trusted Telegram worker with X-Schood-Service-Secret, acting for the
+//     Schood user in X-Schood-User-Id, who must be linked to the Telegram chat in
+//     X-Schood-Telegram-Chat-Id. Only routes marked `service: true` accept it, never
+//     admin routes, and plans and credits apply to that person as usual.
+
+export const MODULES: FeatureModule[] = [coreModule, adminModule, learnerModule, teacherModule, centreModule, coachModule, engageModule];
+
+export interface HandlerDeps {
+  repository: SchoodAIRepository;
+  gateway: Gateway;
+  plans: PlanResolver;
+  isAdmin(userId: string): Promise<boolean>;
+  callFunction: ContextDeps['callFunction'];
+  /** The repo's admin RBAC check for admin routes (admin-access.ts in production). */
+  adminGate(req: Request, permission: string): Promise<{ ok: true } | { ok: false; status: number; code: string }>;
+  modules?: FeatureModule[];
+}
+export interface HandlerOptions {
+  allowedOrigins: string[];
+  /** SCHOOD_AI_SERVICE_SECRET; the worker path is off unless it is at least 32 characters. */
+  serviceSecret?: string | null;
+  now?: () => Date;
+  /** Keeps work alive after the response (EdgeRuntime.waitUntil). */
+  after?: (work: Promise<unknown>) => void;
+}
+
+const METHODS: readonly Method[] = ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'];
+const ROUTE = /\/schood-ai\/([a-z]+)\/([a-z][a-z0-9-]{0,60})\/?$/;
+const DEFAULT_MAX_BODY = 64 * 1024;
+
+function safeEqual(a: string, b: string): boolean {
+  const left = new TextEncoder().encode(a), right = new TextEncoder().encode(b);
+  let diff = left.length ^ right.length;
+  for (let i = 0; i < Math.max(left.length, right.length); i++) diff |= (left[i] ?? 0) ^ (right[i] ?? 0);
+  return diff === 0;
+}
+
+async function readLimited(req: Request, max: number): Promise<Uint8Array> {
+  const declared = Number(req.headers.get('content-length') ?? '0');
+  if (declared > max) throw new SchoodAIError('payload_too_large', 'The request is too large.', 413, { max_bytes: max });
+  if (!req.body) return new Uint8Array();
+  const reader = req.body.getReader(), chunks: Uint8Array[] = [];
+  let size = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.length;
+      if (size > max) { await reader.cancel(); throw new SchoodAIError('payload_too_large', 'The request is too large.', 413, { max_bytes: max }); }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const out = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) { out.set(chunk, offset); offset += chunk.length; }
+  return out;
+}
+
+export function createSchoodAIHandler(deps: HandlerDeps, options: HandlerOptions) {
+  const now = options.now ?? (() => new Date());
+  const after = options.after ?? ((work: Promise<unknown>) => { void work; });
+  const secret = options.serviceSecret && options.serviceSecret.length >= 32 ? options.serviceSecret : null;
+  const routes = new Map<string, RouteHandler>();
+  for (const module of deps.modules ?? MODULES) {
+    if (!(AREAS as readonly string[]).includes(module.area)) throw new Error(`unknown area ${module.area}`);
+    for (const [action, handler] of Object.entries(module.routes)) {
+      if (!/^[a-z][a-z0-9-]{0,60}$/.test(action)) throw new Error(`invalid action ${module.area}/${action}`);
+      if (module.area === 'admin' && !handler.adminPermission) throw new Error(`admin/${action} needs an admin permission`);
+      if (module.area === 'admin' && handler.service) throw new Error(`admin/${action} cannot accept the worker`);
+      const key = `${module.area}/${action}`;
+      if (routes.has(key)) throw new Error(`route ${key} is registered twice`);
+      routes.set(key, handler);
+    }
+  }
+
+  return async (req: Request): Promise<Response> => {
+    const requestId = crypto.randomUUID(), origin = req.headers.get('origin');
+    const headers: Record<string, string> = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Request-ID': requestId, Vary: 'Origin' };
+    if (origin && options.allowedOrigins.includes(origin)) {
+      headers['Access-Control-Allow-Origin'] = origin;
+      headers['Access-Control-Allow-Headers'] = 'authorization, apikey, content-type, idempotency-key, x-schood-locale';
+      headers['Access-Control-Allow-Methods'] = 'GET, POST, PATCH, PUT, DELETE, OPTIONS';
+      headers['Access-Control-Expose-Headers'] = 'X-Request-ID';
+      headers['Access-Control-Max-Age'] = '600';
+    }
+    const json = (status: number, value: unknown, extra: Record<string, string> = {}) => new Response(JSON.stringify(value), { status, headers: { ...headers, ...extra } });
+    const fail = (status: number, code: string, error: string, details: Record<string, unknown> = {}) => json(status, { code, error, ...details, request_id: requestId });
+    if (origin && !options.allowedOrigins.includes(origin)) return fail(403, 'origin_denied', 'Origin is not allowed.');
+    if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers });
+
+    const url = new URL(req.url), match = ROUTE.exec(url.pathname);
+    const handler = match ? routes.get(`${match[1]}/${match[2]}`) : undefined;
+    if (!match || !handler) return fail(404, 'not_found', 'Not found.');
+    const area = match[1] as Area, action = match[2], method = req.method as Method;
+    const run = METHODS.includes(method) ? handler[method] : undefined;
+    if (!run) return fail(405, 'method_not_allowed', 'Method not allowed.', {});
+
+    try {
+      // --- who is calling ----------------------------------------------------------
+      let user: RequestUser;
+      const presented = req.headers.get('x-schood-service-secret');
+      if (presented !== null) {
+        if (!secret || !safeEqual(presented, secret)) return fail(401, 'unauthorized', 'Sign in to continue.');
+        // A browser must never hold the worker secret.
+        if (origin) return fail(403, 'origin_denied', 'Origin is not allowed.');
+        if (!handler.service) return fail(403, 'service_not_allowed', 'This route is not open to the worker.');
+        const userId = req.headers.get('x-schood-user-id') ?? '', chat = req.headers.get('x-schood-telegram-chat-id') ?? '';
+        if (!isUuid(userId) || !/^-?\d{1,20}$/.test(chat)) return fail(400, 'invalid_request', 'The worker must name the user and the Telegram chat.');
+        const profile = await deps.repository.profile(userId.toLowerCase());
+        if (!profile || !profile.isActive || profile.telegramChatId !== chat) return fail(403, 'user_not_linked', 'This Telegram chat is not linked to that Schood account.');
+        user = { id: profile.id, email: null, token: null, via: 'service', telegramChatId: chat };
+      } else {
+        const token = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '').trim();
+        const authed = token ? await deps.repository.user(token) : null;
+        if (!authed) return fail(401, 'unauthorized', 'Sign in to continue.');
+        const profile = await deps.repository.profile(authed.id);
+        if (profile && !profile.isActive) return fail(403, 'account_inactive', 'This account is not active.');
+        user = { id: authed.id, email: authed.email, token, via: 'jwt', telegramChatId: profile?.telegramChatId ?? null };
+      }
+      if (area === 'admin') {
+        const gate = await deps.adminGate(req, handler.adminPermission!);
+        if (!gate.ok) return fail(gate.status, gate.code, gate.status === 401 ? 'Sign in to continue.' : 'Schood admins only.');
+      }
+
+      // --- the route ---------------------------------------------------------------
+      const maxBody = handler.maxBody ?? DEFAULT_MAX_BODY;
+      const ctx = createRequestContext(
+        { repo: deps.repository, gateway: deps.gateway, plans: deps.plans, isAdmin: deps.isAdmin, callFunction: deps.callFunction, after, now, responseHeaders: { ...headers } },
+        { url, headers: req.headers, area, action, method, requestId, user, readBody: () => readLimited(req, maxBody) },
+      );
+      const result = await run(ctx);
+      if (result instanceof Response) {
+        const merged = new Headers(result.headers);
+        for (const [name, value] of Object.entries(headers)) if (name !== 'Content-Type' && !merged.has(name)) merged.set(name, value);
+        return new Response(result.body, { status: result.status, headers: merged });
+      }
+      return json(200, result ?? {});
+    } catch (cause) {
+      if (cause instanceof SchoodAIError) return fail(cause.status, cause.code, cause.message, cause.details);
+      // Never log bodies or prompts: only the route and the error.
+      console.error(JSON.stringify({ request_id: requestId, route: `${area}/${action}`, error: String(cause).slice(0, 300) }));
+      return fail(500, 'internal_error', 'Something went wrong.');
+    }
+  };
+}

@@ -6,6 +6,7 @@
 
 export const CAPABILITIES = ['chat', 'stream', 'json', 'json_schema', 'vision', 'stt', 'tts'] as const;
 export type Capability = (typeof CAPABILITIES)[number];
+export const isCapability = (value: unknown): value is Capability => typeof value === 'string' && (CAPABILITIES as readonly string[]).includes(value);
 export const ADAPTERS = ['openai_compatible', 'anthropic', 'google_gemini', 'cloudflare_workers_ai'] as const;
 export type AdapterKind = (typeof ADAPTERS)[number];
 
@@ -127,21 +128,31 @@ export function routeProblems(route: RegistryRoute): string[] {
   return problems;
 }
 
+/** What a call does: chat modes share the chat routes; speech has its own routes. */
+export type CallMode = 'text' | 'json' | 'stream' | 'stt' | 'tts';
+
 /**
- * Routes tried for a feature, most specific first: the exact credit key
+ * Routes tried for a feature, most specific first. Chat: the exact credit key
  * (`tutor.reply`), its area (`tutor`), its tier (`tier.premium`), then `default`.
+ * Speech never falls back to chat routes: `stt.speaking.turn`, `stt.speaking`, `stt`.
+ * A matching route is final: its policy is never bypassed by falling through.
  */
-export function routeKeysFor(feature: string, tier: string): string[] {
+export function routeKeysFor(feature: string, tier: string, mode: CallMode = 'text'): string[] {
   const area = feature.split('.')[0];
-  return [...new Set([feature, area, `tier.${tier}`, 'default'].filter(Boolean))];
+  const keys = mode === 'stt' || mode === 'tts' ? [`${mode}.${feature}`, `${mode}.${area}`, mode] : [feature, area, `tier.${tier}`, 'default'];
+  return [...new Set(keys.filter(Boolean))];
 }
-export function pickRoute(routes: readonly RegistryRoute[], feature: string, tier: string): RegistryRoute | null {
+export function pickRoute(routes: readonly RegistryRoute[], feature: string, tier: string, mode: CallMode = 'text'): RegistryRoute | null {
   const enabled = new Map(routes.filter((route) => route.enabled).map((route) => [route.key, route]));
-  for (const key of routeKeysFor(feature, tier)) {
+  for (const key of routeKeysFor(feature, tier, mode)) {
     const route = enabled.get(key);
     if (route) return route;
   }
   return null;
+}
+/** Capabilities a call needs before the route's own requirements are added. */
+export function modeCapabilities(mode: CallMode): Capability[] {
+  return mode === 'stt' ? ['stt'] : mode === 'tts' ? ['tts'] : mode === 'json' ? ['chat', 'json'] : mode === 'stream' ? ['chat', 'stream'] : ['chat'];
 }
 
 export interface Requirements { capabilities: Capability[]; noTraining: boolean }
@@ -152,7 +163,7 @@ export interface Candidate { model: RegistryModel; provider: RegistryProvider }
 export function candidateModels(registry: Registry, route: RegistryRoute, required: Requirements, healthy: (modelKey: string) => boolean = () => true): { candidates: Candidate[]; skipped: { key: string; reason: SkipReason }[] } {
   const models = new Map(registry.models.map((model) => [model.key, model]));
   const providers = new Map(registry.providers.map((provider) => [provider.key, provider]));
-  const needs = new Set<Capability>(['chat', ...route.requiredCapabilities, ...required.capabilities]);
+  const needs = new Set<Capability>([...route.requiredCapabilities, ...required.capabilities]);
   const noTraining = route.requireNoTraining || required.noTraining;
   const candidates: Candidate[] = [], skipped: { key: string; reason: SkipReason }[] = [];
   for (const key of route.modelKeys) {

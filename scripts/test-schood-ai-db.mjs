@@ -73,7 +73,7 @@ try {
   // 50-credit pack. Exactly 16 may succeed and the balance must end at 2.
   const ws = psql(`select id from public.ai_ensure_personal_workspace('00000000-0000-4000-8000-0000000000a4', 'Race');`).trim();
   psql(`select public.ai_credit_grant('${ws}', 50, 'pack', 'race-pack');`);
-  const charges = await race(20, (i) => `begin; select (public.ai_credit_charge('${ws}', '00000000-0000-4000-8000-0000000000a4', 3, 'tutor.reply', 'race-${i}', 0))->>'ok'; select pg_sleep(0.15); commit;`);
+  const charges = await race(20, (i) => `begin; select (public.ai_credit_charge('${ws}', '00000000-0000-4000-8000-0000000000a4', 3, 'tutor.reply', 'race-${i}', 0, null))->>'ok'; select pg_sleep(0.15); commit;`);
   const wins = charges.filter((line) => line.split('\n').includes('true')).length;
   assert.equal(wins, 16, `16 of 20 charges fit in 50 credits, got ${wins}`);
   assert.equal(psql(`select pack_balance from public.ai_credit_accounts where workspace_id = '${ws}';`).trim(), '2');
@@ -81,7 +81,7 @@ try {
 
   // The same request key sent by 8 sessions at once is charged once.
   psql(`select public.ai_credit_grant('${ws}', 30, 'pack', 'race-pack-2');`);
-  await race(8, () => `select public.ai_credit_charge('${ws}', '00000000-0000-4000-8000-0000000000a4', 5, 'tutor.reply', 'same-key', 0);`);
+  await race(8, () => `select public.ai_credit_charge('${ws}', '00000000-0000-4000-8000-0000000000a4', 5, 'tutor.reply', 'same-key', 0, null);`);
   assert.equal(psql(`select count(*) from public.ai_credit_ledger where workspace_id = '${ws}' and reference = 'same-key';`).trim(), '1', 'one charge per request key');
   assert.equal(psql(`select pack_balance from public.ai_credit_accounts where workspace_id = '${ws}';`).trim(), '27');
 
@@ -97,7 +97,7 @@ try {
 
   // Plan grants under contention: 10 sessions open the first cycle together; one grant.
   const planWs = psql(`select id from public.ai_ensure_personal_workspace('00000000-0000-4000-8000-0000000000a1', 'Plan race');`).trim();
-  await race(10, (i) => `select public.ai_credit_charge('${planWs}', '00000000-0000-4000-8000-0000000000a1', 1, 'tutor.reply', 'grant-race-${i}', 1500);`);
+  await race(10, (i) => `select public.ai_credit_charge('${planWs}', '00000000-0000-4000-8000-0000000000a1', 1, 'tutor.reply', 'grant-race-${i}', 1500, null);`);
   assert.equal(psql(`select count(*) from public.ai_credit_ledger where workspace_id = '${planWs}' and kind = 'grant';`).trim(), '1', 'one grant per cycle');
   assert.equal(psql(`select plan_balance from public.ai_credit_accounts where workspace_id = '${planWs}';`).trim(), '1490');
 

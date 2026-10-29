@@ -1,7 +1,7 @@
 import {
   BETA_CREDITS, CREDIT_PRICES, FEATURES, MONTHLY_CREDITS, PLAN_CODES, PLAN_PRODUCT_ENV, SSEParser, candidateModels, cleanSwitches, costUsd,
   creditPrice, expandPlans, featureAccess, featureSwitch, formatSSE, keyMayReach, modelProblems, monthlyGrant, nextTashkentMidnight,
-  pickRoute, priceTableProblems, providerProblems, quoteCredits, routeKeysFor, routeProblems, s, SchemaError, tashkentDay, tashkentMonth,
+  modeCapabilities, pickRoute, priceTableProblems, providerProblems, quoteCredits, routeKeysFor, routeProblems, s, SchemaError, tashkentDay, tashkentMonth,
   type Registry, type RegistryModel, type RegistryProvider,
 } from './mod.ts';
 
@@ -101,6 +101,8 @@ Deno.test('provider keys can only reach their own provider', () => {
 
 Deno.test('routes resolve most specific first and filter models by capability, policy and health', () => {
   equal(routeKeysFor('tutor.reply', 'standard'), ['tutor.reply', 'tutor', 'tier.standard', 'default']);
+  equal(routeKeysFor('speaking.turn', 'standard', 'stt'), ['stt.speaking.turn', 'stt.speaking', 'stt'], 'speech has its own routes');
+  equal(modeCapabilities('stream'), ['chat', 'stream']);
   const route = (key: string, modelKeys: string[], extra = {}) => ({ key, modelKeys, requiredCapabilities: [], requireNoTraining: false, maxOutputTokens: null, temperature: null, enabled: true, ...extra });
   const registry: Registry = {
     providers: [provider(), provider({ key: 'off', enabled: false })],
@@ -110,12 +112,14 @@ Deno.test('routes resolve most specific first and filter models by capability, p
   equal(pickRoute(registry.routes, 'tutor.reply', 'standard')?.key, 'tutor');
   equal(pickRoute(registry.routes, 'photo.explain', 'vision')?.key, 'tier.vision', 'a disabled route is skipped');
   equal(pickRoute(registry.routes, 'lesson.plan', 'standard')?.key, 'default');
-  const tutor = candidateModels(registry, registry.routes[1], { capabilities: [], noTraining: false });
+  const tutor = candidateModels(registry, registry.routes[1], { capabilities: ['chat'], noTraining: false });
   equal(tutor.candidates.map((c) => c.model.key), ['safe-c']);
   equal(tutor.skipped, [{ key: 'free-a', reason: 'policy' }], 'children-safe route refuses training models');
   const vision = candidateModels(registry, registry.routes[2], { capabilities: ['vision', 'json'], noTraining: false });
   equal(vision.candidates.map((c) => c.model.key), ['vision-b'], 'json_schema covers json');
   equal(candidateModels(registry, route('x', ['off-d', 'disabled-e', 'gone', 'free-a']), { capabilities: [], noTraining: false }, (key) => key !== 'free-a').skipped.map((s) => s.reason), ['provider_disabled', 'disabled', 'unknown', 'unhealthy']);
+  equal(pickRoute(registry.routes, 'speaking.turn', 'standard', 'stt'), null, 'no speech route is seeded');
+  equal(candidateModels(registry, route('stt', ['free-a']), { capabilities: modeCapabilities('stt'), noTraining: false }).skipped, [{ key: 'free-a', reason: 'capability' }]);
   equal(costUsd({ inputUsdPerMTok: 0.5, outputUsdPerMTok: 1.5 }, 2000, 1000), 0.0025);
 });
 

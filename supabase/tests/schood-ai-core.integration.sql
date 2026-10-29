@@ -28,23 +28,23 @@ begin
   assert raised, 'nobody else joins a personal workspace';
 
   -- No plan: no credits, nothing granted.
-  r := public.ai_credit_balance(ws.id, 0, t0);
+  r := public.ai_credit_balance(ws.id, 0, null, t0);
   assert (r->>'total')::int = 0 and r->'cycle_ends_at' = 'null'::jsonb, 'free users have no credits';
-  r := public.ai_credit_charge(ws.id, learner, 1, 'tutor.reply', 'req-0', 0, t0);
+  r := public.ai_credit_charge(ws.id, learner, 1, 'tutor.reply', 'req-0', 0, null, t0);
   assert r->>'ok' = 'false' and r->>'code' = 'insufficient_credits', 'free users cannot be charged';
 
   -- A plan grants its cycle once; the same cycle does not grant again.
-  r := public.ai_credit_balance(ws.id, 1500, t0);
+  r := public.ai_credit_balance(ws.id, 1500, null, t0);
   assert (r->>'plan')::int = 1500 and (r->>'cycle_ends_at')::timestamptz = t0 + interval '30 days', 'first cycle granted';
-  r := public.ai_credit_balance(ws.id, 1500, t0 + interval '1 day');
+  r := public.ai_credit_balance(ws.id, 1500, null, t0 + interval '1 day');
   assert (r->>'plan')::int = 1500, 'same cycle, no second grant';
   assert (select count(*) from public.ai_credit_ledger where workspace_id = ws.id and kind = 'grant') = 1, 'one grant row';
 
   -- Charges: exact cost, idempotent per request key.
-  r := public.ai_credit_charge(ws.id, learner, 10, 'material.generate', 'req-1', 1500, t0 + interval '1 day');
+  r := public.ai_credit_charge(ws.id, learner, 10, 'material.generate', 'req-1', 1500, null, t0 + interval '1 day');
   assert r->>'ok' = 'true' and (r->>'plan')::int = 10 and (r->'balance'->>'plan')::int = 1490, 'charged from plan credits';
   charge := (r->>'charge_id')::uuid;
-  r := public.ai_credit_charge(ws.id, learner, 10, 'material.generate', 'req-1', 1500, t0 + interval '1 day');
+  r := public.ai_credit_charge(ws.id, learner, 10, 'material.generate', 'req-1', 1500, null, t0 + interval '1 day');
   assert r->>'replayed' = 'true' and (r->>'charge_id')::uuid = charge and (r->'balance'->>'plan')::int = 1490, 'a retried request is not charged twice';
 
   -- Refunds: once, exactly what was taken.
@@ -52,7 +52,7 @@ begin
   assert (r->>'refunded')::int = 10 and (r->'balance'->>'plan')::int = 1500, 'refunded';
   r := public.ai_credit_refund(charge);
   assert r->>'replayed' = 'true' and (r->>'refunded')::int = 0 and (r->'balance'->>'plan')::int = 1500, 'refunding twice refunds once';
-  r := public.ai_credit_charge(ws.id, learner, 10, 'material.generate', 'req-1', 1500, t0 + interval '1 day');
+  r := public.ai_credit_charge(ws.id, learner, 10, 'material.generate', 'req-1', 1500, null, t0 + interval '1 day');
   assert r->>'ok' = 'false' and r->>'code' = 'reference_refunded', 'a refunded attempt is not a free retry';
   assert (public.ai_credit_refund('00000000-0000-4000-8000-00000000dead'))->>'code' = 'charge_not_found', 'unknown charge';
 
@@ -61,27 +61,32 @@ begin
   assert (r->'balance'->>'pack')::int = 100, 'pack granted';
   r := public.ai_credit_grant(ws.id, 100, 'pack', 'order-1', learner);
   assert r->>'replayed' = 'true' and (r->'balance'->>'pack')::int = 100, 'an order is granted once';
-  r := public.ai_credit_charge(ws.id, learner, 1495, 'course.outline', 'req-2', 1500, t0 + interval '2 days');
-  r := public.ai_credit_charge(ws.id, learner, 8, 'essay.review', 'req-3', 1500, t0 + interval '2 days');
+  r := public.ai_credit_charge(ws.id, learner, 1495, 'course.outline', 'req-2', 1500, null, t0 + interval '2 days');
+  r := public.ai_credit_charge(ws.id, learner, 8, 'essay.review', 'req-3', 1500, null, t0 + interval '2 days');
   assert (r->>'plan')::int = 5 and (r->>'pack')::int = 3 and (r->'balance'->>'pack')::int = 97, 'plan first, then pack';
   r := public.ai_credit_refund((r->>'charge_id')::uuid);
   assert (r->'balance'->>'plan')::int = 5 and (r->'balance'->>'pack')::int = 100, 'a split charge refunds into both buckets';
 
   -- Upgrade inside a cycle adds the difference once.
-  r := public.ai_credit_balance(ws.id, 4500, t0 + interval '3 days');
+  r := public.ai_credit_balance(ws.id, 4500, null, t0 + interval '3 days');
   assert (r->>'plan')::int = 3005, 'upgrade tops up the difference';
-  r := public.ai_credit_balance(ws.id, 4500, t0 + interval '4 days');
+  r := public.ai_credit_balance(ws.id, 4500, null, t0 + interval '4 days');
   assert (r->>'plan')::int = 3005, 'only once';
 
   -- The next cycle expires what is left and grants afresh; packs stay.
-  r := public.ai_credit_balance(ws.id, 4500, t0 + interval '31 days');
+  r := public.ai_credit_balance(ws.id, 4500, null, t0 + interval '31 days');
   assert (r->>'plan')::int = 4500 and (r->>'pack')::int = 100, 'new cycle';
   assert (select delta from public.ai_credit_ledger where workspace_id = ws.id and kind = 'expire' order by id desc limit 1) = -3005, 'unused plan credits expired';
 
-  -- After a lapse of more than two days a new run of cycles starts from the renewal.
-  r := public.ai_credit_balance(ws.id, 0, t0 + interval '40 days');
-  r := public.ai_credit_balance(ws.id, 1500, t0 + interval '70 days');
-  assert (r->>'plan')::int = 1500 and (r->>'cycle_ends_at')::timestamptz = t0 + interval '100 days', 'renewal restarts the cycle';
+  -- Cycles follow the entitlement: a month without visits still has one grant per cycle,
+  -- and a renewal with a new start date starts a new run from that date.
+  r := public.ai_credit_balance(ws.id, 0, null, t0 + interval '40 days');
+  r := public.ai_credit_balance(ws.id, 4500, null, t0 + interval '55 days');
+  assert (r->>'plan')::int = 4500, 'no visits for weeks: still the same cycle, no early grant';
+  r := public.ai_credit_balance(ws.id, 1500, t0 + interval '70 days', t0 + interval '71 days');
+  assert (r->>'plan')::int = 1500 and (r->>'cycle_ends_at')::timestamptz = t0 + interval '100 days', 'a renewal starts a new run at its start date';
+  r := public.ai_credit_balance(ws.id, 1500, t0 + interval '70 days', t0 + interval '85 days');
+  assert (r->>'plan')::int = 1500, 'the same entitlement is not granted twice in its cycle';
 
   -- The ledger explains every balance exactly.
   assert (select sum(delta) from public.ai_credit_ledger where workspace_id = ws.id and bucket = 'plan') = (select plan_balance from public.ai_credit_accounts where workspace_id = ws.id), 'plan ledger sums to balance';
@@ -91,28 +96,28 @@ begin
   insert into public.ai_workspaces (kind, name, owner_id) values ('centre', 'Registan Learning Centre', owner) returning id into centre;
   insert into public.ai_workspace_members (workspace_id, user_id, role) values (centre, owner, 'owner');
   insert into public.ai_workspace_members (workspace_id, user_id, role, credit_budget) values (centre, student, 'student', 5);
-  r := public.ai_credit_charge(centre, outsider, 1, 'student_assistant.reply', 'c-0', 10000, t0);
+  r := public.ai_credit_charge(centre, outsider, 1, 'student_assistant.reply', 'c-0', 10000, null, t0);
   assert r->>'code' = 'not_member', 'outsiders cannot spend the pool';
-  r := public.ai_credit_charge(centre, student, 3, 'student_assistant.reply', 'c-1', 10000, t0);
+  r := public.ai_credit_charge(centre, student, 3, 'student_assistant.reply', 'c-1', 10000, null, t0);
   assert r->>'ok' = 'true' and (r->'balance'->>'plan')::int = 9997, 'student spends the pool';
   charge := (r->>'charge_id')::uuid;
-  r := public.ai_credit_charge(centre, student, 3, 'student_assistant.reply', 'c-2', 10000, t0);
+  r := public.ai_credit_charge(centre, student, 3, 'student_assistant.reply', 'c-2', 10000, null, t0);
   assert r->>'code' = 'budget_exhausted' and (r->>'used')::int = 3, 'budget stops the student';
   perform public.ai_credit_refund(charge);
   assert (select budget_used from public.ai_workspace_members where workspace_id = centre and user_id = student) = 0, 'refund restores the budget';
-  r := public.ai_credit_charge(centre, student, 5, 'student_assistant.reply', 'c-3', 10000, t0 + interval '31 days');
+  r := public.ai_credit_charge(centre, student, 5, 'student_assistant.reply', 'c-3', 10000, null, t0 + interval '31 days');
   assert r->>'ok' = 'true', 'the budget turns over with the month';
-  r := public.ai_credit_charge(centre, owner, 50, 'owner.brief', 'c-4', 10000, t0 + interval '31 days');
+  r := public.ai_credit_charge(centre, owner, 50, 'owner.brief', 'c-4', 10000, null, t0 + interval '31 days');
   assert r->>'ok' = 'true', 'no budget means no limit';
   update public.ai_workspace_members set status = 'suspended' where workspace_id = centre and user_id = student;
-  assert (public.ai_credit_charge(centre, student, 1, 'student_assistant.reply', 'c-5', 10000, t0 + interval '31 days'))->>'code' = 'not_member', 'suspended members cannot spend';
+  assert (public.ai_credit_charge(centre, student, 1, 'student_assistant.reply', 'c-5', 10000, null, t0 + interval '31 days'))->>'code' = 'not_member', 'suspended members cannot spend';
 
   -- Invalid input is refused loudly.
   raised := false;
-  begin perform public.ai_credit_charge(ws.id, learner, 0, 'tutor.reply', 'bad', 0, t0); exception when invalid_parameter_value then raised := true; end;
+  begin perform public.ai_credit_charge(ws.id, learner, 0, 'tutor.reply', 'bad', 0, null, t0); exception when invalid_parameter_value then raised := true; end;
   assert raised, 'zero cost refused';
   raised := false;
-  begin perform public.ai_credit_charge('00000000-0000-4000-8000-00000000beef', learner, 1, 'tutor.reply', 'bad', 0, t0); exception when no_data_found then raised := true; end;
+  begin perform public.ai_credit_charge('00000000-0000-4000-8000-00000000beef', learner, 1, 'tutor.reply', 'bad', 0, null, t0); exception when no_data_found then raised := true; end;
   assert raised, 'unknown workspace refused';
 
   -- Append-only ledger.
@@ -208,7 +213,7 @@ do $$
 begin
   begin perform 1 from public.ai_workspaces; raise exception 'authenticated read workspaces'; exception when insufficient_privilege then null; end;
   begin perform 1 from public.ai_messages; raise exception 'authenticated read messages'; exception when insufficient_privilege then null; end;
-  begin perform public.ai_credit_charge('00000000-0000-4000-8000-0000000000a2', '00000000-0000-4000-8000-0000000000a2', 1, 'tutor.reply', 'x', 0, now()); raise exception 'authenticated charged'; exception when insufficient_privilege then null; end;
+  begin perform public.ai_credit_charge('00000000-0000-4000-8000-0000000000a2', '00000000-0000-4000-8000-0000000000a2', 1, 'tutor.reply', 'x', 0, null, now()); raise exception 'authenticated charged'; exception when insufficient_privilege then null; end;
 end $$;
 reset role;
 set role anon;
@@ -225,13 +230,13 @@ begin
   begin update public.ai_credit_accounts set pack_balance = 1000000; raise exception 'service role set a balance'; exception when insufficient_privilege then null; end;
   begin update public.ai_usage_daily set calls = 0; raise exception 'service role reset caps'; exception when insufficient_privilege then null; end;
   begin update public.ai_calls set cost_usd = 0; raise exception 'service role rewrote the call log'; exception when insufficient_privilege then null; end;
-  begin perform public.ai_credit_sync(ws, 1000000, now()); raise exception 'service role called the internal sync'; exception when insufficient_privilege then null; end;
+  begin perform public.ai_credit_sync(ws, 1000000, null, now()); raise exception 'service role called the internal sync'; exception when insufficient_privilege then null; end;
   begin update public.ai_learning_events set score = 9; raise exception 'service role rewrote learning'; exception when insufficient_privilege then null; end;
   begin update public.ai_notify_daily set sent = 0; raise exception 'service role reset the notification budget'; exception when insufficient_privilege then null; end;
   insert into public.ai_learning_events (user_id, area, kind, verified, feature, source) values ('00000000-0000-4000-8000-0000000000a2', 'core', 'goal_set', false, 'CORE', 'telegram');
   perform public.ai_notify('00000000-0000-4000-8000-0000000000a2', 'coach.ielts', false, now());
   -- What the function is meant to do still works.
-  perform public.ai_credit_balance(ws, 0, now());
+  perform public.ai_credit_balance(ws, 0, null, now());
   perform public.ai_take_call(current_date, null, ws, 100, 100, 100);
   insert into public.ai_calls (call_id, feature, status) values (gen_random_uuid(), 'assistant.reply', 'ok');
 end $$;
