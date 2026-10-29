@@ -1,4 +1,4 @@
-import { LEVEL_LABEL, publicTest, scoreObjective, type PlacementTest } from '../../../../packages/ai-core/src/materials/centre-placement.ts';
+import { LEVEL_LABEL, publicTest, scoreObjective, type PlacementTest } from '../../../../packages/ai-core/src/centre/placement.ts';
 import { s, tashkentDay } from '../../../../packages/ai-core/src/mod.ts';
 import { bool, integer, oneOf, optionalText, record, stringList, text, uuid } from '../input.ts';
 import { wrapUserMessage } from '../prompt.ts';

@@ -1,3 +1,4 @@
+import { unitFromDraft, unitProblems } from './curriculum-content.ts';
 import { centreFixture, createCentre, equal, ID, invite, ok, SECRET } from './testing.ts';
 
 // C9 resale and the wholesale ledger, C10 brief delivery rules, C13 knowledge,
@@ -133,8 +134,18 @@ Deno.test('C12: outline, one unit per job, methodologist review, library publish
   const ws = await createCentre(f);
   await invite(f, ws, 'teacher', ['tok-t1']);
   f.model(/English course for an education centre/, { levels: [{ level: 'a1', units: [{ title: 'Hello and introductions', can_do: ['I can greet people.'] }, { title: 'My family', can_do: ['I can describe my family.'] }] }, { level: 'a2', units: [{ title: 'Daily routines', can_do: ['I can talk about my day.'] }, { title: 'Food and shopping', can_do: ['I can buy food.'] }] }] });
-  const unit = (title: string) => ({ title, can_do: ['I can greet people.'], lessons: [{ title: 'Lesson one', aims: ['Greet people'], minutes: 90, stages: [{ name: 'Warm-up', minutes: 10, activity: 'Name chain around the class.' }, { name: 'Presentation', minutes: 30, activity: 'Greetings dialogue with gaps.' }, { name: 'Practice', minutes: 50, activity: 'Pairs role-play introductions.' }], homework: 'Write five greetings.' }], test: [1, 2, 3, 4].map((n) => ({ prompt: `Item ${n}: Hello, ___ are you?`, options: ['how', 'what', 'who'], answer: 0 })) });
-  f.model(/Write one unit of a/, (call) => unit(/"title":"([^"]+)"/.exec(call.system)?.[1] ?? 'Unit'));
+  // Units come back in the teacher material model: a stages block per lesson, the unit test as a question set.
+  const lesson = (minutes: [number, number, number]) => ({ type: 'stages', title: 'Lesson one', homework: 'Write five greetings.', stages: [
+    { name: 'Warm-up', minutes: minutes[0], aim: 'Learn names', steps: ['Name chain around the class.'] },
+    { name: 'Presentation', minutes: minutes[1], aim: 'Meet greetings', steps: ['Greetings dialogue with gaps.'] },
+    { name: 'Practice', minutes: minutes[2], aim: 'Use greetings', steps: ['Pairs role-play introductions.'] },
+  ] });
+  const unitTest = (key: string) => ({ type: 'questions', title: 'Unit test', instructions: 'Choose the answer.', questions: [1, 2, 3, 4].map((n) => ({ type: 'single_choice', prompt: `Item ${n}: Hello, ____ are you${'?'.repeat(n)}`, options: [{ id: 'A', text: 'how' }, { id: 'B', text: 'what' }, { id: 'C', text: 'who' }], answer: [n === 1 ? key : 'A'] })) });
+  const unit = (title: string, broken: boolean) => ({ title, aims: ['I can greet people.'], blocks: [lesson(broken ? [10, 30, 20] : [10, 30, 50]), unitTest(broken ? 'E' : 'A')] });
+  // The first draft of each unit has a lesson 30 minutes short and a key outside the options; the correction turn fixes both.
+  f.model(/Write one unit of a/, (call) => unit(/"title":"([^"]+)"/.exec(call.system)?.[1] ?? 'Unit', !call.last.startsWith('Fix these problems')));
+  const empty = unitFromDraft({ title: 'Probe', aims: ['I can greet people.'], blocks: [] }, { course: 'x', level: 'a1', language: 'en', lessons: 1, minutes: 90, fallbackTitle: 'Probe' });
+  ok(unitProblems(empty, 1, 90).some((line) => line.includes('0 lessons')), 'a unit without lessons is caught');
   const created = await f.json('POST', 'centre/curricula', { workspace: ws, body: { title: 'General English', levels: ['a2', 'a1'], units_per_level: 2, lessons_per_unit: 1, track: 'general', language: 'en' } });
   equal([created.status, created.body.curriculum.units.map((u: { level: string }) => u.level), created.body.credits, created.body.curriculum.cost.per_unit], [200, ['a1', 'a1', 'a2', 'a2'], 10, 20], 'outline in level order, 10 credits; 20 per unit');
   const run = () => f.json('POST', 'centre/curriculum-run', { workspace: ws, body: { id: created.body.curriculum.id } });
@@ -147,6 +158,9 @@ Deno.test('C12: outline, one unit per job, methodologist review, library publish
   for (let i = 0; i < 4; i++) await run();
   const done = await run();
   equal([done.body.done, done.body.curriculum.status, done.body.curriculum.progress.ready], [true, 'review', 4], 'all units ready for review');
+  const view = done.body.curriculum.units[0].content as { lessons: { minutes: number; stages: { aim: string }[]; homework: string }[]; test: { answer: number }[]; problems: string[] };
+  equal([view.lessons.length, view.lessons[0].minutes, view.lessons[0].stages[0].aim, view.test.length, view.test[0].answer, view.problems], [1, 90, 'Learn names', 4, 0, []], 'fixed by the correction turn: 90 minutes, the key in the options');
+  ok(f.upstream.some((call) => call.last.startsWith('Fix these problems') && call.last.includes('Lesson 1: the stages add up to 60 minutes, not 90.') && call.last.includes('Test item 1: the key is not one of the options.')), 'the teacher key check and the timing check asked for the fix');
   equal(f.memory.ledger.filter((row) => row.kind === 'charge' && row.creditKey === 'curriculum.unit').length, 4, '20 credits per unit, interrupted one retried');
   equal((await f.json('POST', 'centre/curriculum-publish', { workspace: ws, body: { id: created.body.curriculum.id } })).body.code, 'not_approved', 'nothing is published before review');
   const units = done.body.curriculum.units;

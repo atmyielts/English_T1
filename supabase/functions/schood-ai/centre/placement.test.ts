@@ -52,6 +52,52 @@ Deno.test('C5: tests are checked before saving, approved by a teacher, taken wit
   void ID;
 });
 
+Deno.test('C5 AI draft: written per level in the teacher material model, broken keys left out, solved without the key, saved as a draft', async () => {
+  const f = await centreFixture();
+  const ws = await createCentre(f);
+  await invite(f, ws, 'teacher', ['tok-t1']);
+  await invite(f, ws, 'student', ['tok-s1']);
+  // One question set per level; one item in each has a broken key (two options are the same).
+  f.model(/placement-test items in English at CEFR/, (call) => {
+    const level = /at CEFR ([A-Z0-9-]+)/.exec(call.system)?.[1] ?? 'A1';
+    return { sets: [{ instructions: 'Choose the best answer.', level, questions: [
+      { type: 'single_choice', prompt: `${level}: She ____ to school every day.`, options: [{ id: 'A', text: 'go' }, { id: 'B', text: 'goes' }, { id: 'C', text: 'going' }, { id: 'D', text: 'gone' }], answer: ['B'] },
+      { type: 'single_choice', prompt: `${level}: I have lived here ____ 2019.`, options: [{ id: 'A', text: 'for' }, { id: 'B', text: 'since' }, { id: 'C', text: 'from' }, { id: 'D', text: 'at' }], answer: ['B'] },
+      { type: 'gap', prompt: `${level}: If I ____ (know), I would have told you.`, answer: ['had known'] },
+      { type: 'single_choice', prompt: `${level}: Pick one.`, options: [{ id: 'A', text: 'same' }, { id: 'B', text: 'same' }, { id: 'C', text: 'other' }, { id: 'D', text: 'else' }], answer: ['A'] },
+    ] }] };
+  });
+  f.model(/one short writing task/, { writing: { prompt: 'Write about your favourite place in your city and why you like it.', min_words: 80 } });
+  // The solver agrees with every key except the A2 "since" item.
+  f.model(/You are checking an answer key/, (call) => {
+    const asked = JSON.parse(/<user_message[^>]*>([\s\S]*)<\/user_message>/.exec(call.last)?.[1] ?? '{"questions":[]}') as { questions: { id: string; prompt: string; type: string }[] };
+    return { answers: asked.questions.map((question) => ({ id: question.id, answer: question.type === 'gap' ? ['had known'] : question.prompt.includes('A2: I have lived') ? ['A'] : question.prompt.includes('lived') ? ['B'] : ['B'], ...(question.prompt.includes('A2: I have lived') ? { reason: 'Both could fit.' } : {}) })) };
+  });
+
+  equal((await f.json('POST', 'centre/placement-generate', { token: 'tok-s1', workspace: ws, body: { from_level: 'a1', to_level: 'b1' } })).status, 403, 'students cannot draft tests');
+  equal((await f.json('POST', 'centre/placement-generate', { token: 'tok-t1', workspace: ws, body: { from_level: 'b2', to_level: 'a1' } })).body.field, 'to_level');
+  const drafted = await f.json('POST', 'centre/placement-generate', { token: 'tok-t1', workspace: ws, body: { from_level: 'a1', to_level: 'b1', per_level: 4, writing: true } });
+  equal(drafted.status, 200, JSON.stringify(drafted.body));
+  const test = drafted.body.test as { sections: { id: string; kind: string; items?: { id: string; level: string }[] }[]; bands: { level: string; min_percent: number }[] };
+  equal(test.sections.map((sec) => [sec.id, sec.items?.length ?? 0]), [['level-a1', 3], ['level-a2', 3], ['level-b1', 3], ['writing', 0]], 'a section per level, broken keys left out, the writing task');
+  equal(test.bands, [{ level: 'a1', min_percent: 0 }, { level: 'a2', min_percent: 33 }, { level: 'b1', min_percent: 67 }], 'even cut scores for the teacher to adjust');
+  equal([drafted.body.review.dropped, drafted.body.review.asked, drafted.body.review.agreed], [3, 9, 8], 'three left out; the solver answered all nine');
+  equal(drafted.body.review.disagreements, [{ item: 'a2-2', key: 'B', solver: 'A', reason: 'Both could fit.' }], 'the disagreement is on the review list');
+  equal(f.memory.ledger.filter((row) => row.kind === 'charge' && row.creditKey === 'placement.generate').length, 1, 'one 15-credit charge for the whole draft');
+  const page = await f.memory.repository.page(drafted.body.page_id);
+  ok(page && page.status === 'draft' && page.kind === 'centre.placement_test' && page.sourceGenerationId, 'saved as a draft page from a generation job');
+  equal((await f.json('GET', 'centre/placement-test', { token: 'tok-s1', workspace: ws, query: { id: drafted.body.page_id } })).status, 404, 'nobody can take it before approval');
+  equal((await f.json('GET', 'centre/placement-draft-review', { token: 'tok-t1', workspace: ws, query: { id: drafted.body.page_id } })).body.review.disagreements.length, 1, 'the review list stays with the draft');
+
+  // Every model reply is broken: nothing is saved and the credits come back.
+  f.model(/placement-test items in English at CEFR/, { sets: [{ instructions: 'x', questions: [{ type: 'single_choice', prompt: 'Pick.', options: [{ id: 'A', text: 'a' }, { id: 'B', text: 'a' }], answer: ['A'] }] }] });
+  const before = (await f.json('GET', 'centre/placement-tests', { token: 'tok-t1', workspace: ws })).body.tests.length;
+  const failed = await f.json('POST', 'centre/placement-generate', { token: 'tok-t1', workspace: ws, body: { from_level: 'a1', to_level: 'a2' } });
+  equal([failed.status, failed.body.code], [502, 'ai_failed']);
+  equal((await f.json('GET', 'centre/placement-tests', { token: 'tok-t1', workspace: ws })).body.tests.length, before, 'no page for a failed draft');
+  ok(f.memory.ledger.some((row) => row.kind === 'refund' && row.creditKey === 'placement.generate'), 'refunded');
+});
+
 Deno.test('C14 placement widget: allowed websites only, a session per taker, an estimate and a teacher check', async () => {
   const f = await centreFixture();
   const ws = await createCentre(f);

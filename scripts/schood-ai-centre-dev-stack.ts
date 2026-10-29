@@ -9,7 +9,7 @@
 // Sign in: open http://localhost:54333/dev/cookie?token=tok-owner (or tok-office, tok-t1, tok-s1)
 // and set the printed `schood-auth` cookie on the app's origin. The centre is
 // "Registan Learning Centre" (Centre Pro, linked to the fake Academy).
-import { placementKind } from '../packages/ai-core/src/materials/centre-placement.ts';
+import { placementKind } from '../packages/ai-core/src/centre/placement.ts';
 import { CircuitBreaker, createGateway } from '../supabase/functions/schood-ai/gateway.ts';
 import { createSchoodAIHandler } from '../supabase/functions/schood-ai/handler.ts';
 import { createMemoryRepository, SEED_REGISTRY } from '../supabase/functions/schood-ai/memory-repository.ts';
@@ -34,7 +34,7 @@ stores.use(centreStore, centreRuntime({
 }));
 
 // --- The fake model: one answer per centre task, chosen from the system prompt ----------------
-const ANSWERS: [RegExp, (user: string) => unknown][] = [
+const ANSWERS: [RegExp, (user: string, system: string) => unknown][] = [
   [/admissions assistant/, () => ({ reply: 'Ha, bolalar uchun 7 yoshdan guruhlarimiz bor. Sinov darsiga yozilmoqchimisiz?', intent: 'question', language: 'uz' })],
   [/to a parent about their child/, () => ({ message: 'Assalomu alaykum! Farzandingiz bu oy darslarda faol qatnashdi. Uy vazifalarini o‘z vaqtida topshirishiga yordam bersangiz, natija yanada yaxshi bo‘ladi. Hurmat bilan, Registan.' })],
   [/follow-up message from the centre|inviting a prospective student/, () => ({ message: 'Assalomu alaykum! IELTS kursimiz haqida so‘ragan edingiz. Sinov darsiga taklif qilamiz — qachon qulay?' })],
@@ -45,7 +45,37 @@ const ANSWERS: [RegExp, (user: string) => unknown][] = [
   [/structured, supportive feedback/, () => ({ summary: 'A well-organised lesson with clear aims; the lead-in was long.', ratings: [{ key: 'aims', rating: 3, evidence: [], comment: 'Aims were shared at the start.' }], strengths: ['Clear aims'], next_steps: ['Shorten the lead-in'] })],
   [/Mark placement-test answers/, () => ({ sections: [{ id: 'writing', level: 'a2', criteria: [{ name: 'Grammar', score: 3, note: 'Some agreement errors.' }], evidence: [], comment: 'Clear ideas with simple sentences.', top_fixes: ['Subject-verb agreement'] }] })],
   [/English course for an education centre/, () => ({ levels: [{ level: 'a1', units: [{ title: 'Hello!', can_do: ['I can greet people.'] }, { title: 'My family', can_do: ['I can talk about my family.'] }] }, { level: 'a2', units: [{ title: 'My day', can_do: ['I can describe my routine.'] }, { title: 'Shopping', can_do: ['I can buy things.'] }] }] })],
-  [/Write one unit of a/, () => ({ title: 'Unit', can_do: ['I can greet people.'], lessons: [{ title: 'Greetings', aims: ['Greet people'], minutes: 90, stages: [{ name: 'Warm-up', minutes: 10, activity: 'Name chain around the class.' }, { name: 'Presentation', minutes: 30, activity: 'Greetings dialogue with gaps.' }, { name: 'Practice', minutes: 50, activity: 'Pairs role-play introductions.' }], homework: 'Write five greetings.' }, { title: 'Introductions', aims: ['Introduce yourself'], minutes: 90, stages: [{ name: 'Warm-up', minutes: 10, activity: 'Find someone who.' }, { name: 'Practice', minutes: 50, activity: 'Mingle and introduce.' }, { name: 'Feedback', minutes: 30, activity: 'Correct common errors.' }], homework: 'Record an introduction.' }], test: [1, 2, 3, 4, 5, 6].map((n) => ({ prompt: `Item ${n}: Hello, ___ are you?`, options: ['how', 'what', 'who'], answer: 0 })) })],
+  // C12 units and C5 drafts come back in the teacher material model.
+  [/Write one unit of a/, (_user, system) => {
+    const minutes = Number(/add up to (\d+)/.exec(system)?.[1] ?? 90), lessons = Number(/first exactly (\d+) blocks/.exec(system)?.[1] ?? 2);
+    const split = [Math.round(minutes * 0.15), Math.round(minutes * 0.35)];
+    const lesson = (n: number) => ({ type: 'stages', title: n === 1 ? 'Greetings' : `Lesson ${n}: introductions`, homework: 'Write five greetings and learn them.', stages: [
+      { name: 'Warm-up', minutes: split[0], aim: 'Learn each other’s names', steps: ['Name chain around the class.'], interaction: 'whole class' },
+      { name: 'Presentation', minutes: split[1], aim: 'Meet formal and informal greetings', steps: ['Listen to two short dialogues.', 'Fill the gaps in pairs.'] },
+      { name: 'Practice', minutes: minutes - split[0] - split[1], aim: 'Greet and introduce people', steps: ['Role-play meeting a new classmate.', 'Swap partners twice.'], interaction: 'pairs' },
+    ] });
+    const items = [['Hello, ____ are you?', ['how', 'what', 'who', 'where'], 'A'], ['Nice to ____ you.', ['see', 'meet', 'know', 'look'], 'B'], ['My name ____ Aziza.', ['am', 'are', 'is', 'be'], 'C'], ['____ you from Tashkent?', ['Is', 'Am', 'Do', 'Are'], 'D'], ['Good ____! (in the morning)', ['morning', 'night', 'evening', 'bye'], 'A'], ['This is ____ friend, Bekzod.', ['I', 'me', 'my', 'mine'], 'C']] as const;
+    return { title: 'Hello and introductions', aims: ['I can greet people.', 'I can introduce myself and others.'], blocks: [
+      ...Array.from({ length: lessons }, (_, index) => lesson(index + 1)),
+      { type: 'questions', title: 'Unit test', instructions: 'Choose the best answer.', questions: items.map(([prompt, options, answer]) => ({ type: 'single_choice', prompt, options: options.map((text, at) => ({ id: 'ABCD'[at], text })), answer: [answer] })) },
+    ] };
+  }],
+  [/placement-test items in English at CEFR/, (_user, system) => {
+    const level = /at CEFR ([A-Za-z0-9-]+)/.exec(system)?.[1] ?? 'A1';
+    return { sets: [{ instructions: 'Choose the best answer or fill the gap.', level, questions: [
+      { type: 'single_choice', prompt: `(${level}) She ____ to work by bus every day.`, options: [{ id: 'A', text: 'go' }, { id: 'B', text: 'goes' }, { id: 'C', text: 'going' }, { id: 'D', text: 'gone' }], answer: ['B'] },
+      { type: 'single_choice', prompt: `(${level}) We have lived in Samarkand ____ 2019.`, options: [{ id: 'A', text: 'for' }, { id: 'B', text: 'since' }, { id: 'C', text: 'from' }, { id: 'D', text: 'at' }], answer: ['B'] },
+      { type: 'gap', prompt: `(${level}) If I ____ (know) earlier, I would have called you.`, answer: ['had known'] },
+      { type: 'single_choice', prompt: `(${level}) There isn't ____ milk left in the fridge.`, options: [{ id: 'A', text: 'some' }, { id: 'B', text: 'any' }, { id: 'C', text: 'many' }, { id: 'D', text: 'a' }], answer: ['B'] },
+      { type: 'single_choice', prompt: `(${level}) Choose one.`, options: [{ id: 'A', text: 'same' }, { id: 'B', text: 'same' }, { id: 'C', text: 'other' }, { id: 'D', text: 'else' }], answer: ['A'] },
+    ] }] };
+  }],
+  [/one short writing task|one speaking task/, () => ({ writing: { prompt: 'Write an email to a friend about your favourite place in your city and why you like it.', min_words: 80 }, speaking: { prompt: 'Tell me about your family and what you like doing together at weekends.' } })],
+  // The key checker answers "A" for choices and the right gap, so drafts show a few disagreements.
+  [/You are checking an answer key/, (user) => {
+    const asked = JSON.parse(/<user_message[^>]*>([\s\S]*)<\/user_message>/.exec(user)?.[1] ?? '{"questions":[]}') as { questions: { id: string; type: string; prompt: string }[] };
+    return { answers: asked.questions.map((question) => ({ id: question.id, answer: question.type === 'gap' ? ['had known'] : [question.prompt.includes('lived') ? 'A' : 'B'], ...(question.prompt.includes('lived') ? { reason: '“for” could also fit if a length of time followed.' } : {}) })) };
+  }],
 ];
 const STREAM = 'Good question! Look at the time word **yesterday**: it points to a finished time, so we use the past simple. Try again: *I ___ him yesterday.*';
 function fakeModel(request: Request, body: { messages?: { role: string; content: unknown }[] }): Response {
@@ -63,7 +93,7 @@ function fakeModel(request: Request, body: { messages?: { role: string; content:
     });
     return new Response(stream, { headers: { 'Content-Type': 'text/event-stream' } });
   }
-  const content = found ? JSON.stringify(found[1](user)) : 'Done.';
+  const content = found ? JSON.stringify(found[1](user, system)) : 'Done.';
   return new Response(JSON.stringify({ choices: [{ message: { content } }], usage: { prompt_tokens: 800, completion_tokens: 160 } }), { headers: { 'Content-Type': 'application/json' } });
 }
 const gateway = createGateway({

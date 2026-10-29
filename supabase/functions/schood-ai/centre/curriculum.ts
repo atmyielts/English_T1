@@ -1,4 +1,4 @@
-import { CEFR_LEVELS, LEVEL_LABEL, type CefrLevel } from '../../../../packages/ai-core/src/materials/centre-placement.ts';
+import { CEFR_LEVELS, LEVEL_LABEL, type CefrLevel } from '../../../../packages/ai-core/src/centre/placement.ts';
 import { quoteCredits, s } from '../../../../packages/ai-core/src/mod.ts';
 import { registerActionKind } from '../actions.ts';
 import { integer, oneOf, optionalText, record, stringList, text, uuid } from '../input.ts';
@@ -6,7 +6,7 @@ import { wrapUserMessage } from '../prompt.ts';
 import { SchoodAIError, type RequestContext } from '../types.ts';
 import { academyClient } from './academy.ts';
 import { centreDeps } from './binding.ts';
-import { lessonMarkdown, unitMarkdown, unitProblems, unitSchema, type UnitContent } from './curriculum-content.ts';
+import { isUnitContent, lessonMarkdown, unitDraftSchema, unitFromDraft, unitLessons, unitMarkdown, unitProblems, unitTask, unitView, type UnitContent } from './curriculum-content.ts';
 import { asRecord, centrePrompt, LANGUAGE_NAMES, pick, requireCentre, STAFF_ROLES } from './shared.ts';
 import type { CurriculumRow, UnitRow } from './store.ts';
 
@@ -29,7 +29,10 @@ const briefOf = (row: CurriculumRow) => row.brief as unknown as Brief;
 const curriculumJson = (row: CurriculumRow, units: UnitRow[]) => ({
   id: row.id, title: row.title, brief: row.brief, status: row.status, published_at: row.published_at, created_at: row.created_at,
   progress: { total: units.length, ready: units.filter((u) => ['ready', 'approved'].includes(u.status)).length, approved: units.filter((u) => u.status === 'approved').length, failed: units.filter((u) => u.status === 'failed').length, generating: units.filter((u) => u.status === 'generating').length },
-  units: units.sort((a, b) => a.position - b.position).map((u) => ({ id: u.id, position: u.position, level: u.level, title: u.title, status: u.status, review_notes: u.review_notes, content: u.content, page_ids: u.page_ids, verification: (u.content as Record<string, unknown> | null)?.problems ?? null })),
+  units: units.sort((a, b) => a.position - b.position).map((u) => {
+    const content = isUnitContent(u.content) ? u.content : null;
+    return { id: u.id, position: u.position, level: u.level, title: u.title, status: u.status, review_notes: u.review_notes, content: content ? unitView(content) : null, page_ids: u.page_ids, verification: content?.problems ?? null };
+  }),
   cost: { outline: quoteCredits('curriculum.outline').credits, per_unit: quoteCredits('curriculum.unit').credits },
 });
 
@@ -117,29 +120,31 @@ export async function run(ctx: RequestContext) {
   const previous = units.filter((u) => u.position < next.position && u.level === next.level).sort((a, b) => b.position - a.position).slice(0, 2).map((u) => u.title);
   const planned = asRecord(next.content).planned_can_do;
   try {
+    const level = next.level as CefrLevel;
+    const shape = { course: row.title, level, language: brief.language, lessons: brief.lessons_per_unit, minutes: brief.minutes, fallbackTitle: next.title };
     const { result, credits, chargeId } = await ctx.ai.charged({ key: 'curriculum.unit', mode: 'json', reference: `curriculum-unit:${next.id}:${next.attempts + 1}` }, async (session) => {
       const messages = [
         { role: 'system' as const, content: centrePrompt({
           workspace: centre.access.workspace, locale: ctx.locale,
           task: [
-            `Write one unit of a ${brief.track} English course at CEFR ${LEVEL_LABEL[next.level as CefrLevel] ?? next.level}: exactly ${brief.lessons_per_unit} lessons of ${brief.minutes} minutes, each with aims, 3-8 timed stages whose minutes add up to the lesson length, and homework; then a unit test of 6-10 multiple-choice items (3-4 options, one correct, the key as the option index).`,
+            unitTask({ track: brief.track, level, lessons: brief.lessons_per_unit, minutes: brief.minutes }),
             `Write teacher-facing text in ${LANGUAGE_NAMES[brief.language]}; English examples and test items in English. Original material only.`,
           ].join(' '),
           blocks: [{ kind: 'unit', title: 'This unit', data: { course: row.title, level: next.level, position: next.position, title: next.title, can_do: planned ?? [], previous_units: previous, reviewer_notes: next.review_notes } }],
         }) },
         { role: 'user' as const, content: 'Write the unit.' },
       ];
-      let unit = await session.json({ messages, schema: unitSchema, maxTokens: 3500, temperature: 0.4 });
-      let problems = unitProblems(unit, brief.lessons_per_unit);
+      let unit = unitFromDraft(await session.json({ messages, schema: unitDraftSchema, maxTokens: 4000, temperature: 0.4 }), shape);
+      let problems = unitProblems(unit, brief.lessons_per_unit, brief.minutes);
       if (problems.length) {
         messages.push({ role: 'user' as const, content: `Fix these problems and reply with the whole unit again: ${problems.join(' ')}` });
-        unit = await session.json({ messages, schema: unitSchema, maxTokens: 3500, temperature: 0.2 });
-        problems = unitProblems(unit, brief.lessons_per_unit);
+        unit = unitFromDraft(await session.json({ messages, schema: unitDraftSchema, maxTokens: 4000, temperature: 0.2 }), shape);
+        problems = unitProblems(unit, brief.lessons_per_unit, brief.minutes);
       }
-      return { unit, problems };
+      return { unit: { ...unit, problems }, problems };
     });
-    await ctx.repo.updateGeneration(job.id, { status: 'ready', output: result.unit, verification: { problems: result.problems }, credits, chargeId, heartbeatAt: ctx.now().toISOString() }, ['generating']);
-    await centre.deps.store.table('units').update({ id: next.id }, { status: 'ready', content: { ...result.unit, problems: result.problems }, title: result.unit.title.slice(0, 160) });
+    await ctx.repo.updateGeneration(job.id, { status: 'ready', output: result.unit.material, verification: { problems: result.problems }, credits, chargeId, heartbeatAt: ctx.now().toISOString() }, ['generating']);
+    await centre.deps.store.table('units').update({ id: next.id }, { status: 'ready', content: result.unit as unknown as Record<string, unknown>, title: result.unit.title });
   } catch (cause) {
     await ctx.repo.updateGeneration(job.id, { status: 'failed', errorCode: cause instanceof SchoodAIError ? cause.code.slice(0, 64) : 'internal_error' }, ['generating']);
     await centre.deps.store.table('units').update({ id: next.id }, { status: 'failed' });
@@ -247,7 +252,7 @@ export function registerCurriculumActions(): void {
             done.modules[unit.id] = String(asRecord(module.module).id ?? '');
             await save();
           }
-          for (const [index, lesson] of content.lessons.entries()) {
+          for (const [index, lesson] of unitLessons(content).entries()) {
             const key = `${unit.id}:${index}`;
             if (done.lessons[key]) continue;
             const created = await client.post('upsert_lesson', { course_id: done.courses[level], module_id: done.modules[unit.id], title: lesson.title.slice(0, 160), summary: lesson.aims.join('; ').slice(0, 500), lesson_content: [{ type: 'rich_text', text: lessonMarkdown(lesson) }], position: index + 1, estimated_minutes: lesson.minutes });

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { CheckCircle2, ClipboardCheck, Plus, Sparkles, Trash2 } from 'lucide-react';
-import type { CefrLevel, PlacementTest } from '../../../../../packages/ai-core/src/materials/centre-placement.ts';
+import type { CefrLevel, PlacementTest } from '../../../../../packages/ai-core/src/centre/placement.ts';
 import { ApiError, ApiErrorState, Badge, Button, Card, CreditCost, EmptyState, Field, getPage, LoadingState, PageHeader, TextArea, TextInput, useLocation, useT } from '../../core/index.ts';
-import { CEFR, CentreGate, LEVEL, Loaded, Section, Select, Table, Tabs, useCentre, useCentreApi, useFormat, useLoad, useSubmit } from '../kit.tsx';
+import { CEFR, CentreGate, LEVEL, Loaded, newKey, Section, Select, Table, Tabs, useCentre, useCentreApi, useFormat, useLoad, useSubmit } from '../kit.tsx';
 
 // C5 placement tests: the builder (checked keys, a teacher approves before anyone
 // takes it), attempts with the objective score, AI marks for writing and speaking
@@ -37,18 +37,31 @@ export function PlacementPage() {
   </CentreGate>;
 }
 
+/** What the key check of an AI draft found (centre/placement-draft-review). */
+interface DraftReview { dropped: number; asked: number; agreed: number; disagreements: { item: string; key: string; solver: string; reason: string | null }[]; unanswered: string[] }
+
 function Tests({ initial }: { initial: string | null }) {
   const t = useT(), f = useFormat(), call = useCentreApi(), { workspaceId } = useCentre();
   const state = useLoad<{ tests: TestRow[] }>('placement-tests');
   const [editing, setEditing] = useState<{ id: string | null; revision: number; test: PlacementTest } | null>(null);
+  const [drafting, setDrafting] = useState(false);
+  const [review, setReview] = useState<DraftReview | null>(null);
   const open = useSubmit(), change = useSubmit();
   const load = (row: { id: string }) => open.run(async () => {
-    const page = await getPage(row.id, workspaceId);
+    const [page, flagged] = await Promise.all([
+      getPage(row.id, workspaceId),
+      call<{ review: DraftReview | null }>('placement-draft-review', { query: { id: row.id } }).catch(() => ({ review: null })),
+    ]);
+    setReview(flagged.review);
     setEditing({ id: row.id, revision: page.revision, test: page.material as PlacementTest });
   });
   useEffect(() => { if (initial) void load({ id: initial }); }, [initial]); // eslint-disable-line react-hooks/exhaustive-deps
-  if (editing) return <Builder start={editing} onDone={() => { setEditing(null); void state.reload(); }}/>;
-  return <Section title={t('centre.placement.tests')} lead={t('centre.placement.testsLead')} actions={<Button onClick={() => setEditing({ id: null, revision: 0, test: blankTest() })} icon={<Plus size={16} aria-hidden="true"/>}>{t('centre.placement.new')}</Button>}>
+  if (editing) return <Builder start={editing} review={review} onDone={() => { setEditing(null); setReview(null); void state.reload(); }}/>;
+  if (drafting) return <DraftForm onCancel={() => setDrafting(false)} onDrafted={(result) => { setDrafting(false); setReview(result.review); setEditing({ id: result.page_id, revision: result.revision, test: result.test }); void state.reload(); }}/>;
+  return <Section title={t('centre.placement.tests')} lead={t('centre.placement.testsLead')} actions={<div className="flex flex-wrap gap-2">
+    <Button variant="spark" onClick={() => setDrafting(true)} icon={<Sparkles size={16} aria-hidden="true"/>}>{t('centre.placement.draft')}</Button>
+    <Button variant="secondary" onClick={() => { setReview(null); setEditing({ id: null, revision: 0, test: blankTest() }); }} icon={<Plus size={16} aria-hidden="true"/>}>{t('centre.placement.new')}</Button>
+  </div>}>
     {(open.error !== null || change.error !== null) && <div className="mb-3"><ApiErrorState error={open.error ?? change.error}/></div>}
     <Loaded state={state}>{(data) => <Table caption={t('centre.placement.tests')} rows={data.tests} rowKey={(row) => row.id} empty={t('centre.placement.noTests')} columns={[
       { key: 'title', label: t('centre.placement.testTitle'), render: (row) => <span className="font-semibold">{row.title}</span> },
@@ -64,7 +77,66 @@ function Tests({ initial }: { initial: string | null }) {
   </Section>;
 }
 
-function Builder({ start, onDone }: { start: { id: string | null; revision: number; test: PlacementTest }; onDone(): void }) {
+function DraftForm({ onCancel, onDrafted }: { onCancel(): void; onDrafted(result: { page_id: string; revision: number; test: PlacementTest; review: DraftReview }): void }) {
+  const t = useT(), call = useCentreApi(), { refresh } = useCentre();
+  const [form, setForm] = useState({ title: '', from: 'a1' as CefrLevel, to: 'b1' as CefrLevel, perLevel: '6', writing: true, speaking: false, focus: '' });
+  const key = useRef(newKey());
+  const submit = useSubmit();
+  const levelOptions = CEFR.map((code) => ({ value: code, label: LEVEL[code] }));
+  const reversed = CEFR.indexOf(form.from) > CEFR.indexOf(form.to);
+  const go = (event: FormEvent) => {
+    event.preventDefault();
+    void submit.run(async () => {
+      const result = await call<{ page_id: string; revision: number; test: PlacementTest; review: DraftReview }>('placement-generate', {
+        method: 'POST', idempotencyKey: key.current,
+        body: { title: form.title.trim() || undefined, from_level: form.from, to_level: form.to, per_level: Number(form.perLevel), writing: form.writing, speaking: form.speaking, focus: form.focus.trim() || undefined },
+      });
+      key.current = newKey();
+      void refresh(); // the pooled credit balance in the header
+      onDrafted(result);
+    });
+  };
+  return <Section title={t('centre.placement.draftTitle')} lead={t('centre.placement.draftLead')}>
+    <form onSubmit={go} className="grid gap-4 md:max-w-2xl">
+      <Field label={t('centre.placement.testTitle')} hint={t('centre.placement.draftTitleHint')}>{(id) => <TextInput id={id} maxLength={160} value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })}/>}</Field>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Select label={t('centre.placement.from')} value={form.from} onChange={(value) => setForm({ ...form, from: value })} options={levelOptions}/>
+        <Select label={t('centre.placement.to')} value={form.to} onChange={(value) => setForm({ ...form, to: value })} options={levelOptions}/>
+        <Field label={t('centre.placement.perLevel')}>{(id) => <TextInput id={id} type="number" min={3} max={10} required value={form.perLevel} onChange={(event) => setForm({ ...form, perLevel: event.target.value })}/>}</Field>
+      </div>
+      {reversed && <p className="m-0 text-sm text-amber-900" role="alert">{t('centre.placement.reversed')}</p>}
+      <fieldset className="m-0 flex flex-wrap gap-4 border-0 p-0"><legend className="mb-1 text-sm font-semibold text-gray-800">{t('centre.placement.draftTasks')}</legend>
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.writing} onChange={(event) => setForm({ ...form, writing: event.target.checked })}/>{t('centre.placement.kind.writing')}</label>
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.speaking} onChange={(event) => setForm({ ...form, speaking: event.target.checked })}/>{t('centre.placement.kind.speaking')}</label>
+      </fieldset>
+      <Field label={t('centre.placement.draftFocus')} hint={t('centre.placement.draftFocusHint')}>{(id) => <TextArea id={id} rows={2} maxLength={300} value={form.focus} onChange={(event) => setForm({ ...form, focus: event.target.value })}/>}</Field>
+      <p className="m-0 text-sm text-gray-700">{t('centre.placement.draftChecks')}</p>
+      <CreditCost creditKey="placement.generate"/>
+      {submit.error !== null && <ApiErrorState error={submit.error}/>}
+      <div className="flex flex-wrap gap-2">
+        <Button type="submit" variant="spark" disabled={submit.busy || reversed} icon={<Sparkles size={16} aria-hidden="true"/>}>{submit.busy ? t('centre.placement.drafting') : t('centre.placement.draft')}</Button>
+        <Button variant="ghost" disabled={submit.busy} onClick={onCancel}>{t('centre.common.cancel')}</Button>
+      </div>
+    </form>
+  </Section>;
+}
+
+function DraftReviewNote({ review }: { review: DraftReview }) {
+  const t = useT();
+  const clean = review.disagreements.length === 0 && review.unanswered.length === 0;
+  return <div role="status" className={`rounded-3xl border p-4 text-sm ${clean ? 'border-navy-line bg-lime-soft/40' : 'border-amber-300 bg-amber-50'}`}>
+    <p className="m-0 font-semibold">{t('centre.placement.reviewTitle')}</p>
+    <p className="m-0 mt-1">{t('centre.placement.reviewSummary', { agreed: review.agreed, asked: review.asked })}</p>
+    {review.dropped > 0 && <p className="m-0 mt-1">{t('centre.placement.reviewDropped', { count: review.dropped })}</p>}
+    {review.disagreements.length > 0 && <ul className="m-0 mt-2 grid list-disc gap-1 pl-5">{review.disagreements.map((entry) => <li key={entry.item}>
+      {t('centre.placement.reviewDisagree', { item: entry.item, key: entry.key, solver: entry.solver })}{entry.reason ? ` ${entry.reason}` : ''}
+    </li>)}</ul>}
+    {review.unanswered.length > 0 && <p className="m-0 mt-1">{t('centre.placement.reviewUnanswered', { items: review.unanswered.join(', ') })}</p>}
+    <p className="m-0 mt-2 text-gray-700">{t('centre.placement.reviewApprove')}</p>
+  </div>;
+}
+
+function Builder({ start, review, onDone }: { start: { id: string | null; revision: number; test: PlacementTest }; review: DraftReview | null; onDone(): void }) {
   const t = useT(), call = useCentreApi();
   const [test, setTest] = useState<PlacementTest>(start.test);
   const [problems, setProblems] = useState<string[]>([]);
@@ -88,6 +160,7 @@ function Builder({ start, onDone }: { start: { id: string | null; revision: numb
     });
   };
   return <form onSubmit={save} className="grid gap-6">
+    {review && <DraftReviewNote review={review}/>}
     <Section title={start.id ? t('centre.placement.edit') : t('centre.placement.new')} lead={t('centre.placement.builderLead')}>
       <div className="grid gap-3 md:grid-cols-[2fr_1fr_1fr_1fr]">
         <Field label={t('centre.placement.testTitle')}>{(id) => <TextInput id={id} required minLength={3} maxLength={160} value={test.title} onChange={(event) => setTest({ ...test, title: event.target.value })}/>}</Field>

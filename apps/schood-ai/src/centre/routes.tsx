@@ -3,7 +3,7 @@ import {
   BarChart3, BookMarked, ClipboardCheck, Eye, GraduationCap, HandCoins, KeyRound, Layers, LibraryBig, LayoutDashboard, Megaphone, MessagesSquare,
   Newspaper, Palette, School, Settings2, Sparkles, Users, UsersRound,
 } from 'lucide-react';
-import { PLACEMENT_KIND, placementMarkdown, type PlacementTest } from '../../../../packages/ai-core/src/materials/centre-placement-markdown.ts';
+import { PLACEMENT_KIND, placementMarkdown, type PlacementTest } from '../../../../packages/ai-core/src/centre/placement-markdown.ts';
 import { registerMaterialKind, type AreaNavItem, type AreaRoute, type HomeCard } from '../core/index.ts';
 import { CentreHomeCard, SetupHomeCard, StudentHomeCard, TeacherHomeCard } from './cards.tsx';
 

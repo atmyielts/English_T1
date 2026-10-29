@@ -9,7 +9,13 @@ import { ApprovalList, CEFR, CentreGate, LEVEL, Loaded, newKey, Section, Select,
 // methodologist reviews every unit, then it is published to the centre library and,
 // after Approve & run, to Academy Courses.
 
-interface Unit { id: string; position: number; level: string; title: string; status: string; review_notes: string | null; page_ids: string[]; verification: string[] | null; content: { can_do?: string[]; lessons?: { title: string; minutes: number; aims: string[]; stages: { name: string; minutes: number; activity: string }[]; homework: string }[]; test?: { prompt: string; options: string[]; answer: number }[] } | null }
+/** A written unit as the function shows it (made from its teacher-model material). */
+interface UnitContent {
+  can_do: string[];
+  lessons: { title: string; minutes: number; stages: { name: string; minutes: number; aim: string; steps: string[]; interaction?: string }[]; homework: string | null }[];
+  test: { prompt: string; options: string[]; answer: number }[];
+}
+interface Unit { id: string; position: number; level: string; title: string; status: string; review_notes: string | null; page_ids: string[]; verification: string[] | null; content: UnitContent | null }
 interface Curriculum { id: string; title: string; status: string; brief: Record<string, unknown>; published_at: string | null; created_at: string; progress: { total: number; ready: number; approved: number; failed: number; generating: number }; units?: Unit[]; cost: { outline: number; per_unit: number } }
 const TRACKS = ['general', 'ielts', 'multilevel', 'exam_other', 'kids'] as const;
 
@@ -110,14 +116,14 @@ function Detail({ id }: { id: string }) {
           <div className="min-w-0"><p className="m-0 text-xs font-semibold uppercase tracking-wider text-gray-600">{LEVEL[unit.level] ?? unit.level} · {t('centre.curriculum.unit', { n: unit.position })}</p><h2 className="m-0 font-display text-lg font-bold">{unit.title}</h2></div>
           <div className="flex flex-wrap items-center gap-2">
             <Badge tone={unit.status === 'approved' ? 'lime' : unit.status === 'failed' || unit.status === 'changes_requested' ? 'warn' : unit.status === 'ready' ? 'sky' : 'neutral'}>{t(`centre.curriculum.unitStatus.${unit.status}`)}</Badge>
-            {unit.content?.lessons && <Button size="sm" variant="secondary" onClick={() => setOpen(open === unit.id ? null : unit.id)} aria-expanded={open === unit.id}>{open === unit.id ? t('centre.common.hide') : t('centre.common.open')}</Button>}
+            {unit.content && <Button size="sm" variant="secondary" onClick={() => setOpen(open === unit.id ? null : unit.id)} aria-expanded={open === unit.id}>{open === unit.id ? t('centre.common.hide') : t('centre.common.open')}</Button>}
             {unit.status === 'failed' && manager && <Button size="sm" variant="secondary" disabled={retry.busy} onClick={() => void retry.run(async () => { await call('curriculum-retry', { method: 'POST', body: { unit_id: unit.id } }); await state.reload(); })} icon={<RotateCcw size={14} aria-hidden="true"/>}>{t('approvals.retry')}</Button>}
             {unit.page_ids[0] && <Link to={`/library/${unit.page_ids[0]}`} className="inline-flex min-h-9 items-center gap-1 rounded-full border border-navy-line bg-white px-3 text-xs font-semibold no-underline"><BookOpenCheck size={14} aria-hidden="true"/>{t('nav.library')}</Link>}
           </div>
         </div>
         {unit.verification && unit.verification.length > 0 && <ul className="m-0 mt-2 list-disc pl-5 text-sm text-amber-900">{unit.verification.map((problem) => <li key={problem}>{problem}</li>)}</ul>}
         {unit.review_notes && <p className="m-0 mt-2 text-sm text-gray-700"><strong>{t('centre.curriculum.notesFrom')}:</strong> {unit.review_notes}</p>}
-        {open === unit.id && unit.content?.lessons && <UnitView unit={unit}/>}
+        {open === unit.id && unit.content && <UnitView unit={unit}/>}
         {['ready', 'approved', 'changes_requested'].includes(unit.status) && curriculum.status !== 'published' && <UnitReview unit={unit} busy={review.busy} onDecide={(decision, notes) => void review.run(async () => { const result = await call<{ curriculum: Curriculum }>('curriculum-review', { method: 'POST', body: { unit_id: unit.id, decision, notes } }); state.setData({ curriculum: { ...result.curriculum } }); })}/>}
       </Card>)}</div>
       {review.error !== null && <div className="mt-3"><ApiErrorState error={review.error}/></div>}
@@ -129,13 +135,16 @@ function UnitView({ unit }: { unit: Unit }) {
   const t = useT();
   const content = unit.content!;
   return <div className="mt-4 grid gap-4 text-sm">
-    {content.can_do && <ul className="m-0 list-disc pl-5">{content.can_do.map((aim) => <li key={aim}>{aim}</li>)}</ul>}
-    {content.lessons?.map((lesson, index) => <div key={index} className="rounded-2xl bg-cream-soft p-3">
+    {content.can_do.length > 0 && <ul className="m-0 list-disc pl-5">{content.can_do.map((aim) => <li key={aim}>{aim}</li>)}</ul>}
+    {content.lessons.map((lesson, index) => <div key={index} className="rounded-2xl bg-cream-soft p-3">
       <p className="m-0 font-semibold">{t('centre.curriculum.lesson', { n: index + 1 })}: {lesson.title} · {lesson.minutes}′</p>
-      <ol className="m-0 mt-2 grid list-decimal gap-1 pl-5">{lesson.stages.map((stage, at) => <li key={at}><strong>{stage.name}</strong> ({stage.minutes}′): {stage.activity}</li>)}</ol>
-      <p className="m-0 mt-2"><strong>{t('centre.curriculum.homework')}:</strong> {lesson.homework}</p>
+      <ol className="m-0 mt-2 grid list-decimal gap-2 pl-5">{lesson.stages.map((stage, at) => <li key={at}>
+        <strong>{stage.name}</strong> ({stage.minutes}′{stage.interaction ? `, ${stage.interaction}` : ''}): {stage.aim}
+        {stage.steps.length > 0 && <ul className="m-0 mt-1 list-disc pl-5 text-gray-700">{stage.steps.map((step, n) => <li key={n}>{step}</li>)}</ul>}
+      </li>)}</ol>
+      {lesson.homework && <p className="m-0 mt-2"><strong>{t('centre.curriculum.homework')}:</strong> {lesson.homework}</p>}
     </div>)}
-    {content.test && <div><p className="m-0 font-semibold">{t('centre.curriculum.test', { count: content.test.length })}</p><ol className="m-0 mt-1 list-decimal pl-5">{content.test.map((item, index) => <li key={index}>{item.prompt} <span className="text-gray-600">({item.options.map((option, at) => `${String.fromCharCode(65 + at)}${at === item.answer ? '✓' : ''} ${option}`).join(' · ')})</span></li>)}</ol></div>}
+    {content.test.length > 0 && <div><p className="m-0 font-semibold">{t('centre.curriculum.test', { count: content.test.length })}</p><ol className="m-0 mt-1 list-decimal pl-5">{content.test.map((item, index) => <li key={index}>{item.prompt} <span className="text-gray-600">({item.options.map((option, at) => `${String.fromCharCode(65 + at)}${at === item.answer ? '✓' : ''} ${option}`).join(' · ')})</span></li>)}</ol></div>}
   </div>;
 }
 

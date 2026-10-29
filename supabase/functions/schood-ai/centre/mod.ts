@@ -14,7 +14,7 @@ import { ask, knowledge } from './knowledge.ts';
 import { marketing, results } from './marketing.ts';
 import { campaignDraft, campaigns, leadDraft, leads, parentDraft, registerMessageActions } from './messages.ts';
 import { observations, progress, standards } from './observations.ts';
-import { answer, attempts, available, mark, registerPlacementKind, review, start, submit, takerTest, tests } from './placement.ts';
+import { answer, attempts, available, draftReview, generate, mark, registerPlacementKind, review, start, submit, takerTest, tests } from './placement.ts';
 import { resell, resellStudents, wholesale } from './resell.ts';
 import { academies, budgets, create, invitePreview, invites, join, leave, members, overview, snapshotNow } from './workspace.ts';
 
@@ -70,6 +70,8 @@ export const centreModule: FeatureModule = {
     'placement-review': { POST: review },
     'placement-attempts': { GET: attempts },
     'placement-available': { GET: available },
+    'placement-generate': { POST: generate },
+    'placement-draft-review': { GET: draftReview },
     // C6 insights
     insights,
     // C7 admin

@@ -1,4 +1,4 @@
-import { publicTest } from '../../../../packages/ai-core/src/materials/centre-placement.ts';
+import { publicTest } from '../../../../packages/ai-core/src/centre/placement.ts';
 import { tashkentDay } from '../../../../packages/ai-core/src/mod.ts';
 import { brandingView } from '../core/views.ts';
 import { createRequestContext } from '../context.ts';

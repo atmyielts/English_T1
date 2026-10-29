@@ -315,5 +315,23 @@ export const en = {
   'centre.groups.noHomework': "No homework in Academy for this group.",
   'centre.groups.ruleFor': "Rule for {title}",
   'centre.groups.ruleDefault': "Group rule ({rule})",
+  // Placement drafts with AI
+  'centre.placement.draft': "Draft with AI",
+  'centre.placement.drafting': "Drafting and checking… up to a minute",
+  'centre.placement.draftTitle': "Draft a placement test with AI",
+  'centre.placement.draftLead': "Choose the level range. Schood AI writes items for each level, checks every key and saves a draft for you to review and approve.",
+  'centre.placement.draftTitleHint': "Optional. Left empty, the test is named after its levels.",
+  'centre.placement.perLevel': "Items per level",
+  'centre.placement.reversed': "The first level must not be above the last one.",
+  'centre.placement.draftTasks': "Also add",
+  'centre.placement.draftFocus': "What should the test check?",
+  'centre.placement.draftFocusHint': "Optional, for example “tenses and everyday vocabulary for adults”.",
+  'centre.placement.draftChecks': "Every key is checked twice: by fixed rules, then by a second AI that answers the items without the key. Items that fail the rules are left out; disagreements are listed for you.",
+  'centre.placement.reviewTitle': "Key check of this AI draft",
+  'centre.placement.reviewSummary': "A second AI answered {asked} items without the key and agreed on {agreed}.",
+  'centre.placement.reviewDropped': "{count|one:# item was|other:# items were} left out because the key failed the checks.",
+  'centre.placement.reviewDisagree': "Item {item}: the key is {key}, the second AI chose {solver}.",
+  'centre.placement.reviewUnanswered': "Not answered by the second AI: {items}.",
+  'centre.placement.reviewApprove': "Read every item before you approve the test. Nobody can take it until you do.",
 } satisfies Record<string, string>;
 export type CentreKey = keyof typeof en;
