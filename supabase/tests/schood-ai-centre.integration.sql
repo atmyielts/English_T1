@@ -145,5 +145,9 @@ begin
   assert not has_function_privilege('anon', 'public.ai_centre_knowledge_search(uuid, text, integer)', 'execute'), 'browsers cannot search';
   assert has_function_privilege('service_role', 'public.ai_centre_usage(uuid, timestamptz)', 'execute'), 'the function can read usage';
   assert (select bool_and(relrowsecurity) from pg_class where relname like 'ai\_centre\_%' and relkind = 'r'), 'RLS on every centre table';
+  assert 'ai_centre_staff_chats' = any(public.account_personal_erasure_tables()) and 'ai_centre_resell_periods' = any(public.account_personal_erasure_tables()), 'personal rows join the erasure registry';
+  raised := false;
+  begin update public.ai_centre_settings set retention_days = 365 where workspace_id = ws; exception when check_violation then raised := true; end;
+  assert raised, 'a centre cannot keep conversations longer than core''s 180 days';
 end $$;
 select 'schood ai centre: ok';

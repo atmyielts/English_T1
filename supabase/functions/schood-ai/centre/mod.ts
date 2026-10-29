@@ -1,3 +1,5 @@
+// Core registers its general assistant first, so it stays first in every list of assistants.
+import '../core/mod.ts';
 import type { FeatureModule } from '../types.ts';
 import { admin, audit, grants, retentionNow, usage } from './admin.ts';
 import { admissions, admissionsBot, bookings, staffCode, staffReply, threads } from './admissions.ts';
@@ -12,7 +14,7 @@ import { ask, knowledge } from './knowledge.ts';
 import { marketing, results } from './marketing.ts';
 import { campaignDraft, campaigns, leadDraft, leads, parentDraft, registerMessageActions } from './messages.ts';
 import { observations, progress, standards } from './observations.ts';
-import { answer, attempts, mark, registerPlacementKind, review, start, submit, takerTest, tests } from './placement.ts';
+import { answer, attempts, available, mark, registerPlacementKind, review, start, submit, takerTest, tests } from './placement.ts';
 import { resell, resellStudents, wholesale } from './resell.ts';
 import { academies, budgets, create, invitePreview, invites, join, leave, members, overview, snapshotNow } from './workspace.ts';
 
@@ -66,6 +68,7 @@ export const centreModule: FeatureModule = {
     'placement-mark': { POST: mark },
     'placement-review': { POST: review },
     'placement-attempts': { GET: attempts },
+    'placement-available': { GET: available },
     // C6 insights
     insights,
     // C7 admin

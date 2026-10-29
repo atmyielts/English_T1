@@ -38,11 +38,12 @@ export const admin = {
       plan: { plans: plan.plans, beta: plan.beta },
     };
   },
-  /** { retention_days }: chats of students and parents and admissions conversations older than this are deleted unless pinned. */
+  /** { retention_days } (30-180): chats of students and parents and admissions conversations older than this are deleted. */
   async PATCH(ctx: RequestContext) {
     const centre = await requireCentre(ctx, ['owner', 'admin']);
     const body = record(await ctx.body());
-    const days = integer(body.retention_days, 'retention_days', 30, 730);
+    // Core deletes every conversation after 180 days, so a centre can only shorten it.
+    const days = integer(body.retention_days, 'retention_days', 30, 180);
     await centre.deps.store.table('settings').update({ workspace_id: centre.access.workspace.id }, { retention_days: days, updated_by: ctx.user.id });
     await ctx.audit('centre.retention', { retention_days: days }, { type: 'workspace', id: centre.access.workspace.id });
     return { retention_days: days };
@@ -102,7 +103,7 @@ export async function usage(ctx: RequestContext) {
   };
 }
 
-/** Deletes chats of students and parents and admissions conversations older than the centre's retention, unless pinned. */
+/** Deletes chats of students and parents and admissions conversations older than the centre's retention (core's own 180-day purge covers the rest). */
 export async function runRetention(ctx: RequestContext, centre: Centre): Promise<{ chats: number; conversations: number }> {
   const ws = centre.access.workspace;
   const cutoff = ctx.now().getTime() - centre.settings.retention_days * 86_400_000;

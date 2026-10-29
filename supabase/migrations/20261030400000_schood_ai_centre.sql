@@ -29,8 +29,9 @@ create table if not exists public.ai_centre_settings (
   widgets jsonb not null default '{}'::jsonb check (jsonb_typeof(widgets) = 'object' and pg_column_size(widgets) <= 8000),
   -- White label beyond core branding: {"avatar_url": "https://...", "launcher_label": {...}}.
   white_label jsonb not null default '{}'::jsonb check (jsonb_typeof(white_label) = 'object' and pg_column_size(white_label) <= 4000),
-  -- Student chats and admissions conversations older than this are deleted unless pinned [ASSUMPTION] 180 days.
-  retention_days integer not null default 180 check (retention_days between 30 and 730),
+  -- Student and parent chats and admissions conversations older than this are deleted. Core
+  -- already deletes every conversation after 180 days, so a centre can only keep them for less.
+  retention_days integer not null default 180 check (retention_days between 30 and 180),
   -- Add-ons granted by Schood support until tenant checkout exists (Teacher seat, 100 students).
   extra_teacher_seats integer not null default 0 check (extra_teacher_seats between 0 and 1000),
   extra_students integer not null default 0 check (extra_students between 0 and 100000),
@@ -692,5 +693,41 @@ grant execute on function public.ai_centre_take_public(uuid, text, date, integer
 grant execute on function public.ai_centre_claim_staff_code(uuid, text, text, timestamptz) to service_role;
 grant execute on function public.ai_centre_knowledge_search(uuid, text, integer) to service_role;
 grant execute on function public.ai_centre_usage(uuid, timestamptz) to service_role;
+
+
+-- --- Account erasure ------------------------------------------------------------------------------
+-- Rows keyed on user_id join the account erasure registry (the additive pattern of
+-- 20261030130000_schood_ai_retention_and_erasure.sql). Placement attempts and
+-- observations are keyed on taker_user_id and teacher_id and go with the users row
+-- (on delete cascade); conversations with prospects are not linked to accounts and
+-- follow the centre's retention.
+do $$
+declare
+  relations text[];
+  wanted text[] := array['ai_centre_group_members', 'ai_centre_resell_periods', 'ai_centre_staff_chats', 'ai_centre_staff_codes'];
+  relation_name text;
+  guard_installed boolean := to_regprocedure('public.guard_closed_personal_record()') is not null;
+begin
+  if to_regprocedure('public.account_personal_erasure_tables()') is null then
+    raise notice 'account_personal_erasure_tables() is not installed; erasure registry not extended';
+    return;
+  end if;
+  relations := public.account_personal_erasure_tables();
+  foreach relation_name in array wanted loop
+    if to_regclass(format('public.%I', relation_name)) is null then continue; end if;
+    if not (relation_name = any(relations)) then
+      relations := relations || relation_name;
+      if guard_installed then
+        execute format('drop trigger if exists account_closed_personal_guard on public.%I', relation_name);
+        execute format('create trigger account_closed_personal_guard before insert or update on public.%I for each row execute function public.guard_closed_personal_record(%L)', relation_name, 'user_id');
+      end if;
+    end if;
+  end loop;
+  execute format(
+    'create or replace function public.account_personal_erasure_tables() returns text[] language sql immutable set search_path=pg_catalog,public as %L',
+    format('select %L::text[];', relations::text)
+  );
+end
+$$;
 
 commit;

@@ -3,7 +3,7 @@ import {
 } from '../../../../packages/ai-core/src/materials/centre-placement.ts';
 import { s, SchemaError } from '../../../../packages/ai-core/src/mod.ts';
 import { registerMaterialKind } from '../library.ts';
-import { dataBlock, wrapUserMessage } from '../prompt.ts';
+import { wrapUserMessage } from '../prompt.ts';
 import { integer, jsonObject, oneOf, optionalText, record, text, uuid } from '../input.ts';
 import { SchoodAIError, type RequestContext, type SchoodAIRepository } from '../types.ts';
 import { centrePrompt, clean, isStaff, requireCentre } from './shared.ts';
@@ -258,4 +258,11 @@ function keyView(test: PlacementTest) {
   return Object.fromEntries(test.sections.flatMap((sec) => (sec.items ?? []).map((entry) => [entry.id, entry.type === 'mcq' ? { answer: entry.answer } : { accept: entry.accept }])));
 }
 
-export const placementDataBlock = (test: PlacementTest) => dataBlock({ kind: 'placement', title: 'Placement test', data: publicTest(test) }, 0);
+/** GET centre/placement-available: approved tests any member may take (titles only), and the caller's own attempts. */
+export async function available(ctx: RequestContext) {
+  const centre = await requireCentre(ctx);
+  const ws = centre.access.workspace;
+  const pages = await ctx.repo.pages({ workspaceId: ws.id, viewerId: ctx.user.id, manager: true, scope: 'all', kind: KIND, status: 'approved', limit: 50 });
+  const mine = await centre.deps.store.table('attempts').list({ workspace_id: ws.id, taker_user_id: ctx.user.id }, { order: 'created_at', desc: true, limit: 20 });
+  return { tests: pages.map((page) => ({ id: page.id, title: page.title })), attempts: mine.map((row) => attemptJson(row, false)) };
+}

@@ -86,6 +86,7 @@ Deno.test('admin: switchable areas, retention, Schood add-on grants, audit and t
   ok(admin.body.areas.some((area: { area: string }) => area.area === 'admissions') && admin.body.areas.some((area: { area: string }) => area.area === 'student_assistant'), 'centre features can be switched');
   equal(admin.body.retention_days, 180, 'default retention [ASSUMPTION]');
   equal((await f.json('PATCH', 'centre/admin', { workspace: ws, body: { retention_days: 10 } })).status, 400, 'at least 30 days');
+  equal((await f.json('PATCH', 'centre/admin', { workspace: ws, body: { retention_days: 365 } })).status, 400, 'core keeps conversations at most 180 days');
   equal((await f.json('PATCH', 'centre/admin', { workspace: ws, body: { retention_days: 60 } })).body.retention_days, 60);
   equal((await f.json('PATCH', 'centre/admin', { token: 'tok-s1', workspace: ws, body: { retention_days: 60 } })).status, 403, 'students cannot');
   // Switching a feature off uses core's settings route; the student assistant then refuses.
