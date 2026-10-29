@@ -76,6 +76,11 @@ export const CREDIT_PRICES = {
   'winback.message': price('C11', 1, 'standard', { assumed: true }),
   'curriculum.unit': price('C12', 20, 'premium'),
   'observation.feedback': price('C16', 5, 'standard', { assumed: true }),
+  // Centres, added by the centre area (assumed: the doc's table has no row of its own).
+  // Placement writing and speaking marks reuse "Marking per script" (4); the curriculum
+  // outline reuses "term outline" (10).
+  'placement.mark': price('C5', 4, 'premium', { assumed: true }),
+  'curriculum.outline': price('C12', 10, 'standard', { assumed: true }),
 } satisfies Record<string, CreditPrice>;
 
 export type CreditKey = keyof typeof CREDIT_PRICES;
