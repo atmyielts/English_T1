@@ -180,6 +180,10 @@ export function createEngageMemory(options: { core: SchoodAIRepository; now: () 
       }
       return Promise.resolve(true);
     },
+    unsettledGroups: (beforeWeek, limit) => Promise.resolve(clone([...groups.values()]
+      .filter((g) => !g.finalizedAt && g.weekStart < beforeWeek)
+      .sort((a, b) => a.weekStart.localeCompare(b.weekStart) || a.id.localeCompare(b.id))
+      .slice(0, limit))),
 
     // --- Journeys, path, dates ----------------------------------------------------------------------
     journeys: (userId) => Promise.resolve(clone(journeys.filter((row) => row.userId === userId))),

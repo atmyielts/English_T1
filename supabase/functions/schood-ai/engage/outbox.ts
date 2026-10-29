@@ -30,7 +30,7 @@ import type { OutboxRow } from './types.ts';
 // Who is due is answered by public.ai_engage_due_users (the bots' cron), documented
 // in docs/product/ai-requests/engage.md.
 
-const MAX_PER_DAY = 2;
+export const MAX_PER_DAY = 2;
 const LAPSE_STAGES: { days: number; kind: MessageKind }[] = [{ days: 2, kind: 'winback_2' }, { days: 7, kind: 'winback_7' }, { days: 21, kind: 'winback_21' }];
 const REHEARSAL: Record<string, string> = { interview: '/speak', exam: '/coach/b1', presentation: '/coach/b6', deadline: '/write', other: '/progress/coach' };
 
@@ -111,7 +111,7 @@ function dueAtChosenHour(e: Engage): Date {
   return inQuietHours(hour) ? new Date(dayStart(addDays(e.today, hour >= QUIET_END ? 1 : 0), e.profile.timeZone).getTime() + QUIET_END * 3_600_000) : e.now;
 }
 
-const rowView = (row: OutboxRow) => ({ id: row.id, kind: row.kind, text: row.payload.text, buttons: row.payload.buttons, data: row.payload.data ?? {}, created_at: row.createdAt, claim: row.claimToken });
+export const rowView = (row: OutboxRow) => ({ id: row.id, kind: row.kind, text: row.payload.text, buttons: row.payload.buttons, data: row.payload.data ?? {}, created_at: row.createdAt, claim: row.claimToken });
 
 // --- Routes ----------------------------------------------------------------------------------------
 /** Plans today's messages for the caller. The bots call it with the service secret for each due person. */
@@ -128,6 +128,15 @@ export async function claimOutbox(ctx: RequestContext) {
   const bot = body.bot === undefined ? 'student' : text(body.bot, 'bot', { max: 20 });
   if (!/^[a-z][a-z0-9_]{1,19}$/.test(bot)) return { messages: [] };
   const limit = body.limit === undefined ? MAX_PER_DAY : integer(body.limit, 'limit', 1, MAX_PER_DAY);
+  return { messages: (await drainFor(e, channel, bot, limit)).map(rowView) };
+}
+
+/**
+ * Claims a person's due messages for one bot. Each is claimed once; then engage's quiet
+ * hours in their zone and the core budget across every bot decide: send now, try again
+ * at the next allowed moment, or drop it when that would be too late.
+ */
+export async function drainFor(e: Engage, channel: 'telegram', bot: string, limit: number): Promise<OutboxRow[]> {
   const claimed = await e.b.repo.claim(e.userId, channel, e.now, limit);
   const out: OutboxRow[] = [];
   const local = localParts(e.now, e.profile.timeZone);
@@ -139,7 +148,7 @@ export async function claimOutbox(ctx: RequestContext) {
       else await e.b.repo.finish(row.id, row.claimToken!, 'skipped', e.now.toISOString(), 'quiet_hours');
       continue;
     }
-    const decision = await ctx.notify.take(e.userId, `engage.${bot}`);
+    const decision = await e.ctx.notify.take(e.userId, `engage.${bot}`);
     if (decision.allowed) { out.push(row); continue; }
     // The budget says when to try again; never earlier than the next local morning for a used-up day.
     const nextMorning = dayStart(addDays(local.day, 1), e.profile.timeZone).getTime() + QUIET_END * 3_600_000;
@@ -148,7 +157,7 @@ export async function claimOutbox(ctx: RequestContext) {
     if (retry < Date.parse(row.expiresAt)) await e.b.repo.release(row.id, row.claimToken!, new Date(retry).toISOString(), decision.reason);
     else await e.b.repo.finish(row.id, row.claimToken!, 'skipped', e.now.toISOString(), decision.reason);
   }
-  return { messages: out.map(rowView) };
+  return out;
 }
 
 export async function ackOutbox(ctx: RequestContext) {

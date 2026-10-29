@@ -2,6 +2,7 @@ import { fixture, type FixtureOptions } from '../fixture.test.ts';
 import { MODULES } from '../handler.ts';
 import type { FeatureModule, LearningEventInput } from '../types.ts';
 import { engageStore } from './binding.ts';
+import { ackDelivered, deliverDue, rolloverLeagues } from './system.ts';
 import type { EngageMemory } from './memory.ts';
 
 // Shared helpers for the engage tests: the real handler and memory repository, plus
@@ -19,6 +20,10 @@ export const learnModule: FeatureModule = {
       },
       service: true,
     },
+    // Stand-ins for core's coming system routes: the jobs run with no user at all.
+    'test-system-deliver': { POST: (ctx) => deliverDue({ ...ctx, user: null as never }), service: true },
+    'test-system-ack': { POST: (ctx) => ackDelivered({ ...ctx, user: null as never }), service: true },
+    'test-system-rollover': { POST: (ctx) => rolloverLeagues({ ...ctx, user: null as never }), service: true },
   },
 };
 

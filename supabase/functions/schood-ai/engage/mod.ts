@@ -30,6 +30,8 @@ import { consentTalent, employerAudit, getTalent, grantEmployer, saveTalentProfi
 
 export { recordSample, type RecordSampleInput } from './samples.ts';
 export { registerOfferSource, registerPassportSource, registerSampleSource, registerSittingSource } from './seams.ts';
+/** Scheduled work for core's coming `system: true` routes (see system.ts and engage.md section 3). */
+export { ackDelivered, deliverDue, ENGAGE_SYSTEM_JOBS, rolloverLeagues } from './system.ts';
 
 /**
  * A route anyone with the link may open, without signing in. The core router does

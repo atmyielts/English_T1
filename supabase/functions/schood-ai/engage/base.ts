@@ -32,8 +32,22 @@ export function dayStart(day: string, zone: string): Date {
 }
 export const dayEnd = (day: string, zone: string) => new Date(dayStart(day, zone).getTime() + DAY_MS);
 
+/**
+ * The same for a person a system job acts on (core's coming `system: true` routes: no
+ * signed-in user). Their saved language and zone apply; `ctx.user` in e.ctx is that person,
+ * marked as a service call, so nothing that needs their own token can run.
+ */
+export async function beginFor(ctx: RequestContext, person: { id: string; telegramChatId?: string | null }): Promise<Engage> {
+  const b = engage(ctx);
+  const profile = await b.repo.profile(person.id);
+  const user: RequestContext['user'] = { id: person.id, email: null, token: null, via: 'service', telegramChatId: person.telegramChatId ?? null };
+  const scoped: RequestContext = { ...ctx, user };
+  const now = ctx.now(), local = localParts(now, profile.timeZone);
+  return { ctx: scoped, b, userId: person.id, profile, now, today: local.day, hour: local.hour, week: weekStart(now), adult: isAdult(profile, local.day), locale: profile.locale };
+}
+
 export async function begin(ctx: RequestContext, options: { locale?: boolean } = {}): Promise<Engage> {
-  const b = await engage(ctx);
+  const b = engage(ctx);
   let profile = await b.repo.profile(ctx.user.id);
   // Remember the person's language for messages sent later by the bots.
   if ((options.locale ?? true) && ctx.user.via === 'jwt' && profile.locale !== ctx.locale) {

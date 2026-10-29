@@ -190,6 +190,9 @@ export function createEngagePostgres(db: EngageDatabase): EngageRepository {
       if (!joined) throw new Error('league join did not create a membership');
       return joined;
     },
+    async unsettledGroups(beforeWeek, limit) {
+      return (check<Row[]>(await db.from('ai_engage_league_groups').select('*').is('finalized_at', null).lt('week_start', beforeWeek).order('week_start').order('id').limit(limit)) ?? []).map(group);
+    },
     async groupMembers(groupId) { return (check<Row[]>(await db.from('ai_engage_league_members').select('*').eq('group_id', groupId)) ?? []).map(member); },
     async settleGroup(groupId, standings) {
       return (await rpc('ai_engage_league_settle', { p_group: groupId, p_standings: standings.map((row) => ({ user_id: row.userId, rank: row.rank, outcome: row.outcome })) })) === true;

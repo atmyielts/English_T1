@@ -60,6 +60,8 @@ export interface EngageRepository {
   groupMembers(groupId: string): Promise<LeagueMember[]>;
   /** Writes final ranks once; false when another request already settled the group. */
   settleGroup(groupId: string, standings: { userId: string; rank: number; xp: number; outcome: 'promoted' | 'stayed' | 'demoted' }[]): Promise<boolean>;
+  /** Groups of weeks before `beforeWeek` not settled yet, oldest first (the weekly rollover). */
+  unsettledGroups(beforeWeek: string, limit: number): Promise<LeagueGroup[]>;
 
   // --- Journeys, lifetime path, dated goals ------------------------------------------------------
   journeys(userId: string): Promise<JourneyRow[]>;

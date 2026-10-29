@@ -12,7 +12,7 @@ import type { LeagueGroup, LeagueMember, LeagueTierName } from './types.ts';
 const GRACE_MS = 3_600_000;
 
 /** Settles a finished week's group once (idempotent: the repository guards finalized_at). */
-export async function settleIfDue(e: Engage, group: LeagueGroup): Promise<boolean> {
+export async function settleIfDue(e: Pick<Engage, 'b' | 'now'>, group: LeagueGroup): Promise<boolean> {
   if (group.finalizedAt || e.now.getTime() < weekEndsAt(group.weekStart).getTime() + GRACE_MS) return false;
   const before = await e.b.repo.groupMembers(group.id);
   await e.b.repo.ingestMany(before.map((member) => member.userId), e.now);

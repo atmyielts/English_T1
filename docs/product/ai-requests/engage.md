@@ -83,6 +83,18 @@ All messages go through `ai_engage_outbox`. At most two a day per person across 
 4. **Acknowledge.** Call `POST /schood-ai/engage/outbox-ack` with `{ id, claim, status: 'sent' | 'failed' }` after `sendMessage`.
 5. **Web:** people without a linked chat get the same messages in the in-app inbox (`GET engage/inbox`, shown on `/progress`). The inbox uses no push budget.
 
+### When core's `system: true` routes land
+
+Core is adding routes that take the worker secret only, have no user and run on a documented schedule. Engage's scheduled work is ready for them in `engage/system.ts` (`ENGAGE_SYSTEM_JOBS`, exported from `engage/mod.ts`). The jobs run the same code as the per-person routes above, never read `ctx.user`, and are tested through stand-in routes that remove the user (`delivery.test.ts`). Wiring each is one route entry, for example `'system-deliver': { POST: deliverDue, system: true }`.
+
+| Route | Schedule | What it does |
+|---|---|---|
+| `engage/system-deliver` | `*/15 * * * *` | For everyone due now (steps 1–3 in one call), it does two things. First it plans their day: check-ins, streak at risk, comeback, win-back on lapse days 2, 7 and 21, last week's league result and the national mock. Then it returns the Telegram messages that pass the budget, as `{ id, kind, text, buttons, claim, user_id, chat_id }`. Body `{ bot, limit? }`. |
+| `engage/system-ack` | after each send | `{ acks: [{ id, claim, status, reason? }] }`; the claim token is the proof. |
+| `engage/system-rollover` | `10 * * * 1` | Settles every league group of a finished week once (an hour after the week ends), even if nobody opens a league. |
+
+Once these are wired, the bots stop calling `ai_engage_due_users`, `tick`, `outbox` and `outbox-ack`. Those service routes can then go in a later release.
+
 ## 4. Requests to core
 
 Answered by core and now used: area stores (`defineStore`, `ctx.store`) replaced engage's own service-role client, and `useCatalog` loads the engage page text (`i18n/pages.<locale>.ts`) with the pages. Engage adds 2.9 KB gzip to the main chunk (115.0 against 112.1 KB for core alone): the route table, nav icons and the page preload map.

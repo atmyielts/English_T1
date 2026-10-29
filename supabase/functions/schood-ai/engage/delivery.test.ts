@@ -141,3 +141,31 @@ Deno.test('scheduler seam: who is due is answered once per day, after their chos
   equal(await memory.dueUsers(new Date('2026-11-02T15:30:00Z'), 10), [], 'once a day');
   equal(await memory.dueUsers(new Date('2026-11-02T18:00:00Z'), 10), [], 'never in quiet hours');
 });
+
+Deno.test('system jobs (for core’s coming system routes): deliver, acknowledge and roll leagues over with no user', async () => {
+  const f = engageFixture();
+  const job = async (name: string, body: Record<string, unknown> = {}) => await (await f.worker(`coach/test-system-${name}`, 'POST', ID.plus, '700100', body)).json();
+  await f.learn('tok-plus', [f.scored('B1', 'ielts.speaking', 5)]);
+  await f.learn('tok-beta', [f.scored('B1', 'ielts.speaking', 5)]);
+  for (const token of ['tok-plus', 'tok-beta']) equal((await f.get('state', token)).body.league.joined, true);
+  equal((await job('deliver')).people, 0, 'Monday 11:00: nobody is due before the chosen hour');
+  f.advance(DAY);
+  await f.learn('tok-plus', [f.scored('B1', 'ielts.speaking', 5)]);
+  f.advance(DAY + 8 * HOUR); // Wednesday 19:00: a 2-day streak, nothing done today
+  const first = await job('deliver', { bot: 'student' });
+  const mine = first.messages.filter((message: { user_id: string }) => message.user_id === ID.plus);
+  ok(mine.length >= 1 && mine.length <= 2, 'at most two, from the same planner as the tick route');
+  ok(mine.some((message: { kind: string; chat_id: string }) => message.kind === 'streak_risk' && message.chat_id === '700100'), 'the streak reminder, addressed to the linked chat');
+  equal(first.failed, 0);
+  equal((await job('deliver', { bot: 'student' })).people, 0, 'each person once a day');
+  const acks = first.messages.map((message: { id: string; claim: string }) => ({ id: message.id, claim: message.claim, status: 'sent' }));
+  equal((await job('ack', { acks })).done, acks.length);
+  equal((await job('ack', { acks })).done, 0, 'a claim is used once');
+  equal((await job('rollover')).settled, 0, 'nothing to settle during the week');
+  f.advance(5 * DAY); // the next Monday 19:00
+  const rolled = await job('rollover');
+  equal([rolled.checked, rolled.settled], [1, 1], 'last week’s group is settled without anyone opening a league');
+  equal((await job('rollover')).checked, 0, 'and only once');
+  const memory = await f.store();
+  equal([...memory.groups.values()].filter((group) => group.finalizedAt).length, 1);
+});
