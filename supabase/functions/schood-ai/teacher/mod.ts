@@ -47,7 +47,7 @@ export const teacherModule: FeatureModule = {
     marking: { ...batches },
     'marking-script': { ...scripts },
     'marking-run': { POST: markScript, maxBody: IMAGES },
-    'marking-audio': { POST: markRecording, maxBody: 10 * 1024 * 1024 + 4096 },
+    'marking-audio': { POST: markRecording, maxBody: 10 * 1024 * 1024 + 8192 },
     'marking-signals': { POST: writingSignals },
     feedback: { POST: writeFeedback },
     // T11 channel autopilot.

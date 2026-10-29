@@ -67,10 +67,9 @@ Deno.test('speaking marking: recordings wait for a speech provider; typed transc
     ] }));
     const ws = await personal(f, T);
     const batch = (await f.json('POST', 'teacher/marking', { token: T, body: { title: 'Part 2', rubric: 'ielts_speaking' } })).body.batch;
-    const audio = new Uint8Array(4000).fill(7);
-    const recording = await f.call('POST', `teacher/marking-audio?batch_id=${batch.id}&student_label=Aziz&mime=audio/webm`, { token: T, body: audio as unknown as string, headers: { 'content-type': 'audio/webm' } });
-    const refused = await recording.json();
-    equal([recording.status, refused.code], [503, 'ai_unavailable'], 'no speech route is set up yet');
+    const audio = btoa(String.fromCharCode(...new Uint8Array(4000).fill(7)));
+    const recording = await f.json('POST', 'teacher/marking-audio', { token: T, body: { batch_id: batch.id, student_label: 'Aziz', mime: 'audio/webm;codecs=opus', audio } });
+    equal([recording.status, recording.body.code], [503, 'ai_unavailable'], 'no speech route is set up yet');
     equal(f.memory.ledger.filter((row) => row.workspaceId === ws && row.kind === 'charge').length, 0, 'nothing charged');
     const typed = (await f.json('POST', 'teacher/marking-script', { token: T, body: { batch_id: batch.id, student_label: 'Aziz', source: 'transcript', text: 'I want to talk about my favourite city, it is Samarkand, he go there every summer with my family and erm it is nice.' } })).body.script;
     const marked = await f.json('POST', 'teacher/marking-run', { token: T, body: { script_id: typed.id } });

@@ -259,15 +259,25 @@ export async function markScript(ctx: RequestContext) {
   }
 }
 
-/** POST teacher/marking-audio?batch_id=&student_label=: a recording is transcribed, then marked, under one charge (T14). */
+/** Base64 audio from the app (JSON, so the app's usual client sends it). */
+function decodeAudio(value: unknown): Uint8Array {
+  if (typeof value !== 'string' || !/^[A-Za-z0-9+/]+={0,2}$/.test(value) || value.length > 10_000_000) throw new SchoodAIError('invalid_request', 'The recording could not be read.', 400, { field: 'audio' });
+  const binary = atob(value);
+  const out = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index++) out[index] = binary.charCodeAt(index);
+  return out;
+}
+
+/** POST teacher/marking-audio: a recording is transcribed, then marked, under one charge (T14). */
 export async function markRecording(ctx: RequestContext) {
-  const batch = await ownBatch(ctx, ctx.query.get('batch_id'));
+  const body = record(await ctx.body());
+  const batch = await ownBatch(ctx, body.batch_id);
   const rubric = RUBRICS[batch.rubric];
   if (rubric.mode !== 'speaking') throw new SchoodAIError('invalid_request', 'Recordings are for speaking rubrics.', 400, { field: 'batch_id' });
-  const label = text(ctx.query.get('student_label'), 'student_label', { max: 80 });
-  const mime = (ctx.url.searchParams.get('mime') ?? 'audio/webm').toLowerCase();
+  const label = text(body.student_label, 'student_label', { max: 80 });
+  const mime = String(body.mime ?? 'audio/webm').toLowerCase().split(';')[0];
   if (!/^audio\/(webm|ogg|mpeg|mp4|wav|x-wav|m4a|aac)$/.test(mime)) throw new SchoodAIError('invalid_request', 'Upload WebM, OGG, MP3, M4A or WAV audio.', 400, { field: 'mime' });
-  const audio = await ctx.bytes();
+  const audio = decodeAudio(body.audio);
   if (audio.length < 1000) throw new SchoodAIError('invalid_request', 'The recording is empty.', 400, { field: 'audio' });
   const { store } = await teacherDeps();
   const workspace = (await ctx.workspace()).workspace;
