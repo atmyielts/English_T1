@@ -6,7 +6,7 @@
 
 export const CAPABILITIES = ['chat', 'stream', 'json', 'json_schema', 'vision', 'stt', 'tts'] as const;
 export type Capability = (typeof CAPABILITIES)[number];
-export const ADAPTERS = ['openai_compatible', 'anthropic', 'google_gemini'] as const;
+export const ADAPTERS = ['openai_compatible', 'anthropic', 'google_gemini', 'cloudflare_workers_ai'] as const;
 export type AdapterKind = (typeof ADAPTERS)[number];
 
 export interface RegistryProvider {
@@ -18,6 +18,8 @@ export interface RegistryProvider {
   apiKeyEnv: string;
   /** Non-secret headers sent on every request (for example OpenRouter's X-Title). */
   headers: Record<string, string>;
+  /** Non-secret adapter settings, for example Cloudflare's `account_id`. */
+  config: Record<string, string>;
   enabled: boolean;
 }
 export interface RegistryModel {
@@ -67,6 +69,8 @@ export const KEY_ENV_HOSTS: Record<string, readonly string[]> = {
   TOGETHER_API_KEY: ['api.together.xyz'],
   FIREWORKS_API_KEY: ['api.fireworks.ai'],
   XAI_API_KEY: ['api.x.ai'],
+  // A Workers AI token only (Account › Workers AI › Read/Run), never the Pages deploy token.
+  CLOUDFLARE_AI_API_TOKEN: ['api.cloudflare.com'],
 };
 export const CUSTOM_KEY_ENV = /^SCHOOD_AI_KEY_[A-Z0-9_]{1,40}$/;
 /** Headers a provider row may not set: the adapter owns authentication. */
@@ -94,6 +98,9 @@ export function providerProblems(provider: RegistryProvider): string[] {
   else if (!keyMayReach(provider.apiKeyEnv, provider.baseUrl)) problems.push('base_url');
   const headers = Object.entries(provider.headers ?? {});
   if (headers.length > 10 || headers.some(([name, value]) => RESERVED_HEADERS.test(name) || !/^[A-Za-z0-9-]{1,60}$/.test(name) || typeof value !== 'string' || value.length > 300 || /[\r\n]/.test(value))) problems.push('headers');
+  const config = Object.entries(provider.config ?? {});
+  if (config.length > 10 || config.some(([name, value]) => !/^[a-z][a-z0-9_]{1,40}$/.test(name) || typeof value !== 'string' || value.length > 200)) problems.push('config');
+  else if (provider.adapter === 'cloudflare_workers_ai' && !/^[0-9a-f]{32}$/.test(provider.config?.account_id ?? '')) problems.push('config');
   return problems;
 }
 export function modelProblems(model: RegistryModel): string[] {

@@ -73,7 +73,7 @@ export function monthlyGrant(plans: Iterable<PlanCode>): number {
 
 // --- Feature matrix ------------------------------------------------------------
 
-export type Audience = 'core' | 'learner' | 'parent' | 'teacher' | 'centre';
+export type Audience = 'core' | 'learner' | 'parent' | 'teacher' | 'centre' | 'coach';
 export interface FeatureRule {
   id: string;
   audience: Audience;
@@ -117,6 +117,9 @@ export const FEATURES: Record<string, FeatureRule> = Object.fromEntries([
   ...['C8', 'C10', 'C11', 'C14'].map((id) => rule(id, 'centre', ['centre_pro'], MANAGER_ROLES)),
   ...['C12', 'C13', 'C16'].map((id) => rule(id, 'centre', ['centre_pro'], STAFF_ROLES)),
   rule('C15', 'centre', ['enterprise'], ['owner']),
+  // Schood Coaches (Telegram bots B1–B6): all six come with Plus and Plus Family; a
+  // single-coach pass or a team seat grants one coach directly (see AccessInput.grants).
+  ...['B1', 'B2', 'B3', 'B4', 'B5', 'B6'].map((id) => rule(id, 'coach', ['plus', 'family'], STUDENT_FACING)),
 ].map((entry) => [entry.id, entry]));
 
 export interface AccessInput {
@@ -126,6 +129,8 @@ export interface AccessInput {
   role: Role;
   /** Schood admins and allowlisted testers: every plan, roles still apply in centres. */
   beta?: boolean;
+  /** Features granted directly rather than by a plan (a coach pass, a team seat). */
+  grants?: Iterable<string>;
 }
 export type AccessDecision =
   | { allowed: true }
@@ -141,6 +146,7 @@ export function featureAccess(featureId: string, input: AccessInput): AccessDeci
   const scope: PlanScope = input.workspaceKind === 'personal' ? 'personal' : 'workspace';
   if (scope === 'workspace' && !feature.roles.includes(input.role)) return { allowed: false, reason: 'role_required', roles: [...feature.roles] };
   if (input.beta) return { allowed: true };
+  if (input.grants && [...input.grants].includes(featureId)) return { allowed: true };
   const held = expandPlans([...input.plans].filter((plan) => PLAN_SCOPE[plan] === scope));
   if (feature.plans.some((plan) => held.has(plan))) return { allowed: true };
   // The cheapest plans that would unlock it here, for the paywall.

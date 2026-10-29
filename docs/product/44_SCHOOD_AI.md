@@ -123,6 +123,78 @@ A material can be exported to:
 | C15 | Bring your own model key | The centre plugs in its own provider key. Schood charges a platform fee instead of credits for those calls. | Enterprise |
 | C16 | Lesson observation coach | An observer's notes or a lesson plan become structured feedback for the teacher against the centre's standards, tracked over a term. | Centre Pro |
 
+## Schood Coaches: a family of Telegram AI bots `[DECIDED]` 2026-10-30
+
+A small set of standalone Telegram bots, each a deep coach for one skill, from IELTS to sales. People start them in Telegram and use them straight away (plug and play). The set stays small; each coach is meant to go deeper than anything else people can get in Telegram. Each is one "coach pack" running on a single shared engine, so adding a new coach means adding a pack and a bot token, with no new code.
+
+### The first six coaches
+
+| ID | Coach | What makes it deep |
+|---|---|---|
+| B1 | **IELTS Coach** | **Speaking:** a full Parts 1–3 examiner over voice messages, following real test flow and timing (a cue card with a 1-minute prep timer and a 2-minute talk). It gives a band per criterion with quoted evidence, fluency numbers (words per minute, pauses, fillers), and "say it better" upgrades for every answer, then you re-record. **Writing:** Task 1 and Task 2 by photo or text, with a band per criterion, an essay ladder and drills on your recurring errors. **Reading and Listening:** daily timed mini-sets with checked keys and strategy by question type. **Also:** topic vocabulary with spaced-repetition quiz polls, a plan to the exam date, a predicted band and a weekly mock linked to the Schood simulator. |
+| B2 | **English Speaking Partner** | Everyday fluency from A2 to C1 through voice role-plays (work, travel, shops, doctor, small talk) that adapt to your level. You choose gentle or strict correction mode. It has pronunciation shadowing and a phrase bank with spaced repetition. A weekly fluency report tracks words per minute, filler rate, vocabulary range and error types. Beginners get explanations in Uzbek or Russian. |
+| B3 | **Admission Maths Coach** | Daily problem sets chosen by topic mastery, from the `subject-core` topic graph and the Admission bank. Send a photo of a problem for hints, then the worked solution. Also timed mini-mocks, a mistake notebook, a percentile against other users and a predicted score. Uzbek and Russian. |
+| B4 | **Sales Coach** | **Skill tree:** prospecting, cold-call openings, discovery questions, value pitch, objection handling (price, "I'll think about it", a competitor, no budget, "send me info"), closing, follow-up, negotiation, shop-floor selling, and Telegram and Instagram DM selling. **Role-plays:** voice role-plays in Uzbek, Russian or English against buyer personas with a hidden state (budget, pain, decision power, mood) that reacts to what you say. **After each call:** a scorecard (talk ratio, questions asked, objections handled, whether a next step was secured) and a replay with better lines. **Also:** a script builder for your own product, rapid-fire objection drills, and a team mode with a leaderboard and a manager view. |
+| B5 | **Career and Interview Coach** | A CV rewrite in uz/ru/en, cover letters, and LinkedIn and hh.uz profiles. Mock interviews: HR, behavioural (STAR method), role-specific, salary negotiation role-play, and student-visa interview practice. A job-search plan. Visa and legal facts come only from a curated, dated dataset and are marked "check the official site". |
+| B6 | **Public Speaking Coach** | Voice analysis of pace, fillers ("ee", "aa", "типа", "anu"), pauses, structure (hook, points, close) and clarity. Drills: elevator pitch, impromptu topics, storytelling, rehearsing a presentation with a Q&A role-play. Weekly progress. |
+
+Candidate next packs, in validation order: Korean EPS-TOPIK, Russian, Customer Service, Negotiation, Team Leadership.
+
+### Depth standard every coach must meet
+
+- **The Schood loop:** placement diagnostic → goal → daily plan → gap tracking → outcome (a mock or assessment), per `00_PRINCIPLES`.
+- **Structured content:** a skill tree with levels; authored lessons, drills, scenarios and rubrics per node; AI-generated variants pass the same checks as T2.
+- **Voice first:** voice messages for role-plays and speaking. Speech-to-text with word timestamps powers the fluency numbers; persona replies can come back as voice when a text-to-speech provider is configured; text works everywhere.
+- **Evidence-based scoring:** every score cites the learner's own words. Each rubric has a calibration set in the repo, and CI checks score agreement and run-to-run consistency against fixtures. A live evaluation script reports the same against real models.
+- **Memory:** a learner model per coach (mastery per skill node, recurring errors, preferences) that shapes every next drill.
+- **Visible results:** a weekly report with before/after numbers, level-ups with a verifiable certificate link people can share, streaks, and reminders at the learner's chosen time.
+- **Rich screens:** a Telegram Mini App (the `/coach/<pack>` routes of `apps/schood-ai`) for the dashboard, charts, reports, long feedback and the plan.
+- **One account:** coaches link to the learner's Schood account through `telegram-link`. One subscription covers web and bots.
+
+### Engine
+
+- **Worker:** `workers/schood-coach-bots` (Cloudflare, free plan) receives webhooks for every coach bot at `/tg/<pack>`. It checks each bot's secret-token header, runs a cron for reminders and weekly reports, and relays to the function's `coach` area with a service secret.
+- **Packs** live in `packages/coach-packs/<pack>/`. Each holds a manifest (names in uz/ru/en, audience, skill tree), the diagnostic, lessons and drills, scenarios and personas, rubrics with calibration sets, plan rules, reminder copy, milestones and free sample outputs. The engine validates every pack on load and in CI.
+- **Tables:** `coach_enrollments`, `coach_sessions`, `coach_turns`, `coach_scores` (per criterion, with evidence), `coach_mastery`, `coach_schedules`, `coach_certificates`.
+- **Speech:** through the provider-agnostic gateway (`stt` and `tts` capabilities). A free option to evaluate is Cloudflare Workers AI Whisper on the existing Cloudflare account, within its free daily allowance `[VERIFY]` limits and Uzbek accuracy. Paid options such as OpenAI or Groq Whisper can be added in the admin console.
+
+### Selling the coaches
+
+- **Free users:** the non-AI placement diagnostic (auto-scored, no model calls) and sample reports. Every AI turn needs a plan, per the no-free-usage rule.
+- **Plans:** all six coaches are included in Schood AI Plus and Plus Family. A single-coach pass costs 29,000 / 30 days `[ASSUMPTION]`.
+- **Team plans** for companies and centres (sales teams, HR, call centres) cost 39,000 per seat / 30 days, with at least 5 seats `[ASSUMPTION]`. They include a manager dashboard and leaderboard.
+- **Payment:** through the Schood account (Click on the web). `[VERIFY]` Telegram's current rules for selling digital goods inside bots (Telegram Stars); owner decision on offering Stars.
+- **Owner actions:** create the six bots in BotFather and set their tokens as worker secrets; decide the speech provider.
+
+## Lifetime engagement layer `[DECIDED]` 2026-10-30
+
+The aim is a daily habit that lasts years and a learner who spends more over time, moving from one goal to the next on Schood. One engine serves the web app and every coach bot. Every area reports learning events to it through the core events API.
+
+| ID | Feature | Why people come back |
+|---|---|---|
+| E1 | **Journeys** | Multi-month programmes with weekly chapters and a graduation, such as "IELTS 5.5 → 7.0 in 16 weeks", "Sales: first 90 days", "Speaking confidence in 60 days". There is always a next chapter. |
+| E2 | **Lifetime path** | After every outcome, the next goal is ready: admission → IELTS → university essays → visa interview → career coach → sales or public speaking. Schood moves with the person from school to work. |
+| E3 | **Skill Passport** | One verifiable profile: certificates, levels, verified exam results and chosen voice and writing samples, shareable by link with employers, universities and centres. It gains value every year, which makes it hard to leave. |
+| E4 | **Leagues** | Weekly leagues of about 30 people at a similar level. The top go up and the bottom go down. XP comes only from verified learning, never from just opening the app. |
+| E5 | **Streaks, daily quests, weekly challenges** | One small first step in Telegram each day, three daily quests, and a weekly challenge. Streak freezes are earned with XP. |
+| E6 | **Squads and duels** | Squads of up to 5 friends share a weekly goal and a squad streak. Duels (L17) are part of this. Friends keep each other coming back. |
+| E7 | **Then vs now** | Your voice from day 1 played next to today's, and your first essay next to your latest, each with its scores. Progress you can hear is the strongest reason to renew. |
+| E8 | **Story mode** | Serial stories at the learner's level with daily episodes, choices and cliffhangers: an English drama series from A1 to C1, and "your first month as a sales rep" for the Sales Coach. Reading and listening practice people want to continue. Arcs are authored, and AI fills in the episodes within them. |
+| E9 | **A coach that remembers** | It knows the exam date, the interview on Thursday and the weak spot from last week, and checks in at the right moment: "Your interview is Thursday: 10-minute rehearsal tonight?" |
+| E10 | **Seasons and live events** | Quarterly seasons with new scenarios, topics and rewards; a weekly national mock; monthly speaking and sales tournaments, with prizes sponsored by centres and universities. |
+| E11 | **Regional and centre leaderboards** | City, school and centre rankings, and a centre-vs-centre league. Centres promote it because it markets them. |
+| E12 | **Skill Certificates** | Paid certificate exams per coach level (for example "Sales Level 2", "Speaking B2"), proctored with Proctor Lite and verifiable by QR. They become a target to train for. |
+| E13 | **Talent pool** (later stage) | Learners who opt in can be found by employers, universities and centres through their Skill Passport. Employers pay. Consent is required and can be withdrawn at any time. |
+| E14 | **Win-back** | When a streak or journey is at risk: a personal message showing the progress they would lose, and a return offer after a lapse. Within quiet hours and a daily message limit. |
+
+### Rules: a healthy habit, not exploitation `[DECIDED]`
+
+- **Learning only:** XP and leagues count verified learning (passed checks, scored turns), so the habit actually produces results.
+- **No gambling:** no paid random rewards, loot boxes or fake urgency. Prices and offers are honest, and cancelling is one tap.
+- **Messages:** at most 2 notifications a day per person across all bots, at their chosen time, within quiet hours (22:00–08:00 local).
+- **Under-18s:** no paid streak repair, no public leaderboard by default, an optional daily time limit, and parents see usage in P1. Adults may also buy a streak freeze with credits.
+- **Breaks:** "You've done enough today" appears after a long session.
+
 ## Credits: the one unit
 
 Every AI action costs credits; one credit is about one tutor reply. Paid plans grant monthly credits and packs top them up. Centre credits are pooled in the centre workspace and handed out by budget to teachers and students. Free users have no credits.
@@ -158,6 +230,12 @@ The price table lives in `packages/ai-core`, so the app shows the cost before ev
 | Schood AI Centre | 490,000 / 30 days | 5 teacher seats, Student Assistant for up to 100 students, 10,000 pooled credits, C1–C7, T7, T8, C9 |
 | Schood AI Centre Pro | 1,290,000 / 30 days | 15 seats, 400 students, 40,000 pooled credits, everything in Centre plus C8, C10–C14, C16 |
 | Enterprise | By contract | Centre Pro plus C15 bring your own key, an SLA, and custom limits |
+| Coach pass (one Telegram coach) | 29,000 / 30 days | Unlimited fair use of one coach bot (B1–B6). All six are included in Plus and Plus Family. |
+| Coach Team | 39,000 per seat / 30 days, 5 seats minimum | One or more coaches for a company or centre team, with a manager dashboard and leaderboard |
+| Plus Annual / Plus Family Annual | 399,000 / 729,000 per year | About a third off monthly. The main long-term plan, offered at every milestone and graduation. |
+| Skill Certificate exam (E12) | 79,000 per sitting | A proctored certificate for a coach level, verifiable by QR |
+| Talent pool access (E13) | By contract, later | For employers, universities and centres searching opted-in learners |
+| Event sponsorship (E10, E11) | By contract | Centres and universities sponsor tournaments, leagues and prizes |
 | Add-ons | Teacher seat 79,000; 100 students 59,000; 1,000 credits 29,000; 10,000 credits 149,000; wholesale per resold student (C9) 9,000 | Add-ons to the plans above |
 
 - Learner, family and teacher plans and credit packs sell through the normal Click → entitlements path.
@@ -261,7 +339,10 @@ supabase/migrations/2026103*_schood_ai_*.sql
 | 2. Learners and parents | L1–L18, P1–P2, Telegram modes, "Ask Schood AI" links in the other apps | `claude/ai-learner` | `20261030200000–299999` |
 | 3. Teachers | T1–T6, T9–T15 | `claude/ai-teacher` | `20261030300000–399999` |
 | 4. Centres | T7, T8, C1–C16, Academy and Assessment Cloud exports | `claude/ai-centre` | `20261030400000–499999` |
-| 5. Selling | Products, plans, bundles, credit packs, gifts, `/pricing`, platform discovery, plan gates on | `claude/ai-pricing` | `20261030500000–599999` |
+| 5. Selling | Products, plans, bundles, credit packs, gifts, coach passes, team plans, `/pricing`, platform discovery, plan gates on (ships last) | `claude/ai-pricing` | `20261030500000–599999` |
+| 6. Coach engine | `workers/schood-coach-bots`, the `coach` area, Mini App screens, pack format and validator, calibration harness, B1 IELTS and B2 Speaking Partner | `claude/ai-coach` | `20261030600000–699999` |
+| 7. Coach packs | B3 Admission Maths, B4 Sales, B5 Career and Interview, B6 Public Speaking | `claude/ai-coach-packs` | `20261030700000–799999` |
+| 8. Lifetime engagement | E1–E14 engine (`engage` area), journeys, story-mode arcs, Skill Passport pages, leagues and squads, seasons, certificates on Proctor Lite. Reuses the existing `user-streak`, `referrals` and `certificates` functions instead of duplicating them. | `claude/ai-engage` | `20261030800000–899999` |
 
 ## Done when
 
@@ -270,8 +351,12 @@ supabase/migrations/2026103*_schood_ai_*.sql
 - A centre owner creates the centre workspace, invites teachers and students, sets budgets, turns on the admissions agent, and receives the Monday brief.
 - A Schood admin adds a new provider and model in the console, routes a feature to it, and sees its cost per call, with no deploy.
 - Every action shows its credit cost first, charges exactly that, and refunds on failure.
+- Each of the six coach bots runs the full loop (diagnostic, goal, daily plan, voice role-play or practice, evidence-based scores, weekly report, certificate), passes its calibration checks, and works in its languages.
+- A learner who finishes a goal is offered the next one on their lifetime path. Their Skill Passport shows every certificate and verified result. They can play their day-1 voice next to today's, and they are in a weekly league and a squad.
 - Plans exist and switch on with one owner decision.
 
 ## North-star metric
 
 Weekly active paying AI accounts that come back the next week, split by learner, family, teacher and centre, alongside revenue, model cost and credits used per paying account.
+
+Long-term metrics: 30-, 90- and 365-day retention; share of payers on annual plans; number of goals per learner over their lifetime (E2); and lifetime value per learner against model cost.

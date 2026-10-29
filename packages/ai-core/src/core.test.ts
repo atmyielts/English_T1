@@ -58,6 +58,10 @@ Deno.test('no plan means no AI; plans unlock exactly their features', () => {
   equal(centre(['centre'], 'student', 'T1'), { allowed: false, reason: 'role_required', roles: ['owner', 'admin', 'teacher'] });
   equal(centre(['plus'], 'student', 'L1').allowed, false, 'a personal plan does nothing in a centre workspace');
   equal(centre(['centre'], 'parent', 'P1').allowed, true);
+  equal(personal(['family'], 'B4').allowed, true, 'coaches come with Plus Family');
+  equal(personal([], 'B1'), { allowed: false, reason: 'plan_required', plans: ['plus', 'family'] });
+  equal(featureAccess('B4', { plans: [], workspaceKind: 'personal', role: 'owner', grants: ['B4'] }).allowed, true, 'a coach pass grants one coach');
+  equal(featureAccess('B1', { plans: [], workspaceKind: 'personal', role: 'owner', grants: ['B4'] }).allowed, false, 'and only that coach');
   equal(featureAccess('C10', { plans: [], workspaceKind: 'centre', role: 'owner', beta: true }).allowed, true, 'beta unlocks plans');
   equal(featureAccess('C10', { plans: [], workspaceKind: 'centre', role: 'student', beta: true }).allowed, false, 'beta keeps roles');
   equal(featureAccess('X9', { plans: ['plus'], workspaceKind: 'personal', role: 'owner' }), { allowed: false, reason: 'unknown_feature' });
@@ -75,7 +79,7 @@ Deno.test('plan grants, inclusion and product envs', () => {
   for (const feature of Object.values(FEATURES)) ok(feature.open || feature.plans.length > 0, `${feature.id} has a plan`);
 });
 
-const provider = (overrides: Partial<RegistryProvider> = {}): RegistryProvider => ({ key: 'openrouter', adapter: 'openai_compatible', displayName: 'OpenRouter', baseUrl: 'https://openrouter.ai/api/v1', apiKeyEnv: 'OPENROUTER_API_KEY', headers: { 'X-Title': 'Schood AI' }, enabled: true, ...overrides });
+const provider = (overrides: Partial<RegistryProvider> = {}): RegistryProvider => ({ key: 'openrouter', adapter: 'openai_compatible', displayName: 'OpenRouter', baseUrl: 'https://openrouter.ai/api/v1', apiKeyEnv: 'OPENROUTER_API_KEY', headers: { 'X-Title': 'Schood AI' }, config: {}, enabled: true, ...overrides });
 const model = (key: string, overrides: Partial<RegistryModel> = {}): RegistryModel => ({ key, providerKey: 'openrouter', modelId: key, displayName: key, capabilities: ['chat', 'stream', 'json'], contextWindow: null, maxOutput: 4096, inputUsdPerMTok: 0, outputUsdPerMTok: 0, noTraining: false, enabled: true, ...overrides });
 
 Deno.test('provider keys can only reach their own provider', () => {
@@ -87,6 +91,10 @@ Deno.test('provider keys can only reach their own provider', () => {
   equal(providerProblems(provider({ apiKeyEnv: 'SCHOOD_AI_KEY_AZURE', baseUrl: 'https://schood.openai.azure.com/openai' })), [], 'custom keys go to custom hosts');
   equal(providerProblems(provider({ headers: { Authorization: 'Bearer x' } })), ['headers'], 'the adapter owns authentication');
   equal(keyMayReach('OPENAI_API_KEY', 'https://user:pw@api.openai.com/v1'), false);
+  const cloudflare = { key: 'workers-ai', adapter: 'cloudflare_workers_ai' as const, baseUrl: 'https://api.cloudflare.com/client/v4', apiKeyEnv: 'CLOUDFLARE_AI_API_TOKEN' };
+  equal(providerProblems(provider({ ...cloudflare, config: { account_id: '0123456789abcdef0123456789abcdef' } })), [], 'Workers AI with an account id');
+  equal(providerProblems(provider({ ...cloudflare })), ['config'], 'Workers AI needs the account id');
+  equal(providerProblems(provider({ ...cloudflare, apiKeyEnv: 'CLOUDFLARE_API_TOKEN', config: { account_id: '0123456789abcdef0123456789abcdef' } })), ['api_key_env'], 'never the Pages deploy token');
   equal(modelProblems(model('openrouter/auto', { modelId: 'openrouter/auto' })), ['model_id'], 'no silent paid router');
   equal(routeProblems({ key: 'default', modelKeys: ['a1', 'a1'], requiredCapabilities: [], requireNoTraining: false, maxOutputTokens: null, temperature: null, enabled: true }), ['model_keys']);
 });
