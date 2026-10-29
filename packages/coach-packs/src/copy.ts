@@ -282,6 +282,9 @@ export const COPY = {
   'sample.label': c('Example report (a fictional learner):', 'Namunaviy hisobot (o‘ylab topilgan o‘quvchi):', 'Пример отчёта (вымышленный ученик):'),
   'sample.open': c('Open the full example', 'To‘liq namunani ochish', 'Открыть пример полностью'),
   'reminder.open': c('▶️ Start', '▶️ Boshlash', '▶️ Начать'),
+  'photo.solution': c('✅ Show the solution', '✅ Yechimni ko‘rsatish', '✅ Показать решение'),
+  'photo.send': c('📷 Send a photo of the problem: I’ll give you hints first, and the worked solution when you ask.', '📷 Masala rasmini yuboring: avval maslahatlar beraman, so‘rasangiz — to‘liq yechimni.', '📷 Пришлите фото задачи: сначала подсказки, а полное решение — по запросу.'),
+  'quiz.hint': c('💡 Hint', '💡 Maslahat', '💡 Подсказка'),
 } satisfies Record<string, Copy>;
 
 export type CopyKey = keyof typeof COPY;

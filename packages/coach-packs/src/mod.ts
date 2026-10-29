@@ -12,3 +12,4 @@ export * from './planner.ts';
 export * from './report.ts';
 export * from './copy.ts';
 export * from './wire.ts';
+export * from './bot-diagnostic.ts';
