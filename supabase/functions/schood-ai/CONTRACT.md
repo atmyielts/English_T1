@@ -1,6 +1,6 @@
 # Schood AI function: the contract for feature areas
 
-This is the brief for every agent building on `supabase/functions/schood-ai`. Read it with `docs/product/44_SCHOOD_AI.md`. The app has its own contract in `apps/schood-ai/src/CONTRACT.md`.
+This is the brief for every agent building on `supabase/functions/schood-ai`. Read it with `docs/product/44_SCHOOD_AI.md`. The app has its own contract in `apps/schood-ai/src/CONTRACT.md` (including its session client and how languages load).
 
 ## Shape
 
@@ -197,6 +197,8 @@ registerMaterialKind({ ...worksheetKind, area: 'teacher' });
 ## Your own data
 
 - `DELETE core/history` deletes every conversation of the caller in every workspace they belong to (Settings → Your data).
+- **Retention:** messages older than 180 days, then conversations left empty, are deleted daily (`ai_purge_old_chats`, pg_cron job `schood-ai-chat-retention-v1`). Do not keep copies of chat text in your own tables.
+- **Account erasure:** `ai_threads`, `ai_generations`, `ai_learning_events`, `ai_notify_prefs`, `ai_notify_daily` and `ai_calls` are in `account_personal_erasure_tables()`, with the closed-account guard. If your area adds a table with personal data keyed on `user_id`, add it to the registry in your own migration with the same additive pattern (see `20261030130000_schood_ai_retention_and_erasure.sql`).
 
 ## Data and tables
 

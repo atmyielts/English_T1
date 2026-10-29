@@ -27,7 +27,7 @@ const OK = ['schood ai core: ok', 'schood ai library: ok', 'schood ai polish: ok
     await db.exec(migration);
     const results = await db.exec(integration);
     assert.deepEqual(results.map((result) => result.rows[0]?.['?column?']).filter((value) => typeof value === 'string' && value.startsWith('schood ai')), OK);
-    console.log(`PGlite (PostgreSQL 17): ${migrations.length} migrations apply twice; workspaces, credit cycles, charges, refunds, budgets, caps, ledger, learning events, notification budget, library saves and versions, and isolation passed.`);
+    console.log(`PGlite (PostgreSQL 17): ${migrations.length} migrations apply twice; workspaces, credit cycles, charges, refunds, budgets, caps, ledger, learning events, notification budget, library saves and versions, specialist overrides, 180-day chat retention, the erasure registry and isolation passed.`);
   } finally {
     await db.close();
   }

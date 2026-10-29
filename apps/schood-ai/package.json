@@ -8,6 +8,7 @@
     "preview": "vite preview --port 4190"
   },
   "dependencies": {
+    "@supabase/auth-js": "^2.107.0",
     "@supabase/supabase-js": "^2.89.0",
     "@tiptap/core": "3.31.4",
     "@tiptap/extension-list": "3.31.4",
