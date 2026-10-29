@@ -1,6 +1,7 @@
 import { creditPrice, featureAccess, isCreditKey, type AccessDecision } from '../../../packages/ai-core/src/mod.ts';
 import { createActionService } from './actions.ts';
 import { createChargedAI } from './ai.ts';
+import { createLibraryService } from './library.ts';
 import type { Gateway } from './gateway.ts';
 import { isUuid } from './input.ts';
 import type { PlanResolver } from './plan.ts';
@@ -129,6 +130,7 @@ export function createRequestContext(deps: ContextDeps, input: ContextInput): Re
     gateway: deps.gateway,
     ai: undefined as never,
     actions: undefined as never,
+    library: undefined as never,
     bytes: () => (bytes ??= input.readBody()),
     body<T>() {
       parsed ??= ctx.bytes().then((raw) => {
@@ -232,5 +234,6 @@ export function createRequestContext(deps: ContextDeps, input: ContextInput): Re
   };
   ctx.ai = createChargedAI(ctx);
   ctx.actions = createActionService(ctx);
+  ctx.library = createLibraryService(ctx);
   return ctx;
 }

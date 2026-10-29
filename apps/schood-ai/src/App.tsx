@@ -25,6 +25,10 @@ const AssistantPage = page(() => import('./core/pages/Assistant.tsx'), 'Assistan
 const HistoryPage = page(account, 'HistoryPage'), CreditsPage = page(account, 'CreditsPage'), ApprovalsPage = page(account, 'ApprovalsPage');
 const SettingsPage = page(account, 'SettingsPage'), NotFoundPage = page(account, 'NotFoundPage');
 const ExamplesPage = page(catalog, 'ExamplesPage'), LandingPage = page(catalog, 'LandingPage'), PlansPage = page(catalog, 'PlansPage');
+const AdminPage = page(() => import('./core/admin/AdminConsole.tsx'), 'AdminConsole');
+const AssistantsPage = page(() => import('./core/pages/Assistants.tsx'), 'AssistantsPage');
+const library = () => import('./core/library/pages.tsx');
+const LibraryPage = page(library, 'LibraryPage'), LibraryPageEditor = page(library, 'LibraryPageEditor'), LibraryPrintPage = page(library, 'LibraryPrintPage');
 
 const AREAS = [learner, teacher, centre, coach, engage];
 const areaRoutes: AreaRoute[] = AREAS.flatMap((area) => area.routes);
@@ -40,7 +44,12 @@ const CORE_ROUTES: CoreRoute[] = [
   { path: '/history', title: 'nav.history', component: HistoryPage },
   { path: '/credits', title: 'nav.credits', component: CreditsPage },
   { path: '/approvals', title: 'nav.approvals', component: ApprovalsPage },
+  { path: '/library', title: 'nav.library', component: LibraryPage, audiences: ['teacher', 'centre'] },
+  { path: '/library/:id', title: 'nav.library', component: LibraryPageEditor, audiences: ['teacher', 'centre'] },
+  { path: '/library/:id/print', title: 'nav.library', component: LibraryPrintPage, audiences: ['teacher', 'centre'] },
   { path: '/settings', title: 'nav.settings', component: SettingsPage },
+  { path: '/settings/assistants', title: 'assistants.title', component: AssistantsPage },
+  { path: '/admin', title: 'nav.admin', component: AdminPage },
   { path: '/plans', title: 'nav.plans', component: PlansPage, public: true },
   { path: '/examples', title: 'nav.examples', component: ExamplesPage, public: true },
 ];
@@ -72,7 +81,7 @@ export function App() {
 
   const audience = workspace.audience;
   const nav: NavEntry[] = [
-    ...CORE_NAV.filter((item) => !item.audiences || item.audiences.includes(audience)),
+    ...CORE_NAV.filter((item) => (!item.audiences || item.audiences.includes(audience)) && (!item.adminOnly || workspace.me!.user.is_schood_admin)),
     ...areaNav.filter((item) => item.audiences.includes(audience)).map((item) => ({ id: item.id, path: item.path, label: item.label, icon: item.icon, group: item.group ?? (audience === 'centre' ? 'centre' : audience) })),
   ];
   let content: React.ReactNode;

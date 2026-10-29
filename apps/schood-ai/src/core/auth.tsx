@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { configured, observeAccount, supabase } from '../../../../packages/assessment-web/src/client';
+import { auth, configured, observeAccount } from './session.ts';
 
 // Who is signed in. The default source is the shared .schood.online session cookie
 // that every Schood app uses (same storage as the platform). Other sources plug in
@@ -29,15 +29,15 @@ const cookieSource: SessionSource = {
   id: 'schood-cookie',
   detect: () => configured,
   async token() {
-    if (!supabase) return null;
-    const { data } = await supabase.auth.getSession();
+    if (!auth) return null;
+    const { data } = await auth.getSession();
     return data.session?.access_token ?? null;
   },
   observe: (changed) => observeAccount(changed),
   signIn: () => location.assign(signInUrl()),
   async signOut() {
-    if (!supabase) return;
-    const { error } = await supabase.auth.signOut({ scope: 'local' });
+    if (!auth) return;
+    const { error } = await auth.signOut({ scope: 'local' });
     if (error) throw error;
   },
 };

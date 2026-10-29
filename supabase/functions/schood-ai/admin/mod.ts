@@ -3,14 +3,14 @@ import {
   type AdapterKind, type Capability, type RegistryModel, type RegistryProvider, type RegistryRoute,
 } from '../../../../packages/ai-core/src/mod.ts';
 import { bool, integer, isUuid, jsonObject, oneOf, optionalText, record, stringList, text, uuid } from '../input.ts';
-import { SchoodAIError, type FeatureModule, type RequestContext, type UsageRow } from '../types.ts';
+import { SchoodAIError, type FeatureModule, type RequestContext, type UsageRow, type Workspace } from '../types.ts';
 
 // Schood admin routes for the model registry, the test console, usage and cost,
 // service switches and caps, the report queue and credit grants. Every route needs
 // the repo's existing admin RBAC permission (admin-access.ts, with its MFA policy,
-// rate limits and audit log); the console UI is milestone 2.
+// rate limits and audit log). The console is the app's /admin screen.
 
-const SETTINGS = 'admin.settings.manage', ANALYTICS = 'admin.analytics.view', SUPPORT = 'admin.support.manage', BILLING = 'admin.billing.manage';
+const SETTINGS = 'admin.settings.manage', ANALYTICS = 'admin.analytics.view', SUPPORT = 'admin.support.manage', BILLING = 'admin.billing.manage', ACTIVITY = 'admin.activity.view';
 const invalid = (problems: string[]) => new SchoodAIError('invalid_request', `Check: ${problems.join(', ')}.`, 400, { fields: problems });
 const capabilities = (value: unknown, field: string): Capability[] => stringList(value, field, { max: CAPABILITIES.length, pattern: /^[a-z_]+$/ }).filter(isCapability);
 const stringsOf = (value: unknown, field: string, maxBytes: number): Record<string, string> =>
@@ -78,6 +78,11 @@ const modelJson = (model: RegistryModel) => ({
 const routeJson = (route: RegistryRoute) => ({
   key: route.key, model_keys: route.modelKeys, required_capabilities: route.requiredCapabilities, require_no_training: route.requireNoTraining,
   max_output_tokens: route.maxOutputTokens, temperature: route.temperature, enabled: route.enabled,
+});
+
+const workspaceJson = (ws: Workspace) => ({
+  id: ws.id, kind: ws.kind, name: ws.name, status: ws.status, owner_id: ws.ownerId, contract_plan: ws.contractPlan, contract_until: ws.contractUntil,
+  features: (ws.settings.features ?? {}) as Record<string, boolean>,
 });
 
 /** Calls, failures, cost and latency grouped by a key. */
@@ -190,6 +195,43 @@ export const adminModule: FeatureModule = {
         if (!await ctx.repo.reviewReport(id, oneOf(body.status, 'status', ['reviewed', 'dismissed'] as const), ctx.user.id)) throw new SchoodAIError('not_found', 'Report not found.', 404);
         await ctx.audit('admin.report.reviewed', { status: body.status }, { type: 'report', id });
         return { ok: true };
+      },
+    },
+    /** Workspace switches and suspension: find a workspace by id or name, then switch features off for it or suspend it. */
+    workspaces: {
+      adminPermission: SETTINGS,
+      async GET(ctx) {
+        const query = (ctx.query.get('q') ?? '').trim().slice(0, 120);
+        return { workspaces: (await ctx.repo.searchWorkspaces(query, 25)).map(workspaceJson) };
+      },
+      async PATCH(ctx) {
+        const body = record(await ctx.body());
+        const ws = await ctx.repo.workspace(uuid(body.id, 'id'));
+        if (!ws) throw new SchoodAIError('not_found', 'Workspace not found.', 404);
+        const patch: Partial<Pick<Workspace, 'settings' | 'status'>> = {};
+        if (body.features !== undefined) patch.settings = { ...ws.settings, features: cleanSwitches(jsonObject(body.features, 'features', 16000)) };
+        if (body.status !== undefined) patch.status = oneOf(body.status, 'status', ['active', 'suspended'] as const);
+        if (!Object.keys(patch).length) throw invalid(['features', 'status']);
+        const saved = await ctx.repo.updateWorkspace(ws.id, patch);
+        await ctx.audit('admin.workspace', { fields: Object.keys(body).filter((key) => key !== 'id'), status: patch.status ?? null }, { type: 'workspace', id: ws.id });
+        return { workspace: workspaceJson(saved) };
+      },
+    },
+    /** The Schood AI audit log, newest first: `workspace_id`, an `event` prefix (`admin.`), `before` an id for paging. */
+    audit: {
+      adminPermission: ACTIVITY,
+      async GET(ctx) {
+        const workspaceId = ctx.query.get('workspace_id') ? uuid(ctx.query.get('workspace_id'), 'workspace_id') : undefined;
+        const prefix = ctx.query.get('event') ? text(ctx.query.get('event'), 'event', { max: 80 }) : undefined;
+        if (prefix && !/^[a-z][a-z0-9_.]*$/.test(prefix)) throw invalid(['event']);
+        const before = ctx.query.get('before') ? integer(Number(ctx.query.get('before')), 'before', 1, Number.MAX_SAFE_INTEGER) : undefined;
+        const rows = await ctx.repo.auditEvents({ workspaceId, prefix, before, limit: 100 });
+        return {
+          events: rows.map((row) => ({
+            id: row.id, workspace_id: row.workspaceId, actor_id: row.actorId, event: row.event, target_type: row.targetType ?? null, target_id: row.targetId ?? null,
+            details: row.details ?? {}, created_at: row.createdAt,
+          })),
+        };
       },
     },
     /** A support or contract credit grant into a workspace's pack credits. */

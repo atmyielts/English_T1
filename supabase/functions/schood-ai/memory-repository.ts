@@ -1,6 +1,6 @@
 import { tashkentMonth, type Registry } from '../../../packages/ai-core/src/mod.ts';
 import type {
-  ActionRow, AuditEvent, Balance, CallRecord, ChargeOutcome, GenerationRow, LearningEvent, Member, Message, NotifyDecision, ReportRow,
+  ActionRow, AuditRow, Balance, CallRecord, ChargeOutcome, GenerationRow, LearningEvent, Member, Message, NotifyDecision, PageRevisionRow, PageRow, ReportRow,
   SchoodAIRepository, ServiceSettings, SpecialistRow, Thread, UserProfile, Workspace,
 } from './types.ts';
 
@@ -33,7 +33,8 @@ export function createMemoryRepository(options: { users: Record<string, MemoryUs
   const ledger: LedgerEntry[] = [], calls: CallRecord[] = [], usage = new Map<string, { calls: number; cost: number }>();
   const threads = new Map<string, Thread>(), messages = new Map<string, Message>(), specialists = new Map<string, SpecialistRow[]>();
   const actions = new Map<string, ActionRow>(), generations = new Map<string, GenerationRow>(), reports = new Map<string, ReportRow>();
-  const audit: AuditEvent[] = [], learning: LearningEvent[] = [], notified = new Map<string, number>();
+  const audit: AuditRow[] = [], learning: LearningEvent[] = [], notified = new Map<string, number>();
+  const pages = new Map<string, PageRow>(), revisions = new Map<string, PageRevisionRow[]>();
   let ledgerId = 0;
   const memberKey = (workspaceId: string, userId: string) => `${workspaceId}:${userId}`;
   const view = (a: Account): Balance => ({ plan: a.plan, planGrant: a.grant, pack: a.pack, total: a.plan + a.pack, cycleEndsAt: a.anchor === null ? null : new Date(a.anchor + ((a.cycle ?? 0) + 1) * CYCLE_MS).toISOString() });
@@ -92,6 +93,10 @@ export function createMemoryRepository(options: { users: Record<string, MemoryUs
       const ws = workspaces.get(id)!;
       Object.assign(ws, structuredClone(patch));
       return Promise.resolve(structuredClone(ws));
+    },
+    searchWorkspaces(query, limit) {
+      const found = [...workspaces.values()].filter((ws) => !query || ws.id === query.toLowerCase() || ws.name.toLowerCase().includes(query.toLowerCase()));
+      return Promise.resolve(structuredClone(found.reverse().slice(0, limit)));
     },
 
     settings: () => Promise.resolve(structuredClone(settings)),
@@ -206,6 +211,15 @@ export function createMemoryRepository(options: { users: Record<string, MemoryUs
     deleteMessage(id) { messages.delete(id); return Promise.resolve(); },
 
     specialists: (workspaceId) => Promise.resolve(structuredClone(specialists.get(workspaceId) ?? [])),
+    saveSpecialist(workspaceId, row) {
+      specialists.set(workspaceId, [...(specialists.get(workspaceId) ?? []).filter((entry) => entry.key !== row.key), structuredClone(row)]);
+      return Promise.resolve();
+    },
+    deleteSpecialist(workspaceId, key) {
+      const rows = specialists.get(workspaceId) ?? [];
+      specialists.set(workspaceId, rows.filter((entry) => entry.key !== key));
+      return Promise.resolve(rows.some((entry) => entry.key === key));
+    },
 
     createAction(input) {
       const row: ActionRow = { ...structuredClone(input), id: crypto.randomUUID(), status: 'pending', decidedBy: null, decidedAt: null, startedAt: null, finishedAt: null, attempts: 0, result: null, errorCode: null, createdAt: iso() };
@@ -248,10 +262,59 @@ export function createMemoryRepository(options: { users: Record<string, MemoryUs
       if (row) row.status = status;
       return Promise.resolve(!!row);
     },
-    audit(event) { audit.push(structuredClone(event)); return Promise.resolve(); },
+    audit(event) { audit.push({ ...structuredClone(event), id: audit.length + 1, createdAt: iso() }); return Promise.resolve(); },
+    auditEvents(filter) {
+      const rows = audit.filter((row) => (!filter.workspaceId || row.workspaceId === filter.workspaceId) && (!filter.prefix || row.event.startsWith(filter.prefix)) && (!filter.before || row.id < filter.before));
+      return Promise.resolve(structuredClone(rows.reverse().slice(0, filter.limit)));
+    },
 
     addLearningEvents(events) { learning.push(...structuredClone(events)); return Promise.resolve(); },
-    notify(userId, channel, take): Promise<NotifyDecision> {
+    createPage(input) {
+      const row: PageRow = { ...structuredClone(input), id: crypto.randomUUID(), revision: 1, updatedBy: input.ownerId, createdAt: iso(), updatedAt: iso() };
+      pages.set(row.id, row);
+      return Promise.resolve(structuredClone(row));
+    },
+    page: (id) => Promise.resolve(pages.has(id) ? structuredClone(pages.get(id)!) : null),
+    pages(q) {
+      const words = (q.query ?? '').toLowerCase().split(/\s+/).filter(Boolean);
+      const visible = [...pages.values()].filter((p) => p.workspaceId === q.workspaceId
+        && (q.scope === 'mine' ? p.ownerId === q.viewerId : q.scope === 'workspace' ? p.visibility === 'workspace' : q.manager || p.ownerId === q.viewerId || p.visibility === 'workspace')
+        && (q.folder === undefined || q.folder === null || p.folder === q.folder) && (!q.kind || p.kind === q.kind)
+        && (q.status ? p.status === q.status : p.status !== 'archived') && (!q.before || p.updatedAt < q.before)
+        && words.every((word) => `${p.title} ${p.folder} ${p.body}`.toLowerCase().includes(word)));
+      return Promise.resolve(visible.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, q.limit).map((p) => ({ ...structuredClone(p), body: p.body.replace(/\s+/g, ' ').slice(0, 240) })));
+    },
+    savePage(id, expected, patch, authorId, snapshot) {
+      const p = pages.get(id);
+      if (!p) return Promise.resolve({ ok: false, code: 'not_found', current: null });
+      if (p.revision !== expected) return Promise.resolve({ ok: false, code: 'revision_conflict', current: structuredClone(p) });
+      const history = revisions.get(id) ?? [];
+      const recent = history.some((r) => Date.parse(r.createdAt) > now().getTime() - 600_000);
+      if (snapshot || p.updatedBy !== authorId || !recent) {
+        if (!history.some((r) => r.revision === p.revision)) history.push({ pageId: id, revision: p.revision, title: p.title, body: p.body, material: structuredClone(p.material), authorId: p.updatedBy, createdAt: iso() });
+      }
+      revisions.set(id, history.sort((a, b) => b.revision - a.revision).slice(0, 200));
+      Object.assign(p, structuredClone(patch), { revision: p.revision + 1, updatedAt: iso(), updatedBy: authorId });
+      return Promise.resolve({ ok: true, page: structuredClone(p) });
+    },
+    deletePage(id) { revisions.delete(id); return Promise.resolve(pages.delete(id)); },
+    pageRevisions: (id, limit) => Promise.resolve((revisions.get(id) ?? []).slice(0, limit).map((r) => ({ ...structuredClone(r), body: '', material: null }))),
+    pageRevision: (id, revision) => Promise.resolve(structuredClone((revisions.get(id) ?? []).find((r) => r.revision === revision) ?? null)),
+    folders(q) {
+      const counts = new Map<string, number>();
+      for (const p of pages.values()) if (p.workspaceId === q.workspaceId && p.status !== 'archived' && (q.manager || p.ownerId === q.viewerId || p.visibility === 'workspace')) counts.set(p.folder, (counts.get(p.folder) ?? 0) + 1);
+      return Promise.resolve([...counts].map(([path, count]) => ({ path, count })).sort((a, b) => a.path.localeCompare(b.path)));
+    },
+    moveFolder(q, from, to) {
+      let moved = 0;
+      for (const p of pages.values()) {
+        if (p.workspaceId !== q.workspaceId || (!q.manager && p.ownerId !== q.viewerId) || !(p.folder === from || p.folder.startsWith(`${from}/`))) continue;
+        p.folder = `${to}${p.folder.slice(from.length)}`.replace(/^\//, '');
+        moved++;
+      }
+      return Promise.resolve(moved);
+    },
+    notify(userId, _channel, take): Promise<NotifyDecision> {
       const zone = byId.get(userId)?.timeZone ?? 'Asia/Tashkent';
       const { day, hour } = localParts(zone);
       // Quiet 22:00-08:00 local; the next allowed moment is reported as 08:00 local (approximated for tests in UTC+5 zones).
@@ -276,5 +339,5 @@ export function createMemoryRepository(options: { users: Record<string, MemoryUs
     },
     specialist(workspaceId: string, row: SpecialistRow) { specialists.set(workspaceId, [...(specialists.get(workspaceId) ?? []), row]); },
   };
-  return { repository, seed, ledger, calls, audit, learning, workspaces, members, threads, messages, actions, generations, reports, accounts };
+  return { repository, seed, ledger, calls, audit, learning, workspaces, members, threads, messages, actions, generations, reports, accounts, pages, revisions };
 }
