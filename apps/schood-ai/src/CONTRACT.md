@@ -76,6 +76,12 @@ export const homeCards: HomeCard[] = [
 | `useWorkspace()` | `me`, `workspaceId`, `audience`, `access(featureId)`, `refresh()`. |
 | `askAssistant(prompt)` | Opens the assistant with a prefilled prompt, without putting it in the URL. |
 
+## Core screens you can link to
+
+- `/settings/assistants`: owners and admins tailor the assistants of the workspace (your specialists appear there automatically).
+- `/admin`: the Schood AI console, shown in the sidebar only to Schood admins.
+- `/library`, `/library/:id`, `/library/:id/print`: below.
+
 ## The library (pages, editor, print)
 
 The library belongs to core. Teacher and centre save materials into it and link to it; they do not build their own.

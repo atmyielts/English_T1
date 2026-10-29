@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
-import { BookOpenCheck, ChevronDown, CircleCheck, Coins, FolderOpen, History, Home, Languages, LayoutGrid, Menu, MessageSquareText, Settings, X } from 'lucide-react';
+import { BookOpenCheck, ChevronDown, CircleCheck, Coins, FolderOpen, History, Home, Languages, LayoutGrid, Menu, MessageSquareText, Settings, ShieldCheck, X } from 'lucide-react';
 import { LOCALE_NAMES, SUPPORTED_LOCALES, type Locale } from '../../../../packages/service-i18n/src/format.ts';
 import { useI18n } from '../../../../packages/service-i18n/src/i18n.tsx';
 import type { Audience, AreaNavItem } from './areas.ts';
@@ -123,7 +123,7 @@ export function AudienceSwitcher() {
 }
 
 export interface NavEntry { id: string; path: string; label: string; icon?: AreaNavItem['icon']; group: string }
-export const CORE_NAV: (NavEntry & { audiences?: Audience[] })[] = [
+export const CORE_NAV: (NavEntry & { audiences?: Audience[]; adminOnly?: boolean })[] = [
   { id: 'home', path: '/', label: 'nav.home', icon: Home, group: 'core' },
   { id: 'assistant', path: '/assistant', label: 'nav.assistant', icon: MessageSquareText, group: 'core' },
   { id: 'history', path: '/history', label: 'nav.history', icon: History, group: 'core' },
@@ -133,6 +133,7 @@ export const CORE_NAV: (NavEntry & { audiences?: Audience[] })[] = [
   { id: 'examples', path: '/examples', label: 'nav.examples', icon: LayoutGrid, group: 'core' },
   { id: 'plans', path: '/plans', label: 'nav.plans', icon: BookOpenCheck, group: 'core' },
   { id: 'settings', path: '/settings', label: 'nav.settings', icon: Settings, group: 'core' },
+  { id: 'admin', path: '/admin', label: 'nav.admin', icon: ShieldCheck, group: 'core', adminOnly: true },
 ];
 const GROUP_ORDER = ['core', 'learner', 'parent', 'teacher', 'centre', 'coach'];
 

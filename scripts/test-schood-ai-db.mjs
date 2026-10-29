@@ -15,8 +15,8 @@ const fixture = read('supabase/tests/schood-ai-core.fixture.sql');
 const migrations = readdirSync(new URL('../supabase/migrations/', import.meta.url))
   .filter((name) => /^202610301\d{5}_schood_ai_.*\.sql$/.test(name)).sort();
 const migration = migrations.map((name) => read(`supabase/migrations/${name}`)).join('\n');
-const integration = ['schood-ai-core', 'schood-ai-library'].map((name) => read(`supabase/tests/${name}.integration.sql`)).join('\n');
-const OK = ['schood ai core: ok', 'schood ai library: ok'];
+const integration = ['schood-ai-core', 'schood-ai-library', 'schood-ai-polish'].map((name) => read(`supabase/tests/${name}.integration.sql`)).join('\n');
+const OK = ['schood ai core: ok', 'schood ai library: ok', 'schood ai polish: ok'];
 
 // --- 1. PGlite ---------------------------------------------------------------------
 {

@@ -20,6 +20,9 @@ const users = {
   'dev-teacher': { id: '00000000-0000-4000-8000-0000000000d2', email: 'teacher@example.com', name: 'Malika Tursunova', products: [TEACHER] },
   'dev-owner': { id: '00000000-0000-4000-8000-0000000000d3', email: 'owner@example.com', name: 'Jasur Aliyev', products: [CENTRE] },
   'dev-free': { id: '00000000-0000-4000-8000-0000000000d4', email: 'free@example.com', name: 'Free Learner' },
+  // A Schood admin for the /admin console; dev-admin-nomfa shows the two-step verification state.
+  'dev-admin': { id: '00000000-0000-4000-8000-0000000000d5', email: 'admin@example.com', name: 'Schood Admin' },
+  'dev-admin-nomfa': { id: '00000000-0000-4000-8000-0000000000d6', email: 'admin2@example.com', name: 'Admin Without MFA' },
 };
 const memory = createMemoryRepository({ users });
 const centre = memory.seed.centre({ name: 'Registan Learning Centre', ownerId: users['dev-owner'].id, branding: { primary_color: '#2f6f4f' } });
@@ -69,14 +72,18 @@ const gateway = createGateway({
 });
 const tokenProducts = new Map(Object.entries(users).map(([token, user]) => [token, 'products' in user ? user.products : []]));
 const plans = createPlanResolver({
-  productIds: { plus: PLUS, teacher: TEACHER, centre: CENTRE }, betaUserIds: new Set(), repo: memory.repository, isAdmin: () => Promise.resolve(false), now: () => new Date(),
+  productIds: { plus: PLUS, teacher: TEACHER, centre: CENTRE }, betaUserIds: new Set(), repo: memory.repository, isAdmin: (id) => Promise.resolve(id === users['dev-admin'].id), now: () => new Date(),
   accessEffective: (token) => Promise.resolve(tokenProducts.get(token) ?? []),
 });
 const profile = { projection: { schema_version: 1 }, cefr_estimate: 'B1', target_cefr: 'B2', learner_goals: ['IELTS 7.0'], skill_scores: { listening: 61, reading: 70 }, outcomes: [{ overall_band: '6.5', overall_score: 6.5, computed_at: '2026-10-20T10:00:00Z' }], recent_error_clusters: [{ skill_key: 'listening', error_type: 'Multiple choice with two options mentioned' }] };
 const handle = createSchoodAIHandler({
-  repository: memory.repository, gateway, plans, isAdmin: () => Promise.resolve(false),
+  repository: memory.repository, gateway, plans, isAdmin: (id) => Promise.resolve(id === users['dev-admin'].id || id === users['dev-admin-nomfa'].id),
   callFunction: (name) => Promise.resolve(name === 'learning-profile-v3' ? { status: 200, data: profile } : { status: 404, data: null }),
-  adminGate: () => Promise.resolve({ ok: false, status: 403, code: 'forbidden' }),
+  adminGate: (req) => {
+    const token = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '');
+    if (token === 'dev-admin') return Promise.resolve({ ok: true });
+    return Promise.resolve(token === 'dev-admin-nomfa' ? { ok: false, status: 403, code: 'mfa_required' } : { ok: false, status: 403, code: 'forbidden' });
+  },
 }, { allowedOrigins: ORIGINS, serviceSecret: null });
 
 /** The cookie value to sign in as a dev user on the app's origin. */

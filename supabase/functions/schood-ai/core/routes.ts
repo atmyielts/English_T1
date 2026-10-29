@@ -68,6 +68,17 @@ export const threads = {
   },
 };
 
+/** DELETE core/history: every conversation of yours, in every workspace you belong to ("delete my history"). */
+export const history = {
+  async DELETE(ctx: RequestContext) {
+    await ctx.repo.ensurePersonalWorkspace(ctx.user.id, ctx.user.email?.split('@')[0] || 'My workspace');
+    let deleted = 0;
+    for (const { workspace } of await ctx.repo.memberships(ctx.user.id)) deleted += await ctx.repo.deleteThreads(workspace.id, ctx.user.id, 'all');
+    await ctx.audit('history.deleted', { conversations: deleted });
+    return { deleted };
+  },
+};
+
 export async function messages(ctx: RequestContext) {
   const thread = await ownThread(ctx, uuid(ctx.query.get('thread_id'), 'thread_id'));
   return { thread: threadJson(thread), messages: (await ctx.repo.messages(thread.id, 200)).map(messageJson) };

@@ -104,11 +104,26 @@ const { data, credits, balance } = await ctx.ai.json({
   - `CLOUDFLARE_AI_API_TOKEN` (a Workers AI token, never the Pages deploy token);
   - `SCHOOD_AI_KEY_*` for custom endpoints.
 
+### Admin console routes
+
+Every `admin/*` route needs the existing admin RBAC permission through `admin-access.ts`, including its MFA policy (a refusal is `403 mfa_required`). The app's `/admin` screen uses them.
+
+| Route | Permission | Use |
+|---|---|---|
+| `GET/PATCH admin/settings` | `admin.settings.manage` | The global switch, feature switches and daily caps |
+| `GET/POST admin/providers`, `admin/models`, `admin/routes` | `admin.settings.manage` | The registry (validated; secrets named, never stored) |
+| `POST admin/test` | `admin.settings.manage` | One prompt to one model: text, latency, tokens, cost. No credits. |
+| `GET admin/usage?days=` | `admin.analytics.view` | Calls, failures, error rate, cost and latency by model and by feature |
+| `GET admin/workspaces?q=` / `PATCH admin/workspaces` | `admin.settings.manage` | Find a workspace by id or name; `{ id, features?, status? }` sets its switches or suspends it |
+| `GET/PATCH admin/reports` | `admin.support.manage` | The report queue |
+| `GET admin/audit?event=&workspace_id=&before=` | `admin.activity.view` | The Schood AI audit log, newest first |
+| `POST admin/credits` | `admin.billing.manage` | A support or contract grant (once per reference) |
+
 ## Extension points
 
 | Registry | Where | Use it for |
 |---|---|---|
-| `registerSpecialist(def)` | `specialists.ts` | A chat assistant: key, names (uz/ru/en), role prompt, allowed context kinds, credit key, roles, starter prompts. `core/chat` serves it. Workspaces can override names and instructions, narrow context and roles, or switch it off (`ai_specialists`). |
+| `registerSpecialist(def)` | `specialists.ts` | A chat assistant: key, names (uz/ru/en), role prompt, allowed context kinds, credit key, roles, starter prompts. `core/chat` serves it. Workspace owners and admins can override names and instructions, narrow context and roles, or switch it off (`ai_specialists`, through `GET/PUT/DELETE core/specialists`); a null name keeps your translated names. |
 | `registerContextProvider(kind, fn, { allowCustom?, selfView?, timeoutMs?, maxChars? })` | `context.ts` | Data the model may see, for example `homework_open`, `group_weak_spots` or `coach_progress`. Check roles inside the provider. `selfView` only for data about the caller (shown in `core/context`). |
 | `registerActionKind({ kind, area, approverRoles, parse, summary, display?, run, retrySafe?, expiresInHours? })` | `actions.ts` | Approve & run: `send_parent_message`, `assign_homework`, `post_to_channel`, `book_trial`. `run` executes as the approver, with their token. |
 | `registerPlanSource(name, fn)` | `plan.ts` | Extra plans or directly granted features: children of a Family holder → `plus`, a coach pass → `features: ['B4']`, a team seat. |
@@ -178,6 +193,10 @@ registerMaterialKind({ ...worksheetKind, area: 'teacher' });
 - Mark a price the doc's table lacks with `assumed: true`.
 - `priceTableProblems()` must stay empty. It is tested, and checked when the function starts.
 - Edits to these two files must be additive: new keys and new rules. Never change an existing price or plan rule without the owner.
+
+## Your own data
+
+- `DELETE core/history` deletes every conversation of the caller in every workspace they belong to (Settings → Your data).
 
 ## Data and tables
 

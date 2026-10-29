@@ -1,6 +1,6 @@
 import { tashkentMonth, type Registry } from '../../../packages/ai-core/src/mod.ts';
 import type {
-  ActionRow, AuditEvent, Balance, CallRecord, ChargeOutcome, GenerationRow, LearningEvent, Member, Message, NotifyDecision, PageRevisionRow, PageRow, ReportRow,
+  ActionRow, AuditRow, Balance, CallRecord, ChargeOutcome, GenerationRow, LearningEvent, Member, Message, NotifyDecision, PageRevisionRow, PageRow, ReportRow,
   SchoodAIRepository, ServiceSettings, SpecialistRow, Thread, UserProfile, Workspace,
 } from './types.ts';
 
@@ -33,7 +33,7 @@ export function createMemoryRepository(options: { users: Record<string, MemoryUs
   const ledger: LedgerEntry[] = [], calls: CallRecord[] = [], usage = new Map<string, { calls: number; cost: number }>();
   const threads = new Map<string, Thread>(), messages = new Map<string, Message>(), specialists = new Map<string, SpecialistRow[]>();
   const actions = new Map<string, ActionRow>(), generations = new Map<string, GenerationRow>(), reports = new Map<string, ReportRow>();
-  const audit: AuditEvent[] = [], learning: LearningEvent[] = [], notified = new Map<string, number>();
+  const audit: AuditRow[] = [], learning: LearningEvent[] = [], notified = new Map<string, number>();
   const pages = new Map<string, PageRow>(), revisions = new Map<string, PageRevisionRow[]>();
   let ledgerId = 0;
   const memberKey = (workspaceId: string, userId: string) => `${workspaceId}:${userId}`;
@@ -93,6 +93,10 @@ export function createMemoryRepository(options: { users: Record<string, MemoryUs
       const ws = workspaces.get(id)!;
       Object.assign(ws, structuredClone(patch));
       return Promise.resolve(structuredClone(ws));
+    },
+    searchWorkspaces(query, limit) {
+      const found = [...workspaces.values()].filter((ws) => !query || ws.id === query.toLowerCase() || ws.name.toLowerCase().includes(query.toLowerCase()));
+      return Promise.resolve(structuredClone(found.reverse().slice(0, limit)));
     },
 
     settings: () => Promise.resolve(structuredClone(settings)),
@@ -207,6 +211,15 @@ export function createMemoryRepository(options: { users: Record<string, MemoryUs
     deleteMessage(id) { messages.delete(id); return Promise.resolve(); },
 
     specialists: (workspaceId) => Promise.resolve(structuredClone(specialists.get(workspaceId) ?? [])),
+    saveSpecialist(workspaceId, row) {
+      specialists.set(workspaceId, [...(specialists.get(workspaceId) ?? []).filter((entry) => entry.key !== row.key), structuredClone(row)]);
+      return Promise.resolve();
+    },
+    deleteSpecialist(workspaceId, key) {
+      const rows = specialists.get(workspaceId) ?? [];
+      specialists.set(workspaceId, rows.filter((entry) => entry.key !== key));
+      return Promise.resolve(rows.some((entry) => entry.key === key));
+    },
 
     createAction(input) {
       const row: ActionRow = { ...structuredClone(input), id: crypto.randomUUID(), status: 'pending', decidedBy: null, decidedAt: null, startedAt: null, finishedAt: null, attempts: 0, result: null, errorCode: null, createdAt: iso() };
@@ -249,7 +262,11 @@ export function createMemoryRepository(options: { users: Record<string, MemoryUs
       if (row) row.status = status;
       return Promise.resolve(!!row);
     },
-    audit(event) { audit.push(structuredClone(event)); return Promise.resolve(); },
+    audit(event) { audit.push({ ...structuredClone(event), id: audit.length + 1, createdAt: iso() }); return Promise.resolve(); },
+    auditEvents(filter) {
+      const rows = audit.filter((row) => (!filter.workspaceId || row.workspaceId === filter.workspaceId) && (!filter.prefix || row.event.startsWith(filter.prefix)) && (!filter.before || row.id < filter.before));
+      return Promise.resolve(structuredClone(rows.reverse().slice(0, filter.limit)));
+    },
 
     addLearningEvents(events) { learning.push(...structuredClone(events)); return Promise.resolve(); },
     createPage(input) {
