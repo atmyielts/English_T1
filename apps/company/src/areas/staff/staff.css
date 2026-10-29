@@ -1,0 +1,42 @@
+/* Schood staff console (gtm). Classes start with "staff-". Builds on people.css. */
+.staff{display:grid;grid-template-columns:minmax(0,1fr);gap:1.25rem;min-width:0}
+.staff .page-heading{margin:0;align-items:flex-end;flex-wrap:wrap}
+.staff h1{margin-bottom:.25rem}
+.staff-tabs{display:flex;gap:.4rem;flex-wrap:wrap}
+.staff-tabs a{text-decoration:none;font-size:.85rem;font-weight:650;color:#111827;border:1px solid var(--control);background:rgb(255 255 255/.7);border-radius:999px;padding:.45rem .9rem}
+.staff-tabs a[aria-current=page]{background:var(--navy);color:#fff;border-color:var(--navy)}
+.staff-chips{display:flex;flex-wrap:wrap;gap:.4rem}
+.staff-chips button{min-height:34px;padding:.35rem .8rem;font-size:.8rem;display:inline-flex;gap:.4rem;align-items:center}
+.staff-count{display:inline-block;min-width:1.4rem;padding:0 .35rem;border-radius:999px;background:rgb(15 23 42/.08);font-size:.72rem;text-align:center}
+.staff-chips button:not(.quiet) .staff-count{background:rgb(255 255 255/.2)}
+.staff-orgs a{color:var(--navy);text-decoration:none}
+.staff-orgs a:hover{text-decoration:underline}
+.staff-stats{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.staff-section{display:grid;grid-template-columns:minmax(0,1fr);gap:.75rem}
+.staff-section h2{margin:0}
+.staff-audit{font-size:.8rem}
+.staff-audit code{font-size:.75rem;background:#f1f5f9;border-radius:6px;padding:.1rem .35rem;white-space:nowrap}
+.staff-audit-details{max-width:420px;overflow-wrap:anywhere;color:var(--muted)}
+.staff-audit td:first-child{white-space:nowrap}
+
+/* Leads pipeline */
+.staff-leads{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
+.staff-leads>li{background:rgb(255 255 255/.9);border:1px solid var(--control);border-radius:18px;overflow:hidden}
+.staff-leads>li.open{border-color:var(--line)}
+.staff-lead-summary{width:100%;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;background:transparent;color:#111827;border:0;border-radius:0;padding:.9rem 1.1rem;text-align:left;font-weight:500;min-height:0}
+.staff-lead-summary:hover:not(:disabled){background:rgb(239 230 216/.35);filter:none}
+.staff-lead-main{display:grid;gap:.15rem;min-width:0}
+.staff-lead-main span{font-size:.8rem;color:var(--muted)}
+.staff-lead-meta{display:flex;gap:.4rem;align-items:center;flex-wrap:wrap}
+.staff-status-new{background:#dbeafe;color:#1e40af}
+.staff-status-contacted{background:#fef9c3;color:#854d0e}
+.staff-status-pilot{background:#ede9fe;color:#5b21b6}
+.staff-status-won{background:#dcfce7;color:#166534}
+.staff-status-lost{background:#f1f5f9;color:#475569}
+.staff-lead-detail{border-top:1px solid #e5e7eb;padding:1rem 1.1rem 1.2rem;display:grid;grid-template-columns:minmax(0,1fr);gap:.9rem}
+.staff-need{margin:0;border-left:3px solid var(--navy);background:#f8fafc;border-radius:0 12px 12px 0;padding:.7rem .9rem;font-size:.9rem;white-space:pre-wrap;overflow-wrap:anywhere}
+.staff-timeline{list-style:none;margin:0;padding:0;display:grid;gap:.5rem;border-left:2px solid #e5e7eb;padding-left:1rem}
+.staff-timeline li{display:grid;gap:.1rem;position:relative;font-size:.85rem}
+.staff-timeline li::before{content:'';position:absolute;left:-1.35rem;top:.35rem;width:10px;height:10px;border-radius:50%;background:var(--navy);border:2px solid var(--paper)}
+.staff-timeline time{font-size:.72rem;color:var(--muted);font-weight:650}
+.staff-source-seats{background:#fde68a;color:#78350f}
