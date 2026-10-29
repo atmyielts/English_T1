@@ -173,7 +173,7 @@ export function bindLearnerStore(repo: object, store: LearnerStore, config: Part
 
 function fromEnvironment(): { store: LearnerStore; config: LearnerConfig } {
   const family = env('SCHOOD_AI_FAMILY_PRODUCT_ID');
-  const config: LearnerConfig = { familyProductId: family && UUID.test(family) ? family.toLowerCase() : null, appUrl: env('SCHOOD_AI_APP_URL') ?? 'https://ai.schood.online' };
+  const config: LearnerConfig = { familyProductId: family && UUID.test(family) ? family.toLowerCase() : null, appUrl: 'https://ai.schood.online' };
   const url = env('SUPABASE_URL'), key = env('SUPABASE_SERVICE_ROLE_KEY');
   if (url && key) return { store: lazyPostgres(url, key), config };
   // Only a local run without a project gets here (index.ts refuses to start without the service role).
