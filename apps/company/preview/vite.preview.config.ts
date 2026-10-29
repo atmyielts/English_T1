@@ -20,7 +20,8 @@ export default defineConfig({
         return null;
       },
       transformIndexHtml(html) {
-        return html.replace('<script type="module" src="/src/main.tsx"></script>', '<script type="module" src="/preview/boot.ts"></script><script type="module" src="/src/main.tsx"></script>');
+        // After a hot reload Vite serves main.tsx?t=…, so match any query.
+        return html.replace(/<script type="module" src="\/src\/main\.tsx[^"]*"><\/script>/, (main) => `<script type="module" src="/preview/boot.ts"></script>${main}`);
       },
     },
   ],

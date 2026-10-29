@@ -79,11 +79,21 @@ function WorkspacePage({ orgId, route, params }: { orgId: string; route: AreaRou
     hr: staff || role === 'owner' || role === 'admin',
     lead: staff || role !== 'employee',
   };
+  // A page listed in two sections for different roles (e.g. Challenges under My English
+  // for employees, under Insights for HR) shows once: preferably where the route names
+  // the person's own role, otherwise the first entry they may open (staff).
+  const navRoutes = allRoutes.filter((candidate) => candidate.access === 'org' && candidate.nav && allowed(candidate));
+  const chosen = new Map<string, AreaRoute>();
+  for (const candidate of navRoutes) {
+    const current = chosen.get(candidate.path);
+    const names = (entry: AreaRoute) => !entry.roles || entry.roles.includes(role);
+    if (!current || (!names(current) && names(candidate))) chosen.set(candidate.path, candidate);
+  }
   const sections: WorkspaceNavSection[] = NAV_SECTIONS.map((section) => ({
     id: section,
     label: t(`nav.section.${section}` as AppKey),
-    items: allRoutes
-      .filter((candidate) => candidate.access === 'org' && candidate.nav?.section === section && allowed(candidate))
+    items: [...chosen.values()]
+      .filter((candidate) => candidate.nav!.section === section)
       .sort((a, b) => a.nav!.order - b.nav!.order)
       .map((candidate) => {
         const to = candidate.path.replace(':org', orgId);
