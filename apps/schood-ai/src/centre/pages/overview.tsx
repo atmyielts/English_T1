@@ -40,7 +40,7 @@ function Overview() {
         <Stat label={t('centre.overview.students')} value={seats(data.seats.students.used, data.seats.students.limit)} tone={data.seats.students.limit !== null && data.seats.students.used >= data.seats.students.limit ? 'warn' : 'plain'}/>
         <Stat label={t('centre.overview.approvals')} value={f.number(data.approvals)} hint={<Link to="/approvals" className="font-semibold text-gray-900 underline">{t('nav.approvals')}</Link>} tone={data.approvals ? 'warn' : 'plain'}/>
       </div>
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
+      <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
         <Section title={t('centre.overview.setup')}>
           <ul className="m-0 grid list-none gap-1 p-0">{STEPS.map(([key, path]) => <li key={key}><Link to={path} className="flex min-h-11 items-center gap-3 rounded-2xl px-2 text-sm text-gray-900 no-underline hover:bg-cream-soft">
             {data.checklist[key] ? <CheckCircle2 size={18} className="text-green-700" aria-hidden="true"/> : <Circle size={18} className="text-gray-400" aria-hidden="true"/>}
@@ -55,8 +55,8 @@ function Overview() {
             <Stat label={t('centre.overview.newLeads')} value={f.number(snap.leads.new)} hint={t('centre.overview.conversions', { count: snap.leads.conversions ?? 0 })}/>
             <Stat label={t('centre.overview.activeStudents')} value={f.number(snap.students.active)}/>
             <Stat label={t('centre.overview.attendance')} value={snap.attendance_30d_percent === null ? '—' : `${snap.attendance_30d_percent}%`}/>
-            <Stat label={t('centre.overview.collected')} value={f.money(snap.money.collected, snap.money.currency ?? 'UZS')}/>
-            <Stat label={t('centre.overview.outstanding')} value={f.money(snap.money.outstanding, snap.money.currency ?? 'UZS')} tone={(snap.money.outstanding ?? 0) > 0 ? 'warn' : 'plain'}/>
+            <Stat label={t('centre.overview.collected')} value={f.moneyTile(snap.money.collected, snap.money.currency ?? 'UZS')}/>
+            <Stat label={t('centre.overview.outstanding')} value={f.moneyTile(snap.money.outstanding, snap.money.currency ?? 'UZS')} tone={(snap.money.outstanding ?? 0) > 0 ? 'warn' : 'plain'}/>
             <Stat label={t('centre.overview.atRisk')} value={f.number(snap.at_risk.count)} tone={(snap.at_risk.count ?? 0) > 0 ? 'warn' : 'plain'}/>
           </div>}
           {snap && snap.parts.some((part) => !part.ok) && <p className="m-0 mt-3 text-xs text-gray-600">{t('centre.overview.partsMissing')}</p>}

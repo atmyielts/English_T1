@@ -92,7 +92,7 @@ export function Section({ title, lead, actions, children, className = '' }: { ti
 export function Stat({ label, value, hint, tone = 'plain' }: { label: ReactNode; value: ReactNode; hint?: ReactNode; tone?: 'plain' | 'warn' | 'good' }) {
   const tones = { plain: 'bg-white/85', warn: 'bg-amber-50', good: 'bg-lime-soft/40' };
   return <div className={`min-w-0 rounded-3xl border border-navy-line p-4 ${tones[tone]}`}>
-    <p className="m-0 text-xs font-semibold uppercase tracking-wider text-gray-600">{label}</p>
+    <p className="m-0 break-words text-xs font-semibold uppercase tracking-wide text-gray-600">{label}</p>
     <p className="m-0 mt-1 break-words font-display text-2xl font-bold text-gray-900">{value}</p>
     {hint && <p className="m-0 mt-1 text-xs text-gray-600">{hint}</p>}
   </div>;
@@ -199,6 +199,13 @@ export function useFormat() {
     dateTime: (value: string | null | undefined) => (value ? date(value, { dateStyle: 'medium', timeStyle: 'short' }) : '—'),
     number: (value: number | null | undefined) => (value === null || value === undefined ? '—' : number(value)),
     money: (value: number | null | undefined, currency = 'UZS') => (value === null || value === undefined ? '—' : `${number(value)} ${currency === 'UZS' ? 'UZS' : currency}`),
+    /** Money in a stat tile: short from a million (41.5M), the currency smaller; the exact amount for screen readers and on hover. */
+    moneyTile: (value: number | null | undefined, currency = 'UZS'): ReactNode => {
+      if (value === null || value === undefined) return '—';
+      const full = `${number(value)} ${currency}`;
+      const short = Math.abs(value) >= 1_000_000 ? number(value, { notation: 'compact', maximumFractionDigits: 1 }) : number(value);
+      return <span title={full}><span aria-hidden="true">{short}<span className="ml-1 text-sm font-semibold text-gray-600">{currency}</span></span><span className="sr-only">{full}</span></span>;
+    },
   };
 }
 

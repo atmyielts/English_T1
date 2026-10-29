@@ -106,8 +106,8 @@ export function ResellPage() {
       return <div className="grid gap-6">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Stat label={t('centre.resell.active')} value={f.number(data.month.active_students)} hint={data.month.period}/>
-          <Stat label={t('centre.resell.wholesale')} value={f.money(data.month.estimate_uzs)} hint={t('centre.resell.rate', { rate: f.number(data.resell.wholesale_rate_uzs) })}/>
-          <Stat label={t('centre.resell.yourPrice')} value={settings.price_uzs === null ? '—' : f.money(settings.price_uzs)} hint={t('centre.resell.perDays', { count: settings.period_days })}/>
+          <Stat label={t('centre.resell.wholesale')} value={f.moneyTile(data.month.estimate_uzs)} hint={t('centre.resell.rate', { rate: f.number(data.resell.wholesale_rate_uzs) })}/>
+          <Stat label={t('centre.resell.yourPrice')} value={f.moneyTile(settings.price_uzs)} hint={t('centre.resell.perDays', { count: settings.period_days })}/>
         </div>
         <Section title={t('centre.resell.settings')} lead={t('centre.resell.settingsLead')}>
           <form className="grid gap-3 md:max-w-2xl" onSubmit={(event: FormEvent) => { event.preventDefault(); void save.run(async () => { await call('resell', { method: 'PATCH', body: { enabled: settings.enabled, price_uzs: settings.price_uzs, period_days: settings.period_days, gate_access: settings.gate_access, student_budget: settings.student_budget, note: settings.note } }); setDraft(null); await state.reload(); }); }}>
