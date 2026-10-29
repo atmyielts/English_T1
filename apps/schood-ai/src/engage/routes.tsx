@@ -1,15 +1,24 @@
-import { lazy, Suspense, type ComponentType } from 'react';
+import { lazy, Suspense, type ComponentType, type ReactNode } from 'react';
 import { Award, BookOpen, Flame, IdCard, Map as MapIcon, Trophy, Users } from 'lucide-react';
 import type { AreaNavItem, AreaRoute, HomeCard } from '../core/areas.ts';
-import { currentLocale, loadPageText } from './i18n/lazy.ts';
+import { LoadingState } from '../core/index.ts';
+import { preloadPageText, usePageText } from './i18n/lazy.ts';
 
 // Lifetime engagement (E1–E14) screens. Every page loads on demand together with its
-// text (i18n/lazy.ts), so the first download carries only this file, the nav labels and
-// the page titles.
+// text (i18n/lazy.ts, core's useCatalog), so the first download carries only this file.
 
 type Page = ComponentType<{ params: Record<string, string> }>;
+/** Holds a page until the engage page text for the person's language is in. */
+function WithText({ children, fallback = <LoadingState/> }: { children: ReactNode; fallback?: ReactNode }) {
+  return <>{usePageText() ? children : fallback}</>;
+}
 const page = <K extends string>(load: () => Promise<Record<K, ComponentType<never>>>, name: K) =>
-  lazy(async () => { const [module] = await Promise.all([load(), loadPageText(currentLocale())]); return { default: module[name] as Page }; });
+  lazy(async () => {
+    const [module] = await Promise.all([load(), preloadPageText()]);
+    const Inner = module[name] as Page;
+    const WithItsText: Page = (props) => <WithText><Inner {...props}/></WithText>;
+    return { default: WithItsText };
+  });
 const progress = () => import('./pages/Progress.tsx'), social = () => import('./pages/Social.tsx'), passport = () => import('./pages/Passport.tsx'), certs = () => import('./pages/Certificates.tsx');
 
 const ProgressPage = page(progress, 'ProgressPage');
@@ -25,7 +34,7 @@ const EventsPage = page(() => import('./pages/Events.tsx'), 'EventsPage');
 const CertificatesPage = page(certs, 'CertificatesPage'), ReviewPage = page(certs, 'ReviewPage');
 const SittingPage = page(() => import('./pages/Sitting.tsx'), 'SittingPage');
 const TalentPage = page(() => import('./pages/Talent.tsx'), 'TalentPage');
-const EngageHomeCard = lazy(async () => { const [module] = await Promise.all([import('./HomeCard.tsx'), loadPageText(currentLocale())]); return module; });
+const EngageHomeCard = lazy(async () => { const [module] = await Promise.all([import('./HomeCard.tsx'), preloadPageText()]); return module; });
 
 const L = ['learner'] as const;
 export const routes: AreaRoute[] = [
@@ -65,5 +74,5 @@ export const nav: AreaNavItem[] = [
 ];
 
 export const homeCards: HomeCard[] = [
-  { id: 'engage-today', audiences: ['learner'], feature: 'E5', render: () => <Suspense fallback={null}><EngageHomeCard/></Suspense> },
+  { id: 'engage-today', audiences: ['learner'], feature: 'E5', render: () => <Suspense fallback={null}><WithText fallback={null}><EngageHomeCard/></WithText></Suspense> },
 ];
