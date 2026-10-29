@@ -231,3 +231,15 @@ Deno.test('renderers: student view, key, text, Telegram, Live Quiz and Assessmen
   equal(items[4].key, { correct: 'B', solution: 'The passage says it had shrunk to a tenth of its size.' });
   ok(items.every((entry) => entry.item.schema_version === 'assessment.item.v1' && entry.item.prompt.includes('Aral Sea')), 'items carry their passage');
 });
+
+Deno.test('library kinds: one per material kind, Markdown with the key, student Telegram text', async () => {
+  const { MATERIAL_KIND_DEFINITIONS, kindSchema, materialMarkdown, materialTelegram } = await import('./mod.ts');
+  equal(MATERIAL_KIND_DEFINITIONS.map((definition) => definition.kind).sort(), Object.keys(MATERIAL_KINDS).sort());
+  const material = readingSet();
+  const markdown = materialMarkdown(material);
+  ok(markdown.includes('### The Aral Sea') && markdown.includes('3. Rivers were diverted to grow ____.') && markdown.includes('## Answer key') && markdown.includes('5. B (a tenth of its size)'), 'teacher document');
+  const telegram = materialTelegram(material);
+  ok(!telegram.includes('✓') && telegram.includes('Aral Sea'), 'students get no key');
+  equal(kindSchema('ielts_reading').parse(material).title, 'The shrinking sea');
+  throws(() => kindSchema('quiz').parse(material), 'a material of another kind is refused');
+});

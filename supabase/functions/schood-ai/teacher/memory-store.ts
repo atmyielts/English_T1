@@ -203,7 +203,7 @@ export function createMemoryTeacherStore(options: { now?: () => Date } = {}) {
       return Promise.resolve(clone(row));
     },
     copyFor: (listingId, workspaceId) => Promise.resolve(clone([...copies.values()].find((row) => row.listingId === listingId && row.workspaceId === workspaceId) ?? null)),
-    copyByGeneration: (generationId) => Promise.resolve(clone([...copies.values()].find((row) => row.generationId === generationId) ?? null)),
+    copyByPage: (pageId) => Promise.resolve(clone([...copies.values()].find((row) => row.pageId === pageId) ?? null)),
     recordUse(listingId, workspaceId, kind) {
       const holds = [...copies.values()].some((row) => row.listingId === listingId && row.workspaceId === workspaceId);
       const listing = listings.get(listingId);

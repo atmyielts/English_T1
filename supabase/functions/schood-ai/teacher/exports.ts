@@ -1,11 +1,12 @@
-import { assessmentItems, materialText, studentView, telegramMessages, type Material } from '../../../../packages/ai-core/src/mod.ts';
+import { assessmentItems, materialText, parseMaterial, studentView, telegramMessages, type Material } from '../../../../packages/ai-core/src/mod.ts';
 import { registerActionKind } from '../actions.ts';
 import { isUuid, oneOf, optionalText, record, text, uuid } from '../input.ts';
 import { SchoodAIError, type Locale, type RequestContext } from '../types.ts';
 import { brandingView } from '../core/views.ts';
 import { academyGroups, createAssignment, weakSpots } from './academy.ts';
 import { teacherDeps } from './deps.ts';
-import { approvedMaterial, type MaterialRow } from './library.ts';
+import { approvedPage } from './library.ts';
+import type { PageView } from '../library.ts';
 import { recordListingUse } from './market.ts';
 import { actionView } from './views.ts';
 
@@ -23,13 +24,12 @@ function token(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(24));
   return btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
-const progressRevision = (row: MaterialRow) => Number((row.progress as { revision?: number }).revision ?? 0);
 
-/** A link to the student version of an approved material; students sign in with Schood to open it. */
-export async function createHandout(ctx: RequestContext, row: MaterialRow): Promise<{ id: string; url: string }> {
+/** A link to the student version of an approved page; students sign in with Schood to open it. */
+export async function createHandout(ctx: RequestContext, page: PageView): Promise<{ id: string; url: string }> {
   const { store, appOrigin } = await teacherDeps();
   const secret = token();
-  const handout = await store.createHandout({ workspaceId: row.workspaceId, generationId: row.id, tokenHash: await sha256(secret), createdBy: ctx.user.id });
+  const handout = await store.createHandout({ workspaceId: page.workspace_id, pageId: page.id, tokenHash: await sha256(secret), createdBy: ctx.user.id });
   return { id: handout.id, url: `${appOrigin}/handout/${secret}` };
 }
 
@@ -40,10 +40,12 @@ export async function getHandout(ctx: RequestContext) {
   const { store } = await teacherDeps();
   const handout = await store.handoutByHash(await sha256(secret));
   if (!handout || handout.revokedAt) throw new SchoodAIError('not_found', 'This link is not valid.', 404);
-  const row = await ctx.repo.generation(handout.generationId);
-  if (!row || row.status !== 'approved' || !row.output) throw new SchoodAIError('not_found', 'This link is not valid.', 404);
-  const workspace = await ctx.repo.workspace(row.workspaceId);
-  const material = studentView(row.output as Material);
+  // The link is the permission: the page itself stays in the teacher's library.
+  const page = await ctx.repo.page(handout.pageId);
+  if (!page || page.status !== 'approved' || !page.material) throw new SchoodAIError('not_found', 'This link is not valid.', 404);
+  const workspace = await ctx.repo.workspace(page.workspaceId);
+  let material: Material;
+  try { material = studentView(parseMaterial(page.material)); } catch { throw new SchoodAIError('not_found', 'This link is not valid.', 404); }
   return { material, workspace: workspace ? { name: workspace.kind === 'centre' ? workspace.name : null, branding: brandingView(workspace.branding) } : null };
 }
 
@@ -63,8 +65,8 @@ const SUMMARY = {
 } as const;
 const fill = (template: string, values: Record<string, string | number>) => template.replace(/\{(\w+)\}/g, (_, key: string) => String(values[key] ?? ''));
 
-interface HomeworkPayload { generation_id: string; revision: number; academy_id: string; classroom_id: string; classroom_name: string; title: string; description: string; due_at: string | null; max_score: number | null; handout_url: string }
-interface AssessmentPayload { generation_id: string; revision: number; tenant_id: string; tenant_name: string; bank_id: string; bank_title: string; title: string; items: number; types: Record<string, number> }
+interface HomeworkPayload { page_id: string; revision: number; academy_id: string; classroom_id: string; classroom_name: string; title: string; description: string; due_at: string | null; max_score: number | null; handout_url: string }
+interface AssessmentPayload { page_id: string; revision: number; tenant_id: string; tenant_name: string; bank_id: string; bank_title: string; title: string; items: number; types: Record<string, number> }
 
 const isoOrNull = (value: unknown, field: string): string | null => {
   if (value === undefined || value === null || value === '') return null;
@@ -81,7 +83,7 @@ export function registerExportActions(): void {
       const handout = text(p.handout_url, 'handout_url', { max: 300 });
       if (!/^https:\/\/[a-z0-9.-]+\/handout\/[A-Za-z0-9_-]{20,64}$/i.test(handout)) throw new SchoodAIError('invalid_request', 'The handout link is not valid.', 400, { field: 'handout_url' });
       return {
-        generation_id: uuid(p.generation_id, 'generation_id'), revision: Number.isInteger(p.revision) ? Number(p.revision) : 0,
+        page_id: uuid(p.page_id, 'page_id'), revision: Number.isInteger(p.revision) ? Number(p.revision) : 0,
         academy_id: uuid(p.academy_id, 'academy_id'), classroom_id: text(p.classroom_id, 'classroom_id', { max: 64 }), classroom_name: text(p.classroom_name, 'classroom_name', { max: 200 }),
         title: text(p.title, 'title', { max: 220 }), description: text(p.description, 'description', { max: 4000 }), due_at: isoOrNull(p.due_at, 'due_at'),
         max_score: typeof p.max_score === 'number' && p.max_score > 0 && p.max_score <= 1000 ? p.max_score : null, handout_url: handout,
@@ -90,13 +92,13 @@ export function registerExportActions(): void {
     summary: (p, locale) => fill(SUMMARY.homework[locale], { title: p.title, group: p.classroom_name }),
     display: (p) => ({ title: p.title, group: p.classroom_name, due: p.due_at ?? '—', points: p.max_score ? String(p.max_score) : '—', link: p.handout_url, description: p.description.slice(0, 1200) }),
     async run(ctx, p) {
-      const row = await ctx.repo.generation(p.generation_id);
-      if (!row || row.status !== 'approved') throw new SchoodAIError('not_approved', 'This material is no longer approved.', 409);
+      // The approver's own view of the page: they must still be able to read it, and it must still be approved.
+      const { page, material } = await approvedPage(ctx, p.page_id);
       const created = await createAssignment(ctx, {
         academy_id: p.academy_id, classroom_id: p.classroom_id, title: p.title, description: p.description, due_at: p.due_at, max_score: p.max_score,
-        metadata: { source: 'schood_ai', material_id: p.generation_id, kind: (row.output as Material).kind, handout_url: p.handout_url, ai_hints_only: true },
+        metadata: { source: 'schood_ai', page_id: page.id, kind: material.kind, handout_url: p.handout_url, ai_hints_only: true },
       });
-      await recordListingUse(ctx, row as MaterialRow, 'homework');
+      await recordListingUse(ctx, page, 'homework');
       return { assignment_id: created.assignment_id, group: p.classroom_name };
     },
   });
@@ -109,7 +111,7 @@ export function registerExportActions(): void {
       const p = record(value, 'payload');
       const types = record(p.types ?? {}, 'types');
       return {
-        generation_id: uuid(p.generation_id, 'generation_id'), revision: Number.isInteger(p.revision) ? Number(p.revision) : 0,
+        page_id: uuid(p.page_id, 'page_id'), revision: Number.isInteger(p.revision) ? Number(p.revision) : 0,
         tenant_id: uuid(p.tenant_id, 'tenant_id'), tenant_name: text(p.tenant_name ?? 'Assessment Cloud', 'tenant_name', { max: 200 }),
         bank_id: uuid(p.bank_id, 'bank_id'), bank_title: text(p.bank_title, 'bank_title', { max: 200 }), title: text(p.title, 'title', { max: 200 }),
         items: Number.isInteger(p.items) && Number(p.items) > 0 && Number(p.items) <= 120 ? Number(p.items) : 0,
@@ -119,10 +121,10 @@ export function registerExportActions(): void {
     summary: (p, locale) => fill(SUMMARY.assessment[locale], { count: p.items, title: p.title, bank: p.bank_title }),
     display: (p) => ({ material: p.title, institution: p.tenant_name, bank: p.bank_title, items: String(p.items), types: Object.entries(p.types).map(([type, count]) => `${type} × ${count}`).join(', '), status: 'draft (then Assessment Cloud review)' }),
     async run(ctx, p, action) {
-      const row = await ctx.repo.generation(p.generation_id);
-      if (!row || row.status !== 'approved') throw new SchoodAIError('not_approved', 'This material is no longer approved.', 409);
-      if (progressRevision(row as MaterialRow) !== p.revision) throw new SchoodAIError('material_changed', 'The material was edited after this was proposed. Propose it again.', 409);
-      const items = assessmentItems(row.output as Material);
+      const { page, material } = await approvedPage(ctx, p.page_id);
+      // Exactly what was shown: an edit after the proposal needs a new proposal.
+      if (page.revision !== p.revision) throw new SchoodAIError('material_changed', 'The material was edited after this was proposed. Propose it again.', 409);
+      const items = assessmentItems(material);
       if (items.length !== p.items) throw new SchoodAIError('material_changed', 'The material changed after this was proposed. Propose it again.', 409);
       const { callFunction } = await teacherDeps();
       const ids: string[] = [];
@@ -134,7 +136,7 @@ export function registerExportActions(): void {
         const id = data?.data?.item_id ?? data?.data?.id;
         if (typeof id === 'string') ids.push(id);
       }
-      await recordListingUse(ctx, row as MaterialRow, 'assessment');
+      await recordListingUse(ctx, page, 'assessment');
       return { created: ids.length, status: 'draft', bank: p.bank_title };
     },
   });
@@ -144,31 +146,31 @@ export function registerExportActions(): void {
 export async function exportMaterial(ctx: RequestContext) {
   const body = record(await ctx.body());
   const to = oneOf(body.to, 'to', ['telegram', 'print', 'handout', 'homework', 'assessment'] as const);
-  const { row, material } = await approvedMaterial(ctx, body.id);
+  const { page, material } = await approvedPage(ctx, body.page_id);
   switch (to) {
     case 'telegram': {
       const withKey = body.key === true;
-      await recordListingUse(ctx, row, 'print');
+      await recordListingUse(ctx, page, 'print');
       return { messages: telegramMessages(material, { key: withKey }) };
     }
     case 'print':
       // The app prints with its print stylesheet; this counts a verified use of a marketplace copy.
-      await recordListingUse(ctx, row, 'print');
+      await recordListingUse(ctx, page, 'print');
       return { ok: true };
     case 'handout':
-      return { handout: await createHandout(ctx, row) };
+      return { handout: await createHandout(ctx, page) };
     case 'homework': {
       await ctx.requireFeature('T1');
       const academyId = uuid(body.academy_id, 'academy_id'), classroomId = text(body.classroom_id, 'classroom_id', { max: 64 });
       const group = (await academyGroups(ctx)).groups.find((entry) => entry.academy_id === academyId && entry.classroom_id === classroomId);
       if (!group) throw new SchoodAIError('group_not_found', 'That Academy group is not one of yours.', 404);
       const instructions = optionalText(body.instructions, 'instructions', { max: 1000 });
-      const handout = await createHandout(ctx, row);
+      const handout = await createHandout(ctx, page);
       const title = text(body.title ?? material.title, 'title', { max: 220 });
       const view = await ctx.actions.propose({
         kind: 'assign_homework',
         payload: {
-          generation_id: row.id, revision: progressRevision(row), academy_id: academyId, classroom_id: classroomId, classroom_name: group.name || classroomId,
+          page_id: page.id, revision: page.revision, academy_id: academyId, classroom_id: classroomId, classroom_name: group.name || classroomId,
           title, description: homeworkDescription(material, instructions, handout.url, ctx.locale), due_at: isoOrNull(body.due_at, 'due_at'),
           max_score: typeof body.max_score === 'number' ? body.max_score : null, handout_url: handout.url,
         },
@@ -187,7 +189,7 @@ export async function exportMaterial(ctx: RequestContext) {
       for (const entry of items) types[entry.item.type] = (types[entry.item.type] ?? 0) + 1;
       const view = await ctx.actions.propose({
         kind: 'export_assessment_items',
-        payload: { generation_id: row.id, revision: progressRevision(row), tenant_id: tenantId, tenant_name: tenant.name, bank_id: bankId, bank_title: bank.title, title: material.title, items: items.length, types },
+        payload: { page_id: page.id, revision: page.revision, tenant_id: tenantId, tenant_name: tenant.name, bank_id: bankId, bank_title: bank.title, title: material.title, items: items.length, types },
       });
       return { action: actionView(view, ctx.user.id) };
     }

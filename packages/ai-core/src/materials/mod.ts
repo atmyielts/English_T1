@@ -9,4 +9,5 @@ export * from './kinds.ts';
 export * from './draft.ts';
 export * from './keys.ts';
 export * from './render.ts';
+export * from './library.ts';
 export { described, listOf, literal, looseText, orElse, tagged } from './kit.ts';

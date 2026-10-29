@@ -72,7 +72,7 @@ export function materialJson(row: MaterialRow) {
     progress: { phase: progress.phase, done: progress.done, total: progress.total, solve_done: progress.solve_done, solve_total: progress.solve_total, running: !!progress.running && Date.now() - Date.parse(progress.running.at) < HEARTBEAT_MS, revision: progress.revision, rechecks_left: Math.max(0, MAX_RECHECKS - progress.rechecks) },
     material, verification: stored ? { checks: stored.checks, solver: stored.solver, clean: stored.clean, stale: stored.stale ?? [], edited: !!stored.edited } : null,
     focus: row.input.focus_source ? { classroom_name: row.input.focus_source.classroom_name ?? null, tags: row.input.focus_source.tags } : null,
-    focus_unavailable: !!row.input.focus_unavailable, source: row.input.source ?? 'generated', listing_id: row.input.listing_id ?? null,
+    focus_unavailable: !!row.input.focus_unavailable, page_id: typeof (row.progress as { page_id?: unknown }).page_id === 'string' ? (row.progress as { page_id: string }).page_id : null,
     derived: material ? { key: answerKey(material), playable: quizQuestions(material).length, assessment_items: assessmentItems(material).length } : null,
     created_at: row.createdAt, updated_at: row.updatedAt, decided_at: row.decidedAt,
   };
@@ -127,7 +127,7 @@ export async function createMaterial(ctx: RequestContext) {
   const steps = kind.vision && images.length ? [{ id: 'page-0', produce: 'page', part: 0 }, ...plan] : plan;
   const row = await ctx.repo.createGeneration({
     workspaceId: access.workspace.id, userId: ctx.user.id, feature: quote.key, credits: quote.credits,
-    input: { brief: finalBrief, plan: steps, focus_source: focusSource, focus_unavailable: focusUnavailable, ...(requestKey ? { request_key: requestKey } : {}), source: 'generated', ...(images.length ? { images: images.length } : {}) },
+    input: { brief: finalBrief, plan: steps, focus_source: focusSource, focus_unavailable: focusUnavailable, ...(requestKey ? { request_key: requestKey } : {}), ...(images.length ? { images: images.length } : {}) },
     output: { draft: true, parts: {}, variants: { support: {}, stretch: {} }, ...(typeof body.page_text === 'string' && body.page_text.trim() ? { page: { text: text(body.page_text, 'page_text', { max: 12_000 }) } } : {}) } satisfies Draft,
     progress: { phase: 'generate', done: 0, total: steps.length, solve_done: 0, solve_total: 0, running: null, kind: brief.kind, title: null, revision: 0, rechecks: 0 } satisfies Progress,
   });
@@ -343,7 +343,8 @@ export async function getMaterial(ctx: RequestContext) {
 export async function editMaterial(ctx: RequestContext) {
   const body = record(await ctx.body());
   const { row } = await materialRow(ctx, body.id);
-  if (!['ready', 'approved'].includes(row.status)) throw new SchoodAIError('not_editable', 'This material cannot be edited now.', 409, { status: row.status });
+  // An approved material is a library page: it is edited there.
+  if (row.status !== 'ready') throw new SchoodAIError('not_editable', row.status === 'approved' ? 'This material is in your library now: edit it there.' : 'This material cannot be edited now.', 409, { status: row.status });
   if (typeof body.updated_at === 'string' && body.updated_at !== row.updatedAt) throw new SchoodAIError('edit_conflict', 'Someone saved a newer version. Reload to see it.', 409, { updated_at: row.updatedAt });
   let material: Material;
   try { material = parseMaterial(body.material); } catch (cause) {
@@ -354,7 +355,7 @@ export async function editMaterial(ctx: RequestContext) {
   const stored = (row.verification as StoredVerification | null) ?? { ...buildVerification(checkMaterial(material), null), solver_answers: [], fingerprints: {}, stale: [], edited: true };
   const verificationNow = revalidate(material, stored);
   const progress = progressOf(row);
-  const updated = await ctx.repo.updateGeneration(row.id, { output: material, verification: verificationNow, progress: { ...progress, revision: progress.revision + 1, title: material.title } }, ['ready', 'approved']);
+  const updated = await ctx.repo.updateGeneration(row.id, { output: material, verification: verificationNow, progress: { ...progress, revision: progress.revision + 1, title: material.title } }, ['ready']);
   if (!updated) throw new SchoodAIError('edit_conflict', 'This material changed. Reload to see it.', 409);
   await ctx.audit('material.edited', { revision: progress.revision + 1 }, { type: 'generation', id: row.id });
   return { material: materialJson(updated as MaterialRow) };
@@ -377,7 +378,7 @@ function revalidate(material: Material, stored: StoredVerification): StoredVerif
 export async function recheckMaterial(ctx: RequestContext) {
   const body = record(await ctx.body());
   const { row } = await materialRow(ctx, body.id);
-  if (!['ready', 'approved'].includes(row.status)) throw new SchoodAIError('not_editable', 'This material cannot be checked now.', 409);
+  if (row.status !== 'ready') throw new SchoodAIError('not_editable', 'This material cannot be checked now.', 409);
   const progress = progressOf(row);
   if (progress.rechecks >= MAX_RECHECKS) throw new SchoodAIError('recheck_limit', 'This material was checked again three times already.', 409);
   const stored = row.verification as StoredVerification | null;
@@ -396,7 +397,7 @@ export async function recheckMaterial(ctx: RequestContext) {
   for (const question of tasks[0].questions) fingerprints[question.id] = fingerprint(question);
   const answers = [...stored.solver_answers.filter((entry) => !ids.has(entry.id)), ...reply.result.answers.filter((entry) => ids.has(entry.id))];
   const next = revalidate(material, { ...stored, solver_answers: answers, fingerprints, solver: stored.solver ?? { asked: 0, agreed: 0, disagreements: [], unanswered: [], status: 'done' } });
-  const updated = await ctx.repo.updateGeneration(row.id, { verification: next, progress: { ...progress, rechecks: progress.rechecks + 1 } }, ['ready', 'approved']);
+  const updated = await ctx.repo.updateGeneration(row.id, { verification: next, progress: { ...progress, rechecks: progress.rechecks + 1 } }, ['ready']);
   return { material: materialJson((updated ?? row) as MaterialRow) };
 }
 
@@ -405,9 +406,9 @@ export async function renameMaterial(ctx: RequestContext) {
   const body = record(await ctx.body());
   const { row } = await materialRow(ctx, uuid(body.id, 'id'));
   const title = text(body.title, 'title', { max: 200 });
-  if (!['ready', 'approved'].includes(row.status)) throw new SchoodAIError('not_editable', 'This material cannot be renamed now.', 409);
+  if (row.status !== 'ready') throw new SchoodAIError('not_editable', 'This material cannot be renamed now.', 409);
   const material = { ...(row.output as Material), title };
   const progress = progressOf(row);
-  const updated = await ctx.repo.updateGeneration(row.id, { output: material, progress: { ...progress, title, revision: progress.revision + 1 } }, ['ready', 'approved']);
+  const updated = await ctx.repo.updateGeneration(row.id, { output: material, progress: { ...progress, title, revision: progress.revision + 1 } }, ['ready']);
   return { material: materialJson((updated ?? row) as MaterialRow) };
 }

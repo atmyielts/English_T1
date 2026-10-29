@@ -1,7 +1,7 @@
 // The teacher area's own tables (migration 20261030300000_schood_ai_teacher.sql):
 // handouts, Live Quiz, marking, channel autopilot, marketplace and the tutor brand
-// kit. Materials themselves stay in core's ai_generations until the shared library
-// lands (see library.ts). pg-store.ts talks to Postgres; memory-store.ts mirrors it.
+// kit. Drafts are jobs in core's ai_generations; approved materials are pages in
+// core's library (see library.ts). pg-store.ts talks to Postgres; memory-store.ts mirrors it.
 
 export type QuizStatus = 'lobby' | 'question' | 'reveal' | 'finished';
 export interface QuizQuestionSnapshot { id: string; prompt: string; options: { id: string; text: string }[]; answer: string; explanation?: string; context?: string }
@@ -10,7 +10,7 @@ export interface QuizSession {
   id: string;
   workspaceId: string;
   hostId: string;
-  generationId: string | null;
+  pageId: string | null;
   title: string;
   code: string;
   status: QuizStatus;
@@ -118,7 +118,7 @@ export interface Listing {
   sellerWorkspaceId: string;
   sellerId: string;
   sellerName: string;
-  sourceGenerationId: string | null;
+  sourcePageId: string | null;
   title: string;
   description: string;
   kind: string;
@@ -141,18 +141,18 @@ export interface Listing {
   publishedAt: string | null;
 }
 export interface ListingRating { listingId: string; userId: string; stars: number; comment: string | null; createdAt: string }
-export interface ListingCopy { id: string; listingId: string; workspaceId: string; userId: string; generationId: string; priceUzs: number; createdAt: string }
+export interface ListingCopy { id: string; listingId: string; workspaceId: string; userId: string; pageId: string | null; priceUzs: number; createdAt: string }
 export interface SellerLedgerRow { id: number; listingId: string; sellerWorkspaceId: string; buyerWorkspaceId: string; grossUzs: number; commissionUzs: number | null; netUzs: number | null; status: 'pending' | 'cleared' | 'reversed'; reference: string; createdAt: string }
 export interface ListingQuery { text?: string; kind?: string; level?: string; exam?: string; language?: string; price?: 'free' | 'paid' | 'any'; sort?: 'rating' | 'usage' | 'new'; limit: number; offset: number }
 
 export interface BrandProfile { workspaceId: string; ownerId: string; displayName: string; subjects: string; city: string; experienceYears: number | null; format: string; contact: string; about: string; updatedAt: string }
 export interface TutorResult { id: string; workspaceId: string; ownerId: string; studentLabel: string; consent: boolean; exam: string; score: string; previousScore: string | null; achievedOn: string; note: string | null; createdAt: string }
 
-export interface Handout { id: string; workspaceId: string; generationId: string; tokenHash: string; createdBy: string; createdAt: string; revokedAt: string | null }
+export interface Handout { id: string; workspaceId: string; pageId: string; tokenHash: string; createdBy: string; createdAt: string; revokedAt: string | null }
 
 export interface TeacherStore {
   // Handouts: the student version of an approved material, opened by an unguessable link.
-  createHandout(input: Pick<Handout, 'workspaceId' | 'generationId' | 'tokenHash' | 'createdBy'>): Promise<Handout>;
+  createHandout(input: Pick<Handout, 'workspaceId' | 'pageId' | 'tokenHash' | 'createdBy'>): Promise<Handout>;
   handoutByHash(tokenHash: string): Promise<Handout | null>;
   revokeHandout(id: string, at: string): Promise<void>;
 
@@ -220,7 +220,7 @@ export interface TeacherStore {
   /** Null when this workspace already has a copy. */
   addCopy(input: Omit<ListingCopy, 'id' | 'createdAt'>): Promise<ListingCopy | null>;
   copyFor(listingId: string, workspaceId: string): Promise<ListingCopy | null>;
-  copyByGeneration(generationId: string): Promise<ListingCopy | null>;
+  copyByPage(pageId: string): Promise<ListingCopy | null>;
   /** Verified use (assigned, played, printed) by a workspace that holds a copy; counted once per workspace. */
   recordUse(listingId: string, workspaceId: string, kind: 'homework' | 'live_quiz' | 'print' | 'assessment'): Promise<boolean>;
   addLedger(row: Omit<SellerLedgerRow, 'id' | 'createdAt'>): Promise<SellerLedgerRow | null>;

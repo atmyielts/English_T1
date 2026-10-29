@@ -6,14 +6,17 @@
 //      ratings, copies and verified use. Skipped when Docker is not available,
 //      unless SCHOOD_AI_DB_REQUIRE_DOCKER=1 (CI). Same pattern as test-schood-ai-db.mjs.
 import { PGlite } from '@electric-sql/pglite';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { spawn, spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import assert from 'node:assert/strict';
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const fixture = read('supabase/tests/schood-ai-core.fixture.sql');
-const core = read('supabase/migrations/20261030100000_schood_ai_core.sql');
+// Every core migration first (20261030100000-199999, in order), as the core test applies them.
+const core = readdirSync(new URL('../supabase/migrations/', import.meta.url))
+  .filter((name) => /^202610301\d{5}_schood_ai_.*\.sql$/.test(name)).sort()
+  .map((name) => read(`supabase/migrations/${name}`)).join('\n');
 const migration = read('supabase/migrations/20261030300000_schood_ai_teacher.sql');
 const integration = read('supabase/tests/schood-ai-teacher.integration.sql');
 
@@ -74,8 +77,8 @@ try {
   const teacher = '00000000-0000-4000-8000-0000000000a1', buyer = '00000000-0000-4000-8000-0000000000a2', student = '00000000-0000-4000-8000-0000000000a3';
   const ws = psql(`select id from public.ai_ensure_personal_workspace('${teacher}', 'Race teacher');`).trim();
   const buyerWs = psql(`select id from public.ai_ensure_personal_workspace('${buyer}', 'Race buyer');`).trim();
-  const gen = psql(`insert into public.ai_generations (workspace_id, user_id, feature, status) values ('${ws}', '${teacher}', 'quiz.pack', 'approved') returning id;`).trim().split('\n')[0];
-  const quiz = psql(`insert into public.ai_teacher_quiz_sessions (workspace_id, host_id, generation_id, title, code, questions) values ('${ws}', '${teacher}', '${gen}', 'Race', '100200', '[{"id":"q1"}]') returning id;`).trim().split('\n')[0];
+  const gen = psql(`insert into public.ai_pages (workspace_id, owner_id, kind, title, status) values ('${ws}', '${teacher}', 'live_quiz', 'Race', 'approved') returning id;`).trim().split('\n')[0];
+  const quiz = psql(`insert into public.ai_teacher_quiz_sessions (workspace_id, host_id, page_id, title, code, questions) values ('${ws}', '${teacher}', '${gen}', 'Race', '100200', '[{"id":"q1"}]') returning id;`).trim().split('\n')[0];
   const player = psql(`insert into public.ai_teacher_quiz_players (session_id, user_id, nickname, token_hash) values ('${quiz}', '${student}', 'Racer', repeat('d', 64)) returning id;`).trim().split('\n')[0];
 
   // 12 taps on the same question from one phone at once: one answer, points once.
@@ -88,7 +91,7 @@ try {
 
   // 10 sessions copy the same listing into the same workspace: one copy.
   const listing = psql(`insert into public.ai_teacher_listings (seller_workspace_id, seller_id, seller_name, title, kind, level, language, material, status) values ('${ws}', '${teacher}', 'T', 'Race listing', 'quiz', 'B1', 'en', '{}', 'published') returning id;`).trim().split('\n')[0];
-  const copyGen = psql(`insert into public.ai_generations (workspace_id, user_id, feature, status) values ('${buyerWs}', '${buyer}', 'quiz.pack', 'approved') returning id;`).trim().split('\n')[0];
+  const copyGen = psql(`insert into public.ai_pages (workspace_id, owner_id, kind, title, status) values ('${buyerWs}', '${buyer}', 'live_quiz', 'Race copy', 'approved') returning id;`).trim().split('\n')[0];
   await race(10, () => `select public.ai_teacher_add_copy('${listing}', '${buyerWs}', '${buyer}', '${copyGen}', 0);`);
   assert.equal(psql(`select copies from public.ai_teacher_listings where id = '${listing}';`).trim(), '1', 'one copy per workspace under contention');
 

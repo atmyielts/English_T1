@@ -2,7 +2,7 @@ import { quizQuestions } from '../../../../packages/ai-core/src/mod.ts';
 import { integer, oneOf, optionalText, record, text, uuid } from '../input.ts';
 import { SchoodAIError, type RequestContext } from '../types.ts';
 import { teacherDeps } from './deps.ts';
-import { approvedMaterial } from './library.ts';
+import { approvedPage } from './library.ts';
 import { recordListingUse } from './market.ts';
 import type { QuizAnswer, QuizPlayer, QuizSession } from './store.ts';
 
@@ -71,7 +71,7 @@ async function hostSession(ctx: RequestContext, id: unknown): Promise<QuizSessio
 export async function createQuiz(ctx: RequestContext) {
   const body = record(await ctx.body());
   await ctx.requireFeature('T10');
-  const { row, access, material } = await approvedMaterial(ctx, body.id);
+  const { page, access, material } = await approvedPage(ctx, body.page_id);
   const questions = quizQuestions(material).slice(0, 60);
   if (!questions.length) throw new SchoodAIError('not_playable', 'This material has no choice questions to play. Make a Live Quiz pack instead.', 409);
   const seconds = body.seconds === undefined ? 20 : integer(body.seconds, 'seconds', 5, 120);
@@ -82,12 +82,12 @@ export async function createQuiz(ctx: RequestContext) {
   let session: QuizSession | null = null;
   for (let attempt = 0; attempt < 6 && !session; attempt++) {
     session = await store.createQuizSession({
-      workspaceId: access.workspace.id, hostId: ctx.user.id, generationId: row.id, title: material.title.slice(0, 200), code: randomCode(), questions,
+      workspaceId: access.workspace.id, hostId: ctx.user.id, pageId: page.id, title: material.title.slice(0, 200), code: randomCode(), questions,
       secondsPerQuestion: seconds, classLabel: classLabel ?? group?.classroom_name ?? null, group,
     });
   }
   if (!session) throw new SchoodAIError('code_unavailable', 'Could not open a game right now. Try again.', 503);
-  await recordListingUse(ctx, row, 'live_quiz');
+  await recordListingUse(ctx, page, 'live_quiz');
   await ctx.audit('quiz.opened', { questions: questions.length }, { type: 'quiz', id: session.id });
   return { quiz: await hostView(ctx, session) };
 }

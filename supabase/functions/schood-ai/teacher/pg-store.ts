@@ -27,9 +27,9 @@ const str = (value: unknown) => (value === null || value === undefined ? null : 
 const obj = (value: unknown): Record<string, unknown> => (value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {});
 const arr = <T = unknown>(value: unknown): T[] => (Array.isArray(value) ? value as T[] : []);
 
-const handout = (row: Row): Handout => ({ id: String(row.id), workspaceId: String(row.workspace_id), generationId: String(row.generation_id), tokenHash: String(row.token_hash), createdBy: String(row.created_by ?? ''), createdAt: String(row.created_at), revokedAt: str(row.revoked_at) });
+const handout = (row: Row): Handout => ({ id: String(row.id), workspaceId: String(row.workspace_id), pageId: String(row.page_id), tokenHash: String(row.token_hash), createdBy: String(row.created_by ?? ''), createdAt: String(row.created_at), revokedAt: str(row.revoked_at) });
 const session = (row: Row): QuizSession => ({
-  id: String(row.id), workspaceId: String(row.workspace_id), hostId: String(row.host_id), generationId: str(row.generation_id), title: String(row.title), code: String(row.code),
+  id: String(row.id), workspaceId: String(row.workspace_id), hostId: String(row.host_id), pageId: str(row.page_id), title: String(row.title), code: String(row.code),
   status: row.status as QuizSession['status'], currentIndex: Number(row.current_index), questionStartedAt: str(row.question_started_at), questions: arr(row.questions),
   secondsPerQuestion: Number(row.seconds_per_question), classLabel: str(row.class_label), group: row.academy_group ? obj(row.academy_group) as unknown as QuizSession['group'] : null,
   createdAt: String(row.created_at), updatedAt: String(row.updated_at), finishedAt: str(row.finished_at),
@@ -64,14 +64,14 @@ const post = (row: Row): ChannelPost => ({
   messageId: str(row.message_id), attempts: Number(row.attempts ?? 0), lastError: str(row.last_error), sentAt: str(row.sent_at), createdAt: String(row.created_at),
 });
 const listing = (row: Row): Listing => ({
-  id: String(row.id), sellerWorkspaceId: String(row.seller_workspace_id), sellerId: String(row.seller_id), sellerName: String(row.seller_name), sourceGenerationId: str(row.source_generation_id),
+  id: String(row.id), sellerWorkspaceId: String(row.seller_workspace_id), sellerId: String(row.seller_id), sellerName: String(row.seller_name), sourcePageId: str(row.source_page_id),
   title: String(row.title), description: String(row.description ?? ''), kind: String(row.kind), level: String(row.level), exam: str(row.exam), language: row.language as Listing['language'],
   tags: arr<string>(row.tags).map(String), material: obj(row.material), priceUzs: Number(row.price_uzs ?? 0), status: row.status as Listing['status'],
   moderationNote: str(row.moderation_note), moderatedBy: str(row.moderated_by), moderatedAt: str(row.moderated_at), ratingSum: Number(row.rating_sum ?? 0), ratingCount: Number(row.rating_count ?? 0),
   usageCount: Number(row.usage_count ?? 0), copies: Number(row.copies ?? 0), createdAt: String(row.created_at), updatedAt: String(row.updated_at), publishedAt: str(row.published_at),
 });
 const rating = (row: Row): ListingRating => ({ listingId: String(row.listing_id), userId: String(row.user_id), stars: Number(row.stars), comment: str(row.comment), createdAt: String(row.created_at) });
-const copyRow = (row: Row): ListingCopy => ({ id: String(row.id), listingId: String(row.listing_id), workspaceId: String(row.workspace_id), userId: String(row.user_id), generationId: String(row.generation_id), priceUzs: Number(row.price_uzs ?? 0), createdAt: String(row.created_at) });
+const copyRow = (row: Row): ListingCopy => ({ id: String(row.id), listingId: String(row.listing_id), workspaceId: String(row.workspace_id), userId: String(row.user_id), pageId: str(row.page_id), priceUzs: Number(row.price_uzs ?? 0), createdAt: String(row.created_at) });
 const ledgerRow = (row: Row): SellerLedgerRow => ({
   id: Number(row.id), listingId: String(row.listing_id), sellerWorkspaceId: String(row.seller_workspace_id), buyerWorkspaceId: String(row.buyer_workspace_id), grossUzs: Number(row.gross_uzs),
   commissionUzs: row.commission_uzs === null || row.commission_uzs === undefined ? null : Number(row.commission_uzs), netUzs: row.net_uzs === null || row.net_uzs === undefined ? null : Number(row.net_uzs),
@@ -108,14 +108,14 @@ export function createPgTeacherStore(db: TeacherDatabase): TeacherStore {
 
   return {
     async createHandout(input) {
-      return handout(check(await db.from('ai_teacher_handouts').insert({ workspace_id: input.workspaceId, generation_id: input.generationId, token_hash: input.tokenHash, created_by: input.createdBy }).select('*').single()));
+      return handout(check(await db.from('ai_teacher_handouts').insert({ workspace_id: input.workspaceId, page_id: input.pageId, token_hash: input.tokenHash, created_by: input.createdBy }).select('*').single()));
     },
     handoutByHash: (hash) => one(db.from('ai_teacher_handouts').select('*').eq('token_hash', hash).maybeSingle(), handout),
     async revokeHandout(id, at) { check(await db.from('ai_teacher_handouts').update({ revoked_at: at }).eq('id', id).is('revoked_at', null)); },
 
     async createQuizSession(input) {
       const res = await db.from('ai_teacher_quiz_sessions').insert({
-        workspace_id: input.workspaceId, host_id: input.hostId, generation_id: input.generationId, title: input.title, code: input.code, questions: input.questions,
+        workspace_id: input.workspaceId, host_id: input.hostId, page_id: input.pageId, title: input.title, code: input.code, questions: input.questions,
         seconds_per_question: input.secondsPerQuestion, class_label: input.classLabel, academy_group: input.group,
       }).select('*').single();
       if (unique(res)) return null;
@@ -218,7 +218,7 @@ export function createPgTeacherStore(db: TeacherDatabase): TeacherStore {
 
     async createListing(input) {
       return listing(check(await db.from('ai_teacher_listings').insert({
-        seller_workspace_id: input.sellerWorkspaceId, seller_id: input.sellerId, seller_name: input.sellerName, source_generation_id: input.sourceGenerationId, title: input.title,
+        seller_workspace_id: input.sellerWorkspaceId, seller_id: input.sellerId, seller_name: input.sellerName, source_page_id: input.sourcePageId, title: input.title,
         description: input.description, kind: input.kind, level: input.level, exam: input.exam, language: input.language, tags: input.tags, material: input.material, price_uzs: input.priceUzs, status: input.status,
       }).select('*').single()));
     },
@@ -230,7 +230,7 @@ export function createPgTeacherStore(db: TeacherDatabase): TeacherStore {
     },
     async searchListings(input) {
       // The list never carries the material itself (the key stays with the buyer's copy).
-      let query = db.from('ai_teacher_listings').select('id, seller_workspace_id, seller_id, seller_name, source_generation_id, title, description, kind, level, exam, language, tags, price_uzs, status, rating_sum, rating_count, usage_count, copies, created_at, updated_at, published_at, moderation_note, moderated_by, moderated_at', { count: 'exact' }).eq('status', 'published');
+      let query = db.from('ai_teacher_listings').select('id, seller_workspace_id, seller_id, seller_name, source_page_id, title, description, kind, level, exam, language, tags, price_uzs, status, rating_sum, rating_count, usage_count, copies, created_at, updated_at, published_at, moderation_note, moderated_by, moderated_at', { count: 'exact' }).eq('status', 'published');
       if (input.kind) query = query.eq('kind', input.kind);
       if (input.level) query = query.eq('level', input.level);
       if (input.exam) query = query.eq('exam', input.exam);
@@ -251,12 +251,12 @@ export function createPgTeacherStore(db: TeacherDatabase): TeacherStore {
     },
     ratings: (listingId, limit) => many(db.from('ai_teacher_listing_ratings').select('*').eq('listing_id', listingId).order('created_at', { ascending: false }).limit(limit), rating),
     async addCopy(input) {
-      const id = check(await db.rpc('ai_teacher_add_copy', { p_listing: input.listingId, p_workspace: input.workspaceId, p_user: input.userId, p_generation: input.generationId, p_price: input.priceUzs }));
+      const id = check(await db.rpc('ai_teacher_add_copy', { p_listing: input.listingId, p_workspace: input.workspaceId, p_user: input.userId, p_page: input.pageId, p_price: input.priceUzs }));
       if (!id) return null;
       return { ...input, id: String(id), createdAt: new Date().toISOString() };
     },
     copyFor: (listingId, workspaceId) => one(db.from('ai_teacher_listing_copies').select('*').eq('listing_id', listingId).eq('workspace_id', workspaceId).maybeSingle(), copyRow),
-    copyByGeneration: (generationId) => one(db.from('ai_teacher_listing_copies').select('*').eq('generation_id', generationId).maybeSingle(), copyRow),
+    copyByPage: (pageId) => one(db.from('ai_teacher_listing_copies').select('*').eq('page_id', pageId).maybeSingle(), copyRow),
     async recordUse(listingId, workspaceId, kind) {
       return check(await db.rpc('ai_teacher_record_use', { p_listing: listingId, p_workspace: workspaceId, p_kind: kind })) === true;
     },

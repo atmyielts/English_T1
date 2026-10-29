@@ -1,8 +1,8 @@
 -- Schood AI teacher area (docs/product/44_SCHOOD_AI.md, T1–T6 and T9–T15).
 --
--- Materials themselves live in core's ai_generations (and, once the shared library
--- ships, ai_pages). These tables hold what the teacher features add around them:
---   handouts           the student version of an approved material, opened by link
+-- Drafts are jobs in core's ai_generations; an approved material is a page in core's
+-- library (ai_pages). These tables hold what the teacher features add around them:
+--   handouts           the student version of an approved library page, opened by link
 --   Live Quiz (T10)    sessions, players and answers; one answer per player and question
 --   marking (T3, T14, T15)  batches of scripts with AI drafts and teacher-confirmed marks
 --   channel autopilot (T11) a teacher's Telegram channel, weekly batches and their posts
@@ -20,21 +20,21 @@
 create table if not exists public.ai_teacher_handouts (
   id uuid primary key default gen_random_uuid(),
   workspace_id uuid not null references public.ai_workspaces(id) on delete cascade,
-  generation_id uuid not null references public.ai_generations(id) on delete cascade,
+  page_id uuid not null references public.ai_pages(id) on delete cascade,
   -- SHA-256 of the link token; the token itself is never stored.
   token_hash text not null unique check (token_hash ~ '^[0-9a-f]{64}$'),
   created_by uuid references public.users(id) on delete cascade,
   created_at timestamptz not null default now(),
   revoked_at timestamptz
 );
-create index if not exists ai_teacher_handouts_generation_idx on public.ai_teacher_handouts (generation_id);
+create index if not exists ai_teacher_handouts_page_idx on public.ai_teacher_handouts (page_id);
 
 -- --- Live Quiz (T10) --------------------------------------------------------------------------
 create table if not exists public.ai_teacher_quiz_sessions (
   id uuid primary key default gen_random_uuid(),
   workspace_id uuid not null references public.ai_workspaces(id) on delete cascade,
   host_id uuid not null references public.users(id) on delete cascade,
-  generation_id uuid references public.ai_generations(id) on delete set null,
+  page_id uuid references public.ai_pages(id) on delete set null,
   title text not null check (char_length(btrim(title)) between 1 and 200),
   code text not null check (code ~ '^[0-9]{6}$'),
   status text not null default 'lobby' check (status in ('lobby', 'question', 'reveal', 'finished')),
@@ -181,7 +181,7 @@ create table if not exists public.ai_teacher_listings (
   seller_workspace_id uuid not null references public.ai_workspaces(id) on delete cascade,
   seller_id uuid not null references public.users(id) on delete cascade,
   seller_name text not null check (char_length(btrim(seller_name)) between 1 and 120),
-  source_generation_id uuid references public.ai_generations(id) on delete set null,
+  source_page_id uuid references public.ai_pages(id) on delete set null,
   title text not null check (char_length(btrim(title)) between 1 and 160),
   description text not null default '' check (char_length(description) <= 2000),
   kind text not null check (kind ~ '^[a-z][a-z0-9_]{1,39}$'),
@@ -224,12 +224,13 @@ create table if not exists public.ai_teacher_listing_copies (
   listing_id uuid not null references public.ai_teacher_listings(id) on delete cascade,
   workspace_id uuid not null references public.ai_workspaces(id) on delete cascade,
   user_id uuid not null references public.users(id) on delete cascade,
-  generation_id uuid not null references public.ai_generations(id) on delete cascade,
+  -- The buyer's library page; a copy stays counted if they delete it later.
+  page_id uuid references public.ai_pages(id) on delete set null,
   price_uzs integer not null default 0 check (price_uzs >= 0),
   created_at timestamptz not null default now(),
   unique (listing_id, workspace_id)
 );
-create index if not exists ai_teacher_listing_copies_generation_idx on public.ai_teacher_listing_copies (generation_id);
+create index if not exists ai_teacher_listing_copies_page_idx on public.ai_teacher_listing_copies (page_id);
 
 create table if not exists public.ai_teacher_listing_uses (
   listing_id uuid not null references public.ai_teacher_listings(id) on delete cascade,
@@ -342,13 +343,13 @@ begin
 end $$;
 
 -- One copy per workspace; the listing's copy count moves with it. Null when it already has one.
-create or replace function public.ai_teacher_add_copy(p_listing uuid, p_workspace uuid, p_user uuid, p_generation uuid, p_price integer)
+create or replace function public.ai_teacher_add_copy(p_listing uuid, p_workspace uuid, p_user uuid, p_page uuid, p_price integer)
 returns uuid
 language plpgsql security definer set search_path = public, pg_temp as $$
 declare created uuid;
 begin
-  insert into public.ai_teacher_listing_copies (listing_id, workspace_id, user_id, generation_id, price_uzs)
-  values (p_listing, p_workspace, p_user, p_generation, greatest(0, p_price))
+  insert into public.ai_teacher_listing_copies (listing_id, workspace_id, user_id, page_id, price_uzs)
+  values (p_listing, p_workspace, p_user, p_page, greatest(0, p_price))
   on conflict (listing_id, workspace_id) do nothing
   returning id into created;
   if created is not null then update public.ai_teacher_listings set copies = copies + 1 where id = p_listing; end if;

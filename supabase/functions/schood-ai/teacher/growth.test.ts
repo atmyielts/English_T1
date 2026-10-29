@@ -78,11 +78,11 @@ const QUIZ_MATERIAL = {
 Deno.test('marketplace: list after Approve & run, Schood moderation, search, free copies, verified use, ratings; paid stays off', async () => {
   const f = teacherFixture();
   try {
-    const seller = await personal(f, PRO);
-    const original = await f.memory.repository.createGeneration({ workspaceId: seller, userId: ID.beta, feature: 'material.generate', status: 'approved', output: QUIZ_MATERIAL, input: { brief: { kind: 'quiz' }, plan: [] }, progress: { revision: 0 } });
-    equal((await f.json('POST', 'teacher/market-list', { token: 'tok-teacher-plan', body: { id: original.id } })).body.code, 'plan_required', 'selling needs Teacher Pro or Centre');
-    equal((await f.json('POST', 'teacher/market-list', { token: PRO, body: { id: original.id, price_uzs: 15000 } })).body.code, 'paid_listings_off', 'paid listings ship off');
-    const proposed = await f.json('POST', 'teacher/market-list', { token: PRO, body: { id: original.id, description: 'Ten minutes of present simple.', tags: ['grammar', 'A2'] } });
+    await personal(f, PRO);
+    const original = (await f.json('POST', 'core/pages', { token: PRO, body: { kind: 'quiz', title: QUIZ_MATERIAL.title, material: QUIZ_MATERIAL, status: 'approved' } })).body.page;
+    equal((await f.json('POST', 'teacher/market-list', { token: 'tok-teacher-plan', body: { page_id: original.id } })).body.code, 'plan_required', 'selling needs Teacher Pro or Centre');
+    equal((await f.json('POST', 'teacher/market-list', { token: PRO, body: { page_id: original.id, price_uzs: 15000 } })).body.code, 'paid_listings_off', 'paid listings ship off');
+    const proposed = await f.json('POST', 'teacher/market-list', { token: PRO, body: { page_id: original.id, description: 'Ten minutes of present simple.', tags: ['grammar', 'A2'] } });
     equal([proposed.body.action.kind, proposed.body.action.display.price], ['publish_listing', 'free']);
     const run = await f.json('POST', 'core/actions', { token: PRO, body: { id: proposed.body.action.id, decision: 'approve' } });
     equal(run.body.action.result.status, 'pending');
@@ -104,12 +104,12 @@ Deno.test('marketplace: list after Approve & run, Schood moderation, search, fre
     equal((await f.json('POST', 'teacher/market-rate', { token: 'tok-teacher-plan', body: { id: listingId, stars: 5 } })).body.code, 'copy_required', 'only people with a copy rate it');
     const copy = await f.json('POST', 'teacher/market-acquire', { token: 'tok-teacher-plan', body: { id: listingId } });
     equal(copy.body.copy.created, true);
-    equal((await f.json('POST', 'teacher/market-acquire', { token: 'tok-teacher-plan', body: { id: listingId } })).body.copy, { material_id: copy.body.copy.material_id, created: false });
-    const library = await f.json('GET', 'teacher/materials', { token: 'tok-teacher-plan' });
-    equal(library.body.materials.map((material: { source: string; status: string }) => [material.source, material.status]), [['marketplace', 'approved']]);
+    equal((await f.json('POST', 'teacher/market-acquire', { token: 'tok-teacher-plan', body: { id: listingId } })).body.copy, { page_id: copy.body.copy.page_id, created: false });
+    const library = await f.json('GET', 'core/pages', { token: 'tok-teacher-plan' });
+    equal(library.body.pages.map((entry: { kind: string; status: string; folder: string }) => [entry.kind, entry.status, entry.folder]), [['quiz', 'approved', 'Marketplace/Quiz/A2']]);
     // Verified use: the buyer plays it in class.
-    equal((await f.json('POST', 'teacher/quiz', { token: 'tok-teacher-plan', body: { id: copy.body.copy.material_id } })).status, 200);
-    await f.json('POST', 'teacher/export', { token: 'tok-teacher-plan', body: { id: copy.body.copy.material_id, to: 'print' } });
+    equal((await f.json('POST', 'teacher/quiz', { token: 'tok-teacher-plan', body: { page_id: copy.body.copy.page_id } })).status, 200);
+    await f.json('POST', 'teacher/export', { token: 'tok-teacher-plan', body: { page_id: copy.body.copy.page_id, to: 'print' } });
     equal((await f.json('POST', 'teacher/market-rate', { token: 'tok-teacher-plan', body: { id: listingId, stars: 4, comment: 'Works well with 9th grade.' } })).body.listing.rating, 4);
     const card = (await f.json('GET', 'teacher/market', { token: PRO })).body.listings[0];
     equal([card.verified_uses, card.copies, card.ratings], [1, 1, 1], 'one workspace used it: counted once');
@@ -117,7 +117,7 @@ Deno.test('marketplace: list after Approve & run, Schood moderation, search, fre
 
     // Paid listings, once the owner switches them on: priced in UZS, but checkout is still the owner's decision.
     await f.memory.repository.updateSettings({ features: { marketplace_paid: true } }, ID.admin);
-    const paid = await f.json('POST', 'teacher/market-list', { token: PRO, body: { id: original.id, price_uzs: 15000, title: 'Present simple quiz (pack)' } });
+    const paid = await f.json('POST', 'teacher/market-list', { token: PRO, body: { page_id: original.id, price_uzs: 15000, title: 'Present simple quiz (pack)' } });
     equal(paid.body.action.display.price, '15000 UZS');
     const paidId = (await f.json('POST', 'core/actions', { token: PRO, body: { id: paid.body.action.id, decision: 'approve' } })).body.action.result.listing_id;
     await f.json('POST', 'teacher/market-moderation', { token: 'tok-admin', body: { id: paidId, decision: 'publish' } });
@@ -125,8 +125,9 @@ Deno.test('marketplace: list after Approve & run, Schood moderation, search, fre
     const mine = await f.json('GET', 'teacher/market-mine', { token: PRO });
     equal([mine.body.listings.length, mine.body.ledger, mine.body.totals.commission_rate], [2, [], null], 'no sales without checkout; the commission is not decided');
     // A copy cannot be resold by whoever took it.
-    const copied = await f.memory.repository.createGeneration({ workspaceId: seller, userId: ID.beta, feature: 'material.generate', status: 'approved', output: QUIZ_MATERIAL, input: { brief: { kind: 'quiz' }, plan: [], source: 'marketplace', listing_id: listingId }, progress: { revision: 0 } });
-    equal((await f.json('POST', 'teacher/market-list', { token: PRO, body: { id: copied.id } })).body.code, 'not_original');
+    const taken = (await f.json('POST', 'core/pages', { token: PRO, body: { kind: 'quiz', title: 'Taken', material: QUIZ_MATERIAL, status: 'approved' } })).body.page;
+    await f.teacher.store.addCopy({ listingId: paidId, workspaceId: taken.workspace_id, userId: ID.beta, pageId: taken.id, priceUzs: 0 });
+    equal((await f.json('POST', 'teacher/market-list', { token: PRO, body: { page_id: taken.id } })).body.code, 'not_original');
   } finally {
     f.reset();
   }

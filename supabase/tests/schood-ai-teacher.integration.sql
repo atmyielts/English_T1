@@ -22,11 +22,11 @@ declare
 begin
   ws := (public.ai_ensure_personal_workspace(teacher, 'Teacher')).id;
   buyer_ws := (public.ai_ensure_personal_workspace(buyer, 'Buyer')).id;
-  insert into public.ai_generations (workspace_id, user_id, feature, status, output) values (ws, teacher, 'material.exam_set', 'approved', '{"title":"x"}') returning id into gen;
-  insert into public.ai_generations (workspace_id, user_id, feature, status, output) values (buyer_ws, buyer, 'material.exam_set', 'approved', '{"title":"x"}') returning id into copy_gen;
+  insert into public.ai_pages (workspace_id, owner_id, kind, title, status) values (ws, teacher, 'ielts_reading', 'Aral Sea', 'approved') returning id into gen;
+  insert into public.ai_pages (workspace_id, owner_id, kind, title, status) values (buyer_ws, buyer, 'ielts_reading', 'Aral Sea (copy)', 'approved') returning id into copy_gen;
 
   -- Live Quiz: one open game per code; a finished game frees it.
-  insert into public.ai_teacher_quiz_sessions (workspace_id, host_id, generation_id, title, code, questions)
+  insert into public.ai_teacher_quiz_sessions (workspace_id, host_id, page_id, title, code, questions)
   values (ws, teacher, gen, 'Aral Sea', '482913', '[{"id":"q1","prompt":"?","options":[{"id":"A","text":"a"},{"id":"B","text":"b"}],"answer":"A"}]') returning id into session;
   raised := false;
   begin
@@ -74,7 +74,7 @@ begin
   insert into public.ai_teacher_channels (workspace_id, owner_id, chat_id, title) values (ws, teacher, '@ielts_with_aziza', 'IELTS with Aziza');
 
   -- Marketplace: ratings replace, totals stay exact.
-  insert into public.ai_teacher_listings (seller_workspace_id, seller_id, seller_name, source_generation_id, title, kind, level, language, material, status)
+  insert into public.ai_teacher_listings (seller_workspace_id, seller_id, seller_name, source_page_id, title, kind, level, language, material, status)
   values (ws, teacher, 'Aziza', gen, 'Aral Sea reading', 'ielts_reading', 'B2', 'en', '{"title":"x"}', 'published') returning * into listing;
   rated := public.ai_teacher_rate_listing(listing.id, buyer, 4, 'Good');
   assert rated.rating_sum = 4 and rated.rating_count = 1, 'first rating';

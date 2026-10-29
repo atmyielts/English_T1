@@ -4,6 +4,7 @@ import { channels, dispatchRoute, editPost, planWeek, proposeWeek, registerChann
 import { academyGroupsRoute, assessmentBanksRoute, exportMaterial, getHandout, registerExportActions, weakSpotsRoute } from './exports.ts';
 import { batches, markRecording, markScript, scripts, writeFeedback, writingSignals } from './marking.ts';
 import { acquireListing, getListing, moderation, myListings, proposeListing, rateListing, registerMarketActions, searchMarket, withdrawListing } from './market.ts';
+import { decideMaterial, registerTeacherKinds } from './library.ts';
 import { createMaterial, editMaterial, getMaterial, listMaterialsRoute, recheckMaterial, renameMaterial, stepMaterial } from './materials.ts';
 import { answerQuiz, controlQuiz, createQuiz, getQuiz, joinQuiz, listQuizzes, playQuiz, quizResults } from './quiz.ts';
 
@@ -11,6 +12,7 @@ import { answerQuiz, controlQuiz, createQuiz, getQuiz, joinQuiz, listQuizzes, pl
 // planner, library adapter, Live Quiz, channel autopilot, marketplace and brand kit.
 // Owned by the teacher agent. See ../CONTRACT.md and docs/product/44_SCHOOD_AI.md.
 
+registerTeacherKinds();
 registerExportActions();
 registerChannelActions();
 registerMarketActions();
@@ -20,13 +22,14 @@ const IMAGES = 10 * 1024 * 1024;
 export const teacherModule: FeatureModule = {
   area: 'teacher',
   routes: {
-    // T1, T2, T5, T9, T10 packs: material jobs (T6 library adapter until core's library lands).
+    // T1, T2, T5, T9, T10 packs: material jobs; approving saves a page to the library (T6).
     materials: { GET: listMaterialsRoute, POST: createMaterial, maxBody: IMAGES },
     material: { GET: getMaterial, PATCH: editMaterial, maxBody: 768 * 1024 },
     'material-step': { POST: stepMaterial, maxBody: IMAGES },
     'material-recheck': { POST: recheckMaterial },
     'material-title': { POST: renameMaterial },
-    // Exports.
+    'material-decide': { POST: decideMaterial },
+    // Exports of approved library pages.
     export: { POST: exportMaterial },
     handout: { GET: getHandout },
     'academy-groups': { GET: academyGroupsRoute },

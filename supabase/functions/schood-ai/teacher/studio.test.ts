@@ -104,22 +104,34 @@ Deno.test('teacher test: IELTS Reading B2 with a checked key → edit → print 
     equal(saved.body.material.verification.clean, true);
     equal(saved.body.material.title, 'Bees on the rooftops (5B)');
 
-    // Nothing reaches students before approval.
-    equal((await f.json('POST', 'teacher/export', { token: T, body: { id, to: 'handout' } })).body.code, 'not_approved');
-    const approved = await f.json('POST', 'core/generations', { token: T, body: { id, decision: 'approve' } });
-    equal(approved.body.generation.status, 'approved');
+    // Approve & save: the material becomes a page of its kind in the library.
+    const approved = await f.json('POST', 'teacher/material-decide', { token: T, body: { id, decision: 'approve' } });
+    equal(approved.status, 200, JSON.stringify(approved.body));
+    const pageId = approved.body.page_id as string;
+    equal((await f.json('POST', 'teacher/material-decide', { token: T, body: { id, decision: 'approve' } })).body.page_id, pageId, 'a second click shows the same page');
+    const page = (await f.json('GET', 'core/page', { token: T, query: { id: pageId } })).body.page;
+    equal([page.kind, page.status, page.folder, page.source_generation_id], ['ielts_reading', 'approved', 'Exam practice/IELTS reading/B2', id]);
+    ok(page.body.includes('## Answer key') && page.body.includes('2. FALSE'), 'the page document is the teacher copy with the edited key');
+    equal((await f.json('PATCH', 'teacher/material', { token: T, body: { id, material: edited } })).body.code, 'not_editable', 'an approved material is edited in the library');
+    // An edit in the library is validated against the kind's schema.
+    equal((await f.json('PATCH', 'core/page', { token: T, body: { id: pageId, expected_revision: page.revision, material: { ...edited, kind: 'quiz' } } })).status, 400);
+    const retitled = await f.json('PATCH', 'core/page', { token: T, body: { id: pageId, expected_revision: page.revision, title: 'Bees on the rooftops (5B)', material: edited } });
+    equal(retitled.status, 200, JSON.stringify(retitled.body));
+    // A draft page does not reach students.
+    const draftPage = await f.json('POST', 'core/pages', { token: T, body: { kind: 'ielts_reading', title: 'Draft copy', material: edited, status: 'draft' } });
+    equal((await f.json('POST', 'teacher/export', { token: T, body: { page_id: draftPage.body.page.id, to: 'handout' } })).body.code, 'not_approved');
 
     // 4. Print with the teacher's logo: the logo is the workspace branding the print view reads.
     const logo = await f.json('PATCH', 'core/settings', { token: T, body: { branding: { logo_url: 'https://cdn.example.com/aziza-logo.png' } } });
     equal(logo.status, 200);
     equal((await f.json('GET', 'core/me', { token: T })).body.workspace.branding.logo_url, 'https://cdn.example.com/aziza-logo.png');
-    equal((await f.json('POST', 'teacher/export', { token: T, body: { id, to: 'print' } })).body.ok, true);
-    const telegram = await f.json('POST', 'teacher/export', { token: T, body: { id, to: 'telegram' } });
+    equal((await f.json('POST', 'teacher/export', { token: T, body: { page_id: pageId, to: 'print' } })).body.ok, true);
+    const telegram = await f.json('POST', 'teacher/export', { token: T, body: { page_id: pageId, to: 'telegram' } });
     ok(telegram.body.messages.length >= 1 && telegram.body.messages.every((message: string) => message.length <= 4096) && !telegram.body.messages.join().includes('✓'), 'Telegram text without the key');
 
     // 5. Live Quiz: no AI call; students join with the code; live leaderboard; results saved.
     const before = calls.length;
-    const quiz = await f.json('POST', 'teacher/quiz', { token: T, body: { id, seconds: 20, class_label: '5B IELTS' } });
+    const quiz = await f.json('POST', 'teacher/quiz', { token: T, body: { page_id: pageId, seconds: 20, class_label: '5B IELTS' } });
     equal(quiz.status, 200, JSON.stringify(quiz.body));
     const code = quiz.body.quiz.code as string;
     ok(/^[0-9]{6}$/.test(code), 'six-digit code');
@@ -156,7 +168,7 @@ Deno.test('teacher test: IELTS Reading B2 with a checked key → edit → print 
     // 6. Homework OS: proposed with the exact payload, run only on approval, with the teacher's token.
     const groups = await f.json('GET', 'teacher/academy-groups', { token: T });
     equal(groups.body.groups.map((group: { name: string }) => group.name), ['5B IELTS'], 'inactive classrooms are left out');
-    const proposed = await f.json('POST', 'teacher/export', { token: T, body: { id, to: 'homework', academy_id: ACADEMY, classroom_id: 'cls-5b', due_at: '2026-11-06T18:00:00.000Z', instructions: 'Do it in 60 minutes.' } });
+    const proposed = await f.json('POST', 'teacher/export', { token: T, body: { page_id: pageId, to: 'homework', academy_id: ACADEMY, classroom_id: 'cls-5b', due_at: '2026-11-06T18:00:00.000Z', instructions: 'Do it in 60 minutes.' } });
     equal(proposed.status, 200, JSON.stringify(proposed.body));
     equal([proposed.body.action.kind, proposed.body.action.status, proposed.body.action.can_approve], ['assign_homework', 'pending', true]);
     equal(f.assignments.length, 0, 'nothing is assigned before Approve & run');
@@ -182,7 +194,7 @@ Deno.test('teacher test: IELTS Reading B2 with a checked key → edit → print 
     // 7. Assessment Cloud draft items, after Approve & run, each created once.
     const banks = await f.json('GET', 'teacher/assessment-banks', { token: T });
     equal(banks.body.tenants[0].banks[0].id, BANK);
-    const items = await f.json('POST', 'teacher/export', { token: T, body: { id, to: 'assessment', tenant_id: TENANT, bank_id: BANK } });
+    const items = await f.json('POST', 'teacher/export', { token: T, body: { page_id: pageId, to: 'assessment', tenant_id: TENANT, bank_id: BANK } });
     equal(items.body.action.display.items, '13');
     const exported = await f.json('POST', 'core/actions', { token: T, body: { id: items.body.action.id, decision: 'approve' } });
     equal(exported.body.action.result, { created: 13, status: 'draft', bank: 'IELTS Reading bank' });
