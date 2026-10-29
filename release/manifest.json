@@ -1,59 +1,55 @@
 {
   "schemaVersion": 1,
-  "releaseId": "toefl-family-sellable-oct28",
+  "releaseId": "company-english",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "platform"
+    "company"
   ],
   "migrations": [
-    "20261028110000_toefl_plans_and_complete_bundle.sql"
+    "20261031100000_company_core.sql",
+    "20261031120000_company_training.sql",
+    "20261031130000_company_insights.sql",
+    "20261031140000_company_people.sql"
   ],
   "edgeFunctions": [
-    "score-prediction"
+    "company"
   ],
   "workers": [],
-  "sharedEdgeConsumers": [
-    "access-effective",
-    "exam-state",
-    "learning-profile",
-    "me",
-    "recommendations",
-    "review-session",
-    "start-session",
-    "trial-claim"
+  "sharedEdgeConsumers": [],
+  "requiredSecrets": [
+    "COMPANY_ALLOWED_ORIGINS",
+    "COMPANY_APP_URL",
+    "COMPANY_SELF_SERVE"
   ],
-  "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
-    "migration:20261028110000_toefl_plans_and_complete_bundle.sql",
-    "function:access-effective",
-    "function:me",
-    "function:start-session",
-    "function:exam-state",
-    "function:review-session",
-    "function:trial-claim",
-    "function:learning-profile",
-    "function:score-prediction",
-    "function:recommendations"
+    "migration:20261031100000_company_core.sql",
+    "migration:20261031120000_company_training.sql",
+    "migration:20261031130000_company_insights.sql",
+    "migration:20261031140000_company_people.sql",
+    "secret:COMPANY_ALLOWED_ORIGINS",
+    "secret:COMPANY_SELF_SERVE",
+    "secret:COMPANY_APP_URL",
+    "function:company"
   ],
   "manualFollowUps": [
-    "Order: ship this LAST, after the TOEFL simulator (toefl-sim) and the TOEFL Playbook with its content (playbooks-engine) are live, so nothing empty goes on sale.",
-    "Pages: merging publishes platform: a TOEFL family card (TOEFL Simulator, TOEFL Playbook, TOEFL Complete) on home, /toefl, /toefl-practice-test (related links), the Telegram Mini App practice tab and the Telegram discover Exams tab; a TOEFL iBT group on the public /pricing page; en/uz/ru. Until the migration runs, /pricing?product=toefl-complete says the service was not found and the TOEFL group only lists what already has active plans.",
-    "Database: supabase db push --linked --include-all from an isolated copy that adds only 20261028110000_toefl_plans_and_complete_bundle.sql to the installed migrations, keeping the 9 pending #220 payment migrations (20261010162000-20261010174000) excluded. Dry run first. It adds TOEFL Playbook Premium (59,000 UZS / 30 days and 149,000 UZS / 90 days), TOEFL iBT Simulator Standard (69,000 UZS / 30 days; the simulator is paywalled and had no active plan, checked on prod 2026-10-28), and the TOEFL Complete product with a 109,000 UZS / 30-day plan whose metadata.included_product_ids grants the simulator and the playbook at purchase. The inactive TOEFL Playbook 'test' plan (5f49a588-34e9-4503-8233-86076d82f457) is not touched.",
-    "Edge, after the migration (--project-ref bbjawctnqrufvnesdsel): supabase functions deploy access-effective; supabase functions deploy me; supabase functions deploy start-session; supabase functions deploy exam-state; supabase functions deploy review-session; supabase functions deploy trial-claim (these six bundle _shared/product-bundles.ts, which now expands TOEFL Complete for admin/sponsor grants and refuses its trial); supabase functions deploy learning-profile; supabase functions deploy score-prediction; supabase functions deploy recommendations (these three bundle _shared/sister-signals.ts, which now reads TOEFL playbook diagnostics and TOEFL simulator results in both the 2026 1-6 band shape and the legacy RLW shape; score-prediction keeps the two TOEFL scales in separate series).",
-    "Owner of ielts-practice is unaffected; TOEFL has no practice app."
+    "Pages: before merging, create the Pages project once (wrangler pages project create schood-company --production-branch main) so the merge deploy of apps/company succeeds; after merging, run the 'Configure Schood Company English Domain' workflow to bind company.schood.online. Until the function is deployed the app shows a connection error; the landing page renders without it.",
+    "Database: supabase db push --linked --include-all from an isolated copy of the installed migrations plus only the four company migrations (20261031100000, 20261031120000, 20261031130000, 20261031140000), keeping the 9 pending #220 payment migrations (20261010162000-20261010174000) excluded. Dry run first. Purely additive: new company_* tables (RLS on, service role only), functions company_sync_english_access / company_sync_org_access / company_reserve_test / company_consume_ai / company_purge_training_drafts / company_activity_summary, and account_personal_erasure_tables() gains the company tables.",
+    "Secrets (--project-ref bbjawctnqrufvnesdsel): supabase secrets set COMPANY_ALLOWED_ORIGINS=https://company.schood.online; supabase secrets set COMPANY_SELF_SERVE=true; supabase secrets set COMPANY_APP_URL=https://company.schood.online. Optional, with defaults: COMPANY_PILOT_TESTS (10), COMPANY_AI_DAILY_LIMIT (300 AI calls per workspace per day).",
+    "Edge: supabase functions deploy company --project-ref bbjawctnqrufvnesdsel (verify_jwt=false in config.toml; the function checks sessions itself). It uses the existing English AI gateway, so OPENROUTER/English AI settings already in place apply and calls are logged in english_ai_calls.",
+    "Commercial: pilots are self-serve (10 tests, no learning seats). Learning seats, test limits and contract dates are set by Schood staff at /staff; a seat grants the Schood English All Skills entitlement with source 'company'."
   ],
   "verification": [
-    "supabase migration list --linked shows 20261028110000 applied and the 9 #220 payment migrations still pending.",
-    "Anon REST: plans?is_active=eq.true&product_id=in.(b262ffa8-9912-4eba-93d7-58af3164d1cc,f9512c15-ec1c-4fcb-a5ec-a2c6ac3a020e,49f0661d-0933-361c-6c4b-67316ba29b4e) returns the 4 new plans; the 'test' plan stays inactive.",
-    "Signed out, https://schood.online/pricing shows a TOEFL iBT group; /pricing?product=toefl-playbook offers TOEFL Complete with 'Bought separately: 128,000 UZS'; Sign in to buy opens /auth?returnTo=/checkout?plan_id=...",
-    "With a test account holding only TOEFL Complete: access-effective effective_product_ids includes TOEFL iBT Simulator and TOEFL Playbook; /me lists derived member rows; toefl.schood.online opens tests.",
-    "GET /functions/v1/learning-profile and /score-prediction return 200 with sister_signals.toefl / practice_signals.toefl."
+    "supabase migration list --linked shows the four 20261031 company migrations applied and the 9 #220 payment migrations still pending.",
+    "Anon REST select on company_orgs and company_members returns 401/permission denied (no anon or authenticated grants).",
+    "GET https://<project>.supabase.co/functions/v1/company/me without a session returns 401 unauthorized; GET .../company/public/v/UNKNOWN returns 404; POST .../company/public/leads with an empty body returns 400.",
+    "https://company.schood.online renders the landing page in en/ru/uz; /t/unknowntoken shows the link-not-active message.",
+    "With a staff account: /staff lists workspaces; a test pilot can be created at /start and shows 10 tests in Settings."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages rollback of schood-platform to the previous deployment.",
-    "migration": "Set is_active=false on the 4 new TOEFL plans and status='disabled' on the TOEFL Complete product. Entitlements already bought stay valid.",
-    "edge": "Redeploy the nine functions from the previous main commit (87464c9f); TOEFL Complete grants made outside checkout stop expanding, purchased member entitlements keep working."
+    "pages": "Cloudflare Pages rollback of schood-company to the previous deployment, or remove the company.schood.online custom domain.",
+    "migration": "Leave the additive tables in place; to stop access set every company_orgs.status to 'suspended' and run select public.company_sync_org_access(id) from company_orgs, which revokes company-granted English entitlements and restores learners' own rows.",
+    "edge": "supabase functions delete company (or deploy a stub returning 503); no other function depends on it."
   }
 }
