@@ -9,7 +9,7 @@ export const LEADS_PER_DAY = 5;
 export const INTERESTS = ['hiring', 'placement', 'training', 'reports'] as const;
 /** A person needs a few seconds to fill the form; faster submissions are bots. */
 export const MIN_FILL_MS = 2500;
-const PHONE = /^\+?[0-9][0-9\s().-]{5,24}$/;
+export const PHONE = /^\+?[0-9][0-9\s().-]{5,24}$/;
 
 export const routes: Route[] = [
   {

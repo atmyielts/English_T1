@@ -7,6 +7,7 @@ import { MEMBER_COLUMNS, ORG_COLUMNS } from './handler.ts';
 import { check, CompanyError, UUID, type Ctx, type MemberRow, type OrgRow, type Route } from './types.ts';
 import { email as readEmail, int, obj, oneOf, text } from './util.ts';
 import { dateOrNull, DAY, fetchAll, issueInvite, OWNER_DAYS, revokeMemberInvites, seatCount } from './people/shared.ts';
+import { PHONE } from './site.ts';
 
 export const LEAD_STATUSES = ['new', 'contacted', 'pilot', 'won', 'lost'] as const;
 const LEAD_COLUMNS = 'id,name,company,job_title,phone,email,size_band,industry,interests,need,locale,status,notes,follow_up_at,org_id,source,created_at,updated_at';
@@ -176,19 +177,30 @@ export const routes: Route[] = [
       if ('name' in input) patch.name = text(input.name, 'name', { min: 2, max: 120 });
       if ('billing_email' in input) patch.billing_email = readEmail(input.billing_email, 'billing_email', true);
       if ('tax_id' in input) patch.tax_id = text(input.tax_id, 'tax_id', { max: 40, optional: true });
-      if ('ai_daily_limit' in input) {
-        const settings = { ...(org.settings ?? {}) } as Record<string, unknown>;
-        const value = int(input.ai_daily_limit, 'ai_daily_limit', { min: 0, max: 100_000, optional: true });
-        if (value === null) delete settings.ai_daily_limit; else settings.ai_daily_limit = value;
-        patch.settings = settings;
+      // Staff-only keys in settings: the AI cap and the Schood contact HR sees for "Talk to Schood about seats".
+      const settings = { ...(org.settings ?? {}) } as Record<string, unknown>;
+      const settingKeys: string[] = [];
+      const setSetting = (key: string, value: unknown) => {
+        if (value === null) delete settings[key]; else settings[key] = value;
+        settingKeys.push(key);
+      };
+      if ('ai_daily_limit' in input) setSetting('ai_daily_limit', int(input.ai_daily_limit, 'ai_daily_limit', { min: 0, max: 100_000, optional: true }));
+      if ('schood_contact_email' in input) setSetting('schood_contact_email', readEmail(input.schood_contact_email, 'schood_contact_email', true));
+      if ('schood_contact_phone' in input) {
+        const phone = text(input.schood_contact_phone, 'schood_contact_phone', { max: 40, optional: true });
+        if (phone && !PHONE.test(phone)) throw new CompanyError('invalid_field', 'schood_contact_phone is not a phone number.', 400, { field: 'schood_contact_phone' });
+        setSetting('schood_contact_phone', phone);
       }
+      if (settingKeys.length) patch.settings = settings;
       if (!Object.keys(patch).length) return { org, synced: null };
       const updated = check<OrgRow>(await ctx.db.from('company_orgs').update(patch).eq('id', org.id).select(ORG_COLUMNS).single());
       const synced = await syncOrg(ctx, org.id);
       const before = org as unknown as Record<string, unknown>, after = updated as unknown as Record<string, unknown>;
-      const changes = Object.fromEntries(Object.keys(patch).map((field) => field === 'settings'
-        ? ['ai_daily_limit', { from: (org.settings as Record<string, unknown>)?.ai_daily_limit ?? null, to: (updated.settings as Record<string, unknown>)?.ai_daily_limit ?? null }]
-        : [field, { from: before[field] ?? null, to: after[field] ?? null }]));
+      const oldSettings = (org.settings ?? {}) as Record<string, unknown>, newSettings = (updated.settings ?? {}) as Record<string, unknown>;
+      const changes = Object.fromEntries([
+        ...Object.keys(patch).filter((field) => field !== 'settings').map((field) => [field, { from: before[field] ?? null, to: after[field] ?? null }]),
+        ...settingKeys.map((key) => [key, { from: oldSettings[key] ?? null, to: newSettings[key] ?? null }]),
+      ]);
       await ctx.audit('staff.org_updated', org.id, { ...changes, synced });
       return { org: updated, usage: await usage(ctx.db, updated), synced };
     },

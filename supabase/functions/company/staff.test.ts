@@ -108,3 +108,20 @@ Deno.test('a demo request becomes a pipeline entry, then a workspace with an own
   const second = await call('POST', `staff/orgs/${org.id}/owner-invite`, { user: STAFF, body: { email: 'deputy@orient.example', full_name: 'Deputy' } });
   assertEquals([second.status, second.body.owner.role], [200, 'owner']);
 });
+
+Deno.test('staff set the Schood contact HR sees, and seat requests from workspaces reach the pipeline', async () => {
+  const { db, call } = setup();
+  const saved = await call('PATCH', `staff/orgs/${ORG}`, { user: STAFF, body: { schood_contact_email: 'Sales@Schood.online', schood_contact_phone: '+998 71 123 45 67', ai_daily_limit: 80 } });
+  assertEquals(saved.status, 200);
+  assertEquals(db.rows('company_orgs')[0].settings, { locale: 'ru', schood_contact_email: 'sales@schood.online', schood_contact_phone: '+998 71 123 45 67', ai_daily_limit: 80 });
+  const audit = db.rows('company_audit').at(-1)!.details as Record<string, { from: unknown; to: unknown }>;
+  assertEquals(audit.schood_contact_email, { from: null, to: 'sales@schood.online' });
+  assertEquals((await call('PATCH', `staff/orgs/${ORG}`, { user: STAFF, body: { schood_contact_phone: 'call us' } })).body.field, 'schood_contact_phone');
+  assertEquals((await call('PATCH', `staff/orgs/${ORG}`, { user: STAFF, body: { schood_contact_email: 'nope' } })).body.field, 'schood_contact_email');
+  await call('PATCH', `staff/orgs/${ORG}`, { user: STAFF, body: { schood_contact_email: null } });
+  assertEquals(db.rows('company_orgs')[0].settings, { locale: 'ru', schood_contact_phone: '+998 71 123 45 67', ai_daily_limit: 80 });
+  // HR's "Talk to Schood about seats" (insights) files a lead with the workspace attached.
+  db.rows('company_leads').push({ id: crypto.randomUUID(), name: 'Dilnoza Karimova', company: 'Silk Road Hotels', status: 'new', source: 'company_seats', org_id: ORG, interests: [], created_at: '2026-10-30T08:00:00Z' });
+  const leads = await call('GET', 'staff/leads', { user: STAFF });
+  assertEquals([leads.body.leads[0].source, leads.body.leads[0].org.name, leads.body.counts.new], ['company_seats', 'Silk Road Hotels', 1]);
+});
