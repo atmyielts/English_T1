@@ -64,13 +64,23 @@ export function toTelegramText(markdown: string, limit = 4000): string[] {
   if (!text) return [];
   const parts: string[] = [];
   let current = '';
+  const push = () => { if (current) parts.push(current); current = ''; };
   for (const block of text.split(/\n\n/)) {
-    const pieces = block.length > limit ? block.match(new RegExp(`[\\s\\S]{1,${limit}}`, 'g')) ?? [] : [block];
-    for (const piece of pieces) {
-      if (current && current.length + 2 + piece.length > limit) { parts.push(current); current = ''; }
+    let rest = block;
+    while (rest) {
+      const room = current ? limit - current.length - 2 : limit;
+      if (rest.length <= room) { current = current ? `${current}\n\n${rest}` : rest; break; }
+      // A paragraph that fits a message of its own starts one; a longer one fills this one first.
+      if (rest.length <= limit || room < limit / 4) { push(); continue; }
+      const window = rest.slice(0, room);
+      let cut = Math.max(window.lastIndexOf('\n'), window.lastIndexOf(' '));
+      if (cut < room / 2) cut = room;
+      const piece = window.slice(0, cut).trimEnd();
       current = current ? `${current}\n\n${piece}` : piece;
+      rest = rest.slice(cut).trimStart();
+      push();
     }
   }
-  if (current) parts.push(current);
+  push();
   return parts;
 }

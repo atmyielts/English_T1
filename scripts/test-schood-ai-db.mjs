@@ -1,19 +1,22 @@
-// Applies the Schood AI core migration to isolated, throwaway databases (never a
-// linked project) and runs its integration test:
+// Applies the Schood AI core migrations (20261030100000-199999, in order) to isolated,
+// throwaway databases (never a linked project) and runs their integration tests:
 //   1. PGlite (PostgreSQL 17 in WASM): always.
 //   2. A Docker postgres:16 container with no host port: the same test, applying the
-//      migration twice, then real concurrent sessions racing for credits and caps.
+//      migrations twice, then real concurrent sessions racing for credits, caps and page saves.
 //      Skipped when Docker is not available, unless SCHOOD_AI_DB_REQUIRE_DOCKER=1 (CI).
 import { PGlite } from '@electric-sql/pglite';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { spawn, spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import assert from 'node:assert/strict';
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const fixture = read('supabase/tests/schood-ai-core.fixture.sql');
-const migration = read('supabase/migrations/20261030100000_schood_ai_core.sql');
-const integration = read('supabase/tests/schood-ai-core.integration.sql');
+const migrations = readdirSync(new URL('../supabase/migrations/', import.meta.url))
+  .filter((name) => /^202610301\d{5}_schood_ai_.*\.sql$/.test(name)).sort();
+const migration = migrations.map((name) => read(`supabase/migrations/${name}`)).join('\n');
+const integration = ['schood-ai-core', 'schood-ai-library'].map((name) => read(`supabase/tests/${name}.integration.sql`)).join('\n');
+const OK = ['schood ai core: ok', 'schood ai library: ok'];
 
 // --- 1. PGlite ---------------------------------------------------------------------
 {
@@ -23,8 +26,8 @@ const integration = read('supabase/tests/schood-ai-core.integration.sql');
     await db.exec(migration);
     await db.exec(migration);
     const results = await db.exec(integration);
-    assert.equal(results.at(-1).rows[0]?.['?column?'], 'schood ai core: ok');
-    console.log('PGlite (PostgreSQL 17): migration applies twice; workspaces, credit cycles, charges, refunds, budgets, caps, ledger, learning events, notification budget and isolation passed.');
+    assert.deepEqual(results.map((result) => result.rows[0]?.['?column?']).filter((value) => typeof value === 'string' && value.startsWith('schood ai')), OK);
+    console.log(`PGlite (PostgreSQL 17): ${migrations.length} migrations apply twice; workspaces, credit cycles, charges, refunds, budgets, caps, ledger, learning events, notification budget, library saves and versions, and isolation passed.`);
   } finally {
     await db.close();
   }
@@ -67,7 +70,7 @@ try {
   psql(migration);
   psql(migration);
   const output = psql(integration);
-  assert.match(output, /schood ai core: ok/);
+  for (const line of OK) assert.ok(output.includes(line), line);
 
   // Concurrency: 20 sessions each hold a 3-credit charge open for 150 ms against a
   // 50-credit pack. Exactly 16 may succeed and the balance must end at 2.
@@ -101,7 +104,14 @@ try {
   assert.equal(psql(`select count(*) from public.ai_credit_ledger where workspace_id = '${planWs}' and kind = 'grant';`).trim(), '1', 'one grant per cycle');
   assert.equal(psql(`select plan_balance from public.ai_credit_accounts where workspace_id = '${planWs}';`).trim(), '1490');
 
-  console.log('Postgres 16 (Docker): migration applies twice; integration passed; 20 racing charges kept the balance exact (16 won, 2 left), duplicate request keys charged once, racing refunds refunded once, a 12-call cap admitted exactly 12 of 30, racing first charges granted the cycle once.');
+  // Ten tabs save the same page from revision 1 at once: exactly one wins, the rest are conflicts.
+  const pageId = psql(`insert into public.ai_pages (workspace_id, owner_id, kind, title, updated_by) values ('${planWs}', '00000000-0000-4000-8000-0000000000a1', 'note', 'Race', '00000000-0000-4000-8000-0000000000a1') returning id;`).trim().split('\n')[0];
+  const saves = await race(10, (i) => `select public.ai_page_save('${pageId}', 1, '{"body": "tab ${i}"}', '00000000-0000-4000-8000-0000000000a1', false, now())->>'ok';`);
+  assert.equal(saves.filter((line) => line === 'true').length, 1, 'one save wins');
+  assert.equal(psql(`select revision from public.ai_pages where id = '${pageId}';`).trim(), '2');
+  assert.equal(psql(`select count(*) from public.ai_page_revisions where page_id = '${pageId}';`).trim(), '1', 'one version for one save');
+
+  console.log(`Postgres 16 (Docker): ${migrations.length} migrations apply twice; integration passed; 20 racing charges kept the balance exact (16 won, 2 left), duplicate request keys charged once, racing refunds refunded once, a 12-call cap admitted exactly 12 of 30, racing first charges granted the cycle once, 10 racing page saves from one revision: exactly 1 won.`);
 } finally {
   spawnSync('docker', ['rm', '--force', container]);
 }

@@ -209,6 +209,41 @@ export interface ActionRow {
   createdAt: string;
 }
 
+// --- Library pages ----------------------------------------------------------------------------
+
+export interface PageRow {
+  id: string;
+  workspaceId: string;
+  ownerId: string | null;
+  folder: string;
+  kind: string;
+  title: string;
+  body: string;
+  material: unknown;
+  revision: number;
+  visibility: 'private' | 'workspace';
+  status: 'draft' | 'approved' | 'archived';
+  sourceGenerationId: string | null;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+export interface PageRevisionRow { pageId: string; revision: number; title: string; body: string; material: unknown; authorId: string | null; createdAt: string }
+export interface PageQuery {
+  workspaceId: string;
+  viewerId: string;
+  /** Owners and admins see every page in the workspace. */
+  manager: boolean;
+  scope: 'mine' | 'workspace' | 'all';
+  folder?: string | null;
+  kind?: string;
+  status?: PageRow['status'];
+  query?: string;
+  limit: number;
+  before?: string;
+}
+export type PagePatch = Partial<Pick<PageRow, 'title' | 'body' | 'material' | 'folder' | 'visibility' | 'status'>>;
+
 export interface ReportRow { id: string; messageId: string | null; workspaceId: string | null; reporterId: string | null; reason: string; note: string | null; excerpt: string; status: 'open' | 'reviewed' | 'dismissed'; createdAt: string }
 export interface AuditEvent { workspaceId: string | null; actorId: string | null; event: string; targetType?: string | null; targetId?: string | null; details?: Record<string, unknown> }
 
@@ -332,6 +367,20 @@ export interface SchoodAIRepository {
   audit(event: AuditEvent): Promise<void>;
 
   addLearningEvents(events: LearningEvent[]): Promise<void>;
+
+  createPage(input: Pick<PageRow, 'workspaceId' | 'ownerId' | 'folder' | 'kind' | 'title' | 'body' | 'material' | 'visibility' | 'status' | 'sourceGenerationId'>): Promise<PageRow>;
+  page(id: string): Promise<PageRow | null>;
+  /** Visible pages, newest first: `mine` (owned), `workspace` (shared), `all` (owned or shared; managers: everything). Archived only when asked. */
+  pages(query: PageQuery): Promise<PageRow[]>;
+  /** Saves only at the expected revision (ai_page_save). */
+  savePage(id: string, expectedRevision: number, patch: PagePatch, authorId: string, snapshot: boolean): Promise<{ ok: true; page: PageRow } | { ok: false; code: 'not_found' | 'revision_conflict'; current: PageRow | null }>;
+  deletePage(id: string): Promise<boolean>;
+  pageRevisions(pageId: string, limit: number): Promise<PageRevisionRow[]>;
+  pageRevision(pageId: string, revision: number): Promise<PageRevisionRow | null>;
+  /** Folders of the visible pages, with counts. */
+  folders(query: Pick<PageQuery, 'workspaceId' | 'viewerId' | 'manager'>): Promise<{ path: string; count: number }[]>;
+  /** Moves pages in `from` (and below) to `to`, only those the viewer may edit. */
+  moveFolder(query: Pick<PageQuery, 'workspaceId' | 'viewerId' | 'manager'>, from: string, to: string): Promise<number>;
   notify(userId: string, channel: string, take: boolean): Promise<NotifyDecision>;
 }
 

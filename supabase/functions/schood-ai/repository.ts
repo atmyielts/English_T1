@@ -2,7 +2,7 @@ import { cleanSwitches, isCapability, type Registry, type RegistryModel, type Re
 import { resolvePermissions } from '../_shared/admin-access.ts';
 import { computeEffectiveAccess, type EntitlementRow, type SponsoredRow } from '../access-effective/logic.ts';
 import type {
-  ActionRow, AuthUser, Balance, CallRecord, ChargeOutcome, GenerationRow, LearningEvent, LedgerRow, Member, Message, NotifyDecision, ReportRow,
+  ActionRow, AuthUser, Balance, CallRecord, ChargeOutcome, GenerationRow, LearningEvent, LedgerRow, Member, Message, NotifyDecision, PageQuery, PageRevisionRow, PageRow, ReportRow,
   SchoodAIRepository, ServiceSettings, SpecialistRow, Thread, UsageRow, UserProfile, Workspace,
 } from './types.ts';
 
@@ -81,6 +81,15 @@ const route = (row: Row): RegistryRoute => ({
   requiredCapabilities: (Array.isArray(row.required_capabilities) ? row.required_capabilities : []).filter(isCapability),
   requireNoTraining: row.require_no_training === true, maxOutputTokens: num(row.max_output_tokens), temperature: num(row.temperature), enabled: row.enabled !== false,
 });
+const PAGE_COLUMNS = 'id,workspace_id,owner_id,folder,kind,title,body,material,revision,visibility,status,source_generation_id,updated_by,created_at,updated_at';
+const SUMMARY_COLUMNS = 'id,workspace_id,owner_id,folder,kind,title,body:excerpt,revision,visibility,status,source_generation_id,updated_by,created_at,updated_at';
+const page = (row: Row): PageRow => ({
+  id: String(row.id), workspaceId: String(row.workspace_id), ownerId: str(row.owner_id), folder: String(row.folder ?? ''), kind: String(row.kind), title: String(row.title),
+  body: String(row.body ?? ''), material: row.material ?? null, revision: Number(row.revision), visibility: row.visibility === 'workspace' ? 'workspace' : 'private',
+  status: row.status as PageRow['status'], sourceGenerationId: str(row.source_generation_id), updatedBy: str(row.updated_by), createdAt: String(row.created_at), updatedAt: String(row.updated_at),
+});
+const likeEscape = (text: string) => text.replace(/[\\%_]/g, (char) => `\\${char}`);
+
 const toSnake = (patch: Record<string, unknown>) => Object.fromEntries(Object.entries(patch).filter(([, value]) => value !== undefined).map(([key, value]) => [key.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`), value]));
 
 export function createSchoodAIRepository(user: (token: string) => Promise<AuthUser | null>, db: SchoodAIDatabase): SchoodAIRepository {
@@ -300,6 +309,74 @@ export function createSchoodAIRepository(user: (token: string) => Promise<AuthUs
         user_id: event.userId, workspace_id: event.workspaceId, area: event.area, kind: event.kind, verified: event.verified, feature: event.feature,
         skill: event.skill, verified_minutes: event.verifiedMinutes, score: event.score, outcome: event.outcome, ref: event.ref, source: event.source,
       }))));
+    },
+    async createPage(input) {
+      return page(check<Row>(await db.from('ai_pages').insert({
+        workspace_id: input.workspaceId, owner_id: input.ownerId, folder: input.folder, kind: input.kind, title: input.title, body: input.body,
+        material: input.material ?? null, visibility: input.visibility, status: input.status, source_generation_id: input.sourceGenerationId, updated_by: input.ownerId,
+      }).select(PAGE_COLUMNS).single()));
+    },
+    async page(id) {
+      const row = check<Row | null>(await db.from('ai_pages').select(PAGE_COLUMNS).eq('id', id).maybeSingle());
+      return row ? page(row) : null;
+    },
+    async pages(q: PageQuery) {
+      const build = () => {
+        let query = db.from('ai_pages').select(SUMMARY_COLUMNS).eq('workspace_id', q.workspaceId);
+        if (q.scope === 'mine') query = query.eq('owner_id', q.viewerId);
+        else if (q.scope === 'workspace') query = query.eq('visibility', 'workspace');
+        else if (!q.manager) query = query.or(`owner_id.eq.${q.viewerId},visibility.eq.workspace`);
+        if (q.folder !== undefined && q.folder !== null) query = query.eq('folder', q.folder);
+        if (q.kind) query = query.eq('kind', q.kind);
+        query = q.status ? query.eq('status', q.status) : query.neq('status', 'archived');
+        if (q.before) query = query.lt('updated_at', q.before);
+        return query;
+      };
+      if (!q.query) return check<Row[]>(await build().order('updated_at', { ascending: false }).limit(q.limit)).map(page);
+      // Whole words first, then titles that contain the text (partial words).
+      const found = check<Row[]>(await build().textSearch('search', q.query, { config: 'simple', type: 'websearch' }).order('updated_at', { ascending: false }).limit(q.limit));
+      if (found.length < q.limit) {
+        const more = check<Row[]>(await build().ilike('title', `%${likeEscape(q.query)}%`).order('updated_at', { ascending: false }).limit(q.limit));
+        for (const row of more) if (!found.some((existing) => existing.id === row.id)) found.push(row);
+      }
+      return found.slice(0, q.limit).map(page);
+    },
+    async savePage(id, expectedRevision, patch, authorId, snapshot) {
+      const result = obj(await rpc('ai_page_save', { p_page: id, p_expected: expectedRevision, p_patch: toSnake(patch as Record<string, unknown>), p_author: authorId, p_snapshot: snapshot }));
+      const current = await this.page(id);
+      if (result.ok === true && current) return { ok: true, page: current };
+      return { ok: false, code: result.code === 'not_found' || !current ? 'not_found' : 'revision_conflict', current };
+    },
+    async deletePage(id) {
+      return check<Row[]>(await db.from('ai_pages').delete().eq('id', id).select('id')).length > 0;
+    },
+    async pageRevisions(pageId, limit) {
+      return check<Row[]>(await db.from('ai_page_revisions').select('page_id,revision,title,author_id,created_at').eq('page_id', pageId).order('revision', { ascending: false }).limit(limit))
+        .map((row): PageRevisionRow => ({ pageId: String(row.page_id), revision: Number(row.revision), title: String(row.title), body: '', material: null, authorId: str(row.author_id), createdAt: String(row.created_at) }));
+    },
+    async pageRevision(pageId, revision) {
+      const row = check<Row | null>(await db.from('ai_page_revisions').select('page_id,revision,title,body,material,author_id,created_at').eq('page_id', pageId).eq('revision', revision).maybeSingle());
+      return row ? { pageId: String(row.page_id), revision: Number(row.revision), title: String(row.title), body: String(row.body ?? ''), material: row.material ?? null, authorId: str(row.author_id), createdAt: String(row.created_at) } : null;
+    },
+    async folders(q) {
+      let query = db.from('ai_pages').select('folder').eq('workspace_id', q.workspaceId).neq('status', 'archived');
+      if (!q.manager) query = query.or(`owner_id.eq.${q.viewerId},visibility.eq.workspace`);
+      const counts = new Map<string, number>();
+      for (const row of check<Row[]>(await query.limit(10000))) counts.set(String(row.folder ?? ''), (counts.get(String(row.folder ?? '')) ?? 0) + 1);
+      return [...counts].map(([path, count]) => ({ path, count })).sort((a, b) => a.path.localeCompare(b.path));
+    },
+    async moveFolder(q, from, to) {
+      // Folder names are free text: fetch the visible folders and filter here rather than build a filter string from them.
+      let query = db.from('ai_pages').select('folder').eq('workspace_id', q.workspaceId);
+      if (!q.manager) query = query.eq('owner_id', q.viewerId);
+      const folders = [...new Set(check<Row[]>(await query.limit(10000)).map((row) => String(row.folder)))].filter((folder) => folder === from || folder.startsWith(`${from}/`));
+      let moved = 0;
+      for (const folder of folders) {
+        let update = db.from('ai_pages').update({ folder: `${to}${folder.slice(from.length)}`.replace(/^\//, '') }).eq('workspace_id', q.workspaceId).eq('folder', folder);
+        if (!q.manager) update = update.eq('owner_id', q.viewerId);
+        moved += check<Row[]>(await update.select('id')).length;
+      }
+      return moved;
     },
     async notify(userId, channel, take): Promise<NotifyDecision> {
       const result = obj(await rpc('ai_notify', { p_user: userId, p_channel: channel, p_take: take }));
