@@ -5,6 +5,7 @@ import type { ChatMessage, SpeechAudio, Transcript } from './providers/types.ts'
 export type { PlanCode, Role, WorkspaceKind } from '../../../packages/ai-core/src/mod.ts';
 export type { ChatMessage, ContentPart, SpeechAudio, Transcript } from './providers/types.ts';
 import type { Gateway } from './gateway.ts';
+import type { LibraryService } from './library.ts';
 
 // The shared types of the Schood AI function: what a route receives (RequestContext),
 // how an area registers its routes (FeatureModule) and what the repository stores.
@@ -162,6 +163,7 @@ export interface Message {
   errorCode: string | null;
   createdAt: string;
 }
+/** `name` is empty when a built-in keeps its own (translated) name. */
 export interface SpecialistRow { key: string; name: string; description: string | null; instructions: string; contextKinds: string[]; roles: Role[]; enabled: boolean }
 
 export type GenerationStatus = 'requested' | 'generating' | 'ready' | 'approved' | 'rejected' | 'failed';
@@ -208,8 +210,44 @@ export interface ActionRow {
   createdAt: string;
 }
 
+// --- Library pages ----------------------------------------------------------------------------
+
+export interface PageRow {
+  id: string;
+  workspaceId: string;
+  ownerId: string | null;
+  folder: string;
+  kind: string;
+  title: string;
+  body: string;
+  material: unknown;
+  revision: number;
+  visibility: 'private' | 'workspace';
+  status: 'draft' | 'approved' | 'archived';
+  sourceGenerationId: string | null;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+export interface PageRevisionRow { pageId: string; revision: number; title: string; body: string; material: unknown; authorId: string | null; createdAt: string }
+export interface PageQuery {
+  workspaceId: string;
+  viewerId: string;
+  /** Owners and admins see every page in the workspace. */
+  manager: boolean;
+  scope: 'mine' | 'workspace' | 'all';
+  folder?: string | null;
+  kind?: string;
+  status?: PageRow['status'];
+  query?: string;
+  limit: number;
+  before?: string;
+}
+export type PagePatch = Partial<Pick<PageRow, 'title' | 'body' | 'material' | 'folder' | 'visibility' | 'status'>>;
+
 export interface ReportRow { id: string; messageId: string | null; workspaceId: string | null; reporterId: string | null; reason: string; note: string | null; excerpt: string; status: 'open' | 'reviewed' | 'dismissed'; createdAt: string }
 export interface AuditEvent { workspaceId: string | null; actorId: string | null; event: string; targetType?: string | null; targetId?: string | null; details?: Record<string, unknown> }
+export interface AuditRow extends AuditEvent { id: number; createdAt: string }
 
 // --- Learning events and notifications ------------------------------------------------------
 
@@ -280,7 +318,9 @@ export interface SchoodAIRepository {
   workspace(id: string): Promise<Workspace | null>;
   membership(workspaceId: string, userId: string): Promise<Member | null>;
   memberships(userId: string): Promise<{ workspace: Workspace; member: Member }[]>;
-  updateWorkspace(id: string, patch: Partial<Pick<Workspace, 'name' | 'branding' | 'houseStyle' | 'settings'>>): Promise<Workspace>;
+  updateWorkspace(id: string, patch: Partial<Pick<Workspace, 'name' | 'branding' | 'houseStyle' | 'settings' | 'status'>>): Promise<Workspace>;
+  /** Workspaces by exact id or by name (admin console), newest first. */
+  searchWorkspaces(query: string, limit: number): Promise<Workspace[]>;
 
   settings(): Promise<ServiceSettings>;
   updateSettings(patch: Partial<ServiceSettings>, actor: string): Promise<ServiceSettings>;
@@ -312,6 +352,9 @@ export interface SchoodAIRepository {
   deleteMessage(id: string): Promise<void>;
 
   specialists(workspaceId: string): Promise<SpecialistRow[]>;
+  /** Creates or replaces a workspace's override or custom specialist. */
+  saveSpecialist(workspaceId: string, row: SpecialistRow, actor: string): Promise<void>;
+  deleteSpecialist(workspaceId: string, key: string): Promise<boolean>;
 
   createAction(input: Pick<ActionRow, 'workspaceId' | 'kind' | 'payload' | 'summary' | 'proposedBy' | 'threadId' | 'messageId' | 'expiresAt'>): Promise<ActionRow>;
   action(id: string): Promise<ActionRow | null>;
@@ -329,8 +372,24 @@ export interface SchoodAIRepository {
   reports(status: ReportRow['status'], limit: number): Promise<ReportRow[]>;
   reviewReport(id: string, status: 'reviewed' | 'dismissed', actor: string): Promise<boolean>;
   audit(event: AuditEvent): Promise<void>;
+  /** The audit log, newest first (admin console). */
+  auditEvents(filter: { workspaceId?: string; prefix?: string; before?: number; limit: number }): Promise<AuditRow[]>;
 
   addLearningEvents(events: LearningEvent[]): Promise<void>;
+
+  createPage(input: Pick<PageRow, 'workspaceId' | 'ownerId' | 'folder' | 'kind' | 'title' | 'body' | 'material' | 'visibility' | 'status' | 'sourceGenerationId'>): Promise<PageRow>;
+  page(id: string): Promise<PageRow | null>;
+  /** Visible pages, newest first: `mine` (owned), `workspace` (shared), `all` (owned or shared; managers: everything). Archived only when asked. */
+  pages(query: PageQuery): Promise<PageRow[]>;
+  /** Saves only at the expected revision (ai_page_save). */
+  savePage(id: string, expectedRevision: number, patch: PagePatch, authorId: string, snapshot: boolean): Promise<{ ok: true; page: PageRow } | { ok: false; code: 'not_found' | 'revision_conflict'; current: PageRow | null }>;
+  deletePage(id: string): Promise<boolean>;
+  pageRevisions(pageId: string, limit: number): Promise<PageRevisionRow[]>;
+  pageRevision(pageId: string, revision: number): Promise<PageRevisionRow | null>;
+  /** Folders of the visible pages, with counts. */
+  folders(query: Pick<PageQuery, 'workspaceId' | 'viewerId' | 'manager'>): Promise<{ path: string; count: number }[]>;
+  /** Moves pages in `from` (and below) to `to`, only those the viewer may edit. */
+  moveFolder(query: Pick<PageQuery, 'workspaceId' | 'viewerId' | 'manager'>, from: string, to: string): Promise<number>;
   notify(userId: string, channel: string, take: boolean): Promise<NotifyDecision>;
 }
 
@@ -417,6 +476,8 @@ export interface RequestContext {
   gateway: Gateway;
   ai: ChargedAI;
   actions: ActionService;
+  /** The library: create, get, save and list pages with the same rules as the core/page routes. */
+  library: LibraryService;
   events: { emit(event: LearningEventInput): void };
   notify: { allowed(userId: string, channel: string): Promise<NotifyDecision>; take(userId: string, channel: string): Promise<NotifyDecision> };
   /** The workspace in `?workspace_id=` (or the personal one) with the caller's active membership. */

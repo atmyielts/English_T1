@@ -1,6 +1,6 @@
 # Schood AI function: the contract for feature areas
 
-This is the brief for every agent building on `supabase/functions/schood-ai`. Read it with `docs/product/44_SCHOOD_AI.md`. The app has its own contract in `apps/schood-ai/src/CONTRACT.md`.
+This is the brief for every agent building on `supabase/functions/schood-ai`. Read it with `docs/product/44_SCHOOD_AI.md`. The app has its own contract in `apps/schood-ai/src/CONTRACT.md` (including its session client and how languages load).
 
 ## Shape
 
@@ -48,6 +48,7 @@ export const learnerModule: FeatureModule = {
 | `ctx.ai` | Charged AI calls (below). The only way a route uses a model. |
 | `ctx.context(kinds, { ref?, specialist? })` | Runs registered context providers. A failing or slow provider is skipped. |
 | `ctx.actions` | The Approve & run queue: `propose`, `list`, `get`, `decide`. |
+| `ctx.library` | Library pages: `create`, `get`, `save`, `list`, with the same rules as the routes (see The library). |
 | `ctx.events.emit(event)` | Learning events. Written after the response; never fails the request. |
 | `ctx.notify.allowed(userId, channel)` / `take(...)` | The notification budget: 2 a day per person across all bots, quiet 22:00–08:00 local. |
 | `ctx.functions.call(name, path, init)` | Another Schood Edge Function, called with the person's own token, for Academy or Assessment Cloud. Throws `user_token_required` on the worker path. |
@@ -103,14 +104,87 @@ const { data, credits, balance } = await ctx.ai.json({
   - `CLOUDFLARE_AI_API_TOKEN` (a Workers AI token, never the Pages deploy token);
   - `SCHOOD_AI_KEY_*` for custom endpoints.
 
+### Admin console routes
+
+Every `admin/*` route needs the existing admin RBAC permission through `admin-access.ts`, including its MFA policy (a refusal is `403 mfa_required`). The app's `/admin` screen uses them.
+
+| Route | Permission | Use |
+|---|---|---|
+| `GET/PATCH admin/settings` | `admin.settings.manage` | The global switch, feature switches and daily caps |
+| `GET/POST admin/providers`, `admin/models`, `admin/routes` | `admin.settings.manage` | The registry (validated; secrets named, never stored) |
+| `POST admin/test` | `admin.settings.manage` | One prompt to one model: text, latency, tokens, cost. No credits. |
+| `GET admin/usage?days=` | `admin.analytics.view` | Calls, failures, error rate, cost and latency by model and by feature |
+| `GET admin/workspaces?q=` / `PATCH admin/workspaces` | `admin.settings.manage` | Find a workspace by id or name; `{ id, features?, status? }` sets its switches or suspends it |
+| `GET/PATCH admin/reports` | `admin.support.manage` | The report queue |
+| `GET admin/audit?event=&workspace_id=&before=` | `admin.activity.view` | The Schood AI audit log, newest first |
+| `POST admin/credits` | `admin.billing.manage` | A support or contract grant (once per reference) |
+
 ## Extension points
 
 | Registry | Where | Use it for |
 |---|---|---|
-| `registerSpecialist(def)` | `specialists.ts` | A chat assistant: key, names (uz/ru/en), role prompt, allowed context kinds, credit key, roles, starter prompts. `core/chat` serves it. Workspaces can override names and instructions, narrow context and roles, or switch it off (`ai_specialists`). |
+| `registerSpecialist(def)` | `specialists.ts` | A chat assistant: key, names (uz/ru/en), role prompt, allowed context kinds, credit key, roles, starter prompts. `core/chat` serves it. Workspace owners and admins can override names and instructions, narrow context and roles, or switch it off (`ai_specialists`, through `GET/PUT/DELETE core/specialists`); a null name keeps your translated names. |
 | `registerContextProvider(kind, fn, { allowCustom?, selfView?, timeoutMs?, maxChars? })` | `context.ts` | Data the model may see, for example `homework_open`, `group_weak_spots` or `coach_progress`. Check roles inside the provider. `selfView` only for data about the caller (shown in `core/context`). |
 | `registerActionKind({ kind, area, approverRoles, parse, summary, display?, run, retrySafe?, expiresInHours? })` | `actions.ts` | Approve & run: `send_parent_message`, `assign_homework`, `post_to_channel`, `book_trial`. `run` executes as the approver, with their token. |
 | `registerPlanSource(name, fn)` | `plan.ts` | Extra plans or directly granted features: children of a Family holder → `plus`, a coach pass → `features: ['B4']`, a team seat. |
+
+## The library (pages)
+
+Every saved material is a page in the library of a person's or a centre's workspace. A page has:
+
+- a Markdown `body`, which is the editable document;
+- an optional structured `material` of a registered kind;
+- `folder`, `kind`, `title`, `status` (`draft`, `approved`, `archived`) and `visibility` (`private`, or shared with the workspace's staff);
+- a `revision` number and version history.
+
+Only staff roles (owner, admin, teacher) use the library.
+
+- **Read and export:** your own pages, shared pages, and all pages for owners and admins. This needs no plan, so your library stays readable.
+- **Create, edit, restore, duplicate, move folders:** need T6 in the plan. Edit is for the page's owner, or owners and admins on a shared page.
+- **Delete:** the page's owner, or owners and admins on a shared page. No plan needed.
+- **Sharing** (`visibility: 'workspace'`) exists only in centre workspaces. Sharing changes and deletes in a centre are written to the audit log.
+- **Linking a generation** (`sourceGenerationId`): only one from this workspace, and your own unless you are an owner or admin.
+- **Saves:** fields you leave out are kept. A new `material` without a `body` rebuilds the body with the kind's `toMarkdown`. A version of the previous state is kept when you pass `snapshot: true`, when someone else edited the page last, or when the last version is over ten minutes old; the newest 200 are kept. Search covers the title, folder names and body (whole words), plus partial matches in titles.
+
+### Routes
+
+| Route | Use |
+|---|---|
+| `GET core/pages?folder=&kind=&status=&q=&scope=mine\|workspace\|all&limit=&before=` | List and full-text search. Returns `{ pages: PageSummary[] }`. |
+| `POST core/pages` | Create: `{ title, kind?, folder?, body?, material?, visibility?, status?, source_generation_id? }`. Returns `{ page }`. |
+| `GET core/page?id=` | One page: `{ page: PageView }`. |
+| `PATCH core/page` | Revision-checked save: `{ id, expected_revision, title?, body?, material?, folder?, visibility?, status?, snapshot? }`. Returns `{ page }`, or **409 `revision_conflict`** with the current `page`. |
+| `DELETE core/page` | `{ id }`, for the owner or managers. |
+| `GET core/page-revisions?id=` / `GET core/page-revision?id=&revision=` | Version history and one snapshot. |
+| `POST core/page-restore` | `{ id, revision, expected_revision }`. Restoring is itself a new revision. |
+| `POST core/page-duplicate` | `{ id }` copies a page you can see into your own pages. |
+| `GET core/page-export?id=&format=markdown\|telegram\|json` | `{ export: { format, filename, mime, parts } }`. Telegram text is split into messages of at most 4,000 characters. |
+| `GET core/folders` / `POST core/folders` | Folders with counts; `{ from, to }` renames a folder for the pages you can edit. |
+
+Print is done in the app: `/library/:id/print` uses the browser print stylesheet with the workspace's logo and colour.
+
+### From your area
+
+`ctx.library.create / get / save / list` apply the same rules as the routes. For example, the teacher area saves an approved generation:
+
+```ts
+const page = await ctx.library.create({
+  kind: 'worksheet', title, material, folder: 'Worksheets/B1', sourceGenerationId: job.id,
+});
+```
+
+### Material kinds
+
+Define the kind once in `packages/ai-core/src/materials/<kind>.ts` (a `MaterialKindDefinition` with a `schema`, `toMarkdown` and an optional `toTelegram`). Then register it on the function side at module load:
+
+```ts
+registerMaterialKind({ ...worksheetKind, area: 'teacher' });
+```
+
+- A page's `material` is validated with the kind's schema on every create and save.
+- A page created without a `body` gets `toMarkdown(material)`.
+- Unknown kinds are refused.
+- The built-in kinds are `note` (a free document) and `chat_answer` (a saved assistant answer).
 
 ## Credit keys and plans
 
@@ -119,6 +193,12 @@ const { data, credits, balance } = await ctx.ai.json({
 - Mark a price the doc's table lacks with `assumed: true`.
 - `priceTableProblems()` must stay empty. It is tested, and checked when the function starts.
 - Edits to these two files must be additive: new keys and new rules. Never change an existing price or plan rule without the owner.
+
+## Your own data
+
+- `DELETE core/history` deletes every conversation of the caller in every workspace they belong to (Settings → Your data).
+- **Retention:** messages older than 180 days, then conversations left empty, are deleted daily (`ai_purge_old_chats`, pg_cron job `schood-ai-chat-retention-v1`). Do not keep copies of chat text in your own tables.
+- **Account erasure:** `ai_threads`, `ai_generations`, `ai_learning_events`, `ai_notify_prefs`, `ai_notify_daily` and `ai_calls` are in `account_personal_erasure_tables()`, with the closed-account guard. If your area adds a table with personal data keyed on `user_id`, add it to the registry in your own migration with the same additive pattern (see `20261030130000_schood_ai_retention_and_erasure.sql`).
 
 ## Data and tables
 
@@ -198,6 +278,7 @@ The handler checks that this chat is linked to that user (`users.telegram_chat_i
 |---|---|
 | `packages/ai-core/src/credits.ts`, `plans.ts` | New keys and rules |
 | `packages/ai-core/src/schema.ts` | New builders, if you need them |
+| `packages/ai-core/src/materials/<kind>.ts` | New files for your material kinds (re-export them from your own module; `mod.ts` stays core's) |
 | `supabase/functions/schood-ai/<your area>/**` | Your own code |
 | `handler.ts` | Nothing: your `mod.ts` is already registered |
 | `.github/workflows/schood-ai-ci.yml` | New test paths |

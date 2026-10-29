@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import { Check, Copy, Flag, RotateCcw, Send, Square } from 'lucide-react';
+import { BookmarkPlus, Check, Copy, Flag, RotateCcw, Send, Square } from 'lucide-react';
 import { quoteCredits } from '../../../../packages/ai-core/src/mod.ts';
 import { api, ApiError, stream } from './api.ts';
 import { useT } from './i18n/index.ts';
+import { createPage } from './library/api.ts';
 import { Answer } from './markdown.tsx';
+import { Link } from './router.tsx';
 import { ApiErrorState, CreditCost, PlanGate } from './states.tsx';
 import type { MessageView } from './types.ts';
 import { Button, Dialog, SparkMark, TextArea, Thinking, VisuallyHidden } from './ui.tsx';
@@ -177,9 +179,25 @@ export function Chat({ specialist = 'assistant', threadId = null, onThread, init
   </div>;
 }
 
+/** A title for an answer saved to the library: its first line without Markdown marks. */
+const answerTitle = (text: string) => {
+  const line = text.split('\n').map((entry) => entry.replace(/[#>*_`|\\$]+/g, ' ').replace(/\s+/g, ' ').trim()).find(Boolean) ?? '';
+  return line.split(/(?<=[.!?])\s/)[0].slice(0, 100);
+};
+
 function AssistantTurn({ turn, onReport }: { turn: Turn; onReport(): void }) {
-  const t = useT();
+  const t = useT(), workspace = useWorkspace();
   const [copied, setCopied] = useState(false);
+  const [saved, setSaved] = useState<{ id: string } | 'saving' | 'failed' | null>(null);
+  // Teachers and centre staff with the library keep good answers as pages.
+  const canSave = workspace.access('T6').allowed;
+  const save = async () => {
+    setSaved('saving');
+    try {
+      const page = await createPage({ kind: 'chat_answer', title: answerTitle(turn.content) || t('library.untitled'), body: turn.content }, workspace.workspaceId);
+      setSaved({ id: page.id });
+    } catch { setSaved('failed'); }
+  };
   const sources = turn.context.map((kind) => t(`context.${kind}`)).join(', ');
   return <article className="flex max-w-full gap-3" aria-label={t('chat.assistant')}>
     <SparkMark size={30}/>
@@ -189,6 +207,9 @@ function AssistantTurn({ turn, onReport }: { turn: Turn; onReport(): void }) {
         {sources && <span className="mr-auto text-xs text-gray-600">{t('chat.context', { sources })}</span>}
         <Button variant="ghost" size="sm" onClick={() => { void navigator.clipboard?.writeText(turn.content).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }); }}
           icon={copied ? <Check size={14} aria-hidden="true"/> : <Copy size={14} aria-hidden="true"/>}>{copied ? t('chat.copied') : t('chat.copy')}</Button>
+        {canSave && (saved && typeof saved === 'object'
+          ? <Link to={`/library/${saved.id}`} className="inline-flex min-h-9 items-center gap-1 px-2 text-xs font-semibold text-gray-900 underline underline-offset-2"><Check size={14} aria-hidden="true"/>{t('library.savedAnswer')}</Link>
+          : <Button variant="ghost" size="sm" disabled={saved === 'saving'} onClick={() => void save()} icon={<BookmarkPlus size={14} aria-hidden="true"/>}>{saved === 'failed' ? t('library.error.save') : t('library.saveAnswer')}</Button>)}
         {turn.id && <Button variant="ghost" size="sm" onClick={onReport} icon={<Flag size={14} aria-hidden="true"/>}>{t('chat.report')}</Button>}
       </div>}
     </div>
