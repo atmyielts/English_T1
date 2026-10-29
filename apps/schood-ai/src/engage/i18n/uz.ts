@@ -1,3 +1,32 @@
 import type { EngageKey } from './en.ts';
 
-export const uz: Record<EngageKey, string> = {};
+export const uz: Record<EngageKey, string> = {
+  'engage.nav.progress': 'Natijalar',
+  'engage.nav.journeys': 'Dasturlar',
+  'engage.nav.stories': 'Hikoyalar',
+  'engage.nav.league': 'Liga',
+  'engage.nav.squads': 'Jamoa',
+  'engage.nav.path': 'Umrbod yo‘l',
+  'engage.nav.passport': 'Skill Passport',
+  'engage.nav.events': 'Mavsum va tadbirlar',
+  'engage.nav.boards': 'Reytinglar',
+  'engage.nav.certificates': 'Sertifikatlar',
+  'engage.nav.thenNow': 'Oldin va hozir',
+  'engage.progress.title': 'Natijalaringiz',
+  'engage.league.title': 'Haftalik liga',
+  'engage.memory.title': 'Coach nimani eslab qoladi',
+  'engage.settings.title': 'Natijalar sozlamalari',
+  'engage.journeys.title': 'Dasturlar',
+  'engage.path.title': 'Umrbod yo‘lingiz',
+  'engage.squad.title': 'Jamoangiz',
+  'engage.boards.title': 'Reytinglar',
+  'engage.events.title': 'Mavsum va tadbirlar',
+  'engage.story.title': 'Hikoyalar',
+  'engage.thenNow.title': 'Oldin va hozir',
+  'engage.passport.title': 'Skill Passport',
+  'engage.passport.publicEyebrow': 'Skill Passport',
+  'engage.verify.title': 'Skill Certificate’ni tekshirish',
+  'engage.cert.title': 'Ko‘nikma sertifikatlari',
+  'engage.review.title': 'Tekshiruvchi navbati',
+  'engage.talent.title': 'Iste’dodlar bazasi',
+};
