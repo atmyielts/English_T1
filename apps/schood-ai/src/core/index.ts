@@ -20,4 +20,4 @@ export { LibraryView, PageEditor, PrintView, type LibraryViewProps, type PageEdi
 export { ApiErrorState, CappedState, CreditBalance, CreditCost, EmptyState, ErrorState, LoadingState, Paywall, PlanGate } from './states.tsx';
 export type * from './types.ts';
 export { Badge, BrandMark, Button, ButtonLink, Card, Dialog, Eyebrow, Field, FocusSurface, PageHeader, SparkMark, TextArea, TextInput, Thinking, VisuallyHidden } from './ui.tsx';
-export { audiencesFor, useWorkspace } from './workspace.tsx';
+export { audiencesFor, contextLabel, useWorkspace } from './workspace.tsx';
