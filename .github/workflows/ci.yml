@@ -187,7 +187,7 @@ jobs:
           - group: practice-and-playbooks
             workspaces: apps/ielts-practice apps/ielts-playbook apps/sat-practice apps/sat-playbook apps/toefl-playbook
           - group: assessment-services
-            workspaces: apps/assessment-cloud apps/exam apps/proctor apps/admission
+            workspaces: apps/assessment-cloud apps/exam apps/proctor apps/admission apps/company
     steps:
       - name: Checkout
         uses: actions/checkout@v4
