@@ -81,7 +81,7 @@ export const homeCards: HomeCard[] = [
 
 - `/settings/assistants`: owners and admins tailor the assistants of the workspace (your specialists appear there automatically).
 - `/admin`: the Schood AI console, shown in the sidebar only to Schood admins.
-- `/settings` → Your data: "Delete my conversation history" (every workspace). Conversations are kept for 180 days.
+- `/settings` → Your data: "Delete my conversation history" (every workspace). Conversations are kept for 180 days. Closing the Schood account erases the personal workspace and the person's Schood AI data. Centre pages stay. A centre owner must hand the centre over first. Tables your area adds register for erasure as the function `CONTRACT.md` describes.
 - `/library`, `/library/:id`, `/library/:id/print`: below.
 
 ## The library (pages, editor, print)

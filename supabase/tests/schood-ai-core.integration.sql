@@ -153,11 +153,13 @@ begin
   exception when check_violation then raised := true; end;
   assert raised, 'https only';
 
-  -- Deleting a person keeps the accounting, deleting a workspace removes it.
+  -- Deleting a person or a workspace keeps the accounting, unlinked (20261030150000).
   delete from public.users where id = student;
   assert (select count(*) from public.ai_credit_ledger where workspace_id = centre and user_id is null and kind = 'charge') >= 2, 'charges stay, the person is cleared';
+  r := jsonb_build_object('rows', (select count(*) from public.ai_credit_ledger where workspace_id = centre));
   delete from public.ai_workspaces where id = centre;
-  assert not exists (select 1 from public.ai_credit_ledger where workspace_id = centre), 'workspace deletion cascades';
+  assert not exists (select 1 from public.ai_credit_ledger where workspace_id = centre), 'the deleted workspace is unlinked';
+  assert (select count(*) from public.ai_credit_ledger where workspace_id is null) >= (r->>'rows')::int, 'its ledger rows stay';
 end $$;
 
 -- Learning events and the notification budget.
