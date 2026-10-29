@@ -59,6 +59,7 @@ export const homeCards: HomeCard[] = [
 - Use `useT()` from core: `t('learner.write.cost', { count })`. Plurals are `{count|one:# credit|other:# credits}`; Russian also has `few` and `many`.
 - Uzbek uses Latin script with `‘` for o‘ and g‘ and `’` for the tutuq belgisi.
 - Core keys you can reuse include `state.*`, `chat.*`, `review.*` and `approvals.*`, plus `plans.<plan>.name`, `role.<role>` and `audience.<audience>`.
+- English ships in the first download; Uzbek and Russian load on demand (core's `i18n/index.ts` imports your `uz.ts` and `ru.ts` lazily, and the first paint waits for the person's language). Keep the named exports `en`, `uz` and `ru`, and never import your `uz.ts` or `ru.ts` from code, or they join the first download.
 
 ## Building blocks from core
 
@@ -76,6 +77,13 @@ export const homeCards: HomeCard[] = [
 | `useWorkspace()` | `me`, `workspaceId`, `audience`, `access(featureId)`, `refresh()`. |
 | `askAssistant(prompt)` | Opens the assistant with a prefilled prompt, without putting it in the URL. |
 
+## Core screens you can link to
+
+- `/settings/assistants`: owners and admins tailor the assistants of the workspace (your specialists appear there automatically).
+- `/admin`: the Schood AI console, shown in the sidebar only to Schood admins.
+- `/settings` → Your data: "Delete my conversation history" (every workspace). Conversations are kept for 180 days.
+- `/library`, `/library/:id`, `/library/:id/print`: below.
+
 ## The library (pages, editor, print)
 
 The library belongs to core. Teacher and centre save materials into it and link to it; they do not build their own.
@@ -85,13 +93,16 @@ The library belongs to core. Teacher and centre save materials into it and link 
   - `<LibraryView kind? folder? onOpen? readOnly?/>`: a list for your own screens, for example only `kind="worksheet"`;
   - `<PageEditor pageId onSaved? onDeleted?/>`: TipTap with slash commands, revision-checked autosave, version history, sharing and export;
   - `<PrintView pageId/>`.
+  - All three load on demand, so importing them adds almost nothing to your area's code; the document editor (TipTap) loads only when a page is edited.
+  - A body with maths, images, raw HTML or footnotes opens in Markdown source mode (the document editor would drop them); people can switch modes.
 - **Calls:** `createPage({ kind, title, material, folder, source_generation_id })`, `getPage`, `listPages`, `savePage(id, { expected_revision, … })`, `exportPage(id, 'telegram')`, `listFolders`, `pageRevisions`, `restorePage`, `duplicatePage`, `deletePage`. When a save hits a newer revision, `conflictPage(error)` returns the current page.
 - **Material kinds:** call `registerMaterialKind({ kind, label, icon?, toMarkdown, render?, fromMarkdown?, editing?, editorPath? })` in your `routes.tsx` at module load.
   - `toMarkdown` is the same function the server uses; define it once in `packages/ai-core`.
-  - `render` draws the material read-only and for print.
+  - `render` draws the material read-only and for print: for people who may read but not edit, for `editing: 'readonly'` kinds, and on `/library/:id/print`. People who may edit a `document` kind see the document editor.
   - `fromMarkdown` rebuilds the material after the document is edited. If it is absent, the document becomes the source and the material is kept as it was.
   - `editing: 'readonly'` keeps a material out of the generic editor; give an `editorPath` to your own screen.
 - **Telegram:** export text comes from `toTelegramText()` in ai-core, or from your kind's `toTelegram`.
+- **Chat answers:** staff whose plan includes the library see "Save to library" under each assistant answer; it creates a `chat_answer` page.
 
 ## Look and feel (main platform)
 
@@ -116,6 +127,7 @@ The library belongs to core. Teacher and centre save materials into it and link 
 
 ## Sign-in and the Telegram Mini App hook
 
+- **Session client:** `src/core/session.ts` exports `auth`, an `AuthClient` from `@supabase/auth-js` with the shared cookie storage. Use it (for example `auth.setSession(...)` in a Mini App source); do not import `@supabase/supabase-js` or `packages/assessment-web/src/client.ts`, which add about 35 KB gzip of realtime, storage and REST code to the first download.
 - **Default:** the shared `.schood.online` session cookie, the same as the platform and every Schood app. "Sign in" goes to `schood.online/auth?returnTo=…`, so `ai.schood.online` must be in `VITE_ALLOWED_RETURN_HOSTS` (it is).
 - **Telegram Mini App:** the coach agent calls `registerSessionSource(source, priority)` before render. Its `detect()` is true inside Telegram (`window.Telegram.WebApp.initData`). It exchanges the init data for a Schood session through a function route, then provides `token()`, `observe()`, `signIn()` and `signOut()`. The API client uses whichever source is active.
 - **Embedding:** `public/_headers` currently forbids framing (`X-Frame-Options: DENY`, `frame-ancestors 'none'`). Telegram's web client shows Mini Apps in an iframe, so the coach agent must add a `/coach/*` rule that removes `X-Frame-Options` and allows `frame-ancestors https://web.telegram.org`. Keep the universal `/*` rule unchanged; `test:pages:security` checks it.
@@ -133,6 +145,8 @@ Everything in `src/core`, `App.tsx`, `main.tsx` and `index.css` belongs to the c
 ## Build and check
 
 `npm --workspace apps/schood-ai run build`, which runs `tsc --noEmit` and then `vite build`.
+
+Keep the first download small: the main chunk is about 112 KB gzip. Load heavy screens and libraries on demand (`lazy(() => import(...))` in your `routes.tsx`), as core does for the library editor and the admin console.
 
 For a local run with no backend, start the real handler over the memory repository with a fake streaming model:
 

@@ -1,9 +1,10 @@
-import { useT } from '../i18n/index.ts';
-import { EmptyState } from '../states.tsx';
+import { lazy, Suspense } from 'react';
+import { LoadingState } from '../states.tsx';
 import type { PageSummary, PageView } from './api.ts';
 
-// Contract placeholders: the full library, editor and print view replace these
-// with the same props in the next commit.
+// The library components areas import from core. Each loads its screen on
+// demand, so importing them costs the main bundle almost nothing; the document
+// editor (TipTap) loads only when a page is edited.
 
 export interface LibraryViewProps {
   /** Only this kind (for example an area's own list of worksheets). */
@@ -15,22 +16,25 @@ export interface LibraryViewProps {
   /** Hides the "New page" button (lists of generated materials). */
   readOnly?: boolean;
 }
-export function LibraryView(_props: LibraryViewProps) {
-  const t = useT();
-  return <EmptyState title={t('library.soon')}/>;
-}
-
 export interface PageEditorProps {
   pageId: string;
   onSaved?(page: PageView): void;
   onDeleted?(): void;
 }
-export function PageEditor(_props: PageEditorProps) {
-  const t = useT();
-  return <EmptyState title={t('library.soon')}/>;
-}
 
-export function PrintView(_props: { pageId: string }) {
-  const t = useT();
-  return <EmptyState title={t('library.soon')}/>;
+const List = lazy(async () => ({ default: (await import('./LibraryList.tsx')).LibraryList }));
+const Editor = lazy(async () => ({ default: (await import('./PageEditorView.tsx')).PageEditorView }));
+const Print = lazy(async () => ({ default: (await import('./PrintPage.tsx')).PrintPage }));
+
+/** Pages with folders, search, filters and paging. */
+export function LibraryView(props: LibraryViewProps) {
+  return <Suspense fallback={<LoadingState/>}><List {...props}/></Suspense>;
+}
+/** One page: document editing with autosave and conflicts, history, export, print. */
+export function PageEditor(props: PageEditorProps) {
+  return <Suspense fallback={<LoadingState/>}><Editor {...props}/></Suspense>;
+}
+/** A page laid out for printing or saving as PDF, with the workspace's branding. */
+export function PrintView({ pageId }: { pageId: string }) {
+  return <Suspense fallback={<LoadingState/>}><Print pageId={pageId}/></Suspense>;
 }

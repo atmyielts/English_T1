@@ -2,7 +2,7 @@ import { cleanSwitches, isCapability, type Registry, type RegistryModel, type Re
 import { resolvePermissions } from '../_shared/admin-access.ts';
 import { computeEffectiveAccess, type EntitlementRow, type SponsoredRow } from '../access-effective/logic.ts';
 import type {
-  ActionRow, AuthUser, Balance, CallRecord, ChargeOutcome, GenerationRow, LearningEvent, LedgerRow, Member, Message, NotifyDecision, PageQuery, PageRevisionRow, PageRow, ReportRow,
+  ActionRow, AuditRow, AuthUser, Balance, CallRecord, ChargeOutcome, GenerationRow, LearningEvent, LedgerRow, Member, Message, NotifyDecision, PageQuery, PageRevisionRow, PageRow, ReportRow,
   SchoodAIRepository, ServiceSettings, SpecialistRow, Thread, UsageRow, UserProfile, Workspace,
 } from './types.ts';
 
@@ -141,6 +141,12 @@ export function createSchoodAIRepository(user: (token: string) => Promise<AuthUs
       const row = check<Row>(await db.from('ai_workspaces').update(toSnake(patch)).eq('id', id).select('*').single());
       return workspace(row);
     },
+    async searchWorkspaces(query, limit) {
+      let request = db.from('ai_workspaces').select('*');
+      if (/^[0-9a-f-]{36}$/i.test(query)) request = request.eq('id', query.toLowerCase());
+      else if (query) request = request.ilike('name', `%${likeEscape(query)}%`);
+      return check<Row[]>(await request.order('created_at', { ascending: false }).limit(limit)).map(workspace);
+    },
 
     async settings() { return settings(check<Row>(await db.from('ai_settings').select('*').eq('id', 1).single())); },
     async updateSettings(patch, actor) {
@@ -240,9 +246,19 @@ export function createSchoodAIRepository(user: (token: string) => Promise<AuthUs
 
     async specialists(workspaceId) {
       return check<Row[]>(await db.from('ai_specialists').select('key,name,description,instructions,context_kinds,roles,enabled').eq('workspace_id', workspaceId).limit(100)).map((row): SpecialistRow => ({
-        key: String(row.key), name: String(row.name), description: str(row.description), instructions: String(row.instructions ?? ''),
+        key: String(row.key), name: String(row.name ?? ''), description: str(row.description), instructions: String(row.instructions ?? ''),
         contextKinds: Array.isArray(row.context_kinds) ? row.context_kinds.map(String) : [], roles: (Array.isArray(row.roles) ? row.roles : []) as SpecialistRow['roles'], enabled: row.enabled !== false,
       }));
+    },
+
+    async saveSpecialist(workspaceId, row, actor) {
+      check(await db.from('ai_specialists').upsert({
+        workspace_id: workspaceId, key: row.key, name: row.name || null, description: row.description, instructions: row.instructions,
+        context_kinds: row.contextKinds, roles: row.roles, enabled: row.enabled, created_by: actor,
+      }, { onConflict: 'workspace_id,key' }));
+    },
+    async deleteSpecialist(workspaceId, key) {
+      return check<Row[]>(await db.from('ai_specialists').delete().eq('workspace_id', workspaceId).eq('key', key).select('key')).length > 0;
     },
 
     async createAction(input) {
@@ -302,6 +318,16 @@ export function createSchoodAIRepository(user: (token: string) => Promise<AuthUs
     },
     async audit(event) {
       check(await db.from('ai_audit_events').insert({ workspace_id: event.workspaceId, actor_id: event.actorId, event: event.event, target_type: event.targetType ?? null, target_id: event.targetId ?? null, details: event.details ?? {} }));
+    },
+    async auditEvents(filter) {
+      let request = db.from('ai_audit_events').select('id,workspace_id,actor_id,event,target_type,target_id,details,created_at');
+      if (filter.workspaceId) request = request.eq('workspace_id', filter.workspaceId);
+      if (filter.prefix) request = request.like('event', `${likeEscape(filter.prefix)}%`);
+      if (filter.before) request = request.lt('id', filter.before);
+      return check<Row[]>(await request.order('id', { ascending: false }).limit(filter.limit)).map((row): AuditRow => ({
+        id: Number(row.id), workspaceId: str(row.workspace_id), actorId: str(row.actor_id), event: String(row.event), targetType: str(row.target_type),
+        targetId: str(row.target_id), details: (row.details ?? {}) as Record<string, unknown>, createdAt: String(row.created_at),
+      }));
     },
 
     async addLearningEvents(events: LearningEvent[]) {

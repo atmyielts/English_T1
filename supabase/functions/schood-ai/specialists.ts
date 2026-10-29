@@ -49,6 +49,7 @@ export function registerSpecialist(definition: SpecialistDefinition): void {
   builtIns.set(definition.key, definition);
 }
 export const builtInSpecialist = (key: string) => builtIns.get(key) ?? null;
+export const builtInSpecialists = () => [...builtIns.values()];
 
 const same = (text: string): Record<Locale, string> => ({ en: text, uz: text, ru: text });
 
