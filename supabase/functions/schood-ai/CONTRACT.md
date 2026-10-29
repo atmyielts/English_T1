@@ -52,9 +52,32 @@ export const learnerModule: FeatureModule = {
 | `ctx.events.emit(event)` | Learning events. Written after the response; never fails the request. |
 | `ctx.notify.allowed(userId, channel)` / `take(...)` | The notification budget: 2 a day per person across all bots, quiet 22:00–08:00 local. |
 | `ctx.functions.call(name, path, init)` | Another Schood Edge Function, called with the person's own token, for Academy or Assessment Cloud. Throws `user_token_required` on the worker path. |
-| `ctx.repo` | The repository (`types.ts` `SchoodAIRepository`) for core tables. Your own tables go in your own repository module. |
+| `ctx.repo` | The repository (`types.ts` `SchoodAIRepository`) for core tables. |
+| `ctx.store(handle)` | Your area's own tables, through the store you define with `defineStore` (see Your area's tables). Postgres when deployed, the memory twin in tests and dev stacks. |
 | `ctx.audit(event, details, target)` | Writes `ai_audit_events`. Use it for anything an admin or owner would want traced. |
 | `ctx.after(work)`, `ctx.sse(produce)`, `ctx.now()`, `ctx.locale`, `ctx.idempotencyKey`, `ctx.body()`, `ctx.bytes()`, `ctx.query` | Plumbing. |
+
+## Your area's tables (`defineStore`, `ctx.store`)
+
+Define one store per area in `stores.ts` style, with a Postgres implementation over the service-role client and an in-memory twin with the same behaviour:
+
+```ts
+// supabase/functions/schood-ai/learner/store.ts
+import { defineStore, type ServiceDb } from '../stores.ts';
+export const learnerStore = defineStore<LearnerStore>('learner', {
+  postgres: (db: ServiceDb, env) => createPostgresLearnerStore(db),  // db.from(...), db.rpc(...)
+  memory: ({ now }) => createMemoryLearnerStore({}, now),
+});
+// in a route, context provider, chat guard or action
+const store = ctx.store(learnerStore);
+// in a plan source
+registerPlanSource('learner.family', ({ store }) => ... store(learnerStore) ...);
+```
+
+- **One instance** per function instance, built on first use. The deployed function passes the same service-role client core uses (`index.ts`). Your Postgres module needs no Supabase import of its own.
+- **Settings:** `env(name)` reads only `SCHOOD_AI_*` settings. Use product ids from `productIds` in plan sources, not from the environment.
+- **Tests:** `fixture()` builds memory twins. Reach one with `f.stores.get(handle)`, or replace it with a seeded twin with `f.stores.use(handle, twin)` (see `extensions.test.ts`). Dev stacks get memory twins without doing anything.
+- **Tables:** keep RLS on with no browser policies, and check roles and workspaces in your routes before you call the store.
 
 ## Charged AI calls (`ctx.ai`)
 
@@ -123,10 +146,11 @@ Every `admin/*` route needs the existing admin RBAC permission through `admin-ac
 
 | Registry | Where | Use it for |
 |---|---|---|
-| `registerSpecialist(def)` | `specialists.ts` | A chat assistant: key, names (uz/ru/en), role prompt, allowed context kinds, credit key, roles, starter prompts. `core/chat` serves it. Workspace owners and admins can override names and instructions, narrow context and roles, or switch it off (`ai_specialists`, through `GET/PUT/DELETE core/specialists`); a null name keeps your translated names. |
-| `registerContextProvider(kind, fn, { allowCustom?, selfView?, timeoutMs?, maxChars? })` | `context.ts` | Data the model may see, for example `homework_open`, `group_weak_spots` or `coach_progress`. Check roles inside the provider. `selfView` only for data about the caller (shown in `core/context`). |
+| `registerSpecialist(def)` | `specialists.ts` | A chat assistant: key, names (uz/ru/en), role prompt, allowed context kinds, credit key, roles, starter prompts, and an optional `guard(ctx, input)` that runs before each of its turns. `core/chat` serves it. Workspace owners and admins can override names and instructions, narrow context and roles, or switch it off (`ai_specialists`, through `GET/PUT/DELETE core/specialists`); a null name keeps your translated names. |
+| `registerContextProvider(kind, fn, { allowCustom?, selfView?, timeoutMs?, maxChars?, label? })` | `context.ts` | Data the model may see, for example `homework_open`, `group_weak_spots` or `coach_progress`. Check roles inside the provider. `selfView` only for data about the caller (shown in `core/context`). `label: { en, uz, ru }` names the source under answers ("Used: your study plan"); `core/me` returns `context_labels` for the request language, so your catalogs need no `context.*` keys. |
+| `registerChatGuard(name, guard)` | `specialists.ts` | A check before every `core/chat` turn with any specialist, for example the under-18 consent step: throw `SchoodAIError('consent_required', …, 403)`. Guards run after the plan check and before anything is read, stored or charged, on the browser and the worker path. A guard that crashes refuses the chat (500). |
 | `registerActionKind({ kind, area, approverRoles, parse, summary, display?, run, retrySafe?, expiresInHours? })` | `actions.ts` | Approve & run: `send_parent_message`, `assign_homework`, `post_to_channel`, `book_trial`. `run` executes as the approver, with their token. |
-| `registerPlanSource(name, fn)` | `plan.ts` | Extra plans or directly granted features: children of a Family holder → `plus`, a coach pass → `features: ['B4']`, a team seat. |
+| `registerPlanSource(name, fn)` | `plan.ts` | Extra plans or directly granted features: children of a Family holder → `plus`, a coach pass → `features: ['B4']`, a team seat. The input has `user`, `workspace`, `role`, `repo`, `now`, `store(handle)`, `productIds` (plan → product id, configured ones only) and `plansOf(userId)` (another person's personal plans from their own products; plan sources are not consulted, so there is no recursion). |
 
 ## The library (pages)
 
@@ -212,6 +236,8 @@ registerMaterialKind({ ...worksheetKind, area: 'teacher' });
     2. **Rows inside a workspace** (`workspace_id … references ai_workspaces on delete cascade`) go with the personal workspace automatically and stay with a centre. Use `on delete set null` only for records that must outlive a workspace, such as financial ones.
     3. **Anything else** (rows keyed on another column, unlinking instead of deleting, files, cross-table rules): write `public.<area>_erase_account(p_user uuid) returns jsonb`, `security definer`, revoked from `public`, `anon`, `authenticated` and `service_role`. Append its name to `account_erasure_service_hooks()` the way `20261030150000_schood_ai_account_erasure.sql` does.
     - Hooks run in the closure transaction after the core erasure. They must be idempotent. Raising aborts the whole closure, so raise only to refuse it (`account_ownership_transfer_required`).
+    - Hooks run in registration order. Core's `ai_erase_account` (migration `20261030150000`) comes first, so when your hook runs, the personal workspace, centre memberships and issued invites are already gone. Key your cleanup on user ids, not on memberships.
+    - The learner area's `learner_erase_account` (migration `20261030200100`) is the reference example. It deletes family links and AI duels and unlinks guardian consents, and it registers itself exactly this way.
   - Never delete append-only financial rows; unlink them. Add a test to your DB tests that closes an account through `auth.users` (see `supabase/tests/schood-ai-erasure.integration.sql`).
 
 ## Data and tables
@@ -305,3 +331,4 @@ Everything else in `supabase/functions/schood-ai/` (core, admin, gateway, provid
 
 - `deno test --no-lock supabase/functions/schood-ai/` and `deno check --no-lock supabase/functions/schood-ai/index.ts`.
 - Write your area's tests with `fixture.test.ts`. Pass `modules` to add your module, and `setProvider` for model output.
+- Core's tests must pass with every area's registrations loaded. Never assert that the specialist list or `custom_context_kinds` is exactly core's own; look for the entries you care about. `extensions.test.ts` registers an area specialist, a provider, a guard and a plan source to keep that true.

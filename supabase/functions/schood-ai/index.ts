@@ -6,6 +6,7 @@ import { CircuitBreaker, createGateway } from './gateway.ts';
 import { createSchoodAIHandler } from './handler.ts';
 import { accessEffectiveOverHttp, createPlanResolver } from './plan.ts';
 import { createSchoodAIRepository, type SchoodAIDatabase } from './repository.ts';
+import { createStores } from './stores.ts';
 
 // Schood AI Edge Function: env wiring only; the router is handler.ts.
 
@@ -89,8 +90,11 @@ async function isAdmin(userId: string): Promise<boolean> {
 
 const plans = createPlanResolver({ productIds, betaUserIds, accessEffective: accessEffectiveOverHttp(url, anon), repo: repository, isAdmin, now: () => new Date() });
 
+// Area tables (stores.ts) over the same service-role client.
+const stores = createStores({ kind: 'postgres', db }, { now: () => new Date(), env: (name) => Deno.env.get(name) });
+
 Deno.serve(createSchoodAIHandler({
-  repository, gateway, plans, isAdmin,
+  repository, gateway, plans, isAdmin, stores,
   async callFunction(name, path, token, init) {
     const target = new URL(`${url}/functions/v1/${name}${path}`);
     for (const [key, value] of Object.entries(init.query ?? {})) target.searchParams.set(key, value);

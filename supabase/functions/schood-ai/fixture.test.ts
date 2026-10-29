@@ -1,6 +1,7 @@
 import { SSEParser, type Registry } from '../../../packages/ai-core/src/mod.ts';
 import { CircuitBreaker, createGateway, type Timeouts } from './gateway.ts';
 import { createSchoodAIHandler, MODULES } from './handler.ts';
+import { createStores } from './stores.ts';
 import { createMemoryRepository, SEED_REGISTRY, type MemoryUser } from './memory-repository.ts';
 import { createPlanResolver } from './plan.ts';
 import type { FeatureModule, ServiceSettings } from './types.ts';
@@ -84,8 +85,10 @@ export function fixture(options: FixtureOptions = {}) {
   });
   const profiles: Record<string, unknown> = {};
   const pending: Promise<unknown>[] = [];
+  // Area stores: memory twins, reachable as f.stores (seed with f.stores.use(handle, twin)).
+  const stores = createStores({ kind: 'memory' }, { now, env: (name) => env[name] });
   const handle = createSchoodAIHandler({
-    repository: memory.repository, gateway, plans, isAdmin,
+    repository: memory.repository, gateway, plans, isAdmin, stores,
     callFunction: (name, _path, token) => Promise.resolve(name === 'learning-profile-v3' && profiles[token] ? { status: 200, data: profiles[token] } : { status: 404, data: null }),
     adminGate: (req, permission) => {
       const token = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '');
@@ -108,7 +111,7 @@ export function fixture(options: FixtureOptions = {}) {
     method, headers: { 'content-type': 'application/json', 'x-schood-service-secret': secret, 'x-schood-user-id': userId, 'x-schood-telegram-chat-id': chat }, ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   }));
   return {
-    memory, gateway, breaker, upstream, env, profiles, call, json, worker,
+    memory, gateway, breaker, upstream, env, profiles, call, json, worker, stores,
     setProvider: (next: typeof provider) => { provider = next; },
     advance: (ms: number) => { clock = new Date(clock.getTime() + ms); },
     /** Waits for after-response work (stream bookkeeping, learning events). */

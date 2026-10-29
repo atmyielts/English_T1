@@ -1,6 +1,6 @@
 import { CREDIT_KEY_PATTERN, isCreditKey, ROLES, type CreditKey, type WorkspaceKind } from '../../../packages/ai-core/src/mod.ts';
 import { customContextKinds } from './context.ts';
-import type { Area, Locale, Role, SpecialistRow, Workspace } from './types.ts';
+import type { Area, Locale, RequestContext, Role, SpecialistRow, Workspace, WorkspaceAccess } from './types.ts';
 
 // Specialists are the assistants people chat with. Built-ins are defined in code
 // by each area (registerSpecialist); a workspace can override a built-in's name,
@@ -24,6 +24,8 @@ export interface SpecialistDefinition {
   workspaceKinds?: WorkspaceKind[];
   /** Starter prompts shown on an empty chat. */
   suggestions?: Record<Locale, string[]>;
+  /** Runs before every core/chat turn with this specialist, after the plan check and before anything is read, stored or charged. Throw a SchoodAIError to refuse. */
+  guard?(ctx: RequestContext, input: ChatGuardInput): Promise<void>;
 }
 export interface ResolvedSpecialist {
   key: string;
@@ -36,6 +38,7 @@ export interface ResolvedSpecialist {
   roles: Role[];
   custom: boolean;
   suggestions: Record<Locale, string[]>;
+  guard: SpecialistDefinition['guard'] | null;
 }
 
 const builtIns = new Map<string, SpecialistDefinition>();
@@ -69,6 +72,7 @@ export function resolveSpecialist(key: string, workspace: Workspace, role: Role,
       workspaceInstructions: row?.instructions?.trim() || null,
       contextKinds: row ? base.contextKinds.filter((kind) => row.contextKinds.includes(kind)) : base.contextKinds,
       suggestions: base.suggestions ?? { en: [], uz: [], ru: [] },
+      guard: base.guard ?? null,
     };
   }
   if (!row) return null;
@@ -81,10 +85,36 @@ export function resolveSpecialist(key: string, workspace: Workspace, role: Role,
     workspaceInstructions: row.instructions.trim() || null,
     contextKinds: row.contextKinds.filter((kind) => allowed.includes(kind)),
     suggestions: { en: [], uz: [], ru: [] },
+    guard: null,
   };
 }
 
 export function listSpecialists(workspace: Workspace, role: Role, overrides: SpecialistRow[]): ResolvedSpecialist[] {
   const keys = new Set([...builtIns.keys(), ...overrides.map((row) => row.key)]);
   return [...keys].map((key) => resolveSpecialist(key, workspace, role, overrides)).filter((entry): entry is ResolvedSpecialist => !!entry);
+}
+
+// --- Chat guards --------------------------------------------------------------------
+/** What a chat guard sees besides ctx: the specialist and the caller's workspace and role. */
+export interface ChatGuardInput { specialist: string; custom: boolean; access: WorkspaceAccess }
+export type ChatGuard = (ctx: RequestContext, input: ChatGuardInput) => Promise<void>;
+const chatGuards = new Map<string, ChatGuard>();
+
+/**
+ * A check before every core/chat turn, with any specialist (for example the
+ * learner area's under-18 consent step: throw SchoodAIError('consent_required', …)).
+ * Guards run after the plan check and before anything is read, stored or charged,
+ * for the browser and the Telegram worker alike. Names are unique; register at module load.
+ */
+export function registerChatGuard(name: string, guard: ChatGuard): void {
+  if (!/^[a-z][a-z0-9_.-]{1,60}$/.test(name)) throw new Error(`chat guard ${name} is invalid`);
+  if (chatGuards.has(name)) throw new Error(`chat guard ${name} is already registered`);
+  chatGuards.set(name, guard);
+}
+
+/** Every registered guard, then the specialist's own. A guard that fails unexpectedly refuses the chat (500). */
+export async function runChatGuards(ctx: RequestContext, specialist: ResolvedSpecialist, access: WorkspaceAccess): Promise<void> {
+  const input: ChatGuardInput = { specialist: specialist.key, custom: specialist.custom, access };
+  for (const guard of chatGuards.values()) await guard(ctx, input);
+  if (specialist.guard) await specialist.guard(ctx, input);
 }
