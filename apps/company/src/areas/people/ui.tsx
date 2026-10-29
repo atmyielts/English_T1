@@ -2,6 +2,7 @@
 // area's codes, copy and share buttons for invitation links, dates, CSV download.
 import React, { useEffect, useRef, useState } from 'react';
 import { useI18n } from '../../../../../packages/service-i18n/src/i18n.tsx';
+import { uzDate } from '../../dates.ts';
 import { en, useAppT, useErrorText, type AppKey } from '../../i18n/index.ts';
 
 /** `people.error.<code>` / `staff.error.<code>` / `site.error.<code>` when known, else the shell's text. */
@@ -26,10 +27,11 @@ export function useProblem() {
 }
 
 export function useDates() {
-  const { date } = useI18n();
+  const { date, locale } = useI18n();
+  const at = (value: string) => value.length === 10 ? `${value}T12:00:00` : value;
   return {
-    day: (value: string | null | undefined) => value ? date(value.length === 10 ? `${value}T12:00:00` : value, { dateStyle: 'medium' }) : '—',
-    when: (value: string | null | undefined) => value ? date(value, { dateStyle: 'medium', timeStyle: 'short' }) : '—',
+    day: (value: string | null | undefined) => !value ? '—' : locale === 'uz' ? uzDate(at(value)) : date(at(value), { dateStyle: 'medium' }),
+    when: (value: string | null | undefined) => !value ? '—' : locale === 'uz' ? uzDate(value, true) : date(value, { dateStyle: 'medium', timeStyle: 'short' }),
   };
 }
 
