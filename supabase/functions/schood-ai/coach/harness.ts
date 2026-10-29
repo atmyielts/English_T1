@@ -4,9 +4,8 @@ import type { Registry } from '../../../../packages/ai-core/src/mod.ts';
 import { createWorker } from '../../../../workers/schood-coach-bots/src/worker.ts';
 import { createGateHandler } from '../../schood-coach-gate/handler.ts';
 import { completion, fixture, ID, SECRET, START, USERS } from '../fixture.test.ts';
-import { MODULES } from '../handler.ts';
 import { SEED_REGISTRY } from '../memory-repository.ts';
-import { createCoachModule } from './mod.ts';
+import { coachServices, coachStore } from './mod.ts';
 import type { CoachRuntime } from './runtime.ts';
 import { createMemoryCoachStore } from './store-memory.ts';
 import { dataCheckString } from './telegram-auth.ts';
@@ -117,7 +116,10 @@ export async function coachStack(options: { speech?: boolean; users?: typeof USE
     config: { appUrl: APP, bots: { ielts: { id: BOT.ielts.id, username: 'SchoodIeltsCoachBot' }, speaking: { id: BOT.speaking.id, username: 'SchoodSpeakingBot' } }, passProducts: { B2: [PASS_PRODUCT] }, fairUseCredits: 1200, telegramPublicKey: publicHex },
     mintSession: (userId) => Promise.resolve({ access_token: `minted-${userId}`, refresh_token: 'refresh', expires_at: 2_000_000_000 }),
   };
-  const f = fixture({ registry: options.speech === false ? SEED_REGISTRY : SPEECH_REGISTRY, modules: [...MODULES.filter((module) => module.area !== 'coach'), createCoachModule(runtime)] });
+  const f = fixture({ registry: options.speech === false ? SEED_REGISTRY : SPEECH_REGISTRY });
+  // The coach area's stores: a memory twin that knows the linked chats, and test settings.
+  f.stores.use(coachStore, coach.store);
+  f.stores.use(coachServices, { config: runtime.config, mintSession: runtime.mintSession });
   const advance = (ms: number) => { f.advance(ms); current = new Date(current.getTime() + ms); };
   f.setProvider(fakeModel(knobs));
   const gate = createGateHandler({ secret: SECRET, deps: { store: coach.store, packs: runtime.packs, config: runtime.config, now, notify: (userId, channel, take) => f.memory.repository.notify(userId, channel, take), nameOf: () => Promise.resolve('Dilnoza') } });

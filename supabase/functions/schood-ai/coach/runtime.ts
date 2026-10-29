@@ -1,11 +1,15 @@
 import type { CoachPack } from '../../../../packages/coach-packs/src/mod.ts';
-import { loadPacks as loadRegistry } from '../../../../packages/coach-packs/src/registry.ts';
+import { loadPacks } from '../../../../packages/coach-packs/src/registry.ts';
+import { defineStore, type StoreHandle } from '../stores.ts';
 import { createMemoryCoachStore } from './store-memory.ts';
+import { createPostgresCoachStore, type CoachDatabase } from './store-postgres.ts';
 import type { CoachStore } from './store.ts';
 
-// What the coach area runs on: its store, the validated packs and its settings.
-// Production builds it lazily from the function's environment (production.ts);
-// tests and the dev stack pass their own.
+// What the coach area runs on, through core's area stores (stores.ts):
+//   - `coachStore`: the coach_* tables (Postgres when deployed, the memory twin in
+//     tests and dev stacks);
+//   - `coachServices`: the coach settings (SCHOOD_AI_COACH_*) and Mini App sign-in;
+//   - the validated packs, loaded once per function instance.
 
 export interface CoachBot { id: string | null; username: string | null }
 export interface CoachConfig {
@@ -21,29 +25,21 @@ export interface CoachConfig {
   telegramPublicKey: string;
 }
 export interface MintedSession { access_token: string; refresh_token: string; expires_at: number }
-export interface CoachRuntime {
-  store: CoachStore;
-  packs: ReadonlyMap<string, CoachPack>;
+export interface CoachServices {
   config: CoachConfig;
   /** A Supabase session for a linked person (Telegram Mini App sign-in); null when the account cannot get one. */
   mintSession(userId: string): Promise<MintedSession | null>;
+}
+export interface CoachRuntime extends CoachServices {
+  store: CoachStore;
+  packs: ReadonlyMap<string, CoachPack>;
 }
 
 /** Telegram's production key for validating Mini App data without the bot token (core.telegram.org/bots/webapps). */
 export const TELEGRAM_PRODUCTION_KEY = 'e7bf03a2fa4602af4580703d88dda5bb59f32ed8b02a56c187fe7d34caed242d';
 export const FAIR_USE_CREDITS = 1200;
 
-/** Reads an env var only when permission is already granted, so tests never prompt or throw. */
-export function safeEnv(name: string): string | undefined {
-  try {
-    if (Deno.permissions.querySync?.({ name: 'env', variable: name }).state !== 'granted') return undefined;
-    return Deno.env.get(name) ?? undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-/** `ielts:123456789:SchoodIeltsCoachBot,speaking:987654321:SchoodSpeakingBot` (SCHOOD_COACH_BOTS). */
+/** `ielts:123456789:SchoodIeltsCoachBot,speaking:987654321:SchoodSpeakingBot` (SCHOOD_AI_COACH_BOTS). */
 export function parseBots(value: string | undefined): Record<string, CoachBot> {
   const out: Record<string, CoachBot> = {};
   for (const entry of (value ?? '').split(',').map((part) => part.trim()).filter(Boolean)) {
@@ -53,7 +49,7 @@ export function parseBots(value: string | undefined): Record<string, CoachBot> {
   }
   return out;
 }
-/** `B1:<product uuid>,B2:<product uuid>` (SCHOOD_COACH_PASS_PRODUCT_IDS). */
+/** `B1:<product uuid>,B2:<product uuid>` (SCHOOD_AI_COACH_PASS_PRODUCT_IDS). */
 export function parsePasses(value: string | undefined): Record<string, string[]> {
   const out: Record<string, string[]> = {};
   for (const entry of (value ?? '').split(',').map((part) => part.trim()).filter(Boolean)) {
@@ -64,38 +60,33 @@ export function parsePasses(value: string | undefined): Record<string, string[]>
   return out;
 }
 
-export function configFromEnv(read: (name: string) => string | undefined = safeEnv): CoachConfig {
-  const appUrl = (read('SCHOOD_COACH_APP_URL') ?? 'https://ai.schood.online').replace(/\/+$/, '');
-  const fairUse = Number(read('SCHOOD_COACH_FAIR_USE_CREDITS') ?? '');
+export function configFromEnv(read: (name: string) => string | undefined): CoachConfig {
+  const appUrl = (read('SCHOOD_AI_COACH_APP_URL') ?? 'https://ai.schood.online').replace(/\/+$/, '');
+  const fairUse = Number(read('SCHOOD_AI_COACH_FAIR_USE_CREDITS') ?? '');
   return {
     appUrl: /^https:\/\/[a-z0-9.-]+$/i.test(appUrl) || /^http:\/\/localhost(:\d+)?$/.test(appUrl) ? appUrl : 'https://ai.schood.online',
-    bots: parseBots(read('SCHOOD_COACH_BOTS')),
-    passProducts: parsePasses(read('SCHOOD_COACH_PASS_PRODUCT_IDS')),
+    bots: parseBots(read('SCHOOD_AI_COACH_BOTS')),
+    passProducts: parsePasses(read('SCHOOD_AI_COACH_PASS_PRODUCT_IDS')),
     fairUseCredits: Number.isInteger(fairUse) && fairUse > 0 && fairUse <= 100000 ? fairUse : FAIR_USE_CREDITS,
     telegramPublicKey: TELEGRAM_PRODUCTION_KEY,
   };
 }
 
-let override: CoachRuntime | null = null;
-let production: Promise<CoachRuntime> | null = null;
+export const coachStore = defineStore<CoachStore>('coach', {
+  postgres: (db) => createPostgresCoachStore(db as unknown as CoachDatabase),
+  memory: ({ now }) => createMemoryCoachStore({ now }).store,
+});
 
-/** Tests and the dev stack: the runtime the coach module and its plan sources use. */
-export function setCoachRuntime(runtime: CoachRuntime | null): void { override = runtime; }
+export const coachServices = defineStore<CoachServices>('coach.services', {
+  postgres: (_db, env) => ({
+    config: configFromEnv((name) => env.env(name)),
+    // Only the deployed function signs people in; the adapter loads on first use.
+    mintSession: async (userId) => (await import('./production.ts')).mintSession(userId),
+  }),
+  memory: (env) => ({ config: configFromEnv((name) => env.env(name)), mintSession: () => Promise.resolve(null) }),
+});
 
-/** The deployed function's runtime: Postgres when the function's env is present, memory otherwise (local dev). */
-export function coachRuntime(): Promise<CoachRuntime> {
-  if (override) return Promise.resolve(override);
-  production ??= (async () => {
-    const packs = loadRegistry();
-    const config = configFromEnv();
-    if (safeEnv('SUPABASE_URL') && safeEnv('SUPABASE_SERVICE_ROLE_KEY')) {
-      const { productionRuntime } = await import('./production.ts');
-      return productionRuntime(packs, config);
-    }
-    console.warn(JSON.stringify({ event: 'schood_coach_memory_store', reason: 'no Supabase environment; local development only' }));
-    return { store: createMemoryCoachStore().store, packs, config, mintSession: () => Promise.resolve(null) };
-  })();
-  production.catch(() => { production = null; });
-  return production;
+/** The coach runtime of a request, a plan source or a context provider. */
+export function runtimeOf(store: <T>(handle: StoreHandle<T>) => T): CoachRuntime {
+  return { ...store(coachServices), store: store(coachStore), packs: loadPacks() };
 }
-

@@ -130,4 +130,44 @@ begin
   delete from public.users where id = '00000000-0000-4000-8000-0000000000b1';
   assert not exists (select 1 from public.coach_team_members where user_id = '00000000-0000-4000-8000-0000000000b1'), 'cascade';
 end $$;
+
+-- Account closure through auth.users: the personal coach rows go with the account;
+-- a team the leaver managed stays for its members, unmanaged; their invites stop.
+insert into public.users (id) values ('00000000-0000-4000-8000-0000000000c1'), ('00000000-0000-4000-8000-0000000000c2') on conflict do nothing;
+insert into auth.users (id) values ('00000000-0000-4000-8000-0000000000c1'), ('00000000-0000-4000-8000-0000000000c2') on conflict do nothing;
+do $$
+declare
+  leaver constant uuid := '00000000-0000-4000-8000-0000000000c1';
+  stayer constant uuid := '00000000-0000-4000-8000-0000000000c2';
+  ws uuid := (public.ai_ensure_personal_workspace(leaver, 'Leaver')).id;
+  enr uuid;
+  ses uuid;
+  team uuid;
+begin
+  assert (select public.account_erasure_service_hooks()) = array['ai_erase_account', 'coach_erase_account'], 'the coach hook runs after core';
+  insert into public.coach_enrollments (user_id, workspace_id, pack, pack_version) values (leaver, ws, 'speaking', '1.0.0') returning id into enr;
+  insert into public.coach_sessions (enrollment_id, user_id, pack, pack_version, kind) values (enr, leaver, 'speaking', '1.0.0', 'roleplay') returning id into ses;
+  insert into public.coach_turns (session_id, user_id, pack, seq, role, kind, content, keep) values (ses, leaver, 'speaking', 0, 'learner', 'line', 'my words', true);
+  insert into public.coach_scores (session_id, user_id, pack, rubric, criterion, score, status, source) values (ses, leaver, 'speaking', 'speaking.conversation', 'range', 3, 'scored', 'model');
+  insert into public.coach_mastery (user_id, pack, node, mastery) values (leaver, 'speaking', 'conversation.range', 0.4);
+  insert into public.coach_certificates (code, user_id, pack, pack_version, milestone, rubric, level, level_label, display_name) values ('9K3M9QX2P4TC', leaver, 'speaking', '1.0.0', 'level-b1', 'speaking.conversation', 3, 'B1', 'Leaver');
+  insert into public.coach_teams (name, manager_id, created_by, packs, seats, valid_until) values ('Leaver team', leaver, leaver, array['speaking'], 5, now() + interval '30 days') returning id into team;
+  insert into public.coach_team_members (team_id, user_id, role) values (team, leaver, 'manager'), (team, stayer, 'member');
+  insert into public.coach_team_invites (code, team_id, created_by, expires_at) values ('LEAVERCODE', team, leaver, now() + interval '7 days');
+
+  update auth.users set deleted_at = now() where id = leaver;
+
+  assert not exists (select 1 from public.coach_enrollments where user_id = leaver), 'enrolment erased';
+  assert not exists (select 1 from public.coach_sessions where user_id = leaver), 'sessions erased';
+  assert not exists (select 1 from public.coach_turns where user_id = leaver), 'turns erased, kept samples too';
+  assert not exists (select 1 from public.coach_scores where user_id = leaver), 'scores erased';
+  assert not exists (select 1 from public.coach_mastery where user_id = leaver), 'mastery erased';
+  assert not exists (select 1 from public.coach_certificates where user_id = leaver), 'certificates erased';
+  assert not exists (select 1 from public.coach_team_members where user_id = leaver), 'membership erased';
+  assert (select manager_id is null and created_by is null from public.coach_teams where id = team), 'the team stays, unmanaged';
+  assert exists (select 1 from public.coach_team_members where team_id = team and user_id = stayer and status = 'active'), 'members keep their seats';
+  assert not exists (select 1 from public.coach_team_invites where code = 'LEAVERCODE'), 'the leaver''s invites stop working';
+  -- Running the hook again changes nothing.
+  assert (public.coach_erase_account(leaver)->>'teams_unmanaged')::int = 0, 'idempotent';
+end $$;
 select 'schood coach: ok';

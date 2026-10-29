@@ -15,7 +15,7 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf
 // The core fixture plus the column the coach claim reads (users.telegram_chat_id, set by telegram-link).
 const fixture = `${read('supabase/tests/schood-ai-core.fixture.sql')}\nalter table public.users add column if not exists telegram_chat_id text;\n`;
 const all = readdirSync(new URL('../supabase/migrations/', import.meta.url)).sort();
-const core = all.filter((name) => /^202610301\d{5}_schood_ai_.*\.sql$/.test(name)).map((name) => read(`supabase/migrations/${name}`)).join('\n');
+const core = all.filter((name) => /^202610301\d{5}_.*\.sql$/.test(name)).map((name) => read(`supabase/migrations/${name}`)).join('\n');
 const coachFiles = all.filter((name) => /^202610306\d{5}_.*\.sql$/.test(name));
 const coach = coachFiles.map((name) => read(`supabase/migrations/${name}`)).join('\n');
 const integration = read('supabase/tests/schood-coach.integration.sql');
@@ -31,7 +31,7 @@ assert.ok(coachFiles.length >= 1, 'the coach migration is present');
     await db.exec(coach);
     const results = await db.exec(integration);
     assert.equal(results.at(-1).rows[0]?.['?column?'], 'schood coach: ok');
-    console.log(`PGlite (PostgreSQL 17): ${coachFiles.length} coach migration(s) apply twice after the core; RLS and grants, enrolment state and revisions, turns and clip references, evidence-bearing scores, retention, certificates, leased reminder claims, team seats and the erasure registry passed.`);
+    console.log(`PGlite (PostgreSQL 17): ${coachFiles.length} coach migration(s) apply twice after the core; RLS and grants, enrolment state and revisions, turns and clip references, evidence-bearing scores, retention, certificates, leased reminder claims, team seats, the erasure registry and account closure through auth.users passed.`);
   } finally {
     await db.close();
   }

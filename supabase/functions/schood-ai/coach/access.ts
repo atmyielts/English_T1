@@ -1,6 +1,6 @@
 import { registerPlanSource } from '../plan.ts';
 import type { RequestContext } from '../types.ts';
-import { coachRuntime, type CoachRuntime } from './runtime.ts';
+import { runtimeOf, type CoachRuntime } from './runtime.ts';
 import type { Enrollment } from './store.ts';
 
 // Who has a coach (docs/product/44_SCHOOD_AI.md, "Selling the coaches"):
@@ -16,21 +16,21 @@ let registered = false;
 const teamCache = new Map<string, { at: number; rows: Awaited<ReturnType<CoachRuntime['store']['teamsOf']>> }>();
 /** Tests and joins: forget cached team seats (a join or removal takes effect at once). */
 export const forgetTeamSeats = (userId?: string) => { if (userId) teamCache.delete(userId); else teamCache.clear(); };
-export function registerCoachPlanSources(runtime: () => Promise<CoachRuntime> = coachRuntime): void {
+export function registerCoachPlanSources(): void {
   if (registered) return;
   registered = true;
-  registerPlanSource('coach-pass', async ({ user, workspace, repo }) => {
+  registerPlanSource('coach-pass', async ({ user, workspace, repo, store }) => {
     if (workspace.kind !== 'personal') return null;
-    const { config } = await runtime();
+    const { config } = runtimeOf(store);
     const sold = Object.entries(config.passProducts);
     if (!sold.length) return null;
     const held = new Set(await repo.productsHeldBy(user.id));
     const features = sold.filter(([, ids]) => ids.some((id) => held.has(id))).map(([feature]) => feature);
     return features.length ? { features } : null;
   });
-  registerPlanSource('coach-team', async ({ user, workspace, now }) => {
+  registerPlanSource('coach-team', async ({ user, workspace, now, store: storeOf }) => {
     if (workspace.kind !== 'personal') return null;
-    const { store, packs } = await runtime();
+    const { store, packs } = runtimeOf(storeOf);
     // Every Schood AI request resolves plans: team seats are cached for a minute per isolate.
     const hit = teamCache.get(user.id);
     const memberships = hit && now.getTime() - hit.at < 60_000 ? hit.rows : await store.teamsOf(user.id);

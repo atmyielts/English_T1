@@ -11,7 +11,7 @@ import { handleUpdate } from './engine.ts';
 import { spokenScript } from './flows/quiz.ts';
 import { pollSent } from './flows/quiz.ts';
 import { setReminders } from './flows/onboard.ts';
-import type { CoachRuntime } from './runtime.ts';
+import { runtimeOf, type CoachRuntime } from './runtime.ts';
 import type { Enrollment } from './store.ts';
 import { verifyMiniAppData } from './telegram-auth.ts';
 import { localParts, parseDate, validReminder, validTimeZone } from './time.ts';
@@ -27,10 +27,11 @@ import { goalOf, planView, progressView, todayPlan, weekView } from './views.ts'
 
 const MB = 1024 * 1024;
 
-export function coachRoutes(runtime: () => Promise<CoachRuntime>): Record<string, RouteHandler> {
+export function coachRoutes(): Record<string, RouteHandler> {
+  const runtime = (ctx: RequestContext) => runtimeOf((handle) => ctx.store(handle));
   const workerOnly = (ctx: RequestContext) => { if (ctx.user.via !== 'service') throw new SchoodAIError('service_only', 'Only the coach bots call this.', 403); };
-  const packOf = async (value: unknown): Promise<{ rt: CoachRuntime; pack: CoachPack }> => {
-    const rt = await runtime();
+  const packOf = (ctx: RequestContext, value: unknown): { rt: CoachRuntime; pack: CoachPack } => {
+    const rt = runtime(ctx);
     const id = typeof value === 'string' ? value : '';
     const pack = rt.packs.get(id);
     if (!pack) throw new SchoodAIError('not_found', 'Unknown coach.', 404, { field: 'pack' });
@@ -50,7 +51,7 @@ export function coachRoutes(runtime: () => Promise<CoachRuntime>): Record<string
       async POST(ctx) {
         workerOnly(ctx);
         const body = record(await ctx.body());
-        const { rt } = await packOf(body.pack);
+        const { rt } = packOf(ctx, body.pack);
         return handleUpdate(ctx, rt, parseUpdate(body));
       },
     },
@@ -59,7 +60,7 @@ export function coachRoutes(runtime: () => Promise<CoachRuntime>): Record<string
       async POST(ctx) {
         workerOnly(ctx);
         const body = record(await ctx.body());
-        const { rt, pack } = await packOf(body.pack);
+        const { rt, pack } = packOf(ctx, body.pack);
         const ref = text(body.ref, 'ref', { max: 120 }), pollId = text(body.poll_id, 'poll_id', { max: 64 });
         const enrollment = await rt.store.enrollment(ctx.user.id, pack.manifest.id);
         if (!enrollment) return { ok: false };
@@ -72,7 +73,7 @@ export function coachRoutes(runtime: () => Promise<CoachRuntime>): Record<string
       async POST(ctx) {
         workerOnly(ctx);
         const body = record(await ctx.body());
-        const { rt, pack } = await packOf(body.pack);
+        const { rt, pack } = packOf(ctx, body.pack);
         const key = text(body.cache_key, 'cache_key', { max: 120 }), fileId = text(body.file_id, 'file_id', { max: 256 });
         if (!/^[a-z0-9][a-z0-9_.:-]{1,120}$/.test(key)) throw new SchoodAIError('invalid_request', 'cache_key is invalid.', 400, { field: 'cache_key' });
         await rt.store.saveMedia(pack.manifest.id, key, fileId);
@@ -89,7 +90,7 @@ export function coachRoutes(runtime: () => Promise<CoachRuntime>): Record<string
       async POST(ctx) {
         workerOnly(ctx);
         const body = record(await ctx.body());
-        const { rt, pack } = await packOf(body.pack);
+        const { rt, pack } = packOf(ctx, body.pack);
         const initData = text(body.init_data, 'init_data', { max: 12000 });
         const botId = rt.config.bots[pack.manifest.id]?.id;
         if (!botId) throw new SchoodAIError('coach_not_configured', 'This coach bot is not set up yet.', 503);
@@ -112,7 +113,7 @@ export function coachRoutes(runtime: () => Promise<CoachRuntime>): Record<string
     // --- the Mini App and the web --------------------------------------------------------------------------
     home: {
       async GET(ctx) {
-        const rt = await runtime();
+        const rt = runtime(ctx);
         const mine = new Map((await rt.store.enrollments(ctx.user.id)).map((row) => [row.pack, row]));
         const coaches = [];
         for (const pack of rt.packs.values()) {
@@ -128,7 +129,7 @@ export function coachRoutes(runtime: () => Promise<CoachRuntime>): Record<string
     },
     dashboard: {
       async GET(ctx) {
-        const { rt, pack } = await packOf(ctx.query.get('pack'));
+        const { rt, pack } = packOf(ctx, ctx.query.get('pack'));
         let enrollment = await enrolment(ctx, rt, pack);
         enrollment = await ensureFairUse(ctx, rt, enrollment, pack.manifest.feature);
         const view = deps(rt, pack, enrollment, ctx);
@@ -159,7 +160,7 @@ export function coachRoutes(runtime: () => Promise<CoachRuntime>): Record<string
     },
     report: {
       async GET(ctx) {
-        const { rt, pack } = await packOf(ctx.query.get('pack'));
+        const { rt, pack } = packOf(ctx, ctx.query.get('pack'));
         const enrollment = await enrolment(ctx, rt, pack);
         const week = ctx.query.get('week') ?? undefined;
         if (week !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(week)) throw new SchoodAIError('invalid_request', 'week must be a date.', 400, { field: 'week' });
@@ -175,7 +176,7 @@ export function coachRoutes(runtime: () => Promise<CoachRuntime>): Record<string
     },
     session: {
       async GET(ctx) {
-        const rt = await runtime();
+        const rt = runtime(ctx);
         const id = uuid(ctx.query.get('id'), 'id');
         const session = await rt.store.session(id);
         if (!session || session.userId !== ctx.user.id) throw new SchoodAIError('not_found', 'Not found.', 404);
@@ -194,7 +195,7 @@ export function coachRoutes(runtime: () => Promise<CoachRuntime>): Record<string
     },
     plan: {
       async GET(ctx) {
-        const { rt, pack } = await packOf(ctx.query.get('pack'));
+        const { rt, pack } = packOf(ctx, ctx.query.get('pack'));
         const enrollment = await enrolment(ctx, rt, pack);
         const view = planView(pack, enrollment, ctx.now()), scale = pack.manifest.scale;
         const today = enrollment.placement ? await todayPlan(deps(rt, pack, enrollment, ctx)) : null;
@@ -211,7 +212,7 @@ export function coachRoutes(runtime: () => Promise<CoachRuntime>): Record<string
     goal: {
       async POST(ctx) {
         const body = record(await ctx.body());
-        const { rt, pack } = await packOf(body.pack);
+        const { rt, pack } = packOf(ctx, body.pack);
         const enrollment = await enrolment(ctx, rt, pack);
         const target = Number(body.target);
         if (!pack.plan.goal.options.includes(target)) throw new SchoodAIError('invalid_request', 'target is not one of the options.', 400, { field: 'target' });
@@ -232,7 +233,7 @@ export function coachRoutes(runtime: () => Promise<CoachRuntime>): Record<string
     settings: {
       async PATCH(ctx) {
         const body = record(await ctx.body());
-        const { rt, pack } = await packOf(body.pack);
+        const { rt, pack } = packOf(ctx, body.pack);
         const enrollment = await enrolment(ctx, rt, pack);
         const settings = { ...enrollment.settings };
         let locale = enrollment.locale;
@@ -254,11 +255,11 @@ export function coachRoutes(runtime: () => Promise<CoachRuntime>): Record<string
     },
     certificates: {
       async GET(ctx) {
-        const rt = await runtime();
+        const rt = runtime(ctx);
         return { certificates: (await rt.store.certificates(ctx.user.id)).map((cert) => ({ ...certView(rt, cert), coach: pick(rt.packs.get(cert.pack)?.manifest.name, ctx.locale) })) };
       },
       async DELETE(ctx) {
-        const rt = await runtime();
+        const rt = runtime(ctx);
         const body = record(await ctx.body());
         const revoked = await rt.store.revokeCertificate(uuid(body.id, 'id'), ctx.user.id);
         if (!revoked) throw new SchoodAIError('not_found', 'Not found.', 404);
@@ -269,7 +270,7 @@ export function coachRoutes(runtime: () => Promise<CoachRuntime>): Record<string
     erase: {
       async POST(ctx) {
         const body = record(await ctx.body());
-        const { rt, pack } = await packOf(body.pack);
+        const { rt, pack } = packOf(ctx, body.pack);
         const removed = await rt.store.erase(ctx.user.id, pack.manifest.id);
         await ctx.audit('coach.history_erased', { pack: pack.manifest.id, sessions: removed });
         return { removed };
@@ -279,7 +280,7 @@ export function coachRoutes(runtime: () => Promise<CoachRuntime>): Record<string
       /** A link that opens this coach's bot with a telegram-link token, so the bot links the same Schood account. */
       async POST(ctx) {
         const body = record(await ctx.body());
-        const { rt, pack } = await packOf(body.pack);
+        const { rt, pack } = packOf(ctx, body.pack);
         const username = rt.config.bots[pack.manifest.id]?.username;
         if (!username) throw new SchoodAIError('coach_not_configured', 'This coach bot is not set up yet.', 503);
         if (ctx.user.telegramChatId) return { linked: true, url: `https://t.me/${username}` };
@@ -299,14 +300,14 @@ export function coachRoutes(runtime: () => Promise<CoachRuntime>): Record<string
     },
     samples: {
       async GET(ctx) {
-        const { pack } = await packOf(ctx.query.get('pack'));
+        const { pack } = packOf(ctx, ctx.query.get('pack'));
         return { coach: packCard(pack, ctx.locale, null), samples: pack.samples.map((sample) => ({ id: sample.id, kind: sample.kind, title: pick(sample.title, ctx.locale), preview: pick(sample.preview, ctx.locale), body: sample.body })) };
       },
     },
     /** Text the Mini App reads aloud with the browser's own voice when no speech provider is set up. */
     'audio-text': {
       async GET(ctx) {
-        const { pack } = await packOf(ctx.query.get('pack'));
+        const { pack } = packOf(ctx, ctx.query.get('pack'));
         const decision = await ctx.access(pack.manifest.feature);
         if (!decision.allowed) throw new SchoodAIError('plan_required', 'This needs a Schood AI plan.', 402, { plans: decision.reason === 'plan_required' ? decision.plans : [], feature: pack.manifest.feature });
         const ref = text(ctx.query.get('ref'), 'ref', { max: 120 });
@@ -319,7 +320,7 @@ export function coachRoutes(runtime: () => Promise<CoachRuntime>): Record<string
     },
     chart: {
       async GET(ctx) {
-        const { pack } = await packOf(ctx.query.get('pack'));
+        const { pack } = packOf(ctx, ctx.query.get('pack'));
         const activity = pack.byId.get(text(ctx.query.get('activity'), 'activity', { max: 100 }));
         if (activity?.kind !== 'writing' || !activity.data) throw new SchoodAIError('not_found', 'Not found.', 404);
         return { title: pick(activity.title, ctx.locale), prompt: activity.prompt, data: activity.data };
@@ -328,7 +329,7 @@ export function coachRoutes(runtime: () => Promise<CoachRuntime>): Record<string
     costs: {
       /** What each coach action costs, from the same price table the function charges. */
       async GET(ctx) {
-        const { pack } = await packOf(ctx.query.get('pack'));
+        const { pack } = packOf(ctx, ctx.query.get('pack'));
         return { costs: Object.fromEntries((['turn', 'review', 'writing', 'ladder', 'photo', 'drill', 'voice', 'shadow'] as const).map((action) => [action, quoteCredits(keyOf(pack, action)).credits])) };
       },
     },
@@ -337,7 +338,7 @@ export function coachRoutes(runtime: () => Promise<CoachRuntime>): Record<string
     team: {
       /** The manager's view: members' verified practice and best results this week and in total, never their messages. */
       async GET(ctx) {
-        const rt = await runtime();
+        const rt = runtime(ctx);
         const teamId = ctx.query.get('id');
         const teams = await rt.store.teamsOf(ctx.user.id);
         if (!teamId) return { teams: teams.map(({ team, member }) => ({ id: team.id, name: team.name, role: member.role, packs: team.packs, seats: team.seats, valid_until: team.validUntil })) };
@@ -359,7 +360,7 @@ export function coachRoutes(runtime: () => Promise<CoachRuntime>): Record<string
     'team-create': {
       async POST(ctx) {
         if (!(await ctx.isSchoodAdmin())) throw new SchoodAIError('admin_required', 'Schood admins only.', 403);
-        const rt = await runtime();
+        const rt = runtime(ctx);
         const body = record(await ctx.body());
         const name = text(body.name, 'name', { min: 2, max: 80 });
         const manager = uuid(body.manager_id, 'manager_id');
@@ -375,7 +376,7 @@ export function coachRoutes(runtime: () => Promise<CoachRuntime>): Record<string
     },
     'team-invite': {
       async POST(ctx) {
-        const rt = await runtime();
+        const rt = runtime(ctx);
         const body = record(await ctx.body());
         const teamId = uuid(body.team_id, 'team_id');
         const mine = (await rt.store.teamsOf(ctx.user.id)).find(({ team }) => team.id === teamId);
@@ -390,7 +391,7 @@ export function coachRoutes(runtime: () => Promise<CoachRuntime>): Record<string
     },
     'team-member': {
       async DELETE(ctx) {
-        const rt = await runtime();
+        const rt = runtime(ctx);
         const body = record(await ctx.body());
         const teamId = uuid(body.team_id, 'team_id'), userId = uuid(body.user_id, 'user_id');
         const mine = (await rt.store.teamsOf(ctx.user.id)).find(({ team }) => team.id === teamId);
@@ -403,7 +404,7 @@ export function coachRoutes(runtime: () => Promise<CoachRuntime>): Record<string
     },
     'team-join': {
       async POST(ctx) {
-        const rt = await runtime();
+        const rt = runtime(ctx);
         const body = record(await ctx.body());
         const code = text(body.code, 'code', { max: 10 });
         if (!/^[A-Za-z0-9]{10}$/.test(code)) throw new SchoodAIError('invalid_request', 'code is invalid.', 400, { field: 'code' });

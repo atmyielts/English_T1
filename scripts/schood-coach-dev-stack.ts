@@ -11,11 +11,12 @@
 import { encodeAnswers, type UpdateRequest } from '../packages/coach-packs/src/mod.ts';
 import { loadPacks } from '../packages/coach-packs/src/registry.ts';
 import { CircuitBreaker, createGateway } from '../supabase/functions/schood-ai/gateway.ts';
-import { createSchoodAIHandler, MODULES } from '../supabase/functions/schood-ai/handler.ts';
+import { createSchoodAIHandler } from '../supabase/functions/schood-ai/handler.ts';
 import { createMemoryRepository } from '../supabase/functions/schood-ai/memory-repository.ts';
 import { createPlanResolver } from '../supabase/functions/schood-ai/plan.ts';
 import { ESSAY, fakeModel, SPEECH_REGISTRY } from '../supabase/functions/schood-ai/coach/harness.ts';
-import { createCoachModule } from '../supabase/functions/schood-ai/coach/mod.ts';
+import { coachServices, coachStore } from '../supabase/functions/schood-ai/coach/mod.ts';
+import { createStores } from '../supabase/functions/schood-ai/stores.ts';
 import { createMemoryCoachStore } from '../supabase/functions/schood-ai/coach/store-memory.ts';
 import { createGateHandler } from '../supabase/functions/schood-coach-gate/handler.ts';
 
@@ -49,11 +50,14 @@ const gateway = createGateway({
 });
 const tokenProducts = new Map(Object.entries(users).map(([token, user]) => [token, 'products' in user ? user.products ?? [] : []]));
 const plans = createPlanResolver({ productIds: { plus: PLUS }, betaUserIds: new Set(), repo: memory.repository, isAdmin: () => Promise.resolve(false), now, accessEffective: (token) => Promise.resolve(tokenProducts.get(token) ?? []) });
+const stores = createStores({ kind: 'memory' }, { now });
+stores.use(coachStore, coach.store);
+stores.use(coachServices, { config: runtime.config, mintSession: runtime.mintSession });
 const handle = createSchoodAIHandler({
   repository: memory.repository, gateway, plans, isAdmin: () => Promise.resolve(false),
   callFunction: () => Promise.resolve({ status: 404, data: null }),
   adminGate: () => Promise.resolve({ ok: false, status: 403, code: 'forbidden' }),
-  modules: [...MODULES.filter((module) => module.area !== 'coach'), createCoachModule(runtime)],
+  stores,
 }, { allowedOrigins: ORIGINS, serviceSecret: SECRET, now });
 const gate = createGateHandler({ secret: SECRET, deps: { store: coach.store, packs, config: runtime.config, now, notify: (u, c, t) => memory.repository.notify(u, c, t), nameOf: () => Promise.resolve('Dilnoza') } });
 
