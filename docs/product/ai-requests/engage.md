@@ -125,3 +125,47 @@ Answered by core and now used: area stores (`defineStore`, `ctx.store`) replaced
   - tournaments on the 8th–21st;
   - the national mock from Saturday 10:00 to Sunday 22:00;
   - the certificate pass marks (70% of items, 60% of the rubric).
+
+## 6. Release manifest for this PR (for the coordinator)
+
+- **Why:** CI's release manifest check compares `release/manifest.json` with the diff against `claude/ai-core`. This PR does not edit that file, as the brief asks, so the `checks` job fails on it (as on the learner PR).
+- **Check:** the manifest below passes `node scripts/verify-release-manifest.mjs --base origin/claude/ai-core --manifest <file>`.
+- **Merge:** fold it into the release manifest when this area merges into core.
+
+```json
+{
+  "schemaVersion": 1,
+  "releaseId": "schood-ai-engage-oct30",
+  "status": "code_ready",
+  "backwardCompatible": true,
+  "frontends": ["schood-ai"],
+  "migrations": ["20261030800000_schood_ai_engage.sql"],
+  "edgeFunctions": ["schood-ai"],
+  "workers": [],
+  "requiredSecrets": [],
+  "rolloutOrder": [
+    "pages",
+    "migration:20261030800000_schood_ai_engage.sql",
+    "function:schood-ai"
+  ],
+  "manualFollowUps": [
+    "Pages: merging publishes schood-ai with the engage screens (progress, journeys, stories, league, squads, Skill Passport, certificates). No new Pages project or domain. Until the migration and function are deployed, these screens show the connection error state; the rest of the app is unchanged.",
+    "Database: supabase db push --linked applies 20261030800000_schood_ai_engage.sql after core's migrations (additive ai_engage_* tables with RLS on and no browser grants; SECURITY DEFINER functions for ingest, leagues, freezes, journeys, squads, outbox, due users and boards; 24 tables added to account_personal_erasure_tables(); ai_engage_erase_account registered in account_erasure_service_hooks(); pg_cron jobs ai-engage-ingest-v1 at 4-59/5 * * * * and ai-engage-prune-v1 at 53 3 * * *). It touches no existing table. Keep the pending #220 payment migrations excluded, as for core.",
+    "Function: supabase functions deploy schood-ai --project-ref <prod> (engage routes, the engage_memory and engage_progress context providers, and the engage.daily_limit chat guard). No new secret: engage uses core's service-role client and the existing media storage settings.",
+    "Talent pool stays off: do not add the engage.talent_pool switch in the admin console until the owner decides.",
+    "Media: add an S3 lifecycle rule or delete job for the schood-ai/engage/ prefix (sample and sitting audio of closed accounts)."
+  ],
+  "verification": [
+    "supabase migration list --linked shows 20261030800000 applied.",
+    "select jobname, schedule from cron.job where jobname in ('ai-engage-ingest-v1', 'ai-engage-prune-v1') returns two rows.",
+    "select public.account_erasure_service_hooks() includes ai_engage_erase_account; select public.account_personal_erasure_tables() includes the ai_engage_* user tables.",
+    "On ai.schood.online as a beta tester: /progress shows 0 XP before practice and counts a scored coach answer within five minutes; /passport opens; /certificates lists the four exams as test sittings.",
+    "select count(*) from public.ai_engage_outbox where channel = 'telegram' and status = 'sent' stays 0 until a bot drains the outbox (no bot is wired in this release)."
+  ],
+  "rollback": {
+    "pages": "Cloudflare Pages: roll schood-ai back to the previous deployment; the engage screens are additive.",
+    "migration": "Additive and isolated: leave the ai_engage_* tables. To stop the jobs, select cron.unschedule('ai-engage-ingest-v1') and cron.unschedule('ai-engage-prune-v1').",
+    "function": "Redeploy the previous schood-ai function; engage routes then answer not_found, and the chat guard and context providers are gone."
+  }
+}
+```
