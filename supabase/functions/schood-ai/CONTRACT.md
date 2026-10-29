@@ -1,6 +1,6 @@
 # Schood AI function: the contract for feature areas
 
-This is the brief for every agent building on `supabase/functions/schood-ai`. Read it with `docs/product/44_SCHOOD_AI.md`. The app has its own contract in `apps/schood-ai/src/CONTRACT.md`.
+This is the brief for every agent building on `supabase/functions/schood-ai`. Read it with `docs/product/44_SCHOOD_AI.md`. The app has its own contract in `apps/schood-ai/src/CONTRACT.md` (including its session client and how languages load).
 
 ## Shape
 
