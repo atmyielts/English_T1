@@ -291,7 +291,17 @@ A migration is needed only if the workstream adds tables or functions. Each inte
   - leads pipeline (status, notes, link to a workspace);
   - open a workspace for a lead, which creates the org plus an owner invite link.
 
-## 4. Done means
+## 4. Local preview (no Supabase needed)
+
+`apps/company/preview/` runs the **real** `company` function inside the browser on `FakeDb`, seeded with an active hotel workspace (3 departments, 17 people, six weeks of activity).
+- Start it with `npm --workspace apps/company run preview:local`, or the launch.json entry for your worktree (`company-hiring` :5192, `company-training` :5193, `company-insights` :5194, `company-gtm` :5195).
+- Personas: `?as=owner|hr|manager|employee|newcomer|staff|signedout`. Add `?reset=1` to reseed.
+- Add your own seed data and AI stubs in `apps/company/preview/seed.<area>.ts`, which `boot.ts` picks up automatically:
+  - `export function seed(db, world)` for data;
+  - `export const ai = { 'company-roleplay': (payload) => ({ … }) }` for canned AI replies.
+- Keep function area modules **browser-safe**: no `Deno.*` globals and no `npm:`/`jsr:` imports outside tests. Configuration comes from `ctx.env`, and AI only through `ctx.ai`.
+
+## 5. Done means
 - `deno test --no-lock packages/company-core/src/ supabase/functions/company/` passes.
 - `deno check --no-lock supabase/functions/company/index.ts` passes.
 - `node scripts/test-company-db.mjs` passes (Docker).

@@ -2,7 +2,21 @@
   "name": "company",
   "private": true,
   "type": "module",
-  "scripts": { "dev": "vite --port 5191", "build": "tsc --noEmit && vite build", "preview": "vite preview --port 4191" },
-  "dependencies": { "@supabase/supabase-js": "^2.89.0", "react": "^19.2.0", "react-dom": "^19.2.0" },
-  "devDependencies": { "@types/react": "^19.2.5", "@types/react-dom": "^19.2.3", "typescript": "~5.9.3", "vite": "^7.2.4" }
+  "scripts": {
+    "dev": "vite --port 5191",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 4191",
+    "preview:local": "vite --config preview/vite.preview.config.ts --port 5196"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.89.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "~5.9.3",
+    "vite": "^7.2.4"
+  }
 }
