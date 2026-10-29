@@ -90,6 +90,7 @@ export const routes: Route[] = [
         status: 'pilot',
         seats_limit: 0,
         tests_limit: ctx.env.pilotTests,
+        tests_used: 0,
         created_by: ctx.user,
         settings: { locale: oneOf(input.locale, ['en', 'ru', 'uz'] as const, 'locale', 'ru') },
       }).select(ORG_COLUMNS).single());
