@@ -1,12 +1,14 @@
 // People pages. Owned by the "gtm" workstream (docs/product/45_COMPANY_ENGLISH.md §3.4).
 import React from 'react';
 import { HR_ROLES, LEAD_ROLES } from '../../../../../packages/company-core/src/mod.ts';
+import { lazyPage } from '../lazy.ts';
 import type { AreaRoute } from '../types.ts';
-import { DepartmentsPage } from './DepartmentsPage.tsx';
-import { JoinPage } from './JoinPage.tsx';
-import { PeoplePage } from './PeoplePage.tsx';
-import { SettingsPage } from './SettingsPage.tsx';
 import './people.css';
+
+const DepartmentsPage = lazyPage(() => import('./DepartmentsPage.tsx'), 'DepartmentsPage');
+const JoinPage = lazyPage(() => import('./JoinPage.tsx'), 'JoinPage');
+const PeoplePage = lazyPage(() => import('./PeoplePage.tsx'), 'PeoplePage');
+const SettingsPage = lazyPage(() => import('./SettingsPage.tsx'), 'SettingsPage');
 
 export const routes: AreaRoute[] = [
   { path: '/w/:org/people', access: 'org', roles: LEAD_ROLES, nav: { section: 'people', label: 'people.nav.people', order: 0 }, render: () => <PeoplePage/> },

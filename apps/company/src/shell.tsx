@@ -1,6 +1,6 @@
 // The app frame: finds the page for the path, checks sign-in and roles, loads the
 // open workspace, and draws the header and the role-aware sidebar.
-import React, { useCallback, useEffect, useState, type ReactNode } from 'react';
+import React, { Suspense, useCallback, useEffect, useState, type ReactNode } from 'react';
 import { configured } from '../../../packages/assessment-web/src/client';
 import { ServiceHeader } from '../../../packages/service-design/src/ServiceHeader';
 import { WorkspaceNavigation, type WorkspaceNavSection } from '../../../packages/service-design/src/WorkspaceNavigation';
@@ -19,6 +19,12 @@ function find(path: string): { route: AreaRoute; params: Record<string, string> 
     if (params) return { route, params };
   }
   return null;
+}
+
+/** Renders a page, showing a loading line while its code arrives. */
+function Page({ route, params }: { route: AreaRoute; params: Record<string, string> }) {
+  const t = useAppT();
+  return <Suspense fallback={<p role="status">{t('app.loading')}</p>}>{route.render(params)}</Suspense>;
 }
 
 function Chrome({ children, nav }: { children: ReactNode; nav?: ReactNode }) {
@@ -105,7 +111,7 @@ function WorkspacePage({ orgId, route, params }: { orgId: string; route: AreaRou
       <p className="company-org-name">{workspace.org.name} · {t(`status.${workspace.org.status}` as AppKey)}</p>
       {workspace.org.status === 'suspended' && <p className="error" role="status">{t('org.suspended')}</p>}
       <ConsentBanner/>
-      {allowed(route) ? route.render(params) : <p className="error" role="alert">{t('error.forbidden')}</p>}
+      {allowed(route) ? <Page route={route} params={params}/> : <p className="error" role="alert">{t('error.forbidden')}</p>}
     </Chrome>
   </WorkspaceContext.Provider>;
 }
@@ -118,12 +124,12 @@ export function App() {
   const found = find(path);
   if (!found) return <Chrome><NotFound/></Chrome>;
   const { route, params } = found;
-  if (route.access === 'public') return route.bare ? <>{route.render(params)}</> : <Chrome>{route.render(params)}</Chrome>;
+  if (route.access === 'public') return route.bare ? <Page route={route} params={params}/> : <Chrome><Page route={route} params={params}/></Chrome>;
   if (user === undefined) return <Chrome><p role="status">{t('app.loading')}</p></Chrome>;
   if (!user) return <SignIn/>;
   if (error && !me) return <Chrome><p className="error" role="alert">{problem(error)}</p></Chrome>;
   if (!me) return <Chrome><p role="status">{t('app.loading')}</p></Chrome>;
   if (route.access === 'staff' && !me.staff) return <Chrome><NotFound/></Chrome>;
   if (route.access === 'org') return <WorkspacePage key={params.org} orgId={params.org} route={route} params={params}/>;
-  return <Chrome>{route.render(params)}</Chrome>;
+  return <Chrome><Page route={route} params={params}/></Chrome>;
 }

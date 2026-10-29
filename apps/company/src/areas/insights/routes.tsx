@@ -3,13 +3,15 @@
 // renders the page for all roles; the next two only place it in the sidebar,
 // under Insights for HR and managers and under My English for employees.
 import React from 'react';
+import { lazyPage } from '../lazy.ts';
 import type { AreaRoute } from '../types.ts';
-import { Challenges } from './Challenges.tsx';
 import './insights.css';
-import { Overview } from './Overview.tsx';
-import { Profile } from './Profile.tsx';
-import { Reports } from './Reports.tsx';
-import { Sessions } from './Sessions.tsx';
+
+const Challenges = lazyPage(() => import('./Challenges.tsx'), 'Challenges');
+const Overview = lazyPage(() => import('./Overview.tsx'), 'Overview');
+const Profile = lazyPage(() => import('./Profile.tsx'), 'Profile');
+const Reports = lazyPage(() => import('./Reports.tsx'), 'Reports');
+const Sessions = lazyPage(() => import('./Sessions.tsx'), 'Sessions');
 
 const LEADS = ['owner', 'admin', 'manager'] as const;
 

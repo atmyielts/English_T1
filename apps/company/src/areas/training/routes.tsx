@@ -1,16 +1,19 @@
 // Training pages. Owned by the "training" workstream (docs/product/45_COMPANY_ENGLISH.md §3.2).
 import React from 'react';
 import { HR_ROLES, LEAD_ROLES } from '../../../../../packages/company-core/src/mod.ts';
+import { lazyPage } from '../lazy.ts';
 import type { AreaRoute } from '../types.ts';
-import { Glossary } from './Glossary.tsx';
-import { GlossaryAdmin } from './GlossaryAdmin.tsx';
-import { LessonPlayer } from './LessonPlayer.tsx';
-import { Lessons } from './Lessons.tsx';
-import { MyEnglish } from './MyEnglish.tsx';
-import { RoleplayHome, RoleplaySession } from './Roleplay.tsx';
-import { TrainingPlan } from './TrainingPlan.tsx';
-import { Writing } from './Writing.tsx';
 import './training.css';
+
+const Glossary = lazyPage(() => import('./Glossary.tsx'), 'Glossary');
+const GlossaryAdmin = lazyPage(() => import('./GlossaryAdmin.tsx'), 'GlossaryAdmin');
+const LessonPlayer = lazyPage(() => import('./LessonPlayer.tsx'), 'LessonPlayer');
+const Lessons = lazyPage(() => import('./Lessons.tsx'), 'Lessons');
+const MyEnglish = lazyPage(() => import('./MyEnglish.tsx'), 'MyEnglish');
+const RoleplayHome = lazyPage(() => import('./Roleplay.tsx'), 'RoleplayHome');
+const RoleplaySession = lazyPage(() => import('./Roleplay.tsx'), 'RoleplaySession');
+const TrainingPlan = lazyPage(() => import('./TrainingPlan.tsx'), 'TrainingPlan');
+const Writing = lazyPage(() => import('./Writing.tsx'), 'Writing');
 
 export const routes: AreaRoute[] = [
   { path: '/w/:org/me', access: 'org', nav: { section: 'me', label: 'training.nav.me', order: 0 }, render: () => <MyEnglish/> },

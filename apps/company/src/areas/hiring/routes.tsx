@@ -1,13 +1,18 @@
 // hiring pages. Owned by the "hiring" workstream (docs/product/45_COMPANY_ENGLISH.md §3.1).
 import React from 'react';
+import { lazyPage } from '../lazy.ts';
 import type { AreaRoute } from '../types.ts';
-import { CandidatePage } from './CandidatePage.tsx';
-import { CertificatePage } from './CertificatePage.tsx';
-import { HiringListPage, TestDetailPage } from './HiringPages.tsx';
-import { MemberTestPage, MyTestsPage } from './MemberPages.tsx';
-import { PlacementDetailPage, PlacementListPage } from './PlacementPages.tsx';
-import { ReportPage } from './ReportPage.tsx';
 import './hiring.css';
+
+const CandidatePage = lazyPage(() => import('./CandidatePage.tsx'), 'CandidatePage');
+const CertificatePage = lazyPage(() => import('./CertificatePage.tsx'), 'CertificatePage');
+const HiringListPage = lazyPage(() => import('./HiringPages.tsx'), 'HiringListPage');
+const TestDetailPage = lazyPage(() => import('./HiringPages.tsx'), 'TestDetailPage');
+const MemberTestPage = lazyPage(() => import('./MemberPages.tsx'), 'MemberTestPage');
+const MyTestsPage = lazyPage(() => import('./MemberPages.tsx'), 'MyTestsPage');
+const PlacementDetailPage = lazyPage(() => import('./PlacementPages.tsx'), 'PlacementDetailPage');
+const PlacementListPage = lazyPage(() => import('./PlacementPages.tsx'), 'PlacementListPage');
+const ReportPage = lazyPage(() => import('./ReportPage.tsx'), 'ReportPage');
 
 const HR = ['owner', 'admin'] as const;
 const LEADS = ['owner', 'admin', 'manager'] as const;
