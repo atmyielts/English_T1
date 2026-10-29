@@ -3,6 +3,7 @@
 // deterministic answer-key checks with the solve-without-key comparison, and the
 // renderer and export shapes. Pure TypeScript for the app, the function and other
 // areas (C5 placement tests, C12 curriculum). Owned by the teacher area.
+export * from './catalog.ts';
 export * from './model.ts';
 export * from './formats.ts';
 export * from './kinds.ts';

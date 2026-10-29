@@ -47,12 +47,14 @@ const NEEDS_PICTURE: readonly IeltsQuestionType[] = ['question_diagram_labeling'
 export const ieltsTypesFor = (section: Extract<IeltsSectionType, 'reading' | 'listening'>): IeltsQuestionType[] =>
   questionTypesForSection(section).filter((type) => !NEEDS_PICTURE.includes(type));
 
+export const IELTS_WRITING_TASKS = ['task1', 'task2'] as const;
+export const IELTS_SPEAKING_PARTS = ['part1', 'part2', 'part3'] as const;
 /** The public test structure: 3 reading passages and 4 listening parts, 40 questions each. */
 export const IELTS_STRUCTURE = {
   reading: { parts: 3, questions: 40, minutes: 60, perPart: [13, 13, 14] },
   listening: { parts: 4, questions: 40, minutes: 30, perPart: [10, 10, 10, 10] },
-  writing: { tasks: ['task1', 'task2'] as const, minutes: { task1: 20, task2: 40 }, words: { task1: 150, task2: 250 } },
-  speaking: { parts: ['part1', 'part2', 'part3'] as const, prepSeconds: 60, talkSeconds: 120 },
+  writing: { tasks: IELTS_WRITING_TASKS, minutes: { task1: 20, task2: 40 }, words: { task1: 150, task2: 250 } },
+  speaking: { parts: IELTS_SPEAKING_PARTS, prepSeconds: 60, talkSeconds: 120 },
 } as const;
 export const ieltsWritingCriteria = (task: 'task1' | 'task2') => writingCriteriaForTask(task).map((criterion) => ({ id: criterion.id, name: criterion.label }));
 export const ieltsSpeakingCriteria = () => speakingCriteria().map((criterion) => ({ id: criterion.id, name: criterion.label }));
@@ -105,18 +107,21 @@ export const SAT_ANSWER_FORMATS = { mcq: 'single_choice', spr: 'numeric' } as co
 
 // --- National admission Maths -----------------------------------------------------------------
 
-export const ADMISSION_MATH_TOPICS = UZ_MATH_TOPICS.topics.map((topic) => ({ code: topic.code, strand: topic.strand, names: topic.names }));
-export const ADMISSION_MATH_TOPIC_CODES: readonly string[] = ADMISSION_MATH_TOPICS.map((topic) => topic.code);
+export const ADMISSION_MATH_TOPICS = /*#__PURE__*/ UZ_MATH_TOPICS.topics.map((topic) => ({ code: topic.code, strand: topic.strand, names: topic.names }));
+export const ADMISSION_MATH_TOPIC_CODES: readonly string[] = /*#__PURE__*/ ADMISSION_MATH_TOPICS.map((topic) => topic.code);
 /** Item types the admission format uses (subject-core's draft format: single choice). */
-export const ADMISSION_ITEM_TYPES: readonly string[] = [...new Set(UZ_ADMISSION_2026.sections.flatMap((section) => section.item_types))];
-export const ADMISSION_TOPICS_VERIFIED = UZ_MATH_TOPICS.verified;
+export const ADMISSION_ITEM_TYPES: readonly string[] = /*#__PURE__*/ Array.from(/*#__PURE__*/ new Set(UZ_ADMISSION_2026.sections.flatMap((section) => section.item_types)));
+/** Whether subject-core marks the topic list as checked against the official programme (it does not yet). */
+export const admissionTopicsVerified = (): boolean => UZ_MATH_TOPICS.verified;
+/** Questions in one SAT module (sat-practice-selection's MODULE_SPEC). */
+export const satModuleQuestions = (section: 'reading_writing' | 'math'): number => MODULE_SPEC[section].questions;
 
 // --- What each exam allows ----------------------------------------------------------------------
 
 /** Valid exam targets: sections, tasks or parts per format, for briefs and validation. */
 export const EXAM_TARGETS: Record<ExamFormatId, { sections: readonly string[]; tasks?: Record<string, readonly string[]> }> = {
-  ielts: { sections: ['reading', 'listening', 'writing', 'speaking'], tasks: { writing: IELTS_STRUCTURE.writing.tasks, speaking: IELTS_STRUCTURE.speaking.parts } },
-  toefl_2026: { sections: ['reading', 'listening', 'writing', 'speaking'], tasks: { reading: toeflTasksFor('reading'), listening: toeflTasksFor('listening'), writing: toeflTasksFor('writing'), speaking: toeflTasksFor('speaking') } },
+  ielts: { sections: ['reading', 'listening', 'writing', 'speaking'], tasks: { writing: IELTS_WRITING_TASKS, speaking: IELTS_SPEAKING_PARTS } },
+  toefl_2026: { sections: ['reading', 'listening', 'writing', 'speaking'], tasks: { reading: /*#__PURE__*/ toeflTasksFor('reading'), listening: /*#__PURE__*/ toeflTasksFor('listening'), writing: /*#__PURE__*/ toeflTasksFor('writing'), speaking: /*#__PURE__*/ toeflTasksFor('speaking') } },
   multilevel: { sections: MULTILEVEL_SECTIONS, tasks: { reading: MULTILEVEL_READING_PARTS, listening: MULTILEVEL_LISTENING_PARTS, writing: MULTILEVEL_WRITING_TASKS, speaking: MULTILEVEL_SPEAKING_PARTS } },
   sat: { sections: ['reading_writing', 'math'], tasks: { reading_writing: SAT_RW_DOMAINS, math: SAT_MATH_DOMAINS_OFFICIAL } },
   admission_math: { sections: ['math'] },

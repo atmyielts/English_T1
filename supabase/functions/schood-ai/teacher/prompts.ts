@@ -1,7 +1,4 @@
-import {
-  ADMISSION_MATH_TOPICS, IELTS_STRUCTURE, MULTILEVEL_WRITING_WORDS, satDomainLabel, satSkillsFor, TOEFL_TIMING,
-  type Block, type GenerationStep, type MaterialBrief, type MaterialKindSpec, type SatOfficialDomain, type SolverTask,
-} from '../../../../packages/ai-core/src/mod.ts';
+import { ADMISSION_MATH_TOPICS, IELTS_STRUCTURE, MULTILEVEL_WRITING_WORDS, satDomainLabel, satSkillsFor, TOEFL_TIMING, type Block, type GenerationStep, type MaterialBrief, type MaterialKindSpec, type SatOfficialDomain, type SolverTask } from '../../../../packages/ai-core/src/materials/mod.ts';
 import { dataBlock, neutralise, wrapUserMessage } from '../prompt.ts';
 import type { ChatMessage, Locale } from '../types.ts';
 

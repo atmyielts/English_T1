@@ -1,4 +1,5 @@
-import { MATERIAL_KIND_DEFINITIONS, MATERIAL_KINDS, parseMaterial, SchemaError, STAFF_ROLES, type Material } from '../../../../packages/ai-core/src/mod.ts';
+import { SchemaError, STAFF_ROLES } from '../../../../packages/ai-core/src/mod.ts';
+import { MATERIAL_KIND_DEFINITIONS, MATERIAL_KINDS, parseMaterial, type Material } from '../../../../packages/ai-core/src/materials/mod.ts';
 import { oneOf, optionalText, record, uuid } from '../input.ts';
 import { isUuid } from '../input.ts';
 import { registerMaterialKind, type PageView } from '../library.ts';

@@ -1,5 +1,6 @@
 import { averageOverallBand, toHalfBand } from '../../../../packages/ielts-core/src/scoring.ts';
-import { ieltsSpeakingCriteria, ieltsWritingCriteria, s, SchemaError, type Schema } from '../../../../packages/ai-core/src/mod.ts';
+import { s, SchemaError, type Schema } from '../../../../packages/ai-core/src/mod.ts';
+import { ieltsSpeakingCriteria, ieltsWritingCriteria } from '../../../../packages/ai-core/src/materials/mod.ts';
 import { SIMILAR_TEXT_THRESHOLD, textSimilarity } from '../../academy-learning/lib.ts';
 import { speakingScore, writingScore } from '../../_shared/english-exam-format.ts';
 import { integer, oneOf, optionalText, record, text, uuid } from '../input.ts';

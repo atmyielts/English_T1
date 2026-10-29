@@ -84,6 +84,6 @@ export function kindSchema(kind: string): Schema<Material> {
 }
 
 /** One library kind definition per T1 material kind. */
-export const MATERIAL_KIND_DEFINITIONS: MaterialKindDefinition<Material>[] = Object.keys(MATERIAL_KINDS).map((kind) => ({
+export const MATERIAL_KIND_DEFINITIONS: MaterialKindDefinition<Material>[] = /*#__PURE__*/ Object.keys(MATERIAL_KINDS).map((kind) => ({
   kind, schema: kindSchema(kind), toMarkdown: materialMarkdown, toTelegram: materialTelegram,
 }));

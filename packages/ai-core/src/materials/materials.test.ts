@@ -243,3 +243,8 @@ Deno.test('library kinds: one per material kind, Markdown with the key, student 
   equal(kindSchema('ielts_reading').parse(material).title, 'The shrinking sea');
   throws(() => kindSchema('quiz').parse(material), 'a material of another kind is refused');
 });
+
+Deno.test('the plain kind catalog matches the kind rules', async () => {
+  const { MATERIAL_KIND_CATALOG } = await import('./mod.ts');
+  equal(Object.entries(MATERIAL_KIND_CATALOG).sort(), Object.values(MATERIAL_KINDS).map((kind) => [kind.kind, kind.group]).sort());
+});

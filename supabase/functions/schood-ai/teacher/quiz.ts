@@ -1,4 +1,4 @@
-import { quizQuestions } from '../../../../packages/ai-core/src/mod.ts';
+import { quizQuestions } from '../../../../packages/ai-core/src/materials/mod.ts';
 import { integer, oneOf, optionalText, record, text, uuid } from '../input.ts';
 import { SchoodAIError, type RequestContext } from '../types.ts';
 import { teacherDeps } from './deps.ts';

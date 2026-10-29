@@ -1,9 +1,5 @@
-import {
-  answerKey, assessmentItems, briefProblems, briefSchema, checkMaterial, compareSolver, draftContentSchema, draftQuestionsSchema, draftSourceSchema,
-  generationPlan, materialCredit, materialKind, neighbourLevels, parseMaterial, plannedCount, quizQuestions, quoteCredits, renumber, s, SchemaError,
-  solverAnswersSchema, solverTasks, verification as buildVerification,
-  type Block, type GenerationStep, type Material, type MaterialBrief, type SolverAnswer, type Verification,
-} from '../../../../packages/ai-core/src/mod.ts';
+import { quoteCredits, s, SchemaError } from '../../../../packages/ai-core/src/mod.ts';
+import { answerKey, assessmentItems, briefProblems, briefSchema, checkMaterial, compareSolver, draftContentSchema, draftQuestionsSchema, draftSourceSchema, generationPlan, materialCredit, materialKind, neighbourLevels, parseMaterial, plannedCount, quizQuestions, renumber, solverAnswersSchema, solverTasks, verification as buildVerification, type Block, type GenerationStep, type Material, type MaterialBrief, type SolverAnswer, type Verification } from '../../../../packages/ai-core/src/materials/mod.ts';
 import { isUuid, record, text, uuid } from '../input.ts';
 import { SchoodAIError, type GenerationRow, type RequestContext } from '../types.ts';
 import { weakSpots } from './academy.ts';

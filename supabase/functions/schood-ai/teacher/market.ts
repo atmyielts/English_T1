@@ -1,4 +1,4 @@
-import { checkMaterial, parseMaterial, studentView, type Block, type Material } from '../../../../packages/ai-core/src/mod.ts';
+import { checkMaterial, parseMaterial, studentView, type Block, type Material } from '../../../../packages/ai-core/src/materials/mod.ts';
 import { registerActionKind } from '../actions.ts';
 import { integer, oneOf, optionalText, record, stringList, text, uuid } from '../input.ts';
 import { SchoodAIError, type Locale, type RequestContext } from '../types.ts';
