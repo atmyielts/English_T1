@@ -17,26 +17,9 @@ export async function requireCentre(ctx: RequestContext, roles?: readonly Role[]
   const access = await ctx.workspace(roles ? { roles } : {});
   if (access.workspace.kind !== 'centre') throw new SchoodAIError('centre_required', 'Open a centre workspace for this.', 409);
   const deps = await centreDeps(ctx);
-  let settings = await deps.store.table('settings').get({ workspace_id: access.workspace.id })
+  const settings = await deps.store.table('settings').get({ workspace_id: access.workspace.id })
     ?? await deps.store.table('settings').insert({ workspace_id: access.workspace.id, created_via: 'admin', created_by: access.workspace.ownerId, public_key: crypto.randomUUID().replace(/-/g, '') });
-  // A manager's visit keeps the plan the centre's bot, widgets and schedules see fresh (at most hourly).
-  if (ctx.caller === 'user' && isManager(access.role)) settings = await refreshPlanCache(ctx, { workspace: access.workspace, deps, settings });
   return { access, deps, settings };
-}
-
-const PLAN_CACHE_MS = 3_600_000;
-/**
- * The plan's seats and features, stored in settings.limits for callers who cannot
- * resolve it: people joining by invite, and the centre's anonymous and system routes
- * (runner.ts). Core has no ctx.planFor yet. Every charge still checks the live plan.
- */
-export async function refreshPlanCache(ctx: RequestContext, centre: { workspace: Workspace; deps: CentreDeps; settings: SettingsRow }, force = false): Promise<SettingsRow> {
-  const cached = (centre.settings.limits ?? {}) as Record<string, unknown>;
-  if (!force && typeof cached.checked_at === 'string' && ctx.now().getTime() - Date.parse(cached.checked_at) < PLAN_CACHE_MS && cached.access) return centre.settings;
-  const plan = await ctx.plan();
-  const limits = { ...seatLimits(plan.plans, plan.beta, centre.settings), access: { plans: plan.plans, beta: plan.beta, grants: plan.features }, checked_at: ctx.now().toISOString() };
-  const [row] = await centre.deps.store.table('settings').update({ workspace_id: centre.workspace.id }, { limits });
-  return row ?? { ...centre.settings, limits };
 }
 
 export const isManager = (role: Role) => MANAGER_ROLES.includes(role);

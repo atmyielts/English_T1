@@ -35,8 +35,6 @@ create table if not exists public.ai_centre_settings (
   -- Add-ons granted by Schood support until tenant checkout exists (Teacher seat, 100 students).
   extra_teacher_seats integer not null default 0 check (extra_teacher_seats between 0 and 1000),
   extra_students integer not null default 0 check (extra_students between 0 and 100000),
-  -- The seat limits of the plan when a member last used the centre ({"teachers", "students", "plan"}), for joins by people who are not members yet.
-  limits jsonb not null default '{}'::jsonb check (jsonb_typeof(limits) = 'object' and pg_column_size(limits) <= 500),
   -- Monthly credit budgets given to new members by role: {"teacher": 500, "student": 50}.
   budget_defaults jsonb not null default '{}'::jsonb check (jsonb_typeof(budget_defaults) = 'object' and pg_column_size(budget_defaults) <= 1000),
   -- The centre's lesson observation standards (C16): [{"key", "title", "description"}].
@@ -238,7 +236,8 @@ create table if not exists public.ai_centre_admissions (
   bot_username text check (bot_username is null or bot_username ~ '^[A-Za-z0-9_]{4,40}$'),
   bot_id bigint,
   -- SHA-256 of Telegram's X-Telegram-Bot-Api-Secret-Token for this bot.
-  webhook_secret_hash text check (webhook_secret_hash is null or webhook_secret_hash ~ '^[0-9a-f]{64}$'),
+  -- Found by hash when Telegram calls (the webhook's rate budget is per bot); one bot per secret.
+  webhook_secret_hash text unique check (webhook_secret_hash is null or webhook_secret_hash ~ '^[0-9a-f]{64}$'),
   faq jsonb not null default '[]'::jsonb check (jsonb_typeof(faq) = 'array' and pg_column_size(faq) <= 65536),
   prices jsonb not null default '[]'::jsonb check (jsonb_typeof(prices) = 'array' and pg_column_size(prices) <= 32000),
   -- {"mode": "approve" | "auto", "slots": [...], "min_notice_hours", "max_per_day", "require_phone"}.
@@ -798,26 +797,3 @@ end
 $$;
 
 commit;
-
--- --- Schedules (core's system routes) ---------------------------------------------------------
--- pg_cron calls the centre's system routes through invoke_schood_ai_system (20261030160000).
--- Each call does a bounded amount of work and the next call picks up the rest:
---   centre/system-brief every 10 minutes (minutes 4, 14, ...): builds each centre's Monday
---     brief from its chosen hour, Tashkent time, at most 8 per call, and retries deliveries
---     that quiet hours or the daily limit held back;
---   centre/system-daily six times a night (03:16 to 04:46 UTC), up to 200 centres a call,
---     each centre once a day: retention, ledgers and insights.
-do $$
-declare
-  v_job_id bigint;
-begin
-  for v_job_id in select jobid from cron.job where jobname in ('schood-ai-centre-brief-v1', 'schood-ai-centre-daily-v1') loop
-    perform cron.unschedule(v_job_id);
-  end loop;
-  perform cron.schedule('schood-ai-centre-brief-v1', '4-59/10 * * * *', $cron$select public.invoke_schood_ai_system('centre/system-brief', '{"builds": 8}');$cron$);
-  perform cron.schedule('schood-ai-centre-daily-v1', '16,31,46 3-4 * * *', $cron$select public.invoke_schood_ai_system('centre/system-daily', '{"limit": 200}');$cron$);
-exception
-  when undefined_table or undefined_function or invalid_schema_name then
-    raise notice 'pg_cron is unavailable in this environment; the centre schedules are not set';
-end
-$$;

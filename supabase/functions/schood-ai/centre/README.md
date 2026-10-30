@@ -94,8 +94,9 @@ Owners and admins tailor both at `/settings/assistants` (core).
 and `placement.mark` (C5, mark assumed), `admissions.reply` (C8), `owner.brief`
 (C10), `winback.message` (C11, assumed), `curriculum.outline` (assumed) and
 `curriculum.unit` (C12), `knowledge.answer` (C13), `observation.feedback` (C16,
-assumed). BYOK calls (C15) are not charged in credits; they carry a platform fee
-in `ai_centre_byok_fees` (the gateway hook is a core request).
+assumed). BYOK calls (C15) are not charged in credits: the area registers core's
+own-key resolver (`registerOwnKeys` in `byok.ts`), the gateway calls the provider with
+the centre's key, and the platform fee is billed monthly in `ai_centre_byok_fees`.
 
 ## Teacher materials (C5, C12)
 
@@ -114,35 +115,36 @@ Placement tests and curriculum units use the teacher area's material model in
 - Curriculum units are `lesson_plan` materials: a `stages` block per lesson and the
   unit test as a `questions` block (`curriculum-content.ts`).
 
-## Routes with nobody signed in (core's anonymous and system routes)
+## Work with nobody signed in (core's anonymous routes and scheduler)
 
 `public.ts`, registered in `mod.ts`:
 
-- `POST centre/bot-webhook?bot=<ref>&key=<secret>` (anonymous): the centre's own
-  Telegram bot (C8). The random bot ref and a per-connection secret are in the
-  webhook URL, because routes cannot read Telegram's secret-token header yet (a
-  core request); Telegram also gets that secret as its `secret_token`. Updates are
-  de-duplicated (`ai_centre_tg_updates`) and answered after the 200. Staff link
-  their chat with a one-time code from the app. Telegram's servers are a few
-  addresses for every centre, so this route has the highest per-IP limit core allows.
+- `POST centre/bot-webhook?bot=<ref>` (anonymous): the centre's own Telegram bot
+  (C8). Telegram's `X-Telegram-Bot-Api-Secret-Token` (read from `ctx.headers`) must
+  match the bot's secret, compared by hash in constant time and never logged. The
+  route's rate budget is per bot (`botRateKey`), since Telegram calls every bot from a
+  few addresses; unknown tokens stay limited per address. Updates are de-duplicated
+  (`ai_centre_tg_updates`) and answered after the 200. Staff link their chat with a
+  one-time code from the app.
 - `GET centre/embed-config`, `POST centre/embed-chat | embed-poll | embed-placement`
-  (anonymous): the website widgets (C14, C8). A centre's site loads
-  `/embed/widget.js` from ai.schood.online; the script talks through a hidden
-  `/embed/bridge.html` on ai.schood.online (core only answers its own origins). The
-  bridge passes the embedding page's origin, which the browser reports with each
-  message, as `site`; the route answers only sites on the centre's allowed list.
-  `_headers` lets only the bridge be framed; the universal `/*` rule is unchanged.
-- `POST centre/system-brief` (system, every 10 minutes): builds due Monday briefs
-  (at most 8 a call) and delivers them by each manager's notification preferences
-  (kind `centre.brief`); retries what quiet hours or the daily limit held back.
-- `POST centre/system-daily` (system, six calls a night): once a day per centre,
-  retention, this and last month's wholesale and fee ledgers, insights.
+  (anonymous, `cors: 'any'`): the website widgets (C14, C8). A centre's site loads
+  `/embed/widget.js` from ai.schood.online and calls these routes directly; core
+  answers CORS for any Origin without credentials, and the route answers only an
+  `ctx.origin` on the centre's own list.
+- Jobs on core's scheduler (`registerSystemJob`, `registerCentreJobs`):
+  `centre.monday_brief` every 15 minutes builds due Monday briefs (from each centre's
+  chosen hour, Tashkent time; at most 8 a run) and delivers them, retrying what quiet
+  hours or the daily limit held back; `centre.daily` every 30 minutes does each
+  centre's once-a-day work (retention, wholesale and fee ledgers, insights), at most
+  100 centres a run.
 
-The schedules are in the centre migration (`invoke_schood_ai_system`). The routes
-use `asCentre` (`runner.ts`): `ctx.workspace()` answers with the centre, AI is
-`ctx.paidBy(centre)`, actions are proposed by nobody for staff to approve, and
-feature checks use the plan a manager's last visit stored (`refreshPlanCache`),
-since core has no `ctx.planFor` yet; each charge still checks the live plan.
+All of it uses `asCentre` (`runner.ts`): `ctx.workspace()` answers with the centre,
+features follow the centre's plan (`ctx.planFor`), AI is `ctx.paidBy(centre)` and
+nothing else, and actions are proposed by nobody for staff to approve.
+
+The Monday brief goes through the centre's own bot to managers who linked it (with
+`ctx.notify.allowed`/`take`), and otherwise through core's `ctx.notify.send` (the
+Schood bot), both by each manager's notification choices (kind `centre.brief`).
 
 ## Data
 
@@ -172,9 +174,7 @@ staff codes, knowledge search, usage).
 Settings read by the area store (`SCHOOD_AI_*` only): `SCHOOD_AI_CENTRE_KEYS`,
 `SCHOOD_AI_CENTRE_KEY_ACTIVE`, `SCHOOD_AI_CENTRE_PUBLIC_URL` (the schood-ai
 function's own URL, for bot webhooks and widget snippets),
-`SCHOOD_AI_APP_URL` (invite links) and, optionally,
-`SCHOOD_AI_TELEGRAM_BOT_TOKEN` (the Schood bot, for briefs to managers who have not
-linked the centre's bot; an owner decision). Knowledge files use the repo's S3
+`SCHOOD_AI_APP_URL` (invite links). Knowledge files use the repo's S3
 media store (`_shared/media-storage.ts`) when it is configured.
 
 ## Tests and local runs

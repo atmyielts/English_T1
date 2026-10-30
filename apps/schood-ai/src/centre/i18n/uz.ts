@@ -331,7 +331,7 @@ export const uz: Record<CentreKey, string> = {
   'centre.audit.action_failed': 'Amal bajarilmadi',
   'centre.audit.workspace_settings': 'Ish maydoni sozlamalari o‘zgartirildi',
   'centre.byok.title': 'O‘z model kalitlari',
-  'centre.byok.lead': 'Enterprise markazlar o‘z AI provayderi kalitidan foydalanishi mumkin. Shu kalit bilan qilingan so‘rovlar uchun kredit o‘rniga platforma to‘lovi olinadi.',
+  'centre.byok.lead': "Enterprise markazlar Schood ishlatadigan AI provayderlaridan biri uchun o‘z kalitidan foydalanishi mumkin. Bunday so‘rovlar uchun kredit emas, platforma to‘lovi olinadi.",
   'centre.byok.notYet': 'Kalitlarni hozirdanoq saqlash mumkin. Ulardan so‘rovlar uchun foydalanishni Schood yoqmoqda; ungacha so‘rovlar Schood modellari va kreditlaridan foydalanadi.',
   'centre.byok.keys': 'Kalitlar',
   'centre.byok.none': 'Hali kalitlar yo‘q.',
@@ -992,4 +992,5 @@ export const uz: Record<CentreKey, string> = {
   // Brief deliveries by notification preferences
   'centre.brief.delivery.muted': "bildirishnoma sozlamalarida o‘chirilgan",
   'centre.brief.delivery.in_app': "ilovada (Telegram orqali yuborish o‘chiq)",
+  'centre.byok.providerHint': "Bu provayderga boradigan so‘rovlar sizning kalitingiz bilan yuboriladi: kredit emas, platforma to‘lovi olinadi.",
 };

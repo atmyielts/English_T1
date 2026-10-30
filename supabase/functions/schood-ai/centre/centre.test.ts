@@ -55,14 +55,11 @@ Deno.test('centre end to end: create, invite, budgets, admissions agent, Monday 
   equal([bot.status, bot.body.admissions.bot.connected, bot.body.admissions.bot.username, bot.body.admissions.bot.hint], [200, true, 'registan_admissions_bot', BOT_TOKEN.slice(-4)], 'bot connected');
   const hook = f.telegram.calls.find((entry) => entry.method === 'setWebhook')!;
   const secretToken = String(hook.body.secret_token), webhook = new URL(String(hook.body.url));
-  ok(secretToken.length >= 32 && webhook.pathname.endsWith('/schood-ai/centre/bot-webhook') && webhook.searchParams.get('key') === secretToken, 'webhook on the anonymous route, with its secret');
+  ok(secretToken.length >= 32 && webhook.pathname.endsWith('/schood-ai/centre/bot-webhook') && !webhook.search.includes(secretToken), 'webhook on the anonymous route; the secret only in Telegram’s header');
   const stored = await f.store.table('secrets').get({ workspace_id: ws, purpose: 'telegram_bot', revoked_at: null });
   ok(stored && stored.sealed.startsWith('v1:k1:') && !stored.sealed.includes(BOT_TOKEN) && !JSON.stringify(bot.body).includes(BOT_TOKEN), 'the token is sealed and never returned');
 
-  const tg = (update: Record<string, unknown>, secret = secretToken) => {
-    const url = new URL(webhook); url.searchParams.set('key', secret);
-    return f.anonymous('POST', url.toString(), { body: update, origin: null });
-  };
+  const tg = (update: Record<string, unknown>, secret = secretToken) => f.anonymous('POST', webhook.toString(), { body: update, origin: null, headers: { 'x-telegram-bot-api-secret-token': secret } });
   let update = 1;
   const say = (text: string) => tg({ update_id: update++, message: { message_id: update, chat: { id: 555001, type: 'private' }, from: { id: 555001, language_code: 'uz', username: 'aziz_t' }, text } });
   equal((await tg({ update_id: 99, message: { chat: { id: 1, type: 'private' }, text: 'hi' } }, 'wrong-secret')).status, 401, 'a wrong secret token is refused');
@@ -116,25 +113,27 @@ Deno.test('centre end to end: create, invite, budgets, admissions agent, Monday 
       { title: 'Chase outstanding payments', why: '7300000 UZS is outstanding.', area: 'payments' },
     ],
   });
-  equal((await f.system('centre/system-brief', {}, 'wrong-secret-0123456789abcdef0123456789')).status, 401, 'the scheduler needs the service secret');
-  equal((await f.anonymous('POST', 'centre/system-brief', { body: {} })).status, 401, 'nobody else can run it');
-  const sunday = await f.system('centre/system-brief');
-  equal([sunday.status, sunday.body.built], [200, 0], 'no brief on Sunday');
+  // Core's scheduler runs the centre's jobs (registerSystemJob) on its tick.
+  equal((await f.system('core/system-tick', {}, 'wrong-secret-0123456789abcdef0123456789')).status, 401, 'the scheduler needs the service secret');
+  equal((await f.tick()).status, 200);
+  equal((await f.store.table('briefs').list({ workspace_id: ws })).length, 0, 'no brief on Sunday');
   f.setClock(new Date('2026-11-02T03:30:00Z')); // Monday 08:30 in Tashkent
-  const monday = await f.system('centre/system-brief');
-  equal([monday.body.built, monday.body.delivered], [1, 1], 'built and delivered');
+  await f.tick();
+  ok((await f.memory.repository.systemRuns()).some((run) => run.job === 'centre.monday_brief' && run.lastStatus === 'ok'), 'the brief job ran');
   const [brief] = await f.store.table('briefs').list({ workspace_id: ws });
   equal([brief.week, brief.source, brief.status], ['2026-W45', 'snapshot', 'sent'], 'from the Academy snapshot');
   const sent = f.telegram.sent('900500').at(-1)!;
+  const sentBefore = f.telegram.sent('900500').length;
   ok(sent.includes('14 new leads') && sent.includes('Chase outstanding payments') && sent.includes('/centre/brief'), 'the owner received the brief with three actions');
   equal(f.memory.ledger.filter((row) => row.kind === 'charge' && row.creditKey === 'owner.brief').map((row) => row.delta), [-10], 'the brief costs 10 credits from the pool');
-  const later = await f.system('centre/system-brief');
-  equal([later.body.built, later.body.delivered], [0, 0], 'once a week');
+  await f.tick();
+  f.advance(20 * 60_000);
+  await f.tick();
+  equal((await f.store.table('briefs').list({ workspace_id: ws })).length, 1, 'once a week');
+  equal(f.telegram.sent('900500').length, sentBefore, 'not sent again');
   ok(f.memory.ledger.filter((row) => row.kind === 'charge' && row.creditKey === 'owner.brief').every((row) => row.userId === null), 'paid by the centre, nobody on the ledger');
-  // The daily job: retention, this month's ledgers and insights, once a day.
-  const daily = await f.system('centre/system-daily', { limit: 50 });
-  equal([daily.status, daily.body.done, daily.body.failed, daily.body.more], [200, 1, 0, false], 'the daily job ran for the centre');
-  const twice = await f.system('centre/system-daily');
-  equal([twice.body.done, twice.body.failed], [0, 0], 'idempotent within the day');
+  // The daily job: retention, this month's ledgers and insights, once a day per centre.
+  ok((await f.memory.repository.systemRuns()).some((run) => run.job === 'centre.daily' && run.lastStatus === 'ok'), 'the daily job ran');
+  equal((await f.store.takePublic(ws, 'cron_daily', '2026-11-02', 1)), false, 'today’s daily work for the centre is done');
   ok(f.memory.audit.some((event) => event.event === 'centre.brief_delivered'), 'audited');
 });

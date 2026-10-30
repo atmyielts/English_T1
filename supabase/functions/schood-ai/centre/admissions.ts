@@ -152,7 +152,7 @@ export const admissionsBot = {
     if (!me.ok || me.result?.is_bot !== true) throw new SchoodAIError('bot_token_invalid', 'Telegram did not accept this token.', 400);
     const current = await config(deps, ws.id);
     const ref = current.bot_ref ?? randomToken(18), secret = randomToken(32);
-    const hook = await deps.telegram.call(token, 'setWebhook', { url: `${deps.config.publicUrl}/centre/bot-webhook?bot=${ref}&key=${secret}`, secret_token: secret, allowed_updates: ['message', 'callback_query'], drop_pending_updates: true });
+    const hook = await deps.telegram.call(token, 'setWebhook', { url: `${deps.config.publicUrl}/centre/bot-webhook?bot=${ref}`, secret_token: secret, allowed_updates: ['message', 'callback_query'], drop_pending_updates: true });
     if (!hook.ok) throw new SchoodAIError('bot_webhook_failed', 'Telegram did not accept the webhook.', 502);
     await deps.telegram.call(token, 'setMyCommands', { commands: [{ command: 'start', description: 'Start' }, { command: 'test', description: 'Placement test' }, { command: 'human', description: 'Talk to a person' }] });
     await deps.store.table('secrets').update({ workspace_id: ws.id, purpose: 'telegram_bot', label: BOT_LABEL, revoked_at: null }, { revoked_at: ctx.now().toISOString() });

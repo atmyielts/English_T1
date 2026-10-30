@@ -1,11 +1,7 @@
 import { lazy, type ComponentType } from 'react';
-import {
-  BarChart3, BookMarked, ClipboardCheck, Eye, GraduationCap, HandCoins, KeyRound, Layers, LibraryBig, LayoutDashboard, Megaphone, MessagesSquare,
-  Newspaper, Palette, School, Settings2, Sparkles, Users, UsersRound,
-} from 'lucide-react';
+import { ClipboardCheck } from 'lucide-react';
 import { PLACEMENT_KIND, placementMarkdown, type PlacementTest } from '../../../../packages/ai-core/src/centre/placement-markdown.ts';
 import { registerMaterialKind, type AreaNavItem, type AreaRoute, type HomeCard } from '../core/index.ts';
-import { CentreHomeCard, SetupHomeCard, StudentHomeCard, TeacherHomeCard } from './cards.tsx';
 
 // Centres (T7, T8, C1–C16): the centre admin for owners and office admins, the
 // teacher's class assistant, and the branded Student Assistant. Screens load on
@@ -44,36 +40,41 @@ export const routes: AreaRoute[] = [
   { path: '/my-centre', component: page(teach, 'MyCentrePage'), title: 'centre.nav.myCentre', audiences: [...LEARNER], feature: 'C2' },
 ];
 
+/** Nav icons load after the first paint (core shows a blank of the same size until then). */
+export const icons = () => import('./icons.ts');
+
 export const nav: AreaNavItem[] = [
-  { id: 'centre-overview', path: '/centre', label: 'centre.nav.overview', icon: LayoutDashboard, audiences: [...CENTRE], feature: 'C1' },
-  { id: 'centre-people', path: '/centre/people', label: 'centre.nav.people', icon: Users, audiences: [...CENTRE], feature: 'C7' },
-  { id: 'centre-groups', path: '/centre/groups', label: 'centre.nav.groups', icon: UsersRound, audiences: [...CENTRE], feature: 'C2' },
-  { id: 'centre-office', path: '/centre/office', label: 'centre.nav.office', icon: MessagesSquare, audiences: [...CENTRE], feature: 'C3' },
-  { id: 'centre-admissions', path: '/centre/admissions', label: 'centre.nav.admissions', icon: Sparkles, audiences: [...CENTRE], feature: 'C8' },
-  { id: 'centre-marketing', path: '/centre/marketing', label: 'centre.nav.marketing', icon: Megaphone, audiences: [...CENTRE], feature: 'C4' },
-  { id: 'centre-placement', path: '/centre/placement', label: 'centre.nav.placement', icon: ClipboardCheck, audiences: [...CENTRE], feature: 'C5' },
-  { id: 'centre-curriculum', path: '/centre/curriculum', label: 'centre.nav.curriculum', icon: Layers, audiences: [...CENTRE], feature: 'C12' },
-  { id: 'centre-knowledge', path: '/centre/knowledge', label: 'centre.nav.knowledge', icon: LibraryBig, audiences: [...CENTRE], feature: 'C13' },
-  { id: 'centre-observations', path: '/centre/observations', label: 'centre.nav.observations', icon: Eye, audiences: [...CENTRE], feature: 'C16' },
-  { id: 'centre-insights', path: '/centre/insights', label: 'centre.nav.insights', icon: BarChart3, audiences: [...CENTRE], feature: 'C6' },
-  { id: 'centre-brief', path: '/centre/brief', label: 'centre.nav.brief', icon: Newspaper, audiences: [...CENTRE], feature: 'C10' },
-  { id: 'centre-resell', path: '/centre/resell', label: 'centre.nav.resell', icon: HandCoins, audiences: [...CENTRE], feature: 'C9' },
-  { id: 'centre-style', path: '/centre/style', label: 'centre.nav.style', icon: Palette, audiences: [...CENTRE], feature: 'C1' },
-  { id: 'centre-admin', path: '/centre/admin', label: 'centre.nav.admin', icon: Settings2, audiences: [...CENTRE], feature: 'C7' },
-  { id: 'centre-keys', path: '/centre/keys', label: 'centre.nav.keys', icon: KeyRound, audiences: [...CENTRE], feature: 'C15' },
-  { id: 'teach-classes', path: '/teach/classes', label: 'centre.nav.classes', icon: School, audiences: [...TEACHER], feature: 'T7', group: 'teacher' },
-  { id: 'teach-groups', path: '/centre/groups', label: 'centre.nav.groups', icon: UsersRound, audiences: [...TEACHER], feature: 'C2', group: 'teacher' },
-  { id: 'teach-placement', path: '/centre/placement', label: 'centre.nav.placement', icon: ClipboardCheck, audiences: [...TEACHER], feature: 'C5', group: 'teacher' },
-  { id: 'teach-curriculum', path: '/centre/curriculum', label: 'centre.nav.curriculum', icon: Layers, audiences: [...TEACHER], feature: 'C12', group: 'teacher' },
-  { id: 'teach-knowledge', path: '/centre/knowledge', label: 'centre.nav.knowledge', icon: BookMarked, audiences: [...TEACHER], feature: 'C13', group: 'teacher' },
-  { id: 'teach-observations', path: '/centre/observations', label: 'centre.nav.observations', icon: Eye, audiences: [...TEACHER], feature: 'C16', group: 'teacher' },
-  { id: 'teach-insights', path: '/centre/insights', label: 'centre.nav.insights', icon: BarChart3, audiences: [...TEACHER], feature: 'C6', group: 'teacher' },
-  { id: 'my-centre', path: '/my-centre', label: 'centre.nav.myCentre', icon: GraduationCap, audiences: [...LEARNER], feature: 'C2', group: 'learner' },
+  { id: 'centre-overview', path: '/centre', label: 'centre.nav.overview', icon: 'LayoutDashboard', audiences: [...CENTRE], feature: 'C1' },
+  { id: 'centre-people', path: '/centre/people', label: 'centre.nav.people', icon: 'Users', audiences: [...CENTRE], feature: 'C7' },
+  { id: 'centre-groups', path: '/centre/groups', label: 'centre.nav.groups', icon: 'UsersRound', audiences: [...CENTRE], feature: 'C2' },
+  { id: 'centre-office', path: '/centre/office', label: 'centre.nav.office', icon: 'MessagesSquare', audiences: [...CENTRE], feature: 'C3' },
+  { id: 'centre-admissions', path: '/centre/admissions', label: 'centre.nav.admissions', icon: 'Sparkles', audiences: [...CENTRE], feature: 'C8' },
+  { id: 'centre-marketing', path: '/centre/marketing', label: 'centre.nav.marketing', icon: 'Megaphone', audiences: [...CENTRE], feature: 'C4' },
+  { id: 'centre-placement', path: '/centre/placement', label: 'centre.nav.placement', icon: 'ClipboardCheck', audiences: [...CENTRE], feature: 'C5' },
+  { id: 'centre-curriculum', path: '/centre/curriculum', label: 'centre.nav.curriculum', icon: 'Layers', audiences: [...CENTRE], feature: 'C12' },
+  { id: 'centre-knowledge', path: '/centre/knowledge', label: 'centre.nav.knowledge', icon: 'LibraryBig', audiences: [...CENTRE], feature: 'C13' },
+  { id: 'centre-observations', path: '/centre/observations', label: 'centre.nav.observations', icon: 'Eye', audiences: [...CENTRE], feature: 'C16' },
+  { id: 'centre-insights', path: '/centre/insights', label: 'centre.nav.insights', icon: 'BarChart3', audiences: [...CENTRE], feature: 'C6' },
+  { id: 'centre-brief', path: '/centre/brief', label: 'centre.nav.brief', icon: 'Newspaper', audiences: [...CENTRE], feature: 'C10' },
+  { id: 'centre-resell', path: '/centre/resell', label: 'centre.nav.resell', icon: 'HandCoins', audiences: [...CENTRE], feature: 'C9' },
+  { id: 'centre-style', path: '/centre/style', label: 'centre.nav.style', icon: 'Palette', audiences: [...CENTRE], feature: 'C1' },
+  { id: 'centre-admin', path: '/centre/admin', label: 'centre.nav.admin', icon: 'Settings2', audiences: [...CENTRE], feature: 'C7' },
+  { id: 'centre-keys', path: '/centre/keys', label: 'centre.nav.keys', icon: 'KeyRound', audiences: [...CENTRE], feature: 'C15' },
+  { id: 'teach-classes', path: '/teach/classes', label: 'centre.nav.classes', icon: 'School', audiences: [...TEACHER], feature: 'T7', group: 'teacher' },
+  { id: 'teach-groups', path: '/centre/groups', label: 'centre.nav.groups', icon: 'UsersRound', audiences: [...TEACHER], feature: 'C2', group: 'teacher' },
+  { id: 'teach-placement', path: '/centre/placement', label: 'centre.nav.placement', icon: 'ClipboardCheck', audiences: [...TEACHER], feature: 'C5', group: 'teacher' },
+  { id: 'teach-curriculum', path: '/centre/curriculum', label: 'centre.nav.curriculum', icon: 'Layers', audiences: [...TEACHER], feature: 'C12', group: 'teacher' },
+  { id: 'teach-knowledge', path: '/centre/knowledge', label: 'centre.nav.knowledge', icon: 'BookMarked', audiences: [...TEACHER], feature: 'C13', group: 'teacher' },
+  { id: 'teach-observations', path: '/centre/observations', label: 'centre.nav.observations', icon: 'Eye', audiences: [...TEACHER], feature: 'C16', group: 'teacher' },
+  { id: 'teach-insights', path: '/centre/insights', label: 'centre.nav.insights', icon: 'BarChart3', audiences: [...TEACHER], feature: 'C6', group: 'teacher' },
+  { id: 'my-centre', path: '/my-centre', label: 'centre.nav.myCentre', icon: 'GraduationCap', audiences: [...LEARNER], feature: 'C2', group: 'learner' },
 ];
 
+// Home cards load with the home page's area chunk, not the first download.
+const card = (name: 'SetupHomeCard' | 'CentreHomeCard' | 'TeacherHomeCard' | 'StudentHomeCard') => () => import('./cards.tsx').then((module) => ({ default: module[name] }));
 export const homeCards: HomeCard[] = [
-  { id: 'centre-setup', audiences: ['learner', 'teacher', 'parent'], render: (me) => <SetupHomeCard me={me}/> },
-  { id: 'centre-today', audiences: [...CENTRE], render: (me) => <CentreHomeCard me={me}/> },
-  { id: 'centre-teacher', audiences: [...TEACHER], render: (me) => <TeacherHomeCard me={me}/> },
-  { id: 'centre-student', audiences: [...LEARNER], render: (me) => <StudentHomeCard me={me}/> },
+  { id: 'centre-setup', audiences: ['learner', 'teacher', 'parent'], component: card('SetupHomeCard') },
+  { id: 'centre-today', audiences: [...CENTRE], component: card('CentreHomeCard') },
+  { id: 'centre-teacher', audiences: [...TEACHER], component: card('TeacherHomeCard') },
+  { id: 'centre-student', audiences: [...LEARNER], component: card('StudentHomeCard') },
 ];

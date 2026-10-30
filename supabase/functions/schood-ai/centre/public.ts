@@ -1,11 +1,12 @@
 import { publicTest } from '../../../../packages/ai-core/src/centre/placement.ts';
 import { tashkentDay } from '../../../../packages/ai-core/src/mod.ts';
 import { brandingView } from '../core/views.ts';
-import { integer } from '../input.ts';
+import { registerSystemJob } from '../registries.ts';
+import type { StoreHandle } from '../stores.ts';
 import { SchoodAIError, type Locale, type RequestContext, type Workspace } from '../types.ts';
 import { runRetention } from './admin.ts';
 import { agentTurn, LIMITS, openThread, say, T, type AgentMessage } from './admissions.ts';
-import { centreDeps, type CentreDeps } from './binding.ts';
+import { centreDeps, centreStore, type CentreDeps } from './binding.ts';
 import { botToken, sendText, webhookSecretHash } from './bot.ts';
 import { briefDue, buildBrief, deliverBrief } from './brief.ts';
 import { computeByokFees } from './byok.ts';
@@ -19,36 +20,54 @@ import { asRecord, clean, monthOf, requireCentre, tashkentWeek } from './shared.
 import { StoreConflict } from './store-memory.ts';
 import type { AdmissionsRow, SettingsRow } from './store.ts';
 
-// The centre's routes for callers without a Schood session, on core's anonymous and
-// system routes (mod.ts):
-//   POST centre/bot-webhook?bot=<ref>&key=<secret>   the centre's own Telegram bot (C8);
-//   GET  centre/embed-config?key=&site=             the website widgets (C14, C8), called through
-//   POST centre/embed-chat | embed-poll |            /embed/bridge.html on ai.schood.online, which
-//        embed-placement                             passes the embedding page's origin as `site`;
-//   POST centre/system-brief                        Monday briefs (every 10 minutes, pg_cron);
-//   POST centre/system-daily                        retention, monthly ledgers, insights (nightly).
+// The centre's work with nobody signed in, on core's anonymous routes (mod.ts) and
+// core's scheduler (registerSystemJob, bottom of this file):
+//   POST centre/bot-webhook?bot=<ref>       the centre's own Telegram bot (C8), checked by
+//                                           Telegram's X-Telegram-Bot-Api-Secret-Token;
+//   GET  centre/embed-config?key=           the website widgets (C14, C8), answered only for
+//   POST centre/embed-chat | embed-poll |   an Origin on the centre's own list (CORS for any
+//        embed-placement                    Origin is core's; the check is here);
+//   job  centre.monday_brief                Monday briefs, every 15 minutes;
+//   job  centre.daily                       retention, monthly ledgers, insights.
 // AI here is paid by the centre's pool through ctx.paidBy (runner.ts asCentre), and
-// only after the centre's own switch for that widget or bot is on.
+// only after the centre's own switch for that widget, bot or brief is on.
 
 const SESSION = /^[A-Za-z0-9_-]{16,64}$/;
 const LANG = (value: unknown): Locale => (typeof value === 'string' && /^ru/i.test(value) ? 'ru' : typeof value === 'string' && /^en/i.test(value) ? 'en' : 'uz');
-const ORIGIN = /^https?:\/\/[a-z0-9.-]+(:\d{2,5})?$/;
 const workspaceLocale = (workspace: Workspace): Locale => (workspace.houseStyle.instruction_language === 'ru' ? 'ru' : workspace.houseStyle.instruction_language === 'en' ? 'en' : 'uz');
 const keyboard = (message: AgentMessage) => message.buttons?.length ? { reply_markup: { inline_keyboard: message.buttons.reduce<{ text: string; callback_data: string }[][]>((rows, button, index) => { if (index % 2 === 0) rows.push([]); rows.at(-1)!.push({ text: button.label, callback_data: button.data.slice(0, 64) }); return rows; }, []) } } : {};
 
 // --- Telegram (anonymous) ---------------------------------------------------------------------
 
+const SECRET_HEADER = 'x-telegram-bot-api-secret-token';
+const presentedSecret = (headers: Headers) => {
+  const value = headers.get(SECRET_HEADER) ?? '';
+  return value.length >= 16 && value.length <= 256 ? value : null;
+};
+
 /**
- * POST centre/bot-webhook?bot=<ref>&key=<secret>: an update from a centre's own bot. The
- * random bot ref and the per-connection secret are in the webhook URL, because routes
- * cannot read Telegram's secret-token header yet (docs/product/ai-requests/centre.md).
- * Telegram gets its 200 at once; the reply is sent after it.
+ * Whose rate budget a webhook call uses: its bot's, when the secret token belongs to a
+ * bot we know (Telegram calls every centre's bot from a few addresses). Unknown or made-up
+ * tokens return null and stay limited per address.
+ */
+export async function botRateKey(req: Request, input: { store<T>(handle: StoreHandle<T>): T }): Promise<string | null> {
+  const token = presentedSecret(req.headers);
+  if (!token) return null;
+  const deps = await input.store(centreStore).deps();
+  const row = await deps.store.table('admissions').get({ webhook_secret_hash: await webhookSecretHash(token) });
+  return row ? `centre-bot:${row.workspace_id}` : null;
+}
+
+/**
+ * POST centre/bot-webhook?bot=<ref>: an update from a centre's own bot, with Telegram's
+ * secret token for that bot in its header (compared by hash, in constant time, never
+ * logged). Telegram gets its 200 at once; the reply is sent after it.
  */
 export async function botWebhook(ctx: RequestContext) {
   const deps = await centreDeps(ctx);
-  const ref = ctx.query.get('bot') ?? '', key = ctx.query.get('key') ?? '';
+  const ref = ctx.query.get('bot') ?? '', presented = presentedSecret(ctx.headers);
   const row = /^[A-Za-z0-9_-]{16,40}$/.test(ref) ? await deps.store.table('admissions').get({ bot_ref: ref }) : null;
-  if (!row || !row.webhook_secret_hash || !key || !timingSafeEqual(await webhookSecretHash(key), row.webhook_secret_hash)) throw new SchoodAIError('unauthorized', 'Unknown bot.', 401);
+  if (!row || !row.webhook_secret_hash || !presented || !timingSafeEqual(await webhookSecretHash(presented), row.webhook_secret_hash)) throw new SchoodAIError('unauthorized', 'Unknown bot.', 401);
   const update = await ctx.body();
   const updateId = Number(update.update_id);
   if (!Number.isSafeInteger(updateId)) return { ok: true };
@@ -101,13 +120,13 @@ interface Embed { deps: CentreDeps; settings: SettingsRow; workspace: Workspace;
 /** The centre behind a widget key, answered only for a website the centre allowed and a plan with C14. */
 async function embed(ctx: RequestContext): Promise<Embed> {
   const body = ctx.method === 'GET' ? {} : await ctx.body();
-  const key = String(ctx.query.get('key') ?? body.key ?? ''), site = String(ctx.query.get('site') ?? body.site ?? '').toLowerCase();
+  const key = String(ctx.query.get('key') ?? body.key ?? ''), site = (ctx.origin ?? '').toLowerCase();
   const deps = await centreDeps(ctx);
   const settings = /^[A-Za-z0-9_-]{20,40}$/.test(key) ? await deps.store.table('settings').get({ public_key: key }) : null;
   const workspace = settings ? await ctx.repo.workspace(settings.workspace_id) : null;
   if (!settings || !workspace || workspace.kind !== 'centre' || workspace.status !== 'active') throw new SchoodAIError('not_found', 'Unknown widget key.', 404);
-  // The bridge passes the embedding page's origin, which the browser vouches for (postMessage).
-  if (!ORIGIN.test(site) || !settings.embed_domains.includes(site)) throw new SchoodAIError('origin_denied', 'This website is not allowed to show the centre’s widget.', 403);
+  // Core answers CORS for any Origin on these routes; only the centre's own sites get an answer.
+  if (!site || !settings.embed_domains.includes(site)) throw new SchoodAIError('origin_denied', 'This website is not allowed to show the centre’s widget.', 403);
   const locale = LANG(body.lang ?? ctx.query.get('lang'));
   const centre = await asCentre(ctx, workspace, locale);
   const [c14, c8, c5] = await Promise.all([centre.access('C14'), centre.access('C8'), centre.access('C5')]);
@@ -125,7 +144,7 @@ async function sessionOf(body: Record<string, unknown>): Promise<string> {
   return (await sha256Hex(`widget:${session}`)).slice(0, 40);
 }
 
-/** GET centre/embed-config?key=&site=&lang=: what the widget shows (branding, which widgets are on). */
+/** GET centre/embed-config?key=&lang=: what the widget shows (branding, which widgets are on). */
 export async function embedConfig(ctx: RequestContext) {
   const { deps, settings, workspace, locale, placementOn, chatOn } = await embed(ctx);
   const view = embedView(settings, deps.config.appUrl), branding = brandingView(workspace.branding);
@@ -145,7 +164,7 @@ export async function embedConfig(ctx: RequestContext) {
   };
 }
 
-/** POST centre/embed-chat { key, site, session, message, lang }: one admissions turn, paid by the centre. */
+/** POST centre/embed-chat { key, session, message, lang }: one admissions turn, paid by the centre. */
 export async function embedChat(ctx: RequestContext) {
   const { deps, workspace, locale, body, chatOn, admissions } = await embed(ctx);
   if (!chatOn || !admissions) throw new SchoodAIError('widget_off', 'The chat is not switched on.', 409);
@@ -161,7 +180,7 @@ export async function embedChat(ctx: RequestContext) {
   return { messages: replies.map((reply) => ({ role: 'agent', text: reply.text, buttons: reply.buttons ?? [] })), status: fresh?.status ?? thread.status, last_id: last?.id ?? 0 };
 }
 
-/** POST centre/embed-poll { key, site, session, after }: staff replies since `after` (no AI). */
+/** POST centre/embed-poll { key, session, after }: staff replies since `after` (no AI). */
 export async function embedPoll(ctx: RequestContext) {
   const { deps, workspace, body, chatOn } = await embed(ctx);
   if (!chatOn) throw new SchoodAIError('widget_off', 'The chat is not switched on.', 409);
@@ -172,7 +191,7 @@ export async function embedPoll(ctx: RequestContext) {
   return { status: thread.status, messages: rows.filter((entry) => entry.role === 'agent' || entry.role === 'staff').map((entry) => ({ id: entry.id, role: entry.role, text: entry.content })) };
 }
 
-/** POST centre/embed-placement { key, site, session, step: start | answer | submit, … }: the website placement test. */
+/** POST centre/embed-placement { key, session, step: start | answer | submit, … }: the website placement test. */
 export async function embedPlacement(ctx: RequestContext) {
   const { deps, settings, workspace, locale, body, centre, placementOn } = await embed(ctx);
   if (!placementOn) throw new SchoodAIError('widget_off', 'The placement test is not switched on.', 409);
@@ -205,9 +224,9 @@ export async function embedPlacement(ctx: RequestContext) {
   return { level: submitted.level, percent: objective.percent ?? null, correct: objective.correct ?? null, total: objective.total ?? null, marked, note: say({ en: 'A teacher confirms your level.', uz: 'Darajangizni o‘qituvchi tasdiqlaydi.', ru: 'Уровень подтвердит преподаватель.' }, locale) };
 }
 
-// --- Scheduled jobs (system) --------------------------------------------------------------------
-// pg_cron calls these often (the centre migration's schedules) and each call does a bounded
-// amount of work, so no call runs long; what is left is picked up by the next one.
+// --- Scheduled jobs (core's scheduler) -----------------------------------------------------------
+// Core's scheduler runs these on its five-minute tick (registerSystemJob); each run does a
+// bounded amount of work, and what is left waits for the next run.
 
 /** Active centres, in a stable order (settings rows are one per centre). */
 async function* activeCentres(ctx: RequestContext, deps: CentreDeps): AsyncGenerator<Workspace> {
@@ -216,24 +235,24 @@ async function* activeCentres(ctx: RequestContext, deps: CentreDeps): AsyncGener
     if (workspace && workspace.kind === 'centre' && workspace.status === 'active') yield workspace;
   }
 }
-const failed = (job: string, workspace: Workspace, cause: unknown) => console.error(JSON.stringify({ event: 'schood_ai_centre_job_failed', job, workspace_id: workspace.id, error: String(cause).slice(0, 300) }));
-const bound = (value: unknown, fallback: number, max: number) => (value === undefined ? fallback : integer(value, 'limit', 1, max));
+const failed = (job: string, workspace: Workspace, cause: unknown) => console.error(JSON.stringify({ event: 'schood_ai_centre_job_failed', job, workspace_id: workspace.id, error: String(cause instanceof Error ? cause.name : 'error') }));
+export const JOB_LIMITS = { briefBuilds: 8, dailyCentres: 100 } as const;
 
 /**
- * POST centre/system-brief { builds? }: builds due Monday briefs (from each centre's chosen
- * hour, Tashkent time) and delivers them, and retries deferred deliveries. At most `builds`
- * new briefs a call (default 8), since each is a model call; every 10 minutes.
+ * Builds due Monday briefs (from each centre's chosen hour, Tashkent time) and delivers
+ * them, and retries deliveries quiet hours or the daily limit held back. At most
+ * `JOB_LIMITS.briefBuilds` new briefs a run, since each is a model call.
  */
-export async function systemBrief(ctx: RequestContext) {
+export async function runBriefs(ctx: RequestContext, builds: number = JOB_LIMITS.briefBuilds) {
   const deps = await centreDeps(ctx);
-  const body = await ctx.body();
-  const builds = bound(body.builds, 8, 50);
   const at = ctx.now(), week = tashkentWeek(at);
   const summary = { centres: 0, built: 0, delivered: 0, waiting: 0, failed: 0 };
   for await (const workspace of activeCentres(ctx, deps)) {
     summary.centres++;
     try {
       const existing = await deps.store.table('briefs').get({ workspace_id: workspace.id, week });
+      const settings = await deps.store.table('settings').get({ workspace_id: workspace.id });
+      if (!settings || (settings.brief as { enabled?: boolean }).enabled !== true) continue;
       const centre = await asCentre(ctx, workspace, workspaceLocale(workspace));
       const full = await requireCentre(centre);
       const due = briefDue(full, at, existing);
@@ -252,13 +271,11 @@ export async function systemBrief(ctx: RequestContext) {
 }
 
 /**
- * POST centre/system-daily { limit? }: once a day per centre, retention, this month's and
- * last month's ledgers and insights. At most `limit` centres a call (default 100); calls
- * through the night's window finish the rest, and a centre done today is skipped.
+ * Once a day per centre: retention, this and last month's ledgers, insights. At most
+ * `limit` centres a run; a centre done today is skipped, so the day's runs finish the rest.
  */
-export async function systemDaily(ctx: RequestContext) {
+export async function runDaily(ctx: RequestContext, limit: number = JOB_LIMITS.dailyCentres) {
   const deps = await centreDeps(ctx);
-  const limit = bound((await ctx.body()).limit, 100, 1000);
   const at = ctx.now(), day = tashkentDay(at), month = monthOf(at);
   const previous = monthOf(new Date(Date.parse(`${month}-01T00:00:00+05:00`) - 86_400_000));
   const summary = { done: 0, retention: 0, ledgers: 0, insights: 0, failed: 0, more: false };
@@ -286,4 +303,9 @@ export async function systemDaily(ctx: RequestContext) {
     }
   }
   return summary;
+}
+
+export function registerCentreJobs(): void {
+  registerSystemJob('centre.monday_brief', { area: 'centre', schedule: { everyMinutes: 15 }, timeoutMs: 110_000, run: (ctx) => runBriefs(ctx) });
+  registerSystemJob('centre.daily', { area: 'centre', schedule: { everyMinutes: 30 }, timeoutMs: 110_000, run: (ctx) => runDaily(ctx) });
 }

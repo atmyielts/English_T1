@@ -5,7 +5,7 @@ import { admin, audit, grants, retentionNow, usage } from './admin.ts';
 import { admissions, admissionsBot, bookings, staffCode, staffReply, threads } from './admissions.ts';
 import { myClasses, registerCentreAssistants, studentAssistant } from './assistants.ts';
 import { brief } from './brief.ts';
-import { byok } from './byok.ts';
+import { byok, registerOwnKeys } from './byok.ts';
 import { curricula, publish, registerCurriculumActions, retryUnit, reviewUnit, run } from './curriculum.ts';
 import { embed } from './embed.ts';
 import { assignmentRules, groupMembers, groups, syncGroups } from './groups.ts';
@@ -14,7 +14,7 @@ import { ask, knowledge } from './knowledge.ts';
 import { marketing, results } from './marketing.ts';
 import { campaignDraft, campaigns, leadDraft, leads, parentDraft, registerMessageActions } from './messages.ts';
 import { observations, progress, standards } from './observations.ts';
-import { botWebhook, embedChat, embedConfig, embedPlacement, embedPoll, systemBrief, systemDaily } from './public.ts';
+import { botRateKey, botWebhook, embedChat, embedConfig, embedPlacement, embedPoll, registerCentreJobs } from './public.ts';
 import { answer, attempts, available, draftReview, generate, mark, registerPlacementKind, review, start, submit, takerTest, tests } from './placement.ts';
 import { resell, resellStudents, wholesale } from './resell.ts';
 import { academies, budgets, create, invitePreview, invites, join, leave, members, overview, snapshotNow } from './workspace.ts';
@@ -23,13 +23,15 @@ import { academies, budgets, create, invitePreview, invites, join, leave, member
 // assistant, office, marketing, placement, insights, admissions agent, resale,
 // owner brief, campaigns, curriculum, knowledge, white label and embed, own model
 // keys and lesson observation. See README.md in this folder and ../CONTRACT.md.
-// Public routes (the centre's Telegram bot, website widgets, the scheduler) are in
-// public.ts, mounted in front of the signed-in router.
+// Work with nobody signed in (the centre's Telegram bot, website widgets, scheduled
+// jobs) is in public.ts, on core's anonymous routes and scheduler.
 
 registerCentreAssistants();
 registerMessageActions();
 registerCurriculumActions();
 registerPlacementKind();
+registerCentreJobs();
+registerOwnKeys();
 
 export const centreModule: FeatureModule = {
   area: 'centre',
@@ -106,16 +108,12 @@ export const centreModule: FeatureModule = {
     'curriculum-retry': { POST: retryUnit },
     'curriculum-review': { POST: reviewUnit },
     'curriculum-publish': { POST: publish },
-    // Nobody signed in (public.ts). The centre's own bot: Telegram's servers are few
-    // addresses for every centre, so their limit is the highest core allows.
-    'bot-webhook': { POST: botWebhook, anonymous: { perMinute: 600, perDay: 100_000 } },
-    // Website widgets, through /embed/bridge.html on ai.schood.online.
-    'embed-config': { GET: embedConfig, anonymous: { perMinute: 30, perDay: 2_000 } },
-    'embed-chat': { POST: embedChat, anonymous: { perMinute: 12, perDay: 400 } },
-    'embed-poll': { POST: embedPoll, anonymous: { perMinute: 12, perDay: 3_000 } },
-    'embed-placement': { POST: embedPlacement, anonymous: { perMinute: 30, perDay: 600 } },
-    // Scheduled by pg_cron in the centre migration (invoke_schood_ai_system).
-    'system-brief': { POST: systemBrief, system: true },
-    'system-daily': { POST: systemDaily, system: true },
+    // Nobody signed in (public.ts). The centre's own bot, with a budget per bot.
+    'bot-webhook': { POST: botWebhook, anonymous: { perMinute: 120, perDay: 20_000, rateKey: botRateKey } },
+    // Website widgets on the centre's own sites: CORS for any Origin, checked against the centre's list.
+    'embed-config': { GET: embedConfig, anonymous: { perMinute: 30, perDay: 2_000, cors: 'any' } },
+    'embed-chat': { POST: embedChat, anonymous: { perMinute: 12, perDay: 400, cors: 'any' } },
+    'embed-poll': { POST: embedPoll, anonymous: { perMinute: 12, perDay: 3_000, cors: 'any' } },
+    'embed-placement': { POST: embedPlacement, anonymous: { perMinute: 30, perDay: 600, cors: 'any' } },
   },
 };

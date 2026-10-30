@@ -109,7 +109,7 @@ export const en = {
   'centre.audit.centre_bot_connected': 'Bot connected', 'centre.audit.centre_bot_disconnected': 'Bot disconnected', 'centre.audit.centre_brief_delivered': 'Brief delivered', 'centre.audit.centre_embed_updated': 'Widgets changed',
   'centre.audit.action_proposed': 'Action proposed', 'centre.audit.action_approved': 'Action approved', 'centre.audit.action_declined': 'Action declined', 'centre.audit.action_done': 'Action done', 'centre.audit.action_failed': 'Action failed',
   'centre.audit.workspace_settings': 'Workspace settings changed',
-  'centre.byok.title': 'Own model keys', 'centre.byok.lead': 'Enterprise centres can use their own AI provider key. Calls with it cost a platform fee instead of credits.',
+  'centre.byok.title': 'Own model keys', 'centre.byok.lead': "Enterprise centres can use their own key for one of the AI providers Schood uses. Calls with it cost a platform fee instead of credits.",
   'centre.byok.notYet': 'Keys can be stored now. Using them for calls is being switched on by Schood; until then calls use Schood’s models and credits.',
   'centre.byok.keys': 'Keys', 'centre.byok.none': 'No keys yet.', 'centre.byok.label': 'Label', 'centre.byok.provider': 'Provider', 'centre.byok.models': 'Models', 'centre.byok.hint': 'Ends with',
   'centre.byok.add': 'Add a key', 'centre.byok.addLead': 'The key is stored encrypted and never shown again.', 'centre.byok.adapter': 'Type', 'centre.byok.openai': 'OpenAI-compatible',
@@ -336,5 +336,6 @@ export const en = {
   // Brief deliveries by notification preferences
   'centre.brief.delivery.muted': "turned off in their notification settings",
   'centre.brief.delivery.in_app': "in the app (Telegram delivery is off)",
+  'centre.byok.providerHint': "Calls that would go to this provider use your key instead: no credits, the platform fee instead.",
 } satisfies Record<string, string>;
 export type CentreKey = keyof typeof en;

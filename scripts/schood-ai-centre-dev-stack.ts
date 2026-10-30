@@ -29,7 +29,7 @@ const secrets = await SecretBox.create('dev', { dev: btoa(String.fromCharCode(..
 const stores = createStores({ kind: 'memory' }, { now: () => new Date() });
 stores.use(centreStore, centreRuntime({
   store, telegram: telegram.api, secrets, media: { put: (key) => Promise.resolve({ provider: 's3', bucket: 'dev', path: key }) },
-  config: { appUrl: ORIGINS[0], publicUrl: `http://localhost:${PORT}/functions/v1/schood-ai`, schoodBotToken: null },
+  config: { appUrl: ORIGINS[0], publicUrl: `http://localhost:${PORT}/functions/v1/schood-ai` },
 }));
 
 // --- The fake model: one answer per centre task, chosen from the system prompt ----------------
@@ -112,11 +112,8 @@ await memory.repository.updateWorkspace(ws, { branding: { primary_color: '#2f6f4
 memory.seed.member(ws, ID.office, 'admin');
 for (const id of [ID.t1, ID.t2]) memory.seed.member(ws, id, 'teacher', { creditBudget: 500 });
 for (const id of [ID.s1, ID.s2, ID.s3, ID.s4, ID.s5, ID.s6]) memory.seed.member(ws, id, 'student', { creditBudget: 50 });
-// The plan the bot and widgets see until a manager opens the centre (runner.ts); a test page on :5204 may embed the widgets.
-await store.table('settings').update({ workspace_id: ws }, {
-  budget_defaults: { teacher: 500, student: 50 }, embed_domains: ['http://localhost:5203', 'http://localhost:5204'], widgets: { admissions_chat: true },
-  limits: { plan: 'centre_pro', teachers: 15, students: 400, access: { plans: ['centre_pro'], beta: false, grants: [] }, checked_at: new Date().toISOString() },
-});
+// A test page on :5204 may embed the widgets.
+await store.table('settings').update({ workspace_id: ws }, { budget_defaults: { teacher: 500, student: 50 }, embed_domains: ['http://localhost:5204'], widgets: { admissions_chat: true } });
 const group = await store.table('groups').insert({ workspace_id: ws, academy_classroom_id: 'c0000000-0000-4000-8000-0000000000b5', name: '5B', level: 'B1', teacher_ids: [ID.t1], focus_topics: ['present perfect'], created_by: ID.owner });
 for (const id of [ID.s1, ID.s2, ID.s3, ID.s4, ID.s5]) await store.table('group_members').insert({ group_id: group.id, workspace_id: ws, user_id: id });
 const test = await memory.repository.createPage({ workspaceId: ws, ownerId: ID.t1, folder: 'Placement tests', kind: 'centre.placement_test', title: TEST.title, body: placementKind.toMarkdown(TEST as never), material: TEST, visibility: 'workspace', status: 'approved', sourceGenerationId: null });

@@ -124,8 +124,9 @@ function AuditLog() {
 // --- C15 own model keys -------------------------------------------------------------
 
 interface ByokView {
-  allowed: boolean; gateway_ready: boolean; secrets_ready: boolean; rate_uzs_per_1000_calls: number | null; period: string;
-  keys: { label: string; adapter: string; base_url: string; models: string[]; hint: string; created_at: string }[];
+  allowed: boolean; secrets_ready: boolean; rate_uzs_per_1000_calls: number | null; period: string;
+  providers: { key: string; name: string }[];
+  keys: { label: string; provider: string | null; hint: string; created_at: string }[];
   fees: { id: string; period: string; calls: number; fee_uzs: number | null; status: string }[];
 }
 
@@ -140,23 +141,21 @@ export function ByokPage() {
 function Byok() {
   const t = useT(), f = useFormat(), call = useCentreApi();
   const state = useLoad<ByokView>('byok');
-  const [form, setForm] = useState({ label: 'main', adapter: 'openai_compatible', base_url: '', api_key: '', models: '' });
+  const [form, setForm] = useState({ label: 'main', provider: '', api_key: '' });
   const submit = useSubmit(), revoke = useSubmit();
   const save = (event: FormEvent) => {
     event.preventDefault();
     void submit.run(async () => {
-      await call('byok', { method: 'POST', body: { label: form.label, adapter: form.adapter, base_url: form.base_url, api_key: form.api_key, models: form.models.split(/[\s,]+/).filter(Boolean) } });
+      await call('byok', { method: 'POST', body: { label: form.label, provider: form.provider || state.data?.providers[0]?.key, api_key: form.api_key } });
       setForm({ ...form, api_key: '' }); await state.reload();
     });
   };
   return <Loaded state={state}>{(data) => <div className="grid gap-6">
-    {!data.gateway_ready && <p role="note" className="m-0 rounded-2xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">{t('centre.byok.notYet')}</p>}
     <div className="grid gap-6 lg:grid-cols-2">
       <Section title={t('centre.byok.keys')}>
         <Table caption={t('centre.byok.keys')} rows={data.keys} rowKey={(row) => row.label} empty={t('centre.byok.none')} columns={[
           { key: 'label', label: t('centre.byok.label'), render: (row) => <span className="font-semibold">{row.label}</span> },
-          { key: 'provider', label: t('centre.byok.provider'), render: (row) => <span className="break-all text-xs">{row.adapter} · {row.base_url}</span> },
-          { key: 'models', label: t('centre.byok.models'), render: (row) => row.models.join(', ') },
+          { key: 'provider', label: t('centre.byok.provider'), render: (row) => data.providers.find((entry) => entry.key === row.provider)?.name ?? row.provider ?? '—' },
           { key: 'hint', label: t('centre.byok.hint'), render: (row) => <span className="font-mono">…{row.hint}</span> },
           { key: 'revoke', label: <span className="sr-only">{t('centre.people.actions')}</span>, render: (row) => <Button size="sm" variant="danger" disabled={revoke.busy} onClick={() => void revoke.run(async () => { await call('byok', { method: 'DELETE', body: { label: row.label } }); await state.reload(); })} icon={<Trash2 size={14} aria-hidden="true"/>}>{t('centre.people.revoke')}</Button> },
         ]}/>
@@ -166,13 +165,11 @@ function Byok() {
         <form onSubmit={save} className="grid gap-3">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label={t('centre.byok.label')}>{(id) => <TextInput id={id} value={form.label} pattern="[a-z0-9][a-z0-9_.\-]{0,40}" onChange={(event) => setForm({ ...form, label: event.target.value.toLowerCase() })} required/>}</Field>
-            <Select label={t('centre.byok.adapter')} value={form.adapter} onChange={(adapter) => setForm({ ...form, adapter, base_url: adapter === 'anthropic' ? 'https://api.anthropic.com/v1' : adapter === 'google_gemini' ? 'https://generativelanguage.googleapis.com/v1beta' : form.base_url })} options={[{ value: 'openai_compatible', label: t('centre.byok.openai') }, { value: 'anthropic', label: t('centre.byok.anthropic') }, { value: 'google_gemini', label: t('centre.byok.gemini') }]}/>
+            <Select label={t('centre.byok.provider')} hint={t('centre.byok.providerHint')} value={form.provider || data.providers[0]?.key || ''} onChange={(provider) => setForm({ ...form, provider })} options={data.providers.map((entry) => ({ value: entry.key, label: entry.name }))}/>
           </div>
-          <Field label={t('centre.byok.baseUrl')}>{(id) => <TextInput id={id} type="url" value={form.base_url} placeholder="https://" onChange={(event) => setForm({ ...form, base_url: event.target.value })} required/>}</Field>
           <Field label={t('centre.byok.apiKey')} hint={t('centre.byok.apiKeyHint')}>{(id) => <TextInput id={id} type="password" autoComplete="off" value={form.api_key} onChange={(event) => setForm({ ...form, api_key: event.target.value })} required/>}</Field>
-          <Field label={t('centre.byok.models')} hint={t('centre.byok.modelsHint')}>{(id) => <TextInput id={id} value={form.models} onChange={(event) => setForm({ ...form, models: event.target.value })} required/>}</Field>
           {submit.error !== null && <ApiErrorState error={submit.error}/>}
-          <div><Button type="submit" disabled={submit.busy || !data.secrets_ready} icon={<KeyRound size={16} aria-hidden="true"/>}>{t('centre.byok.save')}</Button></div>
+          <div><Button type="submit" disabled={submit.busy || !data.secrets_ready || !data.providers.length} icon={<KeyRound size={16} aria-hidden="true"/>}>{t('centre.byok.save')}</Button></div>
           {!data.secrets_ready && <p className="m-0 text-xs text-gray-600">{t('error.secrets_unconfigured')}</p>}
         </form>
       </Section>

@@ -110,10 +110,10 @@ Deno.test('C14 placement widget: allowed websites only, a session per taker, an 
   equal([saved.status, saved.body.embed.widgets.placement], [200, true]);
   ok(saved.body.embed.snippet.includes('https://ai.schood.online/embed/widget.js') && saved.body.embed.snippet.includes(saved.body.embed.public_key), 'a snippet for the website');
   const key = saved.body.embed.public_key;
-  const call = (path: string, body: Record<string, unknown>, site = 'https://registan.uz') => f.anonymous('POST', `centre/embed-${path}`, { body: { key, site, ...body } });
+  const call = (path: string, body: Record<string, unknown>, origin = 'https://registan.uz') => f.anonymous('POST', `centre/embed-${path}`, { body: { key, ...body }, origin });
   equal((await call('placement', { session: 'abcdefghijklmnop1234', step: 'start' }, 'https://evil.example')).status, 403, 'other websites are refused');
-  const config = await f.anonymous('GET', `centre/embed-config?key=${key}&site=${encodeURIComponent('https://registan.uz')}&lang=ru`);
-  equal([config.status, config.headers.get('access-control-allow-origin'), config.body.widgets.placement, config.body.placement.questions, config.body.avatar_url], [200, 'https://ai.schood.online', true, 4, 'https://registan.uz/bot.png'], 'config for the allowed site');
+  const config = await f.anonymous('GET', `centre/embed-config?key=${key}&lang=ru`, { origin: 'https://registan.uz' });
+  equal([config.status, config.headers.get('access-control-allow-origin'), config.body.widgets.placement, config.body.placement.questions, config.body.avatar_url], [200, 'https://registan.uz', true, 4, 'https://registan.uz/bot.png'], 'config for the allowed site');
   const session = 'widget-session-0123456789';
   const started = await call('placement', { session, step: 'start', name: 'Laylo', phone: '+998 91 222 33 44' });
   ok(started.status === 200 && !JSON.stringify(started.body).includes('had known'), 'test without the key');

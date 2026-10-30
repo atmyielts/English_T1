@@ -24,7 +24,7 @@ export function createMemoryCentreStore(memory: Memory, now: () => Date = () => 
   const id = () => crypto.randomUUID();
   let serial = 0;
   const DEFAULTS: { [N in TableName]: () => Partial<TableMap[N]> } = {
-    settings: () => ({ created_by: null, embed_domains: [], widgets: {}, white_label: {}, retention_days: 180, extra_teacher_seats: 0, extra_students: 0, limits: {}, budget_defaults: {}, observation_standards: [], brief: {}, byok_fee: {}, updated_by: null, created_at: iso(), updated_at: iso() }),
+    settings: () => ({ created_by: null, embed_domains: [], widgets: {}, white_label: {}, retention_days: 180, extra_teacher_seats: 0, extra_students: 0, budget_defaults: {}, observation_standards: [], brief: {}, byok_fee: {}, updated_by: null, created_at: iso(), updated_at: iso() }),
     groups: () => ({ id: id(), academy_classroom_id: null, level: null, teacher_ids: [], hint_policy: 'during_homework', focus_topics: [], homework_rule: null, note: null, archived: false, created_by: null, created_at: iso(), updated_at: iso() }),
     group_members: () => ({ added_at: iso() }),
     assignment_rules: () => ({ title: null, set_by: null, updated_at: iso() }),

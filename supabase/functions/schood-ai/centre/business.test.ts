@@ -1,3 +1,6 @@
+import { ownKeyResolver } from '../registries.ts';
+import type { StoreHandle } from '../stores.ts';
+import { computeByokFees } from './byok.ts';
 import { unitFromDraft, unitProblems } from './curriculum-content.ts';
 import { centreFixture, createCentre, equal, ID, invite, ok } from './testing.ts';
 
@@ -41,14 +44,24 @@ Deno.test('C10: brief delivery respects quiet hours and the daily limit, retries
   equal([live.status, live.body.brief.source, live.body.brief.status], [200, 'live', 'ready'], 'live preview');
   // Monday 23:30 in Tashkent: the scheduler builds this week's brief but quiet hours defer delivery.
   f.setClock(new Date('2026-11-02T18:30:00Z'));
-  await f.system('centre/system-brief');
+  await f.tick();
   const deferred = (await f.store.table('briefs').get({ workspace_id: ws, week: '2026-W45' }))!;
-  equal((deferred.deliveries as { status: string }[]).map((entry) => entry.status), ['deferred', 'deferred'], 'quiet hours');
+  equal((deferred.deliveries as { status: string }[]).map((entry) => entry.status), ['deferred', 'no_chat'], 'quiet hours for the owner; the admin has no Telegram linked');
+  equal(f.notifySends.length, 0, 'nothing reached the Schood bot in quiet hours');
   f.setClock(new Date('2026-11-03T04:00:00Z')); // Tuesday 09:00
-  await f.system('centre/system-brief');
+  await f.tick();
   const retried = (await f.store.table('briefs').get({ workspace_id: ws, week: '2026-W45' }))!;
-  equal((retried.deliveries as { user_id: string; status: string; channel: string }[]).map((entry) => [entry.user_id, entry.status, entry.channel]), [[ID.owner, 'sent', 'schood_bot'], [ID.office, 'no_chat', null]], 'the owner gets it through the Schood bot; the admin has no Telegram linked');
+  equal((retried.deliveries as { user_id: string; status: string; channel: string }[]).map((entry) => [entry.user_id, entry.status, entry.channel]), [[ID.owner, 'sent', 'schood_bot'], [ID.office, 'no_chat', null]], 'the owner gets it through core’s Schood bot delivery');
   equal(retried.status, 'partial');
+  const [send] = f.notifySends;
+  equal([f.notifySends.length, send.userId, send.kind, send.buttons[0].path, send.dedupeKey], [1, ID.owner, 'centre.brief', '/centre/brief', `centre-brief:${retried.id}:${ID.owner}`], 'one message, kind centre.brief, a button to the brief, sent once');
+  // Muted in Settings → Notifications: dropped, not retried.
+  await f.memory.repository.saveNotifyPrefs(ID.owner, { ...(await f.memory.repository.notifyPrefs(ID.owner)), muted: ['centre.brief'] });
+  f.setClock(new Date('2026-11-09T04:00:00Z')); // next Monday 09:00
+  await f.tick();
+  const muted = (await f.store.table('briefs').get({ workspace_id: ws, week: '2026-W46' }))!;
+  equal((muted.deliveries as { user_id: string; status: string }[]).find((entry) => entry.user_id === ID.owner)?.status, 'muted', 'the owner muted the brief');
+  equal(f.notifySends.length, 1, 'nothing more reached the bot');
   const basic = await centreFixture();
   const basicWs = (await basic.json('POST', 'centre/create', { token: 'tok-schood-admin', body: { name: 'Basic', owner_user_id: ID.basicOwner } })).body.workspace.id;
   equal((await basic.json('PATCH', 'centre/brief', { token: 'tok-basic-owner', workspace: basicWs, body: { enabled: true } })).body.code, 'plan_required', 'Centre Pro feature');
@@ -76,30 +89,42 @@ Deno.test('C13: policies are chunked per page; answers cite checked pages; no ma
   equal((await f.store.table('knowledge_chunks').list({ workspace_id: ws })).length, 0, 'deleting removes the chunks');
 });
 
-Deno.test('C15: own model keys for Enterprise owners, sealed, with a per-call platform fee set by Schood', async () => {
+Deno.test('C15: own model keys for Enterprise owners, sealed, used by core\u2019s gateway, with a platform fee set by Schood', async () => {
   const f = await centreFixture();
   const pro = await createCentre(f);
-  equal((await f.json('POST', 'centre/byok', { workspace: pro, body: { label: 'main', adapter: 'openai_compatible', base_url: 'https://api.openai.com/v1', api_key: 'sk-test-0123456789abcdef', models: ['gpt-x'] } })).body.code, 'plan_required', 'Enterprise only');
+  equal((await f.json('POST', 'centre/byok', { workspace: pro, body: { label: 'main', provider: 'openrouter', api_key: 'sk-test-0123456789abcdef' } })).body.code, 'plan_required', 'Enterprise only');
   const ent = (await f.json('POST', 'centre/create', { token: 'tok-schood-admin', body: { name: 'Enterprise Centre', owner_user_id: ID.t2, contract_until: '2027-12-31T00:00:00Z' } })).body.workspace.id;
-  const body = { label: 'main', adapter: 'openai_compatible', base_url: 'https://api.example-llm.com/v1', api_key: 'sk-centre-own-key-0123456789', models: ['vendor/model-a'] };
-  equal((await f.json('POST', 'centre/byok', { token: 'tok-t2', workspace: ent, body: { ...body, base_url: 'https://localhost:8080' } })).status, 400, 'no private addresses');
-  equal((await f.json('POST', 'centre/byok', { token: 'tok-t2', workspace: ent, body: { ...body, adapter: 'anthropic' } })).status, 400, 'pinned providers only at their own host');
+  const body = { label: 'main', provider: 'openrouter', api_key: 'sk-centre-own-key-0123456789' };
+  equal((await f.json('POST', 'centre/byok', { token: 'tok-t2', workspace: ent, body: { ...body, provider: 'my-own-endpoint' } })).body.field, 'provider', 'only providers in Schood\u2019s registry');
+  const view0 = await f.json('GET', 'centre/byok', { token: 'tok-t2', workspace: ent });
+  equal(view0.body.providers.map((entry: { key: string }) => entry.key), ['openrouter'], 'the registry\u2019s providers to choose from');
   const saved = await f.json('POST', 'centre/byok', { token: 'tok-t2', workspace: ent, body });
-  equal([saved.status, saved.body.key.hint], [200, '6789'], 'saved');
+  equal([saved.status, saved.body.key.hint, saved.body.key.provider], [200, '6789', 'openrouter'], 'saved');
   ok(!JSON.stringify(saved.body).includes('sk-centre-own-key') && !JSON.stringify(await f.store.table('secrets').list({ workspace_id: ent })).includes('sk-centre-own-key'), 'never stored or returned in plain text');
   const opened = await f.deps.secrets!.open((await f.store.table('secrets').get({ workspace_id: ent, purpose: 'byok' }))!.sealed, `${ent}:byok:main`);
   equal(opened, body.api_key, 'only the function can open it, bound to the centre');
   let moved = false;
   try { await f.deps.secrets!.open((await f.store.table('secrets').get({ workspace_id: ent, purpose: 'byok' }))!.sealed, `${pro}:byok:main`); } catch { moved = true; }
   ok(moved, 'a sealed key copied to another centre cannot be opened');
+  // Core's gateway asks the area's resolver: the key for this centre and provider only.
+  const resolve = ownKeyResolver()!;
+  const store = <T,>(handle: StoreHandle<T>) => f.stores.get(handle);
+  equal(await resolve({ workspaceId: ent, providerKey: 'openrouter', store }), { label: 'main', apiKey: body.api_key, feeCredits: 0 }, 'the centre\u2019s key, no credits per call');
+  equal([await resolve({ workspaceId: pro, providerKey: 'openrouter', store }), await resolve({ workspaceId: ent, providerKey: 'anthropic', store })], [null, null], 'no key for another centre or provider');
+  // A real call in the centre goes out with its own key: logged as byok, no credits charged.
+  await f.json('POST', 'centre/knowledge', { token: 'tok-t2', workspace: ent, body: { title: 'Handbook', pages: [{ page: 1, text: 'Teachers take up to 14 days of paid leave each year.' }] } });
+  f.model(/using only the centre\u2019s own documents/, { answer: 'Up to 14 days of paid leave a year [1].', citations: [1], found: true });
+  const asked = await f.json('POST', 'centre/knowledge-ask', { token: 'tok-t2', workspace: ent, body: { question: 'How many days of leave do teachers get?' } });
+  equal([asked.status, asked.body.found, asked.body.credits], [200, true, 0], 'answered with no credits');
+  ok(f.memory.calls.some((row) => row.workspaceId === ent && row.providerKey === 'byok:main' && row.status === 'ok'), 'the call went out with the centre\u2019s key');
+  // Schood's fee per 1,000 calls, from the calls logged with the centre's key.
   await f.json('PATCH', 'centre/grants', { token: 'tok-schood-admin', body: { workspace_id: ent, byok_uzs_per_1000_calls: 5000 } });
-  f.memory.calls.push(...[1, 2, 3].map((n) => ({ callId: crypto.randomUUID(), attempt: 1, requestId: null, feature: 'teacher_assistant.reply', userId: ID.t2, workspaceId: ent, routeKey: 'byok', providerKey: 'byok:main', modelKey: `byok:main/m${n}`, status: 'ok' as const, errorCode: null, latencyMs: 100, inputTokens: 200, outputTokens: 50, usageEstimated: false, costUsd: 0, credits: 0, chargeId: null, streamed: false })));
-  const { computeByokFees } = await import('./byok.ts');
   const fee = await computeByokFees(f.store, ent, '2026-11');
-  equal([fee!.calls, fee!.fee_uzs, fee!.rate_uzs_per_1000], [3, 15, 5000], '3 calls × 5,000 UZS per 1,000 calls');
+  equal([fee!.calls, fee!.rate_uzs_per_1000], [1, 5000], 'the month\u2019s calls and the contract rate');
   const view = await f.json('GET', 'centre/byok', { token: 'tok-t2', workspace: ent });
-  equal([view.body.allowed, view.body.gateway_ready, view.body.keys.length], [true, false, 1], 'the gateway hook is still a core request');
+  equal([view.body.allowed, view.body.keys.length], [true, 1]);
   equal((await f.json('DELETE', 'centre/byok', { token: 'tok-t2', workspace: ent, body: { label: 'main' } })).status, 200, 'revoked');
+  equal(await resolve({ workspaceId: ent, providerKey: 'openrouter', store }), null, 'a revoked key is not used');
 });
 
 Deno.test('C16: observation feedback against the centre’s standards, checked evidence, shared then acknowledged, tracked over the term', async () => {

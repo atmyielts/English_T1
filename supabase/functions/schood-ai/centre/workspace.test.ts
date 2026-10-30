@@ -43,12 +43,18 @@ Deno.test('invites: roles, expiry, revocation, uses and seats; members and budge
   f.advance(2 * 86_400_000);
   equal((await f.json('POST', 'centre/join', { token: 'tok-s1', body: { code: expiring.body.code } })).body.code, 'invite_expired');
 
-  // Seats come from the plan the centre last used: shrink them with a Centre plan to check the limit.
-  await f.store.table('settings').update({ workspace_id: ws }, { limits: { teachers: 2, students: 2, plan: 'centre' } });
+  // Seats come from the centre's own plan (core's ctx.planFor) plus add-ons, even though the joiner is not a member.
+  const accept = f.store.acceptInvite.bind(f.store);
+  const asked: { teacherSeats: number | null; studentSeats: number | null }[] = [];
+  let full = false;
+  f.store.acceptInvite = (input) => { asked.push({ teacherSeats: input.teacherSeats, studentSeats: input.studentSeats }); return accept(full ? { ...input, teacherSeats: 2 } : input); };
+  await f.store.table('settings').update({ workspace_id: ws }, { extra_teacher_seats: 3 });
   const seats = await f.json('POST', 'centre/invites', { workspace: ws, body: { role: 'teacher', max_uses: 5 } });
-  await f.store.table('settings').update({ workspace_id: ws }, { limits: { teachers: 2, students: 2, plan: 'centre' } });
+  full = true;
   equal((await f.json('POST', 'centre/join', { token: 'tok-t2', body: { code: seats.body.code } })).body.code, 'seats_full', 'office admin + teacher fill two seats');
-  await f.store.table('settings').update({ workspace_id: ws }, { limits: { teachers: 15, students: 400, plan: 'centre_pro' } });
+  equal(asked.at(-1), { teacherSeats: 18, studentSeats: 400 }, 'Centre Pro’s 15 seats and 3 added, 400 places');
+  full = false;
+  f.store.acceptInvite = accept;
   await invite(f, ws, 'student', ['tok-s1', 'tok-s2', 'tok-s3']);
   await invite(f, ws, 'parent', ['tok-parent']);
 
@@ -61,8 +67,7 @@ Deno.test('invites: roles, expiry, revocation, uses and seats; members and budge
   equal((await f.json('PATCH', 'centre/members', { token: 'tok-office', workspace: ws, body: { user_id: ID.s1, credit_budget: 30, status: 'suspended' } })).status, 200);
   equal((await f.memory.repository.membership(ws, ID.s1))!.status, 'suspended', 'suspended');
   equal((await f.json('GET', 'centre/overview', { token: 'tok-s1', workspace: ws })).status, 404, 'a suspended member is out');
-  await f.store.table('settings').update({ workspace_id: ws }, { limits: { teachers: 15, students: 2, plan: 'centre_pro' } });
-  equal((await f.json('PATCH', 'centre/members', { token: 'tok-office', workspace: ws, body: { user_id: ID.s1, status: 'active' } })).status, 200, 'limits are recomputed from the plan (Centre Pro) when a manager acts');
+  equal((await f.json('PATCH', 'centre/members', { token: 'tok-office', workspace: ws, body: { user_id: ID.s1, status: 'active' } })).status, 200, 'back within the plan’s places');
   equal((await f.json('DELETE', 'centre/members', { token: 'tok-office', workspace: ws, body: { user_id: ID.owner } })).body.code, 'owner_protected');
   equal((await f.json('DELETE', 'centre/members', { token: 'tok-office', workspace: ws, body: { user_id: ID.s3 } })).status, 200, 'removed');
   equal((await f.json('POST', 'centre/leave', { token: 'tok-parent', workspace: ws })).status, 200, 'a member can leave');

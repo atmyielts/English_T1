@@ -23,8 +23,6 @@ export interface CentreConfig {
   appUrl: string;
   /** The Schood AI function's own URL (…/functions/v1/schood-ai), for the bot webhook and the widget snippet; null until set. */
   publicUrl: string | null;
-  /** The Schood student bot, for briefs to staff who have not linked the centre's own bot. */
-  schoodBotToken: string | null;
 }
 export interface CentreDeps {
   store: CentreStore;
@@ -92,8 +90,6 @@ async function productionDeps(db: ServiceDb, env: StoreEnv): Promise<CentreDeps>
     config: {
       appUrl: (read('SCHOOD_AI_APP_URL') ?? 'https://ai.schood.online').replace(/\/+$/, ''),
       publicUrl: publicUrl && /^https:\/\/[^\s]+$/.test(publicUrl) ? publicUrl.replace(/\/+$/, '') : null,
-      // Optional (owner decision): the Schood student bot's token, for briefs to managers who have not linked the centre's own bot.
-      schoodBotToken: read('SCHOOD_AI_TELEGRAM_BOT_TOKEN') ?? null,
     },
   };
 }

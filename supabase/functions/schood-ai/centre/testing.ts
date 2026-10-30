@@ -5,6 +5,7 @@ import { createMemoryRepository, SEED_REGISTRY, type MemoryUser } from '../memor
 import { createPlanResolver } from '../plan.ts';
 import type { FunctionCallInit } from '../types.ts';
 import { createStores } from '../stores.ts';
+import { ownKeyResolver } from '../registries.ts';
 import { centreRuntime, centreStore, type CentreDeps, type TelegramResult } from './binding.ts';
 import { SecretBox } from './crypto.ts';
 import { createMemoryCentreStore } from './store-memory.ts';
@@ -137,6 +138,8 @@ export async function centreFixture(options: { publicUrl?: string | null; secret
   const gateway = createGateway({
     registry: () => memory.repository.registry(), settings: () => memory.repository.settings(), takeCall: (input) => memory.repository.takeCall(input),
     record: (rows) => { void memory.repository.recordCalls(rows); }, env: (name) => env[name], now, breaker: new CircuitBreaker(),
+    // C15: the centre's own keys, through the resolver the area registers (byok.ts).
+    ownKey: (input) => ownKeyResolver()?.({ ...input, store: (handle) => stores.get(handle) }) ?? Promise.resolve(null),
     fetch: async (input, init) => {
       const request = new Request(input, init);
       const body = await request.json();
@@ -165,15 +168,19 @@ export async function centreFixture(options: { publicUrl?: string | null; secret
     store, telegram: telegram.api,
     secrets: options.secrets === false ? null : await SecretBox.create('k1', { k1: btoa(String.fromCharCode(...new Uint8Array(32).map((_, i) => i + 1))) }),
     media: { put: (key, bytes) => { media.push({ key, size: bytes.length }); return Promise.resolve({ provider: 's3', bucket: 'test', path: key }); } },
-    config: { appUrl: 'https://ai.schood.online', publicUrl: options.publicUrl === undefined ? 'https://project.supabase.co/functions/v1/schood-ai' : options.publicUrl, schoodBotToken: '6000000000:SchoodStudentBotTokenForTests_abcdefgh' },
+    config: { appUrl: 'https://ai.schood.online', publicUrl: options.publicUrl === undefined ? 'https://project.supabase.co/functions/v1/schood-ai' : options.publicUrl },
   };
   const stores = createStores({ kind: 'memory' }, { now });
+  // What core's ctx.notify.send handed to the Schood bot, and the bot's answer.
+  const notifySends: { userId: string; kind: string; text: string; buttons: { label: string; path: string }[]; dedupeKey: string | null }[] = [];
+  let notifyOutcome: { outcome: 'sent' | 'defer' | 'suppressed' | 'failed'; deliverAt?: string | null } = { outcome: 'sent' };
   stores.use(centreStore, centreRuntime(deps));
   const pending: Promise<unknown>[] = [];
   const after = (work: Promise<unknown>) => { pending.push(work); };
   const callFunction = (name: string, _path: string, token: string, init: FunctionCallInit) => Promise.resolve(academy.handle(name, token, init));
   const handle = createSchoodAIHandler({
     repository: memory.repository, gateway, plans, isAdmin, callFunction, stores,
+    sendTelegram: (input) => { notifySends.push(structuredClone(input)); return Promise.resolve(notifyOutcome); },
     adminGate: () => Promise.resolve({ ok: false, status: 403, code: 'forbidden' }), modules: MODULES,
   }, { allowedOrigins: [ORIGIN], serviceSecret: SECRET, now, after });
 
@@ -200,16 +207,19 @@ export async function centreFixture(options: { publicUrl?: string | null; secret
    * `origin: null`) or a widget through /embed/bridge.html (the app's origin, the default).
    * `path` is `centre/<action>?…`, or a full webhook URL Telegram was given.
    */
-  const anonymous = (method: string, path: string, init: { body?: unknown; origin?: string | null; ip?: string } = {}) => {
+  const anonymous = (method: string, path: string, init: { body?: unknown; origin?: string | null; ip?: string; headers?: Record<string, string> } = {}) => {
     const route = path.includes('/schood-ai/') ? path.split('/schood-ai/')[1] : path;
-    const headers: Record<string, string> = { 'content-type': 'application/json', ...(init.origin === null ? {} : { origin: init.origin ?? ORIGIN }), ...(init.ip ? { 'x-forwarded-for': init.ip } : {}) };
+    const headers: Record<string, string> = { 'content-type': 'application/json', ...(init.origin === null ? {} : { origin: init.origin ?? ORIGIN }), ...(init.ip ? { 'x-forwarded-for': init.ip } : {}), ...init.headers };
     return handle(new Request(`https://x.invalid/functions/v1/schood-ai/${route}`, { method, headers, ...(init.body === undefined ? {} : { body: JSON.stringify(init.body) }) })).then(parsed);
   };
-  /** A scheduled job (core's system routes), as pg_cron calls it. */
+  /** A system route, as pg_cron calls it. */
   const system = (path: string, body: Record<string, unknown> = {}, secret = SECRET) =>
     handle(new Request(`https://x.invalid/functions/v1/schood-ai/${path}`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-schood-service-secret': secret }, body: JSON.stringify(body) })).then(parsed);
+  /** One tick of core's scheduler (core/system-tick): the jobs due now run, then settle. */
+  const tick = async () => { const answer = await system('core/system-tick'); await settle(); return answer; };
   return {
-    memory, store, deps, academy, telegram, upstream, media, env, call, json, settle, anonymous, system,
+    memory, store, deps, academy, telegram, upstream, media, env, call, json, settle, anonymous, system, tick, stores, notifySends,
+    setNotifyOutcome: (outcome: typeof notifyOutcome) => { notifyOutcome = outcome; },
     /** Answer model calls whose system prompt matches. Later rules win over earlier ones. */
     model: (match: RegExp, answer: ModelAnswer) => { answers.unshift({ match, answer }); },
     advance: (ms: number) => { clock = new Date(clock.getTime() + ms); },

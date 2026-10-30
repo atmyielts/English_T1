@@ -9,11 +9,3 @@
   Access-Control-Allow-Origin: *
   Cross-Origin-Resource-Policy: cross-origin
   Cache-Control: public, max-age=300
-# The widget bridge is framed by centres' own websites: it shows nothing and answers
-# only the window that framed it (Pages serves it at /embed/bridge).
-/embed/bridge
-  ! X-Frame-Options
-  ! Content-Security-Policy
-/embed/bridge.html
-  ! X-Frame-Options
-  ! Content-Security-Policy

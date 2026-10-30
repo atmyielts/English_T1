@@ -6,7 +6,7 @@ import { SchoodAIError, type RequestContext, type Role } from '../types.ts';
 import { academySnapshot, centreAcademy, myAcademies } from './academy.ts';
 import { centreDeps } from './binding.ts';
 import { humanCode, randomToken, sha256Hex } from './crypto.ts';
-import { isManager, refreshPlanCache, requireCentre, seatLimits, type Centre } from './shared.ts';
+import { isManager, requireCentre, seatLimits, type Centre } from './shared.ts';
 import type { InviteRow, SnapshotRow } from './store.ts';
 
 // C1 centre workspace and the seats/invites/budgets part of C7: create a centre
@@ -18,11 +18,10 @@ const INVITE_ROLES = ['admin', 'teacher', 'student', 'parent'] as const;
 const normaliseCode = (code: string) => code.toUpperCase().replace(/[^A-Z0-9]/g, '');
 const SNAPSHOT_MAX_AGE_MS = 12 * 3_600_000;
 
-/** The plan's limits now (seats can change with add-ons), stored for joins by people who are not members yet. */
-export async function refreshLimits(ctx: RequestContext, centre: Centre): Promise<ReturnType<typeof seatLimits>> {
-  const row = await refreshPlanCache(ctx, { workspace: centre.access.workspace, deps: centre.deps, settings: centre.settings }, true);
-  const limits = row.limits as ReturnType<typeof seatLimits>;
-  return { plan: limits.plan, teachers: limits.teachers, students: limits.students };
+/** The centre's seats and places now: its plan (core's ctx.planFor) plus add-ons. */
+export async function refreshLimits(ctx: RequestContext, centre: Pick<Centre, 'settings'> & { access: { workspace: { id: string } } }): Promise<ReturnType<typeof seatLimits>> {
+  const plan = await ctx.planFor(centre.access.workspace.id);
+  return seatLimits(plan.plans, plan.beta, centre.settings);
 }
 
 async function counts(centre: Centre) {
@@ -288,13 +287,14 @@ export async function join(ctx: RequestContext) {
   const hash = await sha256Hex(code);
   const invite = await deps.store.table('invites').get({ code_hash: hash });
   const settings = invite ? await deps.store.table('settings').get({ workspace_id: invite.workspace_id }) : null;
-  const limits = settings?.limits as { teachers?: number | null; students?: number | null } | undefined;
+  // The joiner is not a member yet: the seats come from the centre's own plan (core's ctx.planFor).
+  const limits = settings ? await refreshLimits(ctx, { settings, access: { workspace: { id: settings.workspace_id } } }).catch(() => null) : null;
   const fallback = seatLimits([], false, settings ?? { extra_teacher_seats: 0, extra_students: 0 });
   const budgets = Object.fromEntries(Object.entries(settings?.budget_defaults ?? {}).filter(([key, value]) => isRole(key) && typeof value === 'number')) as Record<string, number>;
   const result = await deps.store.acceptInvite({
     codeHash: hash, userId: ctx.user.id, now: ctx.now(), budgets,
-    teacherSeats: limits && 'teachers' in limits ? limits.teachers ?? null : fallback.teachers,
-    studentSeats: limits && 'students' in limits ? limits.students ?? null : fallback.students,
+    teacherSeats: (limits ?? fallback).teachers,
+    studentSeats: (limits ?? fallback).students,
   });
   if (!result.ok) {
     const messages: Record<string, string> = { invite_invalid: 'This invite code is not valid.', invite_revoked: 'This invite was withdrawn.', invite_expired: 'This invite has expired.', invite_used_up: 'This invite has been used up.', seats_full: 'All teacher seats in this centre are taken.', students_full: 'All student places in this centre are taken.' };

@@ -1,7 +1,7 @@
 import { s } from '../../../../packages/ai-core/src/mod.ts';
 import { bool, integer, record, stringList } from '../input.ts';
 import { registerNotifyKind } from '../registries.ts';
-import { SchoodAIError, type RequestContext } from '../types.ts';
+import { SchoodAIError, type NotifySendResult, type RequestContext } from '../types.ts';
 import { actorOf } from './runner.ts';
 import type { AcademySnapshot } from './academy.ts';
 import { botToken, sendText } from './bot.ts';
@@ -92,10 +92,15 @@ export function briefMessage(centre: Centre, brief: BriefRow): string {
   return `${centre.access.workspace.name} · ${brief.week}\n\n${brief.text}\n\n${suggestions}\n\n${centre.deps.config.appUrl}/centre/brief`;
 }
 
-interface Delivery { user_id: string; status: 'sent' | 'deferred' | 'muted' | 'in_app' | 'no_chat' | 'failed'; channel: string | null; at: string; retry_at?: string }
+interface Delivery { user_id: string; status: 'sent' | 'sent_later' | 'deferred' | 'muted' | 'in_app' | 'no_chat' | 'failed'; channel: string | null; at: string; retry_at?: string }
 /** The brief's notification kind (Settings → Notifications lets managers mute it). */
 export const BRIEF_KIND = 'centre.brief';
 registerNotifyKind(BRIEF_KIND, { area: 'centre', label: { en: 'Monday brief of your centre', uz: 'Markazingizning dushanba xulosasi', ru: 'Понедельничная сводка центра' } });
+const BRIEF_BUTTON: Record<string, string> = { en: 'Open the brief', uz: 'Xulosani ochish', ru: 'Открыть сводку' };
+/** What core's notify.send answered, as a delivery status. Deferred ones are retried by the brief job. */
+const SEND_STATUS: Record<Exclude<NotifySendResult, { sent: true }>['reason'], Delivery['status']> = {
+  quiet_hours: 'deferred', daily_limit: 'deferred', deferred: 'sent_later', muted: 'muted', delivery_off: 'in_app', no_telegram: 'no_chat', suppressed: 'failed', failed: 'failed',
+};
 
 /** Sends the brief to each recipient who has not had it yet, within their notification budget. */
 export async function deliverBrief(ctx: RequestContext, centre: Centre, brief: BriefRow): Promise<BriefRow> {
@@ -108,24 +113,27 @@ export async function deliverBrief(ctx: RequestContext, centre: Centre, brief: B
   const deliveries: Delivery[] = [];
   for (const userId of recipients) {
     const before = previous.get(userId);
-    if (before?.status === 'sent') { deliveries.push(before); continue; }
+    if (before?.status === 'sent' || before?.status === 'sent_later') { deliveries.push(before); continue; }
     const member = await ctx.repo.membership(ws.id, userId);
     if (!member || member.status !== 'active' || !['owner', 'admin'].includes(member.role)) continue;
-    // The person's own notification choices (Settings → Notifications): a muted kind is dropped,
-    // quiet hours and the daily limit defer it, and without Telegram delivery they read it in the app.
+    const staffChat = staffChats.get(userId);
+    if (!(centreBot && staffChat)) {
+      // Core's delivery through the Schood bot, by the person's own notification choices.
+      const result = await ctx.notify.send(userId, { kind: BRIEF_KIND, text, buttons: [{ label: BRIEF_BUTTON[ctx.locale] ?? BRIEF_BUTTON.en, path: '/centre/brief' }], dedupeKey: `centre-brief:${brief.id}:${userId}` });
+      deliveries.push(result.sent ? { user_id: userId, status: 'sent', channel: 'schood_bot', at } : { user_id: userId, status: SEND_STATUS[result.reason], channel: null, at, ...(result.retryAt ? { retry_at: result.retryAt } : {}) });
+      continue;
+    }
+    // The centre's own bot, for managers who linked it: the same choices and budget apply.
     const decision = await ctx.notify.allowed(userId, BRIEF_KIND);
     if (!decision.allowed && decision.reason === 'muted') { deliveries.push({ user_id: userId, status: 'muted', channel: null, at }); continue; }
     if (!decision.allowed) { deliveries.push({ user_id: userId, status: 'deferred', channel: null, at, retry_at: decision.retryAt }); continue; }
     if (!(await ctx.notify.prefs(userId)).delivery.includes('telegram')) { deliveries.push({ user_id: userId, status: 'in_app', channel: null, at }); continue; }
-    const staffChat = staffChats.get(userId), schoodChat = (await ctx.repo.profile(userId))?.telegramChatId ?? null;
-    let channel: string | null = null, sent = false;
-    if (centreBot && staffChat) { channel = 'centre_bot'; sent = await sendText(centre.deps, centreBot, staffChat, text) !== null; }
-    else if (centre.deps.config.schoodBotToken && schoodChat) { channel = 'schood_bot'; sent = await sendText(centre.deps, centre.deps.config.schoodBotToken, schoodChat, text) !== null; }
-    if (!channel) { deliveries.push({ user_id: userId, status: 'no_chat', channel: null, at }); continue; }
+    const sent = await sendText(centre.deps, centreBot, staffChat, text) !== null;
     if (sent) await ctx.notify.take(userId, BRIEF_KIND);
-    deliveries.push({ user_id: userId, status: sent ? 'sent' : 'failed', channel, at });
+    deliveries.push({ user_id: userId, status: sent ? 'sent' : 'failed', channel: 'centre_bot', at });
   }
-  const status: BriefRow['status'] = deliveries.length && deliveries.every((entry) => entry.status === 'sent') ? 'sent' : deliveries.some((entry) => entry.status === 'sent') ? 'partial' : deliveries.some((entry) => entry.status === 'deferred') ? 'ready' : 'failed';
+  const delivered = (entry: Delivery) => entry.status === 'sent' || entry.status === 'sent_later';
+  const status: BriefRow['status'] = deliveries.length && deliveries.every(delivered) ? 'sent' : deliveries.some(delivered) ? 'partial' : deliveries.some((entry) => entry.status === 'deferred') ? 'ready' : 'failed';
   const [row] = await centre.deps.store.table('briefs').update({ id: brief.id }, { deliveries: deliveries as unknown[], status });
   await ctx.repo.audit({ workspaceId: ws.id, actorId: actorOf(ctx), event: 'centre.brief_delivered', targetType: 'brief', targetId: brief.id, details: { week: brief.week, sent: deliveries.filter((entry) => entry.status === 'sent').length, deferred: deliveries.filter((entry) => entry.status === 'deferred').length } });
   return row;

@@ -3,10 +3,9 @@
  *   <script src="https://ai.schood.online/embed/widget.js" data-centre="KEY" data-api="API" async></script>
  *   <div data-schood-placement></div>
  *   <script src="https://ai.schood.online/embed/widget.js" data-centre="KEY" data-widget="placement" data-api="API" async></script>
- * The widget talks to Schood through a hidden bridge page on ai.schood.online
- * (embed/bridge.html), which names this website to Schood; Schood answers only
- * websites the centre allowed. Everything renders in a shadow root as text (never
- * HTML from the server). No cookies; one random session id per browser in localStorage. */
+ * The widget calls Schood from this website; Schood answers only websites the
+ * centre allowed. Everything renders in a shadow root as text (never HTML from the
+ * server). No cookies; one random session id per browser in localStorage. */
 (function () {
   'use strict';
   var script = document.currentScript;
@@ -39,39 +38,16 @@
   }
   var sid = session();
 
-  // Calls go through a hidden bridge page on Schood's own site (bridge.html next to this
-  // script). The browser tells the bridge which website is asking (postMessage origin), and
-  // Schood answers only the websites the centre allowed.
-  var bridgeUrl = new URL('bridge.html?api=' + encodeURIComponent(api), script.src);
-  var bridgeOrigin = bridgeUrl.origin;
-  var frame = document.createElement('iframe');
-  frame.src = bridgeUrl.href;
-  frame.title = 'Schood';
-  frame.setAttribute('aria-hidden', 'true');
-  frame.setAttribute('tabindex', '-1');
-  frame.style.cssText = 'position:absolute;width:0;height:0;border:0;visibility:hidden';
-  var pending = {}, seq = 0, markReady;
-  var ready = new Promise(function (resolve) { markReady = resolve; });
-  window.addEventListener('message', function (event) {
-    if (event.origin !== bridgeOrigin || event.source !== frame.contentWindow) return;
-    var data = event.data;
-    if (!data || data.schood !== 'embed') return;
-    if (data.ready) { markReady(); return; }
-    var waiting = pending[data.id];
-    if (!waiting) return;
-    delete pending[data.id];
-    if (data.ok) waiting.resolve(data.data || {});
-    else { var err = new Error((data.data && data.data.code) || 'error'); err.code = data.data && data.data.code; waiting.reject(err); }
-  });
-  (document.body || document.documentElement).appendChild(frame);
+  // Schood answers this website directly (no cookies are sent) and only if the centre
+  // put it on its list of sites; the browser tells Schood which site is asking (Origin).
   function call(op, body) {
-    return ready.then(function () {
-      return new Promise(function (resolve, reject) {
-        var id = ++seq;
-        pending[id] = { resolve: resolve, reject: reject };
-        frame.contentWindow.postMessage({ schood: 'embed', id: id, op: op, key: key, lang: lang, body: body ? Object.assign({ session: sid }, body) : null }, bridgeOrigin);
-        setTimeout(function () { if (pending[id]) { delete pending[id]; var err = new Error('timeout'); err.code = 'timeout'; reject(err); } }, 45000);
-      });
+    var url = api + '/centre/embed-' + op;
+    var init = body
+      ? { method: 'POST', credentials: 'omit', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ key: key, session: sid, lang: lang }, body)) }
+      : { method: 'GET', credentials: 'omit' };
+    if (!body) url += '?key=' + encodeURIComponent(key) + '&lang=' + lang;
+    return fetch(url, init).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (data) { if (!r.ok) { var err = new Error(data.code || 'error'); err.code = data.code; throw err; } return data; });
     });
   }
   function el(tag, attrs, text) {

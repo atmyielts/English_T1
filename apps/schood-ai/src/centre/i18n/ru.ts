@@ -323,7 +323,7 @@ export const ru: Record<CentreKey, string> = {
   'centre.audit.action_failed': 'Действие не удалось',
   'centre.audit.workspace_settings': 'Настройки пространства изменены',
   'centre.byok.title': 'Свои ключи моделей',
-  'centre.byok.lead': 'Центры Enterprise могут использовать собственный ключ провайдера ИИ. За вызовы с ним взимается платформенный сбор вместо кредитов.',
+  'centre.byok.lead': "Центры Enterprise могут использовать свой ключ для одного из AI-провайдеров, с которыми работает Schood. Такие запросы оплачиваются платой за платформу, а не кредитами.",
   'centre.byok.notYet': 'Ключи можно сохранить уже сейчас. Вызовы с ними Schood пока включает; до этого вызовы идут через модели Schood и списывают кредиты.',
   'centre.byok.keys': 'Ключи',
   'centre.byok.none': 'Ключей пока нет.',
@@ -974,4 +974,5 @@ export const ru: Record<CentreKey, string> = {
   // Brief deliveries by notification preferences
   'centre.brief.delivery.muted': "отключено в настройках уведомлений",
   'centre.brief.delivery.in_app': "в приложении (доставка в Telegram выключена)",
+  'centre.byok.providerHint': "Запросы к этому провайдеру пойдут с вашим ключом: вместо кредитов — плата за платформу.",
 };

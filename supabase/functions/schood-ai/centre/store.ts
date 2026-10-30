@@ -32,7 +32,7 @@ export interface Table<R extends Row> {
 
 export interface SettingsRow extends Row {
   workspace_id: string; created_via: 'academy' | 'admin'; created_by: string | null; public_key: string; embed_domains: string[];
-  widgets: Record<string, unknown>; white_label: Record<string, unknown>; retention_days: number; extra_teacher_seats: number; extra_students: number; limits: Record<string, unknown>;
+  widgets: Record<string, unknown>; white_label: Record<string, unknown>; retention_days: number; extra_teacher_seats: number; extra_students: number;
   budget_defaults: Record<string, unknown>; observation_standards: unknown[]; brief: Record<string, unknown>; byok_fee: Record<string, unknown>;
   updated_by: string | null; created_at: string; updated_at: string;
 }
