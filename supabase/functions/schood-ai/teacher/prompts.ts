@@ -1,4 +1,4 @@
-import { ADMISSION_MATH_TOPICS, IELTS_STRUCTURE, MULTILEVEL_WRITING_WORDS, satDomainLabel, satSkillsFor, TOEFL_TIMING, type Block, type GenerationStep, type MaterialBrief, type MaterialKindSpec, type SatOfficialDomain, type SolverTask } from '../../../../packages/ai-core/src/materials/mod.ts';
+import { ADMISSION_MATH_TOPICS, IELTS_STRUCTURE, MULTILEVEL_WRITING_WORDS, satDomainLabel, satSkillsFor, SOLVER_INSTRUCTIONS, SOLVER_SYSTEM, solverPayload, TOEFL_TIMING, type Block, type GenerationStep, type MaterialBrief, type MaterialKindSpec, type SatOfficialDomain, type SolverTask } from '../../../../packages/ai-core/src/materials/mod.ts';
 import { dataBlock, neutralise, wrapUserMessage } from '../prompt.ts';
 import type { ChatMessage, Locale } from '../types.ts';
 
@@ -161,19 +161,18 @@ export function stepMessages(input: {
 
 const sourceView = (block: Block) => block.type === 'text' ? { title: block.title, text: block.body } : block.type === 'script' ? { title: block.title, setting: block.setting, lines: block.lines } : block;
 
-/** The second call (T2): solve the questions without the key. */
+/** The second call (T2): solve the questions without the key, with the solver prompt the centre's placement checks share. */
 export function solveMessages(input: { system: string; task: SolverTask; locale: Locale }): ChatMessage[] {
+  const payload = solverPayload(input.task);
   return [
-    { role: 'system', content: `${input.system}\n\nNow you are an independent checker. You have not seen any answer key.` },
+    { role: 'system', content: `${input.system}\n\n${SOLVER_SYSTEM}` },
     {
       role: 'user',
       content: [
-        'Answer every question in <schood_data kind="questions"> using only the texts in <schood_data kind="sources"> (or general knowledge for questions without a text).',
-        'For choice questions answer with the option id. For TRUE/FALSE/NOT GIVEN answer T, F or NG; for YES/NO/NOT GIVEN answer Y, N or NG. For multi-choice give every id. For ordering give every id in order. For gaps give the missing words only, within the word limit. For numbers give the number only.',
-        'If a question has no single correct answer, or more than one option is correct, answer what you think is best and say why in "reason".',
-        'Return {"answers": [{"id": "q1", "answer": ["..."], "reason": "only when unsure"}]} with one entry per question.',
-        dataBlock({ kind: 'sources', title: 'Texts', data: input.task.sources }, 0),
-        dataBlock({ kind: 'questions', title: 'Questions', data: input.task.questions }, 1),
+        SOLVER_INSTRUCTIONS,
+        'The texts are in <schood_data kind="sources"> and the questions in <schood_data kind="questions">.',
+        dataBlock({ kind: 'sources', title: 'Texts', data: payload.sources }, 0),
+        dataBlock({ kind: 'questions', title: 'Questions', data: payload.questions }, 1),
       ].join('\n\n'),
     },
   ];

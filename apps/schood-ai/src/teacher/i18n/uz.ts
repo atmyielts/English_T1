@@ -257,6 +257,7 @@ export const uz: Record<TeacherKey, string> = {
   'teacher.checks.code.variant_count': 'Bu variantda {actual} ta savol; asosiy variantda {expected} ta.',
   'teacher.checks.code.duplicate_question': 'Bir xil savol ikki marta uchraydi.',
   'teacher.checks.code.key_position_bias': 'Javoblarning {share}% i {option} variant; aralashtiring.',
+  'teacher.checks.code.question_level_missing': 'Bu savolning darajasi yo‘q; joylashtirish testidagi har bir savolga daraja kerak.',
 
   'teacher.view.key': 'Kalit',
   'teacher.view.answerKey': 'Javoblar kaliti',

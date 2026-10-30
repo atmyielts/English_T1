@@ -261,6 +261,7 @@ export const en = {
   'teacher.checks.code.variant_count': 'This version has {actual} questions; the core has {expected}.',
   'teacher.checks.code.duplicate_question': 'The same question appears twice.',
   'teacher.checks.code.key_position_bias': '{share}% of answers are option {option}; mix them up.',
+  'teacher.checks.code.question_level_missing': 'This item has no level; placement items each need one.',
 
   // Material view.
   'teacher.view.key': 'Key',

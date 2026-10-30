@@ -257,6 +257,7 @@ export const ru: Record<TeacherKey, string> = {
   'teacher.checks.code.variant_count': 'В этой версии {actual} вопросов, в основной {expected}.',
   'teacher.checks.code.duplicate_question': 'Один и тот же вопрос встречается дважды.',
   'teacher.checks.code.key_position_bias': '{share}% ответов — вариант {option}; перемешайте.',
+  'teacher.checks.code.question_level_missing': 'У задания нет уровня; в тесте на уровень он нужен каждому заданию.',
 
   'teacher.view.key': 'Ключ',
   'teacher.view.answerKey': 'Ключ ответов',

@@ -2,7 +2,7 @@
 // and every refusal code the teacher routes throw has an error.<code> text. uz.ts and ru.ts are typed
 // against en.ts, so the app build checks they have the same keys.
 // Run from the repo root: deno run --no-lock --allow-read scripts/check-schood-ai-teacher-i18n.ts
-import { CHOICE_TYPES, MATERIAL_KINDS, QUESTION_TYPES, BLOCK_TYPES, TEXT_ROLES, EXAM_TARGETS } from '../packages/ai-core/src/materials/mod.ts';
+import { CHOICE_TYPES, QUESTION_TYPES, BLOCK_TYPES, STUDIO_GROUPS, STUDIO_KIND_IDS, TEXT_ROLES, EXAM_TARGETS } from '../packages/ai-core/src/materials/mod.ts';
 import { en } from '../apps/schood-ai/src/teacher/i18n/en.ts';
 const keys = new Set(Object.keys(en));
 const missing: string[] = [];
@@ -10,7 +10,7 @@ const need = (key: string) => { if (!keys.has(key)) missing.push(key); };
 const walk = (dir: string): string[] => [...Deno.readDirSync(dir)].flatMap((entry) => entry.isDirectory ? walk(`${dir}/${entry.name}`) : /\.tsx?$/.test(entry.name) ? [`${dir}/${entry.name}`] : []);
 for (const file of walk('apps/schood-ai/src/teacher')) for (const match of Deno.readTextFileSync(file).matchAll(/'(teacher\.[a-zA-Z0-9_.]+)'/g)) need(match[1]);
 const families: Record<string, readonly (string | number)[]> = {
-  'teacher.kind': Object.keys(MATERIAL_KINDS), 'teacher.kindHint': Object.keys(MATERIAL_KINDS), 'teacher.group': ['general', 'exam', 'planning', 'textbook'],
+  'teacher.kind': STUDIO_KIND_IDS, 'teacher.kindHint': STUDIO_KIND_IDS, 'teacher.group': [...STUDIO_GROUPS],
   'teacher.status': ['requested', 'generating', 'ready', 'approved', 'rejected', 'failed'], 'teacher.pageStatus': ['draft', 'approved', 'archived'], 'teacher.variant': ['core', 'support', 'stretch'],
   'teacher.qtype': QUESTION_TYPES, 'teacher.block': BLOCK_TYPES, 'teacher.role': TEXT_ROLES,
   'teacher.checks.code': ['block_missing', 'block_not_allowed', 'type_not_allowed', 'exam_type_not_allowed', 'not_auto_markable', 'key_missing', 'mcq_key_count', 'key_not_in_options', 'options_missing', 'options_too_few', 'options_duplicate', 'option_count', 'multi_key_count', 'ordering_key_incomplete', 'matching_options_too_few', 'gap_marker_missing', 'gap_multiple', 'gap_answer_too_long', 'gap_answer_not_in_box', 'gap_answer_not_in_source', 'word_box_too_small', 'cloze_marker_unknown', 'numeric_key_invalid', 'open_has_key', 'source_missing', 'question_count', 'variant_count', 'duplicate_question', 'key_position_bias'],
