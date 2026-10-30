@@ -76,6 +76,8 @@ export function fixture(options: FixtureOptions = {}) {
   const stores = createStores({ kind: 'memory' }, { now, env: (name) => env[name] });
   /** Telegram messages ctx.notify.send handed to the Schood bot; f.setNotifyOutcome changes the bot's answer. */
   const notifySends: { userId: string; kind: string; text: string; buttons: { label: string; path: string }[]; dedupeKey: string | null }[] = [];
+  /** Users ctx.auth.sessionFor minted a session for (fake tokens; users without an email get none). */
+  const sessionsMinted: string[] = [];
   let telegramOutcome: { outcome: 'sent' | 'defer' | 'suppressed' | 'failed'; deliverAt?: string | null } = { outcome: 'sent' };
   const gateway = createGateway({
     registry: () => memory.repository.registry(),
@@ -106,6 +108,7 @@ export function fixture(options: FixtureOptions = {}) {
     },
     systemSecret: () => memory.repository.systemSecret(),
     sendTelegram: (input) => { notifySends.push(structuredClone(input)); return Promise.resolve(telegramOutcome); },
+    mintSession: (userId) => { sessionsMinted.push(userId); return Promise.resolve(Object.values(USERS).some((entry) => entry.id === userId && entry.email) ? { access_token: `access-${userId}`, refresh_token: `refresh-${userId}`, expires_at: Math.floor(clock.getTime() / 1000) + 3600 } : null); },
     systemJobs: options.systemJobs,
     adminGate: (req, permission) => {
       const token = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '');
@@ -128,7 +131,7 @@ export function fixture(options: FixtureOptions = {}) {
     method, headers: { 'content-type': 'application/json', 'x-schood-service-secret': secret, 'x-schood-user-id': userId, 'x-schood-telegram-chat-id': chat }, ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   }));
   return {
-    memory, gateway, breaker, upstream, env, profiles, call, json, worker, stores, functionCalls, notifySends,
+    memory, gateway, breaker, upstream, env, profiles, call, json, worker, stores, functionCalls, notifySends, sessionsMinted,
     setNotifyOutcome: (next: typeof telegramOutcome) => { telegramOutcome = next; },
     setProvider: (next: typeof provider) => { provider = next; },
     advance: (ms: number) => { clock = new Date(clock.getTime() + ms); },

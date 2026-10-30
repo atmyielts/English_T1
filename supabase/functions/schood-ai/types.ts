@@ -324,6 +324,8 @@ export interface NotifyPrefs {
   /** Kinds ("engage.winback") or whole areas ("engage") they opted out of. */
   muted: string[];
 }
+/** A minted Supabase session (ctx.auth.sessionFor). */
+export interface MintedSession { access_token: string; refresh_token: string; expires_at: number }
 export interface NotifyMessage {
   /** The kind registered with registerNotifyKind (`centre.brief`). */
   kind: string;
@@ -519,14 +521,23 @@ export interface FunctionCallInit {
 }
 /** Limits and CORS for an anonymous route. */
 export interface AnonymousOptions {
+  /** Per caller IP, or per rateKey when it returns one. 1 to 600 a minute (3000 with a rateKey). */
   perMinute?: number;
+  /** Up to 100000 a day (1000000 with a rateKey). */
   perDay?: number;
   /**
-   * Whose budget a request uses instead of the caller IP, for example a Telegram webhook's bot. Return
-   * the bot's id only when the request names a bot you know (look its secret token up by hash in your
-   * store); return null otherwise, so unknown or forged callers stay limited per IP. Hashed before it is stored.
+   * Whose budget a request uses instead of the caller IP: a Telegram webhook's bot, a Live Quiz game.
+   * Return the key only when the request names something you know (a bot by the hash of its secret
+   * token, an open game by its code); return null otherwise, so unknown or forged callers stay limited
+   * per IP. `body()` is the parsed JSON body (null when it is not JSON); the route can still read it.
+   * Hashed before it is stored. A per-IP ceiling (ipLimit) still applies to keyed requests.
    */
-  rateKey?(req: Request, input: { store<T>(handle: StoreHandle<T>): T }): string | null | Promise<string | null>;
+  rateKey?(req: Request, input: { store<T>(handle: StoreHandle<T>): T; body(): Promise<unknown> }): string | null | Promise<string | null>;
+  /**
+   * The per-IP ceiling for requests a rateKey keyed, across all keys (a whole school behind one
+   * address). Default 3000 a minute and 300000 a day; at most 6000 and 2000000.
+   */
+  ipLimit?: { perMinute?: number; perDay?: number };
   /**
    * `'any'`: answer CORS for any Origin (an embeddable widget on a centre's own site). Core echoes the
    * Origin with no credentials; the route must check ctx.origin against the centre's own list and refuse others.
@@ -587,6 +598,15 @@ export interface RequestContext {
     prefs(userId: string): Promise<NotifyPrefs>;
     /** Sends through the Schood bot (send-telegram) inside the budget: their delivery choice, mutes, quiet hours and daily limit apply. */
     send(userId: string, message: NotifyMessage): Promise<NotifySendResult>;
+  };
+  auth: {
+    /**
+     * A Supabase session for a person your route has already verified (a Telegram Mini App's signed
+     * initData). `reason` names why, `<area>.<what>` (`coach.mini_app`). Audited, limited (10 an hour
+     * and 30 a day per person, 2000 an hour per area), never for Schood admins or inactive accounts.
+     * A signed-in caller may mint only their own. Hand the tokens to that person only; never log or store them.
+     */
+    sessionFor(userId: string, options: { reason: string }): Promise<MintedSession>;
   };
   /** The workspace in `?workspace_id=` (or the personal one) with the caller's active membership. */
   workspace(options?: { roles?: readonly Role[] }): Promise<WorkspaceAccess>;
