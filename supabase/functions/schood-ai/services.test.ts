@@ -161,7 +161,8 @@ Deno.test('embeddable routes answer any Origin without credentials; webhooks are
   equal([(await hook('forged-1', '198.51.100.4')).status, (await hook('forged-2', '198.51.100.4')).status, (await hook('forged-3', '198.51.100.4')).status], [401, 401, 429], 'made-up tokens cannot buy a fresh budget: they count per IP');
   ok(!JSON.stringify([...f.memory.audit]).includes('bot-secret'), 'the token is never stored');
 
-  for (const bad of [{ cors: 'all' }, { rateKey: 'header' }, { ipLimit: { perMinute: 10 } }, { perMinute: 1000 }, { perMinute: 10, rateKey: () => null, ipLimit: { perMinute: 9000 } }]) {
+  for (const bad of [{ cors: 'all' }, { rateKey: 'header' }, { ipLimit: { perMinute: 10 } }, { perMinute: 1000 }, { perMinute: 10, rateKey: () => null, ipLimit: { perMinute: 9000 } },
+    { unkeyedLimit: { perMinute: 5 } }, { perMinute: 20, rateKey: () => null, unkeyedLimit: { perMinute: 25 } }, { perMinute: 3000, rateKey: () => null, unkeyedLimit: { perMinute: 700 } }]) {
     let threw = '';
     try { fixture({ modules: [{ area: 'centre', routes: { x: { anonymous: bad as never, GET: () => Promise.resolve({}) } } }] }); } catch (cause) { threw = String(cause); }
     ok(threw.includes('centre/x'), `refused at load: ${JSON.stringify(bad)}`);
@@ -354,4 +355,23 @@ Deno.test('own model keys need a plan with C15: keys without it are refused, nev
   // Personal workspaces never have own keys: nothing is checked there.
   const mine = await personal(f, 'tok-plus');
   equal((await system(f, 'centre/zz-pay', { id: mine, key: 'tutor.reply' })).body.credits, 1, 'a learner is never held up by the centre key store');
+});
+
+Deno.test('unknown keys are limited per IP at the ordinary anonymous rate, or the route\'s own lower unkeyedLimit', async () => {
+  const known = (code: string | undefined) => code === 'LIVE' ? code : null;
+  const quiz = (unkeyedLimit?: { perMinute?: number; perDay?: number }): FeatureModule => ({
+    area: 'teacher',
+    routes: { 'zz-play': { anonymous: { perMinute: 3000, perDay: 1_000_000, rateKey: async (_req, { body }) => known(((await body()) as { game?: string } | null)?.game), ...(unkeyedLimit ? { unkeyedLimit } : {}) }, POST: () => Promise.resolve({ ok: true }) } },
+  });
+  const run = async (f: ReturnType<typeof fixture>, game: string, times: number) => {
+    const statuses: number[] = [];
+    for (let i = 0; i < times; i++) statuses.push((await f.call('POST', 'teacher/zz-play', { token: null, origin: null, body: { game }, headers: { 'x-forwarded-for': '203.0.113.90' } })).status);
+    return statuses;
+  };
+  const plain = fixture({ modules: [...MODULES.filter((module) => module.area !== 'teacher'), quiz()] });
+  const made = await run(plain, 'MADE-UP', 31);
+  equal([made.filter((status) => status === 200).length, made.at(-1)], [30, 429], 'made-up codes: 30 a minute per address, not 3000');
+  equal((await run(plain, 'LIVE', 40)).every((status) => status === 200), true, 'a real game keeps its own budget');
+  const strict = fixture({ modules: [...MODULES.filter((module) => module.area !== 'teacher'), quiz({ perMinute: 5 })] });
+  equal(await run(strict, 'MADE-UP', 6), [200, 200, 200, 200, 200, 429], 'the route\'s own lower limit');
 });
