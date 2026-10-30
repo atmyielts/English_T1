@@ -16,6 +16,8 @@ export interface Me {
   ai: { enabled: boolean; switches: Record<string, boolean> };
   specialists: SpecialistView[];
   limits: { message_chars: number };
+  /** Names of the context sources areas registered (kind → label, in the request language). */
+  context_labels?: Record<string, string>;
 }
 export interface ThreadView { id: string; specialist: string; title: string; pinned: boolean; page_id: string | null; created_at: string; last_message_at: string }
 export interface MessageView { id: string; role: 'user' | 'assistant'; content: string; status: 'complete' | 'streaming' | 'failed' | 'stopped'; credits: number; context: string[]; error_code: string | null; created_at: string }

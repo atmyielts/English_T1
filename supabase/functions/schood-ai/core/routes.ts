@@ -1,9 +1,10 @@
 import { cleanSwitches, featureAccess, isCreditKey, MANAGER_ROLES, quoteCredits, STAFF_ROLES } from '../../../../packages/ai-core/src/mod.ts';
 import { switchesOf } from '../ai.ts';
-import { selfViewKinds } from '../context.ts';
-import { bool, isUuid, jsonObject, oneOf, optionalText, record, stringList, text, uuid } from '../input.ts';
+import { contextLabels, selfViewKinds } from '../context.ts';
+import { bool, integer, isUuid, jsonObject, oneOf, optionalText, record, stringList, text, uuid } from '../input.ts';
+import { generationApproval, notifyKinds } from '../registries.ts';
 import { listSpecialists } from '../specialists.ts';
-import { SchoodAIError, type RequestContext } from '../types.ts';
+import { SchoodAIError, type NotifyPrefs, type RequestContext } from '../types.ts';
 import { MAX_MESSAGE_CHARS } from './chat.ts';
 import { actionJson, balanceJson, brandingView, budgetJson, generationJson, messageJson, threadJson, workspaceView } from './views.ts';
 
@@ -34,6 +35,8 @@ export async function me(ctx: RequestContext) {
       suggestions: specialist.suggestions[ctx.locale] ?? [], custom: specialist.custom,
     })),
     limits: { message_chars: MAX_MESSAGE_CHARS },
+    // Names of the context sources areas registered, for "Used: …" under answers.
+    context_labels: contextLabels(ctx.locale),
   };
 }
 
@@ -207,8 +210,52 @@ export const generations = {
     if (row.status === status) return { generation: generationJson(row) };
     const updated = await ctx.repo.updateGeneration(row.id, { status, decidedBy: ctx.user.id, decidedAt: ctx.now().toISOString() }, ['ready']);
     if (!updated) throw new SchoodAIError('not_ready', 'This draft is not ready for review.', 409, { status: row.status });
+    // The area's approval hook (for example saving the material's library page). If it fails, the job is ready again.
+    const hook = status === 'approved' ? generationApproval(row.feature) : null;
+    let result: Record<string, unknown> | void = undefined;
+    if (hook) {
+      try {
+        result = await hook(ctx, { generation: updated, access });
+      } catch (cause) {
+        await ctx.repo.updateGeneration(row.id, { status: 'ready', decidedBy: null, decidedAt: null }, ['approved']);
+        throw cause;
+      }
+    }
     await ctx.audit(`generation.${status}`, { feature: row.feature }, { type: 'generation', id: row.id });
-    return { generation: generationJson(updated) };
+    return { generation: generationJson(updated), ...(result ? { result } : {}) };
+  },
+};
+
+/** GET/PUT core/notify-prefs: the caller's own notification choices, and the kinds they can mute. */
+const ZONE = /^[A-Za-z_]+(\/[A-Za-z0-9_+-]+){0,2}$/;
+const prefsView = (prefs: NotifyPrefs) => ({
+  time_zone: prefs.timeZone, quiet_start: prefs.quietStart, quiet_end: prefs.quietEnd, daily_limit: prefs.dailyLimit,
+  preferred_hour: prefs.preferredHour, delivery: prefs.delivery, muted: prefs.muted,
+});
+export const notifyPrefs = {
+  async GET(ctx: RequestContext) {
+    return { prefs: prefsView(await ctx.repo.notifyPrefs(ctx.user.id)), kinds: notifyKinds(ctx.locale) };
+  },
+  async PUT(ctx: RequestContext) {
+    const body = record(await ctx.body());
+    const current = await ctx.repo.notifyPrefs(ctx.user.id);
+    const hour = (value: unknown, field: string) => integer(value, field, 0, 23);
+    const next: NotifyPrefs = { ...current };
+    if (body.time_zone !== undefined) {
+      const zone = text(body.time_zone, 'time_zone', { max: 60 });
+      let valid = ZONE.test(zone);
+      try { new Intl.DateTimeFormat('en', { timeZone: zone }); } catch { valid = false; }
+      if (!valid) throw new SchoodAIError('invalid_request', 'Unknown time zone.', 400, { field: 'time_zone' });
+      next.timeZone = zone;
+    }
+    if (body.quiet_start !== undefined) next.quietStart = hour(body.quiet_start, 'quiet_start');
+    if (body.quiet_end !== undefined) next.quietEnd = hour(body.quiet_end, 'quiet_end');
+    if (body.daily_limit !== undefined) next.dailyLimit = integer(body.daily_limit, 'daily_limit', 0, 2);
+    if (body.preferred_hour !== undefined) next.preferredHour = body.preferred_hour === null ? null : hour(body.preferred_hour, 'preferred_hour');
+    if (body.delivery !== undefined) next.delivery = stringList(body.delivery, 'delivery', { max: 2, pattern: /^(telegram|web)$/ }) as NotifyPrefs['delivery'];
+    if (body.muted !== undefined) next.muted = stringList(body.muted, 'muted', { max: 50, pattern: /^[a-z][a-z0-9_.-]{1,40}$/ });
+    const saved = await ctx.repo.saveNotifyPrefs(ctx.user.id, next);
+    return { prefs: prefsView(saved), kinds: notifyKinds(ctx.locale) };
   },
 };
 

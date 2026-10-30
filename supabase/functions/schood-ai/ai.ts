@@ -1,6 +1,10 @@
-import { nextTashkentMidnight, quoteCredits, type CallMode, type Schema } from '../../../packages/ai-core/src/mod.ts';
-import type { GatewayFailure, GatewayRequest, GatewayResult, Ticket } from './gateway.ts';
-import { SchoodAIError, type Balance, type ChargedAI, type ChargedCall, type ChargedSession, type ChargeReceipt, type RequestContext, type WorkspaceAccess } from './types.ts';
+import { featureSwitch, nextTashkentMidnight, quoteCredits, type CallMode, type CreditQuote, type Schema } from '../../../packages/ai-core/src/mod.ts';
+import { requireAdult } from './age.ts';
+import type { Gateway, GatewayFailure, GatewayRequest, GatewayResult, Ticket } from './gateway.ts';
+import {
+  SchoodAIError, type Balance, type ChargedAI, type ChargedCall, type ChargedSession, type ChargeReceipt, type PlanState, type RequestContext,
+  type SchoodAIRepository, type SpendReceipt, type WorkspaceAccess,
+} from './types.ts';
 
 // Charged model calls: the only way a route uses AI. In order:
 //   plan and role (plan_required / role_required) → switches, route and caps
@@ -20,36 +24,101 @@ export function failureError(failure: GatewayFailure, now: Date): SchoodAIError 
 
 const balanceView = (balance: Balance) => ({ plan: balance.plan, plan_grant: balance.planGrant, pack: balance.pack, total: balance.total, cycle_ends_at: balance.cycleEndsAt });
 
+/**
+ * Who pays and what they may use. A signed-in route's scope is the caller in their
+ * workspace (ctx.ai); ctx.paidBy builds one for a named workspace with no user.
+ */
+export interface ChargeScope {
+  requestId: string;
+  idempotencyKey: string | null;
+  /** The person charged within a centre budget; null when the workspace itself pays. */
+  readonly userId: string | null;
+  gateway: Gateway;
+  repo: SchoodAIRepository;
+  now(): Date;
+  requireFeature(feature: string): Promise<WorkspaceAccess>;
+  plan(): Promise<PlanState>;
+  /** For adultsOnly price entries. */
+  requireAdult(): Promise<void>;
+}
+
+/** The scope of a signed-in route (or the worker acting for a linked person). */
+export function scopeOf(ctx: RequestContext): ChargeScope {
+  return {
+    requestId: ctx.requestId, idempotencyKey: ctx.idempotencyKey, gateway: ctx.gateway, repo: ctx.repo,
+    get userId() { return ctx.user.id; },
+    now: () => ctx.now(),
+    requireFeature: (feature) => ctx.requireFeature(feature),
+    plan: () => ctx.plan(),
+    requireAdult: () => requireAdult(ctx, ctx.user.id),
+  };
+}
+
+const quoteFor = (input: { key: string; addOns?: string[] }): CreditQuote => {
+  try { return quoteCredits(input.key, input.addOns ?? []); } catch { throw new SchoodAIError('invalid_request', 'Unknown AI action.', 400, { field: 'key' }); }
+};
+
+/** Charges a quote within a scope, or throws the refusal as a clear SchoodAIError. */
+async function chargeQuote(scope: ChargeScope, quote: CreditQuote, access: WorkspaceAccess, plan: PlanState, reference: string): Promise<ChargeReceipt> {
+  const charge = await scope.repo.charge({ workspaceId: access.workspace.id, userId: scope.userId, cost: quote.credits, creditKey: quote.key, reference, grant: plan.grant, anchor: plan.anchor });
+  if (!charge.ok) {
+    if (charge.code === 'reference_refunded') throw new SchoodAIError('retry_with_new_key', 'That attempt failed and was refunded. Try again.', 409);
+    if (charge.code === 'not_member') throw new SchoodAIError('not_member', 'You are not an active member of this workspace.', 403);
+    throw new SchoodAIError(charge.code, charge.code === 'budget_exhausted' ? 'Your credit budget for this month is used up.' : 'Not enough credits for this.', 402, {
+      cost: quote.credits, ...(charge.available !== undefined ? { available: charge.available } : {}), ...(charge.budget !== undefined ? { budget: charge.budget, used: charge.used } : {}),
+      ...(charge.balance ? { balance: balanceView(charge.balance) } : {}),
+    });
+  }
+  return { credits: quote.credits, chargeId: charge.chargeId, balance: charge.balance, replayed: charge.replayed };
+}
+
+/** ctx.credits.spend: a priced action with no model call. Plan, role, age and switches apply; no route or call cap. */
+export function createSpend(scope: ChargeScope) {
+  return async (input: { key: string; addOns?: string[]; reference?: string }): Promise<SpendReceipt> => {
+    const quote = quoteFor(input);
+    const access = await scope.requireFeature(quote.feature);
+    if (quote.adultsOnly) await scope.requireAdult();
+    const settings = await scope.repo.settings();
+    const switched = featureSwitch({ enabled: settings.aiEnabled, features: settings.features, workspace: switchesOf(access) }, quote.key);
+    if (!switched.on) throw failureError({ status: 'disabled', scope: switched.scope, callId: '' }, scope.now());
+    const plan = await scope.plan();
+    const reference = (input.reference ?? (scope.idempotencyKey ? `${quote.key}:${scope.idempotencyKey}` : crypto.randomUUID())).slice(0, 200);
+    const receipt = await chargeQuote(scope, quote, access, plan, reference);
+    return { ...receipt, refund: async () => { await scope.repo.refund(receipt.chargeId); } };
+  };
+}
+
 export function createChargedAI(ctx: RequestContext): ChargedAI {
+  return createChargedAIFor(scopeOf(ctx));
+}
+
+export function createChargedAIFor(scope: ChargeScope): ChargedAI {
+  const ctx = scope;
   async function prepare(input: { key: string; addOns?: string[]; reference?: string; requires?: ChargedCall['requires'] }, mode: CallMode, request: Omit<GatewayRequest, 'feature' | 'userId' | 'workspaceId' | 'requestId' | 'workspaceSwitches'>) {
-    let quote;
-    try { quote = quoteCredits(input.key, input.addOns ?? []); } catch { throw new SchoodAIError('invalid_request', 'Unknown AI action.', 400, { field: 'key' }); }
+    const quote = quoteFor(input);
     const access = await ctx.requireFeature(quote.feature);
+    if (quote.adultsOnly) await ctx.requireAdult();
     const plan = await ctx.plan();
     const base: GatewayRequest = {
       ...request,
       feature: quote.key, tier: quote.tier,
       requires: { capabilities: [...quote.requires, ...(input.requires?.capabilities ?? [])], noTraining: input.requires?.noTraining },
-      userId: ctx.user.id, workspaceId: access.workspace.id, requestId: ctx.requestId,
+      userId: ctx.userId, workspaceId: access.workspace.id, requestId: ctx.requestId,
       workspaceSwitches: switchesOf(access),
     };
     const ticket = await ctx.gateway.reserve(base, mode);
     if (!ticket.ok) throw failureError(ticket.failure, ctx.now());
     const reference = (input.reference ?? (ctx.idempotencyKey ? `${quote.key}:${ctx.idempotencyKey}` : crypto.randomUUID())).slice(0, 200);
-    const charge = await ctx.repo.charge({ workspaceId: access.workspace.id, userId: ctx.user.id, cost: quote.credits, creditKey: quote.key, reference, grant: plan.grant, anchor: plan.anchor });
-    if (!charge.ok) {
-      if (charge.code === 'reference_refunded') throw new SchoodAIError('retry_with_new_key', 'That attempt failed and was refunded. Try again.', 409);
-      if (charge.code === 'not_member') throw new SchoodAIError('not_member', 'You are not an active member of this workspace.', 403);
-      throw new SchoodAIError(charge.code, charge.code === 'budget_exhausted' ? 'Your credit budget for this month is used up.' : 'Not enough credits for this.', 402, {
-        cost: quote.credits, ...(charge.available !== undefined ? { available: charge.available } : {}), ...(charge.budget !== undefined ? { budget: charge.budget, used: charge.used } : {}),
-        ...(charge.balance ? { balance: balanceView(charge.balance) } : {}),
-      });
-    }
-    const receipt: ChargeReceipt = { credits: quote.credits, chargeId: charge.chargeId, balance: charge.balance, replayed: charge.replayed };
-    return { base: { ...base, credits: quote.credits, chargeId: charge.chargeId }, ticket, receipt, access };
+    // On the workspace's own key (C15) the platform fee replaces the credit price; a fee of 0 charges nothing.
+    const own = ticket.ownKey;
+    const receipt = !own ? await chargeQuote(ctx, quote, access, plan, reference)
+      : own.feeCredits > 0 ? await chargeQuote(ctx, { ...quote, credits: own.feeCredits }, access, plan, reference)
+      : { credits: 0, chargeId: '', balance: await ctx.repo.creditBalance(access.workspace.id, plan.grant, plan.anchor), replayed: false };
+    return { base: { ...base, credits: receipt.credits, chargeId: receipt.chargeId || null }, ticket, receipt, access };
   }
 
   async function refund(chargeId: string): Promise<Balance | null> {
+    if (!chargeId) return null; // nothing was charged (a workspace's own key with no fee)
     try {
       await ctx.repo.refund(chargeId);
       return null;

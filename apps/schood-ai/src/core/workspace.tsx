@@ -92,6 +92,11 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }
 
+/** How to name a context source under an answer: the area's registered label, else core's `context.<kind>`. */
+export function contextLabel(me: Me | null | undefined, t: (key: string) => string, kind: string): string {
+  return me?.context_labels?.[kind] ?? t(`context.${kind}`);
+}
+
 export function useWorkspace(): WorkspaceState {
   const value = useContext(Context);
   if (!value) throw new Error('useWorkspace must be used inside WorkspaceProvider');

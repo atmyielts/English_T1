@@ -1,9 +1,12 @@
 import { SSEParser, type Registry } from '../../../packages/ai-core/src/mod.ts';
-import { CircuitBreaker, createGateway, type Timeouts } from './gateway.ts';
+import { CircuitBreaker, createGateway, type GatewayDeps, type Timeouts } from './gateway.ts';
 import { createSchoodAIHandler, MODULES } from './handler.ts';
+import { ownKeyResolver } from './registries.ts';
+import { createStores } from './stores.ts';
 import { createMemoryRepository, SEED_REGISTRY, type MemoryUser } from './memory-repository.ts';
 import { createPlanResolver } from './plan.ts';
-import type { FeatureModule, ServiceSettings } from './types.ts';
+import type { SystemJob } from './registries.ts';
+import type { FeatureModule, FunctionCallInit, ServiceSettings } from './types.ts';
 
 // Shared test fixture: the real handler, gateway and plan resolver over the memory
 // repository, a fake provider behind `fetch`, a movable clock and the after-response
@@ -11,6 +14,8 @@ import type { FeatureModule, ServiceSettings } from './types.ts';
 
 export const ORIGIN = 'https://ai.schood.online';
 export const SECRET = 'worker-secret-0123456789abcdef0123456789';
+/** The system secret pg_cron would send (internal_runtime_secrets). */
+export const SYSTEM_SECRET = 'system-secret-0123456789abcdef0123456789';
 export const PRODUCT = {
   plus: '10000000-0000-4000-8000-000000000001', family: '10000000-0000-4000-8000-000000000002', teacher: '10000000-0000-4000-8000-000000000003',
   teacher_pro: '10000000-0000-4000-8000-000000000004', centre: '10000000-0000-4000-8000-000000000005', centre_pro: '10000000-0000-4000-8000-000000000006',
@@ -55,16 +60,25 @@ export async function events(response: Response) {
   return all.map((event) => ({ event: event.event, data: JSON.parse(event.data) }));
 }
 
-export interface FixtureOptions { settings?: Partial<ServiceSettings>; registry?: Registry; modules?: FeatureModule[]; timeouts?: Partial<Timeouts>; env?: Record<string, string>; productIds?: Partial<typeof PRODUCT> }
+export interface FixtureOptions { settings?: Partial<ServiceSettings>; registry?: Registry; modules?: FeatureModule[]; timeouts?: Partial<Timeouts>; env?: Record<string, string>; productIds?: Partial<typeof PRODUCT>; systemJobs?: [string, SystemJob][]; ownKey?: GatewayDeps['ownKey'] }
 
 export function fixture(options: FixtureOptions = {}) {
   let clock = START;
   const now = () => clock;
-  const memory = createMemoryRepository({ users: USERS, now, settings: options.settings, registry: options.registry ?? SEED_REGISTRY });
+  const memory = createMemoryRepository({ users: USERS, now, settings: options.settings, registry: options.registry ?? SEED_REGISTRY, systemSecret: SYSTEM_SECRET });
+  /** Calls routes made to other Schood functions (name, path, init). */
+  const functionCalls: { name: string; path: string; init: FunctionCallInit }[] = [];
   const upstream: Request[] = [];
   let provider: (request: Request) => Response | Promise<Response> = () => completion('Salom!');
   const env: Record<string, string> = { OPENROUTER_API_KEY: 'sk-or-test', ...options.env };
   const breaker = new CircuitBreaker();
+  // Area stores: memory twins, reachable as f.stores (seed with f.stores.use(handle, twin)).
+  const stores = createStores({ kind: 'memory' }, { now, env: (name) => env[name] });
+  /** Telegram messages ctx.notify.send handed to the Schood bot; f.setNotifyOutcome changes the bot's answer. */
+  const notifySends: { userId: string; kind: string; text: string; buttons: { label: string; path: string }[]; dedupeKey: string | null }[] = [];
+  /** Users ctx.auth.sessionFor minted a session for (fake tokens; users without an email get none). */
+  const sessionsMinted: string[] = [];
+  let telegramOutcome: { outcome: 'sent' | 'defer' | 'suppressed' | 'failed'; deliverAt?: string | null } = { outcome: 'sent' };
   const gateway = createGateway({
     registry: () => memory.repository.registry(),
     settings: () => memory.repository.settings(),
@@ -75,6 +89,7 @@ export function fixture(options: FixtureOptions = {}) {
     now,
     breaker,
     timeouts: options.timeouts,
+    ownKey: options.ownKey ?? ((input) => ownKeyResolver()?.({ ...input, store: (handle) => stores.get(handle) }) ?? Promise.resolve(null)),
   });
   const isAdmin = (userId: string) => Promise.resolve(userId === ID.admin);
   const tokenProducts = new Map(Object.entries(USERS).map(([token, user]) => [token, user.products ?? []]));
@@ -85,14 +100,22 @@ export function fixture(options: FixtureOptions = {}) {
   const profiles: Record<string, unknown> = {};
   const pending: Promise<unknown>[] = [];
   const handle = createSchoodAIHandler({
-    repository: memory.repository, gateway, plans, isAdmin,
-    callFunction: (name, _path, token) => Promise.resolve(name === 'learning-profile-v3' && profiles[token] ? { status: 200, data: profiles[token] } : { status: 404, data: null }),
+    repository: memory.repository, gateway, plans, isAdmin, stores,
+    callFunction: (name, path, token, init) => {
+      functionCalls.push({ name, path, init });
+      if (name === 'assessment-cloud') return Promise.resolve({ status: 200, data: { ok: true } });
+      return Promise.resolve(name === 'learning-profile-v3' && profiles[token] ? { status: 200, data: profiles[token] } : { status: 404, data: null });
+    },
+    systemSecret: () => memory.repository.systemSecret(),
+    sendTelegram: (input) => { notifySends.push(structuredClone(input)); return Promise.resolve(telegramOutcome); },
+    mintSession: (userId) => { sessionsMinted.push(userId); return Promise.resolve(Object.values(USERS).some((entry) => entry.id === userId && entry.email) ? { access_token: `access-${userId}`, refresh_token: `refresh-${userId}`, expires_at: Math.floor(clock.getTime() / 1000) + 3600 } : null); },
+    systemJobs: options.systemJobs,
     adminGate: (req, permission) => {
       const token = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '');
       return Promise.resolve(token === 'tok-admin' && permission.startsWith('admin.') ? { ok: true } : { ok: false, status: 403, code: 'forbidden' });
     },
     modules: options.modules ?? MODULES,
-  }, { allowedOrigins: [ORIGIN], serviceSecret: SECRET, now, after: (work) => { pending.push(work); } });
+  }, { allowedOrigins: [ORIGIN], serviceSecret: SECRET, now, after: (work) => { pending.push(work); }, ipSalt: 'test-salt' });
 
   type CallOptions = { token?: string | null; body?: unknown; query?: Record<string, string>; headers?: Record<string, string>; origin?: string | null };
   const call = (method: string, path: string, opts: CallOptions = {}) => {
@@ -108,9 +131,11 @@ export function fixture(options: FixtureOptions = {}) {
     method, headers: { 'content-type': 'application/json', 'x-schood-service-secret': secret, 'x-schood-user-id': userId, 'x-schood-telegram-chat-id': chat }, ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   }));
   return {
-    memory, gateway, breaker, upstream, env, profiles, call, json, worker,
+    memory, gateway, breaker, upstream, env, profiles, call, json, worker, stores, functionCalls, notifySends, sessionsMinted,
+    setNotifyOutcome: (next: typeof telegramOutcome) => { telegramOutcome = next; },
     setProvider: (next: typeof provider) => { provider = next; },
     advance: (ms: number) => { clock = new Date(clock.getTime() + ms); },
+    now: () => clock,
     /** Waits for after-response work (stream bookkeeping, learning events). */
     settle: async () => { while (pending.length) await Promise.all(pending.splice(0)); },
   };

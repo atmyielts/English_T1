@@ -5,7 +5,7 @@ import { useT } from '../i18n/index.ts';
 import { Link } from '../router.tsx';
 import { ApiErrorState, EmptyState, LoadingState } from '../states.tsx';
 import { Badge, Button, Card, Dialog, Field, PageHeader, TextArea, TextInput } from '../ui.tsx';
-import { useWorkspace } from '../workspace.tsx';
+import { contextLabel, useWorkspace } from '../workspace.tsx';
 
 // /settings/assistants: owners and admins tailor the assistants of this workspace
 // (core/specialists). Built-ins can be renamed, given instructions, narrowed in
@@ -108,7 +108,7 @@ function AssistantEditor({ editing, listing, onClose, onSaved }: { editing: { dr
       {kinds.length > 0 && <fieldset className="m-0 border-0 p-0"><legend className="mb-1 text-sm font-semibold">{t('assistants.reads')}</legend>
         <div className="flex flex-wrap gap-3">{kinds.map((kind) => <label key={kind} className="inline-flex items-center gap-2 text-sm">
           <input type="checkbox" className="h-4 w-4" checked={draft.context_kinds.includes(kind)} onChange={(event) => setDraft({ ...draft, context_kinds: toggle(draft.context_kinds, kind, event.target.checked) })}/>
-          {t(`context.${kind}`)}
+          {contextLabel(workspace.me, t, kind)}
         </label>)}</div>
       </fieldset>}
       {roles.length > 1 && <fieldset className="m-0 border-0 p-0"><legend className="mb-1 text-sm font-semibold">{t('assistants.roles')}</legend>

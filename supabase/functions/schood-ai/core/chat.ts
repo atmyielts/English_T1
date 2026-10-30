@@ -1,7 +1,7 @@
 import { optionalUuid, record, text, uuid } from '../input.ts';
 import { buildSystemPrompt, wrapUserMessage } from '../prompt.ts';
 import type { ChatMessage } from '../providers/types.ts';
-import { resolveSpecialist } from '../specialists.ts';
+import { resolveSpecialist, runChatGuards } from '../specialists.ts';
 import { SchoodAIError, type Message, type RequestContext } from '../types.ts';
 import { balanceJson, threadJson } from './views.ts';
 
@@ -45,6 +45,8 @@ export async function chat(ctx: RequestContext): Promise<Response> {
   if (!specialist) throw new SchoodAIError('specialist_not_found', 'This assistant is not available here.', 404);
   // Refuse early, before reading context or storing anything.
   await ctx.requireFeature(specialist.creditKey);
+  // Area checks (for example the under-18 consent step), before anything is read, stored or charged.
+  await runChatGuards(ctx, specialist, access);
 
   const history: Message[] = thread ? await ctx.repo.messages(thread.id, 60) : [];
   if (history.some((entry) => entry.clientMessageId === clientMessageId)) throw new SchoodAIError('duplicate_message', 'This message was already sent.', 409);
