@@ -43,3 +43,5 @@ begin
   return new;
 end $$;
 create trigger account_erasure_transaction before update of deleted_at on auth.users for each row execute function public.erase_account_personal_data();
+-- The runtime secrets table pg_cron invokers read (20260226173000).
+create table public.internal_runtime_secrets (key text primary key, secret text not null check (length(secret) >= 32), created_at timestamptz not null default now(), updated_at timestamptz not null default now());

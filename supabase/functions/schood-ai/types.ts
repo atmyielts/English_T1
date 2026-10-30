@@ -40,6 +40,18 @@ export interface RouteHandler {
   service?: boolean;
   /** Admin area only: the existing admin RBAC permission the route needs. */
   adminPermission?: string;
+  /**
+   * A scheduled or system job: called with X-Schood-Service-Secret only (the worker secret, or the
+   * system secret pg_cron sends through invoke_schood_ai_system), never with a user. ctx.caller is
+   * 'system'; anything that would act as a user throws. Pay for AI with ctx.paidBy(workspaceId).
+   */
+  system?: boolean;
+  /**
+   * Open without signing in (a Live Quiz player, a shared Passport, a centre's widget), limited per
+   * IP: 30 a minute and 1000 a day unless set. ctx.caller is 'anonymous'; anything that would act as
+   * a user throws, ctx.ai included. Only ctx.paidBy(centreWorkspaceId) can pay for AI here.
+   */
+  anonymous?: boolean | { perMinute?: number; perDay?: number };
 }
 /** One feature area: `/schood-ai/<area>/<action>`. */
 export interface FeatureModule {
@@ -299,7 +311,21 @@ export interface LearningEvent {
   ref: string | null;
   source: 'web' | 'telegram' | 'system';
 }
-export type NotifyDecision = { allowed: true; remaining: number } | { allowed: false; reason: 'quiet_hours' | 'daily_limit'; retryAt: string };
+export type NotifyDecision = { allowed: true; remaining: number } | { allowed: false; reason: 'quiet_hours' | 'daily_limit' | 'muted'; retryAt: string };
+export interface NotifyPrefs {
+  timeZone: string;
+  quietStart: number;
+  quietEnd: number;
+  /** 0 to 2 messages a day across every bot. */
+  dailyLimit: number;
+  /** The local hour they like messages, or null for any time. */
+  preferredHour: number | null;
+  delivery: ('telegram' | 'web')[];
+  /** Kinds ("engage.winback") or whole areas ("engage") they opted out of. */
+  muted: string[];
+}
+export const DEFAULT_NOTIFY_PREFS: NotifyPrefs = { timeZone: 'Asia/Tashkent', quietStart: 22, quietEnd: 8, dailyLimit: 2, preferredHour: null, delivery: ['telegram', 'web'], muted: [] };
+export type LearningEventRow = LearningEvent & { id: number; createdAt: string };
 
 // --- Repository -------------------------------------------------------------------------------
 
@@ -335,7 +361,7 @@ export interface SchoodAIRepository {
   usage(since: Date): Promise<UsageRow[]>;
 
   creditBalance(workspaceId: string, grant: number, anchor: string | null): Promise<Balance>;
-  charge(input: { workspaceId: string; userId: string; cost: number; creditKey: string; reference: string; grant: number; anchor: string | null }): Promise<ChargeOutcome>;
+  charge(input: { workspaceId: string; userId: string | null; cost: number; creditKey: string; reference: string; grant: number; anchor: string | null }): Promise<ChargeOutcome>;
   refund(chargeId: string): Promise<{ refunded: number }>;
   grantCredits(input: { workspaceId: string; amount: number; kind: 'pack' | 'adjust'; reference: string; userId: string | null }): Promise<Balance>;
   ledger(workspaceId: string, options: { userId?: string; limit: number }): Promise<LedgerRow[]>;
@@ -377,6 +403,8 @@ export interface SchoodAIRepository {
   auditEvents(filter: { workspaceId?: string; prefix?: string; before?: number; limit: number }): Promise<AuditRow[]>;
 
   addLearningEvents(events: LearningEvent[]): Promise<void>;
+  /** A person's learning events in order, after an id (tests, dev stacks and areas that fold events). */
+  learningEvents(filter: { userId: string; afterId?: number; limit: number }): Promise<LearningEventRow[]>;
 
   createPage(input: Pick<PageRow, 'workspaceId' | 'ownerId' | 'folder' | 'kind' | 'title' | 'body' | 'material' | 'visibility' | 'status' | 'sourceGenerationId'>): Promise<PageRow>;
   page(id: string): Promise<PageRow | null>;
@@ -392,6 +420,12 @@ export interface SchoodAIRepository {
   /** Moves pages in `from` (and below) to `to`, only those the viewer may edit. */
   moveFolder(query: Pick<PageQuery, 'workspaceId' | 'viewerId' | 'manager'>, from: string, to: string): Promise<number>;
   notify(userId: string, channel: string, take: boolean): Promise<NotifyDecision>;
+  notifyPrefs(userId: string): Promise<NotifyPrefs>;
+  saveNotifyPrefs(userId: string, prefs: NotifyPrefs): Promise<NotifyPrefs>;
+  /** One hit in a fixed window for a bucket (anonymous routes); false when the window is full. */
+  takeRate(bucket: string, limit: number, windowSeconds: number): Promise<{ ok: true; remaining: number } | { ok: false; retryAt: string }>;
+  /** internal_runtime_secrets.schood_ai_system_secret, which pg_cron sends to system routes. */
+  systemSecret(): Promise<string | null>;
 }
 
 // --- The request context -----------------------------------------------------------------------
@@ -456,7 +490,21 @@ export interface ActionService {
   decide(id: string, decision: 'approve' | 'decline' | 'retry'): Promise<ActionView>;
 }
 
-export interface FunctionCallInit { method?: Method; query?: Record<string, string>; body?: unknown; timeoutMs?: number; maxBytes?: number }
+export interface FunctionCallInit {
+  method?: Method;
+  query?: Record<string, string>;
+  body?: unknown;
+  timeoutMs?: number;
+  maxBytes?: number;
+  /** Only Idempotency-Key and If-Match (Assessment Cloud commands need them); anything else is refused. */
+  headers?: Record<string, string>;
+}
+/** Who is calling: a signed-in person, the Telegram worker for a linked person, a scheduled job, or nobody signed in. */
+export type Caller = 'user' | 'service' | 'system' | 'anonymous';
+export interface SpendReceipt extends ChargeReceipt {
+  /** Gives the credits back (for example when the thing bought could not be delivered). Refunding twice refunds once. */
+  refund(): Promise<void>;
+}
 
 export interface RequestContext {
   requestId: string;
@@ -471,7 +519,17 @@ export interface RequestContext {
   bytes(): Promise<Uint8Array>;
   idempotencyKey: string | null;
   locale: Locale;
+  /** The person calling. On system and anonymous routes reading it throws (check ctx.caller first). */
   user: RequestUser;
+  caller: Caller;
+  /**
+   * System and anonymous routes: charged AI paid by a named workspace's pool, with that workspace's
+   * plan, switches and caps (no member budget, no user on the ledger). Anonymous routes may name only an
+   * active centre. Signed-in routes use ctx.ai, which charges the caller's own workspace.
+   */
+  paidBy(workspaceId: string): Promise<ChargedAI>;
+  /** Priced actions that make no model call (a streak freeze): plan, role, age and switches apply, idempotent per reference. */
+  credits: { spend(input: { key: string; addOns?: string[]; reference?: string }): Promise<SpendReceipt> };
   now(): Date;
   repo: SchoodAIRepository;
   gateway: Gateway;
@@ -482,7 +540,12 @@ export interface RequestContext {
   /** Your area's own tables (stores.ts defineStore): Postgres when deployed, the memory twin in tests. */
   store<T>(handle: StoreHandle<T>): T;
   events: { emit(event: LearningEventInput): void };
-  notify: { allowed(userId: string, channel: string): Promise<NotifyDecision>; take(userId: string, channel: string): Promise<NotifyDecision> };
+  notify: {
+    allowed(userId: string, channel: string): Promise<NotifyDecision>;
+    take(userId: string, channel: string): Promise<NotifyDecision>;
+    /** The person's own choices: preferred hour, delivery (telegram, web), muted kinds, quiet hours, zone. */
+    prefs(userId: string): Promise<NotifyPrefs>;
+  };
   /** The workspace in `?workspace_id=` (or the personal one) with the caller's active membership. */
   workspace(options?: { roles?: readonly Role[] }): Promise<WorkspaceAccess>;
   plan(): Promise<PlanState>;
