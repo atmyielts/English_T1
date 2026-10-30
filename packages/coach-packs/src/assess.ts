@@ -28,8 +28,16 @@ export interface Assessment {
   invalidQuotes: number;
 }
 
-/** The scale the overall result is reported on (IELTS: whole-band criteria, half-band overall). */
-export const overallScale = (rubric: Rubric): LevelScale => ({ ...rubric.scale, step: rubric.overall.step ?? rubric.scale.step });
+/**
+ * The scale the overall result is reported on (IELTS: whole-band criteria, half-band
+ * overall). A finer overall step also shows its decimals, so 6.5 never reads as "7".
+ */
+export function overallScale(rubric: Rubric): LevelScale {
+  const step = rubric.overall.step ?? rubric.scale.step;
+  if (step === rubric.scale.step) return rubric.scale;
+  const decimals = Math.max(rubric.scale.decimals ?? 0, (String(step).split('.')[1] ?? '').length);
+  return { ...rubric.scale, step, decimals };
+}
 
 /** Weighted mean of the scored criteria, rounded the rubric's way; null when fewer than half are scored. */
 export function overallOf(rubric: Rubric, scores: Record<string, number | null | undefined>): number | null {

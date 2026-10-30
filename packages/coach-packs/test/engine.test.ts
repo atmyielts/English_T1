@@ -27,6 +27,7 @@ Deno.test('text: quotes match word for word, forgiving case, curly quotes and en
   assert(answerMatches('The River.', ['river']) && !answerMatches('rivers', ['river']), 'short answers forgive articles and punctuation only');
   equal([snap(band, 6.25, 'half_up'), snap(band, 6.75, 'half_up'), snap(band, 6.2), snap(band, 12)], [6.5, 7, 6, 9], 'IELTS rounding and clamping');
   equal([levelLabel(band, 6.5), levelLabel(speaking.manifest.scale, 3)], ['6.5', 'B1'], 'labels as people read them');
+  equal([levelLabel(speaking.manifest.scale, 2.9), levelLabel(speaking.manifest.scale, 3.3), levelLabel(band, 6.33)], ['B1', 'B1+', '6.3'], 'an average on a named scale reads as the nearest level; numbers keep their decimals');
   equal(fill('{name} has {n} {missing}', { name: 'Ali', n: 3 }), 'Ali has 3 {missing}', 'unknown placeholders stay visible');
   equal(escapeHtml('<b>"A&B"</b>'), '&lt;b&gt;&quot;A&amp;B&quot;&lt;/b&gt;', 'Telegram HTML escaping');
 });
@@ -97,6 +98,7 @@ Deno.test('scoring: IELTS overall rounds a quarter band up, as the band descript
   const rubric = ielts.rubricById.get('ielts.writing_task2')!;
   const ids = rubric.criteria.map((criterion) => criterion.id);
   equal(overallScale(rubric).step, 0.5, 'half-band overall');
+  equal([levelLabel(overallScale(rubric), 6.5), levelLabel(overallScale(rubric), 7), levelLabel(rubric.scale, 6)], ['6.5', '7.0', '6'], 'a half band reads as 6.5, never rounded to 7');
   equal(overallOf(rubric, Object.fromEntries(ids.map((id, index) => [id, index === 0 ? 7 : 6]))), 6.5, '6.25 → 6.5');
   equal(overallOf(rubric, Object.fromEntries(ids.map((id, index) => [id, index < 3 ? 7 : 6]))), 7, '6.75 → 7');
   equal(overallOf(rubric, { [ids[0]]: 7 }), null, 'one criterion is not an overall');

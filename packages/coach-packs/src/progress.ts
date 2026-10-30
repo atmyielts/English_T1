@@ -64,11 +64,14 @@ export function recurringErrors(rows: readonly MasteryState[], now: Date, min = 
 }
 
 /** The level of a node, or the mean of its children's levels when it has none itself. */
+/**
+ * A skill's level: the mean of its measured children (scored criteria are more
+ * specific than a parent's own estimate, such as the placement test's), else its own.
+ */
 export function nodeLevel(pack: CoachPack, rows: ReadonlyMap<string, MasteryState>, node: string): number | null {
-  const own = rows.get(node)?.level;
-  if (own !== null && own !== undefined) return own;
   const children = pack.manifest.skills.filter((skill) => skill.parent === node).map((skill) => rows.get(skill.id)?.level).filter((value): value is number => typeof value === 'number');
-  return children.length ? children.reduce((a, b) => a + b, 0) / children.length : null;
+  if (children.length) return children.reduce((a, b) => a + b, 0) / children.length;
+  return rows.get(node)?.level ?? null;
 }
 
 // --- Predicted level -----------------------------------------------------------------------------------

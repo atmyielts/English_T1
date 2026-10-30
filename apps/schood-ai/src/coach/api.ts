@@ -1,4 +1,5 @@
 import { api } from '../core/index.ts';
+import type { Sample } from '../../../../packages/coach-packs/src/types.ts';
 
 // The coach area's calls to schood-ai/coach/* and their JSON shapes (snake_case,
 // as the function sends them). Ids only in queries; never answers or text.
@@ -7,6 +8,13 @@ export interface LevelScale { id: string; min: number; max: number; step: number
 export interface CoachCard {
   id: string; feature: string; name: string; tagline: string; description: string; accent: string; languages: string[];
   scale: LevelScale; correction_modes: string[]; menu: string[]; bot: string | null;
+}
+/** A sample as the function sends it: title and preview in the caller's language. */
+export type SampleView = Sample extends infer S ? S extends Sample ? Omit<S, 'title' | 'preview'> & { title: string; preview: string } : never : never;
+export interface SamplesView {
+  coach: CoachCard; scale: LevelScale;
+  criteria: Record<string, { name: string; scale: LevelScale }>;
+  samples: SampleView[];
 }
 export interface PublicCertificate {
   code: string; display_name: string; coach: Record<string, string>; level: string; title: Record<string, string> | null; rubric: Record<string, string> | null;
@@ -34,7 +42,7 @@ export interface Dashboard {
 }
 export interface CoachSettings { correction?: 'gentle' | 'strict'; voice?: boolean; explain?: 'ui' | 'en'; reminder?: string | null; timeZone?: string }
 export interface Report {
-  from: string; to: string; has_data: boolean; rows: (ReportRow & { label: string })[]; headline: ReportRow | null;
+  from: string; to: string; has_data: boolean; rows: (ReportRow & { label: string })[]; headline: (ReportRow & { label: string }) | null;
   focus: { tag: string; count: number; name: string; explain: string }[];
   stats: { minutes: number; active_days: number; sessions: number; cards: { reviewed: number; correct: number }; quiz: Record<string, { correct: number; total: number; accuracy: number | null }> };
 }
@@ -72,6 +80,8 @@ export const coachApi = {
   settings: (pack: string, body: Record<string, unknown>) => api<{ settings: CoachSettings; locale: string }>('coach/settings', { method: 'PATCH', body: { pack, ...body } }),
   session: (id: string) => api<SessionDetail>('coach/session', { query: { id } }),
   certificates: () => api<{ certificates: CertificateView[] }>('coach/certificates'),
+  /** Example reports for anyone (no sign-in): body texts stay in every language, titles come localized. */
+  samples: (pack: string) => api<SamplesView>('coach/samples', { anonymous: true, query: { pack } }),
   /** The public check behind a certificate's share link: no sign-in, rate-limited per visitor. */
   verify: (code: string) => api<{ certificate: PublicCertificate }>('coach/verify', { anonymous: true, query: { code } }),
   revoke: (id: string) => api<{ revoked: boolean }>('coach/certificates', { method: 'DELETE', body: { id } }),
@@ -87,9 +97,12 @@ export const coachApi = {
   joinTeam: (code: string) => api<{ team: { id: string; name: string; packs: string[] } }>('coach/team-join', { body: { code } }),
 };
 
+/** As the engine's levelLabel: on a named scale (CEFR) an average reads as the nearest named point. */
 export function levelLabel(scale: LevelScale, value: number | null): string {
   if (value === null || !Number.isFinite(value)) return '—';
-  const label = scale.labels?.find((entry) => Math.abs(entry.value - value) < 1e-6)?.label;
+  const named = (target: number) => scale.labels?.find((entry) => Math.abs(entry.value - target) < 1e-6)?.label;
+  const nearest = Math.min(scale.max, Math.max(scale.min, scale.min + Math.round((value - scale.min) / scale.step) * scale.step));
+  const label = named(value) ?? (scale.labels?.length ? named(nearest) : undefined);
   if (label) return label;
   return value.toFixed(scale.decimals ?? (scale.step < 1 ? 1 : 0));
 }

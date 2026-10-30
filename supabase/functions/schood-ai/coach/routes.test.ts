@@ -33,8 +33,9 @@ Deno.test('coach routes: access by plan, pass and nothing; fair use for a pass; 
 
   const costs = await s.f.json('GET', 'coach/costs', { token: 'tok-free', query: { pack: 'ielts' } });
   equal(costs.body.costs, { turn: 1, review: 10, writing: 5, ladder: 8, photo: 3, drill: 2, voice: 1, shadow: 1 }, 'costs from the price table');
-  const samples = await s.f.json('GET', 'coach/samples', { token: 'tok-free', query: { pack: 'ielts' } });
-  ok(samples.status === 200 && samples.body.samples.length >= 2, 'examples for everyone');
+  const samples = await s.f.json('GET', 'coach/samples', { token: null, query: { pack: 'speaking' } });
+  ok(samples.status === 200 && samples.body.samples.length >= 2, 'examples for everyone, signed in or not');
+  equal(samples.body.criteria.range?.scale.id, 'cefr', 'criterion names and scales for the example reports');
   const audio = await s.f.json('GET', 'coach/audio-text', { token: 'tok-free', query: { pack: 'ielts', ref: 'ielts.l.x' } });
   equal(audio.status, 402, 'listening scripts need a plan');
   equal(s.f.memory.calls.length, 0, 'no model call anywhere above');

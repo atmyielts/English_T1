@@ -79,6 +79,7 @@ export const uz: Record<CoachKey, string> = {
   'coach.reason.balance': 'barcha ko‘nikmalarni rivojlantiradi',
   'coach.chart.empty': 'Hali baholangan natija yo‘q.',
   'coach.chart.summary': '{label}: {count|one:# natijada|other:# natijada} {first} dan {last} gacha.',
+  'coach.chart.single': '{label}: hozircha bitta natija, {first}.',
   'coach.chart.title': 'Grafik',
   'coach.verdict.better': 'yaxshiroq',
   'coach.verdict.worse': 'pastroq',

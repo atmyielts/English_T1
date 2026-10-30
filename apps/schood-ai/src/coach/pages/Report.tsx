@@ -57,7 +57,7 @@ function ReportView({ data, pack, t, forecasts }: { data: Report; pack: string; 
         <Stat label={t('coach.report.sessions')} value={data.stats.sessions}/>
         <Stat label={t('coach.report.cardsReviewed')} value={data.stats.cards.reviewed}/>
       </section>
-      {data.headline && <Card className="bg-lime-soft/60"><p className="m-0 text-sm text-gray-900">{t('coach.report.headline', { what: label(data.headline as ReportRow & { label: string }), before: value(data.headline, data.headline.before ?? data.headline.start), after: value(data.headline, data.headline.after) })}</p></Card>}
+      {data.headline && <Card className="bg-lime-soft/60"><p className="m-0 text-sm text-gray-900">{t('coach.report.headline', { what: label(data.headline), before: value(data.headline, data.headline.before ?? data.headline.start), after: value(data.headline, data.headline.after) })}</p></Card>}
       {groups.map((group) => {
         const rows = data.rows.filter((row) => group.keys.includes(row.key) && (row.after !== null || row.before !== null));
         if (!rows.length) return null;

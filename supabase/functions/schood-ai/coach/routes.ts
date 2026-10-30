@@ -233,7 +233,7 @@ export function coachRoutes(): Record<string, RouteHandler> {
         return {
           from: view.from, to: view.to, has_data: view.hasData,
           rows: view.report.rows.map((row) => ({ ...row, label: rowLabelFor(pack, row, ctx.locale) })),
-          headline: view.report.headline,
+          headline: view.report.headline ? { ...view.report.headline, label: rowLabelFor(pack, view.report.headline, ctx.locale) } : null,
           focus: view.report.focus.map((entry) => ({ ...entry, name: pick(pack.errorById.get(entry.tag)?.name, ctx.locale), explain: pick(pack.errorById.get(entry.tag)?.explain, ctx.locale) })),
           stats: { minutes: view.report.current.minutes, active_days: view.report.current.activeDays, sessions: view.report.current.sessions, cards: view.report.current.cards, quiz: view.report.current.quiz },
         };
@@ -364,10 +364,17 @@ export function coachRoutes(): Record<string, RouteHandler> {
         return { linked: true };
       },
     },
+    /** Static example reports, labelled as examples: open to anyone (the Mini App before linking, the web). */
     samples: {
+      anonymous: true,
       async GET(ctx) {
-        const { pack } = packOf(ctx, ctx.query.get('pack'));
-        return { coach: packCard(pack, ctx.locale, null), samples: pack.samples.map((sample) => ({ id: sample.id, kind: sample.kind, title: pick(sample.title, ctx.locale), preview: pick(sample.preview, ctx.locale), body: sample.body })) };
+        const { rt, pack } = packOf(ctx, ctx.query.get('pack'));
+        const criteria: Record<string, { name: string; scale: CoachPack['manifest']['scale'] }> = {};
+        for (const rubric of pack.rubrics) for (const criterion of rubric.criteria) criteria[criterion.id] ??= { name: pick(criterion.name, ctx.locale), scale: rubric.scale };
+        return {
+          coach: packCard(pack, ctx.locale, rt), scale: pack.manifest.scale, criteria,
+          samples: pack.samples.map((sample) => ({ id: sample.id, kind: sample.kind, title: pick(sample.title, ctx.locale), preview: pick(sample.preview, ctx.locale), body: sample.body })),
+        };
       },
     },
     /** Text the Mini App reads aloud with the browser's own voice when no speech provider is set up. */
@@ -501,10 +508,28 @@ function packCard(pack: CoachPack, locale: Locale, rt: CoachRuntime | null) {
 }
 const botLink = (rt: CoachRuntime, pack: CoachPack) => (rt.config.bots[pack.manifest.id]?.username ? `https://t.me/${rt.config.bots[pack.manifest.id]!.username}` : null);
 
+/** Names for sessions that have no pack activity of their own (placement, fresh drills). */
+const KIND_TITLES: Record<string, Partial<Record<Locale, string>>> = {
+  diagnostic: { en: 'Placement test', uz: 'Daraja testi', ru: 'Тест уровня' },
+  drill: { en: 'Practice on your errors', uz: 'Xatolaringiz ustida mashq', ru: 'Работа над ошибками' },
+  deck: { en: 'Card review', uz: 'Kartalarni takrorlash', ru: 'Повторение карточек' },
+  shadowing: { en: 'Shadowing', uz: 'Takrorlab gapirish', ru: 'Шэдоуинг' },
+  photo_help: { en: 'Help with a photo', uz: 'Rasm bo‘yicha yordam', ru: 'Помощь по фото' },
+};
+/** A session's title: a single speaking part names that part; otherwise the activity, else its kind. */
+function sessionTitle(pack: CoachPack, session: { kind: string; activityId: string | null; mode: string | null }, locale: Locale): string {
+  const activity = session.activityId ? pack.byId.get(session.activityId) : undefined;
+  if (activity?.kind === 'speaking_exam' && session.mode && session.mode !== 'mock') {
+    const part = activity.parts.find((entry) => entry.id === session.mode);
+    if (part) return pick(part.title, locale);
+  }
+  return pick(activity?.title, locale) || pick(KIND_TITLES[session.kind], locale) || session.kind;
+}
+
 function sessionCard(pack: CoachPack, session: { id: string; kind: string; activityId: string | null; mode: string | null; status: string; rubric: string | null; overall: number | null; minutes: number; startedAt: string; finishedAt: string | null }, locale: Locale) {
   const rubric = session.rubric ? pack.rubricById.get(session.rubric) : undefined;
   return {
-    id: session.id, kind: session.kind, activity: session.activityId, mode: session.mode, title: pick(session.activityId ? pack.byId.get(session.activityId)?.title : undefined, locale) || session.kind,
+    id: session.id, kind: session.kind, activity: session.activityId, mode: session.mode, title: sessionTitle(pack, session, locale),
     status: session.status, rubric: session.rubric, overall: session.overall, overall_label: rubric && session.overall !== null ? levelLabel(overallScale(rubric), session.overall) : null,
     minutes: session.minutes, started_at: session.startedAt, finished_at: session.finishedAt,
   };

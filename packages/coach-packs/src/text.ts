@@ -74,9 +74,13 @@ export function snap(scale: LevelScale, value: number, mode: 'step' | 'half_up' 
   return Number((scale.min + counted * scale.step).toFixed(6));
 }
 
-/** "6.5", "B1+", "72%": a scale value as people read it. */
+/**
+ * "6.5", "B1+", "72%": a scale value as people read it. On a named scale (CEFR) a value
+ * between two points (an average) reads as the nearest named point.
+ */
 export function levelLabel(scale: LevelScale, value: number): string {
-  const label = scale.labels?.find((entry) => Math.abs(entry.value - value) < 1e-6)?.label;
+  const named = (target: number) => scale.labels?.find((entry) => Math.abs(entry.value - target) < 1e-6)?.label;
+  const label = named(value) ?? (scale.labels?.length ? named(snap(scale, value)) : undefined);
   if (label) return label;
   const text = value.toFixed(scale.decimals ?? (scale.step < 1 ? 1 : 0));
   return scale.id === 'percent' ? `${text}%` : text;

@@ -34,7 +34,7 @@ function Body({ data, pack }: { data: Dashboard; pack: string }) {
     <section aria-label={t('coach.dash.stats')} className="grid grid-cols-2 gap-3 md:grid-cols-4">
       <Stat label={t('coach.dash.streak')} value={<span className="inline-flex items-center gap-1.5"><Flame size={20} aria-hidden="true"/>{data.streak.current}</span>} hint={t('coach.dash.best', { count: data.streak.best })}/>
       <Stat label={t('coach.dash.minutes')} value={<span className="inline-flex items-center gap-1.5"><Timer size={20} aria-hidden="true"/>{data.streak.minutes}</span>} hint={t('coach.dash.minutesHint')}/>
-      <Stat label={t('coach.dash.goal')} value={<span className="inline-flex items-center gap-1.5"><Target size={20} aria-hidden="true"/>{data.goal.target_label}</span>} hint={data.goal.days_left !== null ? t('coach.dash.daysLeft', { count: data.goal.days_left }) : t('coach.dash.weeksLeft', { count: data.goal.weeks_left })}/>
+      <Stat label={t('coach.dash.goal')} value={<span className="inline-flex items-center gap-1.5"><Target size={20} aria-hidden="true"/>{data.enrollment.has_goal ? data.goal.target_label : '—'}</span>} hint={!data.enrollment.has_goal ? t('coach.plan.setGoal') : data.goal.days_left !== null ? t('coach.dash.daysLeft', { count: data.goal.days_left }) : t('coach.dash.weeksLeft', { count: data.goal.weeks_left })}/>
       <Stat label={t('coach.dash.placement')} value={data.enrollment.placement?.label ?? '—'} hint={data.enrollment.placement ? dateText(data.enrollment.placement.at, locale) : t('coach.dash.noPlacement')}/>
     </section>
 

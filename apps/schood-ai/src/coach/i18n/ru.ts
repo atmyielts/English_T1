@@ -79,6 +79,7 @@ export const ru: Record<CoachKey, string> = {
   'coach.reason.balance': 'держит в тонусе все навыки',
   'coach.chart.empty': 'Оценённых результатов пока нет.',
   'coach.chart.summary': '{label}: от {first} до {last}, результатов: {count}.',
+  'coach.chart.single': '{label}: пока один результат, {first}.',
   'coach.chart.title': 'График',
   'coach.verdict.better': 'лучше',
   'coach.verdict.worse': 'ниже',

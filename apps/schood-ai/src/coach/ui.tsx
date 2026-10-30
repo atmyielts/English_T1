@@ -1,23 +1,29 @@
 import { type ReactNode, useEffect, useState } from 'react';
 import { BarChart3, CalendarDays, Home, Settings2 } from 'lucide-react';
-import { ApiErrorState, Badge, Card, Link, LoadingState, useLocation, useT } from '../core/index.ts';
+import { ApiErrorState, Badge, Card, Link, LoadingState, useI18n, useLocation, useT } from '../core/index.ts';
 import { levelLabel, type LevelScale } from './api.ts';
 
 // Shared pieces of the coach screens: the coach frame with its tabs, stat tiles,
 // a line chart for results over time, bars for skills and before/after rows. Charts
 // are plain SVG with a text summary, so they work on weak phones and with screen readers.
 
-/** Loads data for a page; `reload` refetches. */
+/**
+ * Loads data for a page; `reload` refetches. It refetches when the language changes,
+ * since the function writes titles and explanations in the caller's language. The
+ * load starts after this render's effects, once core has set the page language that
+ * requests carry.
+ */
 export function useLoad<T>(load: () => Promise<T>, deps: unknown[]) {
+  const { locale } = useI18n();
   const [state, setState] = useState<{ data: T | null; error: unknown; loading: boolean }>({ data: null, error: null, loading: true });
   const [tick, setTick] = useState(0);
   useEffect(() => {
     let live = true;
     setState((current) => ({ ...current, loading: true, error: null }));
-    load().then((data) => { if (live) setState({ data, error: null, loading: false }); }, (error) => { if (live) setState({ data: null, error, loading: false }); });
+    void Promise.resolve().then(() => (live ? load() : null)).then((data) => { if (live && data !== null) setState({ data, error: null, loading: false }); }, (error) => { if (live) setState({ data: null, error, loading: false }); });
     return () => { live = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [...deps, tick]);
+  }, [...deps, tick, locale]);
   return { ...state, reload: () => setTick((value) => value + 1) };
 }
 
@@ -77,7 +83,9 @@ export function ResultChart({ points, scale, target, label }: { points: { at: st
   const x = (i: number) => pad + (points.length === 1 ? (w - 2 * pad) / 2 : (i * (w - 2 * pad)) / (points.length - 1));
   const y = (value: number) => h - pad - ((value - min) / Math.max(0.0001, max - min)) * (h - 2 * pad);
   const line = points.map((point, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(point.value).toFixed(1)}`).join(' ');
-  const summary = t('coach.chart.summary', { label, first: levelLabel(scale, points[0].value), last: levelLabel(scale, points.at(-1)!.value), count: points.length });
+  const summary = points.length === 1
+    ? t('coach.chart.single', { label, first: levelLabel(scale, points[0].value) })
+    : t('coach.chart.summary', { label, first: levelLabel(scale, points[0].value), last: levelLabel(scale, points.at(-1)!.value), count: points.length });
   return <figure className="m-0">
     <svg viewBox={`0 0 ${w} ${h}`} role="img" aria-label={summary} className="h-auto w-full">
       <line x1={pad} x2={w - pad} y1={h - pad} y2={h - pad} stroke="#cbd5e1"/>
@@ -113,4 +121,12 @@ export function Change({ label, before, after, verdict }: { label: string; befor
   </li>;
 }
 
-export const dateText = (iso: string | null | undefined, locale: string) => (iso ? new Date(iso).toLocaleDateString(locale === 'uz' ? 'uz-Latn' : locale, { day: 'numeric', month: 'short', year: 'numeric' }) : '—');
+// Browsers' Uzbek date data is thin ("2026 M10 10"), so Uzbek dates are written out here.
+const UZ_MONTHS = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'];
+export const dateText = (iso: string | null | undefined, locale: string) => {
+  if (!iso) return '—';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '—';
+  if (locale === 'uz') return `${date.getDate()}-${UZ_MONTHS[date.getMonth()]}, ${date.getFullYear()}`;
+  return date.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+};

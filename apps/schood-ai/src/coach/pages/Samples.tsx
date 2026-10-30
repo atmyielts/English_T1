@@ -1,57 +1,48 @@
-import { useEffect, useState } from 'react';
-import { Badge, Card, EmptyState, LoadingState, PageHeader, useI18n, useT } from '../../core/index.ts';
-import type { Localized, PackManifest, Sample, SampleBodies } from '../../../../../packages/coach-packs/src/types.ts';
+import { Badge, Card, PageHeader, useI18n, useT } from '../../core/index.ts';
+import type { Localized, SampleBodies } from '../../../../../packages/coach-packs/src/types.ts';
+import { coachApi, levelLabel, type SampleView, type SamplesView } from '../api.ts';
+import { Loaded, useLoad } from '../ui.tsx';
 
-// /coach/<pack>/samples and /coach/<pack>/samples/<id>: static example reports a
-// person without a plan (or without an account) can see. They are labelled as
-// examples of a fictional learner. Each pack's examples load only on this page.
-
-const manifests = import.meta.glob<{ manifest: PackManifest }>('../../../../../packages/coach-packs/*/manifest.ts');
-const samples = import.meta.glob<{ samples: Sample[] }>('../../../../../packages/coach-packs/*/samples.ts');
-const fileOf = (pack: string, name: string) => `../../../../../packages/coach-packs/${pack}/${name}.ts`;
+// /coach/<pack>/samples and /coach/<pack>/samples/<id>: static example reports anyone
+// can see (no plan, no account, or the Mini App before linking). They are labelled as
+// examples of a fictional learner.
 
 const pick = (text: Localized | undefined, locale: string) => text?.[locale as 'en'] ?? text?.en ?? '';
 
 export function CoachSamples({ params }: { params: Record<string, string> }) {
   const t = useT(), { locale } = useI18n();
-  const [state, setState] = useState<{ manifest: PackManifest; samples: Sample[] } | null | 'missing'>(null);
-  useEffect(() => {
-    const loadManifest = manifests[fileOf(params.pack, 'manifest')], loadSamples = samples[fileOf(params.pack, 'samples')];
-    if (!loadManifest || !loadSamples) { setState('missing'); return; }
-    let live = true;
-    Promise.all([loadManifest(), loadSamples()]).then(([m, s]) => { if (live) setState({ manifest: m.manifest, samples: s.samples }); }, () => { if (live) setState('missing'); });
-    return () => { live = false; };
-  }, [params.pack]);
-  if (state === 'missing') return <EmptyState title={t('coach.notFound')}/>;
-  if (!state) return <LoadingState/>;
-  const shown = params.id ? state.samples.filter((sample) => sample.id === params.id) : state.samples;
-  return <div className="flex min-w-0 flex-col gap-4">
-    <PageHeader eyebrow={pick(state.manifest.name, locale)} title={t('coach.samples.title')} lead={t('coach.samples.lead')}/>
-    {shown.map((sample) => <Card key={sample.id} className="flex flex-col gap-3" id={sample.id}>
-      <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="m-0 font-display text-lg font-bold">{pick(sample.title, locale)}</h2><Badge tone="warn">{t('coach.samples.badge')}</Badge></div>
-      <SampleBody sample={sample} locale={locale}/>
-    </Card>)}
-  </div>;
+  const state = useLoad(() => coachApi.samples(params.pack), [params.pack]);
+  return <Loaded state={state}>{(data) => {
+    const shown = params.id ? data.samples.filter((sample) => sample.id === params.id) : data.samples;
+    return <div className="flex min-w-0 flex-col gap-4">
+      <PageHeader eyebrow={data.coach.name} title={t('coach.samples.title')} lead={t('coach.samples.lead')}/>
+      {shown.map((sample) => <Card key={sample.id} className="flex flex-col gap-3" id={sample.id}>
+        <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="m-0 font-display text-lg font-bold">{sample.title}</h2><Badge tone="warn">{t('coach.samples.badge')}</Badge></div>
+        <SampleBody sample={sample} data={data} locale={locale}/>
+      </Card>)}
+    </div>;
+  }}</Loaded>;
 }
 
-function Criteria({ rows, locale }: { rows: SampleBodies['speaking_report']['criteria']; locale: string }) {
+function Criteria({ rows, data, locale }: { rows: SampleBodies['speaking_report']['criteria']; data: SamplesView; locale: string }) {
   const t = useT();
   return <ul className="m-0 flex list-none flex-col gap-3 p-0">{rows.map((row) => <li key={row.id} className="text-sm leading-6">
-    <div className="flex items-center justify-between gap-2"><b>{row.id.replace(/_/g, ' ')}</b><Badge tone="sky">{row.score ?? t('coach.session.audio')}</Badge></div>
+    <div className="flex items-center justify-between gap-2"><b>{data.criteria[row.id]?.name ?? row.id.replace(/_/g, ' ')}</b><Badge tone="sky">{row.score === null ? t('coach.session.audio') : data.criteria[row.id] ? levelLabel(data.criteria[row.id].scale, row.score) : row.score}</Badge></div>
     {row.evidence.map((quote, index) => <q key={index} className="mr-2 font-semibold">{quote}</q>)}
     <p className="m-0 text-gray-700">{pick(row.note, locale)}</p>
   </li>)}</ul>;
 }
 
-function SampleBody({ sample, locale }: { sample: Sample; locale: string }) {
+function SampleBody({ sample, data, locale }: { sample: SampleView; data: SamplesView; locale: string }) {
   const t = useT();
+  const level = (value: number) => levelLabel(data.scale, value);
   switch (sample.kind) {
     case 'speaking_report': {
       const body = sample.body;
       return <>
         <p className="m-0 text-sm text-gray-700">{body.task}</p>
-        <p className="m-0 font-display text-2xl font-bold">{t('coach.session.overall', { level: body.overall })}</p>
-        <Criteria rows={body.criteria} locale={locale}/>
+        <p className="m-0 font-display text-2xl font-bold">{t('coach.session.overall', { level: level(body.overall) })}</p>
+        <Criteria rows={body.criteria} data={data} locale={locale}/>
         <p className="m-0 text-sm text-gray-700">{t('coach.samples.metrics', { wpm: body.metrics.wpm, fillers: body.metrics.fillersPerMinute, pauses: body.metrics.longPauses })}</p>
         <Upgrades rows={body.upgrades} locale={locale}/>
       </>;
@@ -60,8 +51,8 @@ function SampleBody({ sample, locale }: { sample: Sample; locale: string }) {
       const body = sample.body;
       return <>
         <p className="m-0 text-sm text-gray-700">{body.task}</p>
-        <p className="m-0 font-display text-2xl font-bold">{t('coach.session.overall', { level: body.overall })}</p>
-        <Criteria rows={body.criteria} locale={locale}/>
+        <p className="m-0 font-display text-2xl font-bold">{t('coach.session.overall', { level: level(body.overall) })}</p>
+        <Criteria rows={body.criteria} data={data} locale={locale}/>
         <ul className="m-0 flex list-none flex-col gap-2 p-0">{body.corrections.map((row, index) => <li key={index} className="text-sm"><s>{row.original}</s> → <b>{row.corrected}</b> <span className="text-gray-700">— {pick(row.why, locale)}</span></li>)}</ul>
         {body.ladder?.map((step) => <details key={step.level} className="rounded-2xl border border-navy-line/30 bg-white/70 p-3"><summary className="cursor-pointer text-sm font-semibold">{step.level}</summary><p className="whitespace-pre-wrap text-sm leading-6">{step.text}</p></details>)}
       </>;
@@ -79,7 +70,7 @@ function SampleBody({ sample, locale }: { sample: Sample; locale: string }) {
       return <>
         <p className="m-0 text-sm text-gray-700">{body.scenario}</p>
         <ul className="m-0 flex list-none flex-col gap-1 p-0">{body.goals.map((goal, index) => <li key={index} className="text-sm">{goal.met ? '✅' : '⬜'} {pick(goal.text, locale)}{goal.quote && <> — <q>{goal.quote}</q></>}</li>)}</ul>
-        <Criteria rows={body.criteria} locale={locale}/>
+        <Criteria rows={body.criteria} data={data} locale={locale}/>
         <p className="m-0 text-sm text-gray-700">{t('coach.session.scorecard', { ratio: body.scorecard.talkRatio, questions: body.scorecard.questionsAsked, words: body.scorecard.averageTurnWords })}</p>
         <Upgrades rows={body.betterLines} locale={locale}/>
       </>;
@@ -87,7 +78,7 @@ function SampleBody({ sample, locale }: { sample: Sample; locale: string }) {
     case 'plan': {
       const body = sample.body;
       return <>
-        <p className="m-0 text-sm text-gray-700">{t('coach.samples.plan', { target: body.target, weeks: body.weeks })}</p>
+        <p className="m-0 text-sm text-gray-700">{t('coach.samples.plan', { target: level(body.target), weeks: body.weeks })}</p>
         <ol className="m-0 flex flex-col gap-2 pl-5">{body.days.map((day, index) => <li key={index} className="text-sm"><b>{pick(day.day, locale)}</b>: {day.tasks.map((task) => pick(task, locale)).join(' · ')}</li>)}</ol>
       </>;
     }

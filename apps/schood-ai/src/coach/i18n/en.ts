@@ -78,6 +78,7 @@ export const en = {
   'coach.reason.balance': 'keeps every skill moving',
   'coach.chart.empty': 'No scored results yet.',
   'coach.chart.summary': '{label}: from {first} to {last} over {count|one:# result|other:# results}.',
+  'coach.chart.single': '{label}: one result so far, {first}.',
   'coach.chart.title': 'Chart',
   'coach.verdict.better': 'better',
   'coach.verdict.worse': 'lower',
