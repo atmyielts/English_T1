@@ -183,6 +183,8 @@ export async function centreFixture(options: { publicUrl?: string | null; secret
     repository: memory.repository, gateway, plans, isAdmin, callFunction, stores,
     sendTelegram: (input) => { notifySends.push(structuredClone(input)); return Promise.resolve(notifyOutcome); },
     adminGate: () => Promise.resolve({ ok: false, status: 403, code: 'forbidden' }), modules: MODULES,
+    // The centre tests' people have taken the learner area's one-time consent step (core's onboarding switch).
+    onboardingTaken: true,
   }, { allowedOrigins: [ORIGIN], serviceSecret: SECRET, now, after });
 
   type CallOptions = { token?: string | null; body?: unknown; query?: Record<string, string>; workspace?: string; headers?: Record<string, string> };

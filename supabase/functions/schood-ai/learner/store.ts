@@ -584,16 +584,8 @@ export function createPostgresLearnerStore(client: ServiceDb): LearnerStore {
   };
 }
 
-/**
- * Marks the default memory twin, the one core's and other areas' tests get. Core's tests
- * must pass with area registrations loaded (extensions.test.ts) and chat as learners who
- * never took the consent step, so the learner chat guard is inert on this twin only.
- * The learner tests replace it with a strict twin (testkit.ts); Postgres always enforces.
- * Delete once core's fixture can pass area chat guards (ai-requests/learner.md, request 10).
- */
-export const DEFAULT_TWIN = Symbol('learner.default_twin');
 
 export const learnerStore = defineStore<LearnerStore>('learner', {
   postgres: (db) => createPostgresLearnerStore(db),
-  memory: ({ now }) => Object.assign(createMemoryLearnerStore({}, now), { [DEFAULT_TWIN]: true }),
+  memory: ({ now }) => createMemoryLearnerStore({}, now),
 });

@@ -30,7 +30,8 @@ registerTutor();
 registerFamilyPlanSource();
 registerBriefJobs();
 // The under-18 consent step, server-side for every chat (the tutor's own guard covers it there).
-registerChatGuard('learner.consent', chatConsentGuard);
+// A one-time step: it always runs when deployed; core's test fixture may declare it taken (onboarding).
+registerChatGuard('learner.consent', chatConsentGuard, { onboarding: true });
 // Core's adults-only prices read the age band from the consent step.
 registerAgeSource('learner.consent', ageFromConsent);
 

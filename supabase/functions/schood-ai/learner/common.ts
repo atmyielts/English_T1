@@ -2,7 +2,7 @@ import { SchemaError, type Schema } from '../../../../packages/ai-core/src/mod.t
 import { buildSystemPrompt, dataBlock, neutralise, wrapUserMessage } from '../prompt.ts';
 import type { ResolvedSpecialist } from '../specialists.ts';
 import { SchoodAIError, type ChargedAI, type ContextBlock, type LearningEventInput, type Locale, type RequestContext, type WorkspaceAccess } from '../types.ts';
-import { DEFAULT_TWIN, learnerStore, type ConsentRow, type LearnerStore, type RecordRow } from './store.ts';
+import { learnerStore, type ConsentRow, type LearnerStore, type RecordRow } from './store.ts';
 
 // Shared pieces of the learner area: the store for this request, the under-18
 // consent gate, activity tracking (with verified learning events), prompts that
@@ -45,7 +45,6 @@ export async function consentGuard(ctx: RequestContext, input: { access: Workspa
 /** The same step for every core/chat turn with any specialist (the tutor checks it in its own guard). */
 export async function chatConsentGuard(ctx: RequestContext, input: { specialist: string; access: WorkspaceAccess }): Promise<void> {
   if (input.specialist === 'tutor') return;
-  if ((store(ctx) as LearnerStore & { [DEFAULT_TWIN]?: true })[DEFAULT_TWIN]) return;
   await consentGuard(ctx, input);
 }
 /** For core's adults-only prices: the age band from the consent step. */

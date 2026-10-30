@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect, useState } from 'react';
 import { BarChart3, CalendarDays, Home, Settings2 } from 'lucide-react';
-import { ApiErrorState, Badge, Card, Link, LoadingState, useI18n, useLocation, useT } from '../core/index.ts';
+import { ApiErrorState, Badge, Card, formatDate, Link, LoadingState, useI18n, useLocation, useT } from '../core/index.ts';
+import type { Locale } from '../../../../packages/service-i18n/src/format.ts';
 import { levelLabel, type LevelScale } from './api.ts';
 
 // Shared pieces of the coach screens: the coach frame with its tabs, stat tiles,
@@ -121,12 +122,6 @@ export function Change({ label, before, after, verdict }: { label: string; befor
   </li>;
 }
 
-// Browsers' Uzbek date data is thin ("2026 M10 10"), so Uzbek dates are written out here.
-const UZ_MONTHS = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'];
-export const dateText = (iso: string | null | undefined, locale: string) => {
-  if (!iso) return '—';
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '—';
-  if (locale === 'uz') return `${date.getDate()}-${UZ_MONTHS[date.getMonth()]}, ${date.getFullYear()}`;
-  return date.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
-};
+// Dates through core's formatter, which writes Uzbek out (browsers' Uzbek data is thin: "2026 M10 10").
+export const dateText = (iso: string | null | undefined, locale: string) =>
+  iso ? formatDate((locale === 'uz' || locale === 'ru' ? locale : 'en') as Locale, iso, { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
