@@ -93,14 +93,18 @@ const plans = createPlanResolver({ productIds, betaUserIds, accessEffective: acc
 // Area tables (stores.ts) over the same service-role client.
 const stores = createStores({ kind: 'postgres', db }, { now: () => new Date(), env: (name) => Deno.env.get(name) });
 
+// The secret pg_cron sends to system routes (invoke_schood_ai_system), read from internal_runtime_secrets.
+const systemSecret = cached(() => repository.systemSecret(), 60_000);
+
 Deno.serve(createSchoodAIHandler({
-  repository, gateway, plans, isAdmin, stores,
+  repository, gateway, plans, isAdmin, stores, systemSecret,
   async callFunction(name, path, token, init) {
     const target = new URL(`${url}/functions/v1/${name}${path}`);
     for (const [key, value] of Object.entries(init.query ?? {})) target.searchParams.set(key, value);
     const response = await fetch(target, {
       method: init.method ?? 'GET',
-      headers: { apikey: anon, Authorization: `Bearer ${token}`, ...(init.body === undefined ? {} : { 'Content-Type': 'application/json' }) },
+      // init.headers holds only Idempotency-Key and If-Match (checked in context.ts).
+      headers: { ...init.headers, apikey: anon, Authorization: `Bearer ${token}`, ...(init.body === undefined ? {} : { 'Content-Type': 'application/json' }) },
       ...(init.body === undefined ? {} : { body: JSON.stringify(init.body) }),
       signal: AbortSignal.timeout(init.timeoutMs ?? 8_000),
     });
@@ -114,4 +118,4 @@ Deno.serve(createSchoodAIHandler({
     const body = await result.response.json().catch(() => ({}));
     return { ok: false, status, code: typeof body?.code === 'string' ? body.code : status === 401 ? 'unauthorized' : 'admin_required' };
   },
-}, { allowedOrigins: origins, serviceSecret, after }));
+}, { allowedOrigins: origins, serviceSecret, after, ipSalt: required('SUPABASE_SERVICE_ROLE_KEY') }));

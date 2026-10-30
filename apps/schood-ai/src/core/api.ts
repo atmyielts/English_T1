@@ -26,17 +26,19 @@ export interface ApiOptions {
   idempotencyKey?: string;
   signal?: AbortSignal;
   timeoutMs?: number;
+  /** For routes marked `anonymous` (a Live Quiz player, a shared Passport): no sign-in and no token sent. */
+  anonymous?: boolean;
 }
 
 async function prepare(path: string, options: ApiOptions) {
   if (!apiConfigured) throw new ApiError(0, 'unconfigured', 'Schood AI is not configured.');
-  const token = await activeSource()?.token();
-  if (!token) throw new ApiError(401, 'unauthorized', 'Sign in to continue.');
+  const token = options.anonymous ? null : await activeSource()?.token();
+  if (!token && !options.anonymous) throw new ApiError(401, 'unauthorized', 'Sign in to continue.');
   const url = new URL(`${base}/functions/v1/schood-ai/${path}`);
   if (options.workspaceId) url.searchParams.set('workspace_id', options.workspaceId);
   for (const [key, value] of Object.entries(options.query ?? {})) if (value !== undefined) url.searchParams.set(key, value);
   const headers: Record<string, string> = {
-    Authorization: `Bearer ${token}`, apikey: anon, 'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}), apikey: anon, 'Content-Type': 'application/json',
     'x-schood-locale': document.documentElement.lang || 'en',
     ...(options.idempotencyKey ? { 'Idempotency-Key': options.idempotencyKey } : {}),
   };

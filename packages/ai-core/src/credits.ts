@@ -19,6 +19,8 @@ export interface CreditPrice {
   addOns?: readonly string[];
   /** Priced here although the doc's table has no row for it; reuses the closest row. */
   assumed?: true;
+  /** Only for people an age source confirms as adults (a streak freeze bought with credits); minors and unknown ages are refused. */
+  adultsOnly?: true;
 }
 
 const price = (feature: string, credits: number, tier: ModelTier = 'standard', extra: Partial<CreditPrice> = {}): CreditPrice => ({ feature, credits, tier, ...extra });
@@ -90,7 +92,7 @@ export const CREDIT_KEY_PATTERN = /^[a-z][a-z0-9_]{1,30}\.[a-z][a-z0-9_]{1,30}$/
 export const isCreditKey = (value: unknown): value is CreditKey => typeof value === 'string' && Object.hasOwn(PRICES, value);
 export const creditPrice = (key: CreditKey): CreditPrice => PRICES[key];
 
-export interface CreditQuote { key: CreditKey; feature: string; credits: number; addOns: CreditKey[]; tier: ModelTier; requires: Capability[] }
+export interface CreditQuote { key: CreditKey; feature: string; credits: number; addOns: CreditKey[]; tier: ModelTier; requires: Capability[]; adultsOnly: boolean }
 
 /** The exact cost of an action and its add-ons. Throws on an unknown key or an add-on the key does not allow. */
 export function quoteCredits(key: string, addOns: readonly string[] = []): CreditQuote {
@@ -99,7 +101,7 @@ export function quoteCredits(key: string, addOns: readonly string[] = []): Credi
   const unique = [...new Set(addOns)];
   for (const addOn of unique) if (!base.addOns?.includes(addOn) || !isCreditKey(addOn)) throw new Error(`invalid_add_on: ${addOn}`);
   const credits = base.credits + unique.reduce((sum, addOn) => sum + PRICES[addOn].credits, 0);
-  return { key, feature: base.feature, credits, addOns: unique as CreditKey[], tier: base.tier, requires: [...(base.requires ?? [])] };
+  return { key, feature: base.feature, credits, addOns: unique as CreditKey[], tier: base.tier, requires: [...(base.requires ?? [])], adultsOnly: base.adultsOnly === true || unique.some((addOn) => PRICES[addOn].adultsOnly === true) };
 }
 
 /** Every price must point at a feature in the plan matrix; checked by tests and at function start. */

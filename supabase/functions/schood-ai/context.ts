@@ -1,6 +1,7 @@
 import { creditPrice, featureAccess, isCreditKey, type AccessDecision } from '../../../packages/ai-core/src/mod.ts';
 import { createActionService } from './actions.ts';
-import { createChargedAI } from './ai.ts';
+import { requireAdult } from './age.ts';
+import { createChargedAI, createChargedAIFor, createSpend, scopeOf } from './ai.ts';
 import { createLibraryService } from './library.ts';
 import type { Gateway } from './gateway.ts';
 import { isUuid } from './input.ts';
@@ -9,7 +10,7 @@ import type { Stores } from './stores.ts';
 import { sseResponse } from './stream.ts';
 import {
   AREAS, LEARNING_EVENT_KINDS, SchoodAIError,
-  type Area, type ContextBlock, type FunctionCallInit, type LearningEvent, type LearningEventInput, type Locale, type Method,
+  type Area, type Caller, type ContextBlock, type FunctionCallInit, type LearningEvent, type LearningEventInput, type Locale, type Method,
   type PlanState, type RequestContext, type RequestUser, type SchoodAIRepository, type WorkspaceAccess,
 } from './types.ts';
 
@@ -88,14 +89,28 @@ export interface ContextInput {
   action: string;
   method: Method;
   requestId: string;
-  user: RequestUser;
+  /** Null on system and anonymous routes. */
+  user: RequestUser | null;
+  caller: Caller;
   readBody(): Promise<Uint8Array>;
 }
 
 const FUNCTION_NAME = /^[a-z0-9][a-z0-9-]{1,60}$/;
+/** Request headers a route may send to another Schood function (Assessment Cloud commands need them). */
+const FORWARDED_HEADERS = new Set(['idempotency-key', 'if-match']);
 
 export function createRequestContext(deps: ContextDeps, input: ContextInput): RequestContext {
-  const { user } = input;
+  const caller = input.caller;
+  // System and anonymous routes have nobody to act as: anything that would act as a person throws.
+  const personal = (caller === 'user' || caller === 'service') && input.user !== null;
+  const noUser = (what: string) => new SchoodAIError('user_required', `${what} needs a signed-in person; this ${caller} route has none.`, 500);
+  const user: RequestUser = personal ? input.user! : new Proxy({} as RequestUser, {
+    get(_target, name) {
+      if (typeof name === 'symbol' || name === 'then' || name === 'toJSON') return undefined;
+      throw noUser(`ctx.user.${String(name)}`);
+    },
+  });
+  const asPerson = (what: string) => { if (!personal) throw noUser(what); };
   const requested = input.url.searchParams.get('workspace_id');
   const headerLocale = (input.headers.get('x-schood-locale') ?? input.url.searchParams.get('locale') ?? '').toLowerCase();
   const locale = (LOCALES as readonly string[]).includes(headerLocale) ? headerLocale as Locale : 'en';
@@ -154,6 +169,7 @@ export function createRequestContext(deps: ContextDeps, input: ContextInput): Re
       return parsed as Promise<T>;
     },
     async workspace(options = {}) {
+      asPerson('ctx.workspace()');
       resolved ??= resolveWorkspace();
       const access = await resolved;
       resolvedId = access.workspace.id;
@@ -165,6 +181,7 @@ export function createRequestContext(deps: ContextDeps, input: ContextInput): Re
       return plan;
     },
     async access(featureOrKey): Promise<AccessDecision> {
+      asPerson('ctx.access()');
       const feature = isCreditKey(featureOrKey) ? creditPrice(featureOrKey).feature : featureOrKey;
       const [access, state] = await Promise.all([ctx.workspace(), ctx.plan()]);
       return featureAccess(feature, { plans: state.plans, workspaceKind: access.workspace.kind, role: access.role, beta: state.beta, grants: state.features });
@@ -177,6 +194,7 @@ export function createRequestContext(deps: ContextDeps, input: ContextInput): Re
       throw new SchoodAIError('invalid_request', 'Unknown feature.', 400);
     },
     async context(kinds, extra = {}) {
+      asPerson('ctx.context()');
       const access = await ctx.workspace();
       const blocks = await Promise.all([...new Set(kinds)].map(async (kind) => {
         const entry = providers.get(kind);
@@ -203,16 +221,22 @@ export function createRequestContext(deps: ContextDeps, input: ContextInput): Re
     functions: {
       async call<T>(name: string, path = '', init: FunctionCallInit = {}): Promise<T> {
         if (!FUNCTION_NAME.test(name) || (path && (!path.startsWith('/') || path.includes('..')))) throw new Error('invalid function call');
+        asPerson('ctx.functions.call()');
+        const headers: Record<string, string> = {};
+        for (const [key, value] of Object.entries(init.headers ?? {})) {
+          if (!FORWARDED_HEADERS.has(key.toLowerCase()) || typeof value !== 'string' || !/^[\x21-\x7e][\x20-\x7e]{0,199}$/.test(value)) throw new Error(`header ${key} cannot be sent to another function`);
+          headers[key.toLowerCase() === 'idempotency-key' ? 'Idempotency-Key' : 'If-Match'] = value;
+        }
         if (!user.token) throw new SchoodAIError('user_token_required', 'This needs the person to be signed in on the web.', 409);
-        const result = await deps.callFunction(name, path, user.token, init);
+        const result = await deps.callFunction(name, path, user.token, { ...init, headers });
         if (result.status < 200 || result.status >= 300) throw new SchoodAIError('upstream_failed', `${name} answered ${result.status}.`, 502, { service: name, status: result.status });
         return result.data as T;
       },
     },
-    isSchoodAdmin: () => deps.isAdmin(user.id),
+    isSchoodAdmin: () => (personal ? deps.isAdmin(user.id) : Promise.resolve(false)),
     async audit(event, details = {}, target) {
       try {
-        await deps.repo.audit({ workspaceId: resolvedId, actorId: user.id, event, targetType: target?.type ?? null, targetId: target?.id ?? null, details });
+        await deps.repo.audit({ workspaceId: resolvedId, actorId: personal ? user.id : null, event, targetType: target?.type ?? null, targetId: target?.id ?? null, details });
       } catch (cause) {
         console.error(JSON.stringify({ event: 'schood_ai_audit_failed', audit: event, request_id: input.requestId, error: String(cause).slice(0, 200) }));
       }
@@ -221,6 +245,7 @@ export function createRequestContext(deps: ContextDeps, input: ContextInput): Re
     sse: (produce) => sseResponse(deps.responseHeaders, deps.after, produce),
     events: {
       emit(event) {
+        asPerson('ctx.events.emit()');
         const row = learningEvent(event, user, resolvedId);
         if (typeof row === 'string') {
           console.error(JSON.stringify({ event: 'schood_ai_learning_event_invalid', field: row, kind: String(event?.kind).slice(0, 40), request_id: input.requestId }));
@@ -241,6 +266,36 @@ export function createRequestContext(deps: ContextDeps, input: ContextInput): Re
     notify: {
       allowed: (userId, channel) => deps.repo.notify(userId, channel, false),
       take: (userId, channel) => deps.repo.notify(userId, channel, true),
+      prefs: (userId) => deps.repo.notifyPrefs(userId),
+    },
+    caller,
+    credits: { spend: (spend) => createSpend(scopeOf(ctx))(spend) },
+    async paidBy(workspaceId) {
+      if (personal) throw new SchoodAIError('paid_by_not_allowed', 'Signed-in routes pay with ctx.ai, from the caller\'s own workspace.', 500);
+      if (!isUuid(workspaceId)) throw new Error('ctx.paidBy needs a workspace id');
+      const workspace = await deps.repo.workspace(workspaceId.toLowerCase());
+      if (!workspace || workspace.status !== 'active') throw new SchoodAIError('workspace_not_found', 'Workspace not found.', 404);
+      // Visitors can only spend a centre's pool, never a person's own credits.
+      if (caller === 'anonymous' && workspace.kind !== 'centre') throw new SchoodAIError('payer_not_allowed', 'Only a centre can pay for visitors.', 500);
+      const owner: RequestUser = { id: workspace.ownerId, email: null, token: null, via: 'service', telegramChatId: null };
+      const member = await deps.repo.membership(workspace.id, workspace.ownerId)
+        ?? { workspaceId: workspace.id, userId: workspace.ownerId, role: 'owner' as const, status: 'active' as const, creditBudget: null, budgetPeriod: null, budgetUsed: 0 };
+      const access: WorkspaceAccess = { workspace, member, role: 'owner' };
+      let state: Promise<PlanState> | null = null;
+      const payerPlan = () => (state ??= deps.plans.resolve(owner, workspace, 'owner', deps.stores));
+      return createChargedAIFor({
+        requestId: input.requestId, idempotencyKey: ctx.idempotencyKey, userId: null, gateway: deps.gateway, repo: deps.repo, now: deps.now,
+        plan: payerPlan,
+        async requireFeature(feature) {
+          const current = await payerPlan();
+          const decision = featureAccess(feature, { plans: current.plans, workspaceKind: workspace.kind, role: 'owner', beta: current.beta, grants: current.features });
+          if (decision.allowed) return access;
+          if (decision.reason === 'plan_required') throw new SchoodAIError('plan_required', 'This workspace\'s plan does not include this.', 402, { plans: decision.plans, feature });
+          throw new SchoodAIError('role_required', 'This cannot be used here.', 403);
+        },
+        // Nobody is asking, so adults-only actions are refused.
+        requireAdult: () => requireAdult(ctx, null),
+      });
     },
   };
   ctx.ai = createChargedAI(ctx);

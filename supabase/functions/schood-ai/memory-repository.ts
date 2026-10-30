@@ -1,8 +1,9 @@
 import { tashkentMonth, type Registry } from '../../../packages/ai-core/src/mod.ts';
 import type {
-  ActionRow, AuditRow, Balance, CallRecord, ChargeOutcome, GenerationRow, LearningEvent, Member, Message, NotifyDecision, PageRevisionRow, PageRow, ReportRow,
+  ActionRow, AuditRow, Balance, CallRecord, ChargeOutcome, GenerationRow, LearningEvent, LearningEventRow, Member, NotifyPrefs, Message, NotifyDecision, PageRevisionRow, PageRow, ReportRow,
   SchoodAIRepository, ServiceSettings, SpecialistRow, Thread, UserProfile, Workspace,
 } from './types.ts';
+import { DEFAULT_NOTIFY_PREFS } from './types.ts';
 
 // In-memory repository for tests and local development. Never used by the deployed
 // function. Mirrors the migration's behaviour: 30-day plan cycles, plan-then-pack
@@ -22,7 +23,7 @@ interface Account { plan: number; grant: number; anchor: number | null; cycle: n
 interface LedgerEntry { id: number; workspaceId: string; userId: string | null; kind: string; bucket: 'plan' | 'pack'; delta: number; balanceAfter: number; creditKey: string | null; chargeId: string | null; reference: string | null; createdAt: string }
 export interface MemoryUser { id: string; email?: string; role?: string; isActive?: boolean; telegramChatId?: string | null; name?: string | null; products?: string[]; productStarts?: Record<string, string>; permissions?: string[]; timeZone?: string }
 
-export function createMemoryRepository(options: { users: Record<string, MemoryUser>; now?: () => Date; registry?: Registry; settings?: Partial<ServiceSettings> }) {
+export function createMemoryRepository(options: { users: Record<string, MemoryUser>; now?: () => Date; registry?: Registry; settings?: Partial<ServiceSettings>; systemSecret?: string | null }) {
   const now = options.now ?? (() => new Date());
   const iso = () => now().toISOString();
   const users = new Map(Object.entries(options.users).map(([token, user]) => [token, user]));
@@ -33,7 +34,9 @@ export function createMemoryRepository(options: { users: Record<string, MemoryUs
   const ledger: LedgerEntry[] = [], calls: CallRecord[] = [], usage = new Map<string, { calls: number; cost: number }>();
   const threads = new Map<string, Thread>(), messages = new Map<string, Message>(), specialists = new Map<string, SpecialistRow[]>();
   const actions = new Map<string, ActionRow>(), generations = new Map<string, GenerationRow>(), reports = new Map<string, ReportRow>();
-  const audit: AuditRow[] = [], learning: LearningEvent[] = [], notified = new Map<string, number>();
+  const audit: AuditRow[] = [], learning: LearningEventRow[] = [], notified = new Map<string, number>();
+  const prefs = new Map<string, NotifyPrefs>(), rates = new Map<string, number>();
+  const systemSecret: string | null = options.systemSecret ?? null;
   const pages = new Map<string, PageRow>(), revisions = new Map<string, PageRevisionRow[]>();
   let ledgerId = 0;
   const memberKey = (workspaceId: string, userId: string) => `${workspaceId}:${userId}`;
@@ -62,9 +65,18 @@ export function createMemoryRepository(options: { users: Record<string, MemoryUs
     a.seen = Math.max(a.seen ?? 0, t);
     return a;
   }
-  function localParts(timeZone: string) {
-    const parts = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23' }).formatToParts(now()).map((part) => [part.type, part.value]));
-    return { day: `${parts.year}-${parts.month}-${parts.day}`, hour: Number(parts.hour) };
+  function localParts(timeZone: string, at: Date = now()) {
+    const parts = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(at).map((part) => [part.type, part.value]));
+    return { day: `${parts.year}-${parts.month}-${parts.day}`, hour: Number(parts.hour), minute: Number(parts.minute) };
+  }
+  /** The instant a local wall-clock hour happens in a zone (as ai_notify computes retry_at). */
+  function instantOf(timeZone: string, day: string, hour: number, plusDays = 0): string {
+    const [y, m, d] = day.split('-').map(Number);
+    const wall = Date.UTC(y, m - 1, d + plusDays, hour);
+    const seen = localParts(timeZone, new Date(wall));
+    const [sy, sm, sd] = seen.day.split('-').map(Number);
+    const offset = Date.UTC(sy, sm - 1, sd, seen.hour, seen.minute) - wall;
+    return new Date(wall - offset).toISOString();
   }
 
   const repository: SchoodAIRepository = {
@@ -139,7 +151,8 @@ export function createMemoryRepository(options: { users: Record<string, MemoryUs
       }
       const month = tashkentMonth(now());
       let m: Member | undefined, used = 0;
-      if (ws.kind === 'centre') {
+      // A member pays within their budget; with no member (userId null, ctx.paidBy) the workspace pays.
+      if (ws.kind === 'centre' && input.userId !== null) {
         m = members.get(memberKey(ws.id, input.userId));
         if (!m || m.status !== 'active') return Promise.resolve({ ok: false, code: 'not_member' });
         used = m.budgetPeriod === month ? m.budgetUsed : 0;
@@ -268,7 +281,20 @@ export function createMemoryRepository(options: { users: Record<string, MemoryUs
       return Promise.resolve(structuredClone(rows.reverse().slice(0, filter.limit)));
     },
 
-    addLearningEvents(events) { learning.push(...structuredClone(events)); return Promise.resolve(); },
+    addLearningEvents(events: LearningEvent[]) {
+      for (const event of events) learning.push({ ...structuredClone(event), id: learning.length + 1, createdAt: iso() });
+      return Promise.resolve();
+    },
+    learningEvents: (filter) => Promise.resolve(structuredClone(learning.filter((row) => row.userId === filter.userId && row.id > (filter.afterId ?? 0)).slice(0, filter.limit))),
+    notifyPrefs: (userId) => Promise.resolve(structuredClone(prefs.get(userId) ?? { ...DEFAULT_NOTIFY_PREFS, delivery: [...DEFAULT_NOTIFY_PREFS.delivery], muted: [] })),
+    saveNotifyPrefs(userId, value) { prefs.set(userId, structuredClone(value)); return Promise.resolve(structuredClone(value)); },
+    takeRate(bucket, limit, windowSeconds) {
+      const start = Math.floor(now().getTime() / 1000 / windowSeconds) * windowSeconds, key = `${bucket}@${start}`, hits = rates.get(key) ?? 0;
+      if (hits >= limit) return Promise.resolve({ ok: false, retryAt: new Date((start + windowSeconds) * 1000).toISOString() });
+      rates.set(key, hits + 1);
+      return Promise.resolve({ ok: true, remaining: limit - hits - 1 });
+    },
+    systemSecret: () => Promise.resolve(systemSecret),
     createPage(input) {
       const row: PageRow = { ...structuredClone(input), id: crypto.randomUUID(), revision: 1, updatedBy: input.ownerId, createdAt: iso(), updatedAt: iso() };
       pages.set(row.id, row);
@@ -314,15 +340,23 @@ export function createMemoryRepository(options: { users: Record<string, MemoryUs
       }
       return Promise.resolve(moved);
     },
-    notify(userId, _channel, take): Promise<NotifyDecision> {
-      const zone = byId.get(userId)?.timeZone ?? 'Asia/Tashkent';
-      const { day, hour } = localParts(zone);
-      // Quiet 22:00-08:00 local; the next allowed moment is reported as 08:00 local (approximated for tests in UTC+5 zones).
-      if (hour >= 22 || hour < 8) return Promise.resolve({ allowed: false, reason: 'quiet_hours', retryAt: `${day}T08:00:00` });
+    notify(userId, channel, take): Promise<NotifyDecision> {
+      // The same rules as ai_notify: muted kinds, quiet hours and the daily budget, in the person's zone.
+      const pref = prefs.get(userId) ?? { ...DEFAULT_NOTIFY_PREFS, timeZone: byId.get(userId)?.timeZone ?? DEFAULT_NOTIFY_PREFS.timeZone };
+      const { day, hour } = localParts(pref.timeZone);
+      if (pref.muted.includes(channel) || pref.muted.includes(channel.split('.')[0])) {
+        return Promise.resolve({ allowed: false, reason: 'muted', retryAt: instantOf(pref.timeZone, day, pref.quietEnd, 1) });
+      }
+      const quiet = pref.quietStart === pref.quietEnd ? false
+        : pref.quietStart > pref.quietEnd ? hour >= pref.quietStart || hour < pref.quietEnd : hour >= pref.quietStart && hour < pref.quietEnd;
+      if (quiet) {
+        const today = instantOf(pref.timeZone, day, pref.quietEnd);
+        return Promise.resolve({ allowed: false, reason: 'quiet_hours', retryAt: Date.parse(today) > now().getTime() ? today : instantOf(pref.timeZone, day, pref.quietEnd, 1) });
+      }
       const key = `${userId}:${day}`, sent = notified.get(key) ?? 0;
-      if (sent >= 2) return Promise.resolve({ allowed: false, reason: 'daily_limit', retryAt: `${day}T08:00:00` });
+      if (sent >= pref.dailyLimit) return Promise.resolve({ allowed: false, reason: 'daily_limit', retryAt: instantOf(pref.timeZone, day, pref.quietEnd, 1) });
       if (take) notified.set(key, sent + 1);
-      return Promise.resolve({ allowed: true, remaining: 2 - sent - (take ? 1 : 0) });
+      return Promise.resolve({ allowed: true, remaining: pref.dailyLimit - sent - (take ? 1 : 0) });
     },
   };
 

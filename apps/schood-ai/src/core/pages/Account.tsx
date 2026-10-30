@@ -3,6 +3,7 @@ import { Bot, Pin, PinOff, Trash2 } from 'lucide-react';
 import { useI18n } from '../../../../../packages/service-i18n/src/i18n.tsx';
 import { api } from '../api.ts';
 import { ApproveRunCard } from '../cards.tsx';
+import { NotificationsCard } from './NotificationsCard.tsx';
 import { useT } from '../i18n/index.ts';
 import { Link, navigate } from '../router.tsx';
 import { ApiErrorState, EmptyState, LoadingState } from '../states.tsx';
@@ -98,7 +99,7 @@ export function SettingsPage() {
     setState({ busy: true, error: null, saved: false });
     try {
       await api('core/settings', { method: 'PATCH', workspaceId: workspace.workspaceId, body: {
-        ...(ws.kind === 'centre' ? { name: form.name } : {}),
+        name: form.name,
         branding: { logo_url: form.logo_url.trim() || null, primary_color: form.primary_color, accent_color: form.accent_color, assistant_name: form.assistant_name.trim() || null },
       } });
       setState({ busy: false, error: null, saved: true });
@@ -108,13 +109,14 @@ export function SettingsPage() {
   const update = (key: keyof typeof form) => (event: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, [key]: event.target.value });
   return <>
     <PageHeader title={t('settings.title')}/>
-    {ws.kind === 'centre' && <Card className="mb-6">
-      <h2 className="m-0 mb-4 font-display text-xl font-bold">{t('settings.workspace')}</h2>
+    {(ws.kind === 'centre' || manager) && <Card className="mb-6">
+      <h2 className="m-0 mb-4 font-display text-xl font-bold">{t(ws.kind === 'centre' ? 'settings.workspace' : 'settings.branding')}</h2>
+      {ws.kind === 'personal' && <p className="m-0 mb-4 text-sm text-gray-700">{t('settings.brandingLead')}</p>}
       {!manager && <p className="m-0 mb-4 text-sm text-gray-700">{t('settings.readOnly')}</p>}
       <form onSubmit={save} className="grid gap-4 md:grid-cols-2">
         <fieldset disabled={!manager || state.busy} className="contents">
-          <Field label={t('settings.name')}>{(id) => <TextInput id={id} value={form.name} maxLength={120} required onChange={update('name')}/>}</Field>
-          <Field label={t('settings.assistantName')}>{(id) => <TextInput id={id} value={form.assistant_name} maxLength={60} onChange={update('assistant_name')}/>}</Field>
+          <Field label={t(ws.kind === 'centre' ? 'settings.name' : 'settings.printName')}>{(id) => <TextInput id={id} value={form.name} maxLength={120} required onChange={update('name')}/>}</Field>
+          {ws.kind === 'centre' && <Field label={t('settings.assistantName')}>{(id) => <TextInput id={id} value={form.assistant_name} maxLength={60} onChange={update('assistant_name')}/>}</Field>}
           <Field label={t('settings.logo')}>{(id) => <TextInput id={id} type="url" inputMode="url" pattern="https://.*" value={form.logo_url} maxLength={500} onChange={update('logo_url')}/>}</Field>
           <div className="grid grid-cols-2 gap-4">
             <Field label={t('settings.primary')}>{(id) => <TextInput id={id} type="color" value={form.primary_color} onChange={update('primary_color')} className="h-11 p-1"/>}</Field>
@@ -130,6 +132,7 @@ export function SettingsPage() {
       <p className="m-0 mt-2 text-sm text-gray-700">{t('assistants.lead')}</p>
       <div className="mt-4"><Button variant="secondary" onClick={() => navigate('/settings/assistants')} icon={<Bot size={16} aria-hidden="true"/>}>{t('assistants.open')}</Button></div>
     </Card>}
+    <NotificationsCard/>
     <DeleteHistoryCard/>
   </>;
 }

@@ -15,8 +15,8 @@ const fixture = read('supabase/tests/schood-ai-core.fixture.sql');
 const migrations = readdirSync(new URL('../supabase/migrations/', import.meta.url))
   .filter((name) => /^202610301\d{5}_.*\.sql$/.test(name)).sort();
 const migration = migrations.map((name) => read(`supabase/migrations/${name}`)).join('\n');
-const integration = ['schood-ai-core', 'schood-ai-library', 'schood-ai-polish', 'schood-ai-erasure'].map((name) => read(`supabase/tests/${name}.integration.sql`)).join('\n');
-const OK = ['schood ai core: ok', 'schood ai library: ok', 'schood ai polish: ok', 'schood ai erasure: ok'];
+const integration = ['schood-ai-core', 'schood-ai-library', 'schood-ai-polish', 'schood-ai-erasure', 'schood-ai-callers'].map((name) => read(`supabase/tests/${name}.integration.sql`)).join('\n');
+const OK = ['schood ai core: ok', 'schood ai library: ok', 'schood ai polish: ok', 'schood ai erasure: ok', 'schood ai callers: ok'];
 
 // --- 1. PGlite ---------------------------------------------------------------------
 {
@@ -27,7 +27,7 @@ const OK = ['schood ai core: ok', 'schood ai library: ok', 'schood ai polish: ok
     await db.exec(migration);
     const results = await db.exec(integration);
     assert.deepEqual(results.map((result) => result.rows[0]?.['?column?']).filter((value) => typeof value === 'string' && value.startsWith('schood ai')), OK);
-    console.log(`PGlite (PostgreSQL 17): ${migrations.length} migrations apply twice; workspaces, credit cycles, charges, refunds, budgets, caps, ledger, learning events, notification budget, library saves and versions, specialist overrides, 180-day chat retention, the erasure registry, account closure through auth.users and isolation passed.`);
+    console.log(`PGlite (PostgreSQL 17): ${migrations.length} migrations apply twice; workspaces, credit cycles, charges, refunds, budgets, caps, ledger, learning events, notification budget, library saves and versions, specialist overrides, 180-day chat retention, the erasure registry, account closure through auth.users, workspace-paid charges, rate limits, notification preferences and isolation passed.`);
   } finally {
     await db.close();
   }
@@ -111,7 +111,11 @@ try {
   assert.equal(psql(`select revision from public.ai_pages where id = '${pageId}';`).trim(), '2');
   assert.equal(psql(`select count(*) from public.ai_page_revisions where page_id = '${pageId}';`).trim(), '1', 'one version for one save');
 
-  console.log(`Postgres 16 (Docker): ${migrations.length} migrations apply twice; integration passed; 20 racing charges kept the balance exact (16 won, 2 left), duplicate request keys charged once, racing refunds refunded once, a 12-call cap admitted exactly 12 of 30, racing first charges granted the cycle once, 10 racing page saves from one revision: exactly 1 won.`);
+  // 20 sessions race for 5 slots of one anonymous window: exactly 5 get in.
+  const slots = await race(20, () => `select (public.ai_rate_take('anon:race:203', 5, 60, '2027-01-01T00:00:10Z'))->>'ok';`);
+  assert.equal(slots.filter((line) => line === 'true').length, 5, 'rate limits are exact under contention');
+
+  console.log(`Postgres 16 (Docker): ${migrations.length} migrations apply twice; integration passed; 20 racing charges kept the balance exact (16 won, 2 left), duplicate request keys charged once, racing refunds refunded once, a 12-call cap admitted exactly 12 of 30, racing first charges granted the cycle once, 10 racing page saves from one revision: exactly 1 won, 20 racing visitors took exactly 5 of 5 rate slots.`);
 } finally {
   spawnSync('docker', ['rm', '--force', container]);
 }
