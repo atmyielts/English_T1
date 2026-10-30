@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { KeyRound, Trash2 } from 'lucide-react';
-import { api, ApiErrorState, Badge, Button, Field, PageHeader, PlanGate, TextInput, useT, useWorkspace } from '../../core/index.ts';
-import { CentreGate, Loaded, Section, Select, Stat, Table, Tabs, Toggle, useCentreApi, useFormat, useLoad, useSubmit } from '../kit.tsx';
+import { api, ApiErrorState, Badge, Button, Field, Link, PageHeader, PlanGate, TextInput, useT, useWorkspace } from '../../core/index.ts';
+import { CentreGate, Loaded, Section, Select, Stat, Table, Tabs, Toggle, useCentre, useCentreApi, useFormat, useLoad, useSubmit } from '../kit.tsx';
 
 // C7 admin: feature switches, data retention, the usage and cost report and the
 // audit log; and C15 the centre's own model keys with the platform fee.
@@ -132,10 +132,37 @@ interface ByokView {
 
 export function ByokPage() {
   const t = useT();
+  const state = useLoad<ByokView>('byok');
   return <CentreGate roles={['owner', 'admin']}>
     <PageHeader title={t('centre.byok.title')} lead={t('centre.byok.lead')}/>
-    <PlanGate feature="C15"><Byok/></PlanGate>
+    <Loaded state={state}>{(data) => (
+      // The plan no longer covers own keys but some are left: AI in the centre is refused until they go.
+      !data.allowed && data.keys.length ? <KeysWithoutPlan data={data} onChanged={() => void state.reload()}/> : <PlanGate feature="C15"><Byok/></PlanGate>
+    )}</Loaded>
   </CentreGate>;
+}
+
+function KeysWithoutPlan({ data, onChanged }: { data: ByokView; onChanged(): void }) {
+  const t = useT(), call = useCentreApi(), { role } = useCentre();
+  const remove = useSubmit();
+  const removeAll = () => void remove.run(async () => {
+    for (const key of data.keys) await call('byok', { method: 'DELETE', body: { label: key.label } });
+    onChanged();
+  });
+  return <Section title={t('centre.byok.lapsedTitle')}>
+    <div role="alert" className="grid gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
+      <p className="m-0">{t('centre.byok.lapsedLead')}</p>
+      <ul className="m-0 list-disc pl-5">{data.keys.map((key) => <li key={key.label}><span className="font-semibold">{key.label}</span> · {data.providers.find((entry) => entry.key === key.provider)?.name ?? key.provider ?? '—'} · …{key.hint}</li>)}</ul>
+      <p className="m-0">{t('centre.byok.lapsedChoice')}</p>
+    </div>
+    {remove.error !== null && <div className="mt-3"><ApiErrorState error={remove.error}/></div>}
+    <div className="mt-4 flex flex-wrap items-center gap-3">
+      {role === 'owner'
+        ? <Button variant="danger" disabled={remove.busy} onClick={removeAll} icon={<Trash2 size={16} aria-hidden="true"/>}>{remove.busy ? t('centre.common.working') : t('centre.byok.removeAll', { count: data.keys.length })}</Button>
+        : <p className="m-0 text-sm text-gray-700">{t('centre.byok.ownerOnly')}</p>}
+      <Link to="/plans" className="text-sm font-semibold text-gray-900 underline underline-offset-2">{t('centre.byok.seePlans')}</Link>
+    </div>
+  </Section>;
 }
 
 function Byok() {

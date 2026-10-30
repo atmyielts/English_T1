@@ -975,4 +975,11 @@ export const ru: Record<CentreKey, string> = {
   'centre.brief.delivery.muted': "отключено в настройках уведомлений",
   'centre.brief.delivery.in_app': "в приложении (доставка в Telegram выключена)",
   'centre.byok.providerHint': "Запросы к этому провайдеру пойдут с вашим ключом: вместо кредитов — плата за платформу.",
+  // Own keys after a plan change
+  'centre.byok.lapsedTitle': "В вашем тарифе больше нет собственных ключей",
+  'centre.byok.lapsedLead': "У центра остались собственные ключи, но они входят в тариф Enterprise, а тариф изменился. Пока ничего не изменится, AI в этом центре выключен: Schood не переводит ваши запросы на свои модели и кредиты без вашего ведома.",
+  'centre.byok.lapsedChoice': "Удалите ключи, чтобы снова пользоваться моделями Schood и кредитами центра, или вернитесь на Enterprise, чтобы и дальше работать со своими ключами.",
+  'centre.byok.removeAll': "{count|one:Удалить ключ|few:Удалить # ключа|many:Удалить # ключей|other:Удалить # ключа}",
+  'centre.byok.ownerOnly': "Удалить ключи может только владелец центра.",
+  'centre.byok.seePlans': "Посмотреть тарифы",
 };

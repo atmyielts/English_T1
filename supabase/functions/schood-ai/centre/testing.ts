@@ -5,7 +5,7 @@ import { createMemoryRepository, SEED_REGISTRY, type MemoryUser } from '../memor
 import { createPlanResolver } from '../plan.ts';
 import type { FunctionCallInit } from '../types.ts';
 import { createStores } from '../stores.ts';
-import { ownKeyResolver } from '../registries.ts';
+import { ownKeyConfigured, ownKeyResolver } from '../registries.ts';
 import { centreRuntime, centreStore, type CentreDeps, type TelegramResult } from './binding.ts';
 import { SecretBox } from './crypto.ts';
 import { createMemoryCentreStore } from './store-memory.ts';
@@ -140,6 +140,7 @@ export async function centreFixture(options: { publicUrl?: string | null; secret
     record: (rows) => { void memory.repository.recordCalls(rows); }, env: (name) => env[name], now, breaker: new CircuitBreaker(),
     // C15: the centre's own keys, through the resolver the area registers (byok.ts).
     ownKey: (input) => ownKeyResolver()?.({ ...input, store: (handle) => stores.get(handle) }) ?? Promise.resolve(null),
+    ownKeyConfigured: (input) => ownKeyConfigured()?.({ ...input, store: (handle) => stores.get(handle) }) ?? Promise.resolve(false),
     fetch: async (input, init) => {
       const request = new Request(input, init);
       const body = await request.json();

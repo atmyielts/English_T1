@@ -1,7 +1,8 @@
 import { record, text } from '../input.ts';
 import { registerOwnKeyResolver } from '../registries.ts';
 import { SchoodAIError, type RequestContext } from '../types.ts';
-import { centreStore } from './binding.ts';
+import type { StoreHandle } from '../stores.ts';
+import { centreStore, CentreStoreUnbound, type CentreDeps } from './binding.ts';
 import { secretContext, sha256Hex } from './crypto.ts';
 import { monthOf, requireCentre } from './shared.ts';
 import type { CentreStore, SecretRow } from './store.ts';
@@ -18,7 +19,7 @@ const keyJson = (row: SecretRow) => ({ label: row.label, provider: typeof row.co
 
 /** A centre's own keys, cached briefly per function instance (the gateway asks on every call). */
 const recent = new Map<string, { at: number; rows: SecretRow[] }>();
-const KEYS_CACHE_MS = 60_000;
+const KEYS_CACHE_MS = 30_000;
 async function ownKeys(store: CentreStore, workspaceId: string, now: number): Promise<SecretRow[]> {
   const hit = recent.get(workspaceId);
   if (hit && now - hit.at < KEYS_CACHE_MS) return hit.rows;
@@ -29,17 +30,38 @@ async function ownKeys(store: CentreStore, workspaceId: string, now: number): Pr
 }
 const forget = (workspaceId: string) => recent.delete(workspaceId);
 
-/** Core's own-key hook: the centre's key for this provider, unsealed only for the call. */
+/** The area's dependencies, or null when the area store is not bound (core's own tests have no centre keys). Real failures throw. */
+async function keyStore(store: <T>(handle: StoreHandle<T>) => T): Promise<CentreDeps | null> {
+  try {
+    return await store(centreStore).deps();
+  } catch (cause) {
+    if (cause instanceof CentreStoreUnbound) return null;
+    throw cause;
+  }
+}
+
+/**
+ * Core's own-key hook. Core asks the resolver only when the centre's plan grants C15, and
+ * asks `configured` when it does not: a centre that still has keys is then refused
+ * (plan_required) rather than moved to Schood's keys and credits. Anything that throws here
+ * (the store, or a key that cannot be opened) makes core refuse the call (ai_unavailable).
+ */
 export function registerOwnKeys(): void {
   registerOwnKeyResolver(async ({ workspaceId, providerKey, store }) => {
-    // Workspaces without the centre store (core's own tests) simply have no own keys.
-    const deps = await store(centreStore).deps().catch(() => null);
-    if (!deps?.secrets) return null;
+    const deps = await keyStore(store);
+    if (!deps) return null;
     const row = (await ownKeys(deps.store, workspaceId, Date.now())).find((entry) => entry.config.provider === providerKey);
     if (!row) return null;
+    if (!deps.secrets) throw new Error('own key cannot be opened: SCHOOD_AI_CENTRE_KEYS is not set');
     const apiKey = await deps.secrets.open(row.sealed, secretContext(workspaceId, 'byok', row.label));
     // No credits per call: the platform fee is billed monthly from the calls (computeByokFees).
     return { label: row.label, apiKey, feeCredits: 0 };
+  }, {
+    // Has the centre any own key? Read fresh, never unsealed.
+    configured: async ({ workspaceId, store }) => {
+      const deps = await keyStore(store);
+      return !!deps && (await deps.store.table('secrets').list({ workspace_id: workspaceId, purpose: 'byok', revoked_at: null }, { limit: 1 })).length > 0;
+    },
   });
 }
 

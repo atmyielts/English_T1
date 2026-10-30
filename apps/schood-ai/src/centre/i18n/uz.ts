@@ -993,4 +993,11 @@ export const uz: Record<CentreKey, string> = {
   'centre.brief.delivery.muted': "bildirishnoma sozlamalarida o‘chirilgan",
   'centre.brief.delivery.in_app': "ilovada (Telegram orqali yuborish o‘chiq)",
   'centre.byok.providerHint': "Bu provayderga boradigan so‘rovlar sizning kalitingiz bilan yuboriladi: kredit emas, platforma to‘lovi olinadi.",
+  // Own keys after a plan change
+  'centre.byok.lapsedTitle': "Tarifingizda endi o‘z model kalitlari yo‘q",
+  'centre.byok.lapsedLead': "Bu markazda hali o‘z kalitlari bor, lekin o‘z kalitlari Enterprise tarifi bilan beriladi va tarif o‘zgardi. Biror narsa o‘zgarmaguncha bu markazda AI o‘chiq: Schood so‘rovlaringizni jimgina o‘z modellari va kreditlariga o‘tkazmaydi.",
+  'centre.byok.lapsedChoice': "Schood modellari va markazingiz kreditlaridan yana foydalanish uchun kalitlarni olib tashlang yoki ulardan foydalanishni davom ettirish uchun Enterprise tarifiga qayting.",
+  'centre.byok.removeAll': "Kalitlarni olib tashlash ({count} ta)",
+  'centre.byok.ownerOnly': "Kalitlarni faqat markaz egasi olib tashlay oladi.",
+  'centre.byok.seePlans': "Tariflarni ko‘rish",
 };

@@ -337,5 +337,12 @@ export const en = {
   'centre.brief.delivery.muted': "turned off in their notification settings",
   'centre.brief.delivery.in_app': "in the app (Telegram delivery is off)",
   'centre.byok.providerHint': "Calls that would go to this provider use your key instead: no credits, the platform fee instead.",
+  // Own keys after a plan change
+  'centre.byok.lapsedTitle': "Your plan no longer includes own model keys",
+  'centre.byok.lapsedLead': "This centre still has its own keys, but own keys come with Enterprise and the plan has changed. Until something changes, AI in this centre is switched off: Schood does not quietly move your calls to its own models and credits.",
+  'centre.byok.lapsedChoice': "Remove the keys to use Schood’s models and your centre’s credits again, or move back to Enterprise to keep using them.",
+  'centre.byok.removeAll': "{count|one:Remove the key|other:Remove all # keys}",
+  'centre.byok.ownerOnly': "Only the centre’s owner can remove the keys.",
+  'centre.byok.seePlans': "See plans",
 } satisfies Record<string, string>;
 export type CentreKey = keyof typeof en;

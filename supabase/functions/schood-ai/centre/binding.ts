@@ -33,6 +33,11 @@ export interface CentreDeps {
   config: CentreConfig;
 }
 
+/** The memory twin was not bound (core's own tests, which have no centres of this area). */
+export class CentreStoreUnbound extends Error {
+  constructor() { super('Bind the centre memory store: stores.use(centreStore, centreRuntime(deps)).'); this.name = 'CentreStoreUnbound'; }
+}
+
 /** The area store: the centre's dependencies, built once per function instance. */
 export interface CentreRuntime { deps(): Promise<CentreDeps> }
 /** A runtime over fixed dependencies (tests and the dev stack). */
@@ -46,7 +51,7 @@ export const centreStore = defineStore<CentreRuntime>('centre', {
   },
   // The memory centre store keeps its rows next to the memory repository's, so it
   // cannot be built from nothing; centreFixture() and the dev stack bind one.
-  memory: () => ({ deps: () => Promise.reject(new Error('Bind the centre memory store: stores.use(centreStore, centreRuntime(deps)).')) }),
+  memory: () => ({ deps: () => Promise.reject(new CentreStoreUnbound()) }),
 });
 
 export function centreDeps(ctx: Pick<RequestContext, 'store'>): Promise<CentreDeps> {

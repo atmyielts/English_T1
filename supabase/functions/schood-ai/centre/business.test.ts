@@ -1,4 +1,4 @@
-import { ownKeyResolver } from '../registries.ts';
+import { ownKeyConfigured, ownKeyResolver } from '../registries.ts';
 import type { StoreHandle } from '../stores.ts';
 import { computeByokFees } from './byok.ts';
 import { unitFromDraft, unitProblems } from './curriculum-content.ts';
@@ -125,6 +125,30 @@ Deno.test('C15: own model keys for Enterprise owners, sealed, used by core\u2019
   equal([view.body.allowed, view.body.keys.length], [true, 1]);
   equal((await f.json('DELETE', 'centre/byok', { token: 'tok-t2', workspace: ent, body: { label: 'main' } })).status, 200, 'revoked');
   equal(await resolve({ workspaceId: ent, providerKey: 'openrouter', store }), null, 'a revoked key is not used');
+});
+
+Deno.test('C15 after a downgrade: a centre still holding keys is refused, and uses Schood credits once the owner removes them', async () => {
+  const f = await centreFixture();
+  const ws = await createCentre(f); // Centre Pro: no C15
+  // Keys left from when the centre was on Enterprise.
+  await f.store.table('secrets').insert({
+    workspace_id: ws, purpose: 'byok', label: 'main', sealed: await f.deps.secrets!.seal('sk-left-over-key-0123456789', `${ws}:byok:main`), hint: '6789', fingerprint: '0'.repeat(64),
+    config: { provider: 'openrouter' }, created_by: ID.owner,
+  });
+  equal(await ownKeyConfigured()!({ workspaceId: ws, store: <T,>(handle: StoreHandle<T>) => f.stores.get(handle) }), true, 'core can tell the centre still has keys, without opening one');
+  await f.json('POST', 'centre/knowledge', { workspace: ws, body: { title: 'Handbook', pages: [{ page: 1, text: 'Teachers take up to 14 days of paid leave each year.' }] } });
+  f.model(/using only the centre’s own documents/, { answer: 'Up to 14 days of paid leave a year [1].', citations: [1], found: true });
+  const ask = () => f.json('POST', 'centre/knowledge-ask', { workspace: ws, body: { question: 'How many days of leave do teachers get?' } });
+  const refused = await ask();
+  equal([refused.status, refused.body.code], [402, 'plan_required'], 'refused, not moved to Schood’s key');
+  equal([f.upstream.length, f.memory.ledger.filter((row) => row.kind === 'charge' && row.creditKey === 'knowledge.answer').length], [0, 0], 'nothing called, nothing charged');
+  // The key screen shows the state and lets the owner remove the keys.
+  const view = await f.json('GET', 'centre/byok', { workspace: ws });
+  equal([view.body.allowed, view.body.keys.length], [false, 1], 'the screen knows the plan no longer covers the keys');
+  equal((await f.json('DELETE', 'centre/byok', { workspace: ws, body: { label: 'main' } })).status, 200, 'the owner removes the key');
+  const answered = await ask();
+  equal([answered.status, answered.body.found, answered.body.credits], [200, true, 1], 'Schood’s model and credits again');
+  ok(f.memory.calls.some((row) => row.workspaceId === ws && row.status === 'ok' && !String(row.providerKey).startsWith('byok:')), 'through Schood’s key');
 });
 
 Deno.test('C16: observation feedback against the centre’s standards, checked evidence, shared then acknowledged, tracked over the term', async () => {
