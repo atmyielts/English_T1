@@ -28,6 +28,7 @@ export const COPY = {
   'btn.yes': c('Yes', 'Ha', 'Да'),
   'btn.partly': c('Partly', 'Qisman', 'Частично'),
   'btn.not_yet': c('Not yet', 'Hali yo‘q', 'Пока нет'),
+  'btn.no': c('No', 'Yo‘q', 'Нет'),
   'cost': c('{count} cr.', '{count} kr.', 'кр.: {count}'),
   'free': c('free', 'bepul', 'бесплатно'),
   'not_now': c('I wasn’t expecting that right now. Here is the menu.', 'Hozir buni kutmagan edim. Mana menyu.', 'Сейчас я этого не ждал. Вот меню.'),
@@ -287,6 +288,38 @@ export const COPY = {
   'quiz.hint': c('💡 Hint', '💡 Maslahat', '💡 Подсказка'),
   'facts.note': c('ℹ️ <b>{title}</b>: the facts in this practice were checked on {date} ({source}). Rules change, so check the official site before you act: {url}', 'ℹ️ <b>{title}</b>: bu mashqdagi ma’lumotlar {date} da tekshirilgan ({source}). Qoidalar o‘zgaradi, shuning uchun harakat qilishdan oldin rasmiy saytni tekshiring: {url}', 'ℹ️ <b>{title}</b>: факты в этой практике проверены {date} ({source}). Правила меняются: перед тем как действовать, проверьте официальный сайт: {url}'),
   'facts.stale': c('⚠️ <b>{title}</b>: these facts were checked on {date} and may be out of date. Use this only for practice and check the official site: {url}', '⚠️ <b>{title}</b>: bu ma’lumotlar {date} da tekshirilgan va eskirgan bo‘lishi mumkin. Faqat mashq uchun foydalaning va rasmiy saytni tekshiring: {url}', '⚠️ <b>{title}</b>: эти факты проверены {date} и могут быть устаревшими. Используйте их только для практики и проверьте официальный сайт: {url}'),
+
+  // --- topic banks, mini-mocks, the mistake notebook (B3) -------------------------------------------------
+  'quiz.practice': c('🧮 <b>{title}</b> · {count} problems · ⏱ {minutes} min\nHints are there if you need them, and every answer is checked.', '🧮 <b>{title}</b> · {count} ta masala · ⏱ {minutes} daqiqa\nKerak bo‘lsa maslahatlar bor, har bir javob tekshiriladi.', '🧮 <b>{title}</b> · задач: {count} · ⏱ {minutes} мин\nЕсли нужно, есть подсказки; каждый ответ проверяется.'),
+  'quiz.mock_intro': c('⏱ <b>{title}</b> · {count} questions · {minutes} min\nNo hints in a mock: answer as on exam day. Questions come from every topic, weighted like the exam.', '⏱ <b>{title}</b> · {count} savol · {minutes} daqiqa\nSinovda maslahat yo‘q: imtihon kunidagidek javob bering. Savollar barcha mavzulardan, imtihondagi ulushiga qarab olinadi.', '⏱ <b>{title}</b> · вопросов: {count} · {minutes} мин\nВ пробнике подсказок нет: отвечайте как на экзамене. Вопросы из всех тем — в тех же долях, что на экзамене.'),
+  'quiz.mistakes_intro': c('📒 <b>Mistake notebook</b> · {count} questions you got wrong before\nGet one right and it leaves the notebook.', '📒 <b>Xatolar daftari</b> · avval xato qilgan {count} ta savolingiz\nTo‘g‘ri yechsangiz, savol daftardan chiqadi.', '📒 <b>Тетрадь ошибок</b> · вопросов, где вы ошиблись: {count}\nРешите верно — и вопрос уйдёт из тетради.'),
+  'quiz.topic': c('<i>{topic}</i>', '<i>{topic}</i>', '<i>{topic}</i>'),
+  'quiz.type_number': c('✏️ Type the number (for example 2.5, -3 or 3/4).', '✏️ Sonni yozing (masalan, 2,5, -3 yoki 3/4).', '✏️ Напишите число (например, 2,5, -3 или 3/4).'),
+  'quiz.mock_score': c('📝 Mock result: <b>{level}</b>', '📝 Sinov natijasi: <b>{level}</b>', '📝 Результат пробника: <b>{level}</b>'),
+  'quiz.projection': c('≈ <b>{count}</b> of {total} questions on {name}', '{name}: ≈ <b>{total} tadan {count}</b> savol', '≈ <b>{count} из {total}</b> вопросов: {name}'),
+  'quiz.percentile': c('🏅 Ahead of <b>{percentile}%</b> of {people} learners of this coach in the last {days} days. Anonymous: nobody sees anyone else’s result.', '🏅 So‘nggi {days} kunda ushbu murabbiyning {people} nafar o‘quvchisidan <b>{percentile}%</b> idan yuqorisiz. Anonim: hech kim boshqalarning natijasini ko‘rmaydi.', '🏅 Вы впереди <b>{percentile}%</b> учеников этого коуча за последние {days} дней (всего: {people}). Анонимно: чужих результатов никто не видит.'),
+  'quiz.percentile_soon': c('🏅 Your place among other learners appears once {min} people have taken a mock in the last {days} days.', '🏅 So‘nggi {days} kunda {min} kishi sinov topshirganda, boshqa o‘quvchilar orasidagi o‘rningiz ko‘rinadi.', '🏅 Ваше место среди других учеников появится, когда пробник за последние {days} дней пройдут {min} человек.'),
+  'quiz.cleared': c('📒 Cleared from your notebook: <b>{count}</b>. Still to fix: {left}.', '📒 Daftardan chiqdi: <b>{count}</b>. Hali tuzatish kerak: {left}.', '📒 Убрано из тетради: <b>{count}</b>. Ещё исправить: {left}.'),
+  'mistakes.empty': c('📒 Your mistake notebook is empty. Every question you get wrong lands here, so you can come back and fix it.', '📒 Xatolar daftaringiz bo‘sh. Xato qilgan har bir savolingiz shu yerga tushadi — qaytib kelib tuzatasiz.', '📒 Тетрадь ошибок пуста. Сюда попадает каждый вопрос, где вы ошиблись, чтобы вернуться и исправить.'),
+  'mistakes.button': c('📒 My mistakes ({count})', '📒 Xatolarim ({count})', '📒 Мои ошибки ({count})'),
+  'mistakes.open': c('📒 Mistake notebook', '📒 Xatolar daftari', '📒 Тетрадь ошибок'),
+
+  // --- the script builder and sales scorecards (B4) ----------------------------------------------------------
+  'script.question': c('🛠 <b>Script builder · {n}/{total}</b>\n{prompt}\n\n<i>For example: {example}</i>', '🛠 <b>Skript yaratish · {n}/{total}</b>\n{prompt}\n\n<i>Masalan: {example}</i>', '🛠 <b>Конструктор скрипта · {n}/{total}</b>\n{prompt}\n\n<i>Например: {example}</i>'),
+  'script.too_long': c('Please keep this answer under {max} characters.', 'Iltimos, bu javobni {max} belgidan oshirmang.', 'Пожалуйста, уложитесь в {max} символов.'),
+  'script.too_short': c('Tell me a little more: a few words are not enough to build a good script.', 'Biroz batafsilroq yozing: yaxshi skript uchun bir-ikki so‘z yetmaydi.', 'Расскажите чуть подробнее: пары слов мало для хорошего скрипта.'),
+  'script.typed': c('Please type your answers to the script builder; voice works in the role-plays.', 'Skript savollariga javobni yozib yuboring; ovoz rolli o‘yinlarda ishlaydi.', 'Ответы для конструктора напишите текстом; голос работает в ролевых играх.'),
+  'script.building': c('Building your call script and objection map…', 'Qo‘ng‘iroq skripti va e’tirozlar xaritasini tayyorlayapman…', 'Собираю скрипт звонка и карту возражений…'),
+  'script.saved': c('🛠 <b>{title}</b> is saved.\n\n<b>Opening:</b> {opening}\n\n<b>Discovery questions:</b>\n{questions}\n\n<b>Objection map:</b>\n{objections}\n\nThe full script, the DM version and the follow-up are in the dashboard.', '🛠 <b>{title}</b> saqlandi.\n\n<b>Kirish:</b> {opening}\n\n<b>Ehtiyojni aniqlovchi savollar:</b>\n{questions}\n\n<b>E’tirozlar xaritasi:</b>\n{objections}\n\nTo‘liq skript, DM varianti va keyingi xabar paneldagi sahifada.', '🛠 <b>{title}</b> сохранён.\n\n<b>Начало:</b> {opening}\n\n<b>Вопросы для выявления потребности:</b>\n{questions}\n\n<b>Карта возражений:</b>\n{objections}\n\nПолный скрипт, версия для директа и follow-up — в панели.'),
+  'script.limit': c('You already have {count} saved scripts, the most you can keep. Delete one in the dashboard to build another.', 'Sizda {count} ta saqlangan skript bor — bu maksimal. Yangisini yaratish uchun paneldan bittasini o‘chiring.', 'У вас уже сохранено скриптов: {count} — это максимум. Удалите один в панели, чтобы собрать новый.'),
+  'script.practise': c('🎭 Practise with your buyer', '🎭 O‘z mijozingiz bilan mashq', '🎭 Потренироваться с вашим клиентом'),
+  'script.open': c('📄 Full script', '📄 To‘liq skript', '📄 Полный скрипт'),
+  'script.new': c('🛠 Build a new script', '🛠 Yangi skript', '🛠 Новый скрипт'),
+  'script.choose': c('Your saved scripts. Pick one to practise with a buyer of your own product, or build a new one:', 'Saqlangan skriptlaringiz. O‘z mahsulotingiz mijozi bilan mashq qilish uchun birini tanlang yoki yangisini yarating:', 'Ваши скрипты. Выберите один, чтобы потренироваться с клиентом вашего продукта, или соберите новый:'),
+  'script.none': c('You have no saved script yet. Build one first: three questions about your product, and you get a call script and an objection map.', 'Hali saqlangan skript yo‘q. Avval yarating: mahsulotingiz haqida uchta savol — va siz qo‘ng‘iroq skripti hamda e’tirozlar xaritasini olasiz.', 'Сохранённых скриптов пока нет. Сначала соберите скрипт: три вопроса о вашем продукте — и у вас скрипт звонка и карта возражений.'),
+  'script.roleplay': c('🎭 <b>Your own buyer</b> · {title}\n{buyer}\n\nThey will raise the objections from your map. Sell the way you would for real.', '🎭 <b>O‘z mijozingiz</b> · {title}\n{buyer}\n\nU sizning xaritangizdagi e’tirozlarni bildiradi. Haqiqiy savdodagidek soting.', '🎭 <b>Ваш клиент</b> · {title}\n{buyer}\n\nОн будет возражать по вашей карте. Продавайте так, как продавали бы на самом деле.'),
+  'rp.sales_card': c('📇 Objections handled: <b>{handled}/{total}</b> · Next step secured: <b>{next}</b>', '📇 Hal qilingan e’tirozlar: <b>{total} tadan {handled}</b> · Keyingi qadam kelishildi: <b>{next}</b>', '📇 Отработано возражений: <b>{handled} из {total}</b> · Следующий шаг закреплён: <b>{next}</b>'),
+  'rp.replay_title': c('🔁 <b>Replay with better lines</b>', '🔁 <b>Yaxshiroq iboralar bilan qayta</b>', '🔁 <b>Повтор с лучшими фразами</b>'),
 } satisfies Record<string, Copy>;
 
 export type CopyKey = keyof typeof COPY;

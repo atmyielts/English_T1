@@ -1,8 +1,9 @@
 import { quoteCredits } from '../../../../packages/ai-core/src/mod.ts';
 import { formatCertificateCode, normalizeCertificateCode } from '../../_shared/english-certificate.ts';
 import {
-  levelLabel, LOCALES, overallScale, pick, type CoachPack, type InEvent, type Locale, type UpdateRequest,
+  levelLabel, LOCALES, MIN_COHORT, overallScale, pick, type CoachPack, type InEvent, type Locale, type UpdateRequest,
 } from '../../../../packages/coach-packs/src/mod.ts';
+import { packFor } from '../../../../packages/coach-packs/src/registry.ts';
 import { integer, isUuid, oneOf, record, text, uuid } from '../input.ts';
 import { SchoodAIError, type RequestContext, type RouteHandler } from '../types.ts';
 import { accessKind, ensureFairUse, forgetTeamSeats } from './access.ts';
@@ -11,8 +12,8 @@ import { activityFacts, factsSummary } from './facts.ts';
 import { Bot } from './bot.ts';
 import { dueDeliveries, recordDelivered, type DeliveryDeps } from './delivery.ts';
 import { handleUpdate } from './engine.ts';
-import { spokenScript } from './flows/quiz.ts';
-import { pollSent } from './flows/quiz.ts';
+import { openMistakes, percentileOf, pollSent, spokenScript } from './flows/quiz.ts';
+import { buildScript } from './flows/script.ts';
 import { setReminders } from './flows/onboard.ts';
 import { runtimeOf, type CoachRuntime } from './runtime.ts';
 import type { Enrollment } from './store.ts';
@@ -220,6 +221,7 @@ export function coachRoutes(): Record<string, RouteHandler> {
           sessions: sessions.map((session) => sessionCard(pack, session, ctx.locale)),
           certificates: certificates.map((cert) => certView(rt, cert)),
           bot: botLink(rt, pack),
+          ...(await dashboardExtras(ctx, rt, pack, enrollment)),
         };
       },
     },
@@ -245,8 +247,9 @@ export function coachRoutes(): Record<string, RouteHandler> {
         const id = uuid(ctx.query.get('id'), 'id');
         const session = await rt.store.session(id);
         if (!session || session.userId !== ctx.user.id) throw new SchoodAIError('not_found', 'Not found.', 404);
-        const pack = rt.packs.get(session.pack);
-        if (!pack) throw new SchoodAIError('not_found', 'Not found.', 404);
+        const base = rt.packs.get(session.pack);
+        if (!base) throw new SchoodAIError('not_found', 'Not found.', 404);
+        const pack = packFor(base, ctx.locale);
         const [turns, scores] = await Promise.all([rt.store.turns(id), rt.store.scores(id)]);
         const rubric = session.rubric ? pack.rubricById.get(session.rubric) : undefined;
         return {
@@ -373,14 +376,14 @@ export function coachRoutes(): Record<string, RouteHandler> {
         for (const rubric of pack.rubrics) for (const criterion of rubric.criteria) criteria[criterion.id] ??= { name: pick(criterion.name, ctx.locale), scale: rubric.scale };
         return {
           coach: packCard(pack, ctx.locale, rt), scale: pack.manifest.scale, criteria,
-          samples: pack.samples.map((sample) => ({ id: sample.id, kind: sample.kind, title: pick(sample.title, ctx.locale), preview: pick(sample.preview, ctx.locale), body: sample.body })),
+          samples: packFor(pack, ctx.locale).samples.map((sample) => ({ id: sample.id, kind: sample.kind, title: pick(sample.title, ctx.locale), preview: pick(sample.preview, ctx.locale), body: sample.body })),
         };
       },
     },
     /** Text the Mini App reads aloud with the browser's own voice when no speech provider is set up. */
     'audio-text': {
       async GET(ctx) {
-        const { pack } = packOf(ctx, ctx.query.get('pack'));
+        const pack = packFor(packOf(ctx, ctx.query.get('pack')).pack, ctx.locale);
         const decision = await ctx.access(pack.manifest.feature);
         if (!decision.allowed) throw new SchoodAIError('plan_required', 'This needs a Schood AI plan.', 402, { plans: decision.reason === 'plan_required' ? decision.plans : [], feature: pack.manifest.feature });
         const ref = text(ctx.query.get('ref'), 'ref', { max: 120 });
@@ -393,7 +396,7 @@ export function coachRoutes(): Record<string, RouteHandler> {
     },
     chart: {
       async GET(ctx) {
-        const { pack } = packOf(ctx, ctx.query.get('pack'));
+        const pack = packFor(packOf(ctx, ctx.query.get('pack')).pack, ctx.locale);
         const activity = pack.byId.get(text(ctx.query.get('activity'), 'activity', { max: 100 }));
         if (activity?.kind !== 'writing' || !activity.data) throw new SchoodAIError('not_found', 'Not found.', 404);
         return { title: pick(activity.title, ctx.locale), prompt: activity.prompt, data: activity.data };
@@ -403,7 +406,69 @@ export function coachRoutes(): Record<string, RouteHandler> {
       /** What each coach action costs, from the same price table the function charges. */
       async GET(ctx) {
         const { pack } = packOf(ctx, ctx.query.get('pack'));
-        return { costs: Object.fromEntries((['turn', 'review', 'writing', 'ladder', 'photo', 'drill', 'voice', 'shadow'] as const).map((action) => [action, quoteCredits(keyOf(pack, action)).credits])) };
+        return { costs: Object.fromEntries((['turn', 'review', 'writing', 'ladder', 'photo', 'drill', 'voice', 'shadow', 'script'] as const).map((action) => [action, quoteCredits(keyOf(pack, action)).credits])) };
+      },
+    },
+
+    // --- B3 mistake notebook, B4 saved scripts -----------------------------------------------------------------
+    /** The mistake notebook: questions whose latest answer was wrong, with the right answer and why. No AI. */
+    mistakes: {
+      async GET(ctx) {
+        const { rt, pack: base } = packOf(ctx, ctx.query.get('pack'));
+        const enrollment = await enrolment(ctx, rt, base);
+        const pack = packFor(base, ctx.locale);
+        const open = await openMistakes(new Bot(ctx, rt, pack, enrollment, null));
+        return {
+          mistakes: open.slice(0, 60).map(({ ref, at, misses, item }) => ({
+            ref, at, misses, topic: pick(pack.skillById.get(item.set.node)?.name, ctx.locale) || pick(item.set.title, ctx.locale), node: item.set.node,
+            prompt: item.question.prompt, options: item.question.options ?? null,
+            answer: typeof item.question.answer === 'number' ? item.question.options?.[item.question.answer] ?? null : Array.isArray(item.question.answer) ? item.question.answer[0] : String(item.question.answer.numeric),
+            explanation: pick(item.question.explanation, ctx.locale), hints: (item.question.hints ?? []).map((hint) => pick(hint, ctx.locale)),
+          })),
+          total: open.length,
+        };
+      },
+    },
+    /** Saved scripts (B4): the list, one script in full, building one from the Mini App (the `script` charge), deleting one. */
+    scripts: {
+      async GET(ctx) {
+        const { rt, pack } = packOf(ctx, ctx.query.get('pack'));
+        if (!pack.scriptBuilder) throw new SchoodAIError('not_found', 'This coach has no script builder.', 404);
+        const id = ctx.query.get('id');
+        const types = Object.fromEntries(pack.scriptBuilder.objectionTypes.map((type) => [type.id, pick(type.name, ctx.locale)]));
+        if (id) {
+          const script = await rt.store.script(uuid(id, 'id'));
+          if (!script || script.userId !== ctx.user.id || script.pack !== pack.manifest.id) throw new SchoodAIError('not_found', 'Not found.', 404);
+          return { script: { id: script.id, title: script.title, input: script.input, script: script.script, created_at: script.createdAt, updated_at: script.updatedAt }, objection_types: types, bot: botLink(rt, pack) };
+        }
+        const scripts = await rt.store.scripts(ctx.user.id, pack.manifest.id);
+        return {
+          scripts: scripts.map((script) => ({ id: script.id, title: script.title, created_at: script.createdAt, objections: Array.isArray(script.script.objections) ? script.script.objections.length : 0 })),
+          max: pack.scriptBuilder.maxScripts,
+          questions: pack.scriptBuilder.questions.map((question) => ({ id: question.id, prompt: pick(question.prompt, ctx.locale), example: pick(question.example, ctx.locale), max_chars: question.maxChars })),
+          cost: quoteCredits(keyOf(pack, 'script')).credits, objection_types: types, bot: botLink(rt, pack),
+        };
+      },
+      async POST(ctx) {
+        const body = record(await ctx.body());
+        const { rt, pack } = packOf(ctx, body.pack);
+        const builder = pack.scriptBuilder;
+        if (!builder) throw new SchoodAIError('not_found', 'This coach has no script builder.', 404);
+        const decision = await ctx.access(pack.manifest.feature);
+        if (!decision.allowed) throw new SchoodAIError('plan_required', 'This needs a Schood AI plan.', 402, { plans: decision.reason === 'plan_required' ? decision.plans : [], feature: pack.manifest.feature });
+        const given = record(body.answers);
+        const answers = Object.fromEntries(builder.questions.map((question) => [question.id, text(given[question.id], `answers.${question.id}`, { min: 8, max: question.maxChars })]));
+        if ((await rt.store.scripts(ctx.user.id, pack.manifest.id)).length >= builder.maxScripts) throw new SchoodAIError('limit_reached', 'Delete a saved script first.', 409, { max: builder.maxScripts });
+        const saved = await buildScript(ctx, rt.store, pack, { userId: ctx.user.id, locale: ctx.locale, answers, reference: `script:${pack.manifest.id}:${ctx.requestId}`.slice(0, 200) });
+        await ctx.audit('coach.script_built', { pack: pack.manifest.id, source: 'web' }, { type: 'coach_script', id: saved.id });
+        return { script: { id: saved.id, title: saved.title } };
+      },
+      async DELETE(ctx) {
+        const body = record(await ctx.body());
+        const { rt, pack } = packOf(ctx, body.pack);
+        if (!(await rt.store.deleteScript(uuid(body.id, 'id'), ctx.user.id))) throw new SchoodAIError('not_found', 'Not found.', 404);
+        await ctx.audit('coach.script_deleted', { pack: pack.manifest.id }, { type: 'coach_script', id: String(body.id) });
+        return { deleted: true };
       },
     },
 
@@ -497,6 +562,27 @@ export function coachRoutes(): Record<string, RouteHandler> {
 }
 
 // --- helpers ------------------------------------------------------------------------------------------------
+
+/**
+ * What some coaches add to the dashboard: the mistake notebook's size (B3), the anonymous
+ * percentile on the latest mini-mock when 30 or more people are in the window (B3), and
+ * the saved scripts (B4).
+ */
+async function dashboardExtras(ctx: RequestContext, rt: CoachRuntime, pack: CoachPack, enrollment: Enrollment) {
+  const out: Record<string, unknown> = {};
+  const menu = new Set(pack.manifest.menu.map((item) => item.action));
+  const bot = new Bot(ctx, rt, packFor(pack, enrollment.locale), enrollment, null);
+  if (menu.has('mistakes')) out.mistakes = { count: (await openMistakes(bot)).length };
+  if (pack.percentile) {
+    const [latest] = await rt.store.results(ctx.user.id, pack.manifest.id, { rubric: pack.percentile.rubric, limit: 1 });
+    const rubric = pack.rubricById.get(pack.percentile.rubric)!;
+    const place = latest?.overall !== null && latest?.overall !== undefined ? await percentileOf(bot, rubric.id, latest.overall) : null;
+    out.cohort = { rubric: rubric.id, name: pick(rubric.name, ctx.locale), window_days: pack.percentile.windowDays, min_people: MIN_COHORT, latest: latest?.overall ?? null, percentile: place?.percentile ?? null, people: place?.percentile === null ? null : place?.people ?? null,
+      projections: (rubric.projections ?? []).map((block) => ({ name: pick(block.name, ctx.locale), questions: block.questions })) };
+  }
+  if (pack.scriptBuilder) out.scripts = { count: (await rt.store.scripts(ctx.user.id, pack.manifest.id)).length, max: pack.scriptBuilder.maxScripts };
+  return out;
+}
 
 function packCard(pack: CoachPack, locale: Locale, rt: CoachRuntime | null) {
   const m = pack.manifest;

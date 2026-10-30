@@ -63,7 +63,7 @@ async function replay(pack: CoachPack, rubric: Rubric) {
 }
 
 for (const pack of loadPacks().values()) {
-  for (const rubric of pack.rubrics) {
+  for (const rubric of pack.rubrics.filter((entry) => !entry.keyed)) {
     Deno.test(`calibration: ${pack.manifest.id}/${rubric.id} through the scoring pipeline`, async () => {
       const recorded = calibrate(rubric);
       ok(recorded.passed, `pack runs: ${recorded.failures.join('; ')}`);

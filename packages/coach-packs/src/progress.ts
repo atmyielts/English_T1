@@ -42,6 +42,8 @@ export function updateMastery(previous: MasteryState | null, node: string, updat
     const accuracy = Math.min(1, Math.max(0, update.accuracy));
     state.mastery = state.evidence ? Math.round((state.mastery + alpha * (accuracy - state.mastery)) * 1000) / 1000 : accuracy;
     state.lastScore = Math.round(accuracy * 100) / 100;
+    // On an accuracy scale (B3: the share of exam questions right) the level is the same measure.
+    if (scale.fromAccuracy) state.level = Math.round((scale.min + state.mastery * (scale.max - scale.min)) * 1000) / 1000;
     state.evidence += 1;
   }
   for (const tag of update.errors ?? []) {

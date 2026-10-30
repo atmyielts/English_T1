@@ -31,6 +31,11 @@ export interface LevelScale {
   /** Named values (CEFR: 1 = A1 … 6 = C2). A value without a label is shown as a number. */
   labels?: { value: number; label: string }[];
   decimals?: number;
+  /**
+   * Values on this scale are accuracies (a percentage scale, B3 Admission Maths): a
+   * checked set moves a skill's level as well as its mastery.
+   */
+  fromAccuracy?: true;
 }
 
 // --- Manifest -----------------------------------------------------------------------
@@ -43,6 +48,11 @@ export interface SkillNode {
   parent?: string;
   /** Relative importance for the planner (default 1). */
   weight?: number;
+  /**
+   * Prerequisite nodes (a topic graph such as packages/subject-core's maths topics).
+   * With `plan.selection: 'mastery'` a topic waits while its prerequisites are weak.
+   */
+  requires?: string[];
 }
 
 /** A recurring error the engine counts per learner, with its fix. */
@@ -59,7 +69,7 @@ export interface ErrorTag {
 }
 
 /** What the main bot menu offers, in order. The engine knows each action. */
-export const MENU_ACTIONS = ['today', 'speaking', 'mock', 'roleplay', 'writing', 'reading', 'listening', 'practice', 'vocab', 'phrases', 'drill', 'shadowing', 'photo', 'lesson', 'progress', 'report', 'plan', 'settings', 'help'] as const;
+export const MENU_ACTIONS = ['today', 'speaking', 'mock', 'roleplay', 'writing', 'reading', 'listening', 'practice', 'vocab', 'phrases', 'drill', 'shadowing', 'photo', 'lesson', 'mistakes', 'script', 'progress', 'report', 'plan', 'settings', 'help'] as const;
 export type MenuAction = (typeof MENU_ACTIONS)[number];
 export interface MenuItem { action: MenuAction; label: Localized; emoji?: string }
 
@@ -90,6 +100,12 @@ export interface PackManifest {
   correctionModes?: ('gentle' | 'strict')[];
   /** Brand colour for the Mini App header (a hex colour). */
   accent?: string;
+  /**
+   * In a `mixed` pack: the language the plain practice strings are written in. The
+   * other interface languages come from each item's `i18n`, written with `T()` in the
+   * pack files and split by `definePack` (localize.ts). Default `en`.
+   */
+  contentLanguage?: Locale;
 }
 
 // --- Fluency (speaking analysis) -------------------------------------------------------------
@@ -151,6 +167,18 @@ export interface CalibrationRun {
 export interface Rubric {
   id: string;
   name: Localized;
+  /**
+   * Results come from an answer key (timed sets that name this rubric, such as B3's
+   * mini-mocks: the share right, on this scale), not from a model. A keyed rubric has no
+   * criteria and no calibration set; milestones, forecasts and certificates work as for
+   * any rubric.
+   */
+  keyed?: true;
+  /**
+   * Keyed rubrics on a percentage scale: exam blocks the share right is projected onto
+   * ("≈ 7 of 10 questions"), shown with each result. Counts only; no points or grades.
+   */
+  projections?: { name: Localized; questions: number }[];
   /** Scale of each criterion. */
   scale: LevelScale;
   criteria: RubricCriterion[];
@@ -188,6 +216,11 @@ interface ActivityBase {
    * interview. The model gets only these facts, and the learner sees when they were checked.
    */
   facts?: string[];
+  /**
+   * Mixed packs only: the practice text in the other interface languages, as the same
+   * shape holding only strings (written with `T()` and split by `definePack`; localize.ts).
+   */
+  i18n?: Partial<Record<Locale, unknown>>;
 }
 
 export interface CueCard {
@@ -267,8 +300,12 @@ export interface Roleplay extends ActivityBase {
     /** How the state moves with what the learner says, in plain words. */
     rules: string;
   };
-  /** What the learner should achieve; the review ticks each one with a quote. */
-  goals: { id: string; text: Localized; check: string }[];
+  /**
+   * What the learner should achieve; the review ticks each one with a quote. `kind`
+   * feeds the sales scorecard: objections handled (of those in the call) and whether a
+   * next step was secured.
+   */
+  goals: { id: string; text: Localized; check: string; kind?: 'objection' | 'next_step' }[];
   /** Deterministic scorecard numbers to show after the call. */
   scorecard: ('talk_ratio' | 'questions_asked' | 'average_turn_words' | 'pace')[];
   minTurns: number;
@@ -277,6 +314,12 @@ export interface Roleplay extends ActivityBase {
   levelNotes: [number, string][];
   /** Phrase-bank card ids worth using here. */
   phrases?: string[];
+  /**
+   * `own_product`: practised with one of the learner's saved scripts (the script
+   * builder): the persona becomes a buyer of their product and raises their
+   * objections. Not listed with the other role-plays.
+   */
+  template?: 'own_product';
 }
 
 export interface DataTable {
@@ -319,6 +362,8 @@ export interface QuizQuestion {
   wordLimit?: number;
   /** Step-by-step hints before the answer (maths). */
   hints?: Localized[];
+  /** 1 easy, 2 medium, 3 hard: drawn sets start near the learner's level. */
+  difficulty?: 1 | 2 | 3;
 }
 
 export interface QuizSet extends ActivityBase {
@@ -330,6 +375,18 @@ export interface QuizSet extends ActivityBase {
   audio?: { script: string; voice?: string };
   timeLimitSeconds: number;
   questions: QuizQuestion[];
+  /**
+   * Draw this many questions per session from `questions` (a topic bank): first ones
+   * never answered, then ones answered wrong; none answered right in the last week.
+   */
+  draw?: number;
+  /**
+   * A timed mini-mock assembled from the pack's practice banks, spread over their skill
+   * nodes by node weight like an exam blueprint. `questions` stays empty.
+   */
+  mock?: { questions: number; nodes?: string[] };
+  /** A keyed rubric the result is recorded on (the share right, on its scale): milestones and forecasts. */
+  rubric?: string;
 }
 
 export interface DeckCard {
@@ -411,6 +468,8 @@ export interface DiagnosticItem {
   /** Two to four options (questions only). */
   options?: string[];
   answer?: number;
+  /** Mixed packs: the question in the other interface languages (the same option order). */
+  i18n?: Partial<Record<Locale, { prompt?: string; passage?: string; options?: string[] }>>;
 }
 
 export interface Diagnostic {
@@ -451,6 +510,13 @@ export interface PlanRules {
   weeklyMock?: { activity: string; weekday: number; title: Localized };
   /** Links out (the Schood IELTS simulator). Only https://*.schood.online. */
   links: { id: string; label: Localized; url: string }[];
+  /**
+   * How practice sets are chosen: `recent` (default), the least recently done set at
+   * the learner's level; `mastery`, the topic with the most to gain (node weight × gap
+   * to the target) whose prerequisites (`SkillNode.requires`) are not weak, so each day's
+   * set follows the topic graph.
+   */
+  selection?: 'recent' | 'mastery';
   /**
    * Accuracy on timed sets → level, per set mode: `[accuracy 0–1, level]`, rising.
    * The engine reads the level at the highest accuracy reached over recent sets
@@ -523,6 +589,8 @@ export type Sample = { [K in SampleKind]: {
   preview: Localized;
   /** The example itself, rendered by the Mini App. */
   body: SampleBodies[K];
+  /** Mixed packs: the body's practice text in the other interface languages. */
+  i18n?: Partial<Record<Locale, unknown>>;
 } }[SampleKind];
 
 /** A curated, dated fact (visa rules, requirements). The engine shows the date and "check the official site". */
@@ -551,6 +619,28 @@ export interface PackSource {
   milestones: Milestone[];
   samples: Sample[];
   facts?: FactDataset[];
+  /** The script builder (B4): the learner's own product becomes a call script, an objection map and a role-play buyer. */
+  scriptBuilder?: ScriptBuilder;
+  /**
+   * An anonymous percentile against the coach's other learners, from aggregated results
+   * on a keyed rubric (B3 mini-mocks). Shown only when at least 30 people have a result in
+   * the window; never a list of people.
+   */
+  percentile?: { rubric: string; windowDays: number };
+}
+
+/** The script builder's questions, and the rules the model follows to build a script from the answers. */
+export interface ScriptBuilder {
+  /** Asked in order in the bot and shown as fields in the Mini App. */
+  questions: { id: string; prompt: Localized; example: Localized; maxChars: number }[];
+  /** Objection types the objection map is organised by (price, "I'll think about it", a competitor…). */
+  objectionTypes: { id: string; name: Localized }[];
+  /** The `own_product` role-play that practises a saved script. */
+  roleplay: string;
+  /** Rules for the model, in English. */
+  instructions: string;
+  /** Saved scripts per person. */
+  maxScripts: number;
 }
 
 /** A validated pack with lookups the engine uses. */

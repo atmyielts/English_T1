@@ -1,5 +1,5 @@
 import type { MasteryState } from '../../../../packages/coach-packs/src/mod.ts';
-import type { CardState, Certificate, Claimed, CoachStore, Enrollment, Schedule, ScoreRow, Session, Team, TeamMember, Turn } from './store.ts';
+import type { CardState, Certificate, Claimed, CoachStore, Enrollment, SavedScript, Schedule, ScoreRow, Session, Team, TeamMember, Turn } from './store.ts';
 
 interface Card { userId: string; pack: string; cardId: string; state: CardState }
 
@@ -19,6 +19,7 @@ export function createMemoryCoachStore(options: { now?: () => Date; chatIdOf?: (
   const deliveries: { id: number; userId: string; pack: string; status: string; reason: string | null; kind: string }[] = [];
   const mints: { userId: string; at: string }[] = [], certificates = new Map<string, Certificate>();
   const teams = new Map<string, Team>(), members = new Map<string, TeamMember>(), invites = new Map<string, { teamId: string; expiresAt: string; maxUses: number; uses: number }>();
+  const scripts = new Map<string, SavedScript>();
   const clone = <T>(value: T): T => structuredClone(value);
 
   const store: CoachStore = {
@@ -149,8 +150,30 @@ export function createMemoryCoachStore(options: { now?: () => Date; chatIdOf?: (
       for (let i = scores.length - 1; i >= 0; i--) if (scores[i].userId === userId && scores[i].pack === pack) scores.splice(i, 1);
       for (const key of [...mastery.keys()]) if (key.startsWith(`${userId}:${pack}:`)) mastery.delete(key);
       for (const key of [...cards.keys()]) if (key.startsWith(`${userId}:${pack}:`)) cards.delete(key);
+      for (const [key, row] of scripts) if (row.userId === userId && row.pack === pack) scripts.delete(key);
       return count;
     },
+    async cohort(pack, rubric, since) {
+      // Each person's latest result in the window, then counts per whole score: what the SQL function returns.
+      const latest = new Map<string, Session>();
+      for (const row of sessions.values()) {
+        if (row.pack !== pack || row.rubric !== rubric || row.status !== 'finished' || row.overall === null || (row.finishedAt ?? '') < since) continue;
+        const seen = latest.get(row.userId);
+        if (!seen || (seen.finishedAt ?? '') < (row.finishedAt ?? '')) latest.set(row.userId, row);
+      }
+      const counts = new Map<number, number>();
+      for (const row of latest.values()) counts.set(Math.round(row.overall!), (counts.get(Math.round(row.overall!)) ?? 0) + 1);
+      return [...counts.entries()].sort((a, b) => a[0] - b[0]).map(([score, people]) => ({ score, people }));
+    },
+    async scripts(userId, pack) { return [...scripts.values()].filter((row) => row.userId === userId && row.pack === pack).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).map(clone); },
+    async script(rowId) { const row = scripts.get(rowId); return row ? clone(row) : null; },
+    async saveScript(input) {
+      const at = iso();
+      const row: SavedScript = { ...clone(input), id: id(), createdAt: at, updatedAt: at };
+      scripts.set(row.id, row);
+      return clone(row);
+    },
+    async deleteScript(rowId, userId) { const row = scripts.get(rowId); if (!row || row.userId !== userId) return false; scripts.delete(rowId); return true; },
     async teamsOf(userId) {
       return [...members.values()].filter((row) => row.userId === userId && row.status === 'active').map((member) => ({ team: clone(teams.get(member.teamId)!), member: clone(member) })).filter((row) => !!row.team);
     },
@@ -187,5 +210,5 @@ export function createMemoryCoachStore(options: { now?: () => Date; chatIdOf?: (
       });
     },
   };
-  return { store, inspect: { enrollments, sessions, turns, scores, schedules, deliveries, certificates, polls, members } };
+  return { store, inspect: { enrollments, sessions, turns, scores, schedules, deliveries, certificates, polls, members, scripts } };
 }

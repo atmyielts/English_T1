@@ -1,3 +1,4 @@
+import { localizeSource, overlayProblems, splitPack } from './localize.ts';
 import { answerMatches, countWords, onScale, quoteFound } from './text.ts';
 import {
   ACTIVITY_KINDS, COACH_FEATURES, LOCALES, MENU_ACTIONS, PLAN_SLOTS,
@@ -42,7 +43,25 @@ export class PackError extends Error {
   }
 }
 
+/**
+ * Every problem in a pack. A mixed pack is also checked in each of its other
+ * interface languages (the overlays applied), with problems prefixed `[uz] `.
+ */
 export function validatePack(source: PackSource): string[] {
+  const problems = validateOne(source);
+  const m = source.manifest;
+  if (!m || !Array.isArray(m.uiLanguages)) return problems;
+  problems.push(...overlayProblems(source));
+  if (m.practiceLanguage !== 'mixed') return problems;
+  const base = m.contentLanguage ?? 'en';
+  for (const locale of m.uiLanguages) {
+    if (locale === base) continue;
+    for (const problem of validateOne(localizeSource(source, locale))) if (!problems.includes(problem)) problems.push(`[${locale}] ${problem}`);
+  }
+  return problems;
+}
+
+function validateOne(source: PackSource): string[] {
   const problems: string[] = [];
   const bad = (path: string, problem: string) => problems.push(`${path}: ${problem}`);
   const m = source.manifest;
@@ -102,6 +121,21 @@ export function validatePack(source: PackSource): string[] {
     }
   }
   const skill = (path: string, id: string) => { if (!skills.has(id)) bad(path, `unknown skill ${id}`); };
+  // Prerequisites form a graph without cycles (a topic graph such as subject-core's).
+  const requires = new Map((m.skills ?? []).map((node) => [node.id, node.requires ?? []]));
+  for (const [id, needs] of requires) for (const need of needs) if (!skills.has(need) || need === id) bad(`manifest.skills.${id}.requires`, `unknown or self prerequisite ${need}`);
+  {
+    const state = new Map<string, 1 | 2>();
+    const visit = (id: string): boolean => {
+      if (state.get(id) === 2) return true;
+      if (state.get(id) === 1) return false;
+      state.set(id, 1);
+      for (const need of requires.get(id) ?? []) if (requires.has(need) && !visit(need)) return false;
+      state.set(id, 2);
+      return true;
+    };
+    for (const id of requires.keys()) if (!visit(id)) { bad(`manifest.skills.${id}.requires`, 'prerequisite cycle'); break; }
+  }
 
   const activities = new Map<string, Activity>();
   for (const [index, activity] of (source.activities ?? []).entries()) {
@@ -124,12 +158,14 @@ export function validatePack(source: PackSource): string[] {
   const menuNeeds: Record<MenuAction, () => boolean> = {
     today: () => true, progress: () => true, report: () => true, plan: () => true, settings: () => true, help: () => true,
     speaking: () => ofKind('speaking_exam').length > 0,
-    mock: () => ofKind('speaking_exam').some((exam) => exam.mock) || ofKind('roleplay').length > 0,
-    roleplay: () => ofKind('roleplay').length > 0,
+    mock: () => ofKind('speaking_exam').some((exam) => exam.mock) || ofKind('quiz_set').some((set) => !!set.mock) || ofKind('roleplay').some((rp) => !rp.template),
+    roleplay: () => ofKind('roleplay').some((rp) => !rp.template),
     writing: () => ofKind('writing').length > 0,
     reading: () => ofKind('quiz_set').some((set) => set.mode === 'reading'),
     listening: () => ofKind('quiz_set').some((set) => set.mode === 'listening'),
-    practice: () => ofKind('quiz_set').some((set) => set.mode === 'practice'),
+    practice: () => ofKind('quiz_set').some((set) => set.mode === 'practice' && !set.mock),
+    mistakes: () => ofKind('quiz_set').some((set) => !set.mock),
+    script: () => !!source.scriptBuilder,
     vocab: () => ofKind('deck').some((deck) => deck.cardType === 'word'),
     phrases: () => ofKind('deck').some((deck) => deck.cardType === 'phrase'),
     drill: () => ofKind('drill').length > 0,
@@ -168,9 +204,20 @@ export function validatePack(source: PackSource): string[] {
     rubrics.set(rubric.id, rubric);
     localized(`${path}.name`, rubric.name, 80);
     scaleOk(`${path}.scale`, rubric.scale);
-    textOk(`${path}.assessorNotes`, rubric.assessorNotes, 4000);
     if (!['step', 'half_up', 'down'].includes(rubric.overall?.round)) bad(`${path}.overall.round`, 'must be step, half_up or down');
     if (rubric.overall?.step !== undefined && rubric.scale && !(rubric.overall.step > 0 && rubric.overall.step <= rubric.scale.step)) bad(`${path}.overall.step`, 'must be positive and at most the criterion step');
+    for (const [index, projection] of (rubric.projections ?? []).entries()) {
+      localized(`${path}.projections[${index}].name`, projection.name, 80);
+      if (!(Number.isInteger(projection.questions) && projection.questions >= 1 && projection.questions <= 200)) bad(`${path}.projections[${index}].questions`, 'must be 1 to 200');
+    }
+    if (rubric.projections?.length && !(rubric.keyed && rubric.scale?.id === 'percent')) bad(`${path}.projections`, 'only for keyed rubrics on a percent scale');
+    if (rubric.keyed) {
+      // Scored by the answer key of timed sets: nothing for a model, nothing to calibrate.
+      if ((rubric.criteria ?? []).length) bad(`${path}.criteria`, 'a keyed rubric has no criteria');
+      if ((rubric.calibration?.samples ?? []).length || Object.keys(rubric.calibration?.runs ?? {}).length) bad(`${path}.calibration`, 'a keyed rubric has no calibration set');
+      continue;
+    }
+    textOk(`${path}.assessorNotes`, rubric.assessorNotes, 4000);
     if (!(rubric.evidence?.min >= 1 && rubric.evidence.max >= rubric.evidence.min && rubric.evidence.max <= 5)) bad(`${path}.evidence`, 'needs 1 ≤ min ≤ max ≤ 5');
     const criteria = new Set<string>(), scored = new Set<string>();
     for (const criterion of rubric.criteria ?? []) {
@@ -318,6 +365,11 @@ export function validatePack(source: PackSource): string[] {
           goals.add(goal.id);
           localized(`${path}.goals.${goal.id}`, goal.text, 200);
           textOk(`${path}.goals.${goal.id}.check`, goal.check, 400);
+          if (goal.kind !== undefined && !['objection', 'next_step'].includes(goal.kind)) bad(`${path}.goals.${goal.id}.kind`, 'must be objection or next_step');
+        }
+        if (activity.template !== undefined) {
+          if (activity.template !== 'own_product') bad(`${path}.template`, 'must be own_product');
+          else if (source.scriptBuilder?.roleplay !== activity.id) bad(`${path}.template`, 'an own_product role-play must be the script builder\'s roleplay');
         }
         for (const metric of activity.scorecard ?? []) if (!['talk_ratio', 'questions_asked', 'average_turn_words', 'pace'].includes(metric)) bad(`${path}.scorecard`, `unknown metric ${metric}`);
         if (!(activity.minTurns >= 2 && activity.minTurns <= activity.maxTurns && activity.maxTurns <= 20)) bad(path, 'needs 2 ≤ minTurns ≤ maxTurns ≤ 20');
@@ -349,7 +401,18 @@ export function validatePack(source: PackSource): string[] {
         const source = activity.passage?.text ?? activity.audio?.script ?? '';
         if (source) textOk(`${path}.source`, source, 12000);
         const ids = new Set<string>();
-        if ((activity.questions ?? []).length < 3) bad(`${path}.questions`, 'needs at least three questions');
+        if (activity.mock) {
+          // A mini-mock is assembled from the practice banks: it has no questions of its own.
+          if (activity.mode !== 'practice') bad(`${path}.mode`, 'a mini-mock is a practice set');
+          if ((activity.questions ?? []).length) bad(`${path}.questions`, 'a mini-mock draws its questions from the practice banks');
+          if (!(Number.isInteger(activity.mock.questions) && activity.mock.questions >= 3 && activity.mock.questions <= 60)) bad(`${path}.mock.questions`, 'must be 3 to 60');
+          for (const node of activity.mock.nodes ?? []) skill(`${path}.mock.nodes`, node);
+          const bank = ofKind('quiz_set').filter((set) => set.mode === 'practice' && !set.mock && (!activity.mock!.nodes?.length || activity.mock!.nodes.includes(set.node))).reduce((sum, set) => sum + (set.questions?.length ?? 0), 0);
+          if (bank < activity.mock.questions * 2) bad(`${path}.mock`, `the banks it draws from hold ${bank} questions, fewer than twice the mock`);
+        } else if ((activity.questions ?? []).length < 3) bad(`${path}.questions`, 'needs at least three questions');
+        if (activity.draw !== undefined && !(Number.isInteger(activity.draw) && activity.draw >= 3 && activity.draw <= (activity.questions ?? []).length)) bad(`${path}.draw`, 'must be 3 to the number of questions');
+        if (activity.rubric !== undefined && !rubrics.get(activity.rubric)?.keyed) bad(`${path}.rubric`, `${activity.rubric} is not a keyed rubric`);
+        for (const question of activity.questions ?? []) if (question.difficulty !== undefined && ![1, 2, 3].includes(question.difficulty)) bad(`${path}.${question.id}.difficulty`, 'must be 1, 2 or 3');
         for (const question of activity.questions ?? []) {
           const qpath = `${path}.${question.id}`;
           if (!ID.test(question.id ?? '') || ids.has(question.id)) bad(qpath, 'bad or duplicate id');
@@ -372,7 +435,8 @@ export function validatePack(source: PackSource): string[] {
           textOk(`${cpath}.front`, card.front, 120);
           textOk(`${cpath}.meaning`, card.meaning, 300);
           textOk(`${cpath}.example`, card.example, 400);
-          for (const locale of languages) if (locale !== m.practiceLanguage && !card.translations?.[locale]?.trim()) bad(`${cpath}.translations`, `missing ${locale}`);
+          // A mixed pack's cards are written in each language (overlays): nothing to translate.
+          if (m.practiceLanguage !== 'mixed') for (const locale of languages) if (locale !== m.practiceLanguage && !card.translations?.[locale]?.trim()) bad(`${cpath}.translations`, `missing ${locale}`);
           const wrong = (card.distractors ?? []).map((value) => value.trim().toLowerCase());
           if (wrong.length < 3 || new Set(wrong).size !== wrong.length) bad(`${cpath}.distractors`, 'needs three distinct wrong options');
           // Cards are reviewed as Telegram quiz polls: options are at most 100 characters.
@@ -427,12 +491,12 @@ export function validatePack(source: PackSource): string[] {
   const exams = ofKind('speaking_exam');
   const part1 = new Set(exams.flatMap((exam) => exam.parts.filter((part) => part.kind === 'questions' && !part.fromCard).flatMap((part) => (part.topics ?? []).flatMap((topic) => topic.questions))));
   const cues = new Set(exams.flatMap((exam) => exam.parts.flatMap((part) => (part.cards ?? []).map((card) => card.id))));
-  const sets = (mode: string) => ofKind('quiz_set').filter((set) => set.mode === mode).length;
+  const sets = (mode: string) => ofKind('quiz_set').filter((set) => set.mode === mode && !set.mock).length;
   const deckCards = (type: Deck['cardType']) => ofKind('deck').filter((deck) => deck.cardType === type).reduce((sum, deck) => sum + deck.cards.length, 0);
   depth(true, source.diagnostic?.items?.length ?? 0, DEPTH.diagnosticItems, 'diagnostic items');
   depth(menu.has('speaking'), part1.size, DEPTH.part1Questions, 'short speaking questions');
   depth(menu.has('speaking') && exams.some((exam) => exam.parts.some((part) => part.kind === 'long_turn')), cues.size, DEPTH.cueCards, 'cue cards');
-  depth(menu.has('roleplay'), ofKind('roleplay').length, DEPTH.roleplays, 'role-plays');
+  depth(menu.has('roleplay'), ofKind('roleplay').filter((rp) => !rp.template).length, DEPTH.roleplays, 'role-plays');
   depth(menu.has('writing'), ofKind('writing').length, DEPTH.writingTasks, 'writing tasks');
   depth(menu.has('reading'), sets('reading'), DEPTH.readingSets, 'reading sets');
   depth(menu.has('listening'), sets('listening'), DEPTH.listeningSets, 'listening sets');
@@ -559,6 +623,7 @@ export function validatePack(source: PackSource): string[] {
     const target = rubrics.get(milestone.rule?.rubric);
     if (!target) bad(`${mpath}.rule.rubric`, `unknown rubric ${milestone.rule?.rubric}`);
     else {
+      if (target.keyed && milestone.rule.metric !== 'overall') bad(`${mpath}.rule.metric`, 'a keyed rubric has only overall');
       if (milestone.rule.metric !== 'overall' && !target.criteria.some((criterion) => criterion.id === milestone.rule.metric && criterion.source === 'model')) bad(`${mpath}.rule.metric`, 'must be overall or a scored criterion');
       // Overall results move in the overall step (IELTS: whole-band criteria, half-band overall).
       const scale = milestone.rule.metric === 'overall' ? { ...target.scale, step: target.overall?.step ?? target.scale.step } : target.scale;
@@ -590,6 +655,35 @@ export function validatePack(source: PackSource): string[] {
   }
   for (const activity of source.activities ?? []) {
     for (const id of activity.facts ?? []) if (!datasets.has(id)) bad(`activities.${activity.id}.facts`, `unknown fact dataset ${id}`);
+  }
+
+  // --- set choice, the percentile, the script builder ---------------------------------------------------
+  if (p?.selection !== undefined && !['recent', 'mastery'].includes(p.selection)) bad('plan.selection', 'must be recent or mastery');
+  if (source.percentile) {
+    if (!rubrics.get(source.percentile.rubric)?.keyed) bad('percentile.rubric', `${source.percentile.rubric} is not a keyed rubric`);
+    if (!(Number.isInteger(source.percentile.windowDays) && source.percentile.windowDays >= 7 && source.percentile.windowDays <= 90)) bad('percentile.windowDays', 'must be 7 to 90');
+  }
+  const builder = source.scriptBuilder;
+  if (builder) {
+    const qs = builder.questions ?? [];
+    if (qs.length < 2 || qs.length > 6) bad('scriptBuilder.questions', 'needs 2 to 6 questions');
+    const qids = new Set<string>();
+    for (const question of qs) {
+      if (!/^[a-z][a-z0-9_]{1,30}$/.test(question.id ?? '') || qids.has(question.id)) bad('scriptBuilder.questions', `bad or duplicate id ${question.id}`);
+      qids.add(question.id);
+      localized(`scriptBuilder.questions.${question.id}.prompt`, question.prompt, 400);
+      localized(`scriptBuilder.questions.${question.id}.example`, question.example, 400);
+      if (!(question.maxChars >= 40 && question.maxChars <= 2000)) bad(`scriptBuilder.questions.${question.id}.maxChars`, 'must be 40 to 2000');
+    }
+    if ((builder.objectionTypes ?? []).length < 3) bad('scriptBuilder.objectionTypes', 'needs at least three');
+    for (const type of builder.objectionTypes ?? []) {
+      if (!/^[a-z][a-z0-9_]{1,30}$/.test(type.id ?? '')) bad('scriptBuilder.objectionTypes', `bad id ${type.id}`);
+      localized(`scriptBuilder.objectionTypes.${type.id}`, type.name, 80);
+    }
+    const template = activities.get(builder.roleplay);
+    if (template?.kind !== 'roleplay' || template.template !== 'own_product') bad('scriptBuilder.roleplay', `${builder.roleplay} is not an own_product role-play`);
+    textOk('scriptBuilder.instructions', builder.instructions, 3000);
+    if (!(Number.isInteger(builder.maxScripts) && builder.maxScripts >= 1 && builder.maxScripts <= 50)) bad('scriptBuilder.maxScripts', 'must be 1 to 50');
   }
   return problems;
 }
@@ -623,7 +717,10 @@ export function indexPack(source: PackSource): CoachPack {
   };
 }
 
-/** Types a pack's source in its own file; validation happens in buildPack. */
-export const definePack = (source: PackSource): PackSource => source;
+/**
+ * Types a pack's source in its own file, and splits a mixed pack's `T()` practice text
+ * into plain strings plus `i18n` overlays (localize.ts). Validation happens in buildPack.
+ */
+export const definePack = (source: PackSource): PackSource => splitPack(source);
 // Re-exported so pack files can check answers the same way the engine does.
 export { answerMatches };

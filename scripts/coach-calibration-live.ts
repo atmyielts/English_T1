@@ -100,7 +100,8 @@ if (import.meta.main) {
   const fail = (message: string): never => { console.error(message); Deno.exit(2); };
   const packId = arg('pack') ?? fail('Missing --pack.');
   const pack = loadPacks().get(packId) ?? fail(`Unknown pack ${packId}.`);
-  const rubrics = arg('rubric') ? [pack.rubricById.get(arg('rubric')!) ?? fail(`Unknown rubric ${arg('rubric')}.`)] : pack.rubrics;
+  // Keyed rubrics (mini-mocks scored by the answer key) involve no model.
+  const rubrics = (arg('rubric') ? [pack.rubricById.get(arg('rubric')!) ?? fail(`Unknown rubric ${arg('rubric')}.`)] : pack.rubrics).filter((rubric) => !rubric.keyed);
   const baseUrl = Deno.env.get('SCHOOD_AI_COACH_EVAL_BASE_URL') ?? fail('Missing SCHOOD_AI_COACH_EVAL_BASE_URL.');
   if (!baseUrl.startsWith('https://')) fail('The endpoint must be https.');
   const modelId = arg('model') ?? Deno.env.get('SCHOOD_AI_COACH_EVAL_MODEL') ?? fail('Missing --model or SCHOOD_AI_COACH_EVAL_MODEL.');

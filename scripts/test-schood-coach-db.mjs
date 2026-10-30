@@ -1,6 +1,7 @@
-// Applies the Schood AI core migrations and the coach migration (20261030600000–
-// 699999) to isolated, throwaway databases (never a linked project), twice, and runs
-// the coach integration test:
+// Applies the Schood AI core migrations and the coach migrations (the engine's
+// 20261030600000–699999 and the coach packs' 20261030700000–799999) to isolated,
+// throwaway databases (never a linked project), twice, and runs the coach integration
+// tests:
 //   1. PGlite (PostgreSQL 17 in WASM): always.
 //   2. A Docker postgres:16 container with no host port: the same test, then real
 //      concurrent cron runs claiming the same due reminders and racing team joins.
@@ -16,9 +17,11 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf
 const fixture = `${read('supabase/tests/schood-ai-core.fixture.sql')}\nalter table public.users add column if not exists telegram_chat_id text;\n`;
 const all = readdirSync(new URL('../supabase/migrations/', import.meta.url)).sort();
 const core = all.filter((name) => /^202610301\d{5}_.*\.sql$/.test(name)).map((name) => read(`supabase/migrations/${name}`)).join('\n');
-const coachFiles = all.filter((name) => /^202610306\d{5}_.*\.sql$/.test(name));
+const coachFiles = all.filter((name) => /^20261030[67]\d{5}_.*\.sql$/.test(name));
 const coach = coachFiles.map((name) => read(`supabase/migrations/${name}`)).join('\n');
 const integration = read('supabase/tests/schood-coach.integration.sql');
+// The coach packs' additions (saved scripts, the anonymous cohort histogram), after the engine's own test.
+const packsIntegration = read('supabase/tests/schood-coach-packs.integration.sql');
 assert.ok(coachFiles.length >= 1, 'the coach migration is present');
 
 // --- 1. PGlite ---------------------------------------------------------------------
@@ -31,7 +34,9 @@ assert.ok(coachFiles.length >= 1, 'the coach migration is present');
     await db.exec(coach);
     const results = await db.exec(integration);
     assert.equal(results.at(-1).rows[0]?.['?column?'], 'schood coach: ok');
-    console.log(`PGlite (PostgreSQL 17): ${coachFiles.length} coach migration(s) apply twice after the core; RLS and grants, enrolment state and revisions, turns and clip references, evidence-bearing scores, retention, certificates, leased reminder claims, team seats, the erasure registry and account closure through auth.users passed.`);
+    const packs = await db.exec(packsIntegration);
+    assert.equal(packs.at(-1).rows[0]?.['?column?'], 'schood coach packs: ok');
+    console.log(`PGlite (PostgreSQL 17): ${coachFiles.length} coach migration(s) apply twice after the core; RLS and grants, enrolment state and revisions, turns and clip references, evidence-bearing scores, retention, certificates, leased reminder claims, team seats, the erasure registry and account closure through auth.users passed; saved scripts and the anonymous cohort histogram passed.`);
   } finally {
     await db.close();
   }
@@ -74,6 +79,7 @@ try {
   psql(coach);
   psql(coach);
   assert.match(psql(integration), /schood coach: ok/);
+  assert.match(psql(packsIntegration), /schood coach packs: ok/);
 
   // Thirty due reminders, eight cron runs at once: every reminder is claimed exactly once.
   const users = Array.from({ length: 30 }, (_, i) => `00000000-0000-4000-8000-${String(1000 + i).padStart(12, '0')}`);

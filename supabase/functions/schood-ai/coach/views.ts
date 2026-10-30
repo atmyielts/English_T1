@@ -18,7 +18,12 @@ export function slotOf(pack: CoachPack, session: Pick<Session, 'kind' | 'activit
     case 'speaking_exam': return session.mode === 'mock' ? 'mock' : 'speaking';
     case 'roleplay': return 'roleplay';
     case 'writing': return 'writing';
-    case 'quiz_set': { const activity = session.activityId ? pack.byId.get(session.activityId) : undefined; return activity?.kind === 'quiz_set' ? activity.mode : 'practice'; }
+    case 'quiz_set': {
+      // A mini-mock is the week's mock; the mistake notebook counts as practice.
+      if (session.mode === 'mock') return 'mock';
+      const activity = session.activityId ? pack.byId.get(session.activityId) : undefined;
+      return activity?.kind === 'quiz_set' && session.mode !== 'mistakes' ? activity.mode : 'practice';
+    }
     case 'deck': return 'vocab';
     case 'drill': return 'drill';
     case 'shadowing': return 'shadowing';

@@ -58,9 +58,11 @@ export function phaseFor(pack: CoachPack, weeks: number): PlanPhase {
 export function slotActivities(pack: CoachPack, slot: PlanSlot): Activity[] {
   switch (slot) {
     case 'speaking': return pack.ofKind('speaking_exam');
-    case 'roleplay': return pack.ofKind('roleplay');
+    // The own-product template needs a saved script; it is started from the script builder.
+    case 'roleplay': return pack.ofKind('roleplay').filter((activity) => !activity.template);
     case 'writing': return pack.ofKind('writing');
-    case 'reading': case 'listening': case 'practice': return pack.ofKind('quiz_set').filter((set) => set.mode === slot);
+    // Mini-mocks are the weekly outcome, not daily practice.
+    case 'reading': case 'listening': case 'practice': return pack.ofKind('quiz_set').filter((set) => set.mode === slot && !set.mock);
     case 'vocab': return pack.ofKind('deck');
     case 'drill': return pack.ofKind('drill');
     case 'shadowing': return pack.ofKind('shadowing');
@@ -80,6 +82,38 @@ function pickActivity(candidates: Activity[], recent: PlannerInput['recent'], le
   const last = new Map<string, number>();
   for (const entry of recent) if (!last.has(entry.activityId)) last.set(entry.activityId, Date.parse(entry.at));
   return [...pool].sort((a, b) => (last.get(a.id) ?? 0) - (last.get(b.id) ?? 0) || (hash(`${seed}:${a.id}`) - hash(`${seed}:${b.id}`)))[0];
+}
+
+/**
+ * How much a topic is worth practising now (`plan.selection: 'mastery'`): its weight
+ * (the exam share) times the gap to the target, a little extra for a topic never tried,
+ * and much less while a prerequisite is measured weak, so the topic graph is followed.
+ */
+export function topicPriority(pack: CoachPack, node: string, mastery: ReadonlyMap<string, MasteryState>, target: number, fallback: number | null): number {
+  const scale = pack.manifest.scale, range = scale.max - scale.min || 1;
+  const level = nodeLevel(pack, mastery, node) ?? fallback ?? scale.min;
+  const unexplored = (mastery.get(node)?.evidence ?? 0) === 0 ? 0.15 : 0;
+  let priority = (pack.skillById.get(node)?.weight ?? 1) * (Math.max(0, target - level) / range + unexplored + 0.05);
+  for (const need of pack.skillById.get(node)?.requires ?? []) {
+    const known = nodeLevel(pack, mastery, need);
+    if (known !== null && (target - known) / range > 0.15) priority *= 0.2;
+    else if (known === null) priority *= 0.85;
+  }
+  return priority;
+}
+
+/** The set to practise by topic priority, less for one done today or yesterday; ties broken by the seed. */
+export function pickByMastery<A extends Activity>(pack: CoachPack, candidates: A[], input: { mastery: ReadonlyMap<string, MasteryState>; target: number; fallback: number | null; recent: { activityId: string; at: string }[]; today: string; seed: number }): A | null {
+  if (!candidates.length) return null;
+  const last = new Map<string, string>();
+  for (const entry of input.recent) if (!last.has(entry.activityId)) last.set(entry.activityId, entry.at.slice(0, 10));
+  const score = (activity: A) => {
+    const days = last.has(activity.id) ? daysBetween(last.get(activity.id)!, input.today) : null;
+    const recency = days === null ? 1 : days <= 0 ? 0.15 : days === 1 ? 0.6 : 1;
+    return topicPriority(pack, activity.node, input.mastery, input.target, input.fallback) * recency;
+  };
+  return [...candidates].map((activity) => ({ activity, value: score(activity) }))
+    .sort((a, b) => b.value - a.value || hash(`${input.seed}:${a.activity.id}`) - hash(`${input.seed}:${b.activity.id}`))[0].activity;
 }
 
 export function dailyPlan(input: PlannerInput): DayPlan {
@@ -132,8 +166,13 @@ export function dailyPlan(input: PlannerInput): DayPlan {
     }
     const candidates = slotActivities(pack, slot).filter((activity) => !used.has(activity.id));
     const root = candidates[0] ? rootOf(pack, candidates[0].node) : null;
-    const level = root ? nodeLevel(pack, input.mastery, root) : null;
-    const activity = pickActivity(candidates, input.recent, level, seed);
+    let level = root ? nodeLevel(pack, input.mastery, root) : null;
+    let activity: Activity | null;
+    if (pack.plan.selection === 'mastery' && (slot === 'practice' || slot === 'reading' || slot === 'listening')) {
+      // The topic graph: the weakest topic worth the most, after its prerequisites.
+      activity = pickByMastery(pack, candidates, { mastery: input.mastery, target: goal.target, fallback: level, recent: input.recent, today: input.today, seed });
+      if (activity) level = nodeLevel(pack, input.mastery, activity.node) ?? level;
+    } else activity = pickActivity(candidates, input.recent, level, seed);
     if (!activity) continue;
     if (activity.minutes > budget - minutes + 10 && tasks.length) continue;
     const task: PlanTask = { slot, activityId: activity.id, minutes: activity.minutes, reason: level !== null && goal.target - level >= scale.step ? 'gap' : 'balance', node: activity.node };
@@ -148,6 +187,17 @@ export function dailyPlan(input: PlannerInput): DayPlan {
     }
     tasks.push(task);
     used.add(activity.id); minutes += task.minutes;
+  }
+  // Topic-graph packs fill the rest of the day with the next weakest topics.
+  if (pack.plan.selection === 'mastery' && phase.mix.practice) {
+    while (minutes < budget * 0.9 && tasks.length < 4) {
+      const candidates = slotActivities(pack, 'practice').filter((activity) => !used.has(activity.id));
+      const activity = pickByMastery(pack, candidates, { mastery: input.mastery, target: goal.target, fallback: null, recent: input.recent, today: input.today, seed });
+      if (!activity || (activity.minutes > budget - minutes + 5 && tasks.length)) break;
+      const level = nodeLevel(pack, input.mastery, activity.node);
+      tasks.push({ slot: 'practice', activityId: activity.id, minutes: activity.minutes, reason: level !== null && goal.target - level >= scale.step ? 'gap' : 'balance', node: activity.node });
+      used.add(activity.id); minutes += activity.minutes;
+    }
   }
   return { phase, weeksLeft: weeks, daysLeft: goal.examDate ? days : null, tasks, minutes };
 }

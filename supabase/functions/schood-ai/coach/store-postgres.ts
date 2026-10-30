@@ -1,5 +1,5 @@
 import type { MasteryState } from '../../../../packages/coach-packs/src/mod.ts';
-import type { CardState, Certificate, Claimed, CoachStore, Enrollment, Schedule, ScoreRow, Session, Team, TeamMember, Turn } from './store.ts';
+import type { CardState, Certificate, Claimed, CoachStore, Enrollment, SavedScript, Schedule, ScoreRow, Session, Team, TeamMember, Turn } from './store.ts';
 
 // The coach tables through the service role (supabase-js query builder). The
 // schood-ai function has already authorised every call; atomic steps (claiming due
@@ -53,6 +53,10 @@ const certificate = (row: Row): Certificate => ({
 const team = (row: Row): Team => ({
   id: String(row.id), name: String(row.name), managerId: str(row.manager_id), packs: Array.isArray(row.packs) ? row.packs.map(String) : [], seats: Number(row.seats),
   status: row.status as Team['status'], validUntil: String(row.valid_until), source: String(row.source), createdAt: String(row.created_at),
+});
+const savedScript = (row: Row): SavedScript => ({
+  id: String(row.id), userId: String(row.user_id), pack: String(row.pack), title: String(row.title ?? ''), input: obj(row.input) as Record<string, string>, script: obj(row.script),
+  createdAt: String(row.created_at), updatedAt: String(row.updated_at ?? row.created_at),
 });
 const member = (row: Row): TeamMember => ({ teamId: String(row.team_id), userId: String(row.user_id), role: row.role as TeamMember['role'], status: row.status as TeamMember['status'], joinedAt: String(row.joined_at) });
 const card = (row: Row): CardState => ({ cardId: String(row.card_id), srs: obj(row.srs), dueAt: String(row.due_at), reps: Number(row.reps ?? 0), lapses: Number(row.lapses ?? 0) });
@@ -245,7 +249,24 @@ export function createPostgresCoachStore(db: CoachDatabase): CoachStore {
       const removed = check(await db.from('coach_sessions').delete().eq('user_id', userId).eq('pack', pack).select('id')) as Row[];
       check(await db.from('coach_mastery').delete().eq('user_id', userId).eq('pack', pack));
       check(await db.from('coach_cards').delete().eq('user_id', userId).eq('pack', pack));
+      check(await db.from('coach_scripts').delete().eq('user_id', userId).eq('pack', pack));
       return removed?.length ?? 0;
+    },
+    async cohort(pack, rubric, since) {
+      // Aggregated in SQL (20261030700000): only counts per score leave the database.
+      const rows = check(await db.rpc('coach_cohort_histogram', { p_pack: pack, p_rubric: rubric, p_since: since })) as Row[] | null;
+      return (rows ?? []).map((row) => ({ score: Number(row.score), people: Number(row.people) })).filter((row) => Number.isFinite(row.score) && row.people > 0);
+    },
+    async scripts(userId, pack) {
+      return ((check(await db.from('coach_scripts').select('*').eq('user_id', userId).eq('pack', pack).order('updated_at', { ascending: false }).limit(50)) as Row[]) ?? []).map(savedScript);
+    },
+    async script(id) { const row = check(await db.from('coach_scripts').select('*').eq('id', id).maybeSingle()); return row ? savedScript(row) : null; },
+    async saveScript(input) {
+      return savedScript(check(await db.from('coach_scripts').insert({ user_id: input.userId, pack: input.pack, title: input.title, input: input.input, script: input.script }).select('*').single()));
+    },
+    async deleteScript(id, userId) {
+      const rows = check(await db.from('coach_scripts').delete().eq('id', id).eq('user_id', userId).select('id')) as Row[];
+      return (rows ?? []).length > 0;
     },
     async teamsOf(userId) {
       const rows = check(await db.from('coach_team_members').select('*, coach_teams(*)').eq('user_id', userId).eq('status', 'active').limit(20)) as Row[];
