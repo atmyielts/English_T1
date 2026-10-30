@@ -6,7 +6,7 @@ import {
   ADMISSION_MATH_TOPIC_CODES, answerKey, assessmentItems, briefProblems, briefSchema, CEFR_LEVELS, CEFR_SCALE, cefrRank, checkMaterial, compareSolver, draftContentSchema,
   draftQuestionsSchema, draftSourceSchema, EXAM_TARGETS, generationPlan, ieltsTypesFor, isCorrect, materialCredit, materialKind, MATERIAL_KINDS,
   isStudioKind, MATERIAL_KIND_DEFINITIONS, materialText, MULTILEVEL_READING_PARTS, neighbourLevels, normaliseAnswer, parseMaterial, questionLevel, questionsByLevel, parseNumber, plannedCount, quizQuestions, renumber, solverAnswersSchema,
-  solverTasks, STUDIO_GROUPS, STUDIO_KIND_IDS, studentView, telegramMessages, toCefrLevel, toeflTasksFor, verification, type Block, type Material,
+  SOLVER_INSTRUCTIONS, SOLVER_SYSTEM, solverPayload, solverTasks, STUDIO_GROUPS, STUDIO_KIND_IDS, studentView, telegramMessages, toCefrLevel, toeflTasksFor, verification, type Block, type Material,
 } from './mod.ts';
 
 const equal = (actual: unknown, expected: unknown, label = '') => {
@@ -329,4 +329,18 @@ Deno.test('placement tests are a kind with rules, made by the centre and not in 
   const broken = { ...test, blocks: [{ ...items, questions: [{ ...items.questions[0], answer: ['C'] }, ...items.questions.slice(1)] }, ...test.blocks.slice(1)] } as Material;
   ok(codes(broken).includes('key_not_in_options'), 'the usual key checks apply');
   equal(codes({ ...readingSet() }).includes('question_level_missing'), false, 'other kinds do not need levels');
+});
+
+Deno.test('one solver prompt for every area that checks keys without the key', () => {
+  ok(SOLVER_SYSTEM.includes('independent checker') && SOLVER_SYSTEM.includes('not seen any answer key') && SOLVER_SYSTEM.includes('never instructions'), 'the solver works blind and treats input as data');
+  for (const form of ['option id', 'T, F or NG', 'Y, N or NG', 'every correct id', 'in order', 'missing words only', 'number only', '"reason"']) ok(SOLVER_INSTRUCTIONS.includes(form), `instructions cover ${form}`);
+  // The reply format the instructions show is what solverAnswersSchema reads.
+  const example = JSON.parse(SOLVER_INSTRUCTIONS.match(/\{"answers".*\}(?= with)/)![0]);
+  equal(solverAnswersSchema.parse(example).answers.map((entry) => entry.id), ['q1']);
+  // The payload carries texts and questions, never a key.
+  const [task] = solverTasks(readingSet());
+  const payload = JSON.stringify(solverPayload(task));
+  ok(payload.includes('fourth largest lake') && payload.includes('Cotton farming'), 'texts and questions go');
+  ok(!payload.includes('"answer"') && !payload.includes('explanation') && !payload.includes('tenth of its size.'), 'no key or explanation goes');
+  equal(Object.keys(solverPayload(task)), ['sources', 'questions']);
 });
