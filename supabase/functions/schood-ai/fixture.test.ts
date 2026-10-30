@@ -1,9 +1,11 @@
 import { SSEParser, type Registry } from '../../../packages/ai-core/src/mod.ts';
-import { CircuitBreaker, createGateway, type Timeouts } from './gateway.ts';
+import { CircuitBreaker, createGateway, type GatewayDeps, type Timeouts } from './gateway.ts';
 import { createSchoodAIHandler, MODULES } from './handler.ts';
+import { ownKeyResolver } from './registries.ts';
 import { createStores } from './stores.ts';
 import { createMemoryRepository, SEED_REGISTRY, type MemoryUser } from './memory-repository.ts';
 import { createPlanResolver } from './plan.ts';
+import type { SystemJob } from './registries.ts';
 import type { FeatureModule, FunctionCallInit, ServiceSettings } from './types.ts';
 
 // Shared test fixture: the real handler, gateway and plan resolver over the memory
@@ -58,7 +60,7 @@ export async function events(response: Response) {
   return all.map((event) => ({ event: event.event, data: JSON.parse(event.data) }));
 }
 
-export interface FixtureOptions { settings?: Partial<ServiceSettings>; registry?: Registry; modules?: FeatureModule[]; timeouts?: Partial<Timeouts>; env?: Record<string, string>; productIds?: Partial<typeof PRODUCT> }
+export interface FixtureOptions { settings?: Partial<ServiceSettings>; registry?: Registry; modules?: FeatureModule[]; timeouts?: Partial<Timeouts>; env?: Record<string, string>; productIds?: Partial<typeof PRODUCT>; systemJobs?: [string, SystemJob][]; ownKey?: GatewayDeps['ownKey'] }
 
 export function fixture(options: FixtureOptions = {}) {
   let clock = START;
@@ -70,6 +72,11 @@ export function fixture(options: FixtureOptions = {}) {
   let provider: (request: Request) => Response | Promise<Response> = () => completion('Salom!');
   const env: Record<string, string> = { OPENROUTER_API_KEY: 'sk-or-test', ...options.env };
   const breaker = new CircuitBreaker();
+  // Area stores: memory twins, reachable as f.stores (seed with f.stores.use(handle, twin)).
+  const stores = createStores({ kind: 'memory' }, { now, env: (name) => env[name] });
+  /** Telegram messages ctx.notify.send handed to the Schood bot; f.setTelegram changes the bot's answer. */
+  const telegram: { userId: string; kind: string; text: string; buttons: { label: string; path: string }[]; dedupeKey: string | null }[] = [];
+  let telegramOutcome: { outcome: 'sent' | 'defer' | 'suppressed' | 'failed'; deliverAt?: string | null } = { outcome: 'sent' };
   const gateway = createGateway({
     registry: () => memory.repository.registry(),
     settings: () => memory.repository.settings(),
@@ -80,6 +87,7 @@ export function fixture(options: FixtureOptions = {}) {
     now,
     breaker,
     timeouts: options.timeouts,
+    ownKey: options.ownKey ?? ((input) => ownKeyResolver()?.({ ...input, store: (handle) => stores.get(handle) }) ?? Promise.resolve(null)),
   });
   const isAdmin = (userId: string) => Promise.resolve(userId === ID.admin);
   const tokenProducts = new Map(Object.entries(USERS).map(([token, user]) => [token, user.products ?? []]));
@@ -89,8 +97,6 @@ export function fixture(options: FixtureOptions = {}) {
   });
   const profiles: Record<string, unknown> = {};
   const pending: Promise<unknown>[] = [];
-  // Area stores: memory twins, reachable as f.stores (seed with f.stores.use(handle, twin)).
-  const stores = createStores({ kind: 'memory' }, { now, env: (name) => env[name] });
   const handle = createSchoodAIHandler({
     repository: memory.repository, gateway, plans, isAdmin, stores,
     callFunction: (name, path, token, init) => {
@@ -99,6 +105,8 @@ export function fixture(options: FixtureOptions = {}) {
       return Promise.resolve(name === 'learning-profile-v3' && profiles[token] ? { status: 200, data: profiles[token] } : { status: 404, data: null });
     },
     systemSecret: () => memory.repository.systemSecret(),
+    sendTelegram: (input) => { telegram.push(structuredClone(input)); return Promise.resolve(telegramOutcome); },
+    systemJobs: options.systemJobs,
     adminGate: (req, permission) => {
       const token = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '');
       return Promise.resolve(token === 'tok-admin' && permission.startsWith('admin.') ? { ok: true } : { ok: false, status: 403, code: 'forbidden' });
@@ -120,9 +128,11 @@ export function fixture(options: FixtureOptions = {}) {
     method, headers: { 'content-type': 'application/json', 'x-schood-service-secret': secret, 'x-schood-user-id': userId, 'x-schood-telegram-chat-id': chat }, ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   }));
   return {
-    memory, gateway, breaker, upstream, env, profiles, call, json, worker, stores, functionCalls,
+    memory, gateway, breaker, upstream, env, profiles, call, json, worker, stores, functionCalls, telegram,
+    setTelegram: (next: typeof telegramOutcome) => { telegramOutcome = next; },
     setProvider: (next: typeof provider) => { provider = next; },
     advance: (ms: number) => { clock = new Date(clock.getTime() + ms); },
+    now: () => clock,
     /** Waits for after-response work (stream bookkeeping, learning events). */
     settle: async () => { while (pending.length) await Promise.all(pending.splice(0)); },
   };

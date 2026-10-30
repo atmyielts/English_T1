@@ -18,6 +18,12 @@ import type { CallRecord, CallStatus, CapScope, ServiceSettings } from './types.
 //      back on any provider failure, and repairs invalid JSON once;
 //   5. records every attempt in ai_calls with tokens, latency, status and USD cost.
 // It never throws for provider trouble; it returns a typed result.
+//
+// A workspace's own model keys (C15, registerOwnKeyResolver): when the workspace has a
+// key for a provider on the route, only those models are tried, with that key, and
+// never Schood's keys. The log names the provider `byok:<label>` with no USD cost,
+// and the shared circuit breaker ignores those attempts (one centre's bad key must not
+// switch a model off for everyone). The key itself is never logged or stored.
 
 export interface Timeouts {
   /** One non-streaming attempt. */
@@ -66,7 +72,11 @@ export interface GatewayDeps {
   /** SCHOOD_AI_GLOBAL_DAILY_CALLS: a deploy-time ceiling the settings row cannot raise. */
   globalCeiling?: number | null;
   timeouts?: Partial<Timeouts>;
+  /** A workspace's own key for a provider (C15); null when it has none. Never logged. */
+  ownKey?(input: { workspaceId: string; providerKey: string }): Promise<OwnKey | null>;
 }
+/** A workspace's own provider key, unsealed. feeCredits: the platform fee charged per call instead of the credit price (0 when billed by contract). */
+export interface OwnKey { label: string; apiKey: string; feeCredits?: number }
 
 export interface GatewayRequest {
   /** A credit key (`tutor.reply`): selects the route and the switches, and labels the log. */
@@ -98,7 +108,13 @@ export interface GatewaySuccess<T> { status: 'ok'; data: T; callId: string; mode
 export type GatewayResult<T> = GatewaySuccess<T> | GatewayFailure;
 
 /** A call that passed switches, routing and caps; running it uses no further checks. */
-export interface Ticket { ok: true; callId: string; mode: CallMode; route: RegistryRoute; candidates: (Candidate & { apiKey: string })[] }
+export interface Ticket {
+  ok: true; callId: string; mode: CallMode; route: RegistryRoute;
+  /** logKey: `byok:<label>` for a workspace's own key, logged in place of the provider. */
+  candidates: (Candidate & { apiKey: string; logKey?: string })[];
+  /** Set when the call runs on the workspace's own key: no credits, the platform fee instead. */
+  ownKey?: { label: string; feeCredits: number } | null;
+}
 
 export type Gateway = ReturnType<typeof createGateway>;
 
@@ -138,8 +154,10 @@ export function createGateway(deps: GatewayDeps) {
     const capabilities: Capability[] = [...modeCapabilities(mode), ...(images ? ['vision' as const] : []), ...(req.requires?.capabilities ?? [])];
     const { candidates } = candidateModels(registry, route, { capabilities, noTraining: req.requires?.noTraining === true }, (key) => breaker.healthy(key, nowMs()));
     if (!candidates.length) return refuse({ status: 'unavailable', reason: 'no_model', callId }, 'unavailable', 'no_model', route.key);
-    // A key must be configured and allowed to reach this provider's host.
-    const keyed = candidates.flatMap((candidate) => {
+    // The workspace's own keys first (C15): then only those models, never Schood's keys.
+    const own = req.workspaceId ? await ownKeys(req.workspaceId, candidates) : null;
+    // Otherwise a key must be configured and allowed to reach this provider's host.
+    const keyed: Ticket['candidates'] = own?.candidates ?? candidates.flatMap((candidate) => {
       const env = candidate.provider.apiKeyEnv;
       const apiKey = keyEnvAllowed(env) && keyMayReach(env, candidate.provider.baseUrl) ? deps.env(env) ?? '' : '';
       return apiKey ? [{ ...candidate, apiKey }] : [];
@@ -151,8 +169,37 @@ export function createGateway(deps: GatewayDeps) {
       globalCap: Math.min(settings.globalDailyCalls, ceiling), userCap: settings.userDailyCalls, workspaceCap: settings.workspaceDailyCalls, globalUsd: settings.globalDailyUsd,
     });
     if (!cap.ok) return refuse({ status: 'capped', scope: cap.scope, callId }, 'capped', `cap_${cap.scope}`, route.key);
-    return { ok: true, callId, mode, route, candidates: keyed };
+    return { ok: true, callId, mode, route, candidates: keyed, ownKey: own?.ownKey ?? null };
   }
+
+  /** The workspace's own keys for the route's providers, or null when it has none (or the resolver failed). */
+  async function ownKeys(workspaceId: string, candidates: Candidate[]): Promise<{ candidates: Ticket['candidates']; ownKey: { label: string; feeCredits: number } } | null> {
+    if (!deps.ownKey) return null;
+    const found = new Map<string, OwnKey | null>();
+    for (const providerKey of new Set(candidates.map((candidate) => candidate.provider.key))) {
+      let key: OwnKey | null = null;
+      try { key = await deps.ownKey({ workspaceId, providerKey }); } catch (cause) {
+        // Never the key: only that the lookup failed. Schood's own keys and prices apply.
+        console.error(JSON.stringify({ event: 'schood_ai_own_key_failed', provider: providerKey, error: String(cause instanceof Error ? cause.name : 'error') }));
+        return null;
+      }
+      const valid = key && /^[a-z0-9][a-z0-9_-]{0,40}$/.test(key.label) && typeof key.apiKey === 'string' && /^[\x21-\x7e]{8,4096}$/.test(key.apiKey)
+        && (key.feeCredits === undefined || (Number.isInteger(key.feeCredits) && key.feeCredits >= 0 && key.feeCredits <= 1000));
+      found.set(providerKey, valid ? key : null);
+    }
+    const keyed = candidates.flatMap((candidate) => {
+      const key = found.get(candidate.provider.key);
+      return key ? [{ ...candidate, apiKey: key.apiKey, logKey: `byok:${key.label}` }] : [];
+    });
+    if (!keyed.length) return null;
+    const first = found.get(keyed[0].provider.key)!;
+    return { candidates: keyed, ownKey: { label: first.label, feeCredits: first.feeCredits ?? 0 } };
+  }
+  /** USD cost for the log: none on a workspace's own key (it is not Schood's spend). */
+  const priced = (candidate: Ticket['candidates'][number], input: number, output: number) => (candidate.logKey ? 0 : costUsd(candidate.model, input, output));
+  /** The shared breaker learns only from Schood's own keys. */
+  const healthy = (candidate: Ticket['candidates'][number]) => { if (!candidate.logKey) breaker.success(candidate.model.key); };
+  const unhealthy = (candidate: Ticket['candidates'][number], code: string) => { if (!candidate.logKey && BREAKER_CODES.has(code)) breaker.failure(candidate.model.key, nowMs()); };
 
   function chatInput(req: GatewayRequest, model: RegistryModel, route: RegistryRoute, schema: Schema<unknown> | null): ChatInput {
     const system = req.messages.filter((entry) => entry.role === 'system').map((entry) => textOf(entry.content)).join('\n\n');
@@ -217,8 +264,8 @@ export function createGateway(deps: GatewayDeps) {
         const row = (status: CallStatus, errorCode: string | null, output: { text: string; inputTokens: number | null; outputTokens: number | null } | null) => {
           const billed = !!output || partial.length > 0;
           const inputTokens = output?.inputTokens ?? estimateTokens(inputChars), outputTokens = output?.outputTokens ?? estimateTokens(output?.text.length ?? partial.length);
-          const cost = billed ? costUsd(candidate.model, inputTokens, outputTokens) : 0;
-          rows.push({ ...base(req, ticket.callId, ticket.mode), attempt: rows.length + 1, status, errorCode, routeKey: ticket.route.key, providerKey: candidate.provider.key, modelKey: candidate.model.key, latencyMs: nowMs() - at, inputTokens: billed ? inputTokens : null, outputTokens: billed ? outputTokens : null, usageEstimated: billed && (!output || output.inputTokens === null || output.outputTokens === null), costUsd: cost });
+          const cost = billed ? priced(candidate, inputTokens, outputTokens) : 0;
+          rows.push({ ...base(req, ticket.callId, ticket.mode), attempt: rows.length + 1, status, errorCode, routeKey: ticket.route.key, providerKey: candidate.logKey ?? candidate.provider.key, modelKey: candidate.model.key, latencyMs: nowMs() - at, inputTokens: billed ? inputTokens : null, outputTokens: billed ? outputTokens : null, usageEstimated: billed && (!output || output.inputTokens === null || output.outputTokens === null), costUsd: cost });
           return { inputTokens, outputTokens, cost };
         };
         try {
@@ -226,12 +273,12 @@ export function createGateway(deps: GatewayDeps) {
             const output = await attempt(Math.min(remaining, timeouts.streamTotalMs), req.signal, (signal, touch) =>
               withFirstByte(timeouts.firstByteMs, signal, (guarded) => adapter.stream(target, input, guarded, (text) => { partial += text; touch(); onDelta(text); }), () => partial.length > 0),
             timeouts.idleMs);
-            breaker.success(candidate.model.key);
+            healthy(candidate);
             const usage = row('ok', null, output);
             return { status: 'ok', data: output.text as T, callId: ticket.callId, modelKey: candidate.model.key, inputTokens: usage.inputTokens, outputTokens: usage.outputTokens, costUsd: usage.cost };
           }
           const output = await attempt(Math.min(remaining, timeouts.attemptMs), req.signal, (signal) => adapter.chat(target, input, signal));
-          breaker.success(candidate.model.key);
+          healthy(candidate);
           if (!schema) {
             const usage = row('ok', null, output);
             return { status: 'ok', data: output.text as T, callId: ticket.callId, modelKey: candidate.model.key, inputTokens: usage.inputTokens, outputTokens: usage.outputTokens, costUsd: usage.cost };
@@ -248,8 +295,8 @@ export function createGateway(deps: GatewayDeps) {
           const second = await attempt(Math.max(2_000, Math.min(timeouts.attemptMs, timeouts.totalMs - (nowMs() - started))), req.signal, (signal) => adapter.chat(target, repair, signal));
           const reparsed = parseAgainst(schema, second.text);
           const inputTokens = second.inputTokens ?? estimateTokens(inputChars + output.text.length), outputTokens = second.outputTokens ?? estimateTokens(second.text.length);
-          const cost = costUsd(candidate.model, inputTokens, outputTokens);
-          rows.push({ ...base(req, ticket.callId, ticket.mode), attempt: rows.length + 1, status: reparsed.ok ? 'ok' : 'invalid_output', errorCode: reparsed.ok ? null : 'invalid_json', routeKey: ticket.route.key, providerKey: candidate.provider.key, modelKey: candidate.model.key, latencyMs: nowMs() - at2, inputTokens, outputTokens, usageEstimated: second.inputTokens === null, costUsd: cost });
+          const cost = priced(candidate, inputTokens, outputTokens);
+          rows.push({ ...base(req, ticket.callId, ticket.mode), attempt: rows.length + 1, status: reparsed.ok ? 'ok' : 'invalid_output', errorCode: reparsed.ok ? null : 'invalid_json', routeKey: ticket.route.key, providerKey: candidate.logKey ?? candidate.provider.key, modelKey: candidate.model.key, latencyMs: nowMs() - at2, inputTokens, outputTokens, usageEstimated: second.inputTokens === null, costUsd: cost });
           if (reparsed.ok) return { status: 'ok', data: reparsed.value, callId: ticket.callId, modelKey: candidate.model.key, inputTokens, outputTokens, costUsd: cost };
           return { status: 'failed', code: 'invalid_output', callId: ticket.callId };
         } catch (cause) {
@@ -259,7 +306,7 @@ export function createGateway(deps: GatewayDeps) {
             return { status: 'stopped', callId: ticket.callId, partial };
           }
           row(statusFor(code), code, null);
-          if (BREAKER_CODES.has(code)) breaker.failure(candidate.model.key, nowMs());
+          unhealthy(candidate, code);
           lastCode = code;
           // Once words reached the person, a second model cannot continue the same answer.
           if (partial) return { status: 'failed', code, callId: ticket.callId, partial };
@@ -288,17 +335,17 @@ export function createGateway(deps: GatewayDeps) {
             if (!running) throw new ProviderError('unsupported');
             return await running;
           });
-          breaker.success(candidate.model.key);
+          healthy(candidate);
           // Speech is priced per token-equivalent in the registry; durations are estimated from sizes.
           const usage = size(value);
-          const cost = costUsd(candidate.model, usage.input, usage.output);
-          rows.push({ ...base(req, ticket.callId, ticket.mode), attempt: rows.length + 1, status: 'ok', errorCode: null, routeKey: ticket.route.key, providerKey: candidate.provider.key, modelKey: candidate.model.key, latencyMs: nowMs() - at, inputTokens: usage.input, outputTokens: usage.output, usageEstimated: true, costUsd: cost });
+          const cost = priced(candidate, usage.input, usage.output);
+          rows.push({ ...base(req, ticket.callId, ticket.mode), attempt: rows.length + 1, status: 'ok', errorCode: null, routeKey: ticket.route.key, providerKey: candidate.logKey ?? candidate.provider.key, modelKey: candidate.model.key, latencyMs: nowMs() - at, inputTokens: usage.input, outputTokens: usage.output, usageEstimated: true, costUsd: cost });
           return { status: 'ok', data: value, callId: ticket.callId, modelKey: candidate.model.key, inputTokens: usage.input, outputTokens: usage.output, costUsd: cost };
         } catch (cause) {
           const code = cause instanceof ProviderError ? cause.code : 'invalid_response';
-          rows.push({ ...base(req, ticket.callId, ticket.mode), attempt: rows.length + 1, status: statusFor(code), errorCode: code, routeKey: ticket.route.key, providerKey: candidate.provider.key, modelKey: candidate.model.key, latencyMs: nowMs() - at, inputTokens: null, outputTokens: null, usageEstimated: false, costUsd: 0 });
+          rows.push({ ...base(req, ticket.callId, ticket.mode), attempt: rows.length + 1, status: statusFor(code), errorCode: code, routeKey: ticket.route.key, providerKey: candidate.logKey ?? candidate.provider.key, modelKey: candidate.model.key, latencyMs: nowMs() - at, inputTokens: null, outputTokens: null, usageEstimated: false, costUsd: 0 });
           if (code === 'aborted') return { status: 'stopped', callId: ticket.callId, partial: '' };
-          if (BREAKER_CODES.has(code)) breaker.failure(candidate.model.key, nowMs());
+          unhealthy(candidate, code);
           lastCode = code;
         }
       }
