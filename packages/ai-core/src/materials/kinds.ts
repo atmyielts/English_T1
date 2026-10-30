@@ -8,8 +8,15 @@ import { AUTO_MARKABLE_TYPES, type BlockType, type ExamFormatId, type MaterialBr
 // set of at most 15 questions, or one small whole material, so every call stays well
 // under the edge-function time limit; long exam sets become several steps of one job.
 
-export const MATERIAL_GROUPS = ['general', 'exam', 'planning', 'textbook'] as const;
+export const MATERIAL_GROUPS = ['general', 'exam', 'planning', 'textbook', 'placement'] as const;
 export type MaterialGroup = (typeof MATERIAL_GROUPS)[number];
+/**
+ * The groups the Materials Studio makes. `placement` kinds are the centre's placement
+ * tests (C5): they use the model and its checks, but the Studio does not write them,
+ * and they are not teacher library kinds (the centre has its own).
+ */
+export const STUDIO_GROUPS = ['general', 'exam', 'planning', 'textbook'] as const satisfies readonly MaterialGroup[];
+export type StudioGroup = (typeof STUDIO_GROUPS)[number];
 
 /** One model call of a generation job. */
 export interface GenerationStep {
@@ -53,6 +60,8 @@ export interface MaterialKindSpec {
   playable: boolean;
   /** Needs a page image (textbook to lesson). */
   vision?: boolean;
+  /** Every question needs a level of its own or its set's (placement tests span a range). */
+  levelled?: boolean;
 }
 
 const ALL_QUESTIONS = AUTO_MARKABLE_TYPES;
@@ -98,11 +107,20 @@ export const MATERIAL_KINDS: Record<string, MaterialKindSpec> = /*#__PURE__*/ Ob
 
   // --- Textbook to lesson (T9) ------------------------------------------------------------
   /*#__PURE__*/ spec({ kind: 'textbook_lesson', group: 'textbook', creditKey: 'textbook.lesson', required: ['questions', 'cards'], allowed: ['text', 'questions', 'cards', 'task', 'words'], questionTypes: [...ALL_QUESTIONS, 'open'], count: counts(8, 12, 16), vision: true }),
+
+  // --- Placement tests (the centre's C5; not made in the Studio) -----------------------------
+  // Objective items (single choice and gaps, each with its level), plus writing and
+  // speaking tasks with their rubrics, which a teacher marks.
+  /*#__PURE__*/ spec({ kind: 'placement_test', group: 'placement', creditKey: 'placement.generate', required: ['questions'], allowed: ['questions', 'task', 'rubric', 'text'], questionTypes: ['single_choice', 'gap'], count: counts(18, 30, 42), autoMarkable: true, levelled: true, variants: false, playable: false }),
 ].map((entry) => [entry.kind, entry]));
 
 export const MATERIAL_KIND_IDS = /*#__PURE__*/ Object.keys(MATERIAL_KINDS);
 export const isMaterialKind = (value: unknown): value is string => typeof value === 'string' && Object.hasOwn(MATERIAL_KINDS, value);
 export const materialKind = (kind: string): MaterialKindSpec | null => (isMaterialKind(kind) ? MATERIAL_KINDS[kind] : null);
+/** A kind the Materials Studio makes (every group but placement). */
+export const isStudioKind = (kind: string): boolean => (STUDIO_GROUPS as readonly string[]).includes(materialKind(kind)?.group ?? '');
+/** The kinds the Studio makes, in table order. */
+export const STUDIO_KIND_IDS = /*#__PURE__*/ MATERIAL_KIND_IDS.filter(isStudioKind);
 
 /** The exact credit key and add-ons a brief costs (three levels add `material.differentiate`). */
 export function materialCredit(brief: Pick<MaterialBrief, 'kind' | 'variants'>): { key: CreditKey; addOns: CreditKey[] } {
@@ -121,7 +139,8 @@ export const plannedCount = (brief: Pick<MaterialBrief, 'kind' | 'length' | 'que
 /** Problems with a brief that the generator cannot fix: wrong exam target, unknown kind. Empty means fine. */
 export function briefProblems(brief: MaterialBrief): string[] {
   const kind = materialKind(brief.kind);
-  if (!kind) return ['kind'];
+  // Placement tests are written by the centre's own builder, never from a Studio brief.
+  if (!kind || !isStudioKind(kind.kind)) return ['kind'];
   const problems: string[] = [];
   if (kind.exam) {
     if (brief.exam && brief.exam.format !== kind.exam) problems.push('exam.format');

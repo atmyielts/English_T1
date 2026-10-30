@@ -1,6 +1,7 @@
-// Every material kind and its group as plain data, with no imports, so a screen can
-// list or register the kinds without loading the material model, the exam formats
-// or the checks. kinds.ts holds the rules; a test keeps the two in step.
+// Every kind the Materials Studio makes, and its group, as plain data with no imports,
+// so a screen can list or register the kinds without loading the material model, the
+// exam formats or the checks. kinds.ts holds the rules; a test keeps the two in step.
+// Placement tests (kind placement_test) are not here: the centre owns that library kind.
 export const MATERIAL_KIND_CATALOG = {
   worksheet: 'general', reading: 'general', listening: 'general', gap_fill: 'general', vocabulary: 'general', grammar: 'general',
   error_correction: 'general', speaking_cards: 'general', dialogue: 'general', writing_task: 'general', quiz: 'general', homework: 'general', live_quiz: 'general',

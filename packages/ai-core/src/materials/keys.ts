@@ -2,7 +2,7 @@ import { SchemaError, type Schema } from '../schema.ts';
 import { examTypesFor } from './formats.ts';
 import { materialKind, solveChunks } from './kinds.ts';
 import {
-  CHOICE_TYPES, FIXED_OPTIONS, SINGLE_KEY_TYPES, TEXT_TYPES, versions,
+  CHOICE_TYPES, FIXED_OPTIONS, questionLevel, SINGLE_KEY_TYPES, TEXT_TYPES, versions,
   type Block, type Choice, type Material, type Question, type QuestionsBlock,
 } from './model.ts';
 
@@ -18,7 +18,7 @@ export type KeyIssueCode =
   | 'multi_key_count' | 'ordering_key_incomplete' | 'matching_options_too_few'
   | 'gap_marker_missing' | 'gap_multiple' | 'gap_answer_too_long' | 'gap_answer_not_in_box' | 'gap_answer_not_in_source' | 'word_box_too_small'
   | 'cloze_marker_unknown' | 'numeric_key_invalid' | 'open_has_key' | 'source_missing'
-  | 'question_count' | 'variant_count' | 'duplicate_question' | 'key_position_bias';
+  | 'question_count' | 'variant_count' | 'duplicate_question' | 'key_position_bias' | 'question_level_missing';
 export interface KeyIssue {
   code: KeyIssueCode;
   level: 'error' | 'warning';
@@ -150,6 +150,7 @@ export function checkMaterial(material: Material, options: { expectedQuestions?:
         if (ids.has(question.id)) add({ code: 'duplicate_question', level: 'error', ...at, params: { id: question.id } });
         ids.add(question.id);
         if (spec && !spec.questionTypes.includes(question.type)) add({ code: 'type_not_allowed', level: 'warning', ...at, params: { type: question.type } });
+        if (spec?.levelled && !questionLevel(question, block)) add({ code: 'question_level_missing', level: 'warning', ...at });
         const examType = question.exam_type ?? block.exam_type;
         if (allowedExamTypes && examType && !allowedExamTypes.includes(examType)) add({ code: 'exam_type_not_allowed', level: 'warning', ...at, params: { exam_type: examType } });
         if (question.type === 'open') {

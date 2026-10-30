@@ -1,6 +1,6 @@
 import type { MaterialKindDefinition } from '../materials.ts';
 import { SchemaError, type Schema } from '../schema.ts';
-import { MATERIAL_KINDS } from './kinds.ts';
+import { STUDIO_KIND_IDS } from './kinds.ts';
 import { displayAnswer, materialText, questionNumbers, studentView } from './render.ts';
 import { materialSchema, parseMaterial, versions, type Block, type Material } from './model.ts';
 
@@ -83,7 +83,7 @@ export function kindSchema(kind: string): Schema<Material> {
   };
 }
 
-/** One library kind definition per T1 material kind. */
-export const MATERIAL_KIND_DEFINITIONS: MaterialKindDefinition<Material>[] = /*#__PURE__*/ Object.keys(MATERIAL_KINDS).map((kind) => ({
+/** One library kind definition per Studio material kind (placement tests are the centre's own library kind). */
+export const MATERIAL_KIND_DEFINITIONS: MaterialKindDefinition<Material>[] = /*#__PURE__*/ STUDIO_KIND_IDS.map((kind) => ({
   kind, schema: kindSchema(kind), toMarkdown: materialMarkdown, toTelegram: materialTelegram,
 }));
