@@ -1,6 +1,7 @@
 import { equal, ID, ok } from '../fixture.test.ts';
 import { examByKey } from './content/certificates.ts';
-import { registerOfferSource, registerPassportSource, resetOfferSource } from './seams.ts';
+import { passportSourceEntries, registerOfferSource, registerPassportSource, resetOfferSource } from './seams.ts';
+import { coachStore } from '../coach/runtime.ts';
 import { b64, DAY, engageFixture, WEBM } from './test-helpers.ts';
 
 // docs/product/44_SCHOOD_AI.md, "Done when", the engagement line:
@@ -11,15 +12,17 @@ import { b64, DAY, engageFixture, WEBM } from './test-helpers.ts';
 let coachRegistered = false;
 
 Deno.test('done: next goal after an outcome, a complete Passport, day 1 next to today, a league and a squad', async () => {
-  if (!coachRegistered) {
+  // The coach engine's real passport source is registered at load (seams/coach-engage.ts); only stand in when it is not.
+  if (!coachRegistered && !passportSourceEntries().some(([name]) => name === 'coach')) {
     coachRegistered = true;
-    // What the coach engine registers for its own certificates (the seam engage documents).
     registerPassportSource('coach', (_ctx, userId) => Promise.resolve(userId === ID.beta ? [{ kind: 'certificate', ref: 'coach-cert-1', title: 'IELTS Coach: Speaking level 3', data: { pack: 'b1', level: 3 }, verifyUrl: 'https://ai.schood.online/coach/b1/certificate/ABCD', verified: true, issuedAt: '2026-11-01T10:00:00Z' }] : []));
   }
   resetOfferSource();
   registerOfferSource((_ctx, input) => Promise.resolve(input.moment === 'goal_done' ? { key: 'plus_annual', plan: 'plus', title: 'Plus Annual', terms: 'Shown with the price from the plans page', path: '/plans' } : null));
   try {
     const f = engageFixture();
+    // A coach certificate for the learner, through the coach engine's own store.
+    await f.stores.get(coachStore).issueCertificate({ userId: ID.beta, pack: 'ielts', packVersion: '1', milestone: 'speaking_3', rubric: 'ielts.speaking', level: 3, levelLabel: 'Speaking level 3', displayName: 'Learner', code: 'SCH-ABCD-EFGH', evidence: [] });
     const learner = 'tok-beta';
     // Day 1: the first voice sample.
     const day1 = (await f.post('sample-voice', { audio_base64: b64(WEBM), mime: 'audio/webm', duration_ms: 30_000, transcript: 'um hello I am uh a student' }, learner)).body;

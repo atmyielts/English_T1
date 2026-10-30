@@ -12,6 +12,8 @@ import { isUuid } from './input.ts';
 import { learnerModule } from './learner/mod.ts';
 import type { PlanResolver } from './plan.ts';
 import { teacherModule } from './teacher/mod.ts';
+// Cross-area seams wired at integration (coach ↔ engage, learner ↔ engage): registrations at load.
+import './seams/mod.ts';
 import { AREAS, SchoodAIError, type Area, type Caller, type FeatureModule, type Method, type RequestUser, type RouteHandler, type SchoodAIRepository } from './types.ts';
 
 // Schood AI API router: /schood-ai/<area>/<action>. Pure: everything it talks to is

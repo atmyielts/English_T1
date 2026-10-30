@@ -6,6 +6,7 @@ import { assessInSession, keyOf, mockMessages } from '../ai.ts';
 import { activityFacts, factsNotice } from '../facts.ts';
 import type { Bot, FlowState, SpeakItem } from '../bot.ts';
 import { criteriaOf, emit, finishSession, learnFrom, recordPractice, scoreRows } from '../results.ts';
+import { recordCoachVoice } from '../../seams/coach-engage.ts';
 import type { Session, Turn } from '../store.ts';
 import { bytesOf, clipOf, compareRows, criterionLines, errorsBlock, fluencyLine, MAX_TEXT, MAX_VOICE_SECONDS, overallLabel, topDrillTag, upgradesBlock, type VoiceEvent } from './render.ts';
 
@@ -230,11 +231,19 @@ async function saveAnswer(bot: Bot, state: Speaking, item: SpeakItem, heard: Hea
   const fluency = measured ?? analyseFluency({ text: heard.scored, words: heard.words, durationSec: heard.duration }, bot.pack.fluency, level);
   const terms = bot.pack.ofKind('deck').flatMap((deck) => deck.cards.map((card) => card.front));
   const lexis = analyseLexis(heard.scored, bot.pack.fluency, terms);
-  return bot.store.addTurn({
+  const turn = await bot.store.addTurn({
     sessionId: state.sessionId, userId: bot.enrollment.userId, pack: bot.pack.manifest.id, role: 'learner', kind: 'answer', promptRef: item.ref,
     content: heard.text, inputMode: heard.mode, clip: voice ? clipOf(bot, voice) : null,
     metrics: { ...metricsOf(fluency, lexis, assessment), ...(assessment ? { assessment } : {}) }, timing: heard.timing, keep: false,
   });
+  // Engage's then-vs-now: one scored voice answer per coach a week (seams/coach-engage.ts).
+  if (voice && assessment) {
+    recordCoachVoice(bot.ctx, {
+      pack: bot.pack.manifest.id, feature: bot.pack.manifest.feature, audio: bytesOf(voice.audio), mime: voice.mime || 'audio/ogg', transcript: heard.text,
+      durationSec: heard.duration ?? voice.duration, scores: { overall: assessment.overall, ...criteriaOf(assessment) }, promptKey: item.ref,
+    });
+  }
+  return turn;
 }
 
 /** Practice: the next question, or the end of the part. */
