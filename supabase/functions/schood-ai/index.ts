@@ -125,8 +125,25 @@ const sendTelegram: NonNullable<Parameters<typeof createSchoodAIHandler>[0]['sen
   }
 };
 
+// ctx.auth.sessionFor: a magic-link token from the auth admin API, verified at once on a
+// throwaway anon client (core's service client must keep the service role), so the token
+// never travels. Only the session goes back to the route.
+const authOptions = { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } };
+async function mintSession(userId: string) {
+  const { data: found, error: lookup } = await service.auth.admin.getUserById(userId);
+  const email = found?.user?.email;
+  if (lookup || !email) return null;
+  const { data: link, error: linkError } = await service.auth.admin.generateLink({ type: 'magiclink', email });
+  const hash = link?.properties?.hashed_token;
+  if (linkError || !hash) return null;
+  const verify = createClient(url, anon, authOptions);
+  const { data, error } = await verify.auth.verifyOtp({ type: 'magiclink', token_hash: hash });
+  if (error || !data.session || data.session.user.id !== userId) return null;
+  return { access_token: data.session.access_token, refresh_token: data.session.refresh_token, expires_at: data.session.expires_at ?? Math.floor(Date.now() / 1000) + 3600 };
+}
+
 Deno.serve(createSchoodAIHandler({
-  repository, gateway, plans, isAdmin, stores, systemSecret, sendTelegram,
+  repository, gateway, plans, isAdmin, stores, systemSecret, sendTelegram, mintSession,
   async callFunction(name, path, token, init) {
     const target = new URL(`${url}/functions/v1/${name}${path}`);
     for (const [key, value] of Object.entries(init.query ?? {})) target.searchParams.set(key, value);

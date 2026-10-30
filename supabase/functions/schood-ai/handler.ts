@@ -51,6 +51,8 @@ export interface HandlerDeps {
   systemSecret?(): Promise<string | null>;
   /** The Schood bot (send-telegram) for ctx.notify.send; without it nothing is sent. */
   sendTelegram?: ContextDeps['sendTelegram'];
+  /** The auth admin API for ctx.auth.sessionFor; without it no session is minted. */
+  mintSession?: ContextDeps['mintSession'];
   /** The jobs core/system-tick runs; the registered ones (registerSystemJob) when left out. */
   systemJobs?: [string, SystemJob][];
 }
@@ -66,6 +68,8 @@ export interface HandlerOptions {
 }
 
 const ANONYMOUS_DEFAULTS = { perMinute: 30, perDay: 1000 };
+/** The per-IP ceiling on keyed anonymous requests (a school's classes share one address). */
+const IP_CEILING_DEFAULTS = { perMinute: 3000, perDay: 300_000 };
 async function sha256Hex(text: string): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
@@ -125,9 +129,15 @@ export function createSchoodAIHandler(deps: HandlerDeps, options: HandlerOptions
       if (module.area === 'admin' && (handler.system || handler.anonymous)) throw new Error(`admin/${action} cannot be a system or anonymous route`);
       if ([handler.service, handler.system, handler.anonymous].filter(Boolean).length > 1) throw new Error(`${module.area}/${action}: service, system and anonymous are separate kinds of route`);
       if (handler.anonymous && typeof handler.anonymous === 'object') {
-        const { perMinute = ANONYMOUS_DEFAULTS.perMinute, perDay = ANONYMOUS_DEFAULTS.perDay, rateKey, cors } = handler.anonymous;
-        if (!Number.isInteger(perMinute) || perMinute < 1 || perMinute > 600 || !Number.isInteger(perDay) || perDay < perMinute || perDay > 100_000) throw new Error(`${module.area}/${action}: anonymous limits are 1-600 a minute and up to 100000 a day`);
-        if (rateKey !== undefined && typeof rateKey !== 'function') throw new Error(`${module.area}/${action}: rateKey is a function`);
+        const { perMinute = ANONYMOUS_DEFAULTS.perMinute, perDay = ANONYMOUS_DEFAULTS.perDay, rateKey, cors, ipLimit } = handler.anonymous;
+        const keyed = rateKey !== undefined, [maxMinute, maxDay] = keyed ? [3000, 1_000_000] : [600, 100_000];
+        if (!Number.isInteger(perMinute) || perMinute < 1 || perMinute > maxMinute || !Number.isInteger(perDay) || perDay < perMinute || perDay > maxDay) throw new Error(`${module.area}/${action}: anonymous limits are 1-${maxMinute} a minute and up to ${maxDay} a day`);
+        if (keyed && typeof rateKey !== 'function') throw new Error(`${module.area}/${action}: rateKey is a function`);
+        if (ipLimit !== undefined) {
+          const { perMinute: ipMinute = IP_CEILING_DEFAULTS.perMinute, perDay: ipDay = IP_CEILING_DEFAULTS.perDay } = ipLimit;
+          if (!keyed) throw new Error(`${module.area}/${action}: ipLimit is the ceiling for a rateKey; set perMinute and perDay instead`);
+          if (!Number.isInteger(ipMinute) || ipMinute < 1 || ipMinute > 6000 || !Number.isInteger(ipDay) || ipDay < ipMinute || ipDay > 2_000_000) throw new Error(`${module.area}/${action}: ipLimit is 1-6000 a minute and up to 2000000 a day`);
+        }
         if (cors !== undefined && cors !== 'any') throw new Error(`${module.area}/${action}: cors is 'any' or left out`);
       }
       const key = `${module.area}/${action}`;
@@ -138,7 +148,7 @@ export function createSchoodAIHandler(deps: HandlerDeps, options: HandlerOptions
 
   const contextDeps = (responseHeaders: Record<string, string>): ContextDeps => ({
     repo: deps.repository, gateway: deps.gateway, plans: deps.plans, stores, isAdmin: deps.isAdmin, callFunction: deps.callFunction,
-    sendTelegram: deps.sendTelegram, after, now, responseHeaders,
+    sendTelegram: deps.sendTelegram, mintSession: deps.mintSession, after, now, responseHeaders,
   });
   // The scheduler (scheduler.ts): answers at once and runs the due jobs after the response.
   if (routes.has('core/system-tick')) throw new Error('route core/system-tick is built in');
@@ -191,6 +201,9 @@ export function createSchoodAIHandler(deps: HandlerDeps, options: HandlerOptions
       // --- who is calling ----------------------------------------------------------
       let user: RequestUser | null;
       let caller: Caller;
+      const maxBody = handler.maxBody ?? DEFAULT_MAX_BODY;
+      // A body a rateKey read (a game code) is read once and handed to the route.
+      let preread: Promise<Uint8Array> | null = null;
       const presented = req.headers.get('x-schood-service-secret');
       if (handler.system) {
         // A scheduled job: the secret alone, never a person, never a browser.
@@ -208,15 +221,33 @@ export function createSchoodAIHandler(deps: HandlerDeps, options: HandlerOptions
         // Open without signing in, limited per IP and route; a token, if sent, is ignored.
         const limits = { ...ANONYMOUS_DEFAULTS, ...(typeof handler.anonymous === 'object' ? handler.anonymous : {}) };
         const day = now().toISOString().slice(0, 10);
-        // The route's own key (a bot's webhook secret) or the caller IP; only a salted hash is stored.
+        // Only salted hashes of the address or the route's key are stored.
+        const bucketOf = async (identity: string) => `anon:${area}/${action}:${(await sha256Hex(`${options.ipSalt ?? 'schood-ai'}:${day}:${identity}`)).slice(0, 32)}`;
+        const take = async (bucket: string, perMinute: number, perDay: number) => {
+          for (const [limit, seconds] of [[perMinute, 60], [perDay, 86_400]] as const) {
+            const taken = await deps.repository.takeRate(`${bucket}:${seconds}`, limit, seconds);
+            if (!taken.ok) return taken.retryAt;
+          }
+          return null;
+        };
+        // The route's own key (a known bot, an open game), or null for the caller IP.
         let ownKey: string | null = null;
-        try { ownKey = (await limits.rateKey?.(req, { store: (storeHandle) => stores.get(storeHandle) })) ?? null; } catch { ownKey = null; }
-        const identity = ownKey ? `key:${String(ownKey).slice(0, 256)}` : `ip:${callerIp(req)}`;
-        const bucket = `anon:${area}/${action}:${(await sha256Hex(`${options.ipSalt ?? 'schood-ai'}:${day}:${identity}`)).slice(0, 32)}`;
-        for (const [limit, seconds] of [[limits.perMinute, 60], [limits.perDay, 86_400]] as const) {
-          const taken = await deps.repository.takeRate(`${bucket}:${seconds}`, limit, seconds);
-          if (!taken.ok) return fail(429, 'rate_limited', 'Too many requests. Try again shortly.', { retry_after: taken.retryAt });
+        if (limits.rateKey) {
+          const body = async () => {
+            try { return JSON.parse(new TextDecoder().decode(await (preread ??= readLimited(req, maxBody)))); } catch { return null; }
+          };
+          try { ownKey = (await limits.rateKey(req, { store: (storeHandle) => stores.get(storeHandle), body })) ?? null; } catch { ownKey = null; }
         }
+        const ip = await bucketOf(`ip:${callerIp(req)}`);
+        let refused: string | null;
+        if (ownKey) {
+          // The key's own budget first (a full game costs the school nothing), then the per-IP ceiling across keys.
+          const ceiling = { ...IP_CEILING_DEFAULTS, ...limits.ipLimit };
+          refused = await take(await bucketOf(`key:${String(ownKey).slice(0, 256)}`), limits.perMinute, limits.perDay) ?? await take(`${ip}:ceiling`, ceiling.perMinute, ceiling.perDay);
+        } else {
+          refused = await take(ip, limits.perMinute, limits.perDay);
+        }
+        if (refused) return fail(429, 'rate_limited', 'Too many requests. Try again shortly.', { retry_after: refused });
         user = null;
         caller = 'anonymous';
       } else if (presented !== null) {
@@ -245,10 +276,9 @@ export function createSchoodAIHandler(deps: HandlerDeps, options: HandlerOptions
       }
 
       // --- the route ---------------------------------------------------------------
-      const maxBody = handler.maxBody ?? DEFAULT_MAX_BODY;
       const ctx = createRequestContext(
         contextDeps({ ...headers }),
-        { url, headers: req.headers, area, action, method, requestId, user, caller, readBody: () => readLimited(req, maxBody) },
+        { url, headers: req.headers, area, action, method, requestId, user, caller, readBody: () => preread ?? readLimited(req, maxBody) },
       );
       const result = await run(ctx);
       if (result instanceof Response) {
