@@ -1,4 +1,4 @@
-import { featureSwitch, nextTashkentMidnight, quoteCredits, type CallMode, type CreditQuote, type Schema } from '../../../packages/ai-core/src/mod.ts';
+import { featureAccess, featureSwitch, nextTashkentMidnight, quoteCredits, type CallMode, type CreditQuote, type Schema } from '../../../packages/ai-core/src/mod.ts';
 import { requireAdult } from './age.ts';
 import type { Gateway, GatewayFailure, GatewayRequest, GatewayResult, Ticket } from './gateway.ts';
 import {
@@ -18,6 +18,7 @@ export function failureError(failure: GatewayFailure, now: Date): SchoodAIError 
     case 'unavailable': return new SchoodAIError('ai_unavailable', 'No AI model is set up for this yet.', 503, { reason: failure.reason });
     case 'capped': return new SchoodAIError('capped', 'Schood AI has reached its limit for today. Try again later.', 429, { scope: failure.scope, retry_after: nextTashkentMidnight(now).toISOString() });
     case 'stopped': return new SchoodAIError('stopped', 'Stopped.', 409);
+    case 'refused': return new SchoodAIError('plan_required', 'This workspace has its own model keys, but its plan no longer includes them. Renew the plan, or remove the keys to use Schood credits.', 402, { plans: failure.plans, feature: 'C15', reason: failure.reason });
     default: return new SchoodAIError('ai_failed', 'The AI could not answer just now. Your credits were returned.', 502, { reason: failure.code });
   }
 }
@@ -99,8 +100,12 @@ export function createChargedAIFor(scope: ChargeScope): ChargedAI {
     const access = await ctx.requireFeature(quote.feature);
     if (quote.adultsOnly) await ctx.requireAdult();
     const plan = await ctx.plan();
+    // Own model keys (C15, centres only) only while the workspace's plan grants them (the role does not matter for using them).
+    const c15 = featureAccess('C15', { plans: plan.plans, workspaceKind: access.workspace.kind, role: 'owner', beta: plan.beta, grants: plan.features });
+    const ownKeys = access.workspace.kind === 'personal' ? undefined : { allowed: c15.allowed, plans: !c15.allowed && c15.reason === 'plan_required' ? [...c15.plans] : [] };
     const base: GatewayRequest = {
       ...request,
+      ownKeys,
       feature: quote.key, tier: quote.tier,
       requires: { capabilities: [...quote.requires, ...(input.requires?.capabilities ?? [])], noTraining: input.requires?.noTraining },
       userId: ctx.userId, workspaceId: access.workspace.id, requestId: ctx.requestId,
