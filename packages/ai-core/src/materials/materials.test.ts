@@ -3,10 +3,10 @@ import { TOEFL_2026_TASKS } from '../../../../supabase/functions/_shared/toefl-2
 import { creditPrice, isCreditKey, quoteCredits } from '../credits.ts';
 import { SchemaError } from '../schema.ts';
 import {
-  ADMISSION_MATH_TOPIC_CODES, answerKey, assessmentItems, briefProblems, briefSchema, checkMaterial, compareSolver, draftContentSchema,
+  ADMISSION_MATH_TOPIC_CODES, answerKey, assessmentItems, briefProblems, briefSchema, CEFR_LEVELS, CEFR_SCALE, cefrRank, checkMaterial, compareSolver, draftContentSchema,
   draftQuestionsSchema, draftSourceSchema, EXAM_TARGETS, generationPlan, ieltsTypesFor, isCorrect, materialCredit, materialKind, MATERIAL_KINDS,
-  materialText, MULTILEVEL_READING_PARTS, normaliseAnswer, parseMaterial, parseNumber, plannedCount, quizQuestions, renumber, solverAnswersSchema,
-  solverTasks, studentView, telegramMessages, toeflTasksFor, verification, type Block, type Material,
+  materialText, MULTILEVEL_READING_PARTS, neighbourLevels, normaliseAnswer, parseMaterial, parseNumber, plannedCount, quizQuestions, renumber, solverAnswersSchema,
+  solverTasks, studentView, telegramMessages, toCefrLevel, toeflTasksFor, verification, type Block, type Material,
 } from './mod.ts';
 
 const equal = (actual: unknown, expected: unknown, label = '') => {
@@ -247,4 +247,19 @@ Deno.test('library kinds: one per material kind, Markdown with the key, student 
 Deno.test('the plain kind catalog matches the kind rules', async () => {
   const { MATERIAL_KIND_CATALOG } = await import('./mod.ts');
   equal(Object.entries(MATERIAL_KIND_CATALOG).sort(), Object.values(MATERIAL_KINDS).map((kind) => [kind.kind, kind.group]).sort());
+});
+
+Deno.test('Pre-A1 is a level below A1 (placement tests), outside the Studio range A1–C2', () => {
+  equal(CEFR_SCALE, ['Pre-A1', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2']);
+  equal(CEFR_LEVELS, ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'], 'the Studio still offers A1–C2');
+  const young = { ...readingSet(), level: 'Pre-A1' };
+  equal(parseMaterial(young).level, 'Pre-A1');
+  equal(briefSchema.parse({ kind: 'worksheet', level: 'Pre-A1', topic: 'Colours', instruction_language: 'uz', length: 'short' }).level, 'Pre-A1');
+  for (const bad of ['PreA1', 'pre_a1', 'A0', 'Pre-A2']) throws(() => parseMaterial({ ...readingSet(), level: bad }), `stored levels use one spelling: ${bad}`);
+  ok(cefrRank('Pre-A1') === 0 && cefrRank('A1') === 1 && cefrRank('C2') === 6 && cefrRank('band:6.5') === -1, 'ranks order the scale');
+  equal(['B1', 'Pre-A1', 'C1', 'A1'].sort((a, b) => cefrRank(a) - cefrRank(b)), ['Pre-A1', 'A1', 'B1', 'C1']);
+  equal(['pre_a1', 'Pre A1', 'PRE-A1', 'prea1', 'b2', ' c1 ', 'A0', 'band:6', 7].map(toCefrLevel), ['Pre-A1', 'Pre-A1', 'Pre-A1', 'Pre-A1', 'B2', 'C1', null, null, null]);
+  equal(neighbourLevels('Pre-A1'), { support: 'Pre-A1', stretch: 'A1' });
+  equal(neighbourLevels('A1'), { support: 'A1', stretch: 'A2' }, 'A1 support does not drop into the young learners level');
+  equal(neighbourLevels('B2'), { support: 'B1', stretch: 'C1' });
 });

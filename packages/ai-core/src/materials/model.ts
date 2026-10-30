@@ -12,14 +12,27 @@ import { literal, tagged } from './kit.ts';
 // checked key (keys.ts) is computed from them. Nothing here talks to a model.
 
 export const MATERIAL_SCHEMA = 'schood.material.v1';
+/** A1 to C2: the levels the Materials Studio offers. */
 export const CEFR_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
 export type CefrLevel = (typeof CEFR_LEVELS)[number];
+/** The whole CEFR scale, with Pre-A1 below A1 (young learners, placement tests that start at the bottom). */
+export const CEFR_SCALE = ['Pre-A1', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
+export type CefrScaleLevel = (typeof CEFR_SCALE)[number];
 export const INSTRUCTION_LANGUAGES = ['en', 'uz', 'ru'] as const;
 export type InstructionLanguage = (typeof INSTRUCTION_LANGUAGES)[number];
 
-/** A CEFR level (`B2`) or an exam band (`band:6.5`, `band:1200`). */
-export const LEVEL_PATTERN = /^(A1|A2|B1|B2|C1|C2|band:[0-9]{1,4}(\.[05])?)$/;
+/** A CEFR level (`Pre-A1`, `B2`) or an exam band (`band:6.5`, `band:1200`). */
+export const LEVEL_PATTERN = /^(Pre-A1|A1|A2|B1|B2|C1|C2|band:[0-9]{1,4}(\.[05])?)$/;
 export const isMaterialLevel = (value: unknown): value is string => typeof value === 'string' && LEVEL_PATTERN.test(value);
+/** A level's place on the CEFR scale (Pre-A1 is 0, C2 is 6), to compare and sort levels; -1 for exam bands and anything else. */
+export const cefrRank = (level: string): number => (CEFR_SCALE as readonly string[]).indexOf(level);
+/** A CEFR level written any common way (`pre_a1`, `Pre A1`, `prea1`, `b2`) in the model's form (`Pre-A1`, `B2`); null when it is not one. */
+export function toCefrLevel(value: unknown): CefrScaleLevel | null {
+  if (typeof value !== 'string') return null;
+  const compact = value.trim().toUpperCase().replace(/[\s_-]+/g, '');
+  if (compact === 'PREA1') return 'Pre-A1';
+  return (CEFR_LEVELS as readonly string[]).includes(compact) ? compact as CefrLevel : null;
+}
 export const ID_PATTERN = /^[a-z][a-z0-9_-]{0,30}$/;
 
 // --- Questions -------------------------------------------------------------------------
@@ -255,8 +268,13 @@ export const briefSchema = /*#__PURE__*/ s.object({
   variants: s.optional(s.boolean()),
 }) as Schema<MaterialBrief>;
 
-/** The CEFR levels around a level, for three-level variants (support, core, stretch). */
+/**
+ * The CEFR levels around a level, for three-level variants (support, core, stretch).
+ * A1's support stays A1: Pre-A1 is a young learners' level, not an easier A1, so the
+ * Studio does not step down into it. Pre-A1 itself stretches to A1.
+ */
 export function neighbourLevels(level: string): { support: string; stretch: string } {
+  if (level === 'Pre-A1') return { support: 'Pre-A1', stretch: 'A1' };
   const index = (CEFR_LEVELS as readonly string[]).indexOf(level);
   if (index >= 0) return { support: CEFR_LEVELS[Math.max(0, index - 1)], stretch: CEFR_LEVELS[Math.min(CEFR_LEVELS.length - 1, index + 1)] };
   return { support: level, stretch: level };
