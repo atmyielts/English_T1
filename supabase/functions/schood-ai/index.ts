@@ -6,6 +6,7 @@ import { CircuitBreaker, createGateway } from './gateway.ts';
 import { createSchoodAIHandler } from './handler.ts';
 import { accessEffectiveOverHttp, createPlanResolver } from './plan.ts';
 import { createSchoodAIRepository, type SchoodAIDatabase } from './repository.ts';
+import { ownKeyResolver } from './registries.ts';
 import { createStores } from './stores.ts';
 
 // Schood AI Edge Function: env wiring only; the router is handler.ts.
@@ -18,9 +19,9 @@ const required = (name: string) => {
 const problems = priceTableProblems();
 if (problems.length) throw new Error(`Credit price table: ${problems.join('; ')}`);
 
-const url = required('SUPABASE_URL'), anon = required('SUPABASE_ANON_KEY');
+const url = required('SUPABASE_URL'), anon = required('SUPABASE_ANON_KEY'), serviceRole = required('SUPABASE_SERVICE_ROLE_KEY');
 const auth = createClient(url, anon, { auth: { persistSession: false } });
-const service = createClient(url, required('SUPABASE_SERVICE_ROLE_KEY'), { auth: { persistSession: false } });
+const service = createClient(url, serviceRole, { auth: { persistSession: false } });
 const db = service as unknown as SchoodAIDatabase;
 
 const origins = (Deno.env.get('SCHOOD_AI_ALLOWED_ORIGINS') ?? '').split(',').map((origin) => origin.trim()).filter(Boolean);
@@ -63,6 +64,9 @@ const cached = <T>(load: () => Promise<T>, ms: number) => {
   };
 };
 
+// Area tables (stores.ts) over the same service-role client.
+const stores = createStores({ kind: 'postgres', db }, { now: () => new Date(), env: (name) => Deno.env.get(name) });
+
 const gateway = createGateway({
   registry: cached(() => repository.registry(), 30_000),
   settings: cached(() => repository.settings(), 15_000),
@@ -74,6 +78,8 @@ const gateway = createGateway({
   now: () => new Date(),
   breaker: new CircuitBreaker(),
   globalCeiling: Number.isInteger(ceiling) && ceiling > 0 ? ceiling : null,
+  // A workspace's own model keys (C15): the centre area's resolver, if it registered one.
+  ownKey: (input) => ownKeyResolver()?.({ ...input, store: (handle) => stores.get(handle) }) ?? Promise.resolve(null),
 });
 
 const adminCache = new Map<string, { at: number; admin: boolean }>();
@@ -90,14 +96,54 @@ async function isAdmin(userId: string): Promise<boolean> {
 
 const plans = createPlanResolver({ productIds, betaUserIds, accessEffective: accessEffectiveOverHttp(url, anon), repo: repository, isAdmin, now: () => new Date() });
 
-// Area tables (stores.ts) over the same service-role client.
-const stores = createStores({ kind: 'postgres', db }, { now: () => new Date(), env: (name) => Deno.env.get(name) });
 
 // The secret pg_cron sends to system routes (invoke_schood_ai_system), read from internal_runtime_secrets.
 const systemSecret = cached(() => repository.systemSecret(), 60_000);
 
+// ctx.notify.send goes through the Schood bot: send-telegram (service-role bearer, as other
+// functions call it) applies the person's platform settings and logs platform_notifications.
+const APP = 'https://ai.schood.online';
+const sendTelegram: NonNullable<Parameters<typeof createSchoodAIHandler>[0]['sendTelegram']> = async (input) => {
+  try {
+    const response = await fetch(`${url}/functions/v1/send-telegram`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${serviceRole}`, apikey: anon, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: input.userId, text: input.text, notification_type: `schood_ai.${input.kind}`, parse_mode: null,
+        ...(input.dedupeKey ? { dedupe_key: `schood_ai.${input.kind}:${input.dedupeKey}` } : {}),
+        ...(input.buttons.length ? { reply_markup: { inline_keyboard: input.buttons.map((button) => [{ text: button.label, url: `${APP}${button.path}` }]) } } : {}),
+      }),
+      signal: AbortSignal.timeout(10_000),
+    });
+    const data = await boundedJson(response, 64_000).catch(() => null) as { outcome?: string; deliver_at?: string; retry_at?: string } | null;
+    if (!response.ok || !data) return { outcome: 'failed' };
+    if (data.outcome === 'sent') return { outcome: 'sent' };
+    if (data.outcome === 'defer' || data.outcome === 'deferred') return { outcome: 'defer', deliverAt: data.deliver_at ?? data.retry_at ?? null };
+    return { outcome: data.outcome === 'suppressed' ? 'suppressed' : 'failed' };
+  } catch {
+    return { outcome: 'failed' };
+  }
+};
+
+// ctx.auth.sessionFor: a magic-link token from the auth admin API, verified at once on a
+// throwaway anon client (core's service client must keep the service role), so the token
+// never travels. Only the session goes back to the route.
+const authOptions = { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } };
+async function mintSession(userId: string) {
+  const { data: found, error: lookup } = await service.auth.admin.getUserById(userId);
+  const email = found?.user?.email;
+  if (lookup || !email) return null;
+  const { data: link, error: linkError } = await service.auth.admin.generateLink({ type: 'magiclink', email });
+  const hash = link?.properties?.hashed_token;
+  if (linkError || !hash) return null;
+  const verify = createClient(url, anon, authOptions);
+  const { data, error } = await verify.auth.verifyOtp({ type: 'magiclink', token_hash: hash });
+  if (error || !data.session || data.session.user.id !== userId) return null;
+  return { access_token: data.session.access_token, refresh_token: data.session.refresh_token, expires_at: data.session.expires_at ?? Math.floor(Date.now() / 1000) + 3600 };
+}
+
 Deno.serve(createSchoodAIHandler({
-  repository, gateway, plans, isAdmin, stores, systemSecret,
+  repository, gateway, plans, isAdmin, stores, systemSecret, sendTelegram, mintSession,
   async callFunction(name, path, token, init) {
     const target = new URL(`${url}/functions/v1/${name}${path}`);
     for (const [key, value] of Object.entries(init.query ?? {})) target.searchParams.set(key, value);
@@ -118,4 +164,4 @@ Deno.serve(createSchoodAIHandler({
     const body = await result.response.json().catch(() => ({}));
     return { ok: false, status, code: typeof body?.code === 'string' ? body.code : status === 401 ? 'unauthorized' : 'admin_required' };
   },
-}, { allowedOrigins: origins, serviceSecret, after, ipSalt: required('SUPABASE_SERVICE_ROLE_KEY') }));
+}, { allowedOrigins: origins, serviceSecret, after, ipSalt: serviceRole }));

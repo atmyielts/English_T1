@@ -26,9 +26,16 @@ export const learnerModule: FeatureModule = {
     // Opt in if the Telegram worker may call it:
     'coach-turn': { POST: coachTurn, service: true },
     // A scheduled job (no user): pg_cron or a bot cron calls it with the secret.
+    // For work on a schedule, prefer registerSystemJob (see Scheduled jobs): no route, no cron entry.
     'system-brief': { POST: sendDueBriefs, system: true },
     // Open without signing in, limited per IP (default 30 a minute, 1000 a day):
     'quiz-join': { POST: joinQuiz, anonymous: { perMinute: 10 } },
+    // A whole class behind one address: limited per open game, under a per-IP ceiling.
+    'quiz-play-open': { POST: playQuiz, anonymous: { perMinute: 1500, perDay: 200000, ipLimit: { perMinute: 6000 }, rateKey: async (req, { store, body }) => store(teacherStore).openGameKey((await body() as { session_id?: string } | null)?.session_id) } },
+    // An embeddable widget on a centre's own site: any Origin, no credentials; check ctx.origin yourself.
+    'widget': { POST: widgetTurn, anonymous: { perMinute: 20, cors: 'any' } },
+    // A centre bot's Telegram webhook: limited per bot, not per Telegram address.
+    'bot-webhook': { POST: botUpdate, anonymous: { perMinute: 120, perDay: 20000, rateKey: (req, { store }) => store(centreStore).botIdForToken(req.headers.get('x-telegram-bot-api-secret-token')) } },
   },
 };
 ```
@@ -47,6 +54,9 @@ export const learnerModule: FeatureModule = {
 |---|---|
 | `ctx.user` | `{ id, email, token, via: 'jwt' \| 'service', telegramChatId }`. `token` is null on the worker path. On system and anonymous routes reading it throws; check `ctx.caller` first. |
 | `ctx.caller` | `'user'` (signed in), `'service'` (the Telegram worker for a linked person), `'system'` (a scheduled job) or `'anonymous'` (nobody signed in). |
+| `ctx.headers` / `ctx.origin` | The request headers (read-only) and the `Origin` header or null, for routes that check their own callers: a Telegram webhook's `X-Telegram-Bot-Api-Secret-Token`, an embeddable widget's site. Compare secrets in constant time and never log them. |
+| `ctx.auth.sessionFor(userId, { reason })` | A Supabase session `{ access_token, refresh_token, expires_at }` for a person your route has already verified (a Telegram Mini App's signed `initData`). `reason` is `<your area>.<what>` (`coach.mini_app`). Every session is audited (`core.session_issued`, no tokens). It is limited to 10 an hour and 30 a day per person, and 2000 an hour per area. It is refused (`session_not_allowed`) for Schood admins, inactive accounts, and on a signed-in route for anyone but the caller. `session_unavailable` (503) when the account has no email or auth is down; `rate_limited` (429). No area holds an admin auth client. Hand the tokens to that person only and never log or store them. |
+| `ctx.planFor(workspaceId)` | Any workspace's plan (`{ workspaceKind, plans, features, beta, grant, anchor }`), resolved for its owner, on every kind of route: check seats before someone joins a centre, or a centre's plan before its widget answers. Throws `workspace_not_found` (404). It checks nothing about the caller: check their role first. |
 | `ctx.paidBy(workspaceId)` | System and anonymous routes only: charged AI paid from a named workspace's pool, with that workspace's plan, switches and caps, no member budget and no user on the ledger. Anonymous routes may name only an active centre (a person's own credits never pay for visitors). |
 | `ctx.credits.spend({ key, reference?, addOns? })` | A priced action with no model call (a streak freeze). Plan, role, age (`adultsOnly`) and switches apply. Idempotent per `reference`. Returns the receipt with `refund()`. |
 | `ctx.workspace({ roles? })` | The workspace in `?workspace_id=`, or the personal one (auto-created), with the caller's active membership. Throws `workspace_not_found` (404, the same for "not a member") or `role_required` (403). |
@@ -57,6 +67,7 @@ export const learnerModule: FeatureModule = {
 | `ctx.actions` | The Approve & run queue: `propose`, `list`, `get`, `decide`. |
 | `ctx.library` | Library pages: `create`, `get`, `save`, `list`, with the same rules as the routes (see The library). |
 | `ctx.events.emit(event)` | Learning events. Written after the response; never fails the request. |
+| `ctx.notify.send(userId, { kind, text, buttons?, dedupeKey? })` | One Telegram message through the Schood bot, inside the budget: see Notifications. Returns `{ sent: true }` or `{ sent: false, reason, retryAt? }`; never throws for a refusal. |
 | `ctx.notify.allowed(userId, channel)` / `take(...)` / `prefs(userId)` | The notification budget, by the person's own choices (default 2 a day across all bots, quiet 22:00–08:00 Tashkent). A refusal is `quiet_hours`, `daily_limit` or `muted` (the person opted out of that kind or area; drop the message), with `retryAt`. `prefs` gives `{ timeZone, quietStart, quietEnd, dailyLimit, preferredHour, delivery: ['telegram' \| 'web'], muted }`: send at `preferredHour` and only where `delivery` allows. |
 | `ctx.functions.call(name, path, init)` | Another Schood Edge Function, called with the person's own token, for Academy or Assessment Cloud. Throws `user_token_required` on the worker path. `init.headers` may carry only `Idempotency-Key` and `If-Match` (Assessment Cloud commands); any other header throws. |
 | `ctx.repo` | The repository (`types.ts` `SchoodAIRepository`) for core tables. |
@@ -159,8 +170,10 @@ Every `admin/*` route needs the existing admin RBAC permission through `admin-ac
 | `registerActionKind({ kind, area, approverRoles, parse, summary, display?, run, retrySafe?, expiresInHours? })` | `actions.ts` | Approve & run: `send_parent_message`, `assign_homework`, `post_to_channel`, `book_trial`. `run` executes as the approver, with their token. |
 | `registerGenerationApproval(feature, fn)` | `registries.ts` | Runs when `core/generations` approves a job of that feature (the job is already `approved`), for example saving the material's library page with `ctx.library.create`. Return `{ page_id }` or similar; it comes back as `result`. If it throws, the job is `ready` again and the error is the response. |
 | `registerNotifyKind(key, { area, label })` | `registries.ts` | A kind of message you send through `ctx.notify` (`engage.winback`, `coach.ielts`). Settings → Notifications lists every kind so people can mute it, or mute your whole area. |
+| `registerSystemJob(name, { area, schedule, run, timeoutMs? })` | `registries.ts` | Scheduled work, run by core's scheduler: see Scheduled jobs. |
+| `registerOwnKeyResolver(fn)` | `registries.ts` | The centre area's "bring your own key" (C15): see A workspace's own model keys. One resolver. |
 | `registerAgeSource(name, fn)` | `age.ts` | `(ctx, userId) => 'adult' \| 'minor' \| null`, for price entries marked `adultsOnly` (the learner area's consent step knows the age band). Any `minor` refuses; without an `adult`, the age is unknown and adults-only actions are refused (`adult_required`, `reason`). |
-| `registerPlanSource(name, fn)` | `plan.ts` | Extra plans or directly granted features: children of a Family holder → `plus`, a coach pass → `features: ['B4']`, a team seat. The input has `user`, `workspace`, `role`, `repo`, `now`, `store(handle)`, `productIds` (plan → product id, configured ones only) and `plansOf(userId)` (another person's personal plans from their own products; plan sources are not consulted, so there is no recursion). |
+| `registerPlanSource(name, fn)` | `plan.ts` | Extra plans or directly granted features: children of a Family holder → `plus`, a coach pass → `features: ['B4']`, a team seat. The input has `user`, `workspace`, `role`, `repo`, `now`, `store(handle)`, `productIds` (plan → product id, configured ones only) and `plansOf(userId)` (another person's personal plans from their own products; plan sources are not consulted, so there is no recursion). A source may also return `credits: { monthly, anchor }` (personal workspaces only; 0 to 100000): added to the plan grant like a plan's own, granted once per 30-day cycle (race-safe in `ai_credit_sync`) and expired at the cycle's end, with cycles from `anchor` (the ISO start of the pass or seat; null: from first use). With several grants the earliest start anchors the cycle. Return credits only when the person needs them (not when Plus already covers the coach). The amount is the area's own assumption. |
 
 ## The library (pages)
 
@@ -234,7 +247,17 @@ registerMaterialKind({ ...worksheetKind, area: 'teacher' });
 - `GET/PUT core/notify-prefs` (also for the worker): the caller's own `time_zone`, `quiet_start`, `quiet_end`, `daily_limit` (0 to 2), `preferred_hour` (or null), `delivery` (`telegram`, `web`) and `muted` kinds or areas, with the registered `kinds` to show.
 - `ctx.repo.learningEvents({ userId, afterId?, limit })` reads a person's learning events in order, from Postgres and the memory repository alike (folding events into XP, tests, dev stacks).
 - **Retention:** messages older than 180 days, then conversations left empty, are deleted daily (`ai_purge_old_chats`, pg_cron job `schood-ai-chat-retention-v1`). Do not keep copies of chat text in your own tables.
-- **Account erasure.** Closing a Schood account runs one database transaction (the `account_erasure_transaction` trigger on `auth.users`). Schood AI is part of it:
+- **Account erasure.** Closing a Schood account runs one database transaction (the `account_erasure_transaction` trigger on `auth.users`). Schood AI is part of it.
+
+  > **Closing an account does not delete the `users` row. It anonymises it** (and marks it closed). So **`on delete cascade` from `users(id)` never fires when an account closes.** A table that relies only on `references users(id) on delete cascade` keeps the person's data after they closed their account, which breaks the promise Schood makes them.
+  >
+  > **Every area must remove its personal data through the registry or a hook below**, in the same migration that creates the table:
+  > - rows keyed on the person (`user_id`, `student_id`, `guardian_id`, …) in **any** table, including tables inside a centre workspace;
+  > - rows that name the person in another column, files and cross-table records.
+  >
+  > The only cascade that does fire is from `ai_workspaces`, because core deletes the person's **personal** workspace. Centre workspaces stay, so a learner's rows inside a centre stay unless you register them. Add a DB test that closes an account through `auth.users` and checks your tables are empty for that person.
+
+  What core removes:
   - The `user_id` tables in `account_personal_erasure_tables()` are deleted: `ai_threads` (and their messages), `ai_generations`, `ai_learning_events`, `ai_notify_prefs`, `ai_notify_daily` and `ai_calls`.
   - Then `ai_erase_account(p_user)` runs as a service hook (`account_erasure_service_hooks()`, migration `20261030140000`):
     - the personal workspace goes, with everything that cascades from it (pages and versions, conversations, jobs, actions, assistants, invites, balance);
@@ -244,8 +267,8 @@ registerMaterialKind({ ...worksheetKind, area: 'teacher' });
     - their reports lose the reporter and their note;
     - a centre they own that others still use blocks the closure with `account_ownership_transfer_required`; a centre they own alone is suspended.
   - **Registering your own tables.** Do it in your area's migration, using your range:
-    1. **Plain personal rows keyed on `user_id`:** append the table to `account_personal_erasure_tables()`, the same additive pattern as `20261030130000_schood_ai_retention_and_erasure.sql`. That installs the closed-account guard too.
-    2. **Rows inside a workspace** (`workspace_id … references ai_workspaces on delete cascade`) go with the personal workspace automatically and stay with a centre. Use `on delete set null` only for records that must outlive a workspace, such as financial ones.
+    1. **Plain personal rows keyed on `user_id`:** append the table to `account_personal_erasure_tables()`, the same additive pattern as `20261030130000_schood_ai_retention_and_erasure.sql`. That installs the closed-account guard too. This covers the table in every workspace, centres included.
+    2. **Rows inside a workspace** (`workspace_id … references ai_workspaces on delete cascade`) go with the personal workspace automatically. In a centre they stay, so a row about the person in a centre (their progress, their messages, their attendance) still needs 1 or 3. Only the centre's own material (a page a teacher wrote) stays on purpose. Use `on delete set null` only for records that must outlive a workspace, such as financial ones.
     3. **Anything else** (rows keyed on another column, unlinking instead of deleting, files, cross-table rules): write `public.<area>_erase_account(p_user uuid) returns jsonb`, `security definer`, revoked from `public`, `anon`, `authenticated` and `service_role`. Append its name to `account_erasure_service_hooks()` the way `20261030150000_schood_ai_account_erasure.sql` does.
     - Hooks run in the closure transaction after the core erasure. They must be idempotent. Raising aborts the whole closure, so raise only to refuse it (`account_ownership_transfer_required`).
     - Hooks run in registration order. Core's `ai_erase_account` (migration `20261030150000`) comes first, so when your hook runs, the personal workspace, centre memberships and issued invites are already gone. Key your cleanup on user ids, not on memberships.
@@ -274,7 +297,7 @@ Migration `20261030100000_schood_ai_core.sql`. Every one has RLS on with no poli
 
 - Prefix them with your area, for example `ai_learner_*`, `ai_teacher_*`, `ai_centre_*`, or `coach_*` for the coach engine as the doc names them.
 - Enable RLS on each with an explicit `alter table public.<t> enable row level security;` line (`verify:prod` checks for it), and revoke from `anon` and `authenticated`.
-- Reference `ai_workspaces(id)` and `users(id)` with `on delete cascade`.
+- Reference `ai_workspaces(id)` and `users(id)` with `on delete cascade`. The `users` cascade covers only a hard delete. **Account closure anonymises the `users` row, so it never cascades:** register every personal table for erasure (see Your own data → Account erasure).
 - Do not alter core tables. If you need a column there, ask the core agent.
 
 ## Migration ranges
@@ -302,10 +325,31 @@ The trusted Telegram worker sends three headers:
 
 The handler checks that this chat is linked to that user (`users.telegram_chat_id`, set by `telegram-link`). It refuses any request that also carries an `Origin`. Only routes with `service: true` accept the worker, never `admin/*`. Plans and credits apply to that person as usual. `ctx.user.via === 'service'` and `token === null`, so token-based context such as `learner_profile` is skipped. Learning events from this path are tagged `source: 'telegram'`.
 
+### Scheduled jobs (`registerSystemJob`)
+
+Something real calls them: **pg_cron runs `core/system-tick` every five minutes** (job `schood-ai-system-tick-v1`, minutes 2, 7, 12 … of each hour; migration `20261030180000`, through `invoke_schood_ai_system` and pg_net). The tick answers at once and runs the due jobs after the response. Register a job at module load in your `mod.ts`; you need no route and no cron entry:
+
+```ts
+registerSystemJob('centre.monday_brief', {
+  area: 'centre',
+  schedule: { weeklyAt: '08:00', weekday: 1 },          // or { dailyAt: '07:30' }, or { everyMinutes: 15 }
+  timeoutMs: 60_000,                                     // 1 to 120 s, default 60 s
+  async run(ctx) {                                       // a system ctx of your area: no user (see below)
+    for (const centre of await ctx.store(centreStore).dueBriefs(50)) { … ctx.paidBy(centre.id) … ctx.notify.send(ownerId, …) }
+  },
+});
+```
+
+- **Names** are `<area>.<job>`. Times are local to `timeZone` (default `Asia/Tashkent`); `everyMinutes` (5 to 1440) is aligned to UTC.
+- **Once a period:** a job runs on the first tick at or after its period starts. `ai_system_claim` makes "due and not running" atomic, so overlapping ticks never run a job twice. A run holds a lease of its timeout plus 30 seconds.
+- **Failures:** a thrown error or a timeout hands the period back, and the next tick retries it, at most three times a period. `ai_system_runs` keeps the last status and a short error (no personal data in error messages). A new period starts fresh.
+- **Bounded and idempotent:** do a limited batch per run and remember progress in your store; a retried run must not send or charge twice (use `dedupeKey` and charge references). Jobs run three at a time; one that could not finish inside the tick's 130-second budget waits for the next tick.
+
 ### System routes (`system: true`): scheduled work
 
 - **Callers:** `X-Schood-Service-Secret` alone, with no `X-Schood-User-Id`, no `Authorization` and no `Origin`. The secret is either the worker secret (`SCHOOD_AI_SERVICE_SECRET`, for a bot's own cron) or the system secret pg_cron sends.
-- **Scheduling** uses the repo's `invoke_*_worker` pattern (migration `20261030160000`). Schedule each job in your area's migration:
+- **Scheduled jobs and system routes get the same ctx.** Prefer `registerSystemJob`. Use a system route of your own only for a cadence the scheduler cannot express or for a caller other than pg_cron (a bot's own cron).
+- **Scheduling a route of your own** uses the repo's `invoke_*_worker` pattern (migration `20261030160000`). Schedule it in your area's migration:
 
   ```sql
   select cron.schedule('schood-ai-engage-deliver-v1', '*/15 * * * *',
@@ -315,17 +359,53 @@ The handler checks that this chat is linked to that user (`users.telegram_chat_i
   `invoke_schood_ai_system(route, body)` posts to the function with the system secret from `internal_runtime_secrets` (`schood_ai_system_secret`, made by the migration). Unschedule by name first, as `20261030130000` does, and stagger minutes away from the existing jobs (03:23, 03:29, 03:35, 03:41, and minute 7 hourly).
 - **What runs:** `ctx.caller === 'system'`.
   - Throws (`user_required`): `ctx.user`, `ctx.workspace()`, `ctx.plan()`, `ctx.ai`, `ctx.context()`, `ctx.events.emit`, `ctx.functions.call`, `ctx.credits` and `ctx.gateway`. So a job can never act as a person.
-  - Available: `ctx.store`, `ctx.repo`, `ctx.notify` (by explicit user id), `ctx.audit` (no actor) and `ctx.paidBy(workspaceId)` for AI. A person's own brief charges their personal workspace; a centre's Monday brief charges the centre.
+  - Available: `ctx.store`, `ctx.repo`, `ctx.notify` (by explicit user id, including `send`), `ctx.audit` (no actor), `ctx.planFor(workspaceId)` and `ctx.paidBy(workspaceId)` for AI. A person's own brief charges their personal workspace; a centre's Monday brief charges the centre.
 - **Keep jobs short and bounded** (a `limit` in the body), idempotent, and tolerant of one person's failure.
 
 ### Anonymous routes (`anonymous: true`)
 
 - **Who uses them:** a Live Quiz player with a code and a nickname, a shared Skill Passport link, a certificate QR check, a centre's placement or admissions widget.
 - **Limits:** 30 requests a minute and 1000 a day per caller IP and route, unless you set `anonymous: { perMinute, perDay }`. Over the limit the answer is `429 rate_limited` with `retry_after`. Only a salted hash of the address is kept, for two days.
+  - `rateKey(req, { store, body })` counts by something else.
+    - A centre bot's webhook returns the bot's id when its `X-Telegram-Bot-Api-Secret-Token` matches a bot in your store, so each bot has its own budget whichever Telegram address calls.
+    - A Live Quiz route returns the open game from `await body()` (the parsed JSON body; your route can still read it) or from the query, so a whole class behind one school address plays on the game's budget.
+    - Return null for anything you do not know, so made-up tokens and codes stay limited per IP and cannot buy a fresh budget. The key is hashed with the salt like an address.
+    - With a `rateKey`, `perMinute` and `perDay` (up to 3000 and 1000000) apply per key. A per-IP ceiling across all keys still applies: `ipLimit: { perMinute, perDay }`, default 3000 a minute and 300000 a day, at most 6000 and 2000000. A request is checked against its key first, then the ceiling.
+- **Embeddable widgets:** `anonymous: { cors: 'any' }` answers CORS for any `Origin` (`GET`, `POST`, `Content-Type` and `X-Schood-Locale` only, no credentials, so no browser session crosses over). Core does not know a centre's sites, so the route must check `ctx.origin` against the centre's own list and refuse others. Serve `/embed/widget.js` from the app or Pages; it calls this route.
+- **Webhooks:** Telegram sends the bot's secret token in `X-Telegram-Bot-Api-Secret-Token`. Read it from `ctx.headers`, find the bot by a hash of it in your store, compare in constant time, and answer 200 quickly (Telegram retries otherwise). Never log the token or the update.
 - **What runs:** `ctx.caller === 'anonymous'`, with the same throwing members as system routes; a token, if sent, is ignored.
   - No AI unless a centre pays: `ctx.paidBy(centreWorkspaceId)` charges the centre's pool under the centre's plan and switches. Check that the centre turned the widget on (your own setting) before you call it.
   - Return only what the person chose to share; never put personal data in the URL.
 - **From the app:** `api(path, { anonymous: true })` sends no token.
+
+## Notifications (`ctx.notify.send`)
+
+`ctx.notify.send(userId, { kind, text, buttons?, dedupeKey? })` sends one Telegram message through the Schood bot. It is the one delivery path for the centre brief, learner briefs and engage messages.
+
+- **In order:**
+  1. their `delivery` choice must include `telegram`, else `delivery_off`;
+  2. their account must be active with a linked Telegram chat, else `no_telegram`;
+  3. `ai_notify` takes one message from the budget: a muted kind or area is `muted`, quiet hours `quiet_hours`, the daily limit `daily_limit` (each with `retryAt`);
+  4. the `send-telegram` function delivers it (service-role call, `notification_type: schood_ai.<kind>`, plain text). It applies the person's Schood notification settings and logs `platform_notifications`. Its answer becomes `sent`, `deferred` (with `retryAt`; it queues the message itself), `suppressed` or `failed`.
+- **Refusals 1 and 2 use none of the budget.** A message refused at 3 never reaches the bot.
+- `kind` is one you registered with `registerNotifyKind` (`centre.brief`). `text` is plain text, 1 to 4000 characters, in the person's language. `buttons` (at most 4) open Schood AI pages by path (`/centre`, never a full URL). `dedupeKey` makes a retried job send once.
+- Send at `prefs.preferredHour` when it is set (a scheduled job can check it). Web delivery is your own in-app feed.
+
+## A workspace's own model keys (C15)
+
+The centre area keeps a centre's own provider keys (sealed in Supabase Vault, never in a table in plain text) and registers one resolver:
+
+```ts
+registerOwnKeyResolver(async ({ workspaceId, providerKey, store }) => {
+  const key = await store(centreStore).ownKey(workspaceId, providerKey);   // enabled keys only
+  return key ? { label: key.label, apiKey: key.secret, feeCredits: key.fee } : null;
+});
+```
+
+- When the workspace has a key for a provider on the route, the gateway tries **only** those models, with that key. It never falls back to Schood's keys, so a centre's bad key fails the call (refunded) rather than costing Schood.
+- **Charging:** the call charges `feeCredits` (0 to 1000, the platform fee) instead of the credit price; 0 or left out charges nothing (a contract fee billed from `ai_calls`).
+- **Logging:** `ai_calls.provider_key` is `byok:<label>` with no USD cost, so it never counts against Schood's spend cap. The key is never logged, stored or returned. The shared circuit breaker ignores these attempts.
+- Plans, roles, switches and the call caps still apply. If the resolver throws, the call uses Schood's keys and prices.
 
 ## Chat stream (`POST core/chat`)
 
@@ -368,4 +448,5 @@ Everything else in `supabase/functions/schood-ai/` (core, admin, gateway, provid
 
 - `deno test --no-lock supabase/functions/schood-ai/` and `deno check --no-lock supabase/functions/schood-ai/index.ts`.
 - Write your area's tests with `fixture.test.ts`. Pass `modules` to add your module, and `setProvider` for model output.
+- `f.notifySends` lists what `ctx.notify.send` handed to the Schood bot, and `f.setNotifyOutcome({ outcome })` changes the bot's answer. `fixture({ systemJobs })` sets the jobs `core/system-tick` runs (or call `runSystemTick` from `scheduler.ts` directly), and `fixture({ ownKey })` fakes a workspace's own keys. See `services.test.ts`.
 - Core's tests must pass with every area's registrations loaded. Never assert that the specialist list or `custom_context_kinds` is exactly core's own; look for the entries you care about. `extensions.test.ts` registers an area specialist, a provider, a guard and a plan source to keep that true.

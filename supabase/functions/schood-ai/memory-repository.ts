@@ -1,6 +1,6 @@
 import { tashkentMonth, type Registry } from '../../../packages/ai-core/src/mod.ts';
 import type {
-  ActionRow, AuditRow, Balance, CallRecord, ChargeOutcome, GenerationRow, LearningEvent, LearningEventRow, Member, NotifyPrefs, Message, NotifyDecision, PageRevisionRow, PageRow, ReportRow,
+  ActionRow, AuditRow, Balance, CallRecord, ChargeOutcome, GenerationRow, LearningEvent, LearningEventRow, Member, NotifyPrefs, SystemRunRow, Message, NotifyDecision, PageRevisionRow, PageRow, ReportRow,
   SchoodAIRepository, ServiceSettings, SpecialistRow, Thread, UserProfile, Workspace,
 } from './types.ts';
 import { DEFAULT_NOTIFY_PREFS } from './types.ts';
@@ -36,6 +36,7 @@ export function createMemoryRepository(options: { users: Record<string, MemoryUs
   const actions = new Map<string, ActionRow>(), generations = new Map<string, GenerationRow>(), reports = new Map<string, ReportRow>();
   const audit: AuditRow[] = [], learning: LearningEventRow[] = [], notified = new Map<string, number>();
   const prefs = new Map<string, NotifyPrefs>(), rates = new Map<string, number>();
+  const runs = new Map<string, SystemRunRow & { previousRunAt: string | null }>();
   const systemSecret: string | null = options.systemSecret ?? null;
   const pages = new Map<string, PageRow>(), revisions = new Map<string, PageRevisionRow[]>();
   let ledgerId = 0;
@@ -295,6 +296,23 @@ export function createMemoryRepository(options: { users: Record<string, MemoryUs
       return Promise.resolve({ ok: true, remaining: limit - hits - 1 });
     },
     systemSecret: () => Promise.resolve(systemSecret),
+    claimSystemJob(job, periodStart, leaseSeconds) {
+      // The same rules as ai_system_claim.
+      const at = now().getTime(), run = runs.get(job);
+      if (run && run.failures > 0 && (!run.lastFinishedAt || run.lastFinishedAt < periodStart)) run.failures = 0;
+      if (run && ((run.lastRunAt && run.lastRunAt >= periodStart) || (run.runningUntil && Date.parse(run.runningUntil) >= at) || run.failures >= 3)) return Promise.resolve(false);
+      runs.set(job, { job, previousRunAt: run?.lastRunAt ?? null, lastRunAt: iso(), runningUntil: new Date(at + leaseSeconds * 1000).toISOString(), failures: run?.failures ?? 0, lastStatus: run?.lastStatus ?? null, lastError: run?.lastError ?? null, lastFinishedAt: run?.lastFinishedAt ?? null });
+      return Promise.resolve(true);
+    },
+    finishSystemJob(job, status, error) {
+      const run = runs.get(job);
+      if (run) {
+        const failures = status === 'ok' ? 0 : run.failures + 1;
+        Object.assign(run, { runningUntil: null, lastStatus: status, lastError: error?.slice(0, 200) ?? null, lastFinishedAt: iso(), failures, lastRunAt: status === 'ok' || failures >= 3 ? run.lastRunAt : run.previousRunAt });
+      }
+      return Promise.resolve();
+    },
+    systemRuns: () => Promise.resolve([...runs.values()].map(({ previousRunAt: _previous, ...row }) => structuredClone(row)).sort((a, b) => a.job.localeCompare(b.job))),
     createPage(input) {
       const row: PageRow = { ...structuredClone(input), id: crypto.randomUUID(), revision: 1, updatedBy: input.ownerId, createdAt: iso(), updatedAt: iso() };
       pages.set(row.id, row);

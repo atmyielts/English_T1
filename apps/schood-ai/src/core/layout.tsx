@@ -1,9 +1,10 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ComponentType, type ReactNode } from 'react';
 import { BookOpenCheck, ChevronDown, CircleCheck, Coins, FolderOpen, History, Home, Languages, LayoutGrid, Menu, MessageSquareText, Settings, ShieldCheck, X } from 'lucide-react';
 import { LOCALE_NAMES, SUPPORTED_LOCALES, type Locale } from '../../../../packages/service-i18n/src/format.ts';
 import { useI18n } from '../../../../packages/service-i18n/src/i18n.tsx';
-import type { Audience, AreaNavItem } from './areas.ts';
+import type { Audience } from './areas.ts';
 import { signInUrl, useSession } from './auth.tsx';
+import type { IconProps } from './lazy.tsx';
 import { useT } from './i18n/index.ts';
 import { Link, useLocation } from './router.tsx';
 import { CreditBalance } from './states.tsx';
@@ -122,7 +123,7 @@ export function AudienceSwitcher() {
   </div>;
 }
 
-export interface NavEntry { id: string; path: string; label: string; icon?: AreaNavItem['icon']; group: string }
+export interface NavEntry { id: string; path: string; label: string; icon?: ComponentType<IconProps>; group: string }
 export const CORE_NAV: (NavEntry & { audiences?: Audience[]; adminOnly?: boolean })[] = [
   { id: 'home', path: '/', label: 'nav.home', icon: Home, group: 'core' },
   { id: 'assistant', path: '/assistant', label: 'nav.assistant', icon: MessageSquareText, group: 'core' },

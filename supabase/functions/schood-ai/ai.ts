@@ -109,11 +109,16 @@ export function createChargedAIFor(scope: ChargeScope): ChargedAI {
     const ticket = await ctx.gateway.reserve(base, mode);
     if (!ticket.ok) throw failureError(ticket.failure, ctx.now());
     const reference = (input.reference ?? (ctx.idempotencyKey ? `${quote.key}:${ctx.idempotencyKey}` : crypto.randomUUID())).slice(0, 200);
-    const receipt = await chargeQuote(ctx, quote, access, plan, reference);
-    return { base: { ...base, credits: quote.credits, chargeId: receipt.chargeId }, ticket, receipt, access };
+    // On the workspace's own key (C15) the platform fee replaces the credit price; a fee of 0 charges nothing.
+    const own = ticket.ownKey;
+    const receipt = !own ? await chargeQuote(ctx, quote, access, plan, reference)
+      : own.feeCredits > 0 ? await chargeQuote(ctx, { ...quote, credits: own.feeCredits }, access, plan, reference)
+      : { credits: 0, chargeId: '', balance: await ctx.repo.creditBalance(access.workspace.id, plan.grant, plan.anchor), replayed: false };
+    return { base: { ...base, credits: receipt.credits, chargeId: receipt.chargeId || null }, ticket, receipt, access };
   }
 
   async function refund(chargeId: string): Promise<Balance | null> {
+    if (!chargeId) return null; // nothing was charged (a workspace's own key with no fee)
     try {
       await ctx.repo.refund(chargeId);
       return null;
