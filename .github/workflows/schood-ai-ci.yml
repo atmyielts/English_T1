@@ -12,6 +12,22 @@ on:
       - 'supabase/migrations/2026103*'
       - 'supabase/tests/schood-ai-*'
       - 'scripts/test-schood-ai-db.mjs'
+      # Teacher area: the exam format files the materials package reuses, and its checks.
+      - 'packages/ielts-core/**'
+      - 'packages/sat-core/**'
+      - 'packages/subject-core/**'
+      - 'supabase/functions/_shared/toefl-2026.ts'
+      - 'supabase/functions/_shared/english-exam*.ts'
+      - 'supabase/functions/_shared/english-today.ts'
+      - 'supabase/functions/_shared/english-mistakes.ts'
+      - 'supabase/functions/_shared/english-l1-notes.ts'
+      - 'supabase/functions/_shared/sat-practice-*.ts'
+      - 'supabase/functions/_shared/telegram-delivery.ts'
+      - 'supabase/functions/_shared/telegram-growth.ts'
+      - 'supabase/functions/_shared/homework-ai.ts'
+      - 'supabase/functions/academy-learning/lib.ts'
+      - 'scripts/test-schood-ai-teacher-db.mjs'
+      - 'scripts/check-schood-ai-teacher-i18n.ts'
       - 'packages/service-i18n/**'
       - 'packages/assessment-web/src/client.ts'
       - 'packages/assessment-web/src/MathText.tsx'
@@ -35,6 +51,10 @@ jobs:
         run: deno test --no-lock packages/ai-core/src/
       - name: ai-core type check
         run: deno check --no-lock packages/ai-core/src/mod.ts
+      - name: Teaching materials type check (imported directly, not through mod.ts)
+        run: deno check --no-lock packages/ai-core/src/materials/mod.ts
+      - name: Teacher i18n coverage
+        run: deno run --no-lock --allow-read scripts/check-schood-ai-teacher-i18n.ts
   service:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -56,5 +76,9 @@ jobs:
         env:
           SCHOOD_AI_DB_REQUIRE_DOCKER: '1'
         run: node scripts/test-schood-ai-db.mjs
+      - name: Teacher migration on PGlite and an isolated Postgres with concurrent sessions
+        env:
+          SCHOOD_AI_DB_REQUIRE_DOCKER: '1'
+        run: node scripts/test-schood-ai-teacher-db.mjs
       - name: App build
         run: npm --workspace apps/schood-ai run build
