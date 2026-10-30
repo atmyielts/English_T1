@@ -20,3 +20,9 @@
   ! X-Frame-Options
   ! Content-Security-Policy
   Content-Security-Policy: frame-ancestors https://web.telegram.org; base-uri 'self'; object-src 'none'; upgrade-insecure-requests
+
+# Centre website widgets: the script any centre site loads (centre/widget routes check the site).
+/embed/*
+  Access-Control-Allow-Origin: *
+  Cross-Origin-Resource-Policy: cross-origin
+  Cache-Control: public, max-age=300

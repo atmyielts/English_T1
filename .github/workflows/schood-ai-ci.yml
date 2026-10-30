@@ -32,6 +32,8 @@ on:
       - 'supabase/functions/academy-learning/lib.ts'
       - 'scripts/test-schood-ai-teacher-db.mjs'
       - 'scripts/check-schood-ai-teacher-i18n.ts'
+      - 'scripts/test-schood-ai-centre-db.mjs'
+      - 'scripts/schood-ai-centre-dev-stack.ts'
       - 'packages/service-i18n/**'
       - 'packages/assessment-web/src/client.ts'
       - 'packages/assessment-web/src/MathText.tsx'
@@ -84,5 +86,11 @@ jobs:
         env:
           SCHOOD_AI_DB_REQUIRE_DOCKER: '1'
         run: node scripts/test-schood-ai-teacher-db.mjs
+      - name: Centre migration on PGlite and an isolated Postgres, account closure, seat and counter races
+        env:
+          SCHOOD_AI_DB_REQUIRE_DOCKER: '1'
+        run: node scripts/test-schood-ai-centre-db.mjs
+      - name: Centre dev stack type check
+        run: deno check --no-lock scripts/schood-ai-centre-dev-stack.ts
       - name: App build
         run: npm --workspace apps/schood-ai run build

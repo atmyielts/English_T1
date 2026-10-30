@@ -110,6 +110,11 @@ export const CREDIT_PRICES = {
   'observation.feedback': price('C16', 5, 'standard', { assumed: true }),
   // Schood Coaches, generated above.
   ...COACH_PRICES,
+  // Centres, added by the centre area (assumed: the doc's table has no row of its own).
+  // Placement writing and speaking marks reuse "Marking per script" (4); the curriculum
+  // outline reuses "term outline" (10).
+  'placement.mark': price('C5', 4, 'premium', { assumed: true }),
+  'curriculum.outline': price('C12', 10, 'standard', { assumed: true }),
 } satisfies Record<string, CreditPrice>;
 
 export type CreditKey = keyof typeof CREDIT_PRICES;
