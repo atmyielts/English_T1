@@ -69,7 +69,7 @@ export function validatePack(source: PackSource): string[] {
 
   // --- manifest ---------------------------------------------------------------------------------
   if (!m) return ['manifest: missing'];
-  if (!PACK_ID.test(m.id ?? '')) bad('manifest.id', 'must match ^[a-z][a-z0-9-]{1,30}$');
+  if (!PACK_ID.test(m.id ?? '')) bad('manifest.id', 'must match ^[a-z][a-z0-9-]{1,15}$');
   if (!(COACH_FEATURES as readonly string[]).includes(m.feature)) bad('manifest.feature', `must be one of ${COACH_FEATURES.join(', ')}`);
   if (!/^\d+\.\d+\.\d+$/.test(m.version ?? '')) bad('manifest.version', 'must look like 1.0.0');
   if (!languages.length || languages.some((locale) => !(LOCALES as readonly string[]).includes(locale)) || new Set(languages).size !== languages.length) bad('manifest.uiLanguages', 'needs distinct languages from uz, ru, en');

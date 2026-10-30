@@ -3,7 +3,7 @@ import {
   applyDiagnosticTap, diagnosticQuestion, diagnosticUnlinked, encodeAnswers, localeFrom, parseDiagnosticSave, parseDiagnosticTap, pick, plain, say,
   type CoachPack, type Delivery, type InEvent, type Locale, type OutMessage, type UpdateRequest, type UpdateResponse,
 } from '../../../packages/coach-packs/src/mod.ts';
-import { keyboard, sendAll, telegram, type Fetch, type Telegram } from './telegram.ts';
+import { keyboard, sendAll, splitHtml, telegram, type Fetch, type Telegram } from './telegram.ts';
 
 // The coach bots' Worker (Cloudflare, free plan). It is transport only:
 //   POST /tg/<pack>         a Telegram webhook, checked with that bot's secret-token header;
@@ -27,6 +27,8 @@ export interface WorkerDeps { env: Env; packs: ReadonlyMap<string, CoachPack>; f
 interface Waiter { waitUntil(promise: Promise<unknown>): void }
 
 const MAX_VOICE_BYTES = 8 * 1024 * 1024, MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+/** Cloudflare's free plan: subrequests per invocation. */
+export const SUBREQUESTS = 50;
 export const envKey = (pack: string) => pack.toUpperCase().replace(/-/g, '_');
 
 function safeEqual(a: string, b: string): boolean {
@@ -226,9 +228,14 @@ export function createWorker(deps: WorkerDeps) {
     const payload = await due.json().catch(() => ({})) as { deliveries?: Delivery[] };
     if (!due.ok || !Array.isArray(payload.deliveries)) { console.error(JSON.stringify({ event: 'coach_cron_due_failed', status: due.status })); return { sent: 0, failed: 0, blocked: 0 }; }
     const results: { id: string; status: 'sent' | 'failed' | 'blocked'; reason?: string }[] = [];
+    // The free plan allows 50 subrequests per run: the due list and the report take two.
+    let budget = SUBREQUESTS - 2;
     for (const delivery of payload.deliveries) {
       const token = tokenOf(delivery.pack);
       if (!token || !/^\d{1,20}$/.test(delivery.chatId)) { results.push({ id: delivery.id, status: 'failed', reason: 'no_bot' }); continue; }
+      const cost = delivery.messages.reduce((sum, message) => sum + (message.kind === 'text' ? splitHtml(message.html).length : 1), 0);
+      if (cost > budget) { results.push({ id: delivery.id, status: 'failed', reason: 'subrequest_budget' }); continue; }
+      budget -= cost;
       const report = await sendAll(telegram(token, deps.fetch), delivery.chatId, delivery.messages, appUrl);
       results.push({ id: delivery.id, status: report.blocked ? 'blocked' : report.failed ? 'failed' : 'sent', ...(report.blocked ? { reason: 'bot_blocked' } : {}) });
     }

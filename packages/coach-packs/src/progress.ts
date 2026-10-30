@@ -119,8 +119,11 @@ export interface ScoredResult { sessionId: string; rubric: string; at: string; o
  */
 export function reachedMilestones(pack: CoachPack, results: readonly ScoredResult[], achieved: ReadonlySet<string>, now: Date): { milestone: Milestone; results: ScoredResult[] }[] {
   const best = new Map<string, { milestone: Milestone; results: ScoredResult[] }>();
+  // A milestone at or below one already reached on the same rubric is never issued later.
+  const top = new Map<string, number>();
+  for (const milestone of pack.milestones) if (achieved.has(milestone.id)) top.set(milestone.rule.rubric, Math.max(top.get(milestone.rule.rubric) ?? -Infinity, milestone.level));
   for (const milestone of pack.milestones) {
-    if (achieved.has(milestone.id)) continue;
+    if (achieved.has(milestone.id) || milestone.level <= (top.get(milestone.rule.rubric) ?? -Infinity)) continue;
     const since = now.getTime() - milestone.rule.withinDays * DAY;
     const qualifying = results
       .filter((result) => result.rubric === milestone.rule.rubric && Date.parse(result.at) >= since)

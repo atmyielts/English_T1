@@ -27,6 +27,16 @@ import { goalOf, planView, progressView, todayPlan, weekView } from './views.ts'
 
 const MB = 1024 * 1024;
 
+/** A task's title: a speaking task names the part it practises, not the whole mock. */
+function taskTitle(pack: CoachPack, task: { activityId: string; part?: string }, locale: Locale): string {
+  const activity = pack.byId.get(task.activityId);
+  if (activity?.kind === 'speaking_exam' && task.part) {
+    const part = activity.parts.find((entry) => entry.id === task.part);
+    if (part) return pick(part.title, locale);
+  }
+  return pick(activity?.title, locale);
+}
+
 export function coachRoutes(): Record<string, RouteHandler> {
   const runtime = (ctx: RequestContext) => runtimeOf((handle) => ctx.store(handle));
   const workerOnly = (ctx: RequestContext) => { if (ctx.user.via !== 'service') throw new SchoodAIError('service_only', 'Only the coach bots call this.', 403); };
@@ -150,7 +160,7 @@ export function coachRoutes(): Record<string, RouteHandler> {
             return { rubric: forecast.rubric, name: pick(rubric.name, ctx.locale), scale: overallScale(rubric), points: forecast.points, ...forecast.prediction };
           }),
           errors: progress.errors.map((error) => ({ ...error, name: pick(pack.errorById.get(error.tag)?.name, ctx.locale), explain: pick(pack.errorById.get(error.tag)?.explain, ctx.locale) })),
-          today: today ? { minutes: today.minutes, phase: pick(today.phase.title, ctx.locale), days_left: today.daysLeft, tasks: today.tasks.map((task) => ({ ...task, title: pick(pack.byId.get(task.activityId)?.title, ctx.locale) })) } : null,
+          today: today ? { minutes: today.minutes, phase: pick(today.phase.title, ctx.locale), days_left: today.daysLeft, tasks: today.tasks.map((task) => ({ ...task, title: taskTitle(pack, task, ctx.locale) })) } : null,
           week: { from: week.from, to: week.to, has_data: week.hasData, headline: week.report.headline },
           sessions: sessions.map((session) => sessionCard(pack, session, ctx.locale)),
           certificates: certificates.map((cert) => certView(rt, cert)),
@@ -205,7 +215,7 @@ export function coachRoutes(): Record<string, RouteHandler> {
           options: { targets: pack.plan.goal.options.map((value) => ({ value, label: levelLabel(scale, value) })), minutes: pack.plan.dailyMinutes.options, exam_date: pack.plan.goal.examDate },
           weekly_mock: pack.plan.weeklyMock ? { weekday: pack.plan.weeklyMock.weekday, title: pick(pack.plan.weeklyMock.title, ctx.locale) } : null,
           links: pack.plan.links.map((link) => ({ id: link.id, label: pick(link.label, ctx.locale), url: link.url })),
-          today: today ? today.tasks.map((task) => ({ ...task, title: pick(pack.byId.get(task.activityId)?.title, ctx.locale) })) : [],
+          today: today ? today.tasks.map((task) => ({ ...task, title: taskTitle(pack, task, ctx.locale) })) : [],
         };
       },
     },

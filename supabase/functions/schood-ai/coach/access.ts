@@ -64,6 +64,9 @@ async function grantCycle(ctx: RequestContext, runtime: CoachRuntime, feature: s
     const starts = await ctx.repo.productStarts(ctx.user.id);
     const start = ids.map((id) => starts[id]).filter(Boolean).sort()[0];
     if (start) return `pass:${feature}:${Math.floor(Date.parse(start) / 1000)}:${Math.floor((now - Date.parse(start)) / CYCLE)}`;
+    // A held pass whose start is not known: 30-day cycles counted from the epoch.
+    const held = new Set(await ctx.repo.productsHeldBy(ctx.user.id));
+    if (ids.some((id) => held.has(id))) return `pass:${feature}:0:${Math.floor(now / CYCLE)}`;
   }
   for (const { team, member } of await runtime.store.teamsOf(ctx.user.id)) {
     if (team.status !== 'active' || Date.parse(team.validUntil) <= now) continue;
