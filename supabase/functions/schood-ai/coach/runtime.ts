@@ -8,7 +8,7 @@ import type { CoachStore } from './store.ts';
 // What the coach area runs on, through core's area stores (stores.ts):
 //   - `coachStore`: the coach_* tables (Postgres when deployed, the memory twin in
 //     tests and dev stacks);
-//   - `coachServices`: the coach settings (SCHOOD_AI_COACH_*) and Mini App sign-in;
+//   - `coachServices`: the coach settings (SCHOOD_AI_COACH_*);
 //   - the validated packs, loaded once per function instance.
 
 export interface CoachBot { id: string | null; username: string | null }
@@ -19,16 +19,13 @@ export interface CoachConfig {
   bots: Record<string, CoachBot>;
   /** Coach feature (B1–B6) → Schood product ids of its single-coach pass. */
   passProducts: Record<string, string[]>;
-  /** Credits a pass or team seat tops up to per 30 days, so fair use works without Plus credits. [ASSUMPTION] */
+  /** Credits a coach pass or team seat brings per coach per 30 days (core grants them). [ASSUMPTION] */
   fairUseCredits: number;
   /** Telegram's Ed25519 public key for Mini App data (hex). */
   telegramPublicKey: string;
 }
-export interface MintedSession { access_token: string; refresh_token: string; expires_at: number }
 export interface CoachServices {
   config: CoachConfig;
-  /** A Supabase session for a linked person (Telegram Mini App sign-in); null when the account cannot get one. */
-  mintSession(userId: string): Promise<MintedSession | null>;
 }
 export interface CoachRuntime extends CoachServices {
   store: CoachStore;
@@ -78,12 +75,8 @@ export const coachStore = defineStore<CoachStore>('coach', {
 });
 
 export const coachServices = defineStore<CoachServices>('coach.services', {
-  postgres: (_db, env) => ({
-    config: configFromEnv((name) => env.env(name)),
-    // Only the deployed function signs people in; the adapter loads on first use.
-    mintSession: async (userId) => (await import('./production.ts')).mintSession(userId),
-  }),
-  memory: (env) => ({ config: configFromEnv((name) => env.env(name)), mintSession: () => Promise.resolve(null) }),
+  postgres: (_db, env) => ({ config: configFromEnv((name) => env.env(name)) }),
+  memory: (env) => ({ config: configFromEnv((name) => env.env(name)) }),
 });
 
 /** The coach runtime of a request, a plan source or a context provider. */

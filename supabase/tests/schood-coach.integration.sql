@@ -23,7 +23,7 @@ begin
 
   -- Every coach table is closed to browsers and has RLS on.
   foreach t in array array['coach_enrollments', 'coach_sessions', 'coach_turns', 'coach_scores', 'coach_mastery', 'coach_cards', 'coach_polls',
-    'coach_schedules', 'coach_deliveries', 'coach_updates', 'coach_media', 'coach_miniapp_mints', 'coach_certificates', 'coach_teams',
+    'coach_schedules', 'coach_deliveries', 'coach_updates', 'coach_media', 'coach_certificates', 'coach_teams',
     'coach_team_members', 'coach_team_invites'] loop
     assert (select relrowsecurity from pg_class where oid = format('public.%I', t)::regclass), format('%s has RLS', t);
     assert not has_table_privilege('anon', format('public.%I', t), 'select'), format('anon cannot read %s', t);

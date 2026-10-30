@@ -51,9 +51,11 @@ Telegram signs a Mini App's `initData` in two ways, and both are checked:
 2. **In the function, with Telegram's public key**: `schood-ai/coach/miniapp-session`
    checks the Ed25519 `signature` field against Telegram's published production key and the
    bot's numeric id from `SCHOOD_AI_COACH_BOTS` (`supabase/functions/schood-ai/coach/telegram-auth.ts`).
-   It also checks that the Telegram user is the chat linked to that account, and allows 12
-   sign-ins an hour per person. Then it mints a Schood session (Supabase admin magic-link
-   token, verified at once on a throwaway client) and writes an audit row.
+   It also checks that the Telegram user is the chat linked to that account. Then core mints
+   the Schood session (`ctx.auth.sessionFor(userId, { reason: 'coach.miniapp' })`). Core audits
+   it as `core.session_issued` and limits it to 10 an hour and 30 a day per person. It never
+   mints one for a Schood admin or an inactive account, and the coach area holds no admin
+   auth client.
 
 So a leaked service secret alone cannot sign anyone in: that also needs data Telegram signed.
 The app stores the session with core's shared auth client, so the person is signed in to
@@ -93,7 +95,7 @@ Function (Supabase secrets of `schood-ai`):
 |---|---|
 | `SCHOOD_AI_COACH_BOTS` | `ielts:<bot id>:<username>,speaking:<bot id>:<username>`. The bot id is the number before `:` in its token. Not secret. |
 | `SCHOOD_AI_COACH_PASS_PRODUCT_IDS` | Optional. `B1:<product uuid>,B2:<product uuid>` for single-coach passes. |
-| `SCHOOD_AI_COACH_FAIR_USE_CREDITS` | Optional. Credits a pass or seat tops up to every 30 days (default 1200). |
+| `SCHOOD_AI_COACH_FAIR_USE_CREDITS` | Optional. Credits a pass or team seat brings per coach every 30 days (default 1200). Core grants them through the plan source, with none for Plus or Family holders. |
 | `SCHOOD_AI_COACH_APP_URL` | Optional. Defaults to `https://ai.schood.online`. |
 
 The app build reads `VITE_COACH_BOTS_URL` (default `https://coach-bots.schood.online`).

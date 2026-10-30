@@ -34,8 +34,6 @@ create table if not exists public.coach_enrollments (
   streak_best integer not null default 0 check (streak_best >= 0),
   last_active_day date,
   verified_minutes integer not null default 0 check (verified_minutes >= 0),
-  -- the fair-use cycle last topped up for a coach pass or team seat.
-  fair_use_cycle text check (fair_use_cycle is null or char_length(fair_use_cycle) <= 120),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (user_id, pack)
@@ -212,15 +210,6 @@ create table if not exists public.coach_media (
   primary key (pack, cache_key)
 );
 
--- Mini App sign-ins, for rate limiting.
-create table if not exists public.coach_miniapp_mints (
-  id bigint generated always as identity primary key,
-  user_id uuid not null references public.users(id) on delete cascade,
-  pack text not null check (pack ~ '^[a-z][a-z0-9-]{1,15}$'),
-  created_at timestamptz not null default now()
-);
-create index if not exists coach_miniapp_mints_user_idx on public.coach_miniapp_mints (user_id, created_at desc);
-
 -- --- Certificates ------------------------------------------------------------------------------------
 create table if not exists public.coach_certificates (
   id uuid primary key default gen_random_uuid(),
@@ -356,7 +345,6 @@ declare
   cutoff timestamptz;
   v_turns integer;
   v_updates integer;
-  v_mints integer;
   v_polls integer;
 begin
   if p_days is null or p_days < 30 then raise exception 'retention_too_short' using errcode = '22023'; end if;
@@ -366,11 +354,9 @@ begin
   get diagnostics v_turns = row_count;
   delete from public.coach_updates where created_at < p_now - interval '7 days';
   get diagnostics v_updates = row_count;
-  delete from public.coach_miniapp_mints where created_at < p_now - interval '2 days';
-  get diagnostics v_mints = row_count;
   delete from public.coach_polls where created_at < p_now - interval '30 days';
   get diagnostics v_polls = row_count;
-  return jsonb_build_object('turns', v_turns, 'updates', v_updates, 'mints', v_mints, 'polls', v_polls, 'cutoff', cutoff);
+  return jsonb_build_object('turns', v_turns, 'updates', v_updates, 'polls', v_polls, 'cutoff', cutoff);
 end $$;
 
 revoke all on function public.coach_claim_due(timestamptz, integer, integer) from public, anon, authenticated;
@@ -392,7 +378,6 @@ alter table public.coach_schedules enable row level security;
 alter table public.coach_deliveries enable row level security;
 alter table public.coach_updates enable row level security;
 alter table public.coach_media enable row level security;
-alter table public.coach_miniapp_mints enable row level security;
 alter table public.coach_certificates enable row level security;
 alter table public.coach_teams enable row level security;
 alter table public.coach_team_members enable row level security;
@@ -400,7 +385,7 @@ alter table public.coach_team_invites enable row level security;
 
 revoke all on public.coach_enrollments, public.coach_sessions, public.coach_turns, public.coach_scores, public.coach_mastery,
   public.coach_cards, public.coach_polls, public.coach_schedules, public.coach_deliveries, public.coach_updates, public.coach_media,
-  public.coach_miniapp_mints, public.coach_certificates, public.coach_teams, public.coach_team_members, public.coach_team_invites
+  public.coach_certificates, public.coach_teams, public.coach_team_members, public.coach_team_invites
   from anon, authenticated;
 
 -- --- Account erasure: the registry pattern of 20261030130000 ------------------------------------------------
@@ -408,7 +393,7 @@ do $$
 declare
   relations text[];
   wanted text[] := array['coach_enrollments', 'coach_sessions', 'coach_turns', 'coach_scores', 'coach_mastery', 'coach_cards', 'coach_polls',
-    'coach_schedules', 'coach_deliveries', 'coach_updates', 'coach_miniapp_mints', 'coach_certificates', 'coach_team_members'];
+    'coach_schedules', 'coach_deliveries', 'coach_updates', 'coach_certificates', 'coach_team_members'];
   relation_name text;
   guard_installed boolean := to_regprocedure('public.guard_closed_personal_record()') is not null;
 begin

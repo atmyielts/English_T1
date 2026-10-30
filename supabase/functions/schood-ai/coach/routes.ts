@@ -5,7 +5,7 @@ import {
 } from '../../../../packages/coach-packs/src/mod.ts';
 import { integer, isUuid, oneOf, record, text, uuid } from '../input.ts';
 import { SchoodAIError, type RequestContext, type RouteHandler } from '../types.ts';
-import { accessKind, ensureFairUse, forgetTeamSeats } from './access.ts';
+import { accessKind, forgetTeamSeats } from './access.ts';
 import { keyOf } from './ai.ts';
 import { activityFacts, factsSummary } from './facts.ts';
 import { Bot } from './bot.ts';
@@ -166,11 +166,9 @@ export function coachRoutes(): Record<string, RouteHandler> {
           throw new SchoodAIError('telegram_invalid', 'Telegram could not confirm this session.', 401, { reason: cause instanceof Error ? cause.message : 'telegram_signature' });
         }
         if (identity.telegramUserId !== ctx.user.telegramChatId) throw new SchoodAIError('telegram_invalid', 'Telegram could not confirm this session.', 401, { reason: 'telegram_user' });
-        if (await rt.store.countMints(ctx.user.id, new Date(ctx.now().getTime() - 3_600_000).toISOString()) >= 12) throw new SchoodAIError('capped', 'Too many sign-ins. Try again later.', 429, { scope: 'user', retry_after: new Date(ctx.now().getTime() + 3_600_000).toISOString() });
-        const session = await rt.mintSession(ctx.user.id);
-        if (!session) throw new SchoodAIError('session_unavailable', 'Open Schood on the web to sign in.', 409);
-        await rt.store.addMint(ctx.user.id, pack.manifest.id);
-        await ctx.audit('coach.miniapp_session', { pack: pack.manifest.id });
+        // Both Telegram signatures are checked and the chat is this person's: core mints the
+        // session (audited as core.session_issued, rate-limited, never for admins).
+        const session = await ctx.auth.sessionFor(ctx.user.id, { reason: 'coach.miniapp' });
         return { session };
       },
     },
@@ -195,8 +193,7 @@ export function coachRoutes(): Record<string, RouteHandler> {
     dashboard: {
       async GET(ctx) {
         const { rt, pack } = packOf(ctx, ctx.query.get('pack'));
-        let enrollment = await enrolment(ctx, rt, pack);
-        enrollment = await ensureFairUse(ctx, rt, enrollment, pack.manifest.feature);
+        const enrollment = await enrolment(ctx, rt, pack);
         const view = deps(rt, pack, enrollment, ctx);
         const [progress, today, week, sessions, certificates, kind] = await Promise.all([
           progressView(view), enrollment.placement ? todayPlan(view) : Promise.resolve(null), weekView(view),
