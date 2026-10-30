@@ -57,63 +57,77 @@ The lifetime engagement layer lives in `supabase/functions/schood-ai/engage/` (f
 - `registerOfferSource((ctx, { userId, moment }) => offer | null)` supplies the honest offer shown at a graduation or a closed goal (Plus Annual). Its title and terms carry the real price.
   - Engage never shows a price or a discount itself.
   - People dismiss an offer in one tap, or mute all offers in settings.
-- `streak.freeze` (10 credits, `assumed: true`) is in `credits.ts`. The pricing phase owns the number. Engage charges it with `ctx.repo.charge`, for adults only and once a week.
+- `streak.freeze` (10 credits, `assumed: true`, `adultsOnly`) is in `credits.ts`. The pricing phase owns the number. Engage buys it with `ctx.credits.spend`, once a week; core refuses anyone an age source does not confirm as an adult. Engage's date of birth is the age source `engage.birth_date`.
 
-## 3. Delivery to Telegram and the web (for the coordinator)
+## 3. Delivery: scheduled jobs and core's notifications
 
-All messages go through `ai_engage_outbox`. At most two a day per person across all bots, at their chosen hour, and never between 22:00 and 08:00 local time.
+Core's scheduler runs engage's work: pg_cron calls `core/system-tick` every five minutes, and the jobs are registered with `registerSystemJob` in `engage/system.ts`. There is nothing to schedule or wire by hand, and no bot drains anything.
 
-1. **Who is due.** The bots' cron calls `rpc('ai_engage_due_users', { p_now, p_limit })` with the service key.
-   - It returns `{ user_id, chat_id }` once per person per local day, after their chosen hour and outside quiet hours.
-   - The coach worker has a cron. The student bot (`workers/schood-bot`) needs `[triggers] crons = ["5 * * * *"]` and a `scheduled()` handler.
-2. **Plan.** For each person, call `POST /schood-ai/engage/tick` with the worker headers. It queues at most two messages for their chosen hour, highest priority first:
-   - check-ins before and after a dated goal;
-   - streak at risk;
-   - the comeback offer;
-   - a journey behind schedule;
-   - win-back on day 2, 7 and 21 of a lapse (three at most), with the person's real XP, best streak and chapter;
-   - last week's league result;
-   - the national mock.
-
-   Certificate results and squad hellos are queued by their own actions and go through the same drain and budget.
-3. **Drain.** Call `POST /schood-ai/engage/outbox` with `{ channel: 'telegram', bot: 'student' | 'coach_b1' | … }`.
-   - Each due message is claimed once, then passes `ctx.notify.take`.
-   - A refusal puts the message back until the next allowed moment, or drops it if it would be stale by then.
-   - The response is `messages: [{ id, kind, text, buttons: [{ label, path }], claim }]`. Paths are relative to `https://ai.schood.online`.
-4. **Acknowledge.** Call `POST /schood-ai/engage/outbox-ack` with `{ id, claim, status: 'sent' | 'failed' }` after `sendMessage`.
-5. **Web:** people without a linked chat get the same messages in the in-app inbox (`GET engage/inbox`, shown on `/progress`). The inbox uses no push budget.
-
-### When core's `system: true` routes land
-
-Core is adding routes that take the worker secret only, have no user and run on a documented schedule. Engage's scheduled work is ready for them in `engage/system.ts` (`ENGAGE_SYSTEM_JOBS`, exported from `engage/mod.ts`). The jobs run the same code as the per-person routes above, never read `ctx.user`, and are tested through stand-in routes that remove the user (`delivery.test.ts`). Wiring each is one route entry, for example `'system-deliver': { POST: deliverDue, system: true }`.
-
-| Route | Schedule | What it does |
+| Job | When | What it does |
 |---|---|---|
-| `engage/system-deliver` | `*/15 * * * *` | For everyone due now (steps 1–3 in one call), it does two things. First it plans their day: check-ins, streak at risk, comeback, win-back on lapse days 2, 7 and 21, last week's league result and the national mock. Then it returns the Telegram messages that pass the budget, as `{ id, kind, text, buttons, claim, user_id, chat_id }`. Body `{ bot, limit? }`. |
-| `engage/system-ack` | after each send | `{ acks: [{ id, claim, status, reason? }] }`; the claim token is the proof. |
-| `engage/system-rollover` | `10 * * * 1` | Settles every league group of a finished week once (an hour after the week ends), even if nobody opens a league. |
+| `engage.plan` | every 5 minutes | Plans the day for each person whose preferred hour has come (core's notification preferences, 19:00 when none is set; `ai_engage_due_users`). It queues at most two messages, highest priority first, never a kind they muted. See the list below. Each person is planned once a local day, 150 a run. |
+| `engage.deliver` | every 5 minutes | Claims due Telegram messages across everyone (`ai_engage_outbox_claim_due`) and sends each with `ctx.notify.send`. See the outcomes below. |
+| `engage.league_rollover` | daily 01:10 Tashkent | Settles every finished league week once, even if nobody opens a league. Weeks end Monday 00:00 Tashkent. |
+| `engage.media_sweep` | daily 04:20 Tashkent | Deletes the audio of closed accounts, pruned samples and sittings (section 5). |
 
-Once these are wired, the bots stop calling `ai_engage_due_users`, `tick`, `outbox` and `outbox-ack`. Those service routes can then go in a later release.
+What `engage.plan` can queue:
+- check-ins before and after a dated goal;
+- streak at risk;
+- the comeback offer;
+- a journey behind schedule;
+- win-back on lapse days 2, 7 and 21, Telegram only;
+- last week's league result;
+- the national mock.
 
-## 4. Requests to core
+How `engage.deliver` handles core's answer:
+- **Later** (quiet hours or the daily limit): the message is put back until then, or dropped if it would be stale by then.
+- **No Telegram** (`delivery_off`, `no_telegram`): it moves to the in-app inbox, if the person gets messages there.
+- **Deferred:** counts as sent, because the Schood bot keeps it for the person's delivery time.
+- **Failed:** tried again after 15 minutes, three times at most.
+- **Muted or suppressed:** dropped.
+- Every send carries the dedupe key `engage:<key>`, so a retried run never sends twice.
 
-Answered by core and now used: area stores (`defineStore`, `ctx.store`) replaced engage's own service-role client, and `useCatalog` loads the engage page text (`i18n/pages.<locale>.ts`) with the pages. Engage adds 2.9 KB gzip to the main chunk (115.0 against 112.1 KB for core alone): the route table, nav icons and the page preload map.
+**Why the outbox stays.** `ai_engage_outbox` is the planner's queue, not a bot drain. `ctx.notify.send` delivers one message now; it does not choose between messages or hold them. The outbox:
+- picks the day's two by priority;
+- keeps dedupe keys across days;
+- lets a message expire, since a check-in is pointless the next day;
+- holds squad nudges and certificate results queued by actions;
+- remembers core's "later" time;
+- is the in-app inbox.
 
-1. **Public routes.** Please let a `RouteHandler` carry `public: true` and run without a user. Engage already marks `engage/passport-view` and `engage/verify` this way (`publicRoute` in `engage/mod.ts`), and neither uses who is asking.
-   - Today the handler requires sign-in, so a shared Passport link and a certificate QR open only for signed-in viewers. Signed-out viewers see the sign-in state.
-   - Suggested shape:
-     - `ctx.user` is null on public routes;
-     - no `ctx.ai`, no workspace;
-     - a per-IP rate limit.
-   - The coach agent will need the same for its certificate links.
-2. **Learning events in the memory repository.** Engage's tables go through core's area store (`engageStore` in `engage/binding.ts`, `ctx.store`). Its memory twin taps the core memory repository's `addLearningEvents` to see events. Please add a read method, such as `learningEvents(userId, afterId)`, so the tap can go.
-3. **Notification preferences.** Please add a route to set `ai_notify_prefs` (time zone, quiet hours). Engage keeps its own zone and hour in `ai_engage_profiles` and checks quiet hours as well as `ai_notify`. The stricter of the two wins.
-4. **Non-AI credit spends.** Please bless `ctx.repo.charge` for a priced action that makes no model call (`streak.freeze`), or add `ctx.credits.spend(key, reference)`.
-5. **Wording for the chat's daily-limit refusal.** The `engage.daily_limit` chat guard (`registerChatGuard`) refuses chats once the limit is reached. Core's chat shows `error.<code>`, and engage keeps its own keys under its prefix, so please add `error.daily_limit_reached`. Until then the chat shows the generic error. Suggested text:
-   - en: "You reached your daily limit. Practice opens again tomorrow."
-   - uz: "Kunlik chegaraga yetdingiz. Mashq ertaga yana ochiladi."
-   - ru: "Дневной лимит достигнут. Практика снова откроется завтра."
-6. **`retryAt` in the memory `notify`.** It reports "today 08:00" for a used-up day. Engage clamps it to the next local morning; Postgres is right already.
+The bot-drained `tick`, `outbox` and `outbox-ack` routes and their acknowledgement are gone. Nothing reaches Telegram except through `ctx.notify.send`.
+
+**Kinds** registered with `registerNotifyKind` (Settings → Notifications lists them, and muting `engage` mutes them all):
+- `engage.checkin`
+- `engage.streak`
+- `engage.journey`
+- `engage.winback`
+- `engage.squad`
+- `engage.league`
+- `engage.events`
+- `engage.certificate`
+
+**Preferences** are core's (`core/notify-prefs`): time zone, quiet hours, messages a day, preferred hour, delivery and mutes.
+- Engage reads them for local days (the SQL ingest reads `ai_notify_prefs.time_zone`) and for planning.
+- Engage's settings page links to them.
+
+**Web:** people who chose the in-app inbox, or have no linked chat, get the same messages in `GET engage/inbox` (shown on `/progress`). The inbox uses no push budget.
+
+## 4. Requests to core: all answered
+
+Every request is answered by core and now used. The workarounds are gone.
+
+- **Area stores** (`defineStore`, `ctx.store`): `engageStore` in `engage/binding.ts`, over core's service-role client.
+- **Learning events in the memory repository** (`learningEvents`): the memory repository reads them as Postgres reads `ai_learning_events`. The `addLearningEvents` patch is gone.
+- **Anonymous routes:**
+  - `engage/passport-view`, `engage/passport-sample` (link playback) and `engage/verify` open without signing in and show only what the person chose to share.
+  - A live link or a real certificate has its own budget (`rateKey`).
+  - Made-up tokens and codes stay limited per IP. Certificate codes are limited at 20 a minute (`unkeyedLimit`).
+- **Notification preferences** (`core/notify-prefs`): see section 3. Engage's own zone, hour and message columns are dropped.
+- **Non-AI credit spend** (`ctx.credits.spend`): the streak freeze. `streak.freeze` is `adultsOnly`, and engage registers the age source `engage.birth_date`.
+- **Chat refusal wording:** core's `error.daily_limit_reached`, for the `engage.daily_limit` chat guard.
+- **Scheduled work and Telegram delivery** (`registerSystemJob`, `ctx.notify.send`): see section 3.
+- **Lazy catalogs, named icons and lazy home cards:** engage adds 2.4 KB gzip to the main chunk (115.3 against 112.9 KB for core alone). That is the 23-route table and its page loaders.
 
 ## 5. For the owner and operations
 
@@ -123,7 +137,11 @@ Answered by core and now used: area stores (`defineStore`, `ctx.store`) replaced
 - **Account closure.** The 24 engage tables keyed on `user_id` are in `account_personal_erasure_tables()`, with the closed-account guard: the Passport, its links and items, samples, XP and days, league rows, sittings and certificates, journeys, goals, dates, squad memberships, the talent profile and the outbox among them.
   - `ai_engage_erase_account` (a service hook) hands an owned squad to the longest-standing member, or deletes it when nobody is left.
   - It also clears the person's id from the talent audit and from sponsor, centre-league, employer-grant and reviewer fields.
-- **Audio** for samples and sittings is stored under `schood-ai/engage/` in the media bucket. Closure removes the rows, but the S3 objects need a lifecycle rule or a delete job for that prefix.
+- **Audio** for samples and sittings is stored under `schood-ai/engage/` in the media bucket.
+  - When the rows go, delete triggers on `ai_engage_samples` and `ai_engage_sittings` queue the objects in `ai_engage_media_trash`. That happens on account closure (through the registry) and when deleted samples are pruned after 7 days.
+  - `engage.media_sweep` deletes the objects through `_shared/media-storage.ts` (`deleteStorageRef`).
+  - Audio another area stored and engage only references is never queued.
+  - A delete that keeps failing stays in the table after 20 attempts, with its last error: `select * from ai_engage_media_trash where attempts >= 20`.
 - **Decisions marked `[ASSUMPTION]` in code:**
   - E-feature plan rules in `plans.ts`;
   - `story.episode` 3 credits;
@@ -154,6 +172,7 @@ Answered by core and now used: area stores (`defineStore`, `ctx.store`) replaced
   "migrations": ["20261030800000_schood_ai_engage.sql"],
   "edgeFunctions": ["schood-ai"],
   "workers": [],
+  "sharedEdgeConsumers": ["schood-ai"],
   "requiredSecrets": [],
   "rolloutOrder": [
     "pages",
@@ -161,23 +180,22 @@ Answered by core and now used: area stores (`defineStore`, `ctx.store`) replaced
     "function:schood-ai"
   ],
   "manualFollowUps": [
-    "Pages: merging publishes schood-ai with the engage screens (progress, journeys, stories, league, squads, Skill Passport, certificates). No new Pages project or domain. Until the migration and function are deployed, these screens show the connection error state; the rest of the app is unchanged.",
-    "Database: supabase db push --linked applies 20261030800000_schood_ai_engage.sql after core's migrations (additive ai_engage_* tables with RLS on and no browser grants; SECURITY DEFINER functions for ingest, leagues, freezes, journeys, squads, outbox, due users and boards; 24 tables added to account_personal_erasure_tables(); ai_engage_erase_account registered in account_erasure_service_hooks(); pg_cron jobs ai-engage-ingest-v1 at 4-59/5 * * * * and ai-engage-prune-v1 at 53 3 * * *). It touches no existing table. Keep the pending #220 payment migrations excluded, as for core.",
-    "Function: supabase functions deploy schood-ai --project-ref <prod> (engage routes, the engage_memory and engage_progress context providers, and the engage.daily_limit chat guard). No new secret: engage uses core's service-role client and the existing media storage settings.",
-    "Talent pool stays off: do not add the engage.talent_pool switch in the admin console until the owner decides.",
-    "Media: add an S3 lifecycle rule or delete job for the schood-ai/engage/ prefix (sample and sitting audio of closed accounts)."
+    "Pages: merging publishes schood-ai with the engage screens (progress, journeys, stories, league, squads, Skill Passport, certificates, shared Passport links and certificate checks that open without signing in). No new Pages project or domain. Until the migration and function are deployed, these screens show the connection error state; the rest of the app is unchanged.",
+    "Database: supabase db push --linked applies 20261030800000_schood_ai_engage.sql after core's migrations (additive ai_engage_* tables with RLS on and no browser grants; SECURITY DEFINER functions for ingest, leagues, freezes, journeys, squads, the outbox claims, due people from ai_notify_prefs, boards and the audio queue; 24 tables added to account_personal_erasure_tables(); ai_engage_erase_account registered in account_erasure_service_hooks(); delete triggers on ai_engage_samples and ai_engage_sittings that queue engage audio for deletion; pg_cron jobs ai-engage-ingest-v1 at 4-59/5 * * * * and ai-engage-prune-v1 at 53 3 * * *). It touches no existing table. Keep the pending #220 payment migrations excluded, as for core.",
+    "Function: supabase functions deploy schood-ai --project-ref <prod>. It carries the engage routes (three anonymous: passport-view, passport-sample, verify), the engage.plan, engage.deliver, engage.league_rollover and engage.media_sweep jobs that core's scheduler runs (schood-ai-system-tick-v1), the notification kinds, the age source, the context providers and the engage.daily_limit chat guard. No new secret: engage uses core's service-role client, core's notify.send and the existing media storage settings. _shared/media-storage.ts gains one export (deleteStorageRef) and no other function changes, so no other function needs a redeploy.",
+    "Talent pool stays off: do not add the engage.talent_pool switch in the admin console until the owner decides."
   ],
   "verification": [
     "supabase migration list --linked shows 20261030800000 applied.",
     "select jobname, schedule from cron.job where jobname in ('ai-engage-ingest-v1', 'ai-engage-prune-v1') returns two rows.",
+    "select job, last_status, failures from public.ai_system_runs where job like 'engage.%' shows engage.plan and engage.deliver running every five minutes with last_status ok.",
     "select public.account_erasure_service_hooks() includes ai_engage_erase_account; select public.account_personal_erasure_tables() includes the ai_engage_* user tables.",
-    "On ai.schood.online as a beta tester: /progress shows 0 XP before practice and counts a scored coach answer within five minutes; /passport opens; /certificates lists the four exams as test sittings.",
-    "select count(*) from public.ai_engage_outbox where channel = 'telegram' and status = 'sent' stays 0 until a bot drains the outbox (no bot is wired in this release)."
+    "On ai.schood.online as a beta tester: /progress shows 0 XP before practice and counts a scored coach answer within five minutes; Settings → Notifications lists the engage kinds; a shared Passport link opens in a private window without signing in."
   ],
   "rollback": {
     "pages": "Cloudflare Pages: roll schood-ai back to the previous deployment; the engage screens are additive.",
     "migration": "Additive and isolated: leave the ai_engage_* tables. To stop the jobs, select cron.unschedule('ai-engage-ingest-v1') and cron.unschedule('ai-engage-prune-v1').",
-    "function": "Redeploy the previous schood-ai function; engage routes then answer not_found, and the chat guard and context providers are gone."
+    "function": "Redeploy the previous schood-ai function; engage routes then answer not_found, the engage jobs are no longer registered (core's scheduler skips them), and the chat guard and context providers are gone."
   }
 }
 ```

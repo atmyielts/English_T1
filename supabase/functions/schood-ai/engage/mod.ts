@@ -59,7 +59,8 @@ const certificateKey: AnonymousOptions['rateKey'] = async (req, { store }) => {
   return row ? `engage.certificate:${row.id}` : null;
 };
 const SHARED_LINK: AnonymousOptions = { perMinute: 120, perDay: 5_000, rateKey: linkKey, ipLimit: { perMinute: 600, perDay: 20_000 } };
-const CERTIFICATE_CHECK: AnonymousOptions = { perMinute: 60, perDay: 3_000, rateKey: certificateKey, ipLimit: { perMinute: 600, perDay: 20_000 } };
+// Codes nobody issued are limited harder per IP, so guessing certificate codes stays slow.
+const CERTIFICATE_CHECK: AnonymousOptions = { perMinute: 60, perDay: 3_000, rateKey: certificateKey, ipLimit: { perMinute: 600, perDay: 20_000 }, unkeyedLimit: { perMinute: 20, perDay: 500 } };
 
 const AUDIO = 4_800 * 1024;
 

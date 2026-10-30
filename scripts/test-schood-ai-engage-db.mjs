@@ -33,7 +33,7 @@ const integration = read('supabase/tests/schood-ai-engage.integration.sql');
     await db.exec(migration);
     const results = await db.exec(integration).catch((cause) => { throw new Error(`${cause.message} (${cause.where ?? 'no location'})`); });
     assert.equal(results.at(-1).rows[0]?.['?column?'], 'schood ai engage: ok');
-    console.log('PGlite (PostgreSQL 17): engage migration applies twice; XP rule, verified-only ingest, daily cap, local days, bonuses, freezes, league groups and settling, journeys, squads, outbox and the cross-person claim, due people from core's preferences, boards, append-only rows, the erasure registry, account closure through auth.users with the engage hook and its audio queued for deletion, account deletion and isolation passed.');
+    console.log('PGlite (PostgreSQL 17): engage migration applies twice; XP rule, verified-only ingest, daily cap, local days, bonuses, freezes, league groups and settling, journeys, squads, outbox and the cross-person claim, due people from the core notification preferences, boards, append-only rows, the erasure registry, account closure through auth.users with the engage hook and its audio queued for deletion, account deletion and isolation passed.');
   } finally {
     await db.close();
   }
