@@ -75,8 +75,9 @@ export function validatePack(source: PackSource): string[] {
   if (!languages.length || languages.some((locale) => !(LOCALES as readonly string[]).includes(locale)) || new Set(languages).size !== languages.length) bad('manifest.uiLanguages', 'needs distinct languages from uz, ru, en');
   if (![...LOCALES, 'mixed'].includes(m.practiceLanguage)) bad('manifest.practiceLanguage', 'must be en, uz, ru or mixed');
   localized('manifest.name', m.name, 60);
-  localized('manifest.tagline', m.tagline, 140);
-  localized('manifest.description', m.description, 1200);
+  // Telegram's limits: the short description is 120 characters, the description 512.
+  localized('manifest.tagline', m.tagline, 120);
+  localized('manifest.description', m.description, 512);
   localized('manifest.audience.description', m.audience?.description, 600);
   scaleOk('manifest.scale', m.scale);
   if (m.scale) for (const value of m.audience?.levels ?? []) level('manifest.audience.levels', value);
