@@ -7,6 +7,9 @@ import type { Me } from './types.ts';
 // own catalog. Core decides who sees what: an item shows when its audience matches
 // and, if it names a feature, when the plan matrix allows it (locked items show a
 // plan gate instead of disappearing).
+//
+// Keep areas out of the first download: name nav icons (`icon: 'PenLine'`) from a lazy
+// `icons` module, and give home cards a `component` loader instead of `render`.
 
 export type Audience = 'learner' | 'parent' | 'teacher' | 'centre';
 
@@ -30,7 +33,8 @@ export interface AreaNavItem {
   path: string;
   /** i18n key. */
   label: string;
-  icon?: LucideIcon;
+  /** A Lucide icon, or (better) its name in the area's lazy `icons` module, which keeps icons out of the first download. */
+  icon?: LucideIcon | string;
   audiences: Audience[];
   feature?: string;
   /** Sidebar group; defaults to the area's audience. */
@@ -40,6 +44,15 @@ export interface HomeCard {
   id: string;
   audiences: Audience[];
   feature?: string;
-  render: (me: Me) => ReactNode;
+  /** Renders inline: its code ships in the first download. */
+  render?: (me: Me) => ReactNode;
+  /** Or loads on demand (`() => import('./WritingCard.tsx')`, default export `({ me }) => …`); a placeholder shows meanwhile. */
+  component?: () => Promise<{ default: ComponentType<{ me: Me }> }>;
 }
-export interface AreaRegistry { routes: AreaRoute[]; nav: AreaNavItem[]; homeCards: HomeCard[] }
+export interface AreaRegistry {
+  routes: AreaRoute[];
+  nav: AreaNavItem[];
+  homeCards: HomeCard[];
+  /** The icons nav items name, loaded after the first paint: `() => import('./icons.ts')` exporting `{ PenLine, … }`. */
+  icons?: () => Promise<Record<string, LucideIcon>>;
+}

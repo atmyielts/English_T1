@@ -1,10 +1,11 @@
 import React, { lazy, Suspense, useEffect, type ComponentType } from 'react';
 import * as centre from './centre/routes.tsx';
 import * as coach from './coach/routes.tsx';
-import type { AreaNavItem, AreaRoute, Audience, HomeCard } from './core/areas.ts';
+import type { AreaRegistry, AreaRoute, Audience, HomeCard } from './core/areas.ts';
 import { useSession } from './core/auth.tsx';
 import { useT } from './core/i18n/index.ts';
 import { AppShell, CORE_NAV, PublicShell, type NavEntry } from './core/layout.tsx';
+import { namedIcon } from './core/lazy.tsx';
 import { HomePage } from './core/pages/Home.tsx';
 import { matchPath, useLocation } from './core/router.tsx';
 import { ApiErrorState, LoadingState, Paywall, PlanGate } from './core/states.tsx';
@@ -30,9 +31,10 @@ const AssistantsPage = page(() => import('./core/pages/Assistants.tsx'), 'Assist
 const library = () => import('./core/library/pages.tsx');
 const LibraryPage = page(library, 'LibraryPage'), LibraryPageEditor = page(library, 'LibraryPageEditor'), LibraryPrintPage = page(library, 'LibraryPrintPage');
 
-const AREAS = [learner, teacher, centre, coach, engage];
+const AREAS: AreaRegistry[] = [learner, teacher, centre, coach, engage];
 const areaRoutes: AreaRoute[] = AREAS.flatMap((area) => area.routes);
-const areaNav: AreaNavItem[] = AREAS.flatMap((area) => area.nav);
+// Icons named by string load from the area's own icons module after the first paint.
+const areaNav = AREAS.flatMap((area) => area.nav.map((item) => ({ ...item, icon: typeof item.icon === 'string' ? namedIcon(area.icons, item.icon) : item.icon })));
 const homeCards: HomeCard[] = AREAS.flatMap((area) => area.homeCards);
 
 interface CoreRoute { path: string; title: string; component: ComponentType<{ params: Record<string, string> }>; public?: boolean; audiences?: Audience[] }

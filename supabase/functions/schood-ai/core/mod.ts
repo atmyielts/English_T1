@@ -3,7 +3,7 @@ import type { FeatureModule } from '../types.ts';
 import { registerAssistant } from './assistant.ts';
 import { chat } from './chat.ts';
 import { registerLearnerProfile } from './profile.ts';
-import { actions, context, credits, generations, history, me, messages, report, settings, threads } from './routes.ts';
+import { actions, context, credits, generations, history, me, messages, notifyPrefs, report, settings, threads } from './routes.ts';
 import { specialists } from './specialists.ts';
 
 registerAssistant();
@@ -16,6 +16,8 @@ export const coreModule: FeatureModule = {
     chat: { POST: chat, maxBody: 48 * 1024, service: true },
     threads: { ...threads, service: true },
     history,
+    // The caller's own notification choices (also from the Telegram bots).
+    'notify-prefs': { ...notifyPrefs, service: true },
     messages: { GET: messages, service: true },
     credits: { ...credits, service: true },
     actions,
