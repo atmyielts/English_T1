@@ -2,7 +2,7 @@ import { cleanSwitches, isCapability, type Registry, type RegistryModel, type Re
 import { resolvePermissions } from '../_shared/admin-access.ts';
 import { computeEffectiveAccess, type EntitlementRow, type SponsoredRow } from '../access-effective/logic.ts';
 import type {
-  ActionRow, AuditRow, AuthUser, Balance, LearningEventRow, NotifyPrefs, CallRecord, ChargeOutcome, GenerationRow, LearningEvent, LedgerRow, Member, Message, NotifyDecision, PageQuery, PageRevisionRow, PageRow, ReportRow,
+  ActionRow, AuditRow, AuthUser, Balance, LearningEventRow, NotifyPrefs, SystemRunRow, CallRecord, ChargeOutcome, GenerationRow, LearningEvent, LedgerRow, Member, Message, NotifyDecision, PageQuery, PageRevisionRow, PageRow, ReportRow,
   SchoodAIRepository, ServiceSettings, SpecialistRow, Thread, UsageRow, UserProfile, Workspace,
 } from './types.ts';
 import { DEFAULT_NOTIFY_PREFS } from './types.ts';
@@ -428,6 +428,18 @@ export function createSchoodAIRepository(user: (token: string) => Promise<AuthUs
     async takeRate(bucket, limit, windowSeconds) {
       const result = obj(await rpc('ai_rate_take', { p_bucket: bucket, p_limit: limit, p_window_seconds: windowSeconds }));
       return result.ok === true ? { ok: true, remaining: Number(result.remaining ?? 0) } : { ok: false, retryAt: String(result.retry_at) };
+    },
+    async claimSystemJob(job, periodStart, leaseSeconds) {
+      return (await rpc('ai_system_claim', { p_job: job, p_period_start: periodStart, p_lease_seconds: leaseSeconds })) === true;
+    },
+    async finishSystemJob(job, status, error) {
+      await rpc('ai_system_finish', { p_job: job, p_status: status, p_error: error });
+    },
+    async systemRuns() {
+      return check<Row[]>(await db.from('ai_system_runs').select('job,last_run_at,running_until,failures,last_status,last_error,last_finished_at').order('job').limit(200)).map((row): SystemRunRow => ({
+        job: String(row.job), lastRunAt: str(row.last_run_at), runningUntil: str(row.running_until), failures: Number(row.failures ?? 0),
+        lastStatus: (row.last_status ?? null) as SystemRunRow['lastStatus'], lastError: str(row.last_error), lastFinishedAt: str(row.last_finished_at),
+      }));
     },
     async systemSecret() {
       const row = check<Row | null>(await db.from('internal_runtime_secrets').select('secret').eq('key', 'schood_ai_system_secret').maybeSingle());

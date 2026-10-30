@@ -49,6 +49,22 @@ export const homeCards: HomeCard[] = [
   - `public: true` makes a page open without signing in. Use it sparingly.
 - **Nav items** show in the sidebar group named by `group`, or by the audience by default. Locked items still show; their page shows the paywall.
 - **Home cards** appear under "Your tools" on that audience's home.
+- **Keep your area out of the first download.** Every area's `routes.tsx` is imported up front, so anything it imports directly ships to every learner. Two ways to stay lazy:
+  - **Icons by name:** give a nav item `icon: 'PenLine'` (a string) and export `icons`, a loader for a module of the icons you name. Core shows a blank of the same size until it loads, then the icon.
+  - **Lazy home cards:** give a card `component: () => import('./WritingCard.tsx')` (default export `({ me }) => …`) instead of `render`. Core shows a placeholder while it loads, and nothing if the chunk fails.
+
+  ```tsx
+  // src/learner/routes.tsx: no lucide or card imports here
+  export const icons = () => import('./icons.ts');        // export { PenLine, Mic } from 'lucide-react';
+  export const nav: AreaNavItem[] = [
+    { id: 'write', path: '/write', label: 'learner.nav.write', icon: 'PenLine', audiences: ['learner'], feature: 'L3' },
+  ];
+  export const homeCards: HomeCard[] = [
+    { id: 'write', audiences: ['learner'], feature: 'L3', component: () => import('./WritingCard.tsx') },
+  ];
+  ```
+
+  `render` and icon components still work, but their code is in the main chunk. With every area on names and lazy cards, the main chunk stays about 113 KB gzip.
 - **Audiences** are `learner`, `parent`, `teacher` and `centre`. In a centre workspace they follow the role: student → learner, parent → parent, teacher → teacher, owner/admin → centre (and teacher). In the personal workspace they follow the plans, and the person can switch.
 - **Navigation:** use `Link` and `navigate()` from core. Never put message text, answers or other student data in a URL; ids only.
 
@@ -152,7 +168,7 @@ Everything in `src/core`, `App.tsx`, `main.tsx` and `index.css` belongs to the c
 
 `npm --workspace apps/schood-ai run build`, which runs `tsc --noEmit` and then `vite build`.
 
-Keep the first download small: the main chunk is about 112 KB gzip. Load heavy screens and libraries on demand (`lazy(() => import(...))` in your `routes.tsx`), as core does for the library editor and the admin console.
+Keep the first download small: the main chunk is about 113 KB gzip. Load heavy screens and libraries on demand (`lazy(() => import(...))` in your `routes.tsx`), as core does for the library editor and the admin console. Name your nav icons and make your home cards lazy (see Add a page, a nav item, a home card).
 
 For a local run with no backend, start the real handler over the memory repository with a fake streaming model:
 
