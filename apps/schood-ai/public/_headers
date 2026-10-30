@@ -5,3 +5,18 @@
   Strict-Transport-Security: max-age=86400
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), camera=(self), microphone=(self)
+
+# Schood Coaches Mini App: Telegram Web (web.telegram.org) shows Mini Apps in an
+# iframe, so the coach pages may be framed by it and nobody else. Rules apply in
+# order and a rule detaches before it attaches: this drops the universal frame
+# headers for /coach pages only and sets the coach policy. Telegram's mobile and
+# desktop apps open Mini Apps in a web view, not a frame.
+/coach
+  ! X-Frame-Options
+  ! Content-Security-Policy
+  Content-Security-Policy: frame-ancestors https://web.telegram.org; base-uri 'self'; object-src 'none'; upgrade-insecure-requests
+
+/coach/*
+  ! X-Frame-Options
+  ! Content-Security-Policy
+  Content-Security-Policy: frame-ancestors https://web.telegram.org; base-uri 'self'; object-src 'none'; upgrade-insecure-requests
