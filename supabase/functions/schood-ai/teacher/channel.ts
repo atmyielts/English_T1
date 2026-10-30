@@ -1,6 +1,6 @@
 import { s, SchemaError, type Schema } from '../../../../packages/ai-core/src/mod.ts';
 import { registerActionKind } from '../actions.ts';
-import { oneOf, optionalText, record, text, uuid } from '../input.ts';
+import { integer, oneOf, optionalText, record, text, uuid } from '../input.ts';
 import { dataBlock, neutralise } from '../prompt.ts';
 import { SchoodAIError, type Locale, type RequestContext } from '../types.ts';
 import { teacherDeps, teacherStore, type TelegramApi } from './deps.ts';
@@ -14,9 +14,9 @@ import type { Channel, ChannelBatch, ChannelPost, ChannelSchedule, PostContent, 
 // added as a channel admin, posts each one at its time. Telegram's limits are kept:
 // 4,096 characters a message, polls of 2–10 options up to 100 characters with a
 // 300-character question and a 200-character explanation, a gap between posts to
-// the same channel and a daily cap. Due posts go out when the teacher's autopilot
-// page is open and when the batch is approved; a scheduled runner needs a core hook
-// (docs/product/ai-requests/teacher.md).
+// the same channel and a daily cap. Due posts go out from a scheduled job (core's
+// system route, pg_cron every 5 minutes), when the week is approved, and when the
+// teacher presses "Send due posts now".
 
 const KINDS: readonly PostKind[] = ['word', 'quiz', 'tip'];
 const TASHKENT_OFFSET_MIN = 5 * 60;
@@ -356,8 +356,15 @@ export async function dispatchDue(ctx: RequestContext, workspaceIds: string[] | 
   return out;
 }
 
-/** POST teacher/channel-dispatch: sends this workspace's due posts (the autopilot page calls it while open). */
+/** POST teacher/channel-dispatch: "Send due posts now" for this workspace's channels (the schedule does it every 5 minutes). */
 export async function dispatchRoute(ctx: RequestContext) {
-  const access = await ctx.workspace();
+  const access = await ctx.workspace({ roles: ['owner', 'admin', 'teacher'] });
   return { dispatched: await dispatchDue(ctx, [access.workspace.id]) };
+}
+
+/** POST teacher/system-channel-dispatch: the scheduled job (pg_cron, every 5 minutes) sends every channel's due posts. */
+export async function systemDispatchRoute(ctx: RequestContext) {
+  const body = record(await ctx.body());
+  const limit = body.limit === undefined ? 25 : integer(body.limit, 'limit', 1, 100);
+  return { dispatched: await dispatchDue(ctx, null, limit) };
 }

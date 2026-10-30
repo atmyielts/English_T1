@@ -159,31 +159,39 @@ async function openSession(ctx: RequestContext, code: unknown): Promise<QuizSess
   if (!session) throw new SchoodAIError('quiz_not_found', 'Check the code and try again.', 404);
   return session;
 }
+// Players come two ways. Signed in (quiz-join, quiz-play, quiz-answer): the player is
+// linked to the student, so the class results name them and each answer is a
+// learning event. Not signed in (the *-open routes, anonymous with core's per-IP
+// limits): a code and a nickname, then the per-game token the join returned.
+const signedIn = (ctx: RequestContext) => ctx.caller === 'user';
+
 async function playerFor(ctx: RequestContext, session: QuizSession, tokenValue: unknown): Promise<QuizPlayer> {
   const store = ctx.store(teacherStore);
-  const player = typeof tokenValue === 'string' && /^[0-9a-f]{48}$/.test(tokenValue) ? await store.quizPlayer(session.id, await sha256(tokenValue)) : await store.quizPlayerByUser(session.id, ctx.user.id);
+  const token = typeof tokenValue === 'string' && /^[0-9a-f]{48}$/.test(tokenValue) ? tokenValue : null;
+  const player = token ? await store.quizPlayer(session.id, await sha256(token)) : signedIn(ctx) ? await store.quizPlayerByUser(session.id, ctx.user.id) : null;
   if (!player) throw new SchoodAIError('not_joined', 'Join the game first.', 403);
   return player;
 }
 
-/** POST teacher/quiz-join: a student joins with the code and a nickname. No plan needed: no AI is used. */
+/** POST teacher/quiz-join (signed in) and teacher/quiz-join-open (anyone): join with the code and a nickname. No AI is used. */
 export async function joinQuiz(ctx: RequestContext) {
   const body = record(await ctx.body());
   const session = await openSession(ctx, body.code);
   if (session.status === 'finished') throw new SchoodAIError('quiz_finished', 'This game has ended.', 409);
   const store = ctx.store(teacherStore);
-  const existing = await store.quizPlayerByUser(session.id, ctx.user.id);
+  const userId = signedIn(ctx) ? ctx.user.id : null;
+  const existing = userId ? await store.quizPlayerByUser(session.id, userId) : null;
   if (existing) return { joined: { session_id: session.id, nickname: existing.nickname, token: null } };
   const nickname = text(body.nickname, 'nickname', { max: 24 }).replace(/\s+/g, ' ');
   if (!NICKNAME.test(nickname)) throw new SchoodAIError('invalid_nickname', 'Use letters and numbers for your nickname.', 400, { field: 'nickname' });
   if ((await store.quizPlayers(session.id)).length >= MAX_PLAYERS) throw new SchoodAIError('quiz_full', 'This game is full.', 409);
   const secret = randomToken();
-  const player = await store.addQuizPlayer({ sessionId: session.id, userId: ctx.user.id, nickname, tokenHash: await sha256(secret) });
+  const player = await store.addQuizPlayer({ sessionId: session.id, userId, nickname, tokenHash: await sha256(secret) });
   if (!player) throw new SchoodAIError('nickname_taken', 'Someone already uses this nickname here. Pick another.', 409, { field: 'nickname' });
   return { joined: { session_id: session.id, nickname: player.nickname, token: secret } };
 }
 
-/** POST teacher/quiz-play: what a phone shows now. */
+/** POST teacher/quiz-play (signed in) and teacher/quiz-play-open (by the player's token): what a phone shows now. */
 export async function playQuiz(ctx: RequestContext) {
   const body = record(await ctx.body());
   // By id, so a finished game still shows its final board after its code is free again.
@@ -220,7 +228,7 @@ async function sessionById(ctx: RequestContext, id: unknown): Promise<QuizSessio
   return session;
 }
 
-/** POST teacher/quiz-answer: one tap per question; points for speed when right. */
+/** POST teacher/quiz-answer and teacher/quiz-answer-open: one tap per question; points for speed when right. */
 export async function answerQuiz(ctx: RequestContext) {
   const body = record(await ctx.body());
   const session = await sessionById(ctx, body.session_id);
@@ -236,7 +244,7 @@ export async function answerQuiz(ctx: RequestContext) {
   const store = ctx.store(teacherStore);
   const accepted = await store.answerQuiz({ sessionId: session.id, playerId: player.id, index, choice, correct, points: quizPoints(correct, Math.max(0, elapsed), session.secondsPerQuestion) });
   if (!accepted) throw new SchoodAIError('already_answered', 'You already answered this one.', 409);
-  // A checked answer is a learning event for the student; the score is the teacher's game, not XP.
-  ctx.events.emit({ kind: correct ? 'check_passed' : 'check_failed', area: 'teacher', feature: 'T10', ref: session.id.slice(0, 200), outcome: correct ? 'passed' : 'failed' });
+  // A checked answer is a learning event for a signed-in student; the score is the teacher's game, not XP.
+  if (signedIn(ctx)) ctx.events.emit({ kind: correct ? 'check_passed' : 'check_failed', area: 'teacher', feature: 'T10', ref: session.id.slice(0, 200), outcome: correct ? 'passed' : 'failed' });
   return { answered: { index, choice } };
 }

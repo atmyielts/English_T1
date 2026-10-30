@@ -1,14 +1,13 @@
-import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Printer } from 'lucide-react';
 import { parseMaterial, versions, type Material } from '../../../../../packages/ai-core/src/materials/mod.ts';
-import { api, ApiErrorState, BrandMark, Button, Field, getPage, Link, LoadingState, TextInput, useI18n, useT, useWorkspace, type Branding, type PageView } from '../../core/index.ts';
+import { api, ApiErrorState, BrandMark, Button, getPage, Link, LoadingState, useI18n, useT, useWorkspace, type PageView } from '../../core/index.ts';
 import { notePrint } from '../api.ts';
 import { MaterialView } from '../MaterialView.tsx';
 
 // Print and PDF for a teaching material with the workspace's own logo and colour:
-// a centre's (set in Settings), or an independent teacher's own, set right here
-// (core Settings shows branding to centres only; core/settings takes it for any
-// workspace owner). The student copy
+// a centre's, or an independent teacher's own once they set a logo (Settings → Your
+// branding, core). The student copy
 // has name and date lines and no key; the teacher copy has the key, inline or on
 // its own page. The browser's print window saves PDF; app chrome is hidden in
 // print by core's print rules (print-hidden).
@@ -40,7 +39,8 @@ export default function PrintMaterial({ params }: { params: Record<string, strin
   try { material = parseMaterial(page.material); } catch { material = null; }
   if (!material) return <ApiErrorState error={null}/>;
   const ws = workspace.me.workspace, branding = ws.branding;
-  const name = ws.kind === 'centre' ? ws.name : workspace.me.user.name ?? 'Schood AI';
+  // As core's print: a centre's name, or a teacher's print name once they set a logo in Settings; else their own name.
+  const name = ws.kind === 'centre' || branding.logo_url ? ws.name : workspace.me.user.name ?? 'Schood AI';
   const color = branding.primary_color ?? '#0f172a';
   const compact = template === 'compact';
   return <div className="mx-auto max-w-3xl">
@@ -59,7 +59,6 @@ export default function PrintMaterial({ params }: { params: Record<string, strin
         <Button onClick={() => print()} icon={<Printer size={16} aria-hidden="true"/>}>{t('teacher.print.button')}</Button>
       </div>
       <p className="m-0 text-xs text-gray-600">{t('teacher.print.hint')}{!branding.logo_url ? ` ${t(ws.kind === 'centre' ? 'teacher.print.noLogoCentre' : 'teacher.print.noLogo')}` : ''}</p>
-      {ws.kind !== 'centre' && ws.role === 'owner' && <PersonalLogo branding={branding}/>}
     </div>
     <article className={`print-sheet rounded-3xl border border-navy-line bg-white p-6 md:p-10 print:rounded-none print:border-0 print:p-0 ${compact ? 'text-[13px]' : ''}`}>
       <header className="mb-5 flex items-center gap-3 border-b-2 pb-3" style={{ borderColor: color }}>
@@ -77,27 +76,3 @@ export default function PrintMaterial({ params }: { params: Record<string, strin
   </div>;
 }
 
-// An independent teacher's own logo for printouts, saved to their personal workspace.
-function PersonalLogo({ branding }: { branding: Branding }) {
-  const t = useT(), workspace = useWorkspace();
-  const [value, setValue] = useState(branding.logo_url ?? '');
-  const [state, setState] = useState<{ busy: boolean; error: unknown; saved: boolean }>({ busy: false, error: null, saved: false });
-  const save = async (logo: string | null) => {
-    setState({ busy: true, error: null, saved: false });
-    try {
-      await api('core/settings', { method: 'PATCH', workspaceId: workspace.workspaceId, body: { branding: { ...branding, logo_url: logo } } });
-      await workspace.refresh();
-      setState({ busy: false, error: null, saved: true });
-    } catch (error) { setState({ busy: false, error, saved: false }); }
-  };
-  const submit = (event: FormEvent) => { event.preventDefault(); void save(value.trim() || null); };
-  return <form onSubmit={submit} className="grid gap-2 border-t border-navy-line/20 pt-3">
-    <Field label={t('teacher.print.logo')} hint={t('teacher.print.logoHint')}>{(id) => <TextInput id={id} type="url" inputMode="url" pattern="https://.*" maxLength={500} value={value} onChange={(event) => setValue(event.target.value)} placeholder="https://"/>}</Field>
-    <div className="flex flex-wrap items-center gap-2">
-      <Button type="submit" size="sm" variant="secondary" disabled={state.busy || !value.trim() || value.trim() === branding.logo_url}>{t('teacher.print.logoSave')}</Button>
-      {branding.logo_url && <Button size="sm" variant="ghost" disabled={state.busy} onClick={() => { setValue(''); void save(null); }}>{t('teacher.print.logoRemove')}</Button>}
-      {state.saved && <span role="status" className="text-xs text-green-800">{t('teacher.print.logoSaved')}</span>}
-    </div>
-    {state.error !== null && <ApiErrorState error={state.error}/>}
-  </form>;
-}

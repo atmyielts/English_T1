@@ -466,3 +466,27 @@ grant execute on function public.ai_teacher_quiz_answer(uuid, uuid, integer, tex
 grant execute on function public.ai_teacher_rate_listing(uuid, uuid, integer, text) to service_role;
 grant execute on function public.ai_teacher_add_copy(uuid, uuid, uuid, uuid, integer) to service_role;
 grant execute on function public.ai_teacher_record_use(uuid, uuid, text) to service_role;
+
+-- --- Channel autopilot schedule (T11) -----------------------------------------------------------
+-- Every 5 minutes (minutes 4, 9, … 59, away from core's jobs), pg_cron calls the
+-- system route that sends every channel's due posts, within Telegram's limits
+-- (core's invoke_schood_ai_system, migration 20261030160000). Approving a week
+-- still sends what is already due at once.
+do $$
+declare
+  v_job_id bigint;
+begin
+  if to_regprocedure('public.invoke_schood_ai_system(text, jsonb)') is null then
+    raise notice 'invoke_schood_ai_system is not installed; the channel autopilot is not scheduled';
+    return;
+  end if;
+  for v_job_id in select jobid from cron.job where jobname = 'schood-ai-teacher-channel-dispatch-v1' loop
+    perform cron.unschedule(v_job_id);
+  end loop;
+  perform cron.schedule('schood-ai-teacher-channel-dispatch-v1', '4-59/5 * * * *',
+    $cron$select public.invoke_schood_ai_system('teacher/system-channel-dispatch', '{"limit": 25}'::jsonb);$cron$);
+exception
+  when undefined_table or undefined_function or invalid_schema_name then
+    raise notice 'pg_cron is unavailable in this environment; the channel autopilot is not scheduled';
+end
+$$;

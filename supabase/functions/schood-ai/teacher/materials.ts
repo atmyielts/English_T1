@@ -318,7 +318,7 @@ function assemble(brief: MaterialBrief, draft: Draft): Material {
 }
 const defaultSection = (kind: string) => ({ ielts_reading: 'reading', ielts_listening: 'listening', ielts_writing: 'writing', ielts_speaking: 'speaking', sat_reading_writing: 'reading_writing', sat_math: 'math', admission_math: 'math' } as Record<string, string>)[kind];
 
-/** GET teacher/materials: the library (until core's shared library lands). */
+/** GET teacher/materials: the teacher's material jobs (drafts and their status); approved ones are core library pages. */
 export async function listMaterialsRoute(ctx: RequestContext) {
   const query = (ctx.query.get('q') ?? '').trim().toLowerCase().slice(0, 100);
   const kind = ctx.query.get('kind'), status = ctx.query.get('status');

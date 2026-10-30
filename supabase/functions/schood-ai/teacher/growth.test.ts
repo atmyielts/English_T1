@@ -1,4 +1,4 @@
-import { ID, equal, ok, personal } from '../fixture.test.ts';
+import { ID, equal, ok, personal, SYSTEM_SECRET } from '../fixture.test.ts';
 import { inventedNumbers } from './brand.ts';
 import { nextMonday, slotTime } from './channel.ts';
 import { promptOf, reply, teacherFixture } from './test-kit.ts';
@@ -41,11 +41,16 @@ Deno.test('channel autopilot: connect, write the week, one-click approval, posti
     equal(f.telegramCalls.filter((call) => call.method.startsWith('send')).length, 0);
 
     f.advance(65 * 60_000);
-    const first = await f.json('POST', 'teacher/channel-dispatch', { token: PRO });
-    equal(first.body.dispatched, { sent: 1, failed: 0, deferred: 0 });
+    // The schedule sends it: pg_cron calls the system route with the system secret, no person, no browser.
+    const system = (body: unknown, headers: Record<string, string> = {}) => f.json('POST', 'teacher/system-channel-dispatch', { token: null, origin: null, body, headers: { 'x-schood-service-secret': SYSTEM_SECRET, ...headers } });
+    equal((await f.json('POST', 'teacher/system-channel-dispatch', { token: PRO, body: {} })).status, 401, 'a person cannot run the job');
+    equal((await system({}, { authorization: `Bearer ${PRO}` })).status, 400, 'the job never acts for a person');
+    equal((await system({ limit: 500 })).status, 400, 'runs stay bounded');
+    const first = await system({ limit: 10 });
+    equal([first.status, first.body.dispatched], [200, { sent: 1, failed: 0, deferred: 0 }]);
     const poll = f.telegramCalls.find((call) => call.method === 'sendPoll')!;
     equal([poll.body.chat_id, poll.body.type, poll.body.correct_option_id, poll.body.is_anonymous], ['-1001234567890', 'quiz', 1, true]);
-    // Telegram asks to slow down: the post waits and goes later.
+    // Telegram asks to slow down: the post waits and goes later ("Send due posts now" on the page).
     f.advance(21 * 3_600_000);
     f.setTelegram((method) => method === 'sendMessage' ? { ok: false, status: 429, description: 'Too Many Requests', decision: { retryable: true, reason: 'rate_limited', retryAfterSeconds: 30 } } : null as never);
     equal((await f.json('POST', 'teacher/channel-dispatch', { token: PRO })).body.dispatched, { sent: 0, failed: 0, deferred: 1 });

@@ -66,9 +66,12 @@ export const quizResults = (workspaceId: Ws, id: string) => api<{
   questions: { index: number; prompt: string; answer: string; options: { id: string; text: string }[]; answered: number; correct: number }[];
 }>('teacher/quiz-results', { ...opts(workspaceId), query: { id } });
 // Players always act in their own personal workspace.
-export const joinQuiz = (code: string, nickname: string) => api<{ joined: { session_id: string; nickname: string; token: string | null } }>('teacher/quiz-join', { body: { code, nickname } }).then((result) => result.joined);
-export const playQuiz = (sessionId: string, token: string | null) => api<{ play: PlayState }>('teacher/quiz-play', { body: { session_id: sessionId, ...(token ? { token } : {}) }, timeoutMs: 6_000 }).then((result) => result.play);
-export const answerQuiz = (sessionId: string, token: string | null, index: number, choice: string) => api<{ answered: { index: number; choice: string } }>('teacher/quiz-answer', { body: { session_id: sessionId, index, choice, ...(token ? { token } : {}) } });
+// Signed in, the player is linked to the student (class results, learning events);
+// open (no account), core's anonymous routes take a code and a nickname, then the token.
+const playPath = (action: 'join' | 'play' | 'answer', open: boolean) => `teacher/quiz-${action}${open ? '-open' : ''}`;
+export const joinQuiz = (code: string, nickname: string, open: boolean) => api<{ joined: { session_id: string; nickname: string; token: string | null } }>(playPath('join', open), { body: { code, nickname }, anonymous: open }).then((result) => result.joined);
+export const playQuiz = (sessionId: string, token: string | null, open: boolean) => api<{ play: PlayState }>(playPath('play', open), { body: { session_id: sessionId, ...(token ? { token } : {}) }, timeoutMs: 6_000, anonymous: open }).then((result) => result.play);
+export const answerQuiz = (sessionId: string, token: string | null, index: number, choice: string, open: boolean) => api<{ answered: { index: number; choice: string } }>(playPath('answer', open), { body: { session_id: sessionId, index, choice, ...(token ? { token } : {}) }, anonymous: open });
 
 // --- Marking ------------------------------------------------------------------------------------
 export interface Rubric { id: string; mode: 'writing' | 'speaking'; label: string; criteria: { id: string; name: string; max: number; step: number }[]; overall: string; schood?: true }

@@ -13,8 +13,7 @@ import {
 // T11 Telegram channel autopilot: connect your channel (add the Schood bot as an
 // admin), plan a week from your schedule, let AI write each post in your voice
 // (3 credits a post), edit anything, approve the whole week in one click, and the
-// bot posts each one at its time. While this page is open it sends due posts every
-// minute.
+// bot posts each one at its time (a scheduled job, whether or not this page is open).
 
 const DAYS = [1, 2, 3, 4, 5, 6, 7];
 const KINDS = ['word', 'quiz', 'tip'] as const;
@@ -25,19 +24,25 @@ export default function ChannelPage() {
   const [data, setData] = useState<Awaited<ReturnType<typeof listChannels>> | null>(null), [error, setError] = useState<unknown>(null);
   const load = useCallback(() => { listChannels(workspace.workspaceId).then(setData).catch(setError); }, [workspace.workspaceId]);
   useEffect(load, [load]);
-  // Due posts go out while the autopilot page is open.
-  useEffect(() => {
-    if (!data?.channels.some((channel) => channel.batches?.some((batch) => batch.posts.some((post) => post.status === 'scheduled')))) return;
-    const timer = setInterval(() => { void dispatchPosts(workspace.workspaceId).then((result) => { if (result.dispatched.sent || result.dispatched.failed) load(); }).catch(() => undefined); }, 60_000);
-    void dispatchPosts(workspace.workspaceId).then((result) => { if (result.dispatched.sent || result.dispatched.failed) load(); }).catch(() => undefined);
-    return () => clearInterval(timer);
-  }, [data, load, workspace.workspaceId]);
+  // Scheduled posts go out on their own (a job every 5 minutes, page open or not);
+  // "Send due posts now" sends what is already due without waiting for it.
+  const [sending, setSending] = useState(false), [sendResult, setSendResult] = useState<{ sent: number; deferred: number; failed: number } | null>(null), [sendError, setSendError] = useState<unknown>(null);
+  const due = !!data?.channels.some((channel) => channel.batches?.some((batch) => batch.posts.some((post) => post.status === 'scheduled' && Date.parse(post.scheduled_for) <= Date.now())));
+  const sendNow = async () => {
+    setSending(true); setSendError(null);
+    try { setSendResult((await dispatchPosts(workspace.workspaceId)).dispatched); load(); } catch (cause) { setSendError(cause); } finally { setSending(false); }
+  };
   return <>
     <PageHeader title={t('teacher.channel.title')} lead={t('teacher.channel.lead')}/>
     <PlanGate feature="T11">
       {error ? <ApiErrorState error={error} onRetry={load}/> : !data ? <LoadingState/> : <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
         <section className="grid content-start gap-4">
           {!data.bot.configured && <p role="status" className="m-0 rounded-3xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">{t('teacher.channel.botMissing')}</p>}
+          {data.bot.configured && (due || sendResult) && <div role="status" className="flex flex-wrap items-center gap-3 rounded-3xl border border-navy-line bg-white p-4 text-sm text-gray-800">
+            <span className="min-w-0 flex-1">{sendResult ? t('teacher.channel.sendResult', { sent: sendResult.sent, waiting: sendResult.deferred + sendResult.failed }) : t('teacher.channel.dueNote')}</span>
+            {due && <Button size="sm" variant="secondary" disabled={sending} onClick={() => void sendNow()}>{sending ? t('teacher.channel.sending') : t('teacher.channel.sendNow')}</Button>}
+            {sendError !== null && <div className="w-full"><ApiErrorState error={sendError}/></div>}
+          </div>}
           {!data.channels.length ? <EmptyState title={t('teacher.channel.none')} lead={t('teacher.channel.noneLead')}/> : data.channels.map((channel) => <ChannelCard key={channel.id} channel={channel} nextWeek={data.next_week} bot={data.bot.username} onChange={load}/>)}
         </section>
         <Connect bot={data.bot.username} onConnected={load}/>

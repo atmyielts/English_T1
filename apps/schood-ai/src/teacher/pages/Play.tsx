@@ -1,17 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CheckCircle2, LogIn, Trophy, XCircle } from 'lucide-react';
-import { ApiError, ApiErrorState, Button, ButtonLink, Field, LoadingState, signInUrl, TextInput, useLocation, useSession, useT } from '../../core/index.ts';
+import { ApiError, ApiErrorState, Button, Field, LoadingState, signInUrl, TextInput, useLocation, useSession, useT } from '../../core/index.ts';
 import { answerQuiz, joinQuiz, playQuiz, type PlayState } from '../api.ts';
 
-// T10 Live Quiz on a student's phone: join with the six-digit code and a nickname
-// (a free Schood account is enough: playing uses no AI), then follow the game. It
-// polls every 1.5 seconds and keeps working on a weak connection: a failed poll
-// just tries again. The tab remembers which game it joined (this tab only).
+// T10 Live Quiz on a student's phone: join with the six-digit code and a nickname,
+// then follow the game. No account is needed (core's anonymous routes, limited per
+// IP). A signed-in student joins as themselves, so the class results name them. It
+// polls (faster when signed in: a whole class often shares one address and its
+// limit) and keeps working on a weak connection: a failed poll tries again, and a
+// rate limit waits as long as the server asks. The tab remembers its game (this tab only).
 
 const KEY = 'schood-ai.play';
 const COLORS = ['bg-lime', 'bg-sky-ai', 'bg-amber-300', 'bg-rose-300', 'bg-violet-300', 'bg-emerald-300'];
-interface Joined { session_id: string; token: string | null; nickname: string }
-const remembered = (): Joined | null => { try { const value = sessionStorage.getItem(KEY); return value ? JSON.parse(value) as Joined : null; } catch { return null; } };
+/** `open`: joined without signing in, so every call goes to the open routes with the token. */
+interface Joined { session_id: string; token: string | null; nickname: string; open: boolean }
+const remembered = (): Joined | null => {
+  try { const value = sessionStorage.getItem(KEY); const parsed = value ? JSON.parse(value) as Joined : null; return parsed && typeof parsed.session_id === 'string' ? { ...parsed, open: parsed.open === true } : null; } catch { return null; }
+};
 const remember = (value: Joined | null) => { try { if (value) sessionStorage.setItem(KEY, JSON.stringify(value)); else sessionStorage.removeItem(KEY); } catch { /* this tab only */ } };
 
 export default function PlayPage() {
@@ -21,17 +26,13 @@ export default function PlayPage() {
   const [busy, setBusy] = useState(false), [error, setError] = useState<unknown>(null);
 
   if (session.status === 'loading') return <LoadingState/>;
-  if (session.status !== 'signed_in') return <section className="mx-auto grid max-w-md gap-4 rounded-3xl border border-navy-line bg-white p-6 text-center">
-    <h1 className="m-0 font-display text-2xl font-bold">{t('teacher.play.title')}</h1>
-    <p className="m-0 text-sm text-gray-700">{t('teacher.play.signIn')}</p>
-    <ButtonLink href={signInUrl('login', `${location.origin}/play${code ? `?code=${code}` : ''}`)}><LogIn size={16} aria-hidden="true"/>{t('teacher.play.signInButton')}</ButtonLink>
-  </section>;
   if (joined) return <Game joined={joined} onLeave={() => { remember(null); setJoined(null); }}/>;
+  const open = session.status !== 'signed_in';
   const join = async () => {
     setBusy(true); setError(null);
     try {
-      const result = await joinQuiz(code, nickname.trim());
-      const next = { session_id: result.session_id, token: result.token, nickname: result.nickname };
+      const result = await joinQuiz(code, nickname.trim(), open);
+      const next = { session_id: result.session_id, token: result.token, nickname: result.nickname, open };
       remember(next); setJoined(next);
     } catch (cause) { setError(cause); } finally { setBusy(false); }
   };
@@ -41,6 +42,8 @@ export default function PlayPage() {
     <Field label={t('teacher.play.nickname')} hint={t('teacher.play.nicknameHint')}>{(id) => <TextInput id={id} maxLength={24} value={nickname} onChange={(event) => setNickname(event.target.value)} required autoComplete="nickname"/>}</Field>
     <Button type="submit" variant="spark" disabled={busy || code.length !== 6 || !nickname.trim()}>{busy ? t('teacher.play.joining') : t('teacher.play.join')}</Button>
     {error !== null && <ApiErrorState error={error}/>}
+    {open && <p className="m-0 flex flex-wrap items-center gap-x-2 text-xs text-gray-600">{t('teacher.play.guest')}
+      <a href={signInUrl('login', `${location.origin}/play${code ? `?code=${code}` : ''}`)} className="inline-flex items-center gap-1 font-semibold text-gray-900"><LogIn size={12} aria-hidden="true"/>{t('teacher.play.signInButton')}</a></p>}
   </form>;
 }
 
@@ -48,12 +51,18 @@ function Game({ joined, onLeave }: { joined: Joined; onLeave(): void }) {
   const t = useT();
   const [state, setState] = useState<PlayState | null>(null), [error, setError] = useState<unknown>(null), [tapped, setTapped] = useState<{ index: number; choice: string } | null>(null);
   const [now, setNow] = useState(Date.now());
-  const fetched = useRef(Date.now());
+  const fetched = useRef(Date.now()), waitUntil = useRef(0);
   const poll = useCallback(async () => {
-    try { const next = await playQuiz(joined.session_id, joined.token); fetched.current = Date.now(); setState(next); setError(null); }
-    catch (cause) { if (cause instanceof ApiError && ['not_joined', 'quiz_not_found', 'invalid_request'].includes(cause.code)) onLeave(); else setError(cause); }
+    if (Date.now() < waitUntil.current) return;
+    try { const next = await playQuiz(joined.session_id, joined.token, joined.open); fetched.current = Date.now(); setState(next); setError(null); }
+    catch (cause) {
+      if (cause instanceof ApiError && ['not_joined', 'quiz_not_found', 'invalid_request'].includes(cause.code)) { onLeave(); return; }
+      // The class's shared address hit core's limit: wait as long as the server asks.
+      if (cause instanceof ApiError && cause.code === 'rate_limited') { const at = Date.parse(String(cause.details.retry_after ?? '')); waitUntil.current = Number.isFinite(at) ? at : Date.now() + 5_000; }
+      setError(cause);
+    }
   }, [joined, onLeave]);
-  useEffect(() => { void poll(); const timer = setInterval(() => { if (!document.hidden) void poll(); }, 1500); return () => clearInterval(timer); }, [poll]);
+  useEffect(() => { void poll(); const timer = setInterval(() => { if (!document.hidden) void poll(); }, joined.open ? 2_500 : 1_500); return () => clearInterval(timer); }, [poll, joined.open]);
   useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 250); return () => clearInterval(timer); }, []);
   if (!state) return error ? <ApiErrorState error={error} onRetry={() => void poll()}/> : <LoadingState label={t('teacher.play.connecting')}/>;
   const mine = state.my_answer ?? (tapped && tapped.index === state.index ? { choice: tapped.choice } : null);
@@ -61,7 +70,7 @@ function Game({ joined, onLeave }: { joined: Joined; onLeave(): void }) {
   const tap = async (choice: string) => {
     if (mine || state.status !== 'question') return;
     setTapped({ index: state.index, choice });
-    try { await answerQuiz(joined.session_id, joined.token, state.index, choice); } catch (cause) { if (!(cause instanceof ApiError && cause.code === 'already_answered')) { setTapped(null); setError(cause); } }
+    try { await answerQuiz(joined.session_id, joined.token, state.index, choice, joined.open); } catch (cause) { if (!(cause instanceof ApiError && cause.code === 'already_answered')) { setTapped(null); setError(cause); } }
     void poll();
   };
   return <section className="mx-auto grid max-w-md gap-4" aria-live="polite">

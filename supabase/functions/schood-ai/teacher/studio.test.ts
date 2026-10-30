@@ -141,6 +141,15 @@ Deno.test('teacher test: IELTS Reading B2 with a checked key → edit → print 
     const session = join.body.joined.session_id as string, playerToken = join.body.joined.token as string;
     equal((await f.json('POST', 'teacher/quiz-join', { token: 'tok-student', body: { code, nickname: 'aziz' } })).body.code, 'nickname_taken');
     await f.json('POST', 'teacher/quiz-join', { token: 'tok-student', body: { code, nickname: 'Malika' } });
+    // Without signing in: a code and a nickname over the open routes (core's per-IP limit); a token sent there is ignored.
+    const open = (path: string, body: unknown, ip = '203.0.113.7') => f.json('POST', `teacher/${path}`, { token: null, body, headers: { 'x-forwarded-for': ip } });
+    equal((await f.json('POST', 'teacher/quiz-join', { token: null, body: { code, nickname: 'Dilnoza' } })).status, 401, 'the signed-in join still needs a sign-in');
+    const guest = await open('quiz-join-open', { code, nickname: 'Dilnoza' });
+    equal([guest.status, guest.body.joined.nickname, typeof guest.body.joined.token], [200, 'Dilnoza', 'string'], JSON.stringify(guest.body));
+    const guestToken = guest.body.joined.token as string;
+    equal((await f.json('POST', 'teacher/quiz-join-open', { token: 'tok-plus', body: { code, nickname: 'Bekzod' }, headers: { 'x-forwarded-for': '203.0.113.8' } })).body.joined.token.length, 48, 'an open join links nobody, even with a token');
+    equal((await open('quiz-play-open', { session_id: session })).body.code, 'not_joined', 'open play needs the player token');
+    equal((await open('quiz-play-open', { session_id: session, token: guestToken })).body.play.me.nickname, 'Dilnoza');
     equal((await f.json('POST', 'teacher/quiz-control', { token: T, body: { id: quiz.body.quiz.id, command: 'start' } })).body.quiz.status, 'question');
     const phone = await f.json('POST', 'teacher/quiz-play', { token: 'tok-free', body: { session_id: session, token: playerToken } });
     equal(phone.body.play.question.answer, undefined, 'the phone never sees the answer while the question is open');
@@ -148,12 +157,13 @@ Deno.test('teacher test: IELTS Reading B2 with a checked key → edit → print 
     equal((await f.json('POST', 'teacher/quiz-answer', { token: 'tok-free', body: { session_id: session, token: playerToken, index: 0, choice: 'T' } })).status, 200);
     equal((await f.json('POST', 'teacher/quiz-answer', { token: 'tok-free', body: { session_id: session, token: playerToken, index: 0, choice: 'F' } })).body.code, 'already_answered');
     await f.json('POST', 'teacher/quiz-answer', { token: 'tok-student', body: { session_id: session, index: 0, choice: 'F' } });
+    equal((await open('quiz-answer-open', { session_id: session, token: guestToken, index: 0, choice: 'T' })).status, 200, 'an open player answers with the token');
     const waiting = await f.json('POST', 'teacher/quiz-play', { token: 'tok-free', body: { session_id: session, token: playerToken } });
     equal([waiting.body.play.my_answer, waiting.body.play.me.score, waiting.body.play.me.correct], [{ choice: 'T' }, 0, 0], 'points wait for the reveal, so they do not give the answer away');
     const host = await f.json('GET', 'teacher/quiz', { token: T, query: { id: quiz.body.quiz.id } });
-    equal([host.body.quiz.answered, host.body.quiz.counts], [2, null], 'counts stay hidden until the reveal');
+    equal([host.body.quiz.answered, host.body.quiz.counts], [3, null], 'counts stay hidden until the reveal');
     const revealed = await f.json('POST', 'teacher/quiz-control', { token: T, body: { id: quiz.body.quiz.id, command: 'reveal' } });
-    equal(revealed.body.quiz.counts, { T: 1, F: 1 });
+    equal(revealed.body.quiz.counts, { T: 2, F: 1 });
     equal(revealed.body.quiz.leaderboard[0].nickname, 'Aziz');
     const after = await f.json('POST', 'teacher/quiz-play', { token: 'tok-free', body: { session_id: session, token: playerToken } });
     equal([after.body.play.my_answer.correct, after.body.play.me.rank], [true, 1]);
@@ -162,10 +172,15 @@ Deno.test('teacher test: IELTS Reading B2 with a checked key → edit → print 
     await f.json('POST', 'teacher/quiz-control', { token: T, body: { id: quiz.body.quiz.id, command: 'finish' } });
     const results = await f.json('GET', 'teacher/quiz-results', { token: T, query: { id: quiz.body.quiz.id } });
     equal(results.body.quiz.class_label, '5B IELTS');
-    equal(results.body.players.map((player: { nickname: string; correct: number }) => [player.nickname, player.correct]), [['Aziz', 1], ['Malika', 0]]);
+    equal(results.body.players.map((player: { nickname: string; correct: number; signed_in: boolean }) => [player.nickname, player.correct, player.signed_in]), [['Aziz', 1, true], ['Dilnoza', 1, false], ['Malika', 0, true], ['Bekzod', 0, false]], 'signed-in students are linked; open players are nicknames only');
     equal(calls.length, before, 'the Live Quiz made no model call');
     await f.settle();
     ok(f.memory.learning.some((event) => event.userId === ID.free && event.kind === 'check_passed' && event.feature === 'T10'), 'a checked answer is a learning event for the student');
+    equal(f.memory.learning.filter((event) => event.feature === 'T10').length, 2, 'open players leave no learning events');
+    // Core's per-IP limit on the open join (120 a minute): a flood from one address is refused.
+    let refused = 0;
+    for (let i = 0; i < 121; i++) if ((await open('quiz-join-open', { code: '000000', nickname: `x${i}` }, '198.51.100.9')).status === 429) refused++;
+    equal(refused, 1, 'the 121st join in a minute from one address waits');
 
     // 6. Homework OS: proposed with the exact payload, run only on approval, with the teacher's token.
     const groups = await f.json('GET', 'teacher/academy-groups', { token: T });
