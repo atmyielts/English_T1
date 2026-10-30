@@ -1,5 +1,5 @@
 import type { CreditKey } from '../credits.ts';
-import { EXAM_TARGETS, IELTS_STRUCTURE, ieltsTypesFor, MULTILEVEL_PART_MAP, SAT_MODULES, TOEFL_TASK_MAP } from './formats.ts';
+import { EXAM_TARGETS, IELTS_STRUCTURE, ieltsTypesFor, MULTILEVEL_PART_MAP, satModuleQuestions, TOEFL_TASK_MAP } from './formats.ts';
 import { AUTO_MARKABLE_TYPES, type BlockType, type ExamFormatId, type MaterialBrief, type MaterialLength, type QuestionType } from './model.ts';
 
 // Every T1 material kind and its rules: which blocks it needs, which question types
@@ -8,8 +8,15 @@ import { AUTO_MARKABLE_TYPES, type BlockType, type ExamFormatId, type MaterialBr
 // set of at most 15 questions, or one small whole material, so every call stays well
 // under the edge-function time limit; long exam sets become several steps of one job.
 
-export const MATERIAL_GROUPS = ['general', 'exam', 'planning', 'textbook'] as const;
+export const MATERIAL_GROUPS = ['general', 'exam', 'planning', 'textbook', 'placement'] as const;
 export type MaterialGroup = (typeof MATERIAL_GROUPS)[number];
+/**
+ * The groups the Materials Studio makes. `placement` kinds are the centre's placement
+ * tests (C5): they use the model and its checks, but the Studio does not write them,
+ * and they are not teacher library kinds (the centre has its own).
+ */
+export const STUDIO_GROUPS = ['general', 'exam', 'planning', 'textbook'] as const satisfies readonly MaterialGroup[];
+export type StudioGroup = (typeof STUDIO_GROUPS)[number];
 
 /** One model call of a generation job. */
 export interface GenerationStep {
@@ -53,6 +60,8 @@ export interface MaterialKindSpec {
   playable: boolean;
   /** Needs a page image (textbook to lesson). */
   vision?: boolean;
+  /** Every question needs a level of its own or its set's (placement tests span a range). */
+  levelled?: boolean;
 }
 
 const ALL_QUESTIONS = AUTO_MARKABLE_TYPES;
@@ -62,47 +71,56 @@ const spec = (input: Omit<MaterialKindSpec, 'variants' | 'playable'> & { variant
   variants: true, playable: input.questionTypes.some((type) => (CHOICE as readonly string[]).includes(type)), ...input,
 });
 
-export const MATERIAL_KINDS: Record<string, MaterialKindSpec> = Object.fromEntries([
+export const MATERIAL_KINDS: Record<string, MaterialKindSpec> = /*#__PURE__*/ Object.fromEntries([
   // --- General material ---------------------------------------------------------------
-  spec({ kind: 'worksheet', group: 'general', creditKey: 'material.generate', required: ['questions'], allowed: ['text', 'questions', 'words', 'task'], questionTypes: [...ALL_QUESTIONS, 'open'], count: counts(8, 12, 20) }),
-  spec({ kind: 'reading', group: 'general', creditKey: 'material.generate', required: ['text', 'questions'], allowed: ['text', 'questions', 'words'], questionTypes: ['single_choice', 'multi_choice', 'true_false', 'true_false_not_given', 'matching', 'gap', 'short_answer'], count: counts(6, 10, 14), sourced: 'passage' }),
-  spec({ kind: 'listening', group: 'general', creditKey: 'material.generate', required: ['script', 'questions'], allowed: ['script', 'questions', 'words'], questionTypes: ['single_choice', 'multi_choice', 'true_false', 'matching', 'gap', 'short_answer'], count: counts(6, 10, 14), sourced: 'script' }),
-  spec({ kind: 'gap_fill', group: 'general', creditKey: 'material.generate', required: ['questions'], allowed: ['text', 'questions'], questionTypes: ['gap', 'single_choice'], count: counts(8, 12, 20) }),
-  spec({ kind: 'vocabulary', group: 'general', creditKey: 'material.generate', required: ['words', 'questions'], allowed: ['words', 'questions', 'text'], questionTypes: ['single_choice', 'matching', 'gap', 'short_answer'], count: counts(8, 12, 20) }),
-  spec({ kind: 'grammar', group: 'general', creditKey: 'material.generate', required: ['text', 'questions'], allowed: ['text', 'questions'], questionTypes: ['single_choice', 'gap', 'transformation', 'error_correction', 'ordering'], count: counts(8, 12, 20) }),
-  spec({ kind: 'error_correction', group: 'general', creditKey: 'material.generate', required: ['questions'], allowed: ['text', 'questions'], questionTypes: ['error_correction', 'single_choice'], count: counts(8, 12, 16) }),
-  spec({ kind: 'speaking_cards', group: 'general', creditKey: 'material.generate', required: ['cards'], allowed: ['cards', 'words', 'text'], questionTypes: [], count: counts(4, 8, 12) }),
-  spec({ kind: 'dialogue', group: 'general', creditKey: 'material.generate', required: ['script'], allowed: ['script', 'questions', 'words', 'cards'], questionTypes: ['single_choice', 'true_false', 'gap', 'short_answer'], count: counts(4, 6, 8), sourced: 'script' }),
-  spec({ kind: 'writing_task', group: 'general', creditKey: 'material.generate', required: ['task', 'model_answer', 'rubric'], allowed: ['task', 'model_answer', 'rubric', 'text', 'words'], questionTypes: [], count: counts(1, 1, 1) }),
-  spec({ kind: 'quiz', group: 'general', creditKey: 'material.generate', required: ['questions'], allowed: ['questions', 'text'], questionTypes: ['single_choice', 'multi_choice', 'true_false', 'true_false_not_given', 'matching', 'gap', 'short_answer', 'numeric'], count: counts(10, 15, 25), autoMarkable: true, options: 4 }),
-  spec({ kind: 'homework', group: 'general', creditKey: 'material.generate', required: ['questions'], allowed: ['text', 'script', 'questions', 'words', 'task'], questionTypes: [...ALL_QUESTIONS, 'open'], count: counts(8, 12, 16) }),
+  /*#__PURE__*/ spec({ kind: 'worksheet', group: 'general', creditKey: 'material.generate', required: ['questions'], allowed: ['text', 'questions', 'words', 'task'], questionTypes: [...ALL_QUESTIONS, 'open'], count: counts(8, 12, 20) }),
+  /*#__PURE__*/ spec({ kind: 'reading', group: 'general', creditKey: 'material.generate', required: ['text', 'questions'], allowed: ['text', 'questions', 'words'], questionTypes: ['single_choice', 'multi_choice', 'true_false', 'true_false_not_given', 'matching', 'gap', 'short_answer'], count: counts(6, 10, 14), sourced: 'passage' }),
+  /*#__PURE__*/ spec({ kind: 'listening', group: 'general', creditKey: 'material.generate', required: ['script', 'questions'], allowed: ['script', 'questions', 'words'], questionTypes: ['single_choice', 'multi_choice', 'true_false', 'matching', 'gap', 'short_answer'], count: counts(6, 10, 14), sourced: 'script' }),
+  /*#__PURE__*/ spec({ kind: 'gap_fill', group: 'general', creditKey: 'material.generate', required: ['questions'], allowed: ['text', 'questions'], questionTypes: ['gap', 'single_choice'], count: counts(8, 12, 20) }),
+  /*#__PURE__*/ spec({ kind: 'vocabulary', group: 'general', creditKey: 'material.generate', required: ['words', 'questions'], allowed: ['words', 'questions', 'text'], questionTypes: ['single_choice', 'matching', 'gap', 'short_answer'], count: counts(8, 12, 20) }),
+  /*#__PURE__*/ spec({ kind: 'grammar', group: 'general', creditKey: 'material.generate', required: ['text', 'questions'], allowed: ['text', 'questions'], questionTypes: ['single_choice', 'gap', 'transformation', 'error_correction', 'ordering'], count: counts(8, 12, 20) }),
+  /*#__PURE__*/ spec({ kind: 'error_correction', group: 'general', creditKey: 'material.generate', required: ['questions'], allowed: ['text', 'questions'], questionTypes: ['error_correction', 'single_choice'], count: counts(8, 12, 16) }),
+  /*#__PURE__*/ spec({ kind: 'speaking_cards', group: 'general', creditKey: 'material.generate', required: ['cards'], allowed: ['cards', 'words', 'text'], questionTypes: [], count: counts(4, 8, 12) }),
+  /*#__PURE__*/ spec({ kind: 'dialogue', group: 'general', creditKey: 'material.generate', required: ['script'], allowed: ['script', 'questions', 'words', 'cards'], questionTypes: ['single_choice', 'true_false', 'gap', 'short_answer'], count: counts(4, 6, 8), sourced: 'script' }),
+  /*#__PURE__*/ spec({ kind: 'writing_task', group: 'general', creditKey: 'material.generate', required: ['task', 'model_answer', 'rubric'], allowed: ['task', 'model_answer', 'rubric', 'text', 'words'], questionTypes: [], count: counts(1, 1, 1) }),
+  /*#__PURE__*/ spec({ kind: 'quiz', group: 'general', creditKey: 'material.generate', required: ['questions'], allowed: ['questions', 'text'], questionTypes: ['single_choice', 'multi_choice', 'true_false', 'true_false_not_given', 'matching', 'gap', 'short_answer', 'numeric'], count: counts(10, 15, 25), autoMarkable: true, options: 4 }),
+  /*#__PURE__*/ spec({ kind: 'homework', group: 'general', creditKey: 'material.generate', required: ['questions'], allowed: ['text', 'script', 'questions', 'words', 'task'], questionTypes: [...ALL_QUESTIONS, 'open'], count: counts(8, 12, 16) }),
   // T10: a quiz written for the class game (short stems, choice answers).
-  spec({ kind: 'live_quiz', group: 'general', creditKey: 'quiz.pack', required: ['questions'], allowed: ['questions'], questionTypes: ['single_choice', 'true_false'], count: counts(10, 15, 20), autoMarkable: true, options: 4, variants: false }),
+  /*#__PURE__*/ spec({ kind: 'live_quiz', group: 'general', creditKey: 'quiz.pack', required: ['questions'], allowed: ['questions'], questionTypes: ['single_choice', 'true_false'], count: counts(10, 15, 20), autoMarkable: true, options: 4, variants: false }),
 
   // --- Exam-style sets -------------------------------------------------------------------
-  spec({ kind: 'ielts_reading', group: 'exam', exam: 'ielts', creditKey: 'material.exam_set', required: ['text', 'questions'], allowed: ['text', 'questions'], questionTypes: ['single_choice', 'multi_choice', 'true_false_not_given', 'yes_no_not_given', 'matching', 'gap', 'short_answer'], count: counts(7, 13, 40), sourced: 'passage' }),
-  spec({ kind: 'ielts_listening', group: 'exam', exam: 'ielts', creditKey: 'material.exam_set', required: ['script', 'questions'], allowed: ['script', 'questions'], questionTypes: ['single_choice', 'multi_choice', 'matching', 'gap', 'short_answer'], count: counts(10, 20, 40), sourced: 'script' }),
-  spec({ kind: 'ielts_writing', group: 'exam', exam: 'ielts', creditKey: 'material.exam_set', required: ['task', 'model_answer', 'rubric'], allowed: ['task', 'model_answer', 'rubric', 'text'], questionTypes: [], count: counts(1, 1, 2) }),
-  spec({ kind: 'ielts_speaking', group: 'exam', exam: 'ielts', creditKey: 'material.exam_set', required: ['cards'], allowed: ['cards', 'rubric', 'words'], questionTypes: [], count: counts(1, 3, 3) }),
-  spec({ kind: 'toefl_2026', group: 'exam', exam: 'toefl_2026', creditKey: 'material.exam_set', required: [], allowed: ['text', 'script', 'questions', 'task', 'model_answer', 'rubric', 'cards'], questionTypes: ['single_choice', 'gap', 'ordering', 'open'], count: counts(5, 10, 15) }),
-  spec({ kind: 'multilevel', group: 'exam', exam: 'multilevel', creditKey: 'material.exam_set', required: [], allowed: ['text', 'script', 'questions', 'task', 'model_answer', 'rubric', 'cards'], questionTypes: ['single_choice', 'matching', 'gap', 'open'], count: counts(6, 8, 12) }),
-  spec({ kind: 'sat_reading_writing', group: 'exam', exam: 'sat', creditKey: 'material.exam_set', required: ['questions'], allowed: ['questions'], questionTypes: ['single_choice'], count: counts(6, 12, SAT_MODULES.reading_writing.questions), options: 4, autoMarkable: true }),
-  spec({ kind: 'sat_math', group: 'exam', exam: 'sat', creditKey: 'material.exam_set', required: ['questions'], allowed: ['questions'], questionTypes: ['single_choice', 'numeric'], count: counts(6, 12, SAT_MODULES.math.questions), options: 4, autoMarkable: true }),
-  spec({ kind: 'admission_math', group: 'exam', exam: 'admission_math', creditKey: 'material.exam_set', required: ['questions'], allowed: ['questions', 'text'], questionTypes: ['single_choice'], count: counts(10, 20, 30), options: 4, autoMarkable: true }),
+  /*#__PURE__*/ spec({ kind: 'ielts_reading', group: 'exam', exam: 'ielts', creditKey: 'material.exam_set', required: ['text', 'questions'], allowed: ['text', 'questions'], questionTypes: ['single_choice', 'multi_choice', 'true_false_not_given', 'yes_no_not_given', 'matching', 'gap', 'short_answer'], count: counts(7, 13, 40), sourced: 'passage' }),
+  /*#__PURE__*/ spec({ kind: 'ielts_listening', group: 'exam', exam: 'ielts', creditKey: 'material.exam_set', required: ['script', 'questions'], allowed: ['script', 'questions'], questionTypes: ['single_choice', 'multi_choice', 'matching', 'gap', 'short_answer'], count: counts(10, 20, 40), sourced: 'script' }),
+  /*#__PURE__*/ spec({ kind: 'ielts_writing', group: 'exam', exam: 'ielts', creditKey: 'material.exam_set', required: ['task', 'model_answer', 'rubric'], allowed: ['task', 'model_answer', 'rubric', 'text'], questionTypes: [], count: counts(1, 1, 2) }),
+  /*#__PURE__*/ spec({ kind: 'ielts_speaking', group: 'exam', exam: 'ielts', creditKey: 'material.exam_set', required: ['cards'], allowed: ['cards', 'rubric', 'words'], questionTypes: [], count: counts(1, 3, 3) }),
+  /*#__PURE__*/ spec({ kind: 'toefl_2026', group: 'exam', exam: 'toefl_2026', creditKey: 'material.exam_set', required: [], allowed: ['text', 'script', 'questions', 'task', 'model_answer', 'rubric', 'cards'], questionTypes: ['single_choice', 'gap', 'ordering', 'open'], count: counts(5, 10, 15) }),
+  /*#__PURE__*/ spec({ kind: 'multilevel', group: 'exam', exam: 'multilevel', creditKey: 'material.exam_set', required: [], allowed: ['text', 'script', 'questions', 'task', 'model_answer', 'rubric', 'cards'], questionTypes: ['single_choice', 'matching', 'gap', 'open'], count: counts(6, 8, 12) }),
+  /*#__PURE__*/ spec({ kind: 'sat_reading_writing', group: 'exam', exam: 'sat', creditKey: 'material.exam_set', required: ['questions'], allowed: ['questions'], questionTypes: ['single_choice'], count: counts(6, 12, /*#__PURE__*/ satModuleQuestions('reading_writing')), options: 4, autoMarkable: true }),
+  /*#__PURE__*/ spec({ kind: 'sat_math', group: 'exam', exam: 'sat', creditKey: 'material.exam_set', required: ['questions'], allowed: ['questions'], questionTypes: ['single_choice', 'numeric'], count: counts(6, 12, /*#__PURE__*/ satModuleQuestions('math')), options: 4, autoMarkable: true }),
+  /*#__PURE__*/ spec({ kind: 'admission_math', group: 'exam', exam: 'admission_math', creditKey: 'material.exam_set', required: ['questions'], allowed: ['questions', 'text'], questionTypes: ['single_choice'], count: counts(10, 20, 30), options: 4, autoMarkable: true }),
 
   // --- Planning and practice -------------------------------------------------------------
-  spec({ kind: 'lesson_plan', group: 'planning', creditKey: 'lesson.plan', required: ['stages'], allowed: ['stages', 'text', 'questions', 'words', 'cards', 'task'], questionTypes: ['single_choice', 'gap', 'short_answer', 'true_false'], count: counts(4, 6, 8), variants: false }),
-  spec({ kind: 'course_outline', group: 'planning', creditKey: 'course.outline', required: ['outline'], allowed: ['outline', 'text'], questionTypes: [], count: counts(6, 10, 14), variants: false }),
-  spec({ kind: 'slide_outline', group: 'planning', creditKey: 'material.generate', required: ['slides'], allowed: ['slides'], questionTypes: [], count: counts(6, 10, 15), variants: false }),
-  spec({ kind: 'flashcards', group: 'planning', creditKey: 'material.generate', required: ['flashcards'], allowed: ['flashcards'], questionTypes: [], count: counts(12, 20, 30) }),
+  /*#__PURE__*/ spec({ kind: 'lesson_plan', group: 'planning', creditKey: 'lesson.plan', required: ['stages'], allowed: ['stages', 'text', 'questions', 'words', 'cards', 'task'], questionTypes: ['single_choice', 'gap', 'short_answer', 'true_false'], count: counts(4, 6, 8), variants: false }),
+  /*#__PURE__*/ spec({ kind: 'course_outline', group: 'planning', creditKey: 'course.outline', required: ['outline'], allowed: ['outline', 'text'], questionTypes: [], count: counts(6, 10, 14), variants: false }),
+  /*#__PURE__*/ spec({ kind: 'slide_outline', group: 'planning', creditKey: 'material.generate', required: ['slides'], allowed: ['slides'], questionTypes: [], count: counts(6, 10, 15), variants: false }),
+  /*#__PURE__*/ spec({ kind: 'flashcards', group: 'planning', creditKey: 'material.generate', required: ['flashcards'], allowed: ['flashcards'], questionTypes: [], count: counts(12, 20, 30) }),
 
   // --- Textbook to lesson (T9) ------------------------------------------------------------
-  spec({ kind: 'textbook_lesson', group: 'textbook', creditKey: 'textbook.lesson', required: ['questions', 'cards'], allowed: ['text', 'questions', 'cards', 'task', 'words'], questionTypes: [...ALL_QUESTIONS, 'open'], count: counts(8, 12, 16), vision: true }),
+  /*#__PURE__*/ spec({ kind: 'textbook_lesson', group: 'textbook', creditKey: 'textbook.lesson', required: ['questions', 'cards'], allowed: ['text', 'questions', 'cards', 'task', 'words'], questionTypes: [...ALL_QUESTIONS, 'open'], count: counts(8, 12, 16), vision: true }),
+
+  // --- Placement tests (the centre's C5; not made in the Studio) -----------------------------
+  // Objective items (single choice and gaps, each with its level), plus writing and
+  // speaking tasks with their rubrics, which a teacher marks.
+  /*#__PURE__*/ spec({ kind: 'placement_test', group: 'placement', creditKey: 'placement.generate', required: ['questions'], allowed: ['questions', 'task', 'rubric', 'text'], questionTypes: ['single_choice', 'gap'], count: counts(18, 30, 42), autoMarkable: true, levelled: true, variants: false, playable: false }),
 ].map((entry) => [entry.kind, entry]));
 
-export const MATERIAL_KIND_IDS = Object.keys(MATERIAL_KINDS);
+export const MATERIAL_KIND_IDS = /*#__PURE__*/ Object.keys(MATERIAL_KINDS);
 export const isMaterialKind = (value: unknown): value is string => typeof value === 'string' && Object.hasOwn(MATERIAL_KINDS, value);
 export const materialKind = (kind: string): MaterialKindSpec | null => (isMaterialKind(kind) ? MATERIAL_KINDS[kind] : null);
+/** A kind the Materials Studio makes (every group but placement). */
+export const isStudioKind = (kind: string): boolean => (STUDIO_GROUPS as readonly string[]).includes(materialKind(kind)?.group ?? '');
+/** The kinds the Studio makes, in table order. */
+export const STUDIO_KIND_IDS = /*#__PURE__*/ MATERIAL_KIND_IDS.filter(isStudioKind);
 
 /** The exact credit key and add-ons a brief costs (three levels add `material.differentiate`). */
 export function materialCredit(brief: Pick<MaterialBrief, 'kind' | 'variants'>): { key: CreditKey; addOns: CreditKey[] } {
@@ -121,7 +139,8 @@ export const plannedCount = (brief: Pick<MaterialBrief, 'kind' | 'length' | 'que
 /** Problems with a brief that the generator cannot fix: wrong exam target, unknown kind. Empty means fine. */
 export function briefProblems(brief: MaterialBrief): string[] {
   const kind = materialKind(brief.kind);
-  if (!kind) return ['kind'];
+  // Placement tests are written by the centre's own builder, never from a Studio brief.
+  if (!kind || !isStudioKind(kind.kind)) return ['kind'];
   const problems: string[] = [];
   if (kind.exam) {
     if (brief.exam && brief.exam.format !== kind.exam) problems.push('exam.format');

@@ -12,14 +12,27 @@ import { literal, tagged } from './kit.ts';
 // checked key (keys.ts) is computed from them. Nothing here talks to a model.
 
 export const MATERIAL_SCHEMA = 'schood.material.v1';
+/** A1 to C2: the levels the Materials Studio offers. */
 export const CEFR_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
 export type CefrLevel = (typeof CEFR_LEVELS)[number];
+/** The whole CEFR scale, with Pre-A1 below A1 (young learners, placement tests that start at the bottom). */
+export const CEFR_SCALE = ['Pre-A1', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
+export type CefrScaleLevel = (typeof CEFR_SCALE)[number];
 export const INSTRUCTION_LANGUAGES = ['en', 'uz', 'ru'] as const;
 export type InstructionLanguage = (typeof INSTRUCTION_LANGUAGES)[number];
 
-/** A CEFR level (`B2`) or an exam band (`band:6.5`, `band:1200`). */
-export const LEVEL_PATTERN = /^(A1|A2|B1|B2|C1|C2|band:[0-9]{1,4}(\.[05])?)$/;
+/** A CEFR level (`Pre-A1`, `B2`) or an exam band (`band:6.5`, `band:1200`). */
+export const LEVEL_PATTERN = /^(Pre-A1|A1|A2|B1|B2|C1|C2|band:[0-9]{1,4}(\.[05])?)$/;
 export const isMaterialLevel = (value: unknown): value is string => typeof value === 'string' && LEVEL_PATTERN.test(value);
+/** A level's place on the CEFR scale (Pre-A1 is 0, C2 is 6), to compare and sort levels; -1 for exam bands and anything else. */
+export const cefrRank = (level: string): number => (CEFR_SCALE as readonly string[]).indexOf(level);
+/** A CEFR level written any common way (`pre_a1`, `Pre A1`, `prea1`, `b2`) in the model's form (`Pre-A1`, `B2`); null when it is not one. */
+export function toCefrLevel(value: unknown): CefrScaleLevel | null {
+  if (typeof value !== 'string') return null;
+  const compact = value.trim().toUpperCase().replace(/[\s_-]+/g, '');
+  if (compact === 'PREA1') return 'Pre-A1';
+  return (CEFR_LEVELS as readonly string[]).includes(compact) ? compact as CefrLevel : null;
+}
 export const ID_PATTERN = /^[a-z][a-z0-9_-]{0,30}$/;
 
 // --- Questions -------------------------------------------------------------------------
@@ -42,7 +55,7 @@ export const CHOICE_TYPES: readonly QuestionType[] = ['single_choice', 'multi_ch
 export const SINGLE_KEY_TYPES: readonly QuestionType[] = ['single_choice', 'true_false', 'true_false_not_given', 'yes_no_not_given', 'matching'];
 export const TEXT_TYPES: readonly QuestionType[] = ['gap', 'short_answer', 'error_correction', 'transformation'];
 /** Types a machine can mark (everything except open prompts). */
-export const AUTO_MARKABLE_TYPES: readonly QuestionType[] = QUESTION_TYPES.filter((type) => type !== 'open');
+export const AUTO_MARKABLE_TYPES: readonly QuestionType[] = /*#__PURE__*/ QUESTION_TYPES.filter((type) => type !== 'open');
 
 /** Fixed option sets of the judgement types; option ids are stable so keys compare. */
 export const FIXED_OPTIONS: Partial<Record<QuestionType, readonly Choice[]>> = {
@@ -69,11 +82,13 @@ export interface Question {
   /** The exam's own type id (`question_true_false_not_given`, `read_daily_life`, `spr`…). */
   exam_type?: string;
   points?: number;
+  /** This question's own level, when a set spans several (placement tests). Else the set's level, else the material's (questionLevel). */
+  level?: string;
 }
 
 export const OPTION_ID = /^[A-Za-z0-9]{1,4}$/;
-export const choiceSchema = s.object({ id: s.string({ min: 1, max: 4, pattern: OPTION_ID }), text: s.string({ min: 1, max: 600 }) });
-export const questionSchema = s.object({
+export const choiceSchema = /*#__PURE__*/ s.object({ id: s.string({ min: 1, max: 4, pattern: OPTION_ID }), text: s.string({ min: 1, max: 600 }) });
+export const questionSchema = /*#__PURE__*/ s.object({
   id: s.string({ min: 1, max: 31, pattern: ID_PATTERN }),
   type: s.enumOf(QUESTION_TYPES),
   prompt: s.string({ max: 2000 }),
@@ -85,6 +100,7 @@ export const questionSchema = s.object({
   skill: s.optional(s.string({ max: 80 })),
   exam_type: s.optional(s.string({ max: 60 })),
   points: s.optional(s.number({ min: 0, max: 100 })),
+  level: s.optional(s.string({ max: 20, pattern: LEVEL_PATTERN })),
 }) as Schema<Question>;
 
 // --- Blocks ---------------------------------------------------------------------------------
@@ -134,30 +150,30 @@ export interface Unit { title: string; weeks?: number; aims: string[]; can_do: s
 export interface OutlineBlock { id: string; type: 'outline'; title?: string; units: Unit[] }
 export type Block = TextBlock | ScriptBlock | QuestionsBlock | WordsBlock | CardsBlock | FlashcardsBlock | TaskBlock | ModelAnswerBlock | RubricBlock | StagesBlock | SlidesBlock | OutlineBlock;
 
-const id = s.string({ min: 1, max: 31, pattern: ID_PATTERN });
-const title = s.optional(s.string({ max: 200 }));
+const id = /*#__PURE__*/ s.string({ min: 1, max: 31, pattern: ID_PATTERN });
+const title = /*#__PURE__*/ s.optional(s.string({ max: 200 }));
 const line = (max = 600) => s.string({ min: 1, max });
 const blocks: Record<BlockType, Schema<Block>> = {
-  text: s.object({ id, type: literal('text'), role: s.enumOf(TEXT_ROLES), title, body: s.string({ min: 1, max: 14_000 }) }) as Schema<Block>,
-  script: s.object({ id, type: literal('script'), role: s.enumOf(['listening', 'dialogue'] as const), title, setting: s.optional(s.string({ max: 400 })), lines: s.array(s.object({ speaker: s.string({ min: 1, max: 60 }), text: line(1500) }), { min: 1, max: 160 }) }) as Schema<Block>,
-  questions: s.object({
+  text: /*#__PURE__*/ s.object({ id, type: literal('text'), role: s.enumOf(TEXT_ROLES), title, body: s.string({ min: 1, max: 14_000 }) }) as Schema<Block>,
+  script: /*#__PURE__*/ s.object({ id, type: literal('script'), role: s.enumOf(['listening', 'dialogue'] as const), title, setting: s.optional(s.string({ max: 400 })), lines: s.array(s.object({ speaker: s.string({ min: 1, max: 60 }), text: line(1500) }), { min: 1, max: 160 }) }) as Schema<Block>,
+  questions: /*#__PURE__*/ s.object({
     id, type: literal('questions'), title, instructions: s.string({ min: 1, max: 1000 }),
     word_limit: s.optional(s.number({ min: 1, max: 10, integer: true })), word_box: s.optional(s.array(line(80), { max: 30 })),
     options: s.optional(s.array(choiceSchema, { max: 16 })), source: s.optional(id), from_source: s.optional(s.boolean()),
     level: s.optional(s.string({ max: 20, pattern: LEVEL_PATTERN })), exam_type: s.optional(s.string({ max: 60 })),
     questions: s.array(questionSchema, { min: 1, max: 60 }),
   }) as Schema<Block>,
-  words: s.object({ id, type: literal('words'), title, words: s.array(s.object({ term: line(80), part_of_speech: s.optional(s.string({ max: 30 })), meaning: line(300), meaning_uz: s.optional(s.string({ max: 300 })), meaning_ru: s.optional(s.string({ max: 300 })), example: s.optional(s.string({ max: 400 })) }), { min: 1, max: 60 }) }) as Schema<Block>,
-  cards: s.object({ id, type: literal('cards'), title, cards: s.array(s.object({ title: line(120), prompt: line(1200), points: s.optional(s.array(line(300), { max: 8 })), role: s.optional(s.string({ max: 300 })), prep_seconds: s.optional(s.number({ min: 0, max: 600, integer: true })), talk_seconds: s.optional(s.number({ min: 0, max: 900, integer: true })) }), { min: 1, max: 40 }) }) as Schema<Block>,
-  flashcards: s.object({ id, type: literal('flashcards'), title, cards: s.array(s.object({ front: line(200), back: line(400), example: s.optional(s.string({ max: 300 })) }), { min: 1, max: 80 }) }) as Schema<Block>,
-  task: s.object({ id, type: literal('task'), title, prompt: s.string({ min: 1, max: 4000 }), words: s.optional(s.object({ min: s.number({ min: 0, max: 2000, integer: true }), max: s.number({ min: 1, max: 3000, integer: true }) })), minutes: s.optional(s.number({ min: 1, max: 240, integer: true })), exam_task: s.optional(s.string({ max: 60 })) }) as Schema<Block>,
-  model_answer: s.object({ id, type: literal('model_answer'), title, body: s.string({ min: 1, max: 8000 }), for: s.optional(id), notes: s.optional(s.array(line(400), { max: 10 })) }) as Schema<Block>,
-  rubric: s.object({ id, type: literal('rubric'), title, for: s.optional(id), criteria: s.array(s.object({ id, name: line(80), description: line(600), max: s.number({ min: 1, max: 100 }) }), { min: 1, max: 12 }) }) as Schema<Block>,
-  stages: s.object({ id, type: literal('stages'), title, homework: s.optional(s.string({ max: 1500 })), stages: s.array(s.object({ name: line(80), minutes: s.number({ min: 1, max: 180, integer: true }), aim: line(400), steps: s.array(line(500), { min: 1, max: 12 }), interaction: s.optional(s.string({ max: 40 })), materials: s.optional(s.string({ max: 300 })) }), { min: 1, max: 16 }) }) as Schema<Block>,
-  slides: s.object({ id, type: literal('slides'), title, slides: s.array(s.object({ title: line(120), bullets: s.array(line(300), { max: 8 }), notes: s.optional(s.string({ max: 800 })) }), { min: 1, max: 40 }) }) as Schema<Block>,
-  outline: s.object({ id, type: literal('outline'), title, units: s.array(s.object({ title: line(160), weeks: s.optional(s.number({ min: 1, max: 20, integer: true })), aims: s.array(line(300), { max: 10 }), can_do: s.array(line(300), { max: 12 }), grammar: s.optional(s.array(line(120), { max: 12 })), vocabulary: s.optional(s.array(line(120), { max: 12 })), skills: s.optional(s.array(line(120), { max: 12 })), assessment: s.optional(s.string({ max: 400 })) }), { min: 1, max: 40 }) }) as Schema<Block>,
+  words: /*#__PURE__*/ s.object({ id, type: literal('words'), title, words: s.array(s.object({ term: line(80), part_of_speech: s.optional(s.string({ max: 30 })), meaning: line(300), meaning_uz: s.optional(s.string({ max: 300 })), meaning_ru: s.optional(s.string({ max: 300 })), example: s.optional(s.string({ max: 400 })) }), { min: 1, max: 60 }) }) as Schema<Block>,
+  cards: /*#__PURE__*/ s.object({ id, type: literal('cards'), title, cards: s.array(s.object({ title: line(120), prompt: line(1200), points: s.optional(s.array(line(300), { max: 8 })), role: s.optional(s.string({ max: 300 })), prep_seconds: s.optional(s.number({ min: 0, max: 600, integer: true })), talk_seconds: s.optional(s.number({ min: 0, max: 900, integer: true })) }), { min: 1, max: 40 }) }) as Schema<Block>,
+  flashcards: /*#__PURE__*/ s.object({ id, type: literal('flashcards'), title, cards: s.array(s.object({ front: line(200), back: line(400), example: s.optional(s.string({ max: 300 })) }), { min: 1, max: 80 }) }) as Schema<Block>,
+  task: /*#__PURE__*/ s.object({ id, type: literal('task'), title, prompt: s.string({ min: 1, max: 4000 }), words: s.optional(s.object({ min: s.number({ min: 0, max: 2000, integer: true }), max: s.number({ min: 1, max: 3000, integer: true }) })), minutes: s.optional(s.number({ min: 1, max: 240, integer: true })), exam_task: s.optional(s.string({ max: 60 })) }) as Schema<Block>,
+  model_answer: /*#__PURE__*/ s.object({ id, type: literal('model_answer'), title, body: s.string({ min: 1, max: 8000 }), for: s.optional(id), notes: s.optional(s.array(line(400), { max: 10 })) }) as Schema<Block>,
+  rubric: /*#__PURE__*/ s.object({ id, type: literal('rubric'), title, for: s.optional(id), criteria: s.array(s.object({ id, name: line(80), description: line(600), max: s.number({ min: 1, max: 100 }) }), { min: 1, max: 12 }) }) as Schema<Block>,
+  stages: /*#__PURE__*/ s.object({ id, type: literal('stages'), title, homework: s.optional(s.string({ max: 1500 })), stages: s.array(s.object({ name: line(80), minutes: s.number({ min: 1, max: 180, integer: true }), aim: line(400), steps: s.array(line(500), { min: 1, max: 12 }), interaction: s.optional(s.string({ max: 40 })), materials: s.optional(s.string({ max: 300 })) }), { min: 1, max: 16 }) }) as Schema<Block>,
+  slides: /*#__PURE__*/ s.object({ id, type: literal('slides'), title, slides: s.array(s.object({ title: line(120), bullets: s.array(line(300), { max: 8 }), notes: s.optional(s.string({ max: 800 })) }), { min: 1, max: 40 }) }) as Schema<Block>,
+  outline: /*#__PURE__*/ s.object({ id, type: literal('outline'), title, units: s.array(s.object({ title: line(160), weeks: s.optional(s.number({ min: 1, max: 20, integer: true })), aims: s.array(line(300), { max: 10 }), can_do: s.array(line(300), { max: 12 }), grammar: s.optional(s.array(line(120), { max: 12 })), vocabulary: s.optional(s.array(line(120), { max: 12 })), skills: s.optional(s.array(line(120), { max: 12 })), assessment: s.optional(s.string({ max: 400 })) }), { min: 1, max: 40 }) }) as Schema<Block>,
 };
-export const blockSchema: Schema<Block> = tagged('type', blocks);
+export const blockSchema: Schema<Block> = /*#__PURE__*/ tagged('type', blocks);
 
 // --- The material ------------------------------------------------------------------------------
 
@@ -181,12 +197,12 @@ export interface Material {
   variants?: Variant[];
 }
 
-export const examTargetSchema = s.object({
+export const examTargetSchema = /*#__PURE__*/ s.object({
   format: s.enumOf(EXAM_FORMATS), section: s.optional(s.string({ max: 40 })), task: s.optional(s.string({ max: 60 })),
   part: s.optional(s.string({ max: 40 })), domain: s.optional(s.string({ max: 60 })), topics: s.optional(s.array(s.string({ min: 1, max: 60 }), { max: 12 })),
 }) as Schema<ExamTarget>;
-const blockList = s.array(blockSchema, { min: 1, max: 40 });
-export const materialSchema = s.object({
+const blockList = /*#__PURE__*/ s.array(blockSchema, { min: 1, max: 40 });
+export const materialSchema = /*#__PURE__*/ s.object({
   schema: literal(MATERIAL_SCHEMA),
   kind: s.string({ min: 2, max: 40, pattern: /^[a-z][a-z0-9_]{1,39}$/ }),
   title: s.string({ min: 1, max: 200 }),
@@ -221,6 +237,19 @@ export const versions = (material: Material): { label: 'core' | 'support' | 'str
   ...(material.variants ?? []).map((variant) => ({ label: variant.label, level: variant.level, blocks: variant.blocks })),
 ];
 export const allQuestions = (blocksOf: readonly Block[]): Question[] => questionBlocks(blocksOf).flatMap((block) => block.questions);
+/** A question's level: its own, else its set's, else the fallback (usually the material's level); null when none is known. */
+export const questionLevel = (question: Pick<Question, 'level'>, block?: Pick<QuestionsBlock, 'level'>, fallback?: string): string | null =>
+  question.level ?? block?.level ?? fallback ?? null;
+/** How many questions there are at each level, in scale order (Pre-A1 first, then bands), for placement tests that span a range. */
+export function questionsByLevel(blocksOf: readonly Block[], fallback?: string): { level: string; questions: number }[] {
+  const counts = new Map<string, number>();
+  for (const block of questionBlocks(blocksOf)) for (const question of block.questions) {
+    const level = questionLevel(question, block, fallback);
+    if (level) counts.set(level, (counts.get(level) ?? 0) + 1);
+  }
+  const rank = (level: string) => { const at = cefrRank(level); return at < 0 ? CEFR_SCALE.length : at; };
+  return [...counts].sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b)).map(([level, questions]) => ({ level, questions }));
+}
 
 // --- The brief ----------------------------------------------------------------------------------
 
@@ -242,7 +271,7 @@ export interface MaterialBrief {
   /** Three levels at once (+10 credits). */
   variants?: boolean;
 }
-export const briefSchema = s.object({
+export const briefSchema = /*#__PURE__*/ s.object({
   kind: s.string({ min: 2, max: 40, pattern: /^[a-z][a-z0-9_]{1,39}$/ }),
   level: s.string({ max: 20, pattern: LEVEL_PATTERN }),
   topic: s.string({ min: 2, max: 200 }),
@@ -255,8 +284,13 @@ export const briefSchema = s.object({
   variants: s.optional(s.boolean()),
 }) as Schema<MaterialBrief>;
 
-/** The CEFR levels around a level, for three-level variants (support, core, stretch). */
+/**
+ * The CEFR levels around a level, for three-level variants (support, core, stretch).
+ * A1's support stays A1: Pre-A1 is a young learners' level, not an easier A1, so the
+ * Studio does not step down into it. Pre-A1 itself stretches to A1.
+ */
 export function neighbourLevels(level: string): { support: string; stretch: string } {
+  if (level === 'Pre-A1') return { support: 'Pre-A1', stretch: 'A1' };
   const index = (CEFR_LEVELS as readonly string[]).indexOf(level);
   if (index >= 0) return { support: CEFR_LEVELS[Math.max(0, index - 1)], stretch: CEFR_LEVELS[Math.min(CEFR_LEVELS.length - 1, index + 1)] };
   return { support: level, stretch: level };

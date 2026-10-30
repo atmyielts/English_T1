@@ -38,7 +38,7 @@ export function studentView(material: Material): Material {
 }
 
 export interface KeyEntry { version: 'core' | 'support' | 'stretch'; number: number; question: string; answer: string; explanation?: string }
-const JUDGEMENT_IDS = new Set(['T', 'F', 'NG', 'Y', 'N']);
+const JUDGEMENT_IDS = /*#__PURE__*/ new Set(['T', 'F', 'NG', 'Y', 'N']);
 const optionLabel = (id: string, options: readonly Choice[]) => {
   const option = options.find((entry) => entry.id === id);
   if (!option) return id;

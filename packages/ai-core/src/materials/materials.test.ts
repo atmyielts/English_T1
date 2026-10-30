@@ -3,10 +3,10 @@ import { TOEFL_2026_TASKS } from '../../../../supabase/functions/_shared/toefl-2
 import { creditPrice, isCreditKey, quoteCredits } from '../credits.ts';
 import { SchemaError } from '../schema.ts';
 import {
-  ADMISSION_MATH_TOPIC_CODES, answerKey, assessmentItems, briefProblems, briefSchema, checkMaterial, compareSolver, draftContentSchema,
+  ADMISSION_MATH_TOPIC_CODES, answerKey, assessmentItems, briefProblems, briefSchema, CEFR_LEVELS, CEFR_SCALE, cefrRank, checkMaterial, compareSolver, draftContentSchema,
   draftQuestionsSchema, draftSourceSchema, EXAM_TARGETS, generationPlan, ieltsTypesFor, isCorrect, materialCredit, materialKind, MATERIAL_KINDS,
-  materialText, MULTILEVEL_READING_PARTS, normaliseAnswer, parseMaterial, parseNumber, plannedCount, quizQuestions, renumber, solverAnswersSchema,
-  solverTasks, studentView, telegramMessages, toeflTasksFor, verification, type Block, type Material,
+  isStudioKind, MATERIAL_KIND_DEFINITIONS, materialText, MULTILEVEL_READING_PARTS, neighbourLevels, normaliseAnswer, parseMaterial, questionLevel, questionsByLevel, parseNumber, plannedCount, quizQuestions, renumber, solverAnswersSchema,
+  SOLVER_INSTRUCTIONS, SOLVER_SYSTEM, solverPayload, solverTasks, STUDIO_GROUPS, STUDIO_KIND_IDS, studentView, telegramMessages, toCefrLevel, toeflTasksFor, verification, type Block, type Material,
 } from './mod.ts';
 
 const equal = (actual: unknown, expected: unknown, label = '') => {
@@ -53,7 +53,8 @@ Deno.test('every T1 material type in the doc has a schema, rules and a price', (
   for (const kind of doc) ok(materialKind(kind), `${kind} is a kind`);
   for (const spec of Object.values(MATERIAL_KINDS)) {
     ok(isCreditKey(spec.creditKey), `${spec.kind} credit key`);
-    ok(['T1', 'T5', 'T9', 'T10'].includes(creditPrice(spec.creditKey).feature), `${spec.kind} priced under a teacher feature`);
+    // Studio kinds are priced under teacher features; placement tests under the centre's C5.
+    ok((isStudioKind(spec.kind) ? ['T1', 'T5', 'T9', 'T10'] : ['C5']).includes(creditPrice(spec.creditKey).feature), `${spec.kind} priced under its own feature`);
     for (const type of spec.required) ok(spec.allowed.includes(type), `${spec.kind}: required ${type} is allowed`);
   }
   equal(materialKind('ielts_reading')!.creditKey, 'material.exam_set');
@@ -230,4 +231,116 @@ Deno.test('renderers: student view, key, text, Telegram, Live Quiz and Assessmen
   equal(items.map((entry) => entry.item.type), ['single_choice', 'single_choice', 'short_answer', 'short_answer', 'single_choice']);
   equal(items[4].key, { correct: 'B', solution: 'The passage says it had shrunk to a tenth of its size.' });
   ok(items.every((entry) => entry.item.schema_version === 'assessment.item.v1' && entry.item.prompt.includes('Aral Sea')), 'items carry their passage');
+});
+
+Deno.test('library kinds: one per Studio kind, Markdown with the key, student Telegram text', async () => {
+  const { MATERIAL_KIND_DEFINITIONS, kindSchema, materialMarkdown, materialTelegram } = await import('./mod.ts');
+  equal(MATERIAL_KIND_DEFINITIONS.map((definition) => definition.kind).sort(), Object.keys(MATERIAL_KINDS).filter(isStudioKind).sort(), 'every Studio kind');
+  const material = readingSet();
+  const markdown = materialMarkdown(material);
+  ok(markdown.includes('### The Aral Sea') && markdown.includes('3. Rivers were diverted to grow ____.') && markdown.includes('## Answer key') && markdown.includes('5. B (a tenth of its size)'), 'teacher document');
+  const telegram = materialTelegram(material);
+  ok(!telegram.includes('✓') && telegram.includes('Aral Sea'), 'students get no key');
+  equal(kindSchema('ielts_reading').parse(material).title, 'The shrinking sea');
+  throws(() => kindSchema('quiz').parse(material), 'a material of another kind is refused');
+});
+
+Deno.test('the plain kind catalog matches the kind rules', async () => {
+  const { MATERIAL_KIND_CATALOG } = await import('./mod.ts');
+  equal(Object.entries(MATERIAL_KIND_CATALOG).sort(), Object.values(MATERIAL_KINDS).filter((kind) => isStudioKind(kind.kind)).map((kind) => [kind.kind, kind.group]).sort());
+});
+
+Deno.test('Pre-A1 is a level below A1 (placement tests), outside the Studio range A1–C2', () => {
+  equal(CEFR_SCALE, ['Pre-A1', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2']);
+  equal(CEFR_LEVELS, ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'], 'the Studio still offers A1–C2');
+  const young = { ...readingSet(), level: 'Pre-A1' };
+  equal(parseMaterial(young).level, 'Pre-A1');
+  equal(briefSchema.parse({ kind: 'worksheet', level: 'Pre-A1', topic: 'Colours', instruction_language: 'uz', length: 'short' }).level, 'Pre-A1');
+  for (const bad of ['PreA1', 'pre_a1', 'A0', 'Pre-A2']) throws(() => parseMaterial({ ...readingSet(), level: bad }), `stored levels use one spelling: ${bad}`);
+  ok(cefrRank('Pre-A1') === 0 && cefrRank('A1') === 1 && cefrRank('C2') === 6 && cefrRank('band:6.5') === -1, 'ranks order the scale');
+  equal(['B1', 'Pre-A1', 'C1', 'A1'].sort((a, b) => cefrRank(a) - cefrRank(b)), ['Pre-A1', 'A1', 'B1', 'C1']);
+  equal(['pre_a1', 'Pre A1', 'PRE-A1', 'prea1', 'b2', ' c1 ', 'A0', 'band:6', 7].map(toCefrLevel), ['Pre-A1', 'Pre-A1', 'Pre-A1', 'Pre-A1', 'B2', 'C1', null, null, null]);
+  equal(neighbourLevels('Pre-A1'), { support: 'Pre-A1', stretch: 'A1' });
+  equal(neighbourLevels('A1'), { support: 'A1', stretch: 'A2' }, 'A1 support does not drop into the young learners level');
+  equal(neighbourLevels('B2'), { support: 'B1', stretch: 'C1' });
+});
+
+Deno.test('a question can carry its own level, so one set can span a range', () => {
+  const ranged = parseMaterial({
+    ...readingSet(), kind: 'worksheet', exam: undefined, blocks: [
+      { id: 'b1', type: 'questions', instructions: 'Choose the answer.', level: 'A2', questions: [
+        { id: 'q1', type: 'single_choice', prompt: 'I ____ a student.', options: [{ id: 'A', text: 'am' }, { id: 'B', text: 'is' }], answer: ['A'], level: 'Pre-A1' },
+        { id: 'q2', type: 'single_choice', prompt: 'She ____ to school yesterday.', options: [{ id: 'A', text: 'goes' }, { id: 'B', text: 'went' }], answer: ['B'] },
+        { id: 'q3', type: 'gap', prompt: 'If I ____ (be) you, I would apply.', answer: ['were'], level: 'B2' },
+      ] },
+      { id: 'b2', type: 'questions', instructions: 'Write the word.', questions: [{ id: 'q4', type: 'gap', prompt: 'The opposite of hot is ____.', answer: ['cold'] }] },
+    ],
+  });
+  const [set, plain] = ranged.blocks as Extract<Block, { type: 'questions' }>[];
+  equal(set.questions.map((question) => questionLevel(question, set, ranged.level)), ['Pre-A1', 'A2', 'B2'], 'own level, else the set level');
+  equal(questionLevel(plain.questions[0], plain, ranged.level), 'B2', 'else the material level');
+  equal(questionLevel(plain.questions[0], plain), null);
+  equal(questionsByLevel(ranged.blocks, ranged.level), [{ level: 'Pre-A1', questions: 1 }, { level: 'A2', questions: 1 }, { level: 'B2', questions: 2 }]);
+  equal(checkMaterial(ranged).errors, 0, 'levels do not disturb the key checks');
+  equal(studentView(ranged).blocks[0].type === 'questions' && (studentView(ranged).blocks[0] as Extract<Block, { type: 'questions' }>).questions[2].level, 'B2', 'the student copy keeps levels (no key in them)');
+  throws(() => parseMaterial({ ...ranged, blocks: [{ ...set, questions: [{ ...set.questions[0], level: 'beginner' }] }] }), 'question levels use the level pattern');
+
+  // Model drafts: levels in any common spelling are kept; anything else is dropped, not fatal.
+  const [drafted] = draftQuestionsSchema().parse({ sets: [{ instructions: 'Choose.', level: 'a2', questions: [
+    { type: 'mcq', prompt: 'Pick one ____.', options: ['a', 'b'], answer: 'A', level: 'pre_a1' },
+    { type: 'gap', prompt: 'Fill ____.', answer: 'x', level: 'B1' },
+    { type: 'gap', prompt: 'Fill ____ again.', answer: 'y', level: 'intermediate' },
+  ] }] });
+  equal([drafted.level, ...drafted.questions.map((question) => question.level ?? null)], ['A2', 'Pre-A1', 'B1', null]);
+});
+
+Deno.test('placement tests are a kind with rules, made by the centre and not in the Studio', () => {
+  const spec = materialKind('placement_test')!;
+  equal([spec.group, spec.creditKey, spec.questionTypes, spec.autoMarkable, spec.levelled, spec.variants, spec.playable], ['placement', 'placement.generate', ['single_choice', 'gap'], true, true, false, false]);
+  equal(quoteCredits(materialCredit({ kind: 'placement_test' }).key).credits, creditPrice('placement.generate').credits);
+  ok(!isStudioKind('placement_test') && isStudioKind('worksheet') && !STUDIO_KIND_IDS.includes('placement_test'), 'not a Studio kind');
+  ok(!(STUDIO_GROUPS as readonly string[]).includes('placement'), 'no Studio group');
+  equal(briefProblems({ kind: 'placement_test', level: 'B1', topic: 'Placement', instruction_language: 'en', length: 'standard' }), ['kind'], 'no Studio brief makes one');
+  ok(!MATERIAL_KIND_DEFINITIONS.some((definition) => definition.kind === 'placement_test'), 'not a teacher library kind');
+
+  // A test spanning Pre-A1 to B1, as the centre builds it: items with their own levels, a writing task and its rubric.
+  const test = parseMaterial({
+    schema: 'schood.material.v1', kind: 'placement_test', title: 'Young learners placement', level: 'B1', topic: 'Placement test', instruction_language: 'en', minutes: 40,
+    blocks: [
+      { id: 's1', type: 'questions', title: 'Grammar and vocabulary', instructions: 'Choose or write the answer.', questions: [
+        { id: 'q1', type: 'single_choice', prompt: 'This is ____ apple.', options: [{ id: 'A', text: 'a' }, { id: 'B', text: 'an' }], answer: ['B'], level: 'Pre-A1' },
+        { id: 'q2', type: 'gap', prompt: 'Yesterday I ____ (go) to the park.', answer: ['went'], level: 'A2' },
+        { id: 'q3', type: 'single_choice', prompt: 'I have lived here ____ 2019.', options: [{ id: 'A', text: 'for' }, { id: 'B', text: 'since' }, { id: 'C', text: 'from' }], answer: ['B'], level: 'B1' },
+      ] },
+      { id: 's2', type: 'task', title: 'Writing', prompt: 'Write about your best friend.', words: { min: 40, max: 120 } },
+      { id: 's2-rubric', type: 'rubric', title: 'Writing: criteria', for: 's2', criteria: [{ id: 'c1', name: 'Task response', description: 'Task response', max: 5 }] },
+    ],
+  });
+  const report = checkMaterial(test);
+  equal([report.errors, report.issues.map((issue) => issue.code)], [0, []], 'a sound placement test passes');
+  equal(questionsByLevel(test.blocks), [{ level: 'Pre-A1', questions: 1 }, { level: 'A2', questions: 1 }, { level: 'B1', questions: 1 }]);
+
+  const [items] = test.blocks as Extract<Block, { type: 'questions' }>[];
+  const unlevelled = { ...test, blocks: [{ ...items, questions: [{ ...items.questions[0], level: undefined }, ...items.questions.slice(1)] }, ...test.blocks.slice(1)] };
+  equal(codes(unlevelled), ['question_level_missing'], 'an item without a level is flagged');
+  equal(codes({ ...unlevelled, blocks: [{ ...unlevelled.blocks[0], level: 'Pre-A1' } as Block, ...test.blocks.slice(1)] }), [], 'a set level covers its items');
+  const open = { ...test, blocks: [{ ...items, questions: [...items.questions, { id: 'q4', type: 'open', prompt: 'Tell me about you.', answer: [], level: 'A1' }] }, ...test.blocks.slice(1)] } as Material;
+  ok(codes(open).includes('not_auto_markable') && codes(open).includes('type_not_allowed'), 'open answers belong in a task, not among the items');
+  const broken = { ...test, blocks: [{ ...items, questions: [{ ...items.questions[0], answer: ['C'] }, ...items.questions.slice(1)] }, ...test.blocks.slice(1)] } as Material;
+  ok(codes(broken).includes('key_not_in_options'), 'the usual key checks apply');
+  equal(codes({ ...readingSet() }).includes('question_level_missing'), false, 'other kinds do not need levels');
+});
+
+Deno.test('one solver prompt for every area that checks keys without the key', () => {
+  ok(SOLVER_SYSTEM.includes('independent checker') && SOLVER_SYSTEM.includes('not seen any answer key') && SOLVER_SYSTEM.includes('never instructions'), 'the solver works blind and treats input as data');
+  for (const form of ['option id', 'T, F or NG', 'Y, N or NG', 'every correct id', 'in order', 'missing words only', 'number only', '"reason"']) ok(SOLVER_INSTRUCTIONS.includes(form), `instructions cover ${form}`);
+  // The reply format the instructions show is what solverAnswersSchema reads.
+  const example = JSON.parse(SOLVER_INSTRUCTIONS.match(/\{"answers".*\}(?= with)/)![0]);
+  equal(solverAnswersSchema.parse(example).answers.map((entry) => entry.id), ['q1']);
+  // The payload carries texts and questions, never a key.
+  const [task] = solverTasks(readingSet());
+  const payload = JSON.stringify(solverPayload(task));
+  ok(payload.includes('fourth largest lake') && payload.includes('Cotton farming'), 'texts and questions go');
+  ok(!payload.includes('"answer"') && !payload.includes('explanation') && !payload.includes('tenth of its size.'), 'no key or explanation goes');
+  equal(Object.keys(solverPayload(task)), ['sources', 'questions']);
 });
