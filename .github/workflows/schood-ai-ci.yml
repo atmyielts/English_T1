@@ -73,6 +73,8 @@ jobs:
         run: deno check --no-lock packages/ai-core/src/materials/mod.ts
       - name: Teacher i18n coverage
         run: deno run --no-lock --allow-read scripts/check-schood-ai-teacher-i18n.ts
+      - name: App helpers (Uzbek dates)
+        run: deno test --no-lock apps/schood-ai/tests/
   service:
     runs-on: ubuntu-latest
     timeout-minutes: 20

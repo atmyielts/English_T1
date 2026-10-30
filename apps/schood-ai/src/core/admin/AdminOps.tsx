@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Search } from 'lucide-react';
-import { useI18n } from '../../../../../packages/service-i18n/src/i18n.tsx';
-import { useT } from '../i18n/index.ts';
+import { useI18n, useT } from '../i18n/index.ts';
 import { EmptyState, LoadingState } from '../states.tsx';
 import { Badge, Button, Field, TextInput } from '../ui.tsx';
 import { adminApi, type AdminWorkspace, type AuditView, type ReportView } from './api.ts';

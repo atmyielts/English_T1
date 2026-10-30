@@ -1,10 +1,9 @@
 import { type ReactNode } from 'react';
-import { AlertTriangle, Clock3, Coins, Lock, Moon, PowerOff, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Clock3, Coins, Lock, Moon, PowerOff, RefreshCw, ShieldCheck } from 'lucide-react';
 import { quoteCredits, type AccessDecision } from '../../../../packages/ai-core/src/mod.ts';
 import { ApiError } from './api.ts';
-import { useT } from './i18n/index.ts';
-import { useI18n } from '../../../../packages/service-i18n/src/i18n.tsx';
-import { Link } from './router.tsx';
+import { useI18n, useT } from './i18n/index.ts';
+import { Link, useLocation } from './router.tsx';
 import { Button, Card } from './ui.tsx';
 import { useWorkspace } from './workspace.tsx';
 
@@ -92,11 +91,20 @@ export function ApiErrorState({ error, onRetry }: { error: unknown; onRetry?: ()
     </StateBox>;
     case 'budget_exhausted': return <StateBox tone="calm" icon={<Coins size={18}/>} title={t('state.budget.title')} lead={t('state.budget.lead', { budget: Number(d.budget ?? 0) })}/>;
     case 'unauthorized': return <StateBox icon={<Lock size={18}/>} title={t('state.signIn.title')} lead={t('state.signIn.lead')}/>;
+    // The learner area's one-time step (age, and a guardian's agreement under 18), then back here.
+    case 'consent_required': return <ConsentState/>;
     default: {
       const key = `error.${error.code}`, text = t(key);
       return <ErrorState lead={text === key ? t('state.error.lead') : text} onRetry={onRetry}/>;
     }
   }
+}
+
+function ConsentState() {
+  const t = useT(), { path } = useLocation();
+  return <StateBox icon={<ShieldCheck size={18}/>} title={t('state.consent.title')} lead={t('state.consent.lead')}>
+    <Link to={`/consent?next=${encodeURIComponent(path)}`} className="inline-flex min-h-11 items-center rounded-full bg-navy px-4 text-sm font-semibold text-white no-underline">{t('state.consent.open')}</Link>
+  </StateBox>;
 }
 
 /** "This costs N credits" from the ai-core price table, the same number the function charges. */

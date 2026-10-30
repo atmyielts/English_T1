@@ -1,8 +1,7 @@
 // Portions adapted from CopilotKit/OpenDots (MIT License, Copyright (c) Atai Barkai)
 import { lazy, Suspense, useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { ArrowLeft, Check, Copy, CopyPlus, Download, FileDown, History, Printer, RefreshCw, Share2, Trash2 } from 'lucide-react';
-import { useI18n } from '../../../../../packages/service-i18n/src/i18n.tsx';
-import { useT } from '../i18n/index.ts';
+import { useI18n, useT } from '../i18n/index.ts';
 import { Answer } from '../markdown.tsx';
 import { Link, navigate } from '../router.tsx';
 import { ApiErrorState, EmptyState, LoadingState } from '../states.tsx';

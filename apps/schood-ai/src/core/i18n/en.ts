@@ -173,6 +173,9 @@ export const en = {
   'state.plan.soon': 'Plans open soon. Until then, Schood AI is in a closed beta.',
   'state.role.title': 'Not for your role',
   'state.role.lead': 'Someone with another role in this workspace can do this.',
+  'state.consent.title': 'One step before you start',
+  'state.consent.lead': 'Schood AI asks every learner to confirm their age once. Learners under 18 also need a parent or guardian to agree.',
+  'state.consent.open': 'Take the step',
   'state.signIn.title': 'Sign in to continue',
   'state.signIn.lead': 'Use your Schood account. If you are signed in on schood.online you are signed in here too.',
 
