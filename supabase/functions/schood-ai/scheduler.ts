@@ -41,7 +41,7 @@ export async function runSystemTick(deps: TickDeps): Promise<{ job: string; stat
     const start = periodStart(job.schedule, deps.now()).toISOString();
     const leaseSeconds = Math.min(900, Math.ceil(timeoutMs / 1000) + LEASE_SLACK_SECONDS);
     if (!(await deps.repo.claimSystemJob(name, start, leaseSeconds))) return 'not_due';
-    let timer: number | undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     let status: 'ok' | 'failed' | 'timeout' = 'ok', error: string | null = null;
     try {
       const work = Promise.resolve().then(() => job.run(deps.contextFor(job.area, name)));
