@@ -65,7 +65,9 @@ jobs:
         env:
           SCHOOD_AI_DB_REQUIRE_DOCKER: '1'
         run: node scripts/test-schood-ai-learner-db.mjs
-      - name: Student bot with Schood AI (relay, homework untouched, brief cron)
+      - name: Student bot with Schood AI (relay, homework untouched, no bot cron)
         run: deno test --no-lock --no-check workers/schood-bot/src/schood-ai.test.ts
+      - name: English duels keep a Schood AI duel's ready questions
+        run: deno test --no-lock supabase/functions/_shared/english-duel-service.test.ts
       - name: App build
         run: npm --workspace apps/schood-ai run build
