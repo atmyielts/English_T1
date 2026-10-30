@@ -3,9 +3,9 @@ import { switchesOf } from '../ai.ts';
 import { record, text, uuid } from '../input.ts';
 import { registerPlanSource } from '../plan.ts';
 import { SchoodAIError, type Locale, type RequestContext, type WorkspaceAccess } from '../types.ts';
-import { CONSENT_VERSION, learnerInput, LANGUAGE, receipt, store, systemFor, today } from './common.ts';
+import { CONSENT_VERSION, learnerInput, LANGUAGE, receipt, store, systemFor, today, userActor, type Actor } from './common.ts';
 import { escapeHtml, scheduleView, saveScheduleFrom, type TelegramMessage } from './brief.ts';
-import { learnerConfig, learnerStore, type FamilyLink } from './store.ts';
+import { APP_URL, learnerStore, type FamilyLink } from './store.ts';
 import { recentActivity } from './tutor.ts';
 
 // Plus Family: one parent and up to 3 children. The parent invites a child with a
@@ -33,15 +33,13 @@ const normaliseCode = (value: unknown) => (typeof value === 'string' ? value.toU
 
 /** Children of a Plus Family holder get Plus in their own personal workspace. */
 export function registerFamilyPlanSource(): void {
-  registerPlanSource('learner.family', async ({ user, workspace, repo }) => {
+  registerPlanSource('learner.family', async ({ user, workspace, repo, store: storeOf, plansOf }) => {
     if (workspace.kind !== 'personal') return null;
-    const familyProduct = learnerConfig(repo).familyProductId;
-    if (!familyProduct) return null;
-    const links = await learnerStore(repo).familyLinks({ childId: user.id, statuses: ['active'] });
+    const links = await storeOf(learnerStore).familyLinks({ childId: user.id, statuses: ['active'] });
     for (const link of links) {
       const home = await repo.workspace(link.workspaceId);
       if (!home || home.kind !== 'personal' || home.ownerId !== link.parentId) continue;
-      if ((await repo.productsHeldBy(link.parentId)).includes(familyProduct)) return { plans: ['plus'] };
+      if ((await plansOf(link.parentId)).includes('family')) return { plans: ['plus'] };
     }
     return null;
   });
@@ -100,7 +98,7 @@ export async function familyInvite(ctx: RequestContext) {
   const result = await store(ctx).familyInvite({ workspaceId: access.workspace.id, parentId: ctx.user.id, label, hash: await sha256(code), hint: code.slice(-4), expiresAt, consentVersion: CONSENT_VERSION, now: ctx.now().toISOString(), limit: FAMILY_LIMIT });
   if (!result.ok) throw new SchoodAIError('family_limit', `A family can have up to ${FAMILY_LIMIT} children.`, 409, { limit: FAMILY_LIMIT });
   await ctx.audit('learner.family_invited', { link_id: result.id }, { type: 'family_link', id: result.id });
-  return { invite: { id: result.id, code: `${code.slice(0, 5)}-${code.slice(5)}`, expires_at: expiresAt, url: `${learnerConfig(ctx.repo).appUrl.replace(/\/$/, '')}/family/join` } };
+  return { invite: { id: result.id, code: `${code.slice(0, 5)}-${code.slice(5)}`, expires_at: expiresAt, url: `${APP_URL.replace(/\/$/, '')}/family/join` } };
 }
 
 // POST learner/family-accept { code }: the child agrees to share their progress summary.
@@ -177,12 +175,17 @@ const NO_DATA: Record<Locale, string> = {
   ru: 'На этой неделе активности в Schood пока не было. Помогает короткая ежедневная практика: предложите ребёнку попробовать сегодняшнюю разминку Schood AI.',
 };
 
-/** One brief per child per week; reused when it exists, charged parent.brief once otherwise. */
-export async function parentBriefs(ctx: RequestContext, access: WorkspaceAccess, onlyChild?: string) {
-  const links = (await store(ctx).familyLinks({ workspaceId: access.workspace.id, parentId: ctx.user.id, statuses: ['active'] })).filter((link) => link.childId && (!onlyChild || link.childId === onlyChild));
+/** One brief per child per week; reused when it exists, charged parent.brief once otherwise (the signed-in parent). */
+export function parentBriefs(ctx: RequestContext, access: WorkspaceAccess, onlyChild?: string) {
+  return parentBriefsFor(ctx, userActor(ctx, access), onlyChild);
+}
+/** The same for any parent (a scheduled job pays with ctx.paidBy for the workspace the links are in). */
+export async function parentBriefsFor(ctx: RequestContext, actor: Actor, onlyChild?: string) {
+  const access = actor.access;
+  const links = (await store(ctx).familyLinks({ workspaceId: access.workspace.id, parentId: actor.userId, statuses: ['active'] })).filter((link) => link.childId && (!onlyChild || link.childId === onlyChild));
   if (!links.length) throw new SchoodAIError('no_children', 'Link a child first.', 409);
   const week = today(ctx.now());
-  const existing = await store(ctx).records(ctx.user.id, { kind: 'parent_brief', workspaceId: access.workspace.id, limit: 30 });
+  const existing = await store(ctx).records(actor.userId, { kind: 'parent_brief', workspaceId: access.workspace.id, limit: 30 });
   const out: { recordId: string; childId: string; name: string; brief: Record<string, unknown>; credits: number }[] = [];
   for (const link of links) {
     const found = existing.find((row) => row.input.child_id === link.childId && row.input.week === week);
@@ -190,23 +193,23 @@ export async function parentBriefs(ctx: RequestContext, access: WorkspaceAccess,
     const data = await childData(ctx, link);
     let brief: Record<string, unknown>, credits = 0;
     if (!hasData(data)) {
-      brief = { name: data.name, stats: data.stats, no_data: true, effort: NO_DATA[ctx.locale] };
+      brief = { name: data.name, stats: data.stats, no_data: true, effort: NO_DATA[actor.locale] };
     } else {
-      const result = await ctx.ai.json({
-        key: 'parent.brief', schema: BRIEF_SCHEMA, maxTokens: 900, temperature: 0.3, reference: `parent-brief:${ctx.user.id}:${link.childId}:${week}`,
+      const result = await actor.ai.json({
+        key: 'parent.brief', schema: BRIEF_SCHEMA, maxTokens: 900, temperature: 0.3, reference: `parent-brief:${actor.userId}:${link.childId}:${week}`,
         messages: [
           { role: 'system', content: systemFor(ctx, access, { name: 'Parent brief', instructions: [
-            `Write a weekly brief for a parent about their child ${data.name}, from the child's data only. Write in ${LANGUAGE[ctx.locale]} for a parent, warm and plain.`,
+            `Write a weekly brief for a parent about their child ${data.name}, from the child's data only. Write in ${LANGUAGE[actor.locale]} for a parent, warm and plain.`,
             'effort: how much and how regularly they practised. progress: what improved or stayed weak, citing results only from the data. praise: one specific thing to praise. watch: one thing to keep an eye on. suggestion: one small thing the parent can do this week.',
             'Never invent scores, dates or activity; if the data does not show something, say so. Never quote the child\'s private messages; there are none in the data.',
-          ] }, [{ kind: 'child_data', title: `${data.name}'s Schood data`, data }]) },
+          ] }, [{ kind: 'child_data', title: `${data.name}'s Schood data`, data }], actor.locale) },
           { role: 'user', content: learnerInput({ request: 'weekly parent brief', week }) },
         ],
       });
       brief = { name: data.name, stats: data.stats, exams: data.exams.slice(0, 3), ...result.data };
       credits = result.credits;
     }
-    const row = await store(ctx).createRecord({ userId: ctx.user.id, workspaceId: access.workspace.id, kind: 'parent_brief', credits, input: { child_id: link.childId, week }, output: brief });
+    const row = await store(ctx).createRecord({ userId: actor.userId, workspaceId: access.workspace.id, kind: 'parent_brief', credits, input: { child_id: link.childId, week }, output: brief });
     out.push({ recordId: row.id, childId: link.childId!, name: data.name, brief, credits });
   }
   return out;
@@ -227,6 +230,17 @@ export function parentBriefMessage(entry: { name: string; brief: Record<string, 
       line(copy.effort, brief.effort), line(copy.progress, brief.progress), line(copy.praise, brief.praise), line(copy.watch, brief.watch), line(copy.suggestion, brief.suggestion),
     ].filter((entry) => entry !== null).join('\n').slice(0, 4000),
   };
+}
+
+/** The weekly parent brief as plain text for ctx.notify.send (one message for all children). */
+export function parentBriefPlain(entries: { name: string; brief: Record<string, unknown> }[], locale: Locale): string {
+  const copy = PARENT_COPY[locale];
+  return entries.map(({ name, brief }) => {
+    const stats = (brief.stats ?? {}) as { minutes_7d?: number; active_days_7d?: number };
+    const line = (label: string, value: unknown) => (typeof value === 'string' && value ? `${label}: ${value}` : null);
+    return [`👪 ${copy.title}: ${name}`, `${stats.minutes_7d ?? 0} ${copy.minutes} · ${stats.active_days_7d ?? 0} ${copy.days}`,
+      line(copy.effort, brief.effort), line(copy.progress, brief.progress), line(copy.praise, brief.praise), line(copy.watch, brief.watch), line(copy.suggestion, brief.suggestion)].filter((entry) => entry !== null).join('\n');
+  }).join('\n\n').slice(0, 4000);
 }
 
 // --- P2 ---------------------------------------------------------------------------------------------

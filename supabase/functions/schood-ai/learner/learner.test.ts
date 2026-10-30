@@ -1,4 +1,4 @@
-import { equal, ID, learnerFixture, ok } from './testkit.ts';
+import { equal, ID, learnerFixture, ok, streamOf } from './testkit.ts';
 
 // Learner routes against the memory repository with a fake model: plans and
 // consent first, exact credits, refunds, keys kept on the server, quotes checked
@@ -19,6 +19,31 @@ Deno.test('learner tools need a plan first, then the age step; under-18s need a 
   equal((await f.json('DELETE', 'learner/consent')).body.consent.state, 'required', 'withdrawn');
   equal((await f.json('POST', 'learner/consent', { body: { age_band: 'adult' } })).status, 400, 'must accept');
   equal((await f.adult()).consent.state, 'ok');
+});
+
+Deno.test('every chat checks the age step on the server (the tutor and the general assistant), before anything is stored or charged', async () => {
+  const f = learnerFixture();
+  const chat = (specialist: string, token = 'tok-plus', query: Record<string, string> = {}) => f.call('POST', 'core/chat', { token, query, body: { client_message_id: crypto.randomUUID(), message: 'Hi', specialist } });
+  for (const specialist of ['tutor', 'assistant']) {
+    const refused = await chat(specialist);
+    equal([refused.status, (await refused.json()).code], [403, 'consent_required'], specialist);
+  }
+  equal([f.memory.threads.size, f.upstream.length, f.memory.ledger.length], [0, 0, 0], 'nothing stored, sent or charged');
+  await f.adult();
+  f.setFallback(() => streamOf(['Salom!']));
+  const allowed = await chat('assistant');
+  equal(allowed.status, 200, 'after the step the chat runs');
+  await allowed.text();
+  await f.settle();
+  // In a centre only students take the step; staff are not asked.
+  const centre = f.memory.seed.centre({ name: 'Registan', ownerId: ID.owner });
+  f.memory.seed.member(centre.id, ID.student, 'student');
+  f.memory.seed.member(centre.id, ID.teacher, 'teacher');
+  const student = await chat('assistant', 'tok-student', { workspace_id: centre.id });
+  equal([student.status, (await student.json()).code], [403, 'consent_required']);
+  const teacher = await chat('assistant', 'tok-teacher', { workspace_id: centre.id });
+  equal(teacher.status, 200, 'staff are not asked');
+  await teacher.text();
 });
 
 Deno.test('L2 explains a mistake, keeps the new keys on the server and checks answers once', async () => {

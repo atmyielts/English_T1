@@ -87,24 +87,8 @@ Deno.test("unlinked people and a missing secret never reach the function", async
   } finally { net.restore(); }
 });
 
-Deno.test("the cron sends due briefs and confirms them; one failure does not stop the rest", async () => {
-  const net = network({
-    "/rest/v1/ai_learner_briefs": () => [
-      { user_id: USER.id, kind: "daily", locale: "uz", users: { telegram_chat_id: "700100" } },
-      { user_id: "00000000-0000-4000-8000-000000000003", kind: "parent", locale: "en", users: { telegram_chat_id: "700300" } },
-      { user_id: "00000000-0000-4000-8000-000000000004", kind: "daily", locale: "en", users: null },
-    ],
-    "/schood-ai/learner/telegram-brief": (body) => (body.kind === "daily" ? { status: "ready", ids: ["22222222-2222-4222-8222-222222222222"], messages: [{ text: "☀️ brief" }, { text: "Question 1/3" }] } : { status: "later", messages: [] }),
-    "/schood-ai/learner/brief-sent": () => ({ ok: true }),
-  });
-  try {
-    await worker.scheduled({}, env);
-    const due = net.to("/rest/v1/ai_learner_briefs")[0];
-    assert(due.url.includes("enabled=eq.true") && due.url.includes("next_due_at=lte."), "due rows only");
-    assertEquals(net.to("telegram-brief").map((call) => [call.body.kind, call.headers.get("x-schood-telegram-chat-id"), call.headers.get("x-schood-locale")]), [["daily", "700100", "uz"], ["parent", "700300", "en"]]);
-    assertEquals(net.telegram("sendMessage").map((body) => [body.chat_id, body.text]), [["700100", "☀️ brief"], ["700100", "Question 1/3"]]);
-    assertEquals(net.to("brief-sent").map((call) => call.body), [{ kind: "daily", ids: ["22222222-2222-4222-8222-222222222222"] }]);
-  } finally { net.restore(); }
+Deno.test("no bot cron: scheduled briefs come from the function's scheduler, never from the worker", () => {
+  assertEquals("scheduled" in worker, false);
 });
 
 Deno.test("classify claims only Schood AI updates; markup keeps aib: and https only", () => {

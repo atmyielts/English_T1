@@ -5,7 +5,7 @@
  * Schood Telegram Mini App.
  */
 import { routeEnglish } from "./english.ts";
-import { routeSchoodAI, runSchoodAISchedule } from "./schood-ai.ts";
+import { routeSchoodAI } from "./schood-ai.ts";
 import { routeSocial } from "./social.ts";
 
 export interface Env {
@@ -677,10 +677,5 @@ export default {
     }
 
     return new Response("Not found", { status: 404 });
-  },
-
-  // Cron (wrangler.toml): Schood AI briefs that are due now.
-  async scheduled(_event: unknown, env: Env): Promise<void> {
-    await runSchoodAISchedule(schoodAI(env));
   },
 } satisfies ExportedHandler<Env>;

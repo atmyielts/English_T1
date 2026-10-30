@@ -1,7 +1,8 @@
 import { equal, ID, KID, learnerFixture, ok } from './testkit.ts';
 
 // Plus Family (link, accept, unlink, Plus for children), P1 and P2, the L14 daily
-// brief with the notification budget, and Schood AI in the student bot.
+// and P1 weekly briefs sent by core's scheduler through ctx.notify, and Schood AI
+// in the student bot.
 
 const BRIEF = {
   based_on: 'Present simple and travel words.',
@@ -73,7 +74,7 @@ Deno.test('P1 and P2 answer only about the parent\'s own linked child, only from
   equal((await f.json('POST', 'learner/family-invite', { token: 'tok-parent', query: { workspace_id: centre.id }, body: { child_label: 'Son', consent: true } })).body.code, 'centre_parent_off');
 });
 
-Deno.test('L14 daily brief: Telegram linked, sent within the notification budget, charged once a day, answered in the chat', async () => {
+Deno.test('L14 daily brief: core\'s scheduler sends it through ctx.notify at the chosen time, charged once a day, answered in the bot', async () => {
   const f = learnerFixture();
   await f.adult();
   equal((await f.json('PUT', 'learner/brief', { token: 'tok-beta', body: { enabled: true, time: '08:30' } })).body.code, 'consent_required');
@@ -82,33 +83,79 @@ Deno.test('L14 daily brief: Telegram linked, sent within the notification budget
   equal((await f.json('PUT', 'learner/brief', { body: { enabled: true, time: '23:00' } })).body.code, 'quiet_hours');
   const on = await f.json('PUT', 'learner/brief', { body: { enabled: true, time: '08:30' } });
   equal(on.body.schedule.next_at, '2026-11-03T03:30:00.000Z', 'tomorrow 08:30 in Tashkent');
-  equal(f.learner.allRecords.size, 0);
   // Yesterday's mistakes feed the brief.
   f.reply({ correct_answer: 'goes', why_wrong: 'Third person.', rule: 'he/she/it + -s', tip: 't', similar: [] });
   await f.json('POST', 'learner/explain', { body: { question: 'She ___ every day.', my_answer: 'go' } });
   await f.settle();
+  equal([await f.tick(), f.notifySends.length, [...f.learner.allRecords.values()].filter((row) => row.kind === 'brief').length], [200, 0, 0], 'not due yet: nothing made or sent');
+  f.setClock('2026-11-03T03:30:00Z');
+  const credits = await f.balance();
   f.reply(BRIEF);
-  const due = await f.worker('learner/telegram-brief', ID.plus, '700100', { kind: 'daily' });
-  equal([due.status, due.body.status, due.body.messages.length], [200, 'ready', 2]);
+  await f.tick();
+  equal(f.notifySends.map((sent) => [sent.userId, sent.kind, sent.buttons, sent.dedupeKey]), [[ID.plus, 'learner.daily_brief', [{ label: 'Answer in Schood AI', path: '/brief' }], `learner.daily_brief:${ID.plus}:2026-11-03`]]);
+  ok(f.notifySends[0].text.includes('itinerary') && f.notifySends[0].text.includes('/brief now'), 'the word, the tip and where to answer');
+  ok(!f.notifySends[0].text.includes('goes'), 'never the answers');
   ok((await f.prompt()).includes('he/she/it + -s'), 'built from yesterday\'s mistakes');
-  ok(due.body.messages[1].buttons[1][0].callback_data.startsWith(`aib:${due.body.ids[0]}:0:1`), 'answer buttons');
-  const again = await f.worker('learner/telegram-brief', ID.plus, '700100', { kind: 'daily' });
-  equal([again.body.status, again.body.ids, f.upstream.length], ['ready', due.body.ids, 2], 'the same brief, not a second charge');
-  await f.worker('learner/brief-sent', ID.plus, '700100', { kind: 'daily', ids: due.body.ids });
-  equal((await f.json('GET', 'learner/brief')).body.schedule.next_at, '2026-11-03T03:30:00.000Z');
-  const tap = await f.worker('learner/telegram', ID.plus, '700100', { kind: 'callback', data: `aib:${due.body.ids[0]}:0:1`, update_id: 9 });
+  equal(credits - await f.balance(), 2, 'daily.brief, paid from their own workspace');
+  equal((await f.json('GET', 'learner/brief')).body.schedule.next_at, '2026-11-04T03:30:00.000Z', 'then tomorrow at the chosen time');
+  f.advance(15 * 60_000);
+  await f.tick();
+  equal([f.notifySends.length, f.upstream.length], [1, 2], 'a later tick sends nothing more today');
+  // Answered in the bot: the same brief, not a second charge.
+  const now = await f.worker('learner/telegram', ID.plus, '700100', { kind: 'command', command: '/brief', args: 'now', update_id: 8 });
+  const id = [...f.learner.allRecords.values()].find((row) => row.kind === 'brief')!.id;
+  equal([now.body.messages.length, f.upstream.length], [2, 2]);
+  ok(now.body.messages[1].buttons[1][0].callback_data.startsWith(`aib:${id}:0:1`), 'answer buttons');
+  const tap = await f.worker('learner/telegram', ID.plus, '700100', { kind: 'callback', data: `aib:${id}:0:1`, update_id: 9 });
   equal([tap.body.handled, tap.body.toast, tap.body.messages[0].text.includes('Question 2/3')], [true, 'Correct!', true]);
-  const repeat = await f.worker('learner/telegram', ID.plus, '700100', { kind: 'callback', data: `aib:${due.body.ids[0]}:0:0`, update_id: 10 });
+  const repeat = await f.worker('learner/telegram', ID.plus, '700100', { kind: 'callback', data: `aib:${id}:0:0`, update_id: 10 });
   equal([repeat.body.edit, repeat.body.messages], [null, []], 'the first answer stands');
   await f.settle();
   ok(f.events().some((event) => event.kind === 'check_passed' && event.source === 'telegram'), 'a verified event from Telegram');
-  // Quiet hours: nothing generated, nothing charged, retried in the morning.
-  f.setClock('2026-11-03T18:30:00Z');
-  const credits = await f.balance();
-  const night = await f.worker('learner/telegram-brief', ID.plus, '700100', { kind: 'daily' });
-  equal([night.body.status, await f.balance()], ['later', credits]);
-  const schedule = await f.learner.schedule(ID.plus, 'daily');
-  equal(schedule!.nextDueAt, '2026-11-04T03:30:00.000Z');
+  // A failed delivery retries the same day within the hour; the brief is not made or charged twice.
+  f.setClock('2026-11-04T03:30:00Z');
+  f.reply(BRIEF);
+  f.setNotifyOutcome({ outcome: 'failed' });
+  await f.tick();
+  equal((await f.learner.schedule(ID.plus, 'daily'))!.nextDueAt, '2026-11-04T04:30:00.000Z');
+  f.setNotifyOutcome({ outcome: 'sent' });
+  f.setClock('2026-11-04T04:30:00Z');
+  const second = await f.balance();
+  await f.tick();
+  equal([f.notifySends.length, second - await f.balance(), f.upstream.length], [3, 0, 3], 'sent on the retry, one model call for the day');
+  equal((await f.learner.schedule(ID.plus, 'daily'))!.nextDueAt, '2026-11-05T03:30:00.000Z');
+  // Quiet hours: a tick that runs after 22:00 makes nothing, charges nothing and waits for the next
+  // chosen time (08:30, 03:30Z), not the end of quiet hours (08:00, 03:00Z), so it never comes early.
+  await f.learner.saveSchedule({ ...(await f.learner.schedule(ID.plus, 'daily'))!, nextDueAt: '2026-11-05T17:00:00.000Z' });
+  f.setClock('2026-11-05T17:10:00Z');
+  const night = await f.balance();
+  await f.tick();
+  equal([f.notifySends.length, await f.balance(), f.upstream.length], [3, night, 3]);
+  equal((await f.learner.schedule(ID.plus, 'daily'))!.nextDueAt, '2026-11-06T03:30:00.000Z');
+  // Turned off: nothing is due.
+  await f.json('PUT', 'learner/brief', { body: { enabled: false } });
+  f.setClock('2026-11-06T03:30:00Z');
+  await f.tick();
+  equal(f.notifySends.length, 3);
+});
+
+Deno.test('P1 weekly parent brief: sent on the chosen day through ctx.notify, paid from the parent\'s workspace', async () => {
+  const f = learnerFixture({ seed: { outcomes: { [KID.child]: [{ name: 'IELTS Simulator', band: '6.0', score: 6, date: '2026-11-05' }] } } });
+  const invite = await f.json('POST', 'learner/family-invite', { token: 'tok-family', body: { child_label: 'Aziza', consent: true } });
+  await f.json('POST', 'learner/family-accept', { token: 'tok-child', body: { code: invite.body.invite.code } });
+  equal((await f.json('PUT', 'learner/family', { token: 'tok-plus', body: { enabled: true, time: '19:00', weekday: 0 } })).body.code, 'plan_required');
+  const on = await f.json('PUT', 'learner/family', { token: 'tok-family', body: { enabled: true, time: '19:00', weekday: 0 } });
+  equal(on.body.schedule.next_at, '2026-11-08T14:00:00.000Z', 'Sunday 19:00 in Tashkent');
+  f.setClock('2026-11-08T14:00:00Z');
+  const credits = await f.balance('tok-family');
+  f.reply({ effort: 'No practice this week.', progress: 'Her last IELTS mock was 6.0.', praise: 'She joined Schood AI.', watch: 'Regular practice.', suggestion: 'Try the daily brief together.' });
+  await f.tick();
+  equal(f.notifySends.map((sent) => [sent.userId, sent.kind, sent.buttons, sent.dedupeKey]), [[KID.family, 'learner.parent_brief', [{ label: 'Open Schood AI', path: '/family' }], `learner.parent_brief:${KID.family}:2026-11-08`]]);
+  ok(f.notifySends[0].text.includes('Aziza') && f.notifySends[0].text.includes('Try the daily brief together.'), 'the child and the suggestion');
+  equal(credits - await f.balance('tok-family'), 1, 'parent.brief');
+  equal((await f.learner.schedule(KID.family, 'parent'))!.nextDueAt, '2026-11-15T14:00:00.000Z', 'next Sunday');
+  // The brief is kept for the week: the web shows the same one, not a second charge.
+  equal((await f.json('POST', 'learner/parent-brief', { token: 'tok-family', body: {} })).body.briefs[0].credits, 0);
 });
 
 Deno.test('the student bot: /ai tutor with consent, threads, refusals as messages, parents and duels', async () => {

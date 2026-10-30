@@ -1,16 +1,18 @@
 import { SSEParser, type Registry } from '../../../../packages/ai-core/src/mod.ts';
-import { completion, ID, ORIGIN, PRODUCT, SECRET, START, USERS } from '../fixture.test.ts';
+import { completion, ID, ORIGIN, PRODUCT, SECRET, START, streamOf, SYSTEM_SECRET, USERS } from '../fixture.test.ts';
 import { CircuitBreaker, createGateway } from '../gateway.ts';
 import { createSchoodAIHandler, MODULES } from '../handler.ts';
 import { createMemoryRepository, SEED_REGISTRY, type MemoryUser } from '../memory-repository.ts';
 import { createPlanResolver } from '../plan.ts';
+import { createStores } from '../stores.ts';
 import type { ServiceSettings } from '../types.ts';
-import { bindLearnerStore, createMemoryLearnerStore, type MemoryLearnerSeed } from './store.ts';
+import { createMemoryLearnerStore, learnerStore, type MemoryLearnerSeed } from './store.ts';
 
 // The learner area's test fixture, following ../fixture.test.ts: the real handler,
-// gateway and plan resolver over the memory repository and the memory learner
-// store, a fake model behind `fetch`, a movable clock, and fake Schood functions
-// (learning-profile-v3, score-prediction, academy, academy-learning,
+// gateway and plan resolver over the memory repository and the learner store's
+// memory twin (stores.use), a fake model behind `fetch`, a movable clock, the
+// Schood bot behind ctx.notify.send, core's system tick (f.tick), and fake Schood
+// functions (learning-profile-v3, score-prediction, academy, academy-learning,
 // review-session) answered per token. No network.
 
 export const KID = {
@@ -33,13 +35,17 @@ export interface LearnerFixtureOptions { settings?: Partial<ServiceSettings>; re
 export function learnerFixture(options: LearnerFixtureOptions = {}) {
   let clock = START;
   const now = () => clock;
-  const memory = createMemoryRepository({ users: LEARNER_USERS, now, settings: options.settings, registry: options.registry ?? SEED_REGISTRY });
+  const memory = createMemoryRepository({ users: LEARNER_USERS, now, settings: options.settings, registry: options.registry ?? SEED_REGISTRY, systemSecret: SYSTEM_SECRET });
+  const env: Record<string, string> = { OPENROUTER_API_KEY: 'sk-or-test' };
+  const stores = createStores({ kind: 'memory' }, { now, env: (name) => env[name] });
   const learner = createMemoryLearnerStore({ names: { [KID.child]: 'Aziza', [KID.child2]: 'Bobur', [ID.plus]: 'Dilnoza', [KID.family]: 'Nodira' }, ...options.seed }, now);
-  bindLearnerStore(memory.repository, learner, { familyProductId: PRODUCT.family });
+  stores.use(learnerStore, learner);
+  /** What ctx.notify.send handed to the Schood bot; setNotifyOutcome changes the bot's answer. */
+  const notifySends: { userId: string; kind: string; text: string; buttons: { label: string; path: string }[]; dedupeKey: string | null }[] = [];
+  let telegramOutcome: { outcome: 'sent' | 'defer' | 'suppressed' | 'failed'; deliverAt?: string | null } = { outcome: 'sent' };
   const upstream: Request[] = [];
   const replies: (string | ((request: Request) => Response))[] = [];
   let fallback: (request: Request) => Response = () => completion('{}');
-  const env: Record<string, string> = { OPENROUTER_API_KEY: 'sk-or-test' };
   const gateway = createGateway({
     registry: () => memory.repository.registry(), settings: () => memory.repository.settings(),
     takeCall: (input) => memory.repository.takeCall(input), record: (rows) => { void memory.repository.recordCalls(rows); },
@@ -60,7 +66,9 @@ export function learnerFixture(options: LearnerFixtureOptions = {}) {
   const functionCalls: { name: string; token: string; query: Record<string, string>; body: unknown }[] = [];
   const pending: Promise<unknown>[] = [];
   const handle = createSchoodAIHandler({
-    repository: memory.repository, gateway, plans, isAdmin,
+    repository: memory.repository, gateway, plans, isAdmin, stores,
+    systemSecret: () => memory.repository.systemSecret(),
+    sendTelegram: (input) => { notifySends.push(structuredClone(input)); return Promise.resolve(telegramOutcome); },
     callFunction: (name, path, token, init) => {
       functionCalls.push({ name, token, query: init.query ?? {}, body: init.body });
       const fake = functions[name];
@@ -74,15 +82,19 @@ export function learnerFixture(options: LearnerFixtureOptions = {}) {
     },
     adminGate: () => Promise.resolve({ ok: false, status: 403, code: 'forbidden' }),
     modules: MODULES,
-  }, { allowedOrigins: [ORIGIN], serviceSecret: SECRET, now, after: (work) => { pending.push(work); } });
+  }, { allowedOrigins: [ORIGIN], serviceSecret: SECRET, now, after: (work) => { pending.push(work); }, ipSalt: 'test-salt' });
 
   type CallOptions = { token?: string | null; body?: unknown; query?: Record<string, string>; headers?: Record<string, string> };
-  const json = async (method: string, path: string, opts: CallOptions = {}) => {
+  /** The raw response (core/chat streams). */
+  const call = (method: string, path: string, opts: CallOptions = {}) => {
     const query = new URLSearchParams(opts.query ?? {}).toString();
-    const response = await handle(new Request(`https://x.invalid/functions/v1/schood-ai/${path}${query ? `?${query}` : ''}`, {
+    return handle(new Request(`https://x.invalid/functions/v1/schood-ai/${path}${query ? `?${query}` : ''}`, {
       method, headers: { 'content-type': 'application/json', origin: ORIGIN, ...(opts.token === null ? {} : { authorization: `Bearer ${opts.token ?? 'tok-plus'}` }), ...opts.headers },
       ...(opts.body === undefined ? {} : { body: JSON.stringify(opts.body) }),
     }));
+  };
+  const json = async (method: string, path: string, opts: CallOptions = {}) => {
+    const response = await call(method, path, opts);
     return { status: response.status, body: await response.json() };
   };
   /** The Telegram worker acting for a linked user. */
@@ -93,8 +105,15 @@ export function learnerFixture(options: LearnerFixtureOptions = {}) {
     return { status: response.status, body: await response.json() };
   };
   const settle = async () => { while (pending.length) await Promise.all(pending.splice(0)); };
+  /** core/system-tick the way pg_cron calls it, then waits for the jobs it ran. */
+  const tick = async () => {
+    const response = await handle(new Request('https://x.invalid/functions/v1/schood-ai/core/system-tick', { method: 'POST', headers: { 'content-type': 'application/json', 'x-schood-service-secret': SYSTEM_SECRET }, body: '{}' }));
+    await settle();
+    return response.status;
+  };
   return {
-    memory, learner, upstream, functions, functionCalls, env, json, worker, settle,
+    memory, learner, stores, upstream, functions, functionCalls, env, call, json, worker, settle, tick, notifySends,
+    setNotifyOutcome: (next: typeof telegramOutcome) => { telegramOutcome = next; },
     /** Queues model answers in order: an object is sent as JSON text. */
     reply: (...answers: unknown[]) => { for (const answer of answers) replies.push(typeof answer === 'string' || typeof answer === 'function' ? answer as string : JSON.stringify(answer)); },
     setFallback: (next: (request: Request) => Response) => { fallback = next; },
@@ -113,4 +132,4 @@ export const equal = (actual: unknown, expected: unknown, label = '') => {
   if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(`${label} expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
 };
 export const ok = (value: unknown, label: string) => { if (!value) throw new Error(label); };
-export { ID, PRODUCT, SSEParser };
+export { ID, PRODUCT, SSEParser, streamOf };

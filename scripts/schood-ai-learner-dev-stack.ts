@@ -11,9 +11,10 @@
 // dev-child, dev-student, dev-free) set as the `schood-auth` cookie on the app origin.
 import { CircuitBreaker, createGateway } from '../supabase/functions/schood-ai/gateway.ts';
 import { createSchoodAIHandler } from '../supabase/functions/schood-ai/handler.ts';
-import { bindLearnerStore, createMemoryLearnerStore } from '../supabase/functions/schood-ai/learner/store.ts';
+import { createMemoryLearnerStore, learnerStore } from '../supabase/functions/schood-ai/learner/store.ts';
 import { createMemoryRepository } from '../supabase/functions/schood-ai/memory-repository.ts';
 import { createPlanResolver } from '../supabase/functions/schood-ai/plan.ts';
+import { createStores } from '../supabase/functions/schood-ai/stores.ts';
 
 const PORT = Number(Deno.env.get('SCHOOD_AI_DEV_PORT') ?? '54331');
 const ORIGINS = (Deno.env.get('SCHOOD_AI_DEV_ORIGINS') ?? 'http://localhost:5201').split(',');
@@ -33,7 +34,9 @@ const learner = createMemoryLearnerStore({
   outcomes: { [users['dev-child'].id]: [{ name: 'IELTS Simulator', band: '6.0', score: 6, date: ago(4).slice(0, 10) }] },
   referralCodes: { [users['dev-plus'].id]: 'DILNOZA1' },
 });
-bindLearnerStore(memory.repository, learner, { familyProductId: FAMILY, appUrl: ORIGINS[0] });
+// The learner store's memory twin, seeded (Postgres when deployed).
+const stores = createStores({ kind: 'memory' }, { now: () => new Date() });
+stores.use(learnerStore, learner);
 const centre = memory.seed.centre({ name: 'Registan Learning Centre', ownerId: users['dev-owner'].id, branding: { primary_color: '#2f6f4f' } });
 centre.academyTenantId = '30000000-0000-4000-8000-000000000001';
 memory.seed.member(centre.id, users['dev-student'].id, 'student', { creditBudget: 200 });
@@ -101,7 +104,9 @@ const prediction = { predictions: [{ exam_type: 'ielts', current_score: 6, predi
 const homework = { assignments: [{ id: '40000000-0000-4000-8000-000000000001', title: 'Past simple: my weekend', description: 'Write five sentences about last weekend using the past simple.', assignment_type: 'writing', status: 'active', due_at: new Date(Date.now() + 3 * 86_400_000).toISOString(), submission: null }] };
 const review = { units: [{ id: '50000000-0000-4000-8000-000000000001', part_name: 'Reading Passage 1', data: { question: 'According to the writer, why did the city build new parks?', options: [{ label: 'A', text: 'to attract tourists' }, { label: 'B', text: 'to reduce summer heat' }, { label: 'C', text: 'to sell land' }] }, answer: { value: 'A' }, correct: { value: 'B' }, is_correct: false }] };
 const handle = createSchoodAIHandler({
-  repository: memory.repository, gateway, plans, isAdmin: () => Promise.resolve(false),
+  repository: memory.repository, gateway, plans, isAdmin: () => Promise.resolve(false), stores,
+  // Briefs and other notifications are printed, not sent.
+  sendTelegram: (input) => { console.log(JSON.stringify({ event: 'dev_notify', kind: input.kind, user: input.userId, text: input.text.slice(0, 80) })); return Promise.resolve({ outcome: 'sent' }); },
   callFunction: (name, _path, token, init) => {
     if (name === 'learning-profile-v3' && token !== 'dev-free') return Promise.resolve({ status: 200, data: profile });
     if (name === 'score-prediction' && token === 'dev-plus') return Promise.resolve({ status: 200, data: prediction });

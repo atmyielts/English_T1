@@ -8,10 +8,6 @@ routes = [
   { pattern = "bot.schood.online", custom_domain = true },
 ]
 
-# Schood AI daily and weekly parent briefs that are due (src/schood-ai.ts).
-[triggers]
-crons = ["*/15 * * * *"]
-
 [vars]
 SITE_URL = "https://schood.online"
 TELEGRAM_BOT_NAME = "schoodstudentbot"

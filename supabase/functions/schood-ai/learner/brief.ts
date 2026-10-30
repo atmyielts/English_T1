@@ -1,15 +1,15 @@
 import { s } from '../../../../packages/ai-core/src/mod.ts';
 import { bool, integer, record, text, uuid } from '../input.ts';
 import { SchoodAIError, type Locale, type RequestContext, type WorkspaceAccess } from '../types.ts';
-import { learnerInput, ownRecord, requireLearner, saveRecord, store, systemFor, today, track } from './common.ts';
+import { clipSummary, learnerInput, ownRecord, requireLearner, saveRecord, store, systemFor, today, track, userActor, type Actor } from './common.ts';
 import type { BriefKind, BriefSchedule, RecordRow } from './store.ts';
 
 // L14 Daily brief in Telegram: every morning a 10-minute set built from
-// yesterday's mistakes: three questions, one word, one tip, answered in the chat.
-// The student bot's cron asks learner/telegram-brief for each learner whose brief
-// is due (ai_learner_briefs.next_due_at); sends respect ctx.notify (at most 2 a day
-// per person across bots, never in quiet hours 22:00–08:00 local). One brief per
-// learner per day; its charge is idempotent for that day.
+// yesterday's mistakes: three questions, one word, one tip, answered in the chat
+// (/brief now and the aib: buttons) or on the web. jobs.ts sends the scheduled ones
+// (ai_learner_briefs.next_due_at) with ctx.notify.send, which keeps each person's
+// budget (at most 2 a day across bots), quiet hours, mutes and delivery choice.
+// One brief per learner per day; its charge is idempotent for that day.
 
 // --- Schedules ---------------------------------------------------------------------------
 export const validTimeZone = (zone: string) => {
@@ -70,10 +70,10 @@ export function telegramHtml(markdown: string): string {
 export interface TelegramButton { text: string; callback_data?: string; url?: string }
 export interface TelegramMessage { text: string; buttons?: TelegramButton[][]; force_reply?: boolean }
 
-const COPY: Record<Locale, { title: string; word: string; tip: string; question: string; right: string; wrong: string; done: (score: number) => string; open: string }> = {
-  en: { title: 'Your daily brief', word: 'Word of the day', tip: 'Tip', question: 'Question', right: 'Correct!', wrong: 'Not quite.', done: (score) => `Done: ${score}/3. See you tomorrow.`, open: 'Open Schood AI' },
-  uz: { title: 'Kunlik mashqingiz', word: 'Kun soʻzi', tip: 'Maslahat', question: 'Savol', right: 'Toʻgʻri!', wrong: 'Unchalik emas.', done: (score) => `Tayyor: ${score}/3. Ertaga koʻrishguncha.`, open: 'Schood AI ni ochish' },
-  ru: { title: 'Ваша ежедневная разминка', word: 'Слово дня', tip: 'Совет', question: 'Вопрос', right: 'Верно!', wrong: 'Не совсем.', done: (score) => `Готово: ${score}/3. До завтра.`, open: 'Открыть Schood AI' },
+export const COPY: Record<Locale, { title: string; word: string; tip: string; question: string; right: string; wrong: string; done: (score: number) => string; open: string; answerHere: string; answer: string }> = {
+  en: { title: 'Your daily brief', word: 'Word of the day', tip: 'Tip', question: 'Question', right: 'Correct!', wrong: 'Not quite.', done: (score) => `Done: ${score}/3. See you tomorrow.`, open: 'Open Schood AI', answerHere: 'Today\'s 3 questions: send /brief now to @schoodstudentbot, or answer them in Schood AI.', answer: 'Answer in Schood AI' },
+  uz: { title: 'Kunlik mashqingiz', word: 'Kun soʻzi', tip: 'Maslahat', question: 'Savol', right: 'Toʻgʻri!', wrong: 'Unchalik emas.', done: (score) => `Tayyor: ${score}/3. Ertaga koʻrishguncha.`, open: 'Schood AI ni ochish', answerHere: 'Bugungi 3 ta savol: @schoodstudentbot ga /brief now yuboring yoki Schood AI da javob bering.', answer: 'Schood AI da javob berish' },
+  ru: { title: 'Ваша ежедневная разминка', word: 'Слово дня', tip: 'Совет', question: 'Вопрос', right: 'Верно!', wrong: 'Не совсем.', done: (score) => `Готово: ${score}/3. До завтра.`, open: 'Открыть Schood AI', answerHere: 'Сегодняшние 3 вопроса: отправьте /brief now боту @schoodstudentbot или ответьте в Schood AI.', answer: 'Ответить в Schood AI' },
 };
 
 // --- The brief -----------------------------------------------------------------------------
@@ -135,32 +135,22 @@ export function briefMessages(row: RecordRow, locale: Locale, appUrl: string): T
   ];
 }
 
-export type BriefOutcome =
-  | { status: 'ready'; record: RecordRow; fresh: boolean }
-  | { status: 'skipped'; reason: string; retry_at: string | null };
-
-/** Today's brief: the stored one, or a new one (charged once per day). The worker path respects the notification budget. */
-export async function dailyBrief(ctx: RequestContext, access: WorkspaceAccess): Promise<BriefOutcome> {
-  const schedule = await store(ctx).schedule(ctx.user.id, 'daily');
-  const zone = schedule?.timeZone ?? 'Asia/Tashkent';
+/** Today's brief for a person: the stored one, or a new one, charged once per day (the charge reference is per day). */
+export async function makeDailyBrief(ctx: RequestContext, actor: Actor, zone = 'Asia/Tashkent'): Promise<{ record: RecordRow; fresh: boolean }> {
   const day = today(ctx.now(), zone);
-  const existing = await store(ctx).recordOfDay(ctx.user.id, 'brief', day);
-  if (existing) return { status: 'ready', record: existing, fresh: false };
-  if (ctx.user.via === 'service') {
-    const allowed = await ctx.notify.allowed(ctx.user.id, 'telegram.brief');
-    if (!allowed.allowed) return { status: 'skipped', reason: allowed.reason, retry_at: allowed.retryAt };
-  }
-  const mistakes = await recentMistakes(ctx, ctx.user.id);
-  const snapshot = await store(ctx).snapshot(ctx.user.id);
-  const out = await ctx.ai.json({
-    key: 'daily.brief', schema: BRIEF_SCHEMA, maxTokens: 1500, temperature: 0.5, reference: `daily-brief:${ctx.user.id}:${day}`,
+  const existing = await store(ctx).recordOfDay(actor.userId, 'brief', day);
+  if (existing) return { record: existing, fresh: false };
+  const mistakes = await recentMistakes(ctx, actor.userId);
+  const snapshot = await store(ctx).snapshot(actor.userId);
+  const out = await actor.ai.json({
+    key: 'daily.brief', schema: BRIEF_SCHEMA, maxTokens: 1500, temperature: 0.5, reference: `daily-brief:${actor.userId}:${day}`,
     messages: [
-      { role: 'system', content: systemFor(ctx, access, { name: 'Daily brief', instructions: [
+      { role: 'system', content: systemFor(ctx, actor.access, { name: 'Daily brief', instructions: [
         'Make today\'s 10-minute brief for this learner, for Telegram.',
         mistakes.length ? 'Build it from their mistakes in the last day (in the data): each question practises one of them with new content.' : 'They have no mistakes recorded yesterday: build it from their weak spots in the data, or general practice at their level.',
         'questions: exactly 3 multiple-choice questions (3-4 short options, one correct, a one-sentence explanation). Questions and options are in English.',
         'word: one useful word at their level with meanings and an example. tip: one practical study tip. based_on: one short line saying what today\'s set practises.',
-      ] }, [{ kind: 'recent_mistakes', title: 'Mistakes in the last day', data: mistakes }, ...(snapshot?.profile ? [{ kind: 'learner_snapshot', title: 'Schood results', data: snapshot.profile }] : [])]) },
+      ] }, [{ kind: 'recent_mistakes', title: 'Mistakes in the last day', data: mistakes }, ...(snapshot?.profile ? [{ kind: 'learner_snapshot', title: 'Schood results', data: snapshot.profile }] : [])], actor.locale) },
       { role: 'user', content: learnerInput({ day, mistakes_count: mistakes.length }) },
     ],
   });
@@ -169,18 +159,31 @@ export async function dailyBrief(ctx: RequestContext, access: WorkspaceAccess): 
   let row: RecordRow;
   try {
     row = await store(ctx).createRecord({
-      userId: ctx.user.id, workspaceId: access.workspace.id, kind: 'brief', day, credits: out.credits,
+      userId: actor.userId, workspaceId: actor.access.workspace.id, kind: 'brief', day, credits: out.credits,
       input: { mistakes }, output: { based_on: out.data.based_on, word: out.data.word, tip: out.data.tip, questions: questions.map((question) => ({ prompt: question.prompt, options: question.options })) },
       secret: { keys: questions.map((question) => ({ answer_index: question.answer_index, explanation: question.explanation })) }, state: { answers: {} },
     });
   } catch {
     // Two runs raced for the day: the first one's brief stands (the charge was replayed, not doubled).
-    const first = await store(ctx).recordOfDay(ctx.user.id, 'brief', day);
+    const first = await store(ctx).recordOfDay(actor.userId, 'brief', day);
     if (!first) throw new SchoodAIError('ai_failed', 'The brief could not be saved.', 502);
-    return { status: 'ready', record: first, fresh: false };
+    return { record: first, fresh: false };
   }
-  track(ctx, access, { feature: 'L14', kind: 'brief', summary: { day, based_on: out.data.based_on, from_mistakes: mistakes.length } });
-  return { status: 'ready', record: row, fresh: true };
+  await store(ctx).addActivity([{ userId: actor.userId, workspaceId: actor.access.workspace.id, feature: 'L14', kind: 'brief', summary: clipSummary({ day, based_on: out.data.based_on, from_mistakes: mistakes.length }) }]);
+  return { record: row, fresh: true };
+}
+
+/** Today's brief for the signed-in learner (the web button and /brief now in the bot): a reply, not a push. */
+export async function dailyBrief(ctx: RequestContext, access: WorkspaceAccess) {
+  const schedule = await store(ctx).schedule(ctx.user.id, 'daily');
+  return makeDailyBrief(ctx, userActor(ctx, access), schedule?.timeZone ?? 'Asia/Tashkent');
+}
+
+/** The scheduled brief as plain text for ctx.notify.send; the questions are answered in the bot or on the web. */
+export function briefPlainText(row: RecordRow, locale: Locale): string {
+  const output = row.output as unknown as Brief, copy = COPY[locale];
+  const meaning = locale === 'uz' ? output.word.meaning_uz : locale === 'ru' ? output.word.meaning_ru : output.word.meaning_en;
+  return [`☀️ ${copy.title}`, '', `${copy.word}: ${output.word.word} — ${meaning}`, output.word.example, '', `${copy.tip}: ${output.tip}`, '', copy.answerHere].join('\n').slice(0, 4000);
 }
 
 // POST learner/brief-answer { id, q, choice }: web and Telegram.
@@ -219,30 +222,6 @@ export async function answerBrief(ctx: RequestContext, input: { id: string; q: n
   };
 }
 
-export async function briefSent(ctx: RequestContext, kind: BriefKind, ids: string[]) {
-  const schedule = await store(ctx).schedule(ctx.user.id, kind);
-  for (const id of ids) {
-    const row = await store(ctx).record(id);
-    if (row && row.userId === ctx.user.id && !row.state.sent_at) await store(ctx).updateRecord(row.id, row.version, { state: { ...row.state, sent_at: ctx.now().toISOString() } });
-  }
-  if (schedule) {
-    await ctx.notify.take(ctx.user.id, kind === 'daily' ? 'telegram.brief' : 'telegram.parent_brief');
-    await store(ctx).saveSchedule({ ...schedule, lastSentAt: ctx.now().toISOString(), nextDueAt: schedule.enabled ? nextOccurrence(new Date(ctx.now().getTime() + 3_600_000), schedule.sendTime, schedule.timeZone, schedule.weekday) : null });
-  }
-  return { ok: true };
-}
-
-/** After a skipped or failed attempt, try again later the same day (never in quiet hours). */
-export async function retryLater(ctx: RequestContext, kind: BriefKind, at: string | null) {
-  const schedule = await store(ctx).schedule(ctx.user.id, kind);
-  if (!schedule) return;
-  const fallback = new Date(ctx.now().getTime() + 3_600_000).toISOString();
-  let next = at && Date.parse(at) > ctx.now().getTime() ? at : fallback;
-  const local = new Intl.DateTimeFormat('en-GB', { timeZone: schedule.timeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(next));
-  if (local >= '22:00' || local < '08:00') next = nextOccurrence(new Date(next), schedule.sendTime, schedule.timeZone, schedule.weekday);
-  await store(ctx).saveSchedule({ ...schedule, nextDueAt: next });
-}
-
 export const briefRoutes = {
   brief: {
     async GET(ctx: RequestContext) {
@@ -262,7 +241,6 @@ export const briefRoutes = {
     async POST(ctx: RequestContext) {
       const access = await requireLearner(ctx, 'daily.brief');
       const outcome = await dailyBrief(ctx, access);
-      if (outcome.status !== 'ready') throw new SchoodAIError('notify_later', 'Try again later.', 409, { reason: outcome.reason });
       return { today: briefView(outcome.record), fresh: outcome.fresh };
     },
   },

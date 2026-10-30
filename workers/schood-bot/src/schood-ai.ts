@@ -9,9 +9,9 @@
  *
  * The function decides everything (POST schood-ai/learner/telegram with the
  * service secret and the Telegram-linked Schood user) and returns ready texts
- * and buttons; this module turns them into Telegram calls. The cron
- * (runSchoodAISchedule) sends daily and weekly parent briefs that are due, and
- * the function keeps them within the notification budget and quiet hours.
+ * and buttons; this module turns them into Telegram calls. Scheduled daily and
+ * weekly parent briefs are not sent from here: the function's scheduler sends
+ * them through Schood's notification service (budget, quiet hours, mutes).
  */
 
 export type SchoodAIEnv = { SUPABASE_URL: string; SUPABASE_SERVICE_KEY: string; SCHOOD_AI_SERVICE_SECRET?: string };
@@ -45,7 +45,8 @@ const localeOf = (code: unknown): Locale => {
 /** Only our own buttons: aib: callbacks and https links. */
 export const toMarkup = (message: Message) => {
   if (message.force_reply === true) return { force_reply: true, input_field_placeholder: MARK };
-  const rows = (Array.isArray(message.buttons) ? message.buttons : []).map((row) => (Array.isArray(row) ? row : []).flatMap((raw) => {
+  type Key = { text: string; callback_data: string } | { text: string; url: string };
+  const rows = (Array.isArray(message.buttons) ? message.buttons : []).map((row) => (Array.isArray(row) ? row : []).flatMap((raw): Key[] => {
     const button = (raw ?? {}) as Button;
     const text = String(button.text ?? "").slice(0, 64);
     if (!text) return [];
@@ -151,33 +152,4 @@ export const routeSchoodAI = async (deps: SchoodAIDeps, update: Record<string, u
   }
   await sendAll(deps, item.chatId, result.messages);
   return true;
-};
-
-/** Cron: sends the daily and parent briefs that are due now. */
-export const runSchoodAISchedule = async (deps: SchoodAIDeps, now = new Date(), limit = 50): Promise<{ due: number; sent: number }> => {
-  if (!deps.env.SCHOOD_AI_SERVICE_SECRET || deps.env.SCHOOD_AI_SERVICE_SECRET.length < SECRET_MIN) return { due: 0, sent: 0 };
-  const doFetch = deps.fetch ?? fetch;
-  const query = new URLSearchParams({ enabled: "eq.true", next_due_at: `lte.${now.toISOString()}`, select: "user_id,kind,locale,users(telegram_chat_id)", order: "next_due_at.asc", limit: String(limit) });
-  const response = await doFetch(`${deps.env.SUPABASE_URL.replace(/\/$/, "")}/rest/v1/ai_learner_briefs?${query}`, {
-    headers: { apikey: deps.env.SUPABASE_SERVICE_KEY, Authorization: `Bearer ${deps.env.SUPABASE_SERVICE_KEY}`, Accept: "application/json" },
-  });
-  const rows = response.ok ? await response.json().catch(() => []) as Record<string, unknown>[] : [];
-  let sent = 0;
-  for (const row of Array.isArray(rows) ? rows : []) {
-    const chat = String((row.users as { telegram_chat_id?: unknown } | null)?.telegram_chat_id ?? "");
-    const kind = row.kind === "parent" ? "parent" : "daily";
-    if (!/^\d{1,20}$/.test(chat)) continue;
-    const locale = localeOf(row.locale);
-    try {
-      const result = await call(deps, "telegram-brief", String(row.user_id), chat, locale, { kind });
-      if (result.status !== "ready" || !Array.isArray(result.messages) || !result.messages.length) continue;
-      await sendAll(deps, chat, result.messages);
-      await call(deps, "brief-sent", String(row.user_id), chat, locale, { kind, ids: Array.isArray(result.ids) ? result.ids : [] });
-      sent++;
-    } catch (error) {
-      // One learner's failure never stops the others; the function retries later.
-      console.error(JSON.stringify({ event: "schood_ai_brief_send_failed", kind, error: error instanceof Error ? error.message : "unknown" }));
-    }
-  }
-  return { due: Array.isArray(rows) ? rows.length : 0, sent };
 };

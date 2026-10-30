@@ -3,7 +3,7 @@ import { summariseProfile } from '../core/profile.ts';
 import { buildSystemPrompt, wrapUserMessage } from '../prompt.ts';
 import { registerSpecialist, resolveSpecialist } from '../specialists.ts';
 import { SchoodAIError, type ContextBlock, type RequestContext, type WorkspaceAccess } from '../types.ts';
-import { requireConsent, store } from './common.ts';
+import { consentGuard, requireConsent, store } from './common.ts';
 
 // L1 personal tutor. A specialist served by core/chat on the web, and by
 // learner/telegram (telegramTutor) in the student bot. It knows the learner's
@@ -139,6 +139,8 @@ export function registerTutor(): void {
     roles: ['owner', 'student'],
     // In a centre the branded Student Assistant (C2, centre area) is the tutor; it can list these context kinds.
     workspaceKinds: ['personal'],
+    // The under-18 consent step, checked by core before every turn on the web and in Telegram.
+    guard: (ctx, input) => consentGuard(ctx, input),
     suggestions: {
       en: ['What should I work on this week to reach my target?', 'Explain my weakest skill and give me one exercise.', 'Make me a 20-minute plan for today.'],
       uz: ['Maqsadimga yetish uchun bu hafta nima ustida ishlashim kerak?', 'Eng zaif tomonimni tushuntirib, bitta mashq bering.', 'Bugun uchun 20 daqiqalik reja tuzib bering.'],
@@ -149,7 +151,7 @@ export function registerTutor(): void {
   registerContextProvider('learner_prediction', async (ctx) => {
     const summary = await loadPrediction(ctx);
     return summary ? { kind: 'learner_prediction', title: 'Your predicted scores', data: summary } : null;
-  }, { selfView: true, maxChars: 3_000 });
+  }, { label: { en: 'your predicted scores', uz: 'bashorat qilingan ballaringiz', ru: 'ваши прогнозируемые баллы' }, selfView: true, maxChars: 3_000 });
 
   // The web path already has learner_profile from core; this keeps a summary for
   // the Telegram path and for linked parents, and serves it when there is no token.
@@ -163,24 +165,24 @@ export function registerTutor(): void {
     }
     const snapshot = await store(ctx).snapshot(ctx.user.id);
     return snapshot?.profile ? { kind: 'learner_snapshot', title: 'Your Schood results (last seen on the web)', data: { ...snapshot.profile, as_of: snapshot.refreshedAt.slice(0, 10) } } : null;
-  }, { selfView: true, maxChars: 4_000 });
+  }, { label: { en: 'your saved Schood results', uz: 'saqlangan Schood natijalaringiz', ru: 'сохранённые результаты Schood' }, selfView: true, maxChars: 4_000 });
 
   registerContextProvider('learner_activity', async (ctx) => {
     const list = await recentActivity(ctx, ctx.user.id);
     return list.length ? { kind: 'learner_activity', title: 'What you did with Schood AI lately', data: list } : null;
-  }, { selfView: true, maxChars: 4_000 });
+  }, { label: { en: 'your Schood AI activity', uz: 'Schood AI dagi faolligingiz', ru: 'ваши действия в Schood AI' }, selfView: true, maxChars: 4_000 });
 
   registerContextProvider('centre_homework', async (ctx, { access }) => {
     const payload = await centreAssignments(ctx, access);
     if (!payload) return null;
     const open = openAssignments(payload, ctx.now()).slice(0, 8).map((row) => ({ ...row, instructions: row.instructions.slice(0, 400) }));
     return { kind: 'centre_homework', title: 'Your open homework', data: { open, count: open.length } };
-  }, { selfView: true, maxChars: 5_000 });
+  }, { label: { en: 'your open homework', uz: 'ochiq uy vazifalaringiz', ru: 'ваши открытые домашние задания' }, selfView: true, maxChars: 5_000 });
 
   registerContextProvider('centre_feedback', async (ctx, { access }) => {
     const data = await centreFeedback(ctx, access);
     return data ? { kind: 'centre_feedback', title: 'Your teacher\'s feedback', data } : null;
-  }, { selfView: true, maxChars: 5_000 });
+  }, { label: { en: "your teacher's feedback", uz: 'o‘qituvchingiz fikri', ru: 'отзывы вашего учителя' }, selfView: true, maxChars: 5_000 });
 }
 
 // --- Telegram ---------------------------------------------------------------------------

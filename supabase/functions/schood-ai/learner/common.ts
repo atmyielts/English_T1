@@ -1,16 +1,15 @@
 import { SchemaError, type Schema } from '../../../../packages/ai-core/src/mod.ts';
 import { buildSystemPrompt, dataBlock, neutralise, wrapUserMessage } from '../prompt.ts';
 import type { ResolvedSpecialist } from '../specialists.ts';
-import { SchoodAIError, type ContextBlock, type LearningEventInput, type Locale, type RequestContext, type WorkspaceAccess } from '../types.ts';
-import { learnerConfig, learnerStore, type ConsentRow, type LearnerStore, type RecordRow } from './store.ts';
+import { SchoodAIError, type ChargedAI, type ContextBlock, type LearningEventInput, type Locale, type RequestContext, type WorkspaceAccess } from '../types.ts';
+import { DEFAULT_TWIN, learnerStore, type ConsentRow, type LearnerStore, type RecordRow } from './store.ts';
 
 // Shared pieces of the learner area: the store for this request, the under-18
 // consent gate, activity tracking (with verified learning events), prompts that
 // keep the core prompt rules, quote checks against the learner's own words and
 // the catalogue of real Schood practice links that plans may point to.
 
-export const store = (ctx: RequestContext): LearnerStore => learnerStore(ctx.repo);
-export const config = (ctx: RequestContext) => learnerConfig(ctx.repo);
+export const store = (ctx: RequestContext): LearnerStore => ctx.store(learnerStore);
 
 // --- Under-18 consent -------------------------------------------------------------------
 /** Bumped when the owner changes the consent text; people then confirm again. */
@@ -28,6 +27,34 @@ export async function requireConsent(ctx: RequestContext): Promise<void> {
   const state = consentState(await store(ctx).consent(ctx.user.id));
   if (state !== 'ok') throw new SchoodAIError('consent_required', 'Confirm your age before using the assistant.', 403, { state });
 }
+/**
+ * The consent step as a chat guard (core runs it before every core/chat turn,
+ * after the plan check, on the web and the Telegram path). It applies where a
+ * learner may be chatting: personal workspaces (except teacher and family plans,
+ * whose holders are adults by product) and centre students. Centre staff and
+ * parents are not asked.
+ */
+export async function consentGuard(ctx: RequestContext, input: { access: WorkspaceAccess }): Promise<void> {
+  if (ctx.caller !== 'user' && ctx.caller !== 'service') return;
+  const { workspace, role } = input.access;
+  if (workspace.kind === 'centre') { if (role === 'student') await requireConsent(ctx); return; }
+  const plans = (await ctx.planFor(workspace.id)).plans;
+  if (plans.some((plan) => plan === 'teacher' || plan === 'teacher_pro' || plan === 'family')) return;
+  await requireConsent(ctx);
+}
+/** The same step for every core/chat turn with any specialist (the tutor checks it in its own guard). */
+export async function chatConsentGuard(ctx: RequestContext, input: { specialist: string; access: WorkspaceAccess }): Promise<void> {
+  if (input.specialist === 'tutor') return;
+  if ((store(ctx) as LearnerStore & { [DEFAULT_TWIN]?: true })[DEFAULT_TWIN]) return;
+  await consentGuard(ctx, input);
+}
+/** For core's adults-only prices: the age band from the consent step. */
+export async function ageFromConsent(ctx: RequestContext, userId: string): Promise<'adult' | 'minor' | null> {
+  const row = await store(ctx).consent(userId);
+  if (!row || row.withdrawnAt) return null;
+  return row.ageBand === 'adult' ? 'adult' : 'minor';
+}
+
 /** The plan (and role) first, so free users see the plans; then the consent step. */
 export async function requireLearner(ctx: RequestContext, featureOrKey: string): Promise<WorkspaceAccess> {
   const access = await ctx.requireFeature(featureOrKey);
@@ -69,15 +96,22 @@ export const LANGUAGE: Record<Locale, string> = { en: 'English', uz: 'Uzbek (Lat
 const same = (value: string): Record<Locale, string> => ({ en: value, uz: value, ru: value });
 
 /** The core system prompt (rules first) for a learner tool, with the tool's own role text. */
-export function systemFor(ctx: RequestContext, access: WorkspaceAccess, role: { name: string; instructions: string[] }, blocks: ContextBlock[] = []): string {
+/**
+ * Who a piece of work is for and who pays: the signed-in person (ctx.ai), or, in a
+ * scheduled job, a named person whose workspace pays (ctx.paidBy).
+ */
+export interface Actor { userId: string; locale: Locale; access: WorkspaceAccess; ai: ChargedAI }
+export const userActor = (ctx: RequestContext, access: WorkspaceAccess): Actor => ({ userId: ctx.user.id, locale: ctx.locale, access, ai: ctx.ai });
+
+export function systemFor(ctx: RequestContext, access: WorkspaceAccess, role: { name: string; instructions: string[] }, blocks: ContextBlock[] = [], locale: Locale = ctx.locale): string {
   const specialist: ResolvedSpecialist = {
     key: 'learner_tool', name: same(role.name), description: same(''), instructions: [
       ...role.instructions,
-      `Write every explanation, comment and tip in ${LANGUAGE[ctx.locale]}, even when the learner's own text is in English. Quote the learner's words exactly as they wrote them.`,
+      `Write every explanation, comment and tip in ${LANGUAGE[locale]}, even when the learner's own text is in English. Quote the learner's words exactly as they wrote them.`,
     ].join(' '),
     workspaceInstructions: null, contextKinds: [], creditKey: 'assistant.reply', roles: [], custom: false, suggestions: { en: [], uz: [], ru: [] },
   };
-  return buildSystemPrompt({ specialist, workspace: access.workspace, locale: ctx.locale, blocks });
+  return buildSystemPrompt({ specialist, workspace: access.workspace, locale, blocks });
 }
 export { dataBlock, neutralise, wrapUserMessage };
 

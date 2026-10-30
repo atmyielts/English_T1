@@ -2,8 +2,8 @@ import { s } from '../../../../packages/ai-core/src/mod.ts';
 import { meetingLevel } from '../../_shared/english-duel.ts';
 import { record, text } from '../input.ts';
 import { SchoodAIError, type RequestContext } from '../types.ts';
-import { config, isCefr, learnerInput, receipt, requireLearner, store, systemFor, type Cefr } from './common.ts';
-import type { DuelQuestion, DuelRow, EnglishDuelState } from './store.ts';
+import { isCefr, learnerInput, receipt, requireLearner, store, systemFor, type Cefr } from './common.ts';
+import { APP_URL, type DuelQuestion, type DuelRow, type EnglishDuelState } from './store.ts';
 import { loadProfile } from './tutor.ts';
 
 // L17 Challenge a friend: an AI-made 10-question duel on a topic, at the level
@@ -33,7 +33,7 @@ export function duelQuestions(raw: { prompt: string; options: string[]; answer_i
 
 const links = (ctx: RequestContext, code: string, referral: string | null, created: { webUrl?: string; botUrl?: string } = {}) => {
   // The referral code is public (it is how sign-ups are attributed), never student data.
-  const landing = `${config(ctx).appUrl.replace(/\/$/, '')}/duel/${code}${referral ? `?ref=${encodeURIComponent(referral)}` : ''}`;
+  const landing = `${APP_URL.replace(/\/$/, '')}/duel/${code}${referral ? `?ref=${encodeURIComponent(referral)}` : ''}`;
   return {
     landing,
     bot: created.botUrl ?? `https://t.me/schoodstudentbot?start=duel_${code}`,
