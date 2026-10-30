@@ -77,7 +77,7 @@ export function BriefPage() {
             <div className="mb-2 flex flex-wrap items-center gap-2"><strong>{brief.week}</strong><Badge tone={brief.status === 'sent' ? 'lime' : brief.status === 'failed' ? 'warn' : 'neutral'}>{t(`centre.brief.status.${brief.status}`)}</Badge><span className="text-xs text-gray-600">{brief.source === 'live' ? t('centre.brief.live') : brief.source === 'snapshot' ? t('centre.brief.snapshot', { date: f.dateTime(brief.snapshot_at) }) : t('centre.brief.noAcademy')}</span></div>
             <p className="m-0 whitespace-pre-wrap text-sm leading-6">{brief.text}</p>
             <ol className="m-0 mt-3 grid list-decimal gap-1 pl-5 text-sm">{brief.suggestions.map((entry) => <li key={entry.title}><strong>{entry.title}</strong> — {entry.why}</li>)}</ol>
-            {brief.deliveries.length > 0 && <ul className="m-0 mt-3 flex list-none flex-wrap gap-2 p-0">{brief.deliveries.map((entry) => <li key={entry.user_id}><Badge tone={entry.status === 'sent' ? 'lime' : entry.status === 'deferred' ? 'sky' : 'warn'}>{names.get(entry.user_id) ?? '—'}: {t(`centre.brief.delivery.${entry.status}`)}</Badge></li>)}</ul>}
+            {brief.deliveries.length > 0 && <ul className="m-0 mt-3 flex list-none flex-wrap gap-2 p-0">{brief.deliveries.map((entry) => <li key={entry.user_id}><Badge tone={entry.status === 'sent' ? 'lime' : entry.status === 'deferred' || entry.status === 'in_app' ? 'sky' : entry.status === 'muted' ? 'neutral' : 'warn'}>{names.get(entry.user_id) ?? '—'}: {t(`centre.brief.delivery.${entry.status}`)}</Badge></li>)}</ul>}
           </Card>)}
         </div>
       </div>;

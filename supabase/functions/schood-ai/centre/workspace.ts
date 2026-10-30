@@ -6,7 +6,7 @@ import { SchoodAIError, type RequestContext, type Role } from '../types.ts';
 import { academySnapshot, centreAcademy, myAcademies } from './academy.ts';
 import { centreDeps } from './binding.ts';
 import { humanCode, randomToken, sha256Hex } from './crypto.ts';
-import { isManager, requireCentre, seatLimits, type Centre } from './shared.ts';
+import { isManager, refreshPlanCache, requireCentre, seatLimits, type Centre } from './shared.ts';
 import type { InviteRow, SnapshotRow } from './store.ts';
 
 // C1 centre workspace and the seats/invites/budgets part of C7: create a centre
@@ -18,15 +18,11 @@ const INVITE_ROLES = ['admin', 'teacher', 'student', 'parent'] as const;
 const normaliseCode = (code: string) => code.toUpperCase().replace(/[^A-Z0-9]/g, '');
 const SNAPSHOT_MAX_AGE_MS = 12 * 3_600_000;
 
-/** The plan's limits now, stored for joins by people who are not members yet. */
-export async function refreshLimits(ctx: RequestContext, centre: Centre) {
-  const plan = await ctx.plan();
-  const limits = seatLimits(plan.plans, plan.beta, centre.settings);
-  const cached = centre.settings.limits as Record<string, unknown>;
-  if (cached.teachers !== limits.teachers || cached.students !== limits.students || cached.plan !== limits.plan) {
-    await centre.deps.store.table('settings').update({ workspace_id: centre.access.workspace.id }, { limits });
-  }
-  return limits;
+/** The plan's limits now (seats can change with add-ons), stored for joins by people who are not members yet. */
+export async function refreshLimits(ctx: RequestContext, centre: Centre): Promise<ReturnType<typeof seatLimits>> {
+  const row = await refreshPlanCache(ctx, { workspace: centre.access.workspace, deps: centre.deps, settings: centre.settings }, true);
+  const limits = row.limits as ReturnType<typeof seatLimits>;
+  return { plan: limits.plan, teachers: limits.teachers, students: limits.students };
 }
 
 async function counts(centre: Centre) {

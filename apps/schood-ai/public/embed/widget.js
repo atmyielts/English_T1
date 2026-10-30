@@ -3,9 +3,10 @@
  *   <script src="https://ai.schood.online/embed/widget.js" data-centre="KEY" data-api="API" async></script>
  *   <div data-schood-placement></div>
  *   <script src="https://ai.schood.online/embed/widget.js" data-centre="KEY" data-widget="placement" data-api="API" async></script>
- * The widget calls Schood from this website; Schood answers only websites the
- * centre allowed. Everything renders in a shadow root as text (never HTML from the
- * server). No cookies; one random session id per browser in localStorage. */
+ * The widget talks to Schood through a hidden bridge page on ai.schood.online
+ * (embed/bridge.html), which names this website to Schood; Schood answers only
+ * websites the centre allowed. Everything renders in a shadow root as text (never
+ * HTML from the server). No cookies; one random session id per browser in localStorage. */
 (function () {
   'use strict';
   var script = document.currentScript;
@@ -13,8 +14,8 @@
   var key = script.getAttribute('data-centre') || '';
   var api = (script.getAttribute('data-api') || '').replace(/\/+$/, '');
   var mode = script.getAttribute('data-widget') === 'placement' ? 'placement' : 'chat';
-  // HTTPS only, except a local dev stack on this machine.
-  if (!/^[A-Za-z0-9_-]{20,40}$/.test(key) || !/^(https:\/\/|http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/)/.test(api)) return;
+  // The Schood AI function: HTTPS only, except a local dev stack on this machine.
+  if (!/^[A-Za-z0-9_-]{20,40}$/.test(key) || !/^(https:\/\/|http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/)/.test(api + '/')) return;
   var docLang = (document.documentElement.lang || navigator.language || 'uz').slice(0, 2).toLowerCase();
   var lang = docLang === 'ru' ? 'ru' : docLang === 'en' ? 'en' : 'uz';
   var T = {
@@ -38,10 +39,40 @@
   }
   var sid = session();
 
+  // Calls go through a hidden bridge page on Schood's own site (bridge.html next to this
+  // script). The browser tells the bridge which website is asking (postMessage origin), and
+  // Schood answers only the websites the centre allowed.
+  var bridgeUrl = new URL('bridge.html?api=' + encodeURIComponent(api), script.src);
+  var bridgeOrigin = bridgeUrl.origin;
+  var frame = document.createElement('iframe');
+  frame.src = bridgeUrl.href;
+  frame.title = 'Schood';
+  frame.setAttribute('aria-hidden', 'true');
+  frame.setAttribute('tabindex', '-1');
+  frame.style.cssText = 'position:absolute;width:0;height:0;border:0;visibility:hidden';
+  var pending = {}, seq = 0, markReady;
+  var ready = new Promise(function (resolve) { markReady = resolve; });
+  window.addEventListener('message', function (event) {
+    if (event.origin !== bridgeOrigin || event.source !== frame.contentWindow) return;
+    var data = event.data;
+    if (!data || data.schood !== 'embed') return;
+    if (data.ready) { markReady(); return; }
+    var waiting = pending[data.id];
+    if (!waiting) return;
+    delete pending[data.id];
+    if (data.ok) waiting.resolve(data.data || {});
+    else { var err = new Error((data.data && data.data.code) || 'error'); err.code = data.data && data.data.code; waiting.reject(err); }
+  });
+  (document.body || document.documentElement).appendChild(frame);
   function call(op, body) {
-    var url = api + '/centre/embed/' + op + '?key=' + encodeURIComponent(key) + '&lang=' + lang;
-    var init = body ? { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(Object.assign({ session: sid, lang: lang }, body)) } : { method: 'GET' };
-    return fetch(url, init).then(function (r) { return r.json().catch(function () { return {}; }).then(function (data) { if (!r.ok) { var err = new Error(data.code || 'error'); err.code = data.code; throw err; } return data; }); });
+    return ready.then(function () {
+      return new Promise(function (resolve, reject) {
+        var id = ++seq;
+        pending[id] = { resolve: resolve, reject: reject };
+        frame.contentWindow.postMessage({ schood: 'embed', id: id, op: op, key: key, lang: lang, body: body ? Object.assign({ session: sid }, body) : null }, bridgeOrigin);
+        setTimeout(function () { if (pending[id]) { delete pending[id]; var err = new Error('timeout'); err.code = 'timeout'; reject(err); } }, 45000);
+      });
+    });
   }
   function el(tag, attrs, text) {
     var node = document.createElement(tag);
@@ -52,7 +83,7 @@
   var SAFE = /^#[0-9a-f]{6}$/i;
   function styles(color) {
     var c = SAFE.test(color || '') ? color : '#0f172a';
-    return ':host{all:initial}*{box-sizing:border-box;font-family:Manrope,system-ui,-apple-system,"Segoe UI",sans-serif}' +
+    return ':host{all:initial}*{box-sizing:border-box;font-family:Manrope,system-ui,-apple-system,"Segoe UI",sans-serif}[hidden]{display:none!important}' +
       '.launch{position:fixed;bottom:20px;z-index:2147483000;display:flex;align-items:center;gap:8px;min-height:48px;padding:0 18px;border:0;border-radius:999px;background:' + c + ';color:#fff;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 8px 24px rgba(15,23,42,.25)}' +
       '.launch img{width:28px;height:28px;border-radius:50%;background:#fff;object-fit:cover}' +
       '.panel{position:fixed;bottom:84px;z-index:2147483000;display:flex;flex-direction:column;width:min(380px,calc(100vw - 24px));height:min(560px,calc(100vh - 110px));border:1px solid #1f2937;border-radius:24px;background:#fbfaf7;color:#111827;overflow:hidden;box-shadow:0 16px 40px rgba(15,23,42,.3)}' +

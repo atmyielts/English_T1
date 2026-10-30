@@ -1,5 +1,5 @@
 // Local dev stack for the centre screens of apps/schood-ai: the real schood-ai
-// handler and the centre's public routes over the memory repository and the memory
+// handler (the centre's anonymous and system routes too) over the memory repository and the memory
 // centre store, with a fake Academy, a fake Telegram and a fake model that answers
 // each centre task in the right shape. No network, no Supabase project, no keys.
 //
@@ -17,7 +17,6 @@ import { createPlanResolver } from '../supabase/functions/schood-ai/plan.ts';
 import { createStores } from '../supabase/functions/schood-ai/stores.ts';
 import { centreRuntime, centreStore } from '../supabase/functions/schood-ai/centre/binding.ts';
 import { SecretBox, secretContext } from '../supabase/functions/schood-ai/centre/crypto.ts';
-import { createCentrePublicHandler } from '../supabase/functions/schood-ai/centre/public.ts';
 import { createMemoryCentreStore } from '../supabase/functions/schood-ai/centre/store-memory.ts';
 import { ACADEMY, BOT_TOKEN, fakeAcademy, fakeTelegram, ID, PRODUCT, TEST, USERS } from '../supabase/functions/schood-ai/centre/testing.ts';
 
@@ -30,7 +29,7 @@ const secrets = await SecretBox.create('dev', { dev: btoa(String.fromCharCode(..
 const stores = createStores({ kind: 'memory' }, { now: () => new Date() });
 stores.use(centreStore, centreRuntime({
   store, telegram: telegram.api, secrets, media: { put: (key) => Promise.resolve({ provider: 's3', bucket: 'dev', path: key }) },
-  config: { appUrl: ORIGINS[0], publicUrl: `http://localhost:${PORT}/functions/v1/schood-ai/public`, schoodBotToken: null },
+  config: { appUrl: ORIGINS[0], publicUrl: `http://localhost:${PORT}/functions/v1/schood-ai`, schoodBotToken: null },
 }));
 
 // --- The fake model: one answer per centre task, chosen from the system prompt ----------------
@@ -72,8 +71,8 @@ const ANSWERS: [RegExp, (user: string, system: string) => unknown][] = [
   }],
   [/one short writing task|one speaking task/, () => ({ writing: { prompt: 'Write an email to a friend about your favourite place in your city and why you like it.', min_words: 80 }, speaking: { prompt: 'Tell me about your family and what you like doing together at weekends.' } })],
   // The key checker answers "A" for choices and the right gap, so drafts show a few disagreements.
-  [/You are checking an answer key/, (user) => {
-    const asked = JSON.parse(/<user_message[^>]*>([\s\S]*)<\/user_message>/.exec(user)?.[1] ?? '{"questions":[]}') as { questions: { id: string; type: string; prompt: string }[] };
+  [/You are an independent checker/, (user) => {
+    const asked = JSON.parse(/<schood_data[^>]*>([\s\S]*)<\/schood_data>/.exec(user)?.[1] ?? '{"questions":[]}') as { questions: { id: string; type: string; prompt: string }[] };
     return { answers: asked.questions.map((question) => ({ id: question.id, answer: question.type === 'gap' ? ['had known'] : [question.prompt.includes('lived') ? 'A' : 'B'], ...(question.prompt.includes('lived') ? { reason: '“for” could also fit if a length of time followed.' } : {}) })) };
   }],
 ];
@@ -106,7 +105,6 @@ const tokenProducts = new Map(Object.entries(USERS).map(([token, user]) => [toke
 const plans = createPlanResolver({ productIds: PRODUCT, betaUserIds: new Set(), repo: memory.repository, isAdmin, now: () => new Date(), accessEffective: (token) => Promise.resolve(tokenProducts.get(token) ?? []) });
 const callFunction = (name: string, _path: string, token: string, init: Parameters<typeof academy.handle>[2]) => Promise.resolve(academy.handle(name, token, init));
 const handle = createSchoodAIHandler({ repository: memory.repository, gateway, plans, isAdmin, callFunction, stores, adminGate: () => Promise.resolve({ ok: false, status: 403, code: 'forbidden' }) }, { allowedOrigins: ORIGINS, serviceSecret: null });
-const publicHandle = createCentrePublicHandler({ repository: memory.repository, gateway, plans, isAdmin, callFunction, stores }, { serviceSecret: null });
 
 // --- Seed: a Centre Pro centre linked to the fake Academy ------------------------------------
 const { workspaceId: ws } = await store.createCentre({ name: 'Registan Learning Centre', ownerId: ID.owner, academyTenantId: ACADEMY, contractPlan: null, contractUntil: null, via: 'academy', createdBy: ID.owner, publicKey: 'dev_widget_key_0123456789' });
@@ -114,7 +112,11 @@ await memory.repository.updateWorkspace(ws, { branding: { primary_color: '#2f6f4
 memory.seed.member(ws, ID.office, 'admin');
 for (const id of [ID.t1, ID.t2]) memory.seed.member(ws, id, 'teacher', { creditBudget: 500 });
 for (const id of [ID.s1, ID.s2, ID.s3, ID.s4, ID.s5, ID.s6]) memory.seed.member(ws, id, 'student', { creditBudget: 50 });
-await store.table('settings').update({ workspace_id: ws }, { budget_defaults: { teacher: 500, student: 50 }, embed_domains: ['http://localhost:5203'], widgets: { admissions_chat: true } });
+// The plan the bot and widgets see until a manager opens the centre (runner.ts); a test page on :5204 may embed the widgets.
+await store.table('settings').update({ workspace_id: ws }, {
+  budget_defaults: { teacher: 500, student: 50 }, embed_domains: ['http://localhost:5203', 'http://localhost:5204'], widgets: { admissions_chat: true },
+  limits: { plan: 'centre_pro', teachers: 15, students: 400, access: { plans: ['centre_pro'], beta: false, grants: [] }, checked_at: new Date().toISOString() },
+});
 const group = await store.table('groups').insert({ workspace_id: ws, academy_classroom_id: 'c0000000-0000-4000-8000-0000000000b5', name: '5B', level: 'B1', teacher_ids: [ID.t1], focus_topics: ['present perfect'], created_by: ID.owner });
 for (const id of [ID.s1, ID.s2, ID.s3, ID.s4, ID.s5]) await store.table('group_members').insert({ group_id: group.id, workspace_id: ws, user_id: id });
 const test = await memory.repository.createPage({ workspaceId: ws, ownerId: ID.t1, folder: 'Placement tests', kind: 'centre.placement_test', title: TEST.title, body: placementKind.toMarkdown(TEST as never), material: TEST, visibility: 'workspace', status: 'approved', sourceGenerationId: null });
@@ -137,7 +139,6 @@ function sessionCookie(token: string): string {
 Deno.serve({ port: PORT }, (request) => {
   const url = new URL(request.url);
   if (url.pathname === '/dev/cookie') return new Response(sessionCookie(url.searchParams.get('token') ?? 'tok-owner'), { headers: { 'Access-Control-Allow-Origin': '*' } });
-  if (url.pathname.startsWith('/functions/v1/schood-ai/public/')) return publicHandle(request);
   if (url.pathname.startsWith('/functions/v1/schood-ai/')) return handle(request);
   return new Response('Not found', { status: 404 });
 });

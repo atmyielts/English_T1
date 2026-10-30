@@ -13,14 +13,15 @@ async function connected(options: { mode?: 'approve' | 'auto' } = {}) {
   await f.json('PATCH', 'centre/admissions', { workspace: ws, body: { enabled: true, prices: PRICES, faq: [{ q: 'Do you teach kids?', a: 'Yes, from 7 years old.' }], booking: { ...SLOTS, mode: options.mode ?? 'approve' } } });
   await f.json('POST', 'centre/admissions-bot', { workspace: ws, body: { token: BOT_TOKEN } });
   const hook = f.telegram.calls.find((entry) => entry.method === 'setWebhook')!;
-  const path = String(hook.body.url).split('/public/centre/')[1], secret = String(hook.body.secret_token);
+  // Telegram calls the webhook URL it was given (core's anonymous route), with no Origin.
+  const path = String(hook.body.url), secret = String(hook.body.secret_token);
   let update = 10;
   const send = async (chat: number, text: string, extra: Record<string, unknown> = {}) => {
-    await f.publicCall('POST', path, { body: { update_id: update++, message: { chat: { id: chat, type: 'private' }, from: { id: chat, language_code: 'ru' }, text }, ...extra }, headers: { 'x-telegram-bot-api-secret-token': secret } });
+    await f.anonymous('POST', path, { body: { update_id: update++, message: { chat: { id: chat, type: 'private' }, from: { id: chat, language_code: 'ru' }, text }, ...extra }, origin: null });
     await f.settle();
   };
   const press = async (chat: number, data: string) => {
-    await f.publicCall('POST', path, { body: { update_id: update++, callback_query: { id: `cb${update}`, data, from: { id: chat, language_code: 'ru' }, message: { chat: { id: chat, type: 'private' } } } }, headers: { 'x-telegram-bot-api-secret-token': secret } });
+    await f.anonymous('POST', path, { body: { update_id: update++, callback_query: { id: `cb${update}`, data, from: { id: chat, language_code: 'ru' }, message: { chat: { id: chat, type: 'private' } } } }, origin: null });
     await f.settle();
   };
   return { f, ws, send, press, path, secret };
@@ -121,21 +122,21 @@ Deno.test('limits: turns per conversation per day; group chats are ignored', asy
   ok(f.telegram.sent('705').at(-1)!.includes('много сообщений'), 'the 41st turn today is not answered by AI');
   equal(f.memory.ledger.filter((row) => row.kind === 'charge' && row.creditKey === 'admissions.reply').length, 40, '40 charged turns');
   const before = f.telegram.calls.length;
-  await f.publicCall('POST', 'x', {});
+  equal((await f.anonymous('POST', 'centre/bot-webhook?bot=unknownbotref0123456789&key=x', { body: { update_id: 1 }, origin: null })).status, 401, 'an unknown bot is refused');
   void ws;
-  equal(f.telegram.calls.length, before, 'nothing sent for unknown paths');
+  equal(f.telegram.calls.length, before, 'nothing sent for unknown bots');
 });
 
 Deno.test('C14 chat widget: only the centre’s website, the agent answers, staff replies arrive by polling', async () => {
   const { f, ws } = await connected({ mode: 'auto' });
   const embed = await f.json('PATCH', 'centre/embed', { workspace: ws, body: { embed_domains: ['https://registan.uz'], widgets: { admissions_chat: true, greeting: { ru: 'Здравствуйте! Чем помочь?' } } } });
   const key = embed.body.embed.public_key;
-  const call = (path: string, body: unknown, origin = 'https://registan.uz') => f.publicCall('POST', `embed/${path}?key=${key}`, { body, headers: { origin } });
-  equal((await call('chat', { session: 'session-abcdefghijklmnop', message: 'hi' }, 'https://registan.uz.evil.example')).status, 403, 'look-alike origins are refused');
-  equal((await f.publicCall('POST', `embed/chat?key=unknownkey0123456789abc`, { body: {}, headers: { origin: 'https://registan.uz' } })).status, 404, 'unknown key');
-  const preflight = await f.publicCall('OPTIONS', `embed/chat?key=${key}`, { headers: { origin: 'https://registan.uz' } });
-  equal([preflight.status, preflight.headers.get('access-control-allow-origin')], [204, 'https://registan.uz'], 'preflight for the allowed site');
-  const config = await f.publicCall('GET', `embed/config?key=${key}&lang=ru`, { headers: { origin: 'https://registan.uz' } });
+  // The widget calls through /embed/bridge.html on ai.schood.online, which names the embedding site.
+  const call = (path: string, body: Record<string, unknown>, site = 'https://registan.uz') => f.anonymous('POST', `centre/embed-${path}`, { body: { key, site, ...body } });
+  equal((await call('chat', { session: 'session-abcdefghijklmnop', message: 'hi' }, 'https://registan.uz.evil.example')).status, 403, 'look-alike sites are refused');
+  equal((await f.anonymous('POST', 'centre/embed-chat', { body: { key: 'unknownkey0123456789abc', site: 'https://registan.uz' } })).status, 404, 'unknown key');
+  equal((await f.anonymous('POST', 'centre/embed-chat', { body: { key, site: 'https://registan.uz', session: 'session-abcdefghijklmnop', message: 'hi' }, origin: 'https://registan.uz' })).body.code, 'origin_denied', 'only through the bridge: core refuses other origins');
+  const config = await f.anonymous('GET', `centre/embed-config?key=${key}&site=${encodeURIComponent('https://registan.uz')}&lang=ru`);
   equal([config.body.widgets.admissions_chat, config.body.greeting], [true, 'Здравствуйте! Чем помочь?'], 'greeting from the centre');
   f.model(/admissions assistant/, { reply: 'Да, с 7 лет.', intent: 'question', language: 'ru' });
   const session = 'session-abcdefghijklmnop';

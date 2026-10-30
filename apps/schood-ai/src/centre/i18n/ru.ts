@@ -971,4 +971,7 @@ export const ru: Record<CentreKey, string> = {
   'centre.placement.reviewDisagree': "Задание {item}: ключ {key}, второй AI выбрал {solver}.",
   'centre.placement.reviewUnanswered': "Второй AI не ответил на: {items}.",
   'centre.placement.reviewApprove': "Прочитайте каждое задание, прежде чем утвердить тест. Пока вы не утвердите, его никто не сможет пройти.",
+  // Brief deliveries by notification preferences
+  'centre.brief.delivery.muted': "отключено в настройках уведомлений",
+  'centre.brief.delivery.in_app': "в приложении (доставка в Telegram выключена)",
 };

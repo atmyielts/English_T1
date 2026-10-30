@@ -989,4 +989,7 @@ export const uz: Record<CentreKey, string> = {
   'centre.placement.reviewDisagree': "Savol {item}: kalit {key}, ikkinchi AI esa {solver} javobini tanladi.",
   'centre.placement.reviewUnanswered': "Ikkinchi AI javob bermagan savollar: {items}.",
   'centre.placement.reviewApprove': "Testni tasdiqlashdan oldin har bir savolni o‘qib chiqing. Siz tasdiqlamaguningizcha uni hech kim topshira olmaydi.",
+  // Brief deliveries by notification preferences
+  'centre.brief.delivery.muted': "bildirishnoma sozlamalarida o‘chirilgan",
+  'centre.brief.delivery.in_app': "ilovada (Telegram orqali yuborish o‘chiq)",
 };

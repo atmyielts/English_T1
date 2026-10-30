@@ -69,6 +69,12 @@ function parseTrial(value: unknown): TrialBooking {
 }
 
 const when = formatWhen;
+const trialSummary = (p: TrialBooking, locale: Locale) => pick(locale, { en: `Trial lesson for ${p.name}, ${when(p.starts_at, 'en')}`, uz: `${p.name} uchun sinov darsi, ${when(p.starts_at, 'uz')}`, ru: `Пробный урок: ${p.name}, ${when(p.starts_at, 'ru')}` });
+/** A trial booking the admissions agent proposes with nobody signed in (runner.ts proposeAsCentre). */
+export function trialProposal(payload: unknown, locale: Locale) {
+  const parsed = parseTrial(payload);
+  return { kind: 'centre_book_trial', payload: parsed as unknown as Record<string, unknown>, summary: trialSummary(parsed, locale), expiresInHours: 96 };
+}
 
 export function registerMessageActions(): void {
   registerActionKind<FamilyMessage>({
@@ -140,7 +146,7 @@ export function registerMessageActions(): void {
     area: 'centre',
     approverRoles: ['owner', 'admin'],
     parse: parseTrial,
-    summary: (p, locale) => pick(locale, { en: `Trial lesson for ${p.name}, ${when(p.starts_at, 'en')}`, uz: `${p.name} uchun sinov darsi, ${when(p.starts_at, 'uz')}`, ru: `Пробный урок: ${p.name}, ${when(p.starts_at, 'ru')}` }),
+    summary: trialSummary,
     display: (p) => ({
       name: p.name, ...(p.phone ? { phone: p.phone } : {}), ...(p.telegram ? { telegram: p.telegram } : {}), ...(p.age ? { age: String(p.age) } : {}), ...(p.interest ? { interest: p.interest } : {}),
       time: `${when(p.starts_at, p.language)} (${Math.round((Date.parse(p.ends_at) - Date.parse(p.starts_at)) / 60_000)} min)`, academy: p.academy_id ? (p.lead_id ? 'Trial for the existing Academy lead' : 'New Academy lead and trial') : 'Schood AI booking only (Academy not connected)',

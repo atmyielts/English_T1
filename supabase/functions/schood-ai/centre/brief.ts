@@ -1,6 +1,8 @@
 import { s } from '../../../../packages/ai-core/src/mod.ts';
 import { bool, integer, record, stringList } from '../input.ts';
+import { registerNotifyKind } from '../registries.ts';
 import { SchoodAIError, type RequestContext } from '../types.ts';
+import { actorOf } from './runner.ts';
 import type { AcademySnapshot } from './academy.ts';
 import { botToken, sendText } from './bot.ts';
 import { draftChecked } from './draft.ts';
@@ -50,7 +52,7 @@ export async function buildBrief(ctx: RequestContext, centre: Centre, mode: 'liv
   const ws = centre.access.workspace, now = ctx.now(), week = tashkentWeek(now);
   let academy: AcademySnapshot | null = null, source: BriefRow['source'] = 'none', snapshotAt: string | null = null;
   if (ws.academyTenantId) {
-    if (mode === 'live' && ctx.user.token) {
+    if (mode === 'live' && ctx.caller === 'user' && ctx.user.token) {
       const fresh = await captureSnapshot(ctx, centre).catch(() => null);
       if (fresh) { academy = fresh.data as unknown as AcademySnapshot; source = 'live'; snapshotAt = fresh.captured_at; }
     }
@@ -79,7 +81,7 @@ export async function buildBrief(ctx: RequestContext, centre: Centre, mode: 'liv
     }),
     brief: 'Write the brief.',
   });
-  const row = { workspace_id: ws.id, week, status: 'ready' as const, source, snapshot_at: snapshotAt, data: data as Record<string, unknown>, text: `${result.headline}\n\n${result.text}`.slice(0, 8000), suggestions: result.suggestions as unknown[], created_by: ctx.user.id };
+  const row = { workspace_id: ws.id, week, status: 'ready' as const, source, snapshot_at: snapshotAt, data: data as Record<string, unknown>, text: `${result.headline}\n\n${result.text}`.slice(0, 8000), suggestions: result.suggestions as unknown[], created_by: actorOf(ctx) };
   const existing = await centre.deps.store.table('briefs').get({ workspace_id: ws.id, week });
   if (existing) return (await centre.deps.store.table('briefs').update({ id: existing.id }, { ...row, deliveries: existing.deliveries }))[0];
   return await centre.deps.store.table('briefs').insert(row);
@@ -90,7 +92,10 @@ export function briefMessage(centre: Centre, brief: BriefRow): string {
   return `${centre.access.workspace.name} · ${brief.week}\n\n${brief.text}\n\n${suggestions}\n\n${centre.deps.config.appUrl}/centre/brief`;
 }
 
-interface Delivery { user_id: string; status: 'sent' | 'deferred' | 'no_chat' | 'failed'; channel: string | null; at: string; retry_at?: string }
+interface Delivery { user_id: string; status: 'sent' | 'deferred' | 'muted' | 'in_app' | 'no_chat' | 'failed'; channel: string | null; at: string; retry_at?: string }
+/** The brief's notification kind (Settings → Notifications lets managers mute it). */
+export const BRIEF_KIND = 'centre.brief';
+registerNotifyKind(BRIEF_KIND, { area: 'centre', label: { en: 'Monday brief of your centre', uz: 'Markazingizning dushanba xulosasi', ru: 'Понедельничная сводка центра' } });
 
 /** Sends the brief to each recipient who has not had it yet, within their notification budget. */
 export async function deliverBrief(ctx: RequestContext, centre: Centre, brief: BriefRow): Promise<BriefRow> {
@@ -106,19 +111,23 @@ export async function deliverBrief(ctx: RequestContext, centre: Centre, brief: B
     if (before?.status === 'sent') { deliveries.push(before); continue; }
     const member = await ctx.repo.membership(ws.id, userId);
     if (!member || member.status !== 'active' || !['owner', 'admin'].includes(member.role)) continue;
-    const decision = await ctx.notify.allowed(userId, 'centre_brief');
+    // The person's own notification choices (Settings → Notifications): a muted kind is dropped,
+    // quiet hours and the daily limit defer it, and without Telegram delivery they read it in the app.
+    const decision = await ctx.notify.allowed(userId, BRIEF_KIND);
+    if (!decision.allowed && decision.reason === 'muted') { deliveries.push({ user_id: userId, status: 'muted', channel: null, at }); continue; }
     if (!decision.allowed) { deliveries.push({ user_id: userId, status: 'deferred', channel: null, at, retry_at: decision.retryAt }); continue; }
+    if (!(await ctx.notify.prefs(userId)).delivery.includes('telegram')) { deliveries.push({ user_id: userId, status: 'in_app', channel: null, at }); continue; }
     const staffChat = staffChats.get(userId), schoodChat = (await ctx.repo.profile(userId))?.telegramChatId ?? null;
     let channel: string | null = null, sent = false;
     if (centreBot && staffChat) { channel = 'centre_bot'; sent = await sendText(centre.deps, centreBot, staffChat, text) !== null; }
     else if (centre.deps.config.schoodBotToken && schoodChat) { channel = 'schood_bot'; sent = await sendText(centre.deps, centre.deps.config.schoodBotToken, schoodChat, text) !== null; }
     if (!channel) { deliveries.push({ user_id: userId, status: 'no_chat', channel: null, at }); continue; }
-    if (sent) await ctx.notify.take(userId, 'centre_brief');
+    if (sent) await ctx.notify.take(userId, BRIEF_KIND);
     deliveries.push({ user_id: userId, status: sent ? 'sent' : 'failed', channel, at });
   }
   const status: BriefRow['status'] = deliveries.length && deliveries.every((entry) => entry.status === 'sent') ? 'sent' : deliveries.some((entry) => entry.status === 'sent') ? 'partial' : deliveries.some((entry) => entry.status === 'deferred') ? 'ready' : 'failed';
   const [row] = await centre.deps.store.table('briefs').update({ id: brief.id }, { deliveries: deliveries as unknown[], status });
-  await ctx.repo.audit({ workspaceId: ws.id, actorId: ctx.user.id, event: 'centre.brief_delivered', targetType: 'brief', targetId: brief.id, details: { week: brief.week, sent: deliveries.filter((entry) => entry.status === 'sent').length, deferred: deliveries.filter((entry) => entry.status === 'deferred').length } });
+  await ctx.repo.audit({ workspaceId: ws.id, actorId: actorOf(ctx), event: 'centre.brief_delivered', targetType: 'brief', targetId: brief.id, details: { week: brief.week, sent: deliveries.filter((entry) => entry.status === 'sent').length, deferred: deliveries.filter((entry) => entry.status === 'deferred').length } });
   return row;
 }
 

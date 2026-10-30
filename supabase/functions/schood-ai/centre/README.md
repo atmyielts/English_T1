@@ -11,9 +11,10 @@ owner's reports. Screens are in `apps/schood-ai/src/centre/`; the product spec i
 
 - **No free AI.** Every model call goes through `ctx.ai` with a key from
   `packages/ai-core/src/credits.ts`. AI work in a centre is charged to the centre's
-  pooled credits, within each member's budget. Public and scheduled work (the
-  admissions bot, the website widgets, the Monday brief) runs as the centre's owner,
-  so it is charged to the pool too.
+  pooled credits, within each member's budget. Work with nobody signed in (the
+  admissions bot, the website widgets, the Monday brief) pays from the centre's pool
+  through core's `ctx.paidBy(centre)` and nothing else (`runner.ts`), and only after
+  the centre switched that bot, widget or brief on.
 - **Nothing invented.** Drafts that state facts (parent messages, results posts,
   the brief, admissions replies) go through `draft.ts`: every number in a draft must
   appear in the facts it was given, with one correction turn; otherwise the draft
@@ -102,35 +103,46 @@ Placement tests and curriculum units use the teacher area's material model in
 `packages/ai-core/src/materials/` (imported only through `materials/mod.ts`):
 
 - `packages/ai-core/src/centre/placement.ts` keeps the builder's compact test shape
-  and maps it onto teacher questions (`placementMaterial`), so keys go through the
-  teacher's `checkMaterial` and answers are marked with its `isCorrect`.
-  `placement-generate` drafts a test per level with the teacher's lenient reader,
-  leaves out items with broken keys and has a second model call solve the rest
-  without the key (`solverTasks`, `compareSolver`); disagreements are listed on the
-  draft (`placement-draft-review`).
+  and maps it onto a `placement_test` material (`placementMaterial`): each item is a
+  teacher question with its own level (`Pre-A1` to `C2`), so keys go through the
+  teacher's `checkMaterial` with the kind's rules and answers are marked with its
+  `isCorrect`. `placement-generate` drafts a test per level with the teacher's
+  lenient reader, leaves out items with broken keys and has a second model call
+  solve the rest without the key, with the teacher's shared solver prompt
+  (`SOLVER_SYSTEM`, `SOLVER_INSTRUCTIONS`, `solverPayload`) and `compareSolver`;
+  disagreements are listed on the draft (`placement-draft-review`).
 - Curriculum units are `lesson_plan` materials: a `stages` block per lesson and the
   unit test as a `questions` block (`curriculum-content.ts`).
 
-## Public routes (no Schood session)
+## Routes with nobody signed in (core's anonymous and system routes)
 
-`public.ts` serves, under `/functions/v1/schood-ai/public/centre/`:
+`public.ts`, registered in `mod.ts`:
 
-- `telegram/<bot ref>`: the centre's own Telegram bot (C8). Telegram's
-  `X-Telegram-Bot-Api-Secret-Token` header must match the per-bot secret; updates
-  are de-duplicated (`ai_centre_tg_updates`). Staff link their chat with a
-  one-time code from the app.
-- `embed/config|chat|poll|placement?key=<public key>`: the website widgets (C14,
-  C8). Answered only for an `Origin` on the centre's allowed list (https only),
-  with CORS for that origin; bodies are `text/plain` JSON so browsers send no
-  preflight. Counters per IP and per day (`ai_centre_public_limits`).
-- `cron` (POST, `X-Schood-Service-Secret`, no `Origin`): Monday briefs, retention,
-  monthly wholesale and fee ledgers, insights. Idempotent per day and month.
+- `POST centre/bot-webhook?bot=<ref>&key=<secret>` (anonymous): the centre's own
+  Telegram bot (C8). The random bot ref and a per-connection secret are in the
+  webhook URL, because routes cannot read Telegram's secret-token header yet (a
+  core request); Telegram also gets that secret as its `secret_token`. Updates are
+  de-duplicated (`ai_centre_tg_updates`) and answered after the 200. Staff link
+  their chat with a one-time code from the app. Telegram's servers are a few
+  addresses for every centre, so this route has the highest per-IP limit core allows.
+- `GET centre/embed-config`, `POST centre/embed-chat | embed-poll | embed-placement`
+  (anonymous): the website widgets (C14, C8). A centre's site loads
+  `/embed/widget.js` from ai.schood.online; the script talks through a hidden
+  `/embed/bridge.html` on ai.schood.online (core only answers its own origins). The
+  bridge passes the embedding page's origin, which the browser reports with each
+  message, as `site`; the route answers only sites on the centre's allowed list.
+  `_headers` lets only the bridge be framed; the universal `/*` rule is unchanged.
+- `POST centre/system-brief` (system, every 10 minutes): builds due Monday briefs
+  (at most 8 a call) and delivers them by each manager's notification preferences
+  (kind `centre.brief`); retries what quiet hours or the daily limit held back.
+- `POST centre/system-daily` (system, six calls a night): once a day per centre,
+  retention, this and last month's wholesale and fee ledgers, insights.
 
-Core's router serves signed-in people only, so `index.ts` mounts this handler in
-front of it. Until core's `anonymous: true` and `system: true` routes land, this is
-the seam; the request in `docs/product/ai-requests/centre.md` has the two-line
-mount. The script `apps/schood-ai/public/embed/widget.js` is what a centre puts on
-its site (`_headers` has an `/embed/*` rule; the universal rule is unchanged).
+The schedules are in the centre migration (`invoke_schood_ai_system`). The routes
+use `asCentre` (`runner.ts`): `ctx.workspace()` answers with the centre, AI is
+`ctx.paidBy(centre)`, actions are proposed by nobody for staff to approve, and
+feature checks use the plan a manager's last visit stored (`refreshPlanCache`),
+since core has no `ctx.planFor` yet; each charge still checks the live plan.
 
 ## Data
 
@@ -158,8 +170,8 @@ staff codes, knowledge search, usage).
   delete) resell periods, which the wholesale charge still counts.
 
 Settings read by the area store (`SCHOOD_AI_*` only): `SCHOOD_AI_CENTRE_KEYS`,
-`SCHOOD_AI_CENTRE_KEY_ACTIVE`, `SCHOOD_AI_CENTRE_PUBLIC_URL` (where the public
-routes are reachable, for Telegram webhooks and widget snippets),
+`SCHOOD_AI_CENTRE_KEY_ACTIVE`, `SCHOOD_AI_CENTRE_PUBLIC_URL` (the schood-ai
+function's own URL, for bot webhooks and widget snippets),
 `SCHOOD_AI_APP_URL` (invite links) and, optionally,
 `SCHOOD_AI_TELEGRAM_BOT_TOKEN` (the Schood bot, for briefs to managers who have not
 linked the centre's bot; an owner decision). Knowledge files use the repo's S3
@@ -174,6 +186,6 @@ media store (`_shared/media-storage.ts`) when it is configured.
   migrations twice on PGlite and an isolated Docker Postgres, runs
   `supabase/tests/schood-ai-centre.integration.sql` (including account closure
   through `auth.users`) and races joins and counters across real sessions.
-- `scripts/schood-ai-centre-dev-stack.ts` runs the real handler and the public
-  routes over memory stores with a seeded Centre Pro centre (see the file's header
-  for the two commands and the sign-in cookie).
+- `scripts/schood-ai-centre-dev-stack.ts` runs the real handler, anonymous and
+  system routes included, over memory stores with a seeded Centre Pro centre (see
+  the file's header for the two commands and the sign-in cookie).

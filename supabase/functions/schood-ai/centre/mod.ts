@@ -14,6 +14,7 @@ import { ask, knowledge } from './knowledge.ts';
 import { marketing, results } from './marketing.ts';
 import { campaignDraft, campaigns, leadDraft, leads, parentDraft, registerMessageActions } from './messages.ts';
 import { observations, progress, standards } from './observations.ts';
+import { botWebhook, embedChat, embedConfig, embedPlacement, embedPoll, systemBrief, systemDaily } from './public.ts';
 import { answer, attempts, available, draftReview, generate, mark, registerPlacementKind, review, start, submit, takerTest, tests } from './placement.ts';
 import { resell, resellStudents, wholesale } from './resell.ts';
 import { academies, budgets, create, invitePreview, invites, join, leave, members, overview, snapshotNow } from './workspace.ts';
@@ -105,5 +106,16 @@ export const centreModule: FeatureModule = {
     'curriculum-retry': { POST: retryUnit },
     'curriculum-review': { POST: reviewUnit },
     'curriculum-publish': { POST: publish },
+    // Nobody signed in (public.ts). The centre's own bot: Telegram's servers are few
+    // addresses for every centre, so their limit is the highest core allows.
+    'bot-webhook': { POST: botWebhook, anonymous: { perMinute: 600, perDay: 100_000 } },
+    // Website widgets, through /embed/bridge.html on ai.schood.online.
+    'embed-config': { GET: embedConfig, anonymous: { perMinute: 30, perDay: 2_000 } },
+    'embed-chat': { POST: embedChat, anonymous: { perMinute: 12, perDay: 400 } },
+    'embed-poll': { POST: embedPoll, anonymous: { perMinute: 12, perDay: 3_000 } },
+    'embed-placement': { POST: embedPlacement, anonymous: { perMinute: 30, perDay: 600 } },
+    // Scheduled by pg_cron in the centre migration (invoke_schood_ai_system).
+    'system-brief': { POST: systemBrief, system: true },
+    'system-daily': { POST: systemDaily, system: true },
   },
 };

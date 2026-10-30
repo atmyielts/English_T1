@@ -7,7 +7,6 @@ import type { FunctionCallInit } from '../types.ts';
 import { createStores } from '../stores.ts';
 import { centreRuntime, centreStore, type CentreDeps, type TelegramResult } from './binding.ts';
 import { SecretBox } from './crypto.ts';
-import { createCentrePublicHandler } from './public.ts';
 import { createMemoryCentreStore } from './store-memory.ts';
 
 // The centre test fixture: the real handler, gateway, plan resolver and centre
@@ -166,7 +165,7 @@ export async function centreFixture(options: { publicUrl?: string | null; secret
     store, telegram: telegram.api,
     secrets: options.secrets === false ? null : await SecretBox.create('k1', { k1: btoa(String.fromCharCode(...new Uint8Array(32).map((_, i) => i + 1))) }),
     media: { put: (key, bytes) => { media.push({ key, size: bytes.length }); return Promise.resolve({ provider: 's3', bucket: 'test', path: key }); } },
-    config: { appUrl: 'https://ai.schood.online', publicUrl: options.publicUrl === undefined ? 'https://project.supabase.co/functions/v1/schood-ai/public' : options.publicUrl, schoodBotToken: '6000000000:SchoodStudentBotTokenForTests_abcdefgh' },
+    config: { appUrl: 'https://ai.schood.online', publicUrl: options.publicUrl === undefined ? 'https://project.supabase.co/functions/v1/schood-ai' : options.publicUrl, schoodBotToken: '6000000000:SchoodStudentBotTokenForTests_abcdefgh' },
   };
   const stores = createStores({ kind: 'memory' }, { now });
   stores.use(centreStore, centreRuntime(deps));
@@ -177,7 +176,6 @@ export async function centreFixture(options: { publicUrl?: string | null; secret
     repository: memory.repository, gateway, plans, isAdmin, callFunction, stores,
     adminGate: () => Promise.resolve({ ok: false, status: 403, code: 'forbidden' }), modules: MODULES,
   }, { allowedOrigins: [ORIGIN], serviceSecret: SECRET, now, after });
-  const publicHandle = createCentrePublicHandler({ repository: memory.repository, gateway, plans, isAdmin, callFunction, stores }, { serviceSecret: SECRET, now, after });
 
   type CallOptions = { token?: string | null; body?: unknown; query?: Record<string, string>; workspace?: string; headers?: Record<string, string> };
   const call = (method: string, path: string, opts: CallOptions = {}) => {
@@ -191,15 +189,27 @@ export async function centreFixture(options: { publicUrl?: string | null; secret
     return { status: response.status, body: text ? JSON.parse(text) : null, response };
   };
   const settle = async () => { while (pending.length) await Promise.all(pending.splice(0)); };
-  const publicCall = async (method: string, path: string, init: { body?: unknown; headers?: Record<string, string> } = {}) => {
-    const response = await publicHandle(new Request(`https://x.invalid/functions/v1/schood-ai/public/centre/${path}`, { method, headers: { 'content-type': 'text/plain', ...init.headers }, ...(init.body === undefined ? {} : { body: typeof init.body === 'string' ? init.body : JSON.stringify(init.body) }) }));
+  const parsed = async (response: Response) => {
     const text = await response.text();
     let body: unknown = text;
     try { body = JSON.parse(text); } catch { /* plain text */ }
     return { status: response.status, body: body as Record<string, any>, headers: response.headers };
   };
+  /**
+   * A call with nobody signed in (core's anonymous routes): the centre's bot (no Origin, so
+   * `origin: null`) or a widget through /embed/bridge.html (the app's origin, the default).
+   * `path` is `centre/<action>?…`, or a full webhook URL Telegram was given.
+   */
+  const anonymous = (method: string, path: string, init: { body?: unknown; origin?: string | null; ip?: string } = {}) => {
+    const route = path.includes('/schood-ai/') ? path.split('/schood-ai/')[1] : path;
+    const headers: Record<string, string> = { 'content-type': 'application/json', ...(init.origin === null ? {} : { origin: init.origin ?? ORIGIN }), ...(init.ip ? { 'x-forwarded-for': init.ip } : {}) };
+    return handle(new Request(`https://x.invalid/functions/v1/schood-ai/${route}`, { method, headers, ...(init.body === undefined ? {} : { body: JSON.stringify(init.body) }) })).then(parsed);
+  };
+  /** A scheduled job (core's system routes), as pg_cron calls it. */
+  const system = (path: string, body: Record<string, unknown> = {}, secret = SECRET) =>
+    handle(new Request(`https://x.invalid/functions/v1/schood-ai/${path}`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-schood-service-secret': secret }, body: JSON.stringify(body) })).then(parsed);
   return {
-    memory, store, deps, academy, telegram, upstream, media, env, call, json, settle, publicCall,
+    memory, store, deps, academy, telegram, upstream, media, env, call, json, settle, anonymous, system,
     /** Answer model calls whose system prompt matches. Later rules win over earlier ones. */
     model: (match: RegExp, answer: ModelAnswer) => { answers.unshift({ match, answer }); },
     advance: (ms: number) => { clock = new Date(clock.getTime() + ms); },

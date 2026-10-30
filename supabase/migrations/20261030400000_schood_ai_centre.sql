@@ -798,3 +798,26 @@ end
 $$;
 
 commit;
+
+-- --- Schedules (core's system routes) ---------------------------------------------------------
+-- pg_cron calls the centre's system routes through invoke_schood_ai_system (20261030160000).
+-- Each call does a bounded amount of work and the next call picks up the rest:
+--   centre/system-brief every 10 minutes (minutes 4, 14, ...): builds each centre's Monday
+--     brief from its chosen hour, Tashkent time, at most 8 per call, and retries deliveries
+--     that quiet hours or the daily limit held back;
+--   centre/system-daily six times a night (03:16 to 04:46 UTC), up to 200 centres a call,
+--     each centre once a day: retention, ledgers and insights.
+do $$
+declare
+  v_job_id bigint;
+begin
+  for v_job_id in select jobid from cron.job where jobname in ('schood-ai-centre-brief-v1', 'schood-ai-centre-daily-v1') loop
+    perform cron.unschedule(v_job_id);
+  end loop;
+  perform cron.schedule('schood-ai-centre-brief-v1', '4-59/10 * * * *', $cron$select public.invoke_schood_ai_system('centre/system-brief', '{"builds": 8}');$cron$);
+  perform cron.schedule('schood-ai-centre-daily-v1', '16,31,46 3-4 * * *', $cron$select public.invoke_schood_ai_system('centre/system-daily', '{"limit": 200}');$cron$);
+exception
+  when undefined_table or undefined_function or invalid_schema_name then
+    raise notice 'pg_cron is unavailable in this environment; the centre schedules are not set';
+end
+$$;

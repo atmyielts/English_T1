@@ -3,6 +3,7 @@ import { balanceView, switchesOf } from '../ai.ts';
 import { bool, integer, record, uuid } from '../input.ts';
 import { SchoodAIError, type RequestContext } from '../types.ts';
 import { centreDeps } from './binding.ts';
+import { actorOf } from './runner.ts';
 import { requireCentre, type Centre } from './shared.ts';
 
 // C7 admin besides seats and invites (workspace.ts): feature switches (stored by
@@ -138,7 +139,7 @@ export async function runRetention(ctx: RequestContext, centre: Centre): Promise
   }
   const conversations = await centre.deps.store.table('threads').remove({ workspace_id: ws.id }, { lt: { last_message_at: new Date(cutoff).toISOString() } });
   await centre.deps.store.table('tg_updates').remove({ workspace_id: ws.id }, { lt: { received_at: new Date(ctx.now().getTime() - 3 * 86_400_000).toISOString() } });
-  if (chats || conversations) await ctx.repo.audit({ workspaceId: ws.id, actorId: ctx.user.id, event: 'centre.retention_run', targetType: 'workspace', targetId: ws.id, details: { chats, conversations, retention_days: centre.settings.retention_days } });
+  if (chats || conversations) await ctx.repo.audit({ workspaceId: ws.id, actorId: actorOf(ctx), event: 'centre.retention_run', targetType: 'workspace', targetId: ws.id, details: { chats, conversations, retention_days: centre.settings.retention_days } });
   return { chats, conversations };
 }
 

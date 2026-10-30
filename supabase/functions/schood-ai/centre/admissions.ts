@@ -7,7 +7,9 @@ import type { CentreDeps } from './binding.ts';
 import { alertStaff, BOT_LABEL, botToken, sendText, webhookSecretHash } from './bot.ts';
 import { humanCode, randomToken, secretContext, sha256Hex } from './crypto.ts';
 import { unknownNumbers } from './draft.ts';
+import { trialProposal } from './messages.ts';
 import { loadTest } from './placement.ts';
+import { proposeAsCentre } from './runner.ts';
 import { asRecord, centrePrompt, clean, formatWhen, pick, requireCentre } from './shared.ts';
 import type { AdmissionsRow, ThreadRow } from './store.ts';
 
@@ -150,7 +152,7 @@ export const admissionsBot = {
     if (!me.ok || me.result?.is_bot !== true) throw new SchoodAIError('bot_token_invalid', 'Telegram did not accept this token.', 400);
     const current = await config(deps, ws.id);
     const ref = current.bot_ref ?? randomToken(18), secret = randomToken(32);
-    const hook = await deps.telegram.call(token, 'setWebhook', { url: `${deps.config.publicUrl}/centre/telegram/${ref}`, secret_token: secret, allowed_updates: ['message', 'callback_query'], drop_pending_updates: true });
+    const hook = await deps.telegram.call(token, 'setWebhook', { url: `${deps.config.publicUrl}/centre/bot-webhook?bot=${ref}&key=${secret}`, secret_token: secret, allowed_updates: ['message', 'callback_query'], drop_pending_updates: true });
     if (!hook.ok) throw new SchoodAIError('bot_webhook_failed', 'Telegram did not accept the webhook.', 502);
     await deps.telegram.call(token, 'setMyCommands', { commands: [{ command: 'start', description: 'Start' }, { command: 'test', description: 'Placement test' }, { command: 'human', description: 'Talk to a person' }] });
     await deps.store.table('secrets').update({ workspace_id: ws.id, purpose: 'telegram_bot', label: BOT_LABEL, revoked_at: null }, { revoked_at: ctx.now().toISOString() });
@@ -463,14 +465,13 @@ async function book(input: AgentInput, slot: Slot, locale: Locale): Promise<Agen
     contact: { name: contact.name ?? null, phone: contact.phone ?? null, age: contact.age ?? null, interest: contact.interest ?? null },
   });
   const confirm = say(auto ? T.booked : T.requested, locale, { time: fmt(slot.starts_at, locale) });
-  const action = await ctx.actions.propose({
-    kind: 'centre_book_trial',
-    payload: {
-      booking_id: booking.id, academy_id: workspace.academyTenantId, lead_id: thread.academy_lead_id, name: String(contact.name), phone: typeof contact.phone === 'string' ? contact.phone : null, telegram: null,
-      age: typeof contact.age === 'number' ? contact.age : null, interest: typeof contact.interest === 'string' ? contact.interest : null, starts_at: slot.starts_at, ends_at: slot.ends_at,
-      classroom_id: null, teacher_user_id: null, language: locale, confirm_message: auto ? null : say(T.booked, locale, { time: fmt(slot.starts_at, locale) }), source: input.channel === 'telegram' ? 'telegram' : 'website',
-    },
-  });
+  const payload = {
+    booking_id: booking.id, academy_id: workspace.academyTenantId, lead_id: thread.academy_lead_id, name: String(contact.name), phone: typeof contact.phone === 'string' ? contact.phone : null, telegram: null,
+    age: typeof contact.age === 'number' ? contact.age : null, interest: typeof contact.interest === 'string' ? contact.interest : null, starts_at: slot.starts_at, ends_at: slot.ends_at,
+    classroom_id: null, teacher_user_id: null, language: locale, confirm_message: auto ? null : say(T.booked, locale, { time: fmt(slot.starts_at, locale) }), source: input.channel === 'telegram' ? 'telegram' : 'website',
+  };
+  // The bot and the widget have nobody signed in: the centre proposes it, staff approve it.
+  const action = ctx.caller === 'user' ? await ctx.actions.propose({ kind: 'centre_book_trial', payload }) : await proposeAsCentre(ctx, workspace.id, trialProposal(payload, ctx.locale));
   await deps.store.table('bookings').update({ id: booking.id }, { action_id: action.id, contact: { ...booking.contact, confirmation_sent: auto } });
   await deps.store.table('threads').update({ id: thread.id }, { status: 'booked' });
   await alertStaff(deps, workspace.id, say(T.alertBooking, 'en', { centre: workspace.name, state: auto ? 'confirmed' : 'requested', name: String(contact.name), time: fmt(slot.starts_at, 'en') }));

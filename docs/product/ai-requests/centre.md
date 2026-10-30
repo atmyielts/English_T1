@@ -7,44 +7,44 @@ blocked, and what to delete once the request lands. Area docs:
 
 ## Core
 
-### 1. Mount the centre's public routes (until `anonymous: true` and `system: true` routes land)
+### Done: anonymous and system routes (core 2a83553f)
 
-The Telegram webhook of each centre's bot, the website widgets and the scheduler
-have no Schood session, so core's router refuses them. The area serves them with
-`createCentrePublicHandler` (`centre/public.ts`). Two lines in `index.ts`, in front
-of the core handler, with the same deps:
+The centre's bot webhook, website widgets and scheduled jobs now run on core's
+anonymous and system routes (`centre/public.ts`, registered in `mod.ts`), pay for AI
+only through `ctx.paidBy(centre)`, and are scheduled by pg_cron in the centre
+migration. The stop-gap handler and its `index.ts` mount request are gone. Three
+things the move surfaced:
 
-```ts
-import { createCentrePublicHandler, isCentrePublicPath } from './centre/public.ts';
-const centrePublic = createCentrePublicHandler({ repository, gateway, plans, isAdmin, callFunction, stores }, { serviceSecret: Deno.env.get('SCHOOD_AI_SERVICE_SECRET') ?? null });
-// in Deno.serve, before the core handler:
-if (isCentrePublicPath(new URL(req.url).pathname)) return centrePublic(req);
-```
+1. **Request headers on anonymous routes.** A route cannot read
+   `X-Telegram-Bot-Api-Secret-Token`, so the bot's secret is also in the webhook URL
+   (`?bot=<ref>&key=<secret>`), where request logs can see it. Request: let an
+   anonymous route read a named header (for example
+   `anonymous: { headers: ['x-telegram-bot-api-secret-token'] }` and
+   `ctx.header(name)`). Then the key leaves the URL.
+2. **Other websites calling anonymous routes.** Core refuses any `Origin` outside
+   `SCHOOD_AI_ALLOWED_ORIGINS` before a route runs, so a centre's own website cannot
+   call the widget routes. The widgets talk through a hidden bridge page on
+   ai.schood.online (`/embed/bridge.html`) that passes the embedding page's origin
+   (the one the browser reports for the message) as `site`; the route checks it
+   against the centre's list. That works today. If core lets a route accept origins
+   it checks itself (for example `anonymous: { origins: 'route' }`, with the route
+   setting `Access-Control-Allow-Origin`), the bridge can go.
+3. **One IP for many callers.** Telegram calls every centre's webhook from a few
+   addresses, so the per-IP limit is shared by all centres' bots. The bot route uses
+   the highest limit core allows (600 a minute, 100,000 a day). A per-route key other
+   than the IP (here the bot ref) would separate centres.
 
-`schood-ai` already has `verify_jwt = false`. When core's anonymous and system
-routes land, the centre will move each path onto them and delete this seam. What
-those routes need for the centre:
+### 2. The plan of a workspace for someone who is not a member yet (`ctx.planFor`)
 
-- **Anonymous** (C8 bot, C14/C8 widgets): the area checks the caller itself
-  (Telegram's `X-Telegram-Bot-Api-Secret-Token` per bot; the `Origin` against the
-  centre's own allowed list), so the route must let the area set
-  `Access-Control-Allow-Origin` per centre and answer `OPTIONS`. Per-IP limits from
-  core are welcome; the area keeps its per-centre daily counters. AI is charged to
-  the centre's pool, acting as the owner (today `systemContext()` in `public.ts`).
-- **System** (C10 Monday brief, retention, monthly ledgers, insights): one call a
-  day is enough (the area is idempotent per day and per month); today
-  `POST /public/centre/cron` with `X-Schood-Service-Secret`. A scheduler has to call
-  it (pg_cron or a Cloudflare cron); nothing calls it yet.
+Not landed yet, so the seam stays. Joining a centre checks teacher seats and student
+places, and the bot, widgets and schedules check the centre's features; none of these
+callers can resolve the centre's plan. The area stores the plan's seats and features
+in `ai_centre_settings.limits` whenever a manager opens the centre (at most hourly,
+`refreshPlanCache` in `shared.ts`) and reads them there (`runner.ts`). Every AI charge
+on those routes still checks the live plan through `ctx.paidBy`. Request:
+`ctx.planFor(workspaceId)`. Then the cache goes.
 
-### 2. The plan of a workspace for someone who is not a member yet
-
-Joining a centre checks teacher seats and student places, which come from the
-centre's plan. A person who is not a member cannot resolve that plan, so the area
-caches the limits in `ai_centre_settings.limits`, refreshed whenever a manager
-opens the centre. Request: `ctx.planFor(workspaceId)` (or plan limits on the
-workspace row). Then `refreshLimits` and the cache go.
-
-### 3. BYOK in the gateway (C15)
+### 3. BYOK in the gateway (C15) (not landed; seam unchanged)
 
 Built: sealed key storage, the UI, model hosts pinned per provider, and the
 platform fee ledger (`ai_centre_byok_fees`, computed from `ai_calls` rows whose
@@ -55,7 +55,7 @@ registry picks, the gateway asks the area for the plaintext key
 it), calls with it, records `provider_key = 'byok:<label>'`, and charges no
 credits. The UI says "gateway_ready: false" until then.
 
-### 4. Telegram through the Schood bot
+### 4. Telegram through the Schood bot (`notify.send`; not landed, seam unchanged)
 
 The Monday brief goes through the centre's own bot to staff who linked it. For
 managers who only linked the Schood bot, the area can send with
@@ -77,22 +77,16 @@ Schood bot, so areas never hold that token.
   `SCHOOD_AI_CENTRE_KEY_ACTIVE`, `SCHOOD_AI_CENTRE_PUBLIC_URL`, `SCHOOD_AI_APP_URL`,
   `SCHOOD_AI_TELEGRAM_BOT_TOKEN`.
 - `schood-ai-ci.yml` gained the centre's DB test step and paths (additive).
+- `_headers` gained rules that let only `/embed/bridge` be framed (detaching
+  `X-Frame-Options` and the frame-ancestors CSP there); the universal rule is unchanged.
 
 ## Teacher materials package (`packages/ai-core/src/materials/`)
 
 The centre maps placement tests and curriculum units onto the package and does
-not edit it. What would let it drop its adapters:
-
-1. **Pre-A1.** `LEVEL_PATTERN` and `CEFR_LEVELS` start at A1. Placement tests for
-   young learners start at Pre-A1, which the centre maps to A1 in the material.
-2. **A level per question.** Placement items carry their own level; today it rides
-   in `skill: 'cefr:a2'`. A `level` on `Question` (or one question set per level,
-   which the centre already does for AI drafts) would make it explicit.
-3. **A `placement_test` kind** in `MATERIAL_KINDS` (questions, task, rubric;
-   single_choice and gap; autoMarkable) so `checkMaterial` applies kind rules too.
-4. **A shared solver prompt.** The centre writes its own instruction for the
-   no-key solver call (`SOLVER_TASK` in `centre/placement.ts`). One exported prompt
-   next to `solverTasks` would keep both areas' checks the same.
+not edit it. All four earlier requests landed at 117d961e and are in use: Pre-A1
+(`toCefrLevel`), a level on each question (`questionLevel`), the `placement_test`
+kind, and the shared solver prompt (`SOLVER_SYSTEM`, `SOLVER_INSTRUCTIONS`,
+`solverPayload`; the centre's own prompt is gone). Nothing is open.
 
 ## Academy (outside Schood AI)
 

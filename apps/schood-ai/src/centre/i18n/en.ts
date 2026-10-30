@@ -333,5 +333,8 @@ export const en = {
   'centre.placement.reviewDisagree': "Item {item}: the key is {key}, the second AI chose {solver}.",
   'centre.placement.reviewUnanswered': "Not answered by the second AI: {items}.",
   'centre.placement.reviewApprove': "Read every item before you approve the test. Nobody can take it until you do.",
+  // Brief deliveries by notification preferences
+  'centre.brief.delivery.muted': "turned off in their notification settings",
+  'centre.brief.delivery.in_app': "in the app (Telegram delivery is off)",
 } satisfies Record<string, string>;
 export type CentreKey = keyof typeof en;

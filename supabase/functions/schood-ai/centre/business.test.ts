@@ -1,5 +1,5 @@
 import { unitFromDraft, unitProblems } from './curriculum-content.ts';
-import { centreFixture, createCentre, equal, ID, invite, ok, SECRET } from './testing.ts';
+import { centreFixture, createCentre, equal, ID, invite, ok } from './testing.ts';
 
 // C9 resale and the wholesale ledger, C10 brief delivery rules, C13 knowledge,
 // C15 own model keys and fees, C16 observations, C12 curriculum in a box.
@@ -41,11 +41,11 @@ Deno.test('C10: brief delivery respects quiet hours and the daily limit, retries
   equal([live.status, live.body.brief.source, live.body.brief.status], [200, 'live', 'ready'], 'live preview');
   // Monday 23:30 in Tashkent: the scheduler builds this week's brief but quiet hours defer delivery.
   f.setClock(new Date('2026-11-02T18:30:00Z'));
-  await f.publicCall('POST', 'cron', { headers: { 'x-schood-service-secret': SECRET } });
+  await f.system('centre/system-brief');
   const deferred = (await f.store.table('briefs').get({ workspace_id: ws, week: '2026-W45' }))!;
   equal((deferred.deliveries as { status: string }[]).map((entry) => entry.status), ['deferred', 'deferred'], 'quiet hours');
   f.setClock(new Date('2026-11-03T04:00:00Z')); // Tuesday 09:00
-  await f.publicCall('POST', 'cron', { headers: { 'x-schood-service-secret': SECRET } });
+  await f.system('centre/system-brief');
   const retried = (await f.store.table('briefs').get({ workspace_id: ws, week: '2026-W45' }))!;
   equal((retried.deliveries as { user_id: string; status: string; channel: string }[]).map((entry) => [entry.user_id, entry.status, entry.channel]), [[ID.owner, 'sent', 'schood_bot'], [ID.office, 'no_chat', null]], 'the owner gets it through the Schood bot; the admin has no Telegram linked');
   equal(retried.status, 'partial');

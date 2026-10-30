@@ -21,7 +21,7 @@ export interface MediaStore {
 export interface CentreConfig {
   /** The app's origin, for invite links and messages (https://ai.schood.online). */
   appUrl: string;
-  /** Where the public centre routes are mounted (Telegram webhooks); null until set. */
+  /** The Schood AI function's own URL (…/functions/v1/schood-ai), for the bot webhook and the widget snippet; null until set. */
   publicUrl: string | null;
   /** The Schood student bot, for briefs to staff who have not linked the centre's own bot. */
   schoodBotToken: string | null;
