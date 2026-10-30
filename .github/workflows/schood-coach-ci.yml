@@ -1,6 +1,7 @@
 name: Schood Coaches CI
 # The coach packs, their calibration, the Telegram worker and the coach tables.
-# The coach area of schood-ai runs with the function suite in schood-ai-ci.yml.
+# The coach area of schood-ai (routes, end-to-end loops, calibration through the scoring
+# pipeline) runs with the function suite in schood-ai-ci.yml.
 on:
   pull_request:
     paths:
@@ -37,8 +38,9 @@ jobs:
         run: deno run --no-lock --allow-read packages/coach-packs/scripts/calibration.ts
       - name: Engine and pack tests
         run: deno test --no-lock packages/coach-packs/test/
-      - name: Calibration through the scoring pipeline, and the live script's wiring
-        run: deno test --no-lock supabase/functions/schood-ai/coach/calibration.test.ts
+      # Calibration through the real scoring pipeline (supabase/functions/schood-ai/coach/
+      # calibration.test.ts) runs with the function suite in schood-ai-ci.yml, which installs
+      # the npm packages the function's types need.
   worker:
     runs-on: ubuntu-latest
     timeout-minutes: 10

@@ -1,8 +1,5 @@
 import { lazy, type ComponentType } from 'react';
-import { GraduationCap } from 'lucide-react';
 import type { AreaNavItem, AreaRoute, HomeCard } from '../core/areas.ts';
-import { Link } from '../core/index.ts';
-import { useT } from '../core/i18n/index.ts';
 import './telegram.ts';
 
 // Schood Coaches (B1–B6): the /coach/<pack> screens, also the Telegram Mini App.
@@ -37,18 +34,10 @@ export const routes: AreaRoute[] = ([
 ] as const).map(([path, name, title]) => ({ path: `/coach${path}`, component: page(name), title, public: true }));
 
 export const nav: AreaNavItem[] = [
-  { id: 'coaches', path: '/coach', label: 'coach.nav', icon: GraduationCap, audiences: ['learner'], group: 'coach' },
+  { id: 'coaches', path: '/coach', label: 'coach.nav', icon: 'GraduationCap', audiences: ['learner'], group: 'coach' },
 ];
+export const icons = () => import('./icons.ts');
 
-function CoachesCard() {
-  const t = useT();
-  return <div className="flex flex-col gap-2 rounded-3xl border border-navy-line bg-white/85 p-5">
-    <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-600"><GraduationCap size={16} aria-hidden="true"/>{t('coach.eyebrow')}</span>
-    <p className="m-0 font-display text-lg font-bold">{t('coach.card.title')}</p>
-    <p className="m-0 text-sm leading-6 text-gray-700">{t('coach.card.lead')}</p>
-    <Link to="/coach" className="text-sm font-semibold text-gray-900 underline underline-offset-2">{t('coach.card.open')}</Link>
-  </div>;
-}
 export const homeCards: HomeCard[] = [
-  { id: 'coaches', audiences: ['learner'], render: () => <CoachesCard/> },
+  { id: 'coaches', audiences: ['learner'], component: () => import('./HomeCard.tsx') },
 ];
