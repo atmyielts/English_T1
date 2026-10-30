@@ -1,10 +1,16 @@
 {
   "schemaVersion": 1,
-  "releaseId": "schood-ai-core-oct30",
+  "releaseId": "schood-ai-oct30",
   "status": "code_ready",
   "backwardCompatible": true,
   "frontends": [
-    "schood-ai"
+    "english-hub",
+    "ielts-simulator",
+    "itep-simulator",
+    "sat-practice",
+    "sat-simulator",
+    "schood-ai",
+    "toefl-ibt-simulator"
   ],
   "migrations": [
     "20261030100000_schood_ai_core.sql",
@@ -15,23 +21,40 @@
     "20261030150000_schood_ai_account_erasure.sql",
     "20261030160000_schood_ai_system_and_public_routes.sql",
     "20261030170000_schood_ai_notify_prefs.sql",
-    "20261030180000_schood_ai_system_jobs.sql"
+    "20261030180000_schood_ai_system_jobs.sql",
+    "20261030200000_schood_ai_learner.sql",
+    "20261030200100_schood_ai_learner_retention.sql",
+    "20261030300000_schood_ai_teacher.sql",
+    "20261030400000_schood_ai_centre.sql",
+    "20261030600000_schood_coach.sql",
+    "20261030600100_schood_coach_account_erasure.sql",
+    "20261030800000_schood_ai_engage.sql"
   ],
   "edgeFunctions": [
     "schood-ai"
   ],
-  "workers": [],
+  "workers": [
+    "schood-bot",
+    "schood-coach-bots"
+  ],
+  "sharedEdgeConsumers": [
+    "hub",
+    "schood-ai",
+    "telegram-app"
+  ],
   "requiredSecrets": [
     "SCHOOD_AI_ALLOWED_ORIGINS",
     "SCHOOD_AI_BETA_USER_IDS",
     "SCHOOD_AI_CENTRE_PRODUCT_ID",
     "SCHOOD_AI_CENTRE_PRO_PRODUCT_ID",
+    "SCHOOD_AI_CHANNEL_BOT_TOKEN",
     "SCHOOD_AI_FAMILY_PRODUCT_ID",
     "SCHOOD_AI_GLOBAL_DAILY_CALLS",
     "SCHOOD_AI_PLUS_PRODUCT_ID",
     "SCHOOD_AI_SERVICE_SECRET",
     "SCHOOD_AI_TEACHER_PRODUCT_ID",
-    "SCHOOD_AI_TEACHER_PRO_PRODUCT_ID"
+    "SCHOOD_AI_TEACHER_PRO_PRODUCT_ID",
+    "TELEGRAM_BOT_TOKEN"
   ],
   "rolloutOrder": [
     "pages",
@@ -44,43 +67,61 @@
     "migration:20261030160000_schood_ai_system_and_public_routes.sql",
     "migration:20261030170000_schood_ai_notify_prefs.sql",
     "migration:20261030180000_schood_ai_system_jobs.sql",
+    "migration:20261030200000_schood_ai_learner.sql",
+    "migration:20261030200100_schood_ai_learner_retention.sql",
+    "migration:20261030300000_schood_ai_teacher.sql",
+    "migration:20261030400000_schood_ai_centre.sql",
+    "migration:20261030600000_schood_coach.sql",
+    "migration:20261030600100_schood_coach_account_erasure.sql",
+    "migration:20261030800000_schood_ai_engage.sql",
     "secret:SCHOOD_AI_ALLOWED_ORIGINS",
     "secret:SCHOOD_AI_BETA_USER_IDS",
-    "secret:SCHOOD_AI_GLOBAL_DAILY_CALLS",
-    "secret:SCHOOD_AI_SERVICE_SECRET",
-    "secret:SCHOOD_AI_PLUS_PRODUCT_ID",
-    "secret:SCHOOD_AI_FAMILY_PRODUCT_ID",
-    "secret:SCHOOD_AI_TEACHER_PRODUCT_ID",
-    "secret:SCHOOD_AI_TEACHER_PRO_PRODUCT_ID",
     "secret:SCHOOD_AI_CENTRE_PRODUCT_ID",
     "secret:SCHOOD_AI_CENTRE_PRO_PRODUCT_ID",
-    "function:schood-ai"
+    "secret:SCHOOD_AI_CHANNEL_BOT_TOKEN",
+    "secret:SCHOOD_AI_FAMILY_PRODUCT_ID",
+    "secret:SCHOOD_AI_GLOBAL_DAILY_CALLS",
+    "secret:SCHOOD_AI_PLUS_PRODUCT_ID",
+    "secret:SCHOOD_AI_SERVICE_SECRET",
+    "secret:SCHOOD_AI_TEACHER_PRODUCT_ID",
+    "secret:SCHOOD_AI_TEACHER_PRO_PRODUCT_ID",
+    "secret:TELEGRAM_BOT_TOKEN",
+    "function:schood-ai",
+    "worker:schood-bot",
+    "worker:schood-coach-bots"
   ],
   "manualFollowUps": [
     "Before merging: create the free Cloudflare Pages project schood-ai (the same way schood-admission was created), so the first deploy-pages run can publish it. After merging, run the 'Configure Schood AI Domain' workflow to bind ai.schood.online.",
-    "Pages: merging publishes schood-ai (new app; nothing else changes visually). ai.schood.online is added to VITE_ALLOWED_RETURN_HOSTS, so every app is rebuilt and the platform's sign-in can return there. Until the function is deployed the app shows the landing page and a connection error after sign-in.",
-    "Database: supabase db push --linked from an isolated copy that adds only 20261030100000_schood_ai_core.sql, 20261030110000_schood_ai_library.sql, 20261030120000_schood_ai_specialist_overrides.sql, 20261030130000_schood_ai_retention_and_erasure.sql, 20261030140000_account_erasure_service_hooks.sql, 20261030150000_schood_ai_account_erasure.sql, 20261030160000_schood_ai_system_and_public_routes.sql, 20261030170000_schood_ai_notify_prefs.sql, 20261030180000_schood_ai_system_jobs.sql to the installed migrations, keeping the 9 pending #220 payment migrations (20261010162000-20261010174000) excluded. Dry run first. It creates the ai_* tables (RLS on, no browser policies), the credit, caps and notification functions, and seeds one settings row (AI on, 1000 calls a day, 300 per person, 5000 per workspace), the OpenRouter provider, the free google/gemma-4-31b-it:free model and the default route. It touches no existing table. 20261030110000_schood_ai_library.sql: adds ai_pages.body, updated_by, a generated search vector and excerpt with indexes, ai_page_revisions.body, and the service-role-only ai_page_save function (revision-checked save with version history); no existing row changes. 20261030120000_schood_ai_specialist_overrides.sql: lets ai_specialists.name be null so a workspace can tailor a built-in assistant and keep its translated names; no existing row changes. 20261030130000_schood_ai_retention_and_erasure.sql: adds ai_purge_old_chats (messages older than 180 days, then empty conversations; batches of 20,000) scheduled daily at 03:29 UTC with pg_cron (job schood-ai-chat-retention-v1), adds ai_threads, ai_generations, ai_learning_events, ai_notify_prefs, ai_notify_daily and ai_calls to account_personal_erasure_tables() with the closed-account guard, and lets the erasure transaction delete learning events; no existing row changes. 20261030140000_account_erasure_service_hooks.sql: adds account_erasure_service_hooks() and the auth.users trigger account_erasure_transaction_services, which runs registered service cleanups in the account closure transaction right after erase_account_personal_data() (unchanged); a failing hook rolls the closure back. It is inert until the closure migrations (20261010155000/160000) are installed. 20261030150000_schood_ai_account_erasure.sql: adds ai_erase_account (personal workspace and its content deleted, centre memberships and issued invites deleted, centre pages kept, ledger rows unlinked, closure refused while the person owns a centre others use) and registers it as a closure hook; ai_credit_ledger.workspace_id becomes ON DELETE SET NULL and the ledger guard allows only that unlinking. 20261030160000_schood_ai_system_and_public_routes.sql: lets a workspace pay with no member (ai_credit_charge with p_user null, used by ctx.paidBy), adds ai_rate_limits with ai_rate_take and a daily prune (pg_cron schood-ai-rate-prune-v1 at 03:35), creates the system secret in internal_runtime_secrets and invoke_schood_ai_system(route, body) for pg_cron (pg_net). 20261030170000_schood_ai_notify_prefs.sql: adds preferred_hour, delivery and muted to ai_notify_prefs and makes ai_notify refuse muted kinds (reason muted). 20261030180000_schood_ai_system_jobs.sql: adds ai_system_runs with ai_system_claim and ai_system_finish (one run per job and period, a lease while it runs, three tries for a failed period) and schedules the Schood AI scheduler: pg_cron job schood-ai-system-tick-v1 at minutes 2-59/5 calls invoke_schood_ai_system('core/system-tick') through pg_net, which runs the jobs the areas registered in code. Until the schood-ai function is deployed the tick gets a 404 and nothing runs; no existing row changes.",
-    "Secrets (--project-ref bbjawctnqrufvnesdsel): supabase secrets set SCHOOD_AI_ALLOWED_ORIGINS=https://ai.schood.online; supabase secrets set SCHOOD_AI_BETA_USER_IDS=<comma-separated Schood user ids of the testers>; supabase secrets set SCHOOD_AI_GLOBAL_DAILY_CALLS=1000 (a ceiling the admin settings can only lower).",
-    "Secrets left unset on purpose for now: supabase secrets set SCHOOD_AI_SERVICE_SECRET=<openssl rand -hex 32> only when the Telegram coach worker ships (the same value goes into the worker); supabase secrets set SCHOOD_AI_PLUS_PRODUCT_ID=<id>, supabase secrets set SCHOOD_AI_FAMILY_PRODUCT_ID=<id>, supabase secrets set SCHOOD_AI_TEACHER_PRODUCT_ID=<id>, supabase secrets set SCHOOD_AI_TEACHER_PRO_PRODUCT_ID=<id>, supabase secrets set SCHOOD_AI_CENTRE_PRODUCT_ID=<id> and supabase secrets set SCHOOD_AI_CENTRE_PRO_PRODUCT_ID=<id> in the pricing release, when the products exist. With them unset only Schood admins and the beta allowlist can use AI; everyone else sees the examples and plans.",
-    "Model keys: no new secret. The seeded provider reads the existing OPENROUTER_API_KEY. Other providers are added later in the registry and name their own secret (for example supabase secrets set CLOUDFLARE_AI_API_TOKEN=<Workers AI token> for Whisper speech to text; never the Pages deploy token).",
-    "Scheduler and notifications: no new secret and no new cron step by hand. The 20261030180000 migration schedules the system tick itself (pg_cron + pg_net, both already used by the academy and Telegram jobs); it calls the deployed schood-ai function with the system secret from internal_runtime_secrets. ctx.notify.send delivers through the existing send-telegram function with the service-role bearer, so send-telegram must be deployed with TELEGRAM_BOT_TOKEN set (the platform's Telegram notifications already need both). A centre's own model keys (C15) need nothing until the centre area ships its key store.",
-    "Edge, after the migration and secrets: supabase functions deploy schood-ai --project-ref bbjawctnqrufvnesdsel (verify_jwt = false is in supabase/config.toml; the function verifies every session itself)."
+    "Pages: merging publishes schood-ai with every area (learners and parents, teachers and Materials Studio, centres, the coach Mini App, engagement) and rebuilds english-hub, ielts-simulator, itep-simulator, sat-practice, sat-simulator, toefl-ibt-simulator with an 'Ask Schood AI' link from their result and review pages. ai.schood.online is added to VITE_ALLOWED_RETURN_HOSTS, so every app is rebuilt and the platform's sign-in can return there. Until the function is deployed, the app shows the landing page and a connection error after sign-in; the other apps' links are additive.",
+    "Database: supabase db push --linked from an isolated copy that adds only 20261030100000_schood_ai_core.sql, 20261030110000_schood_ai_library.sql, 20261030120000_schood_ai_specialist_overrides.sql, 20261030130000_schood_ai_retention_and_erasure.sql, 20261030140000_account_erasure_service_hooks.sql, 20261030150000_schood_ai_account_erasure.sql, 20261030160000_schood_ai_system_and_public_routes.sql, 20261030170000_schood_ai_notify_prefs.sql, 20261030180000_schood_ai_system_jobs.sql, 20261030200000_schood_ai_learner.sql, 20261030200100_schood_ai_learner_retention.sql, 20261030300000_schood_ai_teacher.sql, 20261030400000_schood_ai_centre.sql, 20261030600000_schood_coach.sql, 20261030600100_schood_coach_account_erasure.sql, 20261030800000_schood_ai_engage.sql to the installed migrations, keeping the 9 pending #220 payment migrations (20261010162000-20261010174000) excluded. Dry run first. In order: 20261030100000 core: the ai_* tables (RLS on, no browser policies), credit, caps and notification functions, one settings row (AI on, 1000 calls a day, 300 per person, 5000 per workspace) and the OpenRouter provider with the free google/gemma-4-31b-it:free model on the default route; 20261030110000 library page bodies, search and the revision-checked ai_page_save; 20261030120000 nullable ai_specialists.name for tailored built-in assistants; 20261030130000 180-day chat retention (pg_cron schood-ai-chat-retention-v1 at 03:29 UTC) and the ai_* user tables in account_personal_erasure_tables(); 20261030140000 account_erasure_service_hooks() and the auth.users trigger account_erasure_transaction_services (inert until the closure migrations 20261010155000/160000 are installed); 20261030150000 ai_erase_account as a closure hook (personal workspace deleted, centre memberships and invites deleted, centre pages kept, ledger rows unlinked); 20261030160000 workspace-paid charges, ai_rate_take with a daily prune (pg_cron schood-ai-rate-prune-v1), the system secret and invoke_schood_ai_system (pg_net); 20261030170000 preferred hour, delivery and muted kinds in ai_notify_prefs; 20261030180000 ai_system_runs with claim and finish, and pg_cron schood-ai-system-tick-v1 every five minutes, which runs every area job registered in code; 20261030200000 learners and parents: the ai_learner_* tables (consents, activity, records, briefs, snapshots, Telegram, family links, duels); 20261030200100 learner retention (pg_cron schood-ai-learner-retention-v1 at 03:41 UTC) and learner_erase_account as a closure hook; 20261030300000 teachers: Live Quiz, channel autopilot, materials marketplace and ledger tables; 20261030400000 centres: the ai_centre_* tables (settings, sealed secrets, bots, widgets, knowledge, briefs, observations, wholesale ledger) and the centre erasure hook; 20261030600000 Schood Coaches: the coach_* tables, leased reminder claims, seat-safe team joins and retention (pg_cron schood-coach-retention-v1 at 03:37 UTC); 20261030600100 coach tables in the erasure registry and coach_erase_account for teams and invites; 20261030800000 engagement: the ai_engage_* tables, ingest and league functions, the media trash, 24 tables in the erasure registry, ai_engage_erase_account, and pg_cron ai-engage-ingest-v1 (every five minutes) and ai-engage-prune-v1 (03:53 UTC). Every table is additive with RLS on and no browser grants; no existing table changes except the closure trigger on auth.users.",
+    "Function secrets now (--project-ref bbjawctnqrufvnesdsel): supabase secrets set SCHOOD_AI_ALLOWED_ORIGINS=https://ai.schood.online; supabase secrets set SCHOOD_AI_BETA_USER_IDS=<comma-separated Schood user ids of the testers>; supabase secrets set SCHOOD_AI_GLOBAL_DAILY_CALLS=1000 (a ceiling the admin settings can only lower); supabase secrets set SCHOOD_AI_SERVICE_SECRET=<openssl rand -hex 32> (the same value goes into the schood-coach-bots and schood-bot Workers). TELEGRAM_BOT_TOKEN is the existing Schood bot token that send-telegram already uses; only if it is missing: supabase secrets set TELEGRAM_BOT_TOKEN=<Schood bot token>.",
+    "Function settings by area (--project-ref bbjawctnqrufvnesdsel), not read by the release check but needed for the feature: centres need supabase secrets set SCHOOD_AI_CENTRE_KEYS=<id>:<openssl rand -base64 32> and SCHOOD_AI_CENTRE_KEY_ACTIVE=<id> before a centre can connect its bot or its own model key (AES-256-GCM sealing; there is no Vault setup), and SCHOOD_AI_CENTRE_PUBLIC_URL=https://bbjawctnqrufvnesdsel.supabase.co/functions/v1/schood-ai for bot webhooks and widget snippets (SCHOOD_AI_APP_URL is optional, default https://ai.schood.online). Coaches need SCHOOD_AI_COACH_BOTS=ielts:<bot id>:<username>,speaking:<bot id>:<username> once the bots exist (SCHOOD_AI_COACH_FAIR_USE_CREDITS and SCHOOD_AI_COACH_APP_URL are optional). Teachers' channel autopilot (T11) uses the Schood bot unless supabase secrets set SCHOOD_AI_CHANNEL_BOT_TOKEN=<channel bot token> names a separate bot.",
+    "Left unset on purpose until the pricing release: supabase secrets set SCHOOD_AI_PLUS_PRODUCT_ID=<id>, supabase secrets set SCHOOD_AI_FAMILY_PRODUCT_ID=<id>, supabase secrets set SCHOOD_AI_TEACHER_PRODUCT_ID=<id>, supabase secrets set SCHOOD_AI_TEACHER_PRO_PRODUCT_ID=<id>, supabase secrets set SCHOOD_AI_CENTRE_PRODUCT_ID=<id>, supabase secrets set SCHOOD_AI_CENTRE_PRO_PRODUCT_ID=<id> and SCHOOD_AI_COACH_PASS_PRODUCT_IDS=B1:<id>,B2:<id>. With them unset only Schood admins and the beta allowlist use AI; everyone else sees the examples and plans. Coach pass checkout, team seats and engage's certificate sittings (registerSittingSource) belong to the pricing phase.",
+    "Model keys: no new secret. The seeded provider reads the existing OPENROUTER_API_KEY. Speech (stt, tts) and other providers are added later in the admin registry and name their own secret (for example supabase secrets set CLOUDFLARE_AI_API_TOKEN=<Workers AI token>; never the Pages deploy token). Until speech routes exist, voice features say so and run in text.",
+    "Scheduler and notifications: no cron step by hand. 20261030180000 schedules the system tick (pg_cron + pg_net, as the academy and Telegram jobs already use); it calls the deployed schood-ai function with the system secret from internal_runtime_secrets and runs the jobs registered in code: centre.monday_brief, centre.daily, learner.briefs, teacher.channel_dispatch, engage.plan, engage.deliver, engage.league_rollover and engage.media_sweep. Person-to-person notifications go through ctx.notify.send, which uses the existing send-telegram function (service-role bearer), so send-telegram must stay deployed with TELEGRAM_BOT_TOKEN set. Coach reminders are sent by the schood-coach-bots Worker's own cron, because only it holds the coach bot tokens.",
+    "Edge, after the migrations and secrets: supabase functions deploy schood-ai --project-ref bbjawctnqrufvnesdsel (verify_jwt = false is in supabase/config.toml; the function verifies every session itself). The learner area changed _shared/english-duel-service.ts (a Schood AI duel keeps its ready questions): redeploy when convenient with supabase functions deploy hub --project-ref bbjawctnqrufvnesdsel and supabase functions deploy telegram-app --project-ref bbjawctnqrufvnesdsel. Engage added one export to _shared/media-storage.ts (deleteStorageRef); its other consumers need no redeploy.",
+    "Workers: schood-coach-bots (new, coach-bots.schood.online, cron */5). The owner creates one bot per coach in BotFather (IELTS Coach, Speaking Partner). Then, in workers/schood-coach-bots: wrangler secret put SUPABASE_URL, SCHOOD_AI_SERVICE_SECRET (the function's value), TELEGRAM_INTERNAL_SECRET (telegram-link's value), COACH_BOT_TOKEN_IELTS, COACH_WEBHOOK_SECRET_IELTS, COACH_BOT_TOKEN_SPEAKING and COACH_WEBHOOK_SECRET_SPEAKING; wrangler deploy; then deno run --allow-net --allow-env workers/schood-coach-bots/scripts/setup-webhooks.ts --apply (a dry run without --apply). Order and details: workers/schood-coach-bots/README.md.",
+    "Workers: schood-bot (existing student bot). wrangler secret put SCHOOD_AI_SERVICE_SECRET (the function's value), then wrangler deploy. It adds /ai, /brief, /child, /aiduel and the brief answer buttons; it has no cron; homework hand-in is unchanged. Without the secret, the Schood AI commands stay off.",
+    "Off until the owner decides: the engage.talent_pool switch (do not add it in the admin console yet), centre resale (wholesale 9,000 UZS per active student per month is an assumption, invoices manual) and the prices marked assumed: true in packages/ai-core/src/credits.ts."
   ],
   "verification": [
-    "supabase migration list --linked shows 20261030100000 and 20261030110000 and 20261030120000 and 20261030130000 and 20261030140000 and 20261030150000 and 20261030160000 and 20261030170000 and 20261030180000 applied and the 9 #220 payment migrations still pending.",
-    "select jobname, schedule from cron.job where jobname = 'schood-ai-chat-retention-v1' returns one row at 29 3 * * *; select public.account_personal_erasure_tables() @> array['ai_threads','ai_learning_events'] is true.",
-    "select tgname from pg_trigger where tgrelid = 'auth.users'::regclass and tgname = 'account_erasure_transaction_services' returns one row; select public.account_erasure_service_hooks() returns {ai_erase_account}.",
-    "select count(*) from public.internal_runtime_secrets where key = 'schood_ai_system_secret' returns 1; select jobname from cron.job where jobname = 'schood-ai-rate-prune-v1' returns one row.",
-    "select jobname, schedule from cron.job where jobname = 'schood-ai-system-tick-v1' returns one row at 2-59/5 * * * *; ten minutes after the function deploys, select status_code from net._http_response order by created desc limit 5 shows 200s for the tick, and select job, last_status from public.ai_system_runs lists each registered job (empty until an area registers one).",
-    "Anon REST: GET /rest/v1/ai_settings and /rest/v1/ai_providers return 401/permission denied (no browser access).",
+    "supabase migration list --linked shows 20261030100000 and 20261030110000 and 20261030120000 and 20261030130000 and 20261030140000 and 20261030150000 and 20261030160000 and 20261030170000 and 20261030180000 and 20261030200000 and 20261030200100 and 20261030300000 and 20261030400000 and 20261030600000 and 20261030600100 and 20261030800000 applied and the 9 #220 payment migrations still pending.",
+    "select jobname, schedule from cron.job where jobname in ('schood-ai-chat-retention-v1', 'schood-ai-rate-prune-v1', 'schood-ai-system-tick-v1', 'schood-ai-learner-retention-v1', 'schood-coach-retention-v1', 'ai-engage-ingest-v1', 'ai-engage-prune-v1') returns seven rows (29 3, 35 3, 2-59/5, 41 3, 37 3, 4-59/5 and 53 3).",
+    "select tgname from pg_trigger where tgrelid = 'auth.users'::regclass and tgname = 'account_erasure_transaction_services' returns one row; select public.account_erasure_service_hooks() lists ai_erase_account first, then the learner, centre, coach and engage hooks.",
+    "select count(*) from public.internal_runtime_secrets where key = 'schood_ai_system_secret' returns 1. Fifteen minutes after the function deploys, select status_code from net._http_response order by created desc limit 5 shows 200s for the tick, and select job, last_status, failures from public.ai_system_runs shows centre.*, learner.briefs, teacher.channel_dispatch and engage.* with last_status ok.",
+    "Anon REST: GET /rest/v1/ai_settings, /rest/v1/ai_learner_consents, /rest/v1/ai_centre_settings, /rest/v1/coach_enrollments and /rest/v1/ai_engage_profiles return 401 or permission denied.",
     "OPTIONS https://<project>.supabase.co/functions/v1/schood-ai/core/me with Origin https://ai.schood.online answers 204 with that origin allowed; without a token GET answers 401 unauthorized.",
-    "Signed in as a tester in SCHOOD_AI_BETA_USER_IDS on ai.schood.online: Home shows beta access and 2,000 credits; the Assistant streams an answer from the free model; Credits shows the 1-credit charge; ai_calls has the row with cost 0.",
+    "Signed in as a tester in SCHOOD_AI_BETA_USER_IDS on ai.schood.online: Home shows beta access and 2,000 credits; the consent step appears once on /assistant and returns there; the Assistant streams an answer from the free model; Credits shows the 1-credit charge; ai_calls has the row with cost 0.",
     "Signed in as a person not on the allowlist: Home shows the paywall, the Assistant shows 'This needs a Schood AI plan', and no ai_calls row is written.",
-    "ai.schood.online at 375px in uz, ru and en: landing, sign-in return, home, assistant, credits."
+    "ai.schood.online at 375px in uz, ru and en: landing, sign-in return, home, assistant, credits, /learn, /studio, /centre, /progress and /coach; Uzbek dates read like 30-oktabr, 2026.",
+    "In @schoodstudentbot, /help lists /ai, /brief, /aiduel and /child; a plain text homework answer still reaches Homework OS.",
+    "https://coach-bots.schood.online/health lists the coaches that have a token; /start in each coach bot shows the welcome with the free placement test; /coach/* on ai.schood.online sends frame-ancestors https://web.telegram.org and no X-Frame-Options.",
+    "https://ai.schood.online/embed/widget.js loads with Access-Control-Allow-Origin: *; the universal security headers are unchanged on every other path (npm run test:pages:security)."
   ],
   "rollback": {
-    "pages": "Cloudflare Pages: leave schood-ai on its previous deployment or unbind ai.schood.online. Other apps only gained a return host; rolling them back is not needed.",
-    "migration": "Additive and isolated: to switch AI off, update ai_settings set ai_enabled = false. To remove entirely, drop the ai_* tables and functions (nothing else references them).",
-    "edge": "supabase functions delete schood-ai, or redeploy a previous version; no other function depends on it."
+    "pages": "Cloudflare Pages: roll schood-ai back to its previous deployment or unbind ai.schood.online; roll the six apps back only if needed (their links are additive).",
+    "migration": "Additive and isolated: to switch AI off at once, update ai_settings set ai_enabled = false. To stop scheduled work, select cron.unschedule('schood-ai-system-tick-v1') (and the retention, prune and ingest jobs by name). The ai_*, coach_* and ai_engage_* tables can stay; nothing else references them.",
+    "edge": "Redeploy the previous schood-ai function (or supabase functions delete schood-ai); no other function depends on it. hub and telegram-app run unchanged with the previous english-duel-service.",
+    "workers": "schood-coach-bots: remove the webhooks (setup-webhooks.ts without --apply prints them) or redeploy nothing; the platform does not depend on it. schood-bot: unset SCHOOD_AI_SERVICE_SECRET (Schood AI commands switch off) or redeploy the previous worker."
   }
 }
