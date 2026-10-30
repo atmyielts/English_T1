@@ -74,8 +74,8 @@ export function fixture(options: FixtureOptions = {}) {
   const breaker = new CircuitBreaker();
   // Area stores: memory twins, reachable as f.stores (seed with f.stores.use(handle, twin)).
   const stores = createStores({ kind: 'memory' }, { now, env: (name) => env[name] });
-  /** Telegram messages ctx.notify.send handed to the Schood bot; f.setTelegram changes the bot's answer. */
-  const telegram: { userId: string; kind: string; text: string; buttons: { label: string; path: string }[]; dedupeKey: string | null }[] = [];
+  /** Telegram messages ctx.notify.send handed to the Schood bot; f.setNotifyOutcome changes the bot's answer. */
+  const notifySends: { userId: string; kind: string; text: string; buttons: { label: string; path: string }[]; dedupeKey: string | null }[] = [];
   let telegramOutcome: { outcome: 'sent' | 'defer' | 'suppressed' | 'failed'; deliverAt?: string | null } = { outcome: 'sent' };
   const gateway = createGateway({
     registry: () => memory.repository.registry(),
@@ -105,7 +105,7 @@ export function fixture(options: FixtureOptions = {}) {
       return Promise.resolve(name === 'learning-profile-v3' && profiles[token] ? { status: 200, data: profiles[token] } : { status: 404, data: null });
     },
     systemSecret: () => memory.repository.systemSecret(),
-    sendTelegram: (input) => { telegram.push(structuredClone(input)); return Promise.resolve(telegramOutcome); },
+    sendTelegram: (input) => { notifySends.push(structuredClone(input)); return Promise.resolve(telegramOutcome); },
     systemJobs: options.systemJobs,
     adminGate: (req, permission) => {
       const token = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '');
@@ -128,8 +128,8 @@ export function fixture(options: FixtureOptions = {}) {
     method, headers: { 'content-type': 'application/json', 'x-schood-service-secret': secret, 'x-schood-user-id': userId, 'x-schood-telegram-chat-id': chat }, ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   }));
   return {
-    memory, gateway, breaker, upstream, env, profiles, call, json, worker, stores, functionCalls, telegram,
-    setTelegram: (next: typeof telegramOutcome) => { telegramOutcome = next; },
+    memory, gateway, breaker, upstream, env, profiles, call, json, worker, stores, functionCalls, notifySends,
+    setNotifyOutcome: (next: typeof telegramOutcome) => { telegramOutcome = next; },
     setProvider: (next: typeof provider) => { provider = next; },
     advance: (ms: number) => { clock = new Date(clock.getTime() + ms); },
     now: () => clock,

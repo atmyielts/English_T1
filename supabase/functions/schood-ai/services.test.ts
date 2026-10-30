@@ -162,14 +162,14 @@ Deno.test('ctx.notify.send: through the Schood bot, inside their choices and the
   const f = fixture({ modules });
   const send = (user: string, extra: Record<string, unknown> = {}) => system(f, 'centre/zz-send', { user, ...extra });
   equal((await send(ID.plus)).body.result, { sent: true });
-  equal(f.telegram.at(-1), { userId: ID.plus, kind: 'centre.brief', text: 'This week: 4 new students, 2 unpaid invoices.', buttons: [{ label: 'Open', path: '/centre' }], dedupeKey: '2026-W45' });
+  equal(f.notifySends.at(-1), { userId: ID.plus, kind: 'centre.brief', text: 'This week: 4 new students, 2 unpaid invoices.', buttons: [{ label: 'Open', path: '/centre' }], dedupeKey: '2026-W45' });
   equal((await send(ID.free)).body.result, { sent: false, reason: 'no_telegram' }, 'no linked Telegram');
-  f.setTelegram({ outcome: 'suppressed' });
+  f.setNotifyOutcome({ outcome: 'suppressed' });
   equal((await send(ID.plus)).body.result, { sent: false, reason: 'suppressed' }, 'the bot\'s own settings said no');
-  f.setTelegram({ outcome: 'sent' });
+  f.setNotifyOutcome({ outcome: 'sent' });
   const limited = (await send(ID.plus)).body.result;
   equal([limited.sent, limited.reason, typeof limited.retryAt], [false, 'daily_limit', 'string'], 'two a day by default');
-  equal(f.telegram.length, 2, 'refused messages never reach the bot');
+  equal(f.notifySends.length, 2, 'refused messages never reach the bot');
 
   const prefs = await f.memory.repository.notifyPrefs(ID.student);
   await f.memory.repository.saveNotifyPrefs(ID.student, { ...prefs, delivery: ['web'] });

@@ -93,7 +93,8 @@ export interface ContextInput {
   requestId: string;
   /** Null on system and anonymous routes. */
   user: RequestUser | null;
-  caller: Caller;
+  /** Left out (older callers): a person when there is a user, else anonymous. */
+  caller?: Caller;
   readBody(): Promise<Uint8Array>;
 }
 
@@ -102,7 +103,7 @@ const FUNCTION_NAME = /^[a-z0-9][a-z0-9-]{1,60}$/;
 const FORWARDED_HEADERS = new Set(['idempotency-key', 'if-match']);
 
 export function createRequestContext(deps: ContextDeps, input: ContextInput): RequestContext {
-  const caller = input.caller;
+  const caller: Caller = input.caller ?? (input.user ? (input.user.via === 'service' ? 'service' : 'user') : 'anonymous');
   // System and anonymous routes have nobody to act as: anything that would act as a person throws.
   const personal = (caller === 'user' || caller === 'service') && input.user !== null;
   const noUser = (what: string) => new SchoodAIError('user_required', `${what} needs a signed-in person; this ${caller} route has none.`, 500);

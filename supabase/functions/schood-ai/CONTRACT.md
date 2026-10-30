@@ -441,4 +441,5 @@ Everything else in `supabase/functions/schood-ai/` (core, admin, gateway, provid
 
 - `deno test --no-lock supabase/functions/schood-ai/` and `deno check --no-lock supabase/functions/schood-ai/index.ts`.
 - Write your area's tests with `fixture.test.ts`. Pass `modules` to add your module, and `setProvider` for model output.
+- `f.notifySends` lists what `ctx.notify.send` handed to the Schood bot, and `f.setNotifyOutcome({ outcome })` changes the bot's answer. `fixture({ systemJobs })` sets the jobs `core/system-tick` runs (or call `runSystemTick` from `scheduler.ts` directly), and `fixture({ ownKey })` fakes a workspace's own keys. See `services.test.ts`.
 - Core's tests must pass with every area's registrations loaded. Never assert that the specialist list or `custom_context_kinds` is exactly core's own; look for the entries you care about. `extensions.test.ts` registers an area specialist, a provider, a guard and a plan source to keep that true.
