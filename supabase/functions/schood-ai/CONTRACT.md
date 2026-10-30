@@ -25,6 +25,10 @@ export const learnerModule: FeatureModule = {
     'writing-feedback': { POST: writingFeedback, maxBody: 64 * 1024 },
     // Opt in if the Telegram worker may call it:
     'coach-turn': { POST: coachTurn, service: true },
+    // A scheduled job (no user): pg_cron or a bot cron calls it with the secret.
+    'system-brief': { POST: sendDueBriefs, system: true },
+    // Open without signing in, limited per IP (default 30 a minute, 1000 a day):
+    'quiz-join': { POST: joinQuiz, anonymous: { perMinute: 10 } },
   },
 };
 ```
@@ -41,7 +45,10 @@ export const learnerModule: FeatureModule = {
 
 | Member | What it gives you |
 |---|---|
-| `ctx.user` | `{ id, email, token, via: 'jwt' \| 'service', telegramChatId }`. `token` is null on the worker path. |
+| `ctx.user` | `{ id, email, token, via: 'jwt' \| 'service', telegramChatId }`. `token` is null on the worker path. On system and anonymous routes reading it throws; check `ctx.caller` first. |
+| `ctx.caller` | `'user'` (signed in), `'service'` (the Telegram worker for a linked person), `'system'` (a scheduled job) or `'anonymous'` (nobody signed in). |
+| `ctx.paidBy(workspaceId)` | System and anonymous routes only: charged AI paid from a named workspace's pool, with that workspace's plan, switches and caps, no member budget and no user on the ledger. Anonymous routes may name only an active centre (a person's own credits never pay for visitors). |
+| `ctx.credits.spend({ key, reference?, addOns? })` | A priced action with no model call (a streak freeze). Plan, role, age (`adultsOnly`) and switches apply. Idempotent per `reference`. Returns the receipt with `refund()`. |
 | `ctx.workspace({ roles? })` | The workspace in `?workspace_id=`, or the personal one (auto-created), with the caller's active membership. Throws `workspace_not_found` (404, the same for "not a member") or `role_required` (403). |
 | `ctx.plan()` | `{ workspaceKind, plans, features, beta, grant, anchor }` for this workspace. |
 | `ctx.access(featureOrKey)` / `ctx.requireFeature(...)` | The plan and role decision from `packages/ai-core` `featureAccess`. `requireFeature` throws `plan_required` (402, with `plans`) or `role_required`. |
@@ -50,8 +57,8 @@ export const learnerModule: FeatureModule = {
 | `ctx.actions` | The Approve & run queue: `propose`, `list`, `get`, `decide`. |
 | `ctx.library` | Library pages: `create`, `get`, `save`, `list`, with the same rules as the routes (see The library). |
 | `ctx.events.emit(event)` | Learning events. Written after the response; never fails the request. |
-| `ctx.notify.allowed(userId, channel)` / `take(...)` | The notification budget: 2 a day per person across all bots, quiet 22:00–08:00 local. |
-| `ctx.functions.call(name, path, init)` | Another Schood Edge Function, called with the person's own token, for Academy or Assessment Cloud. Throws `user_token_required` on the worker path. |
+| `ctx.notify.allowed(userId, channel)` / `take(...)` / `prefs(userId)` | The notification budget, by the person's own choices (default 2 a day across all bots, quiet 22:00–08:00 Tashkent). A refusal is `quiet_hours`, `daily_limit` or `muted` (the person opted out of that kind or area; drop the message), with `retryAt`. `prefs` gives `{ timeZone, quietStart, quietEnd, dailyLimit, preferredHour, delivery: ['telegram' \| 'web'], muted }`: send at `preferredHour` and only where `delivery` allows. |
+| `ctx.functions.call(name, path, init)` | Another Schood Edge Function, called with the person's own token, for Academy or Assessment Cloud. Throws `user_token_required` on the worker path. `init.headers` may carry only `Idempotency-Key` and `If-Match` (Assessment Cloud commands); any other header throws. |
 | `ctx.repo` | The repository (`types.ts` `SchoodAIRepository`) for core tables. |
 | `ctx.store(handle)` | Your area's own tables, through the store you define with `defineStore` (see Your area's tables). Postgres when deployed, the memory twin in tests and dev stacks. |
 | `ctx.audit(event, details, target)` | Writes `ai_audit_events`. Use it for anything an admin or owner would want traced. |
@@ -150,6 +157,9 @@ Every `admin/*` route needs the existing admin RBAC permission through `admin-ac
 | `registerContextProvider(kind, fn, { allowCustom?, selfView?, timeoutMs?, maxChars?, label? })` | `context.ts` | Data the model may see, for example `homework_open`, `group_weak_spots` or `coach_progress`. Check roles inside the provider. `selfView` only for data about the caller (shown in `core/context`). `label: { en, uz, ru }` names the source under answers ("Used: your study plan"); `core/me` returns `context_labels` for the request language, so your catalogs need no `context.*` keys. |
 | `registerChatGuard(name, guard)` | `specialists.ts` | A check before every `core/chat` turn with any specialist, for example the under-18 consent step: throw `SchoodAIError('consent_required', …, 403)`. Guards run after the plan check and before anything is read, stored or charged, on the browser and the worker path. A guard that crashes refuses the chat (500). |
 | `registerActionKind({ kind, area, approverRoles, parse, summary, display?, run, retrySafe?, expiresInHours? })` | `actions.ts` | Approve & run: `send_parent_message`, `assign_homework`, `post_to_channel`, `book_trial`. `run` executes as the approver, with their token. |
+| `registerGenerationApproval(feature, fn)` | `registries.ts` | Runs when `core/generations` approves a job of that feature (the job is already `approved`), for example saving the material's library page with `ctx.library.create`. Return `{ page_id }` or similar; it comes back as `result`. If it throws, the job is `ready` again and the error is the response. |
+| `registerNotifyKind(key, { area, label })` | `registries.ts` | A kind of message you send through `ctx.notify` (`engage.winback`, `coach.ielts`). Settings → Notifications lists every kind so people can mute it, or mute your whole area. |
+| `registerAgeSource(name, fn)` | `age.ts` | `(ctx, userId) => 'adult' \| 'minor' \| null`, for price entries marked `adultsOnly` (the learner area's consent step knows the age band). Any `minor` refuses; without an `adult`, the age is unknown and adults-only actions are refused (`adult_required`, `reason`). |
 | `registerPlanSource(name, fn)` | `plan.ts` | Extra plans or directly granted features: children of a Family holder → `plus`, a coach pass → `features: ['B4']`, a team seat. The input has `user`, `workspace`, `role`, `repo`, `now`, `store(handle)`, `productIds` (plan → product id, configured ones only) and `plansOf(userId)` (another person's personal plans from their own products; plan sources are not consulted, so there is no recursion). |
 
 ## The library (pages)
@@ -221,6 +231,8 @@ registerMaterialKind({ ...worksheetKind, area: 'teacher' });
 ## Your own data
 
 - `DELETE core/history` deletes every conversation of the caller in every workspace they belong to (Settings → Your data).
+- `GET/PUT core/notify-prefs` (also for the worker): the caller's own `time_zone`, `quiet_start`, `quiet_end`, `daily_limit` (0 to 2), `preferred_hour` (or null), `delivery` (`telegram`, `web`) and `muted` kinds or areas, with the registered `kinds` to show.
+- `ctx.repo.learningEvents({ userId, afterId?, limit })` reads a person's learning events in order, from Postgres and the memory repository alike (folding events into XP, tests, dev stacks).
 - **Retention:** messages older than 180 days, then conversations left empty, are deleted daily (`ai_purge_old_chats`, pg_cron job `schood-ai-chat-retention-v1`). Do not keep copies of chat text in your own tables.
 - **Account erasure.** Closing a Schood account runs one database transaction (the `account_erasure_transaction` trigger on `auth.users`). Schood AI is part of it:
   - The `user_id` tables in `account_personal_erasure_tables()` are deleted: `ai_threads` (and their messages), `ai_generations`, `ai_learning_events`, `ai_notify_prefs`, `ai_notify_daily` and `ai_calls`.
@@ -289,6 +301,31 @@ The trusted Telegram worker sends three headers:
 - `X-Schood-Telegram-Chat-Id`.
 
 The handler checks that this chat is linked to that user (`users.telegram_chat_id`, set by `telegram-link`). It refuses any request that also carries an `Origin`. Only routes with `service: true` accept the worker, never `admin/*`. Plans and credits apply to that person as usual. `ctx.user.via === 'service'` and `token === null`, so token-based context such as `learner_profile` is skipped. Learning events from this path are tagged `source: 'telegram'`.
+
+### System routes (`system: true`): scheduled work
+
+- **Callers:** `X-Schood-Service-Secret` alone, with no `X-Schood-User-Id`, no `Authorization` and no `Origin`. The secret is either the worker secret (`SCHOOD_AI_SERVICE_SECRET`, for a bot's own cron) or the system secret pg_cron sends.
+- **Scheduling** uses the repo's `invoke_*_worker` pattern (migration `20261030160000`). Schedule each job in your area's migration:
+
+  ```sql
+  select cron.schedule('schood-ai-engage-deliver-v1', '*/15 * * * *',
+    $$select public.invoke_schood_ai_system('engage/system-deliver', '{"bot": "student"}')$$);
+  ```
+
+  `invoke_schood_ai_system(route, body)` posts to the function with the system secret from `internal_runtime_secrets` (`schood_ai_system_secret`, made by the migration). Unschedule by name first, as `20261030130000` does, and stagger minutes away from the existing jobs (03:23, 03:29, 03:35, 03:41, and minute 7 hourly).
+- **What runs:** `ctx.caller === 'system'`.
+  - Throws (`user_required`): `ctx.user`, `ctx.workspace()`, `ctx.plan()`, `ctx.ai`, `ctx.context()`, `ctx.events.emit`, `ctx.functions.call`, `ctx.credits` and `ctx.gateway`. So a job can never act as a person.
+  - Available: `ctx.store`, `ctx.repo`, `ctx.notify` (by explicit user id), `ctx.audit` (no actor) and `ctx.paidBy(workspaceId)` for AI. A person's own brief charges their personal workspace; a centre's Monday brief charges the centre.
+- **Keep jobs short and bounded** (a `limit` in the body), idempotent, and tolerant of one person's failure.
+
+### Anonymous routes (`anonymous: true`)
+
+- **Who uses them:** a Live Quiz player with a code and a nickname, a shared Skill Passport link, a certificate QR check, a centre's placement or admissions widget.
+- **Limits:** 30 requests a minute and 1000 a day per caller IP and route, unless you set `anonymous: { perMinute, perDay }`. Over the limit the answer is `429 rate_limited` with `retry_after`. Only a salted hash of the address is kept, for two days.
+- **What runs:** `ctx.caller === 'anonymous'`, with the same throwing members as system routes; a token, if sent, is ignored.
+  - No AI unless a centre pays: `ctx.paidBy(centreWorkspaceId)` charges the centre's pool under the centre's plan and switches. Check that the centre turned the widget on (your own setting) before you call it.
+  - Return only what the person chose to share; never put personal data in the URL.
+- **From the app:** `api(path, { anonymous: true })` sends no token.
 
 ## Chat stream (`POST core/chat`)
 

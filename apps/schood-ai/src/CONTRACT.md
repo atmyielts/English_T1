@@ -69,7 +69,7 @@ export const homeCards: HomeCard[] = [
 
 | Export | Use |
 |---|---|
-| `api(path, { method, body, query, workspaceId, idempotencyKey })` | JSON calls to `/schood-ai/<area>/<action>`. Pass `useWorkspace().workspaceId` (null means personal). Errors are `ApiError` with `code` and `details`. |
+| `api(path, { method, body, query, workspaceId, idempotencyKey, anonymous })` | JSON calls to `/schood-ai/<area>/<action>`. Pass `useWorkspace().workspaceId` (null means personal). Errors are `ApiError` with `code` and `details`. `anonymous: true` calls a route marked `anonymous` with no token, for pages that work signed out (Live Quiz players, shared Passport links). |
 | `stream(path, { body, onEvent, signal, workspaceId })` | SSE calls. |
 | `Chat` | A streaming chat with any specialist: `<Chat specialist="tutor" threadId={id} onThread={…} initialMessage={…}/>`. Includes stop, retry, report, cost before sending and the paywall. |
 | `Answer` | AI text as Markdown with KaTeX (`\( \)`, `\[ \]`). Raw HTML is dropped and remote images are not loaded. |
@@ -85,6 +85,8 @@ export const homeCards: HomeCard[] = [
 
 - `/settings/assistants`: owners and admins tailor the assistants of the workspace (your specialists appear there automatically).
 - `/admin`: the Schood AI console, shown in the sidebar only to Schood admins.
+- `/settings` → Notifications: the person's time zone, quiet hours, messages a day, best hour, delivery (Telegram, in-app inbox) and the kinds they get. Register your kinds on the function side (`registerNotifyKind`).
+- `/settings` → Your branding (personal workspaces): a teacher's own logo and name, printed on `/library/:id/print`.
 - `/settings` → Your data: "Delete my conversation history" (every workspace). Conversations are kept for 180 days. Closing the Schood account erases the personal workspace and the person's Schood AI data. Centre pages stay. A centre owner must hand the centre over first. Tables your area adds register for erasure as the function `CONTRACT.md` describes.
 - `/library`, `/library/:id`, `/library/:id/print`: below.
 

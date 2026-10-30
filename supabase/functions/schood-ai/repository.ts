@@ -2,9 +2,10 @@ import { cleanSwitches, isCapability, type Registry, type RegistryModel, type Re
 import { resolvePermissions } from '../_shared/admin-access.ts';
 import { computeEffectiveAccess, type EntitlementRow, type SponsoredRow } from '../access-effective/logic.ts';
 import type {
-  ActionRow, AuditRow, AuthUser, Balance, CallRecord, ChargeOutcome, GenerationRow, LearningEvent, LedgerRow, Member, Message, NotifyDecision, PageQuery, PageRevisionRow, PageRow, ReportRow,
+  ActionRow, AuditRow, AuthUser, Balance, LearningEventRow, NotifyPrefs, CallRecord, ChargeOutcome, GenerationRow, LearningEvent, LedgerRow, Member, Message, NotifyDecision, PageQuery, PageRevisionRow, PageRow, ReportRow,
   SchoodAIRepository, ServiceSettings, SpecialistRow, Thread, UsageRow, UserProfile, Workspace,
 } from './types.ts';
+import { DEFAULT_NOTIFY_PREFS } from './types.ts';
 
 // The Postgres repository, through the service role. Credits, caps and notifications
 // go through the SECURITY DEFINER functions of 20261030100000_schood_ai_core.sql;
@@ -90,6 +91,12 @@ const page = (row: Row): PageRow => ({
 });
 const likeEscape = (text: string) => text.replace(/[\\%_]/g, (char) => `\\${char}`);
 
+const notifyPrefs = (row: Row): NotifyPrefs => ({
+  timeZone: String(row.time_zone ?? DEFAULT_NOTIFY_PREFS.timeZone), quietStart: Number(row.quiet_start ?? 22), quietEnd: Number(row.quiet_end ?? 8),
+  dailyLimit: Number(row.daily_limit ?? 2), preferredHour: row.preferred_hour === null || row.preferred_hour === undefined ? null : Number(row.preferred_hour),
+  delivery: (Array.isArray(row.delivery) ? row.delivery : DEFAULT_NOTIFY_PREFS.delivery).map(String) as NotifyPrefs['delivery'],
+  muted: Array.isArray(row.muted) ? row.muted.map(String) : [],
+});
 const toSnake = (patch: Record<string, unknown>) => Object.fromEntries(Object.entries(patch).filter(([, value]) => value !== undefined).map(([key, value]) => [key.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`), value]));
 
 export function createSchoodAIRepository(user: (token: string) => Promise<AuthUser | null>, db: SchoodAIDatabase): SchoodAIRepository {
@@ -407,6 +414,34 @@ export function createSchoodAIRepository(user: (token: string) => Promise<AuthUs
     async notify(userId, channel, take): Promise<NotifyDecision> {
       const result = obj(await rpc('ai_notify', { p_user: userId, p_channel: channel, p_take: take }));
       return result.allowed === true ? { allowed: true, remaining: Number(result.remaining ?? 0) } : { allowed: false, reason: result.reason as 'daily_limit', retryAt: String(result.retry_at) };
+    },
+    async notifyPrefs(userId) {
+      const row = check<Row | null>(await db.from('ai_notify_prefs').select('time_zone,quiet_start,quiet_end,daily_limit,preferred_hour,delivery,muted').eq('user_id', userId).maybeSingle());
+      return row ? notifyPrefs(row) : { ...DEFAULT_NOTIFY_PREFS, delivery: [...DEFAULT_NOTIFY_PREFS.delivery], muted: [] };
+    },
+    async saveNotifyPrefs(userId, prefs) {
+      return notifyPrefs(check<Row>(await db.from('ai_notify_prefs').upsert({
+        user_id: userId, time_zone: prefs.timeZone, quiet_start: prefs.quietStart, quiet_end: prefs.quietEnd, daily_limit: prefs.dailyLimit,
+        preferred_hour: prefs.preferredHour, delivery: prefs.delivery, muted: prefs.muted, updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' }).select('time_zone,quiet_start,quiet_end,daily_limit,preferred_hour,delivery,muted').single()));
+    },
+    async takeRate(bucket, limit, windowSeconds) {
+      const result = obj(await rpc('ai_rate_take', { p_bucket: bucket, p_limit: limit, p_window_seconds: windowSeconds }));
+      return result.ok === true ? { ok: true, remaining: Number(result.remaining ?? 0) } : { ok: false, retryAt: String(result.retry_at) };
+    },
+    async systemSecret() {
+      const row = check<Row | null>(await db.from('internal_runtime_secrets').select('secret').eq('key', 'schood_ai_system_secret').maybeSingle());
+      return row && typeof row.secret === 'string' ? row.secret : null;
+    },
+    async learningEvents(filter) {
+      let query = db.from('ai_learning_events').select('id,user_id,workspace_id,area,kind,verified,feature,skill,verified_minutes,score,outcome,ref,source,created_at').eq('user_id', filter.userId);
+      if (filter.afterId) query = query.gt('id', filter.afterId);
+      return check<Row[]>(await query.order('id', { ascending: true }).limit(filter.limit)).map((row): LearningEventRow => ({
+        id: Number(row.id), userId: String(row.user_id), workspaceId: str(row.workspace_id), area: row.area as LearningEventRow['area'], kind: row.kind as LearningEventRow['kind'],
+        verified: row.verified === true, feature: String(row.feature), skill: str(row.skill), verifiedMinutes: Number(row.verified_minutes ?? 0),
+        score: row.score === null || row.score === undefined ? null : Number(row.score), outcome: str(row.outcome), ref: str(row.ref),
+        source: row.source as LearningEventRow['source'], createdAt: String(row.created_at),
+      }));
     },
   };
 }

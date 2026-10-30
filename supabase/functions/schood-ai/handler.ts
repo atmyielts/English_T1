@@ -10,7 +10,7 @@ import { isUuid } from './input.ts';
 import { learnerModule } from './learner/mod.ts';
 import type { PlanResolver } from './plan.ts';
 import { teacherModule } from './teacher/mod.ts';
-import { AREAS, SchoodAIError, type Area, type FeatureModule, type Method, type RequestUser, type RouteHandler, type SchoodAIRepository } from './types.ts';
+import { AREAS, SchoodAIError, type Area, type Caller, type FeatureModule, type Method, type RequestUser, type RouteHandler, type SchoodAIRepository } from './types.ts';
 
 // Schood AI API router: /schood-ai/<area>/<action>. Pure: everything it talks to is
 // injected, so tests run it against the memory repository and a fake gateway fetch.
@@ -21,7 +21,12 @@ import { AREAS, SchoodAIError, type Area, type FeatureModule, type Method, type 
 //   - the trusted Telegram worker with X-Schood-Service-Secret, acting for the
 //     Schood user in X-Schood-User-Id, who must be linked to the Telegram chat in
 //     X-Schood-Telegram-Chat-Id. Only routes marked `service: true` accept it, never
-//     admin routes, and plans and credits apply to that person as usual.
+//     admin routes, and plans and credits apply to that person as usual;
+//   - system routes (`system: true`): X-Schood-Service-Secret alone, either the
+//     worker secret or the system secret pg_cron sends (invoke_schood_ai_system),
+//     with no user headers and no Origin. Nobody to act as;
+//   - anonymous routes (`anonymous: true`): no sign-in, limited per IP (a salted
+//     hash of it, never the address). Nobody to act as.
 
 export const MODULES: FeatureModule[] = [coreModule, adminModule, learnerModule, teacherModule, centreModule, coachModule, engageModule];
 
@@ -36,6 +41,8 @@ export interface HandlerDeps {
   modules?: FeatureModule[];
   /** Area stores; tests and dev stacks get memory twins when left out. */
   stores?: Stores;
+  /** The system secret pg_cron sends (internal_runtime_secrets), cached by the caller; null when there is none. */
+  systemSecret?(): Promise<string | null>;
 }
 export interface HandlerOptions {
   allowedOrigins: string[];
@@ -44,6 +51,19 @@ export interface HandlerOptions {
   now?: () => Date;
   /** Keeps work alive after the response (EdgeRuntime.waitUntil). */
   after?: (work: Promise<unknown>) => void;
+  /** Salt for hashing caller IPs on anonymous routes (a server secret). */
+  ipSalt?: string;
+}
+
+const ANONYMOUS_DEFAULTS = { perMinute: 30, perDay: 1000 };
+async function sha256Hex(text: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+/** The first address a trusted proxy reports (Supabase sets X-Forwarded-For; Cloudflare CF-Connecting-IP). */
+function callerIp(req: Request): string {
+  const forwarded = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
+  return (forwarded || req.headers.get('cf-connecting-ip') || req.headers.get('x-real-ip') || 'unknown').slice(0, 64);
 }
 
 const METHODS: readonly Method[] = ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'];
@@ -92,6 +112,12 @@ export function createSchoodAIHandler(deps: HandlerDeps, options: HandlerOptions
       if (!/^[a-z][a-z0-9-]{0,60}$/.test(action)) throw new Error(`invalid action ${module.area}/${action}`);
       if (module.area === 'admin' && !handler.adminPermission) throw new Error(`admin/${action} needs an admin permission`);
       if (module.area === 'admin' && handler.service) throw new Error(`admin/${action} cannot accept the worker`);
+      if (module.area === 'admin' && (handler.system || handler.anonymous)) throw new Error(`admin/${action} cannot be a system or anonymous route`);
+      if ([handler.service, handler.system, handler.anonymous].filter(Boolean).length > 1) throw new Error(`${module.area}/${action}: service, system and anonymous are separate kinds of route`);
+      if (handler.anonymous && typeof handler.anonymous === 'object') {
+        const { perMinute = ANONYMOUS_DEFAULTS.perMinute, perDay = ANONYMOUS_DEFAULTS.perDay } = handler.anonymous;
+        if (!Number.isInteger(perMinute) || perMinute < 1 || perMinute > 600 || !Number.isInteger(perDay) || perDay < perMinute || perDay > 100_000) throw new Error(`${module.area}/${action}: anonymous limits are 1-600 a minute and up to 100000 a day`);
+      }
       const key = `${module.area}/${action}`;
       if (routes.has(key)) throw new Error(`route ${key} is registered twice`);
       routes.set(key, handler);
@@ -122,9 +148,33 @@ export function createSchoodAIHandler(deps: HandlerDeps, options: HandlerOptions
 
     try {
       // --- who is calling ----------------------------------------------------------
-      let user: RequestUser;
+      let user: RequestUser | null;
+      let caller: Caller;
       const presented = req.headers.get('x-schood-service-secret');
-      if (presented !== null) {
+      if (handler.system) {
+        // A scheduled job: the secret alone, never a person, never a browser.
+        if (presented === null) return fail(401, 'unauthorized', 'System routes need the service secret.');
+        const system = deps.systemSecret ? await deps.systemSecret().catch(() => null) : null;
+        const known = (secret && safeEqual(presented, secret)) || (system !== null && system.length >= 32 && safeEqual(presented, system));
+        if (!known) return fail(401, 'unauthorized', 'System routes need the service secret.');
+        if (origin) return fail(403, 'origin_denied', 'Origin is not allowed.');
+        if (req.headers.has('x-schood-user-id') || req.headers.has('x-schood-telegram-chat-id') || req.headers.has('authorization')) {
+          return fail(400, 'invalid_request', 'System routes never act for a person.');
+        }
+        user = null;
+        caller = 'system';
+      } else if (handler.anonymous) {
+        // Open without signing in, limited per IP and route; a token, if sent, is ignored.
+        const limits = { ...ANONYMOUS_DEFAULTS, ...(typeof handler.anonymous === 'object' ? handler.anonymous : {}) };
+        const day = now().toISOString().slice(0, 10);
+        const bucket = `anon:${area}/${action}:${(await sha256Hex(`${options.ipSalt ?? 'schood-ai'}:${day}:${callerIp(req)}`)).slice(0, 32)}`;
+        for (const [limit, seconds] of [[limits.perMinute, 60], [limits.perDay, 86_400]] as const) {
+          const taken = await deps.repository.takeRate(`${bucket}:${seconds}`, limit, seconds);
+          if (!taken.ok) return fail(429, 'rate_limited', 'Too many requests. Try again shortly.', { retry_after: taken.retryAt });
+        }
+        user = null;
+        caller = 'anonymous';
+      } else if (presented !== null) {
         if (!secret || !safeEqual(presented, secret)) return fail(401, 'unauthorized', 'Sign in to continue.');
         // A browser must never hold the worker secret.
         if (origin) return fail(403, 'origin_denied', 'Origin is not allowed.');
@@ -134,6 +184,7 @@ export function createSchoodAIHandler(deps: HandlerDeps, options: HandlerOptions
         const profile = await deps.repository.profile(userId.toLowerCase());
         if (!profile || !profile.isActive || profile.telegramChatId !== chat) return fail(403, 'user_not_linked', 'This Telegram chat is not linked to that Schood account.');
         user = { id: profile.id, email: null, token: null, via: 'service', telegramChatId: chat };
+        caller = 'service';
       } else {
         const token = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '').trim();
         const authed = token ? await deps.repository.user(token) : null;
@@ -141,6 +192,7 @@ export function createSchoodAIHandler(deps: HandlerDeps, options: HandlerOptions
         const profile = await deps.repository.profile(authed.id);
         if (profile && !profile.isActive) return fail(403, 'account_inactive', 'This account is not active.');
         user = { id: authed.id, email: authed.email, token, via: 'jwt', telegramChatId: profile?.telegramChatId ?? null };
+        caller = 'user';
       }
       if (area === 'admin') {
         const gate = await deps.adminGate(req, handler.adminPermission!);
@@ -151,7 +203,7 @@ export function createSchoodAIHandler(deps: HandlerDeps, options: HandlerOptions
       const maxBody = handler.maxBody ?? DEFAULT_MAX_BODY;
       const ctx = createRequestContext(
         { repo: deps.repository, gateway: deps.gateway, plans: deps.plans, stores, isAdmin: deps.isAdmin, callFunction: deps.callFunction, after, now, responseHeaders: { ...headers } },
-        { url, headers: req.headers, area, action, method, requestId, user, readBody: () => readLimited(req, maxBody) },
+        { url, headers: req.headers, area, action, method, requestId, user, caller, readBody: () => readLimited(req, maxBody) },
       );
       const result = await run(ctx);
       if (result instanceof Response) {
