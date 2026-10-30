@@ -10,6 +10,8 @@ export interface SampleStorage {
   put(path: string, bytes: Uint8Array, mime: string): Promise<StorageRef>;
   /** A short-lived URL for one playback, or null when the object is gone. */
   url(ref: StorageRef, ttlSeconds: number): Promise<string | null>;
+  /** Deletes the object (engage.media_sweep); one already gone counts as deleted. Throws to be tried again. */
+  remove(ref: StorageRef): Promise<void>;
 }
 
 export function memoryStorage(): SampleStorage & { objects: Map<string, { bytes: Uint8Array; mime: string }> } {
@@ -23,6 +25,10 @@ export function memoryStorage(): SampleStorage & { objects: Map<string, { bytes:
     url(ref) {
       const object = objects.get(ref.path);
       return Promise.resolve(object ? `data:${object.mime};base64,${toBase64(object.bytes)}` : null);
+    },
+    remove(ref) {
+      objects.delete(ref.path);
+      return Promise.resolve();
     },
   };
 }
@@ -39,6 +45,12 @@ export function s3Storage(client: unknown): SampleStorage {
     async url(ref, ttlSeconds) {
       const { signStorageRef } = await media;
       return await signStorageRef(client, { provider: ref.provider, bucket: ref.bucket, path: ref.path }, ttlSeconds, { route: 'schood-ai/engage' });
+    },
+    async remove(ref) {
+      // Only engage's own objects; a sample may reference audio another area stored.
+      if (!ref.path.startsWith('schood-ai/engage/')) return;
+      const { deleteStorageRef } = await media;
+      await deleteStorageRef(client, { provider: ref.provider, bucket: ref.bucket, path: ref.path }, { route: 'schood-ai/engage' });
     },
   };
 }

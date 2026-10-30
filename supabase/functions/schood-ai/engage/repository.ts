@@ -3,7 +3,7 @@ import type { EngageRepository, ProfilePatch } from './store.ts';
 import type {
   CertificateRow, DateRow, DayRow, EngageProfile, EventRow, EventSponsor, FreezeBuy, GoalRow, JourneyRow, LeagueGroup, LeagueMember, OutboxRow,
   PassportItem, PassportLink, PassportRow, SampleRow, SittingRow, SquadMember, SquadRow, StoryEpisodeCache, StoryProgress, StoryResult,
-  TalentAudit, TalentEmployer, TalentProfile, XpRow,
+  StorageRef, TalentAudit, TalentEmployer, TalentProfile, XpRow,
 } from './types.ts';
 
 // The engage repository on Postgres through the service role. Every write that two
@@ -34,15 +34,15 @@ const list = (value: unknown): string[] => (Array.isArray(value) ? value.map(Str
 const isUniqueViolation = (error: DbError) => error?.code === '23505';
 
 const profile = (row: Row): EngageProfile => ({
-  userId: String(row.user_id), birthDate: str(row.birth_date), timeZone: String(row.time_zone ?? DEFAULT_TIME_ZONE), notifyHour: Number(row.notify_hour ?? DEFAULT_NOTIFY_HOUR),
-  messages: (row.messages as EngageProfile['messages']) ?? 'all', locale: (row.locale as EngageProfile['locale']) ?? 'en', region: str(row.region), school: str(row.school),
+  userId: String(row.user_id), birthDate: str(row.birth_date), timeZone: DEFAULT_TIME_ZONE, notifyHour: DEFAULT_NOTIFY_HOUR,
+  locale: (row.locale as EngageProfile['locale']) ?? 'en', region: str(row.region), school: str(row.school),
   leaderboard: (row.leaderboard as EngageProfile['leaderboard']) ?? null, leagueOptOut: row.league_opt_out === true, dailyLimitMinutes: num(row.daily_limit_minutes),
   limitSetBy: (row.limit_set_by as EngageProfile['limitSetBy']) ?? null, offersMuted: row.offers_muted === true, levelBand: (row.level_band as EngageProfile['levelBand']) ?? 'open',
   lapseStage: Number(row.lapse_stage ?? 0), createdAt: str(row.created_at),
 });
 const defaults = (userId: string): EngageProfile => profile({ user_id: userId });
 const PROFILE_COLUMNS: Record<keyof ProfilePatch, string> = {
-  timeZone: 'time_zone', notifyHour: 'notify_hour', messages: 'messages', locale: 'locale', region: 'region', school: 'school', leaderboard: 'leaderboard',
+  locale: 'locale', region: 'region', school: 'school', leaderboard: 'leaderboard',
   leagueOptOut: 'league_opt_out', dailyLimitMinutes: 'daily_limit_minutes', limitSetBy: 'limit_set_by', offersMuted: 'offers_muted', levelBand: 'level_band', lapseStage: 'lapse_stage',
 };
 const day = (row: Row): DayRow => ({ day: String(row.day), xp: Number(row.xp ?? 0), minutes: Number(row.minutes ?? 0), events: Number(row.events ?? 0) });
@@ -442,9 +442,9 @@ export function createEngagePostgres(db: EngageDatabase): EngageRepository {
       const rows = (await rpc('ai_engage_outbox_claim', { p_user: userId, p_channel: channel, p_now: now.toISOString(), p_limit: limit })) as Row[] | null;
       return (rows ?? []).map(outbox).sort((a, b) => b.priority - a.priority || a.dueAt.localeCompare(b.dueAt));
     },
-    async release(id, token, dueAt, reason) { check(await db.from('ai_engage_outbox').update({ status: 'queued', claim_token: null, due_at: dueAt, reason }).eq('id', id).eq('status', 'claimed').eq('claim_token', token)); },
+    async release(id, token, dueAt, reason) { check(await db.from('ai_engage_outbox').update({ status: 'queued', claim_token: null, claimed_at: null, due_at: dueAt, reason }).eq('id', id).eq('status', 'claimed').eq('claim_token', token)); },
     async finish(id, token, status, at, reason = null) {
-      const rows = check<Row[]>(await db.from('ai_engage_outbox').update({ status, claim_token: null, sent_at: status === 'sent' ? at : null, reason }).eq('id', id).eq('status', 'claimed').eq('claim_token', token).select('id')) ?? [];
+      const rows = check<Row[]>(await db.from('ai_engage_outbox').update({ status, claim_token: null, claimed_at: null, sent_at: status === 'sent' ? at : null, reason }).eq('id', id).eq('status', 'claimed').eq('claim_token', token).select('id')) ?? [];
       return rows.length > 0;
     },
     async outbox(userId, options) {
@@ -454,9 +454,23 @@ export function createEngagePostgres(db: EngageDatabase): EngageRepository {
       if (options.since) query = query.gte('created_at', options.since);
       return (check<Row[]>(await query.order('created_at', { ascending: false }).limit(options.limit)) ?? []).map(outbox);
     },
+    async claimDue(now, limit) {
+      const rows = (await rpc('ai_engage_outbox_claim_due', { p_now: now.toISOString(), p_limit: limit })) as Row[] | null;
+      return (rows ?? []).map(outbox).sort((a, b) => a.dueAt.localeCompare(b.dueAt) || b.priority - a.priority);
+    },
     async dueUsers(now, limit) {
       const rows = (await rpc('ai_engage_due_users', { p_now: now.toISOString(), p_limit: limit })) as Row[] | null;
-      return (rows ?? []).map((row) => ({ userId: String(row.user_id), chatId: String(row.chat_id) }));
+      return (rows ?? []).map((row) => ({ userId: String(row.user_id), chatId: str(row.chat_id) }));
+    },
+    async claimMediaTrash(now, limit) {
+      const rows = (await rpc('ai_engage_media_trash_claim', { p_now: now.toISOString(), p_limit: limit })) as Row[] | null;
+      return (rows ?? []).map((row) => ({ id: String(row.id), storage: obj(row.storage) as unknown as StorageRef, attempts: Number(row.attempts ?? 1) }));
+    },
+    async mediaTrashDone(ids) {
+      if (ids.length) check(await db.from('ai_engage_media_trash').delete().in('id', ids));
+    },
+    async mediaTrashFailed(id, error, retryAt) {
+      check(await db.from('ai_engage_media_trash').update({ last_error: error.slice(0, 200), next_try_at: retryAt }).eq('id', id));
     },
     async offerDismissals(userId) { return (check<Row[]>(await db.from('ai_engage_offer_dismissals').select('offer_key').eq('user_id', userId)) ?? []).map((row) => String(row.offer_key)); },
     async dismissOffer(userId, key, at) { check(await db.from('ai_engage_offer_dismissals').upsert({ user_id: userId, offer_key: key, dismissed_at: at }, { onConflict: 'user_id,offer_key', ignoreDuplicates: true })); },

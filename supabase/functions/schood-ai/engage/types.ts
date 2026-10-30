@@ -5,17 +5,16 @@ import type { LearningEventKind, Locale } from '../types.ts';
 // a database. Everything here is camelCase; routes turn it into snake_case JSON.
 
 export type LeaderboardVisibility = 'public' | 'masked' | 'hidden';
-export type MessagePreference = 'all' | 'important' | 'none';
 export type LevelBand = 'foundation' | 'core' | 'advanced' | 'open';
 
 export interface EngageProfile {
   userId: string;
   /** Set once by the person; null means unknown, and unknown is treated as under 18. */
   birthDate: string | null;
+  /** From core's notification preferences (filled in by begin; Asia/Tashkent otherwise). */
   timeZone: string;
-  /** Local hour (8–21) for the day's reminder. */
+  /** The preferred local hour from core's notification preferences, 19:00 when none is chosen. */
   notifyHour: number;
-  messages: MessagePreference;
   locale: Locale;
   region: string | null;
   school: string | null;

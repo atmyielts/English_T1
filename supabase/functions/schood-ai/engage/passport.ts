@@ -2,6 +2,7 @@ import { formatCertificateCode, normalizeCertificateCode } from '../../_shared/e
 import { bool, integer, optionalText, record, stringList, text, uuid } from '../input.ts';
 import type { RequestContext } from '../types.ts';
 import { begin, linkToken, nameOf, refuse, sha256, type Engage } from './base.ts';
+import { engage } from './binding.ts';
 import { examByKey } from './content/certificates.ts';
 import { pick } from './content/text.ts';
 import { displayName } from './rules.ts';
@@ -174,23 +175,32 @@ export async function revokeLink(ctx: RequestContext) {
   return await ownView(e);
 }
 
-/** What a holder of a share link sees: only the chosen items, the chosen name, nothing else. */
-export async function viewPassport(ctx: RequestContext) {
-  const e = await begin(ctx, { locale: false });
-  const token = ctx.query.get('token') ?? '';
-  if (!/^[A-Za-z0-9_-]{40,60}$/.test(token)) refuse('not_found', 'This Passport link does not exist.', 404);
-  const link = await e.b.repo.passportLinkByHash(await sha256(token));
+const TOKEN = /^[A-Za-z0-9_-]{40,60}$/;
+
+/** The live share link for a token: unknown, revoked and expired links are refused alike for samples, told apart for the page. */
+export async function liveLink(ctx: RequestContext, token: string | null) {
+  if (!token || !TOKEN.test(token)) refuse('not_found', 'This Passport link does not exist.', 404);
+  const link = await engage(ctx).repo.passportLinkByHash(await sha256(token!));
   if (!link) refuse('not_found', 'This Passport link does not exist.', 404);
   if (link!.revokedAt) refuse('link_revoked', 'The owner has turned this link off.', 410);
-  if (link!.expiresAt && Date.parse(link!.expiresAt) < e.now.getTime()) refuse('link_expired', 'This link has expired.', 410);
-  const [passport, items, name, owner] = await Promise.all([e.b.repo.passport(link!.userId), e.b.repo.passportItems(link!.userId), nameOf(ctx, link!.userId), e.b.repo.profile(link!.userId)]);
-  const shown = items.filter((item) => item.shown && link!.itemIds.includes(item.id));
+  if (link!.expiresAt && Date.parse(link!.expiresAt) < ctx.now().getTime()) refuse('link_expired', 'This link has expired.', 410);
+  return link!;
+}
+
+/**
+ * What a holder of a share link sees, signed in or not (an anonymous route): only the
+ * items and samples the person chose for this link, the name they chose, nothing else.
+ */
+export async function viewPassport(ctx: RequestContext) {
+  const repo = engage(ctx).repo, now = ctx.now();
+  const link = await liveLink(ctx, ctx.query.get('token'));
+  const [passport, items, name] = await Promise.all([repo.passport(link.userId), repo.passportItems(link.userId), nameOf(ctx, link.userId)]);
+  const shown = items.filter((item) => item.shown && link.itemIds.includes(item.id));
   const samples = await Promise.all(shown.filter((item) => item.kind === 'sample').map(async (item) => {
-    const sample = await e.b.repo.sample(String(item.data.sample_id));
-    return sample && !sample.deletedAt ? { id: sample.id, kind: sample.kind, recorded_at: sample.recordedAt, scores: sample.scores, metrics: sample.metrics, ...(sample.kind === 'writing' && sample.text ? { text: sample.text } : {}), audio: sample.kind === 'voice' } : null;
+    const sample = await repo.sample(String(item.data.sample_id));
+    return sample && !sample.deletedAt && sample.userId === link.userId ? { id: sample.id, kind: sample.kind, recorded_at: sample.recordedAt, scores: sample.scores, metrics: sample.metrics, ...(sample.kind === 'writing' && sample.text ? { text: sample.text } : {}), audio: sample.kind === 'voice' } : null;
   }));
-  if (link!.userId !== e.userId) await e.b.repo.touchPassportLink(link!.id, e.now.toISOString());
-  void owner;
+  await repo.touchPassportLink(link.id, now.toISOString());
   return {
     passport: {
       // The name the person chose; otherwise first name and initial, never the full name or an email.
@@ -203,12 +213,11 @@ export async function viewPassport(ctx: RequestContext) {
   };
 }
 
-/** Certificate check by code (the QR on every Skill Certificate). Shows only what the certificate states. */
+/** Certificate check by code (the QR on every Skill Certificate), signed in or not. Shows only what the certificate states. */
 export async function verifyCertificate(ctx: RequestContext) {
-  const e = await begin(ctx, { locale: false });
   const code = normalizeCertificateCode(ctx.query.get('code'));
   if (!code) refuse('not_found', 'No certificate has this code.', 404);
-  const row = await e.b.repo.certificateByCode(code!);
+  const row = await engage(ctx).repo.certificateByCode(code!);
   if (!row) refuse('not_found', 'No certificate has this code.', 404);
   const exam = examByKey(row!.examKey);
   return {

@@ -163,19 +163,29 @@ export async function deleteSample(ctx: RequestContext) {
   return { ok: true };
 }
 
-/** Playback for the owner, or for a Passport link that includes this sample. */
+/** Playback of the person's own sample. */
 export async function sampleAudio(ctx: RequestContext) {
   const e = await begin(ctx, { locale: false });
   const id = uuid(ctx.query.get('id'), 'id');
   const sample = await e.b.repo.sample(id);
-  if (!sample || sample.deletedAt || sample.kind !== 'voice') refuse('not_found', 'Sample not found.', 404);
-  if (sample!.userId !== e.userId) {
-    const token = ctx.query.get('link');
-    const link = token ? await e.b.repo.passportLinkByHash(await sha256(token)) : null;
-    const item = link ? (await e.b.repo.passportItems(sample!.userId)).find((entry) => entry.sourceRef === `sample:${id}` && entry.shown && link.itemIds.includes(entry.id)) : null;
-    if (!link || link.userId !== sample!.userId || link.revokedAt || (link.expiresAt && Date.parse(link.expiresAt) < e.now.getTime()) || !item) refuse('not_found', 'Sample not found.', 404);
-  }
+  if (!sample || sample.deletedAt || sample.kind !== 'voice' || sample.userId !== e.userId) refuse('not_found', 'Sample not found.', 404);
   const url = await playbackUrl(e, sample!);
+  if (!url) refuse('not_found', 'The recording is no longer available.', 404);
+  return { url, expires_in: PLAYBACK_SECONDS };
+}
+
+/** Playback through a Passport share link (an anonymous route): only a voice sample the person put on that link. */
+export async function linkSampleAudio(ctx: RequestContext) {
+  const b = engage(ctx), id = uuid(ctx.query.get('id'), 'id');
+  const token = ctx.query.get('link');
+  if (!token || !/^[A-Za-z0-9_-]{40,60}$/.test(token)) refuse('not_found', 'Sample not found.', 404);
+  const link = await b.repo.passportLinkByHash(await sha256(token!));
+  const sample = await b.repo.sample(id);
+  const live = !!link && !link.revokedAt && !(link.expiresAt && Date.parse(link.expiresAt) < ctx.now().getTime());
+  if (!live || !sample || sample.deletedAt || sample.kind !== 'voice' || sample.userId !== link!.userId) refuse('not_found', 'Sample not found.', 404);
+  const item = (await b.repo.passportItems(sample!.userId)).find((entry) => entry.sourceRef === `sample:${id}` && entry.shown && link!.itemIds.includes(entry.id));
+  if (!item) refuse('not_found', 'Sample not found.', 404);
+  const url = await playbackUrl({ b, ctx }, sample!);
   if (!url) refuse('not_found', 'The recording is no longer available.', 404);
   return { url, expires_in: PLAYBACK_SECONDS };
 }

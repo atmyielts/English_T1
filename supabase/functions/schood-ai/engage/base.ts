@@ -1,6 +1,6 @@
-import { SchoodAIError, type Locale, type RequestContext } from '../types.ts';
+import { SchoodAIError, type Locale, type NotifyPrefs, type RequestContext } from '../types.ts';
 import { engage, type EngageBinding } from './binding.ts';
-import { DAY_MS, isAdult, localParts, weekStart } from './rules.ts';
+import { DAY_MS, DEFAULT_NOTIFY_HOUR, isAdult, localParts, weekStart } from './rules.ts';
 import type { EngageProfile } from './types.ts';
 
 // What every engage route starts from: the store, the person's engage profile, and
@@ -11,6 +11,8 @@ export interface Engage {
   b: EngageBinding;
   userId: string;
   profile: EngageProfile;
+  /** The person's own notification preferences (core): time zone, preferred hour, delivery, mutes. */
+  prefs: NotifyPrefs;
   now: Date;
   today: string;
   hour: number;
@@ -32,29 +34,33 @@ export function dayStart(day: string, zone: string): Date {
 }
 export const dayEnd = (day: string, zone: string) => new Date(dayStart(day, zone).getTime() + DAY_MS);
 
+/** The person's engage profile with the zone and preferred hour they chose in core's notification settings. */
+async function profileWithPrefs(ctx: RequestContext, b: EngageBinding, userId: string) {
+  const [profile, prefs] = await Promise.all([b.repo.profile(userId), ctx.notify.prefs(userId)]);
+  return { profile: { ...profile, timeZone: prefs.timeZone, notifyHour: prefs.preferredHour ?? DEFAULT_NOTIFY_HOUR }, prefs };
+}
+
 /**
- * The same for a person a system job acts on (core's coming `system: true` routes: no
- * signed-in user). Their saved language and zone apply; `ctx.user` in e.ctx is that person,
- * marked as a service call, so nothing that needs their own token can run.
+ * The same for a person a scheduled job acts on (core's system jobs have no signed-in
+ * user). Their saved language applies. e.ctx is the system ctx: nothing that needs the
+ * person's own session (ctx.user, ctx.ai, ctx.plan) can run, and engage never asks it to.
  */
-export async function beginFor(ctx: RequestContext, person: { id: string; telegramChatId?: string | null }): Promise<Engage> {
+export async function beginFor(ctx: RequestContext, userId: string): Promise<Engage> {
   const b = engage(ctx);
-  const profile = await b.repo.profile(person.id);
-  const user: RequestContext['user'] = { id: person.id, email: null, token: null, via: 'service', telegramChatId: person.telegramChatId ?? null };
-  const scoped: RequestContext = { ...ctx, user };
+  const { profile, prefs } = await profileWithPrefs(ctx, b, userId);
   const now = ctx.now(), local = localParts(now, profile.timeZone);
-  return { ctx: scoped, b, userId: person.id, profile, now, today: local.day, hour: local.hour, week: weekStart(now), adult: isAdult(profile, local.day), locale: profile.locale };
+  return { ctx, b, userId, profile, prefs, now, today: local.day, hour: local.hour, week: weekStart(now), adult: isAdult(profile, local.day), locale: profile.locale };
 }
 
 export async function begin(ctx: RequestContext, options: { locale?: boolean } = {}): Promise<Engage> {
   const b = engage(ctx);
-  let profile = await b.repo.profile(ctx.user.id);
-  // Remember the person's language for messages sent later by the bots.
+  let { profile, prefs } = await profileWithPrefs(ctx, b, ctx.user.id);
+  // Remember the person's language for messages sent later by the scheduled jobs.
   if ((options.locale ?? true) && ctx.user.via === 'jwt' && profile.locale !== ctx.locale) {
-    profile = await b.repo.saveProfile(ctx.user.id, { locale: ctx.locale });
+    profile = { ...await b.repo.saveProfile(ctx.user.id, { locale: ctx.locale }), timeZone: profile.timeZone, notifyHour: profile.notifyHour };
   }
   const now = ctx.now(), local = localParts(now, profile.timeZone);
-  return { ctx, b, userId: ctx.user.id, profile, now, today: local.day, hour: local.hour, week: weekStart(now), adult: isAdult(profile, local.day), locale: ctx.user.via === 'jwt' ? ctx.locale : profile.locale };
+  return { ctx, b, userId: ctx.user.id, profile, prefs, now, today: local.day, hour: local.hour, week: weekStart(now), adult: isAdult(profile, local.day), locale: ctx.user.via === 'jwt' ? ctx.locale : profile.locale };
 }
 
 /** The person's display name from their Schood profile (never an email). */

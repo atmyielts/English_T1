@@ -140,10 +140,11 @@ Deno.test('the Telegram worker reads progress for the linked person, and only se
   equal((await f.worker('engage/state', 'GET', ID.plus, '999', undefined, SECRET)).status, 403, 'only the linked chat');
 });
 
-Deno.test('routes: the public pages are marked public for the core router; delivery routes are open to the worker', () => {
-  const routes = engageModule.routes as Record<string, { public?: boolean; service?: boolean }>;
-  equal([routes['passport-view'].public, routes.verify.public], [true, true]);
-  equal([routes.tick.service, routes.outbox.service, routes['outbox-ack'].service], [true, true, true]);
+Deno.test('routes: shared links and certificate checks are anonymous; delivery is a scheduled job, not a route', () => {
+  const routes = engageModule.routes as Record<string, { anonymous?: unknown; service?: boolean }>;
+  ok(['passport-view', 'passport-sample', 'verify'].every((name) => !!routes[name].anonymous), 'open without signing in, rate limited');
+  ok(Object.entries(routes).filter(([, route]) => route.anonymous).every(([name]) => ['passport-view', 'passport-sample', 'verify'].includes(name)), 'nothing else is anonymous');
+  ok(!routes.tick && !routes.outbox && !routes['outbox-ack'], 'the bots no longer drain an outbox');
   ok(!routes['freeze-buy'].service && !routes['passport-link'].service && !routes['talent-consent'].service, 'nothing that spends or shares is open to the worker');
 });
 

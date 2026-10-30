@@ -86,6 +86,8 @@ Deno.test('E3: the Passport is private by default; a link shows only chosen item
   equal(viewed.body.items.length, 1, 'only the item the link was made with');
   ok(!JSON.stringify(viewed.body).includes(ID.plus) && !JSON.stringify(viewed.body).includes('@'), 'no id and no email');
   equal(viewed.body.passport.display_name, 'Dilnoza', 'first name only when no name was chosen');
+  const signedOut = await f.json('GET', 'engage/passport-view', { token: null, query: { token: created.token } });
+  equal([signedOut.status, signedOut.body.items.length], [200, 1], 'the link opens without signing in, with the same shared item only');
   equal((await f.post('passport-link-revoke', { id: created.link.id })).status, 200);
   const revoked = await f.get('passport-view', 'tok-outsider', { token: created.token });
   equal([revoked.status, revoked.body.code], [410, 'link_revoked']);
@@ -110,10 +112,12 @@ Deno.test('E7: day-1 voice next to today’s, private to the owner or a Passport
   const own = (await f.get('passport')).body;
   const item = own.samples.find((sample: { id: string }) => sample.id === first.id).item_id;
   const link = (await f.post('passport-link', { label: 'Tutor', item_ids: [item] })).body;
-  equal((await f.get('sample-audio', 'tok-outsider', { id: first.id, link: link.token })).status, 200);
-  equal((await f.get('sample-audio', 'tok-outsider', { id: latest.id, link: link.token })).status, 404, 'not a sample the link includes');
+  const viaLink = (id: string) => f.json('GET', 'engage/passport-sample', { token: null, query: { id, link: link.token } });
+  equal((await viaLink(first.id)).status, 200, 'anyone with the link, signed in or not');
+  equal((await f.get('sample-audio', 'tok-outsider', { id: first.id, link: link.token })).status, 404, 'the owner route stays the owner’s');
+  equal((await viaLink(latest.id)).status, 404, 'not a sample the link includes');
   await f.post('sample-delete', { id: first.id });
-  equal((await f.get('sample-audio', 'tok-outsider', { id: first.id, link: link.token })).status, 404, 'a deleted sample leaves every link');
+  equal((await viaLink(first.id)).status, 404, 'a deleted sample leaves every link');
 });
 
 Deno.test('E8: one episode a day; a passed check is one verified event; the cliffhanger comes after passing', async () => {

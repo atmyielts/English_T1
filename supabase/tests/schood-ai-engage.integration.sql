@@ -53,8 +53,9 @@ begin
   assert (select sum(xp) from public.ai_engage_xp where user_id = learner and day = '2026-11-02' and source = 'event') = 600, 'capped at 600';
   assert (select events from public.ai_engage_days where user_id = learner and day = '2026-11-02') = 10, 'every verified act still counts as activity';
 
-  -- Local days follow the person's time zone.
-  update public.ai_engage_profiles set time_zone = 'Europe/London' where user_id = learner;
+  -- Local days follow the time zone the person chose in core's notification preferences.
+  insert into public.ai_notify_prefs (user_id, time_zone) values (learner, 'Europe/London')
+    on conflict (user_id) do update set time_zone = excluded.time_zone;
   insert into public.ai_learning_events (user_id, area, kind, verified, feature, verified_minutes, created_at) values (learner, 'coach', 'turn_scored', true, 'B2', 1, '2026-11-03T23:30:00Z');
   perform public.ai_engage_ingest(learner, '2026-11-04T00:00:00Z');
   assert exists (select 1 from public.ai_engage_days where user_id = learner and day = '2026-11-03'), 'London date, not Tashkent';
@@ -120,14 +121,39 @@ begin
   raised := false;
   begin insert into public.ai_engage_outbox (user_id, channel, kind, priority, dedupe_key, payload, due_at, expires_at) values (learner, 'telegram', 'streak_risk', 80, 'dk-1', '{}', t0, t0); exception when unique_violation then raised := true; end;
   assert raised, 'the dedupe key queues a message once';
+  assert (select count(*) from public.ai_engage_outbox where status = 'claimed' and claimed_at is not null) = 2, 'claims record when';
 
-  -- Who is due: after their hour (19:00 by default), not in quiet hours, once a day.
+  -- The deliver job's claim across everyone: due Telegram rows once each, never web ones;
+  -- a claim older than ten minutes (a run that died) is handed back.
+  update public.ai_engage_outbox set status = 'sent', claim_token = null, claimed_at = null where dedupe_key in ('dk-1', 'dk-2');
+  insert into public.ai_engage_outbox (user_id, channel, kind, priority, dedupe_key, payload, due_at, expires_at) values
+    (friend, 'telegram', 'squad_nudge', 50, 'dk-5', '{"text":"e"}', t0, t0 + interval '10 hours'),
+    (friend, 'web', 'streak_risk', 80, 'dk-6', '{"text":"f"}', t0, t0 + interval '10 hours');
+  assert (select array_agg(dedupe_key order by dedupe_key) from public.ai_engage_outbox_claim_due(t0 + interval '6 hours', 10)) = array['dk-3', 'dk-5'], 'every due Telegram row, never a web one';
+  assert (select count(*) from public.ai_engage_outbox_claim_due(t0 + interval '6 hours 5 minutes', 10)) = 0, 'a live claim is not handed out again';
+  assert (select count(*) from public.ai_engage_outbox_claim_due(t0 + interval '6 hours 11 minutes', 10)) = 2, 'a lapsed claim is handed back';
+  assert (select status from public.ai_engage_outbox where dedupe_key = 'dk-6') = 'queued', 'the web inbox keeps its own';
+
+  -- Who is due (core's notification preferences): after their preferred hour (19:00 when none),
+  -- outside their quiet hours, once a day, where messages reach them (a linked chat, or the
+  -- in-app inbox with chat_id null), never when engage is muted or the limit is zero.
   insert into public.ai_engage_profiles (user_id) values (friend) on conflict do nothing;
-  update public.ai_engage_profiles set time_zone = 'Asia/Tashkent' where user_id = learner;
-  assert (select count(*) from public.ai_engage_due_users('2026-11-05T10:00:00Z', 10)) = 0, '15:00 local is early';
-  assert (select array_agg(chat_id) from public.ai_engage_due_users('2026-11-05T14:30:00Z', 10)) = array['700100'], 'linked chats only';
-  assert (select count(*) from public.ai_engage_due_users('2026-11-05T15:00:00Z', 10)) = 0, 'once a day';
-  assert (select count(*) from public.ai_engage_due_users('2026-11-06T18:00:00Z', 10)) = 0, 'never in quiet hours (23:00)';
+  update public.ai_notify_prefs set time_zone = 'Asia/Tashkent' where user_id = learner;
+  assert (select count(*) from public.ai_engage_due_users('2026-11-05T10:00:00Z', 100)) = 0, '15:00 local is early';
+  create temp table due_check as select * from public.ai_engage_due_users('2026-11-05T14:30:00Z', 100);
+  assert (select chat_id from due_check where user_id = learner) = '700100', 'a linked chat';
+  assert exists (select 1 from due_check where user_id = friend and chat_id is null), 'the in-app inbox';
+  drop table due_check;
+  assert not exists (select 1 from public.ai_engage_due_users('2026-11-05T15:00:00Z', 100) d where d.user_id = learner), 'once a day';
+  assert not exists (select 1 from public.ai_engage_due_users('2026-11-06T18:00:00Z', 100) d where d.user_id = learner), 'never in quiet hours (23:00)';
+  update public.ai_notify_prefs set muted = array['engage'] where user_id = learner;
+  insert into public.ai_notify_prefs (user_id, delivery) values (friend, array['telegram']) on conflict (user_id) do update set delivery = excluded.delivery;
+  assert not exists (select 1 from public.ai_engage_due_users('2026-11-07T14:30:00Z', 100) d where d.user_id in (learner, friend)), 'muted, or Telegram only without a chat';
+  update public.ai_notify_prefs set muted = '{}', daily_limit = 0 where user_id = learner;
+  assert not exists (select 1 from public.ai_engage_due_users('2026-11-08T14:30:00Z', 100) d where d.user_id = learner), 'zero a day';
+  update public.ai_notify_prefs set daily_limit = 2, preferred_hour = 21 where user_id = learner;
+  assert not exists (select 1 from public.ai_engage_due_users('2026-11-09T14:30:00Z', 100) d where d.user_id = learner), 'before the chosen 21:00';
+  assert exists (select 1 from public.ai_engage_due_users('2026-11-09T16:05:00Z', 100) d where d.user_id = learner), 'at 21:00';
 
   -- Boards: weekly XP by region, school and centre students; centres opted in.
   update public.ai_engage_profiles set region = 'samarkand', school = 'school 21' where user_id = learner;
@@ -217,6 +243,12 @@ begin
   insert into public.ai_engage_passports (user_id, display_name) values (leaver, 'Leaver');
   insert into public.ai_engage_talent (user_id, candidate_key, consent_version, consented_at) values (leaver, 'cccccccccccccccccccccccc', 'talent-2026-10', now());
   insert into public.ai_engage_talent_audit (employer_id, action, target_user_id) values (friend, 'view', leaver), (leaver, 'search', null);
+  -- Audio: an engage recording, a sitting's recording, and a clip another area stored (never engage's to delete).
+  insert into public.ai_engage_samples (user_id, kind, source, storage) values
+    (leaver, 'voice', 'engage', '{"provider":"s3","bucket":"media","path":"schood-ai/engage/samples/c1/a.webm"}'),
+    (leaver, 'voice', 'coach', '{"provider":"s3","bucket":"media","path":"schood-ai/coach/clip.webm"}');
+  insert into public.ai_engage_sittings (user_id, exam_key, entitlement_ref, deadline_at, responses) values
+    (leaver, 'speaking_b1', 'beta:closure', now() + interval '1 hour', '{"t1":{"storage":{"provider":"s3","bucket":"media","path":"schood-ai/engage/certificates/x/t1.webm"},"duration_ms":30000}}');
 end $$;
 update auth.users set deleted_at = now() where id = '00000000-0000-4000-8000-0000000000c1';
 do $$
@@ -232,6 +264,11 @@ begin
   assert (select role from public.ai_engage_squad_members m join public.ai_engage_squads s on s.id = m.squad_id where s.invite_code = 'CLSQUADA' and m.user_id = friend) = 'owner', 'with the owner role';
   assert not exists (select 1 from public.ai_engage_talent_audit where target_user_id = leaver or employer_id = leaver), 'cleared from the audit';
   assert (select count(*) from public.ai_engage_talent_audit where action = 'view' and employer_id = friend) >= 1, 'the act stays';
+  assert not exists (select 1 from public.ai_engage_samples where user_id = leaver), 'samples erased';
+  assert (select array_agg(storage->>'path' order by storage->>'path') from public.ai_engage_media_trash) =
+    array['schood-ai/engage/certificates/x/t1.webm', 'schood-ai/engage/samples/c1/a.webm'], 'engage audio queued for deletion, another area''s clip left alone';
+  assert (select count(*) from public.ai_engage_media_trash_claim(now(), 10)) = 2, 'the sweep claims them';
+  assert (select count(*) from public.ai_engage_media_trash_claim(now(), 10)) = 0, 'once, until the retry time';
 end $$;
 
 -- Browsers get nothing; the function's role cannot write XP directly.

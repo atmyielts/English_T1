@@ -1,10 +1,10 @@
-import type { LearningEvent, SchoodAIRepository } from '../types.ts';
-import { DAILY_XP_CAP, DEFAULT_NOTIFY_HOUR, DEFAULT_TIME_ZONE, eventXp, inQuietHours, localParts, weekStart } from './rules.ts';
+import type { LearningEventRow, SchoodAIRepository } from '../types.ts';
+import { DAILY_XP_CAP, DEFAULT_NOTIFY_HOUR, DEFAULT_TIME_ZONE, eventXp, localParts, weekStart } from './rules.ts';
 import type { EngageRepository, ProfilePatch } from './store.ts';
 import type {
   BoardRow, CentreBoardRow, CertificateRow, DateRow, DayRow, EngageProfile, EventRow, EventSponsor, FreezeBuy, GoalRow, JourneyRow,
   LeagueGroup, LeagueMember, OutboxRow, PassportItem, PassportLink, PassportRow, SampleRow, SittingRow, SittingSignal, SquadMember, SquadRow,
-  StoryEpisodeCache, StoryProgress, StoryResult, TalentAudit, TalentEmployer, TalentProfile, XpRow,
+  StorageRef, StoryEpisodeCache, StoryProgress, StoryResult, TalentAudit, TalentEmployer, TalentProfile, XpRow,
 } from './types.ts';
 
 // The engage repository in memory, for tests and the dev stack. Each method does
@@ -12,16 +12,24 @@ import type {
 // Postgres functions get from their per-person advisory lock: two requests racing
 // on the same person can never both count an event, overfill a league group or a
 // squad, or buy two freezes in one week.
+//
+// Learning events are read from core's repository (learningEvents), the way the
+// Postgres repository reads ai_learning_events; time zones and preferred hours from
+// core's notification preferences, as the SQL functions do.
 
 const clone = <T>(value: T): T => structuredClone(value);
 const LEAGUE_GROUP_SIZE = 30;
 
 export interface EngageMemory extends EngageRepository {
-  /** Learning events as ai_learning_events would hold them (ids ascending). */
+  /** Learning events read so far from core (ids ascending). */
   readonly eventLog: EventRow[];
-  /** Appends core learning events with ids and timestamps (the tap and tests). */
-  recordEvents(events: LearningEvent[], at?: Date): void;
   readonly outboxRows: OutboxRow[];
+  readonly mediaTrash: { id: string; storage: StorageRef; source: 'sample' | 'sitting'; attempts: number; nextTryAt: string; lastError: string | null }[];
+  /**
+   * What closing an account does to engage's tables (the erasure registry, then the delete
+   * triggers that queue the person's engage audio, then ai_engage_erase_account), for tests.
+   */
+  eraseAccount(userId: string): void;
   readonly groups: Map<string, LeagueGroup>;
   readonly members: LeagueMember[];
 }
@@ -43,13 +51,16 @@ export function createEngageMemory(options: { core: SchoodAIRepository; now: () 
   const talent = new Map<string, TalentProfile>(), employers = new Map<string, TalentEmployer>(), audit: TalentAudit[] = [];
   const sponsors = new Map<string, EventSponsor>(), entries: { eventKey: string; userId: string; joinedAt: string }[] = [];
   const centreLeague = new Set<string>();
-  const outboxRows: OutboxRow[] = [], ticks = new Set<string>(), dismissals: { userId: string; key: string }[] = [];
+  const outboxRows: (OutboxRow & { claimedAt?: string | null })[] = [], ticks = new Set<string>(), dismissals: { userId: string; key: string }[] = [];
+  const mediaTrash: EngageMemory['mediaTrash'] = [];
+  // Core learning events already copied into eventLog, per person; everyone engage has read about.
+  const synced = new Map<string, number>(), known = new Set<string>();
   let xpId = 0, idSeq = 0;
   const id = () => crypto.randomUUID();
   const dayKey = (userId: string, day: string) => `${userId}:${day}`;
 
   const defaults = (userId: string): EngageProfile => ({
-    userId, birthDate: null, timeZone: DEFAULT_TIME_ZONE, notifyHour: DEFAULT_NOTIFY_HOUR, messages: 'all', locale: 'en', region: null, school: null,
+    userId, birthDate: null, timeZone: DEFAULT_TIME_ZONE, notifyHour: DEFAULT_NOTIFY_HOUR, locale: 'en', region: null, school: null,
     leaderboard: null, leagueOptOut: false, dailyLimitMinutes: null, limitSetBy: null, offersMuted: false, levelBand: 'open', lapseStage: 0, createdAt: null,
   });
   const profileOf = (userId: string) => profiles.get(userId) ?? defaults(userId);
@@ -61,12 +72,45 @@ export function createEngageMemory(options: { core: SchoodAIRepository; now: () 
     const member = members.find((m) => m.userId === userId && m.weekStart === row.weekStart);
     if (member) member.xp += row.xp;
   };
+  const toEvent = (row: LearningEventRow): EventRow => ({
+    id: row.id, userId: row.userId, workspaceId: row.workspaceId, area: row.area, kind: row.kind, verified: row.verified, feature: row.feature, skill: row.skill,
+    verifiedMinutes: row.verifiedMinutes, score: row.score, outcome: row.outcome, ref: row.ref, source: row.source, createdAt: row.createdAt,
+  });
+  /** Copies the person's new learning events from core (as the Postgres repository reads ai_learning_events). */
+  const sync = async (userId: string) => {
+    known.add(userId);
+    for (;;) {
+      const rows = await core.learningEvents({ userId, afterId: synced.get(userId) ?? 0, limit: 1000 });
+      const current = synced.get(userId) ?? 0;
+      const fresh = rows.filter((row) => row.id > current);
+      for (const row of fresh) eventLog.push(toEvent(row));
+      if (fresh.length) { synced.set(userId, fresh[fresh.length - 1].id); eventLog.sort((a, b) => a.id - b.id); }
+      if (rows.length < 1000) return;
+    }
+  };
+  const syncAll = async (userIds: Iterable<string>) => { for (const userId of new Set(userIds)) await sync(userId); };
   const verifiedIn = (userIds: Set<string>, since: Date, until: Date) => eventLog.filter((event) => userIds.has(event.userId) && event.verified && Date.parse(event.createdAt) >= since.getTime() && Date.parse(event.createdAt) <= until.getTime());
 
   const repo: EngageMemory = {
-    eventLog, outboxRows, groups, members,
-    recordEvents(events, at = now()) {
-      for (const event of events) eventLog.push({ id: ++idSeq, userId: event.userId, workspaceId: event.workspaceId, area: event.area, kind: event.kind, verified: event.verified, feature: event.feature, skill: event.skill, verifiedMinutes: event.verifiedMinutes, score: event.score, outcome: event.outcome, ref: event.ref, source: event.source, createdAt: at.toISOString() });
+    eventLog, outboxRows, groups, members, mediaTrash,
+    eraseAccount(userId) {
+      const queue = (storage: StorageRef | null | undefined, source: 'sample' | 'sitting') => {
+        if (storage && storage.path.startsWith('schood-ai/engage/')) mediaTrash.push({ id: String(++idSeq), storage: clone(storage), source, attempts: 0, nextTryAt: iso(), lastError: null });
+      };
+      for (let i = samples.length - 1; i >= 0; i--) if (samples[i].userId === userId) { queue(samples[i].storage, 'sample'); samples.splice(i, 1); }
+      for (let i = sittings.length - 1; i >= 0; i--) {
+        if (sittings[i].userId !== userId) continue;
+        for (const response of Object.values(sittings[i].responses ?? {})) queue((response as { storage?: StorageRef }).storage, 'sitting');
+        sittings.splice(i, 1);
+      }
+      profiles.delete(userId);
+      for (let i = xp.length - 1; i >= 0; i--) if (xp[i].userId === userId) xp.splice(i, 1);
+      for (const key of [...days.keys()]) if (key.startsWith(`${userId}:`)) days.delete(key);
+      for (let i = members.length - 1; i >= 0; i--) if (members[i].userId === userId) members.splice(i, 1);
+      passports.delete(userId);
+      for (let i = items.length - 1; i >= 0; i--) if (items[i].userId === userId) items.splice(i, 1);
+      for (let i = links.length - 1; i >= 0; i--) if (links[i].userId === userId) links.splice(i, 1);
+      for (let i = outboxRows.length - 1; i >= 0; i--) if (outboxRows[i].userId === userId) outboxRows.splice(i, 1);
     },
 
     // --- Profile -------------------------------------------------------------------
@@ -94,8 +138,11 @@ export function createEngageMemory(options: { core: SchoodAIRepository; now: () 
     clearBirthDate(userId) { profiles.set(userId, { ...profileOf(userId), birthDate: null }); return Promise.resolve(); },
 
     // --- XP ----------------------------------------------------------------------------
-    ingest(userId) {
-      const zone = profileOf(userId).timeZone, after = cursors.get(userId) ?? 0;
+    async ingest(userId) {
+      await sync(userId);
+      const zone = (await core.notifyPrefs(userId)).timeZone;
+      if (!profiles.has(userId)) profiles.set(userId, { ...defaults(userId), createdAt: iso() });
+      const after = cursors.get(userId) ?? 0;
       let events = 0, awarded = 0, capped = 0, last = after;
       for (const event of eventLog) {
         if (event.id <= after || event.userId !== userId) continue;
@@ -114,7 +161,7 @@ export function createEngageMemory(options: { core: SchoodAIRepository; now: () 
         else xp.push({ id: ++xpId, userId, eventId: event.id, source: 'event', sourceKey: null, xp: 0, day, weekStart: week, feature: event.feature, createdAt: iso() });
       }
       cursors.set(userId, Math.max(after, last));
-      return Promise.resolve({ events, awarded, capped });
+      return { events, awarded, capped };
     },
     async ingestMany(userIds, at) { for (const userId of new Set(userIds)) await repo.ingest(userId, at); },
     awardBonus(userId, input) {
@@ -127,9 +174,9 @@ export function createEngageMemory(options: { core: SchoodAIRepository; now: () 
     allDays: (userId) => Promise.resolve([...days.values()].filter((day) => day.userId === userId).sort((a, b) => a.day.localeCompare(b.day)).map(({ userId: _u, ...rest }) => clone(rest))),
     totalXp: (userId) => Promise.resolve(xp.filter((row) => row.userId === userId).reduce((sum, row) => sum + row.xp, 0)),
     xpSince: (userId, since) => Promise.resolve(clone(xp.filter((row) => row.userId === userId && row.day >= since))),
-    events: (userId, since, until, limit = 2000) => Promise.resolve(clone(eventLog.filter((event) => event.userId === userId && Date.parse(event.createdAt) >= since.getTime() && Date.parse(event.createdAt) <= until.getTime()).slice(-limit))),
-    eventsByRef: (prefix, since, until, limit = 5000) => Promise.resolve(clone(eventLog.filter((event) => event.verified && (event.ref ?? '').startsWith(prefix) && Date.parse(event.createdAt) >= since.getTime() && Date.parse(event.createdAt) <= until.getTime()).slice(-limit))),
-    eventsOf: (userIds, since, until, limit = 5000) => Promise.resolve(clone(verifiedIn(new Set(userIds), since, until).slice(-limit))),
+    events: async (userId, since, until, limit = 2000) => (await sync(userId), clone(eventLog.filter((event) => event.userId === userId && Date.parse(event.createdAt) >= since.getTime() && Date.parse(event.createdAt) <= until.getTime()).slice(-limit))),
+    eventsByRef: async (prefix, since, until, limit = 5000) => (await syncAll([...known, ...profiles.keys()]), clone(eventLog.filter((event) => event.verified && (event.ref ?? '').startsWith(prefix) && Date.parse(event.createdAt) >= since.getTime() && Date.parse(event.createdAt) <= until.getTime()).slice(-limit))),
+    eventsOf: async (userIds, since, until, limit = 5000) => (await syncAll(userIds), clone(verifiedIn(new Set(userIds), since, until).slice(-limit))),
     dayTotals(userIds, from, to) {
       const set = new Set(userIds);
       return Promise.resolve([...days.values()].filter((day) => set.has(day.userId) && day.day >= from && day.day <= to).map((day) => clone(day)));
@@ -456,7 +503,7 @@ export function createEngageMemory(options: { core: SchoodAIRepository; now: () 
       let added = 0;
       for (const row of rows) {
         if (outboxRows.some((entry) => entry.dedupeKey === row.dedupeKey)) continue;
-        outboxRows.push({ ...clone(row), id: id(), status: 'queued', claimToken: null, attempts: 0, reason: null, createdAt: iso(), sentAt: null });
+        outboxRows.push({ ...clone(row), id: id(), status: 'queued', claimToken: null, claimedAt: null, attempts: 0, reason: null, createdAt: iso(), sentAt: null });
         added += 1;
       }
       return Promise.resolve(added);
@@ -465,36 +512,65 @@ export function createEngageMemory(options: { core: SchoodAIRepository; now: () 
       const due = outboxRows.filter((row) => row.userId === userId && row.channel === channel && row.status === 'queued' && Date.parse(row.dueAt) <= at.getTime());
       for (const row of due) if (Date.parse(row.expiresAt) <= at.getTime()) { row.status = 'expired'; row.reason = 'expired'; }
       const live = due.filter((row) => row.status === 'queued').sort((a, b) => b.priority - a.priority || a.dueAt.localeCompare(b.dueAt)).slice(0, limit);
-      for (const row of live) { row.status = 'claimed'; row.claimToken = crypto.randomUUID(); row.attempts += 1; }
+      for (const row of live) { row.status = 'claimed'; row.claimToken = crypto.randomUUID(); row.claimedAt = at.toISOString(); row.attempts += 1; }
+      return Promise.resolve(clone(live));
+    },
+    claimDue(at, limit) {
+      const nowMs = at.getTime();
+      for (const row of outboxRows) {
+        if (row.channel !== 'telegram') continue;
+        if (row.status === 'queued' && Date.parse(row.expiresAt) <= nowMs) Object.assign(row, { status: 'expired', reason: 'expired' });
+        if (row.status === 'claimed' && row.claimedAt && Date.parse(row.claimedAt) < nowMs - 600_000) Object.assign(row, { status: 'queued', claimToken: null, claimedAt: null, reason: 'claim_lapsed' });
+      }
+      const live = outboxRows.filter((row) => row.channel === 'telegram' && row.status === 'queued' && Date.parse(row.dueAt) <= nowMs)
+        .sort((a, b) => a.dueAt.localeCompare(b.dueAt) || b.priority - a.priority).slice(0, limit);
+      for (const row of live) { row.status = 'claimed'; row.claimToken = crypto.randomUUID(); row.claimedAt = at.toISOString(); row.attempts += 1; }
       return Promise.resolve(clone(live));
     },
     release(rowId, token, dueAt, reason) {
       const row = outboxRows.find((entry) => entry.id === rowId && entry.status === 'claimed' && entry.claimToken === token);
-      if (row) Object.assign(row, { status: 'queued', claimToken: null, dueAt, reason });
+      if (row) Object.assign(row, { status: 'queued', claimToken: null, claimedAt: null, dueAt, reason });
       return Promise.resolve();
     },
     finish(rowId, token, status, at, reason = null) {
       const row = outboxRows.find((entry) => entry.id === rowId && entry.status === 'claimed' && entry.claimToken === token);
       if (!row) return Promise.resolve(false);
-      Object.assign(row, { status, sentAt: status === 'sent' ? at : null, reason });
+      Object.assign(row, { status, claimToken: null, claimedAt: null, sentAt: status === 'sent' ? at : null, reason });
       return Promise.resolve(true);
     },
     outbox: (userId, options) => Promise.resolve(clone(outboxRows.filter((row) => row.userId === userId && (!options.channel || row.channel === options.channel) && (!options.statuses || options.statuses.includes(row.status)) && (!options.since || row.createdAt >= options.since)).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, options.limit))),
     async dueUsers(at, limit) {
-      const known = new Set([...profiles.keys(), ...eventLog.map((event) => event.userId)]);
-      const out: { userId: string; chatId: string }[] = [];
-      for (const userId of known) {
+      const out: { userId: string; chatId: string | null }[] = [];
+      for (const userId of [...profiles.keys()].sort()) {
         if (out.length >= limit) break;
-        const profile = profileOf(userId), local = localParts(at, profile.timeZone);
-        if (profile.messages === 'none' || local.hour < profile.notifyHour || inQuietHours(local.hour)) continue;
+        const prefs = await core.notifyPrefs(userId);
+        if (prefs.dailyLimit === 0 || prefs.muted.includes('engage')) continue;
+        const chat = (await core.profile(userId))?.telegramChatId ?? null;
+        const telegram = prefs.delivery.includes('telegram') && !!chat;
+        if (!telegram && !prefs.delivery.includes('web')) continue;
+        const local = localParts(at, prefs.timeZone), h = local.hour;
+        const quiet = prefs.quietStart === prefs.quietEnd ? false : prefs.quietStart > prefs.quietEnd ? h >= prefs.quietStart || h < prefs.quietEnd : h >= prefs.quietStart && h < prefs.quietEnd;
+        if (h < (prefs.preferredHour ?? DEFAULT_NOTIFY_HOUR) || quiet) continue;
         const key = `${userId}:${local.day}`;
         if (ticks.has(key)) continue;
-        const chat = (await core.profile(userId))?.telegramChatId;
-        if (!chat) continue;
         ticks.add(key);
-        out.push({ userId, chatId: chat });
+        out.push({ userId, chatId: telegram ? chat : null });
       }
       return out;
+    },
+    claimMediaTrash(at, limit) {
+      const live = mediaTrash.filter((row) => Date.parse(row.nextTryAt) <= at.getTime() && row.attempts < 20).slice(0, limit);
+      for (const row of live) { row.attempts += 1; row.nextTryAt = new Date(at.getTime() + 15 * 60_000).toISOString(); }
+      return Promise.resolve(live.map((row) => ({ id: row.id, storage: clone(row.storage), attempts: row.attempts })));
+    },
+    mediaTrashDone(ids) {
+      for (let i = mediaTrash.length - 1; i >= 0; i--) if (ids.includes(mediaTrash[i].id)) mediaTrash.splice(i, 1);
+      return Promise.resolve();
+    },
+    mediaTrashFailed(rowId, error, retryAt) {
+      const row = mediaTrash.find((entry) => entry.id === rowId);
+      if (row) Object.assign(row, { lastError: error.slice(0, 200), nextTryAt: retryAt });
+      return Promise.resolve();
     },
     offerDismissals: (userId) => Promise.resolve(dismissals.filter((row) => row.userId === userId).map((row) => row.key)),
     dismissOffer(userId, key) { if (!dismissals.some((row) => row.userId === userId && row.key === key)) dismissals.push({ userId, key }); return Promise.resolve(); },

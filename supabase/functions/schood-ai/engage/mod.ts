@@ -1,9 +1,13 @@
+import { normalizeCertificateCode } from '../../_shared/english-certificate.ts';
+import { registerAgeSource } from '../age.ts';
 import { registerContextProvider } from '../context.ts';
+import { registerNotifyKind } from '../registries.ts';
 import { registerChatGuard } from '../specialists.ts';
-import { SchoodAIError, type FeatureModule, type RequestContext, type RouteHandler } from '../types.ts';
-import { engage } from './binding.ts';
-import { DAILY_LIMIT_CHOICES, limitReached } from './rules.ts';
-import { begin } from './base.ts';
+import { SchoodAIError, type AnonymousOptions, type FeatureModule, type RequestContext } from '../types.ts';
+import { engage, engageStore } from './binding.ts';
+import { DAILY_LIMIT_CHOICES, isAdult, limitReached, localParts } from './rules.ts';
+import { begin, sha256 } from './base.ts';
+import { NOTIFY_LABELS } from './content/messages.ts';
 import { getBoards, getCentreLeague, setCentreLeague } from './boards.ts';
 import {
   decideSitting, getSitting, listCertificates, proctorCommand, proctorState, reviewQueue, revokeCertificate, saveAnswers, startSitting, submitSitting, uploadTaskAudio,
@@ -13,11 +17,11 @@ import { pick } from './content/text.ts';
 import { activeJourneys, changeGoal, changeJourney, dismissOffer, getJourney, getPath, listJourneys, pathView, progressView, startJourney } from './journeys.ts';
 import { leagueStandings, leagueSummary } from './league.ts';
 import { getEvents, joinEvent, setSponsor } from './live.ts';
-import { ackOutbox, claimOutbox, inbox, tick } from './outbox.ts';
+import { inbox } from './outbox.ts';
 import { createLink, getPassport, importPassport, revokeLink, savePassport, showItem, verifyCertificate, viewPassport } from './passport.ts';
 import { buyFreeze, clearBirthDate, getSettings, progressCore, progressState, saveSettings, usageSummary } from './progress.ts';
 import { addDate, engageMemoryContext, getMemory, memoryFacts, updateDate } from './remember.ts';
-import { addVoiceSample, addWritingSample, deleteSample, sampleAudio, thenVsNow } from './samples.ts';
+import { addVoiceSample, addWritingSample, deleteSample, linkSampleAudio, sampleAudio, thenVsNow } from './samples.ts';
 import { createSquad, getSquad, joinSquad, leaveSquad, nudge, setSquadGoal } from './squads.ts';
 import { answerEpisode, fillEpisode, getEpisode, listStories } from './stories.ts';
 import { consentTalent, employerAudit, getTalent, grantEmployer, saveTalentProfile, searchTalent, viewCandidate, withdrawTalent } from './talent.ts';
@@ -30,15 +34,32 @@ import { consentTalent, employerAudit, getTalent, grantEmployer, saveTalentProfi
 
 export { recordSample, type RecordSampleInput } from './samples.ts';
 export { registerOfferSource, registerPassportSource, registerSampleSource, registerSittingSource } from './seams.ts';
-/** Scheduled work for core's coming `system: true` routes (see system.ts and engage.md section 3). */
-export { ackDelivered, deliverDue, ENGAGE_SYSTEM_JOBS, rolloverLeagues } from './system.ts';
+/** Scheduled work, registered with core's scheduler below (system.ts). */
+export { ENGAGE_SYSTEM_JOBS, planDue, rolloverLeagues, sweepMedia } from './system.ts';
+export { deliverDue } from './outbox.ts';
+import { registerEngageJobs } from './system.ts';
 
-/**
- * A route anyone with the link may open, without signing in. The core router does
- * not support it yet (requested in docs/product/ai-requests/engage.md); until it
- * does, these routes answer signed-in viewers only. They never use who is asking.
- */
-const publicRoute = (handler: RouteHandler): RouteHandler & { public: true } => ({ ...handler, public: true });
+// --- Anonymous routes: a shared Skill Passport link and a certificate QR check -------------------
+// Open without signing in. They show only what the person chose to share. A live link or
+// a real certificate gets its own budget (an office or a fair behind one address opening
+// many of them); a made-up token or code stays limited per IP.
+const query = (req: Request, name: string) => new URL(req.url).searchParams.get(name);
+const linkKey: AnonymousOptions['rateKey'] = async (req, { store }) => {
+  const token = query(req, 'token') ?? query(req, 'link');
+  const binding = store(engageStore).current();
+  if (!token || !/^[A-Za-z0-9_-]{40,60}$/.test(token) || !binding) return null;
+  const link = await binding.repo.passportLinkByHash(await sha256(token));
+  return link && !link.revokedAt ? `engage.link:${link.id}` : null;
+};
+const certificateKey: AnonymousOptions['rateKey'] = async (req, { store }) => {
+  const code = normalizeCertificateCode(query(req, 'code'));
+  const binding = store(engageStore).current();
+  if (!code || !binding) return null;
+  const row = await binding.repo.certificateByCode(code);
+  return row ? `engage.certificate:${row.id}` : null;
+};
+const SHARED_LINK: AnonymousOptions = { perMinute: 120, perDay: 5_000, rateKey: linkKey, ipLimit: { perMinute: 600, perDay: 20_000 } };
+const CERTIFICATE_CHECK: AnonymousOptions = { perMinute: 60, perDay: 3_000, rateKey: certificateKey, ipLimit: { perMinute: 600, perDay: 20_000 } };
 
 const AUDIO = 4_800 * 1024;
 
@@ -127,6 +148,21 @@ function registerProviders() {
 }
 registerProviders();
 
+// Messages people can mute one by one in Settings → Notifications (or all of engage at once).
+for (const [key, label] of Object.entries(NOTIFY_LABELS)) registerNotifyKind(key, { area: 'engage', label });
+
+/**
+ * The date of birth a person gave engage (set once; support can correct it) answers core's
+ * adults-only checks, for example a streak freeze bought with credits. No date: unknown.
+ */
+registerAgeSource('engage.birth_date', async (ctx, userId) => {
+  const profile = await engage(ctx).repo.profile(userId);
+  if (!profile.birthDate) return null;
+  return isAdult(profile, localParts(ctx.now(), 'Asia/Tashkent').day) ? 'adult' : 'minor';
+});
+
+registerEngageJobs();
+
 /**
  * The daily time limit a person (or their parent) set covers the tutor and coach chats
  * too: once today's verified minutes reach it, every core/chat turn is refused before
@@ -173,8 +209,9 @@ export const engageModule: FeatureModule = {
     'passport-item': { POST: showItem },
     'passport-link': { POST: createLink },
     'passport-link-revoke': { POST: revokeLink },
-    'passport-view': publicRoute({ GET: viewPassport }),
-    verify: publicRoute({ GET: verifyCertificate }),
+    'passport-view': { GET: viewPassport, anonymous: SHARED_LINK },
+    'passport-sample': { GET: linkSampleAudio, anonymous: SHARED_LINK },
+    verify: { GET: verifyCertificate, anonymous: CERTIFICATE_CHECK },
     // E7 then vs now
     'then-now': { GET: thenVsNow },
     'sample-voice': { POST: addVoiceSample, maxBody: AUDIO },
@@ -225,9 +262,6 @@ export const engageModule: FeatureModule = {
     'talent-audit': { GET: employerAudit },
     'talent-employer': { POST: grantEmployer },
     // E14 win-back and delivery (the bots drain with the service secret)
-    tick: { POST: tick, service: true },
-    outbox: { POST: claimOutbox, service: true },
-    'outbox-ack': { POST: ackOutbox, service: true },
     inbox: { GET: inbox },
   },
 };

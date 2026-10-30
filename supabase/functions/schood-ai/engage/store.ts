@@ -1,7 +1,7 @@
 import type {
   BoardRow, CentreBoardRow, CertificateRow, DateRow, DayRow, EngageProfile, EventRow, EventSponsor, FreezeBuy, GoalRow, IngestResult,
   JourneyRow, LeagueGroup, LeagueMember, LeagueTierName, LevelBand, OutboxRow, OutboxStatus, PassportItem, PassportLink, PassportRow, SampleRow, SittingRow,
-  SittingSignal, SquadMember, SquadRow, StoryEpisodeCache, StoryProgress, StoryResult, TalentAudit, TalentEmployer, TalentProfile, XpRow,
+  SittingSignal, SquadMember, SquadRow, StorageRef, StoryEpisodeCache, StoryProgress, StoryResult, TalentAudit, TalentEmployer, TalentProfile, XpRow,
 } from './types.ts';
 
 // Every read and write of the engage area. repository.ts implements it on Postgres
@@ -9,7 +9,8 @@ import type {
 // 20261030800000_schood_ai_engage.sql); memory.ts mirrors it for tests and the dev
 // stack with the same locking rules.
 
-export type ProfilePatch = Partial<Omit<EngageProfile, 'userId' | 'birthDate' | 'createdAt'>>;
+/** What engage stores; the time zone and preferred hour are core's notification preferences. */
+export type ProfilePatch = Partial<Omit<EngageProfile, 'userId' | 'birthDate' | 'createdAt' | 'timeZone' | 'notifyHour'>>;
 
 export interface EngageRepository {
   // --- Profile and settings ---------------------------------------------------------
@@ -172,8 +173,20 @@ export interface EngageRepository {
   release(id: string, claimToken: string, dueAt: string, reason: string): Promise<void>;
   finish(id: string, claimToken: string, status: Extract<OutboxStatus, 'sent' | 'failed' | 'skipped'>, at: string, reason?: string | null): Promise<boolean>;
   outbox(userId: string, options: { channel?: OutboxRow['channel']; statuses?: OutboxStatus[]; since?: string; limit: number }): Promise<OutboxRow[]>;
-  /** People due for their daily planning run on Telegram: chosen hour reached today and not yet planned. */
-  dueUsers(now: Date, limit: number): Promise<{ userId: string; chatId: string }[]>;
+  /** Telegram messages due now across everyone (the engage.deliver job), each claimed once; a lapsed claim is handed back. */
+  claimDue(now: Date, limit: number): Promise<OutboxRow[]>;
+  /**
+   * People due for their daily planning run: preferred hour reached today where they are, outside
+   * their quiet hours, messages not off, not yet planned. chatId is null for the in-app inbox.
+   */
+  dueUsers(now: Date, limit: number): Promise<{ userId: string; chatId: string | null }[]>;
+  // --- Audio of deleted rows (the engage.media_sweep job) ------------------------------------------------------------
+  /** The next stored audio objects to delete, each handed to one sweep (retried after 15 minutes). */
+  claimMediaTrash(now: Date, limit: number): Promise<{ id: string; storage: StorageRef; attempts: number }[]>;
+  /** The objects are deleted (or were already gone). */
+  mediaTrashDone(ids: string[]): Promise<void>;
+  /** Deleting failed; try again at retryAt. */
+  mediaTrashFailed(id: string, error: string, retryAt: string): Promise<void>;
   offerDismissals(userId: string): Promise<string[]>;
   dismissOffer(userId: string, offerKey: string, at: string): Promise<void>;
 }

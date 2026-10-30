@@ -10,7 +10,7 @@ Deno.test('concurrency: twenty racing reads count every verified event once', as
   const f = engageFixture();
   await f.learn('tok-plus', Array.from({ length: 6 }, () => f.scored('B1', 'ielts.speaking', 5)));
   const memory = await f.store();
-  memory.recordEvents(Array.from({ length: 4 }, () => ({ userId: ID.plus, workspaceId: null, area: 'coach' as const, kind: 'check_passed' as const, verified: true, feature: 'B1', skill: 'ielts.reading', verifiedMinutes: 2, score: 80, outcome: null, ref: null, source: 'web' as const })));
+  await f.memory.repository.addLearningEvents(Array.from({ length: 4 }, () => ({ userId: ID.plus, workspaceId: null, area: 'coach' as const, kind: 'check_passed' as const, verified: true, feature: 'B1', skill: 'ielts.reading', verifiedMinutes: 2, score: 80, outcome: null, ref: null, source: 'web' as const })));
   await Promise.all(Array.from({ length: 20 }, () => f.get('state')));
   const events = (await memory.xpSince(ID.plus, '2026-11-01')).filter((row) => row.source === 'event');
   equal(events.length, 10, 'ten events, ten rows');
@@ -48,10 +48,13 @@ Deno.test('concurrency: five racing freeze purchases buy one and charge once', a
   equal((await f.json('GET', 'core/me')).body.credits.total, before - 10, 'charged once (one reference per week)');
 });
 
-Deno.test('concurrency: two bots draining at once deliver each message once', async () => {
+Deno.test('concurrency: overlapping deliver runs claim each message once', async () => {
   const f = engageFixture();
   const memory = await f.store();
-  await memory.enqueue([1, 2].map((n) => ({ userId: ID.plus, channel: 'telegram' as const, kind: 'streak_risk', priority: 80 - n, dedupeKey: `race:${n}`, payload: { text: `m${n}`, buttons: [] }, dueAt: new Date('2026-11-02T05:00:00Z').toISOString(), expiresAt: new Date('2026-11-02T19:00:00Z').toISOString() })));
-  const drains = await Promise.all(['student', 'coach_b1', 'coach_b4'].map(async (bot) => (await (await f.worker('engage/outbox', 'POST', ID.plus, '700100', { channel: 'telegram', bot })).json()).messages.length as number));
-  equal(drains.reduce((sum, count) => sum + count, 0), 2, 'two messages, delivered once in total');
+  await memory.enqueue([1, 2, 3].map((n) => ({ userId: ID.plus, channel: 'telegram' as const, kind: 'streak_risk', priority: 80 - n, dedupeKey: `race:${n}`, payload: { text: `m${n}`, buttons: [] }, dueAt: new Date('2026-11-02T05:00:00Z').toISOString(), expiresAt: new Date('2026-11-02T19:00:00Z').toISOString() })));
+  const at = new Date('2026-11-02T06:00:00Z');
+  const claims = await Promise.all(Array.from({ length: 5 }, () => memory.claimDue(at, 10)));
+  equal(claims.reduce((sum, rows) => sum + rows.length, 0), 3, 'three messages, claimed once in total');
+  equal(await memory.claimDue(new Date(at.getTime() + 5 * 60_000), 10), [], 'a live claim is not handed out again');
+  equal((await memory.claimDue(new Date(at.getTime() + 11 * 60_000), 10)).length, 3, 'a claim left by a run that died is handed back after ten minutes');
 });

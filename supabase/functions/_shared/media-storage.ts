@@ -1,4 +1,4 @@
-import { GetObjectCommand, PutObjectCommand, S3Client } from "npm:@aws-sdk/client-s3@3.1085.0";
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "npm:@aws-sdk/client-s3@3.1085.0";
 import { getSignedUrl } from "npm:@aws-sdk/s3-request-presigner@3.1085.0";
 
 type S3Config = {
@@ -283,4 +283,40 @@ export const signStorageRef = async (
     return null;
   }
   return data.signedUrl;
+};
+
+/**
+ * Deletes a stored object (S3, or a Supabase Storage bucket). An object that is already
+ * gone counts as deleted. Throws on any other failure, after logging it, so a caller can
+ * try again later.
+ */
+export const deleteStorageRef = async (
+  sb: any,
+  storage: unknown,
+  context?: MediaOpContext,
+): Promise<void> => {
+  const parsed = parseStorageRef(storage);
+  if (!parsed) return;
+  try {
+    if (isS3Ref(parsed.bucket, parsed.provider)) {
+      await getS3Client().send(new DeleteObjectCommand({ Bucket: parsed.bucket, Key: parsed.path }));
+      return;
+    }
+    const { error } = await sb.storage.from(parsed.bucket).remove([parsed.path]);
+    if (error) throw error;
+  } catch (error) {
+    logMediaError(
+      "delete_failed",
+      {
+        provider: parsed.provider ?? "supabase-storage",
+        bucket: parsed.bucket,
+        path: parsed.path,
+        request_id: context?.requestId ?? null,
+        route: context?.route ?? null,
+        user_id: context?.userId ?? null,
+      },
+      error,
+    );
+    throw error;
+  }
 };

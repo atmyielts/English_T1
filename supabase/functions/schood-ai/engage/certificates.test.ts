@@ -75,6 +75,9 @@ Deno.test('E12: Proctor Lite signals, human review, a certificate with a QR code
   const verified = (await f.get('verify', 'tok-outsider', { code: decided.certificate.code.toLowerCase() })).body.certificate;
   equal([verified.status, verified.display_name, verified.level, verified.proctored], ['valid', 'Beta Tester', 'Level 1', true]);
   ok(!JSON.stringify(verified).includes(ID.beta), 'the check shows only what the certificate states');
+  const scanned = await f.json('GET', 'engage/verify', { token: null, query: { code: decided.certificate.code } });
+  equal([scanned.status, scanned.body.certificate.status], [200, 'valid'], 'the QR check works without signing in');
+  equal((await f.json('GET', 'engage/verify', { token: null, query: { code: 'ZZZZ-ZZZZ-ZZZZ' } })).status, 404);
   const mine = (await f.get('certificates', 'tok-beta')).body.certificates[0];
   equal([mine.test, mine.code], [true, decided.certificate.code], 'a beta sitting is marked as a test certificate');
   const memory = await f.store();

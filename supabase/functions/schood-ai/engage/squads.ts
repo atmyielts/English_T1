@@ -2,7 +2,8 @@ import { leagueName } from '../../_shared/english-xp.ts';
 import { integer, record, text } from '../input.ts';
 import type { RequestContext } from '../types.ts';
 import { begin, dayStart, refuse, sha256, shortCode, type Engage } from './base.ts';
-import { message, PRIORITY } from './content/messages.ts';
+import { message } from './content/messages.ts';
+import { queueFor } from './outbox.ts';
 import { addDays, localParts, SQUAD_GOAL_DEFAULT, SQUAD_MAX, squadStreak } from './rules.ts';
 import type { SquadRow } from './types.ts';
 
@@ -129,15 +130,15 @@ export async function nudge(ctx: RequestContext) {
   let target: string | null = null;
   for (const member of members) if (member.userId !== e.userId && await memberKey(squad.id, member.userId) === key) target = member.userId;
   if (!target) return refuse('not_found', 'That person is not in your squad.', 404);
-  const theirs = await e.b.repo.profile(target);
-  if (theirs.messages !== 'all') return { queued: false, reason: 'messages_off' };
+  const [theirs, prefs] = await Promise.all([e.b.repo.profile(target), ctx.notify.prefs(target)]);
   const view = await squadView(e, squad);
-  const local = localParts(e.now, theirs.timeZone);
+  const local = localParts(e.now, prefs.timeZone);
   const names = await e.b.repo.names([e.userId]);
   const note = message('squad_nudge', theirs.locale, { name: leagueName({ full: names.get(e.userId) ?? '' }), squad: squad.name, minutes: view.week_minutes, goal: squad.weeklyGoalMinutes });
-  const queued = await e.b.repo.enqueue([{
-    userId: target, channel: 'telegram', kind: 'squad_nudge', priority: PRIORITY.squad_nudge, dedupeKey: `squad_nudge:${target}:${local.day}`,
+  // Their own choices decide: a muted kind or no messages means no nudge; one per member per day.
+  const result = await queueFor(ctx, e.b.repo, {
+    userId: target, kind: 'squad_nudge', dedupe: `squad_nudge:${target}:${local.day}`,
     payload: { ...note, data: { squad: squad.id } }, dueAt: e.now.toISOString(), expiresAt: new Date(e.now.getTime() + 12 * 3_600_000).toISOString(),
-  }]);
-  return { queued: queued > 0, reason: queued > 0 ? null : 'already_nudged_today' };
+  });
+  return { queued: result.queued, reason: result.reason === 'already_queued' ? 'already_nudged_today' : result.reason };
 }

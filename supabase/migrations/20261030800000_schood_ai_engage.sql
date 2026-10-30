@@ -17,14 +17,13 @@ begin;
 -- The talent pool (E13) has no table switch: it is the core switch engage.talent_pool,
 -- set in the admin console, and stays off until that switch is set to on.
 
--- --- Profiles: age, time, messages, boards, limits ------------------------------------
+-- --- Profiles: age, boards, limits ---------------------------------------------------
+-- The time zone, preferred hour, quiet hours, delivery and muted kinds are core's
+-- notification preferences (ai_notify_prefs, core/notify-prefs); engage reads them.
 create table if not exists public.ai_engage_profiles (
   user_id uuid primary key references public.users(id) on delete cascade,
   -- Set once by the person. Unknown means under 18 for every protection.
   birth_date date check (birth_date is null or birth_date > date '1900-01-01'),
-  time_zone text not null default 'Asia/Tashkent' check (time_zone ~ '^[A-Za-z_]+(/[A-Za-z0-9_+-]+){0,2}$'),
-  notify_hour smallint not null default 19 check (notify_hour between 8 and 21),
-  messages text not null default 'all' check (messages in ('all', 'important', 'none')),
   locale text not null default 'en' check (locale in ('en', 'uz', 'ru')),
   region text check (region is null or region ~ '^[a-z_]{2,20}$'),
   school text check (school is null or char_length(school) between 2 and 80),
@@ -390,6 +389,7 @@ create table if not exists public.ai_engage_outbox (
   expires_at timestamptz not null,
   status text not null default 'queued' check (status in ('queued', 'claimed', 'sent', 'skipped', 'expired', 'failed')),
   claim_token uuid,
+  claimed_at timestamptz,
   attempts smallint not null default 0 check (attempts between 0 and 50),
   reason text check (reason is null or char_length(reason) <= 80),
   created_at timestamptz not null default now(),
@@ -398,6 +398,8 @@ create table if not exists public.ai_engage_outbox (
 );
 create index if not exists ai_engage_outbox_due_idx on public.ai_engage_outbox (user_id, channel, due_at) where status = 'queued';
 create index if not exists ai_engage_outbox_user_idx on public.ai_engage_outbox (user_id, created_at desc);
+create index if not exists ai_engage_outbox_send_idx on public.ai_engage_outbox (channel, due_at) where status = 'queued';
+create index if not exists ai_engage_outbox_claimed_idx on public.ai_engage_outbox (claimed_at) where status = 'claimed';
 create table if not exists public.ai_engage_ticks (
   user_id uuid not null references public.users(id) on delete cascade,
   day date not null,
@@ -409,6 +411,23 @@ create table if not exists public.ai_engage_offer_dismissals (
   dismissed_at timestamptz not null default now(),
   primary key (user_id, offer_key)
 );
+
+-- --- Audio to delete -------------------------------------------------------------------------------
+-- Stored audio of engage rows that are gone: an account closed through the erasure
+-- registry, a deleted sample once it is pruned, a sitting. The delete triggers below queue
+-- only references under schood-ai/engage/ (a sample may point at audio another area stored,
+-- which engage never deletes); the engage.media_sweep job deletes the objects through
+-- _shared/media-storage.ts and removes the row. Nothing here but the object reference.
+create table if not exists public.ai_engage_media_trash (
+  id bigint generated always as identity primary key,
+  storage jsonb not null check (jsonb_typeof(storage) = 'object' and pg_column_size(storage) <= 1000),
+  source text not null check (source in ('sample', 'sitting')),
+  queued_at timestamptz not null default now(),
+  next_try_at timestamptz not null default now(),
+  attempts smallint not null default 0 check (attempts between 0 and 50),
+  last_error text check (last_error is null or char_length(last_error) <= 200)
+);
+create index if not exists ai_engage_media_trash_due_idx on public.ai_engage_media_trash (next_try_at, id);
 
 -- --- updated_at ---------------------------------------------------------------------------------------------------
 do $$
@@ -499,7 +518,9 @@ declare
 begin
   perform pg_advisory_xact_lock(hashtextextended('ai_engage:' || p_user::text, 0));
   insert into public.ai_engage_profiles (user_id) values (p_user) on conflict (user_id) do nothing;
-  select time_zone, event_cursor into tz, cursor_id from public.ai_engage_profiles where user_id = p_user;
+  select event_cursor into cursor_id from public.ai_engage_profiles where user_id = p_user;
+  -- Local days in the zone the person chose in core's notification preferences.
+  tz := coalesce((select np.time_zone from public.ai_notify_prefs np where np.user_id = p_user), 'Asia/Tashkent');
   last_id := cursor_id;
   for e in select * from public.ai_learning_events where user_id = p_user and id > cursor_id and created_at <= p_now order by id limit 5000 loop
     last_id := e.id;
@@ -701,28 +722,106 @@ begin
         order by priority desc, due_at, id limit greatest(0, least(coalesce(p_limit, 2), 10))
         for update skip locked
     )
-    update public.ai_engage_outbox o set status = 'claimed', claim_token = gen_random_uuid(), attempts = o.attempts + 1
+    update public.ai_engage_outbox o set status = 'claimed', claim_token = gen_random_uuid(), claimed_at = p_now, attempts = o.attempts + 1
       from picked where o.id = picked.id
       returning o.*;
 end $$;
 
--- People due for today's planning run on Telegram: their chosen hour has come, it is not
--- quiet hours where they are, and they were not planned today. Each is returned once.
+-- Telegram messages due now across everyone, for the engage.deliver job: each one claimed
+-- once, oldest first. A claim older than ten minutes (a run that died) is handed back;
+-- core's notify.send dedupe key keeps a message that did go out from going twice.
+create or replace function public.ai_engage_outbox_claim_due(p_now timestamptz, p_limit integer)
+returns setof public.ai_engage_outbox
+language plpgsql security definer set search_path = public, pg_temp as $$
+begin
+  update public.ai_engage_outbox set status = 'expired', reason = 'expired'
+    where channel = 'telegram' and status = 'queued' and expires_at <= p_now;
+  update public.ai_engage_outbox set status = 'queued', claim_token = null, claimed_at = null, reason = 'claim_lapsed'
+    where channel = 'telegram' and status = 'claimed' and claimed_at < p_now - interval '10 minutes';
+  return query
+    with picked as (
+      select id from public.ai_engage_outbox
+        where channel = 'telegram' and status = 'queued' and due_at <= p_now and expires_at > p_now
+        order by due_at, priority desc, id limit greatest(0, least(coalesce(p_limit, 100), 500))
+        for update skip locked
+    )
+    update public.ai_engage_outbox o set status = 'claimed', claim_token = gen_random_uuid(), claimed_at = p_now, attempts = o.attempts + 1
+      from picked where o.id = picked.id
+      returning o.*;
+end $$;
+
+-- Queues the engage audio of a deleted sample or sitting for the engage.media_sweep job.
+create or replace function public.ai_engage_queue_media()
+returns trigger
+language plpgsql security definer set search_path = public, pg_temp as $$
+begin
+  if tg_table_name = 'ai_engage_samples' then
+    if old.storage is not null and coalesce(old.storage->>'path', old.storage->>'key', '') like 'schood-ai/engage/%' then
+      insert into public.ai_engage_media_trash (storage, source) values (old.storage, 'sample');
+    end if;
+  else
+    insert into public.ai_engage_media_trash (storage, source)
+      select r.value->'storage', 'sitting' from jsonb_each(old.responses) r
+        where jsonb_typeof(r.value->'storage') = 'object'
+          and coalesce(r.value->'storage'->>'path', r.value->'storage'->>'key', '') like 'schood-ai/engage/%';
+  end if;
+  return old;
+end $$;
+drop trigger if exists ai_engage_samples_media on public.ai_engage_samples;
+create trigger ai_engage_samples_media after delete on public.ai_engage_samples
+  for each row execute function public.ai_engage_queue_media();
+drop trigger if exists ai_engage_sittings_media on public.ai_engage_sittings;
+create trigger ai_engage_sittings_media after delete on public.ai_engage_sittings
+  for each row execute function public.ai_engage_queue_media();
+
+-- The next audio objects to delete, each handed to one sweep at a time (retried after 15 minutes).
+create or replace function public.ai_engage_media_trash_claim(p_now timestamptz, p_limit integer)
+returns table (id bigint, storage jsonb, attempts smallint)
+language plpgsql security definer set search_path = public, pg_temp as $$
+begin
+  return query
+    with picked as (
+      select t.id from public.ai_engage_media_trash t
+        where t.next_try_at <= p_now and t.attempts < 20
+        order by t.next_try_at, t.id limit greatest(0, least(coalesce(p_limit, 100), 500))
+        for update skip locked
+    )
+    update public.ai_engage_media_trash t set attempts = t.attempts + 1, next_try_at = p_now + interval '15 minutes'
+      from picked where t.id = picked.id
+      returning t.id, t.storage, t.attempts;
+end $$;
+
+-- People due for today's planning run: their preferred hour (core's notification preferences;
+-- 19:00 when they chose none) has come where they are, it is not their quiet hours, they get
+-- messages somewhere (Telegram with a linked chat, or the in-app inbox), they have not muted
+-- engage or set zero messages a day, and they were not planned today. Each once a local day.
+-- chat_id is null when the messages go to the in-app inbox.
 create or replace function public.ai_engage_due_users(p_now timestamptz, p_limit integer)
 returns table (user_id uuid, chat_id text)
 language plpgsql security definer set search_path = public, pg_temp as $$
-declare r record; n integer := 0;
+declare r record; n integer := 0; h integer; quiet boolean;
 begin
   for r in
-    select p.user_id as id, u.telegram_chat_id as chat, (p_now at time zone p.time_zone) as local_time, p.notify_hour
-      from public.ai_engage_profiles p join public.users u on u.id = p.user_id
-      where p.messages <> 'none' and u.telegram_chat_id is not null and coalesce(u.is_active, true)
+    select p.user_id as id, u.telegram_chat_id as chat,
+           (p_now at time zone coalesce(np.time_zone, 'Asia/Tashkent')) as local_time,
+           coalesce(np.preferred_hour, 19) as wanted, coalesce(np.quiet_start, 22) as q_start, coalesce(np.quiet_end, 8) as q_end,
+           coalesce(np.delivery, array['telegram', 'web']::text[]) as delivery
+      from public.ai_engage_profiles p
+      join public.users u on u.id = p.user_id
+      left join public.ai_notify_prefs np on np.user_id = p.user_id
+      where coalesce(u.is_active, true) and coalesce(np.daily_limit, 2) > 0
+        and not ('engage' = any(coalesce(np.muted, '{}'::text[])))
       order by p.user_id
   loop
-    continue when extract(hour from r.local_time) < r.notify_hour or extract(hour from r.local_time) >= 22 or extract(hour from r.local_time) < 8;
+    continue when not (('telegram' = any(r.delivery) and r.chat is not null) or 'web' = any(r.delivery));
+    h := extract(hour from r.local_time)::integer;
+    quiet := case when r.q_start = r.q_end then false
+                  when r.q_start > r.q_end then h >= r.q_start or h < r.q_end
+                  else h >= r.q_start and h < r.q_end end;
+    continue when h < r.wanted or quiet;
     insert into public.ai_engage_ticks (user_id, day) values (r.id, r.local_time::date) on conflict do nothing;
     if found then
-      user_id := r.id; chat_id := r.chat; n := n + 1;
+      user_id := r.id; chat_id := case when 'telegram' = any(r.delivery) then r.chat else null end; n := n + 1;
       return next;
       exit when n >= greatest(1, least(coalesce(p_limit, 100), 1000));
     end if;
@@ -800,6 +899,7 @@ alter table public.ai_engage_centre_league enable row level security;
 alter table public.ai_engage_outbox enable row level security;
 alter table public.ai_engage_ticks enable row level security;
 alter table public.ai_engage_offer_dismissals enable row level security;
+alter table public.ai_engage_media_trash enable row level security;
 
 revoke all on public.ai_engage_profiles, public.ai_engage_xp, public.ai_engage_days, public.ai_engage_freeze_buys,
   public.ai_engage_league_groups, public.ai_engage_league_members, public.ai_engage_journeys, public.ai_engage_goals, public.ai_engage_dates,
@@ -807,7 +907,7 @@ revoke all on public.ai_engage_profiles, public.ai_engage_xp, public.ai_engage_d
   public.ai_engage_passports, public.ai_engage_passport_items, public.ai_engage_passport_links, public.ai_engage_samples, public.ai_engage_sittings,
   public.ai_engage_sitting_signals, public.ai_engage_certificates, public.ai_engage_talent, public.ai_engage_talent_employers, public.ai_engage_talent_audit,
   public.ai_engage_sponsors, public.ai_engage_event_entries, public.ai_engage_centre_league, public.ai_engage_outbox, public.ai_engage_ticks,
-  public.ai_engage_offer_dismissals
+  public.ai_engage_offer_dismissals, public.ai_engage_media_trash
   from anon, authenticated;
 -- XP, days and the talent audit change only through the functions (or account deletion).
 revoke insert, update, delete, truncate on public.ai_engage_xp, public.ai_engage_days from service_role;
@@ -827,6 +927,9 @@ revoke all on function public.ai_engage_squad_join(uuid, uuid, integer, text) fr
 revoke all on function public.ai_engage_squad_leave(uuid, uuid) from public, anon, authenticated;
 revoke all on function public.ai_engage_outbox_claim(uuid, text, timestamptz, integer) from public, anon, authenticated;
 revoke all on function public.ai_engage_due_users(timestamptz, integer) from public, anon, authenticated;
+revoke all on function public.ai_engage_outbox_claim_due(timestamptz, integer) from public, anon, authenticated;
+revoke all on function public.ai_engage_media_trash_claim(timestamptz, integer) from public, anon, authenticated;
+revoke all on function public.ai_engage_queue_media() from public, anon, authenticated;
 revoke all on function public.ai_engage_board(text, text, date, integer) from public, anon, authenticated;
 revoke all on function public.ai_engage_centre_board(date, integer, integer) from public, anon, authenticated;
 revoke all on function public.ai_engage_xp_guard() from public, anon, authenticated;
@@ -846,6 +949,8 @@ grant execute on function public.ai_engage_squad_join(uuid, uuid, integer, text)
 grant execute on function public.ai_engage_squad_leave(uuid, uuid) to service_role;
 grant execute on function public.ai_engage_outbox_claim(uuid, text, timestamptz, integer) to service_role;
 grant execute on function public.ai_engage_due_users(timestamptz, integer) to service_role;
+grant execute on function public.ai_engage_outbox_claim_due(timestamptz, integer) to service_role;
+grant execute on function public.ai_engage_media_trash_claim(timestamptz, integer) to service_role;
 grant execute on function public.ai_engage_board(text, text, date, integer) to service_role;
 grant execute on function public.ai_engage_centre_board(date, integer, integer) to service_role;
 
@@ -902,7 +1007,8 @@ $$;
 -- to their longest-standing member or are deleted when nobody is left; their id is cleared
 -- from the talent audit (as employer and as candidate), sponsor and centre-league records,
 -- employer grants and reviewed sittings. Idempotent; never raises for a normal closure.
--- Their audio files under schood-ai/engage/ in the media bucket are not reachable from SQL.
+-- Their audio under schood-ai/engage/ is queued by the delete triggers on ai_engage_samples and
+-- ai_engage_sittings when the registry erases those rows; engage.media_sweep deletes the objects.
 create or replace function public.ai_engage_erase_account(p_user uuid)
 returns jsonb
 language plpgsql security definer set search_path = pg_catalog, public as $$
@@ -979,6 +1085,7 @@ begin
       delete from public.ai_engage_outbox where status <> 'queued' and created_at < now() - interval '30 days';
       delete from public.ai_engage_outbox where status = 'queued' and expires_at < now() - interval '2 days';
       delete from public.ai_engage_ticks where day < (now() at time zone 'Asia/Tashkent')::date - 14;
+      delete from public.ai_engage_samples where deleted_at < now() - interval '7 days';
       delete from public.ai_engage_sitting_signals s using public.ai_engage_sittings t
         where s.sitting_id = t.id and t.status in ('passed', 'failed', 'voided') and t.decided_at < now() - interval '180 days';
     $cron$

@@ -15,8 +15,25 @@ export const PRIORITY: Record<MessageKind, number> = {
   checkin_soon: 90, certificate_ready: 85, streak_risk: 80, comeback_open: 75, journey_risk: 70,
   winback_2: 65, winback_7: 64, winback_21: 63, checkin_after: 60, squad_nudge: 50, league_result: 40, event_mock: 30,
 };
-/** What "important only" keeps. */
-export const IMPORTANT: readonly MessageKind[] = ['checkin_soon', 'certificate_ready', 'comeback_open'];
+/**
+ * The kind each message is sent as (registerNotifyKind), so people can mute it in Settings →
+ * Notifications; muting "engage" mutes them all.
+ */
+export const NOTIFY_KIND: Record<MessageKind, string> = {
+  checkin_soon: 'engage.checkin', checkin_after: 'engage.checkin', certificate_ready: 'engage.certificate', streak_risk: 'engage.streak',
+  comeback_open: 'engage.streak', journey_risk: 'engage.journey', winback_2: 'engage.winback', winback_7: 'engage.winback', winback_21: 'engage.winback',
+  squad_nudge: 'engage.squad', league_result: 'engage.league', event_mock: 'engage.events',
+};
+export const NOTIFY_LABELS: Record<string, L> = {
+  'engage.checkin': { en: 'Reminders before and after your dates', uz: 'Sanalaringizdan oldin va keyin eslatmalar', ru: 'Напоминания до и после ваших дат' },
+  'engage.streak': { en: 'Streak reminders', uz: 'Seriya eslatmalari', ru: 'Напоминания о серии' },
+  'engage.journey': { en: 'Programme chapters behind schedule', uz: 'Rejadan ortda qolgan dastur boblari', ru: 'Отставание по главам программы' },
+  'engage.winback': { en: 'Messages after a break', uz: 'Tanaffusdan keyingi xabarlar', ru: 'Сообщения после перерыва' },
+  'engage.squad': { en: 'Hellos from your squad', uz: 'Jamoangizdan salomlar', ru: 'Приветы от вашей команды' },
+  'engage.league': { en: 'Weekly league results', uz: 'Haftalik liga natijalari', ru: 'Итоги недельной лиги' },
+  'engage.events': { en: 'The weekend national mock', uz: 'Dam olish kunlaridagi milliy sinov', ru: 'Национальный пробный тест по выходным' },
+  'engage.certificate': { en: 'Skill Certificate results', uz: 'Ko‘nikma sertifikati natijalari', ru: 'Результаты сертификатов навыков' },
+};
 
 interface Template { text: L; button: L; path: string }
 const T: Record<MessageKind, Template> = {

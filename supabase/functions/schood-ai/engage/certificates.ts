@@ -4,7 +4,8 @@ import { bool, integer, jsonObject, oneOf, optionalText, record, text, uuid } fr
 import type { RequestContext } from '../types.ts';
 import { begin, nameOf, refuse, requireSchoodAdmin, seededShuffle, type Engage } from './base.ts';
 import { CERT_EXAMS, examByKey, type CertExam } from './content/certificates.ts';
-import { message, PRIORITY } from './content/messages.ts';
+import { message } from './content/messages.ts';
+import { queueFor } from './outbox.ts';
 import { pick } from './content/text.ts';
 import { SITE } from './passport.ts';
 import { currentSittingSource } from './seams.ts';
@@ -280,7 +281,7 @@ export async function decideSitting(ctx: RequestContext) {
   }
   // The result (pass, fail or void) is ready: one message, inside the person's own budget.
   const candidate = await e.b.repo.profile(row.userId);
-  await e.b.repo.enqueue([{ userId: row.userId, channel: 'telegram', kind: 'certificate_ready', priority: PRIORITY.certificate_ready, dedupeKey: `certificate_ready:${row.id}`, payload: { ...message('certificate_ready', candidate.locale, { exam: pick(exam.title, candidate.locale) }), data: { sitting: row.id } }, dueAt: e.now.toISOString(), expiresAt: new Date(e.now.getTime() + 7 * 86_400_000).toISOString() }]);
+  await queueFor(ctx, e.b.repo, { userId: row.userId, kind: 'certificate_ready', dedupe: `certificate_ready:${row.id}`, payload: { ...message('certificate_ready', candidate.locale, { exam: pick(exam.title, candidate.locale) }), data: { sitting: row.id } }, dueAt: e.now.toISOString(), expiresAt: new Date(e.now.getTime() + 7 * 86_400_000).toISOString() });
   await ctx.audit('engage.sitting_decided', { exam: exam.key, status, integrity, rubric_total: rubricTotal }, { type: 'sitting', id: row.id });
   return { status, certificate: certificate ? { code: formatCertificateCode(certificate.code), verify_url: `${SITE}/verify/${formatCertificateCode(certificate.code)}` } : null };
 }

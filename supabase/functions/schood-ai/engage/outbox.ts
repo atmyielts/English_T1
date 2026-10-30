@@ -1,44 +1,63 @@
 import { previousWeekStart } from '../../_shared/english-xp.ts';
-import { integer, oneOf, optionalText, record, text, uuid } from '../input.ts';
-import type { RequestContext } from '../types.ts';
+import type { NotifyPrefs, RequestContext } from '../types.ts';
 import { begin, dayEnd, dayStart, type Engage } from './base.ts';
 import { journeyByKey } from './content/journeys.ts';
-import { IMPORTANT, message, PRIORITY, word, type MessageKind } from './content/messages.ts';
+import { message, NOTIFY_KIND, PRIORITY, word, type MessageKind } from './content/messages.ts';
 import { goalByKey } from './content/path.ts';
 import { pick } from './content/text.ts';
 import { activeJourneys } from './journeys.ts';
 import { progressState } from './progress.ts';
 import { CHECKIN_BEFORE, memoryFacts } from './remember.ts';
-import { addDays, inQuietHours, localParts, QUIET_END } from './rules.ts';
+import { localParts } from './rules.ts';
+import type { EngageRepository } from './store.ts';
 import type { OutboxRow } from './types.ts';
 
 // Delivery for the whole engagement layer (E5 streaks, E9 check-ins, E14 win-back,
 // league results, squad nudges, certificate results), to Telegram and the web.
 //
-//   plan     engage/tick (the person's own session, or the bots with the service
-//            secret) works out what is worth saying today, at most two messages, and
-//            queues them in ai_engage_outbox for the person's chosen hour, with a
-//            dedupe key so nothing is ever queued twice.
-//   deliver  engage/outbox (service: true) is how a bot drains the queue: each due
-//            message is claimed once, then the core budget (ctx.notify.take: two a day
-//            per person across all bots, never 22:00–08:00 local) decides. A refusal
-//            puts the message back until the budget allows, or drops it when it would
-//            be stale. engage/outbox-ack records what the bot actually sent.
-//   web      engage/inbox shows the person's web messages in the app (no push, so
-//            they do not use the Telegram budget).
-//
-// Who is due is answered by public.ai_engage_due_users (the bots' cron), documented
-// in docs/product/ai-requests/engage.md.
+//   plan     the engage.plan system job (every 15 minutes) works out, for each person
+//            whose preferred hour has come today (core's notification preferences;
+//            ai_engage_due_users), what is worth saying: at most two messages, never a
+//            kind they muted. They are queued in ai_engage_outbox with a dedupe key, so
+//            nothing is queued twice. Squad nudges and certificate results queue too.
+//   deliver  the engage.deliver job (every 5 minutes) claims due Telegram messages across
+//            everyone and sends each with ctx.notify.send, which applies the person's
+//            delivery choice, mutes, quiet hours and daily limit. "Later" puts a message
+//            back until then (or drops it when it would be stale); "no Telegram" moves it
+//            to the in-app inbox when they get messages there.
+//   web      engage/inbox shows web messages in the app; they use no push budget.
 
 export const MAX_PER_DAY = 2;
 const LAPSE_STAGES: { days: number; kind: MessageKind }[] = [{ days: 2, kind: 'winback_2' }, { days: 7, kind: 'winback_7' }, { days: 21, kind: 'winback_21' }];
 const REHEARSAL: Record<string, string> = { interview: '/speak', exam: '/coach/b1', presentation: '/coach/b6', deadline: '/write', other: '/progress/coach' };
+const WINBACK: readonly MessageKind[] = ['winback_2', 'winback_7', 'winback_21'];
 
 interface Candidate { kind: MessageKind; dedupe: string; params: Record<string, string | number>; data?: Record<string, unknown> }
 
+/** True when the person muted this kind of message, or everything from engage (core's notification settings). */
+export const isMuted = (prefs: NotifyPrefs, kind: MessageKind) => prefs.muted.includes('engage') || prefs.muted.includes(NOTIFY_KIND[kind]);
+
+/** Where a person gets engage messages: Telegram when they chose it and linked a chat, else the in-app inbox when they chose that. */
+export async function channelFor(ctx: Pick<RequestContext, 'repo'>, userId: string, prefs: NotifyPrefs): Promise<OutboxRow['channel'] | null> {
+  if (prefs.dailyLimit === 0 || prefs.muted.includes('engage')) return null;
+  if (prefs.delivery.includes('telegram') && (await ctx.repo.profile(userId))?.telegramChatId) return 'telegram';
+  return prefs.delivery.includes('web') ? 'web' : null;
+}
+
+/** Queues one message from an action (a squad nudge, a certificate result) for whoever it is for. */
+export async function queueFor(ctx: Pick<RequestContext, 'repo' | 'notify'>, repo: EngageRepository, input: { userId: string; kind: MessageKind; dedupe: string; payload: OutboxRow['payload']; dueAt: string; expiresAt: string }): Promise<{ queued: boolean; reason: string | null }> {
+  const prefs = await ctx.notify.prefs(input.userId);
+  if (isMuted(prefs, input.kind)) return { queued: false, reason: 'muted' };
+  const channel = await channelFor(ctx, input.userId, prefs);
+  if (!channel) return { queued: false, reason: 'messages_off' };
+  const queued = await repo.enqueue([{ userId: input.userId, channel, kind: input.kind, priority: PRIORITY[input.kind], dedupeKey: input.dedupe, payload: input.payload, dueAt: input.dueAt, expiresAt: input.expiresAt }]);
+  return { queued: queued > 0, reason: queued > 0 ? null : 'already_queued' };
+}
+
 /** What is worth saying to this person today, highest priority first. Pure over the facts it reads. */
 export async function planMessages(e: Engage): Promise<{ queued: number; candidates: MessageKind[] }> {
-  if (e.profile.messages === 'none') return { queued: 0, candidates: [] };
+  const target = await channelFor(e.ctx, e.userId, e.prefs);
+  if (!target) return { queued: 0, candidates: [] };
   const { core, view } = await progressState(e);
   const [journeys, facts] = await Promise.all([activeJourneys(e), memoryFacts(e)]);
   const candidates: Candidate[] = [];
@@ -86,90 +105,82 @@ export async function planMessages(e: Engage): Promise<{ queued: number; candida
     candidates.push({ kind: 'event_mock', dedupe: `mock:${e.userId}:${e.week}`, params: {} });
   }
 
-  const allowed = candidates.filter((candidate) => e.profile.messages === 'all' || IMPORTANT.includes(candidate.kind))
-    .sort((a, b) => PRIORITY[b.kind] - PRIORITY[a.kind]).slice(0, MAX_PER_DAY);
-  const chat = e.ctx.user.telegramChatId ?? (await e.ctx.repo.profile(e.userId))?.telegramChatId ?? null;
-  const channel: OutboxRow['channel'] = chat ? 'telegram' : 'web';
+  // Never a kind they muted; win-back only where it can reach them (not the in-app inbox they are not opening).
+  const allowed = candidates.filter((candidate) => !isMuted(e.prefs, candidate.kind) && (target === 'telegram' || !WINBACK.includes(candidate.kind)))
+    .sort((a, b) => PRIORITY[b.kind] - PRIORITY[a.kind]).slice(0, target === 'telegram' ? Math.min(MAX_PER_DAY, e.prefs.dailyLimit) : MAX_PER_DAY);
   const due = dueAtChosenHour(e);
   const queued = await e.b.repo.enqueue(allowed.map((candidate) => ({
-    userId: e.userId, channel, kind: candidate.kind, priority: PRIORITY[candidate.kind], dedupeKey: candidate.dedupe,
+    userId: e.userId, channel: target, kind: candidate.kind, priority: PRIORITY[candidate.kind], dedupeKey: candidate.dedupe,
     payload: { ...message(candidate.kind, locale, candidate.params), data: candidate.data ?? {} },
     dueAt: due.toISOString(), expiresAt: dayEnd(e.today, e.profile.timeZone).toISOString(),
   })));
-  if (allowed.some((candidate) => candidate.kind.startsWith('winback_'))) {
-    const stage = allowed.find((candidate) => candidate.kind.startsWith('winback_'))!.data!.stage as number;
+  if (allowed.some((candidate) => WINBACK.includes(candidate.kind))) {
+    const stage = allowed.find((candidate) => WINBACK.includes(candidate.kind))!.data!.stage as number;
     await e.b.repo.saveProfile(e.userId, { lapseStage: stage });
   }
   return { queued, candidates: allowed.map((candidate) => candidate.kind) };
 }
 
-/** Today at the person's chosen hour (or now if that has passed), never inside quiet hours. */
+/** Today at the person's preferred hour, or now if that has passed (core's quiet hours apply when it is sent). */
 function dueAtChosenHour(e: Engage): Date {
   const chosen = new Date(dayStart(e.today, e.profile.timeZone).getTime() + e.profile.notifyHour * 3_600_000);
-  if (chosen.getTime() > e.now.getTime()) return chosen;
-  const hour = localParts(e.now, e.profile.timeZone).hour;
-  return inQuietHours(hour) ? new Date(dayStart(addDays(e.today, hour >= QUIET_END ? 1 : 0), e.profile.timeZone).getTime() + QUIET_END * 3_600_000) : e.now;
-}
-
-export const rowView = (row: OutboxRow) => ({ id: row.id, kind: row.kind, text: row.payload.text, buttons: row.payload.buttons, data: row.payload.data ?? {}, created_at: row.createdAt, claim: row.claimToken });
-
-// --- Routes ----------------------------------------------------------------------------------------
-/** Plans today's messages for the caller. The bots call it with the service secret for each due person. */
-export async function tick(ctx: RequestContext) {
-  const e = await begin(ctx, { locale: false });
-  return await planMessages(e);
-}
-
-/** A bot drains the caller's due messages: each is claimed once and passes the core budget, or waits. */
-export async function claimOutbox(ctx: RequestContext) {
-  const e = await begin(ctx, { locale: false });
-  const body = record(await ctx.body());
-  const channel = oneOf(body.channel ?? 'telegram', 'channel', ['telegram'] as const);
-  const bot = body.bot === undefined ? 'student' : text(body.bot, 'bot', { max: 20 });
-  if (!/^[a-z][a-z0-9_]{1,19}$/.test(bot)) return { messages: [] };
-  const limit = body.limit === undefined ? MAX_PER_DAY : integer(body.limit, 'limit', 1, MAX_PER_DAY);
-  return { messages: (await drainFor(e, channel, bot, limit)).map(rowView) };
+  return chosen.getTime() > e.now.getTime() ? chosen : e.now;
 }
 
 /**
- * Claims a person's due messages for one bot. Each is claimed once; then engage's quiet
- * hours in their zone and the core budget across every bot decide: send now, try again
- * at the next allowed moment, or drop it when that would be too late.
+ * The engage.deliver job: claims due Telegram messages across everyone and sends each
+ * through ctx.notify.send (the Schood bot, inside the person's own choices and budget).
  */
-export async function drainFor(e: Engage, channel: 'telegram', bot: string, limit: number): Promise<OutboxRow[]> {
-  const claimed = await e.b.repo.claim(e.userId, channel, e.now, limit);
-  const out: OutboxRow[] = [];
-  const local = localParts(e.now, e.profile.timeZone);
-  for (const row of claimed) {
-    // Engage's own quiet hours in the person's chosen zone, then the core budget across every bot.
-    if (inQuietHours(local.hour)) {
-      const morning = new Date(dayStart(addDays(local.day, local.hour >= QUIET_END ? 1 : 0), e.profile.timeZone).getTime() + QUIET_END * 3_600_000);
-      if (morning.getTime() < Date.parse(row.expiresAt)) await e.b.repo.release(row.id, row.claimToken!, morning.toISOString(), 'quiet_hours');
-      else await e.b.repo.finish(row.id, row.claimToken!, 'skipped', e.now.toISOString(), 'quiet_hours');
-      continue;
+export async function deliverDue(ctx: RequestContext, repo: EngageRepository, limit = 100) {
+  const now = ctx.now(), at = now.toISOString();
+  const counts = { claimed: 0, sent: 0, later: 0, skipped: 0, moved_to_inbox: 0, failed: 0 };
+  for (const row of await repo.claimDue(now, limit)) {
+    counts.claimed++;
+    const kind = row.kind as MessageKind;
+    try {
+      const result = await ctx.notify.send(row.userId, { kind: NOTIFY_KIND[kind] ?? 'engage.progress', text: row.payload.text, buttons: row.payload.buttons.slice(0, 4), dedupeKey: `engage:${row.dedupeKey}` });
+      if (result.sent) { await repo.finish(row.id, row.claimToken!, 'sent', at); counts.sent++; continue; }
+      const retry = result.retryAt ? Date.parse(result.retryAt) : NaN;
+      switch (result.reason) {
+        case 'deferred':
+          // The Schood bot queued it for the person's own delivery time.
+          await repo.finish(row.id, row.claimToken!, 'sent', at, 'deferred');
+          counts.sent++;
+          break;
+        case 'quiet_hours':
+        case 'daily_limit':
+          if (Number.isFinite(retry) && retry > now.getTime() && retry < Date.parse(row.expiresAt)) { await repo.release(row.id, row.claimToken!, new Date(retry).toISOString(), result.reason); counts.later++; }
+          else { await repo.finish(row.id, row.claimToken!, 'skipped', at, result.reason); counts.skipped++; }
+          break;
+        case 'delivery_off':
+        case 'no_telegram': {
+          await repo.finish(row.id, row.claimToken!, 'skipped', at, result.reason);
+          const prefs = await ctx.notify.prefs(row.userId);
+          if (prefs.delivery.includes('web') && !isMuted(prefs, kind) && !WINBACK.includes(kind)) {
+            counts.moved_to_inbox += await repo.enqueue([{ userId: row.userId, channel: 'web', kind: row.kind, priority: row.priority, dedupeKey: `${row.dedupeKey}:web`.slice(0, 200), payload: row.payload, dueAt: at, expiresAt: row.expiresAt }]);
+          } else counts.skipped++;
+          break;
+        }
+        case 'failed':
+          if (row.attempts < 3) { await repo.release(row.id, row.claimToken!, new Date(now.getTime() + 15 * 60_000).toISOString(), 'failed'); counts.later++; }
+          else { await repo.finish(row.id, row.claimToken!, 'failed', at, 'failed'); counts.failed++; }
+          break;
+        default:
+          // muted or suppressed: the person said no; drop it.
+          await repo.finish(row.id, row.claimToken!, 'skipped', at, result.reason);
+          counts.skipped++;
+      }
+    } catch (cause) {
+      // One message's failure never stops the others; it is tried again on the next run.
+      counts.failed++;
+      console.error(JSON.stringify({ event: 'engage_deliver_failed', request_id: ctx.requestId, error: String(cause).slice(0, 200) }));
+      await repo.release(row.id, row.claimToken!, new Date(now.getTime() + 15 * 60_000).toISOString(), 'error').catch(() => {});
     }
-    const decision = await e.ctx.notify.take(e.userId, `engage.${bot}`);
-    if (decision.allowed) { out.push(row); continue; }
-    // The budget says when to try again; never earlier than the next local morning for a used-up day.
-    const nextMorning = dayStart(addDays(local.day, 1), e.profile.timeZone).getTime() + QUIET_END * 3_600_000;
-    const stated = Date.parse(decision.retryAt);
-    const retry = decision.reason === 'daily_limit' ? Math.max(nextMorning, Number.isFinite(stated) ? stated : 0) : Number.isFinite(stated) && stated > e.now.getTime() ? stated : nextMorning;
-    if (retry < Date.parse(row.expiresAt)) await e.b.repo.release(row.id, row.claimToken!, new Date(retry).toISOString(), decision.reason);
-    else await e.b.repo.finish(row.id, row.claimToken!, 'skipped', e.now.toISOString(), decision.reason);
   }
-  return out;
+  return counts;
 }
 
-export async function ackOutbox(ctx: RequestContext) {
-  const e = await begin(ctx, { locale: false });
-  const body = record(await ctx.body());
-  const id = uuid(body.id, 'id'), claim = uuid(body.claim, 'claim');
-  const status = oneOf(body.status, 'status', ['sent', 'failed'] as const);
-  const reason = optionalText(body.reason, 'reason', { max: 80 });
-  const own = (await e.b.repo.outbox(e.userId, { statuses: ['claimed'], limit: 20 })).some((row) => row.id === id);
-  if (!own) return { ok: false };
-  return { ok: await e.b.repo.finish(id, claim, status, e.now.toISOString(), reason) };
-}
+export const rowView = (row: OutboxRow) => ({ id: row.id, kind: row.kind, text: row.payload.text, buttons: row.payload.buttons, data: row.payload.data ?? {}, created_at: row.createdAt });
 
 /** Web messages for the signed-in person: shown once as new, then kept for a week. */
 export async function inbox(ctx: RequestContext) {

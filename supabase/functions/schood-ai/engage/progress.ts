@@ -1,12 +1,13 @@
 import { creditPrice } from '../../../../packages/ai-core/src/mod.ts';
 import { bool, integer, oneOf, optionalText, record, uuid } from '../input.ts';
-import { SchoodAIError, type RequestContext } from '../types.ts';
+import type { RequestContext } from '../types.ts';
 import { begin, dayEnd, dayStart, refuse, requireSchoodAdmin, type Engage } from './base.ts';
 import { leagueSummary } from './league.ts';
 import {
   addDays, ALL_QUESTS_XP, CHALLENGE_XP, CHALLENGES, DAILY_LIMIT_CHOICES, DAILY_XP_CAP, dailyQuests, ENOUGH_MINUTES, enoughToday, isAdult, isRegion, leaderboardVisibility,
   LEVEL_BANDS, limitReached, questProgress, REGIONS, schoolKey, streakState, validBirthDate, validTimeZone, weakSpot, weeklyChallenge,
 } from './rules.ts';
+import type { ProfilePatch } from './store.ts';
 import type { DayRow, EngageProfile } from './types.ts';
 
 // E5 streaks, daily quests and the weekly challenge, freezes, the engage settings
@@ -85,9 +86,9 @@ export const wellbeingView = (profile: EngageProfile, today: DayRow | undefined)
 export const profileView = (profile: EngageProfile, today: string) => ({
   adult: isAdult(profile, today),
   age_known: !!profile.birthDate,
+  // Read-only here: time zone and preferred hour are set in Settings → Notifications (core/notify-prefs).
   time_zone: profile.timeZone,
   notify_hour: profile.notifyHour,
-  messages: profile.messages,
   region: profile.region,
   school: profile.school,
   leaderboard: leaderboardVisibility(profile, today),
@@ -109,17 +110,14 @@ export async function getSettings(ctx: RequestContext) {
 export async function saveSettings(ctx: RequestContext) {
   const e = await begin(ctx);
   const body = record(await ctx.body());
-  const patch: Partial<EngageProfile> = {};
+  const patch: ProfilePatch = {};
   if (body.birth_date !== undefined) {
     if (!validBirthDate(body.birth_date, e.today)) refuse('invalid_request', 'birth_date must be a real date.', 400, { field: 'birth_date' });
     if (!(await e.b.repo.setBirthDate(e.userId, body.birth_date as string))) refuse('birth_date_locked', 'Your date of birth is already set. Schood support can correct it.', 409);
   }
-  if (body.time_zone !== undefined) {
-    if (!validTimeZone(body.time_zone)) refuse('invalid_request', 'time_zone must be a time zone.', 400, { field: 'time_zone' });
-    patch.timeZone = body.time_zone as string;
+  for (const field of ['time_zone', 'notify_hour', 'messages'] as const) {
+    if (body[field] !== undefined) refuse('use_notify_prefs', 'Time zone, hour and messages are set in core/notify-prefs.', 400, { field });
   }
-  if (body.notify_hour !== undefined) patch.notifyHour = integer(body.notify_hour, 'notify_hour', 8, 21);
-  if (body.messages !== undefined) patch.messages = oneOf(body.messages, 'messages', ['all', 'important', 'none'] as const);
   if (body.region !== undefined) patch.region = body.region === null ? null : isRegion(body.region) ? body.region : refuse('invalid_request', 'region is unknown.', 400, { field: 'region' });
   if (body.school !== undefined) patch.school = body.school === null || body.school === '' ? null : schoolKey(optionalText(body.school, 'school', { max: 80 })) ?? refuse('invalid_request', 'school is too short.', 400, { field: 'school' });
   if (body.league_opt_out !== undefined) patch.leagueOptOut = bool(body.league_opt_out, 'league_opt_out');
@@ -164,21 +162,20 @@ export async function buyFreeze(ctx: RequestContext) {
   if (core.streak.freezes >= core.streak.maxFreezes) refuse('freeze_limit', 'You already hold the most freezes you can.', 409, { max: core.streak.maxFreezes });
   const cost = creditPrice('streak.freeze').credits;
   const reference = `engage.freeze:${e.userId}:${e.week}`;
+  // One a week, also under racing requests; a reservation left by a failed attempt is resumed.
   const reserved = await e.b.repo.reserveFreeze(e.userId, { day: e.today, weekStart: e.week, reference, credits: cost });
   if (!reserved) refuse('freeze_week_used', 'One freeze can be bought per week.', 409);
-  const [access, plan] = await Promise.all([ctx.workspace(), ctx.plan()]);
-  const outcome = await ctx.repo.charge({ workspaceId: access.workspace.id, userId: e.userId, cost, creditKey: 'streak.freeze', reference, grant: plan.grant, anchor: plan.anchor })
-    .catch(async (cause) => { await e.b.repo.cancelFreeze(reserved!.id); throw cause; });
-  if (!outcome.ok) {
-    await e.b.repo.cancelFreeze(reserved!.id);
-    if (outcome.code === 'insufficient_credits') throw new SchoodAIError('insufficient_credits', 'Not enough credits.', 402, { cost, available: outcome.available ?? 0 });
-    if (outcome.code === 'budget_exhausted') throw new SchoodAIError('budget_exhausted', 'Your budget is used.', 402, { budget: outcome.budget ?? 0 });
-    throw new SchoodAIError('freeze_failed', 'The freeze could not be bought.', 409);
+  // Core's credit spend: plan, switches and adults only (age sources; a minor is never charged), once per reference.
+  const receipt = await ctx.credits.spend({ key: 'streak.freeze', reference }).catch(async (cause) => { await e.b.repo.cancelFreeze(reserved!.id); throw cause; });
+  try {
+    await e.b.repo.confirmFreeze(reserved!.id);
+  } catch (cause) {
+    await receipt.refund();
+    throw cause;
   }
-  await e.b.repo.confirmFreeze(reserved!.id);
-  await ctx.audit('engage.freeze_bought', { credits: cost, week: e.week });
+  await ctx.audit('engage.freeze_bought', { credits: receipt.credits, week: e.week });
   const after = await progressCore(e);
-  return { streak: streakView(after.streak, e.adult), credits: cost, balance: outcome.balance.total };
+  return { streak: streakView(after.streak, e.adult), credits: receipt.credits, balance: receipt.balance.total };
 }
 
 /** The progress snapshot: streak, quests, challenge, league, wellbeing. The web home and the bots read this. */
