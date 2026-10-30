@@ -19,11 +19,14 @@ import type { CallRecord, CallStatus, CapScope, ServiceSettings } from './types.
 //   5. records every attempt in ai_calls with tokens, latency, status and USD cost.
 // It never throws for provider trouble; it returns a typed result.
 //
-// A workspace's own model keys (C15, registerOwnKeyResolver): when the workspace has a
+// A workspace's own model keys (C15, registerOwnKeyResolver): only when the workspace's
+// plan grants C15 (the request says so) is the resolver asked. When the workspace has a
 // key for a provider on the route, only those models are tried, with that key, and
-// never Schood's keys. The log names the provider `byok:<label>` with no USD cost,
+// never Schood's keys. A workspace that has keys but whose plan no longer grants C15 is
+// refused (own_key_plan → plan_required), never moved to Schood's keys without notice. The log names the provider `byok:<label>` with no USD cost,
 // and the shared circuit breaker ignores those attempts (one centre's bad key must not
-// switch a model off for everyone). The key itself is never logged or stored.
+// switch a model off for everyone). The key itself is never logged or stored. If the key
+// store cannot answer, a centre's call is refused (ai_unavailable, own_key_check).
 
 export interface Timeouts {
   /** One non-streaming attempt. */
@@ -74,6 +77,8 @@ export interface GatewayDeps {
   timeouts?: Partial<Timeouts>;
   /** A workspace's own key for a provider (C15); null when it has none. Never logged. */
   ownKey?(input: { workspaceId: string; providerKey: string }): Promise<OwnKey | null>;
+  /** Whether the workspace has own keys at all, without unsealing one (asked only when its plan lacks C15). */
+  ownKeyConfigured?(input: { workspaceId: string }): Promise<boolean>;
 }
 /** A workspace's own provider key, unsealed. feeCredits: the platform fee charged per call instead of the credit price (0 when billed by contract). */
 export interface OwnKey { label: string; apiKey: string; feeCredits?: number }
@@ -94,13 +99,16 @@ export interface GatewayRequest {
   credits?: number;
   chargeId?: string | null;
   signal?: AbortSignal;
+  /** Set by charged calls in a centre workspace: whether its plan grants C15 (own keys), and the plans that would. Left out: no own keys (a personal workspace). */
+  ownKeys?: { allowed: boolean; plans: string[] };
 }
 export type SpeechInRequest = Omit<GatewayRequest, 'messages' | 'maxTokens' | 'temperature'> & { audio: Uint8Array; mime: string; language?: string | null; prompt?: string | null };
 export type SpeechOutRequest = Omit<GatewayRequest, 'messages' | 'maxTokens' | 'temperature'> & { text: string; voice?: string | null; format?: 'mp3' | 'opus' | 'wav' };
 
 export type GatewayFailure =
   | { status: 'disabled'; scope: 'global' | 'feature' | 'workspace'; callId: string }
-  | { status: 'unavailable'; reason: 'no_route' | 'no_model' | 'no_key'; callId: string }
+  | { status: 'unavailable'; reason: 'no_route' | 'no_model' | 'no_key' | 'own_key_check'; callId: string }
+  | { status: 'refused'; reason: 'own_key_plan'; plans: string[]; callId: string }
   | { status: 'capped'; scope: CapScope; callId: string }
   | { status: 'failed'; code: string; callId: string; partial?: string }
   | { status: 'stopped'; callId: string; partial: string };
@@ -155,7 +163,19 @@ export function createGateway(deps: GatewayDeps) {
     const { candidates } = candidateModels(registry, route, { capabilities, noTraining: req.requires?.noTraining === true }, (key) => breaker.healthy(key, nowMs()));
     if (!candidates.length) return refuse({ status: 'unavailable', reason: 'no_model', callId }, 'unavailable', 'no_model', route.key);
     // The workspace's own keys first (C15): then only those models, never Schood's keys.
-    const own = req.workspaceId ? await ownKeys(req.workspaceId, candidates) : null;
+    // The resolver is asked only when the plan grants C15; keys without it are refused.
+    let own: Exclude<Awaited<ReturnType<typeof ownKeys>>, 'unknown'> = null;
+    if (req.workspaceId && req.ownKeys && deps.ownKey) {
+      if (req.ownKeys.allowed) {
+        const found = await ownKeys(req.workspaceId, candidates);
+        if (found === 'unknown') return refuse({ status: 'unavailable', reason: 'own_key_check', callId }, 'unavailable', 'own_key_check', route.key);
+        own = found;
+      } else {
+        const configured = await keysConfigured(req.workspaceId);
+        if (configured === 'unknown') return refuse({ status: 'unavailable', reason: 'own_key_check', callId }, 'unavailable', 'own_key_check', route.key);
+        if (configured) return refuse({ status: 'refused', reason: 'own_key_plan', plans: req.ownKeys.plans.length ? req.ownKeys.plans : ['enterprise'], callId }, 'unavailable', 'own_key_plan', route.key);
+      }
+    }
     // Otherwise a key must be configured and allowed to reach this provider's host.
     const keyed: Ticket['candidates'] = own?.candidates ?? candidates.flatMap((candidate) => {
       const env = candidate.provider.apiKeyEnv;
@@ -172,16 +192,24 @@ export function createGateway(deps: GatewayDeps) {
     return { ok: true, callId, mode, route, candidates: keyed, ownKey: own?.ownKey ?? null };
   }
 
+  /** Whether a centre without C15 still has own keys; 'unknown' when the check failed (the call is refused, never moved). */
+  async function keysConfigured(workspaceId: string): Promise<boolean | 'unknown'> {
+    if (!deps.ownKeyConfigured) return false;
+    try { return (await deps.ownKeyConfigured({ workspaceId })) === true; } catch (cause) {
+      console.error(JSON.stringify({ event: 'schood_ai_own_key_check_failed', error: String(cause instanceof Error ? cause.name : 'error') }));
+      return 'unknown';
+    }
+  }
   /** The workspace's own keys for the route's providers, or null when it has none (or the resolver failed). */
-  async function ownKeys(workspaceId: string, candidates: Candidate[]): Promise<{ candidates: Ticket['candidates']; ownKey: { label: string; feeCredits: number } } | null> {
+  async function ownKeys(workspaceId: string, candidates: Candidate[]): Promise<{ candidates: Ticket['candidates']; ownKey: { label: string; feeCredits: number } } | 'unknown' | null> {
     if (!deps.ownKey) return null;
     const found = new Map<string, OwnKey | null>();
     for (const providerKey of new Set(candidates.map((candidate) => candidate.provider.key))) {
       let key: OwnKey | null = null;
       try { key = await deps.ownKey({ workspaceId, providerKey }); } catch (cause) {
-        // Never the key: only that the lookup failed. Schood's own keys and prices apply.
+        // Never the key: only that the lookup failed. The call is refused, never moved to Schood's keys.
         console.error(JSON.stringify({ event: 'schood_ai_own_key_failed', provider: providerKey, error: String(cause instanceof Error ? cause.name : 'error') }));
-        return null;
+        return 'unknown';
       }
       const valid = key && /^[a-z0-9][a-z0-9_-]{0,40}$/.test(key.label) && typeof key.apiKey === 'string' && /^[\x21-\x7e]{8,4096}$/.test(key.apiKey)
         && (key.feeCredits === undefined || (Number.isInteger(key.feeCredits) && key.feeCredits >= 0 && key.feeCredits <= 1000));

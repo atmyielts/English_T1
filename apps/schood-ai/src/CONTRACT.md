@@ -85,14 +85,14 @@ export const homeCards: HomeCard[] = [
 
 | Export | Use |
 |---|---|
-| `api(path, { method, body, query, workspaceId, idempotencyKey, anonymous })` | JSON calls to `/schood-ai/<area>/<action>`. Pass `useWorkspace().workspaceId` (null means personal). Errors are `ApiError` with `code` and `details`. `anonymous: true` calls a route marked `anonymous` with no token, for pages that work signed out (Live Quiz players, shared Passport links). |
+| `api(path, { method, body, query, workspaceId, idempotencyKey, anonymous })` | JSON calls to `/schood-ai/<area>/<action>`. Pass `useWorkspace().workspaceId` (null means personal). Errors are `ApiError` with `code` and `details`. `anonymous: true` calls a route marked `anonymous` with no token, for pages that work signed out (Live Quiz players, shared Passport links). Over the route's limit the error is `rate_limited` with `details.retry_after`: wait until then (a polling player slows down) instead of retrying at once. |
 | `stream(path, { body, onEvent, signal, workspaceId })` | SSE calls. |
 | `Chat` | A streaming chat with any specialist: `<Chat specialist="tutor" threadId={id} onThread={…} initialMessage={…}/>`. Includes stop, retry, report, cost before sending and the paywall. |
 | `Answer` | AI text as Markdown with KaTeX (`\( \)`, `\[ \]`). Raw HTML is dropped and remote images are not loaded. |
 | `ReviewCard`, `GenerationReviewCard`, `useGeneration` | Approve & save / Decline for drafts, polling a generation job. |
 | `ApproveRunCard` | Approve & run for a queued action, showing the server's exact payload. |
 | `CreditCost`, `CreditBalance`, `PlanGate`, `Paywall` | Cost before every action (from the ai-core price table) and plan gates. |
-| `ApiErrorState`, `CappedState`, `ErrorState`, `EmptyState`, `LoadingState` | Every AI screen shows refusals with `ApiErrorState`, never a broken screen. |
+| `ApiErrorState`, `CappedState`, `ErrorState`, `EmptyState`, `LoadingState` | Every AI screen shows refusals with `ApiErrorState`, never a broken screen. A centre whose plan no longer includes its own model keys gets `plan_required` with `feature: 'C15'` and `plans: ['enterprise']`; the centre's key settings screen should say so and offer to remove the keys. |
 | `Button` (`primary`, `secondary`, `ghost`, `spark`, `danger`, `onDark`) and the other primitives | `Card`, `PageHeader`, `Eyebrow`, `Badge`, `SparkMark`, `Thinking`, `Field`, `TextInput`, `TextArea`, `Dialog`, `FocusSurface`, `BrandMark` |
 | `useWorkspace()` | `me`, `workspaceId`, `audience`, `access(featureId)`, `refresh()`. |
 | `askAssistant(prompt)` | Opens the assistant with a prefilled prompt, without putting it in the URL. |

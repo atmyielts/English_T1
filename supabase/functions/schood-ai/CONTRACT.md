@@ -371,6 +371,7 @@ registerSystemJob('centre.monday_brief', {
     - A Live Quiz route returns the open game from `await body()` (the parsed JSON body; your route can still read it) or from the query, so a whole class behind one school address plays on the game's budget.
     - Return null for anything you do not know, so made-up tokens and codes stay limited per IP and cannot buy a fresh budget. The key is hashed with the salt like an address.
     - With a `rateKey`, `perMinute` and `perDay` (up to 3000 and 1000000) apply per key. A per-IP ceiling across all keys still applies: `ipLimit: { perMinute, perDay }`, default 3000 a minute and 300000 a day, at most 6000 and 2000000. A request is checked against its key first, then the ceiling.
+    - Requests your `rateKey` did not recognise (it returned null) are limited per IP by `unkeyedLimit: { perMinute, perDay }`. It defaults to the ordinary anonymous limit (30 a minute, 1000 a day). It can be set lower, but never above the route's own limits or the ordinary maximum (600 a minute, 100000 a day). So made-up Live Quiz codes never get a keyed route's 3000 a minute.
 - **Embeddable widgets:** `anonymous: { cors: 'any' }` answers CORS for any `Origin` (`GET`, `POST`, `Content-Type` and `X-Schood-Locale` only, no credentials, so no browser session crosses over). Core does not know a centre's sites, so the route must check `ctx.origin` against the centre's own list and refuse others. Serve `/embed/widget.js` from the app or Pages; it calls this route.
 - **Webhooks:** Telegram sends the bot's secret token in `X-Telegram-Bot-Api-Secret-Token`. Read it from `ctx.headers`, find the bot by a hash of it in your store, compare in constant time, and answer 200 quickly (Telegram retries otherwise). Never log the token or the update.
 - **What runs:** `ctx.caller === 'anonymous'`, with the same throwing members as system routes; a token, if sent, is ignored.
@@ -399,13 +400,19 @@ The centre area keeps a centre's own provider keys (sealed in Supabase Vault, ne
 registerOwnKeyResolver(async ({ workspaceId, providerKey, store }) => {
   const key = await store(centreStore).ownKey(workspaceId, providerKey);   // enabled keys only
   return key ? { label: key.label, apiKey: key.secret, feeCredits: key.fee } : null;
+}, {
+  // Has this workspace any enabled own key? No unsealing; core asks only when its plan lacks C15.
+  configured: async ({ workspaceId, store }) => (await store(centreStore).ownKeyCount(workspaceId)) > 0,
 });
 ```
 
+- **The plan comes first.** Core asks the resolver only when the workspace's plan grants C15 (Enterprise), so a lapsed or downgraded plan never unseals a key. Personal workspaces never have own keys and nothing is checked there.
+- **Keys without C15 are refused.** When a centre's plan does not grant C15, core asks `configured`. If the centre still has keys, the call is refused with `plan_required` (`plans: ['enterprise']`, `feature: 'C15'`), with nothing called or charged. It is never moved to Schood's keys and credits without the centre knowing. To use Schood credits again, the owner removes the keys. Register `configured`: without it core cannot tell, and treats the centre as having no keys.
+- **If the key store cannot answer** (the resolver or `configured` throws), the centre's call is refused with `ai_unavailable` (`reason: 'own_key_check'`). It is never moved to Schood's key and never free.
 - When the workspace has a key for a provider on the route, the gateway tries **only** those models, with that key. It never falls back to Schood's keys, so a centre's bad key fails the call (refunded) rather than costing Schood.
 - **Charging:** the call charges `feeCredits` (0 to 1000, the platform fee) instead of the credit price; 0 or left out charges nothing (a contract fee billed from `ai_calls`).
 - **Logging:** `ai_calls.provider_key` is `byok:<label>` with no USD cost, so it never counts against Schood's spend cap. The key is never logged, stored or returned. The shared circuit breaker ignores these attempts.
-- Plans, roles, switches and the call caps still apply. If the resolver throws, the call uses Schood's keys and prices.
+- Plans, roles, switches and the call caps still apply.
 
 ## Chat stream (`POST core/chat`)
 
