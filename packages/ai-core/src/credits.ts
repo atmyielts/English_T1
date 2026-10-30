@@ -115,6 +115,11 @@ export const CREDIT_PRICES = {
   // outline reuses "term outline" (10).
   'placement.mark': price('C5', 4, 'premium', { assumed: true }),
   'curriculum.outline': price('C12', 10, 'standard', { assumed: true }),
+  // Lifetime engagement. A story episode written inside an authored arc is priced like a
+  // graded reading (L10). A streak freeze bought by an adult is not a model call; it is a
+  // credit spend the engage area charges directly, and the pricing phase owns its number.
+  'story.episode': price('E8', 3, 'standard', { assumed: true }),
+  'streak.freeze': price('E5', 10, 'standard', { assumed: true, adultsOnly: true }),
 } satisfies Record<string, CreditPrice>;
 
 export type CreditKey = keyof typeof CREDIT_PRICES;

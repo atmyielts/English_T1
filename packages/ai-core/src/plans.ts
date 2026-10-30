@@ -120,6 +120,15 @@ export const FEATURES: Record<string, FeatureRule> = Object.fromEntries([
   // Schood Coaches (Telegram bots B1–B6): all six come with Plus and Plus Family; a
   // single-coach pass or a team seat grants one coach directly (see AccessInput.grants).
   ...['B1', 'B2', 'B3', 'B4', 'B5', 'B6'].map((id) => rule(id, 'coach', ['plus', 'family'], STUDENT_FACING)),
+  // Lifetime engagement (E1–E14, `[ASSUMPTION]` owner to confirm). The habit layer comes with
+  // every learner plan and reaches centre students by role. The Skill Passport (E3) is the
+  // person's own record, so it stays open after a plan ends. Certificate exams (E12) are open
+  // to see; each sitting is a separate purchase checked by the engage area. The talent pool
+  // (E13) opt-in is open; employers are granted by contract and the pool ships switched off.
+  ...['E1', 'E2', 'E4', 'E5', 'E6', 'E7', 'E8', 'E9', 'E10', 'E11', 'E14'].map((id) => rule(id, 'learner', ['plus', 'family', 'centre'], STUDENT_FACING)),
+  rule('E3', 'learner', [], STUDENT_FACING, true),
+  rule('E12', 'learner', [], STUDENT_FACING, true),
+  rule('E13', 'learner', [], STUDENT_FACING, true),
 ].map((entry) => [entry.id, entry]));
 
 export interface AccessInput {
