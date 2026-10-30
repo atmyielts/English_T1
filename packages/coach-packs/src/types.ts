@@ -180,6 +180,11 @@ interface ActivityBase {
   /** About how long it takes. */
   minutes: number;
   tags?: string[];
+  /**
+   * Curated fact datasets (`facts[].id`) this activity relies on, such as a student-visa
+   * interview. The model gets only these facts, and the learner sees when they were checked.
+   */
+  facts?: string[];
 }
 
 export interface CueCard {

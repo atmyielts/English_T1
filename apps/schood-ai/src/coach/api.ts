@@ -50,6 +50,8 @@ export interface SessionDetail {
   turns: { seq: number; role: 'coach' | 'learner'; kind: string; prompt: string | null; content: string; input_mode: string | null; has_clip: boolean; metrics: Record<string, unknown>; timing: Record<string, unknown>; created_at: string }[];
   scores: { turn: number | null; criterion: string; score: number | null; status: string; evidence: Evidence[]; source: string }[];
   errors: Record<string, { name: string; explain: string }>;
+  /** Curated facts the activity relied on (B5): when they were checked and the official source. */
+  facts?: { id: string; title: string; checked_at: string; stale: boolean; source: { name: string; url: string } }[];
 }
 export interface TeamList { teams: { id: string; name: string; role: 'manager' | 'member'; packs: string[]; seats: number; valid_until: string }[] }
 export interface TeamBoard {

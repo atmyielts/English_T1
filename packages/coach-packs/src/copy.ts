@@ -285,6 +285,8 @@ export const COPY = {
   'photo.solution': c('✅ Show the solution', '✅ Yechimni ko‘rsatish', '✅ Показать решение'),
   'photo.send': c('📷 Send a photo of the problem: I’ll give you hints first, and the worked solution when you ask.', '📷 Masala rasmini yuboring: avval maslahatlar beraman, so‘rasangiz — to‘liq yechimni.', '📷 Пришлите фото задачи: сначала подсказки, а полное решение — по запросу.'),
   'quiz.hint': c('💡 Hint', '💡 Maslahat', '💡 Подсказка'),
+  'facts.note': c('ℹ️ <b>{title}</b>: the facts in this practice were checked on {date} ({source}). Rules change, so check the official site before you act: {url}', 'ℹ️ <b>{title}</b>: bu mashqdagi ma’lumotlar {date} da tekshirilgan ({source}). Qoidalar o‘zgaradi, shuning uchun harakat qilishdan oldin rasmiy saytni tekshiring: {url}', 'ℹ️ <b>{title}</b>: факты в этой практике проверены {date} ({source}). Правила меняются: перед тем как действовать, проверьте официальный сайт: {url}'),
+  'facts.stale': c('⚠️ <b>{title}</b>: these facts were checked on {date} and may be out of date. Use this only for practice and check the official site: {url}', '⚠️ <b>{title}</b>: bu ma’lumotlar {date} da tekshirilgan va eskirgan bo‘lishi mumkin. Faqat mashq uchun foydalaning va rasmiy saytni tekshiring: {url}', '⚠️ <b>{title}</b>: эти факты проверены {date} и могут быть устаревшими. Используйте их только для практики и проверьте официальный сайт: {url}'),
 } satisfies Record<string, Copy>;
 
 export type CopyKey = keyof typeof COPY;

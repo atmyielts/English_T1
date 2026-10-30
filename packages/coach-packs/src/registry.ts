@@ -1,7 +1,7 @@
 import ielts from '../ielts/index.ts';
 import speaking from '../speaking/index.ts';
 import type { CoachPack, PackSource } from './types.ts';
-import { buildPack } from './validate.ts';
+import { buildPack, indexPack } from './validate.ts';
 
 // Every coach pack the engine serves. Adding a coach is one folder under
 // packages/coach-packs/<id>/ and one line here, plus its bot token (README.md).
@@ -22,4 +22,17 @@ export function loadPacks(): ReadonlyMap<string, CoachPack> {
   }
   loaded = packs;
   return packs;
+}
+
+let indexed: ReadonlyMap<string, CoachPack> | null = null;
+/**
+ * The same packs indexed without validation, for the Telegram worker (a free-plan
+ * Worker has about 10 ms of CPU per request; validating both packs takes longer).
+ * CI validates every pack (packages/coach-packs/test), and the function serving
+ * the engine uses loadPacks(), so an invalid pack still never serves.
+ */
+export function ciValidatedPacks(): ReadonlyMap<string, CoachPack> {
+  if (indexed) return indexed;
+  indexed = new Map(PACK_SOURCES.map((source) => [source.manifest.id, indexPack(source)]));
+  return indexed;
 }

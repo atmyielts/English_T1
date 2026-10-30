@@ -171,6 +171,8 @@ export const en = {
   'coach.session.scorecard': 'You spoke {ratio}% of the words, asked {questions} questions and used {words} words per turn.',
   'coach.session.hidden': 'What the other person was thinking',
   'coach.session.errors': 'Corrections',
+  'coach.session.facts': 'Facts in {title} were checked on {date}. Rules change: check the official site before you act:',
+  'coach.session.factsStale': 'Facts in {title} were checked on {date} and may be out of date. Use them only for practice and check the official site:',
   'coach.session.better': 'Say it better',
   'coach.session.youSaid': 'You said:',
   'coach.session.tryThis': 'Try:',

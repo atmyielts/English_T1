@@ -6,6 +6,7 @@ import { integer, isUuid, oneOf, record, text, uuid } from '../input.ts';
 import { SchoodAIError, type RequestContext, type RouteHandler } from '../types.ts';
 import { accessKind, ensureFairUse, forgetTeamSeats } from './access.ts';
 import { keyOf } from './ai.ts';
+import { activityFacts, factsSummary } from './facts.ts';
 import { Bot } from './bot.ts';
 import { handleUpdate } from './engine.ts';
 import { spokenScript } from './flows/quiz.ts';
@@ -200,6 +201,7 @@ export function coachRoutes(): Record<string, RouteHandler> {
           turns: turns.map((turn) => ({ seq: turn.seq, role: turn.role, kind: turn.kind, prompt: promptText(pack, session.activityId, turn.promptRef), content: turn.content, input_mode: turn.inputMode, has_clip: !!turn.clip, metrics: publicMetrics(turn.metrics), timing: turn.timing, created_at: turn.createdAt })),
           scores: scores.map((score) => ({ turn: turns.find((turn) => turn.id === score.turnId)?.seq ?? null, criterion: score.criterion, score: score.score, status: score.status, evidence: score.evidence, source: score.source })),
           errors: Object.fromEntries(pack.manifest.errorTags.map((tag) => [tag.id, { name: pick(tag.name, ctx.locale), explain: pick(tag.explain, ctx.locale) }])),
+          facts: factsSummary(activityFacts(pack, session.activityId ? pack.byId.get(session.activityId) : null), ctx.locale, ctx.now()),
         };
       },
     },

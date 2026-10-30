@@ -89,3 +89,10 @@ Deno.test('packs: buildPack refuses an invalid pack and indexes a valid one', ()
   assert(pack.byId.size === pack.activities.length && pack.rubricById.size === pack.rubrics.length, 'lookups by id');
   for (const activity of pack.activities) assert(pack.skillById.has(activity.node), `${activity.id}: its skill exists`);
 });
+
+Deno.test('packs: the worker\'s index-only packs are the validated packs', async () => {
+  const { ciValidatedPacks } = await import('../src/registry.ts');
+  const quick = ciValidatedPacks(), checked = loadPacks();
+  assert([...quick.keys()].join() === [...checked.keys()].join(), 'same coaches');
+  for (const [id, pack] of quick) assert(pack.activities === checked.get(id)!.activities && pack.byId.size === checked.get(id)!.byId.size, `${id}: same content`);
+});

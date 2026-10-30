@@ -1,8 +1,9 @@
 import { coachCreditKey, s, type CoachAction, type Schema } from '../../../../packages/ai-core/src/mod.ts';
 import {
-  assess, mergeRepair, needsRepair, overallScale, levelLabel, quoteFound, type Assessment, type CoachPack, type FluencyMetrics, type RawAssessment, type Roleplay, type Rubric,
+  assess, mergeRepair, needsRepair, overallScale, levelLabel, quoteFound, type Assessment, type CoachPack, type FactDataset, type FluencyMetrics, type RawAssessment, type Roleplay, type Rubric,
 } from '../../../../packages/coach-packs/src/mod.ts';
 import { dataBlock, neutralise, wrapUserMessage } from '../prompt.ts';
+import { factsBlock, FACTS_RULE } from './facts.ts';
 import type { ChargedSession, ChatMessage, Locale, RequestContext } from '../types.ts';
 
 // Every model call of the coaches. Prompts keep the core rules (prompt.ts): the
@@ -11,6 +12,9 @@ import type { ChargedSession, ChatMessage, Locale, RequestContext } from '../typ
 // provider: the credit key and its requirements route it (ctx.ai).
 
 export const LANGUAGE: Record<Locale, string> = { en: 'English', uz: 'Uzbek (Latin script, with ‘ in o‘ and g‘)', ru: 'Russian' };
+const LANGUAGE_NAME: Record<Locale, string> = { en: 'English', uz: 'Uzbek', ru: 'Russian' };
+/** The language a learner practises in: the pack's, or their own when the pack is multilingual (B4, B6). */
+export const practiceLocale = (pack: CoachPack, locale: Locale): Locale => (pack.manifest.practiceLanguage === 'mixed' ? locale : pack.manifest.practiceLanguage);
 export const keyOf = (pack: CoachPack, action: CoachAction) => coachCreditKey(pack.manifest.feature, action);
 
 export const RULES = (pack: CoachPack) => [
@@ -78,13 +82,21 @@ export interface AnswerInput {
   fluency: FluencyMetrics | null;
   explain: Locale;
   extra?: string[];
+  /** Curated facts the task relies on (B5): the assessor may use only these. */
+  facts?: readonly FactDataset[];
+  now?: Date;
 }
+
+/** Prompt lines for a task that relies on curated facts. */
+const factsRules = (facts: readonly FactDataset[] | undefined) =>
+  facts?.length ? [FACTS_RULE, '- Judge any fact the learner states only against <schood_data kind="facts">; never correct them from memory.'] : [];
 
 function answerMessages(input: AnswerInput): ChatMessage[] {
   const blocks = [dataBlock({ kind: 'task', title: 'The task', data: input.task }, 0)];
   if (input.fluency) blocks.push(dataBlock({ kind: 'fluency', title: 'Measured fluency', data: input.fluency }, 1));
+  if (input.facts?.length) blocks.push(factsBlock(input.facts, input.now ?? new Date(), 2));
   return [
-    { role: 'system', content: assessorPrompt(input.pack, input.rubric, input.explain, input.extra ?? []) },
+    { role: 'system', content: assessorPrompt(input.pack, input.rubric, input.explain, [...(input.extra ?? []), ...factsRules(input.facts)]) },
     { role: 'user', content: `${blocks.join('\n')}\n${wrapUserMessage(input.answer)}` },
   ];
 }
@@ -126,13 +138,14 @@ function stateSchema(activity: Roleplay): Schema<Record<string, number | string 
   return s.object(shape) as unknown as Schema<Record<string, number | string | boolean>>;
 }
 
-export function personaPrompt(pack: CoachPack, activity: Roleplay, input: { level: number | null; mode: 'gentle' | 'strict'; explain: Locale; state: Record<string, unknown> }): string {
+export function personaPrompt(pack: CoachPack, activity: Roleplay, input: { level: number | null; mode: 'gentle' | 'strict'; explain: Locale; state: Record<string, unknown>; practice?: Locale; facts?: readonly FactDataset[]; now?: Date }): string {
+  const practice = input.practice ?? practiceLocale(pack, 'en');
   const level = input.level ?? activity.levels[0];
   const note = activity.levelNotes.find(([max]) => level <= max)?.[1] ?? activity.levelNotes.at(-1)![1];
   return [
     RULES(pack),
     '',
-    `You play ${neutralise(activity.persona.name)}, ${neutralise(activity.persona.role)}, in a spoken English practice role-play. The learner's level is about ${levelLabel(pack.manifest.scale, level)}.`,
+    `You play ${neutralise(activity.persona.name)}, ${neutralise(activity.persona.role)}, in a spoken practice role-play in ${LANGUAGE_NAME[practice]}. Speak ${LANGUAGE[practice]} only. The learner's level is about ${levelLabel(pack.manifest.scale, level)}.`,
     `Setting: ${activity.setting.en}`,
     `The learner plays: ${activity.learnerRole.en}`,
     `How you speak and behave: ${activity.persona.style}`,
@@ -146,8 +159,9 @@ export function personaPrompt(pack: CoachPack, activity: Roleplay, input: { leve
     input.mode === 'strict'
       ? '- Corrections (strict mode): up to two per turn, every real error, each with the exact quote, a better version and a short explanation.'
       : '- Corrections (gentle mode): at most one per turn, and only when an error blocks meaning or keeps coming back. Usually none.',
-    `- Write correction explanations in ${LANGUAGE[input.explain]}; better versions stay in English. Tag each correction with one of [${pack.manifest.errorTags.map((tag) => tag.id).join(', ')}] or "other".`,
+    `- Write correction explanations in ${LANGUAGE[input.explain]}; better versions stay in ${LANGUAGE_NAME[practice]}. Tag each correction with one of [${pack.manifest.errorTags.map((tag) => tag.id).join(', ')}] or "other".`,
     '- Set end to true when the goals are done, the situation naturally ends, or you would walk away (for example patience ran out). Then say a natural closing line.',
+    ...(input.facts?.length ? ['', ...factsRules(input.facts), factsBlock(input.facts, input.now ?? new Date())] : []),
   ].join('\n');
 }
 
@@ -242,11 +256,13 @@ export function mockMessages(input: AnswerInput & { answers: { label: string; qu
       '- This is a full mock: rate the whole performance the way an examiner would after the test, not answer by answer. Use evidence from across the parts.',
       '- In upgrades pick the answers where a better version would raise the score most.',
       ...(input.extra ?? []),
+      ...factsRules(input.facts),
     ]) },
     { role: 'user', content: [
       dataBlock({ kind: 'task', title: 'The test', data: input.task }, 0),
       dataBlock({ kind: 'fluency', title: 'Measured fluency per answer', data: input.answers.map((answer) => ({ label: answer.label, fluency: answer.fluency })) }, 1),
       dataBlock({ kind: 'questions', title: 'The questions in order', data: input.answers.map((answer) => ({ label: answer.label, question: answer.question })) }, 2),
+      ...(input.facts?.length ? [factsBlock(input.facts, input.now ?? new Date(), 3)] : []),
       wrapUserMessage(input.answers.map((answer) => `[${answer.label}] ${answer.answer}`).join('\n\n')),
     ].join('\n') },
   ];

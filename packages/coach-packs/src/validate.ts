@@ -574,14 +574,21 @@ export function validatePack(source: PackSource): string[] {
     if (!sample.body || typeof sample.body !== 'object') bad(`samples.${sample.id}.body`, 'needs the example');
   }
 
+  const datasets = new Set<string>();
   for (const dataset of source.facts ?? []) {
     const fpath = `facts.${dataset.id}`;
+    if (!ID.test(dataset.id ?? '') || datasets.has(dataset.id)) bad(fpath, 'bad or duplicate id');
+    datasets.add(dataset.id);
+    if (!dataset.topic?.trim()) bad(`${fpath}.topic`, 'needs a topic');
     localized(`${fpath}.title`, dataset.title, 120);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(dataset.checkedAt ?? '') || Number.isNaN(Date.parse(dataset.checkedAt))) bad(`${fpath}.checkedAt`, 'needs YYYY-MM-DD');
     if (!(dataset.maxAgeDays >= 1 && dataset.maxAgeDays <= 730)) bad(`${fpath}.maxAgeDays`, 'must be 1 to 730');
     if (!/^https:\/\//.test(dataset.source?.url ?? '') || !dataset.source?.name) bad(`${fpath}.source`, 'needs a name and an https URL');
     for (const entry of dataset.entries ?? []) localized(`${fpath}.${entry.id}`, entry.statement, 800);
     if (!(dataset.entries ?? []).length) bad(`${fpath}.entries`, 'needs entries');
+  }
+  for (const activity of source.activities ?? []) {
+    for (const id of activity.facts ?? []) if (!datasets.has(id)) bad(`activities.${activity.id}.facts`, `unknown fact dataset ${id}`);
   }
   return problems;
 }
@@ -592,6 +599,15 @@ type Roleplay = Extract<Activity, { kind: 'roleplay' }>;
 export function buildPack(source: PackSource): CoachPack {
   const problems = validatePack(source);
   if (problems.length) throw new PackError(source.manifest?.id ?? 'unknown', problems);
+  return indexPack(source);
+}
+
+/**
+ * Indexes a pack without validating it. Only for packs CI has validated (the
+ * Telegram worker, whose free-plan CPU budget per request is smaller than a
+ * full validation); everything else uses buildPack.
+ */
+export function indexPack(source: PackSource): CoachPack {
   const byId = new Map(source.activities.map((activity) => [activity.id, activity]));
   const cardById = new Map<string, { deck: Deck; card: DeckCard }>();
   for (const activity of source.activities) if (activity.kind === 'deck') for (const card of activity.cards) cardById.set(card.id, { deck: activity, card });

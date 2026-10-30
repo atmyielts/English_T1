@@ -183,3 +183,18 @@ Deno.test('worker: the cron sends due reminders within the subrequest budget and
   equal(await failed.worker.cron(), { sent: 0, failed: 0, blocked: 0 }, 'a failing gate sends nothing');
   equal(failed.to('/schood-coach-gate/delivered').length, 0, 'and reports nothing');
 });
+
+Deno.test('worker: the bot setup script asks Telegram for exactly what the coaches use', async () => {
+  const { setupCalls } = await import('../scripts/setup-webhooks.ts');
+  for (const pack of loadPacks().values()) {
+    const calls = setupCalls(pack, 'secret-0123456789abcdef');
+    const hook = calls.find((call) => call.method === 'setWebhook')!;
+    equal([hook.body.url, hook.body.secret_token, hook.body.allowed_updates], [`https://coach-bots.schood.online/tg/${pack.manifest.id}`, 'secret-0123456789abcdef', ['message', 'callback_query', 'poll_answer']], `${pack.manifest.id}: webhook`);
+    const commands = calls.filter((call) => call.method === 'setMyCommands');
+    equal(commands.map((call) => call.body.language_code ?? 'default'), ['default', 'uz', 'ru'], 'commands per language');
+    for (const call of commands) for (const command of call.body.commands as { command: string; description: string }[]) assert(/^[a-z0-9_]{1,32}$/.test(command.command) && command.description.length >= 3 && command.description.length <= 256, `${pack.manifest.id}: /${command.command}`);
+    for (const call of calls.filter((entry) => entry.method === 'setMyShortDescription')) assert(String(call.body.short_description).length <= 120 && String(call.body.short_description).length > 0, 'short description fits');
+    for (const call of calls.filter((entry) => entry.method === 'setMyDescription')) assert(String(call.body.description).length <= 512 && String(call.body.description).length > 0, 'description fits');
+    equal((calls.at(-1)!.body.menu_button as { web_app: { url: string } }).web_app.url, `https://ai.schood.online/coach/${pack.manifest.id}`, 'the Mini App button');
+  }
+});

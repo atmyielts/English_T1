@@ -172,6 +172,8 @@ export const uz: Record<CoachKey, string> = {
   'coach.session.scorecard': 'So‘zlarning {ratio}% ini siz aytdingiz, {questions} ta savol berdingiz, har navbatda {words} so‘z ishlatdingiz.',
   'coach.session.hidden': 'Suhbatdosh nimani o‘ylagan',
   'coach.session.errors': 'Tuzatishlar',
+  'coach.session.facts': '{title} bo‘yicha ma’lumotlar {date} da tekshirilgan. Qoidalar o‘zgaradi: harakat qilishdan oldin rasmiy saytni tekshiring:',
+  'coach.session.factsStale': '{title} bo‘yicha ma’lumotlar {date} da tekshirilgan va eskirgan bo‘lishi mumkin. Faqat mashq uchun foydalaning va rasmiy saytni tekshiring:',
   'coach.session.better': 'Yaxshiroq ayting',
   'coach.session.youSaid': 'Siz aytdingiz:',
   'coach.session.tryThis': 'Shunday ayting:',

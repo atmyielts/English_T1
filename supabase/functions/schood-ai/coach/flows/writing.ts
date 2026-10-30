@@ -1,6 +1,7 @@
 import { analyseLexis, countWords, escapeHtml, levelLabel, pick, type Assessment, type DataTable, type WritingTask } from '../../../../../packages/coach-packs/src/mod.ts';
 import { SchoodAIError } from '../../types.ts';
 import { assessInSession, keyOf, ladderMessages, ladderSchema, ocrMessages, ocrSchema } from '../ai.ts';
+import { activityFacts, factsNotice } from '../facts.ts';
 import type { Bot, FlowState } from '../bot.ts';
 import { criteriaOf, emit, finishSession, learnFrom, scoreRows } from '../results.ts';
 import { compareRows, criterionLines, errorsBlock, MAX_TEXT, overallLabel, quoteHtml, topDrillTag, upgradesBlock } from './render.ts';
@@ -48,6 +49,8 @@ export async function startWriting(bot: Bot, activityId: string, previousSession
   if (task.data) {
     bot.text(bot.t('write.data', { title: task.data.title, note: task.data.note, table: tableText(task.data) }, { unit: task.data.unit ? ` (${escapeHtml(task.data.unit)})` : '' }), [[bot.app(bot.p('write.chart'), `/chart/${task.id}`)]]);
   }
+  const notice = factsNotice(activityFacts(bot.pack, task), bot.locale, bot.ctx.now());
+  if (notice) bot.text(notice);
   bot.text(bot.t('write.hint', { words: task.minWords, minutes: task.recommendedMinutes }), bot.nav());
 }
 
@@ -101,7 +104,7 @@ async function scoreWriting(bot: Bot, task: WritingTask, text: string, mode: 'te
   let assessment: Assessment;
   try {
     const result = await bot.ctx.ai.charged({ key: keyOf(bot.pack, 'writing'), mode: 'json', reference: bot.reference('write') }, (session) => assessInSession(session, {
-      pack: bot.pack, rubric, explain: bot.explainIn(level), answer: text, fluency: null,
+      pack: bot.pack, rubric, explain: bot.explainIn(level), answer: text, fluency: null, facts: activityFacts(bot.pack, task), now: bot.ctx.now(),
       task: { prompt: task.prompt, data: task.data ?? null, min_words: task.minWords, word_count: words, what_a_strong_answer_covers: task.assessorNotes },
       extra: [`- The answer has ${words} words; the task asks for at least ${task.minWords}. Apply the rubric's length rule.`, '- Corrections must quote the learner\'s exact words; prefer the errors that cost the most marks.'],
     }));

@@ -172,6 +172,8 @@ export const ru: Record<CoachKey, string> = {
   'coach.session.scorecard': 'Ваша доля слов — {ratio}%, вопросов: {questions}, слов за реплику: {words}.',
   'coach.session.hidden': 'Что думал собеседник',
   'coach.session.errors': 'Исправления',
+  'coach.session.facts': 'Факты по теме «{title}» проверены {date}. Правила меняются: перед тем как действовать, проверьте официальный сайт:',
+  'coach.session.factsStale': 'Факты по теме «{title}» проверены {date} и могут быть устаревшими. Используйте их только для практики и проверьте официальный сайт:',
   'coach.session.better': 'Скажи лучше',
   'coach.session.youSaid': 'Вы сказали:',
   'coach.session.tryThis': 'Попробуйте:',

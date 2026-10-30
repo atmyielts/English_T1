@@ -3,6 +3,7 @@ import {
 } from '../../../../../packages/coach-packs/src/mod.ts';
 import { SchoodAIError } from '../../types.ts';
 import { assessInSession, keyOf, mockMessages } from '../ai.ts';
+import { activityFacts, factsNotice } from '../facts.ts';
 import type { Bot, FlowState, SpeakItem } from '../bot.ts';
 import { criteriaOf, emit, finishSession, learnFrom, recordPractice, scoreRows } from '../results.ts';
 import type { Session, Turn } from '../store.ts';
@@ -71,6 +72,8 @@ export async function startSpeaking(bot: Bot, input: { activityId?: string; mode
   if (!queue.length) { bot.menu(); return; }
   bot.set({ flow: 'speaking', sessionId: session.id, activityId: exam.id, mock: mode === 'mock', queue, index: 0, askedAt: bot.ctx.now().toISOString(), awaiting: 'answer', lastTurnId: null });
   if (mode === 'mock') bot.text(bot.t('speak.mock_note'));
+  const notice = factsNotice(activityFacts(bot.pack, exam), bot.locale, bot.ctx.now());
+  if (notice) bot.text(notice);
   ask(bot, exam);
 }
 
@@ -160,7 +163,7 @@ export async function onSpeakingAnswer(bot: Bot, input: { text?: string; voice?:
       }
       const fluency = analyseFluency({ text: got.scored, words: got.words, durationSec: got.duration }, bot.pack.fluency, level);
       const graded = await assessInSession(session, {
-        pack: bot.pack, rubric, explain: bot.explainIn(level), answer: got.scored, fluency,
+        pack: bot.pack, rubric, explain: bot.explainIn(level), answer: got.scored, fluency, facts: activityFacts(bot.pack, exam), now: bot.ctx.now(),
         task: { exam: pick(exam.title, 'en'), part: pick(part.title, 'en'), question: item.question, expected_seconds: part.answerSeconds, ...(item.kind === 'cue' ? { cue_card: part.cards?.find((card) => card.id === item.card) } : {}), mode: got.mode },
       });
       return { got, graded };
@@ -296,7 +299,7 @@ export async function finishMock(bot: Bot, exam: SpeakingExam) {
   const evidence = answers.map((turn) => turn.content).join('\n\n');
   let review: Assessment;
   try {
-    const input = { pack: bot.pack, rubric, explain: bot.explainIn(level), answer: evidence, fluency: null, task: { exam: pick(exam.title, 'en'), parts: exam.parts.map((part) => pick(part.title, 'en')), answers: items.length } };
+    const input = { pack: bot.pack, rubric, explain: bot.explainIn(level), answer: evidence, fluency: null, facts: activityFacts(bot.pack, exam), now: bot.ctx.now(), task: { exam: pick(exam.title, 'en'), parts: exam.parts.map((part) => pick(part.title, 'en')), answers: items.length } };
     const result = await bot.ctx.ai.charged({ key: keyOf(bot.pack, 'review'), mode: 'json', reference: bot.reference('review') }, (charged) => assessInSession(charged, input, { messages: mockMessages({ ...input, answers: items }), evidenceSource: evidence }));
     review = result.result;
   } catch (cause) {

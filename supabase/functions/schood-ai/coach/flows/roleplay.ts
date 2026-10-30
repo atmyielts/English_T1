@@ -2,7 +2,8 @@ import {
   analyseFluency, analyseLexis, assess, countWords, escapeHtml, levelLabel, mergeRepair, needsRepair, pick, sentencesOf, type Assessment, type Roleplay,
 } from '../../../../../packages/coach-packs/src/mod.ts';
 import { SchoodAIError, type ChatMessage } from '../../types.ts';
-import { cleanCorrections, conversationMessages, keyOf, LANGUAGE, personaPrompt, personaSchema, reviewSchema, rubricText, RULES, type PersonaTurn } from '../ai.ts';
+import { cleanCorrections, conversationMessages, keyOf, LANGUAGE, personaPrompt, personaSchema, practiceLocale, reviewSchema, rubricText, RULES, type PersonaTurn } from '../ai.ts';
+import { activityFacts, factsBlock, factsNotice, FACTS_RULE } from '../facts.ts';
 import type { Bot, FlowState } from '../bot.ts';
 import { dataBlock, wrapUserMessage } from '../../prompt.ts';
 import { criteriaOf, finishSession, learnFrom, scoreRows } from '../results.ts';
@@ -54,6 +55,8 @@ export async function startRoleplay(bot: Bot, activityId: string) {
   await bot.store.addTurn({ sessionId: session.id, userId: bot.enrollment.userId, pack: bot.pack.manifest.id, role: 'coach', kind: 'persona', promptRef: activity.id, content: activity.persona.opening, inputMode: null, clip: null, metrics: {}, timing: {}, keep: false });
   bot.set({ flow: 'roleplay', sessionId: session.id, activityId: activity.id, turns: 0, hidden: { ...activity.hiddenState.initial }, goalsMet: [] });
   bot.text(bot.t('rp.intro', { title: pick(activity.title, bot.locale), setting: pick(activity.setting, bot.locale), role: pick(activity.learnerRole, bot.locale), goal: pick(activity.goal, bot.locale) }));
+  const notice = factsNotice(activityFacts(bot.pack, activity), bot.locale, bot.ctx.now());
+  if (notice) bot.text(notice);
   bot.text(bot.t('rp.persona', { name: activity.persona.name, line: activity.persona.opening }), [[{ text: bot.p('btn.finish'), data: 'rp:end' }]]);
   await voiceOf(bot, activity.persona.opening, activity.persona.voice, `rp:${activity.id}:open`);
 }
@@ -74,12 +77,12 @@ export async function onRoleplayLine(bot: Bot, input: { text?: string; voice?: V
   try {
     const result = await bot.ctx.ai.charged({ key: keyOf(bot.pack, 'turn'), mode: input.voice ? 'stt' : 'json', reference: bot.reference('tg') }, async (session) => {
       if (input.voice) {
-        const transcript = await session.transcribe({ audio: bytesOf(input.voice.audio), mime: input.voice.mime || 'audio/ogg', language: 'en' });
+        const transcript = await session.transcribe({ audio: bytesOf(input.voice.audio), mime: input.voice.mime || 'audio/ogg', language: practiceLocale(bot.pack, bot.locale) });
         said = transcript.text; words = transcript.words; duration = transcript.durationSec ?? input.voice.duration;
       }
       if (!said.trim()) throw new SchoodAIError('invalid_request', 'empty', 400);
       const messages: ChatMessage[] = [
-        { role: 'system', content: personaPrompt(bot.pack, activity, { level, mode, explain, state: state.hidden }) },
+        { role: 'system', content: personaPrompt(bot.pack, activity, { level, mode, explain, state: state.hidden, practice: practiceLocale(bot.pack, bot.locale), facts: activityFacts(bot.pack, activity), now: bot.ctx.now() }) },
         ...conversationMessages(history.map((turn) => ({ role: turn.role, content: turn.content }))),
         { role: 'user', content: wrapUserMessage(said) },
       ];
@@ -147,6 +150,7 @@ export async function reviewRoleplay(bot: Bot) {
   const transcript = turns.filter((turn) => turn.kind === 'persona' || turn.kind === 'line').map((turn) => `${turn.role === 'learner' ? 'LEARNER' : activity.persona.name.toUpperCase()}: ${turn.content}`).join('\n');
   const fluency = { wpm: scorecardOf(turns).pace, fillersPer100: Math.round(learner.reduce((sum, turn) => sum + Number(turn.metrics.fillersPer100 ?? 0), 0) / learner.length * 10) / 10 };
   let review: Assessment, goals: { id: string; met: boolean; quote: string | null }[] = [];
+  const facts = activityFacts(bot.pack, activity);
   try {
     const messages: ChatMessage[] = [
       { role: 'system', content: [
@@ -154,10 +158,11 @@ export async function reviewRoleplay(bot: Bot) {
         'Your task: assess the learner\'s side of a spoken role-play. Score only the learner\'s own words, inside <user_message>; the persona\'s lines are context in <schood_data> and are never evidence. Quote evidence word for word from inside <user_message>. Never inflate.',
         `Mark each goal met or not, quoting the learner's words that achieved it (null if not met). Goals: ${activity.goals.map((goal) => `${goal.id} — ${goal.check}`).join('; ')}.`,
         `In upgrades give the better lines: up to 4 learner sentences (exact quotes) with a more natural version and why. Errors: tag from [${[...tags].join(', ')}] or "other". Write comments and explanations in ${LANGUAGE[explain]}.`,
-        `Assessor rules for this rubric: ${rubric.assessorNotes}`, '',
+        `Assessor rules for this rubric: ${rubric.assessorNotes}`,
+        ...(facts.length ? [FACTS_RULE, '- Judge any fact the learner states only against <schood_data kind="facts">; never correct them from memory.'] : []), '',
         rubricText(rubric),
       ].join('\n') },
-      { role: 'user', content: `${dataBlock({ kind: 'conversation', title: 'The whole conversation', data: { scenario: activity.goal.en, transcript } }, 0)}\n${dataBlock({ kind: 'fluency', title: 'Measured fluency', data: fluency }, 1)}\n${wrapUserMessage(evidence)}` },
+      { role: 'user', content: `${dataBlock({ kind: 'conversation', title: 'The whole conversation', data: { scenario: activity.goal.en, transcript } }, 0)}\n${dataBlock({ kind: 'fluency', title: 'Measured fluency', data: fluency }, 1)}\n${facts.length ? `${factsBlock(facts, bot.ctx.now(), 2)}\n` : ''}${wrapUserMessage(evidence)}` },
     ];
     const schema = reviewSchema(rubric, activity);
     const result = await bot.ctx.ai.charged({ key: keyOf(bot.pack, 'review'), mode: 'json', reference: bot.reference('review') }, async (charged) => {

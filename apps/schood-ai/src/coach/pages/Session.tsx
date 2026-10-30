@@ -53,6 +53,10 @@ function Detail({ data }: { data: SessionDetail }) {
       <p className="m-0 text-sm text-gray-600">{dateText(data.session.finished_at ?? data.session.started_at, locale)} · {t('coach.dash.taskMinutes', { count: data.session.minutes })}</p>
       {typeof summary.summary === 'string' && summary.summary && <p className="m-0 text-sm leading-6 text-gray-800">{summary.summary}</p>}
       {rubric && <p className="m-0 text-xs text-gray-600">{t('coach.session.estimate')}</p>}
+      {(data.facts ?? []).map((fact) => <p key={fact.id} className="m-0 text-xs leading-5 text-gray-700">
+        {t(fact.stale ? 'coach.session.factsStale' : 'coach.session.facts', { title: fact.title, date: dateText(fact.checked_at, locale) })}{' '}
+        <a className="font-semibold text-gray-900 underline" href={fact.source.url} target="_blank" rel="noopener noreferrer">{fact.source.name}</a>
+      </p>)}
     </Card>
 
     {rubric && <Card className="flex flex-col gap-4">
