@@ -10,7 +10,7 @@ import type { Stores } from './stores.ts';
 import { sseResponse } from './stream.ts';
 import {
   AREAS, LEARNING_EVENT_KINDS, SchoodAIError,
-  type Area, type Caller, type ContextBlock, type NotifySendResult, type Workspace, type FunctionCallInit, type LearningEvent, type LearningEventInput, type Locale, type Method,
+  type Area, type Caller, type ContextBlock, type MintedSession, type NotifySendResult, type Workspace, type FunctionCallInit, type LearningEvent, type LearningEventInput, type Locale, type Method,
   type PlanState, type RequestContext, type RequestUser, type SchoodAIRepository, type WorkspaceAccess,
 } from './types.ts';
 
@@ -76,6 +76,8 @@ export interface ContextDeps {
   /** Sends one Telegram message through the Schood bot (the send-telegram function); absent where nothing can send. */
   sendTelegram?(input: { userId: string; kind: string; text: string; buttons: { label: string; path: string }[]; dedupeKey: string | null }): Promise<{ outcome: 'sent' | 'defer' | 'suppressed' | 'failed'; deliverAt?: string | null }>;
   isAdmin(userId: string): Promise<boolean>;
+  /** Mints a Supabase session for a user (the auth admin API, index.ts); null when it cannot. Absent where nothing can. */
+  mintSession?(userId: string): Promise<MintedSession | null>;
   /** Another Edge Function with the person's token: status and parsed JSON. */
   callFunction(name: string, path: string, token: string, init: FunctionCallInit): Promise<{ status: number; data: unknown }>;
   /** Keeps work alive after the response (EdgeRuntime.waitUntil in production). */
@@ -307,6 +309,28 @@ export function createRequestContext(deps: ContextDeps, input: ContextInput): Re
       return deps.plans.resolve(ownerOf(workspace), workspace, 'owner', deps.stores);
     },
     credits: { spend: (spend) => createSpend(scopeOf(ctx))(spend) },
+    auth: {
+      async sessionFor(userId, options) {
+        const reason = String(options?.reason ?? '');
+        if (!new RegExp(`^${input.area}\\.[a-z][a-z0-9_.-]{2,60}$`).test(reason)) throw new Error(`ctx.auth.sessionFor needs a reason like ${input.area}.mini_app`);
+        if (!isUuid(userId)) throw new Error('ctx.auth.sessionFor needs a user id');
+        const target = userId.toLowerCase();
+        // A signed-in caller (or the worker for a linked person) may only get a session of their own.
+        if (personal && user.id !== target) throw new SchoodAIError('session_not_allowed', 'You can only open your own session.', 403);
+        const profile = await deps.repo.profile(target);
+        if (!profile?.isActive) throw new SchoodAIError('session_not_allowed', 'This account cannot be signed in here.', 403);
+        if (await deps.isAdmin(target)) throw new SchoodAIError('session_not_allowed', 'Schood admins sign in on the platform.', 403);
+        for (const [bucket, limit, seconds] of [[`session:user:${target}`, 10, 3600], [`session:user:${target}`, 30, 86_400], [`session:area:${input.area}`, 2000, 3600]] as const) {
+          const taken = await deps.repo.takeRate(`${bucket}:${seconds}`, limit, seconds);
+          if (!taken.ok) throw new SchoodAIError('rate_limited', 'Too many sign-ins. Try again shortly.', 429, { retry_after: taken.retryAt });
+        }
+        const session = deps.mintSession ? await deps.mintSession(target).catch(() => null) : null;
+        if (!session) throw new SchoodAIError('session_unavailable', 'Signing in is not available right now.', 503);
+        // Audited before it is handed out; if the audit cannot be written, the session is not returned.
+        await deps.repo.audit({ workspaceId: null, actorId: personal ? user.id : null, event: 'core.session_issued', targetType: 'user', targetId: target, details: { reason, area: input.area, caller } });
+        return session;
+      },
+    },
     async paidBy(workspaceId) {
       if (personal) throw new SchoodAIError('paid_by_not_allowed', 'Signed-in routes pay with ctx.ai, from the caller\'s own workspace.', 500);
       if (!isUuid(workspaceId)) throw new Error('ctx.paidBy needs a workspace id');
