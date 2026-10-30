@@ -1,16 +1,18 @@
 import {
   escapeHtml, fill, levelLabel, overallScale, pick, plain, type CoachPack, type Delivery, type Locale, type OutButton, type ReportRow,
 } from '../../../../packages/coach-packs/src/mod.ts';
-import type { NotifyDecision } from '../types.ts';
+import type { NotifyDecision, NotifyPrefs } from '../types.ts';
 import type { CoachConfig } from './runtime.ts';
 import type { Claimed, CoachStore, Enrollment } from './store.ts';
 import { addDays, DEFAULT_TZ, localParts, nextDaily, nextWeekly, weekStart } from './time.ts';
 import { goalOf, todayPlan, weekView } from './views.ts';
 
-// The cron's work (called by schood-coach-gate for the worker): claim due daily
-// reminders and weekly reports, take the shared notification budget (2 a day per
-// person across every Schood bot, never in quiet hours), render the message in
-// the learner's language, and move each schedule to its next time. No AI.
+// The cron's work (coach/system-due and coach/system-delivered, called by the
+// worker's cron with the worker secret): claim due daily reminders and weekly
+// reports, respect the person's notification settings (Telegram delivery, muted
+// kinds) and take the shared budget (at most 2 a day across every Schood bot,
+// never in quiet hours), render the message in the learner's language, and move
+// each schedule to its next time. No AI.
 
 export interface DeliveryDeps {
   store: CoachStore;
@@ -18,6 +20,8 @@ export interface DeliveryDeps {
   config: CoachConfig;
   /** The shared budget (ai_notify): `take` counts the message. */
   notify(userId: string, channel: string, take: boolean): Promise<NotifyDecision>;
+  /** The person's own settings (core/notify-prefs): reminders go out only when Telegram delivery is on. */
+  prefs?(userId: string): Promise<NotifyPrefs>;
   nameOf(userId: string): Promise<string | null>;
   now(): Date;
 }
@@ -58,6 +62,11 @@ async function deliver(deps: DeliveryDeps, claim: Claimed, now: Date): Promise<D
   if (claim.kind === 'daily' && enrollment.lastActiveDay === local.day) {
     await deps.store.logDelivery({ scheduleId: claim.id, userId: claim.userId, pack: claim.pack, kind: 'daily', slot, status: 'skipped', reason: 'already_practised' });
     await deps.store.advanceSchedule(claim.id, { nextAt: next.toISOString(), lastSlot: slot });
+    return null;
+  }
+  if (deps.prefs && !(await deps.prefs(claim.userId)).delivery.includes('telegram')) {
+    await deps.store.logDelivery({ scheduleId: claim.id, userId: claim.userId, pack: claim.pack, kind: claim.kind, slot, status: 'skipped', reason: 'delivery_off' });
+    await deps.store.advanceSchedule(claim.id, { nextAt: next.toISOString() });
     return null;
   }
   const decision = await deps.notify(claim.userId, `coach.${claim.pack}`, true);

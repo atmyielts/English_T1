@@ -11,41 +11,30 @@ import './telegram.ts';
 // App before linking sees the link step (and examples), not the web landing page;
 // each page shows sign-in or linking itself.
 
-const page = <K extends string>(load: () => Promise<Record<K, ComponentType<never>>>, name: K) =>
-  lazy(async () => ({ default: (await load())[name] as ComponentType<{ params: Record<string, string> }> }));
-const records = () => import('./pages/Records.tsx'), tools = () => import('./pages/Tools.tsx');
-
-const CoachHome = page(() => import('./pages/Home.tsx'), 'CoachHome');
-const CoachDashboard = page(() => import('./pages/Dashboard.tsx'), 'CoachDashboard');
-const CoachReport = page(() => import('./pages/Report.tsx'), 'CoachReport');
-const CoachPlan = page(() => import('./pages/Plan.tsx'), 'CoachPlan');
-const CoachSettings = page(() => import('./pages/Settings.tsx'), 'CoachSettingsPage');
-const CoachSession = page(() => import('./pages/Session.tsx'), 'CoachSession');
-const CoachSamples = page(() => import('./pages/Samples.tsx'), 'CoachSamples');
-const CoachLink = page(() => import('./pages/Link.tsx'), 'CoachLink');
-const CoachVerify = page(records, 'CoachVerify'), CoachCertificates = page(records, 'CoachCertificates'), CoachTeam = page(records, 'CoachTeam');
-const CoachTimer = page(tools, 'CoachTimer'), CoachListen = page(tools, 'CoachListen'), CoachShadow = page(tools, 'CoachShadow'), CoachChart = page(tools, 'CoachChart');
+type PageName = keyof typeof import('./pages/index.ts');
+const pages = () => import('./pages/index.ts');
+const page = (name: PageName) => lazy(async () => ({ default: (await pages())[name] as ComponentType<{ params: Record<string, string> }> }));
 
 // Specific paths first: /coach/team must not be read as a coach called "team".
-export const routes: AreaRoute[] = [
-  { path: '/coach', component: CoachHome, title: 'coach.home.title', public: true },
-  { path: '/coach/team', component: CoachTeam, title: 'coach.team.title', public: true },
-  { path: '/coach/team/join', component: CoachTeam, title: 'coach.team.title', public: true },
-  { path: '/coach/certificates', component: CoachCertificates, title: 'coach.cert.title', public: true },
-  { path: '/coach/verify/:code', component: CoachVerify, title: 'coach.verify.title', public: true },
-  { path: '/coach/:pack', component: CoachDashboard, title: 'coach.tab.dashboard', public: true },
-  { path: '/coach/:pack/report', component: CoachReport, title: 'coach.tab.report', public: true },
-  { path: '/coach/:pack/plan', component: CoachPlan, title: 'coach.tab.plan', public: true },
-  { path: '/coach/:pack/settings', component: CoachSettings, title: 'coach.tab.settings', public: true },
-  { path: '/coach/:pack/session/:id', component: CoachSession, title: 'coach.session.title', public: true },
-  { path: '/coach/:pack/samples', component: CoachSamples, title: 'coach.samples.title', public: true },
-  { path: '/coach/:pack/samples/:id', component: CoachSamples, title: 'coach.samples.title', public: true },
-  { path: '/coach/:pack/link', component: CoachLink, title: 'coach.link.title', public: true },
-  { path: '/coach/:pack/timer', component: CoachTimer, title: 'coach.timer.title', public: true },
-  { path: '/coach/:pack/listen/:set', component: CoachListen, title: 'coach.listen.title', public: true },
-  { path: '/coach/:pack/shadow/:set/:sentence', component: CoachShadow, title: 'coach.shadow.title', public: true },
-  { path: '/coach/:pack/chart/:task', component: CoachChart, title: 'coach.chart.title', public: true },
-];
+export const routes: AreaRoute[] = ([
+  ['', 'CoachHome', 'coach.home.title'],
+  ['/team', 'CoachTeam', 'coach.team.title'],
+  ['/team/join', 'CoachTeam', 'coach.team.title'],
+  ['/certificates', 'CoachCertificates', 'coach.cert.title'],
+  ['/verify/:code', 'CoachVerify', 'coach.verify.title'],
+  ['/:pack', 'CoachDashboard', 'coach.tab.dashboard'],
+  ['/:pack/report', 'CoachReport', 'coach.tab.report'],
+  ['/:pack/plan', 'CoachPlan', 'coach.tab.plan'],
+  ['/:pack/settings', 'CoachSettingsPage', 'coach.tab.settings'],
+  ['/:pack/session/:id', 'CoachSession', 'coach.session.title'],
+  ['/:pack/samples', 'CoachSamples', 'coach.samples.title'],
+  ['/:pack/samples/:id', 'CoachSamples', 'coach.samples.title'],
+  ['/:pack/link', 'CoachLink', 'coach.link.title'],
+  ['/:pack/timer', 'CoachTimer', 'coach.timer.title'],
+  ['/:pack/listen/:set', 'CoachListen', 'coach.listen.title'],
+  ['/:pack/shadow/:set/:sentence', 'CoachShadow', 'coach.shadow.title'],
+  ['/:pack/chart/:task', 'CoachChart', 'coach.chart.title'],
+] as const).map(([path, name, title]) => ({ path: `/coach${path}`, component: page(name), title, public: true }));
 
 export const nav: AreaNavItem[] = [
   { id: 'coaches', path: '/coach', label: 'coach.nav', icon: GraduationCap, audiences: ['learner'], group: 'coach' },

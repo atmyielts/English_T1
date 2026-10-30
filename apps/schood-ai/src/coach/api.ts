@@ -8,6 +8,10 @@ export interface CoachCard {
   id: string; feature: string; name: string; tagline: string; description: string; accent: string; languages: string[];
   scale: LevelScale; correction_modes: string[]; menu: string[]; bot: string | null;
 }
+export interface PublicCertificate {
+  code: string; display_name: string; coach: Record<string, string>; level: string; title: Record<string, string> | null; rubric: Record<string, string> | null;
+  results: { at: string; overall: number | null; label: string | null }[]; issued_at: string; revoked: boolean; accent: string | null;
+}
 export interface HomeView { coaches: (CoachCard & { allowed: boolean; plans: string[]; enrolled: boolean; streak: number; placement: string | null })[]; telegram_linked: boolean }
 export interface Task { slot: string; activityId: string; minutes: number; reason: string; node: string; errorTag?: string; cards?: number; part?: string; title: string }
 export interface ReportRow { key: string; ref: string | null; start: number | null; before: number | null; after: number | null; delta: number | null; lowerIsBetter: boolean; verdict: 'better' | 'worse' | 'same' | null; label?: string }
@@ -68,6 +72,8 @@ export const coachApi = {
   settings: (pack: string, body: Record<string, unknown>) => api<{ settings: CoachSettings; locale: string }>('coach/settings', { method: 'PATCH', body: { pack, ...body } }),
   session: (id: string) => api<SessionDetail>('coach/session', { query: { id } }),
   certificates: () => api<{ certificates: CertificateView[] }>('coach/certificates'),
+  /** The public check behind a certificate's share link: no sign-in, rate-limited per visitor. */
+  verify: (code: string) => api<{ certificate: PublicCertificate }>('coach/verify', { anonymous: true, query: { code } }),
   revoke: (id: string) => api<{ revoked: boolean }>('coach/certificates', { method: 'DELETE', body: { id } }),
   erase: (pack: string) => api<{ removed: number }>('coach/erase', { body: { pack } }),
   link: (pack: string) => api<{ linked: boolean; url: string; expires_at?: string | null }>('coach/link', { body: { pack } }),

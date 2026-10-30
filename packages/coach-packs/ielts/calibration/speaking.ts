@@ -1,12 +1,15 @@
 import type { CalibrationRun, CalibrationSample } from '../../src/types.ts';
 
 // Speaking calibration set: twelve transcripts of Part 1, 2 and 3 answers, bands 4 to 8,
-// each with measured fluency numbers and three recorded assessor runs. Pronunciation is
+// each with measured fluency numbers and three assessor runs. Pronunciation is
 // not rated here: it needs the audio, and a transcript cannot show it. Answers are
 // original Schood practice material written to sound like real learners (fillers,
 // self-corrections and the typical errors of Uzbek- and Russian-speaking speakers).
 // A few evidence quotes in the runs are deliberate paraphrases (not in the text) so the
 // evidence check is exercised.
+// The runs are authored in the assessor's output shape, not captured from a model:
+// they test the scoring pipeline and the thresholds in CI. Replace them with real runs
+// from scripts/coach-calibration-live.ts --out once a model route is configured.
 
 export const speakingCalibration: { samples: CalibrationSample[]; runs: Record<string, CalibrationRun[]> } = {
   samples: [

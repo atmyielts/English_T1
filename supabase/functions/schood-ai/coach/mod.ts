@@ -1,5 +1,7 @@
 import { levelLabel, overallScale, pick, recurringErrors } from '../../../../packages/coach-packs/src/mod.ts';
+import { PACK_SOURCES } from '../../../../packages/coach-packs/src/registry.ts';
 import { registerContextProvider } from '../context.ts';
+import { registerNotifyKind } from '../registries.ts';
 import type { FeatureModule } from '../types.ts';
 import { registerCoachPlanSources } from './access.ts';
 import { coachRoutes } from './routes.ts';
@@ -11,6 +13,16 @@ import { runtimeOf } from './runtime.ts';
 // packages/coach-packs/README.md.
 
 registerCoachPlanSources();
+
+// Each coach's reminders and weekly reports are one kind of notification
+// (`coach.<pack>`): Settings → Notifications lists them, and muting `coach` mutes all.
+for (const source of PACK_SOURCES) {
+  const name = source.manifest.name;
+  registerNotifyKind(`coach.${source.manifest.id}`, {
+    area: 'coach',
+    label: { en: `${name.en ?? source.manifest.id}: reminders and weekly reports`.slice(0, 80), uz: `${name.uz ?? name.en ?? source.manifest.id}: eslatmalar va haftalik hisobotlar`.slice(0, 80), ru: `${name.ru ?? name.en ?? source.manifest.id}: напоминания и недельные отчёты`.slice(0, 80) },
+  });
+}
 
 // The tutor (L1) and other assistants may see the caller's own coach progress.
 registerContextProvider('coach_progress', async (ctx) => {

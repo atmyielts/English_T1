@@ -2,9 +2,12 @@ import type { CalibrationRun, CalibrationSample } from '../src/types.ts';
 
 // Calibration for `speaking.conversation`: twelve learner transcripts from A2 to C1
 // (only the learner's turns, one turn per line, as speech-to-text returns them),
-// rated by the author on the four model-scored criteria, and three recorded assessor
-// runs per sample. A few recorded quotes are deliberately slightly wrong (the
-// assessor "corrected" the learner's words), so the evidence check stays honest.
+// rated by the author on the four model-scored criteria, and three assessor runs per
+// sample. A few quotes in the runs are deliberately slightly wrong (the assessor
+// "corrected" the learner's words), so the evidence check stays honest.
+// The runs are authored in the assessor's output shape, not captured from a model:
+// they test the scoring pipeline and the thresholds in CI. Replace them with real runs
+// from scripts/coach-calibration-live.ts --out once a model route is configured.
 
 type Entry = [score: number, ...evidence: string[]];
 const run = (range: Entry, accuracy: Entry, fluency: Entry, interaction: Entry): CalibrationRun => {

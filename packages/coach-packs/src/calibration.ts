@@ -1,7 +1,7 @@
 import { quoteFound } from './text.ts';
 import type { CalibrationRun, Rubric } from './types.ts';
 
-// Calibration: how well an assessor (recorded runs in CI, a real model in the live
+// Calibration: how well an assessor (the pack's runs in CI, a real model in the live
 // script) agrees with the author-rated reference scores, and how stable it is from
 // run to run. The same numbers gate CI and are printed by the live evaluation.
 

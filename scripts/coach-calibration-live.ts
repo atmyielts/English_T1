@@ -1,13 +1,13 @@
 // Live calibration of a coach rubric against a real model. It sends every calibration
 // sample through the same scoring pipeline the coaches use (assessInSession: prompt,
 // schema, evidence check, one repair call) via the real gateway, several runs each,
-// and prints the same agreement and run-to-run numbers CI checks with the recorded
+// and prints the same agreement and run-to-run numbers CI checks with the pack's
 // runs (packages/coach-packs/src/calibration.ts).
 //
 // The model is never named in code: it comes from the environment (or --model), on
 // any OpenAI-compatible https endpoint. The key follows the gateway's rule for
 // custom keys (SCHOOD_AI_KEY_*). Nothing is written unless --out is given; --out
-// saves the runs in the pack's recorded-run shape, for review before an author
+// saves the runs in the pack's run shape, for review before an author
 // replaces a pack's `runs` with them.
 //
 //   SCHOOD_AI_COACH_EVAL_BASE_URL=<https://…/v1> SCHOOD_AI_KEY_COACH_EVAL=<key> SCHOOD_AI_COACH_EVAL_MODEL=<model id> \

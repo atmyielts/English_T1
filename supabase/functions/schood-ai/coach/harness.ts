@@ -2,7 +2,6 @@ import { signTelegramInitDataForTest } from '../../_shared/telegram-init-data.ts
 import { loadPacks } from '../../../../packages/coach-packs/src/registry.ts';
 import type { Registry } from '../../../../packages/ai-core/src/mod.ts';
 import { createWorker } from '../../../../workers/schood-coach-bots/src/worker.ts';
-import { createGateHandler } from '../../schood-coach-gate/handler.ts';
 import { completion, fixture, ID, SECRET, START, USERS } from '../fixture.test.ts';
 import { SEED_REGISTRY } from '../memory-repository.ts';
 import { coachServices, coachStore } from './mod.ts';
@@ -11,7 +10,8 @@ import { createMemoryCoachStore } from './store-memory.ts';
 import { dataCheckString } from './telegram-auth.ts';
 
 // The whole coach stack for tests: Telegram (fake) → the real worker → the real
-// schood-ai handler with the coach module over the memory stores, the real gate,
+// schood-ai handler with the coach module over the memory stores (cron and certificate
+// checks included),
 // and a fake model that answers each coach task in its own shape. Speech to text
 // reads the "audio" as the words it stands for, so a test controls what was said.
 
@@ -122,7 +122,6 @@ export async function coachStack(options: { speech?: boolean; users?: typeof USE
   f.stores.use(coachServices, { config: runtime.config, mintSession: runtime.mintSession });
   const advance = (ms: number) => { f.advance(ms); current = new Date(current.getTime() + ms); };
   f.setProvider(fakeModel(knobs));
-  const gate = createGateHandler({ secret: SECRET, deps: { store: coach.store, packs: runtime.packs, config: runtime.config, now, notify: (userId, channel, take) => f.memory.repository.notify(userId, channel, take), nameOf: () => Promise.resolve('Dilnoza') } });
 
   const calls: TelegramCall[] = [];
   let messageId = 1000, pollId = 1, updateId = 1;
@@ -157,10 +156,11 @@ export async function coachStack(options: { speech?: boolean; users?: typeof USE
       }
       return Response.json({ error: 'Unknown action' }, { status: 400 });
     }
-    if (url.pathname.startsWith('/functions/v1/schood-coach-gate/')) return gate(request);
     if (url.pathname.startsWith('/functions/v1/schood-ai/')) {
       const path = url.pathname.replace('/functions/v1/schood-ai/', '');
       const body = await request.json().catch(() => undefined);
+      // The cron calls system routes with the secret alone; everything else acts for a linked person.
+      if (!request.headers.get('x-schood-user-id')) return f.call(request.method, path, { token: null, origin: null, headers: { 'x-schood-service-secret': request.headers.get('x-schood-service-secret') ?? '' }, ...(body === undefined ? {} : { body }) });
       return f.worker(path, request.method, request.headers.get('x-schood-user-id') ?? '', request.headers.get('x-schood-telegram-chat-id') ?? '', body, request.headers.get('x-schood-service-secret') ?? '');
     }
     return new Response('not found', { status: 404 });
@@ -205,6 +205,8 @@ export async function coachStack(options: { speech?: boolean; users?: typeof USE
   }
   /** Undoes the link made by the fake telegram-link (USERS is shared by every test). */
   const restore = () => { USERS['tok-outsider'].telegramChatId = null; };
-  return { f, now, advance, restore, knobs, runtime, coach, worker, user, calls, fresh, texts, buttons, data, initData, gate, chats, send };
+  /** The public certificate check, as a visitor with no session. */
+  const verify = (code: string) => f.json('GET', 'coach/verify', { token: null, query: { code } });
+  return { f, now, advance, restore, knobs, runtime, coach, worker, user, calls, fresh, texts, buttons, data, initData, verify, chats, send };
 }
 

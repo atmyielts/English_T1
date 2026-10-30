@@ -19,9 +19,8 @@ APP_URL = "https://ai.schood.online"
 
 # Secrets (set with `wrangler secret put <NAME>`; never written here):
 # SUPABASE_URL               the production project's URL (as the other Schood bot workers)
-# SCHOOD_AI_SERVICE_SECRET   the same value as the schood-ai and schood-coach-gate functions
+# SCHOOD_AI_SERVICE_SECRET   the same value as the schood-ai function
 # TELEGRAM_INTERNAL_SECRET   the same value as the telegram-link function
-# SUPABASE_ANON_KEY          the public anon key (the gate keeps Supabase's JWT check)
 # Per coach pack <PACK> (IELTS, SPEAKING; a pack id upper-cased, "-" as "_"):
 # COACH_BOT_TOKEN_<PACK>              the bot's token from BotFather
 # COACH_WEBHOOK_SECRET_<PACK>         16+ random characters, also given to setWebhook

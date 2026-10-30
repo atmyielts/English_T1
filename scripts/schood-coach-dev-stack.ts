@@ -18,7 +18,6 @@ import { ESSAY, fakeModel, SPEECH_REGISTRY } from '../supabase/functions/schood-
 import { coachServices, coachStore } from '../supabase/functions/schood-ai/coach/mod.ts';
 import { createStores } from '../supabase/functions/schood-ai/stores.ts';
 import { createMemoryCoachStore } from '../supabase/functions/schood-ai/coach/store-memory.ts';
-import { createGateHandler } from '../supabase/functions/schood-coach-gate/handler.ts';
 
 const PORT = Number(Deno.env.get('SCHOOD_AI_DEV_PORT') ?? '54334');
 const ORIGINS = (Deno.env.get('SCHOOD_AI_DEV_ORIGINS') ?? 'http://localhost:5204').split(',');
@@ -59,7 +58,6 @@ const handle = createSchoodAIHandler({
   adminGate: () => Promise.resolve({ ok: false, status: 403, code: 'forbidden' }),
   stores,
 }, { allowedOrigins: ORIGINS, serviceSecret: SECRET, now });
-const gate = createGateHandler({ secret: SECRET, deps: { store: coach.store, packs, config: runtime.config, now, notify: (u, c, t) => memory.repository.notify(u, c, t), nameOf: () => Promise.resolve('Dilnoza') } });
 
 // --- seeding through the real bot flows ------------------------------------------------------------
 let update = 1;
@@ -144,7 +142,6 @@ function sessionCookie(token: keyof typeof users): string {
 Deno.serve({ port: PORT }, (request) => {
   const url = new URL(request.url);
   if (url.pathname === '/dev/cookie') return new Response(sessionCookie((url.searchParams.get('token') ?? 'dev-plus') as keyof typeof users), { headers: { 'Access-Control-Allow-Origin': '*' } });
-  if (url.pathname.startsWith('/functions/v1/schood-coach-gate/')) return gate(request).then((response) => { const headers = new Headers(response.headers); headers.set('Access-Control-Allow-Origin', '*'); return new Response(response.body, { status: response.status, headers }); });
   if (url.pathname.startsWith('/functions/v1/schood-ai/')) return handle(request);
   return new Response('Not found', { status: 404 });
 });

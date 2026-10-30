@@ -1,4 +1,5 @@
-// Calibration report from the recorded runs in the repo (what CI checks):
+// Calibration report from the pack's runs in the repo (what CI checks; authored until
+// replaced with real runs from scripts/coach-calibration-live.ts --out):
 //   deno run --no-lock packages/coach-packs/scripts/calibration.ts [pack]
 // The live script (scripts/coach-calibration-live.ts) prints the same against real models.
 import { calibrate } from '../src/calibration.ts';

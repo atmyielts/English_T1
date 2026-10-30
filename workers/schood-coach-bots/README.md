@@ -10,7 +10,7 @@ Telegram ──webhook──▶ /tg/<pack> ──┬─ telegram-link (status, /
                                     ├─ schood-ai/coach/update                  service secret + user + chat
                                     └─ Bot API (replies, voice, polls)          bot token
 Mini App ──initData──▶ /miniapp/session ── schood-ai/coach/miniapp-session ──▶ a Schood session
-cron */5 ─────────────▶ schood-coach-gate/due ──▶ Bot API ──▶ schood-coach-gate/delivered
+cron */5 ─────────────▶ schood-ai/coach/system-due ──▶ Bot API ──▶ schood-ai/coach/system-delivered
 ```
 
 ## Endpoints
@@ -20,7 +20,7 @@ cron */5 ─────────────▶ schood-coach-gate/due ──
 | `POST /tg/<pack>` | Telegram | `X-Telegram-Bot-Api-Secret-Token` equals `COACH_WEBHOOK_SECRET_<PACK>` (or `_PREVIOUS` while rotating). Anything else gets 401. |
 | `POST /miniapp/session` | The Mini App at `APP_URL` | CORS for `APP_URL` only. `initData` must carry a valid signature from that coach bot's token (see below). |
 | `GET /health` | You | Lists the coaches that have a token. No secrets. |
-| cron `*/5 * * * *` | Cloudflare | Calls the gate with the service secret. |
+| cron `*/5 * * * *` | Cloudflare | Calls the coach area's system routes with the service secret alone. |
 
 ## What happens to an update
 
@@ -79,8 +79,7 @@ Worker (`wrangler secret put <NAME>`, never in `wrangler.toml`):
 | Name | What |
 |---|---|
 | `SUPABASE_URL` | The production project's URL. |
-| `SUPABASE_ANON_KEY` | The public anon key. Sent only to the gate, which keeps Supabase's JWT check. |
-| `SCHOOD_AI_SERVICE_SECRET` | The same value as the `schood-ai` and `schood-coach-gate` functions (32+ characters). |
+| `SCHOOD_AI_SERVICE_SECRET` | The same value as the `schood-ai` function (32+ characters). |
 | `TELEGRAM_INTERNAL_SECRET` | The same value as the `telegram-link` function. |
 | `COACH_BOT_TOKEN_<PACK>` | The bot's token from BotFather. `<PACK>` is the pack id upper-cased, with `-` written as `_`: `IELTS`, `SPEAKING`. |
 | `COACH_WEBHOOK_SECRET_<PACK>` | 16 to 256 random characters from `A-Z a-z 0-9 _ -`, also given to `setWebhook`. |
@@ -88,7 +87,7 @@ Worker (`wrangler secret put <NAME>`, never in `wrangler.toml`):
 
 `APP_URL` (`https://ai.schood.online`) is a plain var in `wrangler.toml`.
 
-Functions (Supabase secrets of `schood-ai` and `schood-coach-gate`):
+Function (Supabase secrets of `schood-ai`):
 
 | Name | What |
 |---|---|
@@ -96,7 +95,6 @@ Functions (Supabase secrets of `schood-ai` and `schood-coach-gate`):
 | `SCHOOD_AI_COACH_PASS_PRODUCT_IDS` | Optional. `B1:<product uuid>,B2:<product uuid>` for single-coach passes. |
 | `SCHOOD_AI_COACH_FAIR_USE_CREDITS` | Optional. Credits a pass or seat tops up to every 30 days (default 1200). |
 | `SCHOOD_AI_COACH_APP_URL` | Optional. Defaults to `https://ai.schood.online`. |
-| `SCHOOD_AI_SERVICE_SECRET` | Already set for `schood-ai`; the gate needs the same value. |
 
 The app build reads `VITE_COACH_BOTS_URL` (default `https://coach-bots.schood.online`).
 
@@ -108,8 +106,8 @@ Nothing here has been run. The order:
    Partner. Keep each token private. The setup script sets the names, descriptions, commands
    and menu button, so BotFather needs nothing more.
 2. **Coordinator:** apply the coach migrations (`20261030600000`, `20261030600100`) with
-   `supabase db push --linked`. Deploy `schood-ai` and `schood-coach-gate`. The gate keeps
-   the default `verify_jwt`; callers send the anon key. Set the function settings above.
+   `supabase db push --linked` (after core's `20261030160000` and `20261030170000`). Deploy
+   `schood-ai`. Set the function settings above.
 3. **Coordinator:** set the Worker secrets, then deploy the Worker. Its custom domain is
    `coach-bots.schood.online`, so check that the DNS record exists.
 4. **Owner or coordinator:** run the setup script against the live bot. A dry run first
@@ -132,16 +130,21 @@ Set `COACH_WEBHOOK_SECRET_<PACK>_PREVIOUS` to the current value and
 `COACH_WEBHOOK_SECRET_<PACK>` to the new one. Run the setup script with `--apply`, check
 that updates arrive, then remove `_PREVIOUS`.
 
-## Reminders (the gate)
+## Reminders
 
-The cron calls `schood-coach-gate` (`/due`, `/delivered`). That function claims due
-reminders and weekly reports and takes the shared notification budget: 2 a day per person
-across every Schood bot, never in quiet hours. It renders the message in the learner's
-language. It also serves the public certificate check (`/verify`).
+The cron calls two `system: true` routes of the coach area, with the worker secret and no
+person:
 
-The gate is a small, temporary seam. Core is adding `system: true` routes (worker secret,
-no user, on a documented schedule), and `due` / `delivered` will move into the coach area
-there (`docs/product/ai-requests/coach.md`).
+- `coach/system-due` claims due reminders and weekly reports (40 at most). It follows each
+  person's Settings → Notifications: Telegram delivery on, the coach kind `coach.<pack>`
+  (or the whole `coach` area) not muted. It takes the shared budget, which is at most 2 a
+  day across every Schood bot and never in quiet hours. It renders each message in the
+  learner's language, with no AI.
+- `coach/system-delivered` records what Telegram did with each message. A blocked bot stops
+  that person's reminders.
+
+The public certificate check behind a share link is `coach/verify`. It is an `anonymous`
+route, rate-limited per visitor.
 
 ## Local checks
 

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { CheckCircle2, Link2, Send } from 'lucide-react';
 import { ApiError, ApiErrorState, Button, Card, PageHeader, useSession, useT } from '../../core/index.ts';
 import { coachApi } from '../api.ts';
-import { openOutside } from '../telegram.ts';
+import { openOutside } from '../telegram-session.ts';
 import { SignedOut } from './common.tsx';
 
 // /coach/<pack>/link: links this Schood account to Telegram through the existing

@@ -1,10 +1,13 @@
 import type { CalibrationRun, CalibrationSample } from '../../src/types.ts';
 
 // Writing Task 1 calibration set: eight Academic reports and two General Training
-// letters, bands 4 to 8, each with three recorded assessor runs. Tasks, data and
+// letters, bands 4 to 8, each with three assessor runs. Tasks, data and
 // responses are original Schood practice material; every figure is invented.
 // A few evidence quotes in the runs are deliberate paraphrases (not in the text)
 // so the evidence check is exercised.
+// The runs are authored in the assessor's output shape, not captured from a model:
+// they test the scoring pipeline and the thresholds in CI. Replace them with real runs
+// from scripts/coach-calibration-live.ts --out once a model route is configured.
 
 export const writingTask1Calibration: { samples: CalibrationSample[]; runs: Record<string, CalibrationRun[]> } = {
   samples: [

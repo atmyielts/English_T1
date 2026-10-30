@@ -109,8 +109,8 @@ Deno.test('B1 IELTS Coach: the full loop from placement to certificate and remin
   ok(certs.length >= 1, `certificate issued: ${texts(out).join(' | ').slice(0, 400)}`);
   ok(texts(out).some((text) => text.includes('Level up')), 'level-up announced');
   const code = certs[0].code;
-  const verify = await s.gate(new Request(`https://x.invalid/functions/v1/schood-coach-gate/verify?code=${code.slice(0, 4)}-${code.slice(4, 8)}-${code.slice(8)}`));
-  const record = await verify.json();
+  const verify = await s.verify(`${code.slice(0, 4)}-${code.slice(4, 8)}-${code.slice(8)}`);
+  const record = verify.body;
   equal([verify.status, record.certificate.level, record.certificate.revoked, record.certificate.results.length >= 3], [200, certs[0].levelLabel, false, true], 'public verification');
   ok(!JSON.stringify(record).includes(ID.plus), 'no user id on the public record');
   ok(s.f.memory.learning.some((event) => event.kind === 'check_passed' && String(event.outcome).startsWith('level_up')), 'level-up event');

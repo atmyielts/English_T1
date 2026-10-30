@@ -5,7 +5,7 @@ import { keyboard, splitHtml } from '../src/telegram.ts';
 import { createWorker, envKey, SUBREQUESTS } from '../src/worker.ts';
 
 // The worker on its own: a fake fetch stands in for Telegram, telegram-link,
-// schood-ai and the gate, so every outgoing request can be checked.
+// schood-ai (including the cron's system routes), so every outgoing request can be checked.
 
 const assert = (value: unknown, label: string) => { if (!value) throw new Error(label); };
 const equal = (actual: unknown, expected: unknown, label: string) => {
@@ -38,16 +38,16 @@ function stack(options: Options = {}) {
       if (body.action === 'status') return Response.json({ linked: body.chat_id === LINKED, user: body.chat_id === LINKED ? { id: 'user-1', name: 'Dilnoza' } : null });
       return Response.json({ ok: false, error: 'Invalid link token' }, { status: 404 });
     }
+    if (url.pathname.endsWith('/schood-ai/coach/system-due')) return options.deliveries === null ? new Response('boom', { status: 500 }) : Response.json({ deliveries: options.deliveries ?? [] });
+    if (url.pathname.endsWith('/schood-ai/coach/system-delivered')) return Response.json({ updated: (body.results as unknown[]).length });
     if (url.pathname.includes('/schood-ai/coach/')) {
       if (url.pathname.endsWith('/miniapp-session')) return Response.json({ session: { access_token: 'a', refresh_token: 'r', expires_at: 1 } });
       return Response.json(options.functionBody ?? { messages: [{ kind: 'text', html: 'From the coach', buttons: [[{ text: 'Today', data: 'm:today' }]] }] }, { status: options.functionStatus ?? 200 });
     }
-    if (url.pathname.endsWith('/schood-coach-gate/due')) return options.deliveries === null ? new Response('boom', { status: 500 }) : Response.json({ deliveries: options.deliveries ?? [] });
-    if (url.pathname.endsWith('/schood-coach-gate/delivered')) return Response.json({ updated: (body.results as unknown[]).length });
     return new Response('not found', { status: 404 });
   };
   const env = {
-    APP_URL: APP, SUPABASE_URL: 'https://coach-test.supabase.co', SUPABASE_ANON_KEY: 'anon-public-key', SCHOOD_AI_SERVICE_SECRET: 'service-secret-0123456789abcdef', TELEGRAM_INTERNAL_SECRET: 'internal-secret-0123456789',
+    APP_URL: APP, SUPABASE_URL: 'https://coach-test.supabase.co', SCHOOD_AI_SERVICE_SECRET: 'service-secret-0123456789abcdef', TELEGRAM_INTERNAL_SECRET: 'internal-secret-0123456789',
     COACH_BOT_TOKEN_IELTS: TOKEN.ielts, COACH_WEBHOOK_SECRET_IELTS: HOOK.ielts, COACH_BOT_TOKEN_SPEAKING: TOKEN.speaking, COACH_WEBHOOK_SECRET_SPEAKING: HOOK.speaking,
     ...options.env,
   };
@@ -169,9 +169,9 @@ Deno.test('worker: the cron sends due reminders within the subrequest budget and
   const result = await s.worker.cron();
   equal([result.sent, result.blocked, result.failed], [39, 1, 2], 'sent, blocked by the person, no bot');
   assert(s.sent.length <= SUBREQUESTS, `${s.sent.length} subrequests in one run (limit ${SUBREQUESTS})`);
-  const due = s.to('/schood-coach-gate/due')[0];
-  equal([due.headers.get('apikey'), due.headers.get('x-schood-service-secret')], ['anon-public-key', 'service-secret-0123456789abcdef'], 'the gate gets the public anon key and the worker secret');
-  const report = s.to('/schood-coach-gate/delivered')[0].body.results as { id: string; status: string; reason?: string }[];
+  const due = s.to('/schood-ai/coach/system-due')[0];
+  equal([due.headers.get('x-schood-service-secret'), due.headers.get('x-schood-user-id'), due.headers.get('authorization'), due.headers.get('origin')], ['service-secret-0123456789abcdef', null, null, null], 'a system call: the worker secret alone');
+  const report = s.to('/schood-ai/coach/system-delivered')[0].body.results as { id: string; status: string; reason?: string }[];
   equal(report.length, 42, 'every delivery reported');
   equal(report.filter((entry) => entry.reason === 'no_bot').map((entry) => entry.id), ['98', '99'], 'unknown coach or chat');
   equal(report.find((entry) => entry.status === 'blocked')?.reason, 'bot_blocked', 'a blocked bot stops further reminders');
@@ -180,7 +180,7 @@ Deno.test('worker: the cron sends due reminders within the subrequest budget and
   const capped = await big.worker.cron();
   assert(big.sent.length <= SUBREQUESTS && capped.sent === 24 && capped.failed === 6, `budget held: ${big.sent.length} subrequests, ${capped.sent} sent`);
   const failed = stack({ deliveries: null });
-  equal(await failed.worker.cron(), { sent: 0, failed: 0, blocked: 0 }, 'a failing gate sends nothing');
+  equal(await failed.worker.cron(), { sent: 0, failed: 0, blocked: 0 }, 'a failing due list sends nothing');
   equal(failed.to('/schood-coach-gate/delivered').length, 0, 'and reports nothing');
 });
 

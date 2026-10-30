@@ -9,7 +9,8 @@ import { keyboard, sendAll, splitHtml, telegram, type Fetch, type Telegram } fro
 //   POST /tg/<pack>         a Telegram webhook, checked with that bot's secret-token header;
 //   POST /miniapp/session   a Mini App's initData, checked with that bot's token, exchanged
 //                           for a Schood session through the function;
-//   cron                    due reminders and weekly reports, sent within the shared budget.
+//   cron                    due reminders and weekly reports (schood-ai/coach/system-due),
+//                           sent within the shared budget and reported back (system-delivered).
 // Linked people's updates are relayed to schood-ai/coach/update with the service secret;
 // everyone else can take the placement test (answers ride in the button data), see
 // examples and link their account. Bot tokens never leave this Worker.
@@ -17,7 +18,6 @@ import { keyboard, sendAll, splitHtml, telegram, type Fetch, type Telegram } fro
 export interface Env {
   APP_URL: string;
   SUPABASE_URL: string;
-  SUPABASE_ANON_KEY?: string;
   SCHOOD_AI_SERVICE_SECRET: string;
   TELEGRAM_INTERNAL_SECRET: string;
   /** Per coach: COACH_BOT_TOKEN_<PACK>, COACH_WEBHOOK_SECRET_<PACK> (and _PREVIOUS while rotating). */
@@ -46,9 +46,8 @@ export function createWorker(deps: WorkerDeps) {
   const { env, packs } = deps;
   const appUrl = (env.APP_URL || 'https://ai.schood.online').replace(/\/+$/, '');
   const fn = (path: string) => `${env.SUPABASE_URL.replace(/\/+$/, '')}/functions/v1/${path}`;
-  // Only the gate checks a JWT at Supabase's edge (the public anon key is enough); telegram-link
-  // and schood-ai take the worker secrets, and telegram-link would read a bearer as a service key.
-  const anon: Record<string, string> = env.SUPABASE_ANON_KEY ? { apikey: env.SUPABASE_ANON_KEY, Authorization: `Bearer ${env.SUPABASE_ANON_KEY}` } : {};
+  // schood-ai and telegram-link take the worker secrets, never a bearer token (telegram-link
+  // would read a bearer as a service key).
   const tokenOf = (pack: string) => env[`COACH_BOT_TOKEN_${envKey(pack)}`];
   const active = (pack: string) => packs.has(pack) && !!tokenOf(pack);
 
@@ -223,8 +222,9 @@ export function createWorker(deps: WorkerDeps) {
 
   // --- the cron ------------------------------------------------------------------------------------------------
   async function cron(): Promise<{ sent: number; failed: number; blocked: number }> {
-    const headers = { 'Content-Type': 'application/json', 'x-schood-service-secret': env.SCHOOD_AI_SERVICE_SECRET, ...anon };
-    const due = await deps.fetch(fn('schood-coach-gate/due'), { method: 'POST', headers, body: JSON.stringify({ limit: 40 }) });
+    // System routes: the worker secret alone (no user, no Authorization, no Origin).
+    const headers = { 'Content-Type': 'application/json', 'x-schood-service-secret': env.SCHOOD_AI_SERVICE_SECRET };
+    const due = await deps.fetch(fn('schood-ai/coach/system-due'), { method: 'POST', headers, body: JSON.stringify({ limit: 40 }) });
     const payload = await due.json().catch(() => ({})) as { deliveries?: Delivery[] };
     if (!due.ok || !Array.isArray(payload.deliveries)) { console.error(JSON.stringify({ event: 'coach_cron_due_failed', status: due.status })); return { sent: 0, failed: 0, blocked: 0 }; }
     const results: { id: string; status: 'sent' | 'failed' | 'blocked'; reason?: string }[] = [];
@@ -239,7 +239,7 @@ export function createWorker(deps: WorkerDeps) {
       const report = await sendAll(telegram(token, deps.fetch), delivery.chatId, delivery.messages, appUrl);
       results.push({ id: delivery.id, status: report.blocked ? 'blocked' : report.failed ? 'failed' : 'sent', ...(report.blocked ? { reason: 'bot_blocked' } : {}) });
     }
-    if (results.length) await deps.fetch(fn('schood-coach-gate/delivered'), { method: 'POST', headers, body: JSON.stringify({ results }) });
+    if (results.length) await deps.fetch(fn('schood-ai/coach/system-delivered'), { method: 'POST', headers, body: JSON.stringify({ results }) });
     return { sent: results.filter((r) => r.status === 'sent').length, failed: results.filter((r) => r.status === 'failed').length, blocked: results.filter((r) => r.status === 'blocked').length };
   }
 

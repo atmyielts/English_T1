@@ -1,4 +1,5 @@
 import { quoteCredits } from '../../../../packages/ai-core/src/mod.ts';
+import { formatCertificateCode, normalizeCertificateCode } from '../../_shared/english-certificate.ts';
 import {
   levelLabel, LOCALES, overallScale, pick, type CoachPack, type InEvent, type Locale, type UpdateRequest,
 } from '../../../../packages/coach-packs/src/mod.ts';
@@ -8,6 +9,7 @@ import { accessKind, ensureFairUse, forgetTeamSeats } from './access.ts';
 import { keyOf } from './ai.ts';
 import { activityFacts, factsSummary } from './facts.ts';
 import { Bot } from './bot.ts';
+import { dueDeliveries, recordDelivered, type DeliveryDeps } from './delivery.ts';
 import { handleUpdate } from './engine.ts';
 import { spokenScript } from './flows/quiz.ts';
 import { pollSent } from './flows/quiz.ts';
@@ -18,9 +20,12 @@ import { verifyMiniAppData } from './telegram-auth.ts';
 import { localParts, parseDate, validReminder, validTimeZone } from './time.ts';
 import { goalOf, planView, progressView, todayPlan, weekView } from './views.ts';
 
-// coach/* routes. Three kinds of caller:
-//   - the Telegram worker (service secret, `service: true`): update, poll-sent,
-//     media-cached, miniapp-session;
+// coach/* routes. Five kinds of caller:
+//   - the Telegram worker for a linked person (service secret, `service: true`):
+//     update, poll-sent, media-cached, miniapp-session;
+//   - the worker's cron (the secret alone, `system: true`): system-due,
+//     system-delivered;
+//   - anyone with a certificate link (`anonymous`, rate-limited): verify;
 //   - the Mini App and the web (the person's session): home, dashboard, report,
 //     session, plan, goal, settings, certificates, erase, link, samples, team…;
 //   - Schood admins: team-create (Coach Team seats are granted by support until
@@ -53,6 +58,13 @@ export function coachRoutes(): Record<string, RouteHandler> {
     return rt.store.ensureEnrollment({ userId: ctx.user.id, workspaceId: access.workspace.id, pack: pack.manifest.id, packVersion: pack.manifest.version, locale });
   };
   const deps = (rt: CoachRuntime, pack: CoachPack, enrollment: Enrollment, ctx: RequestContext) => ({ store: rt.store, pack, enrollment, now: ctx.now() });
+  /** The cron's dependencies on a system route: the shared budget and preferences through ctx.notify. */
+  const deliveryDeps = (ctx: RequestContext, rt: CoachRuntime): DeliveryDeps => ({
+    store: rt.store, packs: rt.packs, config: rt.config, now: () => ctx.now(),
+    notify: (userId, channel, take) => (take ? ctx.notify.take(userId, channel) : ctx.notify.allowed(userId, channel)),
+    prefs: (userId) => ctx.notify.prefs(userId),
+    async nameOf(userId) { const name = (await ctx.repo.profile(userId))?.name?.trim().split(/\s+/)[0] ?? ''; return name ? name.slice(0, 40) : null; },
+  });
 
   return {
     // --- the worker ----------------------------------------------------------------------------------------
@@ -89,6 +101,48 @@ export function coachRoutes(): Record<string, RouteHandler> {
         if (!/^[a-z0-9][a-z0-9_.:-]{1,120}$/.test(key)) throw new SchoodAIError('invalid_request', 'cache_key is invalid.', 400, { field: 'cache_key' });
         await rt.store.saveMedia(pack.manifest.id, key, fileId);
         return { ok: true };
+      },
+    },
+    // --- the worker's cron (system: the worker secret alone, no person) ------------------------------------------
+    /** Due daily reminders and weekly reports, rendered and counted against the shared budget. No AI. */
+    'system-due': {
+      system: true,
+      async POST(ctx) {
+        const body = record(await ctx.body().catch(() => ({})));
+        const limit = body.limit === undefined ? 40 : integer(body.limit, 'limit', 1, 45);
+        return { deliveries: await dueDeliveries(deliveryDeps(ctx, runtime(ctx)), limit) };
+      },
+    },
+    /** What Telegram did with each delivery; a blocked bot stops that person's reminders. */
+    'system-delivered': {
+      system: true,
+      async POST(ctx) {
+        const body = record(await ctx.body());
+        const results = Array.isArray(body.results) ? body.results.slice(0, 200) as { id: string; status: 'sent' | 'failed' | 'blocked'; reason?: string }[] : [];
+        return { updated: await recordDelivered(runtime(ctx).store, results) };
+      },
+    },
+    // --- anyone with the link ----------------------------------------------------------------------------------
+    /** A certificate's public record for its share link and QR code: only what the certificate shows. */
+    verify: {
+      anonymous: { perMinute: 20, perDay: 500 },
+      async GET(ctx) {
+        const rt = runtime(ctx);
+        const code = normalizeCertificateCode(ctx.query.get('code'));
+        const cert = code ? await rt.store.certificateByCode(code) : null;
+        const pack = cert ? rt.packs.get(cert.pack) : undefined;
+        if (!cert || !pack) throw new SchoodAIError('not_found', 'No certificate has this code.', 404);
+        const rubric = pack.rubricById.get(cert.rubric);
+        const milestone = pack.milestones.find((entry) => entry.id === cert.milestone);
+        const all = (text: Parameters<typeof pick>[0]) => Object.fromEntries(LOCALES.map((locale) => [locale, pick(text, locale)]));
+        return {
+          certificate: {
+            code: formatCertificateCode(cert.code), display_name: cert.displayName, coach: all(pack.manifest.name), level: cert.levelLabel,
+            title: milestone ? all(milestone.name) : null, rubric: rubric ? all(rubric.name) : null,
+            results: cert.evidence.map((entry) => ({ at: entry.at, overall: entry.overall, label: entry.overall === null || !rubric ? null : levelLabel(overallScale(rubric), entry.overall) })),
+            issued_at: cert.issuedAt, revoked: !!cert.revokedAt, accent: pack.manifest.accent ?? null,
+          },
+        };
       },
     },
     /**

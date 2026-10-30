@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link2, LogIn, Send } from 'lucide-react';
 import { Button, ButtonLink, Card, Link, signInUrl, useT } from '../../core/index.ts';
-import { insideTelegram, onTelegramLink, openOutside, telegramLink } from '../telegram.ts';
+import { insideTelegram, onTelegramLink, openOutside, telegramLink } from '../telegram-session.ts';
 
 // What a coach page shows to someone who is not signed in: on the web, sign in;
 // inside Telegram, link the Schood account (one account for the web and every bot).

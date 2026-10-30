@@ -1,4 +1,4 @@
-import { equal, ID, ok, USERS } from '../fixture.test.ts';
+import { equal, ID, ok, SECRET, USERS } from '../fixture.test.ts';
 import { coachStack, PASS_PRODUCT } from './harness.ts';
 
 // The coach routes the Mini App and the web call with the person's session, and
@@ -87,8 +87,10 @@ Deno.test('coach routes: goal, settings, plan, report, session detail, certifica
   equal((await s.f.json('GET', 'coach/certificates', { token: 'tok-plus' })).body.certificates.length, 1, 'certificates stay');
   const revoke = await s.f.json('DELETE', 'coach/certificates', { token: 'tok-plus', body: { id: certs.body.certificates[0].id } });
   equal(revoke.status, 200, 'revoked');
-  const check = await s.gate(new Request('https://x.invalid/functions/v1/schood-coach-gate/verify?code=7K3M-9QX2-P4TA'));
-  equal((await check.json()).certificate.revoked, true, 'the public check shows it revoked');
+  const check = await s.verify('7K3M-9QX2-P4TA');
+  equal([check.status, check.body.certificate.revoked], [200, true], 'the public check shows it revoked, with no sign-in');
+  equal((await s.verify('0000-0000-0000')).status, 404, 'an unknown code');
+  ok(!JSON.stringify(check.body).includes(ID.plus) && !JSON.stringify(check.body).includes('dilnoza@'), 'no account details on the public record');
 });
 
 Deno.test('coach routes: Coach Team seats, the manager board and privacy', async () => {
@@ -141,4 +143,32 @@ Deno.test('coach routes: worker-only routes, the update body and Mini App sign-i
   equal((await mint('700100', tampered)).status, 401, 'tampered data is refused');
   s.advance(2 * 86_400_000);
   equal((await (await mint('700100', init)).json()).reason, 'telegram_expired', 'old launch data is refused');
+});
+
+Deno.test('coach routes: the cron routes take the worker secret alone and respect notification settings', async () => {
+  const s = await coachStack();
+  // Only the secret: a person's session or a wrong secret is refused.
+  const system = (path: string, body: unknown, secret = SECRET) => s.f.call('POST', path, { token: null, origin: null, headers: { 'x-schood-service-secret': secret }, body });
+  equal((await system('coach/system-due', {}, 'wrong-secret-0123456789abcdef0123456789')).status, 401, 'a wrong secret');
+  ok([401, 403].includes((await s.f.json('POST', 'coach/system-due', { token: 'tok-plus', body: {} })).status), 'a person cannot call the cron');
+  // Dilnoza sets a reminder, then turns Telegram delivery off in Settings → Notifications.
+  await s.user.text('ielts', '700100', '/start');
+  await s.f.json('PATCH', 'coach/settings', { token: 'tok-plus', body: { pack: 'ielts', reminder: '12:00', time_zone: 'Asia/Tashkent' } });
+  s.advance(2 * 3_600_000);
+  const prefs = await s.f.json('GET', 'core/notify-prefs', { token: 'tok-plus' });
+  ok(prefs.status === 200 && prefs.body.kinds.some((kind: { key: string }) => kind.key === 'coach.ielts'), 'each coach is a notification kind people can mute');
+  await s.f.json('PUT', 'core/notify-prefs', { token: 'tok-plus', body: { ...prefs.body.prefs, delivery: ['web'] } });
+  const off = await (await system('coach/system-due', { limit: 10 })).json();
+  equal(off.deliveries.length, 0, 'no Telegram reminder when Telegram delivery is off');
+  equal(s.coach.inspect.deliveries.at(-1)?.reason, 'delivery_off', 'logged as skipped');
+  s.advance(86_400_000);
+  await s.f.json('PUT', 'core/notify-prefs', { token: 'tok-plus', body: { ...prefs.body.prefs, delivery: ['telegram', 'web'], muted: ['coach'] } });
+  equal((await (await system('coach/system-due', { limit: 10 })).json()).deliveries.length, 0, 'muting the coach area mutes every coach');
+  s.advance(86_400_000);
+  await s.f.json('PUT', 'core/notify-prefs', { token: 'tok-plus', body: { ...prefs.body.prefs, delivery: ['telegram', 'web'], muted: [] } });
+  const due = await (await system('coach/system-due', { limit: 10 })).json();
+  equal([due.deliveries.length, due.deliveries[0]?.pack, due.deliveries[0]?.chatId], [1, 'ielts', '700100'], 'the reminder goes out again');
+  const delivered = await (await system('coach/system-delivered', { results: [{ id: due.deliveries[0].id, status: 'blocked', reason: 'bot_blocked' }] })).json();
+  equal(delivered.updated, 1, 'the outcome is recorded');
+  equal((await system('coach/system-due', { limit: 99 })).status, 400, 'the batch is bounded');
 });

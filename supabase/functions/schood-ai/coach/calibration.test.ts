@@ -4,7 +4,7 @@ import { equal, ok } from '../fixture.test.ts';
 import type { ChargedSession } from '../types.ts';
 import { assessInSession } from './ai.ts';
 
-// Calibration in CI. A fake model replays the recorded assessor runs of every
+// Calibration in CI. A fake model replays the pack's assessor runs of every
 // calibration sample through the real scoring pipeline (the prompt, the schema,
 // the evidence check and the one repair call), then the same agreement and
 // run-to-run thresholds the live evaluation uses are applied to what the pipeline
@@ -12,14 +12,14 @@ import { assessInSession } from './ai.ts';
 
 interface Call { messages: { role: string; content: string }[]; schema: unknown; temperature?: number; keys: string[] }
 
-/** A charged session whose model returns the recorded run; a repair call returns only the verbatim quotes. */
+/** A charged session whose model returns the pack's run; a repair call returns only the verbatim quotes. */
 function replaySession(run: CalibrationRun, response: string, calls: Call[]): ChargedSession {
   const raw = (onlyValid: boolean): RawAssessment => ({
     criteria: Object.entries(run.criteria).map(([id, entry]) => ({
       id, score: entry.score,
       evidence: entry.evidence.filter((quote) => !onlyValid || quoteFound(quote, response)).map((quote) => ({ quote, comment: 'recorded' })),
     })),
-    errors: [], upgrades: [], summary: 'recorded run',
+    errors: [], upgrades: [], summary: 'pack run',
   });
   return {
     json<T>(input: Parameters<ChargedSession['json']>[0]): Promise<T> {
@@ -66,7 +66,7 @@ for (const pack of loadPacks().values()) {
   for (const rubric of pack.rubrics) {
     Deno.test(`calibration: ${pack.manifest.id}/${rubric.id} through the scoring pipeline`, async () => {
       const recorded = calibrate(rubric);
-      ok(recorded.passed, `recorded runs: ${recorded.failures.join('; ')}`);
+      ok(recorded.passed, `pack runs: ${recorded.failures.join('; ')}`);
       const { runs, assessments, repairs } = await replay(pack, rubric);
       const piped = calibrate(rubric, runs);
       ok(piped.passed, `after the evidence check: ${piped.failures.join('; ')} (exact ${piped.exact}, adjacent ${piped.adjacent}, MAE ${piped.mae})`);

@@ -28,7 +28,7 @@ Deno.test('packs: every registered pack validates with no problems and meets the
   assert(loadPacks() === packs, 'packs load once per instance');
 });
 
-Deno.test('packs: recorded calibration runs agree with the reference scores and with each other', () => {
+Deno.test('packs: the calibration runs agree with the reference scores and with each other', () => {
   for (const source of PACK_SOURCES) for (const rubric of source.rubrics) {
     const report = calibrate(rubric);
     assert(report.passed, `${rubric.id}: ${report.failures.join('; ')}`);

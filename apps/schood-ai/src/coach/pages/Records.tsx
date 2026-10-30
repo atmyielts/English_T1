@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Award, Copy, ShieldCheck, Trash2, UserMinus } from 'lucide-react';
-import { ApiErrorState, Badge, Button, Card, EmptyState, Field, LoadingState, PageHeader, TextInput, useI18n, useLocation, useSession, useT } from '../../core/index.ts';
+import { ApiError, ApiErrorState, Badge, Button, Card, EmptyState, Field, LoadingState, PageHeader, TextInput, useI18n, useLocation, useSession, useT } from '../../core/index.ts';
 import { coachApi, type TeamBoard } from '../api.ts';
 import { dateText, Loaded, useLoad } from '../ui.tsx';
 import { SignedOut } from './common.tsx';
@@ -8,27 +8,13 @@ import { SignedOut } from './common.tsx';
 // Certificates (mine, and the public check anyone can open from a share link) and
 // Coach Team: a manager's leaderboard of verified practice, invites and members.
 
-const base = String(import.meta.env.VITE_SUPABASE_URL ?? '').replace(/\/+$/, '');
-const anon = String(import.meta.env.VITE_SUPABASE_ANON_KEY ?? '');
-
-interface PublicCertificate {
-  code: string; display_name: string; coach: Record<string, string>; level: string; title: Record<string, string> | null; rubric: Record<string, string> | null;
-  results: { at: string; overall: number | null; label: string | null }[]; issued_at: string; revoked: boolean; accent: string | null;
-}
-
 export function CoachVerify({ params }: { params: Record<string, string> }) {
   const t = useT(), { locale } = useI18n();
-  const [state, setState] = useState<{ cert: PublicCertificate | null; error: boolean; loading: boolean }>({ cert: null, error: false, loading: true });
-  useEffect(() => {
-    let live = true;
-    fetch(`${base}/functions/v1/schood-coach-gate/verify?code=${encodeURIComponent(params.code)}`, { headers: anon ? { apikey: anon, Authorization: `Bearer ${anon}` } : {} })
-      .then(async (response) => ({ ok: response.ok, body: await response.json().catch(() => ({})) }))
-      .then(({ ok, body }) => { if (live) setState({ cert: ok ? body.certificate : null, error: !ok, loading: false }); }, () => { if (live) setState({ cert: null, error: true, loading: false }); });
-    return () => { live = false; };
-  }, [params.code]);
-  if (state.loading) return <LoadingState/>;
-  if (!state.cert) return <EmptyState title={t('coach.verify.missing')} lead={t('coach.verify.missingLead')}/>;
-  const cert = state.cert, l = locale as 'en';
+  const state = useLoad(() => coachApi.verify(params.code), [params.code]);
+  if (state.error instanceof ApiError && state.error.status === 404) return <EmptyState title={t('coach.verify.missing')} lead={t('coach.verify.missingLead')}/>;
+  if (state.error) return <ApiErrorState error={state.error} onRetry={state.reload}/>;
+  if (state.loading || !state.data) return <LoadingState/>;
+  const cert = state.data.certificate, l = locale as 'en';
   return <div className="flex min-w-0 flex-col gap-4">
     <Card className="flex flex-col gap-3 border-2" style={{ borderColor: cert.accent && /^#[0-9a-f]{6}$/i.test(cert.accent) ? cert.accent : undefined }}>
       <p className="m-0 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-600"><ShieldCheck size={16} aria-hidden="true"/>{t('coach.verify.eyebrow')}</p>

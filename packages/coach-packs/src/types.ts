@@ -140,7 +140,10 @@ export interface CalibrationSample {
   rationale: string;
 }
 
-/** One recorded run of the assessor on a sample (what the model returned). */
+/**
+ * One assessor run on a sample, in the shape the model returns. Authored runs test the
+ * pipeline in CI; scripts/coach-calibration-live.ts --out produces real ones to replace them.
+ */
 export interface CalibrationRun {
   criteria: Record<string, { score: number; evidence: string[] }>;
 }
@@ -161,7 +164,7 @@ export interface Rubric {
     /** CI fails below these against the recorded runs; the live script reports the same against real models. */
     thresholds: { exact: number; adjacent: number; maxMae: number; maxSpread: number; evidenceValid: number };
     samples: CalibrationSample[];
-    /** Recorded assessor runs per sample id (at least two per sample, for run-to-run consistency). */
+    /** Assessor runs per sample id (at least two per sample, for run-to-run consistency). */
     runs: Record<string, CalibrationRun[]>;
   };
 }

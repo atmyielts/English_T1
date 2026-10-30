@@ -1,8 +1,11 @@
 import type { CalibrationRun, CalibrationSample } from '../../src/types.ts';
 
 // Writing Task 2 calibration set: ten original essays from band 4 to band 8 with
-// author-rated reference bands and three recorded assessor runs each. Prompts and
+// author-rated reference bands and three assessor runs each. Prompts and
 // essays are written for Schood practice; none is taken from a published test.
+// The runs are authored in the assessor's output shape, not captured from a model:
+// they test the scoring pipeline and the thresholds in CI. Replace them with real runs
+// from scripts/coach-calibration-live.ts --out once a model route is configured.
 
 const END = ' Give reasons for your answer and include any relevant examples from your own knowledge or experience. Write at least 250 words.';
 const essay = (...paragraphs: string[]) => paragraphs.join('\n\n');
