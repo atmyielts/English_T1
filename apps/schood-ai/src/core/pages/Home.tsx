@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowRight, CircleCheck, MessageSquareText, Sparkles, UserRound } from 'lucide-react';
 import { useI18n } from '../../../../../packages/service-i18n/src/i18n.tsx';
 import { api } from '../api.ts';
 import type { HomeCard } from '../areas.ts';
+import { HomeCardView } from '../lazy.tsx';
 import { useT } from '../i18n/index.ts';
 import { navigate } from '../router.tsx';
 import { CreditBalance, Paywall } from '../states.tsx';
@@ -95,7 +96,7 @@ function Tools({ cards, me }: { cards: HomeCard[]; me: Me }) {
   const t = useT();
   return <section className="mt-6" aria-labelledby="home-tools">
     <h2 id="home-tools" className="m-0 mb-3 font-display text-xl font-bold">{t('home.tools.title')}</h2>
-    {cards.length ? <div className="grid gap-4 md:grid-cols-2">{cards.map((card) => <React.Fragment key={card.id}>{card.render(me)}</React.Fragment>)}</div>
+    {cards.length ? <div className="grid gap-4 md:grid-cols-2">{cards.map((card) => <HomeCardView key={card.id} card={card} me={me}/>)}</div>
       : <p className="m-0 rounded-3xl border border-dashed border-navy-line/40 bg-white/60 p-5 text-sm text-gray-700">{t('home.tools.soon')}</p>}
   </section>;
 }

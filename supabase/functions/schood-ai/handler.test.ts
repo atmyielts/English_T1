@@ -65,7 +65,7 @@ Deno.test('free users browse but every AI call is plan_required and nothing is s
   const f = fixture();
   const me = await f.json('GET', 'core/me', { token: 'tok-free' });
   equal([me.status, me.body.plan.plans, me.body.plan.beta, me.body.credits.total], [200, [], false, 0]);
-  // Areas register their own specialists too: the assistant comes first and none is usable without a plan.
+  // Areas register their own specialists (the learner tutor): all are listed, none usable.
   const listed = me.body.specialists as { key: string; available: boolean }[];
   equal([listed[0].key, listed.filter((s) => s.available).length], ['assistant', 0]);
   const refused = await f.json('POST', 'core/chat', { token: 'tok-free', body: chat({ message: 'Hello' }) });
