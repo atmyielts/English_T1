@@ -1,12 +1,6 @@
 import type { LearnerKey } from './en.ts';
 
 export const uz: Record<LearnerKey, string> = {
-  // Core's chat names its sources `context.<kind>`; these kinds are the learner area's own.
-  'context.learner_prediction': 'bashorat qilingan ballaringiz',
-  'context.learner_activity': 'Schood AI dagi faolligingiz',
-  'context.learner_snapshot': 'saqlangan Schood natijalaringiz',
-  'context.centre_homework': 'ochiq uy vazifalaringiz',
-  'context.centre_feedback': 'o‘qituvchingiz fikri',
   'learner.eyebrow': 'O‘quvchilar uchun Schood AI',
   'learner.eyebrowParent': 'Oilalar uchun Schood AI',
   'learner.cost': 'Har safar {count|one:# kredit|other:# kredit}',
@@ -90,6 +84,8 @@ export const uz: Record<LearnerKey, string> = {
   'learner.consent.term4': 'Noto‘g‘ri yoki xavfli ko‘ringan javob haqida bayroqcha tugmasi bilan xabar bering.',
   'learner.consent.accept': 'Tushundim va davom etmoqchiman.',
   'learner.consent.continue': 'Davom etish',
+  'learner.consent.doneTitle': 'Hammasi tayyor',
+  'learner.consent.doneLead': 'Rahmat. Endi Schood AI dan foydalanishingiz mumkin.',
   'learner.consent.needParent': 'Avval ota-onangiz hisobingizni Plus Family bilan bog‘lashi kerak.',
   'learner.consent.needGuardian': 'Ota-onangiz yoki vasiyingiz rozi ekanini tasdiqlang.',
 
@@ -143,10 +139,6 @@ export const uz: Record<LearnerKey, string> = {
   'learner.tutor.knowsNote': 'Schooddagi natijalaringiz xulosasi ham ishlatiladi. Hisobingizdan boshqa hech narsa olinmaydi.',
   'learner.tutor.telegram': 'Telegramda ham bor: @schoodstudentbot ga /ai yuboring.',
   'learner.tutor.fromResults': 'Hozirgina {app} da mashg‘ulotni tugatdim. Natijamni tushunishga va keyin nimani mashq qilishni aytishga yordam bering.',
-  'learner.context.learner_prediction': 'Bashorat qilingan ballaringiz',
-  'learner.context.learner_activity': 'Schood AI bilan nima qilganingiz',
-  'learner.context.centre_homework': 'Ochiq uy vazifalaringiz',
-  'learner.context.centre_feedback': 'O‘qituvchingiz fikri',
   'learner.source.ielts': 'IELTS Simulyatori',
   'learner.source.ielts-practice': 'IELTS Practice',
   'learner.source.sat': 'SAT Simulyatori',
@@ -477,7 +469,7 @@ export const uz: Record<LearnerKey, string> = {
   'learner.family.parentSees': '{name} Schooddagi o‘sishingizning haftalik xulosasini ko‘radi.',
   'learner.family.unlink': 'Uzish',
   'learner.family.unlinkConfirm': '{name} bilan bog‘lanish uzilsinmi? Oila tarifingizdagi Plus to‘xtaydi.',
-  'learner.family.none': 'Hali bog‘langan farzand yo‘q. O‘ng tomonda farzandingizni taklif qiling.',
+  'learner.family.none': 'Hali bog‘langan farzand yo‘q. Farzandingizni taklif kodi bilan taklif qiling.',
   'learner.family.waiting': 'Taklif yuborildi',
   'learner.family.inviteHint': '{hint} bilan tugaydigan kod, {date} gacha amal qiladi.',
   'learner.family.cancel': 'Taklifni bekor qilish',

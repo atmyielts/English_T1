@@ -58,7 +58,7 @@ function refusal(ctx: RequestContext, error: unknown): TelegramMessage {
     : code === 'insufficient_credits' || code === 'budget_exhausted' ? 'credits' : code === 'capped' ? 'capped'
     : code === 'ai_disabled' || code === 'ai_unavailable' ? 'off' : code === 'quiet_hours' ? 'quiet' : 'failed';
   if (!(error instanceof SchoodAIError)) console.error(JSON.stringify({ event: 'schood_ai_telegram_failed', error: String(error).slice(0, 200) }));
-  return { text: marked(escapeHtml(say(ctx, key))), buttons: webButton(ctx, key === 'plan' ? '/plans' : '') };
+  return { text: marked(escapeHtml(say(ctx, key))), buttons: webButton(ctx, key === 'plan' ? '/plans' : key === 'consent' ? '/consent?next=/tutor' : '') };
 }
 
 async function tutor(ctx: RequestContext, question: string, updateId: number): Promise<TelegramMessage[]> {

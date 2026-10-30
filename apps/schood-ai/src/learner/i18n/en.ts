@@ -1,11 +1,5 @@
 // learner text in English. Keys start with `learner.`; uz.ts and ru.ts must have the same keys.
 export const en = {
-  // Core's chat names its sources `context.<kind>`; these kinds are the learner area's own.
-  'context.learner_prediction': 'your predicted scores',
-  'context.learner_activity': 'your Schood AI activity',
-  'context.learner_snapshot': 'your saved Schood results',
-  'context.centre_homework': 'your open homework',
-  'context.centre_feedback': "your teacher's feedback",
   'learner.eyebrow': 'Schood AI for learners',
   'learner.eyebrowParent': 'Schood AI for families',
   'learner.cost': '{count|one:# credit|other:# credits} per use',
@@ -89,6 +83,8 @@ export const en = {
   'learner.consent.term4': 'Report any answer that looks wrong or unsafe with the flag button.',
   'learner.consent.accept': 'I understand and want to continue.',
   'learner.consent.continue': 'Continue',
+  'learner.consent.doneTitle': 'You are all set',
+  'learner.consent.doneLead': 'Thank you. You can use Schood AI now.',
   'learner.consent.needParent': 'A parent needs to link your account with Plus Family first.',
   'learner.consent.needGuardian': 'Please confirm that your parent or guardian agrees.',
 
@@ -142,10 +138,6 @@ export const en = {
   'learner.tutor.knowsNote': 'Your Schood results summary is also used. Nothing else from your account.',
   'learner.tutor.telegram': 'Also in Telegram: send /ai to @schoodstudentbot.',
   'learner.tutor.fromResults': 'I just finished a session in {app}. Help me understand my result and what to practise next.',
-  'learner.context.learner_prediction': 'Your predicted scores',
-  'learner.context.learner_activity': 'What you did with Schood AI',
-  'learner.context.centre_homework': 'Your open homework',
-  'learner.context.centre_feedback': 'Your teacher\'s feedback',
   'learner.source.ielts': 'IELTS Simulator',
   'learner.source.ielts-practice': 'IELTS Practice',
   'learner.source.sat': 'SAT Simulator',
@@ -476,7 +468,7 @@ export const en = {
   'learner.family.parentSees': '{name} sees a weekly summary of your Schood progress.',
   'learner.family.unlink': 'Unlink',
   'learner.family.unlinkConfirm': 'Unlink {name}? Their Plus from your family plan stops.',
-  'learner.family.none': 'No children linked yet. Invite your child on the right.',
+  'learner.family.none': 'No children linked yet. Invite your child with an invite code.',
   'learner.family.waiting': 'Invite sent',
   'learner.family.inviteHint': 'Code ending {hint}, valid until {date}.',
   'learner.family.cancel': 'Cancel invite',

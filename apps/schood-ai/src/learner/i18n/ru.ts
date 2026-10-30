@@ -1,12 +1,6 @@
 import type { LearnerKey } from './en.ts';
 
 export const ru: Record<LearnerKey, string> = {
-  // Core's chat names its sources `context.<kind>`; these kinds are the learner area's own.
-  'context.learner_prediction': 'ваши прогнозируемые баллы',
-  'context.learner_activity': 'ваши действия в Schood AI',
-  'context.learner_snapshot': 'сохранённые результаты Schood',
-  'context.centre_homework': 'ваши открытые домашние задания',
-  'context.centre_feedback': 'отзывы вашего учителя',
   'learner.eyebrow': 'Schood AI для учеников',
   'learner.eyebrowParent': 'Schood AI для семей',
   'learner.cost': '{count|one:# кредит|few:# кредита|many:# кредитов|other:# кредита} за использование',
@@ -90,6 +84,8 @@ export const ru: Record<LearnerKey, string> = {
   'learner.consent.term4': 'Сообщайте о неверных или небезопасных ответах кнопкой с флажком.',
   'learner.consent.accept': 'Я понимаю и хочу продолжить.',
   'learner.consent.continue': 'Продолжить',
+  'learner.consent.doneTitle': 'Всё готово',
+  'learner.consent.doneLead': 'Спасибо. Теперь можно пользоваться Schood AI.',
   'learner.consent.needParent': 'Сначала родитель должен привязать ваш аккаунт через Plus Family.',
   'learner.consent.needGuardian': 'Подтвердите, что родитель или опекун согласен.',
 
@@ -143,10 +139,6 @@ export const ru: Record<LearnerKey, string> = {
   'learner.tutor.knowsNote': 'Также используется сводка ваших результатов в Schood. Больше ничего из аккаунта.',
   'learner.tutor.telegram': 'Есть и в Telegram: отправьте /ai боту @schoodstudentbot.',
   'learner.tutor.fromResults': 'Я только что закончил занятие в {app}. Помогите понять мой результат и что тренировать дальше.',
-  'learner.context.learner_prediction': 'Ваши прогнозируемые баллы',
-  'learner.context.learner_activity': 'Что вы делали в Schood AI',
-  'learner.context.centre_homework': 'Ваши открытые домашние задания',
-  'learner.context.centre_feedback': 'Отзывы вашего учителя',
   'learner.source.ielts': 'Тренажёр IELTS',
   'learner.source.ielts-practice': 'IELTS Practice',
   'learner.source.sat': 'Тренажёр SAT',
@@ -477,7 +469,7 @@ export const ru: Record<LearnerKey, string> = {
   'learner.family.parentSees': '{name} видит недельную сводку вашего прогресса в Schood.',
   'learner.family.unlink': 'Отвязать',
   'learner.family.unlinkConfirm': 'Отвязать {name}? Plus по вашему семейному тарифу прекратится.',
-  'learner.family.none': 'Пока нет привязанных детей. Пригласите ребёнка справа.',
+  'learner.family.none': 'Пока нет привязанных детей. Пригласите ребёнка по коду приглашения.',
   'learner.family.waiting': 'Приглашение отправлено',
   'learner.family.inviteHint': 'Код, заканчивающийся на {hint}, действует до {date}.',
   'learner.family.cancel': 'Отменить приглашение',

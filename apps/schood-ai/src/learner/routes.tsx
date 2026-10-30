@@ -1,9 +1,8 @@
 import { lazy, type ComponentType } from 'react';
-import { BookOpen, Brain, CalendarCheck, LayoutGrid, MessageSquareText, Mic, PenLine, Swords, Target, UsersRound, ClipboardList } from 'lucide-react';
 import type { AreaNavItem, AreaRoute, HomeCard } from '../core/areas.ts';
-import { FamilyCard, LearnCard } from './cards.tsx';
 
-// Learners and parents (L1–L17, P1–P2). Pages load on demand: learners are on weak phones.
+// Learners and parents (L1–L17, P1–P2). Pages, nav icons and home cards load on
+// demand: learners are on weak phones, so none of it is in the first download.
 type Page = ComponentType<{ params: Record<string, string> }>;
 const page = <K extends string>(load: () => Promise<Record<K, ComponentType<never>>>, name: K) => lazy(async () => ({ default: (await load())[name] as Page }));
 const tutor = () => import('./pages/Tutor.tsx'), writing = () => import('./pages/Writing.tsx'), speaking = () => import('./pages/Speaking.tsx');
@@ -11,6 +10,7 @@ const practice = () => import('./pages/Practice.tsx'), plan = () => import('./pa
 
 export const routes: AreaRoute[] = [
   { path: '/learn', component: page(tutor, 'LearnHubPage'), title: 'learner.hub.title', audiences: ['learner'] },
+  { path: '/consent', component: page(tutor, 'ConsentPage'), title: 'learner.consent.title', audiences: ['learner'] },
   { path: '/tutor', component: page(tutor, 'TutorPage'), title: 'learner.tool.tutor', audiences: ['learner'], feature: 'L1' },
   { path: '/explain', component: page(() => import('./pages/Explain.tsx'), 'ExplainPage'), title: 'learner.tool.explain', audiences: ['learner'], feature: 'L2' },
   { path: '/write', component: page(writing, 'WritePage'), title: 'learner.tool.write', audiences: ['learner'], feature: 'L3' },
@@ -34,20 +34,22 @@ export const routes: AreaRoute[] = [
 ];
 
 export const nav: AreaNavItem[] = [
-  { id: 'learn', path: '/learn', label: 'learner.nav.learn', icon: LayoutGrid, audiences: ['learner'] },
-  { id: 'tutor', path: '/tutor', label: 'learner.tool.tutor', icon: MessageSquareText, audiences: ['learner'], feature: 'L1' },
-  { id: 'explain', path: '/explain', label: 'learner.tool.explain', icon: Brain, audiences: ['learner'], feature: 'L2' },
-  { id: 'homework', path: '/homework', label: 'learner.tool.homework', icon: ClipboardList, audiences: ['learner'], feature: 'L7' },
-  { id: 'write', path: '/write', label: 'learner.tool.write', icon: PenLine, audiences: ['learner'], feature: 'L3' },
-  { id: 'speak', path: '/speak', label: 'learner.tool.speak', icon: Mic, audiences: ['learner'], feature: 'L4' },
-  { id: 'reading', path: '/reading', label: 'learner.tool.reading', icon: BookOpen, audiences: ['learner'], feature: 'L10' },
-  { id: 'plan', path: '/plan', label: 'learner.tool.plan', icon: Target, audiences: ['learner'], feature: 'L5' },
-  { id: 'brief', path: '/brief', label: 'learner.tool.brief', icon: CalendarCheck, audiences: ['learner'], feature: 'L14' },
-  { id: 'duels', path: '/duels', label: 'learner.tool.duels', icon: Swords, audiences: ['learner'], feature: 'L17' },
-  { id: 'family', path: '/family', label: 'learner.tool.family', icon: UsersRound, audiences: ['parent'], feature: 'P1' },
+  { id: 'learn', path: '/learn', label: 'learner.nav.learn', icon: 'LayoutGrid', audiences: ['learner'] },
+  { id: 'tutor', path: '/tutor', label: 'learner.tool.tutor', icon: 'MessageSquareText', audiences: ['learner'], feature: 'L1' },
+  { id: 'explain', path: '/explain', label: 'learner.tool.explain', icon: 'Brain', audiences: ['learner'], feature: 'L2' },
+  { id: 'homework', path: '/homework', label: 'learner.tool.homework', icon: 'ClipboardList', audiences: ['learner'], feature: 'L7' },
+  { id: 'write', path: '/write', label: 'learner.tool.write', icon: 'PenLine', audiences: ['learner'], feature: 'L3' },
+  { id: 'speak', path: '/speak', label: 'learner.tool.speak', icon: 'Mic', audiences: ['learner'], feature: 'L4' },
+  { id: 'reading', path: '/reading', label: 'learner.tool.reading', icon: 'BookOpen', audiences: ['learner'], feature: 'L10' },
+  { id: 'plan', path: '/plan', label: 'learner.tool.plan', icon: 'Target', audiences: ['learner'], feature: 'L5' },
+  { id: 'brief', path: '/brief', label: 'learner.tool.brief', icon: 'CalendarCheck', audiences: ['learner'], feature: 'L14' },
+  { id: 'duels', path: '/duels', label: 'learner.tool.duels', icon: 'Swords', audiences: ['learner'], feature: 'L17' },
+  { id: 'family', path: '/family', label: 'learner.tool.family', icon: 'UsersRound', audiences: ['parent'], feature: 'P1' },
 ];
 
 export const homeCards: HomeCard[] = [
-  { id: 'learn', audiences: ['learner'], render: () => <LearnCard/> },
-  { id: 'family', audiences: ['parent'], render: () => <FamilyCard/> },
+  { id: 'learn', audiences: ['learner'], component: () => import('./cards/LearnCard.tsx') },
+  { id: 'family', audiences: ['parent'], component: () => import('./cards/FamilyCard.tsx') },
 ];
+
+export const icons = () => import('./icons.ts');

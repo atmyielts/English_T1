@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BookOpen, Brain, CalendarCheck, FileText, Globe2, Languages, MessageSquareText, Mic, Camera, PenLine, Swords, Target, UsersRound, Volume2, ClipboardList, Briefcase } from 'lucide-react';
-import { api, Badge, Button, Card, Chat, Link, SparkMark, useLocation, useT, useWorkspace, type ContextBlockView } from '../../core/index.ts';
+import { api, Badge, Button, Card, Chat, contextLabel, Link, SparkMark, useLocation, useT, useWorkspace, type ContextBlockView } from '../../core/index.ts';
 import { ConsentGate, Failure, Section, ToolHeader, useLearnerApi, useRun } from '../kit.tsx';
 
 // L1 tutor page and the learner hub listing every tool.
@@ -72,10 +72,27 @@ function Knows() {
   return <Card as="div" className="text-sm">
     <h2 className="m-0 font-display text-base font-bold">{t('learner.tutor.knows')}</h2>
     {blocks === null ? <p className="mb-0 mt-2 text-gray-600">{t('state.loading')}</p> : blocks.length
-      ? <ul className="mb-0 mt-2 grid gap-1 list-disc pl-5 text-gray-800">{blocks.map((block) => <li key={block.kind}>{t(`learner.context.${block.kind}`)}</li>)}</ul>
+      ? <ul className="mb-0 mt-2 grid gap-1 list-disc pl-5 text-gray-800">{blocks.map((block) => <li key={block.kind} className="first-letter:uppercase">{contextLabel(workspace.me, t, block.kind)}</li>)}</ul>
       : <p className="mb-0 mt-2 text-gray-700">{t('learner.tutor.knowsNone')}</p>}
     <p className="mb-0 mt-3 text-xs text-gray-600">{t('learner.tutor.knowsNote')}</p>
   </Card>;
+}
+
+/**
+ * The age step on its own page. Every chat checks it on the server, so a refusal
+ * anywhere (the general assistant, the bot) can send the learner here and back.
+ */
+export function ConsentPage() {
+  const t = useT(), { query } = useLocation();
+  const asked = query.get('next') ?? '';
+  const next = /^\/(?!\/)[\w\-/?=&%.]*$/.test(asked) ? asked : '/assistant';
+  return <ConsentGate>
+    <Card className="mx-auto max-w-2xl">
+      <h1 className="m-0 font-display text-2xl font-bold">{t('learner.consent.doneTitle')}</h1>
+      <p className="mb-0 mt-2 text-sm leading-6 text-gray-700">{t('learner.consent.doneLead')}</p>
+      <div className="mt-4"><Link to={next} className="inline-flex min-h-11 items-center rounded-full bg-navy px-4 text-sm font-semibold text-white no-underline">{t('learner.consent.continue')}</Link></div>
+    </Card>
+  </ConsentGate>;
 }
 
 /** The tutor here: Schood AI's own in a personal workspace, the centre's assistant in a centre. */
