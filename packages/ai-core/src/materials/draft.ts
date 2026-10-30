@@ -1,6 +1,6 @@
 import { SchemaError, type Schema } from '../schema.ts';
 import {
-  CHOICE_TYPES, FIXED_OPTIONS, ID_PATTERN, QUESTION_TYPES, TEXT_ROLES,
+  CHOICE_TYPES, FIXED_OPTIONS, ID_PATTERN, LEVEL_PATTERN, QUESTION_TYPES, TEXT_ROLES, toCefrLevel,
   type Block, type Choice, type Question, type QuestionsBlock, type QuestionType, type TextBlock,
 } from './model.ts';
 
@@ -113,7 +113,15 @@ function readQuestion(value: unknown, path: string, shared: Choice[] | undefined
     ...(optionalText(value.explanation, `${path}.explanation`, 1500) ? { explanation: optionalText(value.explanation, `${path}.explanation`, 1500) } : {}),
     ...(optionalText(value.skill, `${path}.skill`, 80) ? { skill: optionalText(value.skill, `${path}.skill`, 80) } : {}),
     ...(optionalText(value.exam_type, `${path}.exam_type`, 60) ? { exam_type: optionalText(value.exam_type, `${path}.exam_type`, 60) } : {}),
+    ...(readLevel(value.level) ? { level: readLevel(value.level)! } : {}),
   };
+}
+
+/** A level as a model writes it (`pre_a1`, `b2`, `band:6.5`) in the model's spelling; undefined when it is not one (dropped, not an error). */
+function readLevel(value: unknown): string | undefined {
+  const cefr = toCefrLevel(value);
+  if (cefr) return cefr;
+  return typeof value === 'string' && LEVEL_PATTERN.test(value.trim()) ? value.trim() : undefined;
 }
 
 function readQuestionSet(value: Record<string, unknown>, path: string, fallbackType?: QuestionType): QuestionsBlock {
@@ -131,6 +139,7 @@ function readQuestionSet(value: Record<string, unknown>, path: string, fallbackT
     ...(shared?.length ? { options: shared } : {}),
     ...(value.from_source === true || value.from_source === 'true' ? { from_source: true } : {}),
     ...(examType ? { exam_type: examType } : {}),
+    ...(readLevel(value.level) ? { level: readLevel(value.level)! } : {}),
     questions: questions.map((question) => (examType && !question.exam_type ? { ...question, exam_type: examType } : question)),
   };
 }

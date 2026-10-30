@@ -82,6 +82,8 @@ export interface Question {
   /** The exam's own type id (`question_true_false_not_given`, `read_daily_life`, `spr`…). */
   exam_type?: string;
   points?: number;
+  /** This question's own level, when a set spans several (placement tests). Else the set's level, else the material's (questionLevel). */
+  level?: string;
 }
 
 export const OPTION_ID = /^[A-Za-z0-9]{1,4}$/;
@@ -98,6 +100,7 @@ export const questionSchema = /*#__PURE__*/ s.object({
   skill: s.optional(s.string({ max: 80 })),
   exam_type: s.optional(s.string({ max: 60 })),
   points: s.optional(s.number({ min: 0, max: 100 })),
+  level: s.optional(s.string({ max: 20, pattern: LEVEL_PATTERN })),
 }) as Schema<Question>;
 
 // --- Blocks ---------------------------------------------------------------------------------
@@ -234,6 +237,19 @@ export const versions = (material: Material): { label: 'core' | 'support' | 'str
   ...(material.variants ?? []).map((variant) => ({ label: variant.label, level: variant.level, blocks: variant.blocks })),
 ];
 export const allQuestions = (blocksOf: readonly Block[]): Question[] => questionBlocks(blocksOf).flatMap((block) => block.questions);
+/** A question's level: its own, else its set's, else the fallback (usually the material's level); null when none is known. */
+export const questionLevel = (question: Pick<Question, 'level'>, block?: Pick<QuestionsBlock, 'level'>, fallback?: string): string | null =>
+  question.level ?? block?.level ?? fallback ?? null;
+/** How many questions there are at each level, in scale order (Pre-A1 first, then bands), for placement tests that span a range. */
+export function questionsByLevel(blocksOf: readonly Block[], fallback?: string): { level: string; questions: number }[] {
+  const counts = new Map<string, number>();
+  for (const block of questionBlocks(blocksOf)) for (const question of block.questions) {
+    const level = questionLevel(question, block, fallback);
+    if (level) counts.set(level, (counts.get(level) ?? 0) + 1);
+  }
+  const rank = (level: string) => { const at = cefrRank(level); return at < 0 ? CEFR_SCALE.length : at; };
+  return [...counts].sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b)).map(([level, questions]) => ({ level, questions }));
+}
 
 // --- The brief ----------------------------------------------------------------------------------
 

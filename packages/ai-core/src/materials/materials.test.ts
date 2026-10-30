@@ -5,7 +5,7 @@ import { SchemaError } from '../schema.ts';
 import {
   ADMISSION_MATH_TOPIC_CODES, answerKey, assessmentItems, briefProblems, briefSchema, CEFR_LEVELS, CEFR_SCALE, cefrRank, checkMaterial, compareSolver, draftContentSchema,
   draftQuestionsSchema, draftSourceSchema, EXAM_TARGETS, generationPlan, ieltsTypesFor, isCorrect, materialCredit, materialKind, MATERIAL_KINDS,
-  materialText, MULTILEVEL_READING_PARTS, neighbourLevels, normaliseAnswer, parseMaterial, parseNumber, plannedCount, quizQuestions, renumber, solverAnswersSchema,
+  materialText, MULTILEVEL_READING_PARTS, neighbourLevels, normaliseAnswer, parseMaterial, questionLevel, questionsByLevel, parseNumber, plannedCount, quizQuestions, renumber, solverAnswersSchema,
   solverTasks, studentView, telegramMessages, toCefrLevel, toeflTasksFor, verification, type Block, type Material,
 } from './mod.ts';
 
@@ -262,4 +262,33 @@ Deno.test('Pre-A1 is a level below A1 (placement tests), outside the Studio rang
   equal(neighbourLevels('Pre-A1'), { support: 'Pre-A1', stretch: 'A1' });
   equal(neighbourLevels('A1'), { support: 'A1', stretch: 'A2' }, 'A1 support does not drop into the young learners level');
   equal(neighbourLevels('B2'), { support: 'B1', stretch: 'C1' });
+});
+
+Deno.test('a question can carry its own level, so one set can span a range', () => {
+  const ranged = parseMaterial({
+    ...readingSet(), kind: 'worksheet', exam: undefined, blocks: [
+      { id: 'b1', type: 'questions', instructions: 'Choose the answer.', level: 'A2', questions: [
+        { id: 'q1', type: 'single_choice', prompt: 'I ____ a student.', options: [{ id: 'A', text: 'am' }, { id: 'B', text: 'is' }], answer: ['A'], level: 'Pre-A1' },
+        { id: 'q2', type: 'single_choice', prompt: 'She ____ to school yesterday.', options: [{ id: 'A', text: 'goes' }, { id: 'B', text: 'went' }], answer: ['B'] },
+        { id: 'q3', type: 'gap', prompt: 'If I ____ (be) you, I would apply.', answer: ['were'], level: 'B2' },
+      ] },
+      { id: 'b2', type: 'questions', instructions: 'Write the word.', questions: [{ id: 'q4', type: 'gap', prompt: 'The opposite of hot is ____.', answer: ['cold'] }] },
+    ],
+  });
+  const [set, plain] = ranged.blocks as Extract<Block, { type: 'questions' }>[];
+  equal(set.questions.map((question) => questionLevel(question, set, ranged.level)), ['Pre-A1', 'A2', 'B2'], 'own level, else the set level');
+  equal(questionLevel(plain.questions[0], plain, ranged.level), 'B2', 'else the material level');
+  equal(questionLevel(plain.questions[0], plain), null);
+  equal(questionsByLevel(ranged.blocks, ranged.level), [{ level: 'Pre-A1', questions: 1 }, { level: 'A2', questions: 1 }, { level: 'B2', questions: 2 }]);
+  equal(checkMaterial(ranged).errors, 0, 'levels do not disturb the key checks');
+  equal(studentView(ranged).blocks[0].type === 'questions' && (studentView(ranged).blocks[0] as Extract<Block, { type: 'questions' }>).questions[2].level, 'B2', 'the student copy keeps levels (no key in them)');
+  throws(() => parseMaterial({ ...ranged, blocks: [{ ...set, questions: [{ ...set.questions[0], level: 'beginner' }] }] }), 'question levels use the level pattern');
+
+  // Model drafts: levels in any common spelling are kept; anything else is dropped, not fatal.
+  const [drafted] = draftQuestionsSchema().parse({ sets: [{ instructions: 'Choose.', level: 'a2', questions: [
+    { type: 'mcq', prompt: 'Pick one ____.', options: ['a', 'b'], answer: 'A', level: 'pre_a1' },
+    { type: 'gap', prompt: 'Fill ____.', answer: 'x', level: 'B1' },
+    { type: 'gap', prompt: 'Fill ____ again.', answer: 'y', level: 'intermediate' },
+  ] }] });
+  equal([drafted.level, ...drafted.questions.map((question) => question.level ?? null)], ['A2', 'Pre-A1', 'B1', null]);
 });
