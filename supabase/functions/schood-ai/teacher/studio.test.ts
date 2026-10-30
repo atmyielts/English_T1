@@ -353,13 +353,16 @@ Deno.test('Live Quiz: 40 players behind one school address play on the game budg
     for (const body of [{ code: '999999' }, { code: 'abc' }, null, 'x']) equal(await openGameByCode(req, input(body)), null);
     for (const body of [{ session_id: session.id, token: 'f'.repeat(48) }, { session_id: 'not-a-game', token: tokens[0] }, { session_id: session.id }, null]) equal(await openGameByPlayer(req, input(body)), null);
 
-    // Made-up codes have no game: they count against the address (300 a minute), not a game.
-    // The 40 real joins above were the game's, so the address still has its whole 300.
+    // Made-up codes have no game: they get core's ordinary per-IP limit (30 a minute), not a game's.
+    // The 40 real joins above were the game's, so the address still has its whole 30.
     let refused = 0;
-    for (let i = 0; i < 301; i++) if ((await post('quiz-join-open', { code: '999999', nickname: `x${i}` })).status === 429) refused++;
-    equal(refused, 1, 'the 301st made-up code in a minute waits');
-    // Made-up tokens too: they never reach the game's budget, and the class plays on.
-    equal((await post('quiz-play-open', { session_id: session.id, token: 'f'.repeat(48) })).body.code, 'not_joined');
+    for (let i = 0; i < 31; i++) if ((await post('quiz-join-open', { code: '999999', nickname: `x${i}` })).status === 429) refused++;
+    equal(refused, 1, 'the 31st made-up code in a minute waits');
+    // Made-up player tokens too: 30 a minute from the address, then they wait.
+    let fakes = 0;
+    for (let i = 0; i < 31; i++) if ((await post('quiz-play-open', { session_id: session.id, token: i.toString(16).padStart(48, 'e') })).status === 429) fakes++;
+    equal(fakes, 1, 'the 31st made-up token in a minute waits');
+    // The real game is untouched by them: the class plays on from the same address.
     equal((await post('quiz-play-open', { session_id: session.id, token: tokens[0] })).status, 200);
   } finally {
     f.reset();

@@ -49,10 +49,10 @@ export const teacherModule: FeatureModule = {
     'quiz-answer': { POST: answerQuiz },
     // The same game without signing in. Limits count per open game (rateKey), so a
     // class behind one school address plays without lag, under a per-IP ceiling; a
-    // made-up code or token has no game and is limited per IP at the same rates.
-    'quiz-join-open': { POST: joinQuiz, anonymous: { perMinute: 300, perDay: 5_000, rateKey: openGameByCode } },
-    'quiz-play-open': { POST: playQuiz, anonymous: { perMinute: 3_000, perDay: 300_000, ipLimit: { perMinute: 6_000, perDay: 2_000_000 }, rateKey: openGameByPlayer } },
-    'quiz-answer-open': { POST: answerQuiz, anonymous: { perMinute: 1_000, perDay: 50_000, ipLimit: { perMinute: 3_000, perDay: 300_000 }, rateKey: openGameByPlayer } },
+    // made-up code or token has no game and gets core's ordinary per-IP limit.
+    'quiz-join-open': { POST: joinQuiz, anonymous: { perMinute: 300, perDay: 5_000, rateKey: openGameByCode, unkeyedLimit: { perMinute: 30, perDay: 1_000 } } },
+    'quiz-play-open': { POST: playQuiz, anonymous: { perMinute: 3_000, perDay: 300_000, ipLimit: { perMinute: 6_000, perDay: 2_000_000 }, rateKey: openGameByPlayer, unkeyedLimit: { perMinute: 30, perDay: 1_000 } } },
+    'quiz-answer-open': { POST: answerQuiz, anonymous: { perMinute: 1_000, perDay: 50_000, ipLimit: { perMinute: 3_000, perDay: 300_000 }, rateKey: openGameByPlayer, unkeyedLimit: { perMinute: 30, perDay: 1_000 } } },
     // T3, T14, T15 marking; T4 feedback.
     marking: { ...batches },
     'marking-script': { ...scripts },

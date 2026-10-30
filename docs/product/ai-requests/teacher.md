@@ -18,7 +18,7 @@ What the teacher area (T1–T6, T9–T15, branch `claude/ai-teacher`) asked of c
 
 - Live Quiz players join with a code and a nickname on `teacher/quiz-join-open`, `quiz-play-open` and `quiz-answer-open` (core's anonymous routes). A signed-in student still joins through the signed-in routes, so the class results name them.
 - Limits count per open game (`rateKey`: a real code or player token names the game; anything made up returns null and is limited per IP). A class of 40 behind one school address plays at full speed; play allows 3,000 a minute per game under a 6,000-a-minute ceiling per address.
-- **Note:** a request with no key is limited per IP at the same rate as a keyed one (core uses one `perMinute` for both). A separate, lower per-IP limit for unkeyed requests would let made-up tokens be slowed harder.
+- A made-up code or token has no key and gets core's ordinary per-IP limit (`unkeyedLimit`: 30 a minute, 1000 a day), never a game's budget.
 
 ## 5. Lazy English catalogs for areas (done in core)
 
