@@ -1,23 +1,28 @@
 import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { format, type Catalogs, type Locale, type Params } from '../../../../../packages/service-i18n/src/format.ts';
 import { useI18n } from '../../../../../packages/service-i18n/src/i18n.tsx';
-import { en } from './en.ts';
 
 // Core text plus every area's catalog. Area keys carry their area prefix, so the
 // merge cannot collide; a missing translation falls back to English, never to blank.
 //
-// Only core's English ships in the first download. Every area's catalog for the
-// person's language (and Uzbek or Russian for core) loads on demand, one small
-// chunk per file, in parallel; main.tsx waits for it before the first paint, so
-// nothing flashes untranslated. For Uzbek and Russian, the areas' English loads
-// right after, as the fallback. However many areas merge, the main chunk keeps
-// the same size. Strings only some screens need can load with those screens
+// No catalog ships in the first download, core's English included: only the few
+// strings the loading shell needs. Core's and every area's catalog for the person's
+// language load on demand, one small chunk per file, in parallel; main.tsx waits for
+// them before the first paint, so nothing flashes untranslated. For Uzbek and
+// Russian, English loads right after, as the fallback. A chunk that fails to load is
+// retried when the next screen asks (useT). However many areas merge, the main chunk
+// keeps the same size. Strings only some screens need can load with those screens
 // (useCatalog below).
-export const catalogs: Catalogs<string> = { en: { ...en }, uz: {}, ru: {} };
+const BOOT: Record<string, string> = {
+  'app.title': 'Schood AI', 'app.loading': 'Loading Schood AI…', 'state.retry': 'Try again',
+  'state.error.title': 'Something went wrong', 'state.error.lead': 'Please try again in a moment.',
+};
+export const catalogs: Catalogs<string> = { en: { ...BOOT }, uz: {}, ru: {} };
 
 type Part = () => Promise<Record<string, string>>;
 const parts: Record<Locale, Part[]> = {
   en: [
+    () => import('./en.ts').then((m) => m.en),
     () => import('../../learner/i18n/en.ts').then((m) => m.en), () => import('../../teacher/i18n/en.ts').then((m) => m.en),
     () => import('../../centre/i18n/en.ts').then((m) => m.en), () => import('../../coach/i18n/en.ts').then((m) => m.en),
     () => import('../../engage/i18n/en.ts').then((m) => m.en),
