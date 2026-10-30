@@ -1,7 +1,7 @@
 import { decodeAnswers, plain, type InEvent, type Locale, type MenuAction, type UpdateRequest, type UpdateResponse } from '../../../../packages/coach-packs/src/mod.ts';
 import { packFor } from '../../../../packages/coach-packs/src/registry.ts';
 import { SchoodAIError, type RequestContext } from '../types.ts';
-import { ensureFairUse, forgetTeamSeats } from './access.ts';
+import { forgetTeamSeats } from './access.ts';
 import { Bot } from './bot.ts';
 import { chooseDrill, finishShadow, freshDrill, onDrillAnswer, onShadowVoice, repeatDrill, startDrill, startShadow } from './flows/drills.ts';
 import { onLessonCheck, onPhotoHelp, onPhotoStep, startLesson } from './flows/extra.ts';
@@ -35,7 +35,6 @@ export async function handleUpdate(ctx: RequestContext, runtime: CoachRuntime, r
   // Writing to the bot again after blocking it means they are back.
   if (enrollment.status === 'blocked') enrollment = (await runtime.store.updateEnrollment(enrollment.id, enrollment.revision, { status: 'active' })) ?? enrollment;
   if (enrollment.packVersion !== pack.manifest.version) enrollment = (await runtime.store.updateEnrollment(enrollment.id, enrollment.revision, { packVersion: pack.manifest.version })) ?? enrollment;
-  enrollment = await ensureFairUse(ctx, runtime, enrollment, pack.manifest.feature);
   // Mixed packs (B3–B6): the practice text in this person's language.
   const bot = new Bot(ctx, runtime, packFor(pack, enrollment.locale), enrollment, request);
   await dispatch(bot, request.event);

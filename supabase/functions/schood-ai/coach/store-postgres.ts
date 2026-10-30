@@ -29,7 +29,7 @@ const enrollment = (row: Row): Enrollment => ({
   status: row.status as Enrollment['status'], locale: row.locale as Enrollment['locale'], settings: obj(row.settings), goal: row.goal ? obj(row.goal) as unknown as Enrollment['goal'] : null,
   placement: row.placement ? obj(row.placement) as unknown as Enrollment['placement'] : null, state: obj(row.state), revision: Number(row.revision ?? 0),
   streakCurrent: Number(row.streak_current ?? 0), streakBest: Number(row.streak_best ?? 0), lastActiveDay: str(row.last_active_day), verifiedMinutes: Number(row.verified_minutes ?? 0),
-  fairUseCycle: str(row.fair_use_cycle), createdAt: String(row.created_at),
+  createdAt: String(row.created_at),
 });
 const session = (row: Row): Session => ({
   id: String(row.id), enrollmentId: String(row.enrollment_id), userId: String(row.user_id), pack: String(row.pack), packVersion: String(row.pack_version), kind: row.kind as Session['kind'],
@@ -66,7 +66,7 @@ const masteryRow = (row: Row): MasteryState => ({
 });
 const ENROLLMENT_COLUMNS: Record<string, string> = {
   status: 'status', locale: 'locale', settings: 'settings', goal: 'goal', placement: 'placement', state: 'state', streakCurrent: 'streak_current', streakBest: 'streak_best',
-  lastActiveDay: 'last_active_day', verifiedMinutes: 'verified_minutes', fairUseCycle: 'fair_use_cycle', packVersion: 'pack_version',
+  lastActiveDay: 'last_active_day', verifiedMinutes: 'verified_minutes', packVersion: 'pack_version',
 };
 
 export function createPostgresCoachStore(db: CoachDatabase): CoachStore {
@@ -218,12 +218,6 @@ export function createPostgresCoachStore(db: CoachDatabase): CoachStore {
     },
     async media(pack, cacheKey) { const row = check(await db.from('coach_media').select('file_id').eq('pack', pack).eq('cache_key', cacheKey).maybeSingle()); return row ? String(row.file_id) : null; },
     async saveMedia(pack, cacheKey, fileId) { check(await db.from('coach_media').upsert({ pack, cache_key: cacheKey, file_id: fileId }, { onConflict: 'pack,cache_key' })); },
-    async countMints(userId, since) {
-      const result = await db.from('coach_miniapp_mints').select('id', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', since);
-      check(result);
-      return Number(result.count ?? 0);
-    },
-    async addMint(userId, pack) { check(await db.from('coach_miniapp_mints').insert({ user_id: userId, pack })); },
     async certificates(userId, pack) {
       let query = db.from('coach_certificates').select('*').eq('user_id', userId);
       if (pack) query = query.eq('pack', pack);

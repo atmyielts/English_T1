@@ -6,8 +6,15 @@
 //   SCHOOD_AI_DEV_PORT=54334 SCHOOD_AI_DEV_ORIGINS=http://localhost:5204 deno run --no-lock --allow-net --allow-read --allow-env scripts/schood-coach-dev-stack.ts
 //   VITE_SUPABASE_URL=http://localhost:54334 VITE_SUPABASE_ANON_KEY=dev npm --workspace apps/schood-ai run dev -- --port 5204
 //
-// Sign in: open http://localhost:54334/dev/cookie?token=dev-plus and set the printed
-// cookie on the app's origin (dev-free has no plan; dev-pass holds a Speaking pass).
+// Sign in on the web: open http://localhost:54334/dev/cookie?token=dev-plus and set the
+// printed cookie on the app's origin (dev-free has no plan; dev-pass holds a Speaking pass).
+//
+// Mini App sign-in, end to end: the real coach bots' worker runs on
+// SCHOOD_AI_DEV_WORKER_PORT (8794), with stand-ins for telegram-link's status and the
+// auth user endpoint. http://localhost:54334/dev/initdata?pack=ielts&chat=900001 signs
+// launch data as Telegram would (the dev bot token's HMAC and a dev Ed25519 key the
+// stack trusts); open the app at /coach/ielts#tgWebAppData=<that, URL-encoded> with
+// VITE_COACH_BOTS_URL=http://localhost:8794. Core's ctx.auth.sessionFor mints the session.
 import { encodeAnswers, type UpdateRequest } from '../packages/coach-packs/src/mod.ts';
 import { loadPacks } from '../packages/coach-packs/src/registry.ts';
 import { CircuitBreaker, createGateway } from '../supabase/functions/schood-ai/gateway.ts';
@@ -18,6 +25,10 @@ import { ESSAY, fakeModel, SPEECH_REGISTRY } from '../supabase/functions/schood-
 import { coachServices, coachStore } from '../supabase/functions/schood-ai/coach/mod.ts';
 import { createStores } from '../supabase/functions/schood-ai/stores.ts';
 import { createMemoryCoachStore } from '../supabase/functions/schood-ai/coach/store-memory.ts';
+import { dataCheckString } from '../supabase/functions/schood-ai/coach/telegram-auth.ts';
+import { signTelegramInitDataForTest } from '../supabase/functions/_shared/telegram-init-data.ts';
+import { ciValidatedPacks } from '../packages/coach-packs/src/registry.ts';
+import { createWorker } from '../workers/schood-coach-bots/src/worker.ts';
 
 const PORT = Number(Deno.env.get('SCHOOD_AI_DEV_PORT') ?? '54334');
 const ORIGINS = (Deno.env.get('SCHOOD_AI_DEV_ORIGINS') ?? 'http://localhost:5204').split(',');
@@ -28,16 +39,26 @@ const users = {
   'dev-pass': { id: '00000000-0000-4000-8000-0000000000e2', email: 'jasur@example.com', name: 'Jasur Aliyev', products: [PASS], productStarts: { [PASS]: new Date(Date.now() - 3 * 86_400_000).toISOString() }, telegramChatId: '900002' },
   'dev-free': { id: '00000000-0000-4000-8000-0000000000e3', email: 'free@example.com', name: 'Free Learner', telegramChatId: '900003' },
 };
+type DevUser = (typeof users)[keyof typeof users];
+// Mini App sessions are JWT-shaped (the auth client decodes them); each is also a token the
+// memory repository knows, so the minted session works against this stack.
+const b64url = (value: unknown) => btoa(JSON.stringify(value)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const jwtOf = new Map(Object.values(users).map((user) => [user.id, `${b64url({ alg: 'HS256', typ: 'JWT' })}.${b64url({ sub: user.id, email: user.email, aud: 'authenticated', role: 'authenticated', exp: Math.floor(Date.now() / 1000) + 86_400 })}.ZGV2`]));
+const allUsers: Record<string, DevUser> = { ...users, ...Object.fromEntries(Object.values(users).map((user) => [jwtOf.get(user.id)!, user])) };
+const WORKER_PORT = Number(Deno.env.get('SCHOOD_AI_DEV_WORKER_PORT') ?? '8794');
+const INTERNAL = 'dev-telegram-internal-secret-0123';
+const BOT_TOKENS = { ielts: '7000000001:DEV-IELTS-TOKEN-0123456789abcdefghij', speaking: '7000000002:DEV-SPEAK-TOKEN-0123456789abcdefghij' };
+const telegramKey = await crypto.subtle.generateKey({ name: 'Ed25519' }, true, ['sign', 'verify']) as CryptoKeyPair;
+const telegramPublicHex = [...new Uint8Array(await crypto.subtle.exportKey('raw', telegramKey.publicKey))].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 
 let clock = new Date(Date.now() - 20 * 86_400_000);
 const now = () => clock;
-const memory = createMemoryRepository({ users, now, registry: SPEECH_REGISTRY });
+const memory = createMemoryRepository({ users: allUsers, now, registry: SPEECH_REGISTRY });
 const coach = createMemoryCoachStore({ now, chatIdOf: (userId) => Object.values(users).find((user) => user.id === userId)?.telegramChatId ?? null });
 const packs = loadPacks();
 const runtime = {
   store: coach.store, packs,
-  config: { appUrl: ORIGINS[0], bots: { ielts: { id: '7000000001', username: 'SchoodIeltsCoachBot' }, speaking: { id: '7000000002', username: 'SchoodSpeakingBot' } }, passProducts: { B2: [PASS] }, fairUseCredits: 1200, telegramPublicKey: '0'.repeat(64) },
-  mintSession: () => Promise.resolve(null),
+  config: { appUrl: ORIGINS[0], bots: { ielts: { id: '7000000001', username: 'SchoodIeltsCoachBot' }, speaking: { id: '7000000002', username: 'SchoodSpeakingBot' } }, passProducts: { B2: [PASS] }, fairUseCredits: 1200, telegramPublicKey: telegramPublicHex },
 };
 const knobs = { score: null as number | null, cefr: 3.5, corrections: false, failNext: false, prompts: [] as string[] };
 const model = fakeModel(knobs);
@@ -47,16 +68,18 @@ const gateway = createGateway({
   env: (name) => (name === 'OPENROUTER_API_KEY' ? 'dev-key' : undefined),
   fetch: (input, init) => model(new Request(input, init)), now, breaker: new CircuitBreaker(),
 });
-const tokenProducts = new Map(Object.entries(users).map(([token, user]) => [token, 'products' in user ? user.products ?? [] : []]));
+const tokenProducts = new Map(Object.entries(allUsers).map(([token, user]) => [token, 'products' in user ? user.products ?? [] : []]));
 const plans = createPlanResolver({ productIds: { plus: PLUS }, betaUserIds: new Set(), repo: memory.repository, isAdmin: () => Promise.resolve(false), now, accessEffective: (token) => Promise.resolve(tokenProducts.get(token) ?? []) });
 const stores = createStores({ kind: 'memory' }, { now });
 stores.use(coachStore, coach.store);
-stores.use(coachServices, { config: runtime.config, mintSession: runtime.mintSession });
+stores.use(coachServices, { config: runtime.config });
 const handle = createSchoodAIHandler({
   repository: memory.repository, gateway, plans, isAdmin: () => Promise.resolve(false),
   callFunction: () => Promise.resolve({ status: 404, data: null }),
   adminGate: () => Promise.resolve({ ok: false, status: 403, code: 'forbidden' }),
   stores,
+  // What core's ctx.auth.sessionFor mints here: the person's dev JWT.
+  mintSession: (userId) => Promise.resolve(jwtOf.has(userId) ? { access_token: jwtOf.get(userId)!, refresh_token: `dev-refresh-${userId}`, expires_at: Math.floor(Date.now() / 1000) + 86_400 } : null),
 }, { allowedOrigins: ORIGINS, serviceSecret: SECRET, now });
 
 // --- seeding through the real bot flows ------------------------------------------------------------
@@ -139,10 +162,49 @@ function sessionCookie(token: keyof typeof users): string {
   return `schood-auth=${encodeURIComponent(JSON.stringify(session))}; Path=/`;
 }
 
-Deno.serve({ port: PORT }, (request) => {
+/** Launch data as Telegram signs it: Ed25519 for third parties, then the bot-token HMAC over every field. */
+async function initData(pack: 'ielts' | 'speaking', chat: string): Promise<string> {
+  const botId = BOT_TOKENS[pack].split(':')[0];
+  const values = { auth_date: String(Math.floor(Date.now() / 1000)), query_id: 'AAE-dev', user: JSON.stringify({ id: Number(chat), first_name: 'Dev' }) };
+  const signature = new Uint8Array(await crypto.subtle.sign('Ed25519', telegramKey.privateKey, new TextEncoder().encode(dataCheckString(new URLSearchParams(values).toString(), botId))));
+  const encoded = btoa(String.fromCharCode(...signature)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return signTelegramInitDataForTest({ ...values, signature: encoded }, BOT_TOKENS[pack]);
+}
+const cors = (request: Request) => ({ 'Access-Control-Allow-Origin': request.headers.get('origin') ?? '*', 'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-client-info, x-supabase-api-version', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', Vary: 'Origin' });
+
+Deno.serve({ port: PORT }, async (request) => {
   const url = new URL(request.url);
   if (url.pathname === '/dev/cookie') return new Response(sessionCookie((url.searchParams.get('token') ?? 'dev-plus') as keyof typeof users), { headers: { 'Access-Control-Allow-Origin': '*' } });
+  if (url.pathname === '/dev/initdata') {
+    const pack = url.searchParams.get('pack') === 'speaking' ? 'speaking' : 'ielts';
+    return new Response(await initData(pack, url.searchParams.get('chat') ?? '900001'), { headers: { 'Access-Control-Allow-Origin': '*' } });
+  }
+  // The auth client checks a session it is given (setSession) with GET /auth/v1/user.
+  if (url.pathname === '/auth/v1/user') {
+    if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(request) });
+    const user = allUsers[(request.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '')];
+    if (!user) return Response.json({ code: 401, msg: 'invalid token' }, { status: 401, headers: cors(request) });
+    return Response.json({ id: user.id, aud: 'authenticated', role: 'authenticated', email: user.email, app_metadata: {}, user_metadata: {}, created_at: new Date().toISOString() }, { headers: cors(request) });
+  }
+  // telegram-link's status for the worker (the seeded chats).
+  if (url.pathname === '/functions/v1/telegram-link') {
+    if (request.headers.get('x-worker-secret') !== INTERNAL) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const body = await request.json().catch(() => ({})) as { action?: string; chat_id?: string };
+    const user = Object.values(users).find((entry) => entry.telegramChatId === String(body.chat_id ?? ''));
+    return Response.json({ linked: !!user, user: user ? { id: user.id, name: user.name } : null });
+  }
   if (url.pathname.startsWith('/functions/v1/schood-ai/')) return handle(request);
   return new Response('Not found', { status: 404 });
 });
 console.log(`Schood Coaches dev stack on http://localhost:${PORT} for ${ORIGINS.join(', ')}`);
+
+// The coach bots' worker, for the Mini App sign-in (no Telegram calls are made on this path).
+const worker = createWorker({
+  env: {
+    APP_URL: ORIGINS[0], SUPABASE_URL: `http://127.0.0.1:${PORT}`, SCHOOD_AI_SERVICE_SECRET: SECRET, TELEGRAM_INTERNAL_SECRET: INTERNAL, ALLOW_LOCAL_ORIGINS: '1',
+    COACH_BOT_TOKEN_IELTS: BOT_TOKENS.ielts, COACH_WEBHOOK_SECRET_IELTS: 'dev-hook-secret-ielts-0123', COACH_BOT_TOKEN_SPEAKING: BOT_TOKENS.speaking, COACH_WEBHOOK_SECRET_SPEAKING: 'dev-hook-secret-speaking-01',
+  },
+  packs: ciValidatedPacks(), fetch: (input, init) => fetch(input, init),
+});
+Deno.serve({ port: WORKER_PORT }, (request) => worker.fetch(request));
+console.log(`Coach bots worker on http://localhost:${WORKER_PORT}`);

@@ -17,7 +17,7 @@ export function createMemoryCoachStore(options: { now?: () => Date; chatIdOf?: (
   const polls = new Map<string, { userId: string; pack: string; sessionId: string; cardId: string; correct: number; answeredAt: string | null }>();
   const schedules = new Map<string, Schedule & { lease: number | null }>(), updates = new Set<string>(), media = new Map<string, string>();
   const deliveries: { id: number; userId: string; pack: string; status: string; reason: string | null; kind: string }[] = [];
-  const mints: { userId: string; at: string }[] = [], certificates = new Map<string, Certificate>();
+  const certificates = new Map<string, Certificate>();
   const teams = new Map<string, Team>(), members = new Map<string, TeamMember>(), invites = new Map<string, { teamId: string; expiresAt: string; maxUses: number; uses: number }>();
   const scripts = new Map<string, SavedScript>();
   const clone = <T>(value: T): T => structuredClone(value);
@@ -30,7 +30,7 @@ export function createMemoryCoachStore(options: { now?: () => Date; chatIdOf?: (
       if (existing) return existing;
       const row: Enrollment = {
         id: id(), userId: input.userId, workspaceId: input.workspaceId, pack: input.pack, packVersion: input.packVersion, status: 'active', locale: input.locale,
-        settings: {}, goal: null, placement: null, state: {}, revision: 0, streakCurrent: 0, streakBest: 0, lastActiveDay: null, verifiedMinutes: 0, fairUseCycle: null, createdAt: iso(),
+        settings: {}, goal: null, placement: null, state: {}, revision: 0, streakCurrent: 0, streakBest: 0, lastActiveDay: null, verifiedMinutes: 0, createdAt: iso(),
       };
       enrollments.set(row.id, row);
       return clone(row);
@@ -131,8 +131,6 @@ export function createMemoryCoachStore(options: { now?: () => Date; chatIdOf?: (
     },
     async media(pack, cacheKey) { return media.get(`${pack}:${cacheKey}`) ?? null; },
     async saveMedia(pack, cacheKey, fileId) { media.set(`${pack}:${cacheKey}`, fileId); },
-    async countMints(userId, since) { return mints.filter((row) => row.userId === userId && row.at >= since).length; },
-    async addMint(userId) { mints.push({ userId, at: iso() }); },
     async certificates(userId, pack) { return [...certificates.values()].filter((row) => row.userId === userId && (!pack || row.pack === pack)).sort((a, b) => b.issuedAt.localeCompare(a.issuedAt)).map(clone); },
     async certificateByCode(code) { const row = [...certificates.values()].find((entry) => entry.code === code); return row ? clone(row) : null; },
     async issueCertificate(input) {

@@ -221,7 +221,10 @@ Deno.test('B1 IELTS Coach: the full loop from placement to certificate and remin
   const post = (pack: string, origin: string) => s.worker.fetch(new Request('https://coach-bots.schood.online/miniapp/session', { method: 'POST', headers: { origin, 'content-type': 'application/json' }, body: JSON.stringify({ pack, init_data: init }) }));
   const session = await post('ielts', 'https://ai.schood.online');
   const minted = await session.json();
-  equal([session.status, minted.linked, minted.session?.access_token], [200, true, `minted-${ID.plus}`], 'mini app session');
+  equal([session.status, minted.linked, minted.session?.access_token], [200, true, `access-${ID.plus}`], 'mini app session');
+  equal(s.f.sessionsMinted, [ID.plus], 'core minted it (ctx.auth.sessionFor), for this person only');
+  const issued = s.f.memory.audit.filter((row) => row.event === 'core.session_issued');
+  equal([issued.length, issued[0]?.details?.reason, JSON.stringify(issued).includes('access-')], [1, 'coach.miniapp', false], 'audited by core, with no tokens');
   equal((await post('speaking', 'https://ai.schood.online')).status, 401, 'data signed for one bot does not open another');
   equal((await post('ielts', 'https://evil.example')).status, 403, 'other origins refused');
 

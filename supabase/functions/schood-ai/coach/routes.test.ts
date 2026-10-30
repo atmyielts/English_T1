@@ -1,15 +1,18 @@
-import { equal, ID, ok, SECRET, USERS } from '../fixture.test.ts';
+import { equal, ID, ok, PRODUCT, SECRET, USERS } from '../fixture.test.ts';
 import { coachStack, PASS_PRODUCT } from './harness.ts';
 
 // The coach routes the Mini App and the web call with the person's session, and
 // the service routes only the worker may call.
 
-Deno.test('coach routes: access by plan, pass and nothing; fair use for a pass; no AI for free users', async () => {
-  // A Speaking pass holder with no Schood AI plan (the harness sells the B2 pass as PASS_PRODUCT).
-  const PASS_HOLDER = '00000000-0000-4000-8000-0000000000b2';
+Deno.test('coach routes: access by plan, pass and nothing; pass credits from the plan source; no AI for free users', async () => {
+  // A Speaking pass holder with no Schood AI plan (the harness sells the B2 pass as PASS_PRODUCT),
+  // and a Plus holder who also bought the pass.
+  const PASS_HOLDER = '00000000-0000-4000-8000-0000000000b2', BOTH = '00000000-0000-4000-8000-0000000000b3';
   USERS['tok-pass'] = { id: PASS_HOLDER, email: 'jasur@example.com', products: [PASS_PRODUCT], productStarts: { [PASS_PRODUCT]: '2026-10-20T00:00:00.000Z' }, telegramChatId: '700300' };
+  USERS['tok-both'] = { id: BOTH, email: 'both@example.com', products: [PRODUCT.plus, PASS_PRODUCT], productStarts: { [PRODUCT.plus]: '2026-10-25T00:00:00.000Z', [PASS_PRODUCT]: '2026-10-21T00:00:00.000Z' } };
   const s = await coachStack();
   delete USERS['tok-pass'];
+  delete USERS['tok-both'];
   const home = await s.f.json('GET', 'coach/home', { token: 'tok-plus' });
   equal(home.status, 200, 'home');
   ok(home.body.coaches.every((coach: { allowed: boolean }) => coach.allowed), 'Plus includes every coach');
@@ -22,14 +25,15 @@ Deno.test('coach routes: access by plan, pass and nothing; fair use for a pass; 
   equal([pass.status, pass.body.access.allowed, pass.body.access.kind], [200, true, 'pass'], 'the pass opens its coach');
   const other = await s.f.json('GET', 'coach/dashboard', { token: 'tok-pass', query: { pack: 'ielts' } });
   equal(other.body.access.allowed, false, 'and only its coach');
-  const grants = s.f.memory.ledger.filter((row) => row.kind === 'adjust' && String(row.reference).startsWith('coach_fair_use:pass:B2'));
-  equal([grants.length, grants[0]?.delta], [1, 1200], 'fair-use credits granted once for the cycle');
-  await s.f.json('GET', 'coach/dashboard', { token: 'tok-pass', query: { pack: 'speaking' } });
-  equal(s.f.memory.ledger.filter((row) => row.kind === 'adjust').length, 1, 'not twice in a cycle');
-  s.advance(30 * 86_400_000);
-  await s.f.json('GET', 'coach/dashboard', { token: 'tok-pass', query: { pack: 'speaking' } });
-  const topups = s.f.memory.audit.filter((row) => row.event === 'coach.fair_use_topup').map((row) => (row.details as { amount: number }).amount);
-  equal(topups, [1200, 0], 'the next cycle tops up only what was spent (nothing here), never above fair use');
+  // The pass brings its own credits through the plan source: core grants them per 30-day cycle from the pass start.
+  const passCredits = await s.f.json('GET', 'core/credits', { token: 'tok-pass' });
+  equal([passCredits.status, passCredits.body.grant, passCredits.body.balance.plan_grant], [200, 1200, 1200], 'a pass grants 1200 credits a cycle');
+  equal(passCredits.body.balance.cycle_ends_at, '2026-11-19T00:00:00.000Z', 'cycles follow the pass start (20 October)');
+  equal(s.f.memory.ledger.filter((row) => row.kind === 'adjust').length, 0, 'no top-ups by the coach area any more');
+  const plusOnly = await s.f.json('GET', 'core/credits', { token: 'tok-plus' });
+  const both = await s.f.json('GET', 'core/credits', { token: 'tok-both' });
+  equal(both.body.grant, plusOnly.body.grant, 'no pass credits on top of Plus, which already covers the coaches');
+  equal((await s.f.json('GET', 'coach/dashboard', { token: 'tok-both', query: { pack: 'speaking' } })).body.access.kind, 'plan', 'and Plus is how they have it');
 
   const costs = await s.f.json('GET', 'coach/costs', { token: 'tok-free', query: { pack: 'ielts' } });
   equal(costs.body.costs, { turn: 1, review: 10, writing: 5, ladder: 8, photo: 3, drill: 2, voice: 1, shadow: 1, script: 5 }, 'costs from the price table');
@@ -104,6 +108,8 @@ Deno.test('coach routes: Coach Team seats, the manager board and privacy', async
   // The manager (a linked student without a plan) now has the team's coach.
   const managerView = await s.f.json('GET', 'coach/dashboard', { token: 'tok-student', query: { pack: 'ielts' } });
   equal(managerView.body.access.allowed, true, 'a seat grants the coach');
+  const seatCredits = await s.f.json('GET', 'core/credits', { token: 'tok-student' });
+  equal([seatCredits.body.grant, seatCredits.body.balance.cycle_ends_at], [1200, '2026-12-02T06:00:00.000Z'], 'and its credits, in cycles from when the seat started');
   const invite = await s.f.json('POST', 'coach/team-invite', { token: 'tok-student', body: { team_id: teamId } });
   ok(invite.status === 200 && /^[A-Za-z0-9]{10}$/.test(invite.body.code) && invite.body.links[0].url.includes('start=team_'), 'invite links');
   const notManager = await s.f.json('POST', 'coach/team-invite', { token: 'tok-plus', body: { team_id: teamId } });

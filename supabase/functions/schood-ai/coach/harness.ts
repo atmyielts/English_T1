@@ -114,12 +114,11 @@ export async function coachStack(options: { speech?: boolean; users?: typeof USE
   const runtime: CoachRuntime = {
     store: coach.store, packs: loadPacks(),
     config: { appUrl: APP, bots: { ielts: { id: BOT.ielts.id, username: 'SchoodIeltsCoachBot' }, speaking: { id: BOT.speaking.id, username: 'SchoodSpeakingBot' } }, passProducts: { B2: [PASS_PRODUCT] }, fairUseCredits: 1200, telegramPublicKey: publicHex },
-    mintSession: (userId) => Promise.resolve({ access_token: `minted-${userId}`, refresh_token: 'refresh', expires_at: 2_000_000_000 }),
   };
   const f = fixture({ registry: options.speech === false ? SEED_REGISTRY : SPEECH_REGISTRY });
   // The coach area's stores: a memory twin that knows the linked chats, and test settings.
   f.stores.use(coachStore, coach.store);
-  f.stores.use(coachServices, { config: runtime.config, mintSession: runtime.mintSession });
+  f.stores.use(coachServices, { config: runtime.config });
   const advance = (ms: number) => { f.advance(ms); current = new Date(current.getTime() + ms); };
   f.setProvider(fakeModel(knobs));
 

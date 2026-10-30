@@ -33,10 +33,9 @@ export interface Enrollment {
   streakBest: number;
   lastActiveDay: string | null;
   verifiedMinutes: number;
-  fairUseCycle: string | null;
   createdAt: string;
 }
-export type EnrollmentPatch = Partial<Pick<Enrollment, 'status' | 'locale' | 'settings' | 'goal' | 'placement' | 'state' | 'streakCurrent' | 'streakBest' | 'lastActiveDay' | 'verifiedMinutes' | 'fairUseCycle' | 'packVersion'>>;
+export type EnrollmentPatch = Partial<Pick<Enrollment, 'status' | 'locale' | 'settings' | 'goal' | 'placement' | 'state' | 'streakCurrent' | 'streakBest' | 'lastActiveDay' | 'verifiedMinutes' | 'packVersion'>>;
 
 export type SessionKind = 'diagnostic' | 'speaking_exam' | 'roleplay' | 'writing' | 'quiz_set' | 'deck' | 'drill' | 'shadowing' | 'lesson' | 'photo_help';
 export interface Session {
@@ -185,8 +184,6 @@ export interface CoachStore {
   media(pack: string, cacheKey: string): Promise<string | null>;
   saveMedia(pack: string, cacheKey: string, fileId: string): Promise<void>;
 
-  countMints(userId: string, since: string): Promise<number>;
-  addMint(userId: string, pack: string): Promise<void>;
 
   certificates(userId: string, pack?: string): Promise<Certificate[]>;
   certificateByCode(code: string): Promise<Certificate | null>;
