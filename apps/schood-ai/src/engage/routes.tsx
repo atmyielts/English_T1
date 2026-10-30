@@ -1,11 +1,11 @@
-import { lazy, Suspense, type ComponentType, type ReactNode } from 'react';
-import { Award, BookOpen, Flame, IdCard, Map as MapIcon, Trophy, Users } from 'lucide-react';
+import { lazy, type ComponentType, type ReactNode } from 'react';
 import type { AreaNavItem, AreaRoute, HomeCard } from '../core/areas.ts';
 import { LoadingState } from '../core/index.ts';
 import { preloadPageText, usePageText } from './i18n/lazy.ts';
 
 // Lifetime engagement (E1–E14) screens. Every page loads on demand together with its
-// text (i18n/lazy.ts, core's useCatalog), so the first download carries only this file.
+// text (i18n/lazy.ts, core's useCatalog); nav icons are named (icons.ts) and the home card
+// is its own chunk, so the first download carries only this file.
 
 type Page = ComponentType<{ params: Record<string, string> }>;
 /** Holds a page until the engage page text for the person's language is in. */
@@ -34,7 +34,6 @@ const EventsPage = page(() => import('./pages/Events.tsx'), 'EventsPage');
 const CertificatesPage = page(certs, 'CertificatesPage'), ReviewPage = page(certs, 'ReviewPage');
 const SittingPage = page(() => import('./pages/Sitting.tsx'), 'SittingPage');
 const TalentPage = page(() => import('./pages/Talent.tsx'), 'TalentPage');
-const EngageHomeCard = lazy(async () => { const [module] = await Promise.all([import('./HomeCard.tsx'), preloadPageText()]); return module; });
 
 const L = ['learner'] as const;
 export const routes: AreaRoute[] = [
@@ -63,16 +62,20 @@ export const routes: AreaRoute[] = [
   { path: '/talent', component: TalentPage, title: 'engage.talent.title' },
 ];
 
+/** The icons the nav items name, loaded after the first paint. */
+export const icons = () => import('./icons.ts');
+
 export const nav: AreaNavItem[] = [
-  { id: 'engage-progress', path: '/progress', label: 'engage.nav.progress', icon: Flame, audiences: [...L], feature: 'E5' },
-  { id: 'engage-journeys', path: '/journeys', label: 'engage.nav.journeys', icon: MapIcon, audiences: [...L], feature: 'E1' },
-  { id: 'engage-stories', path: '/stories', label: 'engage.nav.stories', icon: BookOpen, audiences: [...L], feature: 'E8' },
-  { id: 'engage-league', path: '/league', label: 'engage.nav.league', icon: Trophy, audiences: [...L], feature: 'E4' },
-  { id: 'engage-squads', path: '/squads', label: 'engage.nav.squads', icon: Users, audiences: [...L], feature: 'E6' },
-  { id: 'engage-passport', path: '/passport', label: 'engage.nav.passport', icon: IdCard, audiences: [...L], feature: 'E3' },
-  { id: 'engage-certificates', path: '/certificates', label: 'engage.nav.certificates', icon: Award, audiences: [...L], feature: 'E12' },
+  { id: 'engage-progress', path: '/progress', label: 'engage.nav.progress', icon: 'Flame', audiences: [...L], feature: 'E5' },
+  { id: 'engage-journeys', path: '/journeys', label: 'engage.nav.journeys', icon: 'Map', audiences: [...L], feature: 'E1' },
+  { id: 'engage-stories', path: '/stories', label: 'engage.nav.stories', icon: 'BookOpen', audiences: [...L], feature: 'E8' },
+  { id: 'engage-league', path: '/league', label: 'engage.nav.league', icon: 'Trophy', audiences: [...L], feature: 'E4' },
+  { id: 'engage-squads', path: '/squads', label: 'engage.nav.squads', icon: 'Users', audiences: [...L], feature: 'E6' },
+  { id: 'engage-passport', path: '/passport', label: 'engage.nav.passport', icon: 'IdCard', audiences: [...L], feature: 'E3' },
+  { id: 'engage-certificates', path: '/certificates', label: 'engage.nav.certificates', icon: 'Award', audiences: [...L], feature: 'E12' },
 ];
 
 export const homeCards: HomeCard[] = [
-  { id: 'engage-today', audiences: ['learner'], feature: 'E5', render: () => <Suspense fallback={null}><WithText fallback={null}><EngageHomeCard/></WithText></Suspense> },
+  // Its own chunk, fetched with the page text; core shows a placeholder meanwhile.
+  { id: 'engage-today', audiences: ['learner'], feature: 'E5', component: () => Promise.all([import('./HomeCard.tsx'), preloadPageText()]).then(([module]) => module) },
 ];

@@ -1,13 +1,18 @@
 import { ArrowRight, Flame, Snowflake } from 'lucide-react';
 import { Button, Card, Eyebrow, navigate } from '../core/index.ts';
-import { useT } from './i18n/lazy.ts';
+import { usePageText, useT } from './i18n/lazy.ts';
 import { useEngage, type EngageState } from './api.ts';
 import { Meter, TierBadge } from './ui.tsx';
 
 // The learner home card: today's first step and quests, the streak and the league, in
 // one glance. It loads on its own so the home page never waits for it.
 
-export default function EngageHomeCard() {
+/** Core's home card loader renders this; it waits for the engage page text (fetched with the chunk). */
+export default function EngageHomeCardWithText() {
+  return usePageText() ? <EngageHomeCard/> : null;
+}
+
+function EngageHomeCard() {
   const t = useT();
   const view = useEngage<EngageState>('state');
   const state = view.data;

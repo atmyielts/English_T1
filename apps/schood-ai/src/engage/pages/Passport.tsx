@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { BadgeCheck, Copy, Download, EyeOff, Eye, IdCard, Link2, QrCode as QrIcon, ShieldCheck, XCircle } from 'lucide-react';
-import { Badge, Button, Card, EmptyState, Eyebrow, Field, navigate, TextInput, useI18n, useSession } from '../../core/index.ts';
+import { BadgeCheck, Copy, Download, EyeOff, Eye, IdCard, Link2, Play, QrCode as QrIcon, ShieldCheck, XCircle } from 'lucide-react';
+import { Badge, Button, Card, EmptyState, Eyebrow, Field, navigate, TextInput, useI18n } from '../../core/index.ts';
 import { useT } from '../i18n/lazy.ts';
 import { publicGet, useAction, useEngage, type PassportItemView, type PassportOwn } from '../api.ts';
 import { QrCode } from '../qr.tsx';
@@ -130,17 +130,31 @@ export function PassportPage() {
 interface PublicPassport { passport: { display_name: string | null; headline: string | null; label: string }; items: Omit<PassportItemView, 'id' | 'shown'>[]; samples: { id: string; kind: string; recorded_at: string; metrics: Record<string, number>; text?: string; audio: boolean }[] }
 
 function usePublic<T>(action: string, query: Record<string, string>) {
-  const session = useSession();
   const [state, setState] = useState<{ data: T | null; error: unknown; loading: boolean }>({ data: null, error: null, loading: true });
+  const [attempt, setAttempt] = useState(0);
   const key = JSON.stringify(query);
   useEffect(() => {
-    if (session.status === 'loading') return;
     let live = true;
     setState({ data: null, error: null, loading: true });
-    publicGet<T>(action, query, session.status === 'signed_in').then((data) => { if (live) setState({ data, error: null, loading: false }); }).catch((error) => { if (live) setState({ data: null, error, loading: false }); });
+    publicGet<T>(action, query).then((data) => { if (live) setState({ data, error: null, loading: false }); }).catch((error) => { if (live) setState({ data: null, error, loading: false }); });
     return () => { live = false; };
-  }, [action, key, session.status]); // eslint-disable-line react-hooks/exhaustive-deps
-  return { ...state, reload: () => setState((current) => ({ ...current })) };
+  }, [action, key, attempt]); // eslint-disable-line react-hooks/exhaustive-deps
+  return { ...state, reload: () => setAttempt((count) => count + 1) };
+}
+
+/** A voice sample shared on this link: fetched only when the viewer asks to listen (a short-lived URL). */
+function LinkAudio({ id, token }: { id: string; token: string }) {
+  const t = useT();
+  const [state, setState] = useState<{ url: string | null; error: unknown; busy: boolean }>({ url: null, error: null, busy: false });
+  if (state.url) return <audio controls autoPlay src={state.url} className="w-full max-w-md"><track kind="captions"/></audio>;
+  return <div className="flex flex-col items-start gap-2">
+    <Button size="sm" variant="secondary" disabled={state.busy} icon={<Play size={14} aria-hidden="true"/>} onClick={async () => {
+      setState({ url: null, error: null, busy: true });
+      try { setState({ url: (await publicGet<{ url: string }>('passport-sample', { id, link: token })).url, error: null, busy: false }); }
+      catch (error) { setState({ url: null, error, busy: false }); }
+    }}>{t('engage.passport.listen')}</Button>
+    {state.error !== null && <EngageError error={state.error}/>}
+  </div>;
 }
 
 export function PublicPassportPage({ params }: { params: Record<string, string> }) {
@@ -158,7 +172,7 @@ export function PublicPassportPage({ params }: { params: Record<string, string> 
       {data.samples.map((sample) => <Card key={sample.id} className="flex flex-col gap-2">
         <Eyebrow>{t(`engage.thenNow.kind.${sample.kind}`)} · {date(sample.recorded_at, { dateStyle: 'medium' })}</Eyebrow>
         {sample.text && <p className="m-0 whitespace-pre-wrap text-sm leading-6">{sample.text}</p>}
-        {sample.audio && <p className="m-0 text-sm text-gray-600">{t('engage.passport.audioNote')}</p>}
+        {sample.audio && <LinkAudio id={sample.id} token={params.token ?? ''}/>}
       </Card>)}
       <p className="m-0 text-xs text-gray-600">{t('engage.passport.publicFoot')}</p>
     </>}</Loaded>

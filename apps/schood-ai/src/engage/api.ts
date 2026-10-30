@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { api, ApiError, useWorkspace, type ApiOptions } from '../core/index.ts';
+import { api, useWorkspace, type ApiOptions } from '../core/index.ts';
 
 // Calls to /schood-ai/engage/<action>. `useEngage` loads a view and reloads it; every
 // screen shows loading, error and refusal states from it. Public pages (a shared
-// Passport, a certificate check) use `publicGet`, which also works signed out once the
-// core router opens `public: true` routes (requested in docs/product/ai-requests/engage.md).
+// Passport, a certificate check) use `publicGet`: core's anonymous call, no token sent.
 
 export const engageCall = <T>(action: string, options: ApiOptions = {}) => api<T>(`engage/${action}`, options);
 
@@ -53,23 +52,8 @@ export function useAction() {
   return { run, busy, error, clear: () => setError(null) };
 }
 
-const base = String(import.meta.env.VITE_SUPABASE_URL ?? '').replace(/\/+$/, '');
-const anon = String(import.meta.env.VITE_SUPABASE_ANON_KEY ?? '');
-/** A public read: with the session when there is one, otherwise without (no Authorization header). */
-export async function publicGet<T>(action: string, query: Record<string, string>, signedIn: boolean): Promise<T> {
-  if (signedIn) return await engageCall<T>(action, { query });
-  const url = new URL(`${base}/functions/v1/schood-ai/engage/${action}`);
-  for (const [name, value] of Object.entries(query)) url.searchParams.set(name, value);
-  let response: Response;
-  try {
-    response = await fetch(url, { headers: { apikey: anon, 'x-schood-locale': document.documentElement.lang || 'en' } });
-  } catch {
-    throw new ApiError(0, 'network', 'Network error.');
-  }
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) throw new ApiError(response.status, typeof payload.code === 'string' ? payload.code : 'request_failed', String(payload.error ?? ''), payload);
-  return payload as T;
-}
+/** A read of an anonymous route (a shared Passport link, a certificate check): the same for everyone, signed in or not. */
+export const publicGet = <T,>(action: string, query: Record<string, string>) => engageCall<T>(action, { query, anonymous: true });
 
 // --- Shapes (snake_case, as sent) ------------------------------------------------------------
 export interface Quest { key: string; target: number; progress: number; done: boolean; xp: number }
@@ -79,7 +63,7 @@ export interface Streak {
   can_buy_freeze: boolean; freeze_credits: number;
 }
 export interface Settings {
-  adult: boolean; age_known: boolean; time_zone: string; notify_hour: number; messages: 'all' | 'important' | 'none'; region: string | null; school: string | null;
+  adult: boolean; age_known: boolean; time_zone: string; notify_hour: number; region: string | null; school: string | null;
   leaderboard: 'public' | 'masked' | 'hidden'; leaderboard_chosen: boolean; league_opt_out: boolean; daily_limit_minutes: number | null; limit_set_by: 'self' | 'parent' | null;
   offers_muted: boolean; level_band: string; locale: string;
 }
