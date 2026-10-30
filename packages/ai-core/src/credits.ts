@@ -84,6 +84,10 @@ export const CREDIT_PRICES = {
   'essay.review': price('L8', 8, 'premium'),
   'abroad.plan': price('L16', 5),
   'duel.quiz': price('L17', 2, 'standard', { assumed: true }),
+  // Learner keys added by the learner area (additive). The doc prices L6 photos like texts.
+  'words.from_photo': price('L6', 2, 'vision', { requires: ['vision'] }),
+  'writing.model': price('L3', 3, 'premium', { assumed: true }),
+  'speaking.session_report': price('L4', 3, 'standard', { assumed: true }),
   // Parents.
   'parent.brief': price('P1', 1),
   // Teachers.
