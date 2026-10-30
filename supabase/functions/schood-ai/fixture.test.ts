@@ -1,7 +1,7 @@
 import { SSEParser, type Registry } from '../../../packages/ai-core/src/mod.ts';
 import { CircuitBreaker, createGateway, type GatewayDeps, type Timeouts } from './gateway.ts';
 import { createSchoodAIHandler, MODULES } from './handler.ts';
-import { ownKeyResolver } from './registries.ts';
+import { ownKeyConfigured, ownKeyResolver } from './registries.ts';
 import { createStores } from './stores.ts';
 import { createMemoryRepository, SEED_REGISTRY, type MemoryUser } from './memory-repository.ts';
 import { createPlanResolver } from './plan.ts';
@@ -60,7 +60,7 @@ export async function events(response: Response) {
   return all.map((event) => ({ event: event.event, data: JSON.parse(event.data) }));
 }
 
-export interface FixtureOptions { settings?: Partial<ServiceSettings>; registry?: Registry; modules?: FeatureModule[]; timeouts?: Partial<Timeouts>; env?: Record<string, string>; productIds?: Partial<typeof PRODUCT>; systemJobs?: [string, SystemJob][]; ownKey?: GatewayDeps['ownKey'] }
+export interface FixtureOptions { settings?: Partial<ServiceSettings>; registry?: Registry; modules?: FeatureModule[]; timeouts?: Partial<Timeouts>; env?: Record<string, string>; productIds?: Partial<typeof PRODUCT>; systemJobs?: [string, SystemJob][]; ownKey?: GatewayDeps['ownKey']; ownKeyConfigured?: GatewayDeps['ownKeyConfigured'] }
 
 export function fixture(options: FixtureOptions = {}) {
   let clock = START;
@@ -90,6 +90,7 @@ export function fixture(options: FixtureOptions = {}) {
     breaker,
     timeouts: options.timeouts,
     ownKey: options.ownKey ?? ((input) => ownKeyResolver()?.({ ...input, store: (handle) => stores.get(handle) }) ?? Promise.resolve(null)),
+    ownKeyConfigured: options.ownKeyConfigured ?? ((input) => ownKeyConfigured()?.({ ...input, store: (handle) => stores.get(handle) }) ?? Promise.resolve(false)),
   });
   const isAdmin = (userId: string) => Promise.resolve(userId === ID.admin);
   const tokenProducts = new Map(Object.entries(USERS).map(([token, user]) => [token, user.products ?? []]));
