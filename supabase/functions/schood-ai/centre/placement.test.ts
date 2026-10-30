@@ -69,8 +69,9 @@ Deno.test('C5 AI draft: written per level in the teacher material model, broken 
   });
   f.model(/one short writing task/, { writing: { prompt: 'Write about your favourite place in your city and why you like it.', min_words: 80 } });
   // The solver agrees with every key except the A2 "since" item.
-  f.model(/You are checking an answer key/, (call) => {
-    const asked = JSON.parse(/<user_message[^>]*>([\s\S]*)<\/user_message>/.exec(call.last)?.[1] ?? '{"questions":[]}') as { questions: { id: string; prompt: string; type: string }[] };
+  f.model(/You are an independent checker/, (call) => {
+    ok(call.system.includes('have not seen any answer key') && call.last.includes('Answer every question yourself'), 'the shared solver prompt');
+    const asked = JSON.parse(/<schood_data[^>]*>([\s\S]*)<\/schood_data>/.exec(call.last)?.[1] ?? '{"questions":[]}') as { questions: { id: string; prompt: string; type: string }[] };
     return { answers: asked.questions.map((question) => ({ id: question.id, answer: question.type === 'gap' ? ['had known'] : question.prompt.includes('A2: I have lived') ? ['A'] : question.prompt.includes('lived') ? ['B'] : ['B'], ...(question.prompt.includes('A2: I have lived') ? { reason: 'Both could fit.' } : {}) })) };
   });
 
@@ -109,10 +110,10 @@ Deno.test('C14 placement widget: allowed websites only, a session per taker, an 
   equal([saved.status, saved.body.embed.widgets.placement], [200, true]);
   ok(saved.body.embed.snippet.includes('https://ai.schood.online/embed/widget.js') && saved.body.embed.snippet.includes(saved.body.embed.public_key), 'a snippet for the website');
   const key = saved.body.embed.public_key;
-  const call = (path: string, body: unknown, origin = 'https://registan.uz') => f.publicCall('POST', `embed/${path}?key=${key}`, { body, headers: { origin } });
+  const call = (path: string, body: Record<string, unknown>, site = 'https://registan.uz') => f.anonymous('POST', `centre/embed-${path}`, { body: { key, site, ...body } });
   equal((await call('placement', { session: 'abcdefghijklmnop1234', step: 'start' }, 'https://evil.example')).status, 403, 'other websites are refused');
-  const config = await f.publicCall('GET', `embed/config?key=${key}&lang=ru`, { headers: { origin: 'https://registan.uz' } });
-  equal([config.status, config.headers.get('access-control-allow-origin'), config.body.widgets.placement, config.body.placement.questions, config.body.avatar_url], [200, 'https://registan.uz', true, 4, 'https://registan.uz/bot.png'], 'config for the allowed site');
+  const config = await f.anonymous('GET', `centre/embed-config?key=${key}&site=${encodeURIComponent('https://registan.uz')}&lang=ru`);
+  equal([config.status, config.headers.get('access-control-allow-origin'), config.body.widgets.placement, config.body.placement.questions, config.body.avatar_url], [200, 'https://ai.schood.online', true, 4, 'https://registan.uz/bot.png'], 'config for the allowed site');
   const session = 'widget-session-0123456789';
   const started = await call('placement', { session, step: 'start', name: 'Laylo', phone: '+998 91 222 33 44' });
   ok(started.status === 200 && !JSON.stringify(started.body).includes('had known'), 'test without the key');

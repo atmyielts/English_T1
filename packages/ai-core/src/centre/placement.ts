@@ -2,7 +2,7 @@ import type { MaterialKindDefinition } from '../materials.ts';
 import * as s from '../schema.ts';
 import type { Schema } from '../schema.ts';
 import {
-  checkMaterial, isCorrect, MATERIAL_SCHEMA,
+  checkMaterial, isCorrect, MATERIAL_SCHEMA, questionLevel, toCefrLevel,
   type Block, type KeyIssue, type KeyIssueCode, type Material, type Question, type QuestionsBlock,
 } from '../materials/mod.ts';
 import { CEFR_LEVELS, PLACEMENT_KIND as PLACEMENT_KIND_ID, placementMarkdown, type CefrLevel, type PlacementItem, type PlacementTest } from './placement-markdown.ts';
@@ -62,8 +62,13 @@ export const placementTestSchema = testShape as unknown as Schema<PlacementTest>
 export const DEFAULT_CRITERIA = { writing: ['Task response', 'Organisation', 'Vocabulary', 'Grammar'], speaking: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'] } as const;
 
 const OPTION_IDS = ['A', 'B', 'C', 'D', 'E', 'F'] as const;
-/** The teacher model's CEFR scale starts at A1; Pre-A1 items count as A1 there. */
-export const materialLevel = (level: CefrLevel): string => (level === 'pre_a1' ? 'A1' : level.toUpperCase());
+/** A centre level (`pre_a1`, `b2`) in the teacher model's form (`Pre-A1`, `B2`). */
+export const materialLevel = (level: CefrLevel): string => toCefrLevel(level) ?? 'A1';
+/** The teacher model's level back as a centre level; null for anything else (exam bands). */
+export const centreLevel = (level: string | null | undefined): CefrLevel | null => {
+  const cefr = toCefrLevel(level);
+  return cefr ? (cefr === 'Pre-A1' ? 'pre_a1' : cefr.toLowerCase() as CefrLevel) : null;
+};
 
 /** One placement item as a teacher-model question (single choice or gap). */
 export function itemQuestion(entry: PlacementItem, id: string): Question {
@@ -71,9 +76,9 @@ export function itemQuestion(entry: PlacementItem, id: string): Question {
     const options = (entry.options ?? []).map((text, at) => ({ id: OPTION_IDS[at] ?? `O${at + 1}`, text }));
     // A key outside the options stays visible to the checks as an unknown option id.
     const answer = entry.answer === undefined ? [] : [options[entry.answer]?.id ?? `X${entry.answer + 1}`];
-    return { id, type: 'single_choice', prompt: entry.prompt, options, answer, skill: `cefr:${entry.level}` };
+    return { id, type: 'single_choice', prompt: entry.prompt, options, answer, level: materialLevel(entry.level) };
   }
-  return { id, type: 'gap', prompt: entry.prompt, answer: entry.accept ?? [], skill: `cefr:${entry.level}` };
+  return { id, type: 'gap', prompt: entry.prompt, answer: entry.accept ?? [], level: materialLevel(entry.level) };
 }
 
 /**
@@ -166,10 +171,11 @@ export function itemCorrect(entry: PlacementItem, answer: unknown): boolean {
  * placement test): single-choice questions become multiple choice and gaps stay gaps;
  * other types are left out. Ids are `<prefix>1`, `<prefix>2`…
  */
-export function itemsFromQuestions(block: Pick<QuestionsBlock, 'questions'>, level: CefrLevel, prefix: string): PlacementItem[] {
+export function itemsFromQuestions(block: Pick<QuestionsBlock, 'questions' | 'level'>, fallback: CefrLevel, prefix: string): PlacementItem[] {
   const items: PlacementItem[] = [];
   for (const question of block.questions) {
     const id = `${prefix}${items.length + 1}`.slice(0, 20);
+    const level = centreLevel(questionLevel(question, block)) ?? fallback;
     if (question.type === 'single_choice' && question.options?.length) {
       const answer = question.options.findIndex((option) => option.id === question.answer[0]);
       items.push({ id, type: 'mcq', level, prompt: question.prompt, options: question.options.slice(0, 6).map((option) => option.text), ...(answer >= 0 && answer < 6 ? { answer } : {}) });
