@@ -70,6 +70,14 @@ export interface HandlerOptions {
 const ANONYMOUS_DEFAULTS = { perMinute: 30, perDay: 1000 };
 /** The per-IP ceiling on keyed anonymous requests (a school's classes share one address). */
 const IP_CEILING_DEFAULTS = { perMinute: 3000, perDay: 300_000 };
+/**
+ * Requests a rateKey did not recognise: by default the ordinary anonymous limit, and never above
+ * the route's own limits or the ordinary maximum, so made-up codes cannot use a keyed route's budget.
+ */
+function unkeyedCeiling(perMinute: number, perDay: number) {
+  const maxMinute = Math.min(perMinute, 600), maxDay = Math.min(perDay, 100_000);
+  return { maxMinute, maxDay, perMinute: Math.min(ANONYMOUS_DEFAULTS.perMinute, maxMinute), perDay: Math.min(ANONYMOUS_DEFAULTS.perDay, maxDay) };
+}
 async function sha256Hex(text: string): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
@@ -129,7 +137,7 @@ export function createSchoodAIHandler(deps: HandlerDeps, options: HandlerOptions
       if (module.area === 'admin' && (handler.system || handler.anonymous)) throw new Error(`admin/${action} cannot be a system or anonymous route`);
       if ([handler.service, handler.system, handler.anonymous].filter(Boolean).length > 1) throw new Error(`${module.area}/${action}: service, system and anonymous are separate kinds of route`);
       if (handler.anonymous && typeof handler.anonymous === 'object') {
-        const { perMinute = ANONYMOUS_DEFAULTS.perMinute, perDay = ANONYMOUS_DEFAULTS.perDay, rateKey, cors, ipLimit } = handler.anonymous;
+        const { perMinute = ANONYMOUS_DEFAULTS.perMinute, perDay = ANONYMOUS_DEFAULTS.perDay, rateKey, cors, ipLimit, unkeyedLimit } = handler.anonymous;
         const keyed = rateKey !== undefined, [maxMinute, maxDay] = keyed ? [3000, 1_000_000] : [600, 100_000];
         if (!Number.isInteger(perMinute) || perMinute < 1 || perMinute > maxMinute || !Number.isInteger(perDay) || perDay < perMinute || perDay > maxDay) throw new Error(`${module.area}/${action}: anonymous limits are 1-${maxMinute} a minute and up to ${maxDay} a day`);
         if (keyed && typeof rateKey !== 'function') throw new Error(`${module.area}/${action}: rateKey is a function`);
@@ -137,6 +145,14 @@ export function createSchoodAIHandler(deps: HandlerDeps, options: HandlerOptions
           const { perMinute: ipMinute = IP_CEILING_DEFAULTS.perMinute, perDay: ipDay = IP_CEILING_DEFAULTS.perDay } = ipLimit;
           if (!keyed) throw new Error(`${module.area}/${action}: ipLimit is the ceiling for a rateKey; set perMinute and perDay instead`);
           if (!Number.isInteger(ipMinute) || ipMinute < 1 || ipMinute > 6000 || !Number.isInteger(ipDay) || ipDay < ipMinute || ipDay > 2_000_000) throw new Error(`${module.area}/${action}: ipLimit is 1-6000 a minute and up to 2000000 a day`);
+        }
+        if (unkeyedLimit !== undefined) {
+          if (!keyed) throw new Error(`${module.area}/${action}: unkeyedLimit is for requests a rateKey did not recognise; set perMinute and perDay instead`);
+          const ceiling = unkeyedCeiling(perMinute, perDay);
+          const { perMinute: freeMinute = ceiling.perMinute, perDay: freeDay = ceiling.perDay } = unkeyedLimit;
+          if (!Number.isInteger(freeMinute) || freeMinute < 1 || freeMinute > ceiling.maxMinute || !Number.isInteger(freeDay) || freeDay < freeMinute || freeDay > ceiling.maxDay) {
+            throw new Error(`${module.area}/${action}: unkeyedLimit is 1-${ceiling.maxMinute} a minute and up to ${ceiling.maxDay} a day (never above the route's own limits)`);
+          }
         }
         if (cors !== undefined && cors !== 'any') throw new Error(`${module.area}/${action}: cors is 'any' or left out`);
       }
@@ -245,7 +261,9 @@ export function createSchoodAIHandler(deps: HandlerDeps, options: HandlerOptions
           const ceiling = { ...IP_CEILING_DEFAULTS, ...limits.ipLimit };
           refused = await take(await bucketOf(`key:${String(ownKey).slice(0, 256)}`), limits.perMinute, limits.perDay) ?? await take(`${ip}:ceiling`, ceiling.perMinute, ceiling.perDay);
         } else {
-          refused = await take(ip, limits.perMinute, limits.perDay);
+          // Unkeyed: a plain anonymous route, or a key the route did not recognise (its own lower limit).
+          const unkeyed = limits.rateKey ? { ...unkeyedCeiling(limits.perMinute, limits.perDay), ...limits.unkeyedLimit } : limits;
+          refused = await take(ip, unkeyed.perMinute, unkeyed.perDay);
         }
         if (refused) return fail(429, 'rate_limited', 'Too many requests. Try again shortly.', { retry_after: refused });
         user = null;

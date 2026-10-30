@@ -539,6 +539,12 @@ export interface AnonymousOptions {
    */
   ipLimit?: { perMinute?: number; perDay?: number };
   /**
+   * The per-IP limit for requests your rateKey did not recognise (it returned null): made-up game
+   * codes or tokens. Default: the ordinary anonymous limit (30 a minute, 1000 a day), and never above
+   * this route's own perMinute and perDay or the ordinary maximum (600 a minute, 100000 a day).
+   */
+  unkeyedLimit?: { perMinute?: number; perDay?: number };
+  /**
    * `'any'`: answer CORS for any Origin (an embeddable widget on a centre's own site). Core echoes the
    * Origin with no credentials; the route must check ctx.origin against the centre's own list and refuse others.
    */
