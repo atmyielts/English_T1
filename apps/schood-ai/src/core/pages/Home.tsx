@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import { ArrowRight, CircleCheck, MessageSquareText, Sparkles, UserRound } from 'lucide-react';
-import { useI18n } from '../../../../../packages/service-i18n/src/i18n.tsx';
 import { api } from '../api.ts';
 import type { HomeCard } from '../areas.ts';
 import { HomeCardView } from '../lazy.tsx';
-import { useT } from '../i18n/index.ts';
+import { useI18n, useT } from '../i18n/index.ts';
 import { navigate } from '../router.tsx';
 import { CreditBalance, Paywall } from '../states.tsx';
 import type { ActionView, ContextBlockView, Me } from '../types.ts';

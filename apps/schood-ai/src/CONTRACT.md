@@ -78,6 +78,7 @@ export const homeCards: HomeCard[] = [
 - No catalog ships in the first download, core's English included. Your `en.ts`, `uz.ts` and `ru.ts` load on demand: core's `i18n/index.ts` imports the person's language from core and every area in parallel, and the first paint waits for it. For Uzbek and Russian, English follows as the fallback. So however many areas merge, the main chunk stays about 103 KB gzip for core alone.
   - Keep the named exports `en`, `uz` and `ru`.
   - Never import your catalog files from code; that pulls them into the first download.
+- **Dates:** use `useI18n().date(value, options)` from core (`src/core/index.ts`), or `formatDate(locale, value, options)` from `src/core/dates.ts`. Never call `Intl.DateTimeFormat` or `toLocaleDateString` yourself. Many browsers have no Uzbek date data and print "2026 M10 30", so core writes Uzbek dates out with Latin names, for example "30-oktabr, 2026" and "juma, 30-oktabr, 2026, 14:05".
 - **Strings only some screens need** can load with those screens: `const ready = useCatalog('learner.essay', { en: () => import('./i18n/essay.en.ts').then((m) => m.en), uz: …, ru: … })`, and render `LoadingState` until `ready`. Use your area prefix for these keys too.
 - **Context sources** under answers are named by the provider's `label` (function `CONTRACT.md`); use `contextLabel(me, t, kind)`. Core keeps `context.<kind>` keys only for its own kinds.
 

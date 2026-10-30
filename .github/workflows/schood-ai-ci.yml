@@ -35,6 +35,8 @@ jobs:
         run: deno test --no-lock packages/ai-core/src/
       - name: ai-core type check
         run: deno check --no-lock packages/ai-core/src/mod.ts
+      - name: App helpers (Uzbek dates)
+        run: deno test --no-lock apps/schood-ai/tests/
   service:
     runs-on: ubuntu-latest
     timeout-minutes: 20

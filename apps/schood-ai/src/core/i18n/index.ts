@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
 import { format, type Catalogs, type Locale, type Params } from '../../../../../packages/service-i18n/src/format.ts';
-import { useI18n } from '../../../../../packages/service-i18n/src/i18n.tsx';
+import { useI18n as useServiceI18n } from '../../../../../packages/service-i18n/src/i18n.tsx';
+import { formatDate } from '../dates.ts';
 
 // Core text plus every area's catalog. Area keys carry their area prefix, so the
 // merge cannot collide; a missing translation falls back to English, never to blank.
@@ -69,7 +70,7 @@ const subscribe = (listener: () => void) => { listeners.add(listener); return ()
 export type Translate = (key: string, params?: Params) => string;
 
 export function useT(): Translate {
-  const { locale } = useI18n();
+  const { locale } = useServiceI18n();
   const loadedVersion = useSyncExternalStore(subscribe, () => version);
   useEffect(() => { void loadLocale(locale); }, [locale]);
   return useCallback<Translate>((key, params) => format(catalogs, locale, key, params), [locale, loadedVersion]);
@@ -88,7 +89,7 @@ export function useT(): Translate {
  * Keys keep your area prefix. English always loads too, as the fallback.
  */
 export function useCatalog(name: string, loaders: Record<Locale, Part>): boolean {
-  const { locale } = useI18n();
+  const { locale } = useServiceI18n();
   useSyncExternalStore(subscribe, () => version);
   // The loaders are module-level imports; the name identifies them.
   useEffect(() => {
@@ -97,5 +98,9 @@ export function useCatalog(name: string, loaders: Record<Locale, Part>): boolean
   }, [name, locale]);
   return loaded.has(`${name}:${locale}`);
 }
-export { useI18n };
+/** The shared i18n context, with core's date formatter (Uzbek written out: dates.ts). Areas use this one. */
+export function useI18n(): ReturnType<typeof useServiceI18n> {
+  const i18n = useServiceI18n();
+  return useMemo(() => ({ ...i18n, date: (input: string | number | Date, options?: Intl.DateTimeFormatOptions) => formatDate(i18n.locale, input, options) }), [i18n]);
+}
 export type { CoreKey } from './en.ts';

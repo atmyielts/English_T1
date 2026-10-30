@@ -21,3 +21,4 @@ export { ApiErrorState, CappedState, CreditBalance, CreditCost, EmptyState, Erro
 export type * from './types.ts';
 export { Badge, BrandMark, Button, ButtonLink, Card, Dialog, Eyebrow, Field, FocusSurface, PageHeader, SparkMark, TextArea, TextInput, Thinking, VisuallyHidden } from './ui.tsx';
 export { audiencesFor, contextLabel, useWorkspace } from './workspace.tsx';
+export { formatDate } from './dates.ts';

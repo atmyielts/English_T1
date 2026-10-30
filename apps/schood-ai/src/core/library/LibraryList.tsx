@@ -1,8 +1,7 @@
 // Portions adapted from CopilotKit/OpenDots (MIT License, Copyright (c) Atai Barkai)
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { FilePlus2, Folder, FolderOpen, Pencil, Search, Users } from 'lucide-react';
-import { useI18n } from '../../../../../packages/service-i18n/src/i18n.tsx';
-import { useT } from '../i18n/index.ts';
+import { useI18n, useT } from '../i18n/index.ts';
 import { Link, navigate, useLocation } from '../router.tsx';
 import { ApiErrorState, EmptyState, LoadingState } from '../states.tsx';
 import { Badge, Button, Dialog, Field, PageHeader, TextInput } from '../ui.tsx';
