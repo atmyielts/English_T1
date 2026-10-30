@@ -85,7 +85,7 @@ export const homeCards: HomeCard[] = [
 
 | Export | Use |
 |---|---|
-| `api(path, { method, body, query, workspaceId, idempotencyKey, anonymous })` | JSON calls to `/schood-ai/<area>/<action>`. Pass `useWorkspace().workspaceId` (null means personal). Errors are `ApiError` with `code` and `details`. `anonymous: true` calls a route marked `anonymous` with no token, for pages that work signed out (Live Quiz players, shared Passport links). |
+| `api(path, { method, body, query, workspaceId, idempotencyKey, anonymous })` | JSON calls to `/schood-ai/<area>/<action>`. Pass `useWorkspace().workspaceId` (null means personal). Errors are `ApiError` with `code` and `details`. `anonymous: true` calls a route marked `anonymous` with no token, for pages that work signed out (Live Quiz players, shared Passport links). Over the route's limit the error is `rate_limited` with `details.retry_after`: wait until then (a polling player slows down) instead of retrying at once. |
 | `stream(path, { body, onEvent, signal, workspaceId })` | SSE calls. |
 | `Chat` | A streaming chat with any specialist: `<Chat specialist="tutor" threadId={id} onThread={…} initialMessage={…}/>`. Includes stop, retry, report, cost before sending and the paywall. |
 | `Answer` | AI text as Markdown with KaTeX (`\( \)`, `\[ \]`). Raw HTML is dropped and remote images are not loaded. |
