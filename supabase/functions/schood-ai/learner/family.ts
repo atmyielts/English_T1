@@ -7,6 +7,7 @@ import { CONSENT_VERSION, learnerInput, LANGUAGE, receipt, store, systemFor, tod
 import { escapeHtml, scheduleView, saveScheduleFrom, type TelegramMessage } from './brief.ts';
 import { APP_URL, learnerStore, type FamilyLink } from './store.ts';
 import { recentActivity } from './tutor.ts';
+import { childUsage } from '../seams/learner-engage.ts';
 
 // Plus Family: one parent and up to 3 children. The parent invites a child with a
 // one-time code (shown once, stored as a hash); the child accepts it in their own
@@ -143,12 +144,14 @@ export async function familyUnlink(ctx: RequestContext) {
 export async function childData(ctx: RequestContext, link: FamilyLink) {
   const childId = link.childId!;
   const since = new Date(ctx.now().getTime() - 7 * 86_400_000).toISOString();
-  const [week, recent, snapshot, outcomes, name] = await Promise.all([
+  const [week, recent, snapshot, outcomes, name, usage] = await Promise.all([
     store(ctx).activity(childId, { since, limit: 300 }),
     recentActivity(ctx, childId, 30),
     store(ctx).snapshot(childId),
     store(ctx).examOutcomes(childId, 5).catch(() => []),
     store(ctx).displayName(childId).catch(() => null),
+    // Engage's verified learning time across Schood, for a child under 18 (seams/learner-engage.ts).
+    childUsage(ctx, childId),
   ]);
   const days = new Set(week.map((row) => row.createdAt.slice(0, 10)));
   const byFeature: Record<string, number> = {};
@@ -156,13 +159,16 @@ export async function childData(ctx: RequestContext, link: FamilyLink) {
   const scored = week.filter((row) => row.score !== null && ['mock', 'writing', 'interview', 'reading'].includes(row.kind)).slice(0, 8).map((row) => ({ kind: row.kind, feature: row.feature, score: row.score, date: row.createdAt.slice(0, 10) }));
   return {
     name: name ?? link.childLabel,
-    stats: { minutes_7d: week.reduce((sum, row) => sum + row.minutes, 0), active_days_7d: days.size, ai_actions_7d: week.length, by_feature_7d: byFeature, scored_7d: scored },
+    stats: {
+      minutes_7d: week.reduce((sum, row) => sum + row.minutes, 0), active_days_7d: days.size, ai_actions_7d: week.length, by_feature_7d: byFeature, scored_7d: scored,
+      ...(usage ? { practice_minutes_7d: usage.total_minutes, practice_days_7d: usage.active_days, streak: usage.streak, daily_limit_minutes: usage.daily_limit_minutes, limit_reached_days_7d: usage.limit_reached_days } : {}),
+    },
     recent: recent.slice(0, 25),
     results: snapshot?.profile ?? null, predictions: snapshot?.prediction ?? null, results_as_of: snapshot?.refreshedAt?.slice(0, 10) ?? null,
     exams: outcomes,
   };
 }
-const hasData = (data: Awaited<ReturnType<typeof childData>>) => data.stats.ai_actions_7d > 0 || data.exams.length > 0 || !!data.results;
+const hasData = (data: Awaited<ReturnType<typeof childData>>) => data.stats.ai_actions_7d > 0 || (data.stats.practice_minutes_7d ?? 0) > 0 || data.exams.length > 0 || !!data.results;
 
 // --- P1 -------------------------------------------------------------------------------------------
 const BRIEF_SCHEMA = s.object({
@@ -215,18 +221,26 @@ export async function parentBriefsFor(ctx: RequestContext, actor: Actor, onlyChi
   return out;
 }
 
-const PARENT_COPY: Record<Locale, { title: string; minutes: string; days: string; effort: string; progress: string; praise: string; watch: string; suggestion: string }> = {
-  en: { title: 'Weekly brief', minutes: 'minutes of practice', days: 'active days', effort: 'Effort', progress: 'Progress', praise: 'Praise', watch: 'Watch', suggestion: 'This week' },
-  uz: { title: 'Haftalik hisobot', minutes: 'daqiqa mashq', days: 'faol kun', effort: 'Harakat', progress: 'Oʻsish', praise: 'Maqtang', watch: 'E’tibor bering', suggestion: 'Bu hafta' },
-  ru: { title: 'Недельный отчёт', minutes: 'минут практики', days: 'активных дней', effort: 'Старание', progress: 'Прогресс', praise: 'Похвалите', watch: 'Обратите внимание', suggestion: 'На этой неделе' },
+const PARENT_COPY: Record<Locale, { title: string; minutes: string; days: string; effort: string; progress: string; praise: string; watch: string; suggestion: string; streak: string; limit: string }> = {
+  en: { title: 'Weekly brief', minutes: 'minutes of practice', days: 'active days', effort: 'Effort', progress: 'Progress', praise: 'Praise', watch: 'Watch', suggestion: 'This week', streak: 'day streak', limit: 'Daily limit {limit} min, reached on {days} days' },
+  uz: { title: 'Haftalik hisobot', minutes: 'daqiqa mashq', days: 'faol kun', effort: 'Harakat', progress: 'O‘sish', praise: 'Maqtang', watch: 'E’tibor bering', suggestion: 'Bu hafta', streak: 'kunlik seriya', limit: 'Kunlik chegara {limit} daqiqa, {days} kun yetib borildi' },
+  ru: { title: 'Недельный отчёт', minutes: 'минут практики', days: 'активных дней', effort: 'Старание', progress: 'Прогресс', praise: 'Похвалите', watch: 'Обратите внимание', suggestion: 'На этой неделе', streak: 'дней подряд', limit: 'Дневной лимит {limit} мин, достигнут в {days} дн.' },
 };
+type BriefStats = { minutes_7d?: number; active_days_7d?: number; practice_minutes_7d?: number; practice_days_7d?: number; streak?: number; daily_limit_minutes?: number | null; limit_reached_days_7d?: number };
+/** Minutes and days (engage's verified learning when there is a summary), then the streak and the daily limit. */
+function statsLines(copy: (typeof PARENT_COPY)[Locale], stats: BriefStats): string[] {
+  const minutes = stats.practice_minutes_7d ?? stats.minutes_7d ?? 0, days = stats.practice_days_7d ?? stats.active_days_7d ?? 0;
+  const lines = [`${minutes} ${copy.minutes} · ${days} ${copy.days}${stats.streak ? ` · ${stats.streak} ${copy.streak}` : ''}`];
+  if (stats.daily_limit_minutes) lines.push(copy.limit.replace('{limit}', String(stats.daily_limit_minutes)).replace('{days}', String(stats.limit_reached_days_7d ?? 0)));
+  return lines;
+}
 export function parentBriefMessage(entry: { name: string; brief: Record<string, unknown> }, locale: Locale): TelegramMessage {
-  const copy = PARENT_COPY[locale], brief = entry.brief, stats = (brief.stats ?? {}) as { minutes_7d?: number; active_days_7d?: number };
+  const copy = PARENT_COPY[locale], brief = entry.brief, stats = (brief.stats ?? {}) as BriefStats;
   const line = (label: string, value: unknown) => (typeof value === 'string' && value ? `<b>${label}:</b> ${escapeHtml(value)}` : null);
   return {
     text: [
       `👪 <b>${copy.title}: ${escapeHtml(entry.name)}</b>`,
-      `${stats.minutes_7d ?? 0} ${copy.minutes} · ${stats.active_days_7d ?? 0} ${copy.days}`, '',
+      ...statsLines(copy, stats).map(escapeHtml), '',
       line(copy.effort, brief.effort), line(copy.progress, brief.progress), line(copy.praise, brief.praise), line(copy.watch, brief.watch), line(copy.suggestion, brief.suggestion),
     ].filter((entry) => entry !== null).join('\n').slice(0, 4000),
   };
@@ -236,9 +250,9 @@ export function parentBriefMessage(entry: { name: string; brief: Record<string, 
 export function parentBriefPlain(entries: { name: string; brief: Record<string, unknown> }[], locale: Locale): string {
   const copy = PARENT_COPY[locale];
   return entries.map(({ name, brief }) => {
-    const stats = (brief.stats ?? {}) as { minutes_7d?: number; active_days_7d?: number };
+    const stats = (brief.stats ?? {}) as BriefStats;
     const line = (label: string, value: unknown) => (typeof value === 'string' && value ? `${label}: ${value}` : null);
-    return [`👪 ${copy.title}: ${name}`, `${stats.minutes_7d ?? 0} ${copy.minutes} · ${stats.active_days_7d ?? 0} ${copy.days}`,
+    return [`👪 ${copy.title}: ${name}`, ...statsLines(copy, stats),
       line(copy.effort, brief.effort), line(copy.progress, brief.progress), line(copy.praise, brief.praise), line(copy.watch, brief.watch), line(copy.suggestion, brief.suggestion)].filter((entry) => entry !== null).join('\n');
   }).join('\n\n').slice(0, 4000);
 }

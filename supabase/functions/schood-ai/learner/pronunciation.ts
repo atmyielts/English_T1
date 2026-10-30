@@ -4,6 +4,7 @@ import { SchoodAIError, type RequestContext } from '../types.ts';
 import { audioFrom, learnerInput, receipt, requireLearner, store, systemFor, today, track } from './common.ts';
 import { DRILL_PER_DAY, DRILL_SENTENCES, type DrillSentence } from './data/speaking.ts';
 import { loadProfile } from './tutor.ts';
+import { recordWeeklyVoice } from '../seams/samples.ts';
 
 // L13 Pronunciation coach: read a sentence aloud; speech recognition (the
 // provider's when configured, otherwise the browser's) says which words came
@@ -136,6 +137,8 @@ export async function pronunciationCheck(ctx: RequestContext) {
     });
     heard = out.result.spoken; aligned = out.result.alignment; tips = out.result.tips; pauses = out.result.gaps;
     charge = receipt(out);
+    // Engage's then-vs-now: one recording a week (seams/samples.ts).
+    recordWeeklyVoice(ctx, { key: 'learner:L13', feature: 'L13', audio: audio.audio, mime: audio.mime, transcript: heard, durationSec: 0, scores: { pronunciation: aligned.score }, promptKey: sentence.id });
   } else {
     // Browser recognition: the alignment is free; only a tip is charged.
     heard = transcript!;

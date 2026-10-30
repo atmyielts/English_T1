@@ -7,6 +7,7 @@ import { integer, oneOf, optionalText, record, text, uuid } from '../input.ts';
 import { SchoodAIError, type RequestContext } from '../types.ts';
 import { countWords, isCefr, learnerInput, ownRecord, quoted, receipt, requireLearner, saveRecord, store, systemFor, track } from './common.ts';
 import type { RecordRow } from './store.ts';
+import { recordEssay } from '../seams/samples.ts';
 
 // L3 writing coach, L11 essay ladder and L8 application essays.
 // Rubrics are Schood's existing ones, not new ones:
@@ -109,6 +110,8 @@ export async function writingFeedback(ctx: RequestContext) {
     summary: { exam, overall, issues: comments.slice(0, 3).map((entry) => ({ said: entry.quote, better: entry.suggestion })), next: data.next_steps.slice(0, 2) },
     event: { kind: 'drill_finished', skill: `writing.${exam}`, score: overall, verified_minutes: Math.max(1, Math.min(60, Math.round(words / 15))), ref: row.id },
   });
+  // Engage's then-vs-now: the essay with its scores (seams/samples.ts).
+  recordEssay(ctx, { id: row.id, feature: 'L3', text: draft, scores: { overall, ...Object.fromEntries(criteria.map((entry) => [entry.key, entry.score])) }, promptKey: exam });
   return { writing: writingView(row), ...receipt(out) };
 }
 

@@ -10,6 +10,7 @@ import { SchoodAIError, type RequestContext } from '../types.ts';
 import { audioFrom, base64, countWords, isCefr, looseObject, ownRecord, quoted, receipt, requireLearner, saveRecord, store, systemFor, track, wrapUserMessage, type Cefr } from './common.ts';
 import { conversationScenario, INTERVIEW_KINDS, INTERVIEWS, MULTILEVEL_SETS, type InterviewKind } from './data/speaking.ts';
 import type { RecordRow } from './store.ts';
+import { recordWeeklyVoice } from '../seams/samples.ts';
 
 // Speaking partner (L4) and interview simulator (L12). One session engine:
 //   conversation / roleplay / interview: the partner talks back each turn
@@ -172,6 +173,8 @@ export async function speakingTurn(ctx: RequestContext) {
       const out = await ctx.ai.transcribe({ key: 'speaking.turn', audio: audio.audio, mime: audio.mime, language: 'en', reference: `speaking:${row.id}:${step}` });
       said = out.transcript.text.trim();
       charge = receipt(out);
+      // Engage's then-vs-now: one recording a week per feature (seams/samples.ts).
+      recordWeeklyVoice(ctx, { key: `learner:${featureOf(mode)}`, feature: featureOf(mode), audio: audio.audio, mime: audio.mime, transcript: said, durationSec: seconds ?? out.transcript.durationSec ?? 0 });
     }
     state.answers = [...(state.answers ?? []).slice(0, step), { text: said.slice(0, 3000), mode: spoken, seconds, words: countWords(said) }];
     state.step = step + 1;
@@ -200,6 +203,8 @@ export async function speakingTurn(ctx: RequestContext) {
     return { said, turn, voice };
   });
   const { said, turn, voice } = out.result;
+  // Engage's then-vs-now: one recording a week per feature, conversations (L4) and interviews (L12) alike.
+  if (audio) recordWeeklyVoice(ctx, { key: `learner:${featureOf(mode)}`, feature: featureOf(mode), audio: audio.audio, mime: audio.mime, transcript: said, durationSec: seconds ?? 0 });
   state.messages = [...(state.messages ?? []), { role: 'learner', text: said.slice(0, 800) }, { role: 'partner', text: turn.reply }];
   state.goals_met = [...new Set([...(state.goals_met ?? []), ...turn.goals_met])];
   if (turn.tip) state.tips = [...(state.tips ?? []), turn.tip].slice(-10);
