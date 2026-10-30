@@ -10,7 +10,7 @@ import { catalogs, loadLocale } from './core/i18n/index.ts';
 import { WorkspaceProvider } from './core/workspace.tsx';
 import './index.css';
 
-// The person's language loads before the first paint (English is built in), so nothing flashes in English.
+// The person's language loads before the first paint (core's included), so nothing flashes untranslated.
 const render = () => createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <I18nProvider catalogs={catalogs}>
