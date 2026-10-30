@@ -53,6 +53,8 @@ export interface HandlerDeps {
   sendTelegram?: ContextDeps['sendTelegram'];
   /** The auth admin API for ctx.auth.sessionFor; without it no session is minted. */
   mintSession?: ContextDeps['mintSession'];
+  /** Test fixtures only: every onboarding chat guard counts as done. */
+  onboardingTaken?: boolean;
   /** The jobs core/system-tick runs; the registered ones (registerSystemJob) when left out. */
   systemJobs?: [string, SystemJob][];
 }
@@ -164,7 +166,7 @@ export function createSchoodAIHandler(deps: HandlerDeps, options: HandlerOptions
 
   const contextDeps = (responseHeaders: Record<string, string>): ContextDeps => ({
     repo: deps.repository, gateway: deps.gateway, plans: deps.plans, stores, isAdmin: deps.isAdmin, callFunction: deps.callFunction,
-    sendTelegram: deps.sendTelegram, mintSession: deps.mintSession, after, now, responseHeaders,
+    sendTelegram: deps.sendTelegram, mintSession: deps.mintSession, onboardingTaken: deps.onboardingTaken, after, now, responseHeaders,
   });
   // The scheduler (scheduler.ts): answers at once and runs the due jobs after the response.
   if (routes.has('core/system-tick')) throw new Error('route core/system-tick is built in');

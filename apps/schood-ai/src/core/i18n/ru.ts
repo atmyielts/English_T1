@@ -173,6 +173,9 @@ export const ru: Record<CoreKey, string> = {
   'state.plan.soon': 'Тарифы скоро откроются. До тех пор Schood AI работает в закрытой бете.',
   'state.role.title': 'Недоступно для вашей роли',
   'state.role.lead': 'Это может сделать человек с другой ролью в этом рабочем пространстве.',
+  'state.consent.title': 'Один шаг перед началом',
+  'state.consent.lead': 'Schood AI один раз просит каждого ученика подтвердить возраст. Ученикам младше 18 лет также нужно согласие родителя или опекуна.',
+  'state.consent.open': 'Пройти шаг',
   'state.signIn.title': 'Войдите, чтобы продолжить',
   'state.signIn.lead': 'Используйте аккаунт Schood. Если вы вошли на schood.online, вы вошли и здесь.',
 

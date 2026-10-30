@@ -173,6 +173,9 @@ export const uz: Record<CoreKey, string> = {
   'state.plan.soon': 'Tariflar tez orada ochiladi. Ungacha Schood AI yopiq beta rejimida.',
   'state.role.title': 'Rolingiz uchun emas',
   'state.role.lead': 'Buni ish maydonidagi boshqa roldagi kishi bajara oladi.',
+  'state.consent.title': 'Boshlashdan oldin bitta qadam',
+  'state.consent.lead': 'Schood AI har bir o‘quvchidan yoshini bir marta tasdiqlashni so‘raydi. 18 yoshga to‘lmaganlar uchun ota-ona yoki vasiyning roziligi ham kerak.',
+  'state.consent.open': 'Qadamni bajarish',
   'state.signIn.title': 'Davom etish uchun kiring',
   'state.signIn.lead': 'Schood akkauntingizdan foydalaning. schood.online’ga kirgan bo‘lsangiz, bu yerga ham kirgansiz.',
 

@@ -132,3 +132,25 @@ Deno.test('plan sources see other people\'s plans; chat guards refuse before any
   try { registerContextProvider('test_bad_label', () => Promise.resolve(null), { label: { en: 'x', uz: '', ru: 'y' } }); } catch { threw = true; }
   ok(threw, 'labels need all three languages');
 });
+
+// An onboarding step (the learner's consent): skipped for fixtures that declare it done, enforced otherwise.
+let onboardingArmed = false;
+registerChatGuard('test.onboarding', (ctx) => {
+  if (onboardingArmed && ctx.user.id === ID.plus) throw new SchoodAIError('consent_required', 'Take the step first.', 403, { state: 'missing' });
+  return Promise.resolve();
+}, { onboarding: true });
+
+Deno.test('onboarding chat guards: a fixture declares them done by default, or runs them with onboarding: required', async () => {
+  onboardingArmed = true;
+  try {
+    const taken = fixture();
+    taken.setProvider(() => streamOf(['Salom']));
+    equal((await taken.call('POST', 'core/chat', { body: chat({ message: 'Hello' }) })).status, 200, 'declared done: skipped');
+    const required = fixture({ onboarding: 'required' });
+    required.setProvider(() => streamOf(['Salom']));
+    const refused = await required.json('POST', 'core/chat', { body: chat({ message: 'Hello' }) });
+    equal([refused.status, refused.body.code, required.memory.ledger.length], [403, 'consent_required', 0], 'required: enforced before anything is charged');
+  } finally {
+    onboardingArmed = false;
+  }
+});
