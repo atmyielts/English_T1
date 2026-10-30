@@ -5,10 +5,11 @@ import { answerQuiz, joinQuiz, playQuiz, type PlayState } from '../api.ts';
 
 // T10 Live Quiz on a student's phone: join with the six-digit code and a nickname,
 // then follow the game. No account is needed (core's anonymous routes, limited per
-// IP). A signed-in student joins as themselves, so the class results name them. It
-// polls (faster when signed in: a whole class often shares one address and its
-// limit) and keeps working on a weak connection: a failed poll tries again, and a
-// rate limit waits as long as the server asks. The tab remembers its game (this tab only).
+// game, so a class behind one school address plays without lag). A signed-in student
+// joins as themselves, so the class results name them. It polls every 1.5 seconds
+// (slower in very large open games, to stay within the game's budget) and keeps
+// working on a weak connection: a failed poll tries again, and a rate limit waits as
+// long as the server asks. The tab remembers its game (this tab only).
 
 const KEY = 'schood-ai.play';
 const COLORS = ['bg-lime', 'bg-sky-ai', 'bg-amber-300', 'bg-rose-300', 'bg-violet-300', 'bg-emerald-300'];
@@ -62,7 +63,9 @@ function Game({ joined, onLeave }: { joined: Joined; onLeave(): void }) {
       setError(cause);
     }
   }, [joined, onLeave]);
-  useEffect(() => { void poll(); const timer = setInterval(() => { if (!document.hidden) void poll(); }, joined.open ? 2_500 : 1_500); return () => clearInterval(timer); }, [poll, joined.open]);
+  // An open game's budget is 3,000 polls a minute: past 60 phones, each polls a little less often.
+  const players = state?.players ?? 0, every = joined.open && players > 60 ? Math.ceil(players / 20) * 500 : 1_500;
+  useEffect(() => { void poll(); const timer = setInterval(() => { if (!document.hidden) void poll(); }, every); return () => clearInterval(timer); }, [poll, every]);
   useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 250); return () => clearInterval(timer); }, []);
   if (!state) return error ? <ApiErrorState error={error} onRetry={() => void poll()}/> : <LoadingState label={t('teacher.play.connecting')}/>;
   const mine = state.my_answer ?? (tapped && tapped.index === state.index ? { choice: tapped.choice } : null);

@@ -1,12 +1,13 @@
+import { registerSystemJob } from '../registries.ts';
 import type { FeatureModule } from '../types.ts';
 import { brand, results, writeBrand } from './brand.ts';
-import { channels, dispatchRoute, editPost, planWeek, proposeWeek, registerChannelActions, systemDispatchRoute, verifyChannel, writePost } from './channel.ts';
+import { CHANNEL_JOB, channels, dispatchRoute, editPost, planWeek, proposeWeek, registerChannelActions, runChannelJob, verifyChannel, writePost } from './channel.ts';
 import { academyGroupsRoute, assessmentBanksRoute, exportMaterial, getHandout, registerExportActions, weakSpotsRoute } from './exports.ts';
 import { batches, markRecording, markScript, scripts, writeFeedback, writingSignals } from './marking.ts';
 import { acquireListing, getListing, moderation, myListings, proposeListing, rateListing, registerMarketActions, searchMarket, withdrawListing } from './market.ts';
 import { decideMaterial, registerTeacherKinds } from './library.ts';
 import { createMaterial, editMaterial, getMaterial, listMaterialsRoute, recheckMaterial, renameMaterial, stepMaterial } from './materials.ts';
-import { answerQuiz, controlQuiz, createQuiz, getQuiz, joinQuiz, listQuizzes, playQuiz, quizResults } from './quiz.ts';
+import { answerQuiz, controlQuiz, createQuiz, getQuiz, joinQuiz, listQuizzes, openGameByCode, openGameByPlayer, playQuiz, quizResults } from './quiz.ts';
 
 // Teachers (T1–T6, T9–T15): Materials Studio, checked keys, marking, feedback,
 // planner, library adapter, Live Quiz, channel autopilot, marketplace and brand kit.
@@ -15,6 +16,8 @@ import { answerQuiz, controlQuiz, createQuiz, getQuiz, joinQuiz, listQuizzes, pl
 registerTeacherKinds();
 registerExportActions();
 registerChannelActions();
+// T11: core's scheduler sends due channel posts (no route and no cron entry of our own).
+registerSystemJob(CHANNEL_JOB.name, { area: 'teacher', schedule: { everyMinutes: CHANNEL_JOB.everyMinutes }, timeoutMs: 90_000, run: runChannelJob });
 registerMarketActions();
 
 const IMAGES = 10 * 1024 * 1024;
@@ -43,11 +46,12 @@ export const teacherModule: FeatureModule = {
     'quiz-join': { POST: joinQuiz },
     'quiz-play': { POST: playQuiz },
     'quiz-answer': { POST: answerQuiz },
-    // The same game without signing in, limited per IP by core. A class often shares
-    // one address, so play allows core's maximum; phones back off on rate_limited.
-    'quiz-join-open': { POST: joinQuiz, anonymous: { perMinute: 120, perDay: 5_000 } },
-    'quiz-play-open': { POST: playQuiz, anonymous: { perMinute: 600, perDay: 100_000 } },
-    'quiz-answer-open': { POST: answerQuiz, anonymous: { perMinute: 300, perDay: 30_000 } },
+    // The same game without signing in. Limits count per open game (rateKey), so a
+    // class behind one school address plays without lag, under a per-IP ceiling; a
+    // made-up code or token has no game and is limited per IP at the same rates.
+    'quiz-join-open': { POST: joinQuiz, anonymous: { perMinute: 300, perDay: 5_000, rateKey: openGameByCode } },
+    'quiz-play-open': { POST: playQuiz, anonymous: { perMinute: 3_000, perDay: 300_000, ipLimit: { perMinute: 6_000, perDay: 2_000_000 }, rateKey: openGameByPlayer } },
+    'quiz-answer-open': { POST: answerQuiz, anonymous: { perMinute: 1_000, perDay: 50_000, ipLimit: { perMinute: 3_000, perDay: 300_000 }, rateKey: openGameByPlayer } },
     // T3, T14, T15 marking; T4 feedback.
     marking: { ...batches },
     'marking-script': { ...scripts },
@@ -63,8 +67,6 @@ export const teacherModule: FeatureModule = {
     'channel-post': { PATCH: editPost },
     'channel-approve': { POST: proposeWeek },
     'channel-dispatch': { POST: dispatchRoute },
-    // Scheduled: pg_cron calls it every 5 minutes with the system secret (migration 20261030300000).
-    'system-channel-dispatch': { POST: systemDispatchRoute, system: true },
     // T12 marketplace.
     market: { GET: searchMarket },
     'market-listing': { GET: getListing },

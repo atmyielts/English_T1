@@ -13,12 +13,13 @@ What the teacher area (T1–T6, T9–T15, branch `claude/ai-teacher`) needs from
 
 ## 3. A scheduled entry point (cron) for areas (done in core)
 
-- Core shipped `system: true` routes and `invoke_schood_ai_system` (21f363b2). Channel autopilot (T11) runs `teacher/system-channel-dispatch` from pg_cron every 5 minutes (`schood-ai-teacher-channel-dispatch-v1`, in the teacher migration). Approving a week still sends what is already due, and the page has a manual "Send due posts now". The page-open fallback is gone.
+- Channel autopilot (T11) is a job on core's scheduler: `registerSystemJob('teacher.channel_dispatch', { everyMinutes: 5 })`, with no route and no cron entry of its own. Approving a week still sends what is already due, and the page has a manual "Send due posts now".
 
 ## 4. Routes open without signing in (done in core)
 
-- Core shipped `anonymous: true` routes with per-IP limits and `api(path, { anonymous: true })` (21f363b2, 2a83553f). Live Quiz players join with a code and a nickname on `teacher/quiz-join-open`, `quiz-play-open` and `quiz-answer-open`. A signed-in student still joins through the signed-in routes, so the class results name them.
-- **Open question:** the limit is per IP and route, and a class often shares one address. Play allows core's maximum (600 a minute), which covers about 25 phones polling every 2.5 seconds on one address; beyond that, phones wait for `retry_after`. A per-game bucket (for example `anonymous: { key: body.session_id }` next to the IP limit) would let a whole school play at once.
+- Live Quiz players join with a code and a nickname on `teacher/quiz-join-open`, `quiz-play-open` and `quiz-answer-open` (core's anonymous routes). A signed-in student still joins through the signed-in routes, so the class results name them.
+- Limits count per open game (`rateKey`: a real code or player token names the game; anything made up returns null and is limited per IP). A class of 40 behind one school address plays at full speed; play allows 3,000 a minute per game under a 6,000-a-minute ceiling per address.
+- **Note:** a request with no key is limited per IP at the same rate as a keyed one (core uses one `perMinute` for both). A separate, lower per-IP limit for unkeyed requests would let made-up tokens be slowed harder.
 
 ## 5. Lazy English catalogs for areas (done in core)
 

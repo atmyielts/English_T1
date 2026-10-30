@@ -19,19 +19,6 @@ const core = readdirSync(new URL('../supabase/migrations/', import.meta.url))
   .map((name) => read(`supabase/migrations/${name}`)).join('\n');
 const migration = read('supabase/migrations/20261030300000_schood_ai_teacher.sql');
 const integration = read('supabase/tests/schood-ai-teacher.integration.sql');
-// pg_cron is not in these databases. A stand-in cron schema (the same calls the
-// migration makes) shows the channel autopilot is scheduled once, however often the
-// migration runs, and calls core's system invoker with the teacher route.
-const cronStub = `
-create schema if not exists cron;
-create table if not exists cron.job (jobid bigserial primary key, jobname text not null, schedule text not null, command text not null);
-create or replace function cron.schedule(p_name text, p_schedule text, p_command text) returns bigint language sql as
-  'insert into cron.job (jobname, schedule, command) values (p_name, p_schedule, p_command) returning jobid';
-create or replace function cron.unschedule(p_job bigint) returns boolean language sql as 'delete from cron.job where jobid = p_job returning true';
-`;
-const scheduled = `select count(*)::text || '|' || min(schedule) || '|' || (min(command) like '%invoke_schood_ai_system(''teacher/system-channel-dispatch''%')::text
-  from cron.job where jobname = 'schood-ai-teacher-channel-dispatch-v1';`;
-const EXPECTED_SCHEDULE = '1|4-59/5 * * * *|true';
 
 // --- 1. PGlite ---------------------------------------------------------------------
 {
@@ -43,12 +30,7 @@ const EXPECTED_SCHEDULE = '1|4-59/5 * * * *|true';
     await db.exec(migration);
     const results = await db.exec(integration);
     assert.equal(results.at(-1).rows[0]?.['?column?'], 'schood ai teacher: ok');
-    await db.exec(cronStub);
-    await db.exec(migration);
-    await db.exec(migration);
-    const job = await db.query(scheduled);
-    assert.equal(Object.values(job.rows[0])[0], EXPECTED_SCHEDULE, 'the channel autopilot is scheduled once');
-    console.log('PGlite (PostgreSQL 17): teacher migration applies twice; quiz codes, nicknames and one answer per question, channel ids, ratings, copies, verified use, the append-only ledger, account closure through auth.users, the channel schedule and isolation passed.');
+    console.log('PGlite (PostgreSQL 17): teacher migration applies twice; quiz codes, nicknames and one answer per question, channel ids, ratings, copies, verified use, the append-only ledger, account closure through auth.users and isolation passed.');
   } finally {
     await db.close();
   }
@@ -91,10 +73,6 @@ try {
   psql(migration);
   psql(migration);
   assert.match(psql(integration), /schood ai teacher: ok/);
-  psql(cronStub);
-  psql(migration);
-  psql(migration);
-  assert.equal(psql(scheduled).trim(), EXPECTED_SCHEDULE, 'the channel autopilot is scheduled once');
 
   const teacher = '00000000-0000-4000-8000-0000000000a1', buyer = '00000000-0000-4000-8000-0000000000a2', student = '00000000-0000-4000-8000-0000000000a3';
   const ws = psql(`select id from public.ai_ensure_personal_workspace('${teacher}', 'Race teacher');`).trim();
@@ -129,7 +107,7 @@ try {
   assert.equal(count, 3, 'one rating per person');
   assert.equal(String(sum), psql(`select sum(stars) from public.ai_teacher_listing_ratings where listing_id = '${listing}';`).trim(), 'the sum matches the ratings');
 
-  console.log('Postgres 16 (Docker): teacher migration applies twice; integration and the channel schedule passed; 12 racing taps kept one answer and its points, 10 racing copies made one, 20 racing uses counted one workspace, 24 racing ratings kept one per person with an exact sum.');
+  console.log('Postgres 16 (Docker): teacher migration applies twice; integration passed; 12 racing taps kept one answer and its points, 10 racing copies made one, 20 racing uses counted one workspace, 24 racing ratings kept one per person with an exact sum.');
 } finally {
   spawnSync('docker', ['rm', '--force', container]);
 }

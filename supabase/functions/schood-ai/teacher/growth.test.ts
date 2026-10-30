@@ -41,13 +41,12 @@ Deno.test('channel autopilot: connect, write the week, one-click approval, posti
     equal(f.telegramCalls.filter((call) => call.method.startsWith('send')).length, 0);
 
     f.advance(65 * 60_000);
-    // The schedule sends it: pg_cron calls the system route with the system secret, no person, no browser.
-    const system = (body: unknown, headers: Record<string, string> = {}) => f.json('POST', 'teacher/system-channel-dispatch', { token: null, origin: null, body, headers: { 'x-schood-service-secret': SYSTEM_SECRET, ...headers } });
-    equal((await f.json('POST', 'teacher/system-channel-dispatch', { token: PRO, body: {} })).status, 401, 'a person cannot run the job');
-    equal((await system({}, { authorization: `Bearer ${PRO}` })).status, 400, 'the job never acts for a person');
-    equal((await system({ limit: 500 })).status, 400, 'runs stay bounded');
-    const first = await system({ limit: 10 });
-    equal([first.status, first.body.dispatched], [200, { sent: 1, failed: 0, deferred: 0 }]);
+    // Core's scheduler sends it: pg_cron calls core/system-tick, which runs the teacher's registered job.
+    equal((await f.json('POST', 'teacher/system-channel-dispatch', { token: null, origin: null, body: {}, headers: { 'x-schood-service-secret': SYSTEM_SECRET } })).status, 404, 'no route of our own');
+    const tick = await f.json('POST', 'core/system-tick', { token: null, origin: null, body: {}, headers: { 'x-schood-service-secret': SYSTEM_SECRET } });
+    equal(tick.status, 200);
+    await f.settle();
+    equal(f.telegramCalls.filter((call) => call.method.startsWith('send')).length, 1, 'the due post went out with nobody signed in');
     const poll = f.telegramCalls.find((call) => call.method === 'sendPoll')!;
     equal([poll.body.chat_id, poll.body.type, poll.body.correct_option_id, poll.body.is_anonymous], ['-1001234567890', 'quiz', 1, true]);
     // Telegram asks to slow down: the post waits and goes later ("Send due posts now" on the page).

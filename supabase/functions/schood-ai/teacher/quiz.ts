@@ -1,5 +1,6 @@
 import { quizQuestions } from '../../../../packages/ai-core/src/materials/mod.ts';
-import { integer, oneOf, optionalText, record, text, uuid } from '../input.ts';
+import { integer, isUuid, oneOf, optionalText, record, text, uuid } from '../input.ts';
+import type { StoreHandle } from '../stores.ts';
 import { SchoodAIError, type RequestContext } from '../types.ts';
 import { teacherStore } from './deps.ts';
 import { approvedPage } from './library.ts';
@@ -171,6 +172,28 @@ async function playerFor(ctx: RequestContext, session: QuizSession, tokenValue: 
   const player = token ? await store.quizPlayer(session.id, await sha256(token)) : signedIn(ctx) ? await store.quizPlayerByUser(session.id, ctx.user.id) : null;
   if (!player) throw new SchoodAIError('not_joined', 'Join the game first.', 403);
   return player;
+}
+
+// Rate keys for the open routes (core's rateKey): a whole class behind one school
+// address plays on its game's budget, not the address's. Only a real open code, or a
+// real player's token, names the game; anything made up returns null and stays
+// limited per IP, so it cannot buy a fresh budget.
+type KeyInput = { store<T>(handle: StoreHandle<T>): T; body(): Promise<unknown> };
+const gameKey = (sessionId: string) => `quiz:${sessionId}`;
+/** quiz-join-open: the open game a six-digit code names. */
+export async function openGameByCode(_req: Request, input: KeyInput): Promise<string | null> {
+  const body = await input.body() as { code?: unknown } | null;
+  const code = typeof body?.code === 'string' ? body.code.replace(/\s+/g, '') : '';
+  if (!/^[0-9]{6}$/.test(code)) return null;
+  const session = await input.store(teacherStore).quizSessionByCode(code);
+  return session ? gameKey(session.id) : null;
+}
+/** quiz-play-open and quiz-answer-open: the game of the player whose token this is. */
+export async function openGameByPlayer(_req: Request, input: KeyInput): Promise<string | null> {
+  const body = await input.body() as { session_id?: unknown; token?: unknown } | null;
+  if (!isUuid(body?.session_id) || typeof body?.token !== 'string' || !/^[0-9a-f]{48}$/.test(body.token)) return null;
+  const player = await input.store(teacherStore).quizPlayer(body.session_id, await sha256(body.token));
+  return player && !player.removed ? gameKey(body.session_id) : null;
 }
 
 /** POST teacher/quiz-join (signed in) and teacher/quiz-join-open (anyone): join with the code and a nickname. No AI is used. */

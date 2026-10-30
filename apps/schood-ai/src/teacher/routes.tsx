@@ -1,15 +1,13 @@
 import { lazy, type ComponentType } from 'react';
-import {
-  BookOpenCheck, ClipboardCheck, FileText, Gamepad2, GraduationCap, LayoutList, Megaphone, MessageSquareText, Presentation, Send, Store, Wand2,
-} from 'lucide-react';
 import { MATERIAL_KIND_CATALOG } from '../../../../packages/ai-core/src/materials/catalog.ts';
 import type { Material } from '../../../../packages/ai-core/src/materials/mod.ts';
-import { registerMaterialKind, Link, useT, type AreaNavItem, type AreaRoute, type HomeCard } from '../core/index.ts';
+import { registerMaterialKind, type AreaNavItem, type AreaRoute, type HomeCard } from '../core/index.ts';
 import { materialMarkdownLater } from './markdown.ts';
 
 // Teachers (T1–T6, T9–T15): the Materials Studio and its review card, approved
 // materials (library pages of the teacher kinds), print, Live Quiz, marking,
-// feedback, channel autopilot, marketplace and brand kit. Pages load on demand.
+// feedback, channel autopilot, marketplace and brand kit. Pages, nav icons (by
+// name) and home cards all load on demand, so this file is all the first download carries.
 
 const page = <K extends string>(load: () => Promise<Record<K, ComponentType<never>>>, name: K) =>
   lazy(async () => ({ default: (await load())[name] as ComponentType<{ params: Record<string, string> }> }));
@@ -32,10 +30,9 @@ const Brand = page(() => import('./pages/Brand.tsx'), 'default');
 // Every teacher kind in the library: shown with the material renderer, edited in the Studio's own editor.
 // Registration uses the plain catalog, so the material model and exam formats stay out of the first download.
 const LibraryMaterial = lazy(() => import('./MaterialView.tsx'));
-const ICONS = { exam: GraduationCap, planning: LayoutList, textbook: BookOpenCheck, general: FileText } as const;
-for (const [kind, group] of Object.entries(MATERIAL_KIND_CATALOG)) {
+for (const kind of Object.keys(MATERIAL_KIND_CATALOG)) {
   registerMaterialKind<Material>({
-    kind, label: `teacher.kind.${kind}`, icon: kind === 'slide_outline' ? Presentation : ICONS[group], toMarkdown: materialMarkdownLater,
+    kind, label: `teacher.kind.${kind}`, toMarkdown: materialMarkdownLater,
     render: LibraryMaterial as unknown as ComponentType<{ material: Material; print: boolean }>, editing: 'readonly', editorPath: (id) => `/studio/page/${id}`,
   });
 }
@@ -60,42 +57,25 @@ export const routes: AreaRoute[] = [
   { path: '/studio/market/review', component: Moderation, title: 'teacher.nav.market', audiences: TEACHERS },
   { path: '/studio/market/:id', component: Listing, title: 'teacher.nav.market', audiences: TEACHERS },
   { path: '/studio/brand', component: Brand, title: 'teacher.nav.brand', audiences: TEACHERS, feature: 'T13' },
-  // Students join a Live Quiz and open handouts from any audience; signing in is asked on the page.
+  // Open to anyone: a Live Quiz needs no account (signed in, the class results name you); a handout asks to sign in.
   { path: '/play', component: Play, title: 'teacher.nav.play', public: true },
   { path: '/handout/:token', component: Handout, title: 'teacher.handout.title', public: true },
 ];
 
+export const icons = () => import('./icons.ts');
 export const nav: AreaNavItem[] = [
-  { id: 'studio', path: '/studio', label: 'teacher.nav.studio', icon: Wand2, audiences: ['teacher', 'centre'], feature: 'T1', group: 'teacher' },
-  { id: 'planner', path: '/studio/plan', label: 'teacher.nav.planner', icon: LayoutList, audiences: ['teacher', 'centre'], feature: 'T5', group: 'teacher' },
-  { id: 'marking', path: '/studio/marking', label: 'teacher.nav.marking', icon: ClipboardCheck, audiences: ['teacher', 'centre'], feature: 'T3', group: 'teacher' },
-  { id: 'quiz', path: '/studio/quizzes', label: 'teacher.nav.quiz', icon: Gamepad2, audiences: ['teacher', 'centre'], feature: 'T10', group: 'teacher' },
-  { id: 'feedback', path: '/studio/feedback', label: 'teacher.nav.feedback', icon: MessageSquareText, audiences: ['teacher', 'centre'], feature: 'T4', group: 'teacher' },
-  { id: 'channel', path: '/studio/channel', label: 'teacher.nav.channel', icon: Send, audiences: ['teacher', 'centre'], feature: 'T11', group: 'teacher' },
-  { id: 'market', path: '/studio/market', label: 'teacher.nav.market', icon: Store, audiences: ['teacher', 'centre'], group: 'teacher' },
-  { id: 'brand', path: '/studio/brand', label: 'teacher.nav.brand', icon: Megaphone, audiences: ['teacher'], feature: 'T13', group: 'teacher' },
-  { id: 'play', path: '/play', label: 'teacher.nav.play', icon: Gamepad2, audiences: ['learner'], group: 'learner' },
+  { id: 'studio', path: '/studio', label: 'teacher.nav.studio', icon: 'Wand2', audiences: ['teacher', 'centre'], feature: 'T1', group: 'teacher' },
+  { id: 'planner', path: '/studio/plan', label: 'teacher.nav.planner', icon: 'LayoutList', audiences: ['teacher', 'centre'], feature: 'T5', group: 'teacher' },
+  { id: 'marking', path: '/studio/marking', label: 'teacher.nav.marking', icon: 'ClipboardCheck', audiences: ['teacher', 'centre'], feature: 'T3', group: 'teacher' },
+  { id: 'quiz', path: '/studio/quizzes', label: 'teacher.nav.quiz', icon: 'Gamepad2', audiences: ['teacher', 'centre'], feature: 'T10', group: 'teacher' },
+  { id: 'feedback', path: '/studio/feedback', label: 'teacher.nav.feedback', icon: 'MessageSquareText', audiences: ['teacher', 'centre'], feature: 'T4', group: 'teacher' },
+  { id: 'channel', path: '/studio/channel', label: 'teacher.nav.channel', icon: 'Send', audiences: ['teacher', 'centre'], feature: 'T11', group: 'teacher' },
+  { id: 'market', path: '/studio/market', label: 'teacher.nav.market', icon: 'Store', audiences: ['teacher', 'centre'], group: 'teacher' },
+  { id: 'brand', path: '/studio/brand', label: 'teacher.nav.brand', icon: 'Megaphone', audiences: ['teacher'], feature: 'T13', group: 'teacher' },
+  { id: 'play', path: '/play', label: 'teacher.nav.play', icon: 'Gamepad2', audiences: ['learner'], group: 'learner' },
 ];
 
-function StudioCard() {
-  const t = useT();
-  return <div className="flex h-full flex-col gap-2 rounded-3xl border border-navy-line bg-white p-5">
-    <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-600"><Wand2 size={14} aria-hidden="true"/>{t('teacher.home.studioEyebrow')}</span>
-    <strong className="font-display text-lg">{t('teacher.home.studioTitle')}</strong>
-    <p className="m-0 text-sm text-gray-700">{t('teacher.home.studioLead')}</p>
-    <Link to="/studio" className="mt-auto inline-flex min-h-10 w-fit items-center rounded-full bg-navy px-4 text-sm font-semibold text-white no-underline">{t('teacher.home.studioOpen')}</Link>
-  </div>;
-}
-function PlayCard() {
-  const t = useT();
-  return <div className="flex h-full flex-col gap-2 rounded-3xl border border-navy-line bg-white p-5">
-    <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-600"><Gamepad2 size={14} aria-hidden="true"/>{t('teacher.nav.play')}</span>
-    <strong className="font-display text-lg">{t('teacher.home.playTitle')}</strong>
-    <p className="m-0 text-sm text-gray-700">{t('teacher.home.playLead')}</p>
-    <Link to="/play" className="mt-auto inline-flex min-h-10 w-fit items-center rounded-full border border-navy-line px-4 text-sm font-semibold text-gray-900 no-underline">{t('teacher.home.playOpen')}</Link>
-  </div>;
-}
 export const homeCards: HomeCard[] = [
-  { id: 'studio', audiences: ['teacher', 'centre'], feature: 'T1', render: () => <StudioCard/> },
-  { id: 'play', audiences: ['learner'], render: () => <PlayCard/> },
+  { id: 'studio', audiences: ['teacher', 'centre'], feature: 'T1', component: () => import('./HomeCards.tsx').then((module) => ({ default: module.StudioCard })) },
+  { id: 'play', audiences: ['learner'], component: () => import('./HomeCards.tsx').then((module) => ({ default: module.PlayCard })) },
 ];

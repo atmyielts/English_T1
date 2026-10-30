@@ -1,4 +1,6 @@
 import { ID, equal, ok, personal } from '../fixture.test.ts';
+import type { StoreHandle } from '../stores.ts';
+import { openGameByCode, openGameByPlayer } from './quiz.ts';
 import { ACADEMY, BANK, TENANT, promptOf, reply, teacherFixture } from './test-kit.ts';
 
 // The teacher test from docs/product/44_SCHOOD_AI.md, end to end against the memory
@@ -177,10 +179,6 @@ Deno.test('teacher test: IELTS Reading B2 with a checked key → edit → print 
     await f.settle();
     ok(f.memory.learning.some((event) => event.userId === ID.free && event.kind === 'check_passed' && event.feature === 'T10'), 'a checked answer is a learning event for the student');
     equal(f.memory.learning.filter((event) => event.feature === 'T10').length, 2, 'open players leave no learning events');
-    // Core's per-IP limit on the open join (120 a minute): a flood from one address is refused.
-    let refused = 0;
-    for (let i = 0; i < 121; i++) if ((await open('quiz-join-open', { code: '000000', nickname: `x${i}` }, '198.51.100.9')).status === 429) refused++;
-    equal(refused, 1, 'the 121st join in a minute from one address waits');
 
     // 6. Homework OS: proposed with the exact payload, run only on approval, with the teacher's token.
     const groups = await f.json('GET', 'teacher/academy-groups', { token: T });
@@ -307,6 +305,53 @@ Deno.test('textbook to lesson reads the page photo first, then writes from it', 
     equal(steps, ['page:1', 'lesson-from-page'], 'the photo is read once, then the lesson is written from the page text');
     equal(material.status, 'ready');
     equal(material.verification.checks.errors, 0, JSON.stringify(material.verification.checks.issues));
+  } finally {
+    f.reset();
+  }
+});
+
+Deno.test('Live Quiz: 40 players behind one school address play on the game budget; made-up codes stay limited per IP', async () => {
+  const f = teacherFixture();
+  try {
+    const ws = await personal(f, T);
+    const session = (await f.teacher.store.createQuizSession({
+      workspaceId: ws, hostId: ID.plus, pageId: null, title: 'Class game', code: '424242', secondsPerQuestion: 20, classLabel: '7A', group: null,
+      questions: [{ id: 'q1', prompt: 'Pick A.', options: [{ id: 'A', text: 'a' }, { id: 'B', text: 'b' }], answer: 'A' }],
+    }))!;
+    const SCHOOL = '203.0.113.50';
+    const post = (path: string, body: unknown, ip = SCHOOL) => f.json('POST', `teacher/${path}`, { token: null, body, headers: { 'x-forwarded-for': ip } });
+    const tokens: string[] = [];
+    for (let i = 0; i < 40; i++) {
+      const joined = await post('quiz-join-open', { code: '424242', nickname: `Pupil ${i + 1}` });
+      equal(joined.status, 200, JSON.stringify(joined.body));
+      tokens.push(joined.body.joined.token);
+    }
+    await f.teacher.store.updateQuizSession(session.id, { status: 'question', currentIndex: 0, questionStartedAt: f.now().toISOString() }, ['lobby']);
+
+    // A minute of play: 40 phones poll 40 times each from one address (1,600 requests,
+    // well past the 600 a minute one address could make on its own), then all answer.
+    let limited = 0;
+    for (let round = 0; round < 40; round++) for (const token of tokens) if ((await post('quiz-play-open', { session_id: session.id, token })).status !== 200) limited++;
+    equal(limited, 0, 'no phone waits');
+    for (const token of tokens) equal((await post('quiz-answer-open', { session_id: session.id, token, index: 0, choice: 'A' })).status, 200);
+    equal((await f.teacher.store.quizPlayers(session.id)).filter((player) => player.answered === 1).length, 40);
+
+    // The keys: a real code or player token names the game; anything made up names nothing.
+    const req = new Request('https://x.invalid/');
+    const input = (body: unknown) => ({ store: <S,>(handle: StoreHandle<S>) => f.stores.get(handle), body: () => Promise.resolve(body) });
+    equal(await openGameByCode(req, input({ code: '424 242' })), `quiz:${session.id}`);
+    equal(await openGameByPlayer(req, input({ session_id: session.id, token: tokens[3] })), `quiz:${session.id}`);
+    for (const body of [{ code: '999999' }, { code: 'abc' }, null, 'x']) equal(await openGameByCode(req, input(body)), null);
+    for (const body of [{ session_id: session.id, token: 'f'.repeat(48) }, { session_id: 'not-a-game', token: tokens[0] }, { session_id: session.id }, null]) equal(await openGameByPlayer(req, input(body)), null);
+
+    // Made-up codes have no game: they count against the address (300 a minute), not a game.
+    // The 40 real joins above were the game's, so the address still has its whole 300.
+    let refused = 0;
+    for (let i = 0; i < 301; i++) if ((await post('quiz-join-open', { code: '999999', nickname: `x${i}` })).status === 429) refused++;
+    equal(refused, 1, 'the 301st made-up code in a minute waits');
+    // Made-up tokens too: they never reach the game's budget, and the class plays on.
+    equal((await post('quiz-play-open', { session_id: session.id, token: 'f'.repeat(48) })).body.code, 'not_joined');
+    equal((await post('quiz-play-open', { session_id: session.id, token: tokens[0] })).status, 200);
   } finally {
     f.reset();
   }

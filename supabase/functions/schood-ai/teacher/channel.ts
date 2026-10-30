@@ -1,6 +1,6 @@
 import { s, SchemaError, type Schema } from '../../../../packages/ai-core/src/mod.ts';
 import { registerActionKind } from '../actions.ts';
-import { integer, oneOf, optionalText, record, text, uuid } from '../input.ts';
+import { oneOf, optionalText, record, text, uuid } from '../input.ts';
 import { dataBlock, neutralise } from '../prompt.ts';
 import { SchoodAIError, type Locale, type RequestContext } from '../types.ts';
 import { teacherDeps, teacherStore, type TelegramApi } from './deps.ts';
@@ -14,9 +14,9 @@ import type { Channel, ChannelBatch, ChannelPost, ChannelSchedule, PostContent, 
 // added as a channel admin, posts each one at its time. Telegram's limits are kept:
 // 4,096 characters a message, polls of 2–10 options up to 100 characters with a
 // 300-character question and a 200-character explanation, a gap between posts to
-// the same channel and a daily cap. Due posts go out from a scheduled job (core's
-// system route, pg_cron every 5 minutes), when the week is approved, and when the
-// teacher presses "Send due posts now".
+// the same channel and a daily cap. Due posts go out from core's scheduler (a
+// registered job every 5 minutes), when the week is approved, and when the teacher
+// presses "Send due posts now".
 
 const KINDS: readonly PostKind[] = ['word', 'quiz', 'tip'];
 const TASHKENT_OFFSET_MIN = 5 * 60;
@@ -362,9 +362,6 @@ export async function dispatchRoute(ctx: RequestContext) {
   return { dispatched: await dispatchDue(ctx, [access.workspace.id]) };
 }
 
-/** POST teacher/system-channel-dispatch: the scheduled job (pg_cron, every 5 minutes) sends every channel's due posts. */
-export async function systemDispatchRoute(ctx: RequestContext) {
-  const body = record(await ctx.body());
-  const limit = body.limit === undefined ? 25 : integer(body.limit, 'limit', 1, 100);
-  return { dispatched: await dispatchDue(ctx, null, limit) };
-}
+/** Core's scheduler (registerSystemJob, every 5 minutes): every channel's due posts, at most 25 a run. */
+export const CHANNEL_JOB = { name: 'teacher.channel_dispatch', everyMinutes: 5, limit: 25 } as const;
+export const runChannelJob = (ctx: RequestContext) => dispatchDue(ctx, null, CHANNEL_JOB.limit);
