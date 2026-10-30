@@ -29,7 +29,10 @@ export const getMaterial = (workspaceId: Ws, id: string) => api<{ material: Mate
 export const listMaterials = (workspaceId: Ws, query: { q?: string; kind?: string; status?: string } = {}) => api<{ materials: MaterialSummary[] }>('teacher/materials', { ...opts(workspaceId), query }).then((result) => result.materials);
 export const editMaterial = (workspaceId: Ws, id: string, material: Material, updatedAt: string) => api<{ material: MaterialJob }>('teacher/material', { ...opts(workspaceId), method: 'PATCH', body: { id, material, updated_at: updatedAt } }).then((result) => result.material);
 export const recheckMaterial = (workspaceId: Ws, id: string) => api<{ material: MaterialJob }>('teacher/material-recheck', { ...opts(workspaceId), body: { id }, timeoutMs: 90_000 }).then((result) => result.material);
-export const decideMaterial = (workspaceId: Ws, id: string, decision: 'approve' | 'reject', folder?: string) => api<{ status: string; page_id: string | null }>('teacher/material-decide', { ...opts(workspaceId), body: { id, decision, ...(folder ? { folder } : {}) } });
+/** Approve & save or decline, through core's generations (the teacher's approval hook saves the library page). */
+export const decideMaterial = (workspaceId: Ws, id: string, decision: 'approve' | 'reject', folder?: string) =>
+  api<{ generation: { status: string }; result?: { page_id?: string } }>('core/generations', { ...opts(workspaceId), body: { id, decision, ...(folder ? { folder } : {}) } })
+    .then((reply) => ({ status: reply.generation.status, page_id: reply.result?.page_id ?? null }));
 
 export const exportTelegram = (workspaceId: Ws, pageId: string, key: boolean) => api<{ messages: string[] }>('teacher/export', { ...opts(workspaceId), body: { page_id: pageId, to: 'telegram', key } }).then((result) => result.messages);
 export const notePrint = (workspaceId: Ws, pageId: string) => api<{ ok: boolean }>('teacher/export', { ...opts(workspaceId), body: { page_id: pageId, to: 'print' } });

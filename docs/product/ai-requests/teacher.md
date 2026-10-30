@@ -1,15 +1,14 @@
 # Teacher area: requests to core
 
-What the teacher area (T1–T6, T9–T15, branch `claude/ai-teacher`) needs from core. Each item says what the teacher area does until then. Every workaround lives in the teacher area and can be deleted when core ships the item.
+What the teacher area (T1–T6, T9–T15, branch `claude/ai-teacher`) asked of core. All seven are done in core; each item says how the teacher area uses it, and the workarounds are gone.
 
 ## 1. A repository hook for an area's own tables (done in core)
 
 - Core shipped `defineStore` and `ctx.store` in 5571577e. The teacher tables now go through `ctx.store(teacherStore)` (`teacher/deps.ts`); the teacher area's own service-role client is gone.
 
-## 2. Request headers in `ctx.functions.call`
+## 2. Request headers in `ctx.functions.call` (done in core)
 
-- **Need:** `FunctionCallInit.headers`, limited to an allowlist (`Idempotency-Key`, `If-Match`). Assessment Cloud refuses `POST /assessment-cloud/commands` without an `Idempotency-Key`.
-- **Until then:** `deps.ts` `remoteCall` sends calls that need headers with `fetch`, with the person's own token, the anon key, an 8-second timeout and the same error mapping as `ctx.functions.call`. Calls without headers go through `ctx.functions.call`.
+- Core forwards `Idempotency-Key` and `If-Match`. Assessment Cloud commands go through `ctx.functions.call` with them; the teacher area's own fetch is gone (`teacher/deps.ts` `remoteCall` only passes calls on, so tests can fake Academy and Assessment Cloud).
 
 ## 3. A scheduled entry point (cron) for areas (done in core)
 
@@ -29,7 +28,6 @@ What the teacher area (T1–T6, T9–T15, branch `claude/ai-teacher`) needs from
 
 - Core's Settings → Your branding sets a personal workspace's logo, print name and colours (2a83553f). The Studio's print view uses them as core's print does; its own logo field is gone. It stays for the student copy, the teacher copy and the key on its own page.
 
-## 7. Approving a generation from an area
+## 7. Approving a generation from an area (done in core)
 
-- **Need:** a hook on `core/generations` approval, for example `registerGenerationApproval(feature, fn)`, so that approving a material job also saves its library page.
-- **Until then:** the teacher screens approve through `POST teacher/material-decide`. It applies the same rules as `core/generations` (ready only; the owner, or staff in a centre), then creates the page with `ctx.library.create`. If the page cannot be saved, the job goes back to ready.
+- `registerGenerationApproval` runs the teacher's hook for every Studio credit key: approving a material job in `core/generations` saves its library page (in the folder the app names, in the teacher's language) and records the page on the job. If saving fails, core puts the job back to ready. `teacher/material-decide` is gone; the app approves through `core/generations`.

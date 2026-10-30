@@ -106,13 +106,15 @@ Deno.test('teacher test: IELTS Reading B2 with a checked key → edit → print 
     equal(saved.body.material.verification.clean, true);
     equal(saved.body.material.title, 'Bees on the rooftops (5B)');
 
-    // Approve & save: the material becomes a page of its kind in the library.
-    const approved = await f.json('POST', 'teacher/material-decide', { token: T, body: { id, decision: 'approve' } });
-    equal(approved.status, 200, JSON.stringify(approved.body));
-    const pageId = approved.body.page_id as string;
-    equal((await f.json('POST', 'teacher/material-decide', { token: T, body: { id, decision: 'approve' } })).body.page_id, pageId, 'a second click shows the same page');
+    // Approve & save through core/generations: the teacher's approval hook makes the page of its kind.
+    equal((await f.json('POST', 'teacher/material-decide', { token: T, body: { id, decision: 'approve' } })).status, 404, 'no approval route of our own');
+    const approved = await f.json('POST', 'core/generations', { token: T, body: { id, decision: 'approve', folder: 'Imtihonga tayyorgarlik/IELTS Reading/B2' } });
+    equal([approved.status, approved.body.generation.status], [200, 'approved'], JSON.stringify(approved.body));
+    const pageId = approved.body.result.page_id as string;
+    equal((await f.json('POST', 'core/generations', { token: T, body: { id, decision: 'approve' } })).body.generation.status, 'approved', 'a second click changes nothing');
+    equal((await f.json('GET', 'teacher/material', { token: T, query: { id } })).body.material.page_id, pageId, 'the job points at its page');
     const page = (await f.json('GET', 'core/page', { token: T, query: { id: pageId } })).body.page;
-    equal([page.kind, page.status, page.folder, page.source_generation_id], ['ielts_reading', 'approved', 'Exam practice/IELTS reading/B2', id]);
+    equal([page.kind, page.status, page.folder, page.source_generation_id], ['ielts_reading', 'approved', 'Imtihonga tayyorgarlik/IELTS Reading/B2', id], 'in the folder the app named, in the teacher language');
     ok(page.body.includes('## Answer key') && page.body.includes('2. FALSE'), 'the page document is the teacher copy with the edited key');
     equal((await f.json('PATCH', 'teacher/material', { token: T, body: { id, material: edited } })).body.code, 'not_editable', 'an approved material is edited in the library');
     // An edit in the library is validated against the kind's schema.
@@ -215,6 +217,8 @@ Deno.test('teacher test: IELTS Reading B2 with a checked key → edit → print 
     equal(exported.body.action.result, { created: 13, status: 'draft', bank: 'IELTS Reading bank' });
     ok(f.remote.filter((call) => call.path === '/commands').every((call) => call.token === T && /^schood-ai-/.test(call.init.headers?.['Idempotency-Key'] ?? '')), 'each item has its own idempotency key and the teacher\'s token');
     equal(f.items.length, 13);
+    const commands = f.functionCalls.filter((call) => call.name === 'assessment-cloud' && call.path === '/commands');
+    ok(commands.length === 13 && commands.every((call) => /^schood-ai-/.test(call.init.headers?.['Idempotency-Key'] ?? '')), 'core ctx.functions.call carries each Idempotency-Key');
     equal(f.memory.ledger.filter((row) => row.workspaceId === ws && row.kind === 'charge').length, 1, 'exports and the game cost nothing');
   } finally {
     f.reset();
@@ -276,6 +280,11 @@ Deno.test('three-level variants cost +10 and come back as support and stretch ve
     equal(material.material.variants.map((variant: { label: string; level: string }) => [variant.label, variant.level]), [['support', 'A2'], ['stretch', 'B2']]);
     equal(f.memory.ledger.filter((row) => row.workspaceId === ws && row.kind === 'charge').map((row) => row.delta), [-20], 'material + three levels');
     ok(material.material.variants[0].blocks.every((block: { id: string }) => block.id.startsWith('s')), 'version ids never collide');
+    // If the page cannot be saved, core's approval puts the job back to ready, to approve again.
+    await f.memory.repository.updateGeneration(material.id, { output: { schema: 'schood.material.v1', kind: 'reading' } });
+    const failed = await f.json('POST', 'core/generations', { token: T, body: { id: material.id, decision: 'approve' } });
+    ok(failed.status >= 400, 'the approval fails');
+    equal((await f.json('GET', 'core/generations', { token: T, query: { id: material.id } })).body.generation.status, 'ready', 'the draft is ready again');
   } finally {
     f.reset();
   }

@@ -1,5 +1,5 @@
 import { classifyTelegramFailure, type TelegramFailureDecision } from '../../_shared/telegram-delivery.ts';
-import { SchoodAIError, type FunctionCallInit, type RequestContext } from '../types.ts';
+import type { FunctionCallInit, RequestContext } from '../types.ts';
 import { defineStore } from '../stores.ts';
 import { createMemoryTeacherStore } from './memory-store.ts';
 import { createPgTeacherStore, type TeacherDatabase } from './pg-store.ts';
@@ -11,12 +11,10 @@ export const teacherStore = defineStore<TeacherStore>('teacher', {
   memory: ({ now }) => createMemoryTeacherStore({ now }).store,
 });
 
-// What the teacher area needs beyond RequestContext, behind one small adapter that
-// can be deleted when core offers it (see docs/product/ai-requests/teacher.md):
+// What the teacher area needs beyond RequestContext:
 //   telegram      the Bot API for channel autopilot (T11), posting as the Schood bot;
-//   callFunction  another Schood Edge Function with the person's own token; it adds
-//                 request headers that ctx.functions.call cannot send yet (Assessment
-//                 Cloud needs an Idempotency-Key on commands).
+//   callFunction  another Schood Edge Function as the person (core's ctx.functions.call);
+//   appOrigin     the public app origin, for handout links.
 // Tests and the local dev stack replace these with setTeacherDeps().
 
 export interface TelegramReply { ok: true; result: Record<string, unknown> }
@@ -26,7 +24,7 @@ export interface TelegramApi {
   username: string | null;
   call(method: 'getMe' | 'getChat' | 'getChatMember' | 'sendMessage' | 'sendPoll', body: Record<string, unknown>): Promise<TelegramReply | TelegramFailure>;
 }
-export type RemoteCall = <T = unknown>(ctx: RequestContext, name: string, path: string, init: FunctionCallInit & { headers?: Record<string, string> }) => Promise<T>;
+export type RemoteCall = <T = unknown>(ctx: RequestContext, name: string, path: string, init: FunctionCallInit) => Promise<T>;
 export interface TeacherDeps {
   /** Null until the owner sets a channel bot token (SCHOOD_AI_CHANNEL_BOT_TOKEN, else TELEGRAM_BOT_TOKEN). */
   telegram: TelegramApi | null;
@@ -47,37 +45,8 @@ export function setTeacherDeps(next: Partial<TeacherDeps> | null): void {
 const env = (name: string): string | undefined => {
   try { return Deno.env.get(name) ?? undefined; } catch { return undefined; }
 };
-const HEADER_ALLOWED = new Set(['idempotency-key', 'if-match']);
-const FUNCTION_NAME = /^[a-z0-9][a-z0-9-]{1,60}$/;
-
-/** Calls another function as the person, with allowed extra headers; otherwise the same as ctx.functions.call. */
-export const remoteCall: RemoteCall = async <T>(ctx: RequestContext, name: string, path: string, init: FunctionCallInit & { headers?: Record<string, string> }): Promise<T> => {
-  const headers = Object.entries(init.headers ?? {}).filter(([key]) => HEADER_ALLOWED.has(key.toLowerCase()));
-  if (!headers.length) return ctx.functions.call<T>(name, path, init);
-  const url = env('SUPABASE_URL'), anon = env('SUPABASE_ANON_KEY');
-  if (!FUNCTION_NAME.test(name) || (path && (!path.startsWith('/') || path.includes('..')))) throw new Error('invalid function call');
-  if (!ctx.user.token) throw new SchoodAIError('user_token_required', 'This needs the person to be signed in on the web.', 409);
-  if (!url || !anon) throw new SchoodAIError('upstream_failed', `${name} is not reachable here.`, 502, { service: name, status: 0 });
-  const target = new URL(`${url}/functions/v1/${name}${path}`);
-  for (const [key, value] of Object.entries(init.query ?? {})) target.searchParams.set(key, value);
-  let response: Response;
-  try {
-    response = await fetch(target, {
-      method: init.method ?? 'GET',
-      headers: { apikey: anon, Authorization: `Bearer ${ctx.user.token}`, ...Object.fromEntries(headers), ...(init.body === undefined ? {} : { 'Content-Type': 'application/json' }) },
-      ...(init.body === undefined ? {} : { body: JSON.stringify(init.body) }),
-      signal: AbortSignal.timeout(init.timeoutMs ?? 8_000),
-    });
-  } catch {
-    throw new SchoodAIError('upstream_failed', `${name} did not answer.`, 502, { service: name, status: 0 });
-  }
-  const text = await response.text().catch(() => '');
-  if (text.length > (init.maxBytes ?? 1_000_000)) throw new SchoodAIError('upstream_failed', `${name} answered too much.`, 502, { service: name, status: response.status });
-  let data: unknown = null;
-  try { data = text ? JSON.parse(text) : null; } catch { data = null; }
-  if (!response.ok) throw new SchoodAIError('upstream_failed', `${name} answered ${response.status}.`, 502, { service: name, status: response.status, upstream_code: typeof (data as { code?: unknown })?.code === 'string' ? (data as { code: string }).code.slice(0, 64) : null });
-  return data as T;
-};
+/** Another Schood function as the person: core's ctx.functions.call, which carries Idempotency-Key and If-Match (Assessment Cloud commands). Tests replace it. */
+export const remoteCall: RemoteCall = <T>(ctx: RequestContext, name: string, path: string, init: FunctionCallInit) => ctx.functions.call<T>(name, path, init);
 
 /** The Telegram Bot API over fetch. Failures are classified the same way as send-telegram. */
 export function botApi(token: string, fetcher: typeof fetch = fetch): TelegramApi {

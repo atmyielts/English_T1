@@ -1,6 +1,6 @@
 import { completion, fixture, type FixtureOptions } from '../fixture.test.ts';
 import type { FunctionCallInit, RequestContext } from '../types.ts';
-import { setTeacherDeps, teacherStore, type TelegramApi, type TelegramFailure, type TelegramReply } from './deps.ts';
+import { remoteCall, setTeacherDeps, teacherStore, type TelegramApi, type TelegramFailure, type TelegramReply } from './deps.ts';
 import { createMemoryTeacherStore } from './memory-store.ts';
 
 // Shared kit for the teacher area's route tests: core's fixture (real handler,
@@ -57,6 +57,8 @@ export function teacherFixture(options: FixtureOptions & { academy?: 'ok' | 'dow
         if (path === '/workspaces') return { data: [{ tenant_id: TENANT, role: 'owner', tenants: { name: 'Registan Assessments' } }] } as T;
         if (path === '/item-banks') return { data: [{ id: BANK, title: 'IELTS Reading bank' }] } as T;
         if (path === '/commands') {
+          // Through core's ctx.functions.call too, so the test sees the header leave core.
+          await remoteCall(ctx, name, path, init);
           const key = init.headers?.['Idempotency-Key'] ?? '';
           if (!items.some((entry) => entry.key === key)) items.push({ key, body });
           return { data: { id: `v-${items.length}`, item_id: `item-${items.findIndex((entry) => entry.key === key) + 1}`, version: 1 } } as T;

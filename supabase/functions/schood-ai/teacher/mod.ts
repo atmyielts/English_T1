@@ -5,7 +5,7 @@ import { CHANNEL_JOB, channels, dispatchRoute, editPost, planWeek, proposeWeek, 
 import { academyGroupsRoute, assessmentBanksRoute, exportMaterial, getHandout, registerExportActions, weakSpotsRoute } from './exports.ts';
 import { batches, markRecording, markScript, scripts, writeFeedback, writingSignals } from './marking.ts';
 import { acquireListing, getListing, moderation, myListings, proposeListing, rateListing, registerMarketActions, searchMarket, withdrawListing } from './market.ts';
-import { decideMaterial, registerTeacherKinds } from './library.ts';
+import { registerMaterialApprovals, registerTeacherKinds } from './library.ts';
 import { createMaterial, editMaterial, getMaterial, listMaterialsRoute, recheckMaterial, renameMaterial, stepMaterial } from './materials.ts';
 import { answerQuiz, controlQuiz, createQuiz, getQuiz, joinQuiz, listQuizzes, openGameByCode, openGameByPlayer, playQuiz, quizResults } from './quiz.ts';
 
@@ -14,6 +14,8 @@ import { answerQuiz, controlQuiz, createQuiz, getQuiz, joinQuiz, listQuizzes, op
 // Owned by the teacher agent. See ../CONTRACT.md and docs/product/44_SCHOOD_AI.md.
 
 registerTeacherKinds();
+// Approve & save through core/generations: the approved material becomes a library page.
+registerMaterialApprovals();
 registerExportActions();
 registerChannelActions();
 // T11: core's scheduler sends due channel posts (no route and no cron entry of our own).
@@ -31,7 +33,6 @@ export const teacherModule: FeatureModule = {
     'material-step': { POST: stepMaterial, maxBody: IMAGES },
     'material-recheck': { POST: recheckMaterial },
     'material-title': { POST: renameMaterial },
-    'material-decide': { POST: decideMaterial },
     // Exports of approved library pages.
     export: { POST: exportMaterial },
     handout: { GET: getHandout },

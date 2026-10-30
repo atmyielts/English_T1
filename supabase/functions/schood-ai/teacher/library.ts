@@ -1,8 +1,9 @@
 import { SchemaError, STAFF_ROLES } from '../../../../packages/ai-core/src/mod.ts';
-import { MATERIAL_KIND_DEFINITIONS, MATERIAL_KINDS, parseMaterial, type Material } from '../../../../packages/ai-core/src/materials/mod.ts';
-import { oneOf, optionalText, record, uuid } from '../input.ts';
+import { MATERIAL_KIND_DEFINITIONS, MATERIAL_KINDS, parseMaterial, STUDIO_KIND_IDS, type Material } from '../../../../packages/ai-core/src/materials/mod.ts';
+import { optionalText, uuid } from '../input.ts';
 import { isUuid } from '../input.ts';
 import { registerMaterialKind, type PageView } from '../library.ts';
+import { registerGenerationApproval, type GenerationApproval } from '../registries.ts';
 import { SchoodAIError, type GenerationRow, type RequestContext, type WorkspaceAccess } from '../types.ts';
 
 // Where teacher materials live:
@@ -79,42 +80,31 @@ export function folderFor(material: Material): string {
 }
 
 /**
- * POST teacher/material-decide: Approve & save, or decline, a ready draft. Approving
- * saves it to the library as a page of its kind; nothing reaches students before this.
+ * Approve & save (core's registerGenerationApproval): when core/generations approves
+ * a material job, its material becomes a library page of its kind. Nothing reaches
+ * students before this. If the page cannot be saved, core puts the job back to ready.
+ * The app may send the folder in the teacher's language (`folder` in the body).
  */
-export async function decideMaterial(ctx: RequestContext) {
-  const body = record(await ctx.body());
-  const { row, access } = await materialRow(ctx, body.id);
-  const mayDecide = access.workspace.kind === 'personal' ? row.userId === ctx.user.id : STAFF_ROLES.includes(access.role);
-  if (!mayDecide) throw new SchoodAIError('role_required', 'A teacher must review this.', 403, { roles: STAFF_ROLES });
-  const decision = oneOf(body.decision, 'decision', ['approve', 'reject'] as const);
-  const progress = row.progress as Record<string, unknown>;
-  if (decision === 'reject') {
-    if (row.status === 'rejected') return { status: 'rejected', page_id: null };
-    const rejected = await ctx.repo.updateGeneration(row.id, { status: 'rejected', decidedBy: ctx.user.id, decidedAt: ctx.now().toISOString() }, ['ready']);
-    if (!rejected) throw new SchoodAIError('not_ready', 'This draft is not ready for review.', 409, { status: row.status });
-    await ctx.audit('generation.rejected', { feature: row.feature }, { type: 'generation', id: row.id });
-    return { status: 'rejected', page_id: null };
-  }
-  // A second click shows the page the first one made.
-  if (row.status === 'approved' && typeof progress.page_id === 'string') return { status: 'approved', page_id: progress.page_id };
-  const material = parseMaterial(row.output);
-  const claimed = await ctx.repo.updateGeneration(row.id, { status: 'approved', decidedBy: ctx.user.id, decidedAt: ctx.now().toISOString() }, ['ready']);
-  if (!claimed) throw new SchoodAIError('not_ready', 'This draft is not ready for review.', 409, { status: row.status });
-  let page: PageView;
-  try {
-    page = await ctx.library.create({
-      kind: material.kind, title: material.title, material, status: 'approved', sourceGenerationId: row.id,
-      folder: optionalText(body.folder, 'folder', { max: 200 }) ?? folderFor(material),
-    });
-  } catch (cause) {
-    // The page could not be saved: the draft stays ready to approve again.
-    await ctx.repo.updateGeneration(row.id, { status: 'ready', decidedBy: null, decidedAt: null }, ['approved']);
-    throw cause;
-  }
-  await ctx.repo.updateGeneration(row.id, { progress: { ...progress, page_id: page.id } });
-  await ctx.audit('generation.approved', { feature: row.feature, page: page.id }, { type: 'generation', id: row.id });
-  return { status: 'approved', page_id: page.id };
+export const approveMaterial: GenerationApproval = async (ctx, { generation }) => {
+  // Only the Studio's own jobs (a brief of a Studio kind); other areas' jobs of the same credit key are theirs.
+  const brief = (generation.input as { brief?: { kind?: unknown } } | null)?.brief;
+  if (typeof brief?.kind !== 'string' || !STUDIO_KIND_IDS.includes(brief.kind)) return;
+  const progress = generation.progress as Record<string, unknown>;
+  // An approval that already saved its page (a retry after a lost answer) shows that page.
+  if (typeof progress.page_id === 'string') return { page_id: progress.page_id };
+  const material = parseMaterial(generation.output);
+  const body = await ctx.body<Record<string, unknown>>().catch(() => ({} as Record<string, unknown>));
+  const page = await ctx.library.create({
+    kind: material.kind, title: material.title, material, status: 'approved', sourceGenerationId: generation.id,
+    folder: optionalText(body.folder, 'folder', { max: 200 }) ?? folderFor(material),
+  });
+  await ctx.repo.updateGeneration(generation.id, { progress: { ...progress, page_id: page.id } });
+  return { page_id: page.id };
+};
+
+/** One approval hook per Studio credit key (the features of material jobs). */
+export function registerMaterialApprovals(): void {
+  for (const key of new Set(STUDIO_KIND_IDS.map((kind) => MATERIAL_KINDS[kind].creditKey))) registerGenerationApproval(key, approveMaterial);
 }
 
 /** Saves an approved material into the caller's library without a model call (a marketplace copy). */
