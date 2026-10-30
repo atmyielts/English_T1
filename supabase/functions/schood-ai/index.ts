@@ -6,7 +6,7 @@ import { CircuitBreaker, createGateway } from './gateway.ts';
 import { createSchoodAIHandler } from './handler.ts';
 import { accessEffectiveOverHttp, createPlanResolver } from './plan.ts';
 import { createSchoodAIRepository, type SchoodAIDatabase } from './repository.ts';
-import { ownKeyResolver } from './registries.ts';
+import { ownKeyConfigured, ownKeyResolver } from './registries.ts';
 import { createStores } from './stores.ts';
 
 // Schood AI Edge Function: env wiring only; the router is handler.ts.
@@ -80,6 +80,7 @@ const gateway = createGateway({
   globalCeiling: Number.isInteger(ceiling) && ceiling > 0 ? ceiling : null,
   // A workspace's own model keys (C15): the centre area's resolver, if it registered one.
   ownKey: (input) => ownKeyResolver()?.({ ...input, store: (handle) => stores.get(handle) }) ?? Promise.resolve(null),
+  ownKeyConfigured: (input) => ownKeyConfigured()?.({ ...input, store: (handle) => stores.get(handle) }) ?? Promise.resolve(false),
 });
 
 const adminCache = new Map<string, { at: number; admin: boolean }>();

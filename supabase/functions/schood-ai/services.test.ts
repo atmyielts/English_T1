@@ -134,7 +134,8 @@ const area: FeatureModule = {
     'zz-pay': {
       system: true,
       async POST(ctx) {
-        const answer = await (await ctx.paidBy((await ctx.body<{ id: string }>()).id)).text({ key: 'admissions.reply', messages: [{ role: 'user', content: 'Evening classes?' }] });
+        const body = await ctx.body<{ id: string; key?: string }>();
+        const answer = await (await ctx.paidBy(body.id)).text({ key: body.key ?? 'admissions.reply', messages: [{ role: 'user', content: 'Evening classes?' }] });
         return { text: answer.text, credits: answer.credits, charge: answer.chargeId };
       },
     },
@@ -240,11 +241,12 @@ Deno.test('own model keys (C15): the workspace key, the fee instead of credits, 
   ok(f.breaker.healthy(PRICED.models[0].key, f.now().getTime()), 'one centre\'s key never switches the model off for everyone');
   equal(f.memory.ledger.filter((row) => row.workspaceId === own.id && (row.kind === 'charge' || row.kind === 'refund')).reduce((sum, row) => sum + row.delta, 0), -2, 'every failed fee was refunded');
 
-  // The key store is down: Schood's key and prices, never a free call.
+  // The key store is down: refused for now, never moved to Schood's key and credits unannounced, never free.
   f.setProvider(() => completion('Yes.'));
   lookupFails = true;
-  const fallback = await system(f, 'centre/zz-pay', { id: own.id });
-  equal([fallback.body.credits, f.upstream.at(-1)!.headers.get('authorization')], [1, 'Bearer sk-or-test']);
+  const calls = f.upstream.length, charges = f.memory.ledger.length;
+  const down = await system(f, 'centre/zz-pay', { id: own.id });
+  equal([down.status, down.body.code, down.body.reason, f.upstream.length, f.memory.ledger.length], [503, 'ai_unavailable', 'own_key_check', calls, charges]);
 });
 
 Deno.test('keyed anonymous limits: per game, under a per-IP ceiling, and the route still reads the body', async () => {
@@ -307,4 +309,49 @@ Deno.test('ctx.auth.sessionFor: audited, limited, never for admins, inactive acc
   equal([limited.status, limited.body.code], [429, 'rate_limited'], 'ten an hour per person');
   equal((await f.json('POST', 'centre/zz-own-session', { body: { user: ID.plus } })).status, 200, 'a signed-in person may mint their own');
   equal((await f.json('POST', 'centre/zz-own-session', { body: { user: ID.student } })).body.code, 'session_not_allowed', 'never someone else\'s');
+});
+
+Deno.test('own model keys need a plan with C15: keys without it are refused, never quietly moved to Schood\'s key', async () => {
+  const asked: string[] = [], configured = new Set<string>();
+  let probeFails = false;
+  const f = fixture({
+    modules, registry: PRICED,
+    ownKey: ({ workspaceId }) => { asked.push(workspaceId); return Promise.resolve({ label: 'main', apiKey: 'sk-centre-0123456789' }); },
+    ownKeyConfigured: ({ workspaceId }) => probeFails ? Promise.reject(new Error('store down')) : Promise.resolve(configured.has(workspaceId)),
+  });
+  f.setProvider(() => completion('Yes.'));
+  // Enterprise grants C15: the resolver is asked and the centre's key is used.
+  const enterprise = f.memory.seed.centre({ name: 'University', ownerId: ID.outsider, contractPlan: 'enterprise' });
+  configured.add(enterprise.id);
+  equal((await system(f, 'centre/zz-pay', { id: enterprise.id })).body.credits, 0);
+  equal(asked, [enterprise.id]);
+
+  // A centre on Centre (no C15) that still has keys: refused, nothing called, charged or unsealed.
+  const downgraded = f.memory.seed.centre({ name: 'Registan', ownerId: ID.owner });
+  configured.add(downgraded.id);
+  const before = f.upstream.length, ledger = f.memory.ledger.length;
+  const refused = await system(f, 'centre/zz-pay', { id: downgraded.id, key: 'tutor.reply' });
+  equal([refused.status, refused.body.code, refused.body.plans, refused.body.feature], [402, 'plan_required', ['enterprise'], 'C15']);
+  equal([f.upstream.length, f.memory.ledger.length, asked.length], [before, ledger, 1], 'no model call, no charge, the resolver never asked');
+  await f.settle();
+  equal(f.memory.calls.at(-1)!.errorCode, 'own_key_plan', 'the refusal is in the call log');
+
+  // The same centre without keys uses Schood's key and its credits as usual.
+  configured.delete(downgraded.id);
+  const normal = await system(f, 'centre/zz-pay', { id: downgraded.id, key: 'tutor.reply' });
+  equal([normal.status, normal.body.credits, f.upstream.at(-1)!.headers.get('authorization')], [200, 1, 'Bearer sk-or-test']);
+
+  // An Enterprise contract that ended: the resolver is not asked again.
+  f.memory.workspaces.get(enterprise.id)!.contractUntil = '2026-11-01T00:00:00Z';
+  equal((await system(f, 'centre/zz-pay', { id: enterprise.id })).body.code, 'plan_required');
+  equal(asked.length, 1, 'a lapsed plan never unseals a key');
+
+  // If the check itself fails, a centre without C15 is refused for now: never moved to Schood's key unannounced.
+  probeFails = true;
+  const calls = f.upstream.length;
+  const unknown = await system(f, 'centre/zz-pay', { id: downgraded.id, key: 'tutor.reply' });
+  equal([unknown.status, unknown.body.code, unknown.body.reason, f.upstream.length, asked.length], [503, 'ai_unavailable', 'own_key_check', calls, 1]);
+  // Personal workspaces never have own keys: nothing is checked there.
+  const mine = await personal(f, 'tok-plus');
+  equal((await system(f, 'centre/zz-pay', { id: mine, key: 'tutor.reply' })).body.credits, 1, 'a learner is never held up by the centre key store');
 });
