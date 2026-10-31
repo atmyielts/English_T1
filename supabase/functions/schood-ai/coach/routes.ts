@@ -24,8 +24,8 @@ import { goalOf, planView, progressView, todayPlan, weekView } from './views.ts'
 // coach/* routes. Five kinds of caller:
 //   - the Telegram worker for a linked person (service secret, `service: true`):
 //     update, poll-sent, media-cached, miniapp-session;
-//   - the worker's cron (the secret alone, `system: true`): system-due,
-//     system-delivered;
+//   - the worker's cron and account links (the secret alone, `system: true`):
+//     system-due, system-delivered, system-link;
 //   - anyone with a certificate link (`anonymous`, rate-limited): verify;
 //   - the Mini App and the web (the person's session): home, dashboard, report,
 //     session, plan, goal, settings, certificates, erase, link, samples, team…;
@@ -121,6 +121,18 @@ export function coachRoutes(): Record<string, RouteHandler> {
         const body = record(await ctx.body());
         const results = Array.isArray(body.results) ? body.results.slice(0, 200) as { id: string; status: 'sent' | 'failed' | 'blocked'; reason?: string }[] : [];
         return { updated: await recordDelivered(runtime(ctx).store, results) };
+      },
+    },
+    /** The coach bots' account links: telegram-link's link status or a web link token, for one Telegram account. */
+    'system-link': {
+      system: true,
+      async POST(ctx) {
+        const body = record(await ctx.body());
+        const action = oneOf(body.action, 'action', ['status', 'validate'] as const);
+        const chatId = text(body.chat_id, 'chat_id', { max: 20 });
+        const result = await ctx.auth.telegramLink({ action, chatId, ...(action === 'validate' ? { token: text(body.token, 'token', { max: 64 }) } : {}) });
+        if (result.status >= 500) throw new SchoodAIError('upstream_failed', `telegram-link answered ${result.status}.`, 502, { service: 'telegram-link', status: result.status });
+        return { status: result.status, result: result.data ?? {} };
       },
     },
     // --- anyone with the link ----------------------------------------------------------------------------------

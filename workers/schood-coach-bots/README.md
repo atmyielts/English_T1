@@ -82,7 +82,6 @@ Worker (`wrangler secret put <NAME>`, never in `wrangler.toml`):
 |---|---|
 | `SUPABASE_URL` | The production project's URL. |
 | `SCHOOD_AI_SERVICE_SECRET` | The same value as the `schood-ai` function (32+ characters). |
-| `TELEGRAM_INTERNAL_SECRET` | The same value as the `telegram-link` function. |
 | `COACH_BOT_TOKEN_<PACK>` | The bot's token from BotFather. `<PACK>` is the pack id upper-cased, with `-` written as `_`: `IELTS`, `SPEAKING`, `MATHS`, `SALES`, `CAREER`, `SPEECH`. |
 | `COACH_WEBHOOK_SECRET_<PACK>` | 16 to 256 random characters from `A-Z a-z 0-9 _ -`, also given to `setWebhook`. |
 | `COACH_WEBHOOK_SECRET_<PACK>_PREVIOUS` | Optional. Set only while rotating, then remove. |

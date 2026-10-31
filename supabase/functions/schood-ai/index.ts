@@ -135,6 +135,18 @@ const sendTelegram: NonNullable<Parameters<typeof createSchoodAIHandler>[0]['sen
   }
 };
 
+// ctx.auth.telegramLink: telegram-link takes the service-role bearer from other functions, so the
+// coach bots never need the Telegram workers' shared secret.
+async function telegramLink(input: { action: 'status' | 'validate'; chatId: string; token?: string }) {
+  const response = await fetch(`${url}/functions/v1/telegram-link`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${serviceRole}`, apikey: anon, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: input.action, chat_id: input.chatId, ...(input.token ? { token: input.token } : {}) }),
+    signal: AbortSignal.timeout(8_000),
+  });
+  return { status: response.status, data: await boundedJson(response, 64_000).catch(() => null) };
+}
+
 // ctx.auth.sessionFor: a magic-link token from the auth admin API, verified at once on a
 // throwaway anon client (core's service client must keep the service role), so the token
 // never travels. Only the session goes back to the route.
@@ -153,7 +165,7 @@ async function mintSession(userId: string) {
 }
 
 Deno.serve(createSchoodAIHandler({
-  repository, gateway, plans, isAdmin, stores, systemSecret, sendTelegram, mintSession,
+  repository, gateway, plans, isAdmin, stores, systemSecret, sendTelegram, mintSession, telegramLink,
   async callFunction(name, path, token, init) {
     const target = new URL(`${url}/functions/v1/${name}${path}`);
     for (const [key, value] of Object.entries(init.query ?? {})) target.searchParams.set(key, value);

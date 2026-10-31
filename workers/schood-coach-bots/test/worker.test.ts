@@ -4,7 +4,7 @@ import type { Delivery } from '../../../packages/coach-packs/src/wire.ts';
 import { keyboard, splitHtml } from '../src/telegram.ts';
 import { createWorker, envKey, SUBREQUESTS } from '../src/worker.ts';
 
-// The worker on its own: a fake fetch stands in for Telegram, telegram-link,
+// The worker on its own: a fake fetch stands in for Telegram, coach/system-link,
 // schood-ai (including the cron's system routes), so every outgoing request can be checked.
 
 const assert = (value: unknown, label: string) => { if (!value) throw new Error(label); };
@@ -34,9 +34,9 @@ function stack(options: Options = {}) {
       const status = options.telegramStatus?.(method) ?? 200;
       return Response.json(status === 200 ? { ok: true, result: { message_id: 1, poll: { id: 'poll-1' } } } : { ok: false, description: 'Forbidden: bot was blocked by the user' }, { status });
     }
-    if (url.pathname.endsWith('/telegram-link')) {
-      if (body.action === 'status') return Response.json({ linked: body.chat_id === LINKED, user: body.chat_id === LINKED ? { id: 'user-1', name: 'Dilnoza' } : null });
-      return Response.json({ ok: false, error: 'Invalid link token' }, { status: 404 });
+    if (url.pathname.endsWith('/schood-ai/coach/system-link')) {
+      if (body.action === 'status') return Response.json({ status: 200, result: { linked: body.chat_id === LINKED, user: body.chat_id === LINKED ? { id: 'user-1', name: 'Dilnoza' } : null } });
+      return Response.json({ status: 404, result: { error: 'Invalid link token' } });
     }
     if (url.pathname.endsWith('/schood-ai/coach/system-due')) return options.deliveries === null ? new Response('boom', { status: 500 }) : Response.json({ deliveries: options.deliveries ?? [] });
     if (url.pathname.endsWith('/schood-ai/coach/system-delivered')) return Response.json({ updated: (body.results as unknown[]).length });
@@ -47,7 +47,7 @@ function stack(options: Options = {}) {
     return new Response('not found', { status: 404 });
   };
   const env = {
-    APP_URL: APP, SUPABASE_URL: 'https://coach-test.supabase.co', SCHOOD_AI_SERVICE_SECRET: 'service-secret-0123456789abcdef', TELEGRAM_INTERNAL_SECRET: 'internal-secret-0123456789',
+    APP_URL: APP, SUPABASE_URL: 'https://coach-test.supabase.co', SCHOOD_AI_SERVICE_SECRET: 'service-secret-0123456789abcdef',
     COACH_BOT_TOKEN_IELTS: TOKEN.ielts, COACH_WEBHOOK_SECRET_IELTS: HOOK.ielts, COACH_BOT_TOKEN_SPEAKING: TOKEN.speaking, COACH_WEBHOOK_SECRET_SPEAKING: HOOK.speaking,
     ...options.env,
   };
@@ -98,7 +98,7 @@ Deno.test('worker: linked people go to the engine with the service secret; group
   equal(relay.length, 1, 'relayed once');
   equal([relay[0].headers.get('x-schood-service-secret'), relay[0].headers.get('x-schood-user-id'), relay[0].headers.get('x-schood-telegram-chat-id'), relay[0].headers.get('authorization'), relay[0].headers.get('origin')], ['service-secret-0123456789abcdef', 'user-1', LINKED, null, null], 'service headers, never a bearer or an Origin');
   equal([relay[0].body.pack, relay[0].body.locale, (relay[0].body.event as { type: string }).type], ['ielts', 'ru', 'text'], 'the event');
-  equal(s.to('/telegram-link').every((entry) => entry.headers.get('authorization') === null), true, 'telegram-link gets the worker secret only');
+  equal(s.to('/schood-ai/coach/system-link').every((entry) => entry.headers.get('authorization') === null && entry.headers.get('x-schood-user-id') === null && entry.headers.get('x-schood-service-secret') === 'service-secret-0123456789abcdef'), true, 'account links take the service secret alone');
   assert(s.telegramCalls().includes('sendMessage'), 'the reply is sent');
   const reply = s.sent.find((entry) => entry.url.pathname.endsWith('/sendMessage'))!;
   equal([reply.body.text, reply.body.parse_mode, (reply.body.reply_markup as { inline_keyboard: unknown[] }).inline_keyboard.length], ['From the coach', 'HTML', 1], 'as HTML with its buttons');
@@ -135,7 +135,7 @@ Deno.test('worker: people who have not linked get the placement test with no eng
   equal(s.to('/schood-ai/coach/update').length, 0, 'no engine call (no AI, no storage) before linking');
   await s.hook('ielts', s.message(UNLINKED, `/start ${'b'.repeat(64)}`));
   const failed = s.sent.filter((entry) => entry.url.pathname.endsWith('/sendMessage')).at(-1)!;
-  assert(String(failed.body.text).length > 0 && s.to('/telegram-link').some((entry) => entry.body.action === 'validate'), 'a link token is checked with telegram-link');
+  assert(String(failed.body.text).length > 0 && s.to('/schood-ai/coach/system-link').some((entry) => entry.body.action === 'validate'), 'a link token is checked through schood-ai');
 });
 
 Deno.test('worker: Mini App sign-in checks the bot token and the app origin', async () => {

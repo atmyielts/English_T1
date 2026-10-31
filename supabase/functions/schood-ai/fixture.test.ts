@@ -61,7 +61,7 @@ export async function events(response: Response) {
   return all.map((event) => ({ event: event.event, data: JSON.parse(event.data) }));
 }
 
-export interface FixtureOptions { settings?: Partial<ServiceSettings>; registry?: Registry; modules?: FeatureModule[]; timeouts?: Partial<Timeouts>; env?: Record<string, string>; productIds?: Partial<typeof PRODUCT>; systemJobs?: [string, SystemJob][]; ownKey?: GatewayDeps['ownKey']; ownKeyConfigured?: GatewayDeps['ownKeyConfigured'];
+export interface FixtureOptions { settings?: Partial<ServiceSettings>; registry?: Registry; modules?: FeatureModule[]; timeouts?: Partial<Timeouts>; env?: Record<string, string>; productIds?: Partial<typeof PRODUCT>; systemJobs?: [string, SystemJob][]; ownKey?: GatewayDeps['ownKey']; ownKeyConfigured?: GatewayDeps['ownKeyConfigured']; telegramLink?: Parameters<typeof createSchoodAIHandler>[0]['telegramLink'];
   /** More people (token → user) next to USERS; their `products` arrays may be changed during a test (a fake checkout). */
   users?: Record<string, MemoryUser>;
   /**
@@ -127,6 +127,7 @@ export function fixture(options: FixtureOptions = {}) {
     sendTelegram: (input) => { notifySends.push(structuredClone(input)); return Promise.resolve(telegramOutcome); },
     mintSession: (userId) => { sessionsMinted.push(userId); return Promise.resolve(Object.values(USERS).some((entry) => entry.id === userId && entry.email) ? { access_token: `access-${userId}`, refresh_token: `refresh-${userId}`, expires_at: Math.floor(clock.getTime() / 1000) + 3600 } : null); },
     systemJobs: options.systemJobs,
+    telegramLink: options.telegramLink,
     onboardingTaken: (options.onboarding ?? 'taken') === 'taken',
     adminGate: (req, permission) => {
       const token = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '');

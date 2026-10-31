@@ -11,7 +11,7 @@ import { sseResponse } from './stream.ts';
 import { ONBOARDING_TAKEN } from './specialists.ts';
 import {
   AREAS, LEARNING_EVENT_KINDS, SchoodAIError,
-  type Area, type Caller, type ContextBlock, type MintedSession, type NotifySendResult, type Workspace, type FunctionCallInit, type LearningEvent, type LearningEventInput, type Locale, type Method,
+  type Area, type Caller, type ContextBlock, type MintedSession, type TelegramLinkInput, type NotifySendResult, type Workspace, type FunctionCallInit, type LearningEvent, type LearningEventInput, type Locale, type Method,
   type PlanState, type RequestContext, type RequestUser, type SchoodAIRepository, type WorkspaceAccess,
 } from './types.ts';
 
@@ -81,6 +81,8 @@ export interface ContextDeps {
   onboardingTaken?: boolean;
   /** Mints a Supabase session for a user (the auth admin API, index.ts); null when it cannot. Absent where nothing can. */
   mintSession?(userId: string): Promise<MintedSession | null>;
+  /** telegram-link with the service role (index.ts): a Telegram account's link status, or a web link token. Absent where nothing can. */
+  telegramLink?(input: TelegramLinkInput): Promise<{ status: number; data: unknown }>;
   /** Another Edge Function with the person's token: status and parsed JSON. */
   callFunction(name: string, path: string, token: string, init: FunctionCallInit): Promise<{ status: number; data: unknown }>;
   /** Keeps work alive after the response (EdgeRuntime.waitUntil in production). */
@@ -332,6 +334,13 @@ export function createRequestContext(deps: ContextDeps, input: ContextInput): Re
         // Audited before it is handed out; if the audit cannot be written, the session is not returned.
         await deps.repo.audit({ workspaceId: null, actorId: personal ? user.id : null, event: 'core.session_issued', targetType: 'user', targetId: target, details: { reason, area: input.area, caller } });
         return session;
+      },
+      async telegramLink(link) {
+        // The coach bots link Telegram accounts on a system route: the secret alone, never a person.
+        if (caller !== 'system') throw new SchoodAIError('telegram_link_not_allowed', 'ctx.auth.telegramLink is for system routes.', 500);
+        if (!/^[0-9]{1,20}$/.test(link.chatId) || (link.action === 'validate' && !/^[A-Za-z0-9_-]{32,64}$/.test(link.token ?? ''))) throw new SchoodAIError('invalid_request', 'chat_id or token is invalid.', 400);
+        if (!deps.telegramLink) throw new SchoodAIError('telegram_link_unavailable', 'Linking is not available right now.', 503);
+        return deps.telegramLink(link);
       },
     },
     async paidBy(workspaceId) {
