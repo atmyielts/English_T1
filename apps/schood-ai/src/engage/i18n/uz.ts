@@ -14,7 +14,7 @@ export const uz: Record<EngageKey, string> = {
   'engage.nav.thenNow': 'Oldin va hozir',
   'engage.progress.title': 'Natijalaringiz',
   'engage.league.title': 'Haftalik liga',
-  'engage.memory.title': 'Coach nimani eslab qoladi',
+  'engage.memory.title': 'Murabbiy nimani eslab qoladi',
   'engage.settings.title': 'Natijalar sozlamalari',
   'engage.journeys.title': 'Dasturlar',
   'engage.path.title': 'Umrbod yo‘lingiz',

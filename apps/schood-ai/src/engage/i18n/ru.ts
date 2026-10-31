@@ -14,7 +14,7 @@ export const ru: Record<EngageKey, string> = {
   'engage.nav.thenNow': 'Тогда и сейчас',
   'engage.progress.title': 'Ваш прогресс',
   'engage.league.title': 'Недельная лига',
-  'engage.memory.title': 'Что помнит тренер',
+  'engage.memory.title': 'Что помнит коуч',
   'engage.settings.title': 'Настройки прогресса',
   'engage.journeys.title': 'Программы',
   'engage.path.title': 'Ваш путь на годы',
