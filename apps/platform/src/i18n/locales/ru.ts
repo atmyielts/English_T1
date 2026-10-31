@@ -731,6 +731,7 @@ export const ru: Partial<Record<TranslationKey, string>> = {
   "pricing.overview.title": "Цены на все сервисы Schood",
   "pricing.overview.desc": "У каждого сервиса свои тарифы. Тариф Complete открывает всё семейство экзамена дешевле, чем каждая часть по отдельности.",
   "pricing.group.english": "Английский язык",
+  "pricing.group.ai": "Schood AI",
   "pricing.group.other": "Другие сервисы",
   "pricing.allServices": "Все цены",
   "pricing.signInHint": "Все цены видны без аккаунта. Войти нужно только для покупки или бесплатного пробного периода — после входа вы сразу вернётесь к выбранному тарифу.",

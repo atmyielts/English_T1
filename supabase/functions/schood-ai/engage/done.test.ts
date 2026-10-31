@@ -1,5 +1,6 @@
 import { equal, ID, ok } from '../fixture.test.ts';
 import { examByKey } from './content/certificates.ts';
+import { annualOffer } from '../seams/pricing-engage.ts';
 import { passportSourceEntries, registerOfferSource, registerPassportSource, resetOfferSource } from './seams.ts';
 import { coachStore } from '../coach/runtime.ts';
 import { b64, DAY, engageFixture, WEBM } from './test-helpers.ts';
@@ -68,6 +69,8 @@ Deno.test('done: next goal after an outcome, a complete Passport, day 1 next to 
     equal([state.league.joined, state.squad.name], [true, 'Study Friends']);
     equal((await f.get('squad', learner)).body.squad.members.length, 2);
   } finally {
+    // Back to the real source, which the pricing area registers at load.
     resetOfferSource();
+    registerOfferSource(annualOffer);
   }
 });

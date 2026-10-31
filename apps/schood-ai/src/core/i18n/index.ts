@@ -26,15 +26,17 @@ const parts: Record<Locale, Part[]> = {
     () => import('./en.ts').then((m) => m.en),
     () => import('../../learner/i18n/en.ts').then((m) => m.en), () => import('../../teacher/i18n/en.ts').then((m) => m.en),
     () => import('../../centre/i18n/en.ts').then((m) => m.en), () => import('../../coach/i18n/en.ts').then((m) => m.en),
-    () => import('../../engage/i18n/en.ts').then((m) => m.en),
+    () => import('../../engage/i18n/en.ts').then((m) => m.en), () => import('../../pricing/i18n/en.ts').then((m) => m.en),
   ],
   uz: [
     () => import('./uz.ts').then((m) => m.uz), () => import('../../learner/i18n/uz.ts').then((m) => m.uz), () => import('../../teacher/i18n/uz.ts').then((m) => m.uz),
     () => import('../../centre/i18n/uz.ts').then((m) => m.uz), () => import('../../coach/i18n/uz.ts').then((m) => m.uz), () => import('../../engage/i18n/uz.ts').then((m) => m.uz),
+    () => import('../../pricing/i18n/uz.ts').then((m) => m.uz),
   ],
   ru: [
     () => import('./ru.ts').then((m) => m.ru), () => import('../../learner/i18n/ru.ts').then((m) => m.ru), () => import('../../teacher/i18n/ru.ts').then((m) => m.ru),
     () => import('../../centre/i18n/ru.ts').then((m) => m.ru), () => import('../../coach/i18n/ru.ts').then((m) => m.ru), () => import('../../engage/i18n/ru.ts').then((m) => m.ru),
+    () => import('../../pricing/i18n/ru.ts').then((m) => m.ru),
   ],
 };
 

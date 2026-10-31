@@ -51,6 +51,11 @@ on:
       - 'supabase/functions/_shared/english-*.ts'
       - 'supabase/functions/_shared/homework-ai.ts'
       - 'supabase/functions/_shared/toefl-2026-writing.ts'
+      # Pricing: its DB test and dev stack, and the platform checkout and catalogue it hands off to.
+      - 'scripts/test-schood-ai-pricing-db.mjs'
+      - 'scripts/schood-ai-pricing-dev-stack.ts'
+      - 'apps/platform/src/pages/PricingPage.tsx'
+      - 'apps/platform/src/pages/CheckoutPage.tsx'
   workflow_dispatch:
 permissions:
   contents: read
@@ -115,6 +120,12 @@ jobs:
         env:
           SCHOOD_AI_DB_REQUIRE_DOCKER: '1'
         run: node scripts/test-schood-ai-learner-db.mjs
+      - name: Pricing migration on PGlite and an isolated Postgres (credit-pack, gift and team races, launch switch)
+        env:
+          SCHOOD_AI_DB_REQUIRE_DOCKER: '1'
+        run: node scripts/test-schood-ai-pricing-db.mjs
+      - name: Pricing dev stack type check
+        run: deno check --no-lock scripts/schood-ai-pricing-dev-stack.ts
       - name: Student bot with Schood AI (relay, homework untouched, no bot cron)
         run: deno test --no-lock --no-check workers/schood-bot/src/schood-ai.test.ts
       - name: English duels keep a Schood AI duel's ready questions

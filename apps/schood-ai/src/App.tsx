@@ -15,6 +15,7 @@ import { Button, Card } from './core/ui.tsx';
 import { useWorkspace } from './core/workspace.tsx';
 import * as engage from './engage/routes.tsx';
 import * as learner from './learner/routes.tsx';
+import * as pricing from './pricing/routes.tsx';
 import * as teacher from './teacher/routes.tsx';
 
 // Routes, navigation and home cards from every area, merged. Area routes are
@@ -33,7 +34,7 @@ const AssistantsPage = page(() => import('./core/pages/Assistants.tsx'), 'Assist
 const library = () => import('./core/library/pages.tsx');
 const LibraryPage = page(library, 'LibraryPage'), LibraryPageEditor = page(library, 'LibraryPageEditor'), LibraryPrintPage = page(library, 'LibraryPrintPage');
 
-const AREAS: AreaRegistry[] = [learner, teacher, centre, coach, engage];
+const AREAS: AreaRegistry[] = [learner, teacher, centre, coach, engage, pricing];
 const areaRoutes: AreaRoute[] = AREAS.flatMap((area) => area.routes);
 // Icons named by string load from the area's own icons module after the first paint.
 const areaNav = AREAS.flatMap((area) => area.nav.map((item) => ({ ...item, icon: typeof item.icon === 'string' ? namedIcon(area.icons, item.icon) : item.icon })));

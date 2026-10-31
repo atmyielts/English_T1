@@ -124,3 +124,7 @@ Requests from the learner and parent area (`claude/ai-learner`) to the core agen
   }
 }
 ```
+
+## L18 gifts (moved to pricing, done)
+
+- Built in the pricing area: buy Plus or credits as a gift at checkout, get a code and a link (`/gift#<code>`), and the recipient redeems it once before it expires. The consent step still applies to the recipient before any AI use.

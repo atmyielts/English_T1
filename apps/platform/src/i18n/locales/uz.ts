@@ -710,6 +710,7 @@ export const uz: Partial<Record<TranslationKey, string>> = {
   "pricing.overview.title": "Schood’ning barcha xizmatlari narxlari",
   "pricing.overview.desc": "Har bir xizmatning o‘z tariflari bor. Complete tarifi butun imtihon oilasini har bir qismini alohida sotib olishdan arzonroq ochadi.",
   "pricing.group.english": "Ingliz tili",
+  "pricing.group.ai": "Schood AI",
   "pricing.group.other": "Boshqa xizmatlar",
   "pricing.allServices": "Barcha narxlar",
   "pricing.signInHint": "Barcha narxlarni hisobsiz ko‘rishingiz mumkin. Faqat sotib olish yoki bepul sinovni boshlash uchun kirasiz va tanlagan tarifingizga darhol qaytasiz.",

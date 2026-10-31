@@ -160,13 +160,16 @@ const resolveProductLandingUrl = (p: ProductRow, fallbackReturnTo: string): stri
   return '/';
 };
 
-type GroupKey = 'ielts' | 'sat' | 'toefl' | 'english' | 'other';
-const GROUP_ORDER: GroupKey[] = ['ielts', 'sat', 'toefl', 'english', 'other'];
+type GroupKey = 'ielts' | 'sat' | 'toefl' | 'english' | 'ai' | 'other';
+const GROUP_ORDER: GroupKey[] = ['ielts', 'sat', 'toefl', 'english', 'ai', 'other'];
 const GROUP_TITLE: Record<GroupKey, TranslationKey> = {
   ielts: 'examFamily.ielts.title',
   sat: 'examFamily.sat.title',
   toefl: 'examFamily.toefl.title',
   english: 'pricing.group.english',
+  // Schood AI (ai.schood.online): its Plus product is listed here once the owner launches it;
+  // every other Schood AI plan is sold from ai.schood.online/pricing.
+  ai: 'pricing.group.ai',
   other: 'pricing.group.other',
 };
 
@@ -175,6 +178,7 @@ const groupOf = (p: ProductRow): GroupKey => {
   const family = examFamilyForSlug(slug);
   if (family) return family.key;
   if (slug.startsWith('english-')) return 'english';
+  if (slug.startsWith('schood-ai-')) return 'ai';
   return 'other';
 };
 

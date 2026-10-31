@@ -10,6 +10,7 @@ import { engageModule } from './engage/mod.ts';
 import type { Gateway } from './gateway.ts';
 import { isUuid } from './input.ts';
 import { learnerModule } from './learner/mod.ts';
+import { pricingModule } from './pricing/mod.ts';
 import type { PlanResolver } from './plan.ts';
 import { teacherModule } from './teacher/mod.ts';
 // Cross-area seams wired at integration (coach ↔ engage, learner ↔ engage): registrations at load.
@@ -36,7 +37,7 @@ import { AREAS, SchoodAIError, type Area, type Caller, type FeatureModule, type 
 // core/system-tick is built in: pg_cron calls it every five minutes and it runs the
 // jobs areas registered with registerSystemJob (scheduler.ts).
 
-export const MODULES: FeatureModule[] = [coreModule, adminModule, learnerModule, teacherModule, centreModule, coachModule, engageModule];
+export const MODULES: FeatureModule[] = [coreModule, adminModule, learnerModule, teacherModule, centreModule, coachModule, engageModule, pricingModule];
 
 export interface HandlerDeps {
   repository: SchoodAIRepository;

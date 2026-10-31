@@ -4,7 +4,7 @@ This is the brief for every agent building on `supabase/functions/schood-ai`. Re
 
 ## Shape
 
-- Routes are `/functions/v1/schood-ai/<area>/<action>`. The areas are `core` and `admin` (owned by the core agent), plus `learner` (learners and parents), `teacher`, `centre`, `coach` and `engage`.
+- Routes are `/functions/v1/schood-ai/<area>/<action>`. The areas are `core` and `admin` (owned by the core agent), plus `learner` (learners and parents), `teacher`, `centre`, `coach`, `engage` and `pricing` (selling: see Plans, purchases and the launch switch).
 - `handler.ts` is a pure router. It handles CORS, auth (JWT or the worker secret), the admin gate, body limits and errors, then calls your route with a `RequestContext` (`types.ts`).
 - `index.ts` wires the environment only.
 - Tests run the real handler against `memory-repository.ts` with a fake `fetch` for the model. See `fixture.test.ts`.
@@ -60,7 +60,7 @@ export const learnerModule: FeatureModule = {
 | `ctx.paidBy(workspaceId)` | System and anonymous routes only: charged AI paid from a named workspace's pool, with that workspace's plan, switches and caps, no member budget and no user on the ledger. Anonymous routes may name only an active centre (a person's own credits never pay for visitors). |
 | `ctx.credits.spend({ key, reference?, addOns? })` | A priced action with no model call (a streak freeze). Plan, role, age (`adultsOnly`) and switches apply. Idempotent per `reference`. Returns the receipt with `refund()`. |
 | `ctx.workspace({ roles? })` | The workspace in `?workspace_id=`, or the personal one (auto-created), with the caller's active membership. Throws `workspace_not_found` (404, the same for "not a member") or `role_required` (403). |
-| `ctx.plan()` | `{ workspaceKind, plans, features, beta, grant, anchor }` for this workspace. |
+| `ctx.plan()` | `{ workspaceKind, plans, features, beta, grant, anchor, launched }` for this workspace. `launched` is the owner's launch switch: while it is false, `plans`, `features` and `grant` are empty for everyone but beta testers. |
 | `ctx.access(featureOrKey)` / `ctx.requireFeature(...)` | The plan and role decision from `packages/ai-core` `featureAccess`. `requireFeature` throws `plan_required` (402, with `plans`) or `role_required`. |
 | `ctx.ai` | Charged AI calls (below). The only way a route uses a model. |
 | `ctx.context(kinds, { ref?, specialist? })` | Runs registered context providers. A failing or slow provider is skipped. |
@@ -240,6 +240,21 @@ registerMaterialKind({ ...worksheetKind, area: 'teacher' });
 - Mark a price the doc's table lacks with `assumed: true`.
 - `priceTableProblems()` must stay empty. It is tested, and checked when the function starts.
 - Edits to these two files must be additive: new keys and new rules. Never change an existing price or plan rule without the owner.
+
+## Plans, purchases and the launch switch (the pricing area)
+
+Phase 5 (`pricing/`, migration `20261030500000_schood_ai_pricing.sql`, `packages/ai-core/src/catalog.ts`).
+
+- **Products and plans.** 17 products and 28 plans, seeded **inactive** (products `draft`, plans `is_active = false`) at the doc's UZS prices. Ids are deterministic: products `md5('schood-product:<slug>')::uuid`, plans `md5('schood-plan:<slug>')::uuid`. They are not v4 ids, so routes take catalogue items by slug, never through `uuid()`.
+- **Plan resolution.** Core maps a held product to a plan through the catalogue's ids (`planProductIds()` in `index.ts`); the `SCHOOD_AI_*_PRODUCT_ID` settings are optional overrides for a product made by hand. Coach passes come from the catalogue too (`COACH_PASS_PRODUCT_IDS`; `SCHOOD_AI_COACH_PASS_PRODUCT_IDS` only adds more). Plus and Plus Family bundle the six coach passes (`included_product_ids`), so payment fulfilment grants them with the plan.
+- **The launch switch** is `ai_settings.features['pricing.launch'] = true` (`isLaunched` in the catalogue; only that exact key counts). Until it is on, `plan.ts` returns no plans, sources, features or credits to anyone but Schood admins and `SCHOOD_AI_BETA_USER_IDS`. The owner turns it on with one statement in the SQL editor, `select public.ai_pricing_launch(true);`, which also puts the self-serve products and plans on sale in the same transaction (centre plans and add-ons stay granted by support) and writes `pricing.launch` to `ai_audit_events`. `ai_pricing_launch(false)` takes everything off sale and clears the switch. The function cannot call it. A resolver built without `launched` (tests, dev stacks) treats the switch as on; `fixture({ launchSwitch: true })` wires it as deployed.
+- **Buying** is the platform's checkout (`schood.online/checkout?plan_id=&product_id=&returnTo=`, Click → payments → entitlements), which this area does not change. Timed plans and passes need nothing more: their entitlement is the plan.
+- **Fulfilment** of what Schood AI delivers itself after a payment is marked paid: credit packs (pack credits through `ai_credit_grant`, reference `payment:<id>`), gift codes, certificate sittings and Coach Team orders. `ai_pricing_fulfil(payment)` claims the payment in `ai_pricing_fulfilments` (primary key) and applies the effect in the same transaction, so each payment is fulfilled once under any concurrency. `pricing/me` and `pricing/sync` run it for the caller; the `pricing.sync` job runs it every five minutes for everyone (payments of the last 60 days). The payment row is only read.
+- **Gifts (L18).** A gift purchase issues a code (derived from the system secret and the gift id; only its SHA-256 is stored), valid for 365 days `[ASSUMPTION]`. `pricing/gift-redeem` redeems it once under a row lock (10 tries an hour per person): Plus extends the recipient's Plus and coach-pass entitlements like a purchase; credits are pack credits. The reply says `consent_step: true` unless an age source confirms an adult; the consent guard still applies before any AI use.
+- **E12 and offers.** `seams/pricing-engage.ts` registers engage's sitting source (one reference per paid sitting, `pricing:sitting:<payment>`) and the annual offer (only while the annual plan is on sale, with the catalogue's real price and the real monthly comparison).
+- **Routes:** `GET pricing/catalog` (anonymous), `GET pricing/me`, `POST pricing/sync`, `POST pricing/gift-redeem`, `POST pricing/team-setup`.
+- **Account closure:** `ai_pricing_erase_account` unlinks the person from fulfilments and gifts (financial records stay).
+- **Not here:** credits alone do not unlock features (packs top up a plan, a pass or a seat) `[ASSUMPTION]`; refunds after fulfilment, Telegram Stars `[VERIFY]` and C9 wholesale billing are owner decisions.
 
 ## Your own data
 

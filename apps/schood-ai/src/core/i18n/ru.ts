@@ -171,6 +171,7 @@ export const ru: Record<CoreKey, string> = {
   'state.plan.lead': 'Входит в тарифы: {plans}.',
   'state.plan.see': 'Посмотреть тарифы и примеры',
   'state.plan.soon': 'Тарифы скоро откроются. До тех пор Schood AI работает в закрытой бете.',
+  'state.plan.buy': 'Тарифы в продаже: посмотрите цены.',
   'state.role.title': 'Недоступно для вашей роли',
   'state.role.lead': 'Это может сделать человек с другой ролью в этом рабочем пространстве.',
   'state.consent.title': 'Один шаг перед началом',

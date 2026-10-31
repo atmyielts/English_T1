@@ -105,7 +105,8 @@ export class Bot {
   async allowed(): Promise<boolean> { return (await this.ctx.access(this.feature)).allowed; }
   paywall() {
     this.text(this.t('paywall', { coach: this.coachName }), [
-      [{ text: this.p('paywall.plans'), url: `${this.runtime.config.appUrl}/plans` }],
+      // The pricing page shows this coach's pass and Plus, each handing off to checkout.
+      [{ text: this.p('paywall.plans'), url: `${this.runtime.config.appUrl}/pricing?coach=${this.feature}` }],
       [{ text: this.p('paywall.samples'), data: 'm:samples' }, { text: this.p('paywall.test'), data: 'm:test' }],
     ]);
   }
@@ -129,7 +130,7 @@ export class Bot {
         this.text(this.t('error.capped', { time: `${String(local.hour).padStart(2, '0')}:${String(local.minute).padStart(2, '0')}` }));
         return;
       }
-      case 'insufficient_credits': this.text(this.t('error.insufficient_credits', { cost: Number(d.cost ?? 0), available: Number(d.available ?? 0) }), [[{ text: this.p('paywall.plans'), url: `${this.runtime.config.appUrl}/credits` }]]); return;
+      case 'insufficient_credits': this.text(this.t('error.insufficient_credits', { cost: Number(d.cost ?? 0), available: Number(d.available ?? 0) }), [[{ text: this.p('paywall.plans'), url: `${this.runtime.config.appUrl}/pricing?coach=${this.feature}#credits` }]]); return;
       case 'budget_exhausted': this.text(this.t('error.budget_exhausted')); return;
       case 'invalid_request': this.text(this.t('error.generic')); return;
       default: this.text(this.t('error.ai_failed'), this.nav()); return;

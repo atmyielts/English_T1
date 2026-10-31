@@ -12,7 +12,7 @@ import type { StoreHandle } from './stores.ts';
 // how an area registers its routes (FeatureModule) and what the repository stores.
 // Feature areas import from here; see CONTRACT.md.
 
-export const AREAS = ['core', 'admin', 'learner', 'teacher', 'centre', 'coach', 'engage'] as const;
+export const AREAS = ['core', 'admin', 'learner', 'teacher', 'centre', 'coach', 'engage', 'pricing'] as const;
 export type Area = (typeof AREAS)[number];
 export type Method = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 export type Locale = 'en' | 'uz' | 'ru';
@@ -111,6 +111,12 @@ export interface PlanState {
   grant: number;
   /** Start of the entitlement that grants them, so cycles follow the purchase; null for beta and contracts. */
   anchor: string | null;
+  /**
+   * The owner's launch switch (`pricing.launch`). While it is off, plans and plan sources give
+   * nothing and only beta testers have AI; `plans`, `features` and `grant` are then empty for
+   * everyone else. Left out by resolvers that have no switch (tests), which means on.
+   */
+  launched?: boolean;
 }
 
 // --- Credits ---------------------------------------------------------------------------

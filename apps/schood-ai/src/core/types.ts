@@ -11,7 +11,8 @@ export interface Me {
   user: { id: string; email: string | null; name: string | null; is_schood_admin: boolean };
   workspace: WorkspaceView;
   workspaces: WorkspaceView[];
-  plan: { plans: PlanCode[]; features: string[]; beta: boolean; grant: number };
+  /** launched: the owner's launch switch; before it, only beta testers have AI and nothing is on sale. */
+  plan: { plans: PlanCode[]; features: string[]; beta: boolean; grant: number; launched?: boolean };
   credits: BalanceView & { budget: BudgetView | null };
   ai: { enabled: boolean; switches: Record<string, boolean> };
   specialists: SpecialistView[];

@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.89.0';
 import { priceTableProblems, type PlanCode } from '../../../packages/ai-core/src/mod.ts';
+import { isLaunched, planProductIds } from '../../../packages/ai-core/src/catalog.ts';
 import { boundedJson } from '../_shared/ai-response.ts';
 import { authorizeAdminRequest } from '../_shared/admin-access.ts';
 import { CircuitBreaker, createGateway } from './gateway.ts';
@@ -26,15 +27,17 @@ const db = service as unknown as SchoodAIDatabase;
 
 const origins = (Deno.env.get('SCHOOD_AI_ALLOWED_ORIGINS') ?? '').split(',').map((origin) => origin.trim()).filter(Boolean);
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-// Product ids per plan. Unset means nobody holds that plan (only beta testers have access).
-const productIds: Partial<Record<PlanCode, string>> = Object.fromEntries(([
+// Product ids per plan: the deterministic ids the pricing migration seeds
+// (packages/ai-core/src/catalog.ts). A SCHOOD_AI_*_PRODUCT_ID setting still overrides one,
+// for a product made by hand; none is needed. Nothing counts before the launch switch.
+const productIds: Partial<Record<PlanCode, string>> = planProductIds(Object.fromEntries(([
   ['plus', Deno.env.get('SCHOOD_AI_PLUS_PRODUCT_ID')],
   ['family', Deno.env.get('SCHOOD_AI_FAMILY_PRODUCT_ID')],
   ['teacher', Deno.env.get('SCHOOD_AI_TEACHER_PRODUCT_ID')],
   ['teacher_pro', Deno.env.get('SCHOOD_AI_TEACHER_PRO_PRODUCT_ID')],
   ['centre', Deno.env.get('SCHOOD_AI_CENTRE_PRODUCT_ID')],
   ['centre_pro', Deno.env.get('SCHOOD_AI_CENTRE_PRO_PRODUCT_ID')],
-] as const).filter(([, id]) => !!id && uuid.test(id)).map(([plan, id]) => [plan, id!.toLowerCase()]));
+] as const).filter(([, id]) => !!id && uuid.test(id))));
 const betaUserIds = new Set((Deno.env.get('SCHOOD_AI_BETA_USER_IDS') ?? '').split(',').map((id) => id.trim().toLowerCase()).filter((id) => uuid.test(id)));
 const serviceSecret = Deno.env.get('SCHOOD_AI_SERVICE_SECRET') ?? null;
 const ceiling = Number(Deno.env.get('SCHOOD_AI_GLOBAL_DAILY_CALLS') ?? '');
@@ -67,9 +70,10 @@ const cached = <T>(load: () => Promise<T>, ms: number) => {
 // Area tables (stores.ts) over the same service-role client.
 const stores = createStores({ kind: 'postgres', db }, { now: () => new Date(), env: (name) => Deno.env.get(name) });
 
+const settings = cached(() => repository.settings(), 15_000);
 const gateway = createGateway({
   registry: cached(() => repository.registry(), 30_000),
-  settings: cached(() => repository.settings(), 15_000),
+  settings,
   takeCall: (input) => repository.takeCall(input),
   record: (rows) => after(repository.recordCalls(rows)),
   // Provider keys are Supabase secrets named by the registry; only allowed names reach here.
@@ -95,7 +99,12 @@ async function isAdmin(userId: string): Promise<boolean> {
   return admin;
 }
 
-const plans = createPlanResolver({ productIds, betaUserIds, accessEffective: accessEffectiveOverHttp(url, anon), repo: repository, isAdmin, now: () => new Date() });
+// The owner's launch switch (ai_settings.features['pricing.launch']): off means only Schood
+// admins and SCHOOD_AI_BETA_USER_IDS use AI. Flipped as data (ai_pricing_launch), never a deploy.
+const plans = createPlanResolver({
+  productIds, betaUserIds, accessEffective: accessEffectiveOverHttp(url, anon), repo: repository, isAdmin, now: () => new Date(),
+  launched: async () => isLaunched((await settings()).features),
+});
 
 
 // The secret pg_cron sends to system routes (invoke_schood_ai_system), read from internal_runtime_secrets.

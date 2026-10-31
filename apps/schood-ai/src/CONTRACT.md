@@ -14,7 +14,8 @@ This is the brief for every agent adding screens to `apps/schood-ai` (ai.schood.
   - `src/teacher`;
   - `src/centre`;
   - `src/coach` (the `/coach/<pack>` screens, which are also the Telegram Mini App);
-  - `src/engage`.
+  - `src/engage`;
+  - `src/pricing` (`/pricing` and `/plans`, `/pricing/done` where checkout returns, `/gift` to redeem a gift).
 - Import from core only through `src/core/index.ts`.
 
 ## Add a page, a nav item, a home card
@@ -99,6 +100,8 @@ export const homeCards: HomeCard[] = [
 | `askAssistant(prompt)` | Opens the assistant with a prefilled prompt, without putting it in the URL. |
 
 ## Core screens you can link to
+
+- `/pricing` (the pricing area; `/plans` opens the same page): every plan with its catalogue price. Link `/pricing?coach=B4` to highlight a coach pass, `/pricing?plan=<slug>` for one plan, `#credits` for credit packs. Nothing shows as buyable until `me.plan.launched` is true; core's paywall says so.
 
 - `/settings/assistants`: owners and admins tailor the assistants of the workspace (your specialists appear there automatically).
 - `/admin`: the Schood AI console, shown in the sidebar only to Schood admins.

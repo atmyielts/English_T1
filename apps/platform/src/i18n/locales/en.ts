@@ -713,6 +713,7 @@ export const en = {
   "pricing.overview.title": "Prices for every Schood service",
   "pricing.overview.desc": "Each service has its own plans. A Complete plan unlocks a whole exam family for less than buying each part.",
   "pricing.group.english": "English",
+  "pricing.group.ai": "Schood AI",
   "pricing.group.other": "More services",
   "pricing.allServices": "All prices",
   "pricing.signInHint": "You can see every price without an account. You only sign in to buy or to start a free trial, and you come straight back to the plan you chose.",
