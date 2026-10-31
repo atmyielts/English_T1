@@ -64,9 +64,6 @@ Deno.test('pricing: a visitor sees every plan at the doc\'s prices, none on sale
   equal([price('schood-ai-centre-teacher-seat-30'), price('schood-ai-centre-students-100-30')], [79000, 59000]);
   equal(catalog.body.plans.filter((plan: { channel: string }) => plan.channel === 'request').map((plan: { slug: string }) => plan.slug).sort(),
     ['schood-ai-centre-30', 'schood-ai-centre-pro-30', 'schood-ai-centre-students-100-30', 'schood-ai-centre-teacher-seat-30'], 'centre plans are requested, not bought');
-  // The other apps' "Ask Schood AI" links ask from any origin.
-  const link = await f.call('GET', 'pricing/launch', { token: null, origin: 'https://ielts.schood.online' });
-  equal([link.status, (await link.json()).launched, link.headers.get('access-control-allow-origin')], [200, false, 'https://ielts.schood.online']);
 });
 
 Deno.test('pricing: with the switch off only admins and beta testers have AI, whatever anyone holds', async () => {

@@ -9,7 +9,6 @@ import { pricingStore, TEAM_PACKS, type CatalogRow, type FulfilReply, type Fulfi
 
 // pricing/* routes (docs/product/44_SCHOOD_AI.md, "Plans"; L18 gifts; Coach Team):
 //   catalog      anyone (anonymous): every plan with its price now and whether it is on sale;
-//   launch       anyone, any origin: { launched }, for the "Ask Schood AI" links in other apps;
 //   me / sync    the signed-in person: fulfils what they paid for (credits, gift codes, sittings,
 //                team orders), then lists their purchases, gifts and teams to set up;
 //   gift-redeem  the signed-in recipient, once per code, before it expires;
@@ -19,8 +18,7 @@ import { pricingStore, TEAM_PACKS, type CatalogRow, type FulfilReply, type Fulfi
 export const APP_URL = 'https://ai.schood.online';
 const store = (ctx: RequestContext): PricingStore => ctx.store(pricingStore);
 
-// The launch switch, read with the service settings. Cached briefly per repository: the
-// links in the other apps ask often, and the switch changes once.
+// The launch switch, read with the service settings (cached briefly per repository).
 const launchCache = new WeakMap<SchoodAIRepository, { at: number; value: boolean }>();
 export async function launchState(ctx: RequestContext): Promise<boolean> {
   const at = ctx.now().getTime(), hit = launchCache.get(ctx.repo);
@@ -158,8 +156,6 @@ export function pricingRoutes(): Record<string, RouteHandler> {
   return {
     // The /pricing page, signed in or not (an ordinary anonymous limit per visitor).
     catalog: { GET: catalog, anonymous: { perMinute: 60, perDay: 5000 } },
-    // The other apps' results screens ask this before showing "Ask Schood AI". Tiny, any origin.
-    launch: { GET: async (ctx) => ({ launched: await launchState(ctx) }), anonymous: { perMinute: 600, perDay: 100000, cors: 'any' } },
     me: { GET: mine },
     sync: { POST: mine },
     'gift-redeem': { POST: redeem, maxBody: 2 * 1024 },

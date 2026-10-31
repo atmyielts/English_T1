@@ -56,11 +56,13 @@ const planName = (t: (key: string) => string, plan: string) => t(`plans.${plan}.
 
 /** The paywall: what the feature needs, the plans and examples. Never a dead end. */
 export function Paywall({ plans }: { plans: string[] }) {
-  const t = useT();
-  return <StateBox tone="calm" icon={<Lock size={18}/>} title={t('state.plan.title')} lead={plans.length ? t('state.plan.lead', { plans: plans.map((plan) => planName(t, plan)).join(', ') }) : t('state.plan.soon')}>
-    {plans.length > 0 && <p className="m-0 text-sm text-gray-600">{t('state.plan.soon')}</p>}
+  const t = useT(), { me } = useWorkspace();
+  // Before the owner's launch switch nothing is on sale; after it, the plans can be bought.
+  const open = me?.plan.launched === true;
+  return <StateBox tone="calm" icon={<Lock size={18}/>} title={t('state.plan.title')} lead={plans.length ? t('state.plan.lead', { plans: plans.map((plan) => planName(t, plan)).join(', ') }) : open ? t('state.plan.buy') : t('state.plan.soon')}>
+    {plans.length > 0 && <p className="m-0 text-sm text-gray-600">{open ? t('state.plan.buy') : t('state.plan.soon')}</p>}
     <div className="flex flex-wrap gap-2">
-      <Link to="/plans" className="inline-flex min-h-11 items-center rounded-full bg-navy px-4 text-sm font-semibold text-white no-underline">{t('nav.plans')}</Link>
+      <Link to="/pricing" className="inline-flex min-h-11 items-center rounded-full bg-navy px-4 text-sm font-semibold text-white no-underline">{t('nav.plans')}</Link>
       <Link to="/examples" className="inline-flex min-h-11 items-center rounded-full border border-navy-line bg-white px-4 text-sm font-semibold text-gray-900 no-underline">{t('nav.examples')}</Link>
     </div>
   </StateBox>;

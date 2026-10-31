@@ -171,6 +171,7 @@ export const en = {
   'state.plan.lead': 'Included in {plans}.',
   'state.plan.see': 'See plans and examples',
   'state.plan.soon': 'Plans open soon. Until then, Schood AI is in a closed beta.',
+  'state.plan.buy': 'Plans are on sale: see the prices.',
   'state.role.title': 'Not for your role',
   'state.role.lead': 'Someone with another role in this workspace can do this.',
   'state.consent.title': 'One step before you start',

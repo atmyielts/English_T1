@@ -171,6 +171,7 @@ export const uz: Record<CoreKey, string> = {
   'state.plan.lead': 'Tariflarga kiradi: {plans}.',
   'state.plan.see': 'Tariflar va namunalarni ko‘rish',
   'state.plan.soon': 'Tariflar tez orada ochiladi. Ungacha Schood AI yopiq beta rejimida.',
+  'state.plan.buy': 'Tariflar sotuvda: narxlarni ko‘ring.',
   'state.role.title': 'Rolingiz uchun emas',
   'state.role.lead': 'Buni ish maydonidagi boshqa roldagi kishi bajara oladi.',
   'state.consent.title': 'Boshlashdan oldin bitta qadam',
