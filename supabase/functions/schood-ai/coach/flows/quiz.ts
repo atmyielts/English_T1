@@ -62,7 +62,8 @@ async function answerHistory(bot: Bot, days = 120): Promise<Answered[]> {
     const at = session.finishedAt ?? session.startedAt;
     for (const answer of (session.summary.answers as { id: string; ref?: string; right: boolean }[] | undefined) ?? []) out.push({ ref: answer.ref ?? `${session.activityId}#${answer.id}`, right: !!answer.right, at });
   }
-  return out;
+  // Newest first by when each set was finished (stable for answers of the same set).
+  return out.sort((a, b) => b.at.localeCompare(a.at));
 }
 
 /** The mistake notebook: questions whose latest answer was wrong, newest first, with how often they were missed. */
@@ -205,7 +206,7 @@ async function runSet(bot: Bot, set: QuizSet, preset: { items: string[]; kind: '
 }
 
 async function listeningAudio(bot: Bot, set: QuizSet) {
-  const cacheKey = `l:${set.id}`.slice(0, 120);
+  const cacheKey = bot.mediaKey(`l:${set.id}`);
   const cached = await bot.store.media(bot.pack.manifest.id, cacheKey);
   if (cached) { bot.push({ kind: 'voice', fileId: cached }); return; }
   try {

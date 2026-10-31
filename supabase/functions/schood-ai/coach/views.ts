@@ -58,7 +58,7 @@ export async function todayPlan(deps: ViewDeps): Promise<DayPlan> {
     dueCards,
     recurring: recurringErrors([...mastery.values()], now),
     today: local.day, weekday: local.weekday,
-    mockDoneThisWeek: recent.some((session) => session.activityId === mockId && session.mode === 'mock' && Date.parse(session.finishedAt ?? session.startedAt) >= monday),
+    mockDoneThisWeek: recent.some((session) => session.activityId === mockId && (session.mode === 'mock' || session.kind === 'roleplay') && Date.parse(session.finishedAt ?? session.startedAt) >= monday),
     seed: enrollment.userId,
   });
 }

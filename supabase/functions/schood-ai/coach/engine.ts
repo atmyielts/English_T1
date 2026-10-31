@@ -107,6 +107,8 @@ async function onAction(bot: Bot, action: string) {
     case 'mock':
       if (speakingExams(bot).some((exam) => exam.mock)) await startSpeaking(bot, { mode: 'mock' });
       else if (mockSets(bot).length) await startMock(bot);
+      // Role-play coaches (B4, B5): the weekly mock call or interview.
+      else if (bot.pack.plan.weeklyMock && bot.pack.byId.get(bot.pack.plan.weeklyMock.activity)?.kind === 'roleplay') await startRoleplay(bot, bot.pack.plan.weeklyMock.activity);
       else await chooseRoleplay(bot);
       return;
     case 'mistakes': await startMistakes(bot); return;
@@ -144,7 +146,13 @@ async function startTask(bot: Bot, index: number) {
   if (bot.state.current.flow !== 'idle') await leaveFlow(bot);
   bot.state.task = index;
   switch (task.slot) {
-    case 'mock': if (bot.pack.byId.get(task.activityId)?.kind === 'quiz_set') await startMock(bot, task.activityId); else await startSpeaking(bot, { activityId: task.activityId, mode: 'mock' }); return;
+    case 'mock': {
+      const kind = bot.pack.byId.get(task.activityId)?.kind;
+      if (kind === 'quiz_set') await startMock(bot, task.activityId);
+      else if (kind === 'roleplay') await startRoleplay(bot, task.activityId);
+      else await startSpeaking(bot, { activityId: task.activityId, mode: 'mock' });
+      return;
+    }
     case 'speaking': await startSpeaking(bot, { activityId: task.activityId, mode: task.part ?? '' }); return;
     case 'roleplay': await startRoleplay(bot, task.activityId); return;
     case 'writing': await startWriting(bot, task.activityId); return;

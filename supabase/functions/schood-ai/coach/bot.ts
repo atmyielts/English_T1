@@ -156,6 +156,8 @@ export class Bot {
     if (values.length) return values.reduce((a, b) => a + b, 0) / values.length;
     return this.enrollment.placement?.overall ?? null;
   }
+  /** A cache key for spoken audio: a mixed pack speaks each language, so the language is part of the key. */
+  mediaKey(key: string): string { return (this.pack.manifest.practiceLanguage === 'mixed' ? `${key}:${this.locale}` : key).slice(0, 120); }
   label(value: number | null) { return value === null ? '—' : levelLabel(this.pack.manifest.scale, value); }
   languageName(locale: Locale) { return LANGUAGE_NAMES[locale]; }
 

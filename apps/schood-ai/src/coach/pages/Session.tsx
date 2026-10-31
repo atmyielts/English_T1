@@ -1,6 +1,6 @@
 import { Badge, Card, useI18n, useSession, useT } from '../../core/index.ts';
-import { coachApi, levelLabel, type Evidence, type SessionDetail } from '../api.ts';
-import { CoachFrame, dateText, Loaded, useLoad } from '../ui.tsx';
+import { coachApi, levelLabel, type Dashboard, type Evidence, type SessionDetail } from '../api.ts';
+import { Bars, CoachFrame, dateText, Loaded, useLoad } from '../ui.tsx';
 import { SignedOut } from './common.tsx';
 
 // /coach/<pack>/session/<id>: the long feedback that does not fit in a chat: every
@@ -21,7 +21,7 @@ function SessionBody({ pack, id }: { pack: string; id: string }) {
   const coach = useLoad(() => coachApi.dashboard(pack), [pack]);
   const detail = useLoad(() => coachApi.session(id), [id]);
   return <Loaded state={coach}>{(data) => <CoachFrame pack={pack} name={data.coach.name} accent={data.coach.accent}>
-    <Loaded state={detail}>{(session) => <Detail data={session}/>}</Loaded>
+    <Loaded state={detail}>{(session) => <Detail data={session} skills={data.skills}/>}</Loaded>
   </CoachFrame>}</Loaded>;
 }
 
@@ -29,7 +29,7 @@ function Quote({ evidence }: { evidence: Evidence }) {
   return <li className="text-sm leading-6"><q className="font-semibold text-gray-900">{evidence.quote}</q>{evidence.comment && <span className="text-gray-700"> — {evidence.comment}</span>}</li>;
 }
 
-function Detail({ data }: { data: SessionDetail }) {
+function Detail({ data, skills }: { data: SessionDetail; skills: Dashboard['skills'] }) {
   const t = useT(), { locale } = useI18n();
   const summary = data.summary as Record<string, unknown>;
   const criteria = (summary.criteria ?? {}) as Record<string, number | null>;
@@ -39,8 +39,12 @@ function Detail({ data }: { data: SessionDetail }) {
   const metrics = (summary.metrics ?? {}) as Record<string, number | null>;
   const goals = (summary.goals ?? []) as { id: string; met: boolean; quote: string | null }[];
   const hidden = (summary.hidden ?? []) as { id: string; description: string; start: unknown; end: unknown }[];
-  const scorecard = summary.scorecard as { talkRatio: number; questionsAsked: number; averageTurnWords: number; pace: number | null } | undefined;
+  const scorecard = summary.scorecard as { talkRatio: number; questionsAsked: number; averageTurnWords: number; pace: number | null; objectionsHandled?: number; objectionsTotal?: number; nextStep?: boolean } | undefined;
+  const script = summary.script as { id: string; title: string } | undefined;
   const quiz = summary.quiz as { mode: string; correct: number; total: number } | undefined;
+  const quizKind = summary.kind === 'mock' || summary.kind === 'mistakes' ? summary.kind : null;
+  const topics = Object.entries((summary.topics ?? {}) as Record<string, [number, number]>).filter(([, value]) => Array.isArray(value) && value[1] > 0);
+  const topicName = (node: string) => skills.find((skill) => skill.node === node)?.name ?? node.split('.').pop()!.replace(/[_-]/g, ' ');
   const ladder = data.turns.filter((turn) => turn.kind === 'ladder').map((turn) => { try { return JSON.parse(turn.content) as { level: number; text: string; changes: string[] }[]; } catch { return []; } }).at(-1) ?? [];
   const answers = data.turns.filter((turn) => turn.role === 'learner' && turn.content);
   const rubric = data.rubric;
@@ -52,6 +56,7 @@ function Detail({ data }: { data: SessionDetail }) {
       </div>
       <p className="m-0 text-sm text-gray-600">{dateText(data.session.finished_at ?? data.session.started_at, locale)} · {t('coach.dash.taskMinutes', { count: data.session.minutes })}</p>
       {typeof summary.summary === 'string' && summary.summary && <p className="m-0 text-sm leading-6 text-gray-800">{summary.summary}</p>}
+      {script && <p className="m-0 break-words text-sm text-gray-800">{t('coach.session.script', { title: script.title })}</p>}
       {rubric && <p className="m-0 text-xs text-gray-600">{t('coach.session.estimate')}</p>}
       {(data.facts ?? []).map((fact) => <p key={fact.id} className="m-0 text-xs leading-5 text-gray-700">
         {t(fact.stale ? 'coach.session.factsStale' : 'coach.session.facts', { title: fact.title, date: dateText(fact.checked_at, locale) })}{' '}
@@ -83,6 +88,7 @@ function Detail({ data }: { data: SessionDetail }) {
       <h2 className="m-0 font-display text-lg font-bold">{t('coach.session.goals')}</h2>
       <ul className="m-0 flex list-none flex-col gap-1 p-0">{goals.map((goal) => <li key={goal.id} className="text-sm">{goal.met ? '✅' : '⬜'} {t('coach.session.goal', { id: goal.id.replace(/_/g, ' ') })}{goal.quote && <> — <q>{goal.quote}</q></>}</li>)}</ul>
       {scorecard && <p className="m-0 text-sm text-gray-700">{t('coach.session.scorecard', { ratio: scorecard.talkRatio, questions: scorecard.questionsAsked, words: scorecard.averageTurnWords })}</p>}
+      {scorecard && (scorecard.objectionsTotal !== undefined || scorecard.nextStep !== undefined) && <p className="m-0 text-sm font-semibold text-gray-900">{t('coach.session.sales', { handled: scorecard.objectionsHandled ?? 0, total: scorecard.objectionsTotal ?? 0, next: t(scorecard.nextStep ? 'coach.session.yes' : 'coach.session.no') })}</p>}
     </Card>}
 
     {hidden.length > 0 && <Card className="flex flex-col gap-2">
@@ -119,7 +125,11 @@ function Detail({ data }: { data: SessionDetail }) {
 
     {quiz && <Card className="flex flex-col gap-2">
       <h2 className="m-0 font-display text-lg font-bold">{t('coach.session.set', { correct: quiz.correct, total: quiz.total })}</h2>
-      <p className="m-0 text-sm text-gray-700">{t(`coach.mode.${quiz.mode}`)}</p>
+      <p className="m-0 text-sm text-gray-700">{quizKind ? t(`coach.session.kind.${quizKind}`) : t(`coach.mode.${quiz.mode}`)}</p>
+      {topics.length > 0 && <>
+        <h3 className="m-0 mt-2 text-sm font-semibold text-gray-900">{t('coach.session.topics')}</h3>
+        <Bars rows={topics.map(([node, [right, total]]) => ({ label: topicName(node), value: right / total, text: `${right}/${total}` }))}/>
+      </>}
     </Card>}
 
     {answers.length > 0 && <Card className="flex flex-col gap-3">

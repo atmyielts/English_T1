@@ -67,7 +67,7 @@ export async function startRoleplay(bot: Bot, activityId: string, scriptId?: str
   const notice = factsNotice(activityFacts(bot.pack, activity), bot.locale, bot.ctx.now());
   if (notice) bot.text(notice);
   bot.text(bot.t('rp.persona', { name: activity.persona.name, line: opening }), [[{ text: bot.p('btn.finish'), data: 'rp:end' }]]);
-  await voiceOf(bot, opening, activity.persona.voice, script ? null : `rp:${activity.id}:open`);
+  await voiceOf(bot, opening, activity.persona.voice, script ? null : bot.mediaKey(`rp:${activity.id}:open`));
 }
 
 /** The learner's saved scripts to practise with, or the way to build one. */
@@ -234,7 +234,8 @@ export async function reviewRoleplay(bot: Bot) {
     `${bot.t('rp.review', { title: script?.title ?? pick(activity.title, bot.locale), overall: overallLabel(rubric, review.overall) })}\n${criterionLines(bot, rubric, review).join('\n')}`,
     goalLines.join('\n'),
     bot.t('rp.scorecard', { ratio: scorecard.talkRatio, questions: scorecard.questionsAsked, words: scorecard.averageTurnWords }),
-    scorecard.objectionsTotal !== undefined || scorecard.nextStep !== undefined ? bot.t('rp.sales_card', { handled: scorecard.objectionsHandled ?? 0, total: scorecard.objectionsTotal ?? 0, next: bot.p(scorecard.nextStep ? 'btn.yes' : 'btn.no') }) : null,
+    scorecard.objectionsTotal !== undefined ? bot.t('rp.sales_card', { handled: scorecard.objectionsHandled ?? 0, total: scorecard.objectionsTotal, next: bot.p(scorecard.nextStep ? 'btn.yes' : 'btn.no') })
+      : scorecard.nextStep !== undefined ? bot.t('rp.next_step_card', { next: bot.p(scorecard.nextStep ? 'btn.yes' : 'btn.no') }) : null,
     hiddenLines.length ? bot.t('rp.hidden', { name: activity.persona.name }, { lines: hiddenLines.join('\n') }) : null,
     better.length ? `${bot.t(activity.goals.some((goal) => goal.kind) ? 'rp.replay_title' : 'speak.better_title')}\n${better.join('\n\n')}` : null,
   ].filter(Boolean);
