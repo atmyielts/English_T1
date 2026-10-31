@@ -43,8 +43,8 @@ const SPEAKING_RUBRIC: RubricCriterion[] = [
 ];
 const SALES_RUBRIC: RubricCriterion[] = [
   { id: 'listening', title: { en: 'Empathy and listening', uz: 'Hamdardlik va tinglash', ru: 'Эмпатия и слушание' }, max: 4 },
-  { id: 'discovery', title: { en: 'Discovery questions', uz: 'Aniqlovchi savollar', ru: 'Выявляющие вопросы' }, max: 4 },
-  { id: 'value', title: { en: 'Value in the customer’s terms', uz: 'Mijoz tilida qiymat', ru: 'Ценность на языке клиента' }, max: 4 },
+  { id: 'discovery', title: { en: 'Discovery questions', uz: 'Ehtiyojni aniqlovchi savollar', ru: 'Вопросы для выявления потребностей' }, max: 4 },
+  { id: 'value', title: { en: 'Value in the customer’s terms', uz: 'Mijoz nuqtai nazaridan foyda', ru: 'Ценность на языке клиента' }, max: 4 },
   { id: 'objection', title: { en: 'Objection handling', uz: 'E’tirozlar bilan ishlash', ru: 'Работа с возражениями' }, max: 4 },
   { id: 'next_step', title: { en: 'A concrete next step', uz: 'Aniq keyingi qadam', ru: 'Конкретный следующий шаг' }, max: 4 },
 ];
@@ -53,10 +53,10 @@ export const CERT_EXAMS: CertExam[] = [
   {
     key: 'speaking_b1', level: 'B1', coach: 'B2', minutes: 30,
     title: { en: 'English Speaking B1', uz: 'Ingliz tili nutqi B1', ru: 'Разговорный английский B1' },
-    lead: { en: 'Ten everyday-communication questions and three recorded speaking tasks, marked by a reviewer.', uz: 'Kundalik muloqot bo‘yicha o‘nta savol va uchta yozib olingan nutq vazifasi, tekshiruvchi baholaydi.', ru: 'Десять вопросов на повседневное общение и три записанных устных задания, которые оценивает экзаменатор.' },
+    lead: { en: 'Ten everyday-communication questions and three recorded speaking tasks that a trained reviewer marks. A Schood certificate, not an official exam result.', uz: 'Kundalik muloqot bo‘yicha o‘nta savol va uchta yozib olinadigan nutq vazifasi; vazifalarni tayyorlangan tekshiruvchi baholaydi. Bu Schood sertifikati, rasmiy imtihon natijasi emas.', ru: 'Десять вопросов на повседневное общение и три записанных устных задания, которые оценивает подготовленный проверяющий. Это сертификат Schood, а не результат официального экзамена.' },
     items: [
       item('i1', 'Your friend says: "I failed my driving test again." What is the best reply?', [['a', 'Congratulations!'], ['b', 'Oh no, I’m sorry. You’ll pass next time.'], ['c', 'I failed mine too, in 2019.'], ['d', 'Driving is boring.']], 'b'),
-      item('i2', 'In a café you did not get what you ordered. Which is the most polite?', [['a', 'This is wrong. Take it.'], ['b', 'Excuse me, I think I ordered tea, not coffee.'], ['c', 'Why are you so slow?'], ['d', 'Give me tea.']], 'b'),
+      item('i2', 'In a café you did not get what you ordered. Which is the most polite thing to say?', [['a', 'This is wrong. Take it.'], ['b', 'Excuse me, I think I ordered tea, not coffee.'], ['c', 'Why are you so slow?'], ['d', 'Give me tea.']], 'b'),
       item('i3', 'Someone asks: "Would you mind opening the window?" You agree. You say:', [['a', 'Yes, I would.'], ['b', 'Not at all.'], ['c', 'No, I don’t open.'], ['d', 'I mind it.']], 'b'),
       item('i4', 'You did not understand what your colleague said. You say:', [['a', 'What?'], ['b', 'Sorry, could you say that again more slowly?'], ['c', 'You speak badly.'], ['d', 'I understand.']], 'b'),
       item('i5', 'Which sentence gives an opinion with a reason?', [['a', 'I like Tashkent.'], ['b', 'Tashkent is in Uzbekistan.'], ['c', 'I prefer living in Tashkent because there is more work.'], ['d', 'Do you like Tashkent?']], 'c'),
@@ -76,7 +76,7 @@ export const CERT_EXAMS: CertExam[] = [
   {
     key: 'speaking_b2', level: 'B2', coach: 'B2', minutes: 35,
     title: { en: 'English Speaking B2', uz: 'Ingliz tili nutqi B2', ru: 'Разговорный английский B2' },
-    lead: { en: 'Ten questions on discussion language and three longer recorded speaking tasks, marked by a reviewer.', uz: 'Muhokama tili bo‘yicha o‘nta savol va uchta uzunroq yozib olingan nutq vazifasi, tekshiruvchi baholaydi.', ru: 'Десять вопросов о языке дискуссии и три более длинных устных задания, которые оценивает экзаменатор.' },
+    lead: { en: 'Ten questions on discussion language and three longer recorded speaking tasks that a trained reviewer marks. A Schood certificate, not an official exam result.', uz: 'Muhokama tili bo‘yicha o‘nta savol va uchta uzunroq, yozib olinadigan nutq vazifasi; vazifalarni tayyorlangan tekshiruvchi baholaydi. Bu Schood sertifikati, rasmiy imtihon natijasi emas.', ru: 'Десять вопросов о языке дискуссии и три более длинных записанных устных задания, которые оценивает подготовленный проверяющий. Это сертификат Schood, а не результат официального экзамена.' },
     items: [
       item('i1', 'Which response best softens disagreement in a meeting?', [['a', 'You’re wrong.'], ['b', 'I see your point, but I’m not sure that would work in our case.'], ['c', 'No way.'], ['d', 'That’s a silly idea.']], 'b'),
       item('i2', 'Complete: "I wish I ___ more time to travel."', [['a', 'have'], ['b', 'had'], ['c', 'will have'], ['d', 'having']], 'b'),
@@ -99,7 +99,7 @@ export const CERT_EXAMS: CertExam[] = [
   {
     key: 'sales_l1', level: 'Level 1', coach: 'B4', minutes: 30,
     title: { en: 'Sales Level 1', uz: 'Savdo, 1-daraja', ru: 'Продажи, уровень 1' },
-    lead: { en: 'Ten call scenarios and one written reply to a price objection, marked by a reviewer.', uz: 'O‘nta qo‘ng‘iroq vaziyati va narx e’tiroziga bitta yozma javob, tekshiruvchi baholaydi.', ru: 'Десять сценариев звонков и один письменный ответ на возражение о цене, который оценивает экзаменатор.' },
+    lead: { en: 'Ten call scenarios and one written reply to a price objection that a trained reviewer marks. A Schood certificate, not an official qualification.', uz: 'O‘nta qo‘ng‘iroq vaziyati va narx e’tiroziga bitta yozma javob; javobni tayyorlangan tekshiruvchi baholaydi. Bu Schood sertifikati, rasmiy malaka hujjati emas.', ru: 'Десять сценариев звонков и один письменный ответ на возражение о цене, который оценивает подготовленный проверяющий. Это сертификат Schood, а не официальная квалификация.' },
     items: [
       item('i1', 'A shop owner answers your cold call. What should the first fifteen seconds include?', [['a', 'Every feature of your product'], ['b', 'Who you are, why you are calling, and a question'], ['c', 'Your price'], ['d', 'A request for a meeting with no reason']], 'b'),
       item('i2', 'In discovery, which question is the most useful?', [['a', 'Do you want to buy our app?'], ['b', 'What happens in your shop at the busiest hour?'], ['c', 'Is our app good?'], ['d', 'Can I send a brochure?']], 'b'),
@@ -120,7 +120,7 @@ export const CERT_EXAMS: CertExam[] = [
   {
     key: 'sales_l2', level: 'Level 2', coach: 'B4', minutes: 35,
     title: { en: 'Sales Level 2', uz: 'Savdo, 2-daraja', ru: 'Продажи, уровень 2' },
-    lead: { en: 'Ten negotiation and account scenarios and one written negotiation reply, marked by a reviewer.', uz: 'O‘nta muzokara va mijoz bilan ishlash vaziyati hamda bitta yozma muzokara javobi, tekshiruvchi baholaydi.', ru: 'Десять сценариев переговоров и работы с клиентами и один письменный ответ в переговорах, который оценивает экзаменатор.' },
+    lead: { en: 'Ten negotiation and account scenarios and one written negotiation reply that a trained reviewer marks. A Schood certificate, not an official qualification.', uz: 'O‘nta muzokara va mijoz bilan ishlash vaziyati hamda muzokaradagi bitta yozma javob; javobni tayyorlangan tekshiruvchi baholaydi. Bu Schood sertifikati, rasmiy malaka hujjati emas.', ru: 'Десять сценариев переговоров и работы с клиентами и один письменный ответ в переговорах, который оценивает подготовленный проверяющий. Это сертификат Schood, а не официальная квалификация.' },
     items: [
       item('i1', 'The customer asks for a 20% discount. The strongest response:', [['a', 'Accept, to close quickly'], ['b', '"We can look at that if you can commit to a 12-month contract."'], ['c', 'Refuse and end the meeting'], ['d', 'Offer 30% instead']], 'b'),
       item('i2', 'Which is a value-based pitch?', [['a', '"Our app has 40 features."'], ['b', '"You said the queue loses about twenty customers a day; this lets one person serve them twice as fast."'], ['c', '"We are number one."'], ['d', '"Everyone uses us."']], 'b'),
