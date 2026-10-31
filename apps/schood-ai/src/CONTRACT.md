@@ -75,9 +75,10 @@ export const homeCards: HomeCard[] = [
 - Use `useT()` from core: `t('learner.write.cost', { count })`. Plurals are `{count|one:# credit|other:# credits}`; Russian also has `few` and `many`.
 - Uzbek uses Latin script with `‘` for o‘ and g‘ and `’` for the tutuq belgisi.
 - Core keys you can reuse include `state.*`, `chat.*`, `review.*` and `approvals.*`, plus `plans.<plan>.name`, `role.<role>` and `audience.<audience>`.
-- Only core's English ships in the first download. Your `en.ts`, `uz.ts` and `ru.ts` load on demand: core's `i18n/index.ts` imports the person's language from every area in parallel, and the first paint waits for it. For Uzbek and Russian, English follows as the fallback. So however many areas merge, the main chunk stays about 112 KB gzip.
+- No catalog ships in the first download, core's English included. Your `en.ts`, `uz.ts` and `ru.ts` load on demand: core's `i18n/index.ts` imports the person's language from core and every area in parallel, and the first paint waits for it. For Uzbek and Russian, English follows as the fallback. So however many areas merge, the main chunk stays about 103 KB gzip for core alone.
   - Keep the named exports `en`, `uz` and `ru`.
   - Never import your catalog files from code; that pulls them into the first download.
+- **Dates:** use `useI18n().date(value, options)` from core (`src/core/index.ts`), or `formatDate(locale, value, options)` from `src/core/dates.ts`. Never call `Intl.DateTimeFormat` or `toLocaleDateString` yourself. Many browsers have no Uzbek date data and print "2026 M10 30", so core writes Uzbek dates out with Latin names, for example "30-oktabr, 2026" and "juma, 30-oktabr, 2026, 14:05".
 - **Strings only some screens need** can load with those screens: `const ready = useCatalog('learner.essay', { en: () => import('./i18n/essay.en.ts').then((m) => m.en), uz: …, ru: … })`, and render `LoadingState` until `ready`. Use your area prefix for these keys too.
 - **Context sources** under answers are named by the provider's `label` (function `CONTRACT.md`); use `contextLabel(me, t, kind)`. Core keeps `context.<kind>` keys only for its own kinds.
 
@@ -85,14 +86,14 @@ export const homeCards: HomeCard[] = [
 
 | Export | Use |
 |---|---|
-| `api(path, { method, body, query, workspaceId, idempotencyKey, anonymous })` | JSON calls to `/schood-ai/<area>/<action>`. Pass `useWorkspace().workspaceId` (null means personal). Errors are `ApiError` with `code` and `details`. `anonymous: true` calls a route marked `anonymous` with no token, for pages that work signed out (Live Quiz players, shared Passport links). |
+| `api(path, { method, body, query, workspaceId, idempotencyKey, anonymous })` | JSON calls to `/schood-ai/<area>/<action>`. Pass `useWorkspace().workspaceId` (null means personal). Errors are `ApiError` with `code` and `details`. `anonymous: true` calls a route marked `anonymous` with no token, for pages that work signed out (Live Quiz players, shared Passport links). Over the route's limit the error is `rate_limited` with `details.retry_after`: wait until then (a polling player slows down) instead of retrying at once. |
 | `stream(path, { body, onEvent, signal, workspaceId })` | SSE calls. |
 | `Chat` | A streaming chat with any specialist: `<Chat specialist="tutor" threadId={id} onThread={…} initialMessage={…}/>`. Includes stop, retry, report, cost before sending and the paywall. |
 | `Answer` | AI text as Markdown with KaTeX (`\( \)`, `\[ \]`). Raw HTML is dropped and remote images are not loaded. |
 | `ReviewCard`, `GenerationReviewCard`, `useGeneration` | Approve & save / Decline for drafts, polling a generation job. |
 | `ApproveRunCard` | Approve & run for a queued action, showing the server's exact payload. |
 | `CreditCost`, `CreditBalance`, `PlanGate`, `Paywall` | Cost before every action (from the ai-core price table) and plan gates. |
-| `ApiErrorState`, `CappedState`, `ErrorState`, `EmptyState`, `LoadingState` | Every AI screen shows refusals with `ApiErrorState`, never a broken screen. |
+| `ApiErrorState`, `CappedState`, `ErrorState`, `EmptyState`, `LoadingState` | Every AI screen shows refusals with `ApiErrorState`, never a broken screen. `consent_required` (the learner area's one-time step) shows a translated note that links to `/consent?next=<this page>`. A centre whose plan no longer includes its own model keys gets `plan_required` with `feature: 'C15'` and `plans: ['enterprise']`; the centre's key settings screen should say so and offer to remove the keys. |
 | `Button` (`primary`, `secondary`, `ghost`, `spark`, `danger`, `onDark`) and the other primitives | `Card`, `PageHeader`, `Eyebrow`, `Badge`, `SparkMark`, `Thinking`, `Field`, `TextInput`, `TextArea`, `Dialog`, `FocusSurface`, `BrandMark` |
 | `useWorkspace()` | `me`, `workspaceId`, `audience`, `access(featureId)`, `refresh()`. |
 | `askAssistant(prompt)` | Opens the assistant with a prefilled prompt, without putting it in the URL. |

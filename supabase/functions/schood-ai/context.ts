@@ -8,6 +8,7 @@ import { isUuid } from './input.ts';
 import type { PlanResolver } from './plan.ts';
 import type { Stores } from './stores.ts';
 import { sseResponse } from './stream.ts';
+import { ONBOARDING_TAKEN } from './specialists.ts';
 import {
   AREAS, LEARNING_EVENT_KINDS, SchoodAIError,
   type Area, type Caller, type ContextBlock, type MintedSession, type NotifySendResult, type Workspace, type FunctionCallInit, type LearningEvent, type LearningEventInput, type Locale, type Method,
@@ -76,6 +77,8 @@ export interface ContextDeps {
   /** Sends one Telegram message through the Schood bot (the send-telegram function); absent where nothing can send. */
   sendTelegram?(input: { userId: string; kind: string; text: string; buttons: { label: string; path: string }[]; dedupeKey: string | null }): Promise<{ outcome: 'sent' | 'defer' | 'suppressed' | 'failed'; deliverAt?: string | null }>;
   isAdmin(userId: string): Promise<boolean>;
+  /** Test fixtures only: every onboarding chat guard counts as done (specialists.ts ONBOARDING_TAKEN). Never set when deployed. */
+  onboardingTaken?: boolean;
   /** Mints a Supabase session for a user (the auth admin API, index.ts); null when it cannot. Absent where nothing can. */
   mintSession?(userId: string): Promise<MintedSession | null>;
   /** Another Edge Function with the person's token: status and parsed JSON. */
@@ -361,6 +364,7 @@ export function createRequestContext(deps: ContextDeps, input: ContextInput): Re
   };
   ctx.ai = createChargedAI(ctx);
   ctx.actions = createActionService(ctx);
+  if (deps.onboardingTaken) Object.defineProperty(ctx, ONBOARDING_TAKEN, { value: true });
   ctx.library = createLibraryService(ctx);
   return ctx;
 }

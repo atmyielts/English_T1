@@ -73,7 +73,14 @@ export const systemJobs = () => [...jobs].sort(([a], [b]) => a.localeCompare(b))
  * feeCredits: the platform fee per call, 0 to 1000 (0 or left out when the contract bills it).
  */
 export type OwnKeyResolver = (input: { workspaceId: string; providerKey: string; store<T>(handle: StoreHandle<T>): T }) => Promise<{ label: string; apiKey: string; feeCredits?: number } | null>;
+/**
+ * Whether the workspace has any own key set up, without unsealing one. Core asks it only when the
+ * workspace's plan does not grant C15: a workspace with keys but no C15 is refused (`plan_required`)
+ * rather than moved to Schood's keys and credits without being told.
+ */
+export type OwnKeysConfigured = (input: { workspaceId: string; store<T>(handle: StoreHandle<T>): T }) => Promise<boolean>;
 let ownKeys: OwnKeyResolver | null = null;
+let ownKeysConfigured: OwnKeysConfigured | null = null;
 
 /**
  * The centre area's hook for "bring your own key": when a workspace has an enabled key for
@@ -81,8 +88,11 @@ let ownKeys: OwnKeyResolver | null = null;
  * logs the provider as `byok:<label>` with no USD cost, and charges the fee instead of the
  * credit price. Plans, roles, switches and call caps still apply. One resolver; register at module load.
  */
-export function registerOwnKeyResolver(resolver: OwnKeyResolver): void {
+export function registerOwnKeyResolver(resolver: OwnKeyResolver, options: { configured?: OwnKeysConfigured } = {}): void {
   if (ownKeys) throw new Error('an own-key resolver is already registered');
   ownKeys = resolver;
+  ownKeysConfigured = options.configured ?? null;
 }
 export const ownKeyResolver = () => ownKeys;
+/** The registered `configured` check, or null. */
+export const ownKeyConfigured = () => ownKeysConfigured;

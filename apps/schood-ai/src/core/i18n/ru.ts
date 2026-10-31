@@ -173,6 +173,9 @@ export const ru: Record<CoreKey, string> = {
   'state.plan.soon': 'Тарифы скоро откроются. До тех пор Schood AI работает в закрытой бете.',
   'state.role.title': 'Недоступно для вашей роли',
   'state.role.lead': 'Это может сделать человек с другой ролью в этом рабочем пространстве.',
+  'state.consent.title': 'Один шаг перед началом',
+  'state.consent.lead': 'Schood AI один раз просит каждого ученика подтвердить возраст. Ученикам младше 18 лет также нужно согласие родителя или опекуна.',
+  'state.consent.open': 'Пройти шаг',
   'state.signIn.title': 'Войдите, чтобы продолжить',
   'state.signIn.lead': 'Используйте аккаунт Schood. Если вы вошли на schood.online, вы вошли и здесь.',
 
@@ -599,6 +602,8 @@ export const ru: Record<CoreKey, string> = {
   'library.open': 'Открыть',
   'error.revision_conflict': 'Страница изменилась с тех пор, как вы её открыли.',
   'notFound.title': 'Страница не найдена',
+  'place.choose.title': 'В каком рабочем пространстве открыть?',
+  'place.choose.lead': 'Эта страница относится к центру. Выберите, где её открыть.',
   'notFound.lead': 'Такой страницы нет или она закрыта для вашей роли.',
   'notFound.home': 'На главную',
 

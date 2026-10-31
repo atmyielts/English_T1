@@ -9,7 +9,8 @@ import { namedIcon } from './core/lazy.tsx';
 import { HomePage } from './core/pages/Home.tsx';
 import { matchPath, useLocation } from './core/router.tsx';
 import { ApiErrorState, LoadingState, Paywall, PlanGate } from './core/states.tsx';
-import { Card } from './core/ui.tsx';
+import type { WorkspaceView } from './core/types.ts';
+import { Button, Card } from './core/ui.tsx';
 import { useWorkspace } from './core/workspace.tsx';
 import * as engage from './engage/routes.tsx';
 import * as learner from './learner/routes.tsx';
@@ -88,11 +89,38 @@ export function App() {
   ];
   let content: React.ReactNode;
   if (!route) content = <NotFoundPage params={{}}/>;
-  else if (route.audiences && !route.audiences.includes(audience)) content = <NotFoundPage params={{}}/>;
+  else if (route.audiences && !route.audiences.includes(audience)) content = <WrongPlace wanted={route.audiences}/>;
   else if ('feature' in route && route.feature) content = <PlanGate feature={route.feature}><route.component params={params}/></PlanGate>;
   else content = <route.component params={params}/>;
   const blocked = !workspace.me.plan.plans.length && !workspace.me.plan.beta && !workspace.me.plan.features.length && path === '/assistant';
   return <AppShell nav={nav} focusMode={!!route && 'focus' in route && !!route.focus}>
     <Suspense fallback={loading}>{blocked ? <><h1 className="m-0 mb-4 font-display text-3xl font-bold">{t('chat.title')}</h1><Paywall plans={['plus', 'family', 'teacher']}/></> : content}</Suspense>
   </AppShell>;
+}
+
+/** The audiences a centre workspace gives a role (the centre side of audiencesFor). */
+const centreAudiences = (ws: WorkspaceView): Audience[] =>
+  ws.kind !== 'centre' ? [] : ws.role === 'student' ? ['learner'] : ws.role === 'parent' ? ['parent'] : ws.role === 'teacher' ? ['teacher'] : ['centre', 'teacher'];
+
+/**
+ * A page for another audience (a centre owner opening /centre/brief from the Monday brief
+ * while their own workspace is open): switch to the audience or the one workspace where it
+ * belongs, offer a choice when there are several, and say not found only when there is none.
+ */
+function WrongPlace({ wanted }: { wanted: Audience[] }) {
+  const t = useT(), workspace = useWorkspace(), me = workspace.me!;
+  const here = workspace.audiences.find((audience) => wanted.includes(audience)) ?? null;
+  const places = here ? [] : me.workspaces.filter((ws) => ws.id !== me.workspace.id && ws.status === 'active' && centreAudiences(ws).some((audience) => wanted.includes(audience)));
+  const only = places.length === 1 ? places[0].id : null;
+  useEffect(() => {
+    if (here) workspace.setAudience(here);
+    else if (only) workspace.setWorkspace(only);
+  }, [here, only]);
+  if (here || only) return <LoadingState label={t('app.loading')}/>;
+  if (!places.length) return <NotFoundPage params={{}}/>;
+  return <Card>
+    <h1 className="m-0 font-display text-2xl font-bold">{t('place.choose.title')}</h1>
+    <p className="mb-4 mt-2 text-sm text-gray-700">{t('place.choose.lead')}</p>
+    <div className="flex flex-wrap gap-2">{places.map((ws) => <Button key={ws.id} variant="secondary" onClick={() => workspace.setWorkspace(ws.id)}>{ws.name}</Button>)}</div>
+  </Card>;
 }

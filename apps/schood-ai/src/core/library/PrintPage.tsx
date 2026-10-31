@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ArrowLeft, Printer } from 'lucide-react';
-import { useI18n } from '../../../../../packages/service-i18n/src/i18n.tsx';
-import { useT } from '../i18n/index.ts';
+import { useI18n, useT } from '../i18n/index.ts';
 import { Answer } from '../markdown.tsx';
 import { Link } from '../router.tsx';
 import { ApiErrorState, LoadingState } from '../states.tsx';

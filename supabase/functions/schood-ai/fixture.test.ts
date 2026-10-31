@@ -1,7 +1,7 @@
 import { SSEParser, type Registry } from '../../../packages/ai-core/src/mod.ts';
 import { CircuitBreaker, createGateway, type GatewayDeps, type Timeouts } from './gateway.ts';
 import { createSchoodAIHandler, MODULES } from './handler.ts';
-import { ownKeyResolver } from './registries.ts';
+import { ownKeyConfigured, ownKeyResolver } from './registries.ts';
 import { createStores } from './stores.ts';
 import { createMemoryRepository, SEED_REGISTRY, type MemoryUser } from './memory-repository.ts';
 import { createPlanResolver } from './plan.ts';
@@ -60,7 +60,13 @@ export async function events(response: Response) {
   return all.map((event) => ({ event: event.event, data: JSON.parse(event.data) }));
 }
 
-export interface FixtureOptions { settings?: Partial<ServiceSettings>; registry?: Registry; modules?: FeatureModule[]; timeouts?: Partial<Timeouts>; env?: Record<string, string>; productIds?: Partial<typeof PRODUCT>; systemJobs?: [string, SystemJob][]; ownKey?: GatewayDeps['ownKey'] }
+export interface FixtureOptions { settings?: Partial<ServiceSettings>; registry?: Registry; modules?: FeatureModule[]; timeouts?: Partial<Timeouts>; env?: Record<string, string>; productIds?: Partial<typeof PRODUCT>; systemJobs?: [string, SystemJob][]; ownKey?: GatewayDeps['ownKey']; ownKeyConfigured?: GatewayDeps['ownKeyConfigured'];
+  /**
+   * 'taken' (the default): the fixture's people have completed every onboarding step (chat guards
+   * registered with `{ onboarding: true }`, such as the learner's consent), so those guards are skipped.
+   * 'required': they run, as when deployed. Tests of an onboarding step itself use 'required'.
+   */
+  onboarding?: 'taken' | 'required' }
 
 export function fixture(options: FixtureOptions = {}) {
   let clock = START;
@@ -90,6 +96,7 @@ export function fixture(options: FixtureOptions = {}) {
     breaker,
     timeouts: options.timeouts,
     ownKey: options.ownKey ?? ((input) => ownKeyResolver()?.({ ...input, store: (handle) => stores.get(handle) }) ?? Promise.resolve(null)),
+    ownKeyConfigured: options.ownKeyConfigured ?? ((input) => ownKeyConfigured()?.({ ...input, store: (handle) => stores.get(handle) }) ?? Promise.resolve(false)),
   });
   const isAdmin = (userId: string) => Promise.resolve(userId === ID.admin);
   const tokenProducts = new Map(Object.entries(USERS).map(([token, user]) => [token, user.products ?? []]));
@@ -110,6 +117,7 @@ export function fixture(options: FixtureOptions = {}) {
     sendTelegram: (input) => { notifySends.push(structuredClone(input)); return Promise.resolve(telegramOutcome); },
     mintSession: (userId) => { sessionsMinted.push(userId); return Promise.resolve(Object.values(USERS).some((entry) => entry.id === userId && entry.email) ? { access_token: `access-${userId}`, refresh_token: `refresh-${userId}`, expires_at: Math.floor(clock.getTime() / 1000) + 3600 } : null); },
     systemJobs: options.systemJobs,
+    onboardingTaken: (options.onboarding ?? 'taken') === 'taken',
     adminGate: (req, permission) => {
       const token = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '');
       return Promise.resolve(token === 'tok-admin' && permission.startsWith('admin.') ? { ok: true } : { ok: false, status: 403, code: 'forbidden' });

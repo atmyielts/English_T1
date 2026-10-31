@@ -99,7 +99,17 @@ export function listSpecialists(workspace: Workspace, role: Role, overrides: Spe
 /** What a chat guard sees besides ctx: the specialist and the caller's workspace and role. */
 export interface ChatGuardInput { specialist: string; custom: boolean; access: WorkspaceAccess }
 export type ChatGuard = (ctx: RequestContext, input: ChatGuardInput) => Promise<void>;
-const chatGuards = new Map<string, ChatGuard>();
+export interface ChatGuardOptions {
+  /**
+   * A one-time step each person completes once (the learner area's consent step). It always
+   * runs when deployed; a test fixture may declare every such step done for its people
+   * (`fixture({ onboarding: 'taken' })`, the default), so other areas' tests need not repeat it.
+   */
+  onboarding?: boolean;
+}
+const chatGuards = new Map<string, { guard: ChatGuard; onboarding: boolean }>();
+/** Set on a request context (never by index.ts) when a test fixture declares every onboarding step done. */
+export const ONBOARDING_TAKEN = Symbol('schood-ai.onboarding_taken');
 
 /**
  * A check before every core/chat turn, with any specialist (for example the
@@ -107,15 +117,19 @@ const chatGuards = new Map<string, ChatGuard>();
  * Guards run after the plan check and before anything is read, stored or charged,
  * for the browser and the Telegram worker alike. Names are unique; register at module load.
  */
-export function registerChatGuard(name: string, guard: ChatGuard): void {
+export function registerChatGuard(name: string, guard: ChatGuard, options: ChatGuardOptions = {}): void {
   if (!/^[a-z][a-z0-9_.-]{1,60}$/.test(name)) throw new Error(`chat guard ${name} is invalid`);
   if (chatGuards.has(name)) throw new Error(`chat guard ${name} is already registered`);
-  chatGuards.set(name, guard);
+  chatGuards.set(name, { guard, onboarding: options.onboarding === true });
 }
 
 /** Every registered guard, then the specialist's own. A guard that fails unexpectedly refuses the chat (500). */
 export async function runChatGuards(ctx: RequestContext, specialist: ResolvedSpecialist, access: WorkspaceAccess): Promise<void> {
   const input: ChatGuardInput = { specialist: specialist.key, custom: specialist.custom, access };
-  for (const guard of chatGuards.values()) await guard(ctx, input);
+  const onboarded = (ctx as unknown as Record<symbol, unknown>)[ONBOARDING_TAKEN] === true;
+  for (const { guard, onboarding } of chatGuards.values()) {
+    if (onboarding && onboarded) continue;
+    await guard(ctx, input);
+  }
   if (specialist.guard) await specialist.guard(ctx, input);
 }

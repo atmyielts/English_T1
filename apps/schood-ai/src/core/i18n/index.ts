@@ -1,23 +1,29 @@
-import { useCallback, useEffect, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
 import { format, type Catalogs, type Locale, type Params } from '../../../../../packages/service-i18n/src/format.ts';
-import { useI18n } from '../../../../../packages/service-i18n/src/i18n.tsx';
-import { en } from './en.ts';
+import { useI18n as useServiceI18n } from '../../../../../packages/service-i18n/src/i18n.tsx';
+import { formatDate } from '../dates.ts';
 
 // Core text plus every area's catalog. Area keys carry their area prefix, so the
 // merge cannot collide; a missing translation falls back to English, never to blank.
 //
-// Only core's English ships in the first download. Every area's catalog for the
-// person's language (and Uzbek or Russian for core) loads on demand, one small
-// chunk per file, in parallel; main.tsx waits for it before the first paint, so
-// nothing flashes untranslated. For Uzbek and Russian, the areas' English loads
-// right after, as the fallback. However many areas merge, the main chunk keeps
-// the same size. Strings only some screens need can load with those screens
+// No catalog ships in the first download, core's English included: only the few
+// strings the loading shell needs. Core's and every area's catalog for the person's
+// language load on demand, one small chunk per file, in parallel; main.tsx waits for
+// them before the first paint, so nothing flashes untranslated. For Uzbek and
+// Russian, English loads right after, as the fallback. A chunk that fails to load is
+// retried when the next screen asks (useT). However many areas merge, the main chunk
+// keeps the same size. Strings only some screens need can load with those screens
 // (useCatalog below).
-export const catalogs: Catalogs<string> = { en: { ...en }, uz: {}, ru: {} };
+const BOOT: Record<string, string> = {
+  'app.title': 'Schood AI', 'app.loading': 'Loading Schood AI…', 'state.retry': 'Try again',
+  'state.error.title': 'Something went wrong', 'state.error.lead': 'Please try again in a moment.',
+};
+export const catalogs: Catalogs<string> = { en: { ...BOOT }, uz: {}, ru: {} };
 
 type Part = () => Promise<Record<string, string>>;
 const parts: Record<Locale, Part[]> = {
   en: [
+    () => import('./en.ts').then((m) => m.en),
     () => import('../../learner/i18n/en.ts').then((m) => m.en), () => import('../../teacher/i18n/en.ts').then((m) => m.en),
     () => import('../../centre/i18n/en.ts').then((m) => m.en), () => import('../../coach/i18n/en.ts').then((m) => m.en),
     () => import('../../engage/i18n/en.ts').then((m) => m.en),
@@ -64,7 +70,7 @@ const subscribe = (listener: () => void) => { listeners.add(listener); return ()
 export type Translate = (key: string, params?: Params) => string;
 
 export function useT(): Translate {
-  const { locale } = useI18n();
+  const { locale } = useServiceI18n();
   const loadedVersion = useSyncExternalStore(subscribe, () => version);
   useEffect(() => { void loadLocale(locale); }, [locale]);
   return useCallback<Translate>((key, params) => format(catalogs, locale, key, params), [locale, loadedVersion]);
@@ -83,7 +89,7 @@ export function useT(): Translate {
  * Keys keep your area prefix. English always loads too, as the fallback.
  */
 export function useCatalog(name: string, loaders: Record<Locale, Part>): boolean {
-  const { locale } = useI18n();
+  const { locale } = useServiceI18n();
   useSyncExternalStore(subscribe, () => version);
   // The loaders are module-level imports; the name identifies them.
   useEffect(() => {
@@ -92,5 +98,9 @@ export function useCatalog(name: string, loaders: Record<Locale, Part>): boolean
   }, [name, locale]);
   return loaded.has(`${name}:${locale}`);
 }
-export { useI18n };
+/** The shared i18n context, with core's date formatter (Uzbek written out: dates.ts). Areas use this one. */
+export function useI18n(): ReturnType<typeof useServiceI18n> {
+  const i18n = useServiceI18n();
+  return useMemo(() => ({ ...i18n, date: (input: string | number | Date, options?: Intl.DateTimeFormatOptions) => formatDate(i18n.locale, input, options) }), [i18n]);
+}
 export type { CoreKey } from './en.ts';

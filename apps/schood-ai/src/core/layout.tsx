@@ -1,11 +1,10 @@
 import { useEffect, useId, useRef, useState, type ComponentType, type ReactNode } from 'react';
 import { BookOpenCheck, ChevronDown, CircleCheck, Coins, FolderOpen, History, Home, Languages, LayoutGrid, Menu, MessageSquareText, Settings, ShieldCheck, X } from 'lucide-react';
 import { LOCALE_NAMES, SUPPORTED_LOCALES, type Locale } from '../../../../packages/service-i18n/src/format.ts';
-import { useI18n } from '../../../../packages/service-i18n/src/i18n.tsx';
 import type { Audience } from './areas.ts';
 import { signInUrl, useSession } from './auth.tsx';
 import type { IconProps } from './lazy.tsx';
-import { useT } from './i18n/index.ts';
+import { useI18n, useT } from './i18n/index.ts';
 import { Link, useLocation } from './router.tsx';
 import { CreditBalance } from './states.tsx';
 import { BrandMark, Button, ButtonLink } from './ui.tsx';

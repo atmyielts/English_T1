@@ -1,12 +1,11 @@
 import { ArrowUpRight, BookOpenCheck, Building2, GraduationCap, HeartHandshake, ShieldCheck, Sparkles, Users2 } from 'lucide-react';
 import { MONTHLY_CREDITS, PLAN_CODES, type PlanCode } from '../../../../../packages/ai-core/src/mod.ts';
 import { signInUrl, useSession } from '../auth.tsx';
-import { useT } from '../i18n/index.ts';
+import { useI18n, useT } from '../i18n/index.ts';
 import { Answer } from '../markdown.tsx';
 import { Link } from '../router.tsx';
 import { Badge, ButtonLink, Card, Eyebrow, PageHeader, SparkMark } from '../ui.tsx';
 import { useWorkspace } from '../workspace.tsx';
-import { useI18n } from '../../../../../packages/service-i18n/src/i18n.tsx';
 
 // What a person without a plan can see: the landing page, a fixed gallery of
 // examples (written in advance, never live model output) and the plans. Prices are

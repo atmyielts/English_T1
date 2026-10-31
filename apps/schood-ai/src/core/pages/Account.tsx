@@ -1,10 +1,9 @@
 import React, { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Bot, Pin, PinOff, Trash2 } from 'lucide-react';
-import { useI18n } from '../../../../../packages/service-i18n/src/i18n.tsx';
 import { api } from '../api.ts';
 import { ApproveRunCard } from '../cards.tsx';
 import { NotificationsCard } from './NotificationsCard.tsx';
-import { useT } from '../i18n/index.ts';
+import { useI18n, useT } from '../i18n/index.ts';
 import { Link, navigate } from '../router.tsx';
 import { ApiErrorState, EmptyState, LoadingState } from '../states.tsx';
 import type { ActionView, BalanceView, BudgetView, LedgerView, ThreadView } from '../types.ts';
