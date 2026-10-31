@@ -117,7 +117,7 @@ export function registerMessageActions(): void {
     area: 'centre',
     approverRoles: ['owner', 'admin'],
     parse: parseLead,
-    summary: (p, locale) => pick(locale, { en: `Follow up with ${p.lead_name}`, uz: `${p.lead_name} bilan bog‘lanish`, ru: `Связаться с ${p.lead_name}` }),
+    summary: (p, locale) => pick(locale, { en: `Follow up with ${p.lead_name}`, uz: `${p.lead_name} bilan bog‘lanish`, ru: `Повторный контакт: ${p.lead_name}` }),
     display: (p) => ({ lead: p.lead_name, channel: p.channel === 'centre_bot' ? 'Centre Telegram bot' : 'You send it yourself; approving logs it in Academy', language: LANGUAGE_NAMES[p.language], message: p.message, ...(p.next_follow_up_at ? { next_follow_up: p.next_follow_up_at } : {}) }),
     async run(ctx, p, action) {
       const deps = await centreDeps(ctx);

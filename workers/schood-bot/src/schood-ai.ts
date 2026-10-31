@@ -35,7 +35,7 @@ const SECRET_MIN = 32;
 const COPY: Record<Locale, { link: string; off: string; busy: string }> = {
   en: { link: "Link your Schood account first: open Schood, then Account → Link Telegram.", off: "Schood AI is not available in this bot yet.", busy: "Schood AI is busy. Please try again in a minute." },
   ru: { link: "Сначала привяжите аккаунт Schood: откройте Schood, затем Аккаунт → Привязать Telegram.", off: "Schood AI пока недоступен в этом боте.", busy: "Schood AI занят. Попробуйте через минуту." },
-  uz: { link: "Avval Schood hisobingizni bogʻlang: Schoodni oching, keyin Hisob → Telegramni bogʻlash.", off: "Schood AI hali bu botda ishlamaydi.", busy: "Schood AI band. Bir daqiqadan keyin urinib koʻring." },
+  uz: { link: "Avval Schood hisobingizni bog‘lang: Schoodni oching, keyin Hisob → Telegramni bog‘lash.", off: "Schood AI hali bu botda ishlamaydi.", busy: "Schood AI band. Bir daqiqadan keyin qayta urinib ko‘ring." },
 };
 const localeOf = (code: unknown): Locale => {
   const value = String(code ?? "").toLowerCase();

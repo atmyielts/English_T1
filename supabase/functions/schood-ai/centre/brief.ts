@@ -95,7 +95,7 @@ export function briefMessage(centre: Centre, brief: BriefRow): string {
 interface Delivery { user_id: string; status: 'sent' | 'sent_later' | 'deferred' | 'muted' | 'in_app' | 'no_chat' | 'failed'; channel: string | null; at: string; retry_at?: string }
 /** The brief's notification kind (Settings → Notifications lets managers mute it). */
 export const BRIEF_KIND = 'centre.brief';
-registerNotifyKind(BRIEF_KIND, { area: 'centre', label: { en: 'Monday brief of your centre', uz: 'Markazingizning dushanba xulosasi', ru: 'Понедельничная сводка центра' } });
+registerNotifyKind(BRIEF_KIND, { area: 'centre', label: { en: 'Monday brief of your centre', uz: 'Markazingiz bo‘yicha dushanba xulosasi', ru: 'Сводка по центру на понедельник' } });
 const BRIEF_BUTTON: Record<string, string> = { en: 'Open the brief', uz: 'Xulosani ochish', ru: 'Открыть сводку' };
 /** What core's notify.send answered, as a delivery status. Deferred ones are retried by the brief job. */
 const SEND_STATUS: Record<Exclude<NotifySendResult, { sent: true }>['reason'], Delivery['status']> = {

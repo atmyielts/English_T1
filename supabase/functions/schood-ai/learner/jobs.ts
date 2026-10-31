@@ -19,7 +19,7 @@ const BATCH = 25;
 
 export function registerBriefJobs(): void {
   registerNotifyKind(DAILY_KIND, { area: 'learner', label: { en: 'Daily brief', uz: 'Kunlik mashq', ru: 'Ежедневная разминка' } });
-  registerNotifyKind(PARENT_KIND, { area: 'learner', label: { en: 'Weekly brief about your child', uz: 'Farzandingiz haqida haftalik hisobot', ru: 'Недельный отчёт о ребёнке' } });
+  registerNotifyKind(PARENT_KIND, { area: 'learner', label: { en: 'Weekly brief about your child', uz: 'Farzandingiz haqida haftalik xulosa', ru: 'Недельная сводка о ребёнке' } });
   registerSystemJob('learner.briefs', { area: 'learner', schedule: { everyMinutes: 15 }, timeoutMs: 110_000, run: sendDueBriefs });
 }
 

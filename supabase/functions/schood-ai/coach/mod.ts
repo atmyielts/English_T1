@@ -20,7 +20,7 @@ for (const source of PACK_SOURCES) {
   const name = source.manifest.name;
   registerNotifyKind(`coach.${source.manifest.id}`, {
     area: 'coach',
-    label: { en: `${name.en ?? source.manifest.id}: reminders and weekly reports`.slice(0, 80), uz: `${name.uz ?? name.en ?? source.manifest.id}: eslatmalar va haftalik hisobotlar`.slice(0, 80), ru: `${name.ru ?? name.en ?? source.manifest.id}: напоминания и недельные отчёты`.slice(0, 80) },
+    label: { en: `${name.en ?? source.manifest.id}: reminders and weekly reports`.slice(0, 80), uz: `${name.uz ?? name.en ?? source.manifest.id}: eslatmalar va haftalik hisobotlar`.slice(0, 80), ru: `${name.ru ?? name.en ?? source.manifest.id}: напоминания и еженедельные отчёты`.slice(0, 80) },
   });
 }
 

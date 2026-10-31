@@ -122,7 +122,7 @@ export function registerTutor(): void {
     name: { en: 'Your tutor', uz: 'Shaxsiy repetitor', ru: 'Ваш репетитор' },
     description: {
       en: 'A tutor that knows your goals, levels, weak skills and recent results across Schood.',
-      uz: 'Schooddagi maqsadlaringiz, darajangiz, zaif tomonlaringiz va soʻnggi natijalaringizni biladigan repetitor.',
+      uz: 'Schooddagi maqsadlaringiz, darajangiz, zaif tomonlaringiz va so‘nggi natijalaringizni biladigan repetitor.',
       ru: 'Репетитор, который знает ваши цели, уровень, слабые места и недавние результаты в Schood.',
     },
     instructions: [
@@ -143,7 +143,7 @@ export function registerTutor(): void {
     guard: (ctx, input) => consentGuard(ctx, input),
     suggestions: {
       en: ['What should I work on this week to reach my target?', 'Explain my weakest skill and give me one exercise.', 'Make me a 20-minute plan for today.'],
-      uz: ['Maqsadimga yetish uchun bu hafta nima ustida ishlashim kerak?', 'Eng zaif tomonimni tushuntirib, bitta mashq bering.', 'Bugun uchun 20 daqiqalik reja tuzib bering.'],
+      uz: ['Maqsadimga yetish uchun bu hafta nima ustida ishlashim kerak?', 'Eng zaif tomonimni tushuntirib, bitta mashq bering.', 'Bugungi kunga 20 daqiqalik reja tuzib bering.'],
       ru: ['Над чем мне работать на этой неделе, чтобы выйти на цель?', 'Объясните мой самый слабый навык и дайте одно упражнение.', 'Составьте план на 20 минут на сегодня.'],
     },
   });
@@ -170,7 +170,7 @@ export function registerTutor(): void {
   registerContextProvider('learner_activity', async (ctx) => {
     const list = await recentActivity(ctx, ctx.user.id);
     return list.length ? { kind: 'learner_activity', title: 'What you did with Schood AI lately', data: list } : null;
-  }, { label: { en: 'your Schood AI activity', uz: 'Schood AI dagi faolligingiz', ru: 'ваши действия в Schood AI' }, selfView: true, maxChars: 4_000 });
+  }, { label: { en: 'your Schood AI activity', uz: 'Schood AI’dagi faolligingiz', ru: 'ваши действия в Schood AI' }, selfView: true, maxChars: 4_000 });
 
   registerContextProvider('centre_homework', async (ctx, { access }) => {
     const payload = await centreAssignments(ctx, access);
@@ -182,7 +182,7 @@ export function registerTutor(): void {
   registerContextProvider('centre_feedback', async (ctx, { access }) => {
     const data = await centreFeedback(ctx, access);
     return data ? { kind: 'centre_feedback', title: 'Your teacher\'s feedback', data } : null;
-  }, { label: { en: "your teacher's feedback", uz: 'o‘qituvchingiz fikri', ru: 'отзывы вашего учителя' }, selfView: true, maxChars: 5_000 });
+  }, { label: { en: "your teacher's feedback", uz: 'o‘qituvchingizning fikr-mulohazasi', ru: 'обратная связь от вашего преподавателя' }, selfView: true, maxChars: 5_000 });
 }
 
 // --- Telegram ---------------------------------------------------------------------------

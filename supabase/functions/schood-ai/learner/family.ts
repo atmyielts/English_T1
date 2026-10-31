@@ -177,7 +177,7 @@ const BRIEF_SCHEMA = s.object({
 });
 const NO_DATA: Record<Locale, string> = {
   en: 'No Schood activity this week yet. A short daily practice helps; you could ask them to try today\'s Schood AI brief.',
-  uz: 'Bu hafta Schoodda faollik boʻlmadi. Kunlik qisqa mashq foydali; farzandingizdan bugungi Schood AI mashqini sinab koʻrishni soʻrang.',
+  uz: 'Bu hafta Schoodda hali faollik bo‘lmadi. Kunlik qisqa mashq foydali: farzandingizdan bugungi Schood AI mashqini sinab ko‘rishni so‘rang.',
   ru: 'На этой неделе активности в Schood пока не было. Помогает короткая ежедневная практика: предложите ребёнку попробовать сегодняшнюю разминку Schood AI.',
 };
 
@@ -223,8 +223,8 @@ export async function parentBriefsFor(ctx: RequestContext, actor: Actor, onlyChi
 
 const PARENT_COPY: Record<Locale, { title: string; minutes: string; days: string; effort: string; progress: string; praise: string; watch: string; suggestion: string; streak: string; limit: string }> = {
   en: { title: 'Weekly brief', minutes: 'minutes of practice', days: 'active days', effort: 'Effort', progress: 'Progress', praise: 'Praise', watch: 'Watch', suggestion: 'This week', streak: 'day streak', limit: 'Daily limit {limit} min, reached on {days} days' },
-  uz: { title: 'Haftalik hisobot', minutes: 'daqiqa mashq', days: 'faol kun', effort: 'Harakat', progress: 'O‘sish', praise: 'Maqtang', watch: 'E’tibor bering', suggestion: 'Bu hafta', streak: 'kunlik seriya', limit: 'Kunlik chegara {limit} daqiqa, {days} kun yetib borildi' },
-  ru: { title: 'Недельный отчёт', minutes: 'минут практики', days: 'активных дней', effort: 'Старание', progress: 'Прогресс', praise: 'Похвалите', watch: 'Обратите внимание', suggestion: 'На этой неделе', streak: 'дней подряд', limit: 'Дневной лимит {limit} мин, достигнут в {days} дн.' },
+  uz: { title: 'Haftalik xulosa', minutes: 'daqiqa mashq', days: 'faol kun', effort: 'Harakat', progress: 'O‘sish', praise: 'Maqtang', watch: 'E’tibor bering', suggestion: 'Bu hafta', streak: 'kunlik seriya', limit: 'Kunlik limit {limit} daqiqa: {days} kun limitga yetildi' },
+  ru: { title: 'Недельная сводка', minutes: 'мин. практики', days: 'дн. активности', effort: 'Старание', progress: 'Прогресс', praise: 'Похвалите', watch: 'Обратите внимание', suggestion: 'На этой неделе', streak: 'дн. подряд', limit: 'Дневной лимит {limit} мин.; достигнут дней: {days}' },
 };
 type BriefStats = { minutes_7d?: number; active_days_7d?: number; practice_minutes_7d?: number; practice_days_7d?: number; streak?: number; daily_limit_minutes?: number | null; limit_reached_days_7d?: number };
 /** Minutes and days (engage's verified learning when there is a summary), then the streak and the daily limit. */
