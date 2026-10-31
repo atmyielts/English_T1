@@ -1,4 +1,5 @@
 import { ciValidatedPacks } from '../../../packages/coach-packs/src/registry.ts';
+import { AVATARS } from './avatars.ts';
 import { createWorker, type Env } from './worker.ts';
 
 // Cloudflare entry: webhooks and the Mini App sign-in (fetch), reminders (cron).
@@ -7,7 +8,7 @@ import { createWorker, type Env } from './worker.ts';
 
 interface ExecutionContext { waitUntil(promise: Promise<unknown>): void }
 let worker: ReturnType<typeof createWorker> | null = null;
-const workerFor = (env: Env) => (worker ??= createWorker({ env, packs: ciValidatedPacks(), fetch: (input, init) => fetch(input, init) }));
+const workerFor = (env: Env) => (worker ??= createWorker({ env, packs: ciValidatedPacks(), fetch: (input, init) => fetch(input, init), avatars: AVATARS }));
 
 export default {
   fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
