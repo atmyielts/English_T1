@@ -52,6 +52,8 @@ export const ru: Record<TeacherKey, string> = {
   'teacher.kind.ielts_writing': 'IELTS Writing',
   'teacher.kind.ielts_speaking': 'IELTS Speaking',
   'teacher.kind.toefl_2026': 'Задание TOEFL iBT (2026)',
+  // The centre area's library kind, listed in the marketplace with the others.
+  'teacher.kind.placement_test': 'Тест на определение уровня',
   'teacher.kind.multilevel': 'Раздел Multilevel',
   'teacher.kind.sat_reading_writing': 'SAT Reading and Writing',
   'teacher.kind.sat_math': 'SAT Math',
