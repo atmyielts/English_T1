@@ -6,6 +6,7 @@ on:
       - 'packages/ai-core/**'
       - 'supabase/functions/schood-ai/**'
       - 'packages/coach-packs/**'
+      - 'packages/subject-core/**'
       - 'supabase/functions/_shared/telegram-init-data.ts'
       - 'supabase/functions/_shared/english-certificate.ts'
       - 'supabase/functions/_shared/english-srs.ts'

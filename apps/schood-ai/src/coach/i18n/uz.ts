@@ -273,6 +273,7 @@ export const uz: Record<CoachKey, string> = {
   'coach.mistakes.empty': 'Tuzatadigan narsa yo‘q',
   'coach.mistakes.emptyLead': 'Mashq to‘plamlari va mini sinovlarda xato qilgan savollaringiz shu yerga tushadi — qaytib kelib tuzatasiz.',
   'coach.mistakes.more': '{total} tadan {shown} tasi ko‘rsatilgan. Avval shularni tuzating, qolganlari yuqoriga chiqadi.',
+  'coach.cohort.title': 'Siz qayerdasiz',
   'coach.cohort.latest': 'Oxirgisi: {score}',
   'coach.cohort.none': 'Natijangizni, uning imtihon bloklaridagi ma’nosini va boshqa o‘quvchilar orasidagi o‘rningizni ko‘rish uchun botda mini sinov topshiring.',
   'coach.cohort.projection': '{name}: ≈ {total} tadan {count} savol',

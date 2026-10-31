@@ -273,6 +273,7 @@ export const ru: Record<CoachKey, string> = {
   'coach.mistakes.empty': 'Исправлять нечего',
   'coach.mistakes.emptyLead': 'Сюда попадают вопросы, где вы ошиблись в наборах задач и мини-пробниках, чтобы вернуться и исправить их.',
   'coach.mistakes.more': 'Показано {shown} из {total}. Исправьте эти — и поднимутся следующие.',
+  'coach.cohort.title': 'Где вы сейчас',
   'coach.cohort.latest': 'Последний: {score}',
   'coach.cohort.none': 'Пройдите мини-пробник в боте, чтобы увидеть результат, что он значит для блоков экзамена, и ваше место среди других учеников.',
   'coach.cohort.projection': '≈ {count} из {total} вопросов: {name}',

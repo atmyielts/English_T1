@@ -98,6 +98,8 @@ export interface SessionDetail {
   errors: Record<string, { name: string; explain: string }>;
   /** Curated facts the activity relied on (B5): when they were checked and the official source. */
   facts?: { id: string; title: string; checked_at: string; stale: boolean; source: { name: string; url: string } }[];
+  /** A role-play's goals by id, in the reader's language. */
+  goal_texts?: Record<string, string>;
 }
 export interface TeamList { teams: { id: string; name: string; role: 'manager' | 'member'; packs: string[]; seats: number; valid_until: string }[] }
 export interface TeamBoard {
@@ -146,5 +148,6 @@ export function levelLabel(scale: LevelScale, value: number | null): string {
   const nearest = Math.min(scale.max, Math.max(scale.min, scale.min + Math.round((value - scale.min) / scale.step) * scale.step));
   const label = named(value) ?? (scale.labels?.length ? named(nearest) : undefined);
   if (label) return label;
-  return value.toFixed(scale.decimals ?? (scale.step < 1 ? 1 : 0));
+  const text = value.toFixed(scale.decimals ?? (scale.step < 1 ? 1 : 0));
+  return scale.id === 'percent' ? `${text}%` : text;
 }

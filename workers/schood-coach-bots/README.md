@@ -83,7 +83,7 @@ Worker (`wrangler secret put <NAME>`, never in `wrangler.toml`):
 | `SUPABASE_URL` | The production project's URL. |
 | `SCHOOD_AI_SERVICE_SECRET` | The same value as the `schood-ai` function (32+ characters). |
 | `TELEGRAM_INTERNAL_SECRET` | The same value as the `telegram-link` function. |
-| `COACH_BOT_TOKEN_<PACK>` | The bot's token from BotFather. `<PACK>` is the pack id upper-cased, with `-` written as `_`: `IELTS`, `SPEAKING`. |
+| `COACH_BOT_TOKEN_<PACK>` | The bot's token from BotFather. `<PACK>` is the pack id upper-cased, with `-` written as `_`: `IELTS`, `SPEAKING`, `MATHS`, `SALES`, `CAREER`, `SPEECH`. |
 | `COACH_WEBHOOK_SECRET_<PACK>` | 16 to 256 random characters from `A-Z a-z 0-9 _ -`, also given to `setWebhook`. |
 | `COACH_WEBHOOK_SECRET_<PACK>_PREVIOUS` | Optional. Set only while rotating, then remove. |
 
@@ -93,8 +93,8 @@ Function (Supabase secrets of `schood-ai`):
 
 | Name | What |
 |---|---|
-| `SCHOOD_AI_COACH_BOTS` | `ielts:<bot id>:<username>,speaking:<bot id>:<username>`. The bot id is the number before `:` in its token. Not secret. |
-| `SCHOOD_AI_COACH_PASS_PRODUCT_IDS` | Optional. `B1:<product uuid>,B2:<product uuid>` for single-coach passes. |
+| `SCHOOD_AI_COACH_BOTS` | `ielts:<bot id>:<username>,speaking:<bot id>:<username>,maths:…,sales:…,career:…,speech:…`. The bot id is the number before `:` in its token. Not secret. |
+| `SCHOOD_AI_COACH_PASS_PRODUCT_IDS` | Optional. `B1:<product uuid>,B2:<product uuid>` (up to B6) for single-coach passes. |
 | `SCHOOD_AI_COACH_FAIR_USE_CREDITS` | Optional. Credits a pass or team seat brings per coach every 30 days (default 1200). Core grants them through the plan source, with none for Plus or Family holders. |
 | `SCHOOD_AI_COACH_APP_URL` | Optional. Defaults to `https://ai.schood.online`. |
 
@@ -104,20 +104,22 @@ The app build reads `VITE_COACH_BOTS_URL` (default `https://coach-bots.schood.on
 
 Nothing here has been run. The order:
 
-1. **Owner, in BotFather:** create one bot per coach (`/newbot`): IELTS Coach and Speaking
-   Partner. Keep each token private. The setup script sets the names, descriptions, commands
+1. **Owner, in BotFather:** create one bot per coach (`/newbot`): IELTS Coach (`ielts`),
+   Speaking Partner (`speaking`), Admission Maths Coach (`maths`), Sales Coach (`sales`),
+   Career and Interview Coach (`career`) and Public Speaking Coach (`speech`). Keep each token private. The setup script sets the names, descriptions, commands
    and menu button, so BotFather needs nothing more.
-2. **Coordinator:** apply the coach migrations (`20261030600000`, `20261030600100`) with
+2. **Coordinator:** apply the coach migrations (`20261030600000`, `20261030600100`, and the
+   coach packs' `20261030700000`: saved scripts and the cohort histogram) with
    `supabase db push --linked` (after core's `20261030160000` and `20261030170000`). Deploy
    `schood-ai`. Set the function settings above.
 3. **Coordinator:** set the Worker secrets, then deploy the Worker. Its custom domain is
    `coach-bots.schood.online`, so check that the DNS record exists.
 4. **Owner or coordinator:** run the setup script against the live bot. A dry run first
    (no network):
-   `deno run --no-lock --allow-read --allow-env workers/schood-coach-bots/scripts/setup-webhooks.ts ielts speaking`.
+   `deno run --no-lock --allow-read --allow-env workers/schood-coach-bots/scripts/setup-webhooks.ts ielts speaking maths sales career speech`.
    Then the same command with `--allow-net` and `--apply`, with `COACH_BOT_TOKEN_<PACK>` and
    `COACH_WEBHOOK_SECRET_<PACK>` set in the shell.
-5. **Smoke test:** `GET https://coach-bots.schood.online/health` lists both coaches. In
+5. **Smoke test:** `GET https://coach-bots.schood.online/health` lists every coach with a token. In
    Telegram: `/start` shows the welcome, the placement test works unlinked, linking from
    `ai.schood.online/coach/ielts/link` works, and a text answer is scored by a Plus account.
    On `ai.schood.online/coach/ielts`, the response headers have no `X-Frame-Options` and the

@@ -256,6 +256,8 @@ export function coachRoutes(): Record<string, RouteHandler> {
           scores: scores.map((score) => ({ turn: turns.find((turn) => turn.id === score.turnId)?.seq ?? null, criterion: score.criterion, score: score.score, status: score.status, evidence: score.evidence, source: score.source })),
           errors: Object.fromEntries(pack.manifest.errorTags.map((tag) => [tag.id, { name: pick(tag.name, ctx.locale), explain: pick(tag.explain, ctx.locale) }])),
           facts: factsSummary(activityFacts(pack, session.activityId ? pack.byId.get(session.activityId) : null), ctx.locale, ctx.now()),
+          // A role-play's goals in the reader's language (the summary keeps only their ids).
+          goal_texts: (() => { const activity = session.activityId ? pack.byId.get(session.activityId) : undefined; return activity?.kind === 'roleplay' ? Object.fromEntries(activity.goals.map((goal) => [goal.id, pick(goal.text, ctx.locale)])) : {}; })(),
         };
       },
     },

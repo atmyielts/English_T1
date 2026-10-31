@@ -1,17 +1,22 @@
 name: Schood Coaches CI
-# The coach packs, their calibration, the Telegram worker and the coach tables.
+# The coach packs, their calibration, the Telegram worker and the coach tables
+# (the engine's 202610306* and the coach packs' 202610307* migrations).
 # The coach area of schood-ai (routes, end-to-end loops, calibration through the scoring
 # pipeline) runs with the function suite in schood-ai-ci.yml.
 on:
   pull_request:
     paths:
       - 'packages/coach-packs/**'
+      # B3 Admission Maths builds its skill tree from the subject-core topic graph.
+      - 'packages/subject-core/**'
       - 'workers/schood-coach-bots/**'
       - 'supabase/functions/schood-ai/coach/**'
       - 'supabase/functions/_shared/telegram-init-data.ts'
       - 'supabase/functions/_shared/english-certificate.ts'
       - 'supabase/functions/_shared/english-srs.ts'
       - 'supabase/migrations/202610306*'
+      # The coach packs' engine additions (saved scripts, the cohort histogram).
+      - 'supabase/migrations/202610307*'
       - 'supabase/migrations/202610301*'
       - 'supabase/tests/schood-coach*'
       - 'scripts/test-schood-coach-db.mjs'

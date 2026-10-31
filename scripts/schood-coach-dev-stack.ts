@@ -58,7 +58,7 @@ const coach = createMemoryCoachStore({ now, chatIdOf: (userId) => Object.values(
 const packs = loadPacks();
 const runtime = {
   store: coach.store, packs,
-  config: { appUrl: ORIGINS[0], bots: { ielts: { id: '7000000001', username: 'SchoodIeltsCoachBot' }, speaking: { id: '7000000002', username: 'SchoodSpeakingBot' } }, passProducts: { B2: [PASS] }, fairUseCredits: 1200, telegramPublicKey: telegramPublicHex },
+  config: { appUrl: ORIGINS[0], bots: { ielts: { id: '7000000001', username: 'SchoodIeltsCoachBot' }, speaking: { id: '7000000002', username: 'SchoodSpeakingBot' }, maths: { id: '7000000003', username: 'SchoodMathsCoachBot' }, sales: { id: '7000000004', username: 'SchoodSalesCoachBot' }, career: { id: '7000000005', username: 'SchoodCareerCoachBot' }, speech: { id: '7000000006', username: 'SchoodSpeechCoachBot' } }, passProducts: { B2: [PASS] }, fairUseCredits: 1200, telegramPublicKey: telegramPublicHex },
 };
 const knobs = { score: null as number | null, cefr: 3.5, corrections: false, failNext: false, prompts: [] as string[] };
 const model = fakeModel(knobs);
@@ -150,9 +150,63 @@ async function seedSpeaking() {
   }
 }
 
+/** B3: placement, a goal, topic sets with some misses (the notebook), three mini-mocks and a cohort of 34 others (the percentile). */
+async function seedMaths() {
+  const pack = packs.get('maths')!;
+  await bot('dev-plus', 'maths', { type: 'diagnostic', answers: encodeAnswers(pack.diagnostic.items.map((item, i) => (item.kind === 'can_do' ? 1 : i % 3 === 0 ? ((item.answer ?? 0) + 1) % (item.options?.length ?? 2) : item.answer ?? 0))), locale: 'uz' });
+  await tap('dev-plus', 'maths', 'g:t:80');
+  await say('dev-plus', 'maths', new Date(Date.now() + 120 * 86_400_000).toISOString().slice(0, 10).split('-').reverse().join('.'));
+  await tap('dev-plus', 'maths', 'g:m:30');
+  await tap('dev-plus', 'maths', 'g:r:1800');
+  const answerAll = async (right: (index: number) => boolean) => {
+    for (let guard = 0; guard < 40; guard++) {
+      const current = (await coach.store.enrollment(users['dev-plus'].id, 'maths'))!.state.current as { flow: string; index: number; items?: string[] };
+      if (current.flow !== 'quiz' || !current.items) return;
+      const [setId, questionId] = current.items[current.index].split('#');
+      const question = (pack.byId.get(setId) as { questions: { id: string; answer: unknown; options?: string[] }[] }).questions.find((entry) => entry.id === questionId)!;
+      const ok = right(current.index);
+      if (typeof question.answer === 'number') await tap('dev-plus', 'maths', `a:${current.index}:${ok ? question.answer : (question.answer + 1) % question.options!.length}`);
+      else if (Array.isArray(question.answer)) await say('dev-plus', 'maths', ok ? question.answer[0] : 'no');
+      else await say('dev-plus', 'maths', String(ok ? (question.answer as { numeric: number }).numeric : 99999));
+      clock = new Date(clock.getTime() + 40_000);
+    }
+  };
+  for (let i = 0; i < 3; i++) {
+    await tap('dev-plus', 'maths', 'm:practice');
+    await answerAll((index) => (index + i) % 3 !== 0);
+    await tap('dev-plus', 'maths', 'm:mock');
+    await answerAll((index) => index < 5 + 2 * i);
+    day(4);
+  }
+  for (let i = 0; i < 34; i++) {
+    const session = await coach.store.createSession({ enrollmentId: crypto.randomUUID(), userId: `00000000-0000-4000-8000-${String(7000 + i).padStart(12, '0')}`, pack: 'maths', packVersion: pack.manifest.version, kind: 'quiz_set', activityId: 'mock.compulsory', mode: 'mock', rubric: 'admission.mock', source: 'telegram' });
+    await coach.store.updateSession(session.id, { status: 'finished', overall: 30 + ((i * 11) % 65), minutes: 20, finishedAt: clock.toISOString() });
+  }
+}
+
+/** B4: placement, a goal, a buyer role-play and a saved script. */
+async function seedSales() {
+  const pack = packs.get('sales')!;
+  await bot('dev-plus', 'sales', { type: 'diagnostic', answers: encodeAnswers(pack.diagnostic.items.map((item) => (item.kind === 'can_do' ? 1 : item.answer ?? 0))), locale: 'en' }, 'en');
+  await tap('dev-plus', 'sales', 'g:t:4');
+  await tap('dev-plus', 'sales', 'g:d:none');
+  await tap('dev-plus', 'sales', 'g:m:20');
+  await tap('dev-plus', 'sales', 'g:r:1800');
+  await tap('dev-plus', 'sales', 'm:roleplay');
+  await tap('dev-plus', 'sales', 'o:0');
+  for (const line of ['Good afternoon, this is Aziz. Is now a good moment for two minutes?', 'How do you choose suppliers today, and what is the hardest part?', 'Shall we meet on Thursday at ten so I can show you the numbers?']) await say('dev-plus', 'sales', line);
+  await tap('dev-plus', 'sales', 'rp:end');
+  await tap('dev-plus', 'sales', 'm:script');
+  for (const answer of ['Solar power kits for greenhouse farms, installed in two days with a service visit.', 'Greenhouse owners near Tashkent who worry about winter heating costs and power cuts.', 'Too expensive, diesel is cheaper, I will think about it after the harvest.']) await say('dev-plus', 'sales', answer);
+}
+
 await seedIelts();
 clock = new Date(Date.now() - 6 * 86_400_000);
 await seedSpeaking();
+clock = new Date(Date.now() - 13 * 86_400_000);
+await seedMaths();
+clock = new Date(Date.now() - 2 * 86_400_000);
+await seedSales();
 clock = new Date();
 console.log(`Seeded: ${coach.inspect.sessions.size} sessions, ${coach.inspect.certificates.size} certificates.`);
 

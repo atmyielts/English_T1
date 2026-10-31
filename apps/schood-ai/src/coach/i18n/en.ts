@@ -272,6 +272,7 @@ export const en = {
   'coach.mistakes.empty': 'Nothing to fix',
   'coach.mistakes.emptyLead': 'Questions you get wrong in practice sets and mini-mocks land here, so you can come back and fix them.',
   'coach.mistakes.more': 'Showing {shown} of {total}. Fix these first and the rest move up.',
+  'coach.cohort.title': 'Where you stand',
   'coach.cohort.latest': 'Latest: {score}',
   'coach.cohort.none': 'Take a mini-mock in the bot to see your result, what it means on the exam blocks and your place among other learners.',
   'coach.cohort.projection': '≈ {count} of {total} questions: {name}',

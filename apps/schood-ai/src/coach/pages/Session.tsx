@@ -86,7 +86,7 @@ function Detail({ data, skills }: { data: SessionDetail; skills: Dashboard['skil
 
     {goals.length > 0 && <Card className="flex flex-col gap-2">
       <h2 className="m-0 font-display text-lg font-bold">{t('coach.session.goals')}</h2>
-      <ul className="m-0 flex list-none flex-col gap-1 p-0">{goals.map((goal) => <li key={goal.id} className="text-sm">{goal.met ? '✅' : '⬜'} {t('coach.session.goal', { id: goal.id.replace(/_/g, ' ') })}{goal.quote && <> — <q>{goal.quote}</q></>}</li>)}</ul>
+      <ul className="m-0 flex list-none flex-col gap-1 p-0">{goals.map((goal) => <li key={goal.id} className="text-sm">{goal.met ? '✅' : '⬜'} {data.goal_texts?.[goal.id] ?? t('coach.session.goal', { id: goal.id.replace(/_/g, ' ') })}{goal.quote && <> — <q>{goal.quote}</q></>}</li>)}</ul>
       {scorecard && <p className="m-0 text-sm text-gray-700">{t('coach.session.scorecard', { ratio: scorecard.talkRatio, questions: scorecard.questionsAsked, words: scorecard.averageTurnWords })}</p>}
       {scorecard && (scorecard.objectionsTotal !== undefined || scorecard.nextStep !== undefined) && <p className="m-0 text-sm font-semibold text-gray-900">{t('coach.session.sales', { handled: scorecard.objectionsHandled ?? 0, total: scorecard.objectionsTotal ?? 0, next: t(scorecard.nextStep ? 'coach.session.yes' : 'coach.session.no') })}</p>}
     </Card>}

@@ -72,7 +72,7 @@ function Body({ data, pack }: { data: Dashboard; pack: string }) {
       </div>
       <ResultChart points={forecast.points} scale={forecast.scale} target={data.goal.target} label={forecast.name}/>
       <p className="m-0 text-sm text-gray-700">{forecast.predicted !== null
-        ? t('coach.dash.forecast', { level: levelLabel(forecast.scale, forecast.predicted), confidence: t(`coach.confidence.${forecast.confidence ?? 'low'}`), perWeek: forecast.perWeek ?? 0 })
+        ? t('coach.dash.forecast', { level: levelLabel(forecast.scale, forecast.predicted), confidence: t(`coach.confidence.${forecast.confidence ?? 'low'}`), perWeek: Number((forecast.perWeek ?? 0).toFixed(forecast.scale.step < 1 ? 2 : 0)) })
         : t('coach.dash.needMore')}</p>
     </Card>)}
 
@@ -119,7 +119,7 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
   const share = cohort.latest === null ? null : Math.min(1, Math.max(0, cohort.latest / 100));
   return <Card className="flex flex-col gap-3">
     <div className="flex flex-wrap items-baseline justify-between gap-2">
-      <h2 className="m-0 font-display text-lg font-bold">{cohort.name}</h2>
+      <h2 className="m-0 font-display text-lg font-bold">{t('coach.cohort.title')} <span className="block text-sm font-normal text-gray-600">{cohort.name}</span></h2>
       {cohort.latest !== null && <Badge tone="lime">{t('coach.cohort.latest', { score: `${Math.round(cohort.latest)}%` })}</Badge>}
     </div>
     {share === null ? <p className="m-0 text-sm leading-6 text-gray-700">{t('coach.cohort.none')}</p> : <>
