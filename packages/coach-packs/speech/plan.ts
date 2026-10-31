@@ -49,17 +49,17 @@ export const reminders: Reminders = {
     {
       en: 'Good morning, {name}! Today: {task} — about {minutes} minutes. One short talk a day is how confidence grows.',
       uz: 'Xayrli tong, {name}! Bugun: {task} — taxminan {minutes} daqiqa. Kuniga bitta qisqa nutq — ishonch shunday o‘sadi.',
-      ru: 'Доброе утро, {name}! Сегодня: {task} — около {minutes} минут. Одна короткая речь в день — так растёт уверенность.',
+      ru: 'Доброе утро, {name}! Сегодня: {task} — около {minutes} мин. Одна короткая речь в день — так растёт уверенность.',
     },
     {
       en: '{name}, your {streak}-day streak is waiting. {minutes} minutes today: {task}.',
       uz: '{name}, {streak} kunlik seriyangiz davomini kutyapti. Bugun {minutes} daqiqa: {task}.',
-      ru: '{name}, ваша серия ({streak}) ждёт продолжения. Сегодня {minutes} минут: {task}.',
+      ru: '{name}, ваша серия ({streak}) ждёт продолжения. Сегодня: {task} ({minutes} мин.).',
     },
     {
       en: 'The room is ready, {name}: {task}. Send a voice message and {coach} will count your fillers and pauses.',
       uz: 'Xona tayyor, {name}: {task}. Ovozli xabar yuboring — {coach} to‘ldiruvchi so‘zlar va pauzalaringizni sanaydi.',
-      ru: 'Зал готов, {name}: {task}. Отправьте голосовое — {coach} посчитает паразиты и паузы.',
+      ru: 'Зал готов, {name}: {task}. Отправьте голосовое — {coach} посчитает слова-паразиты и паузы.',
     },
     {
       en: 'Two minutes is enough for an elevator pitch, {name}. Today: {task}.',
@@ -69,7 +69,7 @@ export const reminders: Reminders = {
     {
       en: '{name}, your level is {level} and your target is {target}. Today’s step: {task} ({minutes} min).',
       uz: '{name}, darajangiz {level}, maqsadingiz {target}. Bugungi qadam: {task} ({minutes} daqiqa).',
-      ru: '{name}, ваш уровень {level}, цель — {target}. Сегодняшний шаг: {task} ({minutes} мин).',
+      ru: '{name}, ваш уровень {level}, цель — {target}. Сегодняшний шаг: {task} ({minutes} мин.).',
     },
     {
       en: 'Speak before you are ready, {name}: that is the practice. Today: {task}.',
@@ -79,36 +79,36 @@ export const reminders: Reminders = {
     {
       en: 'One story, one minute, {name}. {coach} has today’s topic: {task}.',
       uz: 'Bitta hikoya, bir daqiqa, {name}. {coach} bugungi mavzuni tayyorlab qo‘ygan: {task}.',
-      ru: 'Одна история, одна минута, {name}. У {coach} готова тема на сегодня: {task}.',
+      ru: 'Одна история, одна минута, {name}. {coach} предлагает тему на сегодня: {task}.',
     },
   ],
   comeback: [
     {
-      en: 'We missed you yesterday, {name}. A one-minute talk today keeps your progress: {task}.',
-      uz: 'Kecha sizni sog‘indik, {name}. Bugungi bir daqiqalik nutq natijangizni saqlaydi: {task}.',
-      ru: 'Вчера вас не хватало, {name}. Минутная речь сегодня сохранит прогресс: {task}.',
+      en: 'We missed you yesterday, {name}. A one-minute talk is an easy way back: {task}.',
+      uz: 'Kecha sizni sog‘indik, {name}. Bir daqiqalik nutq bilan osongina qayting: {task}.',
+      ru: 'Вчера вас не хватало, {name}. Вернуться легко — минутная речь: {task}.',
     },
     {
       en: 'Back to the stage, {name}? Start small: {task}, about {minutes} minutes.',
       uz: 'Sahnaga qaytamizmi, {name}? Kichikdan boshlang: {task}, taxminan {minutes} daqiqa.',
-      ru: 'Возвращаемся на сцену, {name}? Начните с малого: {task}, около {minutes} минут.',
+      ru: 'Возвращаемся на сцену, {name}? Начните с малого: {task}, около {minutes} мин.',
     },
   ],
   weekly: {
-    en: 'Your week in speaking is ready, {name}: {delta}. See your pace, fillers and scores before and after.',
-    uz: 'Nutq haftangiz tayyor, {name}: {delta}. Sur’at, to‘ldiruvchilar va ballaringizni oldin va keyin ko‘ring.',
-    ru: 'Ваша неделя выступлений готова, {name}: {delta}. Посмотрите темп, паразиты и баллы — до и после.',
+    en: 'Your weekly speaking report is ready, {name}: {delta}. Compare your pace, fillers and scores with last week.',
+    uz: 'Nutq bo‘yicha haftalik hisobotingiz tayyor, {name}: {delta}. Sur’at, to‘ldiruvchi so‘zlar va ballaringizni o‘tgan hafta bilan solishtiring.',
+    ru: 'Ваш еженедельный отчёт о выступлениях готов, {name}: {delta}. Сравните темп, слова-паразиты и баллы с прошлой неделей.',
   },
   countdown: [
     {
       en: '{days} days to your talk, {name}. Today: {task}. Rehearse your first two sentences out loud.',
       uz: 'Nutqingizgacha {days} kun qoldi, {name}. Bugun: {task}. Dastlabki ikki gapingizni ovoz chiqarib mashq qiling.',
-      ru: 'До вашего выступления дней: {days}, {name}. Сегодня: {task}. Проговорите вслух первые две фразы.',
+      ru: '{name}, до вашего выступления осталось дней: {days}. Сегодня: {task}. Проговорите вслух первые две фразы.',
     },
     {
       en: '{days} days left, {name}. One full rehearsal with questions today: {task}.',
       uz: '{days} kun qoldi, {name}. Bugun savollar bilan bitta to‘liq repetitsiya: {task}.',
-      ru: 'Осталось дней: {days}, {name}. Сегодня одна полная репетиция с вопросами: {task}.',
+      ru: '{name}, осталось дней: {days}. Сегодня одна полная репетиция с вопросами: {task}.',
     },
   ],
 };

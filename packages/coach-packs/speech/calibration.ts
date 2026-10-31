@@ -173,7 +173,7 @@ export const talkCalibration = build(TALK, [
     ],
     metrics: { wpm: 150, longPauses: 1, fillers: 0, seconds: 70 },
     ref: [4, 4, 3.5, 4, 4],
-    why: 'An image hook (the eight-year-old’s first game), a position with two announced reasons, each explained, and a precise answer to close (yes, an hour a week, through play). Pace 150 wpm is a little fast with only one pause, so the key lines are not given room: flow 3.5. Strong, natural Russian.',
+    why: 'An image hook (the eight-year-old’s first game), a position with two announced reasons, each explained, and a precise answer to close (yes, an hour a week, through play). Pace 150 wpm is inside the comfortable range but brisk, with only one pause, so the key lines are not given room: flow 3.5. Strong, natural Russian.',
     ev: [['Представьте ребёнка, который в восемь лет сделал свою первую игру', 'Поэтому мой ответ: да, с начальной школы, по часу в неделю, через игру'], ['программирование учит разбивать большую задачу на маленькие шаги'], ['И вот две причины'], ['ошибка — это просто баг, который можно исправить'], ['не как отдельный сложный предмет, а как игру']],
   },
   {
@@ -362,7 +362,7 @@ export const qaCalibration = build(QA, [
   },
   {
     id: 'q12-director-l5',
-    task: 'Q&A role-play (rp.qa-director): the school director asks who pays for the robotics club, who supervises it, and whether it will hurt exam results.',
+    task: 'Q&A role-play (rp.qa-director): the school director (a woman in this sample, addressed as "opa") asks who pays for the robotics club, who supervises it, and whether it will hurt exam results.',
     lines: [
       'Maktab byudjetidan bir so‘m ham so‘ramaymiz: to‘plamlarni ota-onalar qo‘mitasi va bitta mahalliy korxona homiyligida olamiz, shartnoma loyihasi mana shu papkada.',
       'Har darsda fizika o‘qituvchimiz Anvar aka bo‘ladi, u rozi, jadvalini ham ko‘rib chiqdik.',

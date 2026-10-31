@@ -14,26 +14,26 @@ const can = (id: string, skill: string, level: number, prompt: Tri): DiagnosticI
 export const diagnostic: Diagnostic = {
   intro: {
     en: '🎤 <b>Free placement test</b> · about 6 minutes, 22 questions\nQuestions about speaking situations and a few "can you do this?" statements. There are no trick questions: answer as you really would. Your level and a plan follow.',
-    uz: '🎤 <b>Bepul daraja testi</b> · taxminan 6 daqiqa, 22 ta savol\nNutq vaziyatlari haqida savollar va bir nechta «buni qila olasizmi?» degan gaplar. Hiyla savollar yo‘q: haqiqatda qanday qilsangiz, shunday javob bering. Keyin darajangiz va reja.',
-    ru: '🎤 <b>Бесплатный тест уровня</b> · около 6 минут, 22 вопроса\nВопросы о ситуациях выступления и несколько утверждений «умеете ли вы это?». Подвохов нет: отвечайте, как поступили бы на самом деле. Затем — ваш уровень и план.',
+    uz: '🎤 <b>Bepul daraja testi</b> · taxminan 6 daqiqa, 22 ta savol\nNutq vaziyatlari haqida savollar va bir nechta «buni qila olasizmi?» degan gaplar. Chalg‘ituvchi savollar yo‘q: haqiqatda qanday qilsangiz, shunday javob bering. Keyin darajangiz va rejangizni ko‘rasiz.',
+    ru: '🎤 <b>Бесплатный тест уровня</b> · около 6 минут, 22 вопроса\nВопросы о ситуациях на выступлении и несколько утверждений «умеете ли вы это?». Подвохов нет: отвечайте, как поступили бы на самом деле. Затем — ваш уровень и план.',
   },
   minutes: 6,
   passRatio: 0.6,
   items: [
     // Structure
-    can('st-cd2', 'structure', 2, ['I can give a short talk with a beginning, a middle and an end.', 'Boshi, o‘rtasi va oxiri bor qisqa nutq so‘zlay olaman.', 'Я могу сказать короткую речь с началом, серединой и концом.']),
-    q('st-q2', 'structure', 2, ['Which is the best way to start a talk about saving water?', 'Suvni tejash haqidagi nutqni qanday boshlash eng yaxshi?', 'Как лучше начать речь об экономии воды?'], [
+    can('st-cd2', 'structure', 2, ['I can give a short talk with a beginning, a middle and an end.', 'Boshi, o‘rtasi va oxiri bor qisqa nutq so‘zlay olaman.', 'Я могу произнести короткую речь с началом, серединой и концом.']),
+    q('st-q2', 'structure', 2, ['Which is the best way to start a talk about saving water?', 'Suvni tejash haqidagi nutqni qanday boshlagan ma’qul?', 'Как лучше начать речь об экономии воды?'], [
       ['Sorry, I am not a good speaker.', 'Kechirasiz, men yaxshi notiq emasman.', 'Извините, я плохой оратор.'],
       ['How much water did you use this morning?', 'Bugun ertalab qancha suv ishlatdingiz?', 'Сколько воды вы потратили сегодня утром?'],
       ['My topic is water.', 'Mavzuim — suv.', 'Моя тема — вода.'],
     ], 1),
-    q('st-q3', 'structure', 3, ['You have three minutes. How many main points?', 'Sizda uch daqiqa bor. Nechta asosiy fikr?', 'У вас три минуты. Сколько главных тезисов?'], [
+    q('st-q3', 'structure', 3, ['You have three minutes. How many main points?', 'Sizda uch daqiqa bor. Nechta asosiy fikr bo‘lgani ma’qul?', 'У вас три минуты. Сколько главных тезисов?'], [
       ['Two or three.', 'Ikki yoki uchta.', 'Два-три.'],
       ['Seven.', 'Yettita.', 'Семь.'],
-      ['As many as I know.', 'Bilganimcha.', 'Сколько знаю.'],
+      ['As many as I know.', 'Bilganimning hammasi.', 'Сколько знаю.'],
     ], 0),
     q('st-q4', 'structure', 4, ['Which close is strongest?', 'Qaysi yakun eng kuchli?', 'Какой финал сильнее всего?'], [
-      ['That’s all, thank you.', 'Shu, rahmat.', 'Вот и всё, спасибо.'],
+      ['That’s all, thank you.', 'Bo‘ldi, shu, rahmat.', 'Вот и всё, спасибо.'],
       ['Any questions?', 'Savollar bormi?', 'Есть вопросы?'],
       ['One route, one semester, one honest count: let’s start on Monday.', 'Bitta yo‘nalish, bitta semestr, bitta halol hisob: dushanbadan boshlaylik.', 'Один маршрут, один семестр, один честный подсчёт — начнём в понедельник.'],
     ], 2),
@@ -56,7 +56,7 @@ export const diagnostic: Diagnostic = {
       ['About 220 words a minute.', 'Daqiqasiga taxminan 220 so‘z.', 'Около 220 слов в минуту.'],
     ], 1),
     q('de-q4', 'delivery', 4, ['Which sentence is clearest for a general audience?', 'Oddiy auditoriya uchun qaysi gap eng aniq?', 'Какая фраза понятнее широкой аудитории?'], [
-      ['The app turns homework into short games, so children do it more often.', 'Ilova uy vazifasini qisqa o‘yinlarga aylantiradi, shuning uchun bolalar uni tez-tez bajaradi.', 'Приложение превращает домашку в короткие игры, поэтому дети делают её чаще.'],
+      ['The app turns homework into short games, so children do it more often.', 'Ilova uy vazifasini qisqa o‘yinlarga aylantiradi, shuning uchun bolalar uni tez-tez bajaradi.', 'Приложение превращает домашнее задание в короткие игры, поэтому дети делают его чаще.'],
       ['The platform optimises engagement metrics through gamification.', 'Platforma geymifikatsiya orqali jalb qilish ko‘rsatkichlarini optimallashtiradi.', 'Платформа оптимизирует метрики вовлечённости через геймификацию.'],
       ['It is an innovative educational solution.', 'Bu innovatsion ta’lim yechimi.', 'Это инновационное образовательное решение.'],
     ], 0),
@@ -74,11 +74,11 @@ export const diagnostic: Diagnostic = {
       ['Reading is very, very useful.', 'O‘qish juda-juda foydali.', 'Чтение очень-очень полезно.'],
     ], 1),
     q('co-q4', 'content', 4, ['Where should you slow down when telling a story?', 'Hikoya qilayotganda qayerda sekinlashish kerak?', 'Где замедлиться, рассказывая историю?'], [
-      ['At the turning point, with one detail people can see.', 'Burilish lahzasida, odamlar ko‘ra oladigan bitta tafsilot bilan.', 'В момент поворота, с одной видимой деталью.'],
+      ['At the turning point, with one detail people can see.', 'Burilish lahzasida, odamlar ko‘z oldiga keltira oladigan bitta tafsilot bilan.', 'В момент поворота, с одной деталью, которую можно увидеть.'],
       ['At the date and place.', 'Sana va joyda.', 'На дате и месте.'],
       ['Nowhere; stories must be fast.', 'Hech qayerda; hikoya tez bo‘lishi kerak.', 'Нигде: истории должны быть быстрыми.'],
     ], 0),
-    can('co-cd4', 'content', 4, ['I can tell a short true story that makes a point people remember.', 'Odamlar eslab qoladigan fikrga ega qisqa haqiqiy hikoya so‘zlay olaman.', 'Я могу рассказать короткую правдивую историю, мысль которой запомнят.']),
+    can('co-cd4', 'content', 4, ['I can tell a short true story that makes a point people remember.', 'Fikri esda qoladigan qisqa haqiqiy hikoyani so‘zlab bera olaman.', 'Я могу рассказать короткую правдивую историю, мысль которой запомнят.']),
     q('co-q5', 'content', 5, ['You have no statistic to support your point. What does a strong speaker do?', 'Fikringizni quvvatlaydigan statistika yo‘q. Kuchli notiq nima qiladi?', 'У вас нет статистики для тезиса. Что делает сильный оратор?'], [
       ['Invents a believable number.', 'Ishonarli raqam o‘ylab topadi.', 'Придумывает правдоподобную цифру.'],
       ['Drops the point.', 'Fikrdan voz kechadi.', 'Отказывается от тезиса.'],
@@ -94,9 +94,9 @@ export const diagnostic: Diagnostic = {
     q('in-q4', 'interaction', 4, ['You do not know the answer to a question. What do you say?', 'Savolga javobni bilmaysiz. Nima deysiz?', 'Вы не знаете ответа на вопрос. Что скажете?'], [
       ['"I don’t know yet; I will check and send it to you today."', '«Hozircha bilmayman; tekshirib, bugun sizga yuboraman.»', '«Пока не знаю; проверю и пришлю вам сегодня».'],
       ['A number that sounds right.', 'To‘g‘ri eshitiladigan raqam.', 'Цифру, которая звучит правдоподобно.'],
-      ['"That is not a good question."', '«Bu yaxshi savol emas.»', '«Это нехороший вопрос».'],
+      ['"That is not a good question."', '«Bu yaxshi savol emas.»', '«Это плохой вопрос».'],
     ], 0),
-    q('in-q5', 'interaction', 5, ['An opponent says "Your idea treats us like children." Expert reply?', 'Raqib «G‘oyangiz bizni bola deb hisoblaydi» dedi. Mohir javob?', 'Оппонент: «Ваша идея считает нас детьми». Ответ мастера?'], [
+    q('in-q5', 'interaction', 5, ['An opponent says "Your idea treats us like children." Expert reply?', 'Raqib: «G‘oyangiz bizni yosh bola o‘rnida ko‘radi». Mohir notiq qanday javob beradi?', 'Оппонент: «Ваша идея обращается с нами как с детьми». Как ответит мастер?'], [
       ['"That is not true, you are wrong."', '«Bu rost emas, siz noto‘g‘risiz.»', '«Это неправда, вы не правы».'],
       ['"You’re right that we are not children — that is why I trust us to agree to this rule."', '«To‘g‘ri, biz bola emasmiz — aynan shuning uchun bu qoidaga kelisha olamiz deb ishonaman.»', '«Вы правы, мы не дети — поэтому я верю, что мы договоримся об этом правиле».'],
       ['"OK, maybe it is a bad idea."', '«Xo‘p, balki bu yomon g‘oyadir.»', '«Ладно, может, идея и плохая».'],
