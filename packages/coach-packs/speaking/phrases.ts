@@ -69,7 +69,7 @@ export const phrases: Activity[] = [
       {
         id: 'ph.greetings.sounds-fun', front: 'Oh, that sounds fun!',
         meaning: 'Shows interest and a positive reaction to someone’s plans or news.',
-        translations: { uz: 'Voy, juda qiziq ekan!', ru: 'О, звучит здорово!' },
+        translations: { uz: 'Voy, juda qiziq ekan!', ru: 'О, как здорово!' },
         example: 'A: We’re going camping in the mountains this weekend.\nB: Oh, that sounds fun! Where are you going?',
         situation: 'a friend tells you about an exciting plan and you want to react positively',
         distractors: ['It is fun sound.', 'OK.', 'I don’t care, but OK.'],
@@ -99,10 +99,10 @@ export const phrases: Activity[] = [
         distractors: ['Stop talking, I am going.', 'I run now.', 'Bye, I am bored.'],
       },
       {
-        id: 'ph.greetings.help-yourself', front: 'Please, help yourself.',
+        id: 'ph.greetings.help-yourself', front: 'Please help yourself.',
         meaning: 'Tells a guest they can take food or drink without asking.',
         translations: { uz: 'Marhamat, tortinmang, o‘zingiz oling.', ru: 'Угощайтесь, пожалуйста.' },
-        example: 'A: These cakes look amazing.\nB: Thanks! Please, help yourself.',
+        example: 'A: These cakes look amazing.\nB: Thanks! Please help yourself.',
         situation: 'a guest at your home is looking at the food on the table and you want them to take some',
         distractors: ['Help me, please.', 'You must eat this.', 'Take yourself.'],
       },
@@ -118,7 +118,7 @@ export const phrases: Activity[] = [
   },
   {
     id: 'ph.help', kind: 'deck', cardType: 'phrase', node: 'phrases', levels: [2, 4], minutes: 5,
-    title: { en: 'Asking for help and directions', uz: 'Yordam va yo‘l so‘rash', ru: 'Просьба о помощи и дорога' },
+    title: { en: 'Asking for help and directions', uz: 'Yordam va yo‘l so‘rash', ru: 'Как попросить помощи и спросить дорогу' },
     cards: [
       {
         id: 'ph.help.excuse-me', front: 'Excuse me, could you help me for a second?',
@@ -195,7 +195,7 @@ export const phrases: Activity[] = [
       {
         id: 'ph.help.really-helpful', front: 'Thanks so much, you’ve been really helpful.',
         meaning: 'Thanks someone warmly for their help.',
-        translations: { uz: 'Katta rahmat, juda katta yordam berdingiz.', ru: 'Огромное спасибо, вы мне очень помогли.' },
+        translations: { uz: 'Katta rahmat, menga juda yordam berdingiz.', ru: 'Огромное спасибо, вы мне очень помогли.' },
         example: 'A: The pharmacy is just around the corner.\nB: Thanks so much, you’ve been really helpful.',
         situation: 'a stranger has helped you find your way and you want to thank them warmly',
         distractors: ['OK, goodbye.', 'You are helpful person.', 'Thanks, I knew it already.'],
@@ -203,7 +203,7 @@ export const phrases: Activity[] = [
       {
         id: 'ph.help.near-here', front: 'Is there a cash machine near here?',
         meaning: 'Asks if a place or thing is close by.',
-        translations: { uz: 'Bu yerga yaqin bankomat bormi?', ru: 'Здесь поблизости есть банкомат?' },
+        translations: { uz: 'Shu atrofda bankomat bormi?', ru: 'Здесь поблизости есть банкомат?' },
         example: 'A: Is there a cash machine near here?\nB: Yes, there’s one inside the supermarket.',
         situation: 'you need cash and want to know if there is a cash machine nearby',
         distractors: ['Where is near cash?', 'Can you give me some cash?', 'Is here money?'],
@@ -303,10 +303,10 @@ export const phrases: Activity[] = [
         distractors: ['Give me the change.', 'Change is yours forever.', 'I don’t need money.'],
       },
       {
-        id: 'ph.ordering.not-what-i-ordered', front: 'Sorry, I think this isn’t what I ordered.',
+        id: 'ph.ordering.not-what-i-ordered', front: 'Sorry, I don’t think this is what I ordered.',
         meaning: 'Politely says the waiter has brought the wrong dish.',
         translations: { uz: 'Kechirasiz, menimcha, bu men buyurtma qilgan taom emas.', ru: 'Извините, кажется, это не то, что я заказывал.' },
-        example: 'A: Here’s your fish.\nB: Sorry, I think this isn’t what I ordered. I asked for the chicken.',
+        example: 'A: Here’s your fish.\nB: Sorry, I don’t think this is what I ordered. I asked for the chicken.',
         situation: 'the waiter brings you a different dish from the one you asked for',
         distractors: ['This is wrong food, take it.', 'I ordered this, thank you.', 'Why you bring fish?'],
       },
@@ -351,7 +351,7 @@ export const phrases: Activity[] = [
       {
         id: 'ph.shopping.in-a-medium', front: 'Do you have this in a medium?',
         meaning: 'Asks for the same item in a different size.',
-        translations: { uz: 'Buning o‘rtacha (M) o‘lchami bormi?', ru: 'Есть такое же размера M?' },
+        translations: { uz: 'Buning o‘rtacha (M) o‘lchami bormi?', ru: 'А есть такое же в размере M?' },
         example: 'A: Do you have this in a medium?\nB: Let me check in the back.',
         situation: 'you like a shirt but need a different size',
         distractors: ['Is this medium shirt?', 'I want medium of this.', 'Do you have a medium shop?'],
@@ -367,7 +367,7 @@ export const phrases: Activity[] = [
       {
         id: 'ph.shopping.more-than-i-wanted', front: 'It’s a bit more than I wanted to spend.',
         meaning: 'A polite way to say something is too expensive for you.',
-        translations: { uz: 'Bu men sarflamoqchi bo‘lgan puldan biroz ko‘proq.', ru: 'Это немного больше, чем я планировал потратить.' },
+        translations: { uz: 'Bu men sarflamoqchi bo‘lgan puldan biroz ko‘proq.', ru: 'Это немного дороже, чем я рассчитывал.' },
         example: 'A: That one is two hundred dollars.\nB: Hmm, it’s a bit more than I wanted to spend.',
         situation: 'you like something in a shop but it is too expensive and you want to say so politely',
         distractors: ['Your price is crazy.', 'It is very cheap for me.', 'Make it cheaper now.'],
@@ -407,7 +407,7 @@ export const phrases: Activity[] = [
       {
         id: 'ph.shopping.speak-to-manager', front: 'Would it be possible to speak to the manager?',
         meaning: 'A polite way to ask for someone with more authority.',
-        translations: { uz: 'Menejer bilan gaplashsam bo‘ladimi?', ru: 'Можно ли поговорить с менеджером?' },
+        translations: { uz: 'Menejer bilan gaplashsam bo‘ladimi?', ru: 'Можно поговорить с администратором?' },
         example: 'A: I’m sorry, I can’t do a refund.\nB: I understand. Would it be possible to speak to the manager?',
         situation: 'the shop assistant cannot help you and you want, politely, to talk to someone more senior',
         distractors: ['Call your boss now!', 'You are not the manager, so goodbye.', 'Is the manager possible?'],
@@ -448,7 +448,7 @@ export const phrases: Activity[] = [
   },
   {
     id: 'ph.health', kind: 'deck', cardType: 'phrase', node: 'phrases', levels: [2, 4], minutes: 5,
-    title: { en: 'At the doctor and the pharmacy', uz: 'Shifokor va dorixonada', ru: 'У врача и в аптеке' },
+    title: { en: 'At the doctor and the pharmacy', uz: 'Shifokor qabulida va dorixonada', ru: 'У врача и в аптеке' },
     cards: [
       {
         id: 'ph.health.make-appointment', front: 'I’d like to make an appointment to see a doctor.',
@@ -460,7 +460,7 @@ export const phrases: Activity[] = [
       },
       {
         id: 'ph.health.been-feeling', front: 'I’ve been feeling unwell for about three days.',
-        meaning: 'Says how long you have been ill. Use “have been” + “for” with a period of time.',
+        meaning: 'Says how long you have been ill. Use “have been” + -ing, and “for” with a period of time.',
         translations: { uz: 'Taxminan uch kundan beri o‘zimni yaxshi his qilmayapman.', ru: 'Я плохо себя чувствую уже около трёх дней.' },
         example: 'A: What seems to be the problem?\nB: I’ve been feeling unwell for about three days.',
         situation: 'the doctor asks what is wrong and you want to say how long you have been ill',
@@ -485,7 +485,7 @@ export const phrases: Activity[] = [
       {
         id: 'ph.health.sharp-or-dull', front: 'It’s more of a dull ache than a sharp pain.',
         meaning: 'Describes the kind of pain: a dull ache is steady and heavy, a sharp pain is sudden and strong.',
-        translations: { uz: 'Bu sanchiqli og‘riqdan ko‘ra ko‘proq simillagan og‘riq.', ru: 'Это скорее ноющая боль, чем острая.' },
+        translations: { uz: 'Bu o‘tkir og‘riq emas, ko‘proq simillab og‘riyapti.', ru: 'Это скорее ноющая боль, чем острая.' },
         example: 'A: Can you describe the pain?\nB: It’s more of a dull ache than a sharp pain. It’s there all day.',
         situation: 'the doctor asks what kind of pain you feel',
         distractors: ['It is pain, a big one.', 'The pain is very nice.', 'It’s a sharp knife.'],
@@ -494,7 +494,7 @@ export const phrases: Activity[] = [
         id: 'ph.health.no-other-medicine', front: 'I’m not taking any other medicine at the moment.',
         meaning: 'Answers the question about medicine you already take.',
         translations: { uz: 'Hozircha boshqa dori ichmayapman.', ru: 'Сейчас я не принимаю других лекарств.' },
-        example: 'A: Are you taking anything at the moment?\nB: No, I’m not taking any other medicine at the moment.',
+        example: 'A: Are you taking anything else at the moment?\nB: No, I’m not taking any other medicine at the moment.',
         situation: 'the doctor or pharmacist asks if you take any medicine now, and you do not',
         distractors: ['I don’t drink medicine never.', 'I’m taking all the medicine.', 'No pills for me, thanks.'],
       },
@@ -549,7 +549,7 @@ export const phrases: Activity[] = [
       {
         id: 'ph.health.note-for-work', front: 'Could I get a note for work?',
         meaning: 'Asks the doctor for a paper that shows your employer you were ill.',
-        translations: { uz: 'Ish joyim uchun ma’lumotnoma olsam bo‘ladimi?', ru: 'Можно мне справку для работы?' },
+        translations: { uz: 'Ish joyim uchun ma’lumotnoma olsam bo‘ladimi?', ru: 'Можно мне справку на работу?' },
         example: 'A: You should rest for two days.\nB: Could I get a note for work?',
         situation: 'you need a paper from the doctor to show your employer that you were ill',
         distractors: ['Write my work for me.', 'Can I get a notebook?', 'Give me a paper.'],
@@ -558,12 +558,12 @@ export const phrases: Activity[] = [
   },
   {
     id: 'ph.meetings', kind: 'deck', cardType: 'phrase', node: 'phrases', levels: [3, 5], minutes: 5,
-    title: { en: 'Work meetings and opinions', uz: 'Ish yig‘ilishlari va fikr bildirish', ru: 'Рабочие встречи и мнения' },
+    title: { en: 'Work meetings and opinions', uz: 'Ish yig‘ilishlari va fikr bildirish', ru: 'Рабочие встречи: как высказать мнение' },
     cards: [
       {
         id: 'ph.meetings.way-i-see-it', front: 'The way I see it, we need more time.',
         meaning: 'Introduces your opinion in a calm, confident way.',
-        translations: { uz: 'Mening fikrimcha, bizga ko‘proq vaqt kerak.', ru: 'Как я это вижу, нам нужно больше времени.' },
+        translations: { uz: 'Mening fikrimcha, bizga ko‘proq vaqt kerak.', ru: 'На мой взгляд, нам нужно больше времени.' },
         example: 'A: Can we launch next week?\nB: The way I see it, we need more time.',
         situation: 'you want to give your opinion in a meeting',
         distractors: ['My opinion is we need time, finish.', 'The way I see you, we need time.', 'I am agree we need time.'],
@@ -619,7 +619,7 @@ export const phrases: Activity[] = [
       {
         id: 'ph.meetings.to-be-honest', front: 'To be honest, I have some concerns about the budget.',
         meaning: 'Says politely that you are worried about part of a plan.',
-        translations: { uz: 'Rostini aytsam, budjet bo‘yicha ba’zi xavotirlarim bor.', ru: 'Честно говоря, у меня есть сомнения по поводу бюджета.' },
+        translations: { uz: 'Rostini aytsam, byudjet bo‘yicha ba’zi xavotirlarim bor.', ru: 'Честно говоря, у меня есть сомнения по поводу бюджета.' },
         example: 'A: So, is everyone happy with the plan?\nB: To be honest, I have some concerns about the budget.',
         situation: 'you want to say politely that you are worried about part of a plan',
         distractors: ['Honestly, the budget is a disaster.', 'To be honest, I love the budget.', 'I am worrying for the budget honestly.'],
@@ -643,7 +643,7 @@ export const phrases: Activity[] = [
       {
         id: 'ph.meetings.meet-halfway', front: 'Maybe we could meet halfway — two weeks instead of three?',
         meaning: 'Suggests a compromise between two positions.',
-        translations: { uz: 'Balki o‘rtacha yechimga kelarmiz — uch hafta emas, ikki hafta?', ru: 'Может, найдём компромисс — две недели вместо трёх?' },
+        translations: { uz: 'Balki murosaga kelarmiz — uch hafta emas, ikki hafta?', ru: 'Может, найдём компромисс — две недели вместо трёх?' },
         example: 'A: We need three more weeks.\nB: Maybe we could meet halfway — two weeks instead of three?',
         situation: 'you and a colleague want different things and you suggest a solution in the middle',
         distractors: ['Let’s meet in the middle of the street.', 'Two weeks or nothing.', 'Fine, three weeks, whatever you want.'],
@@ -705,7 +705,7 @@ export const phrases: Activity[] = [
       {
         id: 'ph.phone.breaking-up', front: 'Sorry, you’re breaking up. Could you say that again?',
         meaning: 'Says the line is bad and asks the person to repeat.',
-        translations: { uz: 'Kechirasiz, ovozingiz uzilib qolyapti. Qaytarib ayta olasizmi?', ru: 'Извините, связь прерывается. Повторите, пожалуйста?' },
+        translations: { uz: 'Kechirasiz, ovozingiz uzilib qolyapti. Qaytarib ayta olasizmi?', ru: 'Извините, связь прерывается. Можете повторить?' },
         example: 'A: The meeting is at… on…\nB: Sorry, you’re breaking up. Could you say that again?',
         situation: 'the phone line is bad and you cannot hear the other person clearly',
         distractors: ['You are breaking. Repeat.', 'Sorry, we are breaking up with you.', 'I can’t hear, bye.'],
@@ -737,7 +737,7 @@ export const phrases: Activity[] = [
       {
         id: 'ph.phone.send-by-email', front: 'Would you mind sending me that by email?',
         meaning: 'Asks for information in writing. After “Would you mind”, use the -ing form.',
-        translations: { uz: 'Buni menga elektron pochta orqali yuborib qo‘ymaysizmi?', ru: 'Вы не могли бы прислать это мне по почте?' },
+        translations: { uz: 'Buni menga elektron pochta orqali yuborib qo‘ymaysizmi?', ru: 'Вы не могли бы прислать мне это по электронной почте?' },
         example: 'A: The new prices start in June.\nB: Would you mind sending me that by email?',
         situation: 'you want the details in writing after a phone call',
         distractors: ['Do you mind I send you email?', 'Send it email.', 'Would you mind to send me that by email?'],
@@ -839,7 +839,7 @@ export const phrases: Activity[] = [
       {
         id: 'ph.travel.send-someone', front: 'Could you send someone to have a look?',
         meaning: 'Asks the hotel to send a worker to check a problem.',
-        translations: { uz: 'Ko‘rib chiqish uchun birorta xodimni yubora olasizmi?', ru: 'Не могли бы вы прислать кого-нибудь посмотреть?' },
+        translations: { uz: 'Ko‘rib berish uchun biror kishini yubora olasizmi?', ru: 'Не могли бы вы прислать кого-нибудь посмотреть?' },
         example: 'A: I’m sorry to hear that.\nB: Could you send someone to have a look?',
         situation: 'something in your hotel room is broken and you want a worker to come and check it',
         distractors: ['Send me a look.', 'Could you look at someone?', 'Come and fix, now.'],

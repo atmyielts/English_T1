@@ -16,7 +16,7 @@ export const shadowing: Activity[] = [
       },
       {
         id: 'a2-02', text: 'Could I have a cup of tea, please?',
-        focus: { en: 'Link “cup of” into one sound, /kʌpəv/, with a weak “of”. Keep your voice soft and polite on “please”.', uz: '«Cup of»ni bitta tovush qilib ulang — /kʌpəv/, «of» kuchsiz. «Please»ni yumshoq va muloyim ayting.', ru: 'Свяжите «cup of» в /kʌpəv/ со слабым «of». «Please» произносите мягко и вежливо.' },
+        focus: { en: 'Link “cup of” together, /kʌpəv/, with a weak “of”. Keep your voice soft and polite on “please”.', uz: '«Cup of»ni bir-biriga ulang — /kʌpəv/, «of» kuchsiz. «Please»ni yumshoq va muloyim ayting.', ru: 'Свяжите «cup of» в /kʌpəv/ со слабым «of». «Please» произносите мягко и вежливо.' },
         translations: { uz: 'Bir piyola choy bera olasizmi, iltimos?', ru: 'Можно мне чашку чая, пожалуйста?' },
       },
       {
@@ -41,12 +41,12 @@ export const shadowing: Activity[] = [
       },
       {
         id: 'a2-07', text: 'Sorry, I don’t understand. Can you say it again?',
-        focus: { en: '“Can” is weak here, /kən/. Say “say it again” as one smooth phrase: /seɪɪtəɡen/.', uz: 'Bu yerda «can» kuchsiz — /kən/. «Say it again»ni bir tekis ibora qilib ayting: /seɪɪtəɡen/.', ru: '«Can» здесь слабое — /kən/. «Say it again» произносите слитно: /seɪɪtəɡen/.' },
+        focus: { en: '“Can” is weak here, /kən/. Say “say it again” as one smooth phrase: /seɪɪtəɡen/.', uz: 'Bu yerda «can» kuchsiz — /kən/. «Say it again»ni bir nafasda, silliq ayting: /seɪɪtəɡen/.', ru: '«Can» здесь слабое — /kən/. «Say it again» произносите слитно: /seɪɪtəɡen/.' },
         translations: { uz: 'Kechirasiz, tushunmadim. Yana bir bor ayta olasizmi?', ru: 'Извините, я не понимаю. Можете повторить?' },
       },
       {
         id: 'a2-08', text: 'I live in a flat with my parents.',
-        focus: { en: 'Join a consonant to the next vowel: “live in a” sounds like /lɪvɪnə/. Make /v/ with the top teeth on the lip, not /w/.', uz: 'Undoshni keyingi unliga ulang: «live in a» /lɪvɪnə/ kabi. /v/ ni yuqori tishlarni labga tekkizib ayting, /w/ emas.', ru: 'Связывайте согласный со следующим гласным: «live in a» — /lɪvɪnə/. /v/ — верхние зубы на губе, не /w/.' },
+        focus: { en: 'Join a consonant to the next vowel: “live in a” sounds like /lɪvɪnə/. Make /v/ with your top teeth on your bottom lip, not /w/.', uz: 'Undoshni keyingi unliga ulang: «live in a» /lɪvɪnə/ kabi. /v/ ni yuqori tishlarni pastki labga tekkizib ayting, /w/ emas.', ru: 'Связывайте согласный со следующим гласным: «live in a» — /lɪvɪnə/. /v/ — верхние зубы касаются нижней губы, не /w/.' },
         translations: { uz: 'Men ota-onam bilan kvartirada yashayman.', ru: 'Я живу в квартире с родителями.' },
       },
       {
@@ -117,12 +117,12 @@ export const shadowing: Activity[] = [
       },
       {
         id: 'b1-09', text: 'The weather’s been terrible this week, hasn’t it?',
-        focus: { en: 'A question tag that expects agreement falls at the end: “hasn’t it” goes down.', uz: 'Rozilik kutilayotgan so‘roq qo‘shimchasi oxirida pasayadi: «hasn’t it» pastga tushadi.', ru: 'Разделительный вопрос, который ждёт согласия, в конце понижается: «hasn’t it» идёт вниз.' },
+        focus: { en: 'A question tag that expects agreement falls at the end: “hasn’t it” goes down.', uz: 'Rozilik kutilgan qisqa so‘roq (question tag) oxirida pasayadi: «hasn’t it» pastga tushadi.', ru: 'Разделительный вопрос, который ждёт согласия, в конце понижается: «hasn’t it» идёт вниз.' },
         translations: { uz: 'Bu hafta havo juda yomon bo‘ldi, to‘g‘rimi?', ru: 'Погода на этой неделе ужасная, правда?' },
       },
       {
         id: 'b1-10', text: 'I thought the film was a bit too long.',
-        focus: { en: '/θ/ in “thought”: tongue between the teeth. “Was” is weak, /wəz/. Stress “bit” and “long”.', uz: '«Thought»dagi /θ/: til tishlar orasida. «Was» kuchsiz — /wəz/. Urg‘u «bit» va «long»da.', ru: '/θ/ в «thought»: язык между зубами. «Was» слабое — /wəz/. Ударение на «bit» и «long».' },
+        focus: { en: '/θ/ in “thought”: tongue between the teeth. “Was” is weak, /wəz/. Stress “film” and “too long”.', uz: '«Thought»dagi /θ/: til tishlar orasida. «Was» kuchsiz — /wəz/. Urg‘u «film» va «too long»da.', ru: '/θ/ в «thought»: язык между зубами. «Was» слабое — /wəz/. Ударение на «film» и «too long».' },
         translations: { uz: 'Menimcha, film biroz cho‘zilib ketdi.', ru: 'Мне показалось, фильм был немного затянут.' },
       },
       {
@@ -205,7 +205,7 @@ export const shadowing: Activity[] = [
   },
   {
     id: 'sh.c1', kind: 'shadowing', node: 'conversation.pronunciation', levels: [5, 6], minutes: 5,
-    title: { en: 'Shadowing C1: nuance and tact', uz: 'Shadowing C1: nozik ma’no va odob', ru: 'Шэдоуинг C1: нюансы и такт' },
+    title: { en: 'Shadowing C1: nuance and tact', uz: 'Shadowing C1: nozik ma’nolar va nazokat', ru: 'Шэдоуинг C1: нюансы и такт' },
     sentences: [
       {
         id: 'c1-01', text: 'I’m not saying it’s a bad idea; I’m just not convinced it’ll work in practice.',
@@ -225,7 +225,7 @@ export const shadowing: Activity[] = [
       {
         id: 'c1-04', text: 'Funnily enough, I was just about to call you.',
         focus: { en: 'A light, surprised tone on “Funnily enough”. “About to” is quick: /əbaʊtə/. Stress “call”.', uz: '«Funnily enough»ni yengil, hayratli ohangda ayting. «About to» tez — /əbaʊtə/. Urg‘u «call»da.', ru: '«Funnily enough» — лёгким, удивлённым тоном. «About to» быстро — /əbaʊtə/. Ударение на «call».' },
-        translations: { uz: 'Qiziq, men endigina sizga qo‘ng‘iroq qilmoqchi edim.', ru: 'Забавно, я как раз собирался вам позвонить.' },
+        translations: { uz: 'Qiziq, men hozir sizga qo‘ng‘iroq qilmoqchi bo‘lib turgandim.', ru: 'Забавно, я как раз собирался вам позвонить.' },
       },
       {
         id: 'c1-05', text: 'With all due respect, I think we’re missing the bigger picture here.',

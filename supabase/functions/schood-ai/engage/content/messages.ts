@@ -31,18 +31,18 @@ export const NOTIFY_LABELS: Record<string, L> = {
   'engage.winback': { en: 'Messages after a break', uz: 'Tanaffusdan keyingi xabarlar', ru: 'Сообщения после перерыва' },
   'engage.squad': { en: 'Hellos from your squad', uz: 'Jamoangizdan salomlar', ru: 'Приветы от вашей команды' },
   'engage.league': { en: 'Weekly league results', uz: 'Haftalik liga natijalari', ru: 'Итоги недельной лиги' },
-  'engage.events': { en: 'The weekend national mock', uz: 'Dam olish kunlaridagi milliy sinov', ru: 'Национальный пробный тест по выходным' },
+  'engage.events': { en: 'The weekend national mock', uz: 'Dam olish kunlaridagi milliy sinov', ru: 'Национальный пробный экзамен по выходным' },
   'engage.certificate': { en: 'Skill Certificate results', uz: 'Ko‘nikma sertifikati natijalari', ru: 'Результаты сертификатов навыков' },
 };
 
 interface Template { text: L; button: L; path: string }
 const T: Record<MessageKind, Template> = {
   checkin_soon: {
-    text: { en: 'Your {kind} "{title}" is {when}. A {minutes}-minute rehearsal tonight?', uz: '"{title}" ({kind}) {when}. Bugun kechqurun {minutes} daqiqalik mashq qilamizmi?', ru: '«{title}» ({kind}) — {when}. Репетиция на {minutes} минут сегодня вечером?' },
+    text: { en: 'Your {kind} "{title}" is {when}. A {minutes}-minute rehearsal tonight?', uz: '«{title}» ({kind}) — {when}. Bugun kechqurun {minutes} daqiqalik mashq qilamizmi?', ru: '«{title}» ({kind}) — {when}. Репетиция на {minutes} мин. сегодня вечером?' },
     button: { en: 'Rehearse now', uz: 'Hozir mashq qilish', ru: 'Репетировать сейчас' }, path: '{link}',
   },
   checkin_after: {
-    text: { en: 'How did "{title}" go? Add your result, and your next goal will be ready.', uz: '"{title}" qanday o‘tdi? Natijangizni qo‘shing, keyingi maqsadingiz tayyor bo‘ladi.', ru: 'Как прошло «{title}»? Добавьте результат, и следующая цель будет готова.' },
+    text: { en: 'How did "{title}" go? Add your result, and your next goal will be ready.', uz: '«{title}» qanday o‘tdi? Natijangizni qo‘shing, keyingi maqsadingiz tayyor bo‘ladi.', ru: 'Как прошло «{title}»? Добавьте результат, и следующая цель будет готова.' },
     button: { en: 'Add my result', uz: 'Natijani qo‘shish', ru: 'Добавить результат' }, path: '/progress/coach',
   },
   certificate_ready: {
@@ -54,7 +54,7 @@ const T: Record<MessageKind, Template> = {
     button: { en: 'Today’s first step', uz: 'Bugungi birinchi qadam', ru: 'Первый шаг на сегодня' }, path: '/progress',
   },
   comeback_open: {
-    text: { en: 'Your {old}-day streak can come back: {left} more learning activities by {date}, and it is restored.', uz: '{old} kunlik seriyangiz qaytishi mumkin: {date} gacha yana {left} ta mashg‘ulot, va u tiklanadi.', ru: 'Серию в {old} дн. можно вернуть: ещё {left} занятия до {date} — и она восстановится.' },
+    text: { en: 'Your {old}-day streak can come back: {left} more learning activities by {date}, and it is restored.', uz: '{old} kunlik seriyangizni qaytarish mumkin: {date} gacha yana {left} ta mashg‘ulot bajarsangiz, u tiklanadi.', ru: 'Серию в {old} дн. можно вернуть: выполните до {date} ещё занятий: {left}, и она восстановится.' },
     button: { en: 'Win it back', uz: 'Qaytarib olish', ru: 'Вернуть серию' }, path: '/progress',
   },
   journey_risk: {
@@ -62,7 +62,7 @@ const T: Record<MessageKind, Template> = {
     button: { en: 'Open the chapter', uz: 'Bobni ochish', ru: 'Открыть главу' }, path: '/journeys/{journey_key}',
   },
   winback_2: {
-    text: { en: 'You have {xp} XP and {days} learning days on Schood. Today’s story episode takes about {minutes} minutes.', uz: 'Schood’da {xp} XP va {days} kunlik o‘qishingiz bor. Bugungi hikoya qismi taxminan {minutes} daqiqa oladi.', ru: 'У вас {xp} XP и {days} дней занятий на Schood. Сегодняшний эпизод займёт около {minutes} минут.' },
+    text: { en: 'You have {xp} XP and {days} learning days on Schood. Today’s story episode takes about {minutes} minutes.', uz: 'Schoodda {xp} XP to‘pladingiz va {days} kun shug‘ullandingiz. Bugungi hikoya qismi taxminan {minutes} daqiqa oladi.', ru: 'У вас {xp} XP на Schood, дней занятий: {days}. Сегодняшний эпизод истории займёт около {minutes} мин.' },
     button: { en: 'Read today’s episode', uz: 'Bugungi qismni o‘qish', ru: 'Читать эпизод' }, path: '/stories',
   },
   winback_7: {
@@ -70,19 +70,19 @@ const T: Record<MessageKind, Template> = {
     button: { en: 'Continue', uz: 'Davom etish', ru: 'Продолжить' }, path: '/progress',
   },
   winback_21: {
-    text: { en: 'Your Schood record is still here: {progress_line} This is the last reminder; you can come back any time.', uz: 'Schood’dagi natijalaringiz joyida: {progress_line} Bu oxirgi eslatma; istalgan vaqtda qaytishingiz mumkin.', ru: 'Ваши результаты на Schood на месте: {progress_line} Это последнее напоминание; возвращайтесь в любое время.' },
+    text: { en: 'Your Schood record is still here: {progress_line} This is the last reminder; you can come back any time.', uz: 'Schooddagi natijalaringiz joyida: {progress_line} Bu oxirgi eslatma; istalgan vaqtda qaytishingiz mumkin.', ru: 'Ваши результаты на Schood на месте: {progress_line} Это последнее напоминание; возвращайтесь в любое время.' },
     button: { en: 'See my progress', uz: 'Natijalarimni ko‘rish', ru: 'Мой прогресс' }, path: '/progress',
   },
   squad_nudge: {
-    text: { en: '{name} from {squad} says hi: the squad has {minutes} of {goal} minutes this week.', uz: '{squad} jamoasidan {name} salom yo‘lladi: jamoa bu hafta {goal} daqiqadan {minutes} daqiqa to‘pladi.', ru: '{name} из «{squad}» передаёт привет: у команды {minutes} из {goal} минут на этой неделе.' },
+    text: { en: '{name} from {squad} says hi: the squad has {minutes} of {goal} minutes this week.', uz: '{squad} jamoasidan {name} salom yo‘lladi: jamoa bu hafta {goal} daqiqadan {minutes} daqiqa to‘pladi.', ru: '{name} из «{squad}» передаёт привет: у команды {minutes} из {goal} мин. на этой неделе.' },
     button: { en: 'Open the squad', uz: 'Jamoani ochish', ru: 'Открыть команду' }, path: '/squads',
   },
   league_result: {
-    text: { en: 'Last week you finished {rank} in the {tier} league with {xp} XP: {outcome}.', uz: 'O‘tgan hafta {tier} ligasida {xp} XP bilan {rank}-o‘rinni egalladingiz: {outcome}.', ru: 'На прошлой неделе вы заняли {rank}-е место в лиге «{tier}» с {xp} XP: {outcome}.' },
-    button: { en: 'See this week’s league', uz: 'Bu haftalik liga', ru: 'Лига этой недели' }, path: '/league',
+    text: { en: 'Last week you finished #{rank} in the {tier} league with {xp} XP: {outcome}.', uz: 'O‘tgan hafta {tier} ligasida {xp} XP bilan {rank}-o‘rinni egalladingiz: {outcome}.', ru: 'На прошлой неделе вы заняли {rank}-е место в лиге «{tier}» с {xp} XP: {outcome}.' },
+    button: { en: 'See this week’s league', uz: 'Bu haftaning ligasi', ru: 'Лига этой недели' }, path: '/league',
   },
   event_mock: {
-    text: { en: 'The weekly national mock is open until Sunday 22:00.', uz: 'Haftalik milliy sinov yakshanba 22:00 gacha ochiq.', ru: 'Еженедельный национальный пробник открыт до воскресенья, 22:00.' },
+    text: { en: 'The weekly national mock is open until Sunday 22:00.', uz: 'Haftalik milliy sinov yakshanba 22:00 gacha ochiq.', ru: 'Еженедельный национальный пробный экзамен открыт до воскресенья, 22:00.' },
     button: { en: 'Take the mock', uz: 'Sinovni topshirish', ru: 'Пройти пробник' }, path: '/coach/b1',
   },
 };
@@ -96,13 +96,13 @@ export const WORDS: Record<string, L> = {
   today: { en: 'today', uz: 'bugun', ru: 'сегодня' },
   tomorrow: { en: 'tomorrow', uz: 'ertaga', ru: 'завтра' },
   in_days: { en: 'in {days} days', uz: '{days} kundan keyin', ru: 'через {days} дн.' },
-  freeze_held: { en: 'You also hold {count} streak freeze(s), used automatically if you miss a day.', uz: 'Sizda yana {count} ta seriya muzlatgichi bor, bir kun o‘tkazib yuborsangiz avtomatik ishlatiladi.', ru: 'У вас есть заморозки серии ({count}); они срабатывают сами, если пропустить день.' },
+  freeze_held: { en: 'Streak freezes you hold: {count}. One is used automatically if you miss a day.', uz: 'Sizda {count} ta muzlatish bor: bir kunni o‘tkazib yuborsangiz, bittasi avtomatik ishlatiladi.', ru: 'Заморозок серии у вас: {count}. Если пропустите день, одна сработает автоматически.' },
   freeze_none: { en: '', uz: '', ru: '' },
   progress: { en: '{xp} XP, a {longest}-day best streak{journey}.', uz: '{xp} XP, eng uzun seriya {longest} kun{journey}.', ru: '{xp} XP, лучшая серия {longest} дн.{journey}.' },
   progress_journey: { en: ', chapter {chapter} of {journey}', uz: ', {journey}: {chapter}-bob', ru: ', {journey}: глава {chapter}' },
-  promoted: { en: 'you move up', uz: 'siz yuqoriga ko‘tarilasiz', ru: 'вы поднимаетесь' },
+  promoted: { en: 'you move up', uz: 'keyingi ligaga o‘tasiz', ru: 'вы переходите в лигу выше' },
   stayed: { en: 'you stay in this league', uz: 'shu ligada qolasiz', ru: 'вы остаётесь в этой лиге' },
-  demoted: { en: 'you move down one league', uz: 'bir liga pastga tushasiz', ru: 'вы опускаетесь на одну лигу' },
+  demoted: { en: 'you move down one league', uz: 'bir liga pastga tushasiz', ru: 'вы переходите на лигу ниже' },
   bronze: { en: 'Bronze', uz: 'Bronza', ru: 'Бронза' }, silver: { en: 'Silver', uz: 'Kumush', ru: 'Серебро' }, gold: { en: 'Gold', uz: 'Oltin', ru: 'Золото' },
   sapphire: { en: 'Sapphire', uz: 'Sapfir', ru: 'Сапфир' }, diamond: { en: 'Diamond', uz: 'Olmos', ru: 'Алмаз' },
 };

@@ -24,9 +24,9 @@ export const manifest: PackManifest = {
     ru: 'Живые голосовые разговоры на вашем уровне: работа, путешествия, магазины, врач и small talk.',
   },
   description: {
-    en: 'Voice role-plays with people who react to what you say, from A2 to C1. Choose gentle or strict correction. Shadow sentences to work on how you sound, build a phrase bank with spaced repetition, and get a weekly fluency report: words per minute, filler rate, vocabulary range and the error types you are fixing. Beginners get explanations in Uzbek or Russian.',
-    uz: 'A2 dan C1 gacha — aytganlaringizga munosabat bildiradigan suhbatdoshlar bilan ovozli rolli o‘yinlar. Yumshoq yoki qat’iy tuzatishni tanlang. Talaffuz uchun gaplarni takrorlang (shadowing), oraliq takrorlash bilan iboralar bankini yarating va haftalik ravonlik hisobotini oling: daqiqadagi so‘zlar, to‘ldiruvchi so‘zlar ulushi, lug‘at boyligi va tuzatayotgan xato turlaringiz. Boshlovchilarga tushuntirishlar o‘zbek yoki rus tilida.',
-    ru: 'Голосовые ролевые диалоги с собеседниками, которые реагируют на ваши слова, от A2 до C1. Выберите мягкую или строгую коррекцию. Повторяйте фразы за диктором (shadowing), собирайте банк фраз с интервальным повторением и получайте еженедельный отчёт о беглости: слова в минуту, доля слов-паразитов, словарный запас и типы ошибок, над которыми вы работаете. Начинающим — объяснения на узбекском или русском.',
+    en: 'Voice role-plays with characters who react to what you say, from A2 to C1. Choose gentle or strict correction. Shadow sentences to work on how you sound, build a phrase bank with spaced repetition, and get a weekly fluency report: words per minute, filler rate, vocabulary range and the error types you are fixing. Beginners get explanations in Uzbek or Russian.',
+    uz: 'A2 dan C1 gacha: aytganlaringizga munosabat bildiradigan personajlar bilan ovozli rolli o‘yinlar. Yumshoq yoki qat’iy tuzatish rejimini tanlang. Talaffuzingiz ustida ishlash uchun gaplarni ortidan takrorlang (shadowing), oraliq takrorlash bilan iboralar to‘plamini yarating va haftalik ravonlik hisobotini oling: daqiqadagi so‘zlar, to‘ldiruvchi so‘zlar ulushi, lug‘at boyligi va tuzatayotgan xato turlaringiz. Boshlang‘ich darajadagilarga tushuntirishlar o‘zbek yoki rus tilida beriladi.',
+    ru: 'Голосовые ролевые игры с персонажами, которые реагируют на ваши слова, от A2 до C1. Выберите мягкий или строгий режим исправлений. Повторяйте фразы за диктором (шэдоуинг), чтобы работать над звучанием речи, собирайте банк фраз с интервальным повторением и получайте еженедельный отчёт о беглости: слова в минуту, доля слов-паразитов, разнообразие лексики и типы ошибок, над которыми вы работаете. Начинающим — объяснения на узбекском или русском.',
   },
   uiLanguages: ['uz', 'ru', 'en'],
   practiceLanguage: 'en',
@@ -53,7 +53,7 @@ export const manifest: PackManifest = {
     { id: 'situations.shopping', parent: 'situations', name: { en: 'Shops and services', uz: 'Do‘kon va xizmatlar', ru: 'Магазины и услуги' } },
     { id: 'situations.health', parent: 'situations', name: { en: 'Health and the doctor', uz: 'Sog‘liq va shifokor', ru: 'Здоровье и врач' } },
     { id: 'situations.work', parent: 'situations', name: { en: 'Work', uz: 'Ish', ru: 'Работа' } },
-    { id: 'phrases', name: { en: 'Phrase bank', uz: 'Iboralar banki', ru: 'Банк фраз' }, weight: 0.7 },
+    { id: 'phrases', name: { en: 'Phrase bank', uz: 'Iboralar to‘plami', ru: 'Банк фраз' }, weight: 0.7 },
   ],
   errorTags: [
     {
@@ -79,7 +79,7 @@ export const manifest: PackManifest = {
       name: { en: 'He or she', uz: 'He yoki she', ru: 'He или she' },
       explain: {
         en: 'Uzbek has one word, "u", for he, she and it. In English choose he for a man, she for a woman and it for a thing, and keep the same one through the story.',
-        uz: 'O‘zbek tilida «u» bitta so‘z — ham erkak, ham ayol, ham narsa uchun. Ingliz tilida erkak uchun he, ayol uchun she, narsa uchun it ishlating va hikoya davomida o‘zgartirmang.',
+        uz: 'O‘zbek tilida erkak, ayol va narsa uchun bitta so‘z — «u» ishlatiladi. Ingliz tilida erkak uchun he, ayol uchun she, narsa uchun it ishlating va hikoya davomida o‘zgartirmang.',
         ru: 'В узбекском одно слово «u» для «он», «она» и «оно». В английском выбирайте he для мужчины, she для женщины и it для предмета и не меняйте по ходу рассказа.',
       },
     },
@@ -89,7 +89,7 @@ export const manifest: PackManifest = {
       explain: {
         en: 'Say a or an before one thing you mention for the first time (I bought a jacket), the when it is clear which one (The jacket is too small), and nothing before general plurals (I like dogs).',
         uz: 'Birinchi marta aytilgan bitta narsa oldida a yoki an deng (I bought a jacket), qaysi biri aniq bo‘lsa the (The jacket is too small), umumiy ko‘plik oldida hech narsa (I like dogs).',
-        ru: 'A или an — перед одним предметом, который упоминаете впервые (I bought a jacket), the — когда понятно, какой именно (The jacket is too small), ничего — перед общим множественным (I like dogs).',
+        ru: 'A или an — перед одним предметом, который упоминаете впервые (I bought a jacket), the — когда понятно, какой именно (The jacket is too small), ничего — перед множественным числом в общем значении (I like dogs).',
       },
     },
     {
@@ -106,8 +106,8 @@ export const manifest: PackManifest = {
       name: { en: 'Prepositions of time and place', uz: 'Vaqt va joy predloglari', ru: 'Предлоги времени и места' },
       explain: {
         en: 'At for clock times and points (at 7, at the station), on for days and surfaces (on Monday, on the table), in for months, years and inside spaces (in May, in the car).',
-        uz: 'Soat va nuqta uchun at (at 7, at the station), kunlar va sirt uchun on (on Monday, on the table), oy, yil va ichki joy uchun in (in May, in the car).',
-        ru: 'At — для времени по часам и точек (at 7, at the station), on — для дней и поверхностей (on Monday, on the table), in — для месяцев, лет и внутренних пространств (in May, in the car).',
+        uz: 'Soat va aniq joy uchun at (at 7, at the station), kunlar va sirt uchun on (on Monday, on the table), oylar, yillar va biror narsaning ichi uchun in (in May, in the car).',
+        ru: 'At — для времени по часам и конкретного места (at 7, at the station), on — для дней и поверхностей (on Monday, on the table), in — для месяцев, лет и пространства внутри чего-то (in May, in the car).',
       },
     },
     {
@@ -132,7 +132,7 @@ export const manifest: PackManifest = {
       id: 'false_friends', node: 'conversation.range', drill: 'drill.false_friends',
       name: { en: 'False friends', uz: 'Soxta do‘stlar (aldamchi so‘zlar)', ru: 'Ложные друзья переводчика' },
       explain: {
-        en: 'Some English words look like Russian or Uzbek words but mean something else: magazine is a journal, not a shop; accurate means exact, not tidy; sympathetic means caring, not attractive.',
+        en: 'Some English words look like Russian or Uzbek words but mean something else: a magazine is something you read, not a shop; accurate means exact, not tidy; sympathetic means caring, not attractive.',
         uz: 'Ba’zi inglizcha so‘zlar ruscha yoki o‘zbekcha so‘zlarga o‘xshaydi, lekin boshqa ma’noni beradi: magazine — jurnal, do‘kon emas; accurate — aniq, ozoda emas; sympathetic — hamdard, yoqimtoy emas.',
         ru: 'Некоторые английские слова похожи на русские, но значат другое: magazine — журнал, а не магазин; accurate — точный, а не аккуратный; sympathetic — сочувствующий, а не симпатичный.',
       },
@@ -149,9 +149,9 @@ export const manifest: PackManifest = {
   ],
   menu: [
     { action: 'today', emoji: '📅', label: { en: 'Today’s plan', uz: 'Bugungi reja', ru: 'План на сегодня' } },
-    { action: 'roleplay', emoji: '🗣', label: { en: 'Role-play', uz: 'Rolli suhbat', ru: 'Ролевой диалог' } },
-    { action: 'shadowing', emoji: '🔁', label: { en: 'Shadowing', uz: 'Takrorlash (shadowing)', ru: 'Шэдоуинг' } },
-    { action: 'phrases', emoji: '🧠', label: { en: 'Phrase bank', uz: 'Iboralar banki', ru: 'Банк фраз' } },
+    { action: 'roleplay', emoji: '🗣', label: { en: 'Role-play', uz: 'Rolli o‘yin', ru: 'Ролевая игра' } },
+    { action: 'shadowing', emoji: '🔁', label: { en: 'Shadowing', uz: 'Shadowing (takrorlash)', ru: 'Шэдоуинг' } },
+    { action: 'phrases', emoji: '🧠', label: { en: 'Phrase bank', uz: 'Iboralar to‘plami', ru: 'Банк фраз' } },
     { action: 'drill', emoji: '🎯', label: { en: 'Fix my errors', uz: 'Xatolarimni tuzatish', ru: 'Работа над ошибками' } },
     { action: 'progress', emoji: '📈', label: { en: 'My progress', uz: 'Natijalarim', ru: 'Мой прогресс' } },
     { action: 'report', emoji: '🗓', label: { en: 'Fluency report', uz: 'Ravonlik hisoboti', ru: 'Отчёт о беглости' } },
@@ -162,7 +162,7 @@ export const manifest: PackManifest = {
   commands: [
     { command: 'start', description: { en: 'Start or restart', uz: 'Boshlash', ru: 'Начать' } },
     { command: 'today', description: { en: 'Today’s plan', uz: 'Bugungi reja', ru: 'План на сегодня' } },
-    { command: 'roleplay', description: { en: 'Start a role-play', uz: 'Rolli suhbatni boshlash', ru: 'Начать ролевой диалог' } },
+    { command: 'roleplay', description: { en: 'Start a role-play', uz: 'Rolli o‘yinni boshlash', ru: 'Начать ролевую игру' } },
     { command: 'shadowing', description: { en: 'Pronunciation shadowing', uz: 'Talaffuz mashqi', ru: 'Тренировка произношения' } },
     { command: 'phrases', description: { en: 'Review your phrase bank', uz: 'Iboralarni takrorlash', ru: 'Повторить фразы' } },
     { command: 'progress', description: { en: 'Level, fluency and streak', uz: 'Daraja, ravonlik, seriya', ru: 'Уровень, беглость, серия' } },

@@ -35,27 +35,27 @@ export const plan: PlanRules = {
       mix: { practice: 7, drill: 2, writing: 1 },
     },
   ],
-  weeklyMock: { activity: 'mock.compulsory', weekday: 6, title: { uz: 'Shanba mini sinovi', ru: 'Субботний мини-пробник', en: 'Saturday mini-mock' } },
+  weeklyMock: { activity: 'mock.compulsory', weekday: 6, title: { uz: 'Shanbalik mini-sinov', ru: 'Субботний мини-пробник', en: 'Saturday mini-mock' } },
   links: [],
 };
 
 export const reminders: Reminders = {
   daily: [
-    { uz: 'Xayrli kun, {name}! Bugun: {task}, taxminan {minutes} daqiqa. Har kungi besh masala — imtihonga eng ishonchli yo‘l.', ru: 'Добрый день, {name}! Сегодня: {task}, около {minutes} минут. Пять задач каждый день — самый надёжный путь к экзамену.' },
-    { uz: '{name}, {streak} kunlik seriyangiz davom etsinmi? Bugungi mashq: {task} ({minutes} daqiqa).', ru: '{name}, продолжим серию ({streak} дн.)? Сегодня: {task} ({minutes} минут).' },
-    { uz: 'Bugun eng zaif mavzuingizdan boshlaymiz: {task}. {minutes} daqiqa yetadi.', ru: 'Сегодня начинаем с самой слабой темы: {task}. Хватит {minutes} минут.' },
+    { uz: 'Xayrli kun, {name}! Bugun: {task}, taxminan {minutes} daqiqa. Har kuni besh masala — imtihonga tayyorlanishning ishonchli yo‘li.', ru: 'Добрый день, {name}! Сегодня: {task}, около {minutes} мин. Пять задач каждый день — надёжный способ подготовиться к экзамену.' },
+    { uz: '{name}, {streak} kunlik seriyangiz davom etsinmi? Bugungi mashq: {task} ({minutes} daqiqa).', ru: '{name}, продолжим серию ({streak} дн.)? Сегодня: {task} ({minutes} мин.).' },
+    { uz: 'Bugun eng zaif mavzuingizdan boshlaymiz: {task}. {minutes} daqiqa yetadi.', ru: 'Сегодня начинаем с самой слабой темы: {task}. Хватит {minutes} мин.' },
     { uz: '{coach}: hozirgi darajangiz {level}, maqsad {target}. Bugungi qadam — {task}.', ru: '{coach}: сейчас вы на уровне {level}, цель {target}. Шаг на сегодня — {task}.' },
-    { uz: 'Qoralama va qalam tayyormi, {name}? {task} — {minutes} daqiqa, maslahatlar bor.', ru: 'Черновик и ручка готовы, {name}? {task} — {minutes} минут, подсказки есть.' },
-    { uz: 'Kecha xato qilgan masalalaringiz daftarda kutyapti. Bugun: {task}, {minutes} daqiqa.', ru: 'Задачи, где вы ошиблись, ждут в тетради ошибок. Сегодня: {task}, {minutes} минут.' },
+    { uz: 'Qoralama va qalam tayyormi, {name}? {task} — {minutes} daqiqa, maslahatlar bor.', ru: 'Черновик и ручка готовы, {name}? {task} — {minutes} мин., подсказки есть.' },
+    { uz: 'Xato qilgan masalalaringiz xatolar daftarida kutyapti. Bugun: {task}, {minutes} daqiqa.', ru: 'Задачи, где вы ошиблись, ждут в тетради ошибок. Сегодня: {task}, {minutes} мин.' },
   ],
   comeback: [
-    { uz: '{name}, kecha mashq bo‘lmadi — hechqisi yo‘q. Bugun qisqa to‘plam bilan qaytamiz: {task}.', ru: '{name}, вчера занятия не было — ничего страшного. Вернёмся с короткого набора: {task}.' },
+    { uz: '{name}, kecha mashq bo‘lmadi — hechqisi yo‘q. Bugun qisqa to‘plam bilan qaytamiz: {task}.', ru: '{name}, вчера занятия не было — ничего страшного. Начнём снова с короткого набора: {task}.' },
     { uz: 'Seriya uzildi, lekin bilim joyida. 10 daqiqa: {task} — va yana yo‘ldamiz.', ru: 'Серия прервалась, но знания на месте. 10 минут: {task} — и мы снова в пути.' },
   ],
-  weekly: { uz: 'Haftalik hisobotingiz tayyor: {delta}. Qaysi mavzular o‘sganini va keyingi hafta nimaga e’tibor berishni ko‘ring.', ru: 'Недельный отчёт готов: {delta}. Посмотрите, какие темы выросли и на чём сосредоточиться на следующей неделе.' },
+  weekly: { uz: 'Haftalik hisobotingiz tayyor: {delta}. Qaysi mavzular o‘sganini va keyingi hafta nimaga e’tibor berishni ko‘ring.', ru: 'Еженедельный отчёт готов: {delta}. Посмотрите, какие темы выросли и на чём сосредоточиться на следующей неделе.' },
   countdown: [
     { uz: 'Imtihongacha {days} kun qoldi. Bugungi reja: {task}.', ru: 'До экзамена осталось дней: {days}. План на сегодня: {task}.' },
-    { uz: '{days} kun qoldi, {name}. Har bir mini sinov — imtihon kunining mashqi. Bugun: {task}.', ru: 'Осталось дней: {days}, {name}. Каждый мини-пробник — репетиция экзамена. Сегодня: {task}.' },
+    { uz: '{days} kun qoldi, {name}. Har bir mini-sinov — imtihon kuni uchun mashq. Bugun: {task}.', ru: 'Осталось дней: {days}, {name}. Каждый мини-пробник — репетиция экзамена. Сегодня: {task}.' },
   ],
 };
 

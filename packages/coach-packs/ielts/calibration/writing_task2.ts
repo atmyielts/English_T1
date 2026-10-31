@@ -21,7 +21,7 @@ const samples: CalibrationSample[] = [
       'In conclusion, I think online education is good and bad. In the future schools will be but also online lessons will be more. Every people must choose what is better for him. Government must to give internet for all people.',
     ),
     reference: { task_response: 4, coherence_cohesion: 4, lexical_resource: 4, grammatical_range_accuracy: 4 },
-    rationale: 'About 190 words, well under 250, so Task Response cannot go above 4: the position ("agree partly but also not agree") is unclear and both ideas are a sentence or two of general statements. Basic vocabulary repeated ("online", "school"), and frequent agreement and verb-form errors ("online lessons is cheap", "he not need") that sometimes strain the reader.',
+    rationale: 'About 190 words, well under 250, and the position ("agree partly but also not agree") is unclear, with each idea only a sentence or two of general statements, so Task Response is 4. Vocabulary is basic and repeated ("online", "school"), and frequent agreement and verb-form errors ("online lessons is cheap", "he not need") sometimes strain the reader.',
   },
   {
     id: 'w2.b4.city-traffic',

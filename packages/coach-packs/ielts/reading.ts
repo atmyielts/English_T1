@@ -94,7 +94,7 @@ export const reading: Activity[] = [
         explanation: {
           en: 'False. City surfaces release their heat slowly, so a street stays warm “long after the surrounding fields have cooled”: the countryside cools faster, not the city. The passage states the opposite of the statement, so the answer is False rather than Not Given.',
           uz: 'False. Shahar sirtlari issiqlikni sekin chiqaradi, shuning uchun ko‘cha «atrofdagi dalalar sovigandan keyin ham uzoq vaqt» issiq qoladi: shahar emas, qishloq tezroq soviydi. Matn bayonotning teskarisini aytadi, demak javob Not Given emas, False.',
-          ru: 'False. Городские поверхности отдают тепло медленно, поэтому улица остаётся тёплой «ещё долго после того, как окрестные поля остыли»: быстрее остывает пригород, а не город. Текст утверждает обратное, поэтому ответ False, а не Not Given.',
+          ru: 'False. Городские поверхности отдают тепло медленно, поэтому улица остаётся тёплой «ещё долго после того, как окрестные поля остыли»: быстрее остывает загородная местность, а не город. Текст утверждает обратное, поэтому ответ False, а не Not Given.',
         },
       },
       {
@@ -159,7 +159,7 @@ export const reading: Activity[] = [
         evidence: 'In my view, that comparison is misleading',
         explanation: {
           en: 'No. The writer mentions this comparison only to reject it: “In my view, that comparison is misleading”, because languages are usually given up under pressure. Do not choose Yes just because the comparison appears in the passage; check what the writer thinks of it.',
-          uz: 'No. Muallif bu taqqoslashni faqat rad etish uchun keltiradi: «Menimcha, bu taqqoslash chalg‘ituvchi», chunki tillardan odatda bosim ostida voz kechiladi. Taqqoslash matnda borligi uchungina Yes ni tanlamang; muallif u haqda nima deb o‘ylashini tekshiring.',
+          uz: 'No. Muallif bu taqqoslashni faqat rad etish uchun keltiradi: «Menimcha, bu taqqoslash chalg‘ituvchi», chunki tillardan odatda bosim ostida voz kechiladi. Taqqoslash matnda borligi uchungina Yes’ni tanlamang; muallif u haqda nima deb o‘ylashini tekshiring.',
           ru: 'No. Автор приводит это сравнение только для того, чтобы его отвергнуть: «На мой взгляд, это сравнение вводит в заблуждение», ведь от языка обычно отказываются под давлением. Не выбирайте Yes только потому, что сравнение есть в тексте, — проверьте, как к нему относится автор.',
         },
       },
@@ -193,8 +193,8 @@ export const reading: Activity[] = [
         evidence: 'advantages that a small village language rarely enjoys',
         explanation: {
           en: 'The writer lists Hebrew’s advantages (a vast literature, a large willing population, political backing) and says a small village language “rarely enjoys” them. Option A is true but is background, not the reason; option C contradicts the passage, which says supporters quote it “constantly”.',
-          uz: 'Muallif ibroniy tilining afzalliklarini sanaydi (boy adabiyot, uni qabul qilishga tayyor katta aholi, siyosiy qo‘llov) va kichik qishloq tilida bular «kamdan-kam» bo‘lishini aytadi. A variant to‘g‘ri fakt, lekin sabab emas, shunchaki fon; C esa matnga zid, chunki tarafdorlar bu misolni «doimo» keltiradi.',
-          ru: 'Автор перечисляет преимущества иврита (огромная литература, большое население, готовое его принять, политическая поддержка) и говорит, что у маленького сельского языка их «редко» бывает. Вариант A верен, но это фон, а не причина; C противоречит тексту: сторонники цитируют этот пример «постоянно».',
+          uz: 'Muallif ibroniy tilining afzalliklarini sanaydi (boy adabiyot, uni qabul qilishga tayyor katta aholi, siyosiy qo‘llab-quvvatlov) va kichik qishloq tilida bular «kamdan-kam» bo‘lishini aytadi. A variant to‘g‘ri fakt, lekin sabab emas, shunchaki fon; C esa matnga zid, chunki tarafdorlar bu misolni «doimo» keltiradi.',
+          ru: 'Автор перечисляет преимущества иврита (огромная литература, большое население, готовое его принять, политическая поддержка) и говорит, что у маленького сельского языка они бывают «редко». Вариант A верен, но это фон, а не причина; C противоречит тексту: сторонники цитируют этот пример «постоянно».',
         },
       },
       {
@@ -209,7 +209,7 @@ export const reading: Activity[] = [
         evidence: 'they depend heavily on a shrinking number of elderly teachers',
         explanation: {
           en: 'The weakness is that “they depend heavily on a shrinking number of elderly teachers”. Option A is the opposite of how nests work, B contradicts the statement that they have produced young speakers, and cost is never mentioned.',
-          uz: 'Zaif tomoni shundaki, ular «soni kamayib borayotgan keksa o‘qituvchilarga qattiq bog‘liq». A variant «til uyalari»ning ishlash usuliga teskari, B ular yosh so‘zlovchilarni yetishtirgani haqidagi gapga zid, xarajat esa umuman tilga olinmagan.',
+          uz: 'Zaif tomoni shundaki, ular «soni kamayib borayotgan keksa o‘qituvchilarga qattiq bog‘liq». A variant «til uyalari»ning ishlash usuliga teskari, B ular tilda so‘zlashadigan yoshlarni yetishtirgani haqidagi gapga zid, xarajat esa umuman tilga olinmagan.',
           ru: 'Слабость в том, что «они сильно зависят от сокращающегося числа пожилых учителей». Вариант A противоположен тому, как работают «языковые гнёзда», B противоречит фразе о появлении юных носителей, а о стоимости не сказано вовсе.',
         },
       },
@@ -265,8 +265,8 @@ export const reading: Activity[] = [
         evidence: 'sleep was regarded as a passive state in which the brain simply rested',
         explanation: {
           en: 'False. Sleep “was regarded as a passive state in which the brain simply rested”. The active view is the modern one described in the next sentences, not the twentieth-century belief, so the statement contradicts the passage.',
-          uz: 'False. Uyqu «miya shunchaki dam oladigan passiv holat deb hisoblangan». Faol miya haqidagi qarash keyingi gaplarda tasvirlangan zamonaviy qarash, XX asrdagi e’tiqod emas, shuning uchun bayonot matnga zid.',
-          ru: 'False. Сон «считался пассивным состоянием, в котором мозг просто отдыхает». Представление об активном мозге — современное, оно описано в следующих предложениях, а не взгляд XX века, так что утверждение противоречит тексту.',
+          uz: 'False. Uyqu «miya shunchaki dam oladigan passiv holat deb hisoblangan». Faol miya haqidagi qarash keyingi gaplarda tasvirlangan zamonaviy qarash, XX asrdagi tasavvur emas, shuning uchun bayonot matnga zid.',
+          ru: 'False. Сон «считался пассивным состоянием, в котором мозг просто отдыхает». Представление об активном мозге — современное, оно описано в следующих предложениях; в XX веке считали иначе, так что утверждение противоречит тексту.',
         },
       },
       {
@@ -294,7 +294,7 @@ export const reading: Activity[] = [
         evidence: 'the hippocampus, a small structure deep in the brain, replays patterns of activity',
         explanation: {
           en: '“The hippocampus, a small structure deep in the brain, replays patterns of activity” from learning. The name is one word, so it fits the limit; do not write “structure”, which is only a description of it.',
-          uz: '«Hippokamp — miyaning chuqur qismidagi kichik tuzilma — o‘rganish paytidagi faollik naqshlarini qayta takrorlaydi.» Nomi bitta so‘z, demak chegaraga sig‘adi; «structure» deb yozmang, bu faqat uning tavsifi.',
+          uz: '«Hippokamp — miyaning chuqur qismidagi kichik tuzilma — o‘rganish paytidagi faollik naqshlarini takrorlaydi.» Nomi bitta so‘z, demak chegaraga sig‘adi; «structure» deb yozmang, bu faqat uning tavsifi.',
           ru: '«Гиппокамп, небольшая структура в глубине мозга, воспроизводит паттерны активности», возникшие при обучении. Название — одно слово и укладывается в лимит; не пишите «structure» — это лишь описание.',
         },
       },
@@ -305,8 +305,8 @@ export const reading: Activity[] = [
         evidence: 'Short daytime naps have shown benefits in some studies',
         explanation: {
           en: '“Short daytime naps have shown benefits in some studies, though it remains unclear whether they can fully replace a night of sleep.” Avoid “extra hours of revision”: the passage presents these as what students gain by staying up, at the cost of sleep.',
-          uz: '«Qisqa kunduzgi uyqu ba’zi tadqiqotlarda foyda ko‘rsatgan, ammo u tungi uyquni to‘liq almashtira oladimi, noaniq.» «Extra hours of revision» deb yozmang: matnda bu uyqu hisobiga, tun bo‘yi uxlamay olinadigan narsa sifatida berilgan.',
-          ru: '«Короткий дневной сон в некоторых исследованиях дал пользу, но неясно, может ли он полностью заменить ночной». Не пишите «extra hours of revision»: в тексте это то, что студенты получают, не ложась спать, ценой сна.',
+          uz: '«Ba’zi tadqiqotlarda qisqa kunduzgi uyqu foyda bergan, ammo u tungi uyquni to‘liq almashtira oladimi, hali noaniq.» «Extra hours of revision» deb yozmang: matnda bu uyqu hisobiga, tun bo‘yi uxlamay olinadigan narsa sifatida berilgan.',
+          ru: '«Короткий дневной сон в некоторых исследованиях принёс пользу, но неясно, может ли он полностью заменить ночной». Не пишите «extra hours of revision»: в тексте это то, что студенты получают, не ложась спать, ценой сна.',
         },
       },
       {
@@ -356,7 +356,7 @@ export const reading: Activity[] = [
         evidence: 'some responded by bricking up openings',
         explanation: {
           en: 'Paragraph E: owners paid a tax that “rose with the number of windows”, so some bricked windows up. Paragraph A also describes openings being closed, but with shutters and skins against the weather, which is not a reason for having fewer windows.',
-          uz: 'E paragraf: egalar derazalar soniga qarab oshadigan soliq to‘lagan, shuning uchun ba’zilari derazalarni g‘isht bilan bekitgan. A paragrafda ham teshiklar yopilishi tasvirlangan, lekin ob-havodan himoya uchun darcha va terilar bilan; bu derazalar sonini kamaytirish sababi emas.',
+          uz: 'E paragraf: egalar derazalar soniga qarab oshadigan soliq to‘lagan, shuning uchun ba’zilari derazalarni g‘isht bilan bekitgan. A paragrafda ham teshiklar yopilishi tasvirlangan, lekin ob-havodan himoya uchun yog‘och qopqoq va terilar bilan; bu derazalar sonini kamaytirish sababi emas.',
           ru: 'Абзац E: владельцы платили налог, который «рос с числом окон», и некоторые закладывали окна кирпичом. В абзаце A тоже говорится о закрытых проёмах, но ставнями и шкурами от непогоды — это не причина уменьшать число окон.',
         },
       },
@@ -365,7 +365,7 @@ export const reading: Activity[] = [
         evidence: 'to tell religious stories to people who could not read',
         explanation: {
           en: 'Paragraph C says church windows were meant “to tell religious stories to people who could not read”. Paragraph B also describes glass that gave light without a view, but it says nothing about telling stories or about readers.',
-          uz: 'C paragrafda cherkov derazalari «o‘qiy olmaydigan odamlarga diniy hikoyalarni aytib berish» uchun mo‘ljallangani aytiladi. B paragraf ham ko‘rinish bermay, faqat yorug‘lik o‘tkazadigan oynani tasvirlaydi, lekin unda hikoyalar yoki o‘quvchilar haqida gap yo‘q.',
+          uz: 'C paragrafda cherkov derazalari «o‘qiy olmaydigan odamlarga diniy hikoyalarni aytib berish» uchun mo‘ljallangani aytiladi. B paragraf ham ko‘rinish bermay, faqat yorug‘lik o‘tkazadigan oynani tasvirlaydi, lekin unda hikoyalar yoki savod haqida gap yo‘q.',
           ru: 'В абзаце C сказано, что церковные окна должны были «рассказывать религиозные истории людям, не умевшим читать». В абзаце B тоже есть стекло, которое пропускает свет без вида, но о рассказах и грамотности там ничего нет.',
         },
       },
@@ -385,7 +385,7 @@ export const reading: Activity[] = [
         evidence: 'molten glass is poured onto a bath of liquid tin',
         explanation: {
           en: 'The float process pours molten glass “onto a bath of liquid tin”. The gap needs a material, and tin is the only one named here; “glass” cannot be right, because the glass is what is poured onto the tin.',
-          uz: 'Float jarayonida eritilgan oyna «suyuq qalay vannasiga» quyiladi. Bo‘sh joyga material kerak va bu yerda faqat qalay (tin) nomlangan; «glass» bo‘lishi mumkin emas, chunki qalay ustiga aynan oynaning o‘zi quyiladi.',
+          uz: 'Float jarayonida eritilgan shisha «suyuq qalay vannasiga» quyiladi. Bo‘sh joyga material kerak va bu yerda faqat qalay (tin) nomlangan; «glass» bo‘lishi mumkin emas, chunki qalay ustiga aynan shishaning o‘zi quyiladi.',
           ru: 'В флоат-процессе расплавленное стекло выливают «на ванну с жидким оловом». В пропуск нужен материал, и назван только tin; «glass» не подходит, потому что именно стекло выливают на олово.',
         },
       },
@@ -395,9 +395,9 @@ export const reading: Activity[] = [
         answer: ['oiled cloth'],
         evidence: 'closed with wooden shutters, animal skins or oiled cloth',
         explanation: {
-          en: 'Paragraph A lists “wooden shutters, animal skins or oiled cloth”. The two-word limit lets you write the full answer, so include “oiled”: it is the detail that made the cloth useful against rain. “Small vessels” is about early uses of glass, not window coverings.',
-          uz: 'A paragrafda «yog‘och darchalar, hayvon terilari yoki moylangan mato» sanab o‘tilgan. Ikki so‘z chegarasi to‘liq javobni yozishga imkon beradi, shuning uchun «oiled»ni ham yozing. «Small vessels» oynaning dastlabki qo‘llanilishi haqida, deraza yopqichlari haqida emas.',
-          ru: 'В абзаце A перечислены «деревянные ставни, шкуры животных или промасленная ткань». Лимит в два слова позволяет дать полный ответ, поэтому пишите и «oiled». «Small vessels» относится к раннему использованию стекла, а не к тому, чем закрывали окна.',
+          en: 'Paragraph A lists “wooden shutters, animal skins or oiled cloth”. The two-word limit lets you write the full answer, so include “oiled”: “cloth” alone is incomplete. “Small vessels” is about early uses of glass, not window coverings.',
+          uz: 'A paragrafda «yog‘och qopqoqlar, hayvon terilari yoki moylangan mato» sanab o‘tilgan. Ikki so‘z chegarasi to‘liq javobni yozishga imkon beradi, shuning uchun «oiled»ni ham yozing: «cloth»ning o‘zi to‘liq javob emas. «Small vessels» oynaning dastlabki qo‘llanilishi haqida, deraza yopqichlari haqida emas.',
+          ru: 'В абзаце A перечислены «деревянные ставни, шкуры животных или промасленная ткань». Лимит в два слова позволяет дать полный ответ, поэтому пишите и «oiled»: одного «cloth» недостаточно. «Small vessels» относится к раннему использованию стекла, а не к тому, чем закрывали окна.',
         },
       },
       {
@@ -414,7 +414,7 @@ export const reading: Activity[] = [
         evidence: 'Both techniques produced panes that were uneven and limited in size',
         explanation: {
           en: 'Not Given. The passage describes both methods and says both produced panes “limited in size”, but it never compares the size of their panes. Do not choose True just because the cylinder bubble was “long”.',
-          uz: 'Not Given. Matnda ikkala usul tasvirlangan va ikkalasi ham «o‘lchami cheklangan» oynalar bergani aytilgan, lekin ularning o‘lchami bir-biri bilan solishtirilmagan. Silindr pufagi «uzun» bo‘lgani uchungina True ni tanlamang.',
+          uz: 'Not Given. Matnda ikkala usul tasvirlangan va ikkalasi ham «o‘lchami cheklangan» oynalar bergani aytilgan, lekin ularning o‘lchami bir-biri bilan solishtirilmagan. Silindr pufagi «uzun» bo‘lgani uchungina True’ni tanlamang.',
           ru: 'Not Given. В тексте описаны оба метода и сказано, что оба давали стёкла «ограниченного размера», но их размеры не сравниваются. Не выбирайте True только потому, что цилиндрический пузырь был «длинным».',
         },
       },
@@ -450,7 +450,7 @@ export const reading: Activity[] = [
         explanation: {
           en: 'Paragraph B explains that mangroves were cleared for ponds, farms and resorts, and that because this happened gradually “its total scale went largely unnoticed”. The heading about timber is a trap: the paragraph lists uses of the cleared land, not the value of the wood.',
           uz: 'B paragrafda mangrlar hovuzlar, dalalar va kurortlar uchun kesilgani, bu asta-sekin sodir bo‘lgani sababli esa «uning umumiy ko‘lami deyarli sezilmay qolgani» tushuntiriladi. Yog‘och haqidagi sarlavha tuzoq: paragrafda kesilgan yerdan foydalanish sanaladi, yog‘ochning qiymati emas.',
-          ru: 'Абзац B объясняет, что мангры вырубали под пруды, поля и курорты, а поскольку это шло постепенно, «общий масштаб остался почти незамеченным». Заголовок про древесину — ловушка: в абзаце перечислено, как использовали расчищенную землю, а не ценность леса.',
+          ru: 'Абзац B объясняет, что мангры вырубали под пруды, поля и курорты, а поскольку это шло постепенно, «общий масштаб остался почти незамеченным». Заголовок про древесину — ловушка: в абзаце перечислено, как использовали расчищенную землю, а не ценность древесины.',
         },
       },
       {
@@ -467,8 +467,8 @@ export const reading: Activity[] = [
         evidence: 'it is usually better to restore the natural flow of water',
         explanation: {
           en: 'Paragraph E says early projects planted seedlings where mangroves had never grown and that it is “usually better to restore the natural flow of water” and let seeds arrive with the tide. It is not about adaptations (paragraph A), even though it mentions water and tides.',
-          uz: 'E paragrafda dastlabki loyihalar mangr hech qachon o‘smagan joylarga ko‘chat ekkani va «odatda tabiiy suv oqimini tiklash» hamda urug‘larning suv ko‘tarilishi bilan kelishiga imkon berish yaxshiroq ekani aytiladi. Bu moslashuvlar haqida emas (A paragraf), garchi suv va to‘lqinlar tilga olinsa ham.',
-          ru: 'В абзаце E сказано, что ранние проекты сажали саженцы там, где мангров никогда не было, и что «обычно лучше восстановить естественный ток воды» и дать семенам прийти с приливом. Это не про приспособления растений (абзац A), хотя вода и приливы упоминаются.',
+          uz: 'E paragrafda dastlabki loyihalar mangr hech qachon o‘smagan joylarga ko‘chat ekkani va «odatda tabiiy suv oqimini tiklash» hamda urug‘larning suv ko‘tarilishi bilan kelishiga imkon berish yaxshiroq ekani aytiladi. Bu moslashuvlar haqida emas (A paragraf), garchi unda suv va suv ko‘tarilishi tilga olinsa ham.',
+          ru: 'В абзаце E сказано, что ранние проекты сажали саженцы там, где мангров никогда не было, и что «обычно лучше восстановить естественное течение воды» и дать семенам прийти с приливом. Это не про приспособления растений (абзац A), хотя вода и приливы упоминаются.',
         },
       },
       {
@@ -545,7 +545,7 @@ export const reading: Activity[] = [
         evidence: 'predicted as confidently and as wrongly as the shrinking working week',
         explanation: {
           en: 'No. The writer says few ideas have been predicted “as confidently and as wrongly” as the shrinking week: hours settled at about forty, not fifteen or twenty. Productivity did rise as expected, which may tempt you towards Yes, but the prediction about hours was wrong.',
-          uz: 'No. Muallif ish haftasining qisqarishi kabi «shunchalik ishonch bilan va shunchalik noto‘g‘ri» bashorat qilingan g‘oyalar kam ekanini aytadi: soatlar o‘n besh-yigirma emas, qirq atrofida qolgan. Unumdorlik kutilganidek oshgani Yes ga undashi mumkin, lekin soatlar haqidagi bashorat xato chiqdi.',
+          uz: 'No. Muallif ish haftasining qisqarishi kabi «shunchalik ishonch bilan va shunchalik noto‘g‘ri» bashorat qilingan g‘oyalar kam ekanini aytadi: soatlar o‘n besh-yigirma emas, qirq atrofida qolgan. Unumdorlik kutilganidek oshgani Yes’ga undashi mumkin, lekin soatlar haqidagi bashorat xato chiqdi.',
           ru: 'No. Автор пишет, что мало какие идеи предсказывали «так уверенно и так ошибочно», как сокращение рабочей недели: часы остались около сорока, а не пятнадцать-двадцать. Производительность действительно выросла, и это толкает к Yes, но прогноз о часах не сбылся.',
         },
       },
@@ -555,7 +555,7 @@ export const reading: Activity[] = [
         explanation: {
           en: 'Yes. The writer thinks the results are “presented with more certainty than they can support”, because firms volunteer and those expecting failure do not sign up, and most are easily reorganised offices. The writer still takes the results seriously, but agrees they may be overstated.',
           uz: 'Yes. Muallifning fikricha, natijalar «asoslab bo‘ladiganidan ko‘ra ishonchliroq qilib ko‘rsatiladi», chunki firmalar ixtiyoriy qatnashadi, muvaffaqiyatsizlikni kutganlar yozilmaydi va ko‘pchiligi oson qayta tashkil qilinadigan ofislar. Muallif natijalarni jiddiy qabul qiladi, lekin ular bo‘rttirilgan bo‘lishi mumkinligiga rozi.',
-          ru: 'Yes. По мнению автора, результаты «подаются с большей уверенностью, чем они позволяют»: фирмы участвуют добровольно, те, кто ждёт провала, не записываются, и почти все — легко перестраиваемые офисы. Автор относится к результатам серьёзно, но признаёт, что они могут быть преувеличены.',
+          ru: 'Yes. По мнению автора, результаты «подаются с большей уверенностью, чем позволяют сами данные»: фирмы участвуют добровольно, те, кто ждёт провала, не записываются, и почти все — легко перестраиваемые офисы. Автор относится к результатам серьёзно, но признаёт, что они могут быть преувеличены.',
         },
       },
       {
@@ -579,7 +579,7 @@ export const reading: Activity[] = [
         evidence: 'A fixed deadline of four days forces managers to identify and remove this waste',
         explanation: {
           en: '“A fixed deadline of four days forces managers to identify and remove this waste”: unnecessary meetings, interruptions and habitual tasks. Option C describes what care homes would need (paragraph E), not why offices keep their output, and option D twists the word “meetings”.',
-          uz: '«To‘rt kunlik qat’iy muddat rahbarlarni bu isrofni aniqlab, yo‘q qilishga majbur qiladi»: keraksiz yig‘ilishlar, chalg‘ishlar va odatdan qolgan vazifalar. C variant parvarish uylariga nima kerakligini tasvirlaydi (E paragraf), ofislar natijani qanday saqlashini emas; D esa «meetings» so‘zini buzib ishlatadi.',
+          uz: '«To‘rt kunlik qat’iy muddat rahbarlarni bu isrofni aniqlab, yo‘q qilishga majbur qiladi»: keraksiz yig‘ilishlar, chalg‘ishlar va odatdan qolgan vazifalar. C variant qariyalar uylariga nima kerakligini tasvirlaydi (E paragraf), ofislar natijani qanday saqlashini emas; D esa «meetings» so‘zini buzib ishlatadi.',
           ru: '«Жёсткий срок в четыре дня заставляет руководителей найти и устранить эти потери»: лишние совещания, отвлечения и задачи по привычке. Вариант C описывает, что нужно домам престарелых (абзац E), а не почему офисы сохраняют выработку; D искажает слово «meetings».',
         },
       },
@@ -595,7 +595,7 @@ export const reading: Activity[] = [
         evidence: 'shorter weeks would require hiring additional staff',
         explanation: {
           en: '“A care home cannot close on Fridays, so shorter weeks would require hiring additional staff, and the cost would have to be met by someone.” Option B is the opposite of what the passage says, and staff attitudes and measurement are never mentioned.',
-          uz: '«Parvarish uyi juma kunlari yopila olmaydi, shuning uchun qisqaroq hafta qo‘shimcha xodim yollashni talab qiladi va xarajatni kimdir qoplashi kerak bo‘ladi.» B variant matnda aytilganning teskarisi, xodimlarning munosabati va o‘lchash esa umuman tilga olinmagan.',
+          uz: '«Qariyalar uyi juma kunlari yopila olmaydi, shuning uchun qisqaroq hafta qo‘shimcha xodim yollashni talab qiladi va xarajatni kimdir qoplashi kerak bo‘ladi.» B variant matnda aytilganning teskarisi, xodimlarning munosabati va o‘lchash esa umuman tilga olinmagan.',
           ru: '«Дом престарелых не может закрываться по пятницам, поэтому короткая неделя потребует нанять дополнительный персонал, и кто-то должен будет за это платить». Вариант B противоположен тексту, а отношение сотрудников и измерение выработки не упоминаются.',
         },
       },
@@ -605,7 +605,7 @@ export const reading: Activity[] = [
         explanation: {
           en: 'Paragraph B: firms report “lower absence, easier recruitment and staff who say they feel less exhausted”. Paragraph D explains why output holds up, which is a reason, not a list of benefits that companies reported.',
           uz: 'B paragraf: firmalar «ishga kelmaslik kamayganini, xodim yollash osonlashganini va xodimlar kamroq charchashini» bildiradi. D paragraf natija nega saqlanishini tushuntiradi, bu sabab, kompaniyalar bildirgan foydalar ro‘yxati emas.',
-          ru: 'Абзац B: фирмы сообщают о «меньшем числе прогулов, более лёгком найме и сотрудниках, которые меньше устают». Абзац D объясняет, почему выработка сохраняется, — это причина, а не список пользы, о которой сообщили компании.',
+          ru: 'Абзац B: фирмы сообщают о «меньшем числе пропусков работы, более лёгком найме и сотрудниках, которые меньше устают». Абзац D объясняет, почему выработка сохраняется, — это причина, а не список пользы, о которой сообщили компании.',
         },
       },
       {
@@ -667,7 +667,7 @@ export const reading: Activity[] = [
         explanation: {
           en: 'Paragraph F argues that frozen seeds stop adapting while field varieties keep adapting, so seed banks should work with farmers. “Higher yields from traditional varieties” reuses the idea of old types, but paragraph A says it is the modern varieties that are high-yielding.',
           uz: 'F paragrafda muzlatilgan urug‘lar moslashishdan to‘xtashi, daladagi navlar esa moslashishda davom etishi, shuning uchun urug‘ banklari fermerlar bilan hamkorlik qilishi kerakligi ta’kidlanadi. «An’anaviy navlardan yuqori hosil» eski navlar g‘oyasini takrorlaydi, lekin A paragrafga ko‘ra yuqori hosilli navlar zamonaviylaridir.',
-          ru: 'Абзац F доказывает, что замороженные семена перестают приспосабливаться, а полевые сорта продолжают, поэтому банкам семян нужно работать с фермерами. «Высокие урожаи традиционных сортов» эксплуатирует идею старых сортов, но по абзацу A высокоурожайны как раз современные сорта.',
+          ru: 'Абзац F доказывает, что замороженные семена перестают приспосабливаться, а полевые сорта продолжают, поэтому банкам семян нужно работать с фермерами. «Высокие урожаи традиционных сортов» обыгрывает идею старых сортов, но по абзацу A высокоурожайны как раз современные сорта.',
         },
       },
       {
@@ -677,7 +677,7 @@ export const reading: Activity[] = [
         evidence: 'sealed in airtight packets',
         explanation: {
           en: 'Seeds are “sealed in airtight packets”. The gap sits between “in” and “packets”, so it needs an adjective describing the packets; “dried” describes the seeds, not the packets.',
-          uz: 'Urug‘lar «havo o‘tkazmaydigan paketlarga muhrlanadi». Bo‘sh joy «in» va «packets» orasida, demak paketni tavsiflovchi sifat kerak; «dried» paketni emas, urug‘ni tavsiflaydi.',
+          uz: 'Urug‘lar «havo o‘tkazmaydigan paketlarga germetik joylanadi». Bo‘sh joy «in» va «packets» orasida, demak paketni tavsiflovchi sifat kerak; «dried» paketni emas, urug‘ni tavsiflaydi.',
           ru: 'Семена «запечатывают в герметичные пакеты». Пропуск стоит между «in» и «packets», значит нужно прилагательное, описывающее пакеты; «dried» описывает семена, а не пакеты.',
         },
       },
@@ -744,8 +744,8 @@ export const reading: Activity[] = [
         evidence: 'Adding more rules made the systems larger and slower without making them reliably better',
         explanation: {
           en: 'Paragraph B: rules could not capture the knowledge of the world needed to resolve ambiguity, so more rules made systems “larger and slower without making them reliably better”. Paragraph A also describes early systems, but only their first demonstrations and over-confident designers.',
-          uz: 'B paragraf: qoidalar ko‘p ma’nolilikni hal qilish uchun zarur bo‘lgan dunyo haqidagi bilimni qamrab ololmagan, shuning uchun qoidalar ko‘paygani tizimlarni «kattaroq va sekinroq qildi, lekin ishonchli darajada yaxshiroq qilmadi». A paragraf ham ilk tizimlarni tasvirlaydi, lekin faqat birinchi namoyishlar va haddan tashqari ishongan yaratuvchilarni.',
-          ru: 'Абзац B: правила не могли охватить знание о мире, нужное для снятия многозначности, поэтому новые правила делали системы «больше и медленнее, но не надёжно лучше». Абзац A тоже описывает ранние системы, но лишь первые демонстрации и самоуверенных разработчиков.',
+          uz: 'B paragraf: qoidalar ko‘p ma’nolilikni hal qilish uchun zarur bo‘lgan dunyo haqidagi bilimni qamrab ololmagan, shuning uchun qoidalar ko‘paygani tizimlarni «kattaroq va sekinroq qildi, lekin ishonchli darajada yaxshiroq qilmadi». A paragraf ham ilk tizimlarni tasvirlaydi, lekin faqat birinchi namoyishlar va o‘ziga ortiqcha ishongan yaratuvchilarni.',
+          ru: 'Абзац B: правила не могли охватить знание о мире, нужное для снятия многозначности, поэтому новые правила делали системы «больше и медленнее, но не стабильно лучше». Абзац A тоже описывает ранние системы, но лишь первые демонстрации и самоуверенных разработчиков.',
         },
       },
       {

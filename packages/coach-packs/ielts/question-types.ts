@@ -43,7 +43,7 @@ export const questionTypes: PackSource['questionTypes'] = [
     strategy: {
       en: 'Here you look for one specific detail (an example, a reason, a comparison, a date), so scan rather than read for gist. Turn each prompt into the kind of thing you need, for example "a reason why the method was abandoned", and expect the passage to use different words for it. Some paragraphs may be used twice and others never, and the answers do not follow the order of the passage.',
       uz: 'Bu yerda aniq bir tafsilotni (misol, sabab, solishtirish, sana) qidirasiz, shuning uchun umumiy ma’no uchun o‘qimang, ko‘z yugurtirib izlang. Har bir topshiriqni qidirilayotgan narsa turiga aylantiring, masalan «usuldan voz kechilish sababi», va matnda u boshqa so‘zlar bilan berilishini kuting. Ba’zi paragraflar ikki marta ishlatilishi, ba’zilari esa umuman ishlatilmasligi mumkin; javoblar matn tartibida kelmaydi.',
-      ru: 'Здесь вы ищете конкретную деталь (пример, причину, сравнение, дату), поэтому просматривайте текст, а не читайте для общего смысла. Переформулируйте каждое задание как тип информации, например «причина, по которой от метода отказались», и ждите, что в тексте это сказано другими словами. Одни абзацы могут использоваться дважды, другие ни разу, а ответы идут не по порядку текста.',
+      ru: 'Здесь вы ищете конкретную деталь (пример, причину, сравнение, дату), поэтому просматривайте текст, а не читайте для общего смысла. Переформулируйте каждое задание как тип информации, например «причина, по которой от метода отказались», и будьте готовы к тому, что в тексте это сказано другими словами. Одни абзацы могут использоваться дважды, другие ни разу, а ответы идут не по порядку текста.',
     },
   },
   {
@@ -59,11 +59,11 @@ export const questionTypes: PackSource['questionTypes'] = [
   {
     id: 'summary_completion',
     node: 'reading.completion',
-    name: { en: 'Summary completion', uz: 'Xulosani to‘ldirish', ru: 'Заполнение пересказа' },
+    name: { en: 'Summary completion', uz: 'Qisqacha mazmunni to‘ldirish', ru: 'Заполнение краткого содержания' },
     strategy: {
       en: 'Read the whole summary first: its title and first sentence tell you which part of the passage it retells, often only two or three paragraphs. Predict the word type for each gap, then match the summary’s paraphrases back to the passage and take the exact words from there. Check that the finished sentence is grammatical, for example a plural after "many", and that you have not gone over the word limit.',
-      uz: 'Avval xulosani to‘liq o‘qing: uning sarlavhasi va birinchi gapi matnning qaysi qismini, ko‘pincha faqat ikki-uch paragrafni, qayta hikoya qilayotganini ko‘rsatadi. Har bir bo‘sh joy uchun so‘z turini taxmin qiling, so‘ng xulosadagi parafrazlarni matnga moslab, aniq so‘zlarni o‘sha yerdan oling. Tayyor gap grammatik to‘g‘ri ekanini, masalan «many»dan keyin ko‘plik, va so‘z chegarasidan oshmaganingizni tekshiring.',
-      ru: 'Сначала прочитайте весь пересказ: его заголовок и первое предложение показывают, какую часть текста он передаёт, часто всего два-три абзаца. Предскажите тип слова для каждого пропуска, затем сопоставьте перефразированные фразы с текстом и берите точные слова оттуда. Проверьте, что готовое предложение грамматически верно, например множественное число после «many», и что вы не превысили лимит слов.',
+      uz: 'Avval qisqacha mazmunni to‘liq o‘qing: uning sarlavhasi va birinchi gapi matnning qaysi qismini, ko‘pincha faqat ikki-uch paragrafni, qayta hikoya qilayotganini ko‘rsatadi. Har bir bo‘sh joy uchun so‘z turini taxmin qiling, so‘ng qisqacha mazmundagi parafrazlarni matnga moslab, aniq so‘zlarni o‘sha yerdan oling. Tayyor gap grammatik to‘g‘ri ekanini, masalan «many»dan keyin ko‘plik, va so‘z chegarasidan oshmaganingizni tekshiring.',
+      ru: 'Сначала прочитайте всё краткое содержание: его заголовок и первое предложение показывают, какую часть текста оно передаёт, часто всего два-три абзаца. Предскажите тип слова для каждого пропуска, затем найдите в тексте места, которые в кратком содержании сказаны другими словами, и берите точные слова оттуда. Проверьте, что готовое предложение грамматически верно, например множественное число после «many», и что вы не превысили лимит слов.',
     },
   },
   {
@@ -92,9 +92,9 @@ export const questionTypes: PackSource['questionTypes'] = [
     node: 'listening.form',
     name: { en: 'Form completion', uz: 'Shaklni to‘ldirish', ru: 'Заполнение формы' },
     strategy: {
-      en: 'Use the time before the recording to predict each gap: a name, a number, a date, a street. Speakers often give a wrong detail first and then correct it ("the fourteenth, no, sorry, the fifteenth"), so write only the final version. Spelled names and numbers must be exactly right, and the word limit counts every word, so "ONE WORD AND/OR A NUMBER" means only one word.',
-      uz: 'Yozuv boshlanishidan oldingi vaqtdan har bir bo‘sh joyni taxmin qilish uchun foydalaning: ism, raqam, sana, ko‘cha. So‘zlovchilar ko‘pincha avval noto‘g‘ri ma’lumot aytib, keyin tuzatadi («the fourteenth, no, sorry, the fifteenth»), shuning uchun faqat oxirgi variantni yozing. Harflab aytilgan ismlar va raqamlar mutlaqo aniq bo‘lishi kerak; so‘z chegarasi har bir so‘zni hisoblaydi, «ONE WORD AND/OR A NUMBER» faqat bitta so‘z degani.',
-      ru: 'До начала записи предскажите каждый пропуск: имя, число, дата, улица. Говорящие часто сначала называют неверную деталь, а потом исправляются («the fourteenth, no, sorry, the fifteenth»), поэтому записывайте только окончательный вариант. Имена по буквам и числа должны быть абсолютно точными, а лимит считает каждое слово: «ONE WORD AND/OR A NUMBER» — это только одно слово.',
+      en: 'Use the time before the recording to predict each gap: a name, a number, a date, a street. Speakers often give a wrong detail first and then correct it ("the fourteenth, no, sorry, the fifteenth"), so write only the final version. Names that are spelt out and numbers must be exactly right, and the word limit counts every word, so "ONE WORD AND/OR A NUMBER" means one word at most, with or without a number.',
+      uz: 'Yozuv boshlanishidan oldingi vaqtdan har bir bo‘sh joyni taxmin qilish uchun foydalaning: ism, raqam, sana, ko‘cha. So‘zlovchilar ko‘pincha avval noto‘g‘ri ma’lumot aytib, keyin tuzatadi («the fourteenth, no, sorry, the fifteenth»), shuning uchun faqat oxirgi variantni yozing. Harflab aytilgan ismlar va raqamlar mutlaqo aniq bo‘lishi kerak; so‘z chegarasi har bir so‘zni hisoblaydi: «ONE WORD AND/OR A NUMBER» ko‘pi bilan bitta so‘z degani, son bilan yoki sonsiz.',
+      ru: 'До начала записи предположите, что нужно вписать в каждый пропуск: имя, число, дату, улицу. Говорящие часто сначала называют неверную деталь, а потом исправляются («the fourteenth, no, sorry, the fifteenth»), поэтому записывайте только окончательный вариант. Имена, которые диктуют по буквам, и числа должны быть записаны абсолютно точно, а лимит считает каждое слово: «ONE WORD AND/OR A NUMBER» — это максимум одно слово, с числом или без него.',
     },
   },
   {
@@ -104,7 +104,7 @@ export const questionTypes: PackSource['questionTypes'] = [
     strategy: {
       en: 'Notes follow the order of the talk, so the headings show you where you are; if you miss a gap, move on to the next one instead of losing two. Predict the word type from the note around each gap and listen for the paraphrase of the note, not the same words. Write the words you hear, check plurals and spelling at the end, and stay within the word limit.',
       uz: 'Qaydlar nutq tartibida boradi, shuning uchun sarlavhalar qayerda ekaningizni ko‘rsatadi; bitta bo‘sh joyni o‘tkazib yuborsangiz, ikkitasini yo‘qotmaslik uchun keyingisiga o‘ting. Har bir bo‘sh joy atrofidagi qaydga qarab so‘z turini taxmin qiling va aynan o‘sha so‘zlarni emas, qaydning parafrazini tinglang. Eshitgan so‘zlaringizni yozing, oxirida ko‘plik va imloni tekshiring, so‘z chegarasidan chiqmang.',
-      ru: 'Заметки идут в порядке выступления, поэтому заголовки показывают, где вы находитесь; если пропустили один пропуск, переходите к следующему, чтобы не потерять два. По тексту заметки предскажите тип слова и слушайте перефраз заметки, а не те же самые слова. Записывайте услышанные слова, в конце проверьте множественное число и орфографию, не выходите за лимит.',
+      ru: 'Заметки идут в порядке выступления, поэтому заголовки показывают, где вы находитесь; если не успели заполнить пропуск, переходите к следующему, чтобы не потерять два. По тексту заметки предскажите тип слова и слушайте перефраз заметки, а не те же самые слова. Записывайте услышанные слова, в конце проверьте множественное число и орфографию, не выходите за лимит слов.',
     },
   },
   {
@@ -114,7 +114,7 @@ export const questionTypes: PackSource['questionTypes'] = [
     strategy: {
       en: 'Read the question and underline how the options differ before the audio starts. Usually every option is mentioned, so do not choose the first one you hear: listen for the one the speaker confirms, and for the words that rule the others out (but, actually, that was before, not any more). The answer is usually said in different words from the option.',
       uz: 'Audio boshlanishidan oldin savolni o‘qing va variantlar bir-biridan nimasi bilan farq qilishining tagiga chizing. Odatda hamma variant tilga olinadi, shuning uchun birinchi eshitganingizni tanlamang: so‘zlovchi tasdiqlagan variantni va qolganlarini inkor etuvchi so‘zlarni (but, actually, that was before, not any more) tinglang. Javob odatda variantdagidan boshqa so‘zlar bilan aytiladi.',
-      ru: 'До начала аудио прочитайте вопрос и подчеркните, чем различаются варианты. Обычно упоминаются все варианты, поэтому не выбирайте первый услышанный: слушайте тот, который говорящий подтверждает, и слова, исключающие остальные (but, actually, that was before, not any more). Ответ обычно звучит другими словами, чем в варианте.',
+      ru: 'До начала аудио прочитайте вопрос и подчеркните, чем различаются варианты. Обычно упоминаются все варианты, поэтому не выбирайте первый услышанный: слушайте тот, который говорящий подтверждает, и слова, исключающие остальные (but, actually, that was before, not any more). Ответ обычно звучит не теми словами, что в варианте.',
     },
   },
   {
@@ -123,7 +123,7 @@ export const questionTypes: PackSource['questionTypes'] = [
     name: { en: 'Matching (listening)', uz: 'Moslashtirish (listening)', ru: 'Сопоставление (listening)' },
     strategy: {
       en: 'The items in the question come in the order you will hear them, but the options do not, so keep your eyes on the item list and hold the options in mind. Several options will be mentioned for each item; wait for the one the speaker finally attaches to it. Some options are never used, and if you miss one item, guess and move on so you are ready for the next.',
-      uz: 'Savoldagi bandlar eshitiladigan tartibda keladi, variantlar esa yo‘q, shuning uchun ko‘zingizni bandlar ro‘yxatida tuting va variantlarni yodda saqlang. Har bir band uchun bir nechta variant tilga olinadi; so‘zlovchi oxir-oqibat unga bog‘lagan variantni kuting. Ba’zi variantlar umuman ishlatilmaydi; bitta bandni o‘tkazib yuborsangiz, taxmin qilib, keyingisiga tayyor bo‘ling.',
+      uz: 'Savoldagi bandlar eshitiladigan tartibda keladi, variantlar esa bunday emas, shuning uchun ko‘zingizni bandlar ro‘yxatida tuting va variantlarni yodda saqlang. Har bir band uchun bir nechta variant tilga olinadi; so‘zlovchi oxir-oqibat unga bog‘lagan variantni kuting. Ba’zi variantlar umuman ishlatilmaydi; bitta bandni o‘tkazib yuborsangiz, taxmin qilib, keyingisiga tayyor bo‘ling.',
       ru: 'Пункты задания звучат в том порядке, в каком они перечислены, а варианты — нет, поэтому держите взгляд на списке пунктов, а варианты в памяти. Для каждого пункта прозвучит несколько вариантов; дождитесь того, который говорящий окончательно с ним связывает. Некоторые варианты не используются вовсе; если пропустили пункт, угадайте и будьте готовы к следующему.',
     },
   },

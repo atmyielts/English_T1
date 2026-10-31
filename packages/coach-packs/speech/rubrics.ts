@@ -51,11 +51,11 @@ export const rubrics: Rubric[] = [
       },
       {
         id: 'flow',
-        name: { en: 'Pace, pauses and fillers', uz: 'Sur’at, pauza va to‘ldiruvchilar', ru: 'Темп, паузы и паразиты' },
+        name: { en: 'Pace, pauses and fillers', uz: 'Sur’at, pauza va to‘ldiruvchilar', ru: 'Темп, паузы и слова-паразиты' },
         short: 'Flow',
         source: 'model',
         node: 'delivery.pace',
-        focus: 'How the talk flows, from the measured numbers when given: words per minute against a comfortable 110–170, long pauses (deliberate pauses before key ideas are good; long searching silences are not), fillers per minute and per 100 words in any language, repetitions and restarts. In a typed answer judge only fillers, restarts and sentence rhythm, and do not give 5 without timing.',
+        focus: 'How the talk flows, from the measured numbers when given: words per minute against a rough comfortable range of 110–170 (a guide, not a hard rule), long pauses (deliberate pauses before key ideas are good; long searching silences are not), fillers per minute and per 100 words in any language, repetitions and restarts. In a typed answer judge only fillers, restarts and sentence rhythm, and do not give 5 without timing.',
         descriptors: [
           { score: 1, text: 'Constant hesitation: fillers in almost every sentence (more than about 12 per 100 words), long searching silences, many restarts; or a rush well above 190 words per minute that the listener cannot follow.' },
           { score: 2, text: 'Frequent fillers (about 7–12 per 100 words) and hesitations break the flow; pace is uneven, too slow from searching (under about 90 wpm) or too fast (around 180 or more).' },
@@ -151,7 +151,7 @@ export const rubrics: Rubric[] = [
       },
       {
         id: 'evidence',
-        name: { en: 'Reasons and evidence', uz: 'Sabab va dalillar', ru: 'Аргументы и факты' },
+        name: { en: 'Reasons and evidence', uz: 'Sabab va dalillar', ru: 'Доводы и доказательства' },
         short: 'Evidence',
         source: 'model',
         node: 'interaction.qa',
@@ -166,7 +166,7 @@ export const rubrics: Rubric[] = [
       },
       {
         id: 'composure',
-        name: { en: 'Composure and bridging', uz: 'Xotirjamlik va bog‘lash', ru: 'Самообладание и переход' },
+        name: { en: 'Composure and bridging', uz: 'Xotirjamlik va mavzuga qaytish', ru: 'Самообладание и возврат к теме' },
         short: 'Composure',
         source: 'model',
         node: 'interaction.qa',
@@ -191,7 +191,7 @@ export const rubrics: Rubric[] = [
           { score: 2, text: 'Polite words but impatient tone (as I already said), or the wrong register for the person.' },
           { score: 3, text: 'Respectful and polite, with a basic thanks or acknowledgement.' },
           { score: 4, text: 'Warm and respectful; takes the concern seriously and checks that the answer helped.' },
-          { score: 5, text: 'Makes every questioner feel heard, keeps the whole room with them, and the right register for each person.' },
+          { score: 5, text: 'Makes every questioner feel heard, keeps the whole room with them, and finds the right register for each person.' },
         ],
       },
     ],

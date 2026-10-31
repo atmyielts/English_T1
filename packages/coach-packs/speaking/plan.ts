@@ -45,7 +45,7 @@ export const reminders: Reminders = {
   daily: [
     {
       en: 'Good morning, {name}! Today: {task} — about {minutes} minutes. A short conversation every day is how speaking grows.',
-      uz: 'Xayrli tong, {name}! Bugun: {task} — taxminan {minutes} daqiqa. Har kuni qisqa suhbat — nutqni rivojlantirishning eng yaxshi yo‘li.',
+      uz: 'Xayrli tong, {name}! Bugun: {task} — taxminan {minutes} daqiqa. Nutq har kungi qisqa suhbatlar bilan o‘sadi.',
       ru: 'Доброе утро, {name}! Сегодня: {task} — около {minutes} минут. Короткий разговор каждый день — так и растёт речь.',
     },
     {
@@ -55,13 +55,13 @@ export const reminders: Reminders = {
     },
     {
       en: 'Ready for a quick chat, {name}? Today’s task is {task}, about {minutes} minutes. {coach} is ready when you are.',
-      uz: 'Qisqa suhbatga tayyormisiz, {name}? Bugungi mashq: {task}, taxminan {minutes} daqiqa. {coach} sizni kutyapti.',
+      uz: 'Qisqa suhbatga tayyormisiz, {name}? Bugungi vazifa: {task}, taxminan {minutes} daqiqa. {coach} siz tayyor bo‘lganingizda shu yerda.',
       ru: 'Готовы немного поговорить, {name}? Сегодня: {task}, около {minutes} минут. {coach} на связи, когда вам удобно.',
     },
     {
       en: 'Five minutes of speaking beats an hour of reading about it. Today: {task}.',
       uz: 'Besh daqiqa gapirish bu haqda bir soat o‘qishdan foydaliroq. Bugun: {task}.',
-      ru: 'Пять минут говорения полезнее часа чтения о нём. Сегодня: {task}.',
+      ru: 'Пять минут разговора полезнее часа чтения о том, как говорить. Сегодня: {task}.',
     },
     {
       en: 'Hi {name}! You are at {level}, aiming for {target}. Today’s step: {task} ({minutes} min).',
@@ -70,19 +70,19 @@ export const reminders: Reminders = {
     },
     {
       en: 'Your voice gets more confident every time you use it. {minutes} minutes today, {name}: {task}.',
-      uz: 'Ovozingiz har safar ishlatganingizda ishonchliroq yangraydi. Bugun {minutes} daqiqa, {name}: {task}.',
+      uz: 'Har safar gapirganingizda ovozingiz ishonchliroq yangraydi. Bugun {minutes} daqiqa, {name}: {task}.',
       ru: 'С каждым разом ваш голос звучит увереннее. Сегодня {minutes} минут, {name}: {task}.',
     },
     {
-      en: 'Small talk, big progress. Today: {task}. Mistakes are welcome — they show us what to practise next.',
-      uz: 'Kichik suhbat — katta natija. Bugun: {task}. Xato qilishdan qo‘rqmang — xatolar keyin nimani mashq qilishni ko‘rsatadi.',
-      ru: 'Маленький разговор — большой шаг. Сегодня: {task}. Ошибки — это нормально: они показывают, что тренировать дальше.',
+      en: 'Small talk, steady progress. Today: {task}. Mistakes are welcome — they show us what to practise next.',
+      uz: 'Kichik suhbat — barqaror o‘sish. Bugun: {task}. Xato qilishdan qo‘rqmang — xatolar keyin nimani mashq qilishni ko‘rsatadi.',
+      ru: 'Маленький разговор — ещё шаг вперёд. Сегодня: {task}. Ошибки — это нормально: они показывают, что тренировать дальше.',
     },
   ],
   comeback: [
     {
       en: 'Hi {name}, we missed you yesterday. No problem — today is a good day to start again: {task}, just {minutes} minutes.',
-      uz: 'Salom, {name}, kecha sizni sog‘indik. Hech qisi yo‘q — bugun qaytadan boshlash uchun yaxshi kun: {task}, atigi {minutes} daqiqa.',
+      uz: 'Salom, {name}, kecha sizni ko‘rmadik. Hech qisi yo‘q — bugun qaytadan boshlash uchun yaxshi kun: {task}, atigi {minutes} daqiqa.',
       ru: 'Привет, {name}, вчера вас не хватало. Ничего страшного — сегодня хороший день, чтобы продолжить: {task}, всего {minutes} минут.',
     },
     {
@@ -104,13 +104,13 @@ export const reminders: Reminders = {
   countdown: [
     {
       en: '{days} days left in your plan, {name}. You are at {level}, aiming for {target} — one role-play today keeps you moving.',
-      uz: 'Rejangiz tugashiga {days} kun qoldi, {name}. Hozir {level} darajadasiz, maqsad — {target}. Bugungi bitta rolli suhbat sizni oldinga siljitadi.',
-      ru: '{name}, до конца плана осталось дней: {days}. Сейчас ваш уровень {level}, цель — {target}. Один ролевой диалог сегодня — и вы ещё ближе.',
+      uz: 'Rejangiz tugashiga {days} kun qoldi, {name}. Hozir {level} darajadasiz, maqsad — {target}. Bugungi bitta rolli o‘yin sizni oldinga siljitadi.',
+      ru: '{name}, до конца плана осталось дней: {days}. Сейчас ваш уровень {level}, цель — {target}. Одна ролевая игра сегодня — и вы ещё ближе к цели.',
     },
     {
       en: 'Goal check-in: {days} days to go. Look back at how far you have come, then try today’s task: {task}.',
       uz: 'Maqsadni tekshirish: {days} kun qoldi. Qancha yo‘l bosganingizga bir nazar tashlang, so‘ng bugungi mashqni bajaring: {task}.',
-      ru: 'Сверим цель: осталось дней — {days}. Оглянитесь, сколько уже пройдено, и возьмитесь за сегодняшнее задание: {task}.',
+      ru: 'Сверимся с целью: осталось дней — {days}. Оглянитесь, сколько уже пройдено, и возьмитесь за сегодняшнее задание: {task}.',
     },
   ],
 };

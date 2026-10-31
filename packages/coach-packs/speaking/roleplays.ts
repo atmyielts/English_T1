@@ -14,13 +14,13 @@ export const roleplays: Activity[] = [
     id: 'rp.new-neighbour', kind: 'roleplay', rubric: 'speaking.conversation', node: 'situations.social', levels: [2, 4], minutes: 6,
     title: { en: 'Meeting a new neighbour', uz: 'Yangi qo‘shni bilan tanishuv', ru: 'Знакомство с соседкой' },
     setting: {
-      en: 'The stairwell of a quiet apartment building in an English-speaking city, on a Saturday morning. You moved in last week. Your neighbour from the flat opposite is coming down with her shopping bag.',
+      en: 'The stairwell of a quiet block of flats in an English-speaking city, on a Saturday morning. You moved in last week. Your neighbour from the flat opposite is coming down with her shopping bag.',
       uz: 'Ingliz tilida so‘zlashadigan shahardagi tinch ko‘p qavatli uyning zinapoyasi, shanba kuni ertalab. Siz bu yerga o‘tgan hafta ko‘chib kelgansiz. Ro‘paradagi kvartiradan qo‘shningiz xarid sumkasi bilan pastga tushib kelyapti.',
       ru: 'Лестничная клетка тихого многоквартирного дома в англоязычном городе, субботнее утро. Вы переехали сюда на прошлой неделе. Соседка из квартиры напротив спускается с сумкой для покупок.',
     },
     learnerRole: {
       en: 'You are the new tenant in flat 6. You have a car and are not sure about the parking rules.',
-      uz: 'Siz 6-kvartiraning yangi ijarachisisiz. Mashinangiz bor, lekin to‘xtash joyi qoidalarini yaxshi bilmaysiz.',
+      uz: 'Siz 6-kvartiraning yangi ijarachisisiz. Mashinangiz bor, lekin mashina qo‘yish qoidalarini aniq bilmaysiz.',
       ru: 'Вы новый жилец квартиры 6. У вас есть машина, и вы не уверены в правилах парковки.',
     },
     goal: {
@@ -46,7 +46,7 @@ export const roleplays: Activity[] = [
     goals: [
       {
         id: 'introduce',
-        text: { en: 'Introduce yourself with your name and one detail', uz: 'O‘zingizni ismingiz va bitta tafsilot bilan tanishtiring', ru: 'Представьтесь: имя и одна деталь о себе' },
+        text: { en: 'Introduce yourself with your name and one detail', uz: 'O‘zingizni tanishtiring: ismingiz va o‘zingiz haqingizda bitta ma’lumot', ru: 'Представьтесь: имя и одна деталь о себе' },
         check: 'The learner says their name and at least one personal detail such as their home town, job or when they moved in.',
       },
       {
@@ -80,7 +80,7 @@ export const roleplays: Activity[] = [
     title: { en: 'Lunch with a colleague', uz: 'Hamkasb bilan tushlik', ru: 'Обед с коллегой' },
     setting: {
       en: 'The office canteen at lunchtime. The only free seat is next to James from the IT department. You have said hello in the lift before, but you have never really talked.',
-      uz: 'Tushlik vaqtidagi ofis oshxonasi. Yagona bo‘sh joy IT bo‘limidagi Jeymsning yonida. Liftda salomlashgansiz, lekin hech qachon chinakamiga gaplashmagansiz.',
+      uz: 'Tushlik vaqtidagi ofis oshxonasi. Yagona bo‘sh joy IT bo‘limidagi Jeymsning yonida. Liftda salomlashgansiz, lekin hali hech qachon rosmana suhbatlashmagansiz.',
       ru: 'Офисная столовая в обеденное время. Единственное свободное место — рядом с Джеймсом из IT-отдела. Вы здоровались в лифте, но толком никогда не разговаривали.',
     },
     learnerRole: {
@@ -121,7 +121,7 @@ export const roleplays: Activity[] = [
       },
       {
         id: 'detail',
-        text: { en: 'Share something about yourself with a reason or an example', uz: 'O‘zingiz haqingizda sabab yoki misol bilan gapirib bering', ru: 'Расскажите о себе с причиной или примером' },
+        text: { en: 'Share something about yourself with a reason or an example', uz: 'O‘zingiz haqingizda sabab yoki misol bilan gapirib bering', ru: 'Расскажите о себе и приведите причину или пример' },
         check: 'At least one learner turn gives a personal detail plus why or an example (I love hiking because…, Last month I went to…).',
       },
       {
@@ -146,7 +146,7 @@ export const roleplays: Activity[] = [
     setting: {
       en: 'Kamila’s birthday party in her flat on a Friday evening: music, snacks and about twenty guests. You only know Kamila, and she is busy in the kitchen. A guest is standing alone by the window with a drink.',
       uz: 'Juma oqshomi, Kamilaning kvartirasidagi tug‘ilgan kun bazmi: musiqa, yengil taomlar va yigirmaga yaqin mehmon. Siz faqat Kamilani taniysiz, u esa oshxonada band. Deraza yonida bir mehmon qo‘lida ichimlik bilan yolg‘iz turibdi.',
-      ru: 'День рождения Камилы у неё в квартире, вечер пятницы: музыка, закуски, около двадцати гостей. Вы знаете только Камилу, а она занята на кухне. У окна в одиночестве стоит гостья с бокалом.',
+      ru: 'День рождения Камилы у неё в квартире, вечер пятницы: музыка, закуски, около двадцати гостей. Вы знаете только Камилу, а она занята на кухне. У окна в одиночестве стоит гостья с напитком в руке.',
     },
     learnerRole: {
       en: 'You are a friend of Kamila’s from work or university (you decide). You want to meet new people.',
@@ -191,7 +191,7 @@ export const roleplays: Activity[] = [
       },
       {
         id: 'leave_well',
-        text: { en: 'Leave the conversation politely', uz: 'Suhbatdan xushmuomalalik bilan chiqing', ru: 'Вежливо выйдите из разговора' },
+        text: { en: 'Leave the conversation politely', uz: 'Suhbatni xushmuomalalik bilan yakunlang', ru: 'Вежливо завершите разговор' },
         check: 'The learner ends with a polite reason or offer (I’m going to grab a drink — can I get you one?, It was lovely to meet you) rather than simply stopping.',
       },
     ],
@@ -238,7 +238,7 @@ export const roleplays: Activity[] = [
         { id: 'can_let_go', kind: 'boolean', description: 'Whether Daniel will ignore a last small excess (1 kg or less) as a favour.', revealInReview: true },
       ],
       initial: { excess_kg: 4, patience: 6, can_let_go: true },
-      rules: 'The suitcase is 4 kg over and the fee is 15 per extra kilo. If the learner asks the price or what they can do, Daniel explains and suggests moving things into hand luggage. Each time the learner says what they will move (the books, a jacket, the gifts), excess_kg drops by 1 or 2 as he weighs it again. Patience starts at 6: +1 for a polite, clear request or an apology for the delay; −1 for an unclear or very slow turn; −2 for arguing that the scale is wrong or demanding (Give me…, I don’t pay). If patience reaches 2 or less, can_let_go becomes false, Daniel insists on the full fee and stops helping. If excess_kg falls to 1 or less while patience is 5 or more, he lets the last kilo go (“I’ll let that one go”); otherwise he charges for what is left. He gives the seat, gate and boarding time slowly if the learner asks, or reads them quickly once if not.',
+      rules: 'The suitcase is 4 kg over and the fee is 15 dollars per extra kilo. If the learner asks the price or what they can do, Daniel explains and suggests moving things into hand luggage. Each time the learner says what they will move (the books, a jacket, the gifts), excess_kg drops by 1 or 2 as he weighs it again. Patience starts at 6: +1 for a polite, clear request or an apology for the delay; −1 for an unclear or very slow turn; −2 for arguing that the scale is wrong or demanding (Give me…, I don’t pay). If patience reaches 2 or less, can_let_go becomes false, Daniel insists on the full fee and stops helping. If excess_kg falls to 1 or less while patience is 5 or more, he lets the last kilo go (“I’ll let that one go”); otherwise he charges for what is left. He gives the seat, gate and boarding time slowly if the learner asks, or reads them quickly once if not.',
     },
     goals: [
       {
@@ -253,7 +253,7 @@ export const roleplays: Activity[] = [
       },
       {
         id: 'seat_gate',
-        text: { en: 'Ask for a seat or check the gate and boarding time', uz: 'O‘rindiq so‘rang yoki chiqish yo‘lagi va bortga chiqish vaqtini aniqlang', ru: 'Попросите место или уточните выход и время посадки' },
+        text: { en: 'Ask for a seat or check the gate and boarding time', uz: 'O‘rindiq so‘rang yoki chiqish eshigi va bortga chiqish vaqtini aniqlang', ru: 'Попросите место или уточните выход и время посадки' },
         check: 'The learner asks for a window or aisle seat, or asks about or checks the gate number or boarding time.',
       },
       {
@@ -265,7 +265,7 @@ export const roleplays: Activity[] = [
     scorecard: [...CORE],
     minTurns: 4, maxTurns: 9,
     levelNotes: [
-      [2.5, 'Speak slowly, one question at a time, and say numbers clearly (four kilos, fifteen per kilo). If the learner is stuck, suggest the solution directly: “You can put some things in your backpack.”'],
+      [2.5, 'Speak slowly, one question at a time, and say numbers clearly (four kilos, fifteen dollars a kilo). If the learner is stuck, suggest the solution directly: “You can put some things in your backpack.”'],
       [3.5, 'Normal airline speed with standard phrases. Give information once and repeat only if asked. Let the learner suggest the solution before you offer it.'],
       [5, 'Fast and routine, combining questions (Window or aisle — and did you pack it yourself?). Mention the fee and the hand-luggage limit in one breath and sigh slightly about the queue.'],
       [6, 'Rushed early-shift English with airline terms (excess baggage, hold luggage, cabin allowance) and little patience for vagueness. Expect the learner to negotiate quickly and confidently.'],
@@ -277,7 +277,7 @@ export const roleplays: Activity[] = [
     title: { en: 'A problem with your hotel room', uz: 'Mehmonxona xonasidagi muammo', ru: 'Проблема с номером в отеле' },
     setting: {
       en: 'A city-centre hotel at 11 p.m. You have just got back after a long day. The air conditioning is not working, the room is hot, and every few minutes you hear the lift next door. You call reception.',
-      uz: 'Shahar markazidagi mehmonxona, kechki soat 11. Uzoq kundan keyin xonangizga endi qaytdingiz. Konditsioner ishlamayapti, xona issiq, har bir necha daqiqada yoningizdagi lift shovqini eshitiladi. Siz qabulxonaga qo‘ng‘iroq qilasiz.',
+      uz: 'Shahar markazidagi mehmonxona, kechki soat 11. Uzoq kundan so‘ng xonangizga hozirgina qaytdingiz. Konditsioner ishlamayapti, xona issiq, har necha daqiqada devor ortidagi liftning shovqini eshitiladi. Siz qabulxonaga qo‘ng‘iroq qilasiz.',
       ru: 'Отель в центре города, 23:00. Вы только что вернулись после долгого дня. Кондиционер не работает, в номере жарко, и каждые несколько минут слышно лифт за стеной. Вы звоните на ресепшн.',
     },
     learnerRole: {
@@ -299,7 +299,7 @@ export const roleplays: Activity[] = [
     hiddenState: {
       fields: [
         { id: 'goodwill', kind: 'number', min: 0, max: 10, description: 'How far Sophie is willing to go out of her way for this guest.', revealInReview: true },
-        { id: 'free_rooms', kind: 'enum', values: ['none', 'smaller_room', 'upgrade'], description: 'What is actually free tonight: a quiet upgraded room on the 6th floor. Sophie offers a room only if the learner asks to move.', revealInReview: true },
+        { id: 'free_rooms', kind: 'enum', values: ['none', 'smaller_room', 'upgrade'], description: 'The best room free tonight: a quiet upgraded room on the 6th floor (a smaller room on another floor is free too). Sophie offers a room only if the learner asks to move.', revealInReview: true },
         { id: 'engineer_tonight', kind: 'boolean', description: 'Whether anyone can repair the air conditioning tonight (no: the engineer starts at 7 a.m.).', revealInReview: true },
       ],
       initial: { goodwill: 5, free_rooms: 'upgrade', engineer_tonight: false },
@@ -319,7 +319,7 @@ export const roleplays: Activity[] = [
       {
         id: 'outcome',
         text: { en: 'Get a clear result for tonight', uz: 'Bugun kechasi uchun aniq natijaga erishing', ru: 'Добейтесь понятного результата на сегодня' },
-        check: 'By the end the learner knows what will happen and when (the new room, when to come down, what the engineer will do in the morning).',
+        check: 'By the end the learner states or checks what will happen and when (the new room, when to come down, what the engineer will do in the morning).',
       },
       {
         id: 'thank_confirm',
@@ -342,13 +342,13 @@ export const roleplays: Activity[] = [
     title: { en: 'Asking for directions', uz: 'Yo‘l so‘rash', ru: 'Как пройти?' },
     setting: {
       en: 'The old town of a city you are visiting, on a sunny afternoon. You are looking for the Central Library, but your map shows an empty building. A local man is walking his dog nearby.',
-      uz: 'Siz mehmon bo‘lib kelgan shaharning eski qismi, quyoshli kunduzi. Siz Markaziy kutubxonani qidiryapsiz, lekin xaritangizda bo‘sh bino ko‘rsatilgan. Yaqin atrofda bir mahalliy kishi itini sayr qildiryapti.',
-      ru: 'Старый город, в котором вы гостите, солнечный день. Вы ищете Центральную библиотеку, но на карте пустое здание. Неподалёку местный житель выгуливает собаку.',
+      uz: 'Siz mehmon bo‘lib kelgan shaharning eski qismi, quyoshli kun, tushdan keyin. Siz Markaziy kutubxonani qidiryapsiz, lekin xaritangizda bo‘sh bino ko‘rsatilgan. Yaqin atrofda bir mahalliy kishi itini sayr qildiryapti.',
+      ru: 'Старая часть города, куда вы приехали, солнечный день. Вы ищете Центральную библиотеку, но на карте пустое здание. Неподалёку местный житель выгуливает собаку.',
     },
     learnerRole: {
       en: 'You are a visitor who must return a book and print some documents at the library before it closes at 5 p.m.',
-      uz: 'Siz kutubxona soat 17:00 da yopilishidan oldin kitob qaytarib, hujjatlarni chop etishingiz kerak bo‘lgan mehmonsiz.',
-      ru: 'Вы приезжий, которому нужно до 17:00, пока библиотека не закрылась, вернуть книгу и распечатать документы.',
+      uz: 'Siz shaharga kelgan mehmonsiz: kutubxona soat 17:00 da yopilguncha kitobni qaytarishingiz va hujjatlarni chop etishingiz kerak.',
+      ru: 'Вы приезжий: до 17:00, когда библиотека закрывается, вам нужно вернуть книгу и распечатать документы.',
     },
     goal: {
       en: 'Find out where the library is now, understand the route, and know how long it takes.',
@@ -378,7 +378,7 @@ export const roleplays: Activity[] = [
       },
       {
         id: 'slow_or_check',
-        text: { en: 'Ask Peter to slow down or repeat, or check the route back', uz: 'Piterdan sekinroq gapirishni yoki qaytarishni so‘rang, yoki yo‘lni qaytarib tekshiring', ru: 'Попросите Питера говорить медленнее или повторить, либо повторите маршрут' },
+        text: { en: 'Ask Peter to slow down or repeat, or check the route back', uz: 'Piterdan sekinroq gapirishni yoki takrorlashni so‘rang yoxud yo‘lni o‘zingiz takrorlab tekshiring', ru: 'Попросите Питера говорить медленнее или повторить, либо повторите маршрут, чтобы проверить себя' },
         check: 'At least once the learner asks for repetition or slower speech, or repeats the route to check it.',
       },
       {
@@ -407,17 +407,17 @@ export const roleplays: Activity[] = [
     title: { en: 'Changing a train ticket', uz: 'Poyezd chiptasini almashtirish', ru: 'Обмен билета на поезд' },
     setting: {
       en: 'The ticket office at a busy railway station at 14:20. Your connecting train arrived forty minutes late, so you have just missed the 14:10 to Manchester.',
-      uz: 'Gavjum temir yo‘l vokzalidagi chipta kassasi, soat 14:20. Ulanadigan poyezdingiz qirq daqiqa kechikib keldi va siz Manchesterga ketadigan 14:10 dagi poyezdga ulgurmadingiz.',
-      ru: 'Билетная касса на оживлённом вокзале, 14:20. Ваш пересадочный поезд опоздал на сорок минут, и вы только что пропустили поезд в Манчестер в 14:10.',
+      uz: 'Gavjum temir yo‘l vokzalidagi chipta kassasi, soat 14:20. Sizni bu yerga olib kelgan poyezd qirq daqiqa kechikdi va siz Manchesterga ketadigan 14:10 dagi poyezdga ulgurmay qoldingiz.',
+      ru: 'Билетная касса на оживлённом вокзале, 14:20. Поезд, на котором вы ехали до пересадки, опоздал на сорок минут, и вы только что опоздали на поезд в Манчестер в 14:10.',
     },
     learnerRole: {
       en: 'You are a traveller with an advance ticket for the 14:10. You need to be in Manchester tonight for a family dinner at eight.',
-      uz: 'Siz 14:10 dagi poyezdga oldindan olingan chiptasi bor yo‘lovchisiz. Bugun soat sakkizdagi oilaviy kechki ovqatga Manchesterda bo‘lishingiz kerak.',
+      uz: 'Siz 14:10 dagi poyezdga oldindan olingan chiptasi bor yo‘lovchisiz. Bugun kechqurun soat sakkizda Manchesterda oilaviy kechki ovqatda bo‘lishingiz kerak.',
       ru: 'Вы пассажир с заранее купленным билетом на 14:10. Вам нужно сегодня быть в Манчестере к семейному ужину в восемь.',
     },
     goal: {
       en: 'Change your ticket to a later train today for as little money as possible, and be sure of the new time and platform.',
-      uz: 'Chiptangizni bugungi keyingi poyezdga iloji boricha kam pul to‘lab almashtiring va yangi vaqt hamda platformani aniq bilib oling.',
+      uz: 'Chiptangizni bugun keyinroq jo‘naydigan poyezdga iloji boricha kam pul to‘lab almashtiring va yangi vaqt hamda platformani aniq bilib oling.',
       ru: 'Поменяйте билет на более поздний поезд сегодня, заплатив как можно меньше, и точно узнайте новое время и платформу.',
     },
     persona: {
@@ -448,7 +448,7 @@ export const roleplays: Activity[] = [
       },
       {
         id: 'choose_train',
-        text: { en: 'Choose a train that gets you there in time', uz: 'Vaqtida yetkazadigan poyezdni tanlang', ru: 'Выберите поезд, который довезёт вас вовремя' },
+        text: { en: 'Choose a train that gets you there in time', uz: 'Sizni vaqtida yetkazadigan poyezdni tanlang', ru: 'Выберите поезд, который довезёт вас вовремя' },
         check: 'The learner asks about times or arrival and chooses the 16:10, or checks the arrival time before choosing.',
       },
       {
@@ -510,7 +510,7 @@ export const roleplays: Activity[] = [
       },
       {
         id: 'answer',
-        text: { en: 'Answer Ben’s questions about size, milk and eating in or taking away', uz: 'Benning o‘lcham, sut va shu yerda yoki olib ketish haqidagi savollariga javob bering', ru: 'Ответьте на вопросы Бена о размере, молоке и о том, здесь или с собой' },
+        text: { en: 'Answer Ben’s questions about size, milk and eating in or taking away', uz: 'Benning o‘lcham, sut hamda shu yerdami yoki olib ketasizmi degan savollariga javob bering', ru: 'Ответьте на вопросы Бена о размере, молоке и о том, здесь или с собой' },
         check: 'The learner answers at least two of Ben’s questions clearly (size, milk, here or take away).',
       },
       {
@@ -536,10 +536,10 @@ export const roleplays: Activity[] = [
   },
   {
     id: 'rp.shoes-return', kind: 'roleplay', rubric: 'speaking.conversation', node: 'situations.shopping', levels: [2.5, 4.5], minutes: 7,
-    title: { en: 'Returning faulty shoes without a receipt', uz: 'Nuqsonli poyabzalni cheksiz qaytarish', ru: 'Возврат бракованной обуви без чека' },
+    title: { en: 'Returning faulty shoes without a receipt', uz: 'Nuqsonli poyabzalni chek bo‘lmasa ham qaytarish', ru: 'Возврат бракованной обуви без чека' },
     setting: {
       en: 'A shoe shop in a shopping centre on a Saturday afternoon. Two weeks ago you bought a pair of leather shoes here. The sole of the left shoe is coming off, and you cannot find the receipt.',
-      uz: 'Shanba kuni tushdan keyin savdo markazidagi poyabzal do‘koni. Ikki hafta oldin shu yerdan charm poyabzal sotib olgansiz. Chap poyabzalning tagi ko‘chib ketyapti, chekni esa topa olmayapsiz.',
+      uz: 'Shanba kuni tushdan keyin savdo markazidagi poyabzal do‘koni. Ikki hafta oldin shu yerdan charm poyabzal sotib olgansiz. Chap poyabzalning tagcharmi ko‘chib ketyapti, chekni esa topa olmayapsiz.',
       ru: 'Обувной магазин в торговом центре, субботний день. Две недели назад вы купили здесь кожаные туфли. У левой туфли отклеивается подошва, а чек вы найти не можете.',
     },
     learnerRole: {
@@ -604,7 +604,7 @@ export const roleplays: Activity[] = [
     title: { en: 'Calling the bank: card blocked', uz: 'Bankka qo‘ng‘iroq: karta bloklangan', ru: 'Звонок в банк: карта заблокирована' },
     setting: {
       en: 'You are abroad on a business trip. This morning your bank card was declined at a supermarket, and your banking app says the card is blocked. You call the bank’s customer service line.',
-      uz: 'Siz xizmat safari bilan chet eldasiz. Bugun ertalab supermarketda bank kartangiz qabul qilinmadi, bank ilovangiz esa karta bloklanganini ko‘rsatyapti. Siz bankning mijozlarga xizmat ko‘rsatish liniyasiga qo‘ng‘iroq qilasiz.',
+      uz: 'Siz xizmat safari bilan chet eldasiz. Bugun ertalab supermarketda bank kartangiz qabul qilinmadi, bank ilovangiz esa karta bloklanganini ko‘rsatyapti. Siz bankning mijozlarni qo‘llab-quvvatlash xizmatiga qo‘ng‘iroq qilasiz.',
       ru: 'Вы в командировке за границей. Сегодня утром вашу карту отклонили в супермаркете, а банковское приложение показывает, что карта заблокирована. Вы звоните в службу поддержки банка.',
     },
     learnerRole: {
@@ -615,7 +615,7 @@ export const roleplays: Activity[] = [
     goal: {
       en: 'Pass the security checks, find out why the card was blocked, and agree what happens next so you can pay again.',
       uz: 'Xavfsizlik tekshiruvidan o‘ting, karta nega bloklanganini bilib oling va yana to‘lay olishingiz uchun keyingi qadamlarni kelishib oling.',
-      ru: 'Пройдите проверку, выясните, почему заблокировали карту, и договоритесь о дальнейших шагах, чтобы снова платить.',
+      ru: 'Пройдите проверку, выясните, почему заблокировали карту, и договоритесь о дальнейших шагах, чтобы вы снова могли платить.',
     },
     persona: {
       name: 'Michael',
@@ -650,7 +650,7 @@ export const roleplays: Activity[] = [
       },
       {
         id: 'next_steps',
-        text: { en: 'Agree the next steps and how you can pay meanwhile', uz: 'Keyingi qadamlarni va hozircha qanday to‘lashingizni kelishib oling', ru: 'Договоритесь о дальнейших шагах и о том, как платить пока' },
+        text: { en: 'Agree the next steps and how you can pay meanwhile', uz: 'Keyingi qadamlarni va hozircha qanday to‘lashingizni kelishib oling', ru: 'Договоритесь о дальнейших шагах и о том, как вам пока расплачиваться' },
         check: 'The learner confirms what happens next (new card, when, where) and asks how they can pay while abroad.',
       },
     ],
@@ -668,7 +668,7 @@ export const roleplays: Activity[] = [
   // --- Health ---------------------------------------------------------------------------------------
   {
     id: 'rp.gp-appointment', kind: 'roleplay', rubric: 'speaking.conversation', node: 'situations.health', levels: [2.5, 4.5], minutes: 7,
-    title: { en: 'Seeing a doctor about your symptoms', uz: 'Alomatlar bilan shifokor qabulida', ru: 'Приём у врача: симптомы' },
+    title: { en: 'Seeing a doctor about your symptoms', uz: 'Shifokor qabulida: alomatlar haqida', ru: 'Приём у врача: симптомы' },
     setting: {
       en: 'An appointment with a GP (family doctor) at a local health centre. You have had a headache for a week, and painkillers are not helping much. You have ten minutes with the doctor.',
       uz: 'Mahalliy poliklinikada umumiy amaliyot (oilaviy) shifokori qabuli. Bir haftadan beri boshingiz og‘riyapti, og‘riq qoldiruvchi dorilar deyarli yordam bermayapti. Shifokor bilan o‘n daqiqa vaqtingiz bor.',
@@ -707,7 +707,7 @@ export const roleplays: Activity[] = [
       },
       {
         id: 'pain_details',
-        text: { en: 'Answer the questions about the pain: where, what kind, what makes it worse', uz: 'Og‘riq haqidagi savollarga javob bering: qayerda, qanday, nima kuchaytiradi', ru: 'Ответьте на вопросы о боли: где, какая, что её усиливает' },
+        text: { en: 'Answer the questions about the pain: where, what kind, what makes it worse', uz: 'Og‘riq haqidagi savollarga javob bering: qayerda, qanday og‘riq, nimadan kuchayadi', ru: 'Ответьте на вопросы о боли: где, какая, что её усиливает' },
         check: 'The learner gives at least two of: location, kind of pain, what makes it worse; plus the recent cold or blocked nose.',
       },
       {
@@ -736,8 +736,8 @@ export const roleplays: Activity[] = [
     title: { en: 'At the pharmacy', uz: 'Dorixonada', ru: 'В аптеке' },
     setting: {
       en: 'A high-street pharmacy in the evening. You have had a cough and a sore throat for three days, and you want something that helps you sleep and get to work.',
-      uz: 'Kechqurun, katta ko‘chadagi dorixona. Uch kundan beri yo‘talyapsiz va tomog‘ingiz og‘riyapti; uxlash va ishga borishga yordam beradigan biror narsa kerak.',
-      ru: 'Аптека на центральной улице, вечер. У вас три дня кашель и болит горло; вам нужно что-то, чтобы спать и ходить на работу.',
+      uz: 'Kechqurun, markaziy ko‘chadagi dorixona. Uch kundan beri yo‘talyapsiz va tomog‘ingiz og‘riyapti; yaxshi uxlashingiz va ishga bora olishingiz uchun biror dori kerak.',
+      ru: 'Аптека на центральной улице, вечер. У вас три дня кашель и болит горло; вам нужно средство, чтобы нормально спать и ходить на работу.',
     },
     learnerRole: {
       en: 'You are the customer. You drive to work every morning and you are not taking any other medicine.',
@@ -782,7 +782,7 @@ export const roleplays: Activity[] = [
       },
       {
         id: 'side_effects',
-        text: { en: 'Check side effects or whether it is safe with driving', uz: 'Nojo‘ya ta’sirlarni yoki mashina haydash xavfsizligini aniqlang', ru: 'Уточните побочные эффекты или можно ли садиться за руль' },
+        text: { en: 'Check side effects or whether it is safe to drive', uz: 'Nojo‘ya ta’sirlarini yoki dori ichgach mashina haydash mumkinligini aniqlang', ru: 'Уточните побочные эффекты или можно ли после него садиться за руль' },
         check: 'The learner asks about side effects, or mentions driving to work and asks if it is safe.',
       },
     ],
@@ -804,7 +804,7 @@ export const roleplays: Activity[] = [
     setting: {
       en: 'A video interview for a team leader role in the customer support department of an international online travel company. The interviewer is the head of support, and the interview is in English.',
       uz: 'Xalqaro onlayn sayohat kompaniyasining mijozlarni qo‘llab-quvvatlash bo‘limida jamoa rahbari lavozimiga video suhbat. Suhbatni bo‘lim boshlig‘i ingliz tilida olib boradi.',
-      ru: 'Видеособеседование на должность тимлида в отделе поддержки клиентов международной онлайн-турфирмы. Его проводит руководитель поддержки, на английском.',
+      ru: 'Видеособеседование на должность тимлида в отделе поддержки клиентов международной онлайн-турфирмы. Его проводит руководитель отдела поддержки на английском языке.',
     },
     learnerRole: {
       en: 'You are a candidate with four years in customer support. You have trained new colleagues but have never had the official title of team leader.',
@@ -834,7 +834,7 @@ export const roleplays: Activity[] = [
     goals: [
       {
         id: 'background',
-        text: { en: 'Introduce your background in a clear structure', uz: 'Tajribangizni aniq tartibda tanishtiring', ru: 'Чётко и по порядку расскажите о своём опыте' },
+        text: { en: 'Introduce your background in a clear structure', uz: 'Tajribangiz haqida aniq va izchil gapirib bering', ru: 'Чётко и по порядку расскажите о своём опыте' },
         check: 'The learner describes their experience in a clear order (current role, years, main responsibilities) in at least two connected sentences.',
       },
       {
@@ -867,9 +867,9 @@ export const roleplays: Activity[] = [
     id: 'rp.day-off-request', kind: 'roleplay', rubric: 'speaking.conversation', node: 'situations.work', levels: [2.5, 4.5], minutes: 6,
     title: { en: 'Asking your manager for a day off', uz: 'Rahbardan dam olish kuni so‘rash', ru: 'Попросить выходной у руководителя' },
     setting: {
-      en: 'Your manager’s desk on a Monday afternoon in a busy week: the team has a project deadline next Monday. You need next Friday off for your sister’s wedding in another city.',
-      uz: 'Dushanba kuni tushdan keyin, rahbaringizning stoli oldida. Hafta juda band: jamoaning loyiha muddati keyingi dushanba. Sizga keyingi juma kuni boshqa shahardagi singlingizning to‘yi uchun dam olish kerak.',
-      ru: 'Понедельник, вторая половина дня, стол вашей руководительницы. Неделя напряжённая: у команды дедлайн по проекту в следующий понедельник. Вам нужен выходной в следующую пятницу — свадьба сестры в другом городе.',
+      en: 'Your manager’s desk on a Monday afternoon in a busy week: the team has a project deadline next Monday. You need this Friday off for your sister’s wedding in another city.',
+      uz: 'Dushanba kuni tushdan keyin, rahbaringizning stoli oldida. Hafta juda band: jamoaning loyiha muddati keyingi dushanba. Shu juma kuni boshqa shahardagi singlingizning to‘yi bor, shuning uchun sizga dam olish kuni kerak.',
+      ru: 'Понедельник, вторая половина дня, стол вашей руководительницы. Неделя напряжённая: у команды дедлайн по проекту в следующий понедельник. Вам нужен выходной в эту пятницу — свадьба сестры в другом городе.',
     },
     learnerRole: {
       en: 'You are a team member. Your main task this week is a client report. A colleague, Dilshod, knows your project.',
@@ -900,11 +900,11 @@ export const roleplays: Activity[] = [
       {
         id: 'request',
         text: { en: 'Ask politely for a specific day and give the reason', uz: 'Aniq kunni muloyim so‘rang va sababini ayting', ru: 'Вежливо попросите конкретный день и назовите причину' },
-        check: 'The learner asks for next Friday with a polite form (Would it be possible…, Could I…) and mentions the wedding.',
+        check: 'The learner asks for Friday off with a polite form (Would it be possible…, Could I…) and mentions the wedding.',
       },
       {
         id: 'cover',
-        text: { en: 'Explain how your work will be covered', uz: 'Ishingiz qanday bajarilishini tushuntiring', ru: 'Объясните, как будет прикрыта ваша работа' },
+        text: { en: 'Explain how your work will be covered', uz: 'Yo‘qligingizda ishingiz qanday bajarilishini tushuntiring', ru: 'Объясните, как будет сделана ваша работа, пока вас нет' },
         check: 'The learner says when the report will be finished and who will cover urgent tasks.',
       },
       {
@@ -933,7 +933,7 @@ export const roleplays: Activity[] = [
     title: { en: 'Disagreeing politely in a meeting', uz: 'Yig‘ilishda odob bilan e’tiroz bildirish', ru: 'Вежливое несогласие на совещании' },
     setting: {
       en: 'A weekly project meeting on a video call. The project lead has just proposed launching the product two weeks earlier by cutting the testing phase from three weeks to one. You are responsible for quality.',
-      uz: 'Video qo‘ng‘iroq orqali haftalik loyiha yig‘ilishi. Loyiha rahbari hozirgina sinov bosqichini uch haftadan bir haftaga qisqartirib, mahsulotni ikki hafta oldin chiqarishni taklif qildi. Sifat uchun siz mas’ulsiz.',
+      uz: 'Video qo‘ng‘iroq orqali haftalik loyiha yig‘ilishi. Loyiha rahbari hozirgina sinov bosqichini uch haftadan bir haftaga qisqartirib, mahsulotni ikki hafta ertaroq chiqarishni taklif qildi. Sifat uchun siz mas’ulsiz.',
       ru: 'Еженедельное совещание по проекту по видеосвязи. Руководитель проекта только что предложил выпустить продукт на две недели раньше, сократив тестирование с трёх недель до одной. Вы отвечаете за качество.',
     },
     learnerRole: {
@@ -974,7 +974,7 @@ export const roleplays: Activity[] = [
       },
       {
         id: 'understand',
-        text: { en: 'Ask a question to understand the other side', uz: 'Qarshi tomonni tushunish uchun savol bering', ru: 'Задайте вопрос, чтобы понять другую сторону' },
+        text: { en: 'Ask a question to understand the other side', uz: 'Boshqa tomonni tushunish uchun savol bering', ru: 'Задайте вопрос, чтобы понять другую сторону' },
         check: 'The learner asks why the earlier date matters or what is driving it.',
       },
       {
@@ -995,11 +995,11 @@ export const roleplays: Activity[] = [
   },
   {
     id: 'rp.late-delivery-call', kind: 'roleplay', rubric: 'speaking.conversation', node: 'situations.work', levels: [3, 5], minutes: 8,
-    title: { en: 'Phoning a client about a late delivery', uz: 'Kechikkan yetkazib berish haqida mijozga qo‘ng‘iroq', ru: 'Звонок клиенту о задержке поставки' },
+    title: { en: 'Phoning a client about a late delivery', uz: 'Buyurtma kechikishi haqida mijozga qo‘ng‘iroq', ru: 'Звонок клиенту о задержке поставки' },
     setting: {
-      en: 'You work for a furniture supplier. A client’s order of 120 office chairs is held at customs because of a missing certificate — your company’s mistake — and will arrive five days late. You call the client before she hears it from someone else.',
-      uz: 'Siz mebel yetkazib beruvchi kompaniyada ishlaysiz. Mijozning 120 ta ofis kreslosidan iborat buyurtmasi sertifikat yetishmagani sababli bojxonada ushlanib qoldi — bu sizning kompaniyangiz xatosi — va besh kun kechikib keladi. Mijoz buni boshqalardan eshitmasidan oldin unga qo‘ng‘iroq qilasiz.',
-      ru: 'Вы работаете у поставщика мебели. Заказ клиента — 120 офисных кресел — задержан на таможне из-за отсутствующего сертификата (ошибка вашей компании) и придёт на пять дней позже. Вы звоните клиентке, пока она не узнала об этом от других.',
+      en: 'You work for a furniture supplier. A client’s order of 120 office chairs is held at customs because of a missing certificate — your company’s mistake — and will arrive five days late: next Wednesday instead of this Friday. You call the client before she hears it from someone else.',
+      uz: 'Siz mebel yetkazib beruvchi kompaniyada ishlaysiz. Mijozning 120 ta ofis kreslosidan iborat buyurtmasi sertifikat yetishmagani sababli bojxonada ushlanib qoldi — bu sizning kompaniyangiz xatosi — va besh kun kechikib, shu juma o‘rniga keyingi chorshanba keladi. Mijoz buni boshqalardan eshitmasidan oldin unga qo‘ng‘iroq qilasiz.',
+      ru: 'Вы работаете у поставщика мебели. Заказ клиента — 120 офисных кресел — задержан на таможне из-за отсутствия сертификата (ошибка вашей компании) и придёт на пять дней позже: в следующую среду вместо этой пятницы. Вы звоните клиентке, пока она не узнала об этом от других.',
     },
     learnerRole: {
       en: 'You are the account manager. You may offer about 40 chairs from the local warehouse by Thursday, free delivery for both shipments, or 5% off — nothing more without your director.',

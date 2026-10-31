@@ -7,9 +7,9 @@ import type { Diagnostic } from '../src/types.ts';
 
 export const diagnostic: Diagnostic = {
   intro: {
-    en: 'A quick level check: about 6 minutes, 24 short questions and statements about what you can do. No AI and no recording — just tap your answers. The result is an estimate of your speaking level; your first role-plays will make it precise.',
-    uz: 'Darajani tez aniqlash: taxminan 6 daqiqa, 24 ta qisqa savol va nimalarni qila olishingiz haqidagi fikrlar. Sun’iy intellekt ham, ovoz yozish ham yo‘q — shunchaki javoblarni tanlang. Natija nutq darajangizning taxminiy bahosi; birinchi rolli suhbatlaringiz uni aniqlashtiradi.',
-    ru: 'Быстрая проверка уровня: около 6 минут, 24 коротких вопроса и утверждения о том, что вы умеете. Без ИИ и без записи голоса — просто выбирайте ответы. Результат — примерная оценка вашего разговорного уровня; первые ролевые диалоги её уточнят.',
+    en: 'A quick level check: about 6 minutes, 24 short questions and statements about what you can do. No AI and no recording — just tap your answers. The result is an estimate of your speaking level; your first role-plays will make it more accurate.',
+    uz: 'Darajani tez aniqlash: taxminan 6 daqiqa, 24 ta qisqa savol va nimalarni qila olishingiz haqidagi gaplar. AI ham, ovoz yozish ham yo‘q — shunchaki javoblarni tanlang. Natija og‘zaki nutq darajangizning taxminiy bahosi; birinchi rolli o‘yinlaringiz uni aniqlashtiradi.',
+    ru: 'Быстрая проверка уровня: около 6 минут, 24 коротких вопроса и утверждения о том, что вы умеете. Без ИИ и без записи голоса — просто выбирайте ответы. Результат — примерная оценка вашего разговорного уровня; первые ролевые игры её уточнят.',
   },
   minutes: 6,
   passRatio: 0.6,
@@ -48,7 +48,7 @@ export const diagnostic: Diagnostic = {
     {
       id: 'c1', skill: 'conversation.fluency', level: 2, kind: 'can_do',
       prompt: {
-        en: 'I can answer simple questions about myself — my name, work, family — in short sentences, without long stops.',
+        en: 'I can answer simple questions about myself — my name, work, family — in short sentences, without long pauses.',
         uz: 'Men o‘zim haqimdagi oddiy savollarga — ismim, ishim, oilam — qisqa gaplar bilan, uzoq to‘xtamasdan javob bera olaman.',
         ru: 'Я могу коротко отвечать на простые вопросы о себе — имя, работа, семья — без долгих пауз.',
       },
@@ -96,16 +96,16 @@ export const diagnostic: Diagnostic = {
     {
       id: 'c7', skill: 'conversation.fluency', level: 5, kind: 'can_do',
       prompt: {
-        en: 'I can speak naturally and quickly even about unexpected topics, and I rarely have to search for words.',
-        uz: 'Men kutilmagan mavzularda ham tabiiy va tez gapira olaman, so‘z qidirib qolishim kamdan-kam bo‘ladi.',
-        ru: 'Я могу говорить естественно и быстро даже на неожиданные темы и редко подбираю слова.',
+        en: 'I can speak fluently and spontaneously, even about unexpected topics, and I rarely have to search for words.',
+        uz: 'Men kutilmagan mavzularda ham ravon va erkin gapira olaman, so‘z qidirib qolishim kamdan-kam bo‘ladi.',
+        ru: 'Я могу говорить бегло и спонтанно даже на неожиданные темы, и мне редко приходится подбирать слова.',
       },
     },
     {
       id: 'c8', skill: 'conversation.interaction', level: 5, kind: 'can_do',
       prompt: {
         en: 'I can handle a delicate conversation — bad news, a complaint, a negotiation — tactfully and keep a good relationship.',
-        uz: 'Men nozik suhbatni — yomon xabar, shikoyat, muzokara — odob bilan olib borib, yaxshi munosabatni saqlay olaman.',
+        uz: 'Men nozik suhbatni — yomon xabar, shikoyat, muzokara — nazokat bilan olib borib, yaxshi munosabatni saqlay olaman.',
         ru: 'Я могу тактично провести деликатный разговор — плохая новость, жалоба, переговоры — и сохранить хорошие отношения.',
       },
     },

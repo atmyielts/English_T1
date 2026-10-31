@@ -12,16 +12,16 @@ export interface SeasonTheme { key: string; title: L; lead: L; spotlight: { arc:
 export const SEASON_THEMES: Record<1 | 2 | 3 | 4, SeasonTheme> = {
   1: { key: 'fresh_start', spotlight: { arc: 'tashkent_lights', journey: 'speaking_60' },
     title: { en: 'Fresh Start', uz: 'Yangi boshlanish', ru: 'Новый старт' },
-    lead: { en: 'Navruz season: new goals, a speaking reset and the first chapters of Tashkent Lights.', uz: 'Navro‘z mavsumi: yangi maqsadlar, nutqni qayta boshlash va Tashkent Lights’ning ilk boblari.', ru: 'Сезон Навруза: новые цели, перезапуск речи и первые главы Tashkent Lights.' } },
+    lead: { en: 'Navruz season: new goals, a fresh start for your speaking and the first episodes of Tashkent Lights.', uz: 'Navro‘z mavsumi: yangi maqsadlar, nutq mashqlarini yangidan boshlash va Tashkent Lights’ning ilk qismlari.', ru: 'Сезон Навруза: новые цели, разговорная практика с чистого листа и первые эпизоды Tashkent Lights.' } },
   2: { key: 'exam_season', spotlight: { arc: 'tashkent_lights', journey: 'ielts_55_70' },
     title: { en: 'Exam Season', uz: 'Imtihonlar mavsumi', ru: 'Сезон экзаменов' },
-    lead: { en: 'Admission and IELTS months: weekly national mocks and timed practice.', uz: 'Qabul va IELTS oylari: haftalik milliy sinovlar va vaqtli mashqlar.', ru: 'Месяцы поступления и IELTS: еженедельные национальные пробники и практика на время.' } },
+    lead: { en: 'Admission and IELTS months: weekly national mocks and timed practice.', uz: 'Qabul va IELTS oylari: haftalik milliy sinovlar va vaqt cheklangan mashqlar.', ru: 'Месяцы поступления и IELTS: еженедельные национальные пробные экзамены и практика на время.' } },
   3: { key: 'summer_abroad', spotlight: { arc: 'tashkent_lights', journey: 'speaking_60' },
-    title: { en: 'Summer Abroad', uz: 'Yozgi xorij', ru: 'Лето за границей' },
-    lead: { en: 'Application essays, visa interviews and everyday speaking for travel.', uz: 'Ariza inshosi, viza suhbatlari va sayohat uchun kundalik nutq.', ru: 'Эссе для поступления, визовые собеседования и разговорная речь для поездок.' } },
+    title: { en: 'Summer Abroad', uz: 'Xorijda yoz', ru: 'Лето за границей' },
+    lead: { en: 'Application essays, visa interviews and everyday speaking for travel.', uz: 'Ariza insholari, viza suhbatlari va sayohat uchun kundalik nutq.', ru: 'Эссе для поступления, визовые собеседования и разговорная речь для поездок.' } },
   4: { key: 'career_autumn', spotlight: { arc: 'first_month_sales', journey: 'sales_90' },
     title: { en: 'Career Autumn', uz: 'Karyera kuzi', ru: 'Карьерная осень' },
-    lead: { en: 'Interviews, sales and public speaking: the work season, with the sales tournament.', uz: 'Suhbatlar, savdo va omma oldida nutq: ish mavsumi, savdo turniri bilan.', ru: 'Собеседования, продажи и выступления: рабочий сезон с турниром по продажам.' } },
+    lead: { en: 'Interviews, sales and public speaking: the work season, with the monthly sales tournament.', uz: 'Suhbatlar, savdo va omma oldida nutq: ish mavsumi, har oylik savdo turniri bilan.', ru: 'Собеседования, продажи и выступления: рабочий сезон с ежемесячным турниром по продажам.' } },
 };
 /** Season badges, earned with verified XP in the season. Nothing is random and nothing is for sale. */
 export const SEASON_TIERS = [{ key: 'bronze', xp: 1000 }, { key: 'silver', xp: 3000 }, { key: 'gold', xp: 6000 }] as const;
@@ -57,8 +57,8 @@ export function nationalMock(weekStart: string): LiveEvent {
   const saturday = addDays(weekStart, 5), sunday = addDays(weekStart, 6);
   return {
     key: `mock:${weekStart}`, kind: 'national_mock', join: false, link: '/coach/b1',
-    title: { en: 'Weekly national mock', uz: 'Haftalik milliy sinov', ru: 'Еженедельный национальный пробник' },
-    lead: { en: 'One timed IELTS-style mock with the IELTS Coach, the same weekend for everyone. Your best result counts.', uz: 'IELTS Coach bilan bitta vaqtli IELTS uslubidagi sinov, hamma uchun bir xil dam olish kunida. Eng yaxshi natijangiz hisoblanadi.', ru: 'Один пробный экзамен в формате IELTS с IELTS Coach, в одни выходные для всех. Засчитывается лучший результат.' },
+    title: { en: 'Weekly national mock', uz: 'Haftalik milliy sinov', ru: 'Еженедельный национальный пробный экзамен' },
+    lead: { en: 'One timed IELTS-style mock with the IELTS Coach, the same weekend for everyone. Your best result counts.', uz: 'IELTS murabbiyi bilan IELTS uslubidagi bitta sinov, vaqt cheklangan; hamma uchun bir xil dam olish kunlarida. Eng yaxshi natijangiz hisobga olinadi.', ru: 'Один пробный экзамен в формате IELTS на время с IELTS-коучем, в одни и те же выходные для всех. Засчитывается лучший результат.' },
     opensAt: atTashkent(saturday, 10).toISOString(), closesAt: atTashkent(sunday, 22).toISOString(),
     counts: { features: ['B1', 'E10'], refPrefix: `national_mock:${weekStart}` },
   };
@@ -71,11 +71,11 @@ export function tournaments(at: Date): LiveEvent[] {
   return [
     { key: `tournament:speaking:${month}`, kind: 'tournament_speaking', join: true, link: '/coach/b2', opensAt, closesAt,
       title: { en: 'Speaking tournament', uz: 'Nutq turniri', ru: 'Турнир по разговорной речи' },
-      lead: { en: 'Two weeks of scored speaking turns with any speaking coach. Your five best scores make your result.', uz: 'Istalgan nutq coach’i bilan ikki haftalik baholangan nutq navbatlari. Eng yaxshi beshta ballingiz natijangizni belgilaydi.', ru: 'Две недели оценённых устных ответов с любым тренером речи. Итог — пять ваших лучших баллов.' },
+      lead: { en: 'Two weeks of scored speaking turns with any speaking coach. Your five best scores make your result.', uz: 'Ikki hafta davomida istalgan nutq murabbiyi bilan baholangan og‘zaki javoblar. Natijangiz eng yaxshi beshta ballingiz bo‘yicha hisoblanadi.', ru: 'Две недели оценённых устных ответов с любым коучем по разговорной речи. Итог считается по пяти вашим лучшим баллам.' },
       counts: { features: ['B1', 'B2', 'B6', 'L4'], skills: ['speaking', 'ielts.speaking'] } },
     { key: `tournament:sales:${month}`, kind: 'tournament_sales', join: true, link: '/coach/b4', opensAt, closesAt,
       title: { en: 'Sales tournament', uz: 'Savdo turniri', ru: 'Турнир по продажам' },
-      lead: { en: 'Two weeks of scored role-play calls with the Sales Coach. Your five best scores make your result.', uz: 'Sales Coach bilan ikki haftalik baholangan rolli qo‘ng‘iroqlar. Eng yaxshi beshta ballingiz natijangizni belgilaydi.', ru: 'Две недели оценённых ролевых звонков с Sales Coach. Итог — пять ваших лучших баллов.' },
+      lead: { en: 'Two weeks of scored role-play calls with the Sales Coach. Your five best scores make your result.', uz: 'Ikki hafta davomida Savdo murabbiyi bilan rolli o‘yin tarzidagi baholangan qo‘ng‘iroqlar. Natijangiz eng yaxshi beshta ballingiz bo‘yicha hisoblanadi.', ru: 'Две недели оценённых звонков в ролевой игре с коучем по продажам. Итог считается по пяти вашим лучшим баллам.' },
       counts: { features: ['B4'], skills: ['sales'] } },
   ];
 }

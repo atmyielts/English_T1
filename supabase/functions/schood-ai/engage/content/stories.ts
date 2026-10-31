@@ -54,8 +54,8 @@ const TASHKENT: StoryArc = {
   title: { en: 'Tashkent Lights', uz: 'Tashkent Lights', ru: 'Tashkent Lights' },
   lead: {
     en: 'Madina moves from Samarkand to work in a small café-bookshop and finds a letter that has waited since 1998. Thirty episodes, from A1 to C1.',
-    uz: 'Madina Samarqanddan kichik kafe-kitob do‘koniga ishlash uchun keladi va 1998-yildan beri kutib turgan xatni topadi. A1 dan C1 gacha o‘ttiz qism.',
-    ru: 'Мадина переезжает из Самарканда работать в маленькое кафе-книжный и находит письмо, ждавшее с 1998 года. Тридцать эпизодов, от A1 до C1.',
+    uz: 'Madina kichik kafe va kitob do‘konida ishlash uchun Samarqanddan Toshkentga keladi va u yerda 1998-yildan beri kutib yotgan xatni topadi. A1 dan C1 gacha o‘ttiz qism.',
+    ru: 'Мадина переезжает из Самарканда, чтобы работать в маленьком кафе при книжном магазине, и находит письмо, которое ждёт своего часа с 1998 года. Тридцать эпизодов, от A1 до C1.',
   },
   levels: 'A1–C1',
   bible: [
@@ -129,7 +129,7 @@ Rustam aka laughs. "Tea first. Then work."`,
         { speaker: 'Madina', line: 'And when does it close?' },
         { speaker: 'Rustam aka', line: 'At eight in the evening. On Sunday we close at six.' },
         { speaker: 'Timur', line: 'I come at two. Madina, you start at nine, OK?' },
-        { speaker: 'Madina', line: 'OK. Nine o’clock every day.' },
+        { speaker: 'Madina', line: 'OK. Nine o’clock, Monday to Saturday.' },
       ],
       questions: [
         q('q1', 'reading', 'Who is Rustam aka?', [['a', 'A taxi driver'], ['b', 'The old man at the café'], ['c', 'A student']], 'b'),
@@ -146,7 +146,7 @@ Rustam aka laughs. "Tea first. Then work."`,
     beatOnly('e03', 3, 'A1', 'Coffee and Sophie', 'Madina learns to make coffee. Sophie, an English teacher from London, comes every morning and orders the same tea. Madina keeps the envelope in a drawer and does not open it.', 5),
     beatOnly('e04', 4, 'A1', 'A Day Off', 'On Sunday Timur shows Madina the city: the metro, Chorsu Bazaar and plov for lunch. Madina feels at home for the first time.', 5),
     beatOnly('e05', 5, 'A1', 'The Broken Window', 'Someone breaks the café window at night. Nothing is taken, but the drawer with the envelope is open.', 5),
-    beatOnly('e06', 6, 'A1', 'Rustam’s Photo', 'Madina finds a photo of a young Rustam in London with a woman. On the back it says: "E. and R., 1998".', 5),
+    beatOnly('e06', 6, 'A1', 'Rustam’s Photo', 'Madina finds a photo of a younger Rustam in London with a woman. On the back it says: "E. and R., 1998".', 5),
     {
       key: 'e07', index: 7, level: 'A2', title: 'The Letter', minutes: 6,
       beat: 'Madina finally reads the letter: E. asked Rustam in 1998 to keep "the blue book" for her. A BookCity card appears on the step.',
@@ -174,7 +174,7 @@ Then she heard the door. Somebody was standing outside in the dark.`,
       choice: { flag: 'tell_rustam', prompt: 'Should Madina tell Rustam aka about the letter?', options: [{ id: 'tell', label: 'Yes, tell him today.' }, { id: 'wait', label: 'No, find the blue book first.' }] },
       cliffhanger: 'The person outside was gone. But on the step there was a business card: "BookCity. A. Karimov, Manager."',
       words: [
-        { en: 'handwriting', uz: 'qo‘lyozma', ru: 'почерк' }, { en: 'private', uz: 'shaxsiy', ru: 'личный' },
+        { en: 'handwriting', uz: 'dastxat', ru: 'почерк' }, { en: 'private', uz: 'shaxsiy', ru: 'личный' },
         { en: 'promise', uz: 'va’da bermoq', ru: 'обещать' }, { en: 'worried', uz: 'xavotirda', ru: 'обеспокоенный' },
       ],
     },
@@ -191,7 +191,7 @@ Then she heard the door. Somebody was standing outside in the dark.`,
 
 "Did she ever come to Tashkent?" Madina asked.
 
-"No. She got married, then she had a family, and life was busy. We wrote letters for a few years. Then we stopped." He looked at the shelves. "I kept the blue book for twenty-five years. Last year I gave it to the library. I thought she was never coming."
+"No. She was married and had a family, and life was busy. We wrote letters for a few years. Then we stopped." He looked at the shelves. "I kept the blue book for twenty-five years. Last year I gave it to the library. I thought she was never coming."
 
 Madina felt terrible. "I'm sorry I opened it."
 
@@ -257,7 +257,7 @@ When he left, Rustam aka sat down heavily. His face was grey. "Madina," he said 
       },
       scene: `Running the shop alone was harder than Madina had expected. On her first day in charge, the coffee machine broke, a delivery of books arrived at the wrong time, and a school group of thirty children came in without warning. By six o'clock she was exhausted.
 
-But some things were going well. Timur had started a Telegram channel for the shop, and he posted a photo of the children reading on the floor. By the evening it had two hundred new followers. People started coming in to say they had seen the photo.
+But some things were going well. Timur had started a Telegram channel for the shop, and he posted a photo of the children reading on the floor. By the evening the channel had two hundred new followers. People started coming in to say they had seen the photo.
 
 The email from the night before was from a woman called Grace. She was Sophie's friend and worked at a library in London. "Sophie told me about your search," she wrote. "I've found an Elizabeth Hart who taught English literature at a school in Camden until 2015. I can't promise it's the same person, but I've written to the school. I'll let you know."`,
       listen: [
@@ -270,7 +270,7 @@ The email from the night before was from a woman called Grace. She was Sophie's 
       questions: [
         q('q1', 'reading', 'What went wrong on Madina’s first day in charge?', [['a', 'The coffee machine broke and a school group arrived without warning.'], ['b', 'Timur didn’t come to work.'], ['c', 'BookCity closed the shop.']], 'a'),
         q('q2', 'reading', 'Who is Grace?', [['a', 'Elizabeth’s daughter'], ['b', 'A friend of Sophie’s who works at a London library'], ['c', 'A BookCity manager']], 'b'),
-        q('q3', 'listening', 'Why did the customer come to the shop?', [['a', 'She wanted a job.'], ['b', 'She saw the Telegram post.'], ['c', 'She wanted to sell books.']], 'b'),
+        q('q3', 'listening', 'Why did the customer come to the shop?', [['a', 'To ask about a job'], ['b', 'Because of the Telegram post'], ['c', 'To sell some old books']], 'b'),
       ],
       choice: { flag: 'channel', prompt: 'Timur wants to tell the shop’s story on the channel, including the BookCity offer. Do you agree?', options: [{ id: 'share', label: 'Yes. People should know.' }, { id: 'private', label: 'No. It’s Rustam aka’s private business.' }] },
       cliffhanger: 'Late that night Grace wrote again: "The school replied. Elizabeth Hart lives in Oxford, and she has just asked for your phone number."',
@@ -300,7 +300,7 @@ The article came out on Thursday. By Friday it had been shared eleven thousand t
         { speaker: 'Madina', line: 'Voluntary? They came here four times.' },
         { speaker: 'Timur', line: 'It gets better: "We regret that private negotiations have been shared with the press."' },
         { speaker: 'Madina', line: 'But we never mentioned the price. Nigora didn’t either.' },
-        { speaker: 'Timur', line: 'Exactly. So who told the press about the negotiations? Because it wasn’t us.' },
+        { speaker: 'Timur', line: 'Exactly. So who told the press the price? Because it wasn’t us.' },
       ],
       questions: [
         q('q1', 'reading', 'What kind of story did Nigora want to write?', [['a', 'A sweet story about books'], ['b', 'A story about chains replacing independent places'], ['c', 'A story about Rustam aka’s life in London']], 'b'),
@@ -323,7 +323,7 @@ The article came out on Thursday. By Friday it had been shared eleven thousand t
 
 Madina had practised what to say all night, and now every word had disappeared. "Yes. I'm so sorry. I opened it. I shouldn't have."
 
-"My dear girl, I wrote it twenty-six years ago. If anyone was going to read it, I'm glad it was someone who works in that shop." There was a pause. "Is Rustam well? Grace said something about his heart."
+"My dear girl, I wrote it more than twenty-five years ago. If anyone else was going to read it, I'm glad it was someone who works in that shop." There was a pause. "Is Rustam well? Grace said something about his heart."
 
 Madina told her everything: the broken window, the contract, the doctor, the article. Elizabeth listened without interrupting, which made it easier to say.
 
@@ -335,21 +335,21 @@ Madina told her everything: the broken window, the contract, the doctor, the art
       listen: [
         { speaker: 'Madina', line: 'She asked about you first. Before anything else.' },
         { speaker: 'Rustam aka', line: 'She always did that. Asked about other people first.' },
-        { speaker: 'Madina', line: 'She wants to come in May, for the book festival.' },
+        { speaker: 'Madina', line: 'She wants to come in May, for the book fair.' },
         { speaker: 'Rustam aka', line: 'In May? Madina, I’m not sure I’m ready to see her.' },
         { speaker: 'Madina', line: 'She said you’d say that. She said to tell you she’s coming anyway.' },
       ],
       questions: [
         q('q1', 'reading', 'How did Elizabeth react to Madina opening the letter?', [['a', 'She was angry.'], ['b', 'She was glad it was someone who works in the shop.'], ['c', 'She asked Madina to send it back.']], 'b'),
         q('q2', 'reading', 'According to Madina, which part of the business makes money?', [['a', 'The books'], ['b', 'The café'], ['c', 'Tickets for the club']], 'b'),
-        q('q3', 'listening', 'When does Elizabeth want to come?', [['a', 'In May, for the book festival'], ['b', 'Next week'], ['c', 'Never']], 'a'),
+        q('q3', 'listening', 'When does Elizabeth want to come?', [['a', 'In May, for the book fair'], ['b', 'Next week'], ['c', 'Never']], 'a'),
       ],
       choice: { flag: 'invite', prompt: 'How should Madina welcome Elizabeth?', options: [{ id: 'club', label: 'Invite her to speak at the English club.' }, { id: 'quiet', label: 'Keep it quiet: a private visit for Rustam aka.' }] },
       cliffhanger: 'Two days later, a letter arrived from BookCity’s lawyers. It was addressed not to Rustam aka, but to Madina.',
     },
     beatOnly('e21', 21, 'B2', 'The Lawyers’ Letter', 'BookCity’s lawyers claim the article damaged their reputation and ask Madina to withdraw her quotes.', 9),
     beatOnly('e22', 22, 'B2', 'Advice', 'Nigora and a lawyer friend explain that true statements are not defamation. Madina keeps her quotes but learns to choose her words carefully.', 9),
-    beatOnly('e23', 23, 'B2', 'The Community', 'Customers raise money to repair the window and buy new shelves; Elizabeth sends two hundred of her own books.', 9),
+    beatOnly('e23', 23, 'B2', 'The Community', 'Customers raise money to pay for the window repair and new shelves; Elizabeth sends two hundred of her own books.', 9),
     beatOnly('e24', 24, 'B2', 'Rustam Returns', 'Rustam aka returns to work and asks Madina to become the shop’s official manager.', 9),
     {
       key: 'e25', index: 25, level: 'C1', title: 'The Book Fair', minutes: 10,
@@ -395,7 +395,7 @@ A week later he sat at the corner table of The Silk Page with a very different f
 
 Madina read every clause. The selection shelf was generous, but clause nine gave BookCity the right to use the shop's name and logo "in any marketing materials, without limitation". Clause twelve allowed either side to end the agreement with a month's notice, which meant BookCity could build a brand on The Silk Page's reputation and simply walk away.
 
-"We're interested," Madina said, choosing her words carefully, "but not on these terms. We'd want approval of any use of our name, and a minimum term of two years. In exchange, we can offer the club's programme, which we've already tested, and Ms Hart as a guest author for the launch."
+"We're interested," Madina said, choosing her words carefully, "but not on these terms. We'd want approval of any use of our name, and a minimum term of two years. In exchange, we can offer the club's programme, which we've already tested, and Ms Hart as a guest speaker for the launch."
 
 Karimov raised his eyebrows. "You've become a negotiator."
 
@@ -428,8 +428,8 @@ const SALES: StoryArc = {
   title: { en: 'First Month on the Floor', uz: 'First Month on the Floor', ru: 'First Month on the Floor' },
   lead: {
     en: 'Your first month as a sales rep in Tashkent: a target, a mentor, a rival, a café with a long queue and a competitor at half the price. Twenty working days at B1.',
-    uz: 'Toshkentda savdo vakili sifatidagi birinchi oyingiz: reja, ustoz, raqib, uzun navbatli kafe va yarim narxdagi raqobatchi. B1 darajasida yigirma ish kuni.',
-    ru: 'Ваш первый месяц в продажах в Ташкенте: план, наставник, соперница, кафе с длинной очередью и конкурент вдвое дешевле. Двадцать рабочих дней уровня B1.',
+    uz: 'Toshkentda savdo vakili sifatidagi birinchi oyingiz: sotuv rejasi, ustoz, raqib, navbati uzun kafe va ikki baravar arzon raqobatchi. B1 darajasida yigirma ish kuni.',
+    ru: 'Ваш первый месяц в продажах в Ташкенте: план продаж, наставник, соперница, кафе с длинной очередью и конкурент вдвое дешевле. Двадцать рабочих дней на уровне B1.',
   },
   levels: 'B1',
   bible: [
@@ -555,7 +555,7 @@ This is the moment Bekzod warned you about. If you send a brochure, it will disa
     {
       key: 'd04', index: 4, level: 'B1', title: 'Day 4: Questions First', minutes: 8,
       beat: 'In ten minutes with Mrs Nodira you ask questions instead of pitching, and together you find what the queue really costs her.',
-      openings: { 'next_step=javlon': 'Javlon had kept his word.', 'next_step=message': 'Your message had been three lines long. She had answered in three minutes.' },
+      openings: { 'next_step=javlon': 'Javlon had kept his word.', 'next_step=message': 'Your message had been only three lines long, and she had answered it within the hour.' },
       scene: `Mrs Nodira is small, fast and has flour on her sleeves. She gives you exactly ten minutes and a cup of tea you don't have time to drink.
 
 You want to show her the app. You want to talk about reports, stock alerts and the beautiful dashboard. Instead, you ask questions.
@@ -621,7 +621,7 @@ That evening you write a one-page summary of Café Nodira's problems, in her own
       key: 'd06', index: 6, level: 'B1', title: 'Day 6: “I’ll Think About It”', minutes: 8,
       beat: 'You ask what she wants to think about and discover the real worry: her nephew says such apps sell sales data. You offer facts, not pressure.',
       openings: {
-        'summary=javlon': 'Javlon had liked the one-page summary so much that he had stuck it on the kitchen wall.',
+        'summary=javlon': 'You had dropped Javlon’s copy at the café anyway. He had liked it so much that he had stuck it on the kitchen wall.',
         'summary=nodira': 'Mrs Nodira’s copy of the summary was still in your bag.',
       },
       scene: `"I'll think about it" is the sentence every salesperson hates. Kamila says it means no. Bekzod says it means you haven't found the real problem yet.
@@ -638,7 +638,7 @@ You don't laugh, and you don't tell her that her nephew is wrong. You say: "That
 
 "Good," you say. "Tuesday at four?"`,
       listen: [
-        { speaker: 'Kamila', line: 'Did Nodira cancel? She cancelled on me too, in March.' },
+        { speaker: 'Kamila', line: 'Did Nodira cancel? She cancelled on me too, when I had Chilanzar.' },
         { speaker: 'You', line: 'She didn’t cancel. She moved it to Tuesday.' },
         { speaker: 'Kamila', line: 'Really? What did you say to her?' },
         { speaker: 'You', line: 'I asked what she wanted to think about.' },
@@ -647,7 +647,7 @@ You don't laugh, and you don't tell her that her nephew is wrong. You say: "That
       questions: [
         q('q1', 'reading', 'According to Bekzod, what does "I’ll think about it" usually mean?', [['a', 'The customer will buy next week.'], ['b', 'You haven’t found the real problem yet.'], ['c', 'The price is too low.']], 'b'),
         q('q2', 'reading', 'What was Mrs Nodira really worried about?', [['a', 'The monthly price'], ['b', 'Her sales data being taken and sold'], ['c', 'The time needed for training']], 'b'),
-        q('q3', 'listening', 'What did Kamila do when Mrs Nodira cancelled in March?', [['a', 'She asked a question.'], ['b', 'She sent a discount.'], ['c', 'She visited the café.']], 'b'),
+        q('q3', 'listening', 'What did Kamila do when Mrs Nodira cancelled on her?', [['a', 'She asked a question.'], ['b', 'She sent a discount.'], ['c', 'She visited the café.']], 'b'),
       ],
       choice: { flag: 'nephew', prompt: 'How will you prepare for the nephew?', options: [{ id: 'expert', label: 'Bring Navro Tech’s technical lead to the demo.' }, { id: 'paper', label: 'Bring the data agreement and answer the questions yourself.' }] },
       cliffhanger: 'On Monday Dilfuza calls you into her office. "A competitor called Kassa24 is offering cafés in Chilanzar the same thing for half the price," she says. "Starting today."',
@@ -656,7 +656,7 @@ You don't laugh, and you don't tell her that her nephew is wrong. You say: "That
       key: 'd07', index: 7, level: 'B1', title: 'Day 7: The Competitor', minutes: 8,
       beat: 'A competitor at half the price; instead of discounting you learn what it does not do and prepare questions that show the difference.',
       openings: {
-        'nephew=expert': 'The technical lead, Ulugbek, had agreed to come on Tuesday on one condition: nobody would ask him to wear a tie.',
+        'nephew=expert': 'The technical lead, Ulugbek, couldn’t come on Tuesday, but on Friday afternoon he gave you half an hour and explained how KassaPro works.',
         'nephew=paper': 'You had read the data agreement three times. You could now explain every clause in simple words.',
       },
       scene: `Kassa24 costs a hundred thousand a month. Its website is bright and its ads are everywhere in Chilanzar. By lunchtime two of the twenty shops on your list have told you they're "looking at other options".
@@ -719,7 +719,7 @@ Mrs Nodira looks at the empty queue, then at you. "Fourteen days free?" she asks
       cliffhanger: 'On day nine Javlon calls. He sounds worried. "Something is wrong with the stock numbers," he says. "KassaPro says we have minus forty samsas."',
     },
     beatOnly('d09', 9, 'B1', 'Day 9: Minus Forty Samsas', 'The stock problem turns out to be a set-up mistake. You fix it in person and learn to train the people who use the app every day.', 8),
-    beatOnly('d10', 10, 'B1', 'Day 10: The Decision', 'At the end of the trial you ask Mrs Nodira clearly for her decision instead of waiting for her to offer it.', 8),
+    beatOnly('d10', 10, 'B1', 'Day 10: The Decision', 'On day ten of the trial, as you promised, you ask Mrs Nodira clearly for her decision instead of waiting for her to offer it.', 8),
     beatOnly('d11', 11, 'B1', 'Day 11: First Signature', 'Your first customer signs. Bekzod shows you how to ask a happy customer for an introduction.', 8),
     beatOnly('d12', 12, 'B1', 'Day 12: The Referral', 'Mrs Nodira introduces you to her cousin, who owns three bakeries.', 8),
     beatOnly('d13', 13, 'B1', 'Day 13: Three Bakeries', 'A bigger deal means a negotiation: the cousin asks for a discount for three shops.', 8),

@@ -8,7 +8,7 @@ import type { FactDataset } from '../src/types.ts';
 // `checkedAt`.
 //
 // Left out because they could not be confirmed on an official page on 2026-10-30
-// (travel.state.gov answers automated fetches with 403 Forbidden):
+// (travel.state.gov answers automated fetches with 403 Forbidden; still 403 on 2026-10-31):
 //   [VERIFY] US: the documents to bring to the visa interview (passport validity, DS-160
 //            confirmation page, visa fee receipt, photo) — travel.state.gov student visa page.
 //   [VERIFY] US: documents a consular officer may request (transcripts, test scores,
@@ -40,7 +40,7 @@ export const facts: FactDataset[] = [
         id: 'i20_issued_by',
         statement: {
           en: 'Students receive the Form I-20 from their designated school official (DSO) after acceptance at an SEVP-certified school; the DSO and the student both sign it.',
-          uz: 'Talaba I-20 shaklini SEVP sertifikatiga ega maktabga qabul qilingach, maktabning mas’ul xodimi (DSO) dan oladi; uni DSO va talaba imzolaydi.',
+          uz: 'Talaba I-20 shaklini SEVP sertifikatiga ega maktabga qabul qilingach, maktabning mas’ul xodimi (DSO)dan oladi; uni DSO va talaba imzolaydi.',
           ru: 'Форму I-20 студент получает от уполномоченного сотрудника школы (DSO) после зачисления в школу с сертификацией SEVP; её подписывают и DSO, и студент.',
         },
       },
@@ -48,7 +48,7 @@ export const facts: FactDataset[] = [
         id: 'i20_at_interview',
         statement: {
           en: 'The student visa type must match the Form I-20, and students are expected to have the original Form I-20 at the visa interview.',
-          uz: 'Talabalik vizasi turi I-20 shakliga mos bo‘lishi kerak; viza suhbatiga I-20 ning asl nusxasini olib kelish kutiladi.',
+          uz: 'Talabalik vizasi turi I-20 shakliga mos bo‘lishi kerak; viza suhbatiga I-20 shaklining asl nusxasini olib borishingiz kutiladi.',
           ru: 'Тип студенческой визы должен соответствовать форме I-20; на визовом собеседовании ожидается оригинал формы I-20.',
         },
       },
@@ -64,8 +64,8 @@ export const facts: FactDataset[] = [
         id: 'i20_at_entry',
         statement: {
           en: 'Students are expected to have the signed Form I-20 on hand (not packed in luggage) when entering the United States; a Customs and Border Protection officer asks for it at the port of entry.',
-          uz: 'AQShga kirishda imzolangan I-20 shakli qo‘l ostida (yukda emas) bo‘lishi kutiladi; chegarada Bojxona va chegara xizmati xodimi uni so‘raydi.',
-          ru: 'При въезде в США подписанная форма I-20 должна быть при себе (не в багаже); на пункте въезда её запрашивает сотрудник Таможенно-пограничной службы.',
+          uz: 'AQShga kirishda imzolangan I-20 shakli qo‘l ostida (yukda emas) bo‘lishi kutiladi; kirish punktida AQSh Bojxona va chegara himoyasi xizmati (CBP) xodimi uni so‘raydi.',
+          ru: 'При въезде в США подписанная форма I-20 должна быть при себе (не в багаже); на пункте въезда её запрашивает сотрудник Службы таможни и охраны границ США (CBP).',
         },
       },
     ],
@@ -88,7 +88,7 @@ export const facts: FactDataset[] = [
         statement: {
           en: 'The I-901 SEVIS fee is separate from visa fees and from school SEVIS administration fees.',
           uz: 'I-901 SEVIS to‘lovi viza to‘lovlaridan ham, maktabning SEVIS ma’muriy to‘lovlaridan ham alohida.',
-          ru: 'Сбор I-901 SEVIS не связан ни с визовыми сборами, ни с административными сборами школы за SEVIS.',
+          ru: 'Сбор I-901 SEVIS оплачивается отдельно от визовых сборов и от административных сборов школы за SEVIS.',
         },
       },
       {
@@ -103,7 +103,7 @@ export const facts: FactDataset[] = [
   },
   {
     id: 'us-student-arrival', topic: 'US student visa: first arrival', checkedAt: CHECKED, maxAgeDays: MAX_AGE,
-    title: { en: 'US student visa: first arrival', uz: 'AQSh talabalik vizasi: birinchi kelish', ru: 'Студенческая виза США: первый въезд' },
+    title: { en: 'US student visa: first arrival', uz: 'AQSh talabalik vizasi: birinchi marta kirish', ru: 'Студенческая виза США: первый въезд' },
     source: { name: 'Study in the States (U.S. Department of Homeland Security), 27 July 2026', url: 'https://studyinthestates.dhs.gov/2026/07/first-time-arrival-key-information-for-new-students-traveling-to-the-us' },
     entries: [
       {
@@ -157,8 +157,8 @@ export const facts: FactDataset[] = [
         id: 'arrival',
         statement: {
           en: 'You can arrive up to 1 week before your course if it lasts 6 months or less, or up to 1 month before if it lasts more than 6 months, but never before the start date on your visa.',
-          uz: 'Kurs 6 oy yoki undan qisqa bo‘lsa, boshlanishidan 1 hafta oldin, 6 oydan uzun bo‘lsa, 1 oy oldin kelishingiz mumkin, lekin vizangizdagi boshlanish sanasidan oldin hech qachon emas.',
-          ru: 'Приехать можно не раньше чем за 1 неделю до курса, если он длится 6 месяцев или меньше, и за 1 месяц, если дольше 6 месяцев, но никогда раньше даты начала, указанной в визе.',
+          uz: 'Kurs 6 oy yoki undan qisqa bo‘lsa, boshlanishidan ko‘pi bilan 1 hafta oldin, 6 oydan uzun bo‘lsa, ko‘pi bilan 1 oy oldin kelishingiz mumkin, lekin vizangizda ko‘rsatilgan boshlanish sanasidan oldin kelish mumkin emas.',
+          ru: 'Приехать можно не раньше чем за 1 неделю до курса, если он длится 6 месяцев или меньше, и не раньше чем за 1 месяц, если дольше 6 месяцев, но в любом случае не раньше даты начала, указанной в визе.',
         },
       },
     ],
@@ -172,7 +172,7 @@ export const facts: FactDataset[] = [
         id: 'living_costs',
         statement: {
           en: 'For living costs you need £1,529 a month (for up to 9 months) for courses in London, or £1,171 a month (for up to 9 months) for courses outside London.',
-          uz: 'Yashash xarajatlari uchun London kurslarida oyiga 1 529 funt (ko‘pi bilan 9 oy), Londondan tashqaridagi kurslarda oyiga 1 171 funt (ko‘pi bilan 9 oy) kerak.',
+          uz: 'Yashash xarajatlari uchun Londondagi kurslarda oyiga 1 529 funt (ko‘pi bilan 9 oy uchun), Londondan tashqaridagi kurslarda oyiga 1 171 funt (ko‘pi bilan 9 oy uchun) kerak.',
           ru: 'На проживание нужно £1 529 в месяц (максимум за 9 месяцев) для курсов в Лондоне или £1 171 в месяц (максимум за 9 месяцев) для курсов вне Лондона.',
         },
       },
@@ -248,9 +248,9 @@ export const facts: FactDataset[] = [
       {
         id: 'who',
         statement: {
-          en: 'You need a tuberculosis (TB) test if you are coming to the UK for 6 months or more and you have lived in one of the listed countries for 6 months or more.',
-          uz: 'Buyuk Britaniyaga 6 oy yoki undan uzoqroqqa kelayotgan bo‘lsangiz va ro‘yxatdagi mamlakatlardan birida 6 oy yoki undan ko‘p yashagan bo‘lsangiz, sil (TB) testidan o‘tishingiz kerak.',
-          ru: 'Тест на туберкулёз нужен, если вы едете в Великобританию на 6 месяцев или дольше и прожили в одной из стран списка 6 месяцев или больше.',
+          en: 'You need a tuberculosis (TB) test if you are coming to the UK for 6 months or more, you have lived in one of the listed countries for 6 months or more, and you were living there (or in another listed country) within the last 6 months.',
+          uz: 'Buyuk Britaniyaga 6 oy yoki undan uzoqroq muddatga kelayotgan bo‘lsangiz, ro‘yxatdagi mamlakatlardan birida 6 oy yoki undan ko‘p yashagan bo‘lsangiz va so‘nggi 6 oy ichida o‘sha yerda (yoki ro‘yxatdagi boshqa mamlakatda) yashagan bo‘lsangiz, sil (TB) testidan o‘tishingiz kerak.',
+          ru: 'Тест на туберкулёз нужен, если вы едете в Великобританию на 6 месяцев или дольше, прожили в одной из стран списка 6 месяцев или больше и жили там (или в другой стране списка) в последние 6 месяцев.',
         },
       },
       {
@@ -272,7 +272,7 @@ export const facts: FactDataset[] = [
         id: 'uzbekistan',
         statement: {
           en: 'Uzbekistan is on the list of countries where you need a TB test, and the test must be done at a clinic approved by the Home Office.',
-          uz: 'O‘zbekiston sil testi talab qilinadigan mamlakatlar ro‘yxatida; test Ichki ishlar vazirligi (Home Office) tasdiqlagan klinikada topshirilishi kerak.',
+          uz: 'O‘zbekiston sil testi talab qilinadigan mamlakatlar ro‘yxatida; test Buyuk Britaniya Ichki ishlar vazirligi (Home Office) tasdiqlagan klinikada topshirilishi kerak.',
           ru: 'Узбекистан входит в список стран, где нужен тест на туберкулёз; тест проходят в клинике, одобренной Home Office (МВД Великобритании).',
         },
       },

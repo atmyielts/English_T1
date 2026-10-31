@@ -72,7 +72,7 @@ export interface TelegramMessage { text: string; buttons?: TelegramButton[][]; f
 
 export const COPY: Record<Locale, { title: string; word: string; tip: string; question: string; right: string; wrong: string; done: (score: number) => string; open: string; answerHere: string; answer: string }> = {
   en: { title: 'Your daily brief', word: 'Word of the day', tip: 'Tip', question: 'Question', right: 'Correct!', wrong: 'Not quite.', done: (score) => `Done: ${score}/3. See you tomorrow.`, open: 'Open Schood AI', answerHere: 'Today\'s 3 questions: send /brief now to @schoodstudentbot, or answer them in Schood AI.', answer: 'Answer in Schood AI' },
-  uz: { title: 'Kunlik mashqingiz', word: 'Kun soʻzi', tip: 'Maslahat', question: 'Savol', right: 'Toʻgʻri!', wrong: 'Unchalik emas.', done: (score) => `Tayyor: ${score}/3. Ertaga koʻrishguncha.`, open: 'Schood AI ni ochish', answerHere: 'Bugungi 3 ta savol: @schoodstudentbot ga /brief now yuboring yoki Schood AI da javob bering.', answer: 'Schood AI da javob berish' },
+  uz: { title: 'Kunlik mashqingiz', word: 'Kun so‘zi', tip: 'Maslahat', question: 'Savol', right: 'To‘g‘ri!', wrong: 'Unchalik to‘g‘ri emas.', done: (score) => `Tayyor: ${score}/3. Ertaga ko‘rishguncha.`, open: 'Schood AI’ni ochish', answerHere: 'Bugungi 3 ta savol: @schoodstudentbot botiga /brief now yuboring yoki Schood AI’da javob bering.', answer: 'Schood AI’da javob berish' },
   ru: { title: 'Ваша ежедневная разминка', word: 'Слово дня', tip: 'Совет', question: 'Вопрос', right: 'Верно!', wrong: 'Не совсем.', done: (score) => `Готово: ${score}/3. До завтра.`, open: 'Открыть Schood AI', answerHere: 'Сегодняшние 3 вопроса: отправьте /brief now боту @schoodstudentbot или ответьте в Schood AI.', answer: 'Ответить в Schood AI' },
 };
 

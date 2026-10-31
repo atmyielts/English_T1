@@ -56,7 +56,7 @@ export const rubrics: Rubric[] = [
         node: 'conversation.fluency',
         focus: 'How easily the learner keeps talking: the length of turns, how ideas are linked, and hesitation. When measured numbers are supplied (words per minute, long pauses, fillers, seconds), use them alongside the transcript and compare the pace with the band for the level. Hesitation while thinking about ideas is natural; hesitation searching for basic words and forms is not. Look at linkers and discourse markers (because, so, then, actually, anyway, the thing is).',
         descriptors: [
-          { score: 2, text: 'Very short turns, often single words or phrases. Frequent long pauses to find words and plan; the other person has to keep the conversation going. Pace is usually well under about 80 words per minute.' },
+          { score: 2, text: 'Very short turns, often single words or phrases. Frequent long pauses to find words and plan; the other person has to keep the conversation going. Pace is often below about 80 words per minute.' },
           { score: 2.5, text: 'Short turns of one to three sentences on familiar topics. Pauses, false starts and restarts are very evident and fillers (ee, um, ну) are frequent, but the learner keeps going in routine exchanges.' },
           { score: 3, text: 'Keeps going comprehensibly, with pauses for planning and repair, especially in longer turns. Links ideas into a simple sequence with and, but, because, so and then.' },
           { score: 3.5, text: 'Speaks with relative ease in turns of several connected sentences. Some pauses to search for words, but they rarely stop the flow; uses a wider set of linkers (actually, after that, anyway, so that).' },
@@ -96,7 +96,7 @@ export const rubrics: Rubric[] = [
           { score: 3.5, text: 'Easy to understand in most stretches. Stress on key words is mostly right; some weak forms and linking; intonation can be flat in longer turns.' },
           { score: 4, text: 'Clear and natural, with sentence stress and intonation that show meaning (questions, lists, contrast, politeness). The accent causes no strain.' },
           { score: 4.5, text: 'Connected speech (linking, weak forms, elision) is natural; intonation conveys attitude such as politeness, surprise or doubt. Mispronunciations are rare.' },
-          { score: 5, text: 'Varies intonation and places stress precisely to express fine shades of meaning. Any accent never affects intelligibility.' },
+          { score: 5, text: 'Varies intonation and places stress precisely to express fine shades of meaning. An accent, if any, never affects intelligibility.' },
         ],
       },
     ],

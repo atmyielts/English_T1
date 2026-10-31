@@ -609,8 +609,8 @@ const botLink = (rt: CoachRuntime, pack: CoachPack) => (rt.config.bots[pack.mani
 const KIND_TITLES: Record<string, Partial<Record<Locale, string>>> = {
   diagnostic: { en: 'Placement test', uz: 'Daraja testi', ru: 'Тест уровня' },
   drill: { en: 'Practice on your errors', uz: 'Xatolaringiz ustida mashq', ru: 'Работа над ошибками' },
-  deck: { en: 'Card review', uz: 'Kartalarni takrorlash', ru: 'Повторение карточек' },
-  shadowing: { en: 'Shadowing', uz: 'Takrorlab gapirish', ru: 'Шэдоуинг' },
+  deck: { en: 'Card review', uz: 'Kartochkalarni takrorlash', ru: 'Повторение карточек' },
+  shadowing: { en: 'Shadowing', uz: 'Shadowing (takrorlash mashqi)', ru: 'Шэдоуинг' },
   photo_help: { en: 'Help with a photo', uz: 'Rasm bo‘yicha yordam', ru: 'Помощь по фото' },
 };
 /** A session's title: a single speaking part names that part; otherwise the activity, else its kind. */

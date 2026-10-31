@@ -10,22 +10,22 @@ export const manifest: PackManifest = {
   version: '1.0.0',
   name: { en: 'IELTS Coach', uz: 'IELTS murabbiyi', ru: 'IELTS-коуч' },
   tagline: {
-    en: 'A full IELTS examiner and coach in Telegram: bands with evidence, a plan to your exam date.',
-    uz: 'Telegramdagi to‘liq IELTS imtihonchisi va murabbiyi: dalilli ballar, imtihon kuningizgacha reja.',
-    ru: 'Полноценный экзаменатор и коуч IELTS в Telegram: баллы с доказательствами и план до даты экзамена.',
+    en: 'An examiner-style IELTS coach in Telegram: estimated bands backed by evidence and a plan to your exam date.',
+    uz: 'Telegramda imtihonchi kabi baholaydigan IELTS murabbiyi: dalilli taxminiy ballar va imtihon kuningizgacha reja.',
+    ru: 'IELTS-коуч в Telegram, который оценивает как экзаменатор: примерные баллы с цитатами и план до даты экзамена.',
   },
   description: {
-    en: 'Speaking Parts 1–3 over voice messages with real timing, a band per criterion quoted from your own words, fluency numbers and "say it better" upgrades you re-record. Writing Task 1 and 2 by photo or text with an essay ladder and drills on your recurring errors. Daily timed Reading and Listening mini-sets with strategy by question type, topic vocabulary with spaced repetition, and a weekly mock.',
-    uz: 'Speaking 1–3-qismlar ovozli xabarlar orqali, haqiqiy vaqt bilan: har bir mezon bo‘yicha ball va o‘z gaplaringizdan iqtibos, ravonlik ko‘rsatkichlari va qayta yozib olinadigan «yaxshiroq ayting» variantlari. Writing Task 1 va 2 rasm yoki matn orqali, insho zinapoyasi va takrorlanuvchi xatolaringiz bo‘yicha mashqlar. Har kuni vaqtli Reading va Listening mini-to‘plamlari, savol turi bo‘yicha strategiya, mavzuli lug‘at va haftalik sinov imtihoni.',
-    ru: 'Speaking, части 1–3, голосовыми сообщениями с реальным таймингом: балл по каждому критерию с цитатами из ваших же слов, показатели беглости и варианты «скажи лучше», которые вы перезаписываете. Writing Task 1 и 2 фото или текстом, «лестница» эссе и упражнения на ваши повторяющиеся ошибки. Ежедневные мини-наборы Reading и Listening на время со стратегией по типу вопроса, тематическая лексика с интервальным повторением и еженедельный пробный экзамен.',
+    en: 'Speaking Parts 1–3 over voice messages with real timing: an estimated band per criterion backed by quotes from your own words, fluency numbers and "say it better" upgrades you re-record. Writing Task 1 and 2 by photo or text with an essay ladder and drills on your recurring errors. Daily timed Reading and Listening mini-sets with strategy by question type, topic vocabulary with spaced repetition, and a weekly mock.',
+    uz: 'Speaking 1–3-qismlar ovozli xabarlar orqali, imtihondagidek vaqt bilan: har bir mezon bo‘yicha taxminiy ball va o‘z gaplaringizdan iqtiboslar, ravonlik ko‘rsatkichlari va qayta yozib olinadigan «yaxshiroq ayting» variantlari. Writing Task 1 va 2 surat yoki matn orqali, insho zinapoyasi va takrorlanuvchi xatolaringiz bo‘yicha mashqlar. Har kuni vaqt belgilangan Reading va Listening mini-to‘plamlari, savol turi bo‘yicha strategiya, oraliq takrorlash bilan mavzuli lug‘at va haftalik sinov imtihoni.',
+    ru: 'Speaking, части 1–3, голосовыми сообщениями с таймингом, как на экзамене: примерный балл по каждому критерию с цитатами из ваших же слов, показатели беглости и варианты «Как сказать лучше», которые можно перезаписать. Writing Task 1 и 2 фото или текстом, «лестница» эссе и упражнения на ваши повторяющиеся ошибки. Ежедневные мини-наборы Reading и Listening на время со стратегией по типу вопроса, тематическая лексика с интервальным повторением и еженедельный пробный экзамен.',
   },
   uiLanguages: ['uz', 'ru', 'en'],
   practiceLanguage: 'en',
   audience: {
     description: {
       en: 'Learners preparing for IELTS Academic or General Training, from band 4.5 to 8.0.',
-      uz: 'IELTS Academic yoki General Training’ga tayyorlanayotganlar, 4.5 dan 8.0 gacha.',
-      ru: 'Те, кто готовится к IELTS Academic или General Training, с уровня 4.5 до 8.0.',
+      uz: 'IELTS Academic yoki General Training’ga tayyorlanayotganlar, 4.5 balldan 8.0 ballgacha.',
+      ru: 'Те, кто готовится к IELTS Academic или General Training, с балла 4.5 до 8.0.',
     },
     minAge: 14,
     levels: [4, 8.5],
@@ -62,8 +62,8 @@ export const manifest: PackManifest = {
       name: { en: 'Articles (a, an, the)', uz: 'Artikllar (a, an, the)', ru: 'Артикли (a, an, the)' },
       explain: {
         en: 'Use a/an the first time you mention one countable thing, the when both of you know which one, and no article for general plurals and uncountables (Pollution affects cities).',
-        uz: 'Bitta sanaladigan narsani birinchi marta aytganda a/an, ikkalangiz ham qaysi biri ekanini bilganda the ishlating. Umumiy ko‘plik va sanalmaydigan otlar oldida artikl kerak emas (Pollution affects cities).',
-        ru: 'A/an — когда впервые упоминаете один исчисляемый предмет, the — когда обоим понятно, о каком речь. С обобщёнными множественными и неисчисляемыми артикль не нужен (Pollution affects cities).',
+        uz: 'Bitta sanaladigan narsani birinchi marta aytganda a/an, ikkalangiz ham qaysi biri ekanini bilganda the ishlating. Umumiy ma’nodagi ko‘plik va sanalmaydigan otlar oldida artikl kerak emas (Pollution affects cities).',
+        ru: 'A/an — когда впервые упоминаете один исчисляемый предмет, the — когда обоим понятно, о каком идёт речь. Перед множественным числом и неисчисляемыми существительными в общем значении артикль не нужен (Pollution affects cities).',
       },
     },
     {
@@ -71,16 +71,16 @@ export const manifest: PackManifest = {
       name: { en: 'Subject–verb agreement', uz: 'Ega va kesim moslashuvi', ru: 'Согласование подлежащего и сказуемого' },
       explain: {
         en: 'A singular subject takes a singular verb (The number of cars is rising), even when a plural noun sits between them.',
-        uz: 'Birlikdagi ega birlikdagi kesim bilan keladi (The number of cars is rising), oradagi ko‘plikdagi ot bo‘lsa ham.',
-        ru: 'Подлежащее в единственном числе требует глагола в единственном числе (The number of cars is rising), даже если между ними стоит существительное во множественном.',
+        uz: 'Birlikdagi ega birlikdagi kesim bilan keladi (The number of cars is rising), orada ko‘plikdagi ot turgan bo‘lsa ham.',
+        ru: 'Подлежащее в единственном числе требует глагола в единственном числе (The number of cars is rising), даже если между ними стоит существительное во множественном числе.',
       },
     },
     {
       id: 'verb_tense', node: 'grammar', drill: 'drill.verb_tense',
       name: { en: 'Verb tenses', uz: 'Fe’l zamonlari', ru: 'Времена глаголов' },
       explain: {
-        en: 'Keep one time frame: past simple for finished times (in 2010), present perfect for experience up to now, present simple for facts and habits.',
-        uz: 'Bitta vaqt doirasida qoling: tugagan vaqt uchun past simple (in 2010), hozirgacha bo‘lgan tajriba uchun present perfect, faktlar va odatlar uchun present simple.',
+        en: 'Stick to one time frame: past simple for finished times (in 2010), present perfect for experience up to now, present simple for facts and habits.',
+        uz: 'Bir zamon doirasidan chiqmang: tugagan vaqt uchun past simple (in 2010), hozirgacha bo‘lgan tajriba uchun present perfect, faktlar va odatlar uchun present simple.',
         ru: 'Держите одну временную рамку: past simple для завершённого времени (in 2010), present perfect для опыта до настоящего момента, present simple для фактов и привычек.',
       },
     },
@@ -89,7 +89,7 @@ export const manifest: PackManifest = {
       name: { en: 'Prepositions', uz: 'Predloglar', ru: 'Предлоги' },
       explain: {
         en: 'Many prepositions are fixed with the word before them: rise by 10%, rise to 40%, interested in, depend on, at the weekend / on weekdays.',
-        uz: 'Ko‘p predloglar oldingi so‘z bilan birga yodlanadi: rise by 10%, rise to 40%, interested in, depend on, at the weekend / on weekdays.',
+        uz: 'Ko‘p predloglar oldidagi so‘zga bog‘liq, shuning uchun ularni birga yodlang: rise by 10%, rise to 40%, interested in, depend on, at the weekend / on weekdays.',
         ru: 'Многие предлоги закреплены за словом перед ними: rise by 10%, rise to 40%, interested in, depend on, at the weekend / on weekdays.',
       },
     },
@@ -104,7 +104,7 @@ export const manifest: PackManifest = {
     },
     {
       id: 'countable_nouns', node: 'grammar', drill: 'drill.countable_nouns',
-      name: { en: 'Countable and uncountable nouns', uz: 'Sanaladigan va sanalmaydigan otlar', ru: 'Исчисляемые и неисчисляемые' },
+      name: { en: 'Countable and uncountable nouns', uz: 'Sanaladigan va sanalmaydigan otlar', ru: 'Исчисляемые и неисчисляемые существительные' },
       explain: {
         en: 'Information, advice, research, equipment and evidence have no plural: say much information, a piece of advice, less traffic, fewer cars.',
         uz: 'Information, advice, research, equipment va evidence ko‘plik shakliga ega emas: much information, a piece of advice, less traffic, fewer cars deng.',
@@ -113,7 +113,7 @@ export const manifest: PackManifest = {
     },
     {
       id: 'sentence_boundaries', node: 'writing.grammar', drill: 'drill.sentence_boundaries',
-      name: { en: 'Run-on sentences and fragments', uz: 'Uzilmagan gaplar va bo‘laklar', ru: 'Слитные предложения и обрывки' },
+      name: { en: 'Run-on sentences and fragments', uz: 'Qo‘shilib ketgan va chala gaplar', ru: 'Слитные и незаконченные предложения' },
       explain: {
         en: 'Two full sentences need a full stop, a semicolon or a linking word between them, not just a comma. A clause starting with because or which cannot stand alone.',
         uz: 'Ikki to‘liq gap orasida faqat vergul emas, nuqta, nuqtali vergul yoki bog‘lovchi bo‘lishi kerak. Because yoki which bilan boshlanuvchi qism alohida gap bo‘la olmaydi.',
@@ -133,7 +133,7 @@ export const manifest: PackManifest = {
       id: 'collocations', node: 'writing.lexical_resource', drill: 'drill.collocations',
       name: { en: 'Word partners (collocations)', uz: 'So‘z birikmalari (kollokatsiyalar)', ru: 'Сочетаемость слов (коллокации)' },
       explain: {
-        en: 'Some words simply go together: make a decision, do research, a heavy rain, a sharp rise, pay attention. Translating word by word often breaks these pairs.',
+        en: 'Some words simply go together: make a decision, do research, heavy rain, a sharp rise, pay attention. Translating word by word often breaks these pairs.',
         uz: 'Ba’zi so‘zlar doim birga keladi: make a decision, do research, heavy rain, a sharp rise, pay attention. So‘zma-so‘z tarjima ko‘pincha bu juftlarni buzadi.',
         ru: 'Некоторые слова просто сочетаются: make a decision, do research, heavy rain, a sharp rise, pay attention. Дословный перевод часто ломает эти пары.',
       },
@@ -142,9 +142,9 @@ export const manifest: PackManifest = {
       id: 'register', node: 'writing.lexical_resource', drill: 'drill.register',
       name: { en: 'Formal and informal style', uz: 'Rasmiy va norasmiy uslub', ru: 'Формальный и неформальный стиль' },
       explain: {
-        en: 'Academic writing avoids contractions (don’t), slang (kids, a lot of stuff) and direct questions to the reader; speaking can be relaxed but should stay clear.',
-        uz: 'Akademik yozuvda qisqartmalar (don’t), jargon (kids, a lot of stuff) va o‘quvchiga to‘g‘ridan-to‘g‘ri savollar ishlatilmaydi; nutq erkinroq bo‘lishi mumkin, lekin aniq bo‘lsin.',
-        ru: 'В академическом письме нет сокращений (don’t), сленга (kids, a lot of stuff) и прямых вопросов читателю; в речи можно расслабленнее, но ясно.',
+        en: 'Academic writing avoids contractions (don’t), informal words (kids, a lot of stuff) and direct questions to the reader; speaking can be more relaxed but should stay clear.',
+        uz: 'Akademik yozuvda qisqartmalar (don’t), so‘zlashuv so‘zlari (kids, a lot of stuff) va o‘qiyotgan kishiga to‘g‘ridan-to‘g‘ri savollar ishlatilmaydi; og‘zaki nutq erkinroq bo‘lishi mumkin, lekin aniq bo‘lsin.',
+        ru: 'В академическом письме нет сокращений (don’t), разговорных слов (kids, a lot of stuff) и прямых вопросов читателю; устная речь может быть свободнее, но должна оставаться ясной.',
       },
     },
     {
@@ -152,7 +152,7 @@ export const manifest: PackManifest = {
       name: { en: 'Short, undeveloped answers', uz: 'Qisqa, rivojlantirilmagan javoblar', ru: 'Короткие неразвёрнутые ответы' },
       explain: {
         en: 'Answer, then add a reason and an example or a contrast (Answer → Because → For example). In Part 1 aim for two or three sentences; in Part 3 develop and compare.',
-        uz: 'Javob bering, keyin sabab va misol yoki qarama-qarshilik qo‘shing (Javob → Chunki → Masalan). 1-qismda ikki-uch gap, 3-qismda esa fikrni rivojlantirib, solishtiring.',
+        uz: 'Javob bering, keyin sabab va misol yoki qarama-qarshilik qo‘shing (Javob → Chunki → Masalan). 1-qismda ikki-uch gap ayting, 3-qismda esa fikrni rivojlantiring va solishtiring.',
         ru: 'Ответьте, затем добавьте причину и пример или контраст (Ответ → Потому что → Например). В части 1 — два-три предложения, в части 3 — развивайте мысль и сравнивайте.',
       },
     },
@@ -167,7 +167,7 @@ export const manifest: PackManifest = {
     { action: 'vocab', emoji: '🧠', label: { en: 'Vocabulary quiz', uz: 'Lug‘at testi', ru: 'Тест по лексике' } },
     { action: 'drill', emoji: '🎯', label: { en: 'Fix my errors', uz: 'Xatolarimni tuzatish', ru: 'Работа над ошибками' } },
     { action: 'progress', emoji: '📈', label: { en: 'My progress', uz: 'Natijalarim', ru: 'Мой прогресс' } },
-    { action: 'report', emoji: '🗓', label: { en: 'Weekly report', uz: 'Haftalik hisobot', ru: 'Недельный отчёт' } },
+    { action: 'report', emoji: '🗓', label: { en: 'Weekly report', uz: 'Haftalik hisobot', ru: 'Еженедельный отчёт' } },
     { action: 'plan', emoji: '🧭', label: { en: 'Goal and plan', uz: 'Maqsad va reja', ru: 'Цель и план' } },
     { action: 'settings', emoji: '⚙️', label: { en: 'Settings', uz: 'Sozlamalar', ru: 'Настройки' } },
     { action: 'help', emoji: '❓', label: { en: 'Help', uz: 'Yordam', ru: 'Помощь' } },
@@ -175,7 +175,7 @@ export const manifest: PackManifest = {
   commands: [
     { command: 'start', description: { en: 'Start or restart the coach', uz: 'Murabbiyni boshlash', ru: 'Запустить коуча' } },
     { command: 'today', description: { en: 'Today’s plan', uz: 'Bugungi reja', ru: 'План на сегодня' } },
-    { command: 'mock', description: { en: 'Full speaking mock (Parts 1–3)', uz: 'To‘liq Speaking sinovi (1–3)', ru: 'Полный пробный Speaking (1–3)' } },
+    { command: 'mock', description: { en: 'Full speaking mock (Parts 1–3)', uz: 'To‘liq Speaking sinovi (1–3-qismlar)', ru: 'Полный пробный Speaking (части 1–3)' } },
     { command: 'speaking', description: { en: 'Practise one speaking part', uz: 'Bitta Speaking qismini mashq qilish', ru: 'Практика одной части Speaking' } },
     { command: 'writing', description: { en: 'Get a writing task scored', uz: 'Writing topshirig‘ini baholatish', ru: 'Проверить письменную работу' } },
     { command: 'reading', description: { en: 'Timed reading mini-set', uz: 'Vaqtli Reading mini-to‘plami', ru: 'Мини-набор Reading на время' } },

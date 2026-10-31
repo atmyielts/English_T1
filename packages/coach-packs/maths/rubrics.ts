@@ -16,7 +16,7 @@ export const rubrics: Rubric[] = [
   {
     id: 'admission.mock',
     keyed: true,
-    name: { uz: 'Mini sinov natijasi', ru: 'Результат мини-пробника', en: 'Mini-mock result' },
+    name: { uz: 'Mini-sinov natijasi', ru: 'Результат мини-пробника', en: 'Mini-mock result' },
     scale: { id: 'percent', min: 0, max: 100, step: 1 },
     criteria: [],
     overall: { round: 'step' },

@@ -32,7 +32,7 @@ export const drills: Drill[] = [
       item('i6', '3 + 6 : 3 · 2 = ?', ['7', '4', '6', '9'], 0, { uz: '6 : 3 · 2 = 4, 3 + 4 = 7.', ru: '6 : 3 · 2 = 4, 3 + 4 = 7.' }),
     ]),
   drill('fractions', 'math.num.fractions', { uz: 'Kasrlar', ru: 'Дроби', en: 'Fractions' },
-    { uz: 'Qo‘shishda umumiy maxraj, ko‘paytirishda to‘g‘ridan-to‘g‘ri, bo‘lishda ag‘darib ko‘paytirish.', ru: 'При сложении — общий знаменатель, при умножении — напрямую, при делении — умножение на обратную.' }, [
+    { uz: 'Qo‘shish va ayirishda — umumiy maxraj, ko‘paytirishda — surat suratga, maxraj maxrajga, bo‘lishda — ikkinchi kasrni ag‘darib ko‘paytirish.', ru: 'При сложении и вычитании — общий знаменатель, при умножении — числитель на числитель, знаменатель на знаменатель, при делении — умножение на обратную дробь.' }, [
       item('i1', '1/2 + 1/3 = ?', ['5/6', '2/5', '1/5', '2/6'], 0, { uz: '3/6 + 2/6 = 5/6.', ru: '3/6 + 2/6 = 5/6.' }),
       item('i2', '2/3 · 3/4 = ?', ['1/2', '5/7', '6/7', '8/9'], 0, { uz: '6/12 = 1/2.', ru: '6/12 = 1/2.' }),
       item('i3', '3/4 : 3/8 = ?', ['2', '9/32', '1/2', '3/2'], 0, { uz: '3/4 · 8/3 = 2.', ru: '3/4 · 8/3 = 2.' }),
@@ -41,16 +41,16 @@ export const drills: Drill[] = [
       item('i6', '(2/5)² = ?', ['4/25', '4/5', '2/25', '4/10'], 0, { uz: 'Surat ham, maxraj ham kvadratga ko‘tariladi.', ru: 'В квадрат возводятся и числитель, и знаменатель.' }),
     ]),
   drill('percent_base', 'math.num.percent', { uz: 'Foiz asosi', ru: 'База процента', en: 'Percent of what' },
-    { uz: 'Foiz qaysi sondan olinayotganini har safar so‘zma-so‘z aniqlang.', ru: 'Каждый раз уточняйте, от какого числа берётся процент.' }, [
-      item('i1', { uz: '120 ning 25% i nechaga teng?', ru: 'Чему равны 25% от 120?' }, ['30', '25', '48', '95'], 0, { uz: '120 · 0,25 = 30.', ru: '120 · 0,25 = 30.' }),
-      item('i2', { uz: '30 qaysi sonning 20% i?', ru: '30 — это 20% от какого числа?' }, ['150', '6', '60', '600'], 0, { uz: '30 : 0,2 = 150.', ru: '30 : 0,2 = 150.' }),
+    { uz: 'Har safar foiz qaysi sondan olinayotganini aniqlang.', ru: 'Каждый раз уточняйте, от какого числа берётся процент.' }, [
+      item('i1', { uz: '120 ning 25 foizi nechaga teng?', ru: 'Чему равны 25% от 120?' }, ['30', '25', '48', '95'], 0, { uz: '120 · 0,25 = 30.', ru: '120 · 0,25 = 30.' }),
+      item('i2', { uz: '30 qaysi sonning 20 foizi?', ru: '30 — это 20% от какого числа?' }, ['150', '6', '60', '600'], 0, { uz: '30 : 0,2 = 150.', ru: '30 : 0,2 = 150.' }),
       item('i3', { uz: '40 dan 50 ga oshish necha foiz?', ru: 'Рост с 40 до 50 — это сколько процентов?' }, ['25', '20', '10', '80'], 0, { uz: '10 ni 40 ga bo‘lamiz: 25%.', ru: 'Делим 10 на 40: 25%.' }),
       item('i4', { uz: '50 dan 40 ga kamayish necha foiz?', ru: 'Снижение с 50 до 40 — это сколько процентов?' }, ['20', '25', '10', '80'], 0, { uz: '10 ni 50 ga bo‘lamiz: 20%.', ru: 'Делим 10 на 50: 20%.' }),
-      item('i5', { uz: 'Narx 25% kamaytirilgach 60 bo‘ldi. Dastlabki narx?', ru: 'После снижения на 25% цена 60. Какова исходная цена?' }, ['80', '75', '85', '45'], 0, { uz: '60 — narxning 75% i: 60 : 0,75 = 80.', ru: '60 — это 75% цены: 60 : 0,75 = 80.' }),
+      item('i5', { uz: 'Narx 25% ga kamaytirilgach, 60 bo‘ldi. Dastlabki narxni toping.', ru: 'После снижения на 25% цена 60. Какова исходная цена?' }, ['80', '75', '85', '45'], 0, { uz: '60 — narxning 75 foizi: 60 : 0,75 = 80.', ru: '60 — это 75% цены: 60 : 0,75 = 80.' }),
       item('i6', { uz: '18 soni 72 ning necha foizi?', ru: 'Сколько процентов составляет 18 от 72?' }, ['25', '18', '40', '4'], 0, { uz: '18/72 = 1/4 = 25%.', ru: '18/72 = 1/4 = 25%.' }),
     ]),
   drill('lost_root', 'math.alg.quadratic', { uz: 'Hamma ildizlar', ru: 'Все корни', en: 'Every root' },
-    { uz: 'Tenglamani ko‘paytuvchilarga ajrating va har bir ko‘paytuvchini nolga tenglang.', ru: 'Разложите уравнение на множители и приравняйте каждый к нулю.' }, [
+    { uz: 'Barcha hadlarni bir tomonga o‘tkazing, ko‘paytuvchilarga ajrating va har bir ko‘paytuvchini nolga tenglang.', ru: 'Перенесите всё в одну часть, разложите на множители и приравняйте к нулю каждый множитель.' }, [
       item('i1', { uz: 'x² = 16 ni yeching.', ru: 'Решите x² = 16.' }, ['−4; 4', '4', '8', '−4'], 0, { uz: 'x = ±4.', ru: 'x = ±4.' }),
       item('i2', { uz: 'x² = 5x ni yeching.', ru: 'Решите x² = 5x.' }, ['0; 5', '5', '0', '−5; 5'], 0, { uz: 'x(x − 5) = 0: x = 0 yoki 5.', ru: 'x(x − 5) = 0: x = 0 или 5.' }),
       item('i3', { uz: '(x − 2)² = 9 ni yeching.', ru: 'Решите (x − 2)² = 9.' }, ['−1; 5', '5', '1; 5', '−5; 1'], 0, { uz: 'x − 2 = ±3: x = 5 yoki −1.', ru: 'x − 2 = ±3: x = 5 или −1.' }),
@@ -95,10 +95,10 @@ export const drills: Drill[] = [
       item('i6', { uz: 'Tomonlari 3 va 7 bo‘lgan to‘g‘ri to‘rtburchak perimetri?', ru: 'Периметр прямоугольника со сторонами 3 и 7?' }, ['20', '21', '10', '42'], 0, { uz: 'P = 2(3 + 7) = 20.', ru: 'P = 2(3 + 7) = 20.' }),
     ]),
   drill('units', 'word_problems', { uz: 'Birliklar', ru: 'Единицы', en: 'Units' },
-    { uz: 'Birlikni bitta tizimga keltiring va kvadrat, kub birliklarda koeffitsiyentni ham kvadrat, kubga ko‘taring.', ru: 'Переводите в одну систему; для квадратных и кубических единиц возводите коэффициент в квадрат и куб.' }, [
+    { uz: 'Hamma kattaliklarni bir xil birliklarga keltiring; kvadrat va kub birliklarda o‘tish koeffitsiyentini ham kvadratga va kubga ko‘taring.', ru: 'Переводите всё в одни единицы; для квадратных и кубических единиц возводите коэффициент перевода в квадрат и в куб.' }, [
       item('i1', { uz: '1,5 m necha sm?', ru: 'Сколько сантиметров в 1,5 м?' }, ['150', '15', '1500', '0,15'], 0, { uz: '1 m = 100 sm.', ru: '1 м = 100 см.' }),
       item('i2', { uz: '2,5 soat necha minut?', ru: 'Сколько минут в 2,5 часа?' }, ['150', '250', '125', '90'], 0, { uz: '2,5 · 60 = 150.', ru: '2,5 · 60 = 150.' }),
-      item('i3', { uz: '72 km/soat necha m/s?', ru: 'Сколько м/с в 72 км/ч?' }, ['20', '72', '7,2', '200'], 0, { uz: '72 000 m : 3600 s = 20.', ru: '72 000 м : 3600 с = 20.' }),
+      item('i3', { uz: '72 km/soat necha m/s?', ru: 'Сколько м/с в 72 км/ч?' }, ['20', '72', '7,2', '200'], 0, { uz: '72 000 m : 3600 s = 20 m/s.', ru: '72 000 м : 3600 с = 20 м/с.' }),
       item('i4', { uz: '3 dm³ necha litr?', ru: 'Сколько литров в 3 дм³?' }, ['3', '30', '300', '0,3'], 0, { uz: '1 dm³ = 1 litr.', ru: '1 дм³ = 1 литр.' }),
       item('i5', { uz: '1 m² necha sm²?', ru: 'Сколько см² в 1 м²?' }, ['10000', '100', '1000', '1000000'], 0, { uz: '100 · 100 = 10 000.', ru: '100 · 100 = 10 000.' }),
       item('i6', { uz: '90 sekund necha minut?', ru: 'Сколько минут в 90 секундах?' }, ['1,5', '1,3', '0,9', '9'], 0, { uz: '90 : 60 = 1,5.', ru: '90 : 60 = 1,5.' }),
@@ -106,11 +106,11 @@ export const drills: Drill[] = [
   drill('trig_values', 'math.trig.identities', { uz: 'Trigonometrik qiymatlar', ru: 'Значения тригонометрических функций', en: 'Trig values' },
     { uz: 'Jadval qiymatlarini va chorak bo‘yicha ishorani mashq qiling.', ru: 'Тренируйте табличные значения и знаки по четвертям.' }, [
       item('i1', 'sin 60° = ?', ['√3/2', '1/2', '√2/2', '√3'], 0, { uz: 'Jadval qiymati.', ru: 'Табличное значение.' }),
-      item('i2', 'cos 90° = ?', ['0', '1', '−1', '1/2'], 0, { uz: 'Birlik aylanada 90° — (0; 1) nuqta.', ru: 'На единичной окружности 90° — точка (0; 1).' }),
+      item('i2', 'cos 90° = ?', ['0', '1', '−1', '1/2'], 0, { uz: 'Birlik aylanada 90° ga (0; 1) nuqta mos keladi; kosinus — uning abssissasi, ya’ni 0.', ru: 'На единичной окружности углу 90° соответствует точка (0; 1); косинус — её абсцисса, то есть 0.' }),
       item('i3', 'tg 60° = ?', ['√3', '√3/3', '1', '√3/2'], 0, { uz: 'sin 60° : cos 60° = √3.', ru: 'sin 60° : cos 60° = √3.' }),
       item('i4', 'sin 150° = ?', ['1/2', '−1/2', '√3/2', '−√3/2'], 0, { uz: 'sin (180° − 30°) = sin 30°.', ru: 'sin (180° − 30°) = sin 30°.' }),
-      item('i5', 'cos 180° = ?', ['−1', '1', '0', '1/2'], 0, { uz: '180° — (−1; 0) nuqta.', ru: '180° — точка (−1; 0).' }),
-      item('i6', 'sin (−30°) = ?', ['−1/2', '1/2', '−√3/2', '√3/2'], 0, { uz: 'Sinus toq funksiya.', ru: 'Синус — нечётная функция.' }),
+      item('i5', 'cos 180° = ?', ['−1', '1', '0', '1/2'], 0, { uz: '180° ga (−1; 0) nuqta mos keladi: cos 180° = −1.', ru: 'Углу 180° соответствует точка (−1; 0): cos 180° = −1.' }),
+      item('i6', 'sin (−30°) = ?', ['−1/2', '1/2', '−√3/2', '√3/2'], 0, { uz: 'Sinus toq funksiya: sin (−30°) = −sin 30° = −1/2.', ru: 'Синус — нечётная функция: sin (−30°) = −sin 30° = −1/2.' }),
     ]),
   drill('vieta', 'math.alg.quadratic', { uz: 'Viyet teoremasi', ru: 'Теорема Виета', en: 'Vieta' },
     { uz: 'x₁ + x₂ = −b/a, x₁ · x₂ = c/a. Ishorani va a ni unutmang.', ru: 'x₁ + x₂ = −b/a, x₁ · x₂ = c/a. Не забывайте знак и a.' }, [
@@ -119,6 +119,6 @@ export const drills: Drill[] = [
       item('i3', { uz: 'x² + 3x − 10 = 0: ildizlar yig‘indisi?', ru: 'x² + 3x − 10 = 0: сумма корней?' }, ['−3', '3', '−10', '10'], 0, { uz: '−b/a = −3.', ru: '−b/a = −3.' }),
       item('i4', { uz: '2x² − 8x + 6 = 0: ildizlar yig‘indisi?', ru: '2x² − 8x + 6 = 0: сумма корней?' }, ['4', '8', '−4', '3'], 0, { uz: '−b/a = 8/2 = 4.', ru: '−b/a = 8/2 = 4.' }),
       item('i5', { uz: 'x² − 5x − 14 = 0: ildizlar ko‘paytmasi?', ru: 'x² − 5x − 14 = 0: произведение корней?' }, ['−14', '14', '5', '−5'], 0, { uz: 'c/a = −14.', ru: 'c/a = −14.' }),
-      item('i6', { uz: 'Ildizlari 2 va 5 bo‘lgan tenglama?', ru: 'Уравнение с корнями 2 и 5?' }, ['x² − 7x + 10 = 0', 'x² + 7x + 10 = 0', 'x² − 7x − 10 = 0', 'x² + 3x − 10 = 0'], 0, { uz: 'p = −7, q = 10.', ru: 'p = −7, q = 10.' }),
+      item('i6', { uz: 'Ildizlari 2 va 5 bo‘lgan keltirilgan kvadrat tenglamani tanlang.', ru: 'Выберите приведённое квадратное уравнение с корнями 2 и 5.' }, ['x² − 7x + 10 = 0', 'x² + 7x + 10 = 0', 'x² − 7x − 10 = 0', 'x² + 3x − 10 = 0'], 0, { uz: 'x² + px + q = 0 uchun p = −(2 + 5) = −7, q = 2·5 = 10.', ru: 'Для x² + px + q = 0: p = −(2 + 5) = −7, q = 2·5 = 10.' }),
     ]),
 ];
