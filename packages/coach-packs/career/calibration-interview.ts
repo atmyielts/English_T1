@@ -17,7 +17,7 @@ const authored: Authored[] = [
     ].join('\n'),
     metrics: { wpm: 62, longPauses: 6, fillers: 3, seconds: 34 },
     scores: [1, 1, 1, 1.5, 1.5], drift: [[0, 0.5], [0, 0, 0.5]],
-    rationale: 'No structure beyond name and age; the reason given is only money, so nothing links to the cashier role; the one relevant fact (a year in his brother\'s shop) is left vague with no detail. Short, hesitant (six long pauses) but understandable; register polite but very plain. L1 throughout.',
+    rationale: 'No structure beyond name and age; the reason given is only money, so nothing links to the cashier role; the one relevant fact (a year in his brother\'s shop) is left vague with no detail. Short, hesitant (six long pauses) but understandable; register polite but very plain. L1 overall.',
   },
   {
     id: 'i02-conflict-ru-l1plus',
@@ -56,7 +56,7 @@ const authored: Authored[] = [
     ].join('\n'),
     metrics: { wpm: 96, longPauses: 2, fillers: 1, seconds: 36 },
     scores: [2, 2.5, 2, 2.5, 2.5], drift: [[0, 0, 0.5], [0.5]],
-    rationale: 'A real example with a situation and a bank-related topic, but "biz" hides her role until "slaydlarni qildim"; no task or result beyond "mamnun bo‘ldi deb o‘ylayman". Clear, neutral register.',
+    rationale: 'A real example with a situation and a bank-related topic, but "biz" hides what the candidate did until "slaydlarni qildim"; no task or result beyond "mamnun bo‘ldi deb o‘ylayman". Clear, neutral register.',
   },
   {
     id: 'i05-accountant-ru-l2plus',

@@ -15,7 +15,7 @@ const authored: Authored[] = [
       'oldin ham ishlagan edim bozorda akam bilan',
     ].join('\n'),
     scores: [1, 1.5, 1, 1], drift: [[0, 0, 0.5], [0.5]],
-    rationale: 'One run-on line of duties with no shop name, dates in different formats, first person and no punctuation; nothing achieved. The cashier duties are vaguely relevant to the target but not presented for it. L1.',
+    rationale: 'A run-on line of duties with no shop name or clear dates, then a vague line about earlier market work; first person, no punctuation, nothing achieved. The cashier duties are vaguely relevant to the target but not presented for it. L1.',
   },
   {
     id: 'c02-it-ru-l1plus',
@@ -26,7 +26,7 @@ const authored: Authored[] = [
       'Цель: найти хорошую работу с хорошей зарплатой и дружным коллективом.',
     ].join('\n'),
     scores: [1, 1.5, 2, 2], drift: [[0, 0.5], [0, 0, 0, 0.5]],
-    rationale: 'Clichés instead of evidence; skills list mixes office basics with "HTML немного"; the goal is about what the candidate wants, not the role. Sections exist and are readable; language is correct but generic.',
+    rationale: 'Clichés instead of evidence; skills list mixes office basics with "HTML немного"; the goal is about what the candidate wants, not the role. Sections exist and are readable; the Russian is correct, but the style is informal and uneven for a CV ("HTML немного", "люблю компьютеры с детства", "интернет" as a skill).',
   },
   {
     id: 'c03-teacher-en-l2',
@@ -38,7 +38,7 @@ const authored: Authored[] = [
       'Working with parents and attending meetings.',
     ].join('\n'),
     scores: [1.5, 2.5, 3, 2.5], drift: [[0, 0, 0.5], [0, 0.5]],
-    rationale: 'Clear title, employer and dates in a standard layout, but every bullet is a duty ("Responsible for…") with no results such as student outcomes or class sizes. Relevant to the target, not tailored. "homeworks" is an error.',
+    rationale: 'Clear title, employer and dates in a standard layout, but every bullet is a duty ("Responsible for…") with no results such as student outcomes or class sizes. Relevant to the target, not tailored. The bullets mix forms (Responsible…, Preparing…, Working…), and "homeworks" is an error.',
   },
   {
     id: 'c04-sales-uz-l2',

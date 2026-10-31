@@ -43,7 +43,7 @@ export const rubrics: Rubric[] = [
         ],
       },
       {
-        id: 'evidence', name: { en: 'Evidence and results', uz: 'Dalil va natijalar', ru: 'Доказательства и результаты' }, short: 'Evidence', source: 'model', node: 'interviews.behavioural_star', weight: 1.2,
+        id: 'evidence', name: { en: 'Evidence and results', uz: 'Dalillar va natijalar', ru: 'Доказательства и результаты' }, short: 'Evidence', source: 'model', node: 'interviews.behavioural_star', weight: 1.2,
         focus: 'How specific and believable the evidence is: concrete details, numbers, before and after, time frames, feedback received. Claims such as "I am hard-working" without proof score low. Invented-sounding or inconsistent figures should not be rewarded.',
         descriptors: [
           { score: 1, text: 'Only adjectives about themselves (responsible, friendly) with no example or detail.' },
@@ -55,7 +55,7 @@ export const rubrics: Rubric[] = [
       },
       {
         id: 'clarity', name: { en: 'Clarity and concision', uz: 'Aniqlik va ixchamlik', ru: 'Ясность и лаконичность' }, short: 'Clarity', source: 'model', node: 'interviews.hr',
-        focus: 'Whether the answers are easy to understand and the right length: no long detours, repetition or filler; measured numbers (words per minute, fillers, long pauses) when supplied are facts about delivery, compare them with a comfortable interview pace.',
+        focus: 'Whether the answers are easy to understand and the right length: no long detours, repetition or filler; measured numbers (words per minute, fillers, long pauses) when supplied are facts about delivery: compare them with a comfortable interview pace.',
         descriptors: [
           { score: 1, text: 'Hard to follow: very short fragments or long, circling answers; heavy hesitation or fillers get in the way.' },
           { score: 2, text: 'Understandable with effort; answers ramble or repeat, or are too short to show anything. Fillers and restarts are frequent.' },
@@ -65,7 +65,7 @@ export const rubrics: Rubric[] = [
         ],
       },
       {
-        id: 'language', name: { en: 'Professional language', uz: 'Professional til', ru: 'Профессиональная речь' }, short: 'Language', source: 'model', node: 'interviews.hr', weight: 0.8,
+        id: 'language', name: { en: 'Professional language', uz: 'Professional nutq', ru: 'Профессиональная речь' }, short: 'Language', source: 'model', node: 'interviews.hr', weight: 0.8,
         focus: 'Register and accuracy in the language used: polite, professional wording, correct use of role vocabulary, grammar that does not distract; no slang, no negative talk about past employers, positive framing of weaknesses and gaps.',
         descriptors: [
           { score: 1, text: 'Inappropriate register (slang, rude or overly casual), or errors so frequent the meaning is often unclear.' },
@@ -87,7 +87,7 @@ export const rubrics: Rubric[] = [
     assessorNotes: 'Judge the CV, CV section or profile text (LinkedIn, hh.uz) as a recruiter screening it in under a minute, in the language it is written in. Reward achievements over duties, honest figures, tailoring to the stated target role and a scannable structure. Never invent the learner\'s experience: rewrites in upgrades keep their facts and only improve the wording; where a number would help but is missing, say to add a real one rather than inventing it. Personal data such as age, marital status or a photo is the learner\'s choice; mention it only if it crowds out content.',
     criteria: [
       {
-        id: 'impact', name: { en: 'Impact (achievements, results)', uz: 'Ta’sir (yutuqlar, natijalar)', ru: 'Влияние (достижения, результаты)' }, short: 'Impact', source: 'model', node: 'materials.cv', weight: 1.3,
+        id: 'impact', name: { en: 'Impact (achievements, results)', uz: 'Natijadorlik (yutuqlar, natijalar)', ru: 'Результативность (достижения, итоги)' }, short: 'Impact', source: 'model', node: 'materials.cv', weight: 1.3,
         focus: 'Whether lines show what the candidate achieved rather than what the job was: action verbs, outcomes, figures, scope (how many customers, how much, how fast), recognition.',
         descriptors: [
           { score: 1, text: 'Only job titles and duties copied from a job description; nothing the candidate achieved.' },
@@ -109,7 +109,7 @@ export const rubrics: Rubric[] = [
         ],
       },
       {
-        id: 'structure', name: { en: 'Structure and readability', uz: 'Tuzilma va o‘qilishi', ru: 'Структура и читаемость' }, short: 'Structure', source: 'model', node: 'materials.cv',
+        id: 'structure', name: { en: 'Structure and readability', uz: 'Tuzilma va o‘qishga qulaylik', ru: 'Структура и читаемость' }, short: 'Structure', source: 'model', node: 'materials.cv',
         focus: 'Whether the reader can scan it: clear sections in a sensible order, consistent dates and bullets, short lines, the most important information first, a reasonable length.',
         descriptors: [
           { score: 1, text: 'A block of text or a jumble of sections; dates and roles hard to find.' },
@@ -120,7 +120,7 @@ export const rubrics: Rubric[] = [
         ],
       },
       {
-        id: 'accuracy', name: { en: 'Language accuracy and consistency', uz: 'Til to‘g‘riligi va izchillik', ru: 'Грамотность и единообразие' }, short: 'Accuracy', source: 'model', node: 'materials.cv', weight: 0.8,
+        id: 'accuracy', name: { en: 'Language accuracy and consistency', uz: 'Savodxonlik va bir xillik', ru: 'Грамотность и единообразие' }, short: 'Accuracy', source: 'model', node: 'materials.cv', weight: 0.8,
         focus: 'Spelling, grammar and punctuation in the language used; consistent tense (past for past roles, present for the current one), one style for bullets and dates, no first-person "I" at the start of lines, correct names of tools and qualifications.',
         descriptors: [
           { score: 1, text: 'Many errors in almost every line; tenses and styles mixed throughout.' },
@@ -142,7 +142,7 @@ export const rubrics: Rubric[] = [
     assessorNotes: 'Judge the cover letter, motivation letter or email (thank-you, follow-up, counter-offer) in the language it is written in, as the hiring manager reading it. Reward a clear purpose, evidence matched to the role, a respectful but confident tone and a concrete next step. Never invent the learner\'s experience or the employer\'s facts; for counter-offers, judge reasons and tone, not whether a figure is right.',
     criteria: [
       {
-        id: 'fit', name: { en: 'Fit to the role and reader', uz: 'Lavozim va o‘quvchiga mosligi', ru: 'Соответствие роли и адресату' }, short: 'Fit', source: 'model', node: 'materials.cover_letter', weight: 1.2,
+        id: 'fit', name: { en: 'Fit to the role and reader', uz: 'Lavozim va xat oluvchiga mosligi', ru: 'Соответствие роли и адресату' }, short: 'Fit', source: 'model', node: 'materials.cover_letter', weight: 1.2,
         focus: 'Whether the letter is written for this role, this organisation and this reader: names them, picks the requirements that matter, and explains why this candidate for this job.',
         descriptors: [
           { score: 1, text: 'Could be sent anywhere; the role or organisation is not named or is wrong.' },

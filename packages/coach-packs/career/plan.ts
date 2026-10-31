@@ -46,29 +46,29 @@ export const plan: PlanRules = {
 export const reminders: Reminders = {
   daily: [
     {
-      en: 'Good morning, {name}! Today: {task} — about {minutes} minutes. One sharp answer a day adds up to a strong interview.',
-      uz: 'Xayrli tong, {name}! Bugun: {task} — taxminan {minutes} daqiqa. Har kuni bitta puxta javob — kuchli suhbatga olib keladi.',
-      ru: 'Доброе утро, {name}! Сегодня: {task} — около {minutes} минут. Один отточенный ответ в день — и интервью будет сильным.',
+      en: 'Good morning, {name}! Today: {task} — about {minutes} minutes. One sharp answer a day builds towards a strong interview.',
+      uz: 'Xayrli tong, {name}! Bugun: {task} — taxminan {minutes} daqiqa. Har kuni bitta puxta javob sizni kuchli suhbatga yaqinlashtiradi.',
+      ru: 'Доброе утро, {name}! Сегодня: {task} — около {minutes} мин. Один отточенный ответ в день приближает вас к сильному интервью.',
     },
     {
       en: '{name}, your {streak}-day streak is waiting. {minutes} minutes today: {task}.',
       uz: '{name}, {streak} kunlik seriyangiz davomini kutyapti. Bugun {minutes} daqiqa: {task}.',
-      ru: '{name}, ваша серия занятий ({streak}) ждёт продолжения. Сегодня {minutes} минут: {task}.',
+      ru: '{name}, ваша серия ({streak} дн.) ждёт продолжения. Сегодня {minutes} мин.: {task}.',
     },
     {
       en: 'Ready to practise, {name}? {coach} has today\'s task: {task}, about {minutes} minutes.',
       uz: 'Mashqqa tayyormisiz, {name}? {coach} bugungi vazifani tayyorladi: {task}, taxminan {minutes} daqiqa.',
-      ru: 'Готовы потренироваться, {name}? У {coach} есть задание на сегодня: {task}, около {minutes} минут.',
+      ru: 'Готовы потренироваться, {name}? {coach} подготовил задание на сегодня: {task}, около {minutes} мин.',
     },
     {
-      en: 'A recruiter decides fast. Make your next answer count, {name}: {task} ({minutes} minutes).',
-      uz: 'Rekruter tez qaror qiladi. Keyingi javobingiz e’tiborga loyiq bo‘lsin, {name}: {task} ({minutes} daqiqa).',
-      ru: 'Рекрутер решает быстро. Пусть следующий ответ работает на вас, {name}: {task} ({minutes} минут).',
+      en: 'First impressions matter. Make your next answer count, {name}: {task} ({minutes} minutes).',
+      uz: 'Birinchi taassurot muhim. Keyingi javobingizni puxta tayyorlang, {name}: {task} ({minutes} daqiqa).',
+      ru: 'Первое впечатление важно. Пусть следующий ответ работает на вас, {name}: {task} ({minutes} мин.).',
     },
     {
       en: '{name}, you are aiming for {target}. Today\'s step: {task}, {minutes} minutes.',
       uz: '{name}, maqsadingiz — {target}. Bugungi qadam: {task}, {minutes} daqiqa.',
-      ru: '{name}, ваша цель — {target}. Шаг на сегодня: {task}, {minutes} минут.',
+      ru: '{name}, ваша цель — {target}. Шаг на сегодня: {task}, {minutes} мин.',
     },
     {
       en: 'Ten good minutes beat an hour of worry, {name}. Today: {task}.',
@@ -79,30 +79,30 @@ export const reminders: Reminders = {
   comeback: [
     {
       en: 'We missed you yesterday, {name}. Pick it up with something short: {task}, about {minutes} minutes.',
-      uz: 'Kecha sizni sog‘indik, {name}. Qisqa narsadan qaytadan boshlang: {task}, taxminan {minutes} daqiqa.',
-      ru: 'Вчера вас не было, {name}. Вернитесь с чего-нибудь короткого: {task}, около {minutes} минут.',
+      uz: 'Kecha sizni sog‘indik, {name}. Qisqa mashqdan qayta boshlang: {task}, taxminan {minutes} daqiqa.',
+      ru: 'Вчера нам вас не хватало, {name}. Начните снова с короткого задания: {task}, около {minutes} мин.',
     },
     {
       en: 'The job search has slow days. One small step today keeps it moving, {name}: {task}.',
       uz: 'Ish qidirishda sekin kunlar ham bo‘ladi. Bugun bitta kichik qadam jarayonni davom ettiradi, {name}: {task}.',
-      ru: 'В поиске работы бывают медленные дни. Один маленький шаг сегодня не даст остановиться, {name}: {task}.',
+      ru: 'В поиске работы бывают медленные дни. Один маленький шаг сегодня не даст поиску остановиться, {name}: {task}.',
     },
   ],
   weekly: {
     en: 'Your weekly report from {coach} is ready: {delta}. See what moved and what to work on next.',
-    uz: '{coach} dan haftalik hisobotingiz tayyor: {delta}. Nima o‘zgargani va keyin nima ustida ishlashni ko‘ring.',
-    ru: 'Ваш недельный отчёт от {coach} готов: {delta}. Посмотрите, что сдвинулось и над чем работать дальше.',
+    uz: '{coach}: haftalik hisobotingiz tayyor — {delta}. Nima o‘zgargani va keyin nima ustida ishlashni ko‘ring.',
+    ru: '{coach}: ваш еженедельный отчёт готов — {delta}. Посмотрите, что сдвинулось и над чем работать дальше.',
   },
   countdown: [
     {
       en: '{days} days to go, {name}. Today: {task}. Rehearse the answer you are least sure of.',
-      uz: '{days} kun qoldi, {name}. Bugun: {task}. Eng kam ishonchingiz komil bo‘lgan javobni mashq qiling.',
+      uz: '{days} kun qoldi, {name}. Bugun: {task}. Eng kam ishonch bilan beradigan javobingizni mashq qiling.',
       ru: 'Осталось дней: {days}, {name}. Сегодня: {task}. Отрепетируйте ответ, в котором вы меньше всего уверены.',
     },
     {
       en: 'Only {days} days left, {name}. A full mock today will show you what to polish.',
       uz: 'Atigi {days} kun qoldi, {name}. Bugun to‘liq sinov suhbati nimani sayqallash kerakligini ko‘rsatadi.',
-      ru: 'Осталось всего {days} дн., {name}. Полное пробное интервью сегодня покажет, что доработать.',
+      ru: 'Осталось всего {days} дн., {name}. Полное пробное собеседование сегодня покажет, что доработать.',
     },
   ],
 };
