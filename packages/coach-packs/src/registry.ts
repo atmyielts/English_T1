@@ -1,4 +1,5 @@
 import ielts from '../ielts/index.ts';
+import maths from '../maths/index.ts';
 import speaking from '../speaking/index.ts';
 import { localizeSource } from './localize.ts';
 import type { CoachPack, Locale, PackSource } from './types.ts';
@@ -6,7 +7,7 @@ import { buildPack, indexPack } from './validate.ts';
 
 // Every coach pack the engine serves. Adding a coach is one folder under
 // packages/coach-packs/<id>/ and one line here, plus its bot token (README.md).
-export const PACK_SOURCES: readonly PackSource[] = [ielts, speaking];
+export const PACK_SOURCES: readonly PackSource[] = [ielts, speaking, maths];
 
 let loaded: ReadonlyMap<string, CoachPack> | null = null;
 /** Validated packs by id. Throws PackError on the first invalid pack, so a bad pack never serves. */
