@@ -1,0 +1,73 @@
+import { T } from '../src/localize.ts';
+import type { Lesson } from '../src/types.ts';
+import { arrange, type L } from './bank.ts';
+
+// Method cards: one method in a few lines, a worked example, and one check question.
+
+function lesson(id: string, node: string, title: L & { en: string }, body: L, example: L | string, check: { prompt: L | string; options: string[]; answer: number; explanation: L }): Lesson {
+  const text = (value: L | string) => (typeof value === 'string' ? value : T(value));
+  return { id: `lesson.${id}`, kind: 'lesson', node, levels: [0, 100], minutes: 4, title, body, example: text(example), check: arrange({ ...check, prompt: text(check.prompt) }, `lesson#${id}`) };
+}
+
+export const lessons: Lesson[] = [
+  lesson('quadratic-formula', 'math.alg.quadratic', { uz: 'Kvadrat tenglama: diskriminant', ru: 'Квадратное уравнение: дискриминант', en: 'Quadratic equations: the discriminant' },
+    { uz: 'ax² + bx + c = 0 uchun D = b² − 4ac. D > 0 — ikkita ildiz, D = 0 — bitta, D < 0 — haqiqiy ildiz yo‘q. Ildizlar x = (−b ± √D)/(2a). Javobni doim tenglamaga qo‘yib tekshiring.', ru: 'Для ax² + bx + c = 0: D = b² − 4ac. D > 0 — два корня, D = 0 — один, D < 0 — действительных корней нет. Корни x = (−b ± √D)/(2a). Всегда проверяйте ответ подстановкой.' },
+    'x² − 2x − 8 = 0: D = 4 + 32 = 36, x = (2 ± 6)/2 ⇒ 4; −2.',
+    { prompt: { uz: '3x² − 5x + 2 = 0 ning ildizlari?', ru: 'Корни 3x² − 5x + 2 = 0?' }, options: ['1; 2/3', '−1; −2/3', '1; 3/2', '2; 1/3'], answer: 0, explanation: { uz: 'D = 25 − 24 = 1, x = (5 ± 1)/6.', ru: 'D = 25 − 24 = 1, x = (5 ± 1)/6.' } }),
+  lesson('vieta', 'math.alg.quadratic', { uz: 'Viyet teoremasi', ru: 'Теорема Виета', en: 'Vieta’s theorem' },
+    { uz: 'x² + px + q = 0 ning ildizlari uchun x₁ + x₂ = −p, x₁·x₂ = q. Ildizlarni topmasdan ularning yig‘indisi, ko‘paytmasi va x₁² + x₂² = (x₁ + x₂)² − 2x₁x₂ ni hisoblash mumkin. Avval D ≥ 0 ekanini tekshiring.', ru: 'Для корней x² + px + q = 0: x₁ + x₂ = −p, x₁·x₂ = q. Без нахождения корней можно найти их сумму, произведение и x₁² + x₂² = (x₁ + x₂)² − 2x₁x₂. Сначала проверьте, что D ≥ 0.' },
+    'x² − 9x + 20 = 0: 4 + 5 = 9, 4 · 5 = 20 ⇒ 4; 5.',
+    { prompt: { uz: 'x² − 6x + 4 = 0 uchun x₁² + x₂² = ?', ru: 'Для x² − 6x + 4 = 0: x₁² + x₂² = ?' }, options: ['28', '36', '32', '44'], answer: 0, explanation: { uz: '36 − 2·4 = 28.', ru: '36 − 2·4 = 28.' } }),
+  lesson('interval-method', 'math.alg.inequalities', { uz: 'Oraliqlar usuli', ru: 'Метод интервалов', en: 'The interval method' },
+    { uz: '1) Hamma narsani bir tomonga o‘tkazing. 2) Surat va maxraj nollarini toping. 3) Ularni sonlar o‘qiga qo‘ying: maxraj nollari doim "teshik". 4) Har bir oraliqda ishorani bitta nuqta bilan aniqlang. 5) Kerakli ishorali oraliqlarni yozing, chegaralarni belgiga qarab qo‘shing.', ru: '1) Перенесите всё в одну часть. 2) Найдите нули числителя и знаменателя. 3) Отметьте их на оси: нули знаменателя всегда «выколоты». 4) Определите знак на каждом интервале по одной точке. 5) Запишите нужные интервалы, концы — по знаку неравенства.' },
+    '(x − 1)(x − 4) < 0 ⇒ (1; 4).',
+    { prompt: { uz: '(x + 2)(x − 5) ≥ 0 ni yeching.', ru: 'Решите (x + 2)(x − 5) ≥ 0.' }, options: ['(−∞; −2] ∪ [5; +∞)', '[−2; 5]', '(−2; 5)', '(−∞; −5] ∪ [2; +∞)'], answer: 0, explanation: { uz: 'Parabola ildizlar tashqarisida musbat.', ru: 'Парабола неотрицательна вне корней.' } }),
+  lesson('modulus', 'math.alg.modulus', { uz: 'Modulli tenglamalar', ru: 'Уравнения с модулем', en: 'Absolute value equations' },
+    { uz: '|f(x)| = a (a ≥ 0) ⇔ f(x) = a yoki f(x) = −a. a < 0 bo‘lsa, yechim yo‘q. |f(x)| = g(x) bo‘lsa, avval g(x) ≥ 0 shartini yozing. |x − a| — sonlar o‘qida x dan a gacha masofa.', ru: '|f(x)| = a (a ≥ 0) ⇔ f(x) = a или f(x) = −a. При a < 0 решений нет. Если |f(x)| = g(x), сначала запишите условие g(x) ≥ 0. |x − a| — расстояние от x до a на оси.' },
+    '|x + 1| = 4 ⇒ x = 3; −5.',
+    { prompt: { uz: '|3x − 6| = 9 ning ildizlari yig‘indisi?', ru: 'Сумма корней |3x − 6| = 9?' }, options: ['4', '5', '−1', '6'], answer: 0, explanation: { uz: 'x = 5 yoki −1, yig‘indi 4.', ru: 'x = 5 или −1, сумма 4.' } }),
+  lesson('irrational-check', 'math.alg.irrational', { uz: 'Irratsional tenglamalar: tekshiruv', ru: 'Иррациональные уравнения: проверка', en: 'Radical equations: checking roots' },
+    { uz: '√f(x) = g(x) ni kvadratga ko‘tarishdan oldin g(x) ≥ 0 shartini yozing. Kvadratga ko‘tarish begona ildizlar beradi — har birini tekshiring.', ru: 'Перед возведением √f(x) = g(x) в квадрат запишите условие g(x) ≥ 0. Возведение в квадрат даёт посторонние корни — проверьте каждый.' },
+    '√(x + 6) = x ⇒ x² − x − 6 = 0 ⇒ 3; −2. x ≥ 0: 3.',
+    { prompt: { uz: '√(3x + 4) = x ning ildizi?', ru: 'Корень уравнения √(3x + 4) = x?' }, options: ['4', '−1', '−1; 4', '2'], answer: 0, explanation: { uz: 'x² − 3x − 4 = 0 ⇒ 4; −1. x ≥ 0: 4.', ru: 'x² − 3x − 4 = 0 ⇒ 4; −1. x ≥ 0: 4.' } }),
+  lesson('log-rules', 'math.log.equations', { uz: 'Logarifm xossalari', ru: 'Свойства логарифмов', en: 'Logarithm rules' },
+    { uz: 'logₐ (xy) = logₐ x + logₐ y; logₐ (x/y) = logₐ x − logₐ y; logₐ xⁿ = n·logₐ x; a^(logₐ b) = b; logₐ b = log_c b / log_c a. Tenglamada aniqlanish sohasi: argument > 0, asos > 0 va ≠ 1.', ru: 'logₐ (xy) = logₐ x + logₐ y; logₐ (x/y) = logₐ x − logₐ y; logₐ xⁿ = n·logₐ x; a^(logₐ b) = b; logₐ b = log_c b / log_c a. В уравнении ОДЗ: аргумент > 0, основание > 0 и ≠ 1.' },
+    'log₂ 12 − log₂ 3 = log₂ 4 = 2.',
+    { prompt: 'log₃ 54 − log₃ 2 = ?', options: ['3', '27', '2', '52'], answer: 0, explanation: { uz: 'log₃ 27 = 3.', ru: 'log₃ 27 = 3.' } }),
+  lesson('exp-substitution', 'math.exp.equations', { uz: 'Ko‘rsatkichli tenglamalarda almashtirish', ru: 'Замена в показательных уравнениях', en: 'Substitution in exponential equations' },
+    { uz: 'a²ˣ va aˣ qatnashsa, t = aˣ (t > 0) deb oling va kvadrat tenglamani yeching. Manfiy t lar tashlanadi, chunki aˣ > 0.', ru: 'Если есть a²ˣ и aˣ, положите t = aˣ (t > 0) и решите квадратное уравнение. Отрицательные t отбрасываются, так как aˣ > 0.' },
+    '4ˣ − 2ˣ − 2 = 0: t² − t − 2 = 0 ⇒ t = 2 (t = −1 yo‘q) ⇒ x = 1.',
+    { prompt: { uz: '9ˣ − 2·3ˣ − 3 = 0 ning ildizi?', ru: 'Корень уравнения 9ˣ − 2·3ˣ − 3 = 0?' }, options: ['1', '0', '3', '−1'], answer: 0, explanation: { uz: 't² − 2t − 3 = 0 ⇒ t = 3 ⇒ x = 1.', ru: 't² − 2t − 3 = 0 ⇒ t = 3 ⇒ x = 1.' } }),
+  lesson('trig-table', 'math.trig.identities', { uz: 'Trigonometrik jadval va ishoralar', ru: 'Тригонометрическая таблица и знаки', en: 'The trig table and signs' },
+    { uz: 'sin: 0°→0, 30°→1/2, 45°→√2/2, 60°→√3/2, 90°→1. cos teskari tartibda. I chorakda hammasi musbat, II da faqat sin, III da tg va ctg, IV da faqat cos. Keltirish: 180° ± α va 360° − α da funksiya nomi o‘zgarmaydi.', ru: 'sin: 0°→0, 30°→1/2, 45°→√2/2, 60°→√3/2, 90°→1. cos — в обратном порядке. В I четверти всё положительно, во II — только sin, в III — tg и ctg, в IV — только cos. Приведение: при 180° ± α и 360° − α название функции не меняется.' },
+    'cos 210° = −cos 30° = −√3/2.',
+    { prompt: 'sin 240° = ?', options: ['−√3/2', '√3/2', '−1/2', '1/2'], answer: 0, explanation: { uz: 'sin (180° + 60°) = −sin 60°.', ru: 'sin (180° + 60°) = −sin 60°.' } }),
+  lesson('area-formulas', 'math.geo.areas', { uz: 'Yuza formulalari', ru: 'Формулы площадей', en: 'Area formulas' },
+    { uz: 'Uchburchak: ah/2, ab·sin C/2, Geron √(p(p−a)(p−b)(p−c)). Parallelogramm: ah. Romb: d₁d₂/2. Trapetsiya: (a + b)h/2. Doira: πr², sektor: πr²·α/360°.', ru: 'Треугольник: ah/2, ab·sin C/2, Герон √(p(p−a)(p−b)(p−c)). Параллелограмм: ah. Ромб: d₁d₂/2. Трапеция: (a + b)h/2. Круг: πr², сектор: πr²·α/360°.' },
+    { uz: 'Rombning diagonallari 6 va 8: S = 24.', ru: 'Диагонали ромба 6 и 8: S = 24.' },
+    { prompt: { uz: 'Diagonallari 12 va 7 bo‘lgan romb yuzi?', ru: 'Площадь ромба с диагоналями 12 и 7?' }, options: ['42', '84', '19', '38'], answer: 0, explanation: { uz: '12·7/2 = 42.', ru: '12·7/2 = 42.' } }),
+  lesson('percent-problems', 'math.num.percent', { uz: 'Foizli masalalar', ru: 'Задачи на проценты', en: 'Percent problems' },
+    { uz: 'p% oshirish — 1 + p/100 ga, kamaytirish — 1 − p/100 ga ko‘paytirish. Ketma-ket o‘zgarishlarda koeffitsiyentlar ko‘paytiriladi. "Necha foizga" so‘rog‘ida farqni asos songa bo‘ling.', ru: 'Увеличить на p% — умножить на 1 + p/100, уменьшить — на 1 − p/100. При последовательных изменениях коэффициенты перемножаются. В вопросе «на сколько процентов» делите разность на базу.' },
+    '100 → +10% → 110 → −10% → 99.',
+    { prompt: { uz: 'Narx 10% oshirildi, keyin yana 10% oshirildi. Jami necha foizga oshdi?', ru: 'Цену дважды подняли на 10%. На сколько процентов она выросла всего?' }, options: ['21', '20', '11', '19'], answer: 0, explanation: { uz: '1,1 · 1,1 = 1,21.', ru: '1,1 · 1,1 = 1,21.' } }),
+  lesson('motion-work', 'math.word.problems', { uz: 'Harakat va ish masalalari', ru: 'Задачи на движение и работу', en: 'Motion and work problems' },
+    { uz: 's = v·t. Qarama-qarshi harakatda tezliklar qo‘shiladi, quvib yetishda ayiriladi. Ish masalalarida butun ishni 1 deb oling: unumdorlik = 1/vaqt, birgalikdagi unumdorliklar qo‘shiladi.', ru: 's = v·t. При движении навстречу скорости складываются, вдогонку — вычитаются. В задачах на работу примите всю работу за 1: производительность = 1/время, совместные производительности складываются.' },
+    { uz: '4 va 12 soatda bajaradiganlar birga: 1/4 + 1/12 = 1/3 ⇒ 3 soat.', ru: 'За 4 и 12 часов по отдельности, вместе: 1/4 + 1/12 = 1/3 ⇒ 3 часа.' },
+    { prompt: { uz: 'Piyoda 4 km/soat, velosipedchi 16 km/soat. Bir nuqtadan bir yo‘nalishda, piyoda 3 soat oldin chiqdi. Velosipedchi necha soatda yetib oladi?', ru: 'Пешеход идёт 4 км/ч, велосипедист едет 16 км/ч. Они стартуют из одной точки в одну сторону, пешеход на 3 часа раньше. Через сколько часов велосипедист его догонит?' }, options: ['1', '3', '4', '0,75'], answer: 0, explanation: { uz: 'Oraliq 12 km, yaqinlashish 12 km/soat ⇒ 1 soat.', ru: 'Отрыв 12 км, сближение 12 км/ч ⇒ 1 час.' } }),
+  lesson('progressions', 'math.seq.arithmetic', { uz: 'Progressiyalar', ru: 'Прогрессии', en: 'Progressions' },
+    { uz: 'Arifmetik: aₙ = a₁ + (n − 1)d, Sₙ = (a₁ + aₙ)n/2. Geometrik: bₙ = b₁qⁿ⁻¹, Sₙ = b₁(qⁿ − 1)/(q − 1), |q| < 1 da cheksiz yig‘indi b₁/(1 − q). Xossa: o‘rtadagi had qo‘shnilarining o‘rta arifmetigi (geometrikda — o‘rta geometrigi).', ru: 'Арифметическая: aₙ = a₁ + (n − 1)d, Sₙ = (a₁ + aₙ)n/2. Геометрическая: bₙ = b₁qⁿ⁻¹, Sₙ = b₁(qⁿ − 1)/(q − 1), при |q| < 1 бесконечная сумма b₁/(1 − q). Свойство: средний член — среднее арифметическое соседей (в геометрической — среднее геометрическое).' },
+    '5; 8; 11; … : a₁₀ = 5 + 27 = 32.',
+    { prompt: { uz: 'a₁ = 2, d = 5. S₈ = ?', ru: 'a₁ = 2, d = 5. S₈ = ?' }, options: ['156', '148', '37', '160'], answer: 0, explanation: { uz: 'a₈ = 37, S₈ = (2 + 37)·4 = 156.', ru: 'a₈ = 37, S₈ = (2 + 37)·4 = 156.' } }),
+  lesson('derivative-rules', 'math.calc.derivative', { uz: 'Hosila qoidalari', ru: 'Правила дифференцирования', en: 'Derivative rules' },
+    { uz: '(xⁿ)′ = nxⁿ⁻¹, (sin x)′ = cos x, (cos x)′ = −sin x, (eˣ)′ = eˣ, (ln x)′ = 1/x. (u·v)′ = u′v + uv′, murakkab funksiya: (f(g(x)))′ = f′(g(x))·g′(x). Eng katta va eng kichik qiymat: kritik nuqtalar va kesma uchlaridagi qiymatlarni solishtiring.', ru: '(xⁿ)′ = nxⁿ⁻¹, (sin x)′ = cos x, (cos x)′ = −sin x, (eˣ)′ = eˣ, (ln x)′ = 1/x. (u·v)′ = u′v + uv′, сложная функция: (f(g(x)))′ = f′(g(x))·g′(x). Наибольшее и наименьшее значение: сравните значения в критических точках и на концах отрезка.' },
+    '(x³ − 4x)′ = 3x² − 4.',
+    { prompt: { uz: 'f(x) = x³ − 12x bo‘lsa, f′(1) = ?', ru: 'f(x) = x³ − 12x. f′(1) = ?' }, options: ['−9', '−11', '3', '9'], answer: 0, explanation: { uz: 'f′ = 3x² − 12, f′(1) = −9.', ru: 'f′ = 3x² − 12, f′(1) = −9.' } }),
+  lesson('combinatorics', 'math.prob.combinatorics', { uz: 'Kombinatorika', ru: 'Комбинаторика', en: 'Counting' },
+    { uz: 'O‘rin almashtirish: n!. Tartib muhim bo‘lgan tanlash: n!/(n − k)!. Tartib muhim bo‘lmagan (guruhlash): C(n; k) = n!/(k!(n − k)!). Klassik ehtimollik: qulay natijalar / barcha teng imkoniyatli natijalar.', ru: 'Перестановки: n!. Размещения (порядок важен): n!/(n − k)!. Сочетания (порядок не важен): C(n; k) = n!/(k!(n − k)!). Классическая вероятность: благоприятные исходы / все равновозможные исходы.' },
+    'C(6; 2) = 15.',
+    { prompt: { uz: '8 kishidan sardor va uning o‘rinbosarini necha usulda tanlash mumkin?', ru: 'Сколькими способами из 8 человек можно выбрать старосту и его заместителя?' }, options: ['56', '28', '64', '16'], answer: 0, explanation: { uz: 'Tartib muhim: 8·7 = 56.', ru: 'Порядок важен: 8·7 = 56.' } }),
+  lesson('vectors', 'math.geo.vectors', { uz: 'Vektorlar', ru: 'Векторы', en: 'Vectors' },
+    { uz: 'AB = (x₂ − x₁; y₂ − y₁), |a| = √(x² + y²). Skalyar ko‘paytma a·b = x₁x₂ + y₁y₂ = |a||b|cos φ. Perpendikulyar vektorlarda a·b = 0. Kesma o‘rtasi — koordinatalar o‘rta arifmetigi.', ru: 'AB = (x₂ − x₁; y₂ − y₁), |a| = √(x² + y²). Скалярное произведение a·b = x₁x₂ + y₁y₂ = |a||b|cos φ. Для перпендикулярных векторов a·b = 0. Середина отрезка — среднее арифметическое координат.' },
+    'a(3; 4): |a| = 5.',
+    { prompt: { uz: 'a(2; k) va b(3; 6) perpendikulyar bo‘lsa, k = ?', ru: 'a(2; k) и b(3; 6) перпендикулярны. k = ?' }, options: ['−1', '1', '−4', '4'], answer: 0, explanation: { uz: '6 + 6k = 0, k = −1.', ru: '6 + 6k = 0, k = −1.' } }),
+];

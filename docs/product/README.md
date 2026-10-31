@@ -28,6 +28,7 @@ Updated 2026-10-22. This pack is the product source of truth for what Schood add
 | V-HW | [40_HOMEWORK_OS](40_HOMEWORK_OS.md) | Telegram-first hand-in funnel, AI pre-marking, trusted homework, owner dashboard | P1 B2B flagship |
 | V-CRS | [41_SCHOOD_COURSES](41_SCHOOD_COURSES.md) | Course Studio, blended cohorts, results-verified marketplace, star teachers | P1/P2 B2B, after V-HW |
 | V-HW + V-CRS | [42_HOMEWORK_AND_COURSES_BUILD_PLAN](42_HOMEWORK_AND_COURSES_BUILD_PLAN.md) | How to build both on today's Academy, Telegram, AI grading and Assessment Cloud code: decisions, data model, phases, pilot | Build plan |
+| V-AI | [44_SCHOOD_AI](44_SCHOOD_AI.md) | Schood AI at ai.schood.online: learner tutor and tools, teacher Materials Studio, centre workspace, credits and plans | P1, building |
 | — | [90_VERIFY_AND_OPEN_QUESTIONS](90_VERIFY_AND_OPEN_QUESTIONS.md) | Must-verify facts and owner decisions | Gate |
 
 ## Conventions used in every doc

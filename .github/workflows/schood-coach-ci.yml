@@ -1,0 +1,74 @@
+name: Schood Coaches CI
+# The coach packs, their calibration, the Telegram worker and the coach tables
+# (the engine's 202610306* and the coach packs' 202610307* migrations).
+# The coach area of schood-ai (routes, end-to-end loops, calibration through the scoring
+# pipeline) runs with the function suite in schood-ai-ci.yml.
+on:
+  pull_request:
+    paths:
+      - 'packages/coach-packs/**'
+      # B3 Admission Maths builds its skill tree from the subject-core topic graph.
+      - 'packages/subject-core/**'
+      - 'workers/schood-coach-bots/**'
+      - 'supabase/functions/schood-ai/coach/**'
+      - 'supabase/functions/_shared/telegram-init-data.ts'
+      - 'supabase/functions/_shared/english-certificate.ts'
+      - 'supabase/functions/_shared/english-srs.ts'
+      - 'supabase/migrations/202610306*'
+      # The coach packs' engine additions (saved scripts, the cohort histogram).
+      - 'supabase/migrations/202610307*'
+      - 'supabase/migrations/202610301*'
+      - 'supabase/tests/schood-coach*'
+      - 'scripts/test-schood-coach-db.mjs'
+      - 'scripts/coach-calibration-live.ts'
+      - '.github/workflows/schood-coach-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: schood-coach-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  packs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Every pack validates (format, translations, depth)
+        run: deno run --no-lock --allow-read packages/coach-packs/scripts/check.ts
+      - name: Calibration against the reference scores (the pack's assessor runs)
+        run: deno run --no-lock --allow-read packages/coach-packs/scripts/calibration.ts
+      - name: Engine and pack tests
+        run: deno test --no-lock packages/coach-packs/test/
+      # Calibration through the real scoring pipeline (supabase/functions/schood-ai/coach/
+      # calibration.test.ts) runs with the function suite in schood-ai-ci.yml, which installs
+      # the npm packages the function's types need.
+  worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Worker tests (webhooks, relays, placement before linking, Mini App sign-in, cron budget, bot setup calls)
+        run: deno test --no-lock workers/schood-coach-bots/test/
+      - name: Worker and setup script type check
+        run: deno check --no-lock workers/schood-coach-bots/src/index.ts workers/schood-coach-bots/scripts/setup-webhooks.ts scripts/coach-calibration-live.ts
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Coach migrations twice on PGlite and an isolated Postgres (racing cron runs and team joins)
+        env:
+          SCHOOD_COACH_DB_REQUIRE_DOCKER: '1'
+        run: node scripts/test-schood-coach-db.mjs

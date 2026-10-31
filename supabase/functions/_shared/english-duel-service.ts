@@ -347,16 +347,22 @@ const checkCreateLimit = async (ctx: DuelContext, userId: string, now: Date) => 
   if (Number(count ?? 0) >= DUEL_CREATE_DAILY_LIMIT) throw new DuelError("limit");
 };
 
-/** A new open invite. The friend's join builds the questions. */
-export const createDuel = async (ctx: DuelContext, userId: string, input: { channel: DuelChannel; locale: SocialLocale }) => {
+/**
+ * A new open invite. The friend's join builds the questions, unless the creator
+ * brings ten ready ones (Schood AI's topic duels, L17): those are kept as they are.
+ */
+export const createDuel = async (ctx: DuelContext, userId: string, input: { channel: DuelChannel; locale: SocialLocale; questions?: unknown }) => {
   await ensureOpen(ctx.sb);
   const now = nowOf(ctx);
   await checkCreateLimit(ctx, userId, now);
+  const prepared = input.questions === undefined ? null : parseDuelQuestions(input.questions);
+  if (input.questions !== undefined && !prepared) throw new Error("Failed to create duel: invalid questions");
   const row = await insertDuel(ctx, {
     language_id: ctx.languageId,
     creator_id: userId,
     status: "open",
     invite_expires_at: new Date(now.getTime() + DUEL_INVITE_HOURS * 3_600_000).toISOString(),
+    ...(prepared ? { questions: prepared } : {}),
   });
   const { error } = await ctx.sb.from("english_duel_players").insert({
     duel_id: row.id, user_id: userId, language_id: ctx.languageId, role: "creator", channel: input.channel, locale: input.locale,
@@ -380,7 +386,8 @@ export const joinDuel = async (ctx: DuelContext, userId: string, code: unknown, 
   if (loaded.duel.status === "expired") throw new DuelError("expired");
   if (loaded.duel.status !== "open") throw new DuelError("taken");
 
-  const questions = await buildQuestionsFor(ctx.sb, ctx.languageId, loaded.duel.creator_id, userId);
+  // Ten questions the creator brought (an AI topic duel) stay; otherwise both players' words build them.
+  const questions = parseDuelQuestions(loaded.row.questions) ?? await buildQuestionsFor(ctx.sb, ctx.languageId, loaded.duel.creator_id, userId);
   const { data: claimed, error } = await ctx.sb.from("english_duels").update({
     opponent_id: userId,
     status: "active",

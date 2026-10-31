@@ -250,6 +250,10 @@ verify_jwt = false
 [functions.admission]
 verify_jwt = false
 
+# Schood AI validates user sessions (or the Telegram worker's service secret) inside its request handler.
+[functions.schood-ai]
+verify_jwt = false
+
 [functions.assessment-runtime]
 verify_jwt = false
 

@@ -1,0 +1,123 @@
+name: Schood AI CI
+on:
+  pull_request:
+    paths:
+      - 'apps/schood-ai/**'
+      - 'packages/ai-core/**'
+      - 'supabase/functions/schood-ai/**'
+      - 'packages/coach-packs/**'
+      - 'packages/subject-core/**'
+      - 'supabase/functions/_shared/telegram-init-data.ts'
+      - 'supabase/functions/_shared/english-certificate.ts'
+      - 'supabase/functions/_shared/english-srs.ts'
+      - 'supabase/functions/_shared/sat-ai.ts'
+      - 'supabase/functions/_shared/ai-response.ts'
+      - 'supabase/functions/_shared/admin-access.ts'
+      - 'supabase/functions/access-effective/logic.ts'
+      - 'supabase/migrations/2026103*'
+      - 'supabase/tests/schood-ai-*'
+      - 'scripts/test-schood-ai-db.mjs'
+      # Teacher area: the exam format files the materials package reuses, and its checks.
+      - 'packages/ielts-core/**'
+      - 'packages/sat-core/**'
+      - 'packages/subject-core/**'
+      - 'supabase/functions/_shared/toefl-2026.ts'
+      - 'supabase/functions/_shared/english-exam*.ts'
+      - 'supabase/functions/_shared/english-today.ts'
+      - 'supabase/functions/_shared/english-mistakes.ts'
+      - 'supabase/functions/_shared/english-l1-notes.ts'
+      - 'supabase/functions/_shared/sat-practice-*.ts'
+      - 'supabase/functions/_shared/telegram-delivery.ts'
+      - 'supabase/functions/_shared/telegram-growth.ts'
+      - 'supabase/functions/_shared/homework-ai.ts'
+      - 'supabase/functions/academy-learning/lib.ts'
+      - 'scripts/test-schood-ai-teacher-db.mjs'
+      - 'scripts/check-schood-ai-teacher-i18n.ts'
+      - 'scripts/test-schood-ai-centre-db.mjs'
+      - 'scripts/schood-ai-centre-dev-stack.ts'
+      - 'scripts/test-schood-ai-engage-db.mjs'
+      - 'supabase/functions/_shared/english-xp.ts'
+      - 'supabase/functions/_shared/english-streak.ts'
+      - 'supabase/functions/_shared/english-certificate.ts'
+      - 'supabase/functions/_shared/media-storage.ts'
+      - 'packages/proctor-web/**'
+      - 'packages/assessment-core/src/mod.ts'
+      - 'packages/service-i18n/**'
+      - 'packages/assessment-web/src/client.ts'
+      - 'packages/assessment-web/src/MathText.tsx'
+      - '.github/workflows/schood-ai-ci.yml'
+      - 'scripts/test-schood-ai-learner-db.mjs'
+      - 'workers/schood-bot/**'
+      - 'supabase/functions/_shared/english-*.ts'
+      - 'supabase/functions/_shared/homework-ai.ts'
+      - 'supabase/functions/_shared/toefl-2026-writing.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: schood-ai-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Plans, credit prices, model registry rules, schemas and SSE
+        run: deno test --no-lock packages/ai-core/src/
+      - name: ai-core type check
+        run: deno check --no-lock packages/ai-core/src/mod.ts
+      - name: Teaching materials type check (imported directly, not through mod.ts)
+        run: deno check --no-lock packages/ai-core/src/materials/mod.ts
+      - name: Teacher i18n coverage
+        run: deno run --no-lock --allow-read scripts/check-schood-ai-teacher-i18n.ts
+      - name: App helpers (Uzbek dates)
+        run: deno test --no-lock apps/schood-ai/tests/
+  service:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: npm ci
+      - name: Function contracts (auth, roles, routing, chat, credits, gateway, providers, Approve & run)
+        run: deno test --no-lock supabase/functions/schood-ai/
+      - name: Function type check
+        run: deno check --no-lock supabase/functions/schood-ai/index.ts
+      - name: Core migration on PGlite and an isolated Postgres with concurrent sessions
+        env:
+          SCHOOD_AI_DB_REQUIRE_DOCKER: '1'
+        run: node scripts/test-schood-ai-db.mjs
+      - name: Teacher migration on PGlite and an isolated Postgres with concurrent sessions
+        env:
+          SCHOOD_AI_DB_REQUIRE_DOCKER: '1'
+        run: node scripts/test-schood-ai-teacher-db.mjs
+      - name: Centre migration on PGlite and an isolated Postgres, account closure, seat and counter races
+        env:
+          SCHOOD_AI_DB_REQUIRE_DOCKER: '1'
+        run: node scripts/test-schood-ai-centre-db.mjs
+      - name: Centre dev stack type check
+        run: deno check --no-lock scripts/schood-ai-centre-dev-stack.ts
+      - name: Engage migration on PGlite and an isolated Postgres with concurrent sessions (XP, leagues, squads, freezes, outbox)
+        env:
+          SCHOOD_AI_DB_REQUIRE_DOCKER: '1'
+        run: node scripts/test-schood-ai-engage-db.mjs
+      - name: Learner migration on PGlite and an isolated Postgres with racing family invites
+        env:
+          SCHOOD_AI_DB_REQUIRE_DOCKER: '1'
+        run: node scripts/test-schood-ai-learner-db.mjs
+      - name: Student bot with Schood AI (relay, homework untouched, no bot cron)
+        run: deno test --no-lock --no-check workers/schood-bot/src/schood-ai.test.ts
+      - name: English duels keep a Schood AI duel's ready questions
+        run: deno test --no-lock supabase/functions/_shared/english-duel-service.test.ts
+      - name: App build
+        run: npm --workspace apps/schood-ai run build

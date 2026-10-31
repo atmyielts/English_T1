@@ -1,0 +1,26 @@
+# Schood Coaches: the Telegram coach bots (README.md). Free plan.
+# Never deployed from a laptop: the coordinator ships it.
+name = "schood-coach-bots"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+workers_dev = false
+
+# Webhooks (/tg/<pack>), the Mini App sign-in (/miniapp/session) and /health.
+routes = [
+  { pattern = "coach-bots.schood.online", custom_domain = true },
+]
+
+# Due reminders and weekly reports, every five minutes (at most 40 per run).
+[triggers]
+crons = ["*/5 * * * *"]
+
+[vars]
+APP_URL = "https://ai.schood.online"
+
+# Secrets (set with `wrangler secret put <NAME>`; never written here):
+# SUPABASE_URL               the production project's URL (as the other Schood bot workers)
+# SCHOOD_AI_SERVICE_SECRET   the same value as the schood-ai function
+# Per coach pack <PACK> (IELTS, SPEAKING; a pack id upper-cased, "-" as "_"):
+# COACH_BOT_TOKEN_<PACK>              the bot's token from BotFather
+# COACH_WEBHOOK_SECRET_<PACK>         16+ random characters, also given to setWebhook
+# COACH_WEBHOOK_SECRET_<PACK>_PREVIOUS  optional, only while rotating the webhook secret
