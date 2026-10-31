@@ -64,7 +64,8 @@ export function createWorker(deps: WorkerDeps) {
   const links = new Map<string, { at: number; userId: string | null; name: string | null }>();
   async function linkedUser(chatId: string): Promise<{ userId: string | null; name: string | null }> {
     const hit = links.get(chatId), now = Date.now();
-    if (hit && now - hit.at < 60_000) return hit;
+    // A linked account rarely changes (the engine's user_not_linked clears it); a missing link is rechecked soon.
+    if (hit && now - hit.at < (hit.userId ? 15 * 60_000 : 60_000)) return hit;
     const status = await telegramLink({ action: 'status', chat_id: chatId });
     if (!status.ok) throw new Error('telegram-link status refused');
     const payload = status.result as { linked?: boolean; user?: { id?: string; name?: string } };
@@ -143,7 +144,10 @@ export function createWorker(deps: WorkerDeps) {
       return;
     }
 
+    // Typing shows at once while the account is looked up (the coach's answer can take a few seconds).
+    const typing = message ? api.call('sendChatAction', { chat_id: chatId, action: 'typing' }) : null;
     const linked = await linkedUser(chatId);
+    await typing;
     if (!linked.userId) {
       await ack();
       const save = data.startsWith('dgs:') ? parseDiagnosticSave(data) : null;
@@ -183,7 +187,6 @@ export function createWorker(deps: WorkerDeps) {
     } else if (command) {
       event = { type: 'command', command: command[1].toLowerCase(), args: (command[2] ?? '').trim().slice(0, 64), messageId: Number(message.message_id), date: Number(message.date) };
     } else if (text.trim()) {
-      await api.call('sendChatAction', { chat_id: chatId, action: 'typing' });
       event = { type: 'text', text: text.slice(0, 12000), messageId: Number(message.message_id), date: Number(message.date) };
     }
     if (!event) { await ack(); return; }
