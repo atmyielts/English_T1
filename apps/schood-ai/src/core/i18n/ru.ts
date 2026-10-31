@@ -602,6 +602,8 @@ export const ru: Record<CoreKey, string> = {
   'library.open': 'Открыть',
   'error.revision_conflict': 'Страница изменилась с тех пор, как вы её открыли.',
   'notFound.title': 'Страница не найдена',
+  'place.choose.title': 'В каком рабочем пространстве открыть?',
+  'place.choose.lead': 'Эта страница относится к центру. Выберите, где её открыть.',
   'notFound.lead': 'Такой страницы нет или она закрыта для вашей роли.',
   'notFound.home': 'На главную',
 

@@ -602,6 +602,8 @@ export const en = {
   'library.open': 'Open',
   'error.revision_conflict': 'This page changed since you opened it.',
   'notFound.title': 'Page not found',
+  'place.choose.title': 'Open this in which workspace?',
+  'place.choose.lead': 'This page belongs to a centre. Choose the one to open it in.',
   'notFound.lead': 'This page does not exist or is not open for your role.',
   'notFound.home': 'Back to Home',
 
