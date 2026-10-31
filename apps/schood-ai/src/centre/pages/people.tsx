@@ -56,7 +56,7 @@ function BudgetInput({ value, used, disabled, onSave }: { value: number | null; 
   const t = useT(), id = useId();
   const [draft, setDraft] = useState(value === null ? '' : String(value));
   const dirty = draft !== (value === null ? '' : String(value));
-  return <form className="flex items-center gap-2" onSubmit={(event) => { event.preventDefault(); onSave(draft.trim() === '' ? null : Math.max(0, Math.round(Number(draft)))); }}>
+  return <form className="flex min-w-0 flex-wrap items-center gap-2" onSubmit={(event) => { event.preventDefault(); onSave(draft.trim() === '' ? null : Math.max(0, Math.round(Number(draft)))); }}>
     <label className="sr-only" htmlFor={id}>{t('centre.people.budget')}</label>
     <input id={id} inputMode="numeric" pattern="[0-9]*" value={draft} placeholder={t('centre.people.noLimit')} onChange={(event) => setDraft(event.target.value.replace(/[^0-9]/g, ''))} className="w-24 rounded-lg border border-gray-300 bg-white px-2 py-1 text-sm"/>
     {dirty && <Button size="sm" type="submit" disabled={disabled}>{t('centre.common.save')}</Button>}
