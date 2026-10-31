@@ -22,12 +22,14 @@ export interface Env {
   /** Per coach: COACH_BOT_TOKEN_<PACK>, COACH_WEBHOOK_SECRET_<PACK> (and _PREVIOUS while rotating). */
   [key: string]: string | undefined;
 }
-export interface WorkerDeps { env: Env; packs: ReadonlyMap<string, CoachPack>; fetch: Fetch; now?: () => Date }
+export interface WorkerDeps { env: Env; packs: ReadonlyMap<string, CoachPack>; fetch: Fetch; now?: () => Date; avatars?: Readonly<Record<string, string>> }
 interface Waiter { waitUntil(promise: Promise<unknown>): void }
 
 const MAX_VOICE_BYTES = 8 * 1024 * 1024, MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 /** Cloudflare's free plan: subrequests per invocation. */
 export const SUBREQUESTS = 50;
+/** The Mini App button's text: a long one crowds out the message box. */
+export const MENU_BUTTON_TEXT = 'Open';
 export const envKey = (pack: string) => pack.toUpperCase().replace(/-/g, '_');
 
 function safeEqual(a: string, b: string): boolean {
@@ -228,6 +230,31 @@ export function createWorker(deps: WorkerDeps) {
     return reply(200, { linked: true, pack: pack.manifest.id, session: result.data.session });
   }
 
+  // --- each bot's profile, once per isolate ------------------------------------------------------------------
+  /** The short menu button and, when the bot has none, its avatar. */
+  const profiled = new Set<string>();
+  async function profileSync(budget: number): Promise<number> {
+    let used = 0;
+    for (const id of packs.keys()) {
+      const token = tokenOf(id);
+      if (!token || profiled.has(id) || used + 3 > budget) continue;
+      profiled.add(id);
+      const api = telegram(token, deps.fetch);
+      used += 2;
+      await api.call('setChatMenuButton', { menu_button: { type: 'web_app', text: MENU_BUTTON_TEXT, web_app: { url: `${appUrl}/coach/${id}` } } });
+      const photos = await api.call<{ total_count?: number }>('getUserProfilePhotos', { user_id: Number(token.split(':')[0]), limit: 1 });
+      const avatar = deps.avatars?.[id];
+      if (!photos.ok || (photos.result?.total_count ?? 0) > 0 || !avatar) continue;
+      used += 1;
+      const form = new FormData();
+      form.append('photo', JSON.stringify({ type: 'static', photo: 'attach://avatar' }));
+      form.append('avatar', new Blob([Uint8Array.from(atob(avatar), (c) => c.charCodeAt(0))], { type: 'image/jpeg' }), 'avatar.jpg');
+      const set = await api.call('setMyProfilePhoto', form);
+      console.log(JSON.stringify({ event: 'coach_avatar_set', pack: id, ok: set.ok }));
+    }
+    return used;
+  }
+
   // --- the cron ------------------------------------------------------------------------------------------------
   async function cron(): Promise<{ sent: number; failed: number; blocked: number }> {
     // System routes: the worker secret alone (no user, no Authorization, no Origin).
@@ -247,6 +274,8 @@ export function createWorker(deps: WorkerDeps) {
       const report = await sendAll(telegram(token, deps.fetch), delivery.chatId, delivery.messages, appUrl);
       results.push({ id: delivery.id, status: report.blocked ? 'blocked' : report.failed ? 'failed' : 'sent', ...(report.blocked ? { reason: 'bot_blocked' } : {}) });
     }
+    // Reminders first; each bot's profile takes what is left.
+    await profileSync(budget);
     if (results.length) await deps.fetch(fn('schood-ai/coach/system-delivered'), { method: 'POST', headers, body: JSON.stringify({ results }) });
     return { sent: results.filter((r) => r.status === 'sent').length, failed: results.filter((r) => r.status === 'failed').length, blocked: results.filter((r) => r.status === 'blocked').length };
   }
