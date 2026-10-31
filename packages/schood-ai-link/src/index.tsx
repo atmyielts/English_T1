@@ -4,6 +4,8 @@
 //   /explain?source=<app>&session=<id>&item=<id>   one question
 //   /tutor?source=<app>&session=<id>                 a whole result
 export const SCHOOD_AI_URL = 'https://ai.schood.online';
+/** Hidden until launch: the apps show the link only when built with VITE_SCHOOD_AI_LINKS=1. */
+export const SCHOOD_AI_LINKS_ON = import.meta.env.VITE_SCHOOD_AI_LINKS === '1';
 
 type Locale = 'en' | 'uz' | 'ru';
 const LABEL: Record<Locale, { ask: string; explain: string }> = {
@@ -32,6 +34,7 @@ export function schoodAIUrl(input: { page: 'explain' | 'tutor'; source: string; 
 
 /** A small link styled to sit in any app's results screen. */
 export function AskSchoodAI({ page = 'tutor', source, session, item, className = '' }: { page?: 'explain' | 'tutor'; source: string; session?: string | null; item?: string | null; className?: string }) {
+  if (!SCHOOD_AI_LINKS_ON) return null;
   // Never on proctored assessment (candidate) or admin screens.
   if (typeof location !== 'undefined' && /^\/(candidate|admin)(\/|$)/.test(location.pathname)) return null;
   const label = LABEL[askLocale()];
