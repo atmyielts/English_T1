@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto';
 import { AI_PLANS, AI_PRODUCTS, COACH_FEATURES, COACH_PASS_PRODUCT_IDS, FULFILLED_KINDS, isLaunched, LAUNCH_SWITCH, PLAN_PRODUCT_IDS, planById, planBySlug, planProductIds, productById, productOfPlan } from './catalog.ts';
 import { FEATURES, PLAN_CODES } from './plans.ts';
 
@@ -9,9 +8,34 @@ const equal = (actual: unknown, expected: unknown, label = '') => {
   if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error(`${label} expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
 };
 const ok = (value: unknown, label: string) => { if (!value) throw new Error(label); };
+// MD5 (RFC 1321), inline: this job runs without node_modules, and Web Crypto has no MD5.
+function md5(text: string): string {
+  const bytes = new TextEncoder().encode(text);
+  const words = new Uint32Array(((bytes.length + 8) >> 6) + 1 << 4);
+  bytes.forEach((byte, i) => { words[i >> 2] |= byte << ((i % 4) * 8); });
+  words[bytes.length >> 2] |= 0x80 << ((bytes.length % 4) * 8);
+  words[words.length - 2] = bytes.length * 8;
+  const K = Array.from({ length: 64 }, (_, i) => Math.floor(Math.abs(Math.sin(i + 1)) * 2 ** 32) >>> 0);
+  const R = [7, 12, 17, 22, 5, 9, 14, 20, 4, 11, 16, 23, 6, 10, 15, 21];
+  let [a0, b0, c0, d0] = [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476];
+  for (let block = 0; block < words.length; block += 16) {
+    let [a, b, c, d] = [a0, b0, c0, d0];
+    for (let i = 0; i < 64; i++) {
+      const round = i >> 4;
+      const f = round === 0 ? (b & c) | (~b & d) : round === 1 ? (d & b) | (~d & c) : round === 2 ? b ^ c ^ d : c ^ (b | ~d);
+      const g = round === 0 ? i : round === 1 ? (5 * i + 1) % 16 : round === 2 ? (3 * i + 5) % 16 : (7 * i) % 16;
+      const shift = R[round * 4 + (i % 4)];
+      const sum = (a + f + K[i] + words[block + g]) >>> 0;
+      [a, d, c] = [d, c, b];
+      b = (b + ((sum << shift) | (sum >>> (32 - shift)))) >>> 0;
+    }
+    [a0, b0, c0, d0] = [(a0 + a) >>> 0, (b0 + b) >>> 0, (c0 + c) >>> 0, (d0 + d) >>> 0];
+  }
+  return [a0, b0, c0, d0].map((word) => [0, 8, 16, 24].map((bit) => ((word >>> bit) & 0xff).toString(16).padStart(2, '0')).join('')).join('');
+}
 /** Postgres md5(text)::uuid. */
 const md5uuid = (text: string) => {
-  const hex = createHash('md5').update(text).digest('hex');
+  const hex = md5(text);
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 };
 
