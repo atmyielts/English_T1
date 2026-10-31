@@ -54,7 +54,11 @@ export async function showReport(bot: Bot) {
   const view = await weekView({ store: bot.store, pack: bot.pack, enrollment: bot.enrollment, now: bot.ctx.now() });
   const head = bot.t('report.title', { from: view.from.split('-').reverse().slice(0, 2).join('.'), to: view.to.split('-').reverse().slice(0, 2).join('.') });
   if (!view.hasData) { bot.text(`${head}\n\n${bot.t('report.empty')}`, bot.nav([bot.app(bot.p('btn.full_report'), '/report')])); return; }
-  const rows = view.report.rows.filter((row) => row.key !== 'criterion' || row.after !== null).slice(0, 12).map((row) => bot.t('report.row', {
+  // Overall results first, then the measured numbers (pace, fillers, accuracy), then minutes and days, then criteria:
+  // a coach with several rubrics (B6) still shows its pace and fillers in the chat.
+  const rank = (row: ReportRow) => (row.key === 'result' ? 0 : row.key === 'criterion' ? 3 : row.key === 'minutes' || row.key === 'active_days' ? 2 : 1);
+  const shown = view.report.rows.filter((row) => row.key !== 'criterion' || row.after !== null).map((row, index) => ({ row, index })).sort((a, b) => rank(a.row) - rank(b.row) || a.index - b.index).map((entry) => entry.row);
+  const rows = shown.slice(0, 14).map((row) => bot.t('report.row', {
     label: rowLabel(bot, row), before: rowValue(bot, row, row.before ?? row.start), after: rowValue(bot, row, row.after), arrow: arrow(row),
   }));
   const focus = view.report.focus.length ? `\n\n${bot.t('report.focus', { errors: view.report.focus.map((entry) => `${pick(bot.pack.errorById.get(entry.tag)?.name, bot.locale) || entry.tag} ×${entry.count}`).join(', ') })}` : '';

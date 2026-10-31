@@ -9,7 +9,8 @@ const wanted = Deno.args[0];
 let failed = false;
 for (const source of PACK_SOURCES) {
   if (wanted && source.manifest.id !== wanted) continue;
-  for (const rubric of source.rubrics) {
+  // Keyed rubrics (mini-mocks scored by the answer key) have nothing to calibrate.
+  for (const rubric of source.rubrics.filter((entry) => !entry.keyed)) {
     const report = calibrate(rubric);
     failed ||= !report.passed;
     console.log(`${report.passed ? '✓' : '✗'} ${source.manifest.id}/${rubric.id}: ${report.samples} samples, ${report.runs} runs · exact ${report.exact} · adjacent ${report.adjacent} · MAE ${report.mae} · spread ${report.spread} · evidence ${report.evidenceValid} · QWK ${report.kappa}`);

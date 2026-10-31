@@ -19,9 +19,16 @@ export type FlowState =
   | { flow: 'idle' }
   | { flow: 'onboard'; step: 'target' | 'date' | 'minutes' | 'reminder'; draft: { target?: number; examDate?: string | null; minutes?: number } }
   | { flow: 'speaking'; sessionId: string; activityId: string; mock: boolean; queue: SpeakItem[]; index: number; askedAt: string; awaiting: 'answer' | 'after'; lastTurnId: string | null }
-  | { flow: 'roleplay'; sessionId: string; activityId: string; turns: number; hidden: Record<string, number | string | boolean>; goalsMet: string[] }
+  | { flow: 'roleplay'; sessionId: string; activityId: string; turns: number; hidden: Record<string, number | string | boolean>; goalsMet: string[]; scriptId?: string }
   | { flow: 'writing'; sessionId: string; activityId: string; awaiting: 'answer' | 'confirm' | 'after'; pendingTurnId: string | null; previousSessionId: string | null }
-  | { flow: 'quiz'; sessionId: string; activityId: string; index: number; answers: (number | string | null)[]; startedAt: string }
+  /**
+   * `items`: the questions of a drawn set, a mini-mock or the mistake notebook, as
+   * `<set id>#<question id>`; without it, the whole set in order. `limit`: seconds, when
+   * not the set's own.
+   */
+  | { flow: 'quiz'; sessionId: string; activityId: string; index: number; answers: (number | string | null)[]; startedAt: string; items?: string[]; kind?: 'mock' | 'mistakes'; limit?: number }
+  /** The script builder (B4): the answers so far. */
+  | { flow: 'script'; step: number; answers: string[] }
   | { flow: 'deck'; sessionId: string; queue: string[]; index: number; correct: number; fresh: number }
   | { flow: 'drill'; sessionId: string; activityId: string; items: InlineItem[]; index: number; correct: number; tag: string }
   | { flow: 'shadow'; sessionId: string; activityId: string; sentences: string[]; index: number; scores: number[] }
@@ -53,7 +60,11 @@ export class Bot {
     this.state = { current: raw.current ?? { flow: 'idle' }, options: raw.options, plan: raw.plan, recent: raw.recent ?? {}, task: raw.task ?? null };
   }
 
-  get locale(): Locale { return this.patch.locale ?? this.enrollment.locale; }
+  /** The interface language: the person's, or the coach's first when it does not speak theirs (B3: uz, ru). */
+  get locale(): Locale {
+    const chosen = this.patch.locale ?? this.enrollment.locale, languages = this.pack.manifest.uiLanguages;
+    return languages.includes(chosen) ? chosen : languages[0] ?? chosen;
+  }
   get store() { return this.runtime.store; }
   get feature() { return this.pack.manifest.feature; }
   get tz() { return this.enrollment.settings.timeZone ?? DEFAULT_TZ; }
@@ -145,6 +156,8 @@ export class Bot {
     if (values.length) return values.reduce((a, b) => a + b, 0) / values.length;
     return this.enrollment.placement?.overall ?? null;
   }
+  /** A cache key for spoken audio: a mixed pack speaks each language, so the language is part of the key. */
+  mediaKey(key: string): string { return (this.pack.manifest.practiceLanguage === 'mixed' ? `${key}:${this.locale}` : key).slice(0, 120); }
   label(value: number | null) { return value === null ? '—' : levelLabel(this.pack.manifest.scale, value); }
   languageName(locale: Locale) { return LANGUAGE_NAMES[locale]; }
 

@@ -1,6 +1,6 @@
-import { Award, Flame, Target, Timer } from 'lucide-react';
+import { Award, Flame, NotebookPen, ScrollText, Target, Timer, Users } from 'lucide-react';
 import { Badge, Card, EmptyState, Link, Paywall, useI18n, useSession, useT } from '../../core/index.ts';
-import { coachApi, levelLabel, type Dashboard } from '../api.ts';
+import { coachApi, levelLabel, type Cohort, type Dashboard } from '../api.ts';
 import { Bars, CoachFrame, dateText, Loaded, ResultChart, Stat, useLoad } from '../ui.tsx';
 import { OpenBot, SignedOut } from './common.tsx';
 
@@ -52,6 +52,19 @@ function Body({ data, pack }: { data: Dashboard; pack: string }) {
       </div>
     </Card>
 
+    {data.cohort && <CohortCard cohort={data.cohort}/>}
+
+    {(data.mistakes || data.scripts) && <div className="grid gap-3 md:grid-cols-2">
+      {data.mistakes && <Link to={`/coach/${pack}/mistakes`} className="flex min-h-11 min-w-0 items-center justify-between gap-3 rounded-3xl border border-navy-line bg-white/85 p-4 text-gray-900 no-underline">
+        <span className="inline-flex min-w-0 items-center gap-2 font-display font-bold"><NotebookPen size={18} aria-hidden="true"/>{t('coach.mistakes.title')}</span>
+        <Badge tone={data.mistakes.count ? 'warn' : 'lime'}>{data.mistakes.count ? t('coach.mistakes.count', { count: data.mistakes.count }) : t('coach.mistakes.none')}</Badge>
+      </Link>}
+      {data.scripts && <Link to={`/coach/${pack}/scripts`} className="flex min-h-11 min-w-0 items-center justify-between gap-3 rounded-3xl border border-navy-line bg-white/85 p-4 text-gray-900 no-underline">
+        <span className="inline-flex min-w-0 items-center gap-2 font-display font-bold"><ScrollText size={18} aria-hidden="true"/>{t('coach.scripts.title')}</span>
+        <Badge>{t('coach.scripts.count', { count: data.scripts.count, max: data.scripts.max })}</Badge>
+      </Link>}
+    </div>}
+
     {data.forecasts.filter((forecast) => forecast.points.length).map((forecast) => <Card key={forecast.rubric} className="flex flex-col gap-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="m-0 font-display text-lg font-bold">{forecast.name}</h2>
@@ -59,7 +72,7 @@ function Body({ data, pack }: { data: Dashboard; pack: string }) {
       </div>
       <ResultChart points={forecast.points} scale={forecast.scale} target={data.goal.target} label={forecast.name}/>
       <p className="m-0 text-sm text-gray-700">{forecast.predicted !== null
-        ? t('coach.dash.forecast', { level: levelLabel(forecast.scale, forecast.predicted), confidence: t(`coach.confidence.${forecast.confidence ?? 'low'}`), perWeek: forecast.perWeek ?? 0 })
+        ? t('coach.dash.forecast', { level: levelLabel(forecast.scale, forecast.predicted), confidence: t(`coach.confidence.${forecast.confidence ?? 'low'}`), perWeek: Number((forecast.perWeek ?? 0).toFixed(forecast.scale.step < 1 ? 2 : 0)) })
         : t('coach.dash.needMore')}</p>
     </Card>)}
 
@@ -95,4 +108,30 @@ function Body({ data, pack }: { data: Dashboard; pack: string }) {
       </ul>
     </Card>}
   </>;
+}
+
+/**
+ * B3: the latest mini-mock, what it means on the exam blocks, and the anonymous
+ * percentile (shown only when enough people took a mock in the window).
+ */
+function CohortCard({ cohort }: { cohort: Cohort }) {
+  const t = useT();
+  const share = cohort.latest === null ? null : Math.min(1, Math.max(0, cohort.latest / 100));
+  return <Card className="flex flex-col gap-3">
+    <div className="flex flex-wrap items-baseline justify-between gap-2">
+      <h2 className="m-0 font-display text-lg font-bold">{t('coach.cohort.title')} <span className="block text-sm font-normal text-gray-600">{cohort.name}</span></h2>
+      {cohort.latest !== null && <Badge tone="lime">{t('coach.cohort.latest', { score: `${Math.round(cohort.latest)}%` })}</Badge>}
+    </div>
+    {share === null ? <p className="m-0 text-sm leading-6 text-gray-700">{t('coach.cohort.none')}</p> : <>
+      {cohort.projections.length > 0 && <ul className="m-0 flex list-none flex-col gap-1 p-0">
+        {cohort.projections.map((block) => <li key={block.name} className="break-words text-sm text-gray-800">{t('coach.cohort.projection', { count: Math.round(share * block.questions), total: block.questions, name: block.name })}</li>)}
+      </ul>}
+      <p className="m-0 inline-flex items-start gap-2 text-sm leading-6 text-gray-800"><Users size={16} className="mt-1 shrink-0" aria-hidden="true"/>
+        <span>{cohort.percentile !== null && cohort.people !== null
+          ? t('coach.cohort.percentile', { percentile: cohort.percentile, people: cohort.people, days: cohort.window_days })
+          : t('coach.cohort.soon', { min: cohort.min_people, days: cohort.window_days })}</span>
+      </p>
+    </>}
+    <p className="m-0 text-xs leading-5 text-gray-600">{t('coach.cohort.anonymous')}</p>
+  </Card>;
 }

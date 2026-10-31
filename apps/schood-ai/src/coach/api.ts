@@ -39,6 +39,40 @@ export interface Dashboard {
   sessions: SessionCard[];
   certificates: CertificateView[];
   bot: string | null;
+  /** B3: questions whose latest answer was wrong. */
+  mistakes?: { count: number };
+  /** B3: the latest mini-mock and the anonymous percentile (null below `min_people` in the window). */
+  cohort?: Cohort;
+  /** B4: saved scripts. */
+  scripts?: { count: number; max: number };
+}
+export interface Cohort {
+  rubric: string; name: string; window_days: number; min_people: number;
+  /** The latest result on the keyed rubric (a percentage), or null before the first mock. */
+  latest: number | null;
+  percentile: number | null; people: number | null;
+  projections: { name: string; questions: number }[];
+}
+export interface Mistake {
+  ref: string; at: string; misses: number; topic: string; node: string;
+  prompt: string; options: string[] | null; answer: string | null; explanation: string; hints: string[];
+}
+export interface ScriptQuestion { id: string; prompt: string; example: string; max_chars: number }
+export interface ScriptList {
+  scripts: { id: string; title: string; created_at: string; objections: number }[];
+  max: number; questions: ScriptQuestion[]; cost: number; objection_types: Record<string, string>; bot: string | null;
+}
+/** A script as the script builder saved it (B4). Every field may be missing in an older script. */
+export interface BuiltScript {
+  title: string; product: string; offer: string;
+  buyer: { who: string; pains: string[]; decision: string; budget: string };
+  buyer_opening: string; opening: string; discovery: string[]; pitch: string;
+  objections: { type: string; objection: string; response: string; question: string }[];
+  closes: string[]; next_steps: string[]; dm: string; follow_up: string; watch_outs: string[];
+}
+export interface ScriptDetail {
+  script: { id: string; title: string; input: Record<string, string>; script: Partial<BuiltScript>; created_at: string; updated_at: string };
+  objection_types: Record<string, string>; bot: string | null;
 }
 export interface CoachSettings { correction?: 'gentle' | 'strict'; voice?: boolean; explain?: 'ui' | 'en'; reminder?: string | null; timeZone?: string }
 export interface Report {
@@ -64,6 +98,8 @@ export interface SessionDetail {
   errors: Record<string, { name: string; explain: string }>;
   /** Curated facts the activity relied on (B5): when they were checked and the official source. */
   facts?: { id: string; title: string; checked_at: string; stale: boolean; source: { name: string; url: string } }[];
+  /** A role-play's goals by id, in the reader's language. */
+  goal_texts?: Record<string, string>;
 }
 export interface TeamList { teams: { id: string; name: string; role: 'manager' | 'member'; packs: string[]; seats: number; valid_until: string }[] }
 export interface TeamBoard {
@@ -95,6 +131,14 @@ export const coachApi = {
   invite: (teamId: string) => api<{ code: string; links: { pack: string; url: string | null }[]; web: string }>('coach/team-invite', { body: { team_id: teamId } }),
   removeMember: (teamId: string, userId: string) => api<{ removed: boolean }>('coach/team-member', { method: 'DELETE', body: { team_id: teamId, user_id: userId } }),
   joinTeam: (code: string) => api<{ team: { id: string; name: string; packs: string[] } }>('coach/team-join', { body: { code } }),
+  /** The mistake notebook (B3). No AI. */
+  mistakes: (pack: string) => api<{ mistakes: Mistake[]; total: number }>('coach/mistakes', { query: { pack } }),
+  /** Saved scripts (B4): the list with the builder's questions and its credit cost. */
+  scripts: (pack: string) => api<ScriptList>('coach/scripts', { query: { pack } }),
+  script: (pack: string, id: string) => api<ScriptDetail>('coach/scripts', { query: { pack, id } }),
+  /** One `script` charge; a retry with the same key is charged once. Generation can take a while. */
+  buildScript: (pack: string, answers: Record<string, string>, idempotencyKey: string) => api<{ script: { id: string; title: string } }>('coach/scripts', { body: { pack, answers }, idempotencyKey, timeoutMs: 90_000 }),
+  deleteScript: (pack: string, id: string) => api<{ deleted: boolean }>('coach/scripts', { method: 'DELETE', body: { pack, id } }),
 };
 
 /** As the engine's levelLabel: on a named scale (CEFR) an average reads as the nearest named point. */
@@ -104,5 +148,6 @@ export function levelLabel(scale: LevelScale, value: number | null): string {
   const nearest = Math.min(scale.max, Math.max(scale.min, scale.min + Math.round((value - scale.min) / scale.step) * scale.step));
   const label = named(value) ?? (scale.labels?.length ? named(nearest) : undefined);
   if (label) return label;
-  return value.toFixed(scale.decimals ?? (scale.step < 1 ? 1 : 0));
+  const text = value.toFixed(scale.decimals ?? (scale.step < 1 ? 1 : 0));
+  return scale.id === 'percent' ? `${text}%` : text;
 }

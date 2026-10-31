@@ -144,7 +144,7 @@ async function sendSentence(bot: Bot, set: Shadowing) {
   const state = bot.state.current as ShadowFlow;
   const sentence = set.sentences.find((entry) => entry.id === state.sentences[state.index])!;
   bot.text(bot.t('sh.sentence', { n: state.index + 1, total: state.sentences.length, text: sentence.text, focus: pick(sentence.focus, bot.locale) }), [[bot.app(bot.p('sh.listen_in_app'), `/shadow/${set.id}/${sentence.id}`)], [{ text: bot.p('btn.finish'), data: 'sh:end' }]]);
-  const cacheKey = `sh:${sentence.id}`.slice(0, 120);
+  const cacheKey = bot.mediaKey(`sh:${sentence.id}`);
   const cached = await bot.store.media(bot.pack.manifest.id, cacheKey);
   if (cached) { bot.push({ kind: 'voice', fileId: cached }); return; }
   try {

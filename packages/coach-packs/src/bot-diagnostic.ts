@@ -1,5 +1,6 @@
 import { plain, say } from './copy.ts';
 import { decodeAnswers, encodeAnswers, scoreDiagnostic, type DiagnosticResult } from './diagnostic.ts';
+import { localizeItem } from './localize.ts';
 import { escapeHtml, levelLabel, pick } from './text.ts';
 import type { CoachPack, Locale } from './types.ts';
 import type { OutButton, OutMessage } from './wire.ts';
@@ -31,8 +32,10 @@ export function parseDiagnosticSave(data: string): { locale: Locale; answers: nu
 
 /** The question at `answers.length`, or null when the test is complete. */
 export function diagnosticQuestion(pack: CoachPack, locale: Locale, answers: number[]): OutMessage | null {
-  const items = pack.diagnostic.items, index = answers.length, item = items[index];
-  if (!item) return null;
+  const items = pack.diagnostic.items, index = answers.length;
+  if (!items[index]) return null;
+  // Mixed packs (B3–B6): the question in this person's language, the same options in the same order.
+  const item = localizeItem(items[index], locale), previous = index > 0 ? localizeItem(items[index - 1], locale) : null;
   const state = encodeAnswers(answers);
   const tap = (choice: number) => `dg:${L[locale]}:${index}:${choice}:${state}`;
   const header = `<b>${say(locale, 'diag.question', { n: index + 1, total: items.length })}</b>`;
@@ -43,7 +46,7 @@ export function diagnosticQuestion(pack: CoachPack, locale: Locale, answers: num
       buttons: [[{ text: plain(locale, 'btn.yes'), data: tap(0) }, { text: plain(locale, 'btn.partly'), data: tap(1) }, { text: plain(locale, 'btn.not_yet'), data: tap(2) }]],
     };
   }
-  const passage = item.passage && (index === 0 || items[index - 1].passage !== item.passage) ? `<blockquote>${escapeHtml(item.passage)}</blockquote>\n` : '';
+  const passage = item.passage && (!previous || previous.passage !== item.passage) ? `<blockquote>${escapeHtml(item.passage)}</blockquote>\n` : '';
   const options = item.options ?? [];
   const long = options.some((option) => option.length > 28);
   const letters = ['A', 'B', 'C', 'D'];

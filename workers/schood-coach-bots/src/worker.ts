@@ -95,7 +95,8 @@ export function createWorker(deps: WorkerDeps) {
     if (!from || typeof from.id !== 'number' || from.is_bot) return;
     if (message && message.chat?.type !== 'private') return;
     if (callback && callback.message?.chat?.type && callback.message.chat.type !== 'private') return;
-    const chatId = String(from.id), locale = localeFrom(from.language_code);
+    // A coach that does not speak the person's language (B3: uz, ru) uses its first one.
+    const asked = localeFrom(from.language_code), chatId = String(from.id), locale = pack.manifest.uiLanguages.includes(asked) ? asked : pack.manifest.uiLanguages[0] ?? asked;
     const reply = (messages: OutMessage[]) => sendAll(api, chatId, messages, appUrl);
     const ack = (text?: string) => callback ? api.call('answerCallbackQuery', { callback_query_id: callback.id, ...(text ? { text: text.slice(0, 190) } : {}) }) : Promise.resolve(null);
 

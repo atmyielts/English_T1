@@ -48,3 +48,45 @@ code change is needed.
 - Reminder scheduling: the worker's own cron calls the system routes, because only the
   worker holds the bot tokens. No pg_cron job is added for coaches.
 - `guard(ctx)` on `registerSpecialist`: the coaches register no specialist.
+
+## Packs
+
+From the coach packs build (phase 7, branch `claude/ai-coach-packs`: B3 Admission Maths,
+B4 Sales, B5 Career and Interview, B6 Public Speaking). The engine additions they needed
+live in the coach area (packages/coach-packs, the `coach` area, its Mini App screens and
+migration `20261030700000`). Two things touch core or other services.
+
+### 1. A `script` coach action in the price table (done additively; please confirm)
+
+**Need.** The B4 script builder makes one structured document per call (a call script and
+an objection map) and must show its cost first.
+
+**Done.** `COACH_ACTIONS` in `packages/ai-core/src/credits.ts` gained `script`, so
+`coach_b1.script` … `coach_b6.script` exist at 5 credits, premium tier, `assumed: true`
+(priced as a lesson plan, the closest row). Only B4 uses it. Nothing else in the table
+changed.
+
+**Ask.** Core keeps or reprices the row; the owner confirms the price with the others.
+
+### 2. Reading the Admission bank (cross-service; owner decision)
+
+**Need.** The doc wants B3's daily sets from the subject-core topic graph *and the
+Admission bank*. The graph is used. The bank is approved item versions in Assessment Cloud
+(`assessment_item_versions` for the Schood content tenant), read today only by the
+`admission` function with its own service role and tenant setting. The admission service
+is switched off until content exists, so the bank is empty in production.
+
+**Now.** B3 serves its own 297 verified problems, each tagged with a subject-core topic
+code, so Admission items can be added later without changing the engine.
+
+**Ask.** A read path for approved Admission items by topic code and question language,
+with their keys, for service callers (an `admission` route, or permission for the coach
+store to read the same rows the admission repository reads). The coach would then deal
+bank items into the same sessions (`<source>#<item id>` refs).
+
+### Not needed from core
+
+- Under-18s on public boards: the percentile is shown only to the learner it is about and
+  there is no public board. A future public board must use `requireAdult`.
+- Age, consent and retention: coach scripts are personal rows in the erasure registry; the
+  cohort histogram returns counts only.

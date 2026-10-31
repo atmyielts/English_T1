@@ -36,7 +36,7 @@ Deno.test('coach routes: access by plan, pass and nothing; pass credits from the
   equal((await s.f.json('GET', 'coach/dashboard', { token: 'tok-both', query: { pack: 'speaking' } })).body.access.kind, 'plan', 'and Plus is how they have it');
 
   const costs = await s.f.json('GET', 'coach/costs', { token: 'tok-free', query: { pack: 'ielts' } });
-  equal(costs.body.costs, { turn: 1, review: 10, writing: 5, ladder: 8, photo: 3, drill: 2, voice: 1, shadow: 1 }, 'costs from the price table');
+  equal(costs.body.costs, { turn: 1, review: 10, writing: 5, ladder: 8, photo: 3, drill: 2, voice: 1, shadow: 1, script: 5 }, 'costs from the price table');
   const samples = await s.f.json('GET', 'coach/samples', { token: null, query: { pack: 'speaking' } });
   ok(samples.status === 200 && samples.body.samples.length >= 2, 'examples for everyone, signed in or not');
   equal(samples.body.criteria.range?.scale.id, 'cefr', 'criterion names and scales for the example reports');

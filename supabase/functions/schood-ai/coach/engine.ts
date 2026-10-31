@@ -1,4 +1,5 @@
 import { decodeAnswers, plain, type InEvent, type Locale, type MenuAction, type UpdateRequest, type UpdateResponse } from '../../../../packages/coach-packs/src/mod.ts';
+import { packFor } from '../../../../packages/coach-packs/src/registry.ts';
 import { SchoodAIError, type RequestContext } from '../types.ts';
 import { forgetTeamSeats } from './access.ts';
 import { Bot } from './bot.ts';
@@ -6,8 +7,9 @@ import { chooseDrill, finishShadow, freshDrill, onDrillAnswer, onShadowVoice, re
 import { onLessonCheck, onPhotoHelp, onPhotoStep, startLesson } from './flows/extra.ts';
 import { showHelp, showPlan, showProgress, showReport, showSamples, showSettings, showToday } from './flows/info.ts';
 import { askTarget, languagePicker, onGoal, reminderPicker, savePlacement, setLanguage, startDiagnostic, welcome } from './flows/onboard.ts';
-import { onPollAnswer, onQuizAnswer, quizHint, startDeck, startQuiz } from './flows/quiz.ts';
-import { chooseRoleplay, onRoleplayLine, reviewRoleplay, startRoleplay } from './flows/roleplay.ts';
+import { mockSets, onPollAnswer, onQuizAnswer, quizHint, startDeck, startMistakes, startMock, startQuiz } from './flows/quiz.ts';
+import { chooseRoleplay, chooseScript, onRoleplayLine, reviewRoleplay, startRoleplay } from './flows/roleplay.ts';
+import { finishScript, onScriptText, startScript } from './flows/script.ts';
 import { chooseSpeaking, finishMock, finishPractice, onSpeakingAnswer, speakingExams, speakingNext, speakingRerecord, startSpeaking } from './flows/speaking.ts';
 import { chooseWriting, confirmWriting, onWritingPhoto, onWritingText, startWriting, writingLadder, writingRewrite } from './flows/writing.ts';
 import type { CoachRuntime } from './runtime.ts';
@@ -20,6 +22,7 @@ import type { CoachRuntime } from './runtime.ts';
 const COMMANDS: Record<string, MenuAction | 'menu' | 'test' | 'language' | 'samples'> = {
   today: 'today', mock: 'mock', speaking: 'speaking', writing: 'writing', reading: 'reading', listening: 'listening', practice: 'practice', vocab: 'vocab', phrases: 'phrases',
   roleplay: 'roleplay', shadowing: 'shadowing', drill: 'drill', photo: 'photo', lesson: 'lesson', progress: 'progress', report: 'report', plan: 'plan', settings: 'settings', help: 'help',
+  mistakes: 'mistakes', script: 'script',
   menu: 'menu', cancel: 'menu', test: 'test', language: 'language', samples: 'samples',
 };
 
@@ -32,7 +35,8 @@ export async function handleUpdate(ctx: RequestContext, runtime: CoachRuntime, r
   // Writing to the bot again after blocking it means they are back.
   if (enrollment.status === 'blocked') enrollment = (await runtime.store.updateEnrollment(enrollment.id, enrollment.revision, { status: 'active' })) ?? enrollment;
   if (enrollment.packVersion !== pack.manifest.version) enrollment = (await runtime.store.updateEnrollment(enrollment.id, enrollment.revision, { packVersion: pack.manifest.version })) ?? enrollment;
-  const bot = new Bot(ctx, runtime, pack, enrollment, request);
+  // Mixed packs (B3–B6): the practice text in this person's language.
+  const bot = new Bot(ctx, runtime, packFor(pack, enrollment.locale), enrollment, request);
   await dispatch(bot, request.event);
   await bot.save();
   return { messages: bot.messages, ...(bot.toast ? { toast: bot.toast } : {}), ...(bot.clearButtons ? { clearButtons: true } : {}) };
@@ -82,7 +86,7 @@ async function joinTeam(bot: Bot, code: string) {
   }
 }
 
-const PRACTICE = new Set<string>(['today', 'mock', 'speaking', 'writing', 'reading', 'listening', 'practice', 'vocab', 'phrases', 'roleplay', 'shadowing', 'drill', 'photo', 'lesson']);
+const PRACTICE = new Set<string>(['today', 'mock', 'speaking', 'writing', 'reading', 'listening', 'practice', 'vocab', 'phrases', 'roleplay', 'shadowing', 'drill', 'photo', 'lesson', 'mistakes', 'script']);
 
 async function onAction(bot: Bot, action: string) {
   bot.state.task = null;
@@ -100,7 +104,15 @@ async function onAction(bot: Bot, action: string) {
     case 'report': await showReport(bot); return;
     case 'plan': showPlan(bot); return;
     case 'today': if (!bot.enrollment.goal) { askTarget(bot, bot.enrollment.placement ? undefined : bot.pack.plan.goal.default); return; } await showToday(bot); return;
-    case 'mock': if (speakingExams(bot).some((exam) => exam.mock)) await startSpeaking(bot, { mode: 'mock' }); else await chooseRoleplay(bot); return;
+    case 'mock':
+      if (speakingExams(bot).some((exam) => exam.mock)) await startSpeaking(bot, { mode: 'mock' });
+      else if (mockSets(bot).length) await startMock(bot);
+      // Role-play coaches (B4, B5): the weekly mock call or interview.
+      else if (bot.pack.plan.weeklyMock && bot.pack.byId.get(bot.pack.plan.weeklyMock.activity)?.kind === 'roleplay') await startRoleplay(bot, bot.pack.plan.weeklyMock.activity);
+      else await chooseRoleplay(bot);
+      return;
+    case 'mistakes': await startMistakes(bot); return;
+    case 'script': await startScript(bot); return;
     case 'speaking': chooseSpeaking(bot); return;
     case 'writing': await chooseWriting(bot); return;
     case 'reading': case 'listening': case 'practice': await startQuiz(bot, action); return;
@@ -134,7 +146,13 @@ async function startTask(bot: Bot, index: number) {
   if (bot.state.current.flow !== 'idle') await leaveFlow(bot);
   bot.state.task = index;
   switch (task.slot) {
-    case 'mock': await startSpeaking(bot, { activityId: task.activityId, mode: 'mock' }); return;
+    case 'mock': {
+      const kind = bot.pack.byId.get(task.activityId)?.kind;
+      if (kind === 'quiz_set') await startMock(bot, task.activityId);
+      else if (kind === 'roleplay') await startRoleplay(bot, task.activityId);
+      else await startSpeaking(bot, { activityId: task.activityId, mode: 'mock' });
+      return;
+    }
     case 'speaking': await startSpeaking(bot, { activityId: task.activityId, mode: task.part ?? '' }); return;
     case 'roleplay': await startRoleplay(bot, task.activityId); return;
     case 'writing': await startWriting(bot, task.activityId); return;
@@ -174,6 +192,9 @@ async function onCallback(bot: Bot, data: string) {
   if (data.startsWith('ls:')) { await onLessonCheck(bot, Number(data.slice(3))); return; }
   if (data.startsWith('dr:')) { if (!(await bot.allowed())) { bot.paywall(); return; } if (bot.state.current.flow !== 'idle') await leaveFlow(bot); await startDrill(bot, data.slice(3)); return; }
   if (data.startsWith('qh:')) { const [, index, n] = data.split(':'); quizHint(bot, Number(index), Number(n)); return; }
+  if (data.startsWith('rp:script:')) { if (!(await bot.allowed())) { bot.paywall(); return; } if (bot.state.current.flow !== 'idle') await leaveFlow(bot); const template = bot.pack.scriptBuilder?.roleplay; if (template) await startRoleplay(bot, template, data.slice(10)); else bot.menu(); return; }
+  if (data === 'sc:list') { if (!(await bot.allowed())) { bot.paywall(); return; } if (bot.state.current.flow !== 'idle') await leaveFlow(bot); await chooseScript(bot); return; }
+  if (data === 'sc:retry') { if (bot.state.current.flow === 'script') await finishScript(bot); else bot.menu(); return; }
   if (data.startsWith('rp:again:')) { if (!(await bot.allowed())) { bot.paywall(); return; } if (bot.state.current.flow !== 'idle') await leaveFlow(bot); await startRoleplay(bot, data.slice(9)); return; }
   const flow = bot.state.current.flow;
   const answer = /^a:(\d{1,3}):(\d)$/.exec(data);
@@ -215,6 +236,7 @@ async function onText(bot: Bot, text: string) {
     case 'quiz': await onQuizAnswer(bot, { text }); return;
     case 'drill': await onDrillAnswer(bot, { text }); return;
     case 'shadow': await onShadowVoice(bot, null); return;
+    case 'script': await onScriptText(bot, text); return;
     default: bot.text(bot.t('not_now'), bot.menuButtons());
   }
 }
@@ -224,6 +246,7 @@ async function onVoice(bot: Bot, event: Extract<InEvent, { type: 'voice' }>) {
     case 'speaking': await onSpeakingAnswer(bot, { voice: event }); return;
     case 'roleplay': await onRoleplayLine(bot, { voice: event }); return;
     case 'shadow': await onShadowVoice(bot, event); return;
+    case 'script': bot.text(bot.t('script.typed')); return;
     default:
       if (!(await bot.allowed())) { bot.paywall(); return; }
       if (speakingExams(bot).length) chooseSpeaking(bot);

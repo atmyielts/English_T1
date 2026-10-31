@@ -42,6 +42,8 @@ export function updateMastery(previous: MasteryState | null, node: string, updat
     const accuracy = Math.min(1, Math.max(0, update.accuracy));
     state.mastery = state.evidence ? Math.round((state.mastery + alpha * (accuracy - state.mastery)) * 1000) / 1000 : accuracy;
     state.lastScore = Math.round(accuracy * 100) / 100;
+    // On an accuracy scale (B3: the share of exam questions right) the level is the same measure.
+    if (scale.fromAccuracy) state.level = Math.round((scale.min + state.mastery * (scale.max - scale.min)) * 1000) / 1000;
     state.evidence += 1;
   }
   for (const tag of update.errors ?? []) {
@@ -89,7 +91,8 @@ export interface Prediction {
 /**
  * From the learner's own results only, never from outside norms: the recent level
  * and the trend of their results (Theil–Sen slope, robust to one odd day). The
- * forecast is capped at one scale point above now and needs three results over a
+ * forecast is capped at one scale point above now (on a wide scale such as a percentage,
+ * a ninth of the range, about a band) and needs three results over a
  * week or more.
  */
 export function predict(scale: LevelScale, points: readonly ResultPoint[], weeksLeft: number, round: 'step' | 'half_up' | 'down' = 'step'): Prediction {
@@ -107,7 +110,8 @@ export function predict(scale: LevelScale, points: readonly ResultPoint[], weeks
   slopes.sort((a, b) => a - b);
   const perWeek = slopes.length ? slopes[Math.floor(slopes.length / 2)] : 0;
   const raw = current + perWeek * Math.max(0, weeksLeft);
-  const predicted = snap(scale, Math.min(current + 1, Math.max(current - 0.5, raw)), round);
+  const reach = Math.max(1, (scale.max - scale.min) / 9);
+  const predicted = snap(scale, Math.min(current + reach, Math.max(current - reach / 2, raw)), round);
   return { current, predicted, perWeek: Math.round(perWeek * 100) / 100, confidence: sorted.length >= 6 ? 'medium' : 'low', reason: 'ok' };
 }
 

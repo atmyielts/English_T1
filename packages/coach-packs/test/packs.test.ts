@@ -21,7 +21,8 @@ Deno.test('packs: every registered pack validates with no problems and meets the
     assert(!ids.has(source.manifest.id) && !features.has(source.manifest.feature), 'pack ids and features are unique');
     ids.add(source.manifest.id); features.add(source.manifest.feature);
     assert(source.diagnostic.items.length >= DEPTH.diagnosticItems, `${source.manifest.id}: placement depth`);
-    for (const rubric of source.rubrics) assert(rubric.calibration.samples.length >= DEPTH.calibrationSamples, `${rubric.id}: calibration depth`);
+    // Keyed rubrics (mini-mocks scored by the answer key) have nothing to calibrate.
+    for (const rubric of source.rubrics.filter((entry) => !entry.keyed)) assert(rubric.calibration.samples.length >= DEPTH.calibrationSamples, `${rubric.id}: calibration depth`);
   }
   const packs = loadPacks();
   assert(packs.get('ielts')?.manifest.feature === 'B1' && packs.get('speaking')?.manifest.feature === 'B2', 'B1 and B2 load');
@@ -29,7 +30,7 @@ Deno.test('packs: every registered pack validates with no problems and meets the
 });
 
 Deno.test('packs: the calibration runs agree with the reference scores and with each other', () => {
-  for (const source of PACK_SOURCES) for (const rubric of source.rubrics) {
+  for (const source of PACK_SOURCES) for (const rubric of source.rubrics.filter((entry) => !entry.keyed)) {
     const report = calibrate(rubric);
     assert(report.passed, `${rubric.id}: ${report.failures.join('; ')}`);
     assert(report.runs >= report.samples * DEPTH.calibrationRuns, `${rubric.id}: at least ${DEPTH.calibrationRuns} runs per sample`);

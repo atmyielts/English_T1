@@ -19,7 +19,9 @@ import { bytesOf, clipOf, criterionLines, MAX_TEXT, MAX_VOICE_SECONDS, overallLa
 
 type Playing = Extract<FlowState, { flow: 'roleplay' }>;
 
-export function roleplays(bot: Bot): Roleplay[] { return bot.pack.ofKind('roleplay'); }
+/** The role-plays people pick from (the own-product template is started with a saved script). */
+export function roleplays(bot: Bot): Roleplay[] { return bot.pack.ofKind('roleplay').filter((activity) => !activity.template); }
+const roleplayById = (bot: Bot, id: string) => bot.pack.ofKind('roleplay').find((entry) => entry.id === id);
 
 export async function chooseRoleplay(bot: Bot) {
   const level = await bot.level();
@@ -29,7 +31,9 @@ export async function chooseRoleplay(bot: Bot) {
   const suited = roleplays(bot).filter((activity) => level === null || (level >= activity.levels[0] - 0.5 && level <= activity.levels[1] + 0.5));
   const pool = (suited.length >= 4 ? suited : roleplays(bot)).sort((a, b) => (last.get(a.id) ?? 0) - (last.get(b.id) ?? 0)).slice(0, 5);
   bot.state.options = pool.map((activity) => `rp:${activity.id}`);
-  bot.text(bot.t('rp.choose'), [...pool.map((activity, index) => [{ text: `${pick(activity.title, bot.locale)} · ${levelLabel(bot.pack.manifest.scale, activity.levels[0])}–${levelLabel(bot.pack.manifest.scale, activity.levels[1])}`, data: `o:${index}` }]), ...bot.nav()]);
+  // The script builder's own-product buyer, when the coach has one.
+  const own = bot.pack.scriptBuilder ? [[{ text: bot.p('script.practise'), data: 'sc:list' }]] : [];
+  bot.text(bot.t('rp.choose'), [...pool.map((activity, index) => [{ text: `${pick(activity.title, bot.locale)} · ${levelLabel(bot.pack.manifest.scale, activity.levels[0])}–${levelLabel(bot.pack.manifest.scale, activity.levels[1])}`, data: `o:${index}` }]), ...own, ...bot.nav()]);
 }
 
 /** Speaks a persona line when text-to-speech is set up (inside the turn's charge, or cached); silently skipped otherwise. */
@@ -48,27 +52,52 @@ async function voiceOf(bot: Bot, text: string, voice: string | undefined, cacheK
   }
 }
 
-export async function startRoleplay(bot: Bot, activityId: string) {
-  const activity = roleplays(bot).find((entry) => entry.id === activityId);
+export async function startRoleplay(bot: Bot, activityId: string, scriptId?: string) {
+  const activity = roleplayById(bot, activityId);
   if (!activity) { await chooseRoleplay(bot); return; }
+  // The own-product buyer needs one of the learner's saved scripts.
+  const script = activity.template === 'own_product' && scriptId ? await bot.store.script(scriptId) : null;
+  if (activity.template === 'own_product' && (!script || script.userId !== bot.enrollment.userId || script.pack !== bot.pack.manifest.id)) { await chooseScript(bot); return; }
   const session = await bot.store.createSession({ enrollmentId: bot.enrollment.id, userId: bot.enrollment.userId, pack: bot.pack.manifest.id, packVersion: bot.pack.manifest.version, kind: 'roleplay', activityId: activity.id, mode: bot.enrollment.settings.correction ?? 'gentle', rubric: activity.rubric, source: 'telegram' });
-  await bot.store.addTurn({ sessionId: session.id, userId: bot.enrollment.userId, pack: bot.pack.manifest.id, role: 'coach', kind: 'persona', promptRef: activity.id, content: activity.persona.opening, inputMode: null, clip: null, metrics: {}, timing: {}, keep: false });
-  bot.set({ flow: 'roleplay', sessionId: session.id, activityId: activity.id, turns: 0, hidden: { ...activity.hiddenState.initial }, goalsMet: [] });
-  bot.text(bot.t('rp.intro', { title: pick(activity.title, bot.locale), setting: pick(activity.setting, bot.locale), role: pick(activity.learnerRole, bot.locale), goal: pick(activity.goal, bot.locale) }));
+  const opening = script ? String(script.script.buyer_opening ?? '') || activity.persona.opening : activity.persona.opening;
+  await bot.store.addTurn({ sessionId: session.id, userId: bot.enrollment.userId, pack: bot.pack.manifest.id, role: 'coach', kind: 'persona', promptRef: activity.id, content: opening, inputMode: null, clip: null, metrics: script ? { script: script.id } : {}, timing: {}, keep: false });
+  bot.set({ flow: 'roleplay', sessionId: session.id, activityId: activity.id, turns: 0, hidden: { ...activity.hiddenState.initial }, goalsMet: [], ...(script ? { scriptId: script.id } : {}) });
+  if (script) bot.text(bot.t('script.roleplay', { title: script.title, buyer: String((script.script.buyer as { who?: string } | undefined)?.who ?? '') }));
+  else bot.text(bot.t('rp.intro', { title: pick(activity.title, bot.locale), setting: pick(activity.setting, bot.locale), role: pick(activity.learnerRole, bot.locale), goal: pick(activity.goal, bot.locale) }));
   const notice = factsNotice(activityFacts(bot.pack, activity), bot.locale, bot.ctx.now());
   if (notice) bot.text(notice);
-  bot.text(bot.t('rp.persona', { name: activity.persona.name, line: activity.persona.opening }), [[{ text: bot.p('btn.finish'), data: 'rp:end' }]]);
-  await voiceOf(bot, activity.persona.opening, activity.persona.voice, `rp:${activity.id}:open`);
+  bot.text(bot.t('rp.persona', { name: activity.persona.name, line: opening }), [[{ text: bot.p('btn.finish'), data: 'rp:end' }]]);
+  await voiceOf(bot, opening, activity.persona.voice, script ? null : bot.mediaKey(`rp:${activity.id}:open`));
+}
+
+/** The learner's saved scripts to practise with, or the way to build one. */
+export async function chooseScript(bot: Bot) {
+  const builder = bot.pack.scriptBuilder;
+  if (!builder) { await chooseRoleplay(bot); return; }
+  const scripts = await bot.store.scripts(bot.enrollment.userId, bot.pack.manifest.id);
+  if (!scripts.length) { bot.text(bot.t('script.none'), [[{ text: bot.p('script.new'), data: 'm:script' }], ...bot.nav()]); return; }
+  bot.text(bot.t('script.choose'), [
+    ...scripts.slice(0, 6).map((script) => [{ text: `🎭 ${script.title}`.slice(0, 60), data: `rp:script:${script.id}` }]),
+    ...(scripts.length < builder.maxScripts ? [[{ text: bot.p('script.new'), data: 'm:script' }]] : []),
+    ...bot.nav(),
+  ]);
+}
+
+/** A saved script as data for the persona and the assessor (never instructions): the product, the buyer and the objections to raise. */
+export function scriptData(script: { title: string; script: Record<string, unknown> }) {
+  const s = script.script as { product?: unknown; offer?: unknown; buyer?: unknown; objections?: { type?: string; objection?: string }[] };
+  return { title: script.title, product: s.product ?? null, offer: s.offer ?? null, buyer: s.buyer ?? null, objections_to_raise: (s.objections ?? []).slice(0, 6).map((entry) => ({ type: entry.type, objection: entry.objection })) };
 }
 
 export async function onRoleplayLine(bot: Bot, input: { text?: string; voice?: VoiceEvent }) {
   const state = bot.state.current as Playing;
-  const activity = roleplays(bot).find((entry) => entry.id === state.activityId);
+  const activity = roleplayById(bot, state.activityId);
   if (!activity) { bot.set({ flow: 'idle' }); bot.menu(); return; }
   if (!(await bot.allowed())) { bot.paywall(); return; }
   if (input.voice && input.voice.duration > MAX_VOICE_SECONDS) { bot.text(bot.t('error.voice_too_long', { max: MAX_VOICE_SECONDS / 60 })); return; }
   if (input.text !== undefined && (input.text.length > MAX_TEXT || !input.text.trim())) { bot.text(bot.t('rp.too_short')); return; }
   const history = (await bot.store.turns(state.sessionId)).filter((turn) => turn.kind === 'persona' || turn.kind === 'line');
+  const script = state.scriptId ? await bot.store.script(state.scriptId) : null;
   const level = await bot.level();
   const mode = bot.enrollment.settings.correction === 'strict' ? 'strict' : 'gentle';
   const explain = bot.explainIn(level);
@@ -82,7 +111,7 @@ export async function onRoleplayLine(bot: Bot, input: { text?: string; voice?: V
       }
       if (!said.trim()) throw new SchoodAIError('invalid_request', 'empty', 400);
       const messages: ChatMessage[] = [
-        { role: 'system', content: personaPrompt(bot.pack, activity, { level, mode, explain, state: state.hidden, practice: practiceLocale(bot.pack, bot.locale), facts: activityFacts(bot.pack, activity), now: bot.ctx.now() }) },
+        { role: 'system', content: personaPrompt(bot.pack, activity, { level, mode, explain, state: state.hidden, practice: practiceLocale(bot.pack, bot.locale), facts: activityFacts(bot.pack, activity), now: bot.ctx.now(), script: script ? scriptData(script) : undefined }) },
         ...conversationMessages(history.map((turn) => ({ role: turn.role, content: turn.content }))),
         { role: 'user', content: wrapUserMessage(said) },
       ];
@@ -131,7 +160,7 @@ export function scorecardOf(turns: Turn[]) {
 
 export async function reviewRoleplay(bot: Bot) {
   const state = bot.state.current as Playing;
-  const activity = roleplays(bot).find((entry) => entry.id === state.activityId);
+  const activity = roleplayById(bot, state.activityId);
   const session = await bot.store.session(state.sessionId);
   if (!activity || !session) { bot.set({ flow: 'idle' }); bot.menu(); return; }
   const turns = await bot.store.turns(session.id);
@@ -139,7 +168,7 @@ export async function reviewRoleplay(bot: Bot) {
   if (learner.length < Math.min(2, activity.minTurns)) {
     bot.set({ flow: 'idle' });
     await bot.store.updateSession(session.id, { status: 'abandoned' });
-    bot.text(bot.t('rp.too_short'), bot.nav([{ text: bot.p('rp.again'), data: `rp:again:${activity.id}` }]));
+    bot.text(bot.t('rp.too_short'), bot.nav([{ text: bot.p('rp.again'), data: state.scriptId ? `rp:script:${state.scriptId}` : `rp:again:${activity.id}` }]));
     return;
   }
   const rubric = bot.pack.rubricById.get(activity.rubric)!;
@@ -151,6 +180,8 @@ export async function reviewRoleplay(bot: Bot) {
   const fluency = { wpm: scorecardOf(turns).pace, fillersPer100: Math.round(learner.reduce((sum, turn) => sum + Number(turn.metrics.fillersPer100 ?? 0), 0) / learner.length * 10) / 10 };
   let review: Assessment, goals: { id: string; met: boolean; quote: string | null }[] = [];
   const facts = activityFacts(bot.pack, activity);
+  const script = state.scriptId ? await bot.store.script(state.scriptId) : null;
+  const again = script ? `rp:script:${script.id}` : `rp:again:${activity.id}`;
   try {
     const messages: ChatMessage[] = [
       { role: 'system', content: [
@@ -162,7 +193,7 @@ export async function reviewRoleplay(bot: Bot) {
         ...(facts.length ? [FACTS_RULE, '- Judge any fact the learner states only against <schood_data kind="facts">; never correct them from memory.'] : []), '',
         rubricText(rubric),
       ].join('\n') },
-      { role: 'user', content: `${dataBlock({ kind: 'conversation', title: 'The whole conversation', data: { scenario: activity.goal.en, transcript } }, 0)}\n${dataBlock({ kind: 'fluency', title: 'Measured fluency', data: fluency }, 1)}\n${facts.length ? `${factsBlock(facts, bot.ctx.now(), 2)}\n` : ''}${wrapUserMessage(evidence)}` },
+      { role: 'user', content: `${dataBlock({ kind: 'conversation', title: 'The whole conversation', data: { scenario: activity.goal.en, transcript } }, 0)}\n${dataBlock({ kind: 'fluency', title: 'Measured fluency', data: fluency }, 1)}\n${facts.length ? `${factsBlock(facts, bot.ctx.now(), 2)}\n` : ''}${script ? `${dataBlock({ kind: 'script', title: 'The learner\'s own product and buyer', data: scriptData(script) }, 3)}\n` : ''}${wrapUserMessage(evidence)}` },
     ];
     const schema = reviewSchema(rubric, activity);
     const result = await bot.ctx.ai.charged({ key: keyOf(bot.pack, 'review'), mode: 'json', reference: bot.reference('review') }, async (charged) => {
@@ -183,7 +214,7 @@ export async function reviewRoleplay(bot: Bot) {
   }
   bot.set({ flow: 'idle' });
   const met = new Set([...state.goalsMet, ...goals.filter((goal) => goal.met).map((goal) => goal.id)]);
-  const scorecard = scorecardOf(turns);
+  const scorecard = { ...scorecardOf(turns), ...salesCard(activity, met) };
   const hidden = activity.hiddenState.fields.filter((field) => field.revealInReview).map((field) => ({ id: field.id, description: field.description, start: activity.hiddenState.initial[field.id], end: state.hidden[field.id] }));
   await bot.store.addScores(scoreRows(bot, session, null, review));
   await learnFrom(bot, rubric, review);
@@ -192,7 +223,7 @@ export async function reviewRoleplay(bot: Bot) {
     overall: review.overall, minutes, event: 'turn_scored', node: activity.node,
     summary: {
       criteria: criteriaOf(review), evidence: Object.fromEntries(review.criteria.map((criterion) => [criterion.id, criterion.evidence])), upgrades: review.upgrades, errors: review.errors, summary: review.summary,
-      goals: activity.goals.map((goal) => ({ id: goal.id, met: met.has(goal.id), quote: goals.find((entry) => entry.id === goal.id)?.quote ?? null })), scorecard, hidden,
+      goals: activity.goals.map((goal) => ({ id: goal.id, met: met.has(goal.id), quote: goals.find((entry) => entry.id === goal.id)?.quote ?? null })), scorecard, hidden, ...(script ? { script: { id: script.id, title: script.title } } : {}),
       metrics: { wpm: scorecard.pace, fillersPer100: fluency.fillersPer100, range: analyseLexis(evidence, bot.pack.fluency).range },
     },
   });
@@ -200,16 +231,30 @@ export async function reviewRoleplay(bot: Bot) {
   const hiddenLines = hidden.map((field) => `• ${escapeHtml(field.description)}: <b>${escapeHtml(String(field.end))}</b>`);
   const better = review.upgrades.slice(0, 3).map((upgrade) => bot.t('speak.better', { said: upgrade.said, better: upgrade.better, why: upgrade.why }));
   const blocks = [
-    `${bot.t('rp.review', { title: pick(activity.title, bot.locale), overall: overallLabel(rubric, review.overall) })}\n${criterionLines(bot, rubric, review).join('\n')}`,
+    `${bot.t('rp.review', { title: script?.title ?? pick(activity.title, bot.locale), overall: overallLabel(rubric, review.overall) })}\n${criterionLines(bot, rubric, review).join('\n')}`,
     goalLines.join('\n'),
     bot.t('rp.scorecard', { ratio: scorecard.talkRatio, questions: scorecard.questionsAsked, words: scorecard.averageTurnWords }),
+    scorecard.objectionsTotal !== undefined ? bot.t('rp.sales_card', { handled: scorecard.objectionsHandled ?? 0, total: scorecard.objectionsTotal, next: bot.p(scorecard.nextStep ? 'btn.yes' : 'btn.no') })
+      : scorecard.nextStep !== undefined ? bot.t('rp.next_step_card', { next: bot.p(scorecard.nextStep ? 'btn.yes' : 'btn.no') }) : null,
     hiddenLines.length ? bot.t('rp.hidden', { name: activity.persona.name }, { lines: hiddenLines.join('\n') }) : null,
-    better.length ? `${bot.t('speak.better_title')}\n${better.join('\n\n')}` : null,
+    better.length ? `${bot.t(activity.goals.some((goal) => goal.kind) ? 'rp.replay_title' : 'speak.better_title')}\n${better.join('\n\n')}` : null,
   ].filter(Boolean);
   const drill = topDrillTag(bot, review);
   bot.text(blocks.join('\n\n'), [
-    [bot.app(bot.p('btn.full_report'), `/session/${session.id}`), { text: bot.p('rp.again'), data: `rp:again:${activity.id}` }],
+    [bot.app(bot.p('btn.full_report'), `/session/${session.id}`), { text: bot.p('rp.again'), data: again }],
     ...(drill ? [[{ text: bot.p('write.drill', { error: pick(bot.pack.errorById.get(drill)?.name, bot.locale) }), data: `dr:${drill}` }]] : []),
     ...bot.nav(),
   ]);
+}
+
+/**
+ * The sales scorecard from the goals' kinds (B4, and B5's salary negotiation): objections
+ * handled of those in the call, and whether a next step was secured. Empty when no goal has a kind.
+ */
+export function salesCard(activity: Roleplay, met: ReadonlySet<string>): { objectionsHandled?: number; objectionsTotal?: number; nextStep?: boolean } {
+  const objections = activity.goals.filter((goal) => goal.kind === 'objection'), next = activity.goals.filter((goal) => goal.kind === 'next_step');
+  return {
+    ...(objections.length ? { objectionsHandled: objections.filter((goal) => met.has(goal.id)).length, objectionsTotal: objections.length } : {}),
+    ...(next.length ? { nextStep: next.some((goal) => met.has(goal.id)) } : {}),
+  };
 }

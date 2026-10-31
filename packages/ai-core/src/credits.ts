@@ -36,7 +36,10 @@ const price = (feature: string, credits: number, tier: ModelTier = 'standard', e
 //   drill   five fresh checked drill items (explain a mistake with items, 2)
 //   voice   a spoken persona line or listening audio (pronunciation drill, 1)
 //   shadow  a shadowing attempt checked by speech recognition (pronunciation drill, 1)
-export const COACH_ACTIONS = ['turn', 'review', 'writing', 'ladder', 'photo', 'drill', 'voice', 'shadow'] as const;
+//   script  a call script and objection map built from the learner's own product (B4
+//           script builder; material generation is 10 and a lesson plan 5: priced as a
+//           lesson plan, one structured document, 5)
+export const COACH_ACTIONS = ['turn', 'review', 'writing', 'ladder', 'photo', 'drill', 'voice', 'shadow', 'script'] as const;
 export type CoachAction = (typeof COACH_ACTIONS)[number];
 type CoachCreditKey = `coach_b${1 | 2 | 3 | 4 | 5 | 6}.${CoachAction}`;
 const COACH_PRICES = Object.fromEntries((['B1', 'B2', 'B3', 'B4', 'B5', 'B6'] as const).flatMap((feature) => {
@@ -50,6 +53,7 @@ const COACH_PRICES = Object.fromEntries((['B1', 'B2', 'B3', 'B4', 'B5', 'B6'] as
     [`${prefix}.drill`, price(feature, 2, 'standard', { assumed: true })],
     [`${prefix}.voice`, price(feature, 1, 'standard', { assumed: true })],
     [`${prefix}.shadow`, price(feature, 1, 'standard', { assumed: true })],
+    [`${prefix}.script`, price(feature, 5, 'premium', { assumed: true })],
   ];
 })) as Record<CoachCreditKey, CreditPrice>;
 /** The credit key of a coach action, for example `coach_b1.turn`. */

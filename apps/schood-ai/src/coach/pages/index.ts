@@ -10,3 +10,5 @@ export { CoachSamples } from './Samples.tsx';
 export { CoachLink } from './Link.tsx';
 export { CoachCertificates, CoachTeam, CoachVerify } from './Records.tsx';
 export { CoachChart, CoachListen, CoachShadow, CoachTimer } from './Tools.tsx';
+export { CoachMistakes } from './Mistakes.tsx';
+export { CoachScripts } from './Scripts.tsx';

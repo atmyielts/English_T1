@@ -100,7 +100,8 @@ export async function checkMilestones(bot: Bot, rubricId: string): Promise<Certi
     issued.push(cert);
     // The qualifying answers are kept past retention: they are the certificate's evidence.
     for (const result of evidence) for (const turn of await bot.store.turns(result.sessionId)) if (turn.role === 'learner') await bot.store.keepTurn(turn.id);
-    emit(bot, 'check_passed', { node: rubric.criteria[0].node, minutes: 0, score: milestone.level, outcome: `level_up_${String(milestone.level).replace('.', '_')}`.slice(0, 40), ref: cert.id });
+    // A keyed rubric (mini-mocks) has no criteria: the level-up is for the coach's first skill.
+    emit(bot, 'check_passed', { node: rubric.criteria[0]?.node ?? pack.manifest.skills[0].id, minutes: 0, score: milestone.level, outcome: `level_up_${String(milestone.level).replace('.', '_')}`.slice(0, 40), ref: cert.id });
     await bot.ctx.audit('coach.certificate_issued', { pack: pack.manifest.id, milestone: milestone.id, level: milestone.level }, { type: 'coach_certificate', id: cert.id });
     bot.text(bot.t('cert.earned', { name: milestoneName(bot, milestone.id), count: evidence.length }), [[{ text: bot.p('cert.open'), url: `${bot.runtime.config.appUrl}/coach/verify/${cert.code}` }]]);
   }

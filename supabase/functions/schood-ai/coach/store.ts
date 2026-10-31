@@ -116,6 +116,18 @@ export interface Certificate {
   issuedAt: string;
   revokedAt: string | null;
 }
+/** A script built by the script builder (B4): the learner's answers and the structured script. */
+export interface SavedScript {
+  id: string;
+  userId: string;
+  pack: string;
+  title: string;
+  /** The answers to the builder's questions, by question id (the learner's own words). */
+  input: Record<string, string>;
+  script: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
 export interface Team { id: string; name: string; managerId: string | null; packs: string[]; seats: number; status: 'active' | 'suspended' | 'ended'; validUntil: string; source: string; createdAt: string }
 export interface TeamMember { teamId: string; userId: string; role: 'manager' | 'member'; status: 'active' | 'removed'; joinedAt: string }
 
@@ -193,4 +205,16 @@ export interface CoachStore {
   joinTeam(code: string, userId: string, now: string): Promise<TeamMember>;
   /** Verified practice per member since a time, for the leaderboard: minutes, scored results, active days. */
   teamActivity(userIds: string[], packs: string[], since: string): Promise<{ userId: string; minutes: number; results: number; activeDays: number; best: Record<string, number | null> }[]>;
+
+  /**
+   * The anonymous percentile's input: for each score (rounded to a whole number), how
+   * many people's latest result on a rubric since a time it is. Counts only, never people.
+   */
+  cohort(pack: string, rubric: string, since: string): Promise<{ score: number; people: number }[]>;
+
+  /** Saved scripts (B4 script builder), newest first. */
+  scripts(userId: string, pack: string): Promise<SavedScript[]>;
+  script(id: string): Promise<SavedScript | null>;
+  saveScript(input: Omit<SavedScript, 'id' | 'createdAt' | 'updatedAt'>): Promise<SavedScript>;
+  deleteScript(id: string, userId: string): Promise<boolean>;
 }
