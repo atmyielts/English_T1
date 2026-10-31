@@ -36,13 +36,13 @@ export const plan: PlanRules = {
     {
       id: 'build',
       minWeeksLeft: 4,
-      title: { en: 'Build: range and accuracy', uz: 'Rivojlanish: boy lug‘at va aniqlik', ru: 'Развитие: разнообразие и точность' },
+      title: { en: 'Build: range and accuracy', uz: 'Rivojlanish: xilma-xillik va aniqlik', ru: 'Развитие: разнообразие и точность' },
       mix: { speaking: 3, writing: 3, reading: 2, listening: 2, vocab: 2, drill: 2 },
     },
     {
       id: 'exam-ready',
       minWeeksLeft: 1,
-      title: { en: 'Exam-ready: timed sets and mocks', uz: 'Imtihonga tayyorgarlik: vaqtli mashqlar va sinovlar', ru: 'К экзамену: задания на время и пробники' },
+      title: { en: 'Exam-ready: timed sets and mocks', uz: 'Imtihonga tayyorgarlik: vaqt belgilangan mashqlar va sinovlar', ru: 'К экзамену: задания на время и пробники' },
       mix: { speaking: 4, writing: 3, reading: 3, listening: 3, vocab: 1, drill: 1 },
     },
     {
@@ -87,9 +87,9 @@ export const reminders: Reminders = {
       ru: 'Ещё один небольшой шаг к баллу {target}: {task}, примерно {minutes} мин.',
     },
     {
-      en: 'Your streak is at {streak} days. Today’s {task} takes about {minutes} minutes whenever suits you.',
-      uz: 'Seriyangiz {streak} kunga yetdi. Bugungi {task} taxminan {minutes} daqiqa oladi, qulay vaqtingizda.',
-      ru: 'Ваша серия: {streak} дн. подряд. Сегодняшнее задание «{task}» займёт около {minutes} мин., когда вам удобно.',
+      en: 'You are on a {streak}-day streak. Today: {task}, about {minutes} minutes, whenever it suits you.',
+      uz: 'Seriyangiz {streak} kunga yetdi. Bugungi vazifa — «{task}», taxminan {minutes} daqiqa; o‘zingizga qulay vaqtda bajaring.',
+      ru: 'Ваша серия: {streak} дн. подряд. Сегодняшнее задание «{task}» займёт около {minutes} мин. — в любое удобное для вас время.',
     },
     {
       en: 'Hi {name}, little and often works best for IELTS. Today: {task} ({minutes} min).',
@@ -97,8 +97,8 @@ export const reminders: Reminders = {
       ru: 'Привет, {name}! Для IELTS лучше понемногу, но регулярно. Сегодня: {task} ({minutes} мин.).',
     },
     {
-      en: '{coach} here. I have prepared {task} for you today. Shall we start when you have {minutes} minutes?',
-      uz: 'Salom, men — {coach}. Bugun siz uchun {task} tayyorladim. {minutes} daqiqa vaqtingiz bo‘lganda boshlaymizmi?',
+      en: '{coach} here. Today I have this ready for you: {task}. Shall we start when you have {minutes} minutes?',
+      uz: 'Salom, men — {coach}. Bugun siz uchun tayyorladim: {task}. {minutes} daqiqa vaqtingiz bo‘lganda boshlaymizmi?',
       ru: 'Это {coach}. На сегодня для вас готово: {task}. Начнём, когда у вас будет {minutes} мин.?',
     },
     {
@@ -107,15 +107,15 @@ export const reminders: Reminders = {
       ru: 'Сегодня хватит чашки чая и {minutes} мин., {name}: {task}.',
     },
     {
-      en: 'You are working at band {level} and aiming for {target}. Today’s step: {task}.',
-      uz: 'Hozirgi darajangiz {level}, maqsadingiz {target}. Bugungi qadam: {task}.',
-      ru: 'Сейчас ваш уровень {level}, цель — {target}. Шаг на сегодня: {task}.',
+      en: 'You are working at about band {level} and aiming for {target}. Today’s step: {task}.',
+      uz: 'Hozir taxminan {level} ball darajasidasiz, maqsadingiz — {target}. Bugungi qadam: {task}.',
+      ru: 'Сейчас ваш примерный балл — {level}, цель — {target}. Шаг на сегодня: {task}.',
     },
   ],
   comeback: [
     {
-      en: 'Welcome back, {name}. Missing a day happens to everyone. Today’s {task} is a gentle restart, about {minutes} minutes.',
-      uz: 'Qaytganingizdan xursandmiz, {name}. Bir kun o‘tkazib yuborish hammada bo‘ladi. Bugungi {task} yengil qayta boshlash, taxminan {minutes} daqiqa.',
+      en: 'Welcome back, {name}. Missing a day happens to everyone. Today’s task is a gentle restart: {task}, about {minutes} minutes.',
+      uz: 'Qaytganingizdan xursandmiz, {name}. Bir kun o‘tkazib yuborish hammada bo‘ladi. Bugungi vazifa — «{task}»: qayta boshlash uchun yengil, taxminan {minutes} daqiqa.',
       ru: 'С возвращением, {name}! Пропустить день бывает с каждым. Сегодняшнее задание «{task}» — мягкий старт, примерно {minutes} мин.',
     },
     {
@@ -125,30 +125,30 @@ export const reminders: Reminders = {
     },
     {
       en: 'Your progress is saved and waiting, {name}. When you have {minutes} minutes, {task} is ready.',
-      uz: 'Natijalaringiz saqlangan va sizni kutmoqda, {name}. {minutes} daqiqa vaqtingiz bo‘lganda, {task} tayyor.',
+      uz: 'Natijalaringiz saqlangan va sizni kutmoqda, {name}. {minutes} daqiqa vaqtingiz bo‘lsa, «{task}» tayyor.',
       ru: 'Ваш прогресс сохранён и ждёт вас, {name}. Когда будет {minutes} мин., задание «{task}» готово.',
     },
   ],
   weekly: {
     en: 'Your weekly report is ready, {name}. The headline: {delta}. Open it to see what to focus on next week.',
     uz: 'Haftalik hisobotingiz tayyor, {name}. Asosiysi: {delta}. Keyingi haftada nimaga e’tibor berishni ko‘rish uchun oching.',
-    ru: 'Ваш недельный отчёт готов, {name}. Главное: {delta}. Откройте, чтобы увидеть, на чём сосредоточиться на следующей неделе.',
+    ru: 'Ваш еженедельный отчёт готов, {name}. Главное: {delta}. Откройте, чтобы увидеть, на чём сосредоточиться на следующей неделе.',
   },
   countdown: [
     {
-      en: '{days} days to your exam. Steady practice now is what helps on the day. Today: {task}.',
-      uz: 'Imtihoningizgacha {days} kun qoldi. Hozirgi muntazam mashq imtihon kuni yordam beradi. Bugun: {task}.',
-      ru: 'Дней до экзамена: {days}. Именно спокойная регулярная практика сейчас помогает в день экзамена. Сегодня: {task}.',
+      en: 'Days until your exam: {days}. Steady practice now is what helps on the day. Today: {task}.',
+      uz: 'Imtihoningizgacha {days} kun qoldi. Hozir muntazam mashq qilish imtihon kuni qo‘l keladi. Bugun: {task}.',
+      ru: 'Дней до экзамена: {days}. Спокойная регулярная практика сейчас — то, что поможет в день экзамена. Сегодня: {task}.',
     },
     {
-      en: '{days} days to go, {name}. Keep your routine: {task}, about {minutes} minutes.',
-      uz: '{days} kun qoldi, {name}. Odatingizni saqlang: {task}, taxminan {minutes} daqiqa.',
+      en: '{name}, days to go: {days}. Keep your routine: {task}, about {minutes} minutes.',
+      uz: '{days} kun qoldi, {name}. Mashq tartibingizni saqlang: {task}, taxminan {minutes} daqiqa.',
       ru: '{name}, дней до экзамена: {days}. Сохраняйте ритм: {task}, примерно {minutes} мин.',
     },
     {
-      en: '{days} days until the exam. Every session adds up, and today’s {task} keeps your skills fresh.',
-      uz: 'Imtihongacha {days} kun. Har bir mashg‘ulot hisobga kiradi, bugungi {task} esa ko‘nikmalaringizni yangi saqlaydi.',
-      ru: 'Дней до экзамена: {days}. Каждое занятие идёт в копилку, а сегодняшнее «{task}» поддержит ваши навыки в форме.',
+      en: 'Days until the exam: {days}. Every session adds up, and today’s task keeps your skills fresh: {task}.',
+      uz: 'Imtihongacha {days} kun. Har bir mashg‘ulot o‘z hissasini qo‘shadi, bugungi «{task}» esa ko‘nikmalaringizni charxlab turadi.',
+      ru: 'Дней до экзамена: {days}. Каждое занятие идёт в копилку, а сегодняшнее задание «{task}» поможет держать навыки в форме.',
     },
   ],
 };

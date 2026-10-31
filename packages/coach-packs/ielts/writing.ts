@@ -79,15 +79,15 @@ const task2Prompts: WritingTask[] = [
   ),
   task2(
     'ai-office-jobs',
-    { en: 'Task 2 · Will AI replace office jobs?', uz: 'Task 2 · Sun’iy intellekt ofis ishlarini egallaydimi?', ru: 'Task 2 · Заменит ли ИИ офисную работу?' },
-    'As computer programs become able to write reports, answer customers and analyse data, some people believe that most office jobs will disappear within a generation. Others think these programs will simply change the way office workers do their jobs.',
+    { en: 'Task 2 · Will AI replace office jobs?', uz: 'Task 2 · AI ofis ishlarining o‘rnini egallaydimi?', ru: 'Task 2 · Заменит ли ИИ офисных работников?' },
+    'As computer programs become able to write reports, answer customers’ questions and analyse data, some people believe that most office jobs will disappear within a generation. Others think these programs will simply change the way office workers do their jobs.',
     'Discuss both views and give your own opinion.',
     ['discussion', 'technology', 'work'],
     'Discuss both views and give an opinion. A strong answer gives each view a developed paragraph: (1) why many office jobs could disappear (tasks that are routine and rule-based, cost savings, speed, examples such as call centres or data entry) and (2) why the jobs may change rather than vanish (people still check, decide and take responsibility; new roles appear; past technology changed jobs without ending them). The writer\'s own opinion must be stated clearly (introduction and conclusion at least) and may sit with either side or between them, with reasons. Writing only about one view, or about technology in general (phones, social media), limits Task Response to 5. Giving no opinion at all limits it to 5; an opinion only in the last line is a weakness (usually 6). Predictions should be supported, not just asserted.',
   ),
   task2(
     'young-offenders',
-    { en: 'Task 2 · Punishing young offenders', uz: 'Task 2 · Voyaga yetmagan huquqbuzarlar', ru: 'Task 2 · Наказание несовершеннолетних' },
+    { en: 'Task 2 · Punishing young offenders', uz: 'Task 2 · Voyaga yetmagan huquqbuzarlarni jazolash', ru: 'Task 2 · Наказание несовершеннолетних' },
     'Some people believe that teenagers who commit minor offences, such as vandalism or shoplifting, should face the same punishments as adults. Others argue that young offenders should be dealt with differently, for example through education programmes or by meeting the victims of their crimes.',
     'Discuss both views and give your own opinion.',
     ['discussion', 'crime'],
@@ -95,11 +95,11 @@ const task2Prompts: WritingTask[] = [
   ),
   task2(
     'global-products',
-    { en: 'Task 2 · Products from around the world', uz: 'Task 2 · Dunyo bo‘ylab mahsulotlar', ru: 'Task 2 · Товары со всего мира' },
+    { en: 'Task 2 · Products from around the world', uz: 'Task 2 · Dunyoning turli burchaklaridan mahsulotlar', ru: 'Task 2 · Товары со всего мира' },
     'Today people in most countries can easily buy food, clothes and entertainment produced on the other side of the world.',
     'Do the advantages of this outweigh the disadvantages?',
     ['advantages_disadvantages', 'globalisation'],
-    'Advantages versus disadvantages with a judgement. A strong answer explains real advantages (choice, lower prices, access to medicines and technology, cultural exchange, jobs in exporting countries) and real disadvantages (pressure on local producers and traditional crafts, similar shops and films everywhere, transport emissions, dependence on imports when supply chains break), and then clearly says whether the advantages outweigh the disadvantages, with the reason that tips the balance. The question is "outweigh", so a list of both sides without a verdict limits Task Response to 5; a verdict only in the conclusion that does not follow from the body is a weakness (usually 6). All three areas named (food, clothes, entertainment) do not need equal space, but the essay should not narrow to one of them only. Examples should be concrete (a local market, a type of film, a price).',
+    'Advantages versus disadvantages with a judgement. A strong answer explains real advantages (choice, lower prices, access to medicines and technology, cultural exchange, jobs in exporting countries) and real disadvantages (pressure on local producers and traditional crafts, similar shops and films everywhere, transport emissions, dependence on imports when supply chains break), and then clearly says whether the advantages outweigh the disadvantages, with the reason that tips the balance. The question is "outweigh", so a list of both sides without a verdict limits Task Response to 5; a verdict only in the conclusion that does not follow from the body is a weakness (usually 6). The three areas named (food, clothes, entertainment) do not all need equal space, but the essay should not narrow to one of them only. Examples should be concrete (a local market, a type of film, a price).',
   ),
   task2(
     'city-centres',
@@ -273,7 +273,7 @@ const letters: WritingTask[] = [
     ['say which course you booked and what happened', 'explain how the cancellation has affected you', 'say what you would like the college to do'],
     'Dear Sir or Madam,',
     ['formal', 'complaint'],
-    'Formal complaint. The purpose (to complain and ask for action) must be clear from the first lines. All three points are needed: (1) the course name, dates, price or booking details and what happened (cancelled after two lessons, no contact); (2) concrete effects (money paid, plans changed, a missed goal such as a qualification or a job requirement, time off work or childcare arranged); (3) a specific request (a full or partial refund by a date, a place on the next course, an explanation) with a polite but firm tone. Register: formal throughout ("I am writing to…", "I would be grateful if…", "Yours faithfully" after "Dear Sir or Madam"); no contractions, slang or aggressive language. A missing bullet point limits Task Achievement to 5; an inconsistent or informal tone, or no clear request, usually limits it to 6. Under 150 words is penalised.',
+    'Formal complaint. The purpose (to complain and ask for action) must be clear from the first lines. All three points are needed: (1) the course name, dates, price or booking details and what happened (cancelled after two lessons, no contact); (2) concrete effects (money paid, plans changed, a missed goal such as a qualification or a job requirement, time off work or childcare arranged); (3) a specific request (a full or partial refund by a date, a place on the next course, an explanation) with a polite but firm tone. Register: formal throughout ("I am writing to…", "I would be grateful if…", "Yours faithfully" after "Dear Sir or Madam"); no contractions, slang or aggressive language. A missing bullet point limits Task Achievement to 4; an inconsistent or informal tone, or no clear request, usually limits it to 6. Under 150 words is penalised.',
   ),
   letter(
     'staff-day-out',
@@ -283,7 +283,7 @@ const letters: WritingTask[] = [
     ['suggest a place for the day out', 'explain why it would suit your colleagues', 'describe what activities people could do there'],
     'Dear Mr Harper,',
     ['semi_formal', 'suggestion'],
-    'Semi-formal letter to a known manager. The purpose (responding to the request with a suggestion) must be clear early. All three points: (1) one specific place, named and located (a lake, a mountain resort, a farm, a city museum), with practical details such as travel time; (2) why it suits colleagues, tied to who they are (different ages and fitness levels, families, people who do not drink, budget, team-building); (3) specific activities (a guided walk, a cooking class, a team quiz, boating), ideally with options for different people. Register: polite and friendly but respectful ("I thought you might be interested in…", "I would be happy to help organise…", "Kind regards" or "Yours sincerely" with the manager’s name); too informal (slang, "Hi mate") or stiffly formal throughout is a weakness. A missing point limits Task Achievement to 5; vague suggestions without detail usually limit it to 6.',
+    'Semi-formal letter to a known manager. The purpose (responding to the request with a suggestion) must be clear early. All three points: (1) one specific place, named and located (a lake, a mountain resort, a farm, a city museum), with practical details such as travel time; (2) why it suits colleagues, tied to who they are (different ages and fitness levels, families, dietary needs, budget, team-building); (3) specific activities (a guided walk, a cooking class, a team quiz, boating), ideally with options for different people. Register: polite and friendly but respectful ("I thought you might be interested in…", "I would be happy to help organise…", "Kind regards" or "Yours sincerely" with the manager’s name); too informal (slang, "Hi mate") or stiffly formal throughout is a weakness. A missing point limits Task Achievement to 4; vague suggestions without detail usually limit it to 6.',
   ),
   letter(
     'friend-visit',
@@ -293,7 +293,7 @@ const letters: WritingTask[] = [
     ['tell your friend what the weather will be like and what to bring', 'suggest some places to visit', 'offer to help in some way during the visit'],
     'Dear …,',
     ['informal', 'advice'],
-    'Informal letter to a friend. A friendly opening that responds to the friend’s news, then all three points: (1) realistic summer weather for the writer’s city (heat, temperatures, rain or not) and practical things to bring linked to it (light clothes, a hat, sunscreen, a jacket for cool evenings, comfortable shoes); (2) two or three specific places with a reason for each (a market, a historic area, a park, a day trip); (3) a concrete offer of help (meeting at the airport, a place to stay, being a guide on certain days, buying a local SIM card). Register: warm and natural, contractions and phrasal verbs welcome ("can’t wait", "pick you up"), a friendly close ("See you soon", "Best wishes"). Writing formally ("I am writing to inform you…", "Yours faithfully") is a tone error that usually limits Task Achievement to 6. A missing point limits it to 5.',
+    'Informal letter to a friend. A friendly opening that responds to the friend’s news, then all three points: (1) realistic summer weather for the writer’s city (heat, temperatures, rain or not) and practical things to bring linked to it (light clothes, a hat, sunscreen, a jacket for cool evenings, comfortable shoes); (2) two or three specific places with a reason for each (a market, a historic area, a park, a day trip); (3) a concrete offer of help (meeting at the airport, a place to stay, being a guide on certain days, buying a local SIM card). Register: warm and natural, contractions and phrasal verbs welcome ("can’t wait", "pick you up"), a friendly close ("See you soon", "Best wishes"). Writing formally ("I am writing to inform you…", "Yours faithfully") is a tone error that usually limits Task Achievement to 6. A missing point limits it to 4.',
   ),
 ];
 

@@ -50,7 +50,7 @@ export const drills: Activity[] = [
         answer: 2,
         explanation: {
           en: '“The number of + plural noun” is a fixed Task 1 phrase: it is one specific figure on the graph, so it takes the. “A number of tourists” means “several tourists”, which is not what the graph measures. “The tourists” is wrong because tourists in general take no article, and the first option drops the before “number”.',
-          uz: '«The number of + ko‘plikdagi ot» Task 1 uchun turg‘un ibora: grafikdagi aniq bir ko‘rsatkich, shuning uchun the oladi. «A number of tourists» «bir qancha sayyohlar» degani, grafik esa buni o‘lchamaydi. «The tourists» noto‘g‘ri, chunki umumiy sayyohlar artiklsiz keladi; birinchi variantda «number» oldidagi the tushib qolgan.',
+          uz: '«The number of + ko‘plikdagi ot» Task 1 uchun turg‘un ibora: grafikdagi aniq bir ko‘rsatkich, shuning uchun the oladi. «A number of tourists» «bir qancha sayyohlar» degani, grafik esa buni o‘lchamaydi. «The tourists» noto‘g‘ri, chunki umuman sayyohlar haqida gap ketganda artikl qo‘yilmaydi; birinchi variantda «number» oldidagi the tushib qolgan.',
           ru: '«The number of + существительное во множественном» — устойчивая фраза для Task 1: это конкретный показатель на графике, поэтому the. «A number of tourists» значит «несколько туристов», а график измеряет не это. «The tourists» неверно: туристы вообще идут без артикля, а в первом варианте пропущен the перед «number».',
         },
       },
@@ -68,15 +68,15 @@ export const drills: Activity[] = [
         id: 'a4',
         prompt: 'Choose the correct sentence.',
         options: [
-          'Nowadays the internet has changed the way people shop.',
-          'Nowadays internet has changed the way people shop.',
-          'Nowadays an internet has changed the way people shop.',
-          'Nowadays the internet has changed way people shop.',
+          'In recent years the internet has changed the way people shop.',
+          'In recent years internet has changed the way people shop.',
+          'In recent years an internet has changed the way people shop.',
+          'In recent years the internet has changed way people shop.',
         ],
         answer: 0,
         explanation: {
           en: 'There is only one internet, so it is “the internet” (like the government, the environment, the sun). “The way people shop” also needs the, because the clause after it says exactly which way. Dropping either the is a typical error for speakers of languages without articles.',
-          uz: 'Internet bitta, shuning uchun «the internet» (the government, the environment, the sun kabi). «The way people shop» ham the talab qiladi, chunki undan keyingi qism aynan qaysi usul ekanini aytadi. Ikkala the dan birini tushirib qoldirish artiklsiz tillarda so‘zlashuvchilarning odatiy xatosi.',
+          uz: 'Internet bitta, shuning uchun «the internet» (the government, the environment, the sun kabi). «The way people shop» ham the talab qiladi, chunki undan keyingi qism aynan qaysi usul ekanini aytadi. Ikki the’dan birini tushirib qoldirish artiklsiz tillarda so‘zlashuvchilarning odatiy xatosi.',
           ru: 'Интернет один, поэтому «the internet» (как the government, the environment, the sun). «The way people shop» тоже с the: придаточное уточняет, какой именно способ. Пропуск любого из этих the — типичная ошибка носителей языков без артиклей.',
         },
       },
@@ -87,7 +87,7 @@ export const drills: Activity[] = [
         explanation: {
           en: 'Jobs need a/an in English: I am a teacher, she wants to be a doctor. “Engineer” begins with a vowel sound, so it is an. In Russian and Uzbek you say the job with no article, which is why it is so often missing in Part 1 answers.',
           uz: 'Ingliz tilida kasb oldida a/an kerak: I am a teacher, she wants to be a doctor. «Engineer» unli tovush bilan boshlanadi, shuning uchun an. O‘zbek va rus tillarida kasb artiklsiz aytiladi, shu sabab 1-qism javoblarida artikl ko‘pincha tushib qoladi.',
-          ru: 'Перед профессией в английском нужен a/an: I am a teacher, she wants to be a doctor. «Engineer» начинается с гласного звука, поэтому an. По-русски говорят «хочу быть инженером» без артикля, поэтому в ответах Part 1 его часто теряют.',
+          ru: 'Перед профессией в английском нужен a/an: I am a teacher, she wants to be a doctor. «Engineer» начинается с гласного звука, поэтому an. По-русски говорят «хочу быть инженером» без артикля, поэтому в ответах части 1 его часто теряют.',
         },
       },
       {
@@ -124,11 +124,11 @@ export const drills: Activity[] = [
       {
         id: 'a8',
         prompt: 'Write one word: A new park opened near my house in 2019. ____ park now attracts hundreds of visitors every weekend.',
-        answer: ['the', 'this'],
+        answer: ['the', 'this', 'that'],
         explanation: {
-          en: 'The first mention of the park uses a (a new park); the second uses the, because the reader now knows which park. “This” also works here. Repeating “A park” would sound like a different park, and a singular countable noun cannot stand with no article at all.',
-          uz: 'Bog‘ birinchi marta tilga olinganda a (a new park), ikkinchi marta esa the ishlatiladi, chunki endi o‘quvchi qaysi bog‘ ekanini biladi. Bu yerda «this» ham to‘g‘ri. Yana «A park» deyilsa, boshqa bog‘dek tuyuladi, birlikdagi sanaladigan ot esa umuman artiklsiz kela olmaydi.',
-          ru: 'При первом упоминании парка — a (a new park), при втором — the, потому что читатель уже знает, о каком парке речь. Здесь подойдёт и «this». Повторное «A park» прозвучит как другой парк, а исчисляемое существительное в единственном числе не может стоять совсем без артикля.',
+          en: 'The first mention of the park uses a (a new park); the second uses the, because the reader now knows which park. “This” or “that” also works here. Repeating “A park” would sound like a different park, and a singular countable noun cannot stand with no article at all.',
+          uz: 'Bog‘ birinchi marta tilga olinganda a (a new park), ikkinchi marta esa the ishlatiladi, chunki endi o‘quvchi qaysi bog‘ ekanini biladi. Bu yerda «this» yoki «that» ham to‘g‘ri. Yana «A park» deyilsa, boshqa bog‘dek tuyuladi, birlikdagi sanaladigan ot esa umuman artiklsiz kela olmaydi.',
+          ru: 'При первом упоминании парка — a (a new park), при втором — the, потому что читатель уже знает, о каком парке речь. Здесь подойдёт и «this» или «that». Повторное «A park» прозвучит как другой парк, а исчисляемое существительное в единственном числе не может стоять совсем без артикля.',
         },
       },
     ],
@@ -147,7 +147,7 @@ export const drills: Activity[] = [
     explain: {
       en: 'The verb agrees with the main noun of the subject, not with the nearest noun: The number of cars is rising; One of the reasons is cost; The quality of schools varies. Uncountables (information, money, research), -ing subjects (Living in cities is…) and everyone, each and every take a singular verb. In the present simple, add -s/-es after he, she, it and any singular noun (My father works). Russian and Uzbek verbs change differently, so this -s is easy to forget in fast speech. After there is / there are, the noun that follows decides the verb.',
       uz: 'Kesim eng yaqin ot bilan emas, eganing asosiy oti bilan moslashadi: The number of cars is rising; One of the reasons is cost; The quality of schools varies. Sanalmaydigan otlar (information, money, research), -ing bilan boshlangan ega (Living in cities is…) hamda everyone, each, every birlikdagi kesim oladi. Present simple’da he, she, it va har qanday birlikdagi otdan keyin fe’lga -s/-es qo‘shiladi (My father works). O‘zbek va rus tillarida fe’l boshqacha o‘zgaradi, shu sabab tez nutqda bu -s oson unutiladi. There is / there are’dan keyin keladigan ot kesimni belgilaydi.',
-      ru: 'Сказуемое согласуется с главным существительным подлежащего, а не с ближайшим: The number of cars is rising; One of the reasons is cost; The quality of schools varies. Неисчисляемые (information, money, research), подлежащее с -ing (Living in cities is…), а также everyone, each, every требуют единственного числа. В present simple после he, she, it и любого существительного в единственном числе добавляется -s/-es (My father works). В русском и узбекском глагол изменяется иначе, поэтому в быстрой речи это -s легко забыть. После there is / there are глагол определяет существительное, которое идёт следом.',
+      ru: 'Сказуемое согласуется с главным существительным подлежащего, а не с ближайшим: The number of cars is rising; One of the reasons is cost; The quality of schools varies. Неисчисляемые (information, money, research), подлежащее с -ing (Living in cities is…), а также everyone, each, every требуют единственного числа. В present simple после he, she, it и любого существительного в единственном числе добавляется -s/-es (My father works). В русском и узбекском глагол изменяется иначе, поэтому в быстрой речи это -s легко забыть. После there is / there are форму глагола определяет существительное, которое идёт следом.',
     },
     items: [
       {
@@ -188,7 +188,7 @@ export const drills: Activity[] = [
         explanation: {
           en: 'In the present simple, a singular subject (my father, he) needs -s on the verb: works, likes. The third option fixes the first verb but forgets the second, which is exactly what happens in fast Part 1 answers. “Working” and “liking” without am/is are not complete verbs.',
           uz: 'Present simple’da birlikdagi egadan (my father, he) keyin fe’lga -s qo‘shiladi: works, likes. Uchinchi variantda birinchi fe’l to‘g‘ri, ikkinchisi esa -s’siz qolgan — 1-qismdagi tez javoblarda aynan shunday bo‘ladi. Am/is’siz «working» va «liking» to‘liq kesim emas.',
-          ru: 'В present simple при подлежащем в единственном числе (my father, he) у глагола -s: works, likes. В третьем варианте первый глагол исправлен, а второй забыт — именно так бывает в быстрых ответах Part 1. «Working» и «liking» без am/is не являются полным сказуемым.',
+          ru: 'В present simple при подлежащем в единственном числе (my father, he) у глагола -s: works, likes. В третьем варианте первый глагол исправлен, а второй забыт — именно так бывает в быстрых ответах части 1. «Working» и «liking» без am/is не являются полным сказуемым.',
         },
       },
       {
@@ -336,7 +336,7 @@ export const drills: Activity[] = [
         answer: 0,
         explanation: {
           en: 'Habits and routines take the present simple: I usually meet, we play. Russian and Uzbek speakers often use the continuous for repeated actions, but “am usually meeting” sounds like a temporary arrangement. The past simple talks about the past, not your usual weekend.',
-          uz: 'Odat va kundalik ishlar present simple bilan aytiladi: I usually meet, we play. Takrorlanuvchi harakatlar uchun ko‘pincha davomli zamon ishlatiladi, lekin «am usually meeting» vaqtinchalik kelishuvdek eshitiladi. Past simple odatiy dam olish kuningizni emas, o‘tmishni bildiradi.',
+          uz: 'Odat va kundalik ishlar present simple bilan aytiladi: I usually meet, we play. O‘zbek va rus tillarida so‘zlashuvchilar takrorlanuvchi harakatlar uchun ko‘pincha davomli zamonni ishlatadi, lekin «am usually meeting» vaqtinchalik kelishuvdek eshitiladi. Past simple odatiy dam olish kuningizni emas, o‘tmishni bildiradi.',
           ru: 'Привычки и распорядок — present simple: I usually meet, we play. Носители русского и узбекского часто ставят continuous для повторяющихся действий, но «am usually meeting» звучит как временная договорённость. Past simple говорит о прошлом, а не о ваших обычных выходных.',
         },
       },
@@ -411,7 +411,7 @@ export const drills: Activity[] = [
         answer: 2,
         explanation: {
           en: '“Discuss” takes a direct object with no preposition: discuss the advantages. “Discuss about” comes from Russian “говорить о” and Uzbek “haqida gaplashmoq”. If you want a preposition, use a different verb: talk about, write about.',
-          uz: '«Discuss» predlogsiz to‘g‘ridan-to‘g‘ri to‘ldiruvchi oladi: discuss the advantages. «Discuss about» o‘zbekcha «haqida gaplashmoq» va ruscha «говорить о» dan kelib chiqqan. Predlog kerak bo‘lsa, boshqa fe’l ishlating: talk about, write about.',
+          uz: '«Discuss» predlogsiz to‘g‘ridan-to‘g‘ri to‘ldiruvchi oladi: discuss the advantages. «Discuss about» o‘zbekcha «haqida gaplashmoq» va ruscha «говорить о»dan kelib chiqqan. Predlog kerak bo‘lsa, boshqa fe’l ishlating: talk about, write about.',
           ru: '«Discuss» требует прямого дополнения без предлога: discuss the advantages. «Discuss about» — калька с «говорить о». Если хочется предлога, возьмите другой глагол: talk about, write about.',
         },
       },
@@ -443,7 +443,7 @@ export const drills: Activity[] = [
         answer: 2,
         explanation: {
           en: '“By” gives the size of the change: rose by 5 points. “To” gives the end point, so “rose to 5 points” would mean the final figure was 5. “On” is a word-for-word translation of Russian “вырос на”, and “with” is not used for changes.',
-          uz: '«By» o‘zgarish hajmini bildiradi: rose by 5 points. «To» oxirgi nuqtani bildiradi, demak «rose to 5 points» yakuniy ko‘rsatkich 5 bo‘lgan degani. «On» ruscha «вырос на» dan so‘zma-so‘z tarjima, «with» esa o‘zgarishlar uchun ishlatilmaydi. O‘zbekcha «5 foizga oshdi» ham «rose by 5%» bo‘ladi, «to» emas.',
+          uz: '«By» o‘zgarish hajmini bildiradi: rose by 5 points. «To» oxirgi nuqtani bildiradi, demak «rose to 5 points» yakuniy ko‘rsatkich 5 bo‘lgan degani. «On» ruscha «вырос на»dan so‘zma-so‘z tarjima, «with» esa o‘zgarishlar uchun ishlatilmaydi. O‘zbekcha «5 foizga oshdi» ham «rose to» emas, «rose by» bo‘ladi.',
           ru: '«By» показывает величину изменения: rose by 5 points. «To» — конечная точка, «rose to 5 points» значило бы, что итоговая цифра равна 5. «On» — калька с «вырос на», а «with» для изменений не используется.',
         },
       },
@@ -459,7 +459,7 @@ export const drills: Activity[] = [
         answer: 0,
         explanation: {
           en: 'The adjective “interested” always takes “in”: interested in games, an interest in science. “With” comes from Russian “интересоваться чем”, and “about” and “on” are guesses. Learn the pair as one unit.',
-          uz: '«Interested» sifati doim «in» bilan keladi: interested in games, an interest in science. «With» ruscha «интересоваться чем» dan kelib chiqqan, «about» va «on» esa taxmin. Juftlikni bir butun sifatida yodlang.',
+          uz: '«Interested» sifati doim «in» bilan keladi: interested in games, an interest in science. «With» ruscha «интересоваться чем»dan kelib chiqqan, «about» va «on» esa taxmin. Juftlikni bir butun sifatida yodlang.',
           ru: 'Прилагательное «interested» всегда с «in»: interested in games, an interest in science. «With» появляется из-за «интересоваться чем» (творительный падеж), а «about» и «on» — догадки. Запоминайте пару целиком.',
         },
       },
@@ -673,7 +673,7 @@ export const drills: Activity[] = [
       },
       {
         id: 'f3',
-        prompt: 'Write one word: If more people cycled to work, there would be ____ traffic in the city centre.',
+        prompt: 'Write one word: If more people cycled to work, there would be ____ traffic in the city centre than there is now.',
         answer: ['less'],
         explanation: {
           en: '“Traffic” is uncountable, so the comparative is “less traffic”. “Fewer” goes with countable plurals: fewer cars, fewer buses. Learners often write “fewer traffic” or “less cars”; in an essay both cost marks.',
@@ -760,11 +760,11 @@ export const drills: Activity[] = [
     levels: [4, 8],
     minutes: 5,
     aiVariants: true,
-    title: { en: 'Run-on sentences and fragments', uz: 'Uzilmagan gaplar va bo‘laklar', ru: 'Слитные предложения и обрывки' },
+    title: { en: 'Run-on sentences and fragments', uz: 'Qo‘shilib ketgan va chala gaplar', ru: 'Слитные и незаконченные предложения' },
     explain: {
       en: 'A full sentence has a subject and a verb and can stand alone. Two full sentences cannot be joined by a comma only (a comma splice): “Cities are growing, this causes traffic.” Fix it with a full stop (…growing. This causes…), a semicolon, or a linking word (…growing, and this causes… / …growing, which causes…). Russian and Uzbek punctuation allows long chains of clauses with commas, so learners carry the habit into English. The opposite error is a fragment: a because-, which- or for example-part written as a sentence on its own (“Because it is cheap.”). Attach it to the main clause.',
-      uz: 'To‘liq gapda ega va kesim bo‘ladi va u mustaqil tura oladi. Ikki to‘liq gapni faqat vergul bilan bog‘lab bo‘lmaydi (comma splice): «Cities are growing, this causes traffic.» Buni nuqta (…growing. This causes…), nuqtali vergul yoki bog‘lovchi bilan tuzating (…growing, and this causes… / …growing, which causes…). O‘zbek va rus tinish belgilari vergul bilan uzun gap zanjirlariga yo‘l qo‘yadi, shuning uchun bu odat ingliz tiliga ham o‘tadi. Teskari xato — bo‘lak: because, which yoki for example bilan boshlangan qism alohida gap qilib yoziladi («Because it is cheap.»). Uni bosh gapga qo‘shing.',
-      ru: 'Полное предложение имеет подлежащее и сказуемое и может стоять отдельно. Два полных предложения нельзя соединить одной запятой (comma splice): «Cities are growing, this causes traffic.» Исправьте точкой (…growing. This causes…), точкой с запятой или союзом (…growing, and this causes… / …growing, which causes…). Русская и узбекская пунктуация допускает длинные цепочки предложений через запятую, и эта привычка переходит в английский. Обратная ошибка — обрывок: часть с because, which или for example записана как отдельное предложение («Because it is cheap.»). Присоедините её к главному предложению.',
+      uz: 'To‘liq gapda ega va kesim bo‘ladi va u mustaqil tura oladi. Ikki to‘liq gapni faqat vergul bilan bog‘lab bo‘lmaydi (comma splice): «Cities are growing, this causes traffic.» Buni nuqta (…growing. This causes…), nuqtali vergul yoki bog‘lovchi bilan tuzating (…growing, and this causes… / …growing, which causes…). O‘zbek va rus tillaridagi tinish belgilari qoidalari vergul bilan uzun gap zanjirlariga yo‘l qo‘yadi, shuning uchun bu odat ingliz tiliga ham o‘tadi. Teskari xato — chala gap: because, which yoki for example bilan boshlangan qism alohida gap qilib yoziladi («Because it is cheap.»). Uni bosh gapga qo‘shing.',
+      ru: 'Полное предложение имеет подлежащее и сказуемое и может стоять отдельно. Два полных предложения нельзя соединить одной запятой (comma splice): «Cities are growing, this causes traffic.» Исправьте точкой (…growing. This causes…), точкой с запятой или союзом (…growing, and this causes… / …growing, which causes…). Русская и узбекская пунктуация допускает длинные цепочки предложений через запятую, и эта привычка переходит в английский. Обратная ошибка — незаконченное предложение: часть с because, which или for example записана как отдельное предложение («Because it is cheap.»). Присоедините её к главному предложению.',
     },
     items: [
       {
@@ -778,8 +778,8 @@ export const drills: Activity[] = [
         answer: 2,
         explanation: {
           en: 'The third option joins the two ideas with “because” in one sentence. The first is a comma splice: two full sentences with only a comma between them. The second turns “Because they want better jobs” into a fragment, which cannot stand alone.',
-          uz: 'Uchinchi variant ikki fikrni «because» bilan bitta gapda bog‘laydi. Birinchisi comma splice: ikki to‘liq gap orasida faqat vergul bor. Ikkinchisida «Because they want better jobs» alohida bo‘lakka aylangan, u mustaqil tura olmaydi.',
-          ru: 'Третий вариант соединяет две мысли через «because» в одном предложении. Первый — comma splice: между двумя полными предложениями только запятая. Во втором «Because they want better jobs» стало обрывком, который не может стоять отдельно.',
+          uz: 'Uchinchi variant ikki fikrni «because» bilan bitta gapda bog‘laydi. Birinchisi comma splice: ikki to‘liq gap orasida faqat vergul bor. Ikkinchisida «Because they want better jobs» chala gapga aylangan, u mustaqil tura olmaydi.',
+          ru: 'Третий вариант соединяет две мысли через «because» в одном предложении. Первый — comma splice: между двумя полными предложениями только запятая. Во втором «Because they want better jobs» стало незаконченным предложением, которое не может стоять отдельно.',
         },
       },
       {
@@ -849,8 +849,8 @@ export const drills: Activity[] = [
         answer: 2,
         explanation: {
           en: 'A “which” clause gives extra information about the noun before it and must stay in the same sentence, after a comma. Starting a new sentence with “Which” creates a fragment, and “…, it rose” is a comma splice.',
-          uz: '«Which» bilan boshlanadigan qism oldingi ot haqida qo‘shimcha ma’lumot beradi va verguldan keyin o‘sha gap ichida qolishi kerak. Yangi gapni «Which» bilan boshlash bo‘lak hosil qiladi, «…, it rose» esa comma splice.',
-          ru: 'Придаточное с «which» добавляет сведения о предыдущем существительном и должно оставаться в том же предложении после запятой. Новое предложение с «Which» — это обрывок, а «…, it rose» — comma splice.',
+          uz: '«Which» bilan boshlanadigan qism oldingi ot haqida qo‘shimcha ma’lumot beradi va verguldan keyin o‘sha gap ichida qolishi kerak. Yangi gapni «Which» bilan boshlash chala gap hosil qiladi, «…, it rose» esa comma splice.',
+          ru: 'Придаточное с «which» добавляет сведения о предыдущем существительном и должно оставаться в том же предложении после запятой. Новое предложение с «Which» — это незаконченное предложение, а «…, it rose» — comma splice.',
         },
       },
       {
@@ -870,7 +870,7 @@ export const drills: Activity[] = [
       },
       {
         id: 'g8',
-        prompt: 'Write one word that joins the two clauses into one correct sentence: Some students prefer to study alone, ____ others learn better in groups.',
+        prompt: 'Write one word that joins the two clauses and shows the contrast: Some students prefer to study alone, ____ others learn better in groups.',
         answer: ['but', 'while', 'whereas', 'yet'],
         explanation: {
           en: 'The two clauses contrast, so a contrast conjunction is needed after the comma: but, while, whereas or yet. Without it the sentence is a comma splice. “However” would not work here unless the comma became a semicolon.',
@@ -1025,7 +1025,7 @@ export const drills: Activity[] = [
         answer: 2,
         explanation: {
           en: 'Research is “done” or “carried out”, never “made”, and it takes no article because it is uncountable. “Make a research” comes from Russian “сделать исследование” and Uzbek “tadqiqot qilmoq”. You can also say “conducted a study”.',
-          uz: 'Research «do» yoki «carry out» qilinadi, hech qachon «make» emas, va u sanalmagani uchun artikl olmaydi. «Make a research» o‘zbekcha «tadqiqot qilmoq» va ruscha «сделать исследование» dan kelib chiqqan. «Conducted a study» deyish ham mumkin.',
+          uz: 'Research «do» yoki «carry out» qilinadi, hech qachon «make» emas, va u sanalmagani uchun artikl olmaydi. «Make a research» o‘zbekcha «tadqiqot qilmoq» va ruscha «сделать исследование»dan kelib chiqqan. «Conducted a study» deyish ham mumkin.',
           ru: 'Research «do» или «carry out», но никогда не «make», и без артикля, потому что слово неисчисляемое. «Make a research» — калька с «сделать исследование». Можно также сказать «conducted a study».',
         },
       },
@@ -1036,7 +1036,7 @@ export const drills: Activity[] = [
         answer: 2,
         explanation: {
           en: 'English says “heavy traffic” (also heavy rain, heavy snow, a heavy smoker). “Big traffic” and “strong traffic” are translations of Russian “сильные пробки” and Uzbek “katta tirbandlik”. The opposite is “light traffic”.',
-          uz: 'Ingliz tilida «heavy traffic» deyiladi (heavy rain, heavy snow, a heavy smoker ham). «Big traffic» va «strong traffic» o‘zbekcha «katta tirbandlik» yoki ruscha «сильные пробки» dan tarjima. Teskarisi — «light traffic».',
+          uz: 'Ingliz tilida «heavy traffic» deyiladi (heavy rain, heavy snow, a heavy smoker ham). «Big traffic» va «strong traffic» o‘zbekcha «katta tirbandlik» yoki ruscha «сильные пробки»dan tarjima. Teskarisi — «light traffic».',
           ru: 'По-английски «heavy traffic» (а также heavy rain, heavy snow, a heavy smoker). «Big traffic» и «strong traffic» — кальки с «большое движение» и «сильные пробки». Противоположное — «light traffic».',
         },
       },
@@ -1046,7 +1046,7 @@ export const drills: Activity[] = [
         answer: ['make', 'take'],
         explanation: {
           en: 'The usual partner is “make a decision” (“take a decision” is also used in British English). “Do a decision” or “accept a decision” in this sense come from translating Russian “принять решение” and Uzbek “qaror qabul qilmoq” word by word.',
-          uz: 'Odatiy jufti — «make a decision» (Britaniya ingliz tilida «take a decision» ham ishlatiladi). Bu ma’noda «do a decision» yoki «accept a decision» xato, ular «qaror qabul qilmoq» va «принять решение» ning so‘zma-so‘z tarjimasidan kelib chiqadi.',
+          uz: 'Odatiy jufti — «make a decision» (Britaniya ingliz tilida «take a decision» ham ishlatiladi). Bu ma’noda «do a decision» yoki «accept a decision» xato, ular «qaror qabul qilmoq» va «принять решение»ning so‘zma-so‘z tarjimasidan kelib chiqadi.',
           ru: 'Обычная пара — «make a decision» (в британском английском встречается и «take a decision»). «Do a decision» или «accept a decision» в этом значении — ошибки от дословного перевода «принять решение».',
         },
       },
@@ -1085,9 +1085,9 @@ export const drills: Activity[] = [
         prompt: 'Write one word: Teachers often complain that students do not ____ attention in class.',
         answer: ['pay'],
         explanation: {
-          en: 'The fixed partner is “pay attention (to)”. “Give attention” or “turn attention” are translations of Russian “обращать внимание” and Uzbek “e’tibor bermoq”. In an essay you can also “draw attention to” a problem.',
-          uz: 'Turg‘un jufti — «pay attention (to)». «Give attention» yoki «turn attention» o‘zbekcha «e’tibor bermoq» va ruscha «обращать внимание» dan tarjima. Inshoda muammoga «draw attention to» deyish ham mumkin.',
-          ru: 'Устойчивая пара — «pay attention (to)». «Give attention» или «turn attention» — кальки с «обращать внимание». В эссе можно также «draw attention to» проблему.',
+          en: 'The fixed partner is “pay attention (to)”. In this sentence “give attention” and “turn attention” are wrong: they translate Russian “обращать внимание” and Uzbek “e’tibor bermoq” word by word. In an essay you can also “draw attention to” a problem.',
+          uz: 'Turg‘un jufti — «pay attention (to)». Bu gapda «give attention» va «turn attention» xato: ular o‘zbekcha «e’tibor bermoq» va ruscha «обращать внимание»ning so‘zma-so‘z tarjimasi. Inshoda muammoga «draw attention to» deyish ham mumkin.',
+          ru: 'Устойчивая пара — «pay attention (to)». В этом предложении «give attention» и «turn attention» — ошибки, кальки с «обращать внимание». В эссе можно также «draw attention to» проблему.',
         },
       },
       {
@@ -1112,7 +1112,7 @@ export const drills: Activity[] = [
         answer: 2,
         explanation: {
           en: 'Crimes are “committed”: commit a crime, commit an offence. “Make a crime” and “do a crime” are direct translations of Russian “совершать преступление” and Uzbek “jinoyat qilmoq”. This collocation appears in almost every crime essay.',
-          uz: 'Jinoyat «commit» qilinadi: commit a crime, commit an offence. «Make a crime» va «do a crime» «jinoyat qilmoq» va «совершать преступление» ning to‘g‘ridan-to‘g‘ri tarjimasi. Bu kollokatsiya jinoyat haqidagi deyarli har bir inshoda uchraydi.',
+          uz: 'Jinoyat «commit» qilinadi: commit a crime, commit an offence. «Make a crime» va «do a crime» «jinoyat qilmoq» va «совершать преступление»ning to‘g‘ridan-to‘g‘ri tarjimasi. Bu kollokatsiya jinoyat haqidagi deyarli har bir inshoda uchraydi.',
           ru: 'Преступление «commit»: commit a crime, commit an offence. «Make a crime» и «do a crime» — дословный перевод «совершать преступление». Эта коллокация встречается почти в каждом эссе о преступности.',
         },
       },
@@ -1234,15 +1234,15 @@ export const drills: Activity[] = [
         id: 'j8',
         prompt: 'Speaking Part 1: “Do you like cooking?” Which answer has the right style for speaking?',
         options: [
-          'Yes, I really do. I cook most evenings, mostly simple dishes like plov or soup, because it helps me relax after work.',
+          'Yes, I really do. I cook most evenings, usually simple dishes like plov or soup, because it helps me relax after work.',
           'Furthermore, cooking constitutes a significant aspect of my daily existence.',
           'In conclusion, I would argue that cooking is beneficial for society as a whole.',
         ],
         answer: 0,
         explanation: {
-          en: 'Speaking should sound natural and personal: a direct answer, a detail and a reason. The other two use essay language (“Furthermore”, “In conclusion”, “constitutes”) that sounds memorised in a conversation and does not answer about you.',
-          uz: 'Nutq tabiiy va shaxsiy eshitilishi kerak: to‘g‘ridan-to‘g‘ri javob, tafsilot va sabab. Qolgan ikkitasida insho tili («Furthermore», «In conclusion», «constitutes») ishlatilgan, suhbatda bu yodlangandek eshitiladi va siz haqingizda javob bermaydi.',
-          ru: 'Речь должна звучать естественно и лично: прямой ответ, деталь и причина. В двух других вариантах язык эссе («Furthermore», «In conclusion», «constitutes»), который в разговоре звучит заученно и не отвечает о вас.',
+          en: 'Speaking should sound natural and personal: a direct answer, a detail and a reason. The other two use essay language (“Furthermore”, “In conclusion”, “constitutes”) that sounds memorised in a conversation and says nothing about you.',
+          uz: 'Nutq tabiiy va shaxsiy eshitilishi kerak: to‘g‘ridan-to‘g‘ri javob, tafsilot va sabab. Qolgan ikkitasida insho tili («Furthermore», «In conclusion», «constitutes») ishlatilgan, suhbatda bu yodlangandek eshitiladi va siz haqingizda hech narsa demaydi.',
+          ru: 'Речь должна звучать естественно и лично: прямой ответ, деталь и причина. В двух других вариантах язык эссе («Furthermore», «In conclusion», «constitutes»), который в разговоре звучит заученно и ничего не говорит о вас.',
         },
       },
     ],
@@ -1360,11 +1360,11 @@ export const drills: Activity[] = [
       {
         id: 'k7',
         prompt: 'Write one word to add a contrast in Part 3: “Online shopping saves a lot of time. ____, some people still enjoy going to the shops with friends.”',
-        answer: ['however', 'still', 'nevertheless', 'yet'],
+        answer: ['however', 'still', 'nevertheless', 'nonetheless', 'yet'],
         explanation: {
           en: 'Adding the other side with “However” (or “Nevertheless”) turns a single point into a balanced Part 3 answer. Linking the contrast clearly is part of what examiners call coherence.',
           uz: 'Ikkinchi tomonni «However» (yoki «Nevertheless») bilan qo‘shish bitta fikrni muvozanatli 3-qism javobiga aylantiradi. Qarama-qarshilikni aniq bog‘lash imtihonchilar izchillik deb ataydigan narsaning bir qismi.',
-          ru: 'Добавление другой стороны через «However» (или «Nevertheless») превращает одну мысль в сбалансированный ответ части 3. Чёткая связка контраста — часть того, что экзаменаторы называют связностью.',
+          ru: 'Добавление другой стороны через «However» (или «Nevertheless») превращает одну мысль в сбалансированный ответ для части 3. Чёткая связка контраста — часть того, что экзаменаторы называют связностью.',
         },
       },
       {

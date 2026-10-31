@@ -13,7 +13,7 @@ export const samples: Sample[] = [
     preview: {
       en: 'An example of the report after a Part 2 talk: a band for each criterion with quotes from the learner’s own words, measured fluency, and four “say it better” upgrades to re-record. The learner is fictional.',
       uz: '2-qismdagi nutqdan keyingi hisobot namunasi: har bir mezon bo‘yicha ball va o‘quvchining o‘z gaplaridan iqtiboslar, o‘lchangan ravonlik ko‘rsatkichlari hamda qayta yozib olish uchun to‘rtta «yaxshiroq ayting» varianti. O‘quvchi to‘qima shaxs.',
-      ru: 'Пример отчёта после монолога (часть 2): балл по каждому критерию с цитатами из слов ученика, измеренная беглость и четыре варианта «скажи лучше» для перезаписи. Ученик вымышленный.',
+      ru: 'Пример отчёта после монолога (часть 2): балл по каждому критерию с цитатами из слов ученика, измеренная беглость и четыре варианта «Как сказать лучше» для перезаписи. Ученик вымышленный.',
     },
     body: {
       task: 'Speaking Part 2: Describe a place in your country that you would recommend to visitors.',
@@ -25,8 +25,8 @@ export const samples: Sample[] = [
           evidence: ['Um, in winter you can do skiing and, um, in summer'],
           note: {
             en: 'You kept talking for 1 minute 44 seconds and covered every point, but fillers and restarts break the flow. Next step: link ideas with a phrase such as “what I love most is…” instead of pausing.',
-            uz: '1 daqiqa 44 soniya gapirdingiz va barcha bandlarni yoritdingiz, lekin «um» va qayta boshlashlar nutq oqimini buzadi. Keyingi qadam: to‘xtab qolish o‘rniga g‘oyalarni «what I love most is…» kabi ibora bilan bog‘lang.',
-            ru: 'Вы говорили 1 минуту 44 секунды и раскрыли все пункты, но «um» и перезапуски фраз прерывают речь. Следующий шаг: вместо пауз связывайте мысли фразой вроде «what I love most is…».',
+            uz: '1 daqiqa 44 soniya gapirdingiz va barcha bandlarni yoritdingiz, lekin to‘ldiruvchi so‘zlar va qayta boshlangan gaplar nutq oqimini buzadi. Keyingi qadam: to‘xtab qolish o‘rniga g‘oyalarni «what I love most is…» kabi ibora bilan bog‘lang.',
+            ru: 'Вы говорили 1 минуту 44 секунды и раскрыли все пункты, но слова-паразиты и фразы, начатые заново, прерывают речь. Следующий шаг: вместо пауз связывайте мысли фразой вроде «what I love most is…».',
           },
         },
         {
@@ -55,8 +55,8 @@ export const samples: Sample[] = [
           evidence: [],
           note: {
             en: 'Not scored: pronunciation needs analysis of the recording itself, and a transcript cannot show it. The coach never guesses this band.',
-            uz: 'Baholanmadi: talaffuz uchun yozuvning o‘zini tahlil qilish kerak, matndan uni aniqlab bo‘lmaydi. Murabbiy bu ballni hech qachon taxmin qilmaydi.',
-            ru: 'Не оценено: для произношения нужен анализ самой записи, по расшифровке его не определить. Коуч никогда не угадывает этот балл.',
+            uz: 'Baholanmadi: talaffuz uchun yozuvning o‘zini tahlil qilish kerak, matndan uni aniqlab bo‘lmaydi. Murabbiy bu ballni hech qachon tusmol bilan qo‘ymaydi.',
+            ru: 'Не оценено: для произношения нужен анализ самой записи, по расшифровке его не определить. Коуч никогда не ставит этот балл наугад.',
           },
         },
       ],
@@ -64,29 +64,29 @@ export const samples: Sample[] = [
       upgrades: [
         {
           said: 'Chimgan is very beautiful place in mountains near to Tashkent.',
-          better: 'Chimgan is a stunning spot in the mountains, only about an hour’s drive from Tashkent.',
+          better: 'Chimgan is a stunning spot in the mountains, less than two hours’ drive from Tashkent.',
           why: {
-            en: 'A singular countable noun needs a or an (a stunning spot). “Near to” becomes “near”, and “an hour’s drive from” tells the listener exactly where it is.',
-            uz: 'Birlikdagi sanaladigan ot oldida a yoki an kerak (a stunning spot). «Near to» o‘rniga «near» deyiladi, «an hour’s drive from» esa joyni aniq ko‘rsatadi.',
-            ru: 'Перед исчисляемым существительным в единственном числе нужен a или an (a stunning spot). Вместо «near to» — просто «near», а «an hour’s drive from» точно показывает, где это место.',
+            en: 'A singular countable noun needs a or an (a stunning spot), and a mountain area takes the (in the mountains). “Near to Tashkent” is simply “near Tashkent”, but “two hours’ drive from” tells the listener exactly where it is.',
+            uz: 'Birlikdagi sanaladigan ot oldida a yoki an kerak (a stunning spot), tog‘li hudud esa the bilan keladi (in the mountains). «Near to Tashkent» emas, shunchaki «near Tashkent» deyiladi, «two hours’ drive from» esa joyni aniq ko‘rsatadi.',
+            ru: 'Перед исчисляемым существительным в единственном числе нужен a или an (a stunning spot), а горы как местность — с the (in the mountains). Не «near to Tashkent», а просто «near Tashkent», но «two hours’ drive from» точнее показывает, где это место.',
           },
         },
         {
           said: 'Um, in winter you can do skiing and, um, in summer you can do walking in mountains.',
           better: 'In winter you can go skiing, and in summer you can go hiking along the mountain trails.',
           why: {
-            en: 'Sports and activities ending in -ing take “go”: go skiing, go hiking. “Do walking” is a word-for-word translation. Dropping the fillers keeps the sentence moving.',
-            uz: '-ing bilan tugaydigan sport va mashg‘ulotlar «go» bilan ishlatiladi: go skiing, go hiking. «Do walking» — so‘zma-so‘z tarjima. «Um»larni olib tashlasangiz, gap ravon chiqadi.',
-            ru: 'Виды спорта и занятия на -ing употребляются с «go»: go skiing, go hiking. «Do walking» — дословный перевод. Без «um» фраза звучит увереннее.',
+            en: 'Many sports and activities ending in -ing take “go”: go skiing, go hiking. “Do walking” is a word-for-word translation. Dropping the fillers keeps the sentence moving.',
+            uz: '-ing bilan tugaydigan ko‘p sport turlari va mashg‘ulotlar «go» bilan ishlatiladi: go skiing, go hiking. «Do walking» — so‘zma-so‘z tarjima. «Um»larni olib tashlasangiz, gap ravon chiqadi.',
+            ru: 'Многие виды спорта и занятия на -ing употребляются с «go»: go skiing, go hiking. «Do walking» — дословный перевод. Без «um» фраза звучит увереннее.',
           },
         },
         {
           said: 'The air is very very clean and you feel yourself relax.',
           better: 'The air is incredibly fresh, and you instantly feel more relaxed.',
           why: {
-            en: 'Replace “very very” with one strong adverb (incredibly). “Feel yourself relax” copies a pattern from Uzbek and Russian; in English you simply feel relaxed.',
-            uz: '«Very very» o‘rniga bitta kuchli ravish ishlating (incredibly). «Feel yourself relax» o‘zbek va rus tilidagi qolipdan ko‘chirilgan; inglizchada shunchaki «feel relaxed» deyiladi.',
-            ru: 'Вместо «very very» — одно сильное наречие (incredibly). «Feel yourself relax» — калька с «чувствовать себя»; по-английски просто «feel relaxed».',
+            en: 'Replace “very very” with one strong adverb (incredibly). “You feel yourself relax” sounds translated from Uzbek or Russian; the natural phrase here is simply “feel relaxed”.',
+            uz: '«Very very» o‘rniga bitta kuchli ravish ishlating (incredibly). «You feel yourself relax» o‘zbekcha yoki ruschadan tarjimadek eshitiladi; bu yerda tabiiy ibora shunchaki «feel relaxed».',
+            ru: 'Вместо «very very» — одно сильное наречие (incredibly). «You feel yourself relax» звучит как калька с «чувствовать себя»; здесь естественнее просто «feel relaxed».',
           },
         },
         {
@@ -120,7 +120,7 @@ export const samples: Sample[] = [
           evidence: ['teenagers spends a lot of time on phone', 'parents also responsible'],
           note: {
             en: 'Both questions are answered: the causes (phones, homework, early starts) and who is responsible. The view on responsibility appears only in the last paragraph and is not explained, so the answer is uneven.',
-            uz: 'Ikkala savolga ham javob berilgan: sabablar (telefon, uy vazifasi, erta boshlanadigan darslar) va kim mas’ulligi. Ammo mas’uliyat haqidagi fikr faqat oxirgi xatboshida paydo bo‘ladi va asoslanmagan, shuning uchun javob notekis.',
+            uz: 'Ikkala savolga ham javob berilgan: sabablar (telefon, uy vazifasi, erta boshlanadigan darslar) va kim mas’ul ekani. Ammo mas’uliyat haqidagi fikr faqat oxirgi xatboshida paydo bo‘ladi va asoslanmagan, shuning uchun javob notekis.',
             ru: 'Ответ дан на оба вопроса: причины (телефоны, домашние задания, ранние уроки) и кто должен решать проблему. Но мнение об ответственности появляется только в последнем абзаце и не объяснено, поэтому ответ неравномерный.',
           },
         },
@@ -149,9 +149,9 @@ export const samples: Sample[] = [
           score: 5,
           evidence: ['teenagers spends', "Schools start at eight o'clock, students must wake up at six"],
           note: {
-            en: 'Complex sentences are attempted, but agreement errors and comma splices recur. Next step: check every plural subject against its verb, and join two full sentences with so, because or a full stop.',
-            uz: 'Murakkab gaplar tuzishga harakat bor, lekin ega-kesim moslashuvi xatolari va vergul bilan qo‘shilgan gaplar takrorlanadi. Keyingi qadam: har bir ko‘plikdagi egani kesim bilan tekshiring, ikki to‘liq gapni so, because yoki nuqta bilan ajrating.',
-            ru: 'Сложные предложения есть, но повторяются ошибки согласования и предложения, склеенные запятой. Следующий шаг: проверяйте каждое подлежащее во множественном числе со сказуемым и соединяйте два полных предложения через so, because или точку.',
+            en: 'Complex sentences are attempted, but agreement errors and comma splices recur. Next step: check every plural subject against its verb, and link two full sentences with so or because, or separate them with a full stop.',
+            uz: 'Murakkab gaplar tuzishga harakat bor, lekin ega-kesim moslashuvi xatolari va vergul bilan qo‘shilgan gaplar takrorlanadi. Keyingi qadam: har bir ko‘plikdagi egani kesim bilan tekshiring, ikki to‘liq gapni so yoki because bilan bog‘lang yoki nuqta bilan ajrating.',
+            ru: 'Сложные предложения есть, но повторяются ошибки согласования и предложения, склеенные запятой. Следующий шаг: проверяйте каждое подлежащее во множественном числе со сказуемым и соединяйте два полных предложения через so или because либо разделяйте их точкой.',
           },
         },
       ],
@@ -198,12 +198,12 @@ export const samples: Sample[] = [
         },
         {
           original: 'In the other hand, parents also responsible.',
-          corrected: 'On the other hand, parents are also responsible.',
+          corrected: 'Parents are also responsible.',
           tag: 'linking_words',
           why: {
-            en: 'The fixed phrase is “on the other hand”, and it signals a contrast; here you are adding a point, so “Parents are also responsible” works better on its own. The sentence also needs the verb “are”.',
-            uz: 'Turg‘un ibora «on the other hand» bo‘ladi va u qarama-qarshilikni bildiradi; bu yerda siz fikr qo‘shyapsiz, shuning uchun «Parents are also responsible» o‘zi yetarli. Gapda «are» fe’li ham bo‘lishi kerak.',
-            ru: 'Устойчивое выражение — «on the other hand», и оно вводит противопоставление; здесь вы добавляете мысль, поэтому лучше просто «Parents are also responsible». В предложении также нужен глагол «are».',
+            en: 'The fixed phrase is “on the other hand” (not “in”), and it signals a contrast; here you are adding a point, so “Parents are also responsible” works better on its own. The sentence also needs the verb “are”.',
+            uz: 'Turg‘un ibora «in» emas, «on the other hand» bo‘ladi va u qarama-qarshilikni bildiradi; bu yerda siz fikr qo‘shyapsiz, shuning uchun «Parents are also responsible» o‘zi yetarli. Gapda «are» fe’li ham bo‘lishi kerak.',
+            ru: 'Устойчивое выражение — «on the other hand» (не «in»), и оно вводит противопоставление; здесь вы добавляете мысль, поэтому лучше просто «Parents are also responsible». В предложении также нужен глагол «are».',
           },
         },
       ],
@@ -226,29 +226,29 @@ export const samples: Sample[] = [
   {
     id: 'sample.weekly-report',
     kind: 'weekly_report',
-    title: { en: 'Example: Weekly report', uz: 'Namuna: Haftalik hisobot', ru: 'Пример: недельный отчёт' },
+    title: { en: 'Example: Weekly report', uz: 'Namuna: Haftalik hisobot', ru: 'Пример: еженедельный отчёт' },
     preview: {
       en: 'An example of the weekly report: what changed in bands, fluency, accuracy and reading, the minutes practised, the streak and three focus points for next week. The numbers are illustrative, not real results.',
       uz: 'Haftalik hisobot namunasi: ballar, ravonlik, aniqlik va Reading’dagi o‘zgarishlar, mashq qilingan daqiqalar, seriya va keyingi hafta uchun uchta asosiy yo‘nalish. Raqamlar namuna uchun, haqiqiy natija emas.',
-      ru: 'Пример недельного отчёта: что изменилось в баллах, беглости, точности и Reading, сколько минут занятий, серия и три фокуса на следующую неделю. Цифры условные, это не реальные результаты.',
+      ru: 'Пример еженедельного отчёта: что изменилось в баллах, беглости, точности и Reading, сколько минут занятий, серия и три главные задачи на следующую неделю. Цифры условные, это не реальные результаты.',
     },
     body: {
       rows: [
         { label: { en: 'Speaking (overall band)', uz: 'Speaking (umumiy ball)', ru: 'Speaking (общий балл)' }, before: 5.5, after: 6 },
         { label: { en: 'Writing Task 2 (overall band)', uz: 'Writing Task 2 (umumiy ball)', ru: 'Writing Task 2 (общий балл)' }, before: 5, after: 5.5 },
         { label: { en: 'Speaking pace', uz: 'Nutq tezligi', ru: 'Темп речи' }, before: 104, after: 116, unit: 'wpm' },
-        { label: { en: 'Fillers per minute', uz: 'Daqiqasiga «um»lar', ru: 'Слов-паразитов в минуту' }, before: 7.2, after: 4.8, unit: '/min', lowerIsBetter: true },
+        { label: { en: 'Fillers per minute', uz: 'Daqiqasiga to‘ldiruvchi so‘zlar', ru: 'Слов-паразитов в минуту' }, before: 7.2, after: 4.8, unit: '/min', lowerIsBetter: true },
         { label: { en: 'Article errors per 100 words', uz: '100 so‘zga artikl xatolari', ru: 'Ошибок в артиклях на 100 слов' }, before: 3.1, after: 1.9, lowerIsBetter: true },
         { label: { en: 'Reading accuracy', uz: 'Reading aniqligi', ru: 'Точность в Reading' }, before: 62, after: 71, unit: '%' },
-        { label: { en: 'Vocabulary cards mastered', uz: 'O‘zlashtirilgan lug‘at kartalari', ru: 'Выученные карточки лексики' }, before: 40, after: 95 },
+        { label: { en: 'Vocabulary cards mastered', uz: 'O‘zlashtirilgan lug‘at kartochkalari', ru: 'Выученные карточки лексики' }, before: 40, after: 95 },
       ],
       minutes: 214,
       streak: 6,
       focus: [
         {
           en: 'Speaking: bring fillers below 4 a minute by using a linking phrase (what I mean is, the thing is) instead of “um”.',
-          uz: 'Speaking: «um» o‘rniga bog‘lovchi ibora (what I mean is, the thing is) ishlatib, daqiqasiga 4 tadan kamaytiring.',
-          ru: 'Speaking: сократите слова-паразиты до 4 в минуту — вместо «um» используйте связку (what I mean is, the thing is).',
+          uz: 'Speaking: «um» o‘rniga bog‘lovchi ibora (what I mean is, the thing is) ishlatib, to‘ldiruvchi so‘zlarni daqiqasiga 4 tadan kamga tushiring.',
+          ru: 'Speaking: сократите слова-паразиты до менее чем 4 в минуту — вместо «um» используйте связку (what I mean is, the thing is).',
         },
         {
           en: 'Writing: three 10-minute article drills, then one Task 2 body paragraph checked for a, an and the.',
@@ -269,8 +269,8 @@ export const samples: Sample[] = [
     title: { en: 'Example: one week of a plan to band 7.0', uz: 'Namuna: 7.0 ballga reja — bir hafta', ru: 'Пример: неделя плана на 7.0' },
     preview: {
       en: 'An example week from a 10-week plan to band 7.0 at 40 minutes a day: speaking, writing, reading, listening, vocabulary and drills on your own errors, with a full speaking mock at the weekend. The learner is fictional.',
-      uz: 'Kuniga 40 daqiqadan 10 haftada 7.0 ballga mo‘ljallangan rejadan bir hafta namunasi: speaking, writing, reading, listening, lug‘at va o‘z xatolaringiz bo‘yicha mashqlar, dam olish kunida to‘liq Speaking sinovi. O‘quvchi to‘qima shaxs.',
-      ru: 'Пример недели из 10-недельного плана на 7.0 по 40 минут в день: speaking, writing, reading, listening, лексика и упражнения на собственные ошибки, а в выходные — полный пробный Speaking. Ученик вымышленный.',
+      uz: 'Kuniga 40 daqiqadan 10 haftada 7.0 ballga mo‘ljallangan rejadan bir hafta namunasi: Speaking, Writing, Reading, Listening, lug‘at va o‘z xatolaringiz bo‘yicha mashqlar, dam olish kunida to‘liq Speaking sinovi. O‘quvchi to‘qima shaxs.',
+      ru: 'Пример недели из 10-недельного плана на 7.0 по 40 минут в день: Speaking, Writing, Reading, Listening, лексика и упражнения на собственные ошибки, а в выходные — полный пробный Speaking. Ученик вымышленный.',
     },
     body: {
       target: 7,
@@ -282,7 +282,7 @@ export const samples: Sample[] = [
             { en: 'Speaking Part 1: two topics, six questions (10 min)', uz: 'Speaking 1-qism: ikki mavzu, oltita savol (10 daq.)', ru: 'Speaking, часть 1: две темы, шесть вопросов (10 мин)' },
             { en: 'Drill: articles (10 min)', uz: 'Mashq: artikllar (10 daq.)', ru: 'Упражнение: артикли (10 мин)' },
             { en: 'Reading: True / False / Not Given mini-set (15 min)', uz: 'Reading: True / False / Not Given mini-to‘plami (15 daq.)', ru: 'Reading: мини-набор True / False / Not Given (15 мин)' },
-            { en: 'Vocabulary review: 20 cards (5 min)', uz: 'Lug‘at takrori: 20 ta karta (5 daq.)', ru: 'Повторение лексики: 20 карточек (5 мин)' },
+            { en: 'Vocabulary review: 20 cards (5 min)', uz: 'Lug‘at takrori: 20 ta kartochka (5 daq.)', ru: 'Повторение лексики: 20 карточек (5 мин)' },
           ],
         },
         {
@@ -290,13 +290,13 @@ export const samples: Sample[] = [
           tasks: [
             { en: 'Writing Task 1: line graph report (20 min)', uz: 'Writing Task 1: chiziqli grafik bo‘yicha hisobot (20 daq.)', ru: 'Writing Task 1: отчёт по линейному графику (20 мин)' },
             { en: 'Listening: form completion mini-set (12 min)', uz: 'Listening: shaklni to‘ldirish mini-to‘plami (12 daq.)', ru: 'Listening: мини-набор на заполнение формы (12 мин)' },
-            { en: 'Vocabulary review: 20 cards (8 min)', uz: 'Lug‘at takrori: 20 ta karta (8 daq.)', ru: 'Повторение лексики: 20 карточек (8 мин)' },
+            { en: 'Vocabulary review: 20 cards (8 min)', uz: 'Lug‘at takrori: 20 ta kartochka (8 daq.)', ru: 'Повторение лексики: 20 карточек (8 мин)' },
           ],
         },
         {
           day: { en: 'Wednesday', uz: 'Chorshanba', ru: 'Среда' },
           tasks: [
-            { en: 'Speaking Part 2: one cue card, then re-record two upgrades (15 min)', uz: 'Speaking 2-qism: bitta kartochka, so‘ng ikkita yaxshilangan variantni qayta yozing (15 daq.)', ru: 'Speaking, часть 2: одна карточка, затем перезапишите два улучшенных варианта (15 мин)' },
+            { en: 'Speaking Part 2: one cue card, then re-record two upgrades (15 min)', uz: 'Speaking 2-qism: bitta kartochka, so‘ng ikkita yaxshilangan variantni qayta yozib oling (15 daq.)', ru: 'Speaking, часть 2: одна карточка, затем перезапишите два улучшенных варианта (15 мин)' },
             { en: 'Reading: matching headings (15 min)', uz: 'Reading: sarlavhalarni moslash (15 daq.)', ru: 'Reading: сопоставление заголовков (15 мин)' },
             { en: 'Drill: subject–verb agreement (10 min)', uz: 'Mashq: ega va kesim moslashuvi (10 daq.)', ru: 'Упражнение: согласование подлежащего и сказуемого (10 мин)' },
           ],
@@ -305,7 +305,7 @@ export const samples: Sample[] = [
           day: { en: 'Thursday', uz: 'Payshanba', ru: 'Четверг' },
           tasks: [
             { en: 'Writing Task 2: plan and write the body paragraphs (30 min)', uz: 'Writing Task 2: reja tuzing va asosiy xatboshilarni yozing (30 daq.)', ru: 'Writing Task 2: план и основные абзацы (30 мин)' },
-            { en: 'Vocabulary review: 20 cards (10 min)', uz: 'Lug‘at takrori: 20 ta karta (10 daq.)', ru: 'Повторение лексики: 20 карточек (10 мин)' },
+            { en: 'Vocabulary review: 20 cards (10 min)', uz: 'Lug‘at takrori: 20 ta kartochka (10 daq.)', ru: 'Повторение лексики: 20 карточек (10 мин)' },
           ],
         },
         {
@@ -314,13 +314,13 @@ export const samples: Sample[] = [
             { en: 'Speaking Part 3: four discussion questions (12 min)', uz: 'Speaking 3-qism: to‘rtta muhokama savoli (12 daq.)', ru: 'Speaking, часть 3: четыре вопроса для дискуссии (12 мин)' },
             { en: 'Listening: multiple choice mini-set (15 min)', uz: 'Listening: ko‘p tanlovli savollar mini-to‘plami (15 daq.)', ru: 'Listening: мини-набор с выбором ответа (15 мин)' },
             { en: 'Drill: linking words (8 min)', uz: 'Mashq: bog‘lovchi so‘zlar (8 daq.)', ru: 'Упражнение: слова-связки (8 мин)' },
-            { en: 'Vocabulary review: 20 cards (5 min)', uz: 'Lug‘at takrori: 20 ta karta (5 daq.)', ru: 'Повторение лексики: 20 карточек (5 мин)' },
+            { en: 'Vocabulary review: 20 cards (5 min)', uz: 'Lug‘at takrori: 20 ta kartochka (5 daq.)', ru: 'Повторение лексики: 20 карточек (5 мин)' },
           ],
         },
         {
           day: { en: 'Saturday', uz: 'Shanba', ru: 'Суббота' },
           tasks: [
-            { en: 'Writing Task 2: a full timed essay (40 min)', uz: 'Writing Task 2: vaqt bilan to‘liq insho (40 daq.)', ru: 'Writing Task 2: полное эссе на время (40 мин)' },
+            { en: 'Writing Task 2: a full timed essay (40 min)', uz: 'Writing Task 2: vaqt belgilab to‘liq insho (40 daq.)', ru: 'Writing Task 2: полное эссе на время (40 мин)' },
           ],
         },
         {
@@ -328,7 +328,7 @@ export const samples: Sample[] = [
           tasks: [
             { en: 'Full speaking mock, Parts 1–3 (15 min)', uz: 'To‘liq Speaking sinovi, 1–3-qismlar (15 daq.)', ru: 'Полный пробный Speaking, части 1–3 (15 мин)' },
             { en: 'Reading: completion questions (20 min)', uz: 'Reading: to‘ldirish savollari (20 daq.)', ru: 'Reading: вопросы на заполнение (20 мин)' },
-            { en: 'Weekly report and next week’s focus (5 min)', uz: 'Haftalik hisobot va keyingi hafta yo‘nalishi (5 daq.)', ru: 'Недельный отчёт и фокус на следующую неделю (5 мин)' },
+            { en: 'Weekly report and next week’s focus (5 min)', uz: 'Haftalik hisobot va keyingi hafta yo‘nalishi (5 daq.)', ru: 'Еженедельный отчёт и задачи на следующую неделю (5 мин)' },
           ],
         },
       ],

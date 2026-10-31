@@ -33,8 +33,8 @@ export const speakingCalibration: { samples: CalibrationSample[]; runs: Record<s
       metrics: { wpm: 94, longPauses: 7, fillers: 16, seconds: 120 },
       reference: { fluency_coherence: 4, lexical_resource: 5, grammatical_range_accuracy: 4 },
       rationale:
-        "The speaker keeps going for two minutes but with a filler every few words, a 'what else' search and a he/she self-correction, linked only by and/but/because: FC 4. " +
-        "Topic words are adequate for basic meaning (strict, patient, believe in me), so LR reaches 5, but almost every verb is wrong ('she always say us', 'she is go', 'I am remember'): GRA 4.",
+        "The speaker keeps going for two minutes, but with 16 fillers, 7 long pauses, a 'what else' search and a he/she self-correction, and ideas are linked only by and/but/because: FC 4. " +
+        "Topic words are adequate for basic meaning (strict, patient, believe in me), so LR reaches 5, but many verb forms are wrong ('she always say us', 'she is go', 'I am remember'): GRA 4.",
     },
     {
       id: 'sp.p1.b5-food',
@@ -69,7 +69,7 @@ export const speakingCalibration: { samples: CalibrationSample[]; runs: Record<s
       reference: { fluency_coherence: 5, lexical_resource: 6, grammatical_range_accuracy: 5 },
       rationale:
         "The talk covers every point in a sensible order, but frequent fillers, repetitions ('blue... blue tiles', 'of... of mausoleums') and a 'what else' pause keep FC at 5. " +
-        "Topic vocabulary is wide enough to describe the place in detail (madrasas, tiles, gates, light show, mausoleums) with a paraphrase when stuck: LR 6; articles and negatives keep failing ('very famous city', 'if somebody come', 'didn't see nothing'): GRA 5.",
+        "Topic vocabulary is wide enough to describe the place in detail (madrasas, tiles, gates, light show, mausoleums) with a paraphrase when stuck: LR 6; articles, agreement and negatives keep failing ('very famous city', 'if somebody come', 'didn't see nothing'): GRA 5.",
     },
     {
       id: 'sp.p1.b6-study',
@@ -128,7 +128,7 @@ export const speakingCalibration: { samples: CalibrationSample[]; runs: Record<s
       reference: { fluency_coherence: 7, lexical_resource: 7, grammatical_range_accuracy: 6 },
       rationale:
         "A genuine comparison organised by difference (pace, community, opportunities, health) and closed with a personal note, spoken without effort: FC 7; precise collocations (pace of life, stuck in traffic, barely know their neighbours, gets involved) give LR 7. " +
-        "Errors in comparatives, word order and habits in the past ('more healthier life', 'you only can see', 'leaving from villages', 'every summer I was going') keep GRA at 6.",
+        "Errors in comparatives, word order, prepositions and past habits ('more healthier life', 'you only can see', 'leaving from villages', 'every summer I was going') keep GRA at 6.",
     },
     {
       id: 'sp.p1.b8-hobby',

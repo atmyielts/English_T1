@@ -13,9 +13,9 @@ const PLANNING_FALLACY =
 
 export const diagnostic: Diagnostic = {
   intro: {
-    en: 'This placement check takes about 8 minutes: grammar, vocabulary, two short reading texts and a few questions about what you can already do in speaking, writing and listening. It is scored automatically, without AI. The result is an estimate of your current level to start your plan, not an official IELTS score, and the coach updates it as you practise.',
-    uz: 'Bu darajani aniqlash testi taxminan 8 daqiqa davom etadi: grammatika, lug‘at, ikkita qisqa o‘qish matni va speaking, writing hamda listening bo‘yicha hozir nimalarni qila olishingiz haqida bir nechta savol. U sun’iy intellektsiz, avtomatik baholanadi. Natija — rejangizni boshlash uchun hozirgi darajangizning taxminiy bahosi, rasmiy IELTS bali emas; murabbiy uni mashq qilganingiz sari yangilab boradi.',
-    ru: 'Этот тест на определение уровня займёт около 8 минут: грамматика, лексика, два коротких текста для чтения и несколько вопросов о том, что вы уже умеете в speaking, writing и listening. Он оценивается автоматически, без ИИ. Результат — примерная оценка вашего текущего уровня для старта плана, а не официальный балл IELTS; коуч будет уточнять его по мере ваших занятий.',
+    en: 'This placement test takes about 8 minutes: grammar, vocabulary, two short reading texts and a few questions about what you can already do in Speaking, Writing and Listening. It is scored automatically, without AI. The result is an estimate of your current level to start your plan, not an official IELTS score, and the coach updates it as you practise.',
+    uz: 'Bu daraja testi taxminan 8 daqiqa davom etadi: grammatika, lug‘at, o‘qish uchun ikkita qisqa matn va Speaking, Writing hamda Listening bo‘yicha hozir nimalarni qila olishingiz haqida bir nechta savol. Test AI ishtirokisiz, avtomatik baholanadi. Natija — rejangizni boshlash uchun hozirgi darajangizning taxminiy bahosi, rasmiy IELTS balli emas; murabbiy uni mashq qilganingiz sari yangilab boradi.',
+    ru: 'Этот тест уровня займёт около 8 минут: грамматика, лексика, два коротких текста для чтения и несколько вопросов о том, что вы уже умеете в Speaking, Writing и Listening. Он оценивается автоматически, без ИИ. Результат — примерная оценка вашего текущего уровня для старта плана, а не официальный балл IELTS; коуч будет уточнять его по мере ваших занятий.',
   },
   minutes: 8,
   passRatio: 0.6,
@@ -190,7 +190,7 @@ export const diagnostic: Diagnostic = {
       id: 'c2', skill: 'speaking', level: 6, kind: 'can_do',
       prompt: {
         en: 'I can talk for two minutes about a familiar topic without long pauses.',
-        uz: 'Tanish mavzuda uzoq to‘xtalishlarsiz ikki daqiqa gapira olaman.',
+        uz: 'Tanish mavzuda uzoq pauzalarsiz ikki daqiqa gapira olaman.',
         ru: 'Я могу две минуты говорить на знакомую тему без долгих пауз.',
       },
     },
@@ -199,7 +199,7 @@ export const diagnostic: Diagnostic = {
       prompt: {
         en: 'I can discuss abstract questions, such as how technology changes society, compare different views and justify my own.',
         uz: 'Texnologiya jamiyatni qanday o‘zgartirishi kabi mavhum savollarni muhokama qila, turli qarashlarni solishtira va o‘z fikrimni asoslay olaman.',
-        ru: 'Я могу обсуждать абстрактные вопросы, например как технологии меняют общество, сравнивать разные точки зрения и обосновывать свою.',
+        ru: 'Я могу обсуждать абстрактные вопросы, например, как технологии меняют общество, сравнивать разные точки зрения и обосновывать свою.',
       },
     },
     {

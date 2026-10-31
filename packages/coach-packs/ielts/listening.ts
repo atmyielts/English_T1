@@ -37,8 +37,8 @@ export const listening: Activity[] = [
     mode: 'listening',
     node: 'listening',
     title: {
-      en: 'Section 1: enrolling on a swimming course',
-      uz: '1-bo‘lim: suzish kursiga yozilish',
+      en: 'Part 1: enrolling on a swimming course',
+      uz: '1-qism: suzish kursiga yozilish',
       ru: 'Часть 1: запись на курс плавания',
     },
     levels: [4.5, 7],
@@ -77,8 +77,8 @@ export const listening: Activity[] = [
         wordLimit: 1,
         evidence: 'No, it ends with an O. M-I-R-Z-O.',
         explanation: {
-          en: 'The receptionist checks “M-I-R-Z-A?” and Aziz corrects it: the name ends with an O. In Section 1 the first spelling you hear is often the trap, so write the version the speaker confirms.',
-          uz: 'Qabulxona xodimi «M-I-R-Z-A?» deb so‘raydi, Aziz esa tuzatadi: familiya O harfi bilan tugaydi. 1-bo‘limda birinchi eshitilgan imlo ko‘pincha tuzoq bo‘ladi, shuning uchun so‘zlovchi tasdiqlagan variantni yozing.',
+          en: 'The receptionist checks “M-I-R-Z-A?” and Aziz corrects it: the name ends with an O. In Part 1 the first spelling you hear is often the trap, so write the version the speaker confirms.',
+          uz: 'Qabulxona xodimi «M-I-R-Z-A?» deb so‘raydi, Aziz esa tuzatadi: familiya O harfi bilan tugaydi. 1-qismda birinchi eshitilgan imlo ko‘pincha tuzoq bo‘ladi, shuning uchun so‘zlovchi tasdiqlagan variantni yozing.',
           ru: 'Администратор уточняет «M-I-R-Z-A?», и Азиз поправляет: фамилия заканчивается на O. В первой части первое услышанное написание часто оказывается ловушкой, поэтому записывайте вариант, который говорящий подтверждает.',
         },
       },
@@ -117,7 +117,7 @@ export const listening: Activity[] = [
         evidence: 'That’s thirty-eight pounds.',
         explanation: {
           en: 'Forty-five pounds is the standard price, but Aziz lives in the borough and pays the resident rate: thirty-eight pounds. The form asks for the resident rate, so 45 is wrong.',
-          uz: 'Qirq besh funt standart narx, lekin Aziz shu tumanda yashagani uchun rezident narxini to‘laydi: o‘ttiz sakkiz funt. Shaklda aynan rezident narxi so‘ralgan, shuning uchun 45 noto‘g‘ri.',
+          uz: 'Qirq besh funt standart narx, lekin Aziz shu tumanda yashagani uchun tuman aholisi narxini to‘laydi: o‘ttiz sakkiz funt. Shaklda aynan shu narx so‘ralgan, shuning uchun 45 noto‘g‘ri.',
           ru: 'Сорок пять фунтов — стандартная цена, но Азиз живёт в этом районе и платит тариф для жителей: тридцать восемь фунтов. В форме спрашивается именно этот тариф, поэтому 45 — неверно.',
         },
       },
@@ -130,7 +130,7 @@ export const listening: Activity[] = [
         evidence: 'The one thing you must bring to the first lesson is proof of address',
         explanation: {
           en: 'Goggles are “not required” and a cap can be borrowed, so both are traps. The only thing he “must bring” is proof of address, which confirms the resident rate.',
-          uz: 'Suzish ko‘zoynagi «majburiy emas», shapkani esa markazdan olib turish mumkin, ikkalasi ham tuzoq. U olib kelishi shart bo‘lgan yagona narsa — rezident narxini tasdiqlaydigan manzil hujjati.',
+          uz: 'Suzish ko‘zoynagi «majburiy emas», shapkani esa markazdan olib turish mumkin, ikkalasi ham tuzoq. U olib kelishi shart bo‘lgan yagona narsa — tuman aholisi narxini tasdiqlaydigan manzil hujjati.',
           ru: 'Очки «не обязательны», а шапочку можно взять в центре, так что оба варианта — ловушки. Единственное, что он «должен принести», — подтверждение адреса для тарифа жителей.',
         },
       },
@@ -143,7 +143,7 @@ export const listening: Activity[] = [
         evidence: 'It was my sister who recommended you.',
         explanation: {
           en: 'Aziz saw the posters but “didn’t really pay attention to them”; it was his sister who recommended the centre. The survey is only the reason the receptionist asks, not where he heard about it.',
-          uz: 'Aziz afishalarni ko‘rgan, lekin ularga «unchalik e’tibor bermagan»; markazni unga opasi tavsiya qilgan. So‘rovnoma esa xodim nega so‘rayotganining sababi, Aziz ma’lumot olgan manba emas.',
+          uz: 'Aziz afishalarni ko‘rgan, lekin ularga «unchalik e’tibor bermagan»; markazni unga opasi tavsiya qilgan. So‘rovnoma esa xodim bu savolni berishining sababi, Aziz ma’lumot olgan manba emas.',
           ru: 'Азиз видел афиши, но «не особо обратил на них внимание»; центр ему посоветовала сестра. Опрос — лишь причина, по которой администратор задаёт вопрос, а не источник информации.',
         },
       },
@@ -157,8 +157,8 @@ export const listening: Activity[] = [
     mode: 'listening',
     node: 'listening',
     title: {
-      en: 'Section 1: arranging a homestay',
-      uz: '1-bo‘lim: oila bilan yashashni kelishish',
+      en: 'Part 1: arranging a homestay',
+      uz: '1-qism: mezbon oilada yashashni kelishish',
       ru: 'Часть 1: проживание в принимающей семье',
     },
     levels: [4.5, 7],
@@ -225,8 +225,8 @@ export const listening: Activity[] = [
         evidence: 'I’d much rather walk than wait for buses every morning.',
         explanation: {
           en: 'Hilltop is about fifteen minutes on foot from the college, and Dilnoza would “much rather walk”. Riverside is the cheapest area and the Old Town is the lively one, so those options describe the other areas.',
-          uz: 'Hilltop kollejdan piyoda taxminan o‘n besh daqiqa, Dilnoza esa «piyoda yurishni afzal ko‘radi». Eng arzon hudud Riverside, gavjum va qiziqarlisi Old Town, ya’ni bu variantlar boshqa hududlarga tegishli.',
-          ru: 'Хиллтоп примерно в пятнадцати минутах ходьбы от колледжа, а Дильноза «гораздо охотнее ходит пешком». Самый дешёвый район — Riverside, оживлённый — Old Town, так что эти варианты описывают другие районы.',
+          uz: 'Hilltop kollejdan piyoda taxminan o‘n besh daqiqa, Dilnoza esa «piyoda yurishni afzal ko‘radi». Eng arzon hudud Riverside, jonli hudud esa Old Town, ya’ni bu variantlar boshqa hududlarga tegishli.',
+          ru: 'Hilltop примерно в пятнадцати минутах ходьбы от колледжа, а Дильноза «гораздо охотнее ходит пешком». Самый дешёвый район — Riverside, оживлённый — Old Town, так что эти варианты описывают другие районы.',
         },
       },
       {
@@ -278,8 +278,8 @@ export const listening: Activity[] = [
     mode: 'listening',
     node: 'listening',
     title: {
-      en: 'Section 2: a tour of an old cotton mill',
-      uz: '2-bo‘lim: eski to‘qimachilik fabrikasi bo‘ylab ekskursiya',
+      en: 'Part 2: a tour of an old cotton mill',
+      uz: '2-qism: eski to‘qimachilik fabrikasi bo‘ylab ekskursiya',
       ru: 'Часть 2: экскурсия по старой текстильной фабрике',
     },
     levels: [5, 7.5],
@@ -308,8 +308,8 @@ export const listening: Activity[] = [
         evidence: 'the real reason is that this is where the raw cotton arrived by canal boat',
         explanation: {
           en: 'The guide mentions the view of the chimney only to reject it (“People sometimes think…”); the real reason is that raw cotton arrived there by canal boat. Ear protection is collected at the Weaving Hall door, not in the courtyard.',
-          uz: 'Gid mo‘ri manzarasini faqat rad etish uchun tilga oladi («People sometimes think…»); asl sabab shuki, paxta xomashyosi aynan shu yerga kanal qayig‘ida keltirilgan. Quloqchinlar hovlida emas, to‘quv zali eshigida beriladi.',
-          ru: 'Вид на трубу гид упоминает лишь затем, чтобы его отвергнуть («People sometimes think…»); настоящая причина — сырой хлопок привозили сюда по каналу на лодках. Наушники выдают у входа в ткацкий зал, а не во дворе.',
+          uz: 'Gid mo‘ri manzarasini faqat rad etish uchun tilga oladi («People sometimes think…»); asl sabab shuki, paxta xomashyosi aynan shu yerga kanal qayig‘ida keltirilgan. Himoya quloqchinlari hovlida emas, to‘quv zali eshigida beriladi.',
+          ru: 'Вид на трубу гид упоминает лишь затем, чтобы его отвергнуть («People sometimes think…»); настоящая причина — сырой хлопок привозили сюда по каналу на лодках. Защитные наушники выдают у входа в ткацкий зал, а не во дворе.',
         },
       },
       {
@@ -321,8 +321,8 @@ export const listening: Activity[] = [
         evidence: 'we run two of the original looms, so you’ll see exactly how the cloth was made',
         explanation: {
           en: 'Twice a day two of the original looms are run in the Weaving Hall, so visitors watch original machines working. The ear protection is a safety detail, not one of the activities on the list.',
-          uz: 'To‘quv zalida kuniga ikki marta ikkita asl dastgoh ishga tushiriladi, ya’ni tashrif buyuruvchilar asl mashinalar ishlayotganini ko‘radi. Quloqchinlar xavfsizlik tafsiloti, ro‘yxatdagi faoliyatlardan biri emas.',
-          ru: 'В ткацком зале дважды в день запускают два старинных станка, то есть посетители видят оригинальные машины в работе. Наушники — деталь техники безопасности, а не одно из занятий в списке.',
+          uz: 'To‘quv zalida kuniga ikki marta ikkita asl dastgoh ishga tushiriladi, ya’ni tashrif buyuruvchilar asl mashinalar ishlayotganini ko‘radi. Himoya quloqchinlari xavfsizlik tafsiloti, ro‘yxatdagi faoliyatlardan biri emas.',
+          ru: 'В ткацком зале дважды в день запускают два старинных станка, то есть посетители видят оригинальные машины в работе. Защитные наушники — деталь техники безопасности, а не одно из занятий в списке.',
         },
       },
       {
@@ -334,7 +334,7 @@ export const listening: Activity[] = [
         evidence: 'the room now shows a short film about the families who worked here',
         explanation: {
           en: 'The room’s name suggests the steam engine, but it “was sold for scrap”, so that option is the trap. The room now shows a short film about the mill families.',
-          uz: 'Xona nomi bug‘ mashinasini eslatadi, lekin u «metallomga sotilgan», shuning uchun bu variant tuzoq. Hozir xonada fabrikada ishlagan oilalar haqida qisqa film ko‘rsatiladi.',
+          uz: 'Xona nomi bug‘ mashinasini eslatadi, lekin u «temir-tersak sifatida sotilgan», shuning uchun bu variant tuzoq. Hozir xonada fabrikada ishlagan oilalar haqida qisqa film ko‘rsatiladi.',
           ru: 'Название зала наводит на мысль о паровой машине, но её «продали на металлолом», поэтому этот вариант — ловушка. Сейчас там показывают короткий фильм о семьях, работавших на фабрике.',
         },
       },
@@ -360,7 +360,7 @@ export const listening: Activity[] = [
         evidence: 'most of what we sell is cloth woven on our own looms',
         explanation: {
           en: 'Visitors “expect postcards and souvenirs”, and there are a few, but the guide stresses that most of what is sold is cloth woven on the mill’s own looms.',
-          uz: 'Tashrif buyuruvchilar «otkritka va esdalik sovg‘alarini kutadi», ular biroz bor ham, lekin gid sotiladigan narsalarning asosiy qismi fabrikaning o‘z dastgohlarida to‘qilgan mato ekanini ta’kidlaydi.',
+          uz: 'Tashrif buyuruvchilar «otkritka va esdalik sovg‘alarini kutadi», ulardan ozgina bor ham, lekin gid sotiladigan narsalarning asosiy qismi fabrikaning o‘z dastgohlarida to‘qilgan mato ekanini ta’kidlaydi.',
           ru: 'Посетители «ожидают открыток и сувениров», и они действительно есть, но гид подчёркивает: в основном продаётся ткань, сотканная на станках самой фабрики.',
         },
       },
@@ -387,8 +387,8 @@ export const listening: Activity[] = [
     mode: 'listening',
     node: 'listening',
     title: {
-      en: 'Section 2: a library orientation talk',
-      uz: '2-bo‘lim: kutubxona bilan tanishtiruv',
+      en: 'Part 2: a library orientation talk',
+      uz: '2-qism: kutubxona bilan tanishtiruv',
       ru: 'Часть 2: вводная беседа о библиотеке',
     },
     levels: [5, 7.5],
@@ -428,7 +428,7 @@ export const listening: Activity[] = [
         evidence: 'it’s also where you’ll find the help desk',
         explanation: {
           en: 'The ground floor is the “social floor”, and “it’s also where you’ll find the help desk”. The later advice to see a subject librarian instead of the help desk does not move the desk anywhere else.',
-          uz: 'Ground floor — «ijtimoiy qavat», va «yordam stoli ham shu yerda». Keyinroq aytilgan, yordam stoli o‘rniga fan kutubxonachisiga yozilish haqidagi maslahat stolning joyini o‘zgartirmaydi.',
+          uz: 'Ground floor — «ijtimoiy qavat» va «yordam stoli ham shu yerda». Keyinroq aytilgan maslahat (yordam stoli o‘rniga fan kutubxonachisiga yozilish) stolning joyini o‘zgartirmaydi.',
           ru: 'Ground floor — «социальный этаж», и «там же находится стойка помощи». Более поздний совет обращаться к библиотекарю по предмету, а не на стойку, её местоположение не меняет.',
         },
       },
@@ -494,8 +494,8 @@ export const listening: Activity[] = [
     mode: 'listening',
     node: 'listening',
     title: {
-      en: 'Section 4: how migratory birds find their way',
-      uz: '4-bo‘lim: ko‘chmanchi qushlar yo‘lni qanday topadi',
+      en: 'Part 4: how migratory birds find their way',
+      uz: '4-qism: ko‘chmanchi qushlar yo‘lni qanday topadi',
       ru: 'Часть 4: как перелётные птицы находят дорогу',
     },
     levels: [6, 8.5],
@@ -561,7 +561,7 @@ export const listening: Activity[] = [
         evidence: 'This tells them whether they are heading towards a pole or towards the equator',
         explanation: {
           en: 'The dip angle of the field lines tells birds whether they are heading towards a pole or the equator, “rather than simply pointing north as a ship’s compass does”. Pointing north is exactly what the lecturer says it does not do.',
-          uz: 'Magnit chiziqlarining yerga og‘ish burchagi qushga qutb tomonga yoki ekvator tomonga uchayotganini bildiradi; u kema kompasi kabi shunchaki shimolni ko‘rsatmaydi. Ma’ruzachi aynan shimolni ko‘rsatmasligini ta’kidlaydi.',
+          uz: 'Magnit maydoni chiziqlarining yerga og‘ish burchagi qushga qutb tomonga yoki ekvator tomonga uchayotganini bildiradi; u kema kompasi kabi shunchaki shimolni ko‘rsatmaydi. Ma’ruzachi aynan shimolni ko‘rsatmasligini ta’kidlaydi.',
           ru: 'Угол наклона силовых линий подсказывает птице, летит ли она к полюсу или к экватору, а не просто указывает на север, «как корабельный компас». Лектор прямо говорит, что на север он не указывает.',
         },
       },
@@ -573,7 +573,7 @@ export const listening: Activity[] = [
         answer: 4,
         evidence: 'they often failed to find their way back to their colony',
         explanation: {
-          en: 'Seabirds without a sense of smell still flew in a fairly straight line but often failed to find their colony, so smell helps birds find one particular place. Holding a straight course was not affected, so that is not what smell provides.',
+          en: 'Seabirds whose sense of smell was temporarily blocked still flew in a fairly straight line but often failed to find their colony, so smell helps birds find one particular place. Holding a straight course was not affected, so that is not what smell provides.',
           uz: 'Hid bilishi vaqtincha to‘silgan dengiz qushlari baribir deyarli to‘g‘ri chiziq bo‘ylab uchgan, lekin ko‘pincha o‘z koloniyasini topa olmagan. Demak, hid aniq bir joyni topishga yordam beradi, to‘g‘ri yo‘nalishni ushlab turishga emas.',
           ru: 'Морские птицы с временно заблокированным обонянием всё равно летели почти по прямой, но часто не находили свою колонию. Значит, запах помогает найти конкретное место, а не держать курс.',
         },
@@ -606,8 +606,8 @@ export const listening: Activity[] = [
     mode: 'listening',
     node: 'listening',
     title: {
-      en: 'Section 4: keeping food cold before refrigerators',
-      uz: '4-bo‘lim: muzlatgichlardan oldin oziq-ovqatni sovuq saqlash',
+      en: 'Part 4: keeping food cold before refrigerators',
+      uz: '4-qism: muzlatgichlardan oldin oziq-ovqatni sovuq saqlash',
       ru: 'Часть 4: как сохраняли холод до появления холодильников',
     },
     levels: [6, 8.5],
@@ -647,8 +647,8 @@ export const listening: Activity[] = [
         evidence: 'packed in sawdust and shipped to hot cities',
         explanation: {
           en: 'The blocks were “packed in sawdust”, which the lecturer calls “a remarkably effective insulator”. Frozen lakes are where the ice came from, not what it was packed in.',
-          uz: 'Muz bo‘laklari «qipiqqa o‘ralgan», ma’ruzachi uni «juda samarali issiqlik izolyatori» deb ataydi. Muzlagan ko‘llar muz olingan joy, u o‘ralgan material emas.',
-          ru: 'Блоки «упаковывали в опилки», которые лектор называет «удивительно эффективным утеплителем». Замёрзшие озёра — источник льда, а не упаковка.',
+          uz: 'Muz bo‘laklari «qipiqqa joylangan», ma’ruzachi uni «juda samarali issiqlik izolyatori» deb ataydi. Muzlagan ko‘llar muz olingan joy, u joylangan material emas.',
+          ru: 'Блоки «упаковывали в опилки», которые лектор называет «удивительно эффективным теплоизолятором». Замёрзшие озёра — источник льда, а не упаковка.',
         },
       },
       {
