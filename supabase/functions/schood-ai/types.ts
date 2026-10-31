@@ -326,6 +326,8 @@ export interface NotifyPrefs {
 }
 /** A minted Supabase session (ctx.auth.sessionFor). */
 export interface MintedSession { access_token: string; refresh_token: string; expires_at: number }
+/** A telegram-link call for a Telegram account (ctx.auth.telegramLink). */
+export interface TelegramLinkInput { action: 'status' | 'validate'; chatId: string; token?: string }
 export interface NotifyMessage {
   /** The kind registered with registerNotifyKind (`centre.brief`). */
   kind: string;
@@ -613,6 +615,8 @@ export interface RequestContext {
      * A signed-in caller may mint only their own. Hand the tokens to that person only; never log or store them.
      */
     sessionFor(userId: string, options: { reason: string }): Promise<MintedSession>;
+    /** System routes only: telegram-link's answer (status and JSON) for a Telegram account's link status or a web link token. */
+    telegramLink(input: TelegramLinkInput): Promise<{ status: number; data: unknown }>;
   };
   /** The workspace in `?workspace_id=` (or the personal one) with the caller's active membership. */
   workspace(options?: { roles?: readonly Role[] }): Promise<WorkspaceAccess>;

@@ -148,7 +148,14 @@ export async function coachStack(options: { speech?: boolean; users?: typeof USE
     store: coach.store, packs: loadPacks(),
     config: { appUrl: APP, bots: Object.fromEntries(Object.entries(BOT).map(([pack, bot]) => [pack, { id: bot.id, username: bot.username }])), passProducts: { B2: [PASS_PRODUCT] }, fairUseCredits: 1200, telegramPublicKey: publicHex },
   };
-  const f = fixture({ registry: options.speech === false ? SEED_REGISTRY : SPEECH_REGISTRY });
+  // ctx.auth.telegramLink as index.ts sends it: telegram-link with the service-role bearer.
+  const f = fixture({
+    registry: options.speech === false ? SEED_REGISTRY : SPEECH_REGISTRY,
+    async telegramLink(input) {
+      const response = await backend(`${SUPABASE}/functions/v1/telegram-link`, { method: 'POST', headers: { Authorization: 'Bearer service-role-key', 'Content-Type': 'application/json' }, body: JSON.stringify({ action: input.action, chat_id: input.chatId, ...(input.token ? { token: input.token } : {}) }) });
+      return { status: response.status, data: await response.json().catch(() => null) };
+    },
+  });
   // The coach area's stores: a memory twin that knows the linked chats, and test settings.
   f.stores.use(coachStore, coach.store);
   f.stores.use(coachServices, { config: runtime.config });
@@ -175,7 +182,7 @@ export async function coachStack(options: { speech?: boolean; users?: typeof USE
     }
     if (url.pathname.startsWith('/functions/v1/telegram-link')) {
       const body = await request.json().catch(() => ({}));
-      if (request.headers.get('x-worker-secret') !== 'internal-secret-0123456789') return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      if (request.headers.get('authorization') !== 'Bearer service-role-key') return Response.json({ error: 'Unauthorized' }, { status: 401 });
       if (body.action === 'status') { const id = chats.get(String(body.chat_id)); return Response.json({ linked: !!id, user: id ? { id, name: 'Learner' } : null }); }
       if (body.action === 'validate') {
         if (body.token === 'a'.repeat(64)) {
@@ -198,7 +205,7 @@ export async function coachStack(options: { speech?: boolean; users?: typeof USE
     return new Response('not found', { status: 404 });
   }
   const env = {
-    APP_URL: APP, SUPABASE_URL: SUPABASE, SUPABASE_ANON_KEY: 'anon-public-key', SCHOOD_AI_SERVICE_SECRET: SECRET, TELEGRAM_INTERNAL_SECRET: 'internal-secret-0123456789',
+    APP_URL: APP, SUPABASE_URL: SUPABASE, SUPABASE_ANON_KEY: 'anon-public-key', SCHOOD_AI_SERVICE_SECRET: SECRET,
     ...Object.fromEntries(Object.entries(BOT).flatMap(([pack, bot]) => [[`COACH_BOT_TOKEN_${pack.toUpperCase()}`, bot.token], [`COACH_WEBHOOK_SECRET_${pack.toUpperCase()}`, bot.secret]])),
   };
   const worker = createWorker({ env, packs: runtime.packs, fetch: backend, now });

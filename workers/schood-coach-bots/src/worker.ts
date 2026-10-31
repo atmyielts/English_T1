@@ -19,7 +19,6 @@ export interface Env {
   APP_URL: string;
   SUPABASE_URL: string;
   SCHOOD_AI_SERVICE_SECRET: string;
-  TELEGRAM_INTERNAL_SECRET: string;
   /** Per coach: COACH_BOT_TOKEN_<PACK>, COACH_WEBHOOK_SECRET_<PACK> (and _PREVIOUS while rotating). */
   [key: string]: string | undefined;
 }
@@ -46,19 +45,27 @@ export function createWorker(deps: WorkerDeps) {
   const { env, packs } = deps;
   const appUrl = (env.APP_URL || 'https://ai.schood.online').replace(/\/+$/, '');
   const fn = (path: string) => `${env.SUPABASE_URL.replace(/\/+$/, '')}/functions/v1/${path}`;
-  // schood-ai and telegram-link take the worker secrets, never a bearer token (telegram-link
-  // would read a bearer as a service key).
+  // schood-ai takes the service secret, never a bearer token. Account links go through
+  // schood-ai too (coach/system-link), which calls telegram-link with the service role.
   const tokenOf = (pack: string) => env[`COACH_BOT_TOKEN_${envKey(pack)}`];
   const active = (pack: string) => packs.has(pack) && !!tokenOf(pack);
+
+  /** telegram-link's answer for this Telegram account, through schood-ai. */
+  async function telegramLink(body: { action: 'status' | 'validate'; chat_id: string; token?: string }): Promise<{ ok: boolean; result: Record<string, unknown> }> {
+    const response = await deps.fetch(fn('schood-ai/coach/system-link'), { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-schood-service-secret': env.SCHOOD_AI_SERVICE_SECRET }, body: JSON.stringify(body) });
+    const payload = await response.json().catch(() => null) as { status?: number; result?: Record<string, unknown> } | null;
+    if (!response.ok || !payload) throw new Error(`coach/system-link ${response.status}`);
+    return { ok: typeof payload.status === 'number' && payload.status >= 200 && payload.status < 300, result: payload.result ?? {} };
+  }
 
   // Linked accounts by Telegram user, briefly cached per isolate.
   const links = new Map<string, { at: number; userId: string | null; name: string | null }>();
   async function linkedUser(chatId: string): Promise<{ userId: string | null; name: string | null }> {
     const hit = links.get(chatId), now = Date.now();
     if (hit && now - hit.at < 60_000) return hit;
-    const response = await deps.fetch(`${fn('telegram-link')}?action=status&chat_id=${chatId}`, { method: 'POST', headers: { 'x-worker-secret': env.TELEGRAM_INTERNAL_SECRET, 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'status', chat_id: chatId }) });
-    const payload = await response.json().catch(() => ({})) as { linked?: boolean; user?: { id?: string; name?: string } };
-    if (!response.ok) throw new Error(`telegram-link status ${response.status}`);
+    const status = await telegramLink({ action: 'status', chat_id: chatId });
+    if (!status.ok) throw new Error('telegram-link status refused');
+    const payload = status.result as { linked?: boolean; user?: { id?: string; name?: string } };
     const entry = { at: now, userId: payload.linked && typeof payload.user?.id === 'string' ? payload.user.id : null, name: payload.user?.name ?? null };
     links.set(chatId, entry);
     if (links.size > 5000) links.clear();
@@ -104,8 +111,8 @@ export function createWorker(deps: WorkerDeps) {
     const text: string = typeof message?.text === 'string' ? message.text : '';
     const command = /^\/([a-z_]{1,32})(?:@\w+)?(?:\s+(.+))?$/i.exec(text.trim());
     if (command && command[1].toLowerCase() === 'start' && command[2] && /^[A-Za-z0-9_-]{32,64}$/.test(command[2].trim())) {
-      const response = await deps.fetch(fn('telegram-link'), { method: 'POST', headers: { 'x-worker-secret': env.TELEGRAM_INTERNAL_SECRET, 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'validate', token: command[2].trim(), chat_id: chatId }) });
-      const result = await response.json().catch(() => ({})) as { ok?: boolean; name?: string; confirmation_required?: boolean; error?: string };
+      const validated = await telegramLink({ action: 'validate', token: command[2].trim(), chat_id: chatId }).catch(() => ({ ok: false, result: {} }));
+      const result = (validated.ok ? validated.result : { ...validated.result, ok: false }) as { ok?: boolean; name?: string; confirmation_required?: boolean; error?: string };
       links.delete(chatId);
       if (!result.ok) { await reply([{ kind: 'text', html: say(locale, 'link.failed', { reason: result.error ?? 'invalid' }) }]); return; }
       if (result.confirmation_required) { await reply([{ kind: 'text', html: say(locale, 'link.confirm') }]); return; }
