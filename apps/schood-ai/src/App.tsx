@@ -1,4 +1,5 @@
-import React, { lazy, Suspense, useEffect, type ComponentType } from 'react';
+import React, { lazy, Suspense, useEffect, type ComponentType, type ReactNode } from 'react';
+import { FEATURES, PLAN_SCOPE } from '../../../packages/ai-core/src/mod.ts';
 import * as centre from './centre/routes.tsx';
 import * as coach from './coach/routes.tsx';
 import type { AreaRegistry, AreaRoute, Audience, HomeCard } from './core/areas.ts';
@@ -90,13 +91,23 @@ export function App() {
   let content: React.ReactNode;
   if (!route) content = <NotFoundPage params={{}}/>;
   else if (route.audiences && !route.audiences.includes(audience)) content = <WrongPlace wanted={route.audiences}/>;
-  else if ('feature' in route && route.feature) content = <PlanGate feature={route.feature}><route.component params={params}/></PlanGate>;
+  else if ('feature' in route && route.feature) {
+    const gated = <PlanGate feature={route.feature}><route.component params={params}/></PlanGate>;
+    // A centre-only feature (a student's /my-centre) opened from the person's own workspace: open it in their centre.
+    content = workspace.me.workspace.kind === 'personal' && centreOnly(route.feature) ? <WrongPlace wanted={route.audiences ?? [audience]} elsewhere fallback={gated}/> : gated;
+  }
   else content = <route.component params={params}/>;
   const blocked = !workspace.me.plan.plans.length && !workspace.me.plan.beta && !workspace.me.plan.features.length && path === '/assistant';
   return <AppShell nav={nav} focusMode={!!route && 'focus' in route && !!route.focus}>
     <Suspense fallback={loading}>{blocked ? <><h1 className="m-0 mb-4 font-display text-3xl font-bold">{t('chat.title')}</h1><Paywall plans={['plus', 'family', 'teacher']}/></> : content}</Suspense>
   </AppShell>;
 }
+
+/** A feature only centre plans include, so it can never open in a personal workspace. */
+const centreOnly = (feature: string) => {
+  const rule = FEATURES[feature];
+  return !!rule && !rule.open && rule.plans.length > 0 && rule.plans.every((plan) => PLAN_SCOPE[plan] === 'workspace');
+};
 
 /** The audiences a centre workspace gives a role (the centre side of audiencesFor). */
 const centreAudiences = (ws: WorkspaceView): Audience[] =>
@@ -106,10 +117,12 @@ const centreAudiences = (ws: WorkspaceView): Audience[] =>
  * A page for another audience (a centre owner opening /centre/brief from the Monday brief
  * while their own workspace is open): switch to the audience or the one workspace where it
  * belongs, offer a choice when there are several, and say not found only when there is none.
+ * `elsewhere`: only another (centre) workspace will do, for a centre-only feature; with no
+ * centre to open it in, `fallback` shows (the plan gate).
  */
-function WrongPlace({ wanted }: { wanted: Audience[] }) {
+function WrongPlace({ wanted, elsewhere = false, fallback }: { wanted: Audience[]; elsewhere?: boolean; fallback?: ReactNode }) {
   const t = useT(), workspace = useWorkspace(), me = workspace.me!;
-  const here = workspace.audiences.find((audience) => wanted.includes(audience)) ?? null;
+  const here = elsewhere ? null : workspace.audiences.find((audience) => wanted.includes(audience)) ?? null;
   const places = here ? [] : me.workspaces.filter((ws) => ws.id !== me.workspace.id && ws.status === 'active' && centreAudiences(ws).some((audience) => wanted.includes(audience)));
   const only = places.length === 1 ? places[0].id : null;
   useEffect(() => {
@@ -117,7 +130,7 @@ function WrongPlace({ wanted }: { wanted: Audience[] }) {
     else if (only) workspace.setWorkspace(only);
   }, [here, only]);
   if (here || only) return <LoadingState label={t('app.loading')}/>;
-  if (!places.length) return <NotFoundPage params={{}}/>;
+  if (!places.length) return fallback ? <>{fallback}</> : <NotFoundPage params={{}}/>;
   return <Card>
     <h1 className="m-0 font-display text-2xl font-bold">{t('place.choose.title')}</h1>
     <p className="mb-4 mt-2 text-sm text-gray-700">{t('place.choose.lead')}</p>
