@@ -32,7 +32,7 @@ const samples: CalibrationSample[] = [
     ].join('\n'),
     metrics: { wpm: 58, longPauses: 7, fillers: 4, seconds: 75 },
     reference: { range: 2, accuracy: 2, fluency: 2, interaction: 2 },
-    rationale: 'Turns are mostly one to three words from a small everyday stock (Cappuccino. Big one. Chocolate cake). Systematic basic errors: missing subject and “be” pattern in “Is very cold today”, article drops (near window, hot drink), statement order in “How much it is?”. The order opens with a bare command (Give me coffee); the learner copes with the missing oat milk and asks for repetition, but the barista carries the exchange. Pace 58 wpm with seven long pauses. Solid A2 on every criterion.',
+    rationale: 'Turns are mostly one to three words from a small everyday stock (Cappuccino. Big one. Chocolate cake). Systematic basic errors: the missing subject in “Is very cold today”, article drops (near window, hot drink), statement order in “How much it is?”. The order opens with a bare command (Give me coffee); the learner copes with the missing oat milk and asks for repetition, but the barista carries the exchange. Pace 58 wpm with seven long pauses. Solid A2 on every criterion.',
   },
   {
     id: 's02-directions-a2',
@@ -163,7 +163,7 @@ const samples: CalibrationSample[] = [
     ].join('\n'),
     metrics: { wpm: 126, longPauses: 2, fillers: 3, seconds: 84 },
     reference: { range: 4, accuracy: 3.5, fluency: 4, interaction: 4 },
-    rationale: 'Precise symptom vocabulary (more like pressure, a bit blocked, I had a rash once) used to describe the pain exactly. Mostly accurate, but two B1+ errors that a B2 speaker usually avoids: “I am taking paracetamol since Monday” and the embedded question “how long I should take them”, plus “in the forehead”. Fluent, developed turns. Interaction is B2: volunteers the key details (worse when bending, the cold, the allergy) and asks what it is and how long the treatment lasts.',
+    rationale: 'Precise symptom vocabulary (more like pressure, a bit blocked, I had a rash once) used to describe the pain exactly. Mostly accurate, but two B1+ errors that a B2 speaker usually avoids: “I am taking paracetamol since Monday” and statement order in the question “how long I should take them”, plus “in the forehead”. Fluent, developed turns. Interaction is B2: volunteers the key details (worse when bending, the cold, the allergy) and asks what it is and how long the treatment lasts.',
   },
   {
     id: 's10-disagree-b2plus',

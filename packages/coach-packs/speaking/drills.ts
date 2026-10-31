@@ -9,7 +9,7 @@ export const drills: Activity[] = [
     id: 'drill.verb_tense', kind: 'drill', errorTag: 'verb_tense', node: 'conversation.accuracy', levels: [2, 5], minutes: 5, aiVariants: true,
     title: { en: 'Verb tenses in conversation', uz: 'Suhbatda fe’l zamonlari', ru: 'Времена глаголов в разговоре' },
     explain: {
-      en: 'The tense tells the listener when. A finished time (yesterday, last week, in 2022) → past simple: I went. Experience or a result now, with no time given → present perfect: I have been to Dubai. Something that started in the past and is still true → present perfect with for (a period) or since (a start): I have lived here for two years. Plans you have arranged → present continuous: I’m meeting him tomorrow.',
+      en: 'The tense tells the listener when. A finished time (yesterday, last week, in 2022) → past simple: I went. Experience or a result now, with no time given → present perfect: I have been to Dubai. Something that started in the past and is still true → present perfect with for (a period) or since (a start): I have lived here for two years, not I live here since two years. Plans you have arranged → present continuous: I’m meeting him tomorrow.',
       uz: 'Zamon tinglovchiga voqea qachon bo‘lganini aytadi. Tugagan vaqt (yesterday, last week, in 2022) → past simple: I went. Tajriba yoki hozirgi natija, vaqt aytilmasa → present perfect: I have been to Dubai. O‘tmishda boshlanib, hozir ham davom etayotgan narsa → present perfect + for (muddat) yoki since (boshlanish nuqtasi): I have lived here for two years. «I live here since two years» deyilmaydi. Kelishilgan rejalar → present continuous: I’m meeting him tomorrow.',
       ru: 'Время подсказывает слушателю, когда это было. Законченное время (yesterday, last week, in 2022) → past simple: I went. Опыт или результат сейчас, без указания времени → present perfect: I have been to Dubai. То, что началось в прошлом и продолжается сейчас, → present perfect + for (срок) или since (начало): I have lived here for two years. Нельзя «I live here since two years». Договорённые планы → present continuous: I’m meeting him tomorrow.',
     },
@@ -52,11 +52,11 @@ export const drills: Activity[] = [
       },
       {
         id: 'vt5', prompt: 'You have already booked a doctor’s appointment for tomorrow. Choose the most natural sentence.',
-        options: ['I meet the doctor tomorrow at ten.', 'I’m meeting the doctor tomorrow at ten.', 'I will meeting the doctor tomorrow at ten.'], answer: 1,
+        options: ['I see the doctor tomorrow at ten.', 'I’m seeing the doctor tomorrow at ten.', 'I will seeing the doctor tomorrow at ten.'], answer: 1,
         explanation: {
-          en: 'For a plan you have already arranged, use the present continuous: I’m meeting… “Will meeting” is not possible.',
-          uz: 'Oldindan kelishilgan reja uchun present continuous: I’m meeting… «Will meeting» shakli yo‘q.',
-          ru: 'Для заранее договорённых планов — present continuous: I’m meeting… Формы «will meeting» не существует.',
+          en: 'For a plan you have already arranged, use the present continuous: I’m seeing the doctor… “Will seeing” is not possible.',
+          uz: 'Oldindan kelishilgan reja uchun present continuous: I’m seeing the doctor… «Will seeing» shakli yo‘q.',
+          ru: 'Для заранее договорённых планов — present continuous: I’m seeing the doctor… Формы «will seeing» не существует.',
         },
       },
       {
@@ -64,7 +64,7 @@ export const drills: Activity[] = [
         options: ['I was waiting for the bus when it started to rain.', 'I waited for the bus when it was starting to rain.', 'I am waiting for the bus when it started to rain.'], answer: 0,
         explanation: {
           en: 'The longer background action uses the past continuous (was waiting); the short action that interrupts it uses the past simple (started).',
-          uz: 'Uzoqroq davom etgan fon harakat past continuous bilan (was waiting), uni bo‘lgan qisqa harakat past simple bilan (started).',
+          uz: 'Uzoqroq davom etgan fon harakati past continuous bilan (was waiting), uni bo‘lib qo‘ygan qisqa harakat esa past simple bilan (started) ifodalanadi.',
           ru: 'Длительное фоновое действие — past continuous (was waiting), короткое действие, которое его прервало, — past simple (started).',
         },
       },
@@ -83,7 +83,7 @@ export const drills: Activity[] = [
         explanation: {
           en: 'A state that started on Monday and continues now needs the present perfect (continuous) with since. Uzbek and Russian use the present here; English does not.',
           uz: 'Dushanbada boshlanib, hozir ham davom etayotgan holat: present perfect (continuous) + since. O‘zbek va rus tilida bu yerda hozirgi zamon ishlatiladi, ingliz tilida esa yo‘q.',
-          ru: 'Состояние, начавшееся в понедельник и продолжающееся сейчас: present perfect (continuous) + since. В русском здесь настоящее время, в английском — нет.',
+          ru: 'Состояние, начавшееся в понедельник и продолжающееся сейчас: present perfect (continuous) + since. В русском и узбекском здесь настоящее время, в английском — нет.',
         },
       },
     ],
@@ -94,7 +94,7 @@ export const drills: Activity[] = [
     explain: {
       en: 'Every English sentence needs a verb. When there is no action verb, use be: I am, he/she/it is, we/you/they are. Uzbek and Russian often have no verb here, so it is easy to forget: say I am a student, She is at work, It is cold today. In questions, be comes first: Are you ready? Is it far? Before -ing, be is needed too: I am waiting.',
       uz: 'Ingliz tilida har bir gapda fe’l bo‘lishi kerak. Harakat fe’li bo‘lmasa, be ishlatiladi: I am, he/she/it is, we/you/they are. O‘zbek tilida bu yerda fe’l yo‘q («Men talabaman», «Havo sovuq»), shuning uchun uni unutish oson. To‘g‘risi: I am a student, She is at work, It is cold today. Savolda be oldinga chiqadi: Are you ready? Is it far? -ing dan oldin ham be kerak: I am waiting.',
-      ru: 'В каждом английском предложении нужен глагол. Если действия нет, используйте be: I am, he/she/it is, we/you/they are. В русском здесь глагола нет («Я студент», «Холодно»), поэтому его легко забыть. Правильно: I am a student, She is at work, It is cold today. В вопросе be выходит вперёд: Are you ready? Is it far? Перед -ing тоже нужен be: I am waiting.',
+      ru: 'В каждом английском предложении нужен глагол. Если глагола действия нет, используйте be: I am, he/she/it is, we/you/they are. В русском здесь глагола нет («Я студент», «Холодно»), поэтому его легко забыть. Правильно: I am a student, She is at work, It is cold today. В вопросе be выходит вперёд: Are you ready? Is it far? Перед -ing тоже нужен be: I am waiting.',
     },
     items: [
       {
@@ -116,7 +116,7 @@ export const drills: Activity[] = [
         },
       },
       {
-        id: 'mb3', prompt: 'Complete with one word: My brother ___ a doctor in Tashkent.',
+        id: 'mb3', prompt: 'Complete with am, is or are: My brother ___ a doctor in Tashkent.',
         answer: ['is'],
         explanation: {
           en: 'My brother = he, so the verb is “is”: My brother is a doctor.',
@@ -128,9 +128,9 @@ export const drills: Activity[] = [
         id: 'mb4', prompt: 'Asking about distance. Choose the correct question.',
         options: ['It far from here?', 'Is it far from here?', 'It is far from here?'], answer: 1,
         explanation: {
-          en: 'In a question, “is” goes before “it”: Is it far? Without “is” it is not a sentence, and rising intonation alone sounds unsure.',
-          uz: 'Savolda «is» «it»dan oldin keladi: Is it far? «Is» bo‘lmasa, bu gap emas, faqat ohang bilan so‘rash esa ishonchsiz eshitiladi.',
-          ru: 'В вопросе «is» стоит перед «it»: Is it far? Без «is» это не предложение, а вопрос одной интонацией звучит неуверенно.',
+          en: 'In a question, “is” goes before “it”: Is it far? Without “is” it is not a sentence, and “It is far…?” with only rising intonation sounds surprised, not like a normal question.',
+          uz: 'Savolda «is» «it»dan oldin keladi: Is it far? «Is» bo‘lmasa, bu gap emas. Faqat ohang bilan aytilgan «It is far…?» esa oddiy savol emas, ajablanishdek eshitiladi.',
+          ru: 'В вопросе «is» стоит перед «it»: Is it far? Без «is» это не предложение, а «It is far…?» с одной лишь интонацией звучит как удивление, а не как обычный вопрос.',
         },
       },
       {
@@ -143,7 +143,7 @@ export const drills: Activity[] = [
         },
       },
       {
-        id: 'mb6', prompt: 'Complete with one word: We ___ from Uzbekistan.',
+        id: 'mb6', prompt: 'Complete with am, is or are: We ___ from Uzbekistan.',
         answer: ['are'],
         explanation: {
           en: 'With we, you and they, use “are”: We are from Uzbekistan. In speech: We’re from Uzbekistan.',
@@ -244,7 +244,7 @@ export const drills: Activity[] = [
     explain: {
       en: 'Use a or an with one countable thing when you mention it for the first time or say what something is: I have a car. She’s an engineer. Use the when the listener knows which one: The car is outside. The station is closed. Use no article with plurals and uncountable nouns in general: I like dogs. Coffee is expensive here. Use an before a vowel sound: an hour, an apple.',
       uz: 'Bitta sanaladigan narsani birinchi marta aytganda yoki nima ekanini aytganda a/an ishlating: I have a car. She’s an engineer. Tinglovchi qaysi biri ekanini bilsa — the: The car is outside. The station is closed. Umumiy ko‘plik va sanalmaydigan otlar oldida artikl kerak emas: I like dogs. Coffee is expensive here. Unli tovush oldida an: an hour, an apple. O‘zbek tilida artikl yo‘q, shuning uchun ularni ongli ravishda qo‘shishga odatlaning.',
-      ru: 'A/an — с одним исчисляемым предметом, когда упоминаете его впервые или говорите, что это такое: I have a car. She’s an engineer. The — когда слушатель знает, о чём речь: The car is outside. The station is closed. Без артикля — общие множественные и неисчисляемые: I like dogs. Coffee is expensive here. Перед гласным звуком — an: an hour, an apple. В русском артиклей нет, поэтому их нужно добавлять сознательно.',
+      ru: 'A/an — с одним исчисляемым предметом, когда упоминаете его впервые или говорите, что это такое: I have a car. She’s an engineer. The — когда слушатель знает, о чём речь: The car is outside. The station is closed. Без артикля — множественное число и неисчисляемые в общем смысле: I like dogs. Coffee is expensive here. Перед гласным звуком — an: an hour, an apple. В русском артиклей нет, поэтому их нужно добавлять сознательно.',
     },
     items: [
       {
@@ -266,7 +266,7 @@ export const drills: Activity[] = [
         },
       },
       {
-        id: 'ar3', prompt: 'Complete with a, an or the: I bought ___ umbrella yesterday.',
+        id: 'ar3', prompt: 'Complete with a, an or the: It started raining, so I bought ___ umbrella.',
         answer: ['an'],
         explanation: {
           en: 'One umbrella, mentioned for the first time, and “umbrella” starts with a vowel sound, so “an”.',
@@ -296,9 +296,9 @@ export const drills: Activity[] = [
         id: 'ar6', prompt: 'Asking for directions. Choose the correct question.',
         options: ['Where is the nearest pharmacy?', 'Where is nearest pharmacy?', 'Where is a nearest pharmacy?'], answer: 0,
         explanation: {
-          en: 'Superlatives (the nearest, the best, the cheapest) always take “the”.',
-          uz: 'Orttirma daraja (the nearest, the best, the cheapest) doim «the» bilan keladi.',
-          ru: 'Превосходная степень (the nearest, the best, the cheapest) всегда с «the».',
+          en: 'Superlatives (the nearest, the best, the cheapest) take “the”.',
+          uz: 'Orttirma daraja (the nearest, the best, the cheapest) «the» bilan keladi.',
+          ru: 'Превосходная степень (the nearest, the best, the cheapest) употребляется с «the».',
         },
       },
       {
@@ -352,13 +352,13 @@ export const drills: Activity[] = [
         id: 'qf3', prompt: 'At a hotel. Choose the most natural question.',
         options: ['Do you have a room for tonight?', 'You have a room for tonight?', 'Have you a room for tonight?'], answer: 0,
         explanation: {
-          en: 'Use do: Do you have…? A statement with rising intonation sounds unsure, and “Have you a room?” is old-fashioned.',
-          uz: 'Do ishlating: Do you have…? Faqat ohang bilan so‘ralgan darak gap ishonchsiz eshitiladi, «Have you a room?» esa eskirgan shakl.',
-          ru: 'Используйте do: Do you have…? Утверждение с вопросительной интонацией звучит неуверенно, а «Have you a room?» — устаревшая форма.',
+          en: 'Use do: Do you have…? A statement with rising intonation sounds surprised or too casual here, and “Have you a room?” is old-fashioned.',
+          uz: 'Do ishlating: Do you have…? Faqat ohang bilan so‘ralgan darak gap bu yerda ajablanishdek yoki o‘ta norasmiy eshitiladi, «Have you a room?» esa eskirgan shakl.',
+          ru: 'Используйте do: Do you have…? Утверждение с вопросительной интонацией звучит здесь как удивление или слишком небрежно, а «Have you a room?» — устаревшая форма.',
         },
       },
       {
-        id: 'qf4', prompt: 'Complete with one word: What time ___ the museum open?',
+        id: 'qf4', prompt: 'Complete with do or does: What time ___ the museum open?',
         answer: ['does'],
         explanation: {
           en: 'The museum = it, so use “does”: What time does the museum open?',
@@ -535,7 +535,7 @@ export const drills: Activity[] = [
         options: ['Two coffee, please.', 'Two coffees, please.', 'Two of coffee, please.'], answer: 1,
         explanation: {
           en: 'When you order drinks you count cups, so “coffee” becomes countable: two coffees, three teas.',
-          uz: 'Ichimlik buyurtma qilganda piyolalar sanaladi, shuning uchun «coffee» sanaladigan bo‘ladi: two coffees, three teas.',
+          uz: 'Ichimlik buyurtma qilganda chashkalar sanaladi, shuning uchun «coffee» sanaladigan bo‘ladi: two coffees, three teas.',
           ru: 'Когда заказываете напитки, вы считаете чашки, поэтому «coffee» становится исчисляемым: two coffees, three teas.',
         },
       },
@@ -588,16 +588,16 @@ export const drills: Activity[] = [
       },
       {
         id: 'po4', prompt: 'Your host offers you more food, but you are full. Choose the polite answer.',
-        options: ['No.', 'I don’t want it.', 'No, thanks — I’m fine.'], answer: 2,
+        options: ['No.', 'I don’t want it.', 'No, thanks — I’m full. It was delicious.'], answer: 2,
         explanation: {
-          en: 'A bare “No” or “I don’t want it” sounds rude. Add thanks and a friendly reason: No, thanks — I’m fine.',
-          uz: 'Faqat «No» yoki «I don’t want it» qo‘pol eshitiladi. Rahmat va do‘stona izoh qo‘shing: No, thanks — I’m fine.',
-          ru: 'Голое «No» или «I don’t want it» звучит грубо. Добавьте спасибо и дружелюбное пояснение: No, thanks — I’m fine.',
+          en: 'A bare “No” or “I don’t want it” sounds rude. Add thanks and a friendly reason: No, thanks — I’m full. It was delicious.',
+          uz: 'Faqat «No» yoki «I don’t want it» qo‘pol eshitiladi. Rahmat va do‘stona sabab qo‘shing: No, thanks — I’m full. It was delicious.',
+          ru: 'Одно лишь «No» или «I don’t want it» звучит грубо. Добавьте спасибо и дружелюбную причину: No, thanks — I’m full. It was delicious.',
         },
       },
       {
         id: 'po5', prompt: 'Complaining at a hotel. Choose the best way to say it.',
-        options: ['Your room is dirty. Clean it.', 'I’m sorry, but the room hasn’t been cleaned. Could someone have a look?', 'Why is the room dirty? It is your job.'], answer: 1,
+        options: ['Your room is dirty. Clean it.', 'I’m sorry, but the room hasn’t been cleaned. Could someone come and clean it, please?', 'Why is the room dirty? It is your job.'], answer: 1,
         explanation: {
           en: 'Start with “I’m sorry, but…”, describe the fact, then make a soft request. You will get help faster.',
           uz: '«I’m sorry, but…» bilan boshlang, faktni ayting, so‘ng yumshoq iltimos qiling. Shunda yordam tezroq keladi.',
@@ -627,7 +627,7 @@ export const drills: Activity[] = [
         options: ['Sorry to interrupt, but could I ask something?', 'Stop, I have a question.', 'Wait, wait, listen to me.'], answer: 0,
         explanation: {
           en: 'Apologise first, then ask: Sorry to interrupt, but…',
-          uz: 'Avval uzr so‘rang, keyin so‘rang: Sorry to interrupt, but…',
+          uz: 'Avval uzr so‘rang, keyin savolingizni bering: Sorry to interrupt, but…',
           ru: 'Сначала извинитесь, затем спросите: Sorry to interrupt, but…',
         },
       },
@@ -637,7 +637,7 @@ export const drills: Activity[] = [
     id: 'drill.false_friends', kind: 'drill', errorTag: 'false_friends', node: 'conversation.range', levels: [2, 5], minutes: 5, aiVariants: true,
     title: { en: 'False friends', uz: 'Aldamchi so‘zlar', ru: 'Ложные друзья переводчика' },
     explain: {
-      en: 'Some English words look like Russian or Uzbek words but mean something else. Magazine is a journal — a shop is a shop or store. Recipe is for cooking — the doctor gives a prescription. Familiya is your surname — family means your relatives. Accurate means exact — a person who keeps things in order is tidy. Sympathetic means caring — a good-looking person is attractive. Decade is ten years, fabric is cloth (a factory makes things), and angina is a heart problem — say a sore throat.',
+      en: 'Some English words look like Russian or Uzbek words but mean something else. A magazine is something you read — a place that sells things is a shop or store. Recipe is for cooking — the doctor gives a prescription. Familiya is your surname — family means your relatives. Accurate means exact — a person who keeps things in order is tidy. Sympathetic means caring — a good-looking person is attractive. Decade is ten years, fabric is cloth (a factory makes things), and angina is a heart problem — say a sore throat.',
       uz: 'Ba’zi inglizcha so‘zlar o‘zbekcha yoki ruscha so‘zlarga o‘xshaydi, lekin boshqa ma’noni beradi. Magazine — jurnal, do‘kon esa shop yoki store. Recipe — taom retsepti, shifokor esa prescription yozadi. Familiya — surname, family esa oila. Accurate — aniq, ozoda va tartibli odam esa tidy. Sympathetic — hamdard, chiroyli odam esa attractive. Decade — o‘n yil, fabric — mato (zavod — factory), angina — yurak kasalligi; tomoq og‘rig‘i — a sore throat.',
       ru: 'Некоторые английские слова похожи на русские, но значат другое. Magazine — журнал, а магазин — shop или store. Recipe — кулинарный рецепт, а врач выписывает prescription. Фамилия — surname, а family — это семья. Accurate — точный, а аккуратный — tidy. Sympathetic — сочувствующий, а симпатичный — attractive. Decade — десять лет (не декада), fabric — ткань (фабрика — factory), angina — болезнь сердца, а ангина — a sore throat.',
     },
@@ -646,7 +646,7 @@ export const drills: Activity[] = [
         id: 'ff1', prompt: 'You need to buy bread. Choose the correct question.',
         options: ['Is there a magazine near here? I need bread.', 'Is there a shop near here? I need bread.', 'Is there a fabric near here? I need bread.'], answer: 1,
         explanation: {
-          en: 'A magazine is a journal you read. A place that sells things is a shop.',
+          en: 'A magazine is something you read, with articles and photos. A place that sells things is a shop.',
           uz: 'Magazine — o‘qiladigan jurnal. Narsa sotiladigan joy — shop.',
           ru: 'Magazine — журнал, который читают. Место, где продают, — shop.',
         },
@@ -720,9 +720,9 @@ export const drills: Activity[] = [
     id: 'drill.word_order', kind: 'drill', errorTag: 'word_order', node: 'conversation.accuracy', levels: [2, 5], minutes: 5, aiVariants: true,
     title: { en: 'Word order', uz: 'So‘z tartibi', ru: 'Порядок слов' },
     explain: {
-      en: 'English sentences follow subject – verb – object: I really like this city (not This city I really like). Words like always, often and never go before the main verb but after be: I always drink tea; She is never late. Put the object right after the verb (I like this city very much, not I like very much this city), place before time (I’ll go to the office early tomorrow), and size before colour (a big black bag).',
-      uz: 'Inglizcha gap tartibi: ega – fe’l – to‘ldiruvchi: I really like this city («This city I really like» emas). O‘zbek tilida fe’l oxirida keladi, ingliz tilida esa egadan keyin. Always, often, never kabi so‘zlar asosiy fe’ldan oldin, lekin be dan keyin keladi: I always drink tea; She is never late. To‘ldiruvchini fe’ldan keyin darhol qo‘ying (I like this city very much), joyni vaqtdan oldin ayting (I’ll go to the office early tomorrow), o‘lchamni rangdan oldin (a big black bag).',
-      ru: 'В английском порядок «подлежащее – глагол – дополнение»: I really like this city (а не «This city I really like»). В русском порядок свободный, в английском — нет. Always, often, never стоят перед основным глаголом, но после be: I always drink tea; She is never late. Дополнение — сразу после глагола (I like this city very much, а не I like very much this city), место — перед временем (I’ll go to the office early tomorrow), размер — перед цветом (a big black bag).',
+      en: 'English sentences normally follow subject – verb – object: I really like this city (not This city I really like). Words like always, often and never go before the main verb but after be: I always drink tea; She is never late. Put the object right after the verb (I like this city very much, not I like very much this city), place before time (I’ll go to the office early tomorrow), and size before colour (a big black bag).',
+      uz: 'Inglizcha gapning odatiy tartibi: ega – fe’l – to‘ldiruvchi: I really like this city («This city I really like» emas). O‘zbek tilida fe’l oxirida keladi, ingliz tilida esa egadan keyin. Always, often, never kabi so‘zlar asosiy fe’ldan oldin, lekin be dan keyin keladi: I always drink tea; She is never late. To‘ldiruvchini fe’ldan keyin darhol qo‘ying (I like this city very much), joyni vaqtdan oldin ayting (I’ll go to the office early tomorrow), o‘lchamni rangdan oldin (a big black bag).',
+      ru: 'В английском обычный порядок — «подлежащее – глагол – дополнение»: I really like this city (а не «This city I really like»). В русском порядок свободный, в английском — нет. Always, often, never стоят перед основным глаголом, но после be: I always drink tea; She is never late. Дополнение — сразу после глагола (I like this city very much, а не I like very much this city), место — перед временем (I’ll go to the office early tomorrow), размер — перед цветом (a big black bag).',
     },
     items: [
       {
@@ -736,7 +736,7 @@ export const drills: Activity[] = [
         explanation: { en: 'With “be”, frequency words go after it: She is often late.', uz: '«Be» bilan takroriylik so‘zlari undan keyin keladi: She is often late.', ru: 'С «be» слова частоты ставятся после него: She is often late.' },
       },
       {
-        id: 'wo3', prompt: 'Saying what you like. Choose the correct sentence.',
+        id: 'wo3', prompt: 'Saying what you like. Choose the most natural sentence.',
         options: ['This city I like very much.', 'I like very much this city.', 'I like this city very much.'], answer: 2,
         explanation: {
           en: 'Do not put words between the verb and its object: like this city, then very much at the end.',
