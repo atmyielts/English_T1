@@ -17,14 +17,16 @@ async function extract(file: File): Promise<{ pages: { page: number; text: strin
   if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name)) {
     const [pdfjs, worker] = await Promise.all([import('pdfjs-dist'), import('pdfjs-dist/build/pdf.worker.min.mjs?url')]);
     pdfjs.GlobalWorkerOptions.workerSrc = worker.default;
-    const doc = await pdfjs.getDocument({ data: bytes.slice() }).promise;
+    const task = pdfjs.getDocument({ data: bytes.slice() });
+    const doc = await task.promise;
     const pages: { page: number; text: string }[] = [];
     for (let n = 1; n <= Math.min(doc.numPages, 500); n++) {
       const page = await doc.getPage(n);
       const content = await page.getTextContent();
       pages.push({ page: n, text: content.items.map((item) => ('str' in item ? item.str + (item.hasEOL ? '\n' : ' ') : '')).join('').trim() });
     }
-    await doc.destroy();
+    // pdf.js 6: the loading task frees the document and its worker.
+    await task.destroy();
     return { pages, bytes };
   }
   const text = new TextDecoder().decode(bytes);
