@@ -602,6 +602,8 @@ export const uz: Record<CoreKey, string> = {
   'library.open': 'Ochish',
   'error.revision_conflict': 'Siz ochganingizdan beri bu sahifa o‘zgargan.',
   'notFound.title': 'Sahifa topilmadi',
+  'place.choose.title': 'Buni qaysi ish maydonida ochamiz?',
+  'place.choose.lead': 'Bu sahifa markazga tegishli. Uni ochish uchun markazni tanlang.',
   'notFound.lead': 'Bu sahifa mavjud emas yoki rolingiz uchun ochiq emas.',
   'notFound.home': 'Bosh sahifaga qaytish',
 
