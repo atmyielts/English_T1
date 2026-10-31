@@ -41,7 +41,7 @@ const samples: CalibrationSample[] = [
       'Xo‘p, o‘ylab ko‘ring, keyin keling.',
     ].join('\n'),
     reference: { opening: 2, discovery: 1, value: 1.5, objections: 1.5, closing: 1.5 },
-    rationale: 'A friendly greeting, but the seller goes straight to one product and its price. No question about the kitchen, the budget or what the couple compares with. Value is one material fact. The price objection gets an argument ("qimmat emas") and then an immediate 2 million discount with nothing in return. "Olasizmi?" is a bare ask, and the call ends with "o‘ylab ko‘ring" and no next step.',
+    rationale: 'A friendly greeting, but the seller goes straight to one product and its price. No question about the kitchen, the budget or what the couple compares with. Value is one material fact. The price objection gets an argument ("qimmat emas") and then an immediate 2 million discount with nothing in return. "Olasizmi?" is a bare ask, and the conversation ends with "o‘ylab ko‘ring" and no next step.',
   },
   {
     id: 'c03-fitness-l2',
@@ -112,7 +112,7 @@ const samples: CalibrationSample[] = [
       'Shall we book a free trial day for the whole team next Tuesday?',
     ].join('\n'),
     reference: { opening: 4, discovery: 4, value: 3.5, objections: 3, closing: 4 },
-    rationale: 'Asks permission to ask questions first: a strong opening. Discovery uses open questions about growth and pain and a confirming summary. The pitch links meeting rooms to the client problem, but only one benefit. The price objection is acknowledged and reframed with a cost question, though the comparison with a flat is not explored. A concrete trial day for the whole team with a day is proposed.',
+    rationale: 'Asks permission to ask questions first: a strong opening. Discovery uses open questions about growth and pain and a confirming summary. The pitch links meeting rooms to the client problem, but only one benefit. The price objection is acknowledged and reframed with a cost question, though the comparison with a flat is not explored. A concrete next step is proposed: a free trial day for the whole team next Tuesday.',
   },
   {
     id: 'c08-solar-l3plus',
@@ -172,7 +172,7 @@ const samples: CalibrationSample[] = [
   },
   {
     id: 'c12-supermarket-l5',
-    task: 'Negotiation with a supermarket chain buyer who asks for an extra 5% off before the category review (rp.negotiation-wholesale).',
+    task: 'Negotiation with a supermarket chain buyer who asks for an extra 5% off before the category review (rp.negotiation-supermarket).',
     response: [
       'Thanks for making time, Mr Karimov. I know your category review is next month, so I’d like to use these twenty minutes well. Can I start by asking what a good supplier looks like for you this year?',
       'When you say shelf rotation is the problem, which lines are slowing down — the one-litre packs or the multipacks?',
@@ -182,7 +182,7 @@ const samples: CalibrationSample[] = [
       'Let’s put it in writing: weekly delivery from the first of the month, merchandising in all twelve stores, prices fixed for six months. I’ll send the draft tonight; can we sign it with your director on Thursday?',
     ].join('\n'),
     reference: { opening: 5, discovery: 5, value: 5, objections: 5, closing: 5 },
-    rationale: 'Frames the meeting around the buyer’s calendar and asks what a good supplier looks like. Discovery drills into the exact lines and reframes the goal from price to write-offs, confirmed by the buyer. The value is the buyer’s own problem solved. The discount request is refused on list price and traded for concrete terms, with a conditional question. The close is a precise written summary with a signing date and the director included.',
+    rationale: 'Frames the meeting around the buyer’s calendar and asks what a good supplier looks like. Discovery drills into the exact lines and reframes the goal from price to write-offs, checked with the buyer ("Is that fair?"). The value is the buyer’s own problem solved. The discount request is refused on list price and traded for concrete terms, with a conditional question. The close is a precise written summary with a signing date and the director included.',
   },
 ];
 

@@ -75,7 +75,7 @@ const samples: CalibrationSample[] = [
     task: 'E-mail recap after a meeting with a logistics company’s operations manager about GPS trackers for 25 trucks (task w.recap).',
     response: 'Hi Timur,\n\nThanks for the meeting today. A short summary so we are on the same page:\n\n• Your goal: fewer fuel losses and fewer calls to drivers asking where they are.\n• Our proposal: trackers for all 25 trucks, a fuel-level sensor on the 8 long-haul ones, and a two-week trial on 3 trucks first.\n• Open question: whether your accountant needs the fuel report in Excel or in 1C.\n\nNext step: I will install the 3 trial trackers on Monday at 9:00 at your depot, as agreed. Could you confirm who will meet our technician?\n\nBest regards,\nLola',
     reference: { personal: 4, value: 4, clarity: 4.5, next_step: 4, tone: 4 },
-    rationale: 'Built around the buyer’s own goals, with a fitting proposal and an honest low-risk trial. Very easy to scan. The next step is concrete and confirmed, with a small, easy request. The value could quantify less, but every line is relevant.',
+    rationale: 'Built around the buyer’s own goals, with a fitting proposal and an honest low-risk trial. Very easy to scan. The next step is concrete and confirmed, with a small, easy request. The value could be more concrete, but every line is relevant.',
   },
   {
     id: 'm10-complaint-uz-l4',

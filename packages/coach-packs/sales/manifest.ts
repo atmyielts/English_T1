@@ -22,13 +22,13 @@ export const manifest: PackManifest = {
   name: { en: 'Sales Coach', uz: 'Savdo murabbiyi', ru: 'Коуч по продажам' },
   tagline: {
     en: 'Sell better by voice: cold calls, discovery, objections, closing and DM selling, scored after every call.',
-    uz: 'Ovozli mashq bilan yaxshiroq soting: sovuq qo‘ng‘iroq, ehtiyoj, e’tirozlar, bitim va DM savdosi.',
-    ru: 'Продавайте лучше голосом: холодные звонки, выявление, возражения, закрытие и продажи в директе.',
+    uz: 'Ovozli mashq bilan yaxshiroq soting: sovuq qo‘ng‘iroq, ehtiyojni aniqlash, e’tirozlar, bitim tuzish va DM savdosi.',
+    ru: 'Голосовая практика продаж: холодные звонки, выявление потребностей, возражения, закрытие сделки, продажи в директе.',
   },
   description: {
     en: 'Role-play with buyers from the Uzbek market — shops, B2B, real estate, cars, education — who have a hidden budget, pain, decision power and mood that react to what you say. After every call: a scorecard (talk ratio, questions, objections handled, next step) and a replay with better lines. Rapid-fire objection drills, a script builder for your own product, and team mode for sales managers.',
-    uz: 'O‘zbek bozori mijozlari — do‘konlar, B2B, ko‘chmas mulk, avtomobil, ta’lim — bilan rolli suhbat. Ularning yashirin byudjeti, muammosi, qaror vakolati va kayfiyati gapingizga qarab o‘zgaradi. Har qo‘ng‘iroqdan keyin: natija kartasi (gap ulushi, savollar, hal qilingan e’tirozlar, keyingi qadam) va yaxshiroq iboralar. Tezkor e’tiroz mashqlari, o‘z mahsulotingiz uchun skript va jamoa rejimi.',
-    ru: 'Ролевые звонки с клиентами узбекского рынка — магазины, B2B, недвижимость, авто, образование — со скрытым бюджетом, болью, полномочиями и настроением, которые реагируют на ваши слова. После звонка: карта результата (доля речи, вопросы, отработанные возражения, следующий шаг) и разбор лучших фраз. Быстрые тренировки возражений, скрипт для вашего продукта и командный режим.',
+    uz: 'O‘zbek bozori mijozlari — do‘konlar, B2B, ko‘chmas mulk, avtomobil, ta’lim — bilan rolli o‘yin. Ularning yashirin byudjeti, muammosi, qaror vakolati va kayfiyati gapingizga qarab o‘zgaradi. Har qo‘ng‘iroqdan keyin: natija kartasi (gap ulushi, savollar, hal qilingan e’tirozlar, keyingi qadam) va yaxshiroq iboralar bilan suhbat tahlili. Tezkor e’tiroz mashqlari, o‘z mahsulotingiz uchun skript konstruktori va savdo rahbarlari uchun jamoa rejimi.',
+    ru: 'Ролевые игры с клиентами узбекского рынка — магазины, B2B, недвижимость, авто, образование — со скрытым бюджетом, болью, правом решения и настроением, которые меняются от ваших слов. После каждого звонка: оценочная карта (доля речи, вопросы, отработанные возражения, следующий шаг) и разбор с более удачными фразами. Быстрые тренировки возражений, конструктор скриптов для вашего продукта и командный режим для руководителей продаж.',
   },
   uiLanguages: ['uz', 'ru', 'en'],
   practiceLanguage: 'mixed',
@@ -55,7 +55,7 @@ export const manifest: PackManifest = {
     { id: 'objections.competitor', parent: 'objections', name: { en: 'A competitor', uz: 'Raqobatchi', ru: 'Конкурент' } },
     { id: 'objections.budget', parent: 'objections', name: { en: 'No budget', uz: 'Byudjet yo‘q', ru: 'Нет бюджета' } },
     { id: 'objections.send_info', parent: 'objections', name: { en: '"Send me info"', uz: '«Ma’lumot yuboring»', ru: '«Пришлите информацию»' } },
-    { id: 'closing', name: { en: 'Closing and next steps', uz: 'Bitimni yopish va keyingi qadam', ru: 'Закрытие и следующий шаг' }, weight: 1.2 },
+    { id: 'closing', name: { en: 'Closing and next steps', uz: 'Bitim tuzish va keyingi qadam', ru: 'Закрытие сделки и следующий шаг' }, weight: 1.2 },
     { id: 'follow_up', name: { en: 'Follow-up', uz: 'Keyingi aloqa (follow-up)', ru: 'Повторный контакт' }, weight: 0.9 },
     { id: 'negotiation', name: { en: 'Negotiation', uz: 'Muzokara', ru: 'Переговоры' } },
     { id: 'shop_floor', name: { en: 'Shop-floor selling', uz: 'Do‘konda sotish', ru: 'Продажи в торговом зале' } },
@@ -66,9 +66,9 @@ export const manifest: PackManifest = {
       id: 'weak_opening', node: 'prospecting.cold_call', drill: 'drill.opening',
       name: { en: 'Weak or generic opening', uz: 'Zaif yoki umumiy boshlanish', ru: 'Слабое или шаблонное начало' },
       explain: {
-        en: 'The first 20 seconds decide whether the buyer keeps listening. Say who you are, why you are calling this person in particular, and ask permission for one short question. "Can I help you?" or a long company history loses them.',
-        uz: 'Birinchi 20 soniya mijoz tinglashda davom etadimi-yo‘qmi, shuni hal qiladi. Kimligingizni, nega aynan unga qo‘ng‘iroq qilayotganingizni ayting va bitta qisqa savol uchun ruxsat so‘rang. «Yordam bera olamanmi?» yoki kompaniya tarixini uzoq so‘zlash mijozni yo‘qotadi.',
-        ru: 'Первые 20 секунд решают, будет ли клиент слушать дальше. Скажите, кто вы, почему звоните именно ему, и попросите разрешения задать один короткий вопрос. «Чем могу помочь?» или длинная история компании теряют клиента.',
+        en: 'The first 20 seconds often decide whether the buyer keeps listening. Say who you are, why you are calling this person in particular, and ask permission for one short question. "Can I help you?" or a long company history loses them.',
+        uz: 'Birinchi 20 soniya ko‘pincha mijoz tinglashda davom etadimi-yo‘qmi, shuni hal qiladi. Kimligingizni, nega aynan unga qo‘ng‘iroq qilayotganingizni ayting va bitta qisqa savol uchun ruxsat so‘rang. «Yordam bera olamanmi?» yoki kompaniya tarixini uzoq so‘zlash mijozni yo‘qotadi.',
+        ru: 'Первые 20 секунд часто решают, будет ли клиент слушать дальше. Скажите, кто вы, почему звоните именно ему, и попросите разрешения задать один короткий вопрос. «Чем могу помочь?» или длинный рассказ о компании — и клиент потерян.',
       },
     },
     {
@@ -86,12 +86,12 @@ export const manifest: PackManifest = {
       explain: {
         en: 'Many buyers in Uzbekistan decide with a partner, a parent, the owner or a director. Ask early and politely: "Who else will be part of this decision?" Then plan the next step so that person is included.',
         uz: 'O‘zbekistonda ko‘p mijozlar sherigi, ota-onasi, egasi yoki direktori bilan birga qaror qiladi. Erta va xushmuomalalik bilan so‘rang: «Bu qarorda yana kim ishtirok etadi?» Keyin keyingi qadamni o‘sha odam ham qatnashadigan qilib rejalashtiring.',
-        ru: 'Многие клиенты в Узбекистане решают вместе с партнёром, родителями, владельцем или директором. Спросите рано и вежливо: «Кто ещё участвует в этом решении?» И спланируйте следующий шаг так, чтобы этот человек был включён.',
+        ru: 'Многие клиенты в Узбекистане решают вместе с партнёром, родителями, владельцем или директором. Спросите рано и вежливо: «Кто ещё участвует в этом решении?» И спланируйте следующий шаг так, чтобы в нём участвовал этот человек.',
       },
     },
     {
       id: 'feature_dump', node: 'value', drill: 'drill.value',
-      name: { en: 'Talking too much, listing features', uz: 'Ko‘p gapirish, xususiyatlarni sanab o‘tish', ru: 'Много говорит, перечисляет характеристики' },
+      name: { en: 'Talking too much, listing features', uz: 'Ko‘p gapirish, xususiyatlarni sanab o‘tish', ru: 'Много слов, перечисление характеристик' },
       explain: {
         en: 'A list of features before you know the buyer’s problem sounds like a brochure. Speak less than half the time, and link each feature to something the buyer told you: "You said deliveries are late — that is why we deliver by 9 a.m."',
         uz: 'Mijozning muammosini bilmasdan xususiyatlarni sanash buklet o‘qishdek eshitiladi. Vaqtning yarmidan kamini gapiring va har bir xususiyatni mijoz aytgan narsa bilan bog‘lang: «Yetkazib berish kechikadi dedingiz — shuning uchun biz soat 9 gacha olib kelamiz.»',
@@ -104,7 +104,7 @@ export const manifest: PackManifest = {
       explain: {
         en: 'A discount offered the moment the buyer says "expensive" tells them your price was not real, and they will ask for more. First find out what they compare with and what matters to them; trade any concession for something (a bigger order, prepayment, a longer contract).',
         uz: 'Mijoz «qimmat» deyishi bilan berilgan chegirma narxingiz haqiqiy emasligini bildiradi va u yana so‘raydi. Avval nima bilan solishtirayotganini va unga nima muhimligini bilib oling; har qanday yon berishni nimadir evaziga bering (kattaroq buyurtma, oldindan to‘lov, uzoqroq shartnoma).',
-        ru: 'Скидка сразу после слова «дорого» говорит клиенту, что цена была ненастоящей, и он попросит ещё. Сначала узнайте, с чем он сравнивает и что для него важно; любую уступку меняйте на что-то (больший заказ, предоплату, более длинный договор).',
+        ru: 'Скидка сразу после слова «дорого» говорит клиенту, что цена была ненастоящей, и он попросит ещё. Сначала узнайте, с чем он сравнивает и что для него важно; любую уступку давайте только в обмен на что-то (больший заказ, предоплату, более длинный договор).',
       },
     },
     {
@@ -121,7 +121,7 @@ export const manifest: PackManifest = {
       name: { en: 'Arguing with the buyer', uz: 'Mijoz bilan bahslashish', ru: 'Спор с клиентом' },
       explain: {
         en: 'Telling a buyer they are wrong, or criticising a competitor, makes them defend their choice. Agree with what is true ("They are a solid company"), then ask what they would improve, and show the difference calmly.',
-        uz: 'Mijozga noto‘g‘ri ekanini aytish yoki raqobatchini yomonlash uni o‘z tanlovini himoya qilishga majbur qiladi. To‘g‘ri tomonga qo‘shiling («Ular jiddiy kompaniya»), keyin nimani yaxshilashni xohlashini so‘rang va farqni xotirjam ko‘rsating.',
+        uz: 'Mijozga noto‘g‘ri ekanini aytish yoki raqobatchini yomonlash uni o‘z tanlovini himoya qilishga majbur qiladi. To‘g‘ri gapga qo‘shiling («Bu jiddiy kompaniya»), keyin nimani yaxshilashni xohlashini so‘rang va farqni xotirjam ko‘rsating.',
         ru: 'Если сказать клиенту, что он неправ, или ругать конкурента, он начнёт защищать свой выбор. Согласитесь с тем, что правда («Это серьёзная компания»), спросите, что бы он улучшил, и спокойно покажите разницу.',
       },
     },
@@ -131,7 +131,7 @@ export const manifest: PackManifest = {
       explain: {
         en: 'A call that ends with "OK, call me sometime" is lost. Before you hang up, agree on one concrete step with a day and time: a meeting, a demo, a trial order, a call with the decision maker.',
         uz: '«Mayli, qachondir qo‘ng‘iroq qiling» bilan tugagan qo‘ng‘iroq yo‘qotilgan hisoblanadi. Go‘shakni qo‘yishdan oldin kun va vaqti bilan bitta aniq qadamni kelishib oling: uchrashuv, namoyish, sinov buyurtmasi, qaror qiluvchi bilan qo‘ng‘iroq.',
-        ru: 'Звонок, который заканчивается «Ладно, позвоните как-нибудь», потерян. До того как положить трубку, договоритесь об одном конкретном шаге с днём и временем: встреча, демонстрация, пробный заказ, звонок с тем, кто решает.',
+        ru: 'Звонок, который заканчивается «Ладно, позвоните как-нибудь», потерян. До того как положить трубку, договоритесь об одном конкретном шаге, назначив день и время: встреча, демонстрация, пробный заказ, звонок с тем, кто решает.',
       },
     },
     {
@@ -157,7 +157,7 @@ export const manifest: PackManifest = {
       name: { en: 'Price-only reply in DMs', uz: 'DMda faqat narx bilan javob', ru: 'Ответ в директе только ценой' },
       explain: {
         en: 'When someone writes "price?", a bare number ends the conversation. Answer the price honestly, add one line of value, and finish with an easy question that keeps them talking ("Which size do you need?").',
-        uz: 'Kimdir «narxi?» deb yozsa, faqat raqam yozish suhbatni tugatadi. Narxni halol ayting, bitta qiymat jumlasini qo‘shing va suhbatni davom ettiradigan oson savol bilan yakunlang («Qaysi o‘lcham kerak?»).',
+        uz: 'Kimdir «narxi?» deb yozsa, faqat raqam yozish suhbatni tugatadi. Narxni halol ayting, mahsulot foydasi haqida bitta jumla qo‘shing va suhbatni davom ettiradigan oson savol bilan yakunlang («Qaysi o‘lcham kerak?»).',
         ru: 'Когда пишут «цена?», голая цифра заканчивает разговор. Честно назовите цену, добавьте одну фразу о ценности и закончите лёгким вопросом, который продолжит диалог («Какой размер вам нужен?»).',
       },
     },
@@ -171,7 +171,7 @@ export const manifest: PackManifest = {
     { action: 'script', emoji: '🛠', label: { en: 'My script', uz: 'Mening skriptim', ru: 'Мой скрипт' } },
     { action: 'lesson', emoji: '📘', label: { en: 'Micro-lesson', uz: 'Mini dars', ru: 'Мини-урок' } },
     { action: 'progress', emoji: '📈', label: { en: 'Progress', uz: 'Natijalar', ru: 'Прогресс' } },
-    { action: 'report', emoji: '🗓', label: { en: 'Weekly report', uz: 'Haftalik hisobot', ru: 'Отчёт за неделю' } },
+    { action: 'report', emoji: '🗓', label: { en: 'Weekly report', uz: 'Haftalik hisobot', ru: 'Еженедельный отчёт' } },
     { action: 'plan', emoji: '🎯', label: { en: 'My plan', uz: 'Rejam', ru: 'Мой план' } },
     { action: 'settings', emoji: '⚙️', label: { en: 'Settings', uz: 'Sozlamalar', ru: 'Настройки' } },
     { action: 'help', emoji: '❓', label: { en: 'Help', uz: 'Yordam', ru: 'Помощь' } },
@@ -179,13 +179,13 @@ export const manifest: PackManifest = {
   commands: [
     { command: 'today', description: { en: 'Today’s practice plan', uz: 'Bugungi mashq rejasi', ru: 'План практики на сегодня' } },
     { command: 'roleplay', description: { en: 'A sales call with a buyer', uz: 'Mijoz bilan savdo qo‘ng‘irog‘i', ru: 'Звонок клиенту' } },
-    { command: 'mock', description: { en: 'A scored mock sales call', uz: 'Baholanadigan sinov savdo qo‘ng‘irog‘i', ru: 'Оценённый пробный звонок' } },
+    { command: 'mock', description: { en: 'A scored mock sales call', uz: 'Baholanadigan sinov savdo qo‘ng‘irog‘i', ru: 'Пробный звонок с оценкой' } },
     { command: 'drill', description: { en: 'Rapid-fire objection drills', uz: 'Tezkor e’tiroz mashqlari', ru: 'Быстрые тренировки возражений' } },
     { command: 'writing', description: { en: 'DM and follow-up messages', uz: 'DM va follow-up xabarlari', ru: 'Сообщения в директ и follow-up' } },
     { command: 'script', description: { en: 'Build a script for your product', uz: 'Mahsulotingiz uchun skript', ru: 'Скрипт для вашего продукта' } },
     { command: 'lesson', description: { en: 'A two-minute sales lesson', uz: 'Ikki daqiqalik savdo darsi', ru: 'Двухминутный урок продаж' } },
     { command: 'progress', description: { en: 'Your level and progress', uz: 'Darajangiz va natijalar', ru: 'Ваш уровень и прогресс' } },
-    { command: 'report', description: { en: 'This week vs last week', uz: 'Bu hafta va o‘tgan hafta', ru: 'Эта неделя против прошлой' } },
+    { command: 'report', description: { en: 'This week vs last week', uz: 'Bu hafta va o‘tgan hafta', ru: 'Эта неделя в сравнении с прошлой' } },
     { command: 'plan', description: { en: 'Your goal and plan', uz: 'Maqsad va reja', ru: 'Цель и план' } },
     { command: 'settings', description: { en: 'Language, reminders, corrections', uz: 'Til, eslatmalar, tuzatishlar', ru: 'Язык, напоминания, исправления' } },
     { command: 'help', description: { en: 'How this coach works', uz: 'Murabbiy qanday ishlaydi', ru: 'Как работает коуч' } },

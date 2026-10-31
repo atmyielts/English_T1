@@ -21,7 +21,7 @@ export const plan: PlanRules = {
   phases: [
     {
       id: 'foundations', minWeeksLeft: 8,
-      title: { en: 'Foundations: openings and questions', uz: 'Asoslar: boshlanish va savollar', ru: 'Основы: начало и вопросы' },
+      title: { en: 'Foundations: openings and questions', uz: 'Asoslar: suhbat boshlanishi va savollar', ru: 'Основы: начало разговора и вопросы' },
       // Short lessons and drills on openings and discovery, with an easy call most days.
       mix: { lesson: 3, drill: 3, roleplay: 3, writing: 1 },
     },
@@ -38,7 +38,7 @@ export const plan: PlanRules = {
       mix: { roleplay: 5, drill: 2, writing: 2 },
     },
   ],
-  weeklyMock: { activity: 'rp.mix-pharma-distribution', weekday: 5, title: { en: 'Friday tough buyer: three objections in one call', uz: 'Juma kungi qiyin mijoz: bitta qo‘ng‘iroqda uchta e’tiroz', ru: 'Пятничный сложный клиент: три возражения за звонок' } },
+  weeklyMock: { activity: 'rp.mix-pharma-distribution', weekday: 5, title: { en: 'Friday tough buyer: three objections in one call', uz: 'Juma kungi qiyin mijoz: bitta qo‘ng‘iroqda uchta e’tiroz', ru: 'Пятничный сложный клиент: три возражения за один звонок' } },
   links: [],
 };
 
@@ -47,12 +47,12 @@ export const reminders: Reminders = {
     {
       en: 'Good morning, {name}! Today: {task} — about {minutes} minutes. One good call a day is how sellers get better.',
       uz: 'Xayrli tong, {name}! Bugun: {task} — taxminan {minutes} daqiqa. Kuniga bitta yaxshi qo‘ng‘iroq — sotuvchi shunday o‘sadi.',
-      ru: 'Доброе утро, {name}! Сегодня: {task} — около {minutes} минут. Один хороший звонок в день — так растут продавцы.',
+      ru: 'Доброе утро, {name}! Сегодня: {task} — около {minutes} мин. Один хороший звонок в день — так растут продавцы.',
     },
     {
       en: '{name}, your {streak}-day streak is waiting. {minutes} minutes today: {task}.',
       uz: '{name}, {streak} kunlik seriyangiz davomini kutyapti. Bugun {minutes} daqiqa: {task}.',
-      ru: '{name}, ваша серия ({streak}) ждёт продолжения. Сегодня {minutes} минут: {task}.',
+      ru: '{name}, ваша серия ({streak} дн.) ждёт продолжения. Сегодня {minutes} мин.: {task}.',
     },
     {
       en: 'A buyer is waiting for your call, {name}: {task}. {coach} has the scorecard ready.',
@@ -61,47 +61,47 @@ export const reminders: Reminders = {
     },
     {
       en: 'Before your first real call today, warm up for {minutes} minutes, {name}: {task}.',
-      uz: 'Bugungi birinchi haqiqiy qo‘ng‘irog‘ingizdan oldin {minutes} daqiqa qiziting, {name}: {task}.',
-      ru: 'Перед первым настоящим звонком сегодня разомнитесь {minutes} минут, {name}: {task}.',
+      uz: 'Bugungi birinchi haqiqiy qo‘ng‘irog‘ingizdan oldin {minutes} daqiqa mashq qilib oling, {name}: {task}.',
+      ru: 'Перед первым настоящим звонком сегодня разомнитесь {minutes} мин., {name}: {task}.',
     },
     {
-      en: 'Today’s rep, {name}: {task}. Short, scored, and one step closer to {target}.',
-      uz: 'Bugungi mashq, {name}: {task}. Qisqa, baholangan va {target} ga yana bir qadam yaqin.',
+      en: 'Today’s practice, {name}: {task}. Short, scored and one step closer to {target}.',
+      uz: 'Bugungi mashq, {name}: {task}. Qisqa, baholanadi va sizni {target} darajaga yana bir qadam yaqinlashtiradi.',
       ru: 'Сегодняшняя тренировка, {name}: {task}. Коротко, с оценкой и ещё на шаг ближе к {target}.',
     },
     {
       en: '{name}, objections are easier when you’ve heard them before. {minutes} minutes: {task}.',
-      uz: '{name}, e’tirozlarni oldin eshitgan bo‘lsangiz, ular osonroq. {minutes} daqiqa: {task}.',
-      ru: '{name}, с возражениями проще, если вы их уже слышали. {minutes} минут: {task}.',
+      uz: '{name}, e’tirozni oldin eshitgan bo‘lsangiz, unga javob berish osonroq. {minutes} daqiqa: {task}.',
+      ru: '{name}, с возражениями проще, если вы их уже слышали. {minutes} мин.: {task}.',
     },
   ],
   comeback: [
     {
       en: 'We missed you yesterday, {name}. Pick up where you left off: {task}, {minutes} minutes.',
       uz: 'Kecha sizni sog‘indik, {name}. To‘xtagan joyingizdan davom eting: {task}, {minutes} daqiqa.',
-      ru: 'Вчера вас не хватало, {name}. Продолжим с того же места: {task}, {minutes} минут.',
+      ru: 'Вчера вас не хватало, {name}. Продолжим с того же места: {task}, {minutes} мин.',
     },
     {
       en: 'Busy days happen, {name}. One short call today keeps your skills sharp: {task}.',
-      uz: 'Band kunlar bo‘lib turadi, {name}. Bugun bitta qisqa qo‘ng‘iroq ko‘nikmalaringizni o‘tkir saqlaydi: {task}.',
-      ru: 'Бывают загруженные дни, {name}. Один короткий звонок сегодня держит навыки в форме: {task}.',
+      uz: 'Band kunlar bo‘lib turadi, {name}. Bugun bitta qisqa qo‘ng‘iroq — va ko‘nikmalaringiz susaymaydi: {task}.',
+      ru: 'Бывают загруженные дни, {name}. Один короткий звонок сегодня — и навыки останутся в форме: {task}.',
     },
   ],
   weekly: {
     en: 'Your weekly sales report is ready, {name}: {delta}. See this week against last week and what to work on next.',
     uz: 'Haftalik savdo hisobotingiz tayyor, {name}: {delta}. Bu haftani o‘tgan hafta bilan solishtiring va keyingi qadamni ko‘ring.',
-    ru: 'Ваш недельный отчёт по продажам готов, {name}: {delta}. Сравните с прошлой неделей и посмотрите, над чем работать дальше.',
+    ru: 'Ваш еженедельный отчёт по продажам готов, {name}: {delta}. Сравните с прошлой неделей и посмотрите, над чем работать дальше.',
   },
   countdown: [
     {
       en: '{days} days to your target date, {name}. Today: {task}, {minutes} minutes.',
       uz: 'Maqsadli sanagacha {days} kun qoldi, {name}. Bugun: {task}, {minutes} daqiqa.',
-      ru: 'До целевой даты осталось дней: {days}, {name}. Сегодня: {task}, {minutes} минут.',
+      ru: 'До целевой даты осталось дней: {days}, {name}. Сегодня: {task}, {minutes} мин.',
     },
     {
       en: '{days} days left. You’re at {level}, aiming for {target}. Keep the calls coming: {task}.',
       uz: '{days} kun qoldi. Siz {level} darajadasiz, maqsad — {target}. Qo‘ng‘iroqlarni davom ettiring: {task}.',
-      ru: 'Осталось дней: {days}. Сейчас {level}, цель — {target}. Продолжайте звонки: {task}.',
+      ru: 'Осталось дней: {days}. Сейчас у вас {level}, цель — {target}. Продолжайте звонки: {task}.',
     },
   ],
 };
@@ -114,10 +114,10 @@ const levelUp = (id: string, level: number, label: string, count: number, within
 });
 
 export const milestones: Milestone[] = [
-  levelUp('sales-l2', 2, 'Level 2', 3, 30),
-  levelUp('sales-l3', 3, 'Level 3', 3, 30),
-  levelUp('sales-l3plus', 3.5, 'Level 3+', 3, 30),
-  levelUp('sales-l4', 4, 'Level 4', 4, 30),
-  levelUp('sales-l4plus', 4.5, 'Level 4+', 4, 45),
-  levelUp('sales-l5', 5, 'Level 5', 4, 45),
+  levelUp('sales-l2', 2, 'L2', 3, 30),
+  levelUp('sales-l3', 3, 'L3', 3, 30),
+  levelUp('sales-l3plus', 3.5, 'L3+', 3, 30),
+  levelUp('sales-l4', 4, 'L4', 4, 30),
+  levelUp('sales-l4plus', 4.5, 'L4+', 4, 45),
+  levelUp('sales-l5', 5, 'L5', 4, 45),
 ];

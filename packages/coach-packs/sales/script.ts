@@ -10,13 +10,13 @@ export const scriptBuilder: ScriptBuilder = {
       id: 'product',
       prompt: {
         en: 'What do you sell, and what is your offer? Say what is included, the price or price range, and any guarantee or trial you really give.',
-        uz: 'Nima sotasiz va taklifingiz qanday? Nima kirishini, narx yoki narx oralig‘ini va haqiqatan beradigan kafolat yoki sinovni ayting.',
-        ru: 'Что вы продаёте и какое у вас предложение? Что входит, цена или диапазон цен и какие гарантия или проба реально есть.',
+        uz: 'Nima sotasiz va taklifingiz qanday? Unga nimalar kirishini, narxi yoki narx oralig‘ini hamda haqiqatan beradigan kafolat yoki sinov muddatini ko‘rsating.',
+        ru: 'Что вы продаёте и какое у вас предложение? Укажите, что входит, цену или диапазон цен и какую гарантию или пробный период вы действительно даёте.',
       },
       example: {
         en: 'Home water filters with installation, 1.9–3.5 million UZS; free filter change in the first year; a 14-day money-back trial.',
-        uz: 'O‘rnatish bilan uy suv filtrlari, 1,9–3,5 million so‘m; birinchi yili filtrni bepul almashtirish; 14 kunlik pulni qaytarish sinovi.',
-        ru: 'Бытовые фильтры для воды с установкой, 1,9–3,5 млн сумов; бесплатная замена картриджа в первый год; 14 дней на возврат денег.',
+        uz: 'O‘rnatib beriladigan uy suv filtrlari, 1,9–3,5 million so‘m; birinchi yili kartrijni bepul almashtirish; 14 kun sinab ko‘rish, yoqmasa pul qaytariladi.',
+        ru: 'Бытовые фильтры для воды с установкой, 1,9–3,5 млн сумов; бесплатная замена картриджа в первый год; 14 дней на пробу с возвратом денег.',
       },
       maxChars: 800,
     },
@@ -29,7 +29,7 @@ export const scriptBuilder: ScriptBuilder = {
       },
       example: {
         en: 'Families in new apartment blocks in Tashkent, found through Instagram ads and building chats. Usually the wife chooses, the husband pays. They care about children’s health and the taste of tea.',
-        uz: 'Toshkentdagi yangi uylarda yashovchi oilalar, Instagram reklamasi va uy chatlari orqali topiladi. Odatda xotin tanlaydi, er to‘laydi. Ular uchun bolalar salomatligi va choy ta’mi muhim.',
+        uz: 'Toshkentdagi yangi ko‘p qavatli uylarda yashovchi oilalar, ularni Instagram reklamasi va uy chatlari orqali topamiz. Odatda ayoli tanlaydi, eri to‘laydi. Ular uchun bolalar salomatligi va choy ta’mi muhim.',
         ru: 'Семьи в новостройках Ташкента, находим через рекламу в Instagram и чаты домов. Обычно выбирает жена, платит муж. Им важны здоровье детей и вкус чая.',
       },
       maxChars: 800,
@@ -37,12 +37,12 @@ export const scriptBuilder: ScriptBuilder = {
     {
       id: 'objections',
       prompt: {
-        en: 'What do buyers usually say to say no, and who are your competitors? Add anything about price you often hear.',
-        uz: 'Mijozlar odatda «yo‘q» deyish uchun nima deydi va raqobatchilaringiz kim? Narx haqida tez-tez eshitadigan gaplaringizni ham qo‘shing.',
+        en: 'What do buyers usually say when they say no, and who are your competitors? Add anything you often hear about price.',
+        uz: 'Mijozlar rad etganda odatda nima deydi va raqobatchilaringiz kim? Narx haqida tez-tez eshitadigan gaplaringizni ham qo‘shing.',
         ru: 'Что клиенты обычно говорят, отказываясь, и кто ваши конкуренты? Добавьте, что часто слышите о цене.',
       },
       example: {
-        en: '"We buy bottled water", "too expensive", "I need to ask my husband", "the market sells filters for 600,000". Competitors: bottled water delivery and cheap filters at the bazaar.',
+        en: '"We buy bottled water", "too expensive", "I need to ask my husband", "at the bazaar a filter is 600,000". Competitors: bottled water delivery and cheap filters at the bazaar.',
         uz: '«Biz baklashka suv olamiz», «qimmat», «erim bilan maslahatlashishim kerak», «bozorda filtr 600 ming». Raqobatchilar: suv yetkazib berish va bozordagi arzon filtrlar.',
         ru: '«Мы покупаем воду в бутылях», «дорого», «надо спросить мужа», «на рынке фильтр за 600 тысяч». Конкуренты: доставка воды и дешёвые фильтры на базаре.',
       },
@@ -57,7 +57,7 @@ export const scriptBuilder: ScriptBuilder = {
     { id: 'send_info', name: { en: '"Send me info"', uz: '«Ma’lumot yuboring»', ru: '«Пришлите информацию»' } },
     { id: 'no_need', name: { en: '"We don’t need it"', uz: '«Bizga kerak emas»', ru: '«Нам не нужно»' } },
     { id: 'timing', name: { en: '"Not now"', uz: '«Hozir emas»', ru: '«Не сейчас»' } },
-    { id: 'authority', name: { en: '"I have to ask…"', uz: '«…dan so‘rashim kerak»', ru: '«Мне нужно спросить…»' } },
+    { id: 'authority', name: { en: '"I have to ask…"', uz: '«Maslahatlashishim kerak…»', ru: '«Мне нужно спросить…»' } },
   ],
   roleplay: 'rp.own-product',
   instructions: [

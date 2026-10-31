@@ -66,7 +66,7 @@ export const rubrics: Rubric[] = [
       },
       {
         id: 'closing', name: { en: 'Closing and next step', uz: 'Yakun va keyingi qadam', ru: 'Закрытие и следующий шаг' }, short: 'Closing', source: 'model', node: 'closing', weight: 1.2,
-        focus: 'How the learner moves to a decision: does they ask for the order or for a concrete next step (a meeting, a demo, a trial, a call with the decision maker) with a day and time, at the right moment, without pressure? Do they confirm what was agreed? An honest "not now" with a clear follow-up date is better than a vague promise.',
+        focus: 'How the learner moves to a decision: do they ask for the order or for a concrete next step (a meeting, a demo, a trial, a call with the decision maker) with a day and time, at the right moment, without pressure? Do they confirm what was agreed? An honest "not now" with a clear follow-up date is better than a vague promise.',
         descriptors: [
           { score: 1, text: 'The call ends with no ask at all, or with "call me if you need" / "думайте" / "o‘ylab ko‘ring".' },
           { score: 2, text: 'A weak or very late ask ("so... maybe you want?"), or pushes for an order before the buyer is ready. No time or date for any next step.' },
@@ -87,7 +87,7 @@ export const rubrics: Rubric[] = [
     assessorNotes: 'A written message for Telegram, Instagram, e-mail or a messenger: judge it as the buyer would read it on a phone. The learner may write in Uzbek, Russian or English; judge selling and clarity, not spelling, unless errors make it look careless. Length matters: a DM wall of text loses the reader, and a bare price or "ok" loses the sale. Never reward invented facts, fake urgency or pressure; a message that uses them gets at most 2.5 on tone. Better versions keep the learner\'s own product, prices and facts.',
     criteria: [
       {
-        id: 'personal', name: { en: 'Relevance to this buyer', uz: 'Shu mijozga moslik', ru: 'Под этого клиента' }, short: 'Personal', source: 'model', node: 'dm', weight: 1,
+        id: 'personal', name: { en: 'Relevance to this buyer', uz: 'Shu mijozga moslik', ru: 'Соответствие клиенту' }, short: 'Personal', source: 'model', node: 'dm', weight: 1,
         focus: 'Does the message answer what this buyer asked or care about, use what is known about them (their question, their business, what was said on the call), and sound written for one person rather than copied for everyone?',
         descriptors: [
           { score: 1, text: 'A generic template or a bare reply that ignores what the buyer asked.' },
