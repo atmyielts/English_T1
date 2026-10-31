@@ -11,6 +11,9 @@ import type { PlanState, RequestUser, Role, SchoodAIRepository, Workspace } from
 // person's own token. Without a token (the Telegram worker) or for a centre owner, the
 // same logic runs on the entitlement rows (repository.productsHeldBy).
 // Areas add plan sources (Family children, coach passes, team seats) with registerPlanSource.
+// The launch switch (`launched`, the pricing phase): until the owner switches plans on, only
+// beta testers have AI, whatever products anyone holds; after, plans apply to everyone and
+// the beta allowlist is optional.
 
 export interface PlanSourceInput {
   user: RequestUser;
@@ -51,6 +54,11 @@ export interface PlanConfig {
   repo: SchoodAIRepository;
   isAdmin(userId: string): Promise<boolean>;
   now(): Date;
+  /**
+   * The owner's launch switch (ai_settings.features['pricing.launch'], cached by the caller). False
+   * or failing: only beta testers have AI. Left out (tests and dev stacks): plans apply.
+   */
+  launched?(): Promise<boolean>;
 }
 export type PlanResolver = ReturnType<typeof createPlanResolver>;
 
@@ -83,20 +91,35 @@ export function createPlanResolver(config: PlanConfig) {
   const isBeta = async (userId: string) => config.betaUserIds.has(userId) || await config.isAdmin(userId);
   const fallbackStores = createStores({ kind: 'memory' }, { now: config.now });
 
+  const isLaunched = async () => {
+    if (!config.launched) return true;
+    try {
+      return await config.launched() === true;
+    } catch (cause) {
+      // Unknown means off: an outage never opens AI to people without beta access.
+      console.error(JSON.stringify({ event: 'schood_ai_launch_switch_unavailable', error: String(cause).slice(0, 200) }));
+      return false;
+    }
+  };
+
   return {
     /** True when the person is a Schood admin or on the beta allowlist. */
     isBeta,
+    /** The launch switch (true when the resolver has none). */
+    isLaunched,
     async resolve(user: RequestUser, workspace: Workspace, role: Role, stores: Stores = fallbackStores): Promise<PlanState> {
       const now = config.now();
-      let plans: PlanCode[], beta: boolean;
+      const beta = await isBeta(workspace.kind === 'personal' ? user.id : workspace.ownerId);
+      const launched = await isLaunched();
+      // Before launch nothing anyone holds counts, except for beta testers.
+      if (!launched && !beta) return { workspaceKind: workspace.kind, plans: [], features: [], beta: false, grant: 0, anchor: null, launched };
+      let plans: PlanCode[];
       if (workspace.kind === 'personal') {
         plans = plansFrom(await products(user.id, user.token), 'personal');
-        beta = await isBeta(user.id);
       } else {
         const owner = workspace.ownerId === user.id;
         plans = plansFrom(owner ? await products(user.id, user.token) : await config.repo.productsHeldBy(workspace.ownerId), 'workspace');
         if (workspace.contractPlan === 'enterprise' && (!workspace.contractUntil || Date.parse(workspace.contractUntil) > now.getTime())) plans.push('enterprise');
-        beta = await isBeta(workspace.ownerId);
       }
       const features: string[] = [];
       let sourceCredits = 0;
@@ -135,7 +158,7 @@ export function createPlanResolver(config: PlanConfig) {
         const starts = sold.length ? await config.repo.productStarts(workspace.kind === 'personal' ? user.id : workspace.ownerId) : {};
         anchor = [...sold.map((id) => starts[id]).filter(Boolean).map((at) => new Date(at).toISOString()), ...sourceAnchors].sort()[0] ?? null;
       }
-      return { workspaceKind: workspace.kind, plans: unique, features: [...new Set(features)], beta, grant, anchor };
+      return { workspaceKind: workspace.kind, plans: unique, features: [...new Set(features)], beta, grant, anchor, launched };
     },
   };
 }

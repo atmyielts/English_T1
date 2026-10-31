@@ -1,3 +1,4 @@
+import { COACH_PASS_PRODUCT_IDS } from '../../../../packages/ai-core/src/catalog.ts';
 import type { CoachPack } from '../../../../packages/coach-packs/src/mod.ts';
 import { loadPacks } from '../../../../packages/coach-packs/src/registry.ts';
 import { defineStore, type StoreHandle } from '../stores.ts';
@@ -46,13 +47,17 @@ export function parseBots(value: string | undefined): Record<string, CoachBot> {
   }
   return out;
 }
-/** `B1:<product uuid>,B2:<product uuid>` (SCHOOD_AI_COACH_PASS_PRODUCT_IDS). */
+/**
+ * The single-coach pass products: the pricing migration's deterministic ids
+ * (packages/ai-core/src/catalog.ts), plus any in `B1:<product uuid>,B2:<product uuid>`
+ * (SCHOOD_AI_COACH_PASS_PRODUCT_IDS, optional, for a product made by hand).
+ */
 export function parsePasses(value: string | undefined): Record<string, string[]> {
-  const out: Record<string, string[]> = {};
+  const out: Record<string, string[]> = Object.fromEntries(Object.entries(COACH_PASS_PRODUCT_IDS).map(([feature, id]) => [feature, [id]]));
   for (const entry of (value ?? '').split(',').map((part) => part.trim()).filter(Boolean)) {
     const [feature, id] = entry.split(':').map((part) => part.trim());
     if (!/^B[1-6]$/.test(feature ?? '') || !/^[0-9a-f-]{36}$/i.test(id ?? '')) continue;
-    (out[feature] ??= []).push(id.toLowerCase());
+    if (!(out[feature] ??= []).includes(id.toLowerCase())) out[feature].push(id.toLowerCase());
   }
   return out;
 }

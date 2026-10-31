@@ -1,5 +1,6 @@
 import { equal, ID, ok } from '../fixture.test.ts';
 import { examByKey } from './content/certificates.ts';
+import { pricingSittings } from '../seams/pricing-engage.ts';
 import { registerSittingSource, resetSittingSource } from './seams.ts';
 import { engageFixture } from './test-helpers.ts';
 
@@ -13,7 +14,8 @@ Deno.test('E12: a sitting needs a purchase or beta access; consent first', async
   const f = engageFixture();
   const list = (await f.get('certificates')).body;
   equal(list.exams.map((exam: { key: string }) => exam.key), ['speaking_b1', 'speaking_b2', 'sales_l1', 'sales_l2']);
-  equal([list.available.sittings, list.available.for_sale], [0, false], 'no product until the pricing phase registers one');
+  // The pricing phase sells sittings (seams/pricing-engage.ts); this learner has bought none.
+  equal([list.available.sittings, list.available.for_sale], [0, true], 'sold by the pricing phase, none bought');
   equal((await f.post('sitting-start', { exam: 'sales_l1', consent: false, display_name: 'Dilnoza Karimova' })).body.code, 'consent_required');
   const refused = await f.post('sitting-start', { exam: 'sales_l1', consent: true, display_name: 'Dilnoza Karimova' });
   equal([refused.status, refused.body.code, refused.body.product], [402, 'sitting_required', 'certificate_exam']);
@@ -30,7 +32,9 @@ Deno.test('E12: one purchased sitting is one sitting', async () => {
     await f.post('sitting-submit', { sitting: started.body.sitting.id });
     equal((await f.post('sitting-start', { exam: 'sales_l1', consent: true, display_name: 'Dilnoza Karimova' })).body.code, 'sitting_required', 'the purchase is used');
   } finally {
+    // Back to the real source, which the pricing area registers at load.
     resetSittingSource();
+    registerSittingSource(pricingSittings);
   }
 });
 

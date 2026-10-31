@@ -5,6 +5,7 @@ import { ownKeyConfigured, ownKeyResolver } from './registries.ts';
 import { createStores } from './stores.ts';
 import { createMemoryRepository, SEED_REGISTRY, type MemoryUser } from './memory-repository.ts';
 import { createPlanResolver } from './plan.ts';
+import { isLaunched } from '../../../packages/ai-core/src/catalog.ts';
 import type { SystemJob } from './registries.ts';
 import type { FeatureModule, FunctionCallInit, ServiceSettings } from './types.ts';
 
@@ -61,6 +62,13 @@ export async function events(response: Response) {
 }
 
 export interface FixtureOptions { settings?: Partial<ServiceSettings>; registry?: Registry; modules?: FeatureModule[]; timeouts?: Partial<Timeouts>; env?: Record<string, string>; productIds?: Partial<typeof PRODUCT>; systemJobs?: [string, SystemJob][]; ownKey?: GatewayDeps['ownKey']; ownKeyConfigured?: GatewayDeps['ownKeyConfigured'];
+  /** More people (token → user) next to USERS; their `products` arrays may be changed during a test (a fake checkout). */
+  users?: Record<string, MemoryUser>;
+  /**
+   * Wires the owner's launch switch as deployed (ai_settings.features['pricing.launch'], see index.ts):
+   * until it is set, only beta testers have AI. Without it (the default) plans always apply.
+   */
+  launchSwitch?: boolean;
   /**
    * 'taken' (the default): the fixture's people have completed every onboarding step (chat guards
    * registered with `{ onboarding: true }`, such as the learner's consent), so those guards are skipped.
@@ -71,7 +79,8 @@ export interface FixtureOptions { settings?: Partial<ServiceSettings>; registry?
 export function fixture(options: FixtureOptions = {}) {
   let clock = START;
   const now = () => clock;
-  const memory = createMemoryRepository({ users: USERS, now, settings: options.settings, registry: options.registry ?? SEED_REGISTRY, systemSecret: SYSTEM_SECRET });
+  const people = { ...USERS, ...options.users };
+  const memory = createMemoryRepository({ users: people, now, settings: options.settings, registry: options.registry ?? SEED_REGISTRY, systemSecret: SYSTEM_SECRET });
   /** Calls routes made to other Schood functions (name, path, init). */
   const functionCalls: { name: string; path: string; init: FunctionCallInit }[] = [];
   const upstream: Request[] = [];
@@ -99,10 +108,11 @@ export function fixture(options: FixtureOptions = {}) {
     ownKeyConfigured: options.ownKeyConfigured ?? ((input) => ownKeyConfigured()?.({ ...input, store: (handle) => stores.get(handle) }) ?? Promise.resolve(false)),
   });
   const isAdmin = (userId: string) => Promise.resolve(userId === ID.admin);
-  const tokenProducts = new Map(Object.entries(USERS).map(([token, user]) => [token, user.products ?? []]));
+  const tokenProducts = new Map(Object.entries(people).map(([token, user]) => [token, user.products ?? []]));
   const plans = createPlanResolver({
     productIds: options.productIds ?? PRODUCT, betaUserIds: new Set([ID.beta]), repo: memory.repository, isAdmin, now,
-    accessEffective: (token) => Promise.resolve(tokenProducts.get(token) ?? []),
+    accessEffective: (token) => Promise.resolve([...(tokenProducts.get(token) ?? [])]),
+    ...(options.launchSwitch ? { launched: async () => isLaunched((await memory.repository.settings()).features) } : {}),
   });
   const profiles: Record<string, unknown> = {};
   const pending: Promise<unknown>[] = [];

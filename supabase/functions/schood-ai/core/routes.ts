@@ -26,7 +26,8 @@ export async function me(ctx: RequestContext) {
     user: { id: ctx.user.id, email: ctx.user.email, name: profile?.name ?? null, is_schood_admin: admin },
     workspace: workspaceView(access.workspace, access.role),
     workspaces: memberships.filter((row) => row.member.status === 'active' && row.workspace.status === 'active').map((row) => workspaceView(row.workspace, row.member.role)),
-    plan: { plans: plan.plans, features: plan.features, beta: plan.beta, grant: plan.grant },
+    // launched: the owner's switch (pricing.launch); before it, only beta testers have AI.
+    plan: { plans: plan.plans, features: plan.features, beta: plan.beta, grant: plan.grant, launched: plan.launched !== false },
     credits: { ...balanceJson(balance), budget: budgetJson(access, ctx.now()) },
     ai: { enabled: settings.aiEnabled, switches: { ...settings.features, ...(switchesOf(access) ?? {}) } },
     specialists: listSpecialists(access.workspace, access.role, overrides).map((specialist) => ({
