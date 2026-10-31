@@ -52,8 +52,8 @@ export const questionTypes: PackSource['questionTypes'] = [
     id: 'single_choice', node: 'algebra',
     name: { uz: 'Bir javobli test', ru: 'Тест с одним ответом', en: 'Single choice' },
     strategy: {
-      uz: 'Avval o‘zingiz yeching, keyin javobni variantlardan qidiring. Ishonchingiz komil bo‘lmasa, variantlarni shartga qo‘yib tekshiring va aniq noto‘g‘rilarini chiqarib tashlang. Ishoraga, ildizlar soniga va aniqlanish sohasiga alohida qarang: noto‘g‘ri variantlar aynan shu xatolardan tuziladi.',
-      ru: 'Сначала решите сами, потом ищите ответ среди вариантов. Если сомневаетесь, подставьте варианты в условие и отбросьте явно неверные. Отдельно проверьте знак, число корней и область определения: неверные варианты составлены именно из этих ошибок.',
+      uz: 'Avval o‘zingiz yeching, keyin javobni variantlardan qidiring. Ishonchingiz komil bo‘lmasa, variantlarni shartga qo‘yib tekshiring va aniq noto‘g‘rilarini chiqarib tashlang. Ishoraga, ildizlar soniga va aniqlanish sohasiga alohida qarang: noto‘g‘ri variantlar ko‘pincha aynan shu xatolarga asoslanadi.',
+      ru: 'Сначала решите сами, потом ищите ответ среди вариантов. Если сомневаетесь, подставьте варианты в условие и отбросьте явно неверные. Отдельно проверьте знак, число корней и область определения: неверные варианты часто построены именно на этих ошибках.',
     },
   },
   {
@@ -75,7 +75,7 @@ export const mocks: QuizSet[] = [
   {
     id: 'mock.compulsory', kind: 'quiz_set', mode: 'practice', node: 'algebra', levels: [0, 100], minutes: 20, timeLimitSeconds: 1200, questions: [],
     mock: { questions: 10, nodes: compulsory }, rubric: 'admission.mock',
-    title: { uz: 'Mini sinov: majburiy blok (10 savol)', ru: 'Мини-пробник: обязательный блок (10 вопросов)', en: 'Mini-mock: compulsory block (10 questions)' },
+    title: { uz: 'Mini-sinov: majburiy blok (10 savol)', ru: 'Мини-пробник: обязательный блок (10 вопросов)', en: 'Mini-mock: compulsory block (10 questions)' },
   },
   {
     id: 'mock.specialised', kind: 'quiz_set', mode: 'practice', node: 'algebra', levels: [0, 100], minutes: 60, timeLimitSeconds: 3600, questions: [],

@@ -16,7 +16,7 @@ const STRANDS: Record<string, { uz: string; ru: string; en: string }> = {
   algebra: { uz: 'Algebra', ru: 'Алгебра', en: 'Algebra' },
   functions: { uz: 'Funksiyalar', ru: 'Функции', en: 'Functions' },
   sequences: { uz: 'Progressiyalar', ru: 'Прогрессии', en: 'Sequences' },
-  exponents: { uz: 'Ko‘rsatkichli va logarifmik', ru: 'Показательные и логарифмы', en: 'Exponents and logarithms' },
+  exponents: { uz: 'Ko‘rsatkichli va logarifmik funksiyalar', ru: 'Показательная функция и логарифмы', en: 'Exponents and logarithms' },
   trigonometry: { uz: 'Trigonometriya', ru: 'Тригонометрия', en: 'Trigonometry' },
   word_problems: { uz: 'Matnli masalalar', ru: 'Текстовые задачи', en: 'Word problems' },
   calculus: { uz: 'Hosila va integral', ru: 'Производная и интеграл', en: 'Calculus' },
@@ -46,13 +46,13 @@ export const manifest: PackManifest = {
   version: '1.0.0',
   name: { uz: 'Matematika: OTMga kirish murabbiyi', ru: 'Математика: коуч для поступления', en: 'Admission Maths Coach' },
   tagline: {
-    uz: 'Har kuni zaif mavzularingiz bo‘yicha masalalar, mini sinovlar, xatolar daftari va kutilayotgan natija.',
+    uz: 'Har kuni zaif mavzularingiz bo‘yicha masalalar, mini-sinovlar, xatolar daftari va taxminiy natija.',
     ru: 'Каждый день задачи по слабым темам, мини-пробники, тетрадь ошибок и прогноз результата.',
     en: 'Daily problems on your weakest topics, timed mini-mocks, a mistake notebook and a predicted score.',
   },
   description: {
-    uz: 'OTMga kirish testining matematika qismiga tayyorgarlik. Har kungi masalalar mavzular grafi bo‘yicha tanlanadi: avval eng zaif va eng muhim mavzu, uning asosiy mavzulari mustahkam bo‘lgandan keyin. Masala rasmini yuboring — avval maslahat, so‘rasangiz to‘liq yechim. Vaqtli mini sinovlar, xatolar daftari, kutilayotgan natija va boshqa o‘quvchilar orasidagi anonim o‘rningiz.',
-    ru: 'Подготовка к математике на вступительном тесте в вузы. Задачи на каждый день подбираются по графу тем: сначала самая слабая и важная тема, после того как окрепли её базовые темы. Пришлите фото задачи — сначала подсказки, по запросу полное решение. Мини-пробники на время, тетрадь ошибок, прогноз результата и ваше анонимное место среди других учеников.',
+    uz: 'OTMga kirish testining matematika qismiga tayyorgarlik. Har kungi masalalar mavzular grafi bo‘yicha tanlanadi: avval tayanch mavzulari o‘zlashtirilgan eng zaif va eng muhim mavzu. Masala rasmini yuboring — avval maslahatlar, so‘rasangiz to‘liq yechim. Vaqtli mini-sinovlar, xatolar daftari, taxminiy natija va boshqa o‘quvchilar orasidagi anonim o‘rningiz.',
+    ru: 'Подготовка к математической части вступительного теста в вузы. Задачи на каждый день подбираются по графу тем: сначала самая слабая и важная тема, базовые темы которой уже освоены. Пришлите фото задачи — сначала подсказки, по запросу полное решение. Мини-пробники на время, тетрадь ошибок, прогноз результата и ваше анонимное место среди других учеников.',
     en: 'Maths for the national university admission test. Daily problems follow the topic graph: your weakest, most valuable topic once its basics are solid. Send a photo of a problem for hints, then the worked solution. Timed mini-mocks, a mistake notebook, a predicted score and your anonymous place among other learners.',
   },
   uiLanguages: ['uz', 'ru'],
@@ -61,7 +61,7 @@ export const manifest: PackManifest = {
   audience: {
     description: {
       uz: 'Matematikadan OTMga kirish testiga tayyorlanayotgan 9–11-sinf o‘quvchilari va bitiruvchilar.',
-      ru: 'Ученики 9–11 классов и выпускники, которые готовятся к математике на вступительном тесте в вузы.',
+      ru: 'Ученики 9–11 классов и выпускники, которые готовятся к вступительному тесту в вузы по математике.',
       en: 'Students in grades 9–11 and school leavers preparing for maths on the university admission test.',
     },
     minAge: 13,
@@ -98,7 +98,7 @@ export const manifest: PackManifest = {
       id: 'percent_base', node: 'math.num.percent', drill: 'drill.percent_base',
       name: { uz: 'Foiz qaysi sondan', ru: 'Процент от какого числа' },
       explain: {
-        uz: 'Foiz har doim asos sondan olinadi. 40 dan 50 ga oshish — 40 ning 25% i, 50 dan 40 ga kamayish — 50 ning 20% i. Ketma-ket oshirish va kamaytirishda har safar yangi son asos bo‘ladi.',
+        uz: 'Foiz har doim asos sondan olinadi. 40 dan 50 ga oshish — 40 ning 25 foizi, 50 dan 40 ga kamayish — 50 ning 20 foizi. Ketma-ket oshirish va kamaytirishda har safar yangi son asos bo‘ladi.',
         ru: 'Процент всегда берётся от базового числа. Рост с 40 до 50 — это 25% от 40, а снижение с 50 до 40 — 20% от 50. При последовательных изменениях базой каждый раз становится новое число.',
       },
     },
@@ -106,7 +106,7 @@ export const manifest: PackManifest = {
       id: 'lost_root', node: 'math.alg.quadratic', drill: 'drill.lost_root',
       name: { uz: 'Yo‘qolgan ildiz', ru: 'Потерянный корень' },
       explain: {
-        uz: 'x² = 16 ning ikkita ildizi bor: ±4. Tenglamani x ga bo‘lmang (x = 0 ildizi yo‘qoladi): x² = 5x ni x(x − 5) = 0 ko‘rinishiga keltiring.',
+        uz: 'x² = 16 tenglamaning ikkita ildizi bor: ±4. Tenglamani x ga bo‘lmang (x = 0 ildizi yo‘qoladi): x² = 5x ni x(x − 5) = 0 ko‘rinishiga keltiring.',
         ru: 'У x² = 16 два корня: ±4. Не делите уравнение на x (теряется корень x = 0): запишите x² = 5x как x(x − 5) = 0.',
       },
     },
@@ -114,8 +114,8 @@ export const manifest: PackManifest = {
       id: 'domain', node: 'math.alg.irrational', drill: 'drill.domain',
       name: { uz: 'Aniqlanish sohasi', ru: 'Область определения' },
       explain: {
-        uz: 'Maxraj nolga teng bo‘lmaydi, juft darajali ildiz ostidagi ifoda manfiy bo‘lmaydi, logarifm ostidagi ifoda musbat bo‘ladi. Topilgan ildizlarni shu shartlar bilan tekshiring va begona ildizlarni chiqarib tashlang.',
-        ru: 'Знаменатель не равен нулю, подкоренное выражение чётной степени неотрицательно, выражение под логарифмом положительно. Проверьте найденные корни этими условиями и отбросьте посторонние.',
+        uz: 'Maxraj nolga teng bo‘lmasligi, juft darajali ildiz ostidagi ifoda manfiy bo‘lmasligi, logarifm ostidagi ifoda musbat bo‘lishi kerak. Topilgan ildizlarni shu shartlar bilan tekshiring va begona ildizlarni chiqarib tashlang.',
+        ru: 'Знаменатель не равен нулю, выражение под корнем чётной степени неотрицательно, выражение под логарифмом положительно. Проверьте найденные корни этими условиями и отбросьте посторонние.',
       },
     },
     {
@@ -130,16 +130,16 @@ export const manifest: PackManifest = {
       id: 'powers', node: 'math.alg.powers', drill: 'drill.powers',
       name: { uz: 'Daraja xossalari', ru: 'Свойства степеней' },
       explain: {
-        uz: 'Bir xil asosli darajalar ko‘paytirilganda ko‘rsatkichlar qo‘shiladi (a³·a⁵ = a⁸), darajani darajaga ko‘tarishda ko‘paytiriladi ((a²)³ = a⁶). a⁰ = 1, a⁻ⁿ = 1/aⁿ.',
-        ru: 'При умножении степеней с одинаковым основанием показатели складываются (a³·a⁵ = a⁸), при возведении степени в степень — перемножаются ((a²)³ = a⁶). a⁰ = 1, a⁻ⁿ = 1/aⁿ.',
+        uz: 'Bir xil asosli darajalar ko‘paytirilganda ko‘rsatkichlar qo‘shiladi (a³·a⁵ = a⁸), darajani darajaga ko‘tarishda ko‘paytiriladi ((a²)³ = a⁶). a⁰ = 1, a⁻ⁿ = 1/aⁿ (a ≠ 0).',
+        ru: 'При умножении степеней с одинаковым основанием показатели складываются (a³·a⁵ = a⁸), при возведении степени в степень — перемножаются ((a²)³ = a⁶). a⁰ = 1, a⁻ⁿ = 1/aⁿ (a ≠ 0).',
       },
     },
     {
       id: 'formulas', node: 'geometry', drill: 'drill.formulas',
       name: { uz: 'Yuza, perimetr va hajm formulalari', ru: 'Формулы площади, периметра и объёма' },
       explain: {
-        uz: 'Perimetr — chiziq uzunligi (sm), yuza — sirt (sm²), hajm — fazo (sm³). Doira: uzunlik 2πr, yuza πr². Kub: hajm a³, to‘la sirt 6a².',
-        ru: 'Периметр — длина (см), площадь — поверхность (см²), объём — пространство (см³). Круг: длина 2πr, площадь πr². Куб: объём a³, полная поверхность 6a².',
+        uz: 'Perimetr uzunlik birligida (sm), yuza kvadrat birlikda (sm²), hajm kub birlikda (sm³) o‘lchanadi. Aylana uzunligi 2πr, doira yuzi πr². Kub: hajmi a³, to‘la sirtining yuzi 6a².',
+        ru: 'Периметр измеряется в единицах длины (см), площадь — в квадратных единицах (см²), объём — в кубических (см³). Длина окружности 2πr, площадь круга πr². Куб: объём a³, площадь полной поверхности 6a².',
       },
     },
     {
@@ -170,14 +170,14 @@ export const manifest: PackManifest = {
   menu: [
     { action: 'today', emoji: '📅', label: { uz: 'Bugungi reja', ru: 'План на сегодня' } },
     { action: 'practice', emoji: '🧮', label: { uz: 'Masalalar', ru: 'Задачи' } },
-    { action: 'mock', emoji: '⏱', label: { uz: 'Mini sinov', ru: 'Мини-пробник' } },
+    { action: 'mock', emoji: '⏱', label: { uz: 'Mini-sinov', ru: 'Мини-пробник' } },
     { action: 'mistakes', emoji: '📒', label: { uz: 'Xatolar daftari', ru: 'Тетрадь ошибок' } },
     { action: 'photo', emoji: '📷', label: { uz: 'Rasm bo‘yicha yordam', ru: 'Помощь по фото' } },
     { action: 'writing', emoji: '✍️', label: { uz: 'Yechimni tekshirish', ru: 'Проверка решения' } },
     { action: 'drill', emoji: '🎯', label: { uz: 'Xatolar ustida mashq', ru: 'Работа над ошибками' } },
     { action: 'lesson', emoji: '📘', label: { uz: 'Usullar', ru: 'Методы' } },
     { action: 'progress', emoji: '📈', label: { uz: 'Natijalarim', ru: 'Мой прогресс' } },
-    { action: 'report', emoji: '🗓', label: { uz: 'Haftalik hisobot', ru: 'Недельный отчёт' } },
+    { action: 'report', emoji: '🗓', label: { uz: 'Haftalik hisobot', ru: 'Еженедельный отчёт' } },
     { action: 'plan', emoji: '🧭', label: { uz: 'Reja', ru: 'План' } },
     { action: 'settings', emoji: '⚙️', label: { uz: 'Sozlamalar', ru: 'Настройки' } },
     { action: 'help', emoji: '❓', label: { uz: 'Yordam', ru: 'Помощь' } },
@@ -185,12 +185,12 @@ export const manifest: PackManifest = {
   commands: [
     { command: 'today', description: { uz: 'Bugungi masalalar', ru: 'Задачи на сегодня' } },
     { command: 'practice', description: { uz: 'Zaif mavzu bo‘yicha masalalar', ru: 'Задачи по слабой теме' } },
-    { command: 'mock', description: { uz: 'Vaqtli mini sinov', ru: 'Мини-пробник на время' } },
+    { command: 'mock', description: { uz: 'Vaqtli mini-sinov', ru: 'Мини-пробник на время' } },
     { command: 'mistakes', description: { uz: 'Xatolar daftari', ru: 'Тетрадь ошибок' } },
     { command: 'photo', description: { uz: 'Masala rasmi bo‘yicha yordam', ru: 'Помощь по фото задачи' } },
     { command: 'writing', description: { uz: 'Yechimingizni tekshirish', ru: 'Проверить ваше решение' } },
     { command: 'progress', description: { uz: 'Natijalar va prognoz', ru: 'Прогресс и прогноз' } },
-    { command: 'report', description: { uz: 'Haftalik hisobot', ru: 'Недельный отчёт' } },
+    { command: 'report', description: { uz: 'Haftalik hisobot', ru: 'Еженедельный отчёт' } },
     { command: 'plan', description: { uz: 'Reja va maqsad', ru: 'План и цель' } },
     { command: 'settings', description: { uz: 'Til va eslatmalar', ru: 'Язык и напоминания' } },
     { command: 'help', description: { uz: 'Yordam', ru: 'Помощь' } },
