@@ -58,7 +58,7 @@ const planName = (t: (key: string) => string, plan: string) => t(`plans.${plan}.
 export function Paywall({ plans }: { plans: string[] }) {
   const t = useT();
   return <StateBox tone="calm" icon={<Lock size={18}/>} title={t('state.plan.title')} lead={plans.length ? t('state.plan.lead', { plans: plans.map((plan) => planName(t, plan)).join(', ') }) : t('state.plan.soon')}>
-    <p className="m-0 text-sm text-gray-600">{t('state.plan.soon')}</p>
+    {plans.length > 0 && <p className="m-0 text-sm text-gray-600">{t('state.plan.soon')}</p>}
     <div className="flex flex-wrap gap-2">
       <Link to="/plans" className="inline-flex min-h-11 items-center rounded-full bg-navy px-4 text-sm font-semibold text-white no-underline">{t('nav.plans')}</Link>
       <Link to="/examples" className="inline-flex min-h-11 items-center rounded-full border border-navy-line bg-white px-4 text-sm font-semibold text-gray-900 no-underline">{t('nav.examples')}</Link>
