@@ -243,6 +243,13 @@ The price table lives in `packages/ai-core`, so the app shows the cost before ev
 - Plans ship inactive (`is_active = false`) until the owner confirms prices and the model routes.
 - Before plans go on sale, only Schood admins and an allowlist (`SCHOOD_AI_BETA_USER_IDS`) can use AI features.
 
+### Selling, as built (phase 5, `claude/ai-pricing`)
+
+- **Catalogue:** every row of the table above except Enterprise (a contract on the workspace), talent pool, sponsorship and the C9 wholesale rate is a product and plan in migration `20261030500000`, seeded inactive with deterministic ids (`packages/ai-core/src/catalog.ts`). Coach Team is sold in 5, 10 and 20 seats at 39,000 a seat `[ASSUMPTION]` sizes. Gifts cost what buying for yourself costs.
+- **Launch, one owner decision:** `select public.ai_pricing_launch(true);` in the Supabase SQL editor sets the launch switch (`ai_settings.features['pricing.launch']`) and puts the self-serve plans on sale in one transaction. Plan-based access then applies to everyone and the beta list becomes optional. `ai_pricing_launch(false)` undoes both. The "Ask Schood AI" links in the other apps are a separate build flag: they appear when CI builds the seven apps with `VITE_SCHOOD_AI_LINKS=1`. `deploy-pages.yml` does not pass it yet: at launch add `VITE_SCHOOD_AI_LINKS: ${{ vars.VITE_SCHOOD_AI_LINKS || '0' }}` to its build env (as `VITE_ACADEMY_HOMEWORK_OS` is), set the repository variable to `1` and let the next `main` deploy rebuild them.
+- **Checkout:** `/pricing` on ai.schood.online hands off to `schood.online/checkout` and comes back to `/pricing/done`, which fulfils credit packs, gift codes, certificate sittings and Coach Team orders once per payment. Centre plans and add-ons say "request through support".
+- **Open owner decisions:** the prices, Telegram Stars `[VERIFY]`, refunds after a pack or gift is used, whether bought credits alone should unlock learner features (today they top up a plan, pass or seat), gift and sitting validity (365 days `[ASSUMPTION]`).
+
 ## Models: provider-agnostic gateway `[DECIDED]`
 
 Any model is pluggable and routed per feature from an admin console, with no code change.

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { ArrowUpRight, BadgeCheck, Building2, Check, Coins, GraduationCap, HeartHandshake, Info, Lock, MessagesSquare, PenTool, Sparkles } from 'lucide-react';
 import { COACH_FEATURES, type CoachFeature } from '../../../../../packages/ai-core/src/catalog.ts';
 import { ApiErrorState, Badge, ButtonLink, Card, Eyebrow, Link, LoadingState, PageHeader, signInUrl, useI18n, useLocation, useSession, useT, useWorkspace } from '../../core/index.ts';
-import { checkoutUrl, CONTACT_URL, getCatalog, getMine, money, type CatalogPlanView, type CatalogView, type MineView } from '../api.ts';
+import { checkoutUrl, CONTACT_URL, count, getCatalog, getMine, money, type CatalogPlanView, type CatalogView, type MineView } from '../api.ts';
 import { GiftCard } from './parts.tsx';
 
 // /pricing (and /plans): every Schood AI plan with its real price, for learners, families,
@@ -54,7 +54,7 @@ export function PricingPage() {
     <PlanCard key={plan.slug} plan={plan} title={title} lines={lines} signedIn={signedIn} current={!!plan.plan && held.has(plan.plan)}
       highlighted={plan.slug === wanted || (!!coach && plan.coach === coach)} monthly={plan.days === 365 ? monthlyOf(plan.plan) : null} gift={options.gift}/>;
   const lines = (code: string) => Array.from({ length: FEATURE_LINES[code] ?? 0 }, (_, i) => t(`pricing.f.${code}.${i + 1}`));
-  const credits = (count: number | null) => (count ?? 0).toLocaleString('en-US');
+  const credits = (value: number | null) => count(value ?? 0, locale);
 
   return <>
     <PageHeader eyebrow={<Eyebrow icon={<Sparkles size={14} aria-hidden="true"/>}>{t('pricing.eyebrow')}</Eyebrow>} title={t('pricing.title')} lead={t('pricing.lead')}/>

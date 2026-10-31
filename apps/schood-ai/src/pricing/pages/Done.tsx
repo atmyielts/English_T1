@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { CheckCircle2, Coins, RefreshCw, Sparkles } from 'lucide-react';
 import { planBySlug } from '../../../../../packages/ai-core/src/catalog.ts';
-import { ApiErrorState, Button, Card, Eyebrow, Link, PageHeader, Thinking, useLocation, useT, useWorkspace } from '../../core/index.ts';
-import { syncMine, type MineView } from '../api.ts';
+import { ApiErrorState, Button, Card, Eyebrow, Link, PageHeader, Thinking, useI18n, useLocation, useT, useWorkspace } from '../../core/index.ts';
+import { count, syncMine, type MineView } from '../api.ts';
 import { GiftCard, TeamReady, TeamSetup } from './parts.tsx';
 
 // /pricing/done?plan=<slug>: where the platform's checkout returns. It asks the function to
@@ -13,7 +13,7 @@ import { GiftCard, TeamReady, TeamSetup } from './parts.tsx';
 const EVERY_MS = 5_000, TRIES = 24;
 
 export function DonePage() {
-  const t = useT(), workspace = useWorkspace(), { query } = useLocation();
+  const t = useT(), { locale } = useI18n(), workspace = useWorkspace(), { query } = useLocation();
   const slug = query.get('plan') ?? '';
   const plan = planBySlug(slug);
   const [mine, setMine] = useState<MineView | null>(null);
@@ -56,7 +56,7 @@ export function DonePage() {
   } else if (kind === 'gift') {
     body = <div className="flex flex-col gap-4"><Success text={t('pricing.done.gift')}/><div className="grid gap-4 sm:grid-cols-2">{gifts.map((gift) => <GiftCard key={gift.id} gift={gift}/>)}</div></div>;
   } else if (kind === 'credits') {
-    body = <Success icon={<Coins size={20} aria-hidden="true"/>} text={t('pricing.done.credits', { count: (plan?.credits ?? 0).toLocaleString('en-US') })}/>;
+    body = <Success icon={<Coins size={20} aria-hidden="true"/>} text={t('pricing.done.credits', { count: count(plan?.credits ?? 0, locale) })}/>;
   } else if (kind === 'certificate') {
     body = <Success text={t('pricing.done.sitting')} action={<Link to="/certificates" className="inline-flex min-h-11 items-center rounded-full bg-navy px-4 text-sm font-semibold text-white no-underline">{t('pricing.done.sitting.open')}</Link>}/>;
   } else if (kind === 'coach_team') {

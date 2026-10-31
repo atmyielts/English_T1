@@ -49,7 +49,11 @@ The lifetime engagement layer lives in `supabase/functions/schood-ai/engage/` (f
 - **Context:** every chat can read `engage_memory` (dated goals, weak spot, journey chapter) and `engage_progress` (streak, league, quests left). Both are `selfView` providers.
 - **Telegram first step:** `engage/state`, `stories`, `story`, `story-answer`, `memory`, `date-add`, `league`, `squad` and `events` accept the worker (`service: true`).
 
-### Pricing
+### Pricing (done in phase 5: `seams/pricing-engage.ts`)
+
+- The sitting source returns one `pricing:sitting:<payment>` reference per paid Skill Certificate sitting (79,000 UZS), fulfilled first so a purchase shows at once.
+- The offer source offers Plus Annual (or Plus Family Annual to a Family holder) only while it is on sale, with the catalogue's price and the real cost of paying monthly for a year.
+
 
 - `registerSittingSource((ctx, userId) => [{ ref, examKey | null, expiresAt }])` lists the certificate-exam sittings a person bought (79,000 UZS per sitting `[ASSUMPTION]`).
   - One `ref` is one sitting; it is enforced by a unique column.

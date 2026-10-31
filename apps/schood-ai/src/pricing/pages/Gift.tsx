@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { CheckCircle2, Gift, ShieldCheck } from 'lucide-react';
-import { ApiError, Button, ButtonLink, Card, Eyebrow, Field, Link, PageHeader, signInUrl, TextInput, useSession, useT, useWorkspace } from '../../core/index.ts';
-import { redeemGift, type RedeemView } from '../api.ts';
+import { ApiError, Button, ButtonLink, Card, Eyebrow, Field, Link, PageHeader, signInUrl, TextInput, useI18n, useSession, useT, useWorkspace } from '../../core/index.ts';
+import { count, redeemGift, type RedeemView } from '../api.ts';
 
 // /gift#<code>: redeem an L18 gift. The code travels in the URL fragment (never sent to a
 // server or kept in logs); the page keeps it in this tab while the person signs in, then
@@ -12,7 +12,7 @@ const read = () => { try { return sessionStorage.getItem(KEY) ?? ''; } catch { r
 const keep = (code: string) => { try { if (code) sessionStorage.setItem(KEY, code); else sessionStorage.removeItem(KEY); } catch { /* it stays in the field */ } };
 
 export function GiftPage() {
-  const t = useT(), session = useSession(), workspace = useWorkspace();
+  const t = useT(), { locale } = useI18n(), session = useSession(), workspace = useWorkspace();
   const [code, setCode] = useState(() => {
     const fromLink = decodeURIComponent(location.hash.slice(1)).trim();
     if (fromLink) keep(fromLink);
@@ -36,7 +36,7 @@ export function GiftPage() {
   if (done) {
     return <>{header}<Card className="flex flex-col gap-4">
       <p className="m-0 inline-flex items-start gap-2 text-base font-semibold leading-7 text-gray-900"><CheckCircle2 size={20} className="mt-1 shrink-0" aria-hidden="true"/>
-        {done.gift.kind === 'credits' ? t('pricing.redeem.credits', { count: (done.gift.credits ?? 0).toLocaleString('en-US') }) : t('pricing.redeem.plus', { count: done.gift.days ?? 0 })}</p>
+        {done.gift.kind === 'credits' ? t('pricing.redeem.credits', { count: count(done.gift.credits ?? 0, locale) }) : t('pricing.redeem.plus', { count: done.gift.days ?? 0 })}</p>
       {done.gift.kind === 'credits' && <p className="m-0 text-sm text-gray-700">{t('pricing.redeem.creditsNote')}</p>}
       {done.consent_step && <div className="flex flex-col gap-2 rounded-2xl border border-navy-line bg-cream-soft p-4">
         <p className="m-0 inline-flex items-start gap-2 text-sm leading-6 text-gray-900"><ShieldCheck size={18} className="mt-0.5 shrink-0" aria-hidden="true"/>{t('pricing.redeem.consent')}</p>

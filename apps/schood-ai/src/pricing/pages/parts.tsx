@@ -2,15 +2,15 @@ import { useEffect, useState } from 'react';
 import { Check, Copy, Gift, Share2, Users } from 'lucide-react';
 import { COACH_PACK_OF, COACH_FEATURES } from '../../../../../packages/ai-core/src/catalog.ts';
 import { api, ApiError, Badge, Button, Card, Field, Link, TextInput, useI18n, useT } from '../../core/index.ts';
-import { setUpTeam, type GiftView, type PurchaseView } from '../api.ts';
+import { count, setUpTeam, type GiftView, type PurchaseView } from '../api.ts';
 
 // Pieces the pricing page and the checkout return page share: a bought gift with its code,
 // and the Coach Team setup form.
 
 export function GiftCard({ gift }: { gift: GiftView }) {
-  const t = useT(), { date } = useI18n();
+  const t = useT(), { date, locale } = useI18n();
   const [copied, setCopied] = useState(false);
-  const title = gift.kind === 'credits' ? t('pricing.giftCard.credits', { count: (gift.credits ?? 0).toLocaleString('en-US') }) : t('pricing.giftCard.plus', { count: gift.days ?? 0 });
+  const title = gift.kind === 'credits' ? t('pricing.giftCard.credits', { count: count(gift.credits ?? 0, locale) }) : t('pricing.giftCard.plus', { count: gift.days ?? 0 });
   const copy = async () => {
     if (!gift.link) return;
     try { await navigator.clipboard.writeText(gift.link); setCopied(true); setTimeout(() => setCopied(false), 2500); } catch { /* the code is on screen to copy by hand */ }

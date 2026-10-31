@@ -20,7 +20,15 @@ remove once core offers the feature.
 
 ## Open
 
-### 1. Selling the coach pass and Coach Team seats
+### 1. Selling the coach pass and Coach Team seats (answered by pricing)
+
+**Done (phase 5).** The six passes (29,000 / 30 days) and Coach Team plans (5, 10 and 20 seats at
+39,000 a seat) are products in migration `20261030500000`; the coach reads the pass ids from
+`packages/ai-core/src/catalog.ts` (`SCHOOD_AI_COACH_PASS_PRODUCT_IDS` only adds more). A paid team
+order is set up by its buyer on `/pricing/done` (`pricing/team-setup` creates the `coach_teams` row,
+source `order`, or extends a team they manage). The bot paywall links to `/pricing?coach=<feature>`.
+Still open: Telegram Stars [VERIFY], an owner decision.
+
 
 **Need.** The product doc prices a coach pass at 29,000 / 30 days and includes all six
 coaches in Plus and Plus Family. The coach reads pass product ids from

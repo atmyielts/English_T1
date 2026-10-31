@@ -43,6 +43,11 @@ export function checkoutUrl(plan: Pick<CatalogPlanView, 'id' | 'product_id' | 's
 /** Schood support (the platform's contact page): centre plans and add-ons are granted by hand. */
 export const CONTACT_URL = `${PLATFORM}/contact`;
 
+/** 1,500 in English, 1 500 in Uzbek and Russian. */
+export const count = (value: number, locale: string): string => {
+  const digits = Math.round(value).toLocaleString('en-US');
+  return locale === 'en' ? digits : digits.replace(/,/g, ' ');
+};
 /** 49,000 UZS / 49 000 so‘m / 49 000 сум, the same way on every screen. */
 export function money(amount: number, locale: string): string {
   const digits = Math.round(amount).toLocaleString('en-US');
