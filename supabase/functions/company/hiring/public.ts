@@ -1,12 +1,14 @@
 // Public routes: the candidate test behind a hiring link (/t/:token) and the
 // certificate check (/v/:code). Candidates have no account: starting returns a
-// private attempt key the page keeps in localStorage to resume. Starts are limited
-// per address hash and test; every start reserves one of the workspace's tests.
+// private attempt key the page keeps in localStorage to resume. Starts, and starts
+// refused for a used email, are limited per address hash and test; every start
+// reserves one of the workspace's tests.
 import { ORG_COLUMNS } from '../handler.ts';
 import { check, CompanyError, type Ctx, type OrgRow, type Route } from '../types.ts';
+import { fetchAll } from '../insights/common.ts';
 import { email, obj, sha256, text, token } from '../util.ts';
 import {
-  ASSESSMENT_COLUMNS, ATTEMPT_COLUMNS, attemptView, closed, expireIfOverdue, nextStep, saveAttempt, settingsOf, startAttempt, submitAttempt,
+  ASSESSMENT_COLUMNS, ATTEMPT_COLUMNS, attemptView, closed, expireIfOverdue, nextStep, orgOpen, saveAttempt, settingsOf, startAttempt, submitAttempt,
   type AssessmentRow, type AttemptRow,
 } from './attempts.ts';
 import { orderSkills } from './engine.ts';
@@ -14,6 +16,7 @@ import { suggestedMinutes } from './shared.ts';
 
 /** At most this many starts per hour from one address on one test. */
 export const STARTS_PER_HOUR = 5;
+const REFUSED = 'hiring.start_refused';
 const LINK = /^[A-Za-z0-9_-]{20,64}$/;
 const KEY = /^[A-Za-z0-9_-]{20,64}$/;
 const CODE = /^[A-HJ-NP-Z2-9]{10}$/;
@@ -36,9 +39,29 @@ async function byKey(ctx: Ctx, body: unknown): Promise<{ attempt: AttemptRow; as
   if (!attempt) throw new CompanyError('attempt_not_found', 'This test session was not found.', 404);
   const assessment = check<AssessmentRow>(await ctx.db.from('company_assessments').select(ASSESSMENT_COLUMNS).eq('id', attempt.assessment_id).single());
   const org = check<OrgRow>(await ctx.db.from('company_orgs').select(ORG_COLUMNS).eq('id', attempt.org_id).single());
+  // A suspended workspace or an ended contract lets a started attempt finish; a closed workspace does not.
+  if (org.status === 'closed') throw new CompanyError('org_closed', 'This workspace is closed.', 403);
   // AI grading and the audit trail count against the candidate's company.
   ctx.org = org;
   return { attempt: await expireIfOverdue(ctx, attempt, assessment, org, null), assessment, org, input };
+}
+
+/** Starts and refused starts from this address on this test in the last hour. */
+async function startsThisHour(ctx: Ctx, assessment: AssessmentRow, org: OrgRow): Promise<number> {
+  const hourAgo = new Date(ctx.now().getTime() - 3_600_000).toISOString();
+  const started = await fetchAll<{ integrity: { ip_hash?: string } }>(() => ctx.db.from('company_attempts').select('integrity').eq('assessment_id', assessment.id).gte('started_at', hourAgo).order('id'));
+  const refused = await fetchAll<{ details: { ip_hash?: string } }>(() => ctx.db.from('company_audit').select('details').eq('org_id', org.id).eq('action', REFUSED).eq('target', assessment.id).gte('created_at', hourAgo).order('id'));
+  return started.filter((row) => row.integrity?.ip_hash === ctx.ipHash).length + refused.filter((row) => row.details?.ip_hash === ctx.ipHash).length;
+}
+
+/**
+ * The answer when this email already has an attempt, in words that do not confirm it,
+ * so the link cannot be used to check who applied. Counts toward the hourly limit.
+ */
+async function cannotStart(ctx: Ctx, assessment: AssessmentRow, org: OrgRow): Promise<CompanyError> {
+  const { error } = await ctx.db.from('company_audit').insert({ org_id: org.id, actor: null, action: REFUSED, target: assessment.id, details: { ip_hash: ctx.ipHash }, created_at: ctx.now().toISOString() });
+  if (error) console.error(JSON.stringify({ company_audit: 'failed', action: REFUSED, error: error.message }));
+  return new CompanyError('cannot_start', 'We could not start a test with these details. If you already started, use your original link or ask the company for a new one.', 409);
 }
 
 const candidateView = (ctx: Ctx, attempt: AttemptRow, assessment: AssessmentRow, org: OrgRow) =>
@@ -50,7 +73,7 @@ export const routes: Route[] = [
     method: 'GET', path: 'public/t/:token', access: 'public',
     async handle(ctx, params) {
       const { assessment, org } = await byLink(ctx, params.token);
-      const open = !closed(assessment, ctx.now()) && (org.status === 'pilot' || org.status === 'active');
+      const open = !closed(assessment, ctx.now()) && orgOpen(org, ctx.now());
       const skills = orderSkills(assessment.skills);
       return {
         test: {
@@ -68,25 +91,35 @@ export const routes: Route[] = [
     async handle(ctx, params, body) {
       const input = obj(body);
       const { assessment, org } = await byLink(ctx, params.token);
-      if (closed(assessment, ctx.now()) || !(org.status === 'pilot' || org.status === 'active')) throw new CompanyError('test_closed', 'This test is closed.', 409);
+      if (closed(assessment, ctx.now()) || !orgOpen(org, ctx.now())) throw new CompanyError('test_closed', 'This test is closed.', 409);
       if (input.consent !== true) throw new CompanyError('consent_required', 'Please agree to the processing of your answers first.', 400, { field: 'consent' });
       const name = text(input.name, 'name', { min: 2, max: 120 })!;
       const address = email(input.email, 'email')!;
       const phone = text(input.phone, 'phone', { max: 40, optional: true });
-      const hourAgo = new Date(ctx.now().getTime() - 3_600_000).toISOString();
-      const recent = check<{ integrity: { ip_hash?: string } }[]>(await ctx.db.from('company_attempts').select('integrity').eq('assessment_id', assessment.id).gte('started_at', hourAgo));
-      if (recent.filter((row) => row.integrity?.ip_hash === ctx.ipHash).length >= STARTS_PER_HOUR) {
+      if (await startsThisHour(ctx, assessment, org) >= STARTS_PER_HOUR) {
         throw new CompanyError('too_many_starts', 'Too many tests were started from this network. Try again in an hour.', 429);
       }
-      const previous = check<{ id: string; candidate_email: string | null }[]>(await ctx.db.from('company_attempts').select('id,candidate_email').eq('assessment_id', assessment.id).neq('status', 'expired'));
-      if (previous.some((row) => row.candidate_email === address)) throw new CompanyError('already_taken', 'This email has already been used for this test.', 409);
-      if (assessment.max_attempts !== null && previous.length >= assessment.max_attempts) throw new CompanyError('test_full', 'This test has reached its number of candidates.', 409);
-      const key = token(24);
       ctx.org = org;
-      const attempt = await startAttempt(ctx, {
-        assessment, org, member: null, candidate: { name, email: address, phone }, accessHash: await sha256(key),
-        integrity: { ip_hash: ctx.ipHash, user_agent: (ctx.req.headers.get('user-agent') ?? '').slice(0, 200) },
-      });
+      // An attempt left to run out closes first: with no answers it stops blocking this email.
+      const mine = check<AttemptRow[]>(await ctx.db.from('company_attempts').select(ATTEMPT_COLUMNS).eq('assessment_id', assessment.id).eq('candidate_email', address).neq('status', 'expired').limit(20));
+      const current = await Promise.all(mine.map((row) => expireIfOverdue(ctx, row, assessment, org, null, false)));
+      if (assessment.max_attempts !== null) {
+        const taken = await ctx.db.from('company_attempts').select('id', { count: 'exact', head: true }).eq('assessment_id', assessment.id).neq('status', 'expired');
+        if (taken.error) throw new Error(taken.error.message);
+        if ((taken.count ?? 0) >= assessment.max_attempts) throw new CompanyError('test_full', 'This test has reached its number of candidates.', 409);
+      }
+      if (current.some((row) => row.status !== 'expired')) throw await cannotStart(ctx, assessment, org);
+      const key = token(24);
+      let attempt: AttemptRow;
+      try {
+        attempt = await startAttempt(ctx, {
+          assessment, org, member: null, candidate: { name, email: address, phone }, accessHash: await sha256(key),
+          integrity: { ip_hash: ctx.ipHash, user_agent: (ctx.req.headers.get('user-agent') ?? '').slice(0, 200) },
+        });
+      } catch (cause) {
+        if (cause instanceof CompanyError && cause.code === 'attempt_exists') throw await cannotStart(ctx, assessment, org);
+        throw cause;
+      }
       await ctx.audit('hiring.candidate_started', attempt.id, { assessment: assessment.id });
       return { key, ...candidateView(ctx, attempt, assessment, org) };
     },

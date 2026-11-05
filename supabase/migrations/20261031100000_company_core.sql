@@ -4,8 +4,22 @@
 -- and per-workspace AI usage. Every table is reached only through the
 -- `company` Edge Function with the service role: RLS is on and there are no
 -- anon/authenticated policies.
--- A learning seat unlocks Schood English "All Skills" through an ordinary
--- entitlement row (source 'company'), so every English app sees it unchanged.
+-- A learning seat unlocks all of Schood English through its own entitlement row
+-- on a hidden product, kept apart from anything the learner buys: a seat and a
+-- purchase never touch each other's row.
+
+insert into public.products (id, name, type, status, description, metadata)
+values (
+  'c0a1e5d2-7b3f-4a86-9c14-5e2f8d6b1a07',
+  'English All Skills (company seat)',
+  'course',
+  'active',
+  'All seven Schood English skills, provided by an employer through Schood Company English. Not sold on its own.',
+  jsonb_build_object('slug', 'english-company-seat', 'kind', 'company_seat', 'service', 'company-english', 'hidden', true)
+)
+on conflict (id) do update
+set name = excluded.name, type = excluded.type, status = excluded.status, description = excluded.description,
+    metadata = coalesce(public.products.metadata, '{}'::jsonb) || excluded.metadata;
 
 create table if not exists public.company_orgs (
   id uuid primary key default gen_random_uuid(),
@@ -287,19 +301,20 @@ set search_path = public
 as $$
   with reserved as (
     update public.company_orgs set tests_used = tests_used + 1
-    where id = p_org and status in ('pilot','active') and (tests_limit is null or tests_used < tests_limit)
+    where id = p_org and status in ('pilot','active')
+      and (tests_limit is null or tests_used < tests_limit)
+      and (contract_ends_at is null or contract_ends_at > now())
     returning 1
   )
   select exists (select 1 from reserved);
 $$;
 
--- Makes the learner's Schood English access match their company seats.
+-- Makes the person's Schood English access match their company seats.
 -- A seat counts while the member is active, the workspace is active and its
--- contract has not ended. The grant is the ordinary entitlement row for the
--- All Skills bundle, marked source 'company'. A learner who bought English
--- themselves keeps their own row while it covers the seat; when the company
--- extends past it, the row is taken over and the previous state is kept in
--- value.company_previous so revoking the seat restores it.
+-- contract has not ended. The grant is one entitlement row on the hidden
+-- company-seat product, which ends with the longest contract by itself; nothing
+-- needs to run when a contract lapses. A learner's own purchase is a different
+-- row on a different product, so it is never read or changed here.
 create or replace function public.company_sync_english_access(p_user uuid)
 returns text
 language plpgsql
@@ -307,16 +322,16 @@ security definer
 set search_path = public
 as $$
 declare
-  v_bundle constant uuid := '3a7bd983-58c5-4c75-b5f8-5ac46c94a0fa';
+  v_seat_product constant uuid := 'c0a1e5d2-7b3f-4a86-9c14-5e2f8d6b1a07';
   v_seated boolean;
   v_until timestamptz;
   v_open_ended boolean;
   v_tenant uuid;
-  v_row public.entitlements%rowtype;
-  v_previous jsonb;
+  v_existing uuid;
+  v_changed integer;
 begin
   if p_user is null then return 'none'; end if;
-  select count(*) > 0, max(o.contract_ends_at), bool_or(o.contract_ends_at is null)
+  select count(*) > 0, max(o.contract_ends_at), coalesce(bool_or(o.contract_ends_at is null), false)
     into v_seated, v_until, v_open_ended
   from public.company_members m
   join public.company_orgs o on o.id = m.org_id
@@ -324,50 +339,32 @@ begin
     and o.status = 'active' and (o.contract_ends_at is null or o.contract_ends_at > now());
   if v_open_ended then v_until := null; end if;
 
+  if not v_seated then
+    update public.entitlements
+    set is_active = false, ends_at = least(coalesce(ends_at, now()), now())
+    where user_id = p_user and resource_type = 'product' and resource_id = v_seat_product and is_active;
+    get diagnostics v_changed = row_count;
+    return case when v_changed > 0 then 'revoked' else 'none' end;
+  end if;
+
+  -- The tenant English access checks read: the person's oldest active membership.
   select tenant_id into v_tenant from public.tenant_memberships
   where user_id = p_user and status = 'active'
   order by created_at asc limit 1;
   if v_tenant is null then return 'no_tenant'; end if;
 
-  select * into v_row from public.entitlements
-  where tenant_id = v_tenant and resource_type = 'product' and resource_id = v_bundle
-  for update;
+  -- A grant left on a tenant the person no longer reads from is switched off.
+  update public.entitlements
+  set is_active = false, ends_at = least(coalesce(ends_at, now()), now())
+  where user_id = p_user and resource_type = 'product' and resource_id = v_seat_product and tenant_id <> v_tenant and is_active;
 
-  if v_seated then
-    if not found then
-      insert into public.entitlements (user_id, tenant_id, resource_type, resource_id, is_active, starts_at, ends_at, source)
-      values (p_user, v_tenant, 'product', v_bundle, true, now(), v_until, 'company');
-      return 'granted';
-    elsif v_row.source = 'company' then
-      update public.entitlements set is_active = true, ends_at = v_until where id = v_row.id;
-      return 'updated';
-    elsif v_row.is_active and (v_row.ends_at is null or (v_until is not null and v_row.ends_at >= v_until)) then
-      return 'own_covers';
-    else
-      update public.entitlements
-      set is_active = true, ends_at = v_until, source = 'company',
-          value = coalesce(value, '{}'::jsonb) || jsonb_build_object('company_previous',
-            jsonb_build_object('source', v_row.source, 'ends_at', v_row.ends_at, 'is_active', v_row.is_active))
-      where id = v_row.id;
-      return 'taken_over';
-    end if;
-  end if;
-
-  if found and v_row.source = 'company' then
-    v_previous := v_row.value -> 'company_previous';
-    if v_previous is not null then
-      update public.entitlements
-      set source = coalesce(v_previous ->> 'source', 'system'),
-          ends_at = (v_previous ->> 'ends_at')::timestamptz,
-          is_active = coalesce((v_previous ->> 'is_active')::boolean, false),
-          value = value - 'company_previous'
-      where id = v_row.id;
-      return 'restored';
-    end if;
-    update public.entitlements set is_active = false, ends_at = least(coalesce(ends_at, now()), now()) where id = v_row.id;
-    return 'revoked';
-  end if;
-  return 'none';
+  select id into v_existing from public.entitlements
+  where tenant_id = v_tenant and resource_type = 'product' and resource_id = v_seat_product;
+  insert into public.entitlements (user_id, tenant_id, resource_type, resource_id, is_active, starts_at, ends_at, source)
+  values (p_user, v_tenant, 'product', v_seat_product, true, now(), v_until, 'company')
+  on conflict (tenant_id, resource_type, resource_id)
+  do update set user_id = excluded.user_id, is_active = true, ends_at = excluded.ends_at, source = 'company';
+  return case when v_existing is null then 'granted' else 'updated' end;
 end;
 $$;
 
@@ -398,6 +395,92 @@ grant execute on function public.company_consume_ai(uuid, integer) to service_ro
 grant execute on function public.company_reserve_test(uuid) to service_role;
 grant execute on function public.company_sync_english_access(uuid) to service_role;
 grant execute on function public.company_sync_org_access(uuid) to service_role;
+
+-- When the last active owner's row goes (account closure deletes it by user_id),
+-- the longest-serving active admin takes over, so the workspace keeps someone who
+-- can run it. With no admin it stays ownerless and the staff console flags it.
+create or replace function public.company_promote_after_owner_left()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if old.role = 'owner' and old.status = 'active'
+    and not exists (select 1 from public.company_members where org_id = old.org_id and role = 'owner' and status = 'active' and id <> old.id) then
+    update public.company_members set role = 'owner'
+    where id = (
+      select id from public.company_members
+      where org_id = old.org_id and role = 'admin' and status = 'active' and id <> old.id
+      order by joined_at asc nulls last, created_at asc limit 1
+    );
+  end if;
+  return null;
+end;
+$$;
+revoke all on function public.company_promote_after_owner_left() from public, anon, authenticated, service_role;
+drop trigger if exists company_members_owner_succession on public.company_members;
+create trigger company_members_owner_succession after delete on public.company_members
+for each row execute function public.company_promote_after_owner_left();
+
+-- Account closure, after the user_id tables in the registry below are erased: the
+-- person's verified email and name also sit in rows no user_id reaches. Billing
+-- contact, sales leads, audit details, unaccepted invitations and hiring tests they
+-- took as a candidate lose them; scores and the companies' own records stay.
+create or replace function public.company_erase_account(p_user uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $$
+declare
+  v_email text;
+  v_billing integer := 0;
+  v_leads integer := 0;
+  v_audit integer := 0;
+  v_invited integer := 0;
+  v_candidate integer := 0;
+begin
+  select lower(email) into v_email from auth.users where id = p_user and email_confirmed_at is not null;
+  update public.company_audit set actor = null where actor = p_user;
+  get diagnostics v_audit = row_count;
+  if v_email is null or v_email = '' then
+    return jsonb_build_object('audit_rows', v_audit);
+  end if;
+  update public.company_orgs set billing_email = null where lower(billing_email) = v_email;
+  get diagnostics v_billing = row_count;
+  update public.company_leads set name = '-', email = null, phone = null, need = null, notes = null where lower(email) = v_email;
+  get diagnostics v_leads = row_count;
+  update public.company_audit
+  set details = details - array['name','full_name','email','owner_email','from','to','candidate_name','candidate_email','phone']
+  where strpos(lower(details::text), v_email) > 0;
+  delete from public.company_members where lower(email) = v_email and user_id is null and status <> 'active';
+  get diagnostics v_invited = row_count;
+  update public.company_attempts set candidate_name = null, candidate_email = null, candidate_phone = null, notes = null
+  where lower(candidate_email) = v_email;
+  get diagnostics v_candidate = row_count;
+  return jsonb_build_object('billing', v_billing, 'leads', v_leads, 'audit_rows', v_audit, 'invited', v_invited, 'candidate_attempts', v_candidate);
+end;
+$$;
+revoke all on function public.company_erase_account(uuid) from public, anon, authenticated, service_role;
+
+do $$
+declare hooks text[];
+begin
+  if to_regprocedure('public.account_erasure_service_hooks()') is null then
+    raise notice 'account_erasure_service_hooks() is not installed; company erasure hook not registered';
+    return;
+  end if;
+  hooks := public.account_erasure_service_hooks();
+  if not ('company_erase_account' = any(hooks)) then
+    hooks := hooks || 'company_erase_account'::text;
+    execute format(
+      'create or replace function public.account_erasure_service_hooks() returns text[] language sql immutable set search_path=pg_catalog,public as %L',
+      format('select %L::text[];', hooks::text)
+    );
+  end if;
+end
+$$;
 
 -- Closing an account erases the person's company records too (same additive
 -- registry pattern as 20261026170000_english_account_erasure_registry.sql).

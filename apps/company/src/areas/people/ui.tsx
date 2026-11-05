@@ -104,7 +104,9 @@ export function download(name: string, content: string, type = 'text/csv;charset
 }
 
 export const csvCell = (value: unknown) => {
-  const text = value === null || value === undefined ? '' : String(value);
+  let text = value === null || value === undefined ? '' : String(value);
+  // Spreadsheet formula injection: a cell starting with = + - @ is shown as text.
+  if (/^[=+\-@\t\r]/.test(text)) text = `'${text}`;
   return /[",;\n\r]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 };
 

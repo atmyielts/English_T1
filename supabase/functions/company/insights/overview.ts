@@ -168,7 +168,8 @@ async function overview(ctx: Ctx) {
   const pending = members.filter((member) => member.status === 'invited');
   const soon = learners.filter((member) => member.target_date && member.target_date >= today && member.target_date <= addDays(today, 30) && isLevel(member.target_level) && !meetsTarget(member.level, member.target_level));
   const unseated = learners.filter((member) => !member.seat);
-  const seatsUsed = active.filter((member) => member.seat).length;
+  // Invited people hold seats too, so this matches the seat limit the people routes enforce.
+  const seatsUsed = members.filter((member) => member.seat).length;
   const seatsFree = Math.max(0, org.seats_limit - (viewer.hr ? seatsUsed : 0));
   const pick = (list: MemberRow[]) => list.slice(0, 5).map((member) => ({ id: member.id, name: displayName(member) }));
   const todo = [

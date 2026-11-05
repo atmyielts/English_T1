@@ -4,10 +4,12 @@
 // person shares their progress (or is looking at themself).
 import { isLevel, SKILLS } from '../../../../packages/company-core/src/mod.ts';
 import { MEMBER_COLUMNS } from '../handler.ts';
+import { appliesTo, ASSIGNMENT_COLUMNS, type AssignmentRow } from '../training/assignments.ts';
+import { findLesson } from '../training/tracks/index.ts';
 import { check, CompanyError, UUID, type MemberRow, type Route } from '../types.ts';
 import { addDays, canSee, dayStart, fetchAll, localDate, meetsTarget, shares, viewerOf, weekOf } from './common.ts';
 import { englishSummary } from './english.ts';
-import { optional, type AssignmentRow } from './overview.ts';
+import { optional } from './overview.ts';
 
 interface AttemptRow { id: string; assessment_id: string; status: string; overall_level: string | null; overall_score: number | null; skill_results: Record<string, { score?: unknown; level?: unknown }> | null; started_at: string; submitted_at: string | null; graded_at: string | null; certificate_code: string | null }
 interface ProgressRow { track_code: string; lesson_code: string; status: string; score: number | null; minutes: number; completed_at: string | null; updated_at: string | null }
@@ -40,7 +42,7 @@ export const routes: Route[] = [
         member.department_id ? ctx.db.from('company_departments').select('id,name').eq('id', member.department_id).maybeSingle() : null,
         check<AttemptRow[]>(await ctx.db.from('company_attempts').select('id,assessment_id,status,overall_level,overall_score,skill_results,started_at,submitted_at,graded_at,certificate_code')
           .eq('org_id', org.id).eq('member_id', member.id).order('started_at', { ascending: false }).limit(60)),
-        fetchAll<AssignmentRow>(() => ctx.db.from('company_assignments').select('id,track_code,target_level,due_date,department_id,member_id,status,note,created_at').eq('org_id', org.id).neq('status', 'cancelled').order('id'), 5000),
+        fetchAll<AssignmentRow>(() => ctx.db.from('company_assignments').select(ASSIGNMENT_COLUMNS).eq('org_id', org.id).neq('status', 'cancelled').order('id'), 5000),
         detail ? fetchAll<ProgressRow>(() => ctx.db.from('company_lesson_progress').select('track_code,lesson_code,status,score,minutes,completed_at,updated_at').eq('member_id', member.id).order('lesson_code'), 3000) : [],
         detail ? fetchAll<ActivityRow>(() => ctx.db.from('company_activity').select('kind,minutes,points,created_at').eq('org_id', org.id).eq('member_id', member.id).gte('created_at', dayStart(firstWeek).toISOString()).order('id'), 10_000) : [],
         detail ? optional<{ session_id: string; marked_at: string }[]>(() => ctx.db.from('company_session_attendance').select('session_id,marked_at').eq('member_id', member.id).order('marked_at', { ascending: false }).limit(50), []) : [],
@@ -64,10 +66,10 @@ export const routes: Route[] = [
       const completedByTrack = new Map<string, number>();
       for (const row of progress) if (row.status === 'completed') completedByTrack.set(row.track_code, (completedByTrack.get(row.track_code) ?? 0) + 1);
       const assignments = assignmentRows
-        .filter((row) => row.member_id === member.id || (row.department_id !== null && row.department_id === member.department_id))
+        .filter((row) => appliesTo(row, member))
         .map((row) => ({
           id: row.id, track_code: row.track_code, target_level: row.target_level, due_date: row.due_date, status: row.status, note: row.note,
-          scope: row.member_id ? 'person' : 'department', overdue: row.status === 'active' && Boolean(row.due_date && row.due_date < today),
+          scope: row.member_id ? 'person' : row.department_id ? 'department' : 'all', overdue: row.status === 'active' && Boolean(row.due_date && row.due_date < today),
           target_met: row.target_level ? meetsTarget(member.level, row.target_level) : null,
           lessons_done: detail && row.track_code ? completedByTrack.get(row.track_code) ?? 0 : null,
         }))
@@ -106,7 +108,8 @@ export const routes: Route[] = [
           lesson_minutes: progress.reduce((sum, row) => sum + (Number(row.minutes) || 0), 0),
           avg_lesson_score: scored.length ? Math.round(scored.reduce((sum, row) => sum + Number(row.score), 0) / scored.length) : null,
           tracks: [...tracks.values()].sort((a, b) => String(b.last_at ?? '').localeCompare(String(a.last_at ?? ''))),
-          recent_lessons: [...progress].sort((a, b) => String(b.completed_at ?? b.updated_at ?? '').localeCompare(String(a.completed_at ?? a.updated_at ?? ''))).slice(0, 8),
+          recent_lessons: [...progress].sort((a, b) => String(b.completed_at ?? b.updated_at ?? '').localeCompare(String(a.completed_at ?? a.updated_at ?? ''))).slice(0, 8)
+            .map((row) => ({ ...row, title: findLesson(row.lesson_code)?.lesson.title ?? null })),
           sessions: sessions.sort((a, b) => b.starts_at.localeCompare(a.starts_at)).slice(0, 10),
         };
       }

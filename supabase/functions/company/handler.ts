@@ -1,7 +1,7 @@
 // Schood Company English API (/functions/v1/company/...). One router over the
 // area modules' route lists: CORS, sign-in, Schood staff, workspace membership
 // and role checks happen here, so each area only writes its handlers.
-import { check, CompanyError, type AiCall, type CompanyEnv, type Ctx, type Db, type MemberRow, type OrgRow, type Route } from './types.ts';
+import { check, CompanyError, UUID, type AiCall, type CompanyEnv, type Ctx, type Db, type MemberRow, type OrgRow, type Route } from './types.ts';
 import { sha256, tashkentDay } from './util.ts';
 
 export interface HandlerDeps {
@@ -18,6 +18,11 @@ const MAX_BODY = 512 * 1024;
 export const ORG_COLUMNS = 'id,name,industry,size_band,city,contact_phone,billing_email,tax_id,status,seats_limit,tests_limit,tests_used,contract_ends_at,settings,created_at';
 export const MEMBER_COLUMNS = 'id,org_id,user_id,email,full_name,role,department_id,job_role,status,seat,level,level_score,level_source,level_at,target_level,target_date,consent_at,joined_at';
 
+/** True once the workspace's agreement has run out; a pilot has no end date. */
+export function contractEnded(org: Pick<OrgRow, 'contract_ends_at'>, at: Date): boolean {
+  return Boolean(org.contract_ends_at) && Date.parse(org.contract_ends_at!) <= at.getTime();
+}
+
 function match(pattern: string, path: string): Record<string, string> | null {
   const want = pattern.split('/'), have = path.split('/');
   if (want.length !== have.length) return null;
@@ -25,7 +30,11 @@ function match(pattern: string, path: string): Record<string, string> | null {
   for (let index = 0; index < want.length; index++) {
     if (want[index].startsWith(':')) {
       if (!have[index]) return null;
-      params[want[index].slice(1)] = decodeURIComponent(have[index]);
+      try {
+        params[want[index].slice(1)] = decodeURIComponent(have[index]);
+      } catch {
+        return null;
+      }
     } else if (want[index] !== have[index]) return null;
   }
   return params;
@@ -88,7 +97,8 @@ export function createCompanyHandler(deps: HandlerDeps) {
       if (route.access === 'staff' && !ctx.staff) throw new CompanyError('forbidden', 'Schood staff only.', 403);
 
       if (route.access === 'org') {
-        const org = check<OrgRow | null>(await deps.db.from('company_orgs').select(ORG_COLUMNS).eq('id', params.org ?? '').maybeSingle());
+        if (!UUID.test(params.org ?? '')) throw new CompanyError('org_not_found', 'Workspace not found.', 404);
+        const org = check<OrgRow | null>(await deps.db.from('company_orgs').select(ORG_COLUMNS).eq('id', params.org).maybeSingle());
         if (!org) throw new CompanyError('org_not_found', 'Workspace not found.', 404);
         const member = check<MemberRow | null>(await deps.db.from('company_members').select(MEMBER_COLUMNS).eq('org_id', org.id).eq('user_id', ctx.user).eq('status', 'active').maybeSingle());
         if (!ctx.staff) {
@@ -96,6 +106,8 @@ export function createCompanyHandler(deps: HandlerDeps) {
           if (route.roles && !route.roles.includes(member.role)) throw new CompanyError('forbidden', 'Your role cannot do this.', 403, { role: member.role });
           if (org.status === 'closed') throw new CompanyError('org_closed', 'This workspace is closed.', 403);
           if (org.status === 'suspended' && req.method !== 'GET' && !route.allowSuspended) throw new CompanyError('org_suspended', 'This workspace is paused. Contact Schood.', 403);
+          // An ended contract makes the workspace read-only, like a pause, whatever its status says.
+          if (contractEnded(org, now()) && req.method !== 'GET' && !route.allowSuspended) throw new CompanyError('contract_ended', 'Your agreement with Schood has ended. Contact Schood to continue.', 403);
         }
         ctx.org = org;
         ctx.member = member;

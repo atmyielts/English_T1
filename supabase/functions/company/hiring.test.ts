@@ -1,5 +1,6 @@
 import { assert, assertEquals, assertNotEquals } from 'jsr:@std/assert@1';
 import { JOB_ROLES } from '../../../packages/company-core/src/mod.ts';
+import { SaveGate, TIME_UP_RETRY_MS, decodeLink, encodeLink, keyIsGone, resumeStep, timeUpSubmitDue } from '../../../apps/company/src/areas/hiring/flow.ts';
 import { routes as core } from './core.ts';
 import { routes as hiring } from './hiring.ts';
 import {
@@ -12,6 +13,7 @@ import {
 } from './hiring/engine.ts';
 import { parseGrade } from './hiring/grading.ts';
 import { integrityFlags, mergeIntegrity } from './hiring/integrity.ts';
+import { STARTS_PER_HOUR } from './hiring/public.ts';
 import { attemptsCsv } from './hiring/shared.ts';
 import { FakeDb, testHandler } from './testing.ts';
 import type { AiCall } from './types.ts';
@@ -345,7 +347,7 @@ Deno.test('routes: a candidate takes the test end to end, AI grades, HR decides,
   // A reload resumes on the finished state.
   assertEquals((await call('POST', 'public/attempts/state', { body: { key } })).body.attempt.status, 'graded');
   // The same email cannot take it twice.
-  assertEquals((await call('POST', `public/t/${token}/start`, { body: { name: 'Aziza R', email: 'aziza@mail.uz', consent: true } })).body.code, 'already_taken');
+  assertEquals((await call('POST', `public/t/${token}/start`, { body: { name: 'Aziza R', email: 'aziza@mail.uz', consent: true } })).body.code, 'cannot_start');
 
   const detail = await call('GET', `orgs/${ORG}/assessments/${created.body.assessment.id}`, { user: HR_ADMIN });
   assertEquals(detail.body.attempts.length, 1);
@@ -507,4 +509,355 @@ Deno.test('routes: placement campaigns, my/tests contract, member level and acti
   const list = await call('GET', `orgs/${ORG}/placement`, { user: OWNER });
   assertEquals(list.body.campaigns[0].progress, { audience: 2, done: 1, in_progress: 0, levels: { [view.result.overall_level]: 1 } });
   assertEquals((await call('GET', `orgs/${ORG}/placement/audience`, { user: HR_ADMIN })).body.members.length, 5);
+});
+
+// ---------------------------------------------------------------- production review regressions
+
+const MINUTE = 60_000;
+type Call = ReturnType<typeof world>['call'];
+
+async function hiringTest(call: Call, body: Record<string, unknown>) {
+  const created = await call('POST', `orgs/${ORG}/assessments`, { user: HR_ADMIN, body: { title: 'Front desk', ...body } });
+  assertEquals(created.status, 200, JSON.stringify(created.body));
+  return { id: created.body.assessment.id as string, token: linkToken(created.body.link), assessment: created.body.assessment, link: created.body.link as string };
+}
+const startAs = (call: Call, token: string, email: string, name = 'Candidate') => call('POST', `public/t/${token}/start`, { body: { name, email, consent: true } });
+const WRITTEN = 'Dear guest, thank you for choosing our hotel. Your room is booked from Friday to Sunday.';
+const attemptRows = (db: FakeDb) => db.rows('company_attempts');
+const testsUsed = (db: FakeDb) => db.rows('company_orgs')[0].tests_used;
+
+/** Behaves like PostgREST with max_rows=1000: no read returns more, whatever it asks for. */
+function capRows(db: FakeDb) {
+  const from = db.from.bind(db);
+  db.from = ((table: string) => {
+    const query = from(table);
+    const limit = query.limit.bind(query), range = query.range.bind(query);
+    query.limit(1000);
+    query.limit = (count: number) => limit(Math.min(count, 1000));
+    query.range = (start: number, end: number) => range(start, Math.min(end, start + 999));
+    return query;
+  }) as typeof db.from;
+}
+
+/** The next attempt insert loses a race: another request's row lands and the unique index refuses this one. */
+function loseStartRace(db: FakeDb, winner?: Record<string, unknown>) {
+  const from = db.from.bind(db);
+  db.from = ((table: string) => {
+    const query = from(table);
+    if (table === 'company_attempts') {
+      query.insert = ((row: Record<string, unknown>) => {
+        db.from = from;
+        if (winner) attemptRows(db).push({ id: crypto.randomUUID(), created_at: row.started_at, updated_at: row.started_at, ...row, ...winner });
+        return { select: () => ({ single: () => Promise.resolve({ data: null, error: { code: '23505', message: 'duplicate key' } }) }) };
+      }) as never;
+    }
+    return query;
+  }) as typeof db.from;
+}
+
+Deno.test('routes: a retried next after a lost response does not score what nobody saw', async () => {
+  const { db, call } = world();
+  const { token } = await hiringTest(call, { skills: ['grammar', 'reading'] });
+  const started = await startAs(call, token, 'retry@mail.uz');
+  const key = started.body.key;
+  const next = (at: unknown, answers: Record<string, unknown> = {}) => call('POST', 'public/attempts/next', { body: { key, answers, at } });
+
+  // Stage 1 moves on, the response is lost, and the page sends stage 1 again.
+  const firstItems = started.body.attempt.section.items;
+  const moved = await next({ current: 0, stage: 1 }, Object.fromEntries(firstItems.map((item: { id: string }) => [item.id, 0])));
+  assertEquals(moved.body.attempt.section.stage, 2);
+  const retried = await next({ current: 0, stage: 1 });
+  assertEquals(retried.status, 200);
+  assertEquals(retried.body.attempt.section.stage, 2, 'the page catches up');
+  assertEquals(retried.body.attempt.section.items, moved.body.attempt.section.items);
+  assertEquals((attemptRows(db)[0].items as Section[])[0].stages!.length, 2, 'no extra stage');
+
+  // The same on the last stage: the section that was opened stays open.
+  await next({ current: 0, stage: 2 });
+  const reading = await next({ current: 0, stage: 3 });
+  assertEquals([reading.body.attempt.current, reading.body.attempt.section.skill], [1, 'reading']);
+  const again = await next({ current: 0, stage: 3 });
+  assertEquals([again.body.attempt.status, again.body.attempt.current, again.body.attempt.section.skill], ['started', 1, 'reading']);
+  assertEquals((attemptRows(db)[0].skill_results as Record<string, unknown>).reading, undefined, 'reading was not closed');
+  // A page on the right step moves as usual; a passage section has no stage.
+  assertEquals((await next({ current: 1, stage: null })).body.attempt.status, 'graded');
+});
+
+Deno.test('routes: an attempt closed long after it was abandoned logs its time limit as activity', async () => {
+  const { db, call, clock } = world();
+  const created = await call('POST', `orgs/${ORG}/placement`, { user: HR_ADMIN, body: { kind: 'placement', title: 'Placement', skills: ['grammar'], time_limit_minutes: 10 } });
+  const view = (await call('POST', `orgs/${ORG}/my/attempts`, { user: EMPLOYEE, body: { assessment_id: created.body.assessment.id } })).body.attempt;
+  await call('POST', `orgs/${ORG}/my/attempts/${view.id}/save`, { user: EMPLOYEE, body: { answers: { [view.section.items[0].id]: 1 } } });
+  clock.now = new Date(clock.now.getTime() + 7 * 24 * 60 * MINUTE);
+  assertEquals((await call('GET', `orgs/${ORG}/my/tests`, { user: EMPLOYEE })).body.tests[0].status, 'done');
+  assertEquals(db.rows('company_activity')[0].minutes, 10);
+});
+
+Deno.test('routes: starting again: an empty overdue attempt frees the email, others get a neutral refusal', async () => {
+  const { db, call, clock, calls } = world();
+  const { token } = await hiringTest(call, { skills: ['writing'], time_limit_minutes: 10 });
+
+  // Nothing answered and the time ran out: the same email starts again.
+  await startAs(call, token, 'idle@mail.uz');
+  clock.now = new Date(clock.now.getTime() + 13 * MINUTE);
+  assertEquals((await startAs(call, token, 'idle@mail.uz')).status, 200);
+  assertEquals(attemptRows(db)[0].status, 'expired');
+
+  // Answered and overdue: closed with what was saved, without AI, and still blocking.
+  const answered = await startAs(call, token, 'answered@mail.uz');
+  const task = answered.body.attempt.section.tasks[0].id;
+  await call('POST', 'public/attempts/save', { body: { key: answered.body.key, answers: { [task]: WRITTEN } } });
+  clock.now = new Date(clock.now.getTime() + 13 * MINUTE);
+  const refused = await startAs(call, token, 'answered@mail.uz');
+  assertEquals([refused.status, refused.body.code], [409, 'cannot_start']);
+  assert(!/used|taken/i.test(refused.body.error), 'the words do not confirm the email was used');
+  assertEquals(attemptRows(db).find((row) => row.candidate_email === 'answered@mail.uz')!.status, 'submitted');
+  assertEquals(calls, []);
+});
+
+Deno.test('routes: refused starts count toward the hourly limit', async () => {
+  const { db, call } = world();
+  const { token } = await hiringTest(call, { skills: ['grammar'] });
+  assertEquals((await startAs(call, token, 'target@mail.uz')).status, 200);
+  for (let probe = 0; probe < STARTS_PER_HOUR - 1; probe++) assertEquals((await startAs(call, token, 'target@mail.uz')).body.code, 'cannot_start');
+  const limited = await startAs(call, token, 'target@mail.uz');
+  assertEquals([limited.status, limited.body.code], [429, 'too_many_starts']);
+  assertEquals(attemptRows(db).length, 1);
+});
+
+Deno.test('routes: HR gives a candidate who lost their key a new access link', async () => {
+  const { call, clock } = world();
+  const { token, id } = await hiringTest(call, { skills: ['grammar'], time_limit_minutes: 10 });
+  const started = await startAs(call, token, 'phone@mail.uz');
+  const attempt = started.body.attempt.id;
+  assertEquals((await call('POST', `orgs/${ORG}/attempts/${attempt}/access`, { user: EMPLOYEE })).status, 403);
+  const issued = await call('POST', `orgs/${ORG}/attempts/${attempt}/access`, { user: HR_ADMIN });
+  const fresh = String(issued.body.link).split('/r/')[1];
+  assert(fresh.length >= 20);
+  assertEquals((await call('POST', 'public/attempts/state', { body: { key: started.body.key } })).body.code, 'attempt_not_found', 'the old key stops working');
+  const state = await call('POST', 'public/attempts/state', { body: { key: fresh } });
+  assertEquals([state.body.attempt.id, state.body.attempt.status], [attempt, 'started']);
+  // Once the attempt is over there is nothing to continue.
+  clock.now = new Date(clock.now.getTime() + 13 * MINUTE);
+  await call('GET', `orgs/${ORG}/assessments/${id}`, { user: HR_ADMIN });
+  assertEquals((await call('POST', `orgs/${ORG}/attempts/${attempt}/access`, { user: HR_ADMIN })).body.code, 'attempt_finished');
+});
+
+Deno.test('routes: opening the candidate list closes overdue attempts without AI; HR grades them after', async () => {
+  const { call, clock, calls } = world();
+  const { token, id } = await hiringTest(call, { skills: ['writing'], time_limit_minutes: 10 });
+  for (const email of ['a@mail.uz', 'b@mail.uz']) {
+    const started = await startAs(call, token, email);
+    await call('POST', 'public/attempts/save', { body: { key: started.body.key, answers: { [started.body.attempt.section.tasks[0].id]: WRITTEN } } });
+  }
+  clock.now = new Date(clock.now.getTime() + 13 * MINUTE);
+  const detail = await call('GET', `orgs/${ORG}/assessments/${id}`, { user: HR_ADMIN });
+  assertEquals(calls, [], 'no AI inside the page load');
+  assertEquals(detail.body.attempts.map((row: { status: string; pending: string[] }) => [row.status, row.pending]), [['submitted', ['writing']], ['submitted', ['writing']]]);
+  // Nothing is lost, and the report does not claim AI failed.
+  const report = await call('GET', `orgs/${ORG}/attempts/${detail.body.attempts[0].id}`, { user: HR_ADMIN });
+  assertEquals([report.body.attempt.feedback.reason, report.body.attempt.feedback.tried_at], [null, null]);
+  const graded = await call('POST', `orgs/${ORG}/attempts/${detail.body.attempts[0].id}/regrade`, { user: HR_ADMIN });
+  assertEquals([graded.body.attempt.status, calls.length], ['graded', 1]);
+});
+
+Deno.test('routes: hiring lists, stats and exports are complete past the 1000-row limit', async () => {
+  const { db, call } = world();
+  capRows(db);
+  const { token, id } = await hiringTest(call, { skills: ['grammar'], max_attempts: 1600 });
+  for (let index = 0; index < 1500; index++) {
+    const at = new Date(Date.parse('2026-10-20T00:00:00.000Z') + index * MINUTE).toISOString();
+    attemptRows(db).push({ id: `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`, org_id: ORG, assessment_id: id, member_id: null, user_id: null, candidate_name: `C ${index}`, candidate_email: `c${index}@mail.uz`, candidate_phone: null, access_token_hash: null, status: 'submitted', started_at: at, deadline_at: at, submitted_at: at, graded_at: null, items: [], answers: {}, overall_level: null, overall_score: null, skill_results: {}, ai_feedback: {}, integrity: {}, decision: null, decision_by: null, notes: null, certificate_code: null, created_at: at, updated_at: at });
+  }
+  const detail = await call('GET', `orgs/${ORG}/assessments/${id}`, { user: HR_ADMIN });
+  assertEquals([detail.body.attempts.length, detail.body.stats.total], [1500, 1500]);
+  assertEquals(new Set(detail.body.attempts.map((row: { id: string }) => row.id)).size, 1500, 'no row twice across pages');
+  assertEquals((await call('GET', `orgs/${ORG}/assessments?kind=hiring`, { user: HR_ADMIN })).body.assessments[0].stats.total, 1500);
+  const csv = await call('GET', `orgs/${ORG}/assessments/${id}/export`, { user: HR_ADMIN });
+  assertEquals(csv.body.csv.trim().split('\r\n').length, 1501);
+  // The oldest email, beyond the newest 1000, cannot start again.
+  assertEquals((await startAs(call, token, 'c0@mail.uz')).body.code, 'cannot_start');
+  // The candidate cap is reached past 1000 too.
+  db.rows('company_assessments')[0].max_attempts = 1500;
+  assertEquals((await startAs(call, token, 'new@mail.uz')).body.code, 'test_full');
+
+  // A campaign audience and the people list work above 1000 members.
+  const ids: string[] = [];
+  for (let index = 0; index < 1200; index++) {
+    const memberId = `00000000-0000-4000-9000-${String(index).padStart(12, '0')}`;
+    ids.push(memberId);
+    db.rows('company_members').push({ id: memberId, org_id: ORG, user_id: null, email: `m${index}@x.uz`, full_name: `M ${index}`, role: 'employee', department_id: null, job_role: 'general', status: 'active', seat: false, level: null });
+  }
+  const campaign = await call('POST', `orgs/${ORG}/placement`, { user: HR_ADMIN, body: { kind: 'placement', title: 'Everyone', skills: ['grammar'], audience: { type: 'members', ids } } });
+  assertEquals(campaign.status, 200, JSON.stringify(campaign.body));
+  assertEquals((await call('GET', `orgs/${ORG}/placement/audience`, { user: HR_ADMIN })).body.members.length, 1205);
+});
+
+Deno.test('routes: a failed re-grade reports its reason even though the old result stays', async () => {
+  const { call, setAi } = world();
+  const { token, id } = await hiringTest(call, { skills: ['writing'] });
+  const started = await startAs(call, token, 'grade@mail.uz');
+  await call('POST', 'public/attempts/submit', { body: { key: started.body.key, answers: { [started.body.attempt.section.tasks[0].id]: WRITTEN } } });
+  const attempt = (await call('GET', `orgs/${ORG}/assessments/${id}`, { user: HR_ADMIN })).body.attempts[0].id;
+  const fine = await call('POST', `orgs/${ORG}/attempts/${attempt}/regrade`, { user: HR_ADMIN, body: { skill: 'writing' } });
+  assertEquals([fine.body.attempt.status, fine.body.reason], ['graded', null]);
+  setAi('down');
+  const failed = await call('POST', `orgs/${ORG}/attempts/${attempt}/regrade`, { user: HR_ADMIN, body: { skill: 'writing' } });
+  assertEquals([failed.body.attempt.status, failed.body.attempt.results.writing.score, failed.body.reason], ['graded', 62, 'ai_unavailable']);
+});
+
+Deno.test('routes: public attempt routes refuse a closed workspace; a suspended one lets a started attempt finish', async () => {
+  const { db, call } = world();
+  const { token } = await hiringTest(call, { skills: ['grammar'] });
+  const started = await startAs(call, token, 'status@mail.uz');
+  const key = started.body.key;
+  db.rows('company_orgs')[0].status = 'suspended';
+  assertEquals((await call('GET', `public/t/${token}`)).body.open, false);
+  assertEquals((await startAs(call, token, 'late@mail.uz')).body.code, 'test_closed');
+  assertEquals((await call('POST', 'public/attempts/save', { body: { key, answers: {} } })).status, 200);
+  db.rows('company_orgs')[0].status = 'closed';
+  for (const route of ['state', 'save', 'next', 'submit']) {
+    const refused = await call('POST', `public/attempts/${route}`, { body: { key, answers: {} } });
+    assertEquals([route, refused.status, refused.body.code], [route, 403, 'org_closed']);
+  }
+  assertEquals(attemptRows(db)[0].status, 'started');
+});
+
+Deno.test('routes: after the contract ends nobody starts a test, and a started one may finish', async () => {
+  const { db, call, clock } = world();
+  const { token } = await hiringTest(call, { skills: ['grammar'] });
+  const campaign = (await call('POST', `orgs/${ORG}/placement`, { user: HR_ADMIN, body: { kind: 'placement', title: 'Placement', skills: ['grammar'] } })).body.assessment.id;
+  const candidate = await startAs(call, token, 'before@mail.uz');
+  const staff = (await call('POST', `orgs/${ORG}/my/attempts`, { user: EMPLOYEE, body: { assessment_id: campaign } })).body.attempt;
+  const used = testsUsed(db);
+  db.rows('company_orgs')[0].contract_ends_at = new Date(clock.now.getTime() - MINUTE).toISOString();
+
+  // Candidates see the test as closed, not as out of tests.
+  assertEquals((await call('GET', `public/t/${token}`)).body.open, false);
+  const refused = await startAs(call, token, 'after@mail.uz');
+  assertEquals([refused.status, refused.body.code], [409, 'test_closed']);
+  // Members who have not started cannot, and the campaign is not offered.
+  const other = OTHER;
+  assertEquals((await call('GET', `orgs/${ORG}/my/tests`, { user: other })).body.tests, []);
+  const intro = await call('GET', `orgs/${ORG}/my/tests/${campaign}`, { user: other });
+  assertEquals([intro.body.closed, intro.body.can_start], [true, false]);
+  const start = await call('POST', `orgs/${ORG}/my/attempts`, { user: other, body: { assessment_id: campaign } });
+  assert(start.status === 403 || start.status === 409, JSON.stringify(start.body));
+  assert(start.body.code === 'contract_ended' || start.body.code === 'test_closed', start.body.code);
+  assertEquals(testsUsed(db), used);
+
+  // Attempts already started finish.
+  assertEquals((await call('POST', 'public/attempts/save', { body: { key: candidate.body.key, answers: {} } })).status, 200);
+  assertEquals((await call('POST', 'public/attempts/submit', { body: { key: candidate.body.key, answers: {} } })).body.attempt.status, 'graded');
+  assertEquals((await call('GET', `orgs/${ORG}/my/tests`, { user: EMPLOYEE })).body.tests[0].status, 'in_progress');
+  assertEquals((await call('POST', `orgs/${ORG}/my/attempts/${staff.id}/submit`, { user: EMPLOYEE, body: {} })).body.attempt.status, 'graded');
+});
+
+Deno.test('routes: a lost start race uses no test, and a refused reservation leaves no attempt', async () => {
+  const { db, call } = world();
+  const { token } = await hiringTest(call, { skills: ['grammar'] });
+  // Candidate: the same neutral refusal and no key.
+  loseStartRace(db);
+  const lost = await startAs(call, token, 'twice@mail.uz');
+  assertEquals([lost.status, lost.body.code, lost.body.key], [409, 'cannot_start', undefined]);
+  assertEquals(testsUsed(db), 0);
+  // Member: resumes the attempt that won.
+  const campaign = (await call('POST', `orgs/${ORG}/placement`, { user: HR_ADMIN, body: { kind: 'placement', title: 'Placement', skills: ['grammar'] } })).body.assessment.id;
+  const winner = crypto.randomUUID();
+  loseStartRace(db, { id: winner });
+  const resumed = await call('POST', `orgs/${ORG}/my/attempts`, { user: EMPLOYEE, body: { assessment_id: campaign } });
+  assertEquals([resumed.status, resumed.body.attempt.id], [200, winner]);
+  assertEquals(testsUsed(db), 0);
+
+  const { db: full, call: callFull } = world({ testsLimit: 0 });
+  const test = await hiringTest(callFull, { skills: ['grammar'] });
+  assertEquals((await startAs(callFull, test.token, 'x@mail.uz')).body.code, 'tests_exhausted');
+  assertEquals(attemptRows(full).length, 0);
+});
+
+Deno.test('routes: starting after an overrun attempt closes keeps the retest rule', async () => {
+  const { db, call, clock } = world();
+  const campaign = (await call('POST', `orgs/${ORG}/placement`, { user: HR_ADMIN, body: { kind: 'placement', title: 'Placement', skills: ['grammar'], time_limit_minutes: 10 } })).body.assessment.id;
+  const start = () => call('POST', `orgs/${ORG}/my/attempts`, { user: EMPLOYEE, body: { assessment_id: campaign } });
+  const view = (await start()).body.attempt;
+  await call('POST', `orgs/${ORG}/my/attempts/${view.id}/save`, { user: EMPLOYEE, body: { answers: { [view.section.items[0].id]: 1 } } });
+  clock.now = new Date(clock.now.getTime() + 13 * MINUTE);
+  const again = await start();
+  assertEquals([again.status, again.body.code], [409, 'already_taken']);
+  assertEquals([attemptRows(db).length, testsUsed(db)], [1, 1]);
+});
+
+Deno.test('routes: the normal time-up submit is not flagged late', async () => {
+  const { db, call, clock } = world();
+  const { token, id } = await hiringTest(call, { skills: ['grammar'], time_limit_minutes: 10 });
+  const onTime = await startAs(call, token, 'ontime@mail.uz');
+  const late = await startAs(call, token, 'late@mail.uz');
+  clock.now = new Date(clock.now.getTime() + 10 * MINUTE + 5_000);
+  await call('POST', 'public/attempts/submit', { body: { key: onTime.body.key, answers: {} } });
+  clock.now = new Date(clock.now.getTime() + 55_000);
+  await call('POST', 'public/attempts/submit', { body: { key: late.body.key, answers: {} } });
+  assertEquals(attemptRows(db).map((row) => (row.integrity as { late?: boolean }).late), [undefined, true]);
+  const rows = (await call('GET', `orgs/${ORG}/assessments/${id}`, { user: HR_ADMIN })).body.attempts as { email: string; flags: { code: string }[] }[];
+  assertEquals(rows.find((row) => row.email === 'ontime@mail.uz')!.flags.some((flag) => flag.code === 'late'), false);
+  assertEquals(rows.find((row) => row.email === 'late@mail.uz')!.flags.some((flag) => flag.code === 'late'), true);
+});
+
+Deno.test('routes and page: a remembered link is shown only while it is the live link', async () => {
+  const { call } = world();
+  const { id, assessment, link } = await hiringTest(call, { skills: ['grammar'] });
+  assertEquals(String(assessment.link_id).length, 12);
+  assertEquals(assessment.link_token_hash, undefined);
+  const remembered = encodeLink(link, assessment.link_id);
+  assertEquals(decodeLink(remembered, assessment.link_id), link);
+
+  const other = await call('POST', `orgs/${ORG}/assessments/${id}/link`, { user: OWNER });
+  assertNotEquals(other.body.link_id, assessment.link_id);
+  const live = (await call('GET', `orgs/${ORG}/assessments/${id}`, { user: HR_ADMIN })).body.assessment.link_id;
+  assertEquals(live, other.body.link_id);
+  assertEquals(decodeLink(remembered, live), null, 'another admin replaced it');
+  assertEquals(decodeLink(encodeLink(other.body.link, other.body.link_id), live), other.body.link);
+  const copy = await call('POST', `orgs/${ORG}/assessments/${id}/duplicate`, { user: HR_ADMIN });
+  assert(copy.body.assessment.link_id && copy.body.assessment.link_id !== live);
+  // Anything unreadable counts as not remembered.
+  assertEquals(decodeLink('https://company.schood.online/t/old', live), null);
+  assertEquals(decodeLink(null, live), null);
+});
+
+Deno.test('page: resuming keeps the key unless the session is really gone', () => {
+  assertEquals(resumeStep('started'), 'running');
+  assertEquals(resumeStep('submitted'), 'done');
+  assertEquals(resumeStep('graded'), 'done');
+  assertEquals(resumeStep('expired'), 'start_over');
+  assertEquals(keyIsGone({ status: 404, code: 'attempt_not_found' }), true);
+  for (const failure of [new TypeError('timeout'), new TypeError('Failed to fetch'), { status: 500, code: 'internal_error' }, { status: 403, code: 'org_closed' }, { status: 404, code: 'not_found' }]) {
+    assertEquals(keyIsGone(failure), false, JSON.stringify(failure));
+  }
+});
+
+Deno.test('page: the time-up submit retries, spaced out, and waits for a request in flight', () => {
+  const state = { remaining: 0, busy: false, finished: false, lastTry: 0, now: 1_000_000 };
+  assertEquals(timeUpSubmitDue(state), true, 'first try at once');
+  assertEquals(timeUpSubmitDue({ ...state, remaining: 1 }), false, 'time left');
+  assertEquals(timeUpSubmitDue({ ...state, busy: true }), false, 'a request is in flight');
+  assertEquals(timeUpSubmitDue({ ...state, finished: true }), false, 'already finished');
+  assertEquals(timeUpSubmitDue({ ...state, remaining: -3, lastTry: state.now - 3_000 }), false, 'not so soon after a failure');
+  assertEquals(timeUpSubmitDue({ ...state, remaining: -15, lastTry: state.now - TIME_UP_RETRY_MS }), true, 'tries again');
+});
+
+Deno.test('page: starting Next or Submit drops the waiting autosave and blocks a second move', async () => {
+  const gate = new SaveGate();
+  let saves = 0;
+  gate.schedule(() => saves++, 5);
+  assertEquals(gate.begin(), true);
+  assertEquals(gate.moving, true);
+  assertEquals(gate.begin(), false, 'one move at a time');
+  await new Promise((resolve) => setTimeout(resolve, 25));
+  assertEquals(saves, 0, 'the waiting save never fired');
+  gate.end();
+  assertEquals(gate.begin(), true, 'free again');
+  gate.end();
+  gate.schedule(() => saves++, 1);
+  gate.schedule(() => saves++, 1);
+  await new Promise((resolve) => setTimeout(resolve, 25));
+  assertEquals(saves, 1, 'a newer save replaces the waiting one');
 });

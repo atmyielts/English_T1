@@ -83,6 +83,11 @@ export const routes: Route[] = [
     async handle(ctx, _params, _body, query) {
       const status = query.get('status'), q = (query.get('q') ?? '').trim().toLowerCase();
       let orgs = check<OrgRow[]>(await ctx.db.from('company_orgs').select(ORG_COLUMNS).order('created_at', { ascending: false }).limit(1000));
+      // A live workspace with no active owner: nobody there can manage owners, so staff have to step in.
+      const owners = await fetchAll<{ org_id: string }>(() => ctx.db.from('company_members').select('org_id').eq('role', 'owner').eq('status', 'active').order('id'));
+      const owned = new Set(owners.map((row) => row.org_id));
+      const lacksOwner = (org: { id: string; status: string }) => org.status !== 'closed' && !owned.has(org.id);
+      if (query.get('ownerless') === '1') orgs = orgs.filter(lacksOwner);
       if (status && (ORG_STATUSES as readonly string[]).includes(status)) orgs = orgs.filter((org) => org.status === status);
       if (q) orgs = orgs.filter((org) => [org.name, org.city, org.billing_email, org.contact_phone, org.tax_id].some((value) => String(value ?? '').toLowerCase().includes(q)));
       const ids = orgs.map((org) => org.id);
@@ -94,9 +99,9 @@ export const routes: Route[] = [
         if (row.seat) entry.seats_used++;
         tally.set(row.org_id, entry);
       }
-      const all = check<{ status: string }[]>(await ctx.db.from('company_orgs').select('status').limit(5000));
+      const all = check<{ id: string; status: string }[]>(await ctx.db.from('company_orgs').select('id,status').limit(5000));
       const counts = Object.fromEntries(ORG_STATUSES.map((value) => [value, all.filter((row) => row.status === value).length]));
-      return { orgs: orgs.map((org) => ({ ...org, ...(tally.get(org.id) ?? { people: 0, invited: 0, seats_used: 0 }) })), counts };
+      return { orgs: orgs.map((org) => ({ ...org, ...(tally.get(org.id) ?? { people: 0, invited: 0, seats_used: 0 }), ownerless: lacksOwner(org) })), counts, ownerless: all.filter(lacksOwner).length };
     },
   },
   {

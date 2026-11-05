@@ -1,10 +1,11 @@
 // Tracks and the lesson player: content without answer keys, server-side
-// checking, progress in company_lesson_progress and `lesson` activity.
+// checking, progress in company_lesson_progress and `lesson` activity. Browsing
+// the tracks is open to everyone; the lessons themselves need a learning seat.
 import { logActivity } from '../core.ts';
 import { check, CompanyError, type Ctx, type Route } from '../types.ts';
 import { obj } from '../util.ts';
 import { normalizeAnswer, type Exercise, type Lesson, type Track } from './content.ts';
-import { learner, minutesSpent } from './shared.ts';
+import { canLearn, learner, minutesSpent, requireSeat } from './shared.ts';
 import { findLesson, findScenario, findTemplate, findTrack, TRACKS } from './tracks/index.ts';
 
 /** Score a lesson must reach to count as completed. */
@@ -121,6 +122,7 @@ export const routes: Route[] = [
       const progress = ctx.member ? await memberProgress(ctx, ctx.member.id) : [];
       return {
         recommended: ctx.member?.job_role ?? 'general',
+        can_learn: canLearn(ctx),
         tracks: TRACKS.map((track) => {
           const mine = progress.filter((row) => row.track_code === track.code);
           return { ...trackSummary(track), completed: mine.filter((row) => row.status === 'completed').length, started: mine.length };
@@ -135,6 +137,7 @@ export const routes: Route[] = [
       if (!track) throw new CompanyError('track_not_found', 'No such track.', 404);
       const progress = ctx.member ? await memberProgress(ctx, ctx.member.id) : [];
       return {
+        can_learn: canLearn(ctx),
         track: trackSummary(track),
         lessons: track.lessons.map((lesson) => {
           const row = progress.find((entry) => entry.lesson_code === lesson.code);
@@ -148,6 +151,7 @@ export const routes: Route[] = [
   {
     method: 'GET', path: 'orgs/:org/learn/:lesson', access: 'org', allowSuspended: true,
     async handle(ctx, params) {
+      requireSeat(ctx);
       const { track, lesson, index } = lessonOr404(params.lesson);
       const row = ctx.member
         ? check<ProgressRow | null>(await ctx.db.from('company_lesson_progress').select(PROGRESS_COLUMNS).eq('member_id', ctx.member.id).eq('lesson_code', lesson.code).maybeSingle())
@@ -173,6 +177,7 @@ export const routes: Route[] = [
     method: 'POST', path: 'orgs/:org/learn/:lesson/start', access: 'org',
     async handle(ctx, params, body) {
       const member = learner(ctx);
+      requireSeat(ctx);
       const { track, lesson } = lessonOr404(params.lesson);
       const input = body === undefined ? {} : obj(body);
       const step = ['phrases', 'words', 'dialogue', 'exercises', 'results'].includes(String(input.step)) ? String(input.step) : 'phrases';
@@ -192,6 +197,7 @@ export const routes: Route[] = [
     method: 'POST', path: 'orgs/:org/learn/:lesson/check', access: 'org',
     async handle(ctx, params, body) {
       const member = learner(ctx);
+      requireSeat(ctx);
       const { track, lesson, index } = lessonOr404(params.lesson);
       const input = obj(body);
       const answers = input.answers && typeof input.answers === 'object' && !Array.isArray(input.answers) ? input.answers as Record<string, unknown> : {};
@@ -211,9 +217,11 @@ export const routes: Route[] = [
       };
       if (existing) check(await ctx.db.from('company_lesson_progress').update(row).eq('id', existing.id));
       else check(await ctx.db.from('company_lesson_progress').insert({ org_id: ctx.org!.id, member_id: member.id, user_id: ctx.user, track_code: track.code, lesson_code: lesson.code, ...row }));
+      // One 'lesson' per lesson completed, so KPIs and challenges count lessons, not
+      // clicks on Check. Other attempts keep their minutes and earn no points.
       await logActivity(ctx.db, {
-        org_id: ctx.org!.id, member_id: member.id, user_id: ctx.user, kind: 'lesson', minutes,
-        points: Math.round(result.score / 10) + (firstCompletion ? 10 : 0), ref: lesson.code,
+        org_id: ctx.org!.id, member_id: member.id, user_id: ctx.user, kind: firstCompletion ? 'lesson' : 'lesson_retry', minutes,
+        points: firstCompletion ? Math.round(result.score / 10) + 10 : 0, ref: lesson.code,
       });
       return { ...result, passed, first_completion: firstCompletion, best: row.score, status: row.status, next: track.lessons[index + 1]?.code ?? null, pass_score: PASS_SCORE };
     },

@@ -22,7 +22,7 @@
 //   POST /classes/:id/assignments/:aid/cancel
 // Worker (reminder cron, see index.ts): runClassReminders.
 import { pushInbox } from "../_shared/english-inbox.ts";
-import { ENGLISH_BUNDLE_PRODUCT_ID, expandBundleEntitlements, isActiveAccessWindow } from "../_shared/english-access.ts";
+import { ENGLISH_ALL_SKILLS_PRODUCT_IDS, expandBundleEntitlements, isActiveAccessWindow } from "../_shared/english-access.ts";
 import { json, parseBody, toText } from "../_shared/english-learning.ts";
 import { readReminderSettings } from "../_shared/english-reminders.ts";
 import { asLocale, publicScenario, ROLEPLAY_SCENARIOS, roleplayScenario } from "../_shared/english-roleplay.ts";
@@ -249,7 +249,7 @@ const loadPlanTiers = async (sb: any, userIds: string[], products: Products) => 
       .in("tenant_id", tenants)
       .eq("resource_type", "product")
       .eq("is_active", true)
-      .in("resource_id", [...productIds, ENGLISH_BUNDLE_PRODUCT_ID])
+      .in("resource_id", [...productIds, ...ENGLISH_ALL_SKILLS_PRODUCT_IDS])
       .limit(5000);
     for (const row of (data ?? []) as Row[]) {
       if (!isActiveAccessWindow(row as { is_active?: boolean | null; starts_at?: string | null; ends_at?: string | null })) continue;

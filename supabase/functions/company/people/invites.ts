@@ -75,6 +75,10 @@ export const inviteRoutes: Route[] = [
     async handle(ctx, params) {
       const invite = await loadInvite(ctx, ctx.org!.id, params.invite);
       if (invite.revoked_at) return { invite: { ...invite, state: 'revoked' } };
+      if (invite.kind === 'personal' && invite.member_id) {
+        const member = check<MemberRow | null>(await ctx.db.from('company_members').select(MEMBER_COLUMNS).eq('id', invite.member_id).maybeSingle());
+        if (member?.role === 'owner' && !actsAsOwner(ctx)) throw new CompanyError('owner_protected', 'Only an owner can invite another owner.', 403);
+      }
       const updated = check<InviteRow>(await ctx.db.from('company_invites').update({ revoked_at: ctx.now().toISOString() }).eq('id', invite.id).select(INVITE_COLUMNS).single());
       await ctx.audit('invite.revoked', invite.id, { kind: invite.kind, member_id: invite.member_id });
       return { invite: { ...updated, state: 'revoked' } };

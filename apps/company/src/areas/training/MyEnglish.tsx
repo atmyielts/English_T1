@@ -6,11 +6,12 @@ import { api } from '../../api.ts';
 import { useAppT, type AppKey } from '../../i18n/index.ts';
 import { Link } from '../../router.tsx';
 import { useWorkspace } from '../../session.tsx';
-import { LevelBadge, Loading, Progress, useDate, useLoad, useLocalized, useWeekday, type Localized } from './lib.tsx';
+import { LevelBadge, Loading, Progress, SeatLocked, useDate, useLoad, useLocalized, useWeekday, type Localized } from './lib.tsx';
 
 interface LessonRef { code: string; track_code: string; track_title: Localized; title: Localized; stage: string; level: string; step: string | null }
 interface Home {
   member: { full_name: string | null; job_role: string; seat: boolean; level: string | null; level_source: string | null; level_at: string | null; target_level: string | null; target_date: string | null; gap: number | null };
+  can_learn: boolean;
   english_url: string | null;
   assignments: { id: string; track_code: string | null; track_title: Localized | null; target_level: string | null; due_date: string | null; note: string | null; lessons_done: number; lessons_total: number; meets_target: boolean | null; overdue: boolean; next: LessonRef | null }[];
   continue: LessonRef | null;
@@ -103,6 +104,8 @@ export function MyEnglish() {
 
     <TestsToTake org={org.id}/>
 
+    {!data.can_learn && <SeatLocked browse/>}
+
     {data.continue && <section className="training-card training-continue" aria-labelledby="training-continue">
       <p className="eyebrow">{data.resuming ? t('training.me.continue') : t('training.me.next')}</p>
       <h2 id="training-continue">{pick(data.continue.title)}</h2>
@@ -112,7 +115,7 @@ export function MyEnglish() {
 
     <section className="training-card" aria-labelledby="training-assignments">
       <h2 id="training-assignments">{t('training.me.assignments')}</h2>
-      {data.assignments.length === 0 ? <p>{t('training.me.noAssignments')}</p> : <ul className="training-list">
+      {data.assignments.length === 0 ? <p>{t(data.can_learn ? 'training.me.noAssignments' : 'training.me.noAssignmentsLocked')}</p> : <ul className="training-list">
         {data.assignments.map((item) => <li key={item.id}>
           <div>
             <strong>{item.track_title ? pick(item.track_title) : t('training.me.levelGoal', { level: levelText(item.target_level) })}</strong>
@@ -146,7 +149,7 @@ export function MyEnglish() {
       </div>
     </section>
 
-    <section className="training-card" aria-labelledby="training-practice">
+    {data.can_learn && <section className="training-card" aria-labelledby="training-practice">
       <h2 id="training-practice">{t('training.me.practice')}</h2>
       <div className="training-shortcuts">
         <Link to={`/w/${org.id}/learn`}><strong>{t('training.nav.lessons')}</strong><span>{t('training.me.lessonsHint')}</span></Link>
@@ -154,7 +157,7 @@ export function MyEnglish() {
         <Link to={`/w/${org.id}/writing`}><strong>{t('training.nav.writing')}</strong><span>{t('training.me.writingHint')}</span></Link>
         <Link to={`/w/${org.id}/glossary`}><strong>{t('training.nav.glossary')}</strong><span>{t('training.me.glossaryHint')}</span></Link>
       </div>
-    </section>
+    </section>}
 
     {data.english_url && <section className="training-card training-english" aria-labelledby="training-english">
       <h2 id="training-english">{t('training.me.english')}</h2>

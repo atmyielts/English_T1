@@ -1,6 +1,6 @@
 // The app frame: finds the page for the path, checks sign-in and roles, loads the
 // open workspace, and draws the header and the role-aware sidebar.
-import React, { Suspense, useCallback, useEffect, useState, type ReactNode } from 'react';
+import React, { Component, Suspense, useCallback, useEffect, useState, type ReactNode } from 'react';
 import { configured } from '../../../packages/assessment-web/src/client';
 import { ServiceHeader } from '../../../packages/service-design/src/ServiceHeader';
 import { WorkspaceNavigation, type WorkspaceNavSection } from '../../../packages/service-design/src/WorkspaceNavigation';
@@ -21,10 +21,46 @@ function find(path: string): { route: AreaRoute; params: Record<string, string> 
   return null;
 }
 
+const STALE_RELOAD = 'company-stale-reload';
+/** True when a page's code can't be fetched: usually an open tab after a new deploy. */
+const isStaleChunk = (error: unknown) => /dynamically imported module|Importing a module script failed|error loading dynamically/i.test(String((error as Error)?.message ?? error));
+
+function Crashed() {
+  const t = useAppT();
+  return <section className="company-narrow" role="alert">
+    <h1>{t('app.crashed')}</h1>
+    <p>{t('app.crashedLead')}</p>
+    <button onClick={() => location.reload()}>{t('app.reload')}</button>
+  </section>;
+}
+
+/** One failed page shows a way out instead of blanking the app; after a deploy it reloads once to fetch the new code. */
+class PageBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidCatch(error: unknown) {
+    console.error(error);
+    if (!isStaleChunk(error)) return;
+    try {
+      if (sessionStorage.getItem(STALE_RELOAD) === location.pathname) return;
+      sessionStorage.setItem(STALE_RELOAD, location.pathname);
+    } catch {
+      return; // Without storage we can't tell whether we already tried, so don't loop.
+    }
+    location.reload();
+  }
+  render() {
+    return this.state.failed ? <Crashed/> : this.props.children;
+  }
+}
+
 /** Renders a page, showing a loading line while its code arrives. */
 function Page({ route, params }: { route: AreaRoute; params: Record<string, string> }) {
   const t = useAppT();
-  return <Suspense fallback={<p role="status">{t('app.loading')}</p>}>{route.render(params)}</Suspense>;
+  const { path } = useLocation();
+  return <PageBoundary key={path}><Suspense fallback={<p role="status">{t('app.loading')}</p>}>{route.render(params)}</Suspense></PageBoundary>;
 }
 
 function Chrome({ children, nav }: { children: ReactNode; nav?: ReactNode }) {
@@ -110,6 +146,7 @@ function WorkspacePage({ orgId, route, params }: { orgId: string; route: AreaRou
     <Chrome nav={<WorkspaceNavigation label={t('nav.label')} menuLabel={t('nav.menu')} sections={sections}/>}>
       <p className="company-org-name">{workspace.org.name} · {t(`status.${workspace.org.status}` as AppKey)}</p>
       {workspace.org.status === 'suspended' && <p className="error" role="status">{t('org.suspended')}</p>}
+      {workspace.org.status === 'active' && workspace.org.contract_ends_at && Date.parse(workspace.org.contract_ends_at) <= Date.now() && <p className="error" role="status">{t('org.contractEnded')}</p>}
       <ConsentBanner/>
       {allowed(route) ? <Page route={route} params={params}/> : <p className="error" role="alert">{t('error.forbidden')}</p>}
     </Chrome>

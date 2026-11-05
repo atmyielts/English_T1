@@ -79,7 +79,9 @@ Deno.test('joining from a personal link: preview, consent, access sync, and join
   assertEquals(joined.status, 200);
   assertEquals([joined.body.state, joined.body.home], ['joined', `/w/${ORG}`]);
   const member = memberOf(db, NEWCOMER);
-  assertEquals([member.status, member.role, member.department_id, member.email], ['active', 'manager', SALES, 'malika@example.com']);
+  // The row shows the account that joined; the audit log keeps the address HR invited.
+  assertEquals([member.status, member.role, member.department_id, member.email], ['active', 'manager', SALES, 'e1000000@example.com']);
+  assertEquals((db.rows('company_audit').at(-1)!.details as Record<string, unknown>).invited_email, 'malika@example.com');
   assert(member.consent_at);
   assertEquals(synced, [NEWCOMER]);
   assertEquals(db.rows('company_invites').find((row) => row.id === invited.body.invite.id)!.uses, 1);
@@ -144,6 +146,7 @@ Deno.test('a removed person who joins again keeps one membership row', async () 
   const { db, call } = setup();
   const employeeRow = memberOf(db, EMPLOYEE);
   assertEquals((await call('DELETE', `orgs/${ORG}/people/${employeeRow.id}`, { user: ADMIN })).status, 200);
+  employeeRow.removed_at = '2026-01-01T00:00:00Z';
   const link = await call('POST', `orgs/${ORG}/invites`, { user: ADMIN, body: { kind: 'link', department_id: SALES } });
   await call('POST', `join/${tokenOf(link.body.link)}`, { user: EMPLOYEE, body: { consent: true } });
   const rows = db.rows('company_members').filter((row) => row.user_id === EMPLOYEE);
@@ -169,9 +172,12 @@ Deno.test('learning seats: only in active workspaces, within the limit, then Eng
   assertEquals(synced, [EMPLOYEE, MANAGER, EMPLOYEE]);
   assertEquals(db.rows('company_audit').filter((row) => String(row.action).startsWith('member.seat')).length, 3);
   assertEquals((await call('POST', `orgs/${ORG}/people/${ids[2]}/seat`, { user: MANAGER, body: { seat: true } })).status, 403);
-  // An ended contract gives no new seats.
+  // An ended contract gives no new seats: HR is stopped at the door like any other change, staff by the route.
   db.rows('company_orgs')[0].contract_ends_at = '2020-01-01T00:00:00Z';
-  assertEquals((await call('POST', `orgs/${ORG}/people/${ids[0]}/seat`, { user: ADMIN, body: { seat: true } })).body.code, 'contract_ended');
+  const ended = await call('POST', `orgs/${ORG}/people/${ids[0]}/seat`, { user: ADMIN, body: { seat: true } });
+  assertEquals([ended.status, ended.body.code], [403, 'contract_ended']);
+  const forStaff = await call('POST', `orgs/${ORG}/people/${ids[0]}/seat`, { user: STAFF, body: { seat: true } });
+  assertEquals([forStaff.status, forStaff.body.code], [409, 'seats_contract_ended']);
 });
 
 Deno.test('removing a person turns the seat off, revokes their links and re-syncs access', async () => {
@@ -303,7 +309,9 @@ Deno.test('departments: create several, refuse duplicates, rename, delete moves 
   assertEquals((await call('POST', `orgs/${ORG}/departments`, { user: ADMIN, body: { name: ' front OFFICE ' } })).body.code, 'department_exists');
   assertEquals((await call('PATCH', `orgs/${ORG}/departments/${SALES}`, { user: ADMIN, body: { name: 'Housekeeping' } })).body.code, 'department_exists');
   assertEquals((await call('PATCH', `orgs/${ORG}/departments/${SALES}`, { user: ADMIN, body: { name: 'Sales and events' } })).body.department.name, 'Sales and events');
-  const counted = await call('GET', `orgs/${ORG}/departments`, { user: MANAGER });
+  // Headcounts of every department are for HR; a manager sees their own in People.
+  assertEquals((await call('GET', `orgs/${ORG}/departments`, { user: MANAGER })).status, 403);
+  const counted = await call('GET', `orgs/${ORG}/departments`, { user: ADMIN });
   const front = counted.body.departments.find((row: { id: string }) => row.id === FRONT);
   assertEquals([front.people, counted.body.unassigned.people], [2, 2]);
   const deleted = await call('DELETE', `orgs/${ORG}/departments/${FRONT}`, { user: OWNER });
@@ -328,4 +336,220 @@ Deno.test('settings: profile and default language for HR; plan fields stay with 
   assertEquals((await call('PATCH', `orgs/${ORG}/settings`, { user: ADMIN, body: { locale: 'de' } })).body.field, 'locale');
   assertEquals((await call('GET', `orgs/${ORG}/settings`, { user: MANAGER })).status, 403);
   assertEquals(db.rows('company_audit').at(-1)!.action, 'settings.updated');
+});
+
+/** Runs `act` as each company_invites query starts; the first query of a join finds the link, the second claims it. */
+function onInviteQuery(db: FakeDb, act: (query: number) => void) {
+  const from = db.from.bind(db);
+  let query = 0;
+  db.from = (table: string) => {
+    if (table === 'company_invites') act(++query);
+    return from(table);
+  };
+}
+const inviteRow = (db: FakeDb, id: string) => db.rows('company_invites').find((row) => row.id === id)!;
+/** No two people still in the workspace share an address (company_members_email_key, which FakeDb does not enforce). */
+function assertEmailsUnique(db: FakeDb) {
+  const live = db.rows('company_members').filter((row) => row.status !== 'removed' && row.email).map((row) => String(row.email).toLowerCase());
+  assertEquals(live.length, new Set(live).size);
+}
+
+Deno.test('an admin cannot rewrite a pending owner\'s email, so a team link cannot make someone owner', async () => {
+  const { db, call } = setup();
+  const pending = (await call('POST', `orgs/${ORG}/invites`, { user: OWNER, body: { full_name: 'Next Owner', email: 'next.owner@example.com', role: 'owner' } })).body.member;
+  const row = db.rows('company_members').find((candidate) => candidate.id === pending.id)!;
+  const attacker = `${OTHER.slice(0, 8)}@example.com`;
+  // Rewriting or clearing the address is refused; the row keeps it.
+  const rewrite = await call('PATCH', `orgs/${ORG}/people/${pending.id}`, { user: ADMIN, body: { email: attacker } });
+  assertEquals([rewrite.status, rewrite.body.code], [403, 'owner_protected']);
+  assertEquals((await call('PATCH', `orgs/${ORG}/people/${pending.id}`, { user: ADMIN, body: { email: null } })).body.code, 'owner_protected');
+  assertEquals((await call('PATCH', `orgs/${ORG}/people/${pending.id}`, { user: ADMIN, body: { email: '' } })).body.code, 'owner_protected');
+  assertEquals(row.email, 'next.owner@example.com');
+  // Saving the form unchanged, or fixing other fields, still works for an admin.
+  assertEquals((await call('PATCH', `orgs/${ORG}/people/${pending.id}`, { user: ADMIN, body: { email: 'Next.Owner@example.com', department_id: SALES, full_name: 'Next Owner Jr' } })).status, 200);
+  assertEquals([row.email, row.department_id, row.full_name], ['next.owner@example.com', SALES, 'Next Owner Jr']);
+  // The attack goes nowhere: the second account joins the team link as an ordinary employee.
+  const link = await call('POST', `orgs/${ORG}/invites`, { user: ADMIN, body: { kind: 'link' } });
+  assertEquals((await call('POST', `join/${tokenOf(link.body.link)}`, { user: OTHER, body: { consent: true } })).status, 200);
+  assertEquals(memberOf(db, OTHER).role, 'employee');
+  assertEquals([row.status, row.role, row.user_id ?? null], ['invited', 'owner', null]);
+  // Admins may still correct the email of other invited people; owners and staff may correct an owner's.
+  const invitedAdmin = (await call('POST', `orgs/${ORG}/invites`, { user: ADMIN, body: { full_name: 'New Admin', email: 'typo@example.com', role: 'admin' } })).body.member;
+  assertEquals((await call('PATCH', `orgs/${ORG}/people/${invitedAdmin.id}`, { user: ADMIN, body: { email: 'fixed@example.com' } })).body.member.email, 'fixed@example.com');
+  assertEquals((await call('PATCH', `orgs/${ORG}/people/${pending.id}`, { user: OWNER, body: { email: 'owner.two@example.com' } })).body.member.email, 'owner.two@example.com');
+  assertEquals((await call('PATCH', `orgs/${ORG}/people/${pending.id}`, { user: STAFF, body: { email: 'owner.three@example.com' } })).body.member.email, 'owner.three@example.com');
+});
+
+Deno.test('a team link from before a removal does not bring the person back; a newer link does', async () => {
+  const { db, synced, call } = setup();
+  const old = await call('POST', `orgs/${ORG}/invites`, { user: ADMIN, body: { kind: 'link', role: 'manager', department_id: SALES } });
+  const raw = tokenOf(old.body.link);
+  const employeeRow = memberOf(db, EMPLOYEE);
+  await call('DELETE', `orgs/${ORG}/people/${employeeRow.id}`, { user: ADMIN });
+  synced.length = 0;
+  // The preview and the join agree, and no use of the link is burned.
+  assertEquals((await call('GET', `join/${raw}`, { user: EMPLOYEE })).body.state, 'revoked');
+  const refused = await call('POST', `join/${raw}`, { user: EMPLOYEE, body: { consent: true } });
+  assertEquals([refused.status, refused.body.code], [410, 'invite_revoked']);
+  assertEquals([employeeRow.status, employeeRow.role, inviteRow(db, old.body.invite.id).uses, synced.length], ['removed', 'employee', 0, 0]);
+  assertEquals((await call('GET', `orgs/${ORG}/people`, { user: EMPLOYEE })).status, 403);
+  // Someone who left on their own needs a newer link too.
+  await call('POST', `orgs/${ORG}/people/me/leave`, { user: MANAGER });
+  assertEquals((await call('POST', `join/${raw}`, { user: MANAGER, body: { consent: true } })).body.code, 'invite_revoked');
+  // The link still works for everybody else, and for anyone not signed in it looks open.
+  assertEquals((await call('GET', `join/${raw}`)).body.state, 'open');
+  assertEquals((await call('POST', `join/${raw}`, { user: NEWCOMER, body: { consent: true } })).status, 200);
+  // A link HR makes after the removal is a decision to let them back in.
+  employeeRow.removed_at = '2026-01-01T00:00:00Z';
+  const newer = await call('POST', `orgs/${ORG}/invites`, { user: ADMIN, body: { kind: 'link', department_id: SALES } });
+  assertEquals((await call('POST', `join/${tokenOf(newer.body.link)}`, { user: EMPLOYEE, body: { consent: true } })).status, 200);
+  assertEquals(employeeRow.status, 'active');
+});
+
+Deno.test('joining at the same moment as someone else retries instead of saying the link was used', async () => {
+  // Another join takes a use between reading the link and claiming it: the unlimited link still works.
+  const unlimited = setup();
+  const open = await unlimited.call('POST', `orgs/${ORG}/invites`, { user: ADMIN, body: { kind: 'link', department_id: FRONT } });
+  const row = inviteRow(unlimited.db, open.body.invite.id);
+  onInviteQuery(unlimited.db, (query) => { if (query === 2) (row.uses as number)++; });
+  const won = await unlimited.call('POST', `join/${tokenOf(open.body.link)}`, { user: NEWCOMER, body: { consent: true } });
+  assertEquals([won.status, memberOf(unlimited.db, NEWCOMER).status, row.uses], [200, 'active', 2]);
+
+  // That join took the last use: now the link really is used up, and nobody joined.
+  const capped = setup();
+  const last = await capped.call('POST', `orgs/${ORG}/invites`, { user: ADMIN, body: { kind: 'link', max_uses: 1 } });
+  const lastRow = inviteRow(capped.db, last.body.invite.id);
+  onInviteQuery(capped.db, (query) => { if (query === 2) (lastRow.uses as number)++; });
+  const usedUp = await capped.call('POST', `join/${tokenOf(last.body.link)}`, { user: NEWCOMER, body: { consent: true } });
+  assertEquals([usedUp.status, usedUp.body.code, lastRow.uses], [410, 'invite_used_up', 1]);
+  assertEquals(capped.db.rows('company_members').some((candidate) => candidate.user_id === NEWCOMER), false);
+
+  // HR revoked it in that moment: the person is told so.
+  const revoked = setup();
+  const pulled = await revoked.call('POST', `orgs/${ORG}/invites`, { user: ADMIN, body: { kind: 'link' } });
+  const pulledRow = inviteRow(revoked.db, pulled.body.invite.id);
+  onInviteQuery(revoked.db, (query) => { if (query === 2) pulledRow.revoked_at = '2026-11-01T00:00:00Z'; });
+  assertEquals((await revoked.call('POST', `join/${tokenOf(pulled.body.link)}`, { user: NEWCOMER, body: { consent: true } })).body.code, 'invite_revoked');
+
+  // A race lost on every try says "try again", not "used up", and burns nothing for this person.
+  const busy = setup();
+  const crowded = await busy.call('POST', `orgs/${ORG}/invites`, { user: ADMIN, body: { kind: 'link' } });
+  const crowdedRow = inviteRow(busy.db, crowded.body.invite.id);
+  onInviteQuery(busy.db, (query) => { if (query % 2 === 0) (crowdedRow.uses as number)++; });
+  const tooBusy = await busy.call('POST', `join/${tokenOf(crowded.body.link)}`, { user: NEWCOMER, body: { consent: true } });
+  assertEquals([tooBusy.status, tooBusy.body.code], [409, 'invite_busy']);
+
+  // Several people really joining at once all get in, and every use is counted.
+  const crowd = setup();
+  const shared = await crowd.call('POST', `orgs/${ORG}/invites`, { user: ADMIN, body: { kind: 'link', department_id: FRONT } });
+  const joins = await Promise.all([NEWCOMER, OTHER, OWNER2].map((user) => crowd.call('POST', `join/${tokenOf(shared.body.link)}`, { user, body: { consent: true } })));
+  assertEquals(joins.map((result) => result.status), [200, 200, 200]);
+  assertEquals(inviteRow(crowd.db, shared.body.invite.id).uses, 3);
+});
+
+Deno.test('a personal link accepted from another account shows that account\'s email', async () => {
+  const { db, call } = setup();
+  const invited = await call('POST', `orgs/${ORG}/invites`, { user: OWNER, body: { full_name: 'Boss', email: 'boss@corp.example', role: 'admin' } });
+  assertEquals((await call('POST', `join/${tokenOf(invited.body.link)}`, { user: NEWCOMER, body: { consent: true } })).status, 200);
+  assertEquals(memberOf(db, NEWCOMER).email, 'e1000000@example.com');
+  const joined = db.rows('company_audit').at(-1)!;
+  assertEquals([joined.action, (joined.details as Record<string, unknown>).invited_email], ['member.joined', 'boss@corp.example']);
+  // The address is free again for the person it belongs to.
+  assertEquals((await call('POST', `orgs/${ORG}/invites`, { user: OWNER, body: { full_name: 'Boss', email: 'boss@corp.example' } })).status, 200);
+
+  // The same address as the account: nothing to report.
+  const same = await call('POST', `orgs/${ORG}/invites`, { user: OWNER, body: { full_name: 'Exact Match', email: `${OTHER.slice(0, 8)}@example.com` } });
+  await call('POST', `join/${tokenOf(same.body.link)}`, { user: OTHER, body: { consent: true } });
+  assertEquals((db.rows('company_audit').at(-1)!.details as Record<string, unknown>).invited_email, undefined);
+
+  // No email on the invitation: the account fills it in.
+  const blank = await call('POST', `orgs/${ORG}/invites`, { user: OWNER, body: { full_name: 'No Email' } });
+  await call('POST', `join/${tokenOf(blank.body.link)}`, { user: OWNER2, body: { consent: true } });
+  assertEquals(memberOf(db, OWNER2).email, 'a2000000@example.com');
+
+  // The account's address already belongs to someone else in the workspace: keep the invited one.
+  db.rows('users').push({ id: 'ab000000-0000-4000-8000-000000000009', role: 'user' });
+  await call('POST', `orgs/${ORG}/invites`, { user: OWNER, body: { full_name: 'Holder', email: 'ab000000@example.com' } });
+  const taken = await call('POST', `orgs/${ORG}/invites`, { user: OWNER, body: { full_name: 'Second', email: 'second@example.com' } });
+  await call('POST', `join/${tokenOf(taken.body.link)}`, { user: 'ab000000-0000-4000-8000-000000000009', body: { consent: true } });
+  assertEquals(memberOf(db, 'ab000000-0000-4000-8000-000000000009').email, 'second@example.com');
+  assertEmailsUnique(db);
+});
+
+Deno.test('a removed person HR invited again can join by a newer team link or the personal link, in their old row', async () => {
+  // Team link: HR's new row steps aside, its settings move to the old row, and no use is lost to an error.
+  const team = setup();
+  const oldRow = memberOf(team.db, EMPLOYEE);
+  const address = String(oldRow.email);
+  await team.call('DELETE', `orgs/${ORG}/people/${oldRow.id}`, { user: ADMIN });
+  oldRow.removed_at = '2026-01-01T00:00:00Z';
+  const again = await team.call('POST', `orgs/${ORG}/invites`, { user: ADMIN, body: { full_name: 'Back Again', email: address, role: 'manager', department_id: SALES, job_role: 'sales', target_level: 'b1' } });
+  const link = await team.call('POST', `orgs/${ORG}/invites`, { user: ADMIN, body: { kind: 'link', department_id: FRONT } });
+  const joined = await team.call('POST', `join/${tokenOf(link.body.link)}`, { user: EMPLOYEE, body: { consent: true } });
+  assertEquals([joined.status, joined.body.role], [200, 'manager']);
+  assertEmailsUnique(team.db);
+  const prepared = team.db.rows('company_members').find((row) => row.id === again.body.member.id)!;
+  assertEquals([prepared.status, prepared.seat], ['removed', false]);
+  assertEquals(team.db.rows('company_members').filter((row) => row.user_id === EMPLOYEE).length, 1);
+  assertEquals([oldRow.status, oldRow.role, oldRow.department_id, oldRow.job_role, oldRow.target_level, oldRow.email, oldRow.removed_at], ['active', 'manager', SALES, 'sales', 'b1', address, null]);
+  assert(inviteRow(team.db, again.body.invite.id).revoked_at);
+  assertEquals(inviteRow(team.db, link.body.invite.id).uses, 1);
+
+  // Personal link: the same outcome.
+  const personal = setup();
+  const row = memberOf(personal.db, EMPLOYEE);
+  await personal.call('DELETE', `orgs/${ORG}/people/${row.id}`, { user: ADMIN });
+  const invited = await personal.call('POST', `orgs/${ORG}/invites`, { user: ADMIN, body: { full_name: 'Back Again', email: String(row.email), role: 'manager', department_id: SALES } });
+  assertEquals((await personal.call('POST', `join/${tokenOf(invited.body.link)}`, { user: EMPLOYEE, body: { consent: true } })).status, 200);
+  assertEmailsUnique(personal.db);
+  assertEquals([row.status, row.role, row.department_id], ['active', 'manager', SALES]);
+
+  // Their old address now belongs to somebody else's invitation: the row takes the account's address.
+  const moved = setup();
+  const movedRow = memberOf(moved.db, EMPLOYEE);
+  await moved.call('DELETE', `orgs/${ORG}/people/${movedRow.id}`, { user: ADMIN });
+  movedRow.removed_at = '2026-01-01T00:00:00Z';
+  movedRow.email = 'old.address@example.com';
+  await moved.call('POST', `orgs/${ORG}/invites`, { user: ADMIN, body: { full_name: 'New Hire', email: 'old.address@example.com' } });
+  const movedLink = await moved.call('POST', `orgs/${ORG}/invites`, { user: ADMIN, body: { kind: 'link' } });
+  assertEquals((await moved.call('POST', `join/${tokenOf(movedLink.body.link)}`, { user: EMPLOYEE, body: { consent: true } })).status, 200);
+  assertEquals(movedRow.email, 'd1000000@example.com');
+  assertEmailsUnique(moved.db);
+
+  // Both addresses are held by others: the row goes without one rather than failing.
+  const none = setup();
+  const noneRow = memberOf(none.db, EMPLOYEE);
+  await none.call('DELETE', `orgs/${ORG}/people/${noneRow.id}`, { user: ADMIN });
+  noneRow.removed_at = '2026-01-01T00:00:00Z';
+  noneRow.email = 'old.address@example.com';
+  await none.call('POST', `orgs/${ORG}/invites`, { user: ADMIN, body: { full_name: 'New Hire', email: 'old.address@example.com' } });
+  none.db.rows('company_members').push({ id: crypto.randomUUID(), org_id: ORG, user_id: OTHER, email: 'd1000000@example.com', role: 'employee', status: 'active', seat: false, job_role: 'general', department_id: null });
+  const noneLink = await none.call('POST', `orgs/${ORG}/invites`, { user: ADMIN, body: { kind: 'link' } });
+  assertEquals((await none.call('POST', `join/${tokenOf(noneLink.body.link)}`, { user: EMPLOYEE, body: { consent: true } })).status, 200);
+  assertEquals(noneRow.email, null);
+  assertEmailsUnique(none.db);
+});
+
+Deno.test('an admin cannot withdraw a pending owner\'s invitation', async () => {
+  const { db, call } = setup();
+  const owner = await call('POST', `orgs/${ORG}/invites`, { user: OWNER, body: { full_name: 'Next Owner', role: 'owner' } });
+  const refused = await call('POST', `orgs/${ORG}/invites/${owner.body.invite.id}/revoke`, { user: ADMIN });
+  assertEquals([refused.status, refused.body.code], [403, 'owner_protected']);
+  assertEquals(inviteRow(db, owner.body.invite.id).revoked_at, null);
+  assertEquals((await call('GET', `join/${tokenOf(owner.body.link)}`)).body.state, 'open');
+  // Admins still withdraw everyone else's; an owner or staff can withdraw an owner's.
+  const staffer = await call('POST', `orgs/${ORG}/invites`, { user: ADMIN, body: { full_name: 'Someone Else' } });
+  assertEquals((await call('POST', `orgs/${ORG}/invites/${staffer.body.invite.id}/revoke`, { user: ADMIN })).status, 200);
+  const link = await call('POST', `orgs/${ORG}/invites`, { user: ADMIN, body: { kind: 'link' } });
+  assertEquals((await call('POST', `orgs/${ORG}/invites/${link.body.invite.id}/revoke`, { user: ADMIN })).status, 200);
+  assertEquals((await call('POST', `orgs/${ORG}/invites/${owner.body.invite.id}/revoke`, { user: OWNER })).status, 200);
+});
+
+Deno.test('staff can demote an invited owner in a workspace with no active owner', async () => {
+  const { db, call } = setup();
+  const pending = (await call('POST', `orgs/${ORG}/invites`, { user: STAFF, body: { full_name: 'Next Owner', role: 'owner' } })).body.member;
+  memberOf(db, OWNER).status = 'removed';
+  const demoted = await call('PATCH', `orgs/${ORG}/people/${pending.id}`, { user: STAFF, body: { role: 'admin' } });
+  assertEquals([demoted.status, demoted.body.member?.role], [200, 'admin']);
+  assertEquals(db.rows('company_members').find((row) => row.id === pending.id)!.role, 'admin');
 });

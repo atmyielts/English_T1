@@ -56,6 +56,18 @@ Deno.test('workspace routes check membership, role and status', async () => {
   assertEquals((await call('GET', `orgs/${orgId}`, { user: OWNER })).status, 200);
 });
 
+Deno.test('an ended contract makes a workspace read-only, and a bad id is simply not found', async () => {
+  const { db, call } = setup();
+  const orgId = await createOrg(call);
+  db.rows('company_orgs')[0].contract_ends_at = new Date(Date.now() - 86_400_000).toISOString();
+  assertEquals((await call('POST', `orgs/${orgId}/hr-thing`, { user: OWNER })).body.code, 'contract_ended');
+  assertEquals((await call('GET', `orgs/${orgId}`, { user: OWNER })).status, 200);
+  assertEquals((await call('POST', `orgs/${orgId}/hr-thing`, { user: STAFF })).body.ok, 'hr');
+  assertEquals((await call('POST', `orgs/${orgId}/consent`, { user: OWNER })).status, 200);
+  assertEquals((await call('GET', 'orgs/not-a-uuid', { user: OWNER })).body.code, 'org_not_found');
+  assertEquals((await call('GET', 'orgs/%E0%A4%A', { user: OWNER })).status, 404);
+});
+
 Deno.test('consent is recorded once', async () => {
   const { db, call } = setup();
   const orgId = await createOrg(call);

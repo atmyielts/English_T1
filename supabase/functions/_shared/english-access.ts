@@ -3,12 +3,18 @@ type EnglishProductMap = Record<string, { productId?: string | null }>;
 /** "All of English": one product that unlocks every skill (seeded by 20261025160000). */
 export const ENGLISH_BUNDLE_PRODUCT_ID = "3a7bd983-58c5-4c75-b5f8-5ac46c94a0fa";
 
-/** Product ids the learner effectively holds: the bundle stands for every skill product. */
+/** A learning seat from an employer (Schood Company English, seeded by 20261031100000): not sold, unlocks every skill. */
+export const ENGLISH_COMPANY_SEAT_PRODUCT_ID = "c0a1e5d2-7b3f-4a86-9c14-5e2f8d6b1a07";
+
+/** Products that stand for every English skill. Entitlement queries must ask for these too. */
+export const ENGLISH_ALL_SKILLS_PRODUCT_IDS = [ENGLISH_BUNDLE_PRODUCT_ID, ENGLISH_COMPANY_SEAT_PRODUCT_ID];
+
+/** Product ids the learner effectively holds: the bundle or a company seat stands for every skill product. */
 export const expandBundleEntitlements = (
   entitledIds: string[],
   skillProductIds: string[],
 ): string[] =>
-  entitledIds.includes(ENGLISH_BUNDLE_PRODUCT_ID)
+  entitledIds.some((id) => ENGLISH_ALL_SKILLS_PRODUCT_IDS.includes(id))
     ? [...new Set([...entitledIds, ...skillProductIds])]
     : entitledIds;
 
@@ -139,7 +145,7 @@ export const requireEnglishSuiteAccess = async (
     .eq("tenant_id", tenantId)
     .eq("resource_type", "product")
     .eq("is_active", true)
-    .in("resource_id", [...productIds, ENGLISH_BUNDLE_PRODUCT_ID]);
+    .in("resource_id", [...productIds, ...ENGLISH_ALL_SKILLS_PRODUCT_IDS]);
   if (entitlementError) {
     throw new Error(
       `Failed to resolve English entitlements: ${

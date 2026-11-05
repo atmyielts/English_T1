@@ -79,9 +79,12 @@ export function meetsMinimum(attempt: Pick<AttemptRow, 'overall_level'>, assessm
   return levelIndex(attempt.overall_level) >= levelIndex(assessment.min_level);
 }
 
+/** Names the current link without revealing it, so a browser can tell whether the link it remembers is still the live one. */
+export const linkId = (hash: string | null) => hash ? hash.slice(0, 12) : null;
+
 export function assessmentView(row: AssessmentRow) {
   const { link_token_hash, ...rest } = row;
-  return { ...rest, settings: settingsOf(row), has_link: Boolean(link_token_hash) };
+  return { ...rest, settings: settingsOf(row), has_link: Boolean(link_token_hash), link_id: linkId(link_token_hash) };
 }
 
 export function stats(attempts: Pick<AttemptRow, 'status' | 'overall_level' | 'overall_score' | 'decision'>[], assessment: Pick<AssessmentRow, 'min_level'>) {

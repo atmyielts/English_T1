@@ -11,7 +11,7 @@ export interface Assessment {
   id: string; org_id: string; kind: Kind; title: string; job_role: string; skills: Skill[]; min_level: Level | null;
   time_limit_minutes: number; status: 'draft' | 'open' | 'closed'; max_attempts: number | null; closes_at: string | null;
   settings: { show_level?: boolean; audience?: { type: 'all' | 'departments' | 'members'; ids: string[] }; retest_days?: number | null; member_role?: boolean };
-  created_at: string; has_link: boolean; stats?: Stats;
+  created_at: string; has_link: boolean; link_id: string | null; stats?: Stats;
   progress?: { audience: number; done: number; in_progress: number; levels: Partial<Record<Level, number>> };
 }
 

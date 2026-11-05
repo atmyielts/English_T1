@@ -62,6 +62,12 @@ create table if not exists public.company_glossary_terms (
 );
 create unique index if not exists company_glossary_terms_term_key on public.company_glossary_terms (org_id, lower(btrim(term)));
 
+-- A lesson check that is not a first completion: its minutes count, but it is
+-- not a lesson and earns no points, so KPIs and challenges count finished lessons.
+alter table public.company_activity drop constraint if exists company_activity_kind_check;
+alter table public.company_activity add constraint company_activity_kind_check
+  check (kind in ('lesson','lesson_retry','roleplay','writing','test','glossary','session','english'));
+
 -- Lookups the training plan and My English make often.
 create index if not exists company_lesson_progress_member_idx on public.company_lesson_progress (member_id, updated_at desc);
 create index if not exists company_assignments_member_idx on public.company_assignments (member_id) where member_id is not null;
@@ -86,7 +92,8 @@ end
 $$;
 
 -- Deletes writing drafts older than 90 days (the app says so on the writing page)
--- and role-plays nobody finished within a day. Returns how many drafts went.
+-- and role-plays nobody finished within a day, logging the practice in those that
+-- had replies (as the finish route would). Returns how many drafts went.
 -- The function also purges per workspace on every new check; this catches the rest.
 create or replace function public.company_purge_training_drafts()
 returns integer
@@ -99,9 +106,18 @@ declare
 begin
   delete from public.company_writing_checks where created_at < now() - interval '90 days';
   get diagnostics v_drafts = row_count;
-  update public.company_roleplay_sessions
-     set status = 'ended', ended_at = coalesce(ended_at, now())
-   where status = 'active' and created_at < now() - interval '1 day';
+  -- updated_at here is still the time of the last reply, and the activity is dated then too.
+  with closed as (
+    update public.company_roleplay_sessions
+       set status = 'ended', ended_at = coalesce(ended_at, now()),
+           minutes = least(30, greatest(1, round(extract(epoch from updated_at - created_at) / 60)::integer))
+     where status = 'active' and created_at < now() - interval '1 day'
+    returning org_id, member_id, user_id, scenario_code, learner_turns, minutes, created_at
+  )
+  insert into public.company_activity (org_id, member_id, user_id, kind, minutes, points, ref, created_at)
+  select org_id, member_id, user_id, 'roleplay', minutes, 5 + learner_turns * 2, scenario_code, created_at + make_interval(mins => minutes)
+    from closed
+   where learner_turns > 0;
   return v_drafts;
 end;
 $$;

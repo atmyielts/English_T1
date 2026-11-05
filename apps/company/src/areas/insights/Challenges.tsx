@@ -47,7 +47,7 @@ export function Challenges() {
 
 function StandingsView({ challenge, departments, onEdit, onChanged }: { challenge: Challenge; departments: Department[]; onEdit: () => void; onChanged: () => void }) {
   const t = useAppT(), f = useFormat(), problem = useErrorText();
-  const { org, lead } = useWorkspace();
+  const { org, lead, member } = useWorkspace();
   const { data, error, loading, reload } = useApi<Standings>(`orgs/${org.id}/challenges/${challenge.id}`);
   const [busy, setBusy] = useState(false), [actionError, setActionError] = useState('');
   const unit = (value: number) => challenge.metric === 'minutes' ? f.minutes(value) : t(`insights.metricValue.${challenge.metric}` as AppKey, { count: value });
@@ -89,7 +89,7 @@ function StandingsView({ challenge, departments, onEdit, onChanged }: { challeng
           {!data.me.sharing ? <p>{t('insights.challenges.meNotSharing')}</p>
             : !data.me.participating ? <p>{t('insights.challenges.meNotIn')}</p>
             : data.me.rank ? <p><strong>{t('insights.challenges.meRank', { rank: data.me.rank, count: data.active })}</strong> · {unit(data.me.value)}</p>
-            : <p>{challenge.status === 'upcoming' ? t('insights.challenges.meSoon') : t('insights.challenges.meStart')}</p>}
+            : <p>{challenge.status === 'upcoming' ? t('insights.challenges.meSoon') : member?.seat ? t('insights.challenges.meStart') : t('insights.challenges.meNoSeat')}</p>}
         </div>}
         <ul className="insights-movement">
           <li><strong>{f.num(data.participants)}</strong><span>{t('insights.challenges.participants')}</span></li>

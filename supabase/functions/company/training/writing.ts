@@ -2,11 +2,12 @@
 // message and gets a corrected version, tone notes and explanations in their
 // language. Checks are kept for RETENTION_DAYS and then deleted (here on every
 // new check, and by public.company_purge_training_drafts() in the database).
+// A new check needs a learning seat; a learner's past checks stay theirs without one.
 import { consumeAi, logActivity } from '../core.ts';
 import { check, CompanyError, type Ctx, type Route } from '../types.ts';
 import { obj, text, uuid } from '../util.ts';
 import type { WritingTemplate } from './content.ts';
-import { aiList, aiScore, aiText, daysAgo, feedbackLocale, LOCALE_NAME, learner, type Locale } from './shared.ts';
+import { aiList, aiScore, aiText, canLearn, daysAgo, feedbackLocale, LOCALE_NAME, learner, requireSeat, type Locale } from './shared.ts';
 import { findTemplate, TRACKS } from './tracks/index.ts';
 
 export const RETENTION_DAYS = 90;
@@ -86,6 +87,7 @@ export const routes: Route[] = [
         : [];
       return {
         recommended: ctx.member?.job_role ?? 'general',
+        can_learn: canLearn(ctx),
         retention_days: RETENTION_DAYS, max_length: MAX_DRAFT,
         tracks: TRACKS.map((track) => ({
           code: track.code, title: track.title,
@@ -99,6 +101,7 @@ export const routes: Route[] = [
     method: 'POST', path: 'orgs/:org/writing/check', access: 'org',
     async handle(ctx, _params, body) {
       const member = learner(ctx);
+      requireSeat(ctx);
       const input = obj(body);
       const draft = text(input.text, 'text', { min: 20, max: MAX_DRAFT })!;
       const code = input.template === undefined || input.template === null || input.template === '' ? null : String(input.template);

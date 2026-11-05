@@ -2,6 +2,7 @@ import { assert, assertEquals, assertExists, assertStringIncludes } from 'jsr:@s
 import { routes as insights } from './insights.ts';
 import { csvCell, parseRange, summarize, weekOf } from './insights/common.ts';
 import { FakeDb, testHandler } from './testing.ts';
+import { findLesson } from './training/tracks/index.ts';
 import type { AiCall } from './types.ts';
 
 const ORG = '7a0f5c1e-0000-4000-8000-0000000000c1';
@@ -386,4 +387,110 @@ Deno.test('someone first tested inside the period still counts as moving up on a
   assertEquals([report.body.movement.up, report.body.movement.first], [2, 1]);
   assertEquals(report.body.improvers.map((row: { name: string }) => row.name).sort(), ['Anna Lee', 'Boris Popov']);
   assertEquals(report.body.departments[0].moved_up, 2);
+});
+
+Deno.test('a profile lists company-wide assignments for the people they apply to', async () => {
+  const { db, call } = setup();
+  db.rows('company_assignments').push(
+    { id: 'as3', org_id: ORG, track_code: 'hospitality', target_level: null, due_date: '2026-10-05', department_id: null, member_id: null, note: null, status: 'active', created_by: null, created_at: ago(20) },
+    { id: 'as4', org_id: ORG, track_code: 'sales', target_level: null, due_date: null, department_id: null, member_id: member(6), note: null, status: 'active', created_by: null, created_at: ago(20) },
+  );
+  const anna = await call('GET', `orgs/${ORG}/members/${member(4)}/profile`, { user: ADMIN });
+  const everyone = anna.body.assignments.find((row: { id: string }) => row.id === 'as3');
+  assertEquals([everyone.scope, everyone.overdue, everyone.lessons_done], ['all', true, 1]);
+  assert(!anna.body.assignments.some((row: { id: string }) => row.id === 'as4'), 'another person\'s assignment stays off');
+  assertEquals(anna.body.assignments.find((row: { id: string }) => row.id === 'as1').scope, 'department');
+
+  const chen = await call('GET', `orgs/${ORG}/members/${member(6)}/profile`, { user: ADMIN });
+  assertEquals(chen.body.assignments.find((row: { id: string }) => row.id === 'as4').scope, 'person');
+  assertEquals(chen.body.assignments.find((row: { id: string }) => row.id === 'as3').scope, 'all');
+  // Same rule as My English: company-wide assignments are for employees and managers.
+  const owner = await call('GET', `orgs/${ORG}/members/${member(1)}/profile`, { user: ADMIN });
+  assertEquals(owner.body.assignments, []);
+});
+
+Deno.test('recent lessons on a profile carry the lesson title in every language', async () => {
+  const { db, call } = setup();
+  db.rows('company_lesson_progress').push({ id: 'lp3', org_id: ORG, member_id: member(4), track_code: 'hospitality', lesson_code: 'hospitality-f1', status: 'started', score: null, minutes: 5, completed_at: null, updated_at: ago(0) });
+  const anna = await call('GET', `orgs/${ORG}/members/${member(4)}/profile`, { user: ADMIN });
+  const titles = new Map(anna.body.learning.recent_lessons.map((row: { lesson_code: string; title: unknown }) => [row.lesson_code, row.title]));
+  assertEquals(titles.get('hospitality-f1'), findLesson('hospitality-f1')!.lesson.title);
+  assertExists(findLesson('hospitality-f1')!.lesson.title.uz);
+  assertEquals(titles.get('h-1'), null); // A lesson no longer in the catalog falls back to its code on the page.
+});
+
+Deno.test('the attendance sheet keeps invited people lists with HR', async () => {
+  const { call } = setup();
+  const past = new Date(NOW.getTime() - 2 * 3_600_000).toISOString();
+  const session = await call('POST', `orgs/${ORG}/sessions`, { user: ADMIN, body: { title: 'Mixed group', starts_at: past, member_ids: [member(4), member(6)] } });
+  const path = `orgs/${ORG}/sessions/${session.body.session.id}/attendance`;
+  assertEquals((await call('GET', path, { user: ADMIN })).body.session.member_ids, [member(4), member(6)]);
+  const manager = await call('GET', path, { user: MANAGER });
+  assertEquals(manager.status, 200);
+  assertEquals(manager.body.session.member_ids, []);
+  // The manager's own people are still listed, and nobody from another department.
+  assertEquals(manager.body.people.map((row: { name: string; invited: boolean }) => [row.name, row.invited]), [['Anna Lee', true]]);
+});
+
+Deno.test('a suspended workspace can read its report but not spend AI on a summary', async () => {
+  let aiCalls = 0, consumed = 0;
+  const ai: AiCall = <T>() => {
+    aiCalls += 1;
+    return Promise.resolve({ status: 'ok' as const, data: { headline: 'Paused', paragraphs: [], actions: [] } as unknown as T });
+  };
+  const { db, call } = setup({ ai });
+  db.rpcs.company_consume_ai = () => { consumed += 1; return true; };
+  db.rows('company_orgs')[0].status = 'suspended';
+  for (const user of [ADMIN, MANAGER]) {
+    const refused = await call('POST', `orgs/${ORG}/reports/summary`, { user, body: { from: '2026-10-01', to: '2026-10-20', locale: 'en' } });
+    assertEquals([refused.status, refused.body.code], [403, 'org_suspended']);
+  }
+  assertEquals([aiCalls, consumed], [0, 0]);
+  assertEquals((await call('GET', `orgs/${ORG}/reports/monthly?from=2026-10-01&to=2026-10-20`, { user: ADMIN })).status, 200);
+});
+
+Deno.test('a manager with no department can open their own profile and no one else\'s', async () => {
+  const { db, call } = setup();
+  db.rows('company_members').find((row) => row.id === member(3))!.department_id = null;
+  const own = await call('GET', `orgs/${ORG}/members/${member(3)}/profile`, { user: MANAGER });
+  assertEquals([own.status, own.body.self], [200, true]);
+  assertEquals((await call('GET', `orgs/${ORG}/members/${member(4)}/profile`, { user: MANAGER })).body.code, 'member_not_found');
+  // Team-wide pages stay empty: having no department still means having no team.
+  const overview = await call('GET', `orgs/${ORG}/insights/overview`, { user: MANAGER });
+  assertEquals([overview.body.kpis.people, overview.body.scope.unassigned], [0, true]);
+});
+
+Deno.test('the seat meter counts invited people who hold a seat', async () => {
+  const { db, call } = setup();
+  const org = db.rows('company_orgs')[0];
+  org.status = 'active';
+  org.seats_limit = 4;
+  // Elena, Anna and Boris are active with seats; the fourth seat goes to someone still invited.
+  db.rows('company_members').find((row) => row.id === member(7))!.seat = true;
+  const hr = await call('GET', `orgs/${ORG}/insights/overview`, { user: ADMIN });
+  assertEquals([hr.body.usage.seats_used, hr.body.usage.seats_limit, hr.body.kpis.seats], [4, 4, 4]);
+  assert(!hr.body.todo.some((item: { kind: string }) => item.kind === 'seats_free'), 'no seat is free to give');
+  org.seats_limit = 5;
+  const room = await call('GET', `orgs/${ORG}/insights/overview`, { user: ADMIN });
+  assertEquals(room.body.todo.find((item: { kind: string }) => item.kind === 'seats_free').count, 1); // Chen is the only learner without one.
+});
+
+Deno.test('a candidate counts as graded in the month of grading, whenever they started', async () => {
+  const { db, call } = setup();
+  db.rows('company_attempts').push(
+    { id: 'c1', org_id: ORG, assessment_id: 'a0000000-0000-4000-8000-000000000002', member_id: null, candidate_name: 'Late grade', candidate_email: 'late@mail.example', status: 'graded', overall_level: 'b1', overall_score: 56, decision: null, skill_results: {}, started_at: '2026-09-30T10:00:00Z', graded_at: '2026-10-03T10:00:00Z' },
+    { id: 'c2', org_id: ORG, assessment_id: 'a0000000-0000-4000-8000-000000000002', member_id: null, candidate_name: 'Waiting', candidate_email: 'wait@mail.example', status: 'submitted', overall_level: null, overall_score: null, decision: null, skill_results: {}, started_at: '2026-10-02T10:00:00Z', graded_at: null },
+    { id: 'c3', org_id: OTHER_ORG, assessment_id: 'a0000000-0000-4000-8000-000000000002', member_id: null, candidate_name: 'Other org', candidate_email: 'other@mail.example', status: 'graded', overall_level: 'b1', overall_score: 56, decision: null, skill_results: {}, started_at: '2026-10-02T10:00:00Z', graded_at: '2026-10-03T10:00:00Z' },
+  );
+  const summaryFor = async (from: string, to: string) => (await call('GET', `orgs/${ORG}/reports/monthly?from=${from}&to=${to}`, { user: ADMIN })).body.summary;
+  const october = await summaryFor('2026-10-01', '2026-10-20');
+  assertEquals([october.tests_graded, october.staff_tests], [4, 1]); // Anna, Kamola, Sardor and the late grade.
+  assertEquals((await summaryFor('2026-09-01', '2026-09-30')).tests_graded, 0);
+  // Anna and the late grade fall before the 15th ends; Kamola and Sardor come after it.
+  assertEquals((await summaryFor('2026-10-01', '2026-10-15')).tests_graded, 2);
+  // The funnel still goes by when candidates started.
+  const september = await call('GET', `orgs/${ORG}/reports/monthly?from=2026-09-01&to=2026-09-30`, { user: ADMIN });
+  assertEquals(september.body.hiring.started, 1);
+  // Managers do not see hiring, so their count is staff tests only.
+  assertEquals((await call('GET', `orgs/${ORG}/reports/monthly?from=2026-10-01&to=2026-10-20`, { user: MANAGER })).body.summary.tests_graded, 1);
 });

@@ -2,6 +2,7 @@ import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
 import {
   consumeEnglishAiDailyQuota,
   ENGLISH_BUNDLE_PRODUCT_ID,
+  ENGLISH_COMPANY_SEAT_PRODUCT_ID,
   expandBundleEntitlements,
   isActiveAccessWindow,
   parseEnglishAiDailyLimit,
@@ -131,6 +132,14 @@ Deno.test("The All of English bundle unlocks every skill product", async () => {
   );
   assertEquals(expired.allowed, false);
   assertEquals(expandBundleEntitlements(["product-1"], ["product-1", "product-2"]), ["product-1"]);
+  // A company seat is its own product and unlocks every skill the same way.
+  const seat = await requireEnglishSuiteAccess(
+    accessClient({ resourceId: ENGLISH_COMPANY_SEAT_PRODUCT_ID }),
+    "user-1",
+    products,
+  );
+  assertEquals(seat.allowed, true);
+  assertEquals(seat.entitlementProductIds.sort(), [ENGLISH_COMPANY_SEAT_PRODUCT_ID, "product-1", "product-2"].sort());
 });
 
 Deno.test("English suite access permits platform admins without tenant lookup", async () => {

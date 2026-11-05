@@ -25,6 +25,8 @@ export const SKILLS: Skill[] = [
 
 /** "All of English": one plan that unlocks every skill. Same id as the server's ENGLISH_BUNDLE_PRODUCT_ID. */
 export const ENGLISH_BUNDLE = { productSlug: 'english-all', productId: '3a7bd983-58c5-4c75-b5f8-5ac46c94a0fa' } as const;
+/** A learning seat from an employer (Schood Company English): not sold, unlocks every skill. Same id as the server's ENGLISH_COMPANY_SEAT_PRODUCT_ID. */
+export const ENGLISH_COMPANY_SEAT = { productSlug: 'english-company-seat', productId: 'c0a1e5d2-7b3f-4a86-9c14-5e2f8d6b1a07' } as const;
 
 export const skillByKey = (key: string | null | undefined): Skill | null =>
   SKILLS.find((skill) => skill.key === key) ?? null;

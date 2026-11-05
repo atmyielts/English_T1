@@ -10,7 +10,7 @@ import { useProblem } from '../people/ui.tsx';
 
 const INTERESTS = ['hiring', 'placement', 'training', 'reports'] as const;
 
-export function DemoForm() {
+export function DemoForm({ selfServe = true }: { selfServe?: boolean }) {
   const t = useAppT(), problem = useProblem();
   const { locale } = useI18n();
   const started = useRef(Date.now());
@@ -39,8 +39,8 @@ export function DemoForm() {
   }
   if (sent) return <div className="site-form-sent" role="status">
     <h3>{t('site.demo.sent.title')}</h3>
-    <p>{t('site.demo.sent.body')}</p>
-    <p><Link className="button-link" to="/start">{t('site.cta.pilot')}</Link></p>
+    <p>{t(selfServe ? 'site.demo.sent.body' : 'site.demo.sent.bodyClosed')}</p>
+    {selfServe && <p><Link className="button-link" to="/start">{t('site.cta.pilot')}</Link></p>}
   </div>;
   const invalid = (name: string) => field === name ? { 'aria-invalid': true as const, 'aria-describedby': 'site-form-error' } : {};
   return <form className="site-form" onSubmit={submit} noValidate={false}>

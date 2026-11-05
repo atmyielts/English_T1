@@ -5,6 +5,8 @@ import { LEVEL_LABEL, isLevel } from '../../../../../packages/company-core/src/m
 import { useI18n } from '../../../../../packages/service-i18n/src/i18n.tsx';
 import { api } from '../../api.ts';
 import { useAppT, useErrorText, type AppKey } from '../../i18n/index.ts';
+import { Link } from '../../router.tsx';
+import { useWorkspace } from '../../session.tsx';
 import { canSpeak, speak, stopSpeaking } from './speech.ts';
 
 export interface Localized { en: string; ru: string; uz: string }
@@ -42,6 +44,31 @@ export function useLoad<T>(path: string | null) {
 export function Loading({ error }: { error: string }) {
   const t = useAppT();
   return error ? <p className="error" role="alert">{error}</p> : <p role="status">{t('app.loading')}</p>;
+}
+
+/** The server refused because the caller has no working learning seat. */
+export const needsSeat = (cause: unknown) => (cause as { code?: string } | null)?.code === 'seat_required';
+
+/** Shown instead of lessons and AI practice without a seat: what it opens and who arranges it. */
+export function SeatLocked({ browse = false }: { browse?: boolean }) {
+  const t = useAppT();
+  const { org, hr } = useWorkspace();
+  return <section className="training-card training-locked" aria-labelledby="training-locked">
+    <h2 id="training-locked">{t('training.locked.title')}</h2>
+    <p>{t('training.locked.lead')}</p>
+    <ul>
+      <li>{t('training.locked.lessons')}</li>
+      <li>{t('training.locked.roleplay')}</li>
+      <li>{t('training.locked.writing')}</li>
+      <li>{t('training.locked.glossary')}</li>
+      <li>{t('training.locked.english')}</li>
+    </ul>
+    <p>{t(hr ? 'training.locked.hr' : 'training.locked.ask')}</p>
+    {(hr || browse) && <p className="company-actions">
+      {hr && <Link className="button-link" to={`/w/${org.id}/people`}>{t('training.locked.people')}</Link>}
+      {browse && <Link className="button-link quiet" to={`/w/${org.id}/learn`}>{t('training.locked.browse')}</Link>}
+    </p>}
+  </section>;
 }
 
 export function LevelBadge({ level }: { level: string | null | undefined }) {

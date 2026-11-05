@@ -146,7 +146,11 @@ export const hiringEn = {
   'hiring.report.pendingAi': 'AI grading was not available. Try again later or enter a score yourself.',
   'hiring.report.pendingLimit': 'Your workspace reached today’s AI limit. Try again tomorrow or enter a score yourself.',
   'hiring.report.gradeAgain': 'Grade with AI',
+  'hiring.report.pendingNotTried': 'This test closed when its time ran out and has not been graded yet. Grade it now or enter a score yourself.',
   'hiring.report.gradedNow': 'Graded.',
+  'hiring.report.accessTitle': 'Candidate lost access?',
+  'hiring.report.accessLead': 'If the candidate changed device or lost the page, make a private link that continues this attempt. Their old session stops working.',
+  'hiring.report.accessMake': 'Make an access link',
   'hiring.report.manualScore': '{skill} score, 0–100',
   'hiring.report.manualSave': 'Save score',
   'hiring.report.override': 'Change this grade',
@@ -355,6 +359,12 @@ export const hiringEn = {
   'hiring.candidate.expiredTitle': 'Time is over',
   'hiring.candidate.expired': 'The time ran out before any answers were saved.',
   'hiring.candidate.closeNote': 'You can close this page now.',
+  'hiring.candidate.resumeFailedTitle': 'We could not reopen your test',
+  'hiring.candidate.resumeFailedLead': 'Your saved answers are safe. Check your connection and try again.',
+  'hiring.candidate.retry': 'Try again',
+  'hiring.candidate.startDifferent': 'Start as a different person',
+  'hiring.candidate.startAgain': 'Start again',
+  'hiring.candidate.showResult': 'Show the result',
   'hiring.candidate.poweredBy': 'English test by Schood',
 
   'hiring.cert.title': 'English level certificate',
@@ -383,5 +393,7 @@ export const hiringEn = {
   'hiring.error.attempt_finished': 'This test has already been submitted.',
   'hiring.error.attempt_not_submitted': 'The test has not been submitted yet.',
   'hiring.error.certificate_not_found': 'No certificate has this code.',
+  'hiring.error.cannot_start': 'We could not start a test with these details. If you already started, use your original link or ask the company for a new one.',
+  'hiring.error.attempt_exists': 'This test has already been started. Reload the page.',
 } as const;
 export type HiringKey = keyof typeof hiringEn;

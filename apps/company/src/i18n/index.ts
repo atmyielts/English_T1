@@ -40,13 +40,19 @@ export function useAppT(): AppTranslate {
   return useCallback<AppTranslate>((key, params) => format(catalogs as Catalogs<string>, locale, key, params), [locale]);
 }
 
-/** Turns an API error into a sentence: `error.<code>` when known, otherwise the server text. */
+const ERROR_PREFIXES = ['error.', 'people.error.', 'staff.error.', 'site.error.', 'hiring.error.', 'training.error.', 'insights.error.'];
+
+/** Turns an API error into a sentence: `error.<code>` or `<area>.error.<code>` when known, otherwise the server text. */
 export function useErrorText() {
   const t = useAppT();
   return (cause: unknown): string => {
     const code = (cause as { code?: string })?.code;
-    const key = `error.${code}` as AppKey;
-    if (code && key in en) return t(key, { field: String((cause as { field?: string }).field ?? '') });
+    const key = code ? ERROR_PREFIXES.map((prefix) => `${prefix}${code}` as AppKey).find((candidate) => candidate in en) : undefined;
+    if (key) {
+      const details = (cause as { details?: Record<string, unknown> }).details ?? {};
+      const params = Object.fromEntries(Object.entries(details).filter(([, value]) => typeof value === 'string' || typeof value === 'number')) as Params;
+      return t(key, { ...params, field: String((cause as { field?: string }).field ?? '') });
+    }
     if (cause instanceof TypeError) return t('error.network');
     return cause instanceof Error && cause.message ? cause.message : t('error.internal_error');
   };

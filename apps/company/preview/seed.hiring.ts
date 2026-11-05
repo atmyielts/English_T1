@@ -170,7 +170,7 @@ export function seed(db: FakeDb, world: World) {
     time_limit_minutes: 59, status: 'open', link_token_hash: LINK_HASH, max_attempts: 100, closes_at: at(-21), settings: { show_level: true },
     created_by: hr, created_at: at(9), updated_at: at(9),
   });
-  try { localStorage.setItem(`company-hiring-link:${testId}`, `${location.origin}/t/${PREVIEW_LINK}`); } catch { /* preview only */ }
+  try { localStorage.setItem(`company-hiring-link:${testId}`, JSON.stringify({ link: `${location.origin}/t/${PREVIEW_LINK}`, link_id: LINK_HASH.slice(0, 12) })); } catch { /* preview only */ }
 
   const candidates: { name: string; email: string; phone: string; accuracy: number; tier: Tier; state: 'graded' | 'pending' | 'started' | 'expired'; decision?: string; notes?: string; days: number; integrity?: Record<string, unknown>; code?: string }[] = [
     { name: 'Madina Yuldasheva', email: 'madina.yu@mail.uz', phone: '+998 90 412 33 18', accuracy: 0.93, tier: 'strong', state: 'graded', decision: 'shortlist', notes: 'Сильная устная часть. Пригласить на интервью в четверг.', days: 6, code: 'SRH7K2M9QX', integrity: { tab_hidden: 0, paste: 0, copy: 0, fullscreen_exit: 0 } },

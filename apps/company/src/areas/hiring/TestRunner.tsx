@@ -6,6 +6,7 @@
 // with every save.
 import React, { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useAppT, type AppKey } from '../../i18n/index.ts';
+import { SaveGate, timeUpSubmitDue } from './flow.ts';
 import { canRecognize, canSpeak, listen, speakLines, stopSpeaking, type Listener } from './speech.ts';
 import type { AnswerValue, AttemptView, Choice, PublicSection, SpokenAnswer } from './types.ts';
 import { clock, skillText, useHiringError } from './ui.tsx';
@@ -14,7 +15,11 @@ export interface IntegrityState {
   tab_hidden: number; paste: number; copy: number; fullscreen_exit: number;
   section_seconds: Record<string, number>; plays: Record<string, number>;
 }
-export interface RunnerBody { answers: Record<string, AnswerValue>; integrity: IntegrityState }
+export interface RunnerBody {
+  answers: Record<string, AnswerValue>; integrity: IntegrityState;
+  /** Next only: the section and stage on screen, so a retry after a lost response cannot move twice. */
+  at?: { current: number; stage: number | null };
+}
 export interface Transport {
   /** Autosave; returns a view only when the attempt has ended meanwhile. */
   save: (body: RunnerBody) => Promise<AttemptView | null>;
@@ -60,6 +65,7 @@ export function TestRunner({ initial, transport, storageKey, onDone }: { initial
   const [tick, setTick] = useState(() => Date.now());
   const [announce, setAnnounce] = useState('');
   const dirty = useRef(false), chain = useRef<Promise<unknown>>(Promise.resolve()), finished = useRef(false);
+  const gate = useRef(new SaveGate()), lastTimeUp = useRef(0);
   const sectionStart = useRef(Date.now());
   const heading = useRef<HTMLHeadingElement>(null);
   const offset = useMemo(() => Date.parse(view.now) - Date.now(), [view.now]);
@@ -86,7 +92,7 @@ export function TestRunner({ initial, transport, storageKey, onDone }: { initial
   }, [answers, ids, view.current, view.sections]);
 
   const save = useCallback(() => {
-    if (finished.current) return chain.current;
+    if (finished.current || gate.current.moving) return chain.current;
     const payload = body();
     dirty.current = false;
     setSaveState('saving');
@@ -107,8 +113,8 @@ export function TestRunner({ initial, transport, storageKey, onDone }: { initial
   useEffect(() => {
     store.write(draftKey, answers);
     if (!dirty.current) return;
-    const timer = setTimeout(() => void save(), 1200);
-    return () => clearTimeout(timer);
+    gate.current.schedule(() => void save(), 1200);
+    return () => gate.current.cancel();
   }, [answers, draftKey, save]);
   // Retry failed saves and keep the clock moving.
   useEffect(() => {
@@ -147,11 +153,12 @@ export function TestRunner({ initial, transport, storageKey, onDone }: { initial
   }, [bump, save]);
 
   const move = useCallback(async (kind: 'next' | 'submit') => {
+    if (!gate.current.begin()) return;
     setBusy(true); setError(''); setConfirm(null);
     try {
       await chain.current;
       const payload = body();
-      const next = await (kind === 'next' ? transport.next(payload) : transport.submit(payload));
+      const next = await (kind === 'next' ? transport.next({ ...payload, at: { current: view.current, stage: view.section?.stage ?? null } }) : transport.submit(payload));
       integrity.current = { ...integrity.current, section_seconds: payload.integrity.section_seconds };
       store.write(integrityKey, integrity.current);
       dirty.current = false;
@@ -164,17 +171,25 @@ export function TestRunner({ initial, transport, storageKey, onDone }: { initial
       queueMicrotask(() => heading.current?.focus());
     } catch (cause) {
       setError(problem(cause));
+      // The autosave this move replaced still has to reach the server.
+      if (dirty.current) setSaveState('error');
     } finally {
+      gate.current.end();
       setBusy(false);
     }
-  }, [body, transport, integrityKey, finish, problem]);
+  }, [body, transport, integrityKey, finish, problem, view.current, view.section]);
 
-  // Time is up: submit what we have (the server accepts it during a short grace period).
   useEffect(() => {
     if (remaining === 300) setAnnounce(t('hiring.run.fiveMinutes'));
     if (remaining === 60) setAnnounce(t('hiring.run.oneMinute'));
-    if (remaining <= 0 && !busy && !finished.current) void move('submit');
-  }, [remaining <= 0, remaining === 300, remaining === 60]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [remaining === 300, remaining === 60]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Time is up: submit what we have (the server accepts it during a short grace period),
+  // once any request in flight ends, and again until it goes through.
+  useEffect(() => {
+    if (!timeUpSubmitDue({ remaining, busy, finished: finished.current, lastTry: lastTimeUp.current, now: Date.now() })) return;
+    lastTimeUp.current = Date.now();
+    void move('submit');
+  }, [remaining, busy]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const setAnswer = (id: string, value: AnswerValue) => {
     dirty.current = true;

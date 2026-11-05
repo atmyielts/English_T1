@@ -2,7 +2,7 @@
 // CSV import, edits, learning seats, removal and leaving.
 import { HR_ROLES, LEAD_ROLES } from '../../../../packages/company-core/src/mod.ts';
 import { syncAccess, usage } from '../core.ts';
-import { MEMBER_COLUMNS } from '../handler.ts';
+import { contractEnded, MEMBER_COLUMNS } from '../handler.ts';
 import { check, CompanyError, type Ctx, type MemberRow, type Route } from '../types.ts';
 import { obj, text, email as readEmail } from '../util.ts';
 import { readImport, MAX_IMPORT_ROWS } from './csv.ts';
@@ -31,6 +31,8 @@ async function applyEdit(ctx: Ctx, member: MemberRow, input: Record<string, unkn
   if ('email' in input) {
     if (member.status !== 'invited') throw new CompanyError('email_locked', 'The email of someone who has joined comes from their Schood account.', 409);
     const next = readEmail(input.email, 'email', true);
+    // A pending owner's address decides who can become owner by joining from a team link.
+    if (next !== (member.email ?? null) && member.role === 'owner' && !actsAsOwner(ctx)) throw new CompanyError('owner_protected', 'Only an owner can change owners.', 403);
     if (next && next !== member.email) {
       const taken = check<{ id: string }[]>(await ctx.db.from('company_members').select('id').eq('org_id', orgId).eq('email', next).neq('status', 'removed'));
       if (taken.some((row) => row.id !== member.id)) throw new CompanyError('member_exists', 'Someone with this email is already in the workspace.', 409, { field: 'email' });
@@ -135,7 +137,7 @@ export const memberRoutes: Route[] = [
         guardError(cause);
       }
       // A demotion raced with another one: put it back rather than leave no owner.
-      if (patch.role && member.role === 'owner' && !(await assertOwnerStill(ctx, member))) {
+      if (patch.role && member.role === 'owner' && member.status === 'active' && !(await assertOwnerStill(ctx, member))) {
         check(await ctx.db.from('company_members').update({ role: 'owner' }).eq('id', member.id));
         throw new CompanyError('last_owner', 'A workspace needs at least one owner. Make someone else an owner first.', 409);
       }
@@ -159,7 +161,8 @@ export const memberRoutes: Route[] = [
       if (member.seat === input.seat) return { member, usage: await usage(ctx.db, org) };
       if (input.seat) {
         if (org.status !== 'active') throw new CompanyError('seats_inactive', 'Learning seats are available once Schood activates your agreement.', 409, { status: org.status });
-        if (org.contract_ends_at && new Date(org.contract_ends_at).getTime() <= ctx.now().getTime()) throw new CompanyError('contract_ended', 'Your agreement has ended. Contact Schood to renew it.', 409);
+        // The handler already stops HR once the contract has ended, so only Schood staff get here.
+        if (contractEnded(org, ctx.now())) throw new CompanyError('seats_contract_ended', 'This agreement has ended, so learning seats cannot be turned on. Extend the contract first.', 409);
         if (await seatCount(ctx.db, org.id) >= org.seats_limit) throw new CompanyError('seats_full', 'All learning seats are in use.', 409, { limit: org.seats_limit });
       }
       const updated = check<MemberRow>(await ctx.db.from('company_members').update({ seat: input.seat }).eq('id', member.id).select(MEMBER_COLUMNS).single());

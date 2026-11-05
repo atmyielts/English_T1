@@ -71,6 +71,21 @@ begin
   end;
   assert blocked, 'token hash unique';
 
+  -- A removed row keeps its email while HR invites that address again. Bringing the old
+  -- row back only works once the new row is out of the way (people/join.ts, bringBack).
+  insert into public.company_members(org_id, user_id, email, role, status) values (org, second_owner, 'back@example.com', 'employee', 'removed') returning id into other_row;
+  insert into public.company_members(org_id, email, role, status) values (org, 'BACK@example.com', 'manager', 'invited') returning id into department;
+  blocked := false;
+  begin
+    update public.company_members set status = 'active' where id = other_row;
+  exception when unique_violation then
+    blocked := true;
+  end;
+  assert blocked, 'two live rows cannot share an email';
+  update public.company_members set status = 'removed', seat = false where id = department;
+  update public.company_members set status = 'active', role = 'manager' where id = other_row;
+  assert (select status from public.company_members where id = other_row) = 'active', 'old row back after the new one steps aside';
+
   -- Demo requests carry a job title, interests and a follow-up date.
   insert into public.company_leads(name, company, phone, job_title, interests, follow_up_at, ip_hash)
     values ('Dilnoza', 'Silk Road Hotels', '+998 90 000 00 00', 'HR director', array['hiring','training'], current_date + 3, 'abc');

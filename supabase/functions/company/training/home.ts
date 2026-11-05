@@ -1,12 +1,14 @@
 // My English: one call for the learner's home page — level and target, what is
 // assigned, where to continue, this week's minutes and lessons, certificates.
 // Tests to take come from the hiring area (GET orgs/:org/my/tests), not from here.
+// Open to every member; without a learning seat it offers no lessons (`can_learn`).
 import { levelGap, isLevel } from '../../../../packages/company-core/src/mod.ts';
-import { check, type Route } from '../types.ts';
+import { fetchAll } from '../people/shared.ts';
+import { check, type Ctx, type MemberRow, type Route } from '../types.ts';
 import { tashkentDay } from '../util.ts';
 import { ASSIGNMENT_COLUMNS, appliesTo, type AssignmentRow } from './assignments.ts';
 import { memberProgress, type ProgressRow } from './lessons.ts';
-import { daysAgo, learner, weekStart } from './shared.ts';
+import { canLearn, daysAgo, learner, seatOpen, weekStart } from './shared.ts';
 import { findLesson, findTrack } from './tracks/index.ts';
 
 export const ENGLISH_URL = 'https://english.schood.online';
@@ -23,6 +25,16 @@ function nextIn(trackCode: string, progress: ProgressRow[]) {
   return lesson ? lessonRef(lesson.code) : null;
 }
 
+/** Assignments for this member: their own rows, then whatever is set for a department or everyone. */
+async function activeAssignments(ctx: Ctx, member: MemberRow): Promise<AssignmentRow[]> {
+  const active = () => ctx.db.from('company_assignments').select(ASSIGNMENT_COLUMNS).eq('org_id', ctx.org!.id).eq('status', 'active');
+  const [own, groups] = await Promise.all([
+    fetchAll<AssignmentRow>(() => active().eq('member_id', member.id).order('id')),
+    fetchAll<AssignmentRow>(() => active().is('member_id', null).order('id')),
+  ]);
+  return [...own, ...groups];
+}
+
 export const routes: Route[] = [
   {
     method: 'GET', path: 'orgs/:org/my/home', access: 'org', allowSuspended: true,
@@ -30,7 +42,8 @@ export const routes: Route[] = [
       const member = learner(ctx);
       const now = ctx.now();
       const progress = await memberProgress(ctx, member.id);
-      const assignmentRows = check<AssignmentRow[]>(await ctx.db.from('company_assignments').select(ASSIGNMENT_COLUMNS).eq('org_id', ctx.org!.id).eq('status', 'active'));
+      const assignmentRows = await activeAssignments(ctx, member);
+      const open = canLearn(ctx);
       const today = tashkentDay(now);
       const assignments = assignmentRows.filter((row) => appliesTo(row, member)).map((row) => {
         const track = row.track_code ? findTrack(row.track_code) : undefined;
@@ -40,14 +53,14 @@ export const routes: Route[] = [
           lessons_done: done, lessons_total: track?.lessons.length ?? 0,
           meets_target: row.target_level ? levelGap(isLevel(member.level) ? member.level : null, row.target_level) === 0 && member.level !== null : null,
           overdue: row.due_date !== null && row.due_date < today,
-          next: row.track_code ? nextIn(row.track_code, progress) : null,
+          next: open && row.track_code ? nextIn(row.track_code, progress) : null,
         };
       }).sort((a, b) => (a.due_date ?? '9999') < (b.due_date ?? '9999') ? -1 : 1);
 
       // Continue the lesson touched last; otherwise the next one from an assignment or the job-role track.
-      const open = progress.filter((row) => row.status === 'started').sort((a, b) => String(b.updated_at ?? '') < String(a.updated_at ?? '') ? -1 : 1)[0];
-      const resume = open ? lessonRef(open.lesson_code, open.data?.step ?? null) : null;
-      const suggested = resume ?? assignments.find((entry) => entry.next)?.next ?? nextIn(member.job_role, progress) ?? nextIn('general', progress);
+      const started = progress.filter((row) => row.status === 'started').sort((a, b) => String(b.updated_at ?? '') < String(a.updated_at ?? '') ? -1 : 1)[0];
+      const resume = open && started ? lessonRef(started.lesson_code, started.data?.step ?? null) : null;
+      const suggested = !open ? null : resume ?? assignments.find((entry) => entry.next)?.next ?? nextIn(member.job_role, progress) ?? nextIn('general', progress);
 
       const since = weekStart(now);
       const windowStart = daysAgo(new Date(`${tashkentDay(now)}T00:00:00+05:00`), 6);
@@ -77,7 +90,8 @@ export const routes: Route[] = [
           target_level: member.target_level, target_date: member.target_date,
           gap: member.target_level && isLevel(member.target_level) ? levelGap(isLevel(member.level) ? member.level : null, member.target_level) : null,
         },
-        english_url: member.seat && ctx.org!.status === 'active' ? ENGLISH_URL : null,
+        can_learn: open,
+        english_url: seatOpen(ctx, member) ? ENGLISH_URL : null,
         assignments,
         continue: suggested,
         resuming: Boolean(resume),

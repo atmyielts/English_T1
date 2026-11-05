@@ -198,7 +198,7 @@ export function Landing() {
             <li>{t('site.demo.point3')}</li>
           </ul>
         </div>
-        <DemoForm/>
+        <DemoForm selfServe={selfServe}/>
       </section>
     </main>
 

@@ -1,13 +1,17 @@
 // The company's own glossary: HR adds terms (one by one or from CSV), employees
 // practise them with flashcards and a quiz, which logs `glossary` activity.
+// Reading the terms and managing them need no seat; practice does.
 import { HR_ROLES } from '../../../../packages/company-core/src/mod.ts';
 import { logActivity } from '../core.ts';
 import { check, CompanyError, type Ctx, type Route } from '../types.ts';
-import { obj, oneOf, text, uuid } from '../util.ts';
-import { isHr, learner, minutesSpent } from './shared.ts';
+import { fetchAll } from '../people/shared.ts';
+import { obj, oneOf, tashkentDay, text, uuid } from '../util.ts';
+import { canLearn, isHr, learner, minutesSpent, requireSeat } from './shared.ts';
 
 export const MAX_TERMS = 2000;
 export const MAX_IMPORT_ROWS = 500;
+/** Points practice can earn in a Tashkent day. Rounds are self-reported, so more rounds must not top a challenge. */
+export const DAILY_POINTS = 40;
 
 export interface TermRow { id: string; org_id: string; term: string; meaning: string; ru: string | null; uz: string | null; example: string | null; department_id: string | null; created_at?: string; updated_at?: string }
 const COLUMNS = 'id,org_id,term,meaning,ru,uz,example,department_id,created_at,updated_at';
@@ -33,7 +37,7 @@ async function departmentIds(ctx: Ctx): Promise<Map<string, string>> {
 }
 
 async function allTerms(ctx: Ctx): Promise<TermRow[]> {
-  return check<TermRow[]>(await ctx.db.from('company_glossary_terms').select(COLUMNS).eq('org_id', ctx.org!.id).order('term'));
+  return fetchAll<TermRow>(() => ctx.db.from('company_glossary_terms').select(COLUMNS).eq('org_id', ctx.org!.id).order('term').order('id'));
 }
 
 const key = (term: string) => term.trim().toLowerCase();
@@ -96,7 +100,7 @@ export const routes: Route[] = [
       const manage = isHr(ctx);
       // Employees see the company-wide terms and their own department's.
       const visible = manage ? terms : terms.filter((row) => row.department_id === null || row.department_id === ctx.member?.department_id);
-      return { terms: visible, can_manage: manage, max_terms: MAX_TERMS };
+      return { terms: visible, can_manage: manage, can_learn: canLearn(ctx), max_terms: MAX_TERMS };
     },
   },
   {
@@ -191,6 +195,7 @@ export const routes: Route[] = [
     method: 'POST', path: 'orgs/:org/glossary/practice', access: 'org',
     async handle(ctx, _params, body) {
       const member = learner(ctx);
+      requireSeat(ctx);
       const input = obj(body);
       const mode = oneOf(input.mode, ['cards', 'quiz'] as const, 'mode');
       const minutes = minutesSpent(input.minutes, 30);
@@ -209,7 +214,9 @@ export const routes: Route[] = [
         total = Math.min(200, Math.max(1, Math.round(Number(input.seen) || 1)));
         correct = Math.min(total, Math.max(0, Math.round(Number(input.known) || 0)));
       }
-      await logActivity(ctx.db, { org_id: ctx.org!.id, member_id: member.id, user_id: ctx.user, kind: 'glossary', minutes, points: mode === 'quiz' ? correct * 2 : Math.min(40, total), ref: mode });
+      const today = check<{ points: number }[]>(await ctx.db.from('company_activity').select('points').eq('member_id', member.id).eq('kind', 'glossary').gt('points', 0).gte('created_at', new Date(`${tashkentDay(ctx.now())}T00:00:00+05:00`).toISOString()));
+      const left = Math.max(0, DAILY_POINTS - today.reduce((sum, row) => sum + row.points, 0));
+      await logActivity(ctx.db, { org_id: ctx.org!.id, member_id: member.id, user_id: ctx.user, kind: 'glossary', minutes, points: Math.min(left, mode === 'quiz' ? correct * 2 : total), ref: mode });
       return { mode, correct, total };
     },
   },

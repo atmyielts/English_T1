@@ -27,5 +27,6 @@ export const routes: AreaRoute[] = [
   { path: '/w/:org/tests', access: 'org', nav: { section: 'me', label: 'hiring.nav.myTests', order: 20 }, render: () => <MyTestsPage/> },
   { path: '/w/:org/test/:assessment', access: 'org', render: ({ assessment }) => <MemberTestPage key={assessment} assessmentId={assessment}/> },
   { path: '/t/:token', access: 'public', bare: true, render: ({ token }) => <CandidatePage key={token} token={token}/> },
+  { path: '/r/:key', access: 'public', bare: true, render: ({ key }) => <CandidatePage key={key} token={`r-${key.slice(0, 12)}`} resumeKey={key}/> },
   { path: '/v/:code', access: 'public', render: ({ code }) => <CertificatePage key={code} code={code}/> },
 ];

@@ -24,7 +24,8 @@ interface TestInfo {
 export function MyTestsPage() {
   const t = useAppT(), format = useFormat();
   const { org } = useWorkspace();
-  const { data, error } = useLoad(() => api<{ tests: MyTest[] }>(`orgs/${org.id}/my/tests`), [org.id]);
+  // Listing closes an overdue test, and that can call AI.
+  const { data, error } = useLoad(() => api<{ tests: MyTest[] }>(`orgs/${org.id}/my/tests`, { timeoutMs: 90_000 }), [org.id]);
   const certificates = useLoad(() => api<{ attempts: (MyResult & { title: string | null })[] }>(`orgs/${org.id}/my/attempts`), [org.id]);
   return <section>
     <h1>{t('hiring.my.title')}</h1>
@@ -69,8 +70,8 @@ export function MemberTestPage({ assessmentId }: { assessmentId: string }) {
     setBusy(true); setError('');
     try {
       const response = info.data?.attempt_id
-        ? await api<{ attempt: AttemptView }>(`orgs/${org.id}/my/attempts/${info.data.attempt_id}`)
-        : await api<{ attempt: AttemptView }>(`orgs/${org.id}/my/attempts`, { method: 'POST', body: { assessment_id: assessmentId } });
+        ? await api<{ attempt: AttemptView }>(`orgs/${org.id}/my/attempts/${info.data.attempt_id}`, { timeoutMs: 90_000 })
+        : await api<{ attempt: AttemptView }>(`orgs/${org.id}/my/attempts`, { method: 'POST', body: { assessment_id: assessmentId }, timeoutMs: 90_000 });
       if (response.attempt.status === 'started') setRunning(response.attempt);
       else await info.reload();
     } catch (cause) {

@@ -1,13 +1,14 @@
 // AI role-play (`company-roleplay`): the AI plays a workplace persona, the learner
 // types or speaks up to MAX_TURNS replies, then gets scored feedback in their language.
 // Every AI call is counted with consumeAi first; any AI failure leaves the session
-// as it was so the learner can retry without losing what they wrote.
+// as it was so the learner can retry without losing what they wrote. Practising
+// needs a learning seat; past sessions stay readable without one.
 import { LEVEL_LABEL, isLevel } from '../../../../packages/company-core/src/mod.ts';
 import { consumeAi, logActivity } from '../core.ts';
 import { check, CompanyError, type Ctx, type Route } from '../types.ts';
 import { obj, oneOf, text, uuid } from '../util.ts';
 import type { Scenario } from './content.ts';
-import { aiList, aiScore, aiText, feedbackLocale, LOCALE_NAME, learner, type Locale } from './shared.ts';
+import { aiList, aiScore, aiText, canLearn, feedbackLocale, LOCALE_NAME, learner, requireSeat, type Locale } from './shared.ts';
 import { findScenario, TRACKS } from './tracks/index.ts';
 
 export const MAX_TURNS = 12;
@@ -118,6 +119,7 @@ export const routes: Route[] = [
         : [];
       return {
         recommended: ctx.member?.job_role ?? 'general',
+        can_learn: canLearn(ctx),
         max_turns: MAX_TURNS,
         tracks: TRACKS.map((track) => ({ code: track.code, title: track.title, scenarios: track.scenarios.map(scenarioView) })),
         sessions: sessions.map((row) => ({ id: row.id, scenario_code: row.scenario_code, title: findScenario(row.scenario_code)?.scenario.title ?? null, status: row.status, score: row.score, learner_turns: row.learner_turns, created_at: row.created_at })),
@@ -128,6 +130,7 @@ export const routes: Route[] = [
     method: 'POST', path: 'orgs/:org/roleplay', access: 'org',
     async handle(ctx, _params, body) {
       const member = learner(ctx);
+      requireSeat(ctx);
       const input = obj(body);
       const found = findScenario(String(input.scenario ?? ''));
       if (!found) throw new CompanyError('scenario_not_found', 'No such role-play.', 404);
@@ -143,12 +146,13 @@ export const routes: Route[] = [
   {
     method: 'GET', path: 'orgs/:org/roleplay/:session', access: 'org', allowSuspended: true,
     async handle(ctx, params) {
-      return { session: sessionView(await own(ctx, params.session)) };
+      return { session: sessionView(await own(ctx, params.session)), can_learn: canLearn(ctx) };
     },
   },
   {
     method: 'POST', path: 'orgs/:org/roleplay/:session/turn', access: 'org',
     async handle(ctx, params, body) {
+      requireSeat(ctx);
       const row = await own(ctx, params.session);
       const input = obj(body);
       const said = text(input.text, 'text', { min: 1, max: 600 })!;
@@ -182,6 +186,7 @@ export const routes: Route[] = [
     // Ends the role-play (logged once) and asks for feedback; calling again retries the feedback.
     method: 'POST', path: 'orgs/:org/roleplay/:session/finish', access: 'org',
     async handle(ctx, params, body) {
+      requireSeat(ctx);
       let row = await own(ctx, params.session);
       const input = body === undefined ? {} : obj(body);
       const locale = feedbackLocale(ctx, input.locale);

@@ -5,11 +5,12 @@ import React from 'react';
 import { useAppT, type AppKey } from '../../i18n/index.ts';
 import { Link } from '../../router.tsx';
 import { useWorkspace } from '../../session.tsx';
+import { useLocalized } from '../training/lib.tsx';
 import { useApi, type Profile as ProfileData } from './api.ts';
 import { BarList, Columns, DataTable, Kpi, LEVEL_CODES, LEVEL_SHORT, LevelBadge, Loading, Panel, Problem, SkillBars, useFormat, useMaybeT } from './ui.tsx';
 
 export function Profile({ memberId }: { memberId: string }) {
-  const t = useAppT(), f = useFormat(), maybe = useMaybeT();
+  const t = useAppT(), f = useFormat(), maybe = useMaybeT(), pick = useLocalized();
   const { org, lead } = useWorkspace();
   const { data, error, loading, reload } = useApi<ProfileData>(`orgs/${org.id}/members/${encodeURIComponent(memberId)}/profile`);
   if (error && !data) return <>
@@ -81,7 +82,7 @@ export function Profile({ memberId }: { memberId: string }) {
             <span>
               {row.target_level && <>{t('insights.profile.targetShort')} <LevelBadge level={row.target_level}/> {row.target_met ? `✓ ${t('insights.profile.reached')}` : ''} · </>}
               {row.due_date ? t('insights.profile.due', { date: f.date(row.due_date) }) : t('insights.profile.noDue')}
-              {' · '}{row.scope === 'department' ? t('insights.profile.forDepartment') : t('insights.profile.forPerson')}
+              {' · '}{row.scope === 'department' ? t('insights.profile.forDepartment') : row.scope === 'all' ? t('insights.profile.forEveryone') : t('insights.profile.forPerson')}
             </span>
             <span>
               {row.overdue && <span className="company-badge bad">{t('insights.profile.overdue')}</span>}{' '}
@@ -128,7 +129,7 @@ export function Profile({ memberId }: { memberId: string }) {
         <h3>{t('insights.profile.recentLessons')}</h3>
         <ul className="records insights-records">
           {data.learning.recent_lessons.map((row) => <li key={`${row.track_code}-${row.lesson_code}`}>
-            <strong>{maybe(`insights.lesson.${row.lesson_code}`, row.lesson_code)}</strong>
+            <strong>{pick(row.title) || row.lesson_code}</strong>
             <span>{track(row.track_code)} · {row.status === 'completed' ? t('insights.profile.completedOn', { date: f.date(row.completed_at) }) : t('insights.profile.started')}{row.score !== null ? ` · ${t('insights.profile.score', { score: row.score })}` : ''}{row.minutes ? ` · ${f.minutes(row.minutes)}` : ''}</span>
           </li>)}
         </ul>

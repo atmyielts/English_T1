@@ -6,7 +6,7 @@ import { api } from '../../api.ts';
 import { useAppT, useErrorText, type AppKey } from '../../i18n/index.ts';
 import { useLocation } from '../../router.tsx';
 import { useWorkspace } from '../../session.tsx';
-import { aiMessage, Loading, readLocal, useDate, useLoad, useLocalized, writeLocal, type AiStatus, type Localized } from './lib.tsx';
+import { aiMessage, Loading, needsSeat, readLocal, SeatLocked, useDate, useLoad, useLocalized, writeLocal, type AiStatus, type Localized } from './lib.tsx';
 
 interface Template { code: string; title: Localized; kind: string; situation: Localized; starter: string; checklist: string[] }
 interface Result {
@@ -15,7 +15,7 @@ interface Result {
 }
 interface Check { id: string; template_code: string | null; title: Localized | null; draft: string; result: Result; score: number | null; created_at: string }
 interface Overview {
-  recommended: string; retention_days: number; max_length: number;
+  recommended: string; can_learn: boolean; retention_days: number; max_length: number;
   tracks: { code: string; title: Localized; templates: Template[] }[];
   checks: { id: string; template_code: string | null; title: Localized | null; score: number | null; created_at: string; excerpt: string }[];
 }
@@ -33,6 +33,7 @@ export function Writing() {
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false), [failure, setFailure] = useState(''), [copied, setCopied] = useState(false);
   const [shown, setShown] = useState<Check | null>(null);
+  const [seatGone, setSeatGone] = useState(false);
 
   const draftKey = `training.writing.${templateCode || 'free'}`;
   useEffect(() => { setDraft(readLocal(draftKey, '')); }, [draftKey]);
@@ -58,7 +59,8 @@ export function Writing() {
       void reload();
       queueMicrotask(() => document.getElementById('training-result')?.focus());
     } catch (cause) {
-      setFailure(problem(cause));
+      if (needsSeat(cause)) setSeatGone(true);
+      else setFailure(problem(cause));
     } finally {
       setBusy(false);
     }
@@ -92,7 +94,7 @@ export function Writing() {
     </header>
     <p className="notice" role="note">{t('training.writing.retention', { days: data.retention_days })}</p>
 
-    <section className="training-card" aria-labelledby="training-task">
+    {!data.can_learn || seatGone ? <SeatLocked/> : <section className="training-card" aria-labelledby="training-task">
       <h2 id="training-task">{t('training.writing.task')}</h2>
       <div className="company-toolbar">
         <label>{t('training.learn.track')}
@@ -127,7 +129,7 @@ export function Writing() {
           {draft && <button type="button" className="quiet" disabled={busy} onClick={() => { if (confirm(t('training.writing.clearConfirm'))) save(''); }}>{t('training.writing.clear')}</button>}
         </div>
       </form>
-    </section>
+    </section>}
 
     {shown && <section className="training-card training-result" aria-labelledby="training-result-title" id="training-result" tabIndex={-1}>
       <h2 id="training-result-title">{t('training.writing.result')}{shown.title ? ` · ${pick(shown.title)}` : ''}</h2>

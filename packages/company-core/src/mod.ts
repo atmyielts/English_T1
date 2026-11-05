@@ -88,5 +88,8 @@ export type AssessmentKind = (typeof ASSESSMENT_KINDS)[number];
 export const ACTIVITY_KINDS = ['lesson', 'roleplay', 'writing', 'test', 'glossary', 'session', 'english'] as const;
 export type ActivityKind = (typeof ACTIVITY_KINDS)[number];
 
-/** The Schood English "All Skills" product a company learning seat unlocks. */
-export const ENGLISH_BUNDLE_PRODUCT_ID = '3a7bd983-58c5-4c75-b5f8-5ac46c94a0fa';
+/**
+ * The hidden product a company learning seat is granted on. It unlocks every Schood
+ * English skill, and is a separate row from anything the learner buys themselves.
+ */
+export const ENGLISH_COMPANY_SEAT_PRODUCT_ID = 'c0a1e5d2-7b3f-4a86-9c14-5e2f8d6b1a07';

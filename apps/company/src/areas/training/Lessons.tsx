@@ -3,7 +3,7 @@ import React from 'react';
 import { useAppT, type AppKey } from '../../i18n/index.ts';
 import { Link, navigate, useLocation } from '../../router.tsx';
 import { useWorkspace } from '../../session.tsx';
-import { LevelBadge, Loading, Progress, useLoad, useLocalized, type Localized } from './lib.tsx';
+import { LevelBadge, Loading, Progress, SeatLocked, useLoad, useLocalized, type Localized } from './lib.tsx';
 
 interface TrackSummary { code: string; title: Localized; summary: Localized; lessons: number; foundation: number; professional: number; scenarios: number; templates: number; completed: number; started: number }
 interface TrackDetail {
@@ -15,7 +15,7 @@ export function Lessons() {
   const t = useAppT(), pick = useLocalized();
   const { org } = useWorkspace();
   const { query } = useLocation();
-  const list = useLoad<{ recommended: string; tracks: TrackSummary[] }>(`orgs/${org.id}/tracks`);
+  const list = useLoad<{ recommended: string; can_learn: boolean; tracks: TrackSummary[] }>(`orgs/${org.id}/tracks`);
   const chosen = query.get('track') ?? list.data?.recommended ?? null;
   const detail = useLoad<TrackDetail>(chosen ? `orgs/${org.id}/tracks/${chosen}` : null);
   if (!list.data) return <Loading error={list.error}/>;
@@ -27,6 +27,7 @@ export function Lessons() {
       <h1>{t('training.learn.title')}</h1>
       <p>{t('training.learn.lead')}</p>
     </header>
+    {!list.data.can_learn && <SeatLocked/>}
     <div className="company-toolbar">
       <label>{t('training.learn.track')}
         <select value={chosen ?? ''} onChange={(event) => navigate(`/w/${org.id}/learn?track=${event.target.value}`, { replace: true })}>
@@ -35,7 +36,7 @@ export function Lessons() {
       </label>
     </div>
 
-    {!detail.data ? <Loading error={detail.error}/> : <TrackView org={org.id} detail={detail.data} recommended={detail.data.track.code === recommended}/>}
+    {!detail.data ? <Loading error={detail.error}/> : <TrackView org={org.id} detail={detail.data} recommended={detail.data.track.code === recommended} open={list.data.can_learn}/>}
 
     <section className="training-card" aria-labelledby="training-all-tracks">
       <h2 id="training-all-tracks">{t('training.learn.allTracks')}</h2>
@@ -52,7 +53,7 @@ export function Lessons() {
   </div>;
 }
 
-function TrackView({ org, detail, recommended }: { org: string; detail: TrackDetail; recommended: boolean }) {
+function TrackView({ org, detail, recommended, open }: { org: string; detail: TrackDetail; recommended: boolean; open: boolean }) {
   const t = useAppT(), pick = useLocalized();
   const done = detail.lessons.filter((lesson) => lesson.status === 'completed').length;
   return <section className="training-card" aria-labelledby="training-track-title">
@@ -66,21 +67,23 @@ function TrackView({ org, detail, recommended }: { org: string; detail: TrackDet
       <ol className="training-lessons">
         {detail.lessons.filter((lesson) => lesson.stage === stage).map((lesson) => {
           const number = detail.lessons.indexOf(lesson) + 1;
-          return <li key={lesson.code} className={`training-lesson is-${lesson.status}`}>
-            <Link to={`/w/${org}/learn/${detail.track.code}/${lesson.code}`}>
-              <span className="training-lesson-number" aria-hidden="true">{lesson.status === 'completed' ? '✓' : number}</span>
-              <span className="training-lesson-body">
-                <strong>{pick(lesson.title)}</strong>
-                <span>{pick(lesson.goal)}</span>
-                <span className="training-lesson-meta">
-                  <LevelBadge level={lesson.level}/>
-                  <span className={`company-badge${lesson.status === 'completed' ? ' good' : lesson.status === 'started' ? ' warn' : ''}`}>
-                    {lesson.status === 'completed' ? t('training.lesson.statusDone', { score: lesson.score ?? 0 }) : t(`training.lesson.status.${lesson.status}` as AppKey)}
-                  </span>
-                  <span className="hint">{t(`training.mission.${lesson.mission}` as AppKey)}</span>
+          const content = <>
+            <span className="training-lesson-number" aria-hidden="true">{lesson.status === 'completed' ? '✓' : number}</span>
+            <span className="training-lesson-body">
+              <strong>{pick(lesson.title)}</strong>
+              <span>{pick(lesson.goal)}</span>
+              <span className="training-lesson-meta">
+                <LevelBadge level={lesson.level}/>
+                <span className={`company-badge${lesson.status === 'completed' ? ' good' : lesson.status === 'started' ? ' warn' : ''}`}>
+                  {lesson.status === 'completed' ? t('training.lesson.statusDone', { score: lesson.score ?? 0 }) : t(`training.lesson.status.${lesson.status}` as AppKey)}
                 </span>
+                {!open && <span className="company-badge">{t('training.locked.badge')}</span>}
+                <span className="hint">{t(`training.mission.${lesson.mission}` as AppKey)}</span>
               </span>
-            </Link>
+            </span>
+          </>;
+          return <li key={lesson.code} className={`training-lesson is-${lesson.status}`}>
+            {open ? <Link to={`/w/${org}/learn/${detail.track.code}/${lesson.code}`}>{content}</Link> : <div className="training-lesson-locked">{content}</div>}
           </li>;
         })}
       </ol>

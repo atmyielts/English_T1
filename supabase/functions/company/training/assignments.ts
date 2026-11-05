@@ -3,8 +3,9 @@
 // people who have not agreed to share it is left out of the numbers.
 import { HR_ROLES, LEAD_ROLES, LEVELS, levelIndex, isLevel, type Level } from '../../../../packages/company-core/src/mod.ts';
 import { MEMBER_COLUMNS } from '../handler.ts';
+import { fetchAll } from '../people/shared.ts';
 import { check, CompanyError, type Ctx, type MemberRow, type Route } from '../types.ts';
-import { obj, oneOf, text, uuid } from '../util.ts';
+import { obj, oneOf, tashkentDay, text, uuid } from '../util.ts';
 import { isHr } from './shared.ts';
 import { findTrack, TRACKS } from './tracks/index.ts';
 
@@ -16,6 +17,8 @@ export interface AssignmentRow {
 export const ASSIGNMENT_COLUMNS = 'id,org_id,track_code,target_level,due_date,department_id,member_id,note,status,created_by,created_at,updated_at';
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_PEOPLE = 500;
+/** One row per person per lesson, so this outgrows fetchAll's default. */
+const MAX_PROGRESS_ROWS = 200_000;
 
 /** Whether the assignment is meant for this member. */
 export const appliesTo = (assignment: AssignmentRow, member: Pick<MemberRow, 'id' | 'department_id' | 'role'>) =>
@@ -61,9 +64,10 @@ export function summarise(people: PersonProgress[], today: string, assignment: A
 }
 
 async function context(ctx: Ctx) {
-  const members = check<MemberRow[]>(await ctx.db.from('company_members').select(MEMBER_COLUMNS).eq('org_id', ctx.org!.id).eq('status', 'active'));
-  const progress = check<{ member_id: string; lesson_code: string; status: string; updated_at: string | null }[]>(
-    await ctx.db.from('company_lesson_progress').select('member_id,lesson_code,status,updated_at').eq('org_id', ctx.org!.id),
+  const members = await fetchAll<MemberRow>(() => ctx.db.from('company_members').select(MEMBER_COLUMNS).eq('org_id', ctx.org!.id).eq('status', 'active').order('id'));
+  const progress = await fetchAll<{ member_id: string; lesson_code: string; status: string; updated_at: string | null }>(
+    () => ctx.db.from('company_lesson_progress').select('member_id,lesson_code,status,updated_at').eq('org_id', ctx.org!.id).order('id'),
+    MAX_PROGRESS_ROWS,
   );
   const completed = new Set(progress.filter((row) => row.status === 'completed').map((row) => `${row.member_id}:${row.lesson_code}`));
   const last = new Map<string, string>();
@@ -79,8 +83,9 @@ function visibleTo(ctx: Ctx, members: MemberRow[]) {
   return (row: AssignmentRow) => (!row.department_id && !row.member_id) || (department !== null && row.department_id === department) || (row.member_id !== null && mine.has(row.member_id));
 }
 
+/** `departmentOf`: undefined shows everyone (HR); a manager gets their department, and a manager with none gets nobody. */
 function assignmentView(row: AssignmentRow, members: MemberRow[], completed: Set<string>, last: Map<string, string>, today: string, departmentOf?: string | null) {
-  const people = members.filter((member) => appliesTo(row, member) && (departmentOf === undefined || member.department_id === departmentOf))
+  const people = members.filter((member) => appliesTo(row, member) && (departmentOf === undefined || (departmentOf !== null && member.department_id === departmentOf)))
     .map((member) => personProgress(row, member, completed, last.get(member.id) ?? null));
   const track = row.track_code ? findTrack(row.track_code) : undefined;
   return { assignment: { ...row, track_title: track?.title ?? null, track_lessons: track?.lessons.length ?? 0 }, people, stats: summarise(people, today, row) };
@@ -90,9 +95,9 @@ export const routes: Route[] = [
   {
     method: 'GET', path: 'orgs/:org/assignments', access: 'org', roles: LEAD_ROLES, allowSuspended: true,
     async handle(ctx) {
-      const rows = check<AssignmentRow[]>(await ctx.db.from('company_assignments').select(ASSIGNMENT_COLUMNS).eq('org_id', ctx.org!.id).order('created_at', { ascending: false }));
+      const rows = await fetchAll<AssignmentRow>(() => ctx.db.from('company_assignments').select(ASSIGNMENT_COLUMNS).eq('org_id', ctx.org!.id).order('created_at', { ascending: false }).order('id'));
       const { members, completed, last } = await context(ctx);
-      const today = ctx.now().toISOString().slice(0, 10);
+      const today = tashkentDay(ctx.now());
       // Managers count only their own department's people.
       const scope = isHr(ctx) ? undefined : ctx.member?.department_id ?? null;
       const visible = visibleTo(ctx, members);
@@ -115,7 +120,7 @@ export const routes: Route[] = [
       const { members, completed, last } = await context(ctx);
       if (!row || !visibleTo(ctx, members)(row)) throw new CompanyError('assignment_not_found', 'Assignment not found.', 404);
       const scope = isHr(ctx) ? undefined : ctx.member?.department_id ?? null;
-      return assignmentView(row, members, completed, last, ctx.now().toISOString().slice(0, 10), scope);
+      return assignmentView(row, members, completed, last, tashkentDay(ctx.now()), scope);
     },
   },
   {
@@ -129,7 +134,7 @@ export const routes: Route[] = [
       if (!trackCode && !target) throw new CompanyError('assignment_empty', 'Choose a track, a target level or both.', 400, { field: 'track_code' });
       const due = input.due_date === undefined || input.due_date === null || input.due_date === '' ? null : String(input.due_date);
       if (due && (!DATE.test(due) || Number.isNaN(Date.parse(due)))) throw new CompanyError('invalid_field', 'due_date must be a date.', 400, { field: 'due_date' });
-      if (due && due < ctx.now().toISOString().slice(0, 10)) throw new CompanyError('invalid_field', 'due_date is in the past.', 400, { field: 'due_date' });
+      if (due && due < tashkentDay(ctx.now())) throw new CompanyError('invalid_field', 'due_date is in the past.', 400, { field: 'due_date' });
       const note = text(input.note, 'note', { max: 1000, optional: true });
       const scope = oneOf(input.scope, ['all', 'departments', 'people'] as const, 'scope');
       const base = { org_id: ctx.org!.id, track_code: trackCode, target_level: target, due_date: due, note, status: 'active', created_by: ctx.user };
@@ -143,7 +148,7 @@ export const routes: Route[] = [
       } else {
         const wanted = Array.isArray(input.member_ids) ? [...new Set(input.member_ids.map((id) => uuid(id, 'member_ids')))] : [];
         if (wanted.length > MAX_PEOPLE) throw new CompanyError('invalid_field', `Choose up to ${MAX_PEOPLE} people.`, 400, { field: 'member_ids' });
-        const members = new Set(check<{ id: string }[]>(await ctx.db.from('company_members').select('id').eq('org_id', ctx.org!.id).neq('status', 'removed')).map((row) => row.id));
+        const members = new Set((await fetchAll<{ id: string }>(() => ctx.db.from('company_members').select('id').eq('org_id', ctx.org!.id).neq('status', 'removed').order('id'))).map((row) => row.id));
         if (!wanted.length || wanted.some((id) => !members.has(id))) throw new CompanyError('invalid_field', 'Choose people of this workspace.', 400, { field: 'member_ids' });
         rows = wanted.map((id) => ({ ...base, department_id: null, member_id: id }));
       }

@@ -103,8 +103,10 @@ Deno.test('a demo request becomes a pipeline entry, then a workspace with an own
   assertEquals(joined.status, 200);
   const owner = db.rows('company_members').find((row) => row.user_id === BUYER)!;
   assertEquals([owner.role, owner.status, owner.org_id], ['owner', 'active', org.id]);
-  // A replacement owner link for the same email reuses the row; an active owner cannot be re-invited.
-  assertEquals((await call('POST', `staff/orgs/${org.id}/owner-invite`, { user: STAFF, body: { email: 'aziza@orient.example' } })).body.code, 'member_exists');
+  // The row shows the account that joined, with the invited address in the audit log. An active owner cannot be re-invited.
+  assertEquals(owner.email, 'b1000000@example.com');
+  assertEquals((db.rows('company_audit').find((row) => row.action === 'member.joined')!.details as Record<string, unknown>).invited_email, 'aziza@orient.example');
+  assertEquals((await call('POST', `staff/orgs/${org.id}/owner-invite`, { user: STAFF, body: { email: 'b1000000@example.com' } })).body.code, 'member_exists');
   const second = await call('POST', `staff/orgs/${org.id}/owner-invite`, { user: STAFF, body: { email: 'deputy@orient.example', full_name: 'Deputy' } });
   assertEquals([second.status, second.body.owner.role], [200, 'owner']);
 });
@@ -124,4 +126,26 @@ Deno.test('staff set the Schood contact HR sees, and seat requests from workspac
   db.rows('company_leads').push({ id: crypto.randomUUID(), name: 'Dilnoza Karimova', company: 'Silk Road Hotels', status: 'new', source: 'company_seats', org_id: ORG, interests: [], created_at: '2026-10-30T08:00:00Z' });
   const leads = await call('GET', 'staff/leads', { user: STAFF });
   assertEquals([leads.body.leads[0].source, leads.body.leads[0].org.name, leads.body.counts.new], ['company_seats', 'Silk Road Hotels', 1]);
+});
+
+Deno.test('staff see and can filter live workspaces with no active owner', async () => {
+  const { db, call } = setup();
+  const all = await call('GET', 'staff/orgs', { user: STAFF });
+  assertEquals(all.body.orgs.map((org: { name: string; ownerless: boolean }) => [org.name, org.ownerless]), [['Silk Road Hotels', false], ['Navoi Logistics', true]]);
+  assertEquals(all.body.ownerless, 1);
+  const only = await call('GET', 'staff/orgs?ownerless=1', { user: STAFF });
+  assertEquals(only.body.orgs.map((org: { name: string }) => org.name), ['Navoi Logistics']);
+  // The filter combines with the others, and the total counts all workspaces.
+  const filtered = await call('GET', 'staff/orgs?ownerless=1&status=pilot', { user: STAFF });
+  assertEquals([filtered.body.orgs.length, filtered.body.ownerless], [0, 1]);
+  // An invited or removed owner is not an active one.
+  const owner = db.rows('company_members').find((row) => row.user_id === OWNER)!;
+  owner.status = 'removed';
+  assertEquals((await call('GET', 'staff/orgs?ownerless=1', { user: STAFF })).body.orgs.length, 2);
+  db.rows('company_members').push({ id: crypto.randomUUID(), org_id: ORG, user_id: null, email: 'next@example.com', role: 'owner', status: 'invited', seat: false, job_role: 'general' });
+  assertEquals((await call('GET', 'staff/orgs', { user: STAFF })).body.ownerless, 2);
+  // A closed workspace needs no owner.
+  db.rows('company_orgs')[1].status = 'closed';
+  const closed = await call('GET', 'staff/orgs', { user: STAFF });
+  assertEquals([closed.body.orgs[1].ownerless, closed.body.ownerless], [false, 1]);
 });

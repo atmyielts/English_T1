@@ -1,11 +1,14 @@
 // /t/:token — the public candidate test: intro, details and consent, microphone
 // and sound checks, the test itself, and a thank-you page (with the level when the
-// company allows it). The attempt key stays in localStorage so a reload resumes.
+// company allows it). The attempt key stays in localStorage so a reload resumes; a
+// saved attempt opens without the link, which HR may have replaced since. /r/:key is
+// the same page opened from an access link HR made for a candidate who lost theirs.
 import React, { useEffect, useRef, useState, type FormEvent } from 'react';
 import { LocaleSwitcher } from '../../../../../packages/service-i18n/src/i18n.tsx';
 import { api } from '../../api.ts';
 import { useAppT, type AppKey } from '../../i18n/index.ts';
 import { Link } from '../../router.tsx';
+import { keyIsGone, resumeStep } from './flow.ts';
 import { canRecognize, canSpeak, speak, stopSpeaking } from './speech.ts';
 import { TestRunner, type RunnerBody, type Transport } from './TestRunner.tsx';
 import type { AttemptView } from './types.ts';
@@ -36,34 +39,48 @@ function Frame({ company, children }: { company?: string; children: React.ReactN
   </div>;
 }
 
-export function CandidatePage({ token }: { token: string }) {
+export function CandidatePage({ token, resumeKey }: { token: string; resumeKey?: string }) {
   const t = useAppT(), problem = useHiringError();
   const [intro, setIntro] = useState<Intro | null>(null);
   const [view, setView] = useState<AttemptView | null>(null);
-  const [key, setKey] = useState<string | null>(() => readKey(token));
-  const [phase, setPhase] = useState<'loading' | 'intro' | 'details' | 'running' | 'done' | 'invalid'>('loading');
+  const [key, setKey] = useState<string | null>(() => resumeKey ?? readKey(token));
+  const [phase, setPhase] = useState<'loading' | 'retry' | 'intro' | 'details' | 'running' | 'done' | 'invalid'>('loading');
   const [error, setError] = useState('');
+  const [finishedHere, setFinishedHere] = useState(false);
+  const [loads, setLoads] = useState(0);
+  const forgetKey = () => { writeKey(token, null); setKey(null); setView(null); };
+  const loadAgain = () => { setPhase('loading'); setLoads((count) => count + 1); };
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      const saved = resumeKey ?? readKey(token);
+      if (saved) {
+        try {
+          // Closing an overdue attempt here can call AI, which takes longer than the default timeout.
+          const state = await api<{ attempt: AttemptView }>('public/attempts/state', { method: 'POST', body: { key: saved }, auth: false, timeoutMs: 90_000 });
+          if (cancelled) return;
+          const step = resumeStep(state.attempt.status);
+          if (step !== 'start_over' || resumeKey) {
+            setView(state.attempt);
+            setPhase(step === 'running' ? 'running' : 'done');
+            return;
+          }
+          forgetKey();
+        } catch (cause) {
+          if (cancelled) return;
+          if (!keyIsGone(cause)) {
+            setError(problem(cause));
+            setPhase('retry');
+            return;
+          }
+          forgetKey();
+        }
+      }
       try {
         const info = await api<Intro>(`public/t/${encodeURIComponent(token)}`, { auth: false });
         if (cancelled) return;
         setIntro(info);
-        const saved = readKey(token);
-        if (saved) {
-          try {
-            const state = await api<{ attempt: AttemptView }>('public/attempts/state', { method: 'POST', body: { key: saved }, auth: false });
-            if (cancelled) return;
-            setView(state.attempt);
-            setPhase(state.attempt.status === 'started' ? 'running' : 'done');
-            return;
-          } catch {
-            writeKey(token, null);
-            setKey(null);
-          }
-        }
         setPhase('intro');
       } catch (cause) {
         if (cancelled) return;
@@ -72,11 +89,15 @@ export function CandidatePage({ token }: { token: string }) {
       }
     })();
     return () => { cancelled = true; };
-  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [token, loads]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (phase === 'loading') return <Frame><p role="status">{t('app.loading')}</p></Frame>;
-  if (phase === 'invalid' || !intro) return <Frame><section className="hiring-narrow"><h1>{t('hiring.candidate.invalidTitle')}</h1><p className="error" role="alert">{error || t('hiring.error.link_not_found')}</p></section></Frame>;
-  const { test } = intro;
+  if (phase === 'retry') return <Frame><section className="hiring-narrow">
+    <h1>{t('hiring.candidate.resumeFailedTitle')}</h1>
+    <p>{t('hiring.candidate.resumeFailedLead')}</p>
+    <p className="error" role="alert">{error}</p>
+    <div className="company-actions"><button type="button" onClick={loadAgain}>{t('hiring.candidate.retry')}</button></div>
+  </section></Frame>;
 
   if (phase === 'running' && view && key) {
     const call = (path: string, body: RunnerBody) => api<{ attempt?: AttemptView }>(`public/attempts/${path}`, { method: 'POST', body: { key, ...body }, auth: false, timeoutMs: 90_000 });
@@ -85,12 +106,17 @@ export function CandidatePage({ token }: { token: string }) {
       next: async (body) => (await call('next', body)).attempt!,
       submit: async (body) => (await call('submit', body)).attempt!,
     };
-    return <Frame company={test.company}>
-      <TestRunner initial={view} transport={transport} storageKey={`company-test:${token}`} onDone={(done) => { setView(done); setPhase('done'); scrollTo(0, 0); }}/>
+    return <Frame company={view.company}>
+      <TestRunner initial={view} transport={transport} storageKey={`company-test:${token}`} onDone={(done) => { setView(done); setFinishedHere(true); setPhase('done'); scrollTo(0, 0); }}/>
     </Frame>;
   }
 
-  if (phase === 'done' && view) return <Frame company={test.company}><ThankYou view={view} company={test.company}/></Frame>;
+  if (phase === 'done' && view) {
+    return <Frame company={view.company}><ThankYou view={view} fresh={finishedHere} onStartOver={resumeKey ? undefined : () => { forgetKey(); setFinishedHere(false); loadAgain(); }}/></Frame>;
+  }
+
+  if (phase === 'invalid' || !intro) return <Frame><section className="hiring-narrow"><h1>{t('hiring.candidate.invalidTitle')}</h1><p className="error" role="alert">{error || t('hiring.error.link_not_found')}</p></section></Frame>;
+  const { test } = intro;
 
   if (!intro.open) return <Frame company={test.company}><section className="hiring-narrow"><h1>{test.title}</h1><p className="error" role="alert">{t('hiring.candidate.closed', { company: test.company })}</p></section></Frame>;
 
@@ -135,7 +161,7 @@ function Details({ token, intro, onStarted }: { token: string; intro: Intro; onS
     event.preventDefault();
     setBusy(true); setError('');
     try {
-      const started = await api<{ key: string; attempt: AttemptView }>(`public/t/${encodeURIComponent(token)}/start`, { method: 'POST', body: { ...form, consent }, auth: false });
+      const started = await api<{ key: string; attempt: AttemptView }>(`public/t/${encodeURIComponent(token)}/start`, { method: 'POST', body: { ...form, consent }, auth: false, timeoutMs: 90_000 });
       onStarted(started.key, started.attempt);
     } catch (cause) {
       setError(problem(cause));
@@ -225,21 +251,24 @@ function MicCheck() {
   </div>;
 }
 
-function ThankYou({ view, company }: { view: AttemptView; company: string }) {
+function ThankYou({ view, fresh, onStartOver }: { view: AttemptView; fresh: boolean; onStartOver?: () => void }) {
   const t = useAppT();
   const result = view.result;
+  const level = result && <div className="hiring-result">
+    <p className="eyebrow">{t('hiring.candidate.yourLevel')}</p>
+    <p className="hiring-result-level"><LevelBadge level={result.overall_level}/></p>
+    <SkillBars skills={view.sections.map((section) => section.skill)} results={result.skills}/>
+    {result.certificate_code && <p>{t('hiring.candidate.certificate', { code: result.certificate_code })} <Link to={`/v/${result.certificate_code}`}>{t('hiring.candidate.verify')}</Link></p>}
+    <p className="hint">{t('hiring.report.estimateNote')}</p>
+  </div>;
   return <section className="hiring-narrow hiring-thanks">
     <div className="hiring-check-mark" aria-hidden="true">✓</div>
     <h1>{view.status === 'expired' ? t('hiring.candidate.expiredTitle') : t('hiring.candidate.thanksTitle')}</h1>
-    <p>{view.status === 'expired' ? t('hiring.candidate.expired') : t('hiring.candidate.thanksLead', { company })}</p>
+    <p>{view.status === 'expired' ? t('hiring.candidate.expired') : t('hiring.candidate.thanksLead', { company: view.company })}</p>
     {view.status === 'submitted' && <p className="notice" role="status">{t('hiring.candidate.pending')}</p>}
-    {result && <div className="hiring-result">
-      <p className="eyebrow">{t('hiring.candidate.yourLevel')}</p>
-      <p className="hiring-result-level"><LevelBadge level={result.overall_level}/></p>
-      <SkillBars skills={view.sections.map((section) => section.skill)} results={result.skills}/>
-      {result.certificate_code && <p>{t('hiring.candidate.certificate', { code: result.certificate_code })} <Link to={`/v/${result.certificate_code}`}>{t('hiring.candidate.verify')}</Link></p>}
-      <p className="hint">{t('hiring.report.estimateNote')}</p>
-    </div>}
+    {/* Coming back, the level stays folded: this may be the next candidate on a shared computer. */}
+    {level && (fresh ? level : <details><summary>{t('hiring.candidate.showResult')}</summary>{level}</details>)}
     <p className="hint">{t('hiring.candidate.closeNote')}</p>
+    {onStartOver && <div className="company-actions"><button type="button" className="quiet" onClick={onStartOver}>{t(view.status === 'expired' ? 'hiring.candidate.startAgain' : 'hiring.candidate.startDifferent')}</button></div>}
   </section>;
 }

@@ -12,6 +12,20 @@ export function learner(ctx: Ctx): MemberRow {
   return ctx.member;
 }
 
+/** The seat works: it is on, the agreement is active and it has not ended. A pilot has no seats. */
+export function seatOpen(ctx: Ctx, member: MemberRow): boolean {
+  const org = ctx.org!;
+  return member.seat && org.status === 'active' && (!org.contract_ends_at || new Date(org.contract_ends_at).getTime() > ctx.now().getTime());
+}
+
+/** Whether the caller can use lessons and AI practice (Schood staff always can). */
+export const canLearn = (ctx: Ctx) => ctx.staff || Boolean(ctx.member && seatOpen(ctx, ctx.member));
+
+/** Lessons and AI practice need a learning seat. The catalogue, My English and HR's own tools do not. */
+export function requireSeat(ctx: Ctx): void {
+  if (!canLearn(ctx)) throw new CompanyError('seat_required', 'This needs a learning seat. Your HR team arranges seats.', 402);
+}
+
 export const isHr = (ctx: Ctx) => ctx.staff || ctx.member?.role === 'owner' || ctx.member?.role === 'admin';
 
 /** Feedback language: what the app sent, else the workspace default, else Russian. */

@@ -199,7 +199,8 @@ export const routes: Route[] = [
         .map((member) => ({ member_id: member.id, name: displayName(member), department: member.department_id ? names.get(member.department_id) ?? null : null, invited: isInvitee(session, member), present: present.has(member.id) }))
         .sort((a, b) => a.name.localeCompare(b.name));
       return {
-        session,
+        // People lists stay with HR, as in the session list.
+        session: { ...session, member_ids: viewer.hr ? session.member_ids : [] },
         started: Date.parse(session.starts_at) <= ctx.now().getTime(),
         can_mark: viewer.hr && session.status === 'scheduled' && Date.parse(session.starts_at) <= ctx.now().getTime(),
         people: rows,

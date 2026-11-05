@@ -9,17 +9,19 @@ import { Link, navigate } from '../../router.tsx';
 import { useWorkspace } from '../../session.tsx';
 import { FeedbackBlock } from './MemberPages.tsx';
 import type { Assessment, Decision, Report } from './types.ts';
-import { DecisionBadge, FlagList, LevelBadge, MeetsBadge, SkillBars, StatusBadge, clock, shortLevel, skillText, useFormat, useHiringError, useLoad } from './ui.tsx';
+import { CopyButton, DecisionBadge, FlagList, LevelBadge, MeetsBadge, SkillBars, StatusBadge, clock, shortLevel, skillText, useFormat, useHiringError, useLoad } from './ui.tsx';
 
 interface ReportResponse { attempt: Report; assessment: Assessment; member: { id: string; full_name: string | null; email: string | null; department_id: string | null; job_role: string } | null; can_edit: boolean }
 
 export function ReportPage({ assessmentId, attemptId, back }: { assessmentId: string; attemptId: string; back: 'hiring' | 'placement' }) {
   const t = useAppT(), problem = useHiringError(), format = useFormat();
   const { org, departments } = useWorkspace();
-  const { data, error, setData } = useLoad(() => api<ReportResponse>(`orgs/${org.id}/attempts/${attemptId}`), [org.id, attemptId]);
+  // Opening an attempt whose time ran out closes it, and that can call AI.
+  const { data, error, setData } = useLoad(() => api<ReportResponse>(`orgs/${org.id}/attempts/${attemptId}`, { timeoutMs: 90_000 }), [org.id, attemptId]);
   const [busy, setBusy] = useState(false), [actionError, setActionError] = useState(''), [notice, setNotice] = useState('');
   const [notes, setNotes] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [access, setAccess] = useState<string | null>(null);
   const backTo = `/w/${org.id}/${back}/${assessmentId}`;
   if (error) return <section><p className="error" role="alert">{error}</p><p><Link to={backTo}>{t('hiring.report.back')}</Link></p></section>;
   if (!data) return <p role="status">{t('app.loading')}</p>;
@@ -44,9 +46,11 @@ export function ReportPage({ assessmentId, attemptId, back }: { assessmentId: st
   };
   const regrade = (skill?: Skill) => run(() => api<{ attempt: Report; reason: string | null }>(`orgs/${org.id}/attempts/${attempt.id}/regrade`, { method: 'POST', body: skill ? { skill } : {}, timeoutMs: 90_000 }), (value) => {
     setData({ ...data, attempt: value.attempt });
-    setNotice(value.attempt.status === 'graded' ? t('hiring.report.gradedNow') : t(value.reason === 'ai_limit' ? 'hiring.report.pendingLimit' : 'hiring.report.pendingAi'));
+    // A failed re-grade keeps the old result and status, so the reason comes first.
+    setNotice(value.reason === 'ai_limit' ? t('hiring.report.pendingLimit') : value.reason || value.attempt.status !== 'graded' ? t('hiring.report.pendingAi') : t('hiring.report.gradedNow'));
   });
   const score = (skill: Skill, value: number) => run(() => api<{ attempt: Report }>(`orgs/${org.id}/attempts/${attempt.id}/score`, { method: 'POST', body: { skill, score: value } }), (response) => { setData({ ...data, attempt: response.attempt }); setNotice(t('common.saved')); });
+  const makeAccess = () => run(() => api<{ link: string }>(`orgs/${org.id}/attempts/${attempt.id}/access`, { method: 'POST' }), (value) => setAccess(value.link));
   const remove = () => run(() => api(`orgs/${org.id}/attempts/${attempt.id}`, { method: 'DELETE' }), () => navigate(backTo, { replace: true }));
   const production = attempt.sections.filter((section) => section.tasks);
   const department = departments.find((entry) => entry.id === member?.department_id)?.name;
@@ -90,11 +94,22 @@ export function ReportPage({ assessmentId, attemptId, back }: { assessmentId: st
 
     {attempt.status === 'submitted' && attempt.pending.length > 0 && <section className="hiring-pending" aria-labelledby="pending-title">
       <h2 id="pending-title">{t('hiring.report.pendingTitle')}</h2>
-      <p>{t(attempt.feedback.reason === 'ai_limit' ? 'hiring.report.pendingLimit' : 'hiring.report.pendingAi')}</p>
+      <p>{t(attempt.feedback.reason === 'ai_limit' ? 'hiring.report.pendingLimit' : attempt.feedback.tried_at ? 'hiring.report.pendingAi' : 'hiring.report.pendingNotTried')}</p>
       {canEdit && <>
         <div className="company-actions"><button type="button" disabled={busy} onClick={() => void regrade()}>{busy ? t('hiring.run.working') : t('hiring.report.gradeAgain')}</button></div>
         <div className="hiring-manual-row">{attempt.pending.map((skill) => <ManualScore key={skill} skill={skill} busy={busy} onSave={(value) => void score(skill, value)}/>)}</div>
       </>}
+    </section>}
+
+    {hiring && canEdit && attempt.status === 'started' && <section className="hiring-link no-print" aria-labelledby="access-title">
+      <h2 id="access-title">{t('hiring.report.accessTitle')}</h2>
+      <p className="hint">{t('hiring.report.accessLead')}</p>
+      {access
+        ? <div className="hiring-link-row">
+          <label className="hiring-link-field"><span className="visually-hidden">{t('hiring.link.label')}</span><input readOnly value={access} onFocus={(event) => event.target.select()}/></label>
+          <CopyButton text={access}/>
+        </div>
+        : <button type="button" className="quiet hiring-small" disabled={busy} onClick={() => void makeAccess()}>{t('hiring.report.accessMake')}</button>}
     </section>}
 
     {production.map((section) => <section key={section.skill} aria-labelledby={`answers-${section.skill}`}>

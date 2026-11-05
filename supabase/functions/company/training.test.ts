@@ -125,8 +125,8 @@ Deno.test('tracks list, lesson view and progress through the lesson player', asy
   assertEquals(progress.length, 1);
   assertEquals([progress[0].status, progress[0].score, progress[0].attempts, progress[0].minutes], ['completed', 100, 3, 9 + 60 + 3]);
   const lessons = db.rows('company_activity').filter((row) => row.kind === 'lesson');
-  assertEquals(lessons.map((row) => row.minutes), [9, 60, 3]);
-  assertEquals(lessons[1].points, 20);
+  assertEquals(lessons.map((row) => [row.minutes, row.points]), [[60, 20]]);
+  assertEquals(db.rows('company_activity').filter((row) => row.kind === 'lesson_retry').map((row) => [row.minutes, row.points]), [[9, 0], [3, 0]]);
   assertEquals((await call('GET', `orgs/${ORG}/tracks/hospitality`, { user: EMPLOYEE })).body.lessons[0].status, 'completed');
   assertEquals((await call('POST', `orgs/${ORG}/learn/nope-f1/check`, { user: EMPLOYEE, body: { answers: {} } })).status, 404);
 });
@@ -339,4 +339,225 @@ Deno.test('learner routes need a membership; staff without one are refused polit
   db.rows('company_orgs')[0].status = 'suspended';
   assertEquals((await call('POST', `orgs/${ORG}/learn/hospitality-f1/check`, { user: EMPLOYEE, body: { answers: {} } })).body.code, 'org_suspended');
   assertEquals((await call('GET', `orgs/${ORG}/my/home`, { user: EMPLOYEE })).status, 200);
+});
+
+const SESSION = '00000000-0000-4000-8000-0000000000f1';
+const addSession = (db: FakeDb, member: string) => db.rows('company_roleplay_sessions').push({
+  id: SESSION, org_id: ORG, member_id: member, user_id: null, scenario_code: 'hospitality-rp-phone-booking', track_code: 'hospitality', status: 'active',
+  turns: [{ role: 'ai', text: 'Hello.', at: '2026-10-01T00:00:00Z' }], learner_turns: 1, locale: 'ru', feedback: null, score: null, minutes: 0, created_at: '2026-10-01T00:00:00Z', ended_at: null,
+});
+/** Every route lessons and AI practice go through, for a learner with session SESSION. */
+const practiceCalls = (user: string): [string, string, { user: string; body?: unknown }][] => [
+  ['GET', `orgs/${ORG}/learn/hospitality-f1`, { user }],
+  ['POST', `orgs/${ORG}/learn/hospitality-f1/start`, { user, body: { step: 'words' } }],
+  ['POST', `orgs/${ORG}/learn/hospitality-f1/check`, { user, body: { answers: {} } }],
+  ['POST', `orgs/${ORG}/roleplay`, { user, body: { scenario: 'hospitality-rp-phone-booking' } }],
+  ['POST', `orgs/${ORG}/roleplay/${SESSION}/turn`, { user, body: { text: 'Good afternoon.' } }],
+  ['POST', `orgs/${ORG}/roleplay/${SESSION}/finish`, { user }],
+  ['POST', `orgs/${ORG}/writing/check`, { user, body: { text: 'Dear Mr Hoffmann, thank for your message about the room.' } }],
+  ['POST', `orgs/${ORG}/glossary/practice`, { user, body: { mode: 'cards', seen: 5, known: 3 } }],
+];
+
+Deno.test('lessons and AI practice need a learning seat; browsing and HR tools do not', async () => {
+  const { db, call, aiCalls } = setup({ ai: roleplayAi() });
+  addSession(db, M.other);
+  for (const [method, path, options] of practiceCalls(OTHER)) {
+    const refused = await call(method, path, options);
+    assertEquals([refused.status, refused.body.code], [402, 'seat_required'], path);
+  }
+  assertEquals(aiCalls(), 0);
+  assertEquals(db.rows('company_activity').length, 0);
+  assertEquals(db.rows('company_lesson_progress').length, 0);
+  assertEquals(db.rows('company_roleplay_sessions').length, 1);
+
+  // What a seat unlocks stays visible, and the pages know it is locked.
+  const tracks = await call('GET', `orgs/${ORG}/tracks`, { user: OTHER });
+  assertEquals([tracks.status, tracks.body.can_learn, tracks.body.tracks.length], [200, false, 11]);
+  const track = await call('GET', `orgs/${ORG}/tracks/hospitality`, { user: OTHER });
+  assertEquals([track.status, track.body.can_learn, track.body.lessons[0].status], [200, false, 'new']);
+  for (const page of ['roleplay', 'writing', 'glossary']) assertEquals((await call('GET', `orgs/${ORG}/${page}`, { user: OTHER })).body.can_learn, false, page);
+  assertEquals((await call('GET', `orgs/${ORG}/roleplay/${SESSION}`, { user: OTHER })).body.can_learn, false);
+
+  // My English opens but offers no lesson that would be refused.
+  db.rows('company_assignments').push({ id: crypto.randomUUID(), org_id: ORG, track_code: 'sales', target_level: null, due_date: null, department_id: SALES, member_id: null, note: null, status: 'active', created_at: '2026-10-01' });
+  const home = await call('GET', `orgs/${ORG}/my/home`, { user: OTHER });
+  assertEquals([home.status, home.body.can_learn, home.body.continue, home.body.resuming, home.body.english_url], [200, false, null, false, null]);
+  assertEquals([home.body.assignments.length, home.body.assignments[0].next], [1, null]);
+
+  // HR needs no seat to manage; they do to practise.
+  assertEquals((await call('POST', `orgs/${ORG}/glossary`, { user: HR, body: { term: 'Rack rate', meaning: 'The full price' } })).status, 200);
+  assertEquals((await call('POST', `orgs/${ORG}/assignments`, { user: HR, body: { scope: 'all', target_level: 'b1' } })).status, 200);
+  assertEquals((await call('GET', `orgs/${ORG}/assignments`, { user: HR })).status, 200);
+  assertEquals((await call('POST', `orgs/${ORG}/glossary/practice`, { user: HR, body: { mode: 'cards', seen: 5 } })).status, 402);
+
+  // A seated learner goes through every one of them.
+  db.rows('company_roleplay_sessions')[0].member_id = M.employee;
+  for (const [method, path, options] of practiceCalls(EMPLOYEE)) assertEquals((await call(method, path, options)).status, 200, path);
+  assertEquals((await call('GET', `orgs/${ORG}/my/home`, { user: EMPLOYEE })).body.can_learn, true);
+});
+
+Deno.test('a pilot or an ended agreement closes seats and the Schood English link; staff are exempt', async () => {
+  const now = new Date('2026-10-30T09:00:00Z');
+  const { db, call } = setup({ ai: roleplayAi(), now: () => now });
+  addSession(db, M.employee);
+  const org = db.rows('company_orgs')[0];
+  const locked = async (writes: string) => {
+    for (const [method, path, options] of practiceCalls(EMPLOYEE)) assertEquals((await call(method, path, options)).body.code, method === 'GET' ? 'seat_required' : writes, path);
+    const home = await call('GET', `orgs/${ORG}/my/home`, { user: EMPLOYEE });
+    assertEquals([home.body.can_learn, home.body.english_url, home.body.member.seat], [false, null, true]);
+  };
+
+  org.status = 'pilot';
+  await locked('seat_required');
+  // After an agreement ends the handler already refuses every write.
+  org.status = 'active';
+  org.contract_ends_at = '2026-10-29T00:00:00Z';
+  await locked('contract_ended');
+
+  org.contract_ends_at = '2026-11-30T00:00:00Z';
+  const open = await call('GET', `orgs/${ORG}/my/home`, { user: EMPLOYEE });
+  assertEquals([open.body.can_learn, open.body.english_url], [true, 'https://english.schood.online']);
+  assertEquals((await call('GET', `orgs/${ORG}/learn/hospitality-f1`, { user: EMPLOYEE })).status, 200);
+
+  // Staff browse lessons without a seat, even in a pilot, and can try them from a membership.
+  org.status = 'pilot';
+  const STAFF = '00000000-0000-4000-8000-0000000000c9';
+  db.rows('users').push({ id: STAFF, role: 'admin' });
+  assertEquals((await call('GET', `orgs/${ORG}/learn/hospitality-f1`, { user: STAFF })).status, 200);
+  assertEquals((await call('GET', `orgs/${ORG}/tracks`, { user: STAFF })).body.can_learn, true);
+  db.rows('company_members').push({ ...db.rows('company_members')[0], id: crypto.randomUUID(), user_id: STAFF, seat: false });
+  assertEquals((await call('POST', `orgs/${ORG}/roleplay`, { user: STAFF, body: { scenario: 'hospitality-rp-phone-booking' } })).status, 200);
+});
+
+/** Behaves like production, where PostgREST returns at most 1,000 rows per request. */
+function capAt1000(db: FakeDb) {
+  const from = db.from.bind(db);
+  db.from = (table: string) => from(table).limit(1000);
+}
+const filler = (index: number) => `00000000-0000-0000-0000-${String(index).padStart(12, '0')}`;
+
+Deno.test('the training plan reads every member and every lesson row past the 1,000-row limit', async () => {
+  const { db, call } = setup();
+  capAt1000(db);
+  // More people than one page, sorted ahead of the real ones, and all in the employee's department.
+  const template = db.rows('company_members').find((row) => row.id === M.employee)!;
+  db.tables.company_members.unshift(...Array.from({ length: 1100 }, (_, index) => ({ ...template, id: filler(index), user_id: null, email: null, full_name: `Person ${index}`, seat: false })));
+  const assignment = (await call('POST', `orgs/${ORG}/assignments`, { user: HR, body: { scope: 'departments', department_ids: [FRONT], track_code: 'hospitality' } })).body.assignments[0];
+
+  // More lesson rows than one page, ahead of the employee's completed lessons.
+  db.rows('company_lesson_progress').push(...Array.from({ length: 1100 }, (_, index) => ({ id: filler(index), org_id: ORG, member_id: filler(index), track_code: 'general', lesson_code: 'general-f1', status: 'started', updated_at: '2026-10-01T00:00:00Z' })));
+  const { track } = findLesson('hospitality-f1')!;
+  track.lessons.forEach((lesson, index) => db.rows('company_lesson_progress').push({ id: `ffffffff-0000-4000-8000-${String(index).padStart(12, '0')}`, org_id: ORG, member_id: M.employee, track_code: 'hospitality', lesson_code: lesson.code, status: 'completed', updated_at: '2026-10-20T00:00:00Z' }));
+
+  const list = await call('GET', `orgs/${ORG}/assignments`, { user: HR });
+  assertEquals(list.body.assignments[0].stats.people, 1102);
+  assertEquals(list.body.assignments[0].stats.done, 1);
+  const detail = await call('GET', `orgs/${ORG}/assignments/${assignment.id}`, { user: HR });
+  const employee = detail.body.people.find((row: { member_id: string }) => row.member_id === M.employee);
+  assertEquals([employee.lessons_done, employee.done, employee.last_active], [track.lessons.length, true, '2026-10-20T00:00:00Z']);
+
+  // HR can choose someone past the first page, and sees every assignment.
+  const late = (await call('POST', `orgs/${ORG}/assignments`, { user: HR, body: { scope: 'people', member_ids: [M.other], target_level: 'b1' } }));
+  assertEquals(late.status, 200);
+  db.rows('company_assignments').unshift(...Array.from({ length: 1100 }, (_, index) => ({ id: filler(index), org_id: ORG, track_code: null, target_level: 'b1', due_date: null, department_id: null, member_id: filler(index), note: null, status: 'active', created_at: '2020-01-01' })));
+  assertEquals((await call('GET', `orgs/${ORG}/assignments`, { user: HR })).body.assignments.length, 1102);
+});
+
+Deno.test('My English finds a member\'s assignments past the 1,000-row limit', async () => {
+  const { db, call } = setup();
+  capAt1000(db);
+  db.rows('company_assignments').push(
+    ...Array.from({ length: 1100 }, (_, index) => ({ id: filler(index), org_id: ORG, track_code: 'general', target_level: null, due_date: null, department_id: null, member_id: crypto.randomUUID(), note: null, status: 'active', created_at: '2026-10-01' })),
+    { id: 'ffffffff-0000-4000-8000-000000000001', org_id: ORG, track_code: 'hospitality', target_level: null, due_date: null, department_id: null, member_id: null, note: 'Everyone', status: 'active', created_at: '2026-10-01' },
+    { id: 'ffffffff-0000-4000-8000-000000000002', org_id: ORG, track_code: 'hospitality', target_level: null, due_date: null, department_id: FRONT, member_id: null, note: 'Front office', status: 'active', created_at: '2026-10-01' },
+    { id: 'ffffffff-0000-4000-8000-000000000003', org_id: ORG, track_code: 'hospitality', target_level: null, due_date: null, department_id: null, member_id: M.employee, note: 'Just you', status: 'active', created_at: '2026-10-01' },
+  );
+  const home = await call('GET', `orgs/${ORG}/my/home`, { user: EMPLOYEE });
+  assertEquals(home.body.assignments.map((row: { note: string }) => row.note).sort(), ['Everyone', 'Front office', 'Just you']);
+});
+
+Deno.test('a manager with no department sees nobody through company-wide assignments', async () => {
+  const { db, call } = setup();
+  const manager = db.rows('company_members').find((row) => row.id === M.manager)!;
+  manager.department_id = null;
+  db.rows('company_members').find((row) => row.id === M.other)!.department_id = null;
+  const assignment = (await call('POST', `orgs/${ORG}/assignments`, { user: HR, body: { scope: 'all', track_code: 'general' } })).body.assignments[0];
+
+  const detail = await call('GET', `orgs/${ORG}/assignments/${assignment.id}`, { user: MANAGER });
+  assertEquals(detail.status, 200);
+  assertEquals([detail.body.people, detail.body.stats.people, detail.body.stats.completion], [[], 0, null]);
+  const list = await call('GET', `orgs/${ORG}/assignments`, { user: MANAGER });
+  assertEquals([list.body.assignments.length, list.body.assignments[0].stats.people, list.body.assignments[0].stats.hidden], [1, 0, 0]);
+
+  // HR still sees the same people, and a manager with a department sees theirs.
+  assertEquals((await call('GET', `orgs/${ORG}/assignments/${assignment.id}`, { user: HR })).body.stats.people, 3);
+  manager.department_id = FRONT;
+  assertEquals((await call('GET', `orgs/${ORG}/assignments/${assignment.id}`, { user: MANAGER })).body.people.map((row: { member_id: string }) => row.member_id).sort(), [M.employee, M.manager]);
+});
+
+Deno.test('only a first completion counts as a lesson and earns points', async () => {
+  const { db, call } = setup();
+  const code = 'hospitality-f1';
+  const check = (answers: unknown) => call('POST', `orgs/${ORG}/learn/${code}/check`, { user: EMPLOYEE, body: { answers, minutes: 5 } });
+  for (let attempt = 0; attempt < 5; attempt++) await check({});
+  const activity = () => db.rows('company_activity');
+  assertEquals(activity().filter((row) => row.kind === 'lesson').length, 0);
+  assertEquals(activity().filter((row) => row.kind === 'lesson_retry').length, 5);
+
+  assertEquals((await check(correctAnswers(code))).body.first_completion, true);
+  for (let attempt = 0; attempt < 3; attempt++) assertEquals((await check(correctAnswers(code))).body.first_completion, false);
+  assertEquals(activity().filter((row) => row.kind === 'lesson').length, 1);
+  assertEquals(activity().reduce((sum, row) => sum + Number(row.points), 0), 20);
+  assertEquals(activity().reduce((sum, row) => sum + Number(row.minutes), 0), 45);
+});
+
+Deno.test('glossary practice earns at most 40 points a Tashkent day, and earns again the next day', async () => {
+  let now = new Date('2026-10-30T18:30:00Z'); // 23:30 in Tashkent
+  const { db, call } = setup({ now: () => now });
+  const term = crypto.randomUUID();
+  db.rows('company_glossary_terms').push({ id: term, org_id: ORG, term: 'Rack rate', meaning: 'The full price', department_id: null });
+  const round = async (body: Record<string, unknown>) => {
+    assertEquals((await call('POST', `orgs/${ORG}/glossary/practice`, { user: EMPLOYEE, body: { minutes: 2, ...body } })).status, 200);
+    db.rows('company_activity').at(-1)!.created_at = now.toISOString();
+  };
+  await round({ mode: 'cards', seen: 30 });
+  await round({ mode: 'cards', seen: 200 });
+  await round({ mode: 'quiz', answers: Array.from({ length: 50 }, () => ({ term, choice: term })) });
+  assertEquals(db.rows('company_activity').map((row) => row.points), [30, 10, 0]);
+  assertEquals(db.rows('company_activity').map((row) => row.minutes), [2, 2, 2]);
+
+  now = new Date('2026-10-30T19:30:00Z'); // 00:30 the next day in Tashkent
+  await round({ mode: 'cards', seen: 5 });
+  assertEquals(db.rows('company_activity').at(-1)!.points, 5);
+});
+
+Deno.test('the glossary reads all its terms past the 1,000-row limit', async () => {
+  const { db, call } = setup();
+  capAt1000(db);
+  const terms = db.rows('company_glossary_terms');
+  terms.push(...Array.from({ length: 1100 }, (_, index) => ({ id: crypto.randomUUID(), org_id: ORG, term: `Term ${String(index).padStart(4, '0')}`, meaning: 'x', department_id: null })));
+  const hidden = terms[1050];
+
+  assertEquals((await call('GET', `orgs/${ORG}/glossary`, { user: HR })).body.terms.length, 1100);
+  const patched = await call('PATCH', `orgs/${ORG}/glossary/${hidden.id}`, { user: HR, body: { meaning: 'Now explained' } });
+  assertEquals([patched.status, patched.body.term.meaning], [200, 'Now explained']);
+  assertEquals((await call('POST', `orgs/${ORG}/glossary`, { user: HR, body: { term: String(hidden.term).toUpperCase(), meaning: 'Again' } })).body.code, 'glossary_duplicate');
+  const imported = await call('POST', `orgs/${ORG}/glossary/import`, { user: HR, body: { csv: `term,meaning\n${hidden.term},From the file\n` } });
+  assertEquals([imported.body.added, imported.body.updated], [0, 1]);
+
+  terms.push(...Array.from({ length: 900 }, (_, index) => ({ id: crypto.randomUUID(), org_id: ORG, term: `Extra ${index}`, meaning: 'x', department_id: null })));
+  assertEquals((await call('POST', `orgs/${ORG}/glossary`, { user: HR, body: { term: 'One too many', meaning: 'x' } })).body.code, 'glossary_full');
+});
+
+Deno.test('assignment dates follow Tashkent, like My English and the overview', async () => {
+  const now = new Date('2026-11-01T20:00:00Z'); // 01:00 on 2 November in Tashkent
+  const { db, call } = setup({ now: () => now });
+  assertEquals((await call('POST', `orgs/${ORG}/assignments`, { user: HR, body: { scope: 'all', target_level: 'b1', due_date: '2026-11-01' } })).body.field, 'due_date');
+  assertEquals((await call('POST', `orgs/${ORG}/assignments`, { user: HR, body: { scope: 'all', target_level: 'b1', due_date: '2026-11-02' } })).status, 200);
+  const row = db.rows('company_assignments')[0];
+  assertEquals((await call('GET', `orgs/${ORG}/assignments`, { user: HR })).body.assignments[0].stats.overdue, false);
+  row.due_date = '2026-11-01';
+  assertEquals((await call('GET', `orgs/${ORG}/assignments`, { user: HR })).body.assignments[0].stats.overdue, true);
+  assertEquals((await call('GET', `orgs/${ORG}/assignments/${row.id}`, { user: HR })).body.stats.overdue, true);
+  assertEquals((await call('GET', `orgs/${ORG}/my/home`, { user: EMPLOYEE })).body.assignments[0].overdue, true);
 });

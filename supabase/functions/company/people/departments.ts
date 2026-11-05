@@ -1,6 +1,6 @@
 // Departments: create (one or several at once), rename, delete. Deleting moves its
 // people to "no department" (the foreign key sets it to null).
-import { HR_ROLES, LEAD_ROLES } from '../../../../packages/company-core/src/mod.ts';
+import { HR_ROLES } from '../../../../packages/company-core/src/mod.ts';
 import { check, CompanyError, UUID, type Ctx, type Route } from '../types.ts';
 import { obj, text } from '../util.ts';
 import { fetchAll } from './shared.ts';
@@ -19,7 +19,7 @@ const key = (name: string) => name.trim().toLowerCase();
 
 export const departmentRoutes: Route[] = [
   {
-    method: 'GET', path: 'orgs/:org/departments', access: 'org', roles: LEAD_ROLES, allowSuspended: true,
+    method: 'GET', path: 'orgs/:org/departments', access: 'org', roles: HR_ROLES, allowSuspended: true,
     async handle(ctx) {
       const org = ctx.org!;
       const departments = check<DepartmentRow[]>(await ctx.db.from('company_departments').select('id,name,created_at').eq('org_id', org.id).order('name'));

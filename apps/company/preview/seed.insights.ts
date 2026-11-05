@@ -4,6 +4,7 @@
 // app activity for a few seated people. Plus a canned AI report summary.
 import { scoreToLevel } from '../../../packages/company-core/src/mod.ts';
 import type { FakeDb } from '../../../supabase/functions/company/testing.ts';
+import { findTrack } from '../../../supabase/functions/company/training/tracks/index.ts';
 import type { World } from './boot.ts';
 
 type Row = Record<string, unknown>;
@@ -104,14 +105,18 @@ export function seed(db: FakeDb, world: World) {
     { id: crypto.randomUUID(), org_id: orgId, track_code: 'sales', target_level: 'b2', due_date: localDay(now, -4), department_id: departments.sales, member_id: null, note: null, status: 'active', created_by: owner, created_at: at(now, -40, 9), updated_at: at(now, -40, 9) },
     { id: crypto.randomUUID(), org_id: orgId, track_code: 'banking_finance', target_level: null, due_date: localDay(now, 45), department_id: departments.finance, member_id: null, note: null, status: 'active', created_by: owner, created_at: at(now, -20, 9), updated_at: at(now, -20, 9) },
   );
-  learners.filter((row) => row.consent_at && row.user_id).forEach((member, index) => {
-    const track = String(member.job_role);
+  // seed.training gives the employee and manager personas their own progress and everyone
+  // else foundation lessons, so these are real professional-stage lessons that cannot clash.
+  const trainingPersonas = new Set<string>([world.personas.employee.id, world.personas.manager.id]);
+  learners.filter((row) => row.consent_at && row.user_id && !trainingPersonas.has(String(row.user_id))).forEach((member, index) => {
+    const track = findTrack(String(member.job_role)) ?? findTrack('general')!;
+    const lessons = track.lessons.filter((entry) => entry.stage === 'professional');
     const done = 2 + (index % 5);
-    for (let lesson = 1; lesson <= done + 1; lesson++) {
+    for (let lesson = 1; lesson <= Math.min(done + 1, lessons.length); lesson++) {
       const completed = lesson <= done;
       const when = at(now, -36 + lesson * 6 + (index % 4), 9 + (lesson % 8));
       db.rows('company_lesson_progress').push({
-        id: crypto.randomUUID(), org_id: orgId, member_id: member.id, user_id: member.user_id, track_code: track, lesson_code: `${track}-${String(lesson).padStart(2, '0')}`,
+        id: crypto.randomUUID(), org_id: orgId, member_id: member.id, user_id: member.user_id, track_code: track.code, lesson_code: lessons[lesson - 1].code,
         status: completed ? 'completed' : 'started', score: completed ? 62 + ((index * 11 + lesson * 7) % 36) : null, minutes: completed ? 14 + ((index + lesson) % 9) : 6,
         attempts: 1, data: {}, completed_at: completed ? when : null, created_at: when, updated_at: when,
       });

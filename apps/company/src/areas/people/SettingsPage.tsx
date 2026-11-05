@@ -104,7 +104,7 @@ export function SettingsPage() {
         <p className="hint">{org.status === 'pilot' ? t('people.settings.pilotNote', { tests: data.pilot_tests }) : t('people.settings.planNote')}</p>
         <div className="company-actions">
           {contactEmail && <a className="button-link quiet" href={`mailto:${contactEmail}`}>{t('people.settings.writeSchood')}</a>}
-          {contactPhone && <a className="button-link quiet" href={`tel:${contactPhone.replace(/[^d+]/g, '')}`}>{t('people.settings.callSchood', { phone: contactPhone })}</a>}
+          {contactPhone && <a className="button-link quiet" href={`tel:${contactPhone.replace(/[^\d+]/g, '')}`}>{t('people.settings.callSchood', { phone: contactPhone })}</a>}
           {!contactEmail && !contactPhone && <Link className="button-link quiet" to="/#demo">{t('people.settings.talk')}</Link>}
         </div>
       </section>

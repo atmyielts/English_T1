@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../../api.ts';
 import { useErrorText } from '../../i18n/index.ts';
+import type { Localized } from '../training/lib.tsx';
 
 export type LevelCode = 'pre_a1' | 'a1' | 'a2' | 'b1' | 'b2' | 'c1' | 'c2';
 export type LevelCounts = Record<LevelCode | 'none', number>;
@@ -48,13 +49,13 @@ export interface Profile {
   can_manage: boolean;
   tests: { id: string; title: string | null; kind: string | null; status: string; overall_level: LevelCode | null; overall_score: number | null; skills: SkillBar[]; started_at: string; graded_at: string | null; certificate_code: string | null }[];
   certificates: { code: string; level: LevelCode | null; date: string | null; title: string | null }[];
-  assignments: { id: string; track_code: string | null; target_level: LevelCode | null; due_date: string | null; status: string; note: string | null; scope: 'person' | 'department'; overdue: boolean; target_met: boolean | null; lessons_done: number | null }[];
+  assignments: { id: string; track_code: string | null; target_level: LevelCode | null; due_date: string | null; status: string; note: string | null; scope: 'person' | 'department' | 'all'; overdue: boolean; target_met: boolean | null; lessons_done: number | null }[];
   learning: null | {
     weeks_count: number; minutes: number; points: number; active_days: number; last_at: string | null; kinds: Kinds;
     weeks: { week: string; minutes: number; events: number }[];
     lessons_completed: number; lessons_started: number; lesson_minutes: number; avg_lesson_score: number | null;
     tracks: { track_code: string; completed: number; started: number; last_at: string | null }[];
-    recent_lessons: { track_code: string; lesson_code: string; status: string; score: number | null; minutes: number; completed_at: string | null; updated_at: string | null }[];
+    recent_lessons: { track_code: string; lesson_code: string; title: Localized | null; status: string; score: number | null; minutes: number; completed_at: string | null; updated_at: string | null }[];
     sessions: { id: string; title: string; kind: string; starts_at: string; duration_minutes: number }[];
   };
   english: null | {

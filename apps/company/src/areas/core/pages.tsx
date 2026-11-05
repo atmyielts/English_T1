@@ -21,7 +21,11 @@ export function SignIn() {
     setBusy(true); setError('');
     try {
       const { error } = await supabase!.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      if (error) {
+        // Supabase's own messages are in English only.
+        const code = (error as { code?: string }).code ?? '';
+        setError(t(code === 'invalid_credentials' ? 'signin.error.invalid' : code === 'email_not_confirmed' ? 'signin.error.unconfirmed' : code === 'over_request_rate_limit' || error.status === 429 ? 'signin.error.tooMany' : 'signin.error.other'));
+      }
     } catch (cause) {
       setError(problem(cause));
     } finally {

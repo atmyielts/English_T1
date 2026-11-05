@@ -27,7 +27,13 @@ export function matchPath(pattern: string, path: string): Record<string, string>
   if (want.length !== have.length) return null;
   const params: Record<string, string> = {};
   for (let index = 0; index < want.length; index++) {
-    if (want[index].startsWith(':')) params[want[index].slice(1)] = decodeURIComponent(have[index]);
+    if (want[index].startsWith(':')) {
+      try {
+        params[want[index].slice(1)] = decodeURIComponent(have[index]);
+      } catch {
+        return null; // A malformed percent sequence is simply not this page.
+      }
+    }
     else if (want[index] !== have[index]) return null;
   }
   return params;

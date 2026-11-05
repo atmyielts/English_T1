@@ -7,6 +7,7 @@ import { api, type Usage } from '../../api.ts';
 import { useAppT, type AppKey } from '../../i18n/index.ts';
 import { Link, navigate } from '../../router.tsx';
 import { useWorkspace } from '../../session.tsx';
+import { decodeLink, encodeLink } from './flow.ts';
 import type { Assessment, AttemptRow, Stats } from './types.ts';
 import {
   CopyButton, DecisionBadge, FlagList, LevelBadge, MeetsBadge, StatusBadge, downloadText, shortLevel, skillText, useFormat, useHiringError, useLoad,
@@ -15,8 +16,8 @@ import {
 const SUGGESTED: Record<Skill, number> = { grammar: 7, vocabulary: 7, reading: 12, listening: 10, writing: 15, speaking: 8 };
 export const suggested = (skills: Skill[]) => Math.min(180, Math.max(5, skills.reduce((sum, skill) => sum + SUGGESTED[skill], 0)));
 const linkKey = (id: string) => `company-hiring-link:${id}`;
-export const rememberLink = (id: string, link: string) => { try { localStorage.setItem(linkKey(id), link); } catch { /* shown once */ } };
-const recallLink = (id: string) => { try { return localStorage.getItem(linkKey(id)); } catch { return null; } };
+export const rememberLink = (id: string, link: string, linkId: string | null) => { try { localStorage.setItem(linkKey(id), encodeLink(link, linkId)); } catch { /* shown once */ } };
+const recallLink = (id: string, liveId: string | null) => { try { return decodeLink(localStorage.getItem(linkKey(id)), liveId); } catch { return null; } };
 const toDateInput = (value: string | null) => value ? value.slice(0, 10) : '';
 const fromDateInput = (value: string) => value ? new Date(`${value}T23:59:00+05:00`).toISOString() : null;
 
@@ -45,7 +46,7 @@ export function HiringListPage() {
     {creating && <section aria-labelledby="hiring-form-title">
       <h2 id="hiring-form-title">{t('hiring.form.createTitle')}</h2>
       <TestForm onCancel={() => setCreating(false)} onSaved={(assessment, link) => {
-        if (link) rememberLink(assessment.id, link);
+        if (link) rememberLink(assessment.id, link, assessment.link_id);
         void reload();
         navigate(`/w/${org.id}/hiring/${assessment.id}`);
       }}/>
@@ -165,14 +166,14 @@ export function TestForm({ initial, onSaved, onCancel }: { initial?: Assessment;
 function LinkPanel({ assessment }: { assessment: Assessment }) {
   const t = useAppT(), problem = useHiringError();
   const { org } = useWorkspace();
-  const [link, setLink] = useState<string | null>(() => recallLink(assessment.id));
+  const [link, setLink] = useState<string | null>(() => recallLink(assessment.id, assessment.link_id));
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
   async function regenerate() {
     setBusy(true); setError('');
     try {
-      const response = await api<{ link: string }>(`orgs/${org.id}/assessments/${assessment.id}/link`, { method: 'POST' });
-      rememberLink(assessment.id, response.link);
+      const response = await api<{ link: string; link_id: string }>(`orgs/${org.id}/assessments/${assessment.id}/link`, { method: 'POST' });
+      rememberLink(assessment.id, response.link, response.link_id);
       setLink(response.link);
       setConfirming(false);
     } catch (cause) {
@@ -209,7 +210,7 @@ interface Filters { search: string; meets: '' | 'yes' | 'no'; status: string; de
 export function TestDetailPage({ assessmentId }: { assessmentId: string }) {
   const t = useAppT(), problem = useHiringError(), format = useFormat();
   const { org } = useWorkspace();
-  const { data, error, setData } = useLoad(() => api<{ assessment: Assessment; stats: Stats; attempts: AttemptRow[] }>(`orgs/${org.id}/assessments/${assessmentId}`), [org.id, assessmentId]);
+  const { data, error, setData } = useLoad(() => api<{ assessment: Assessment; stats: Stats; attempts: AttemptRow[] }>(`orgs/${org.id}/assessments/${assessmentId}`, { timeoutMs: 60_000 }), [org.id, assessmentId]);
   const [editing, setEditing] = useState(false);
   const [filters, setFilters] = useState<Filters>({ search: '', meets: '', status: '', decision: '', sort: 'newest' });
   const [picked, setPicked] = useState<string[]>([]);
@@ -239,10 +240,10 @@ export function TestDetailPage({ assessmentId }: { assessmentId: string }) {
     try {
       if (kind === 'duplicate') {
         const copy = await api<{ assessment: Assessment; link: string }>(`orgs/${org.id}/assessments/${assessment.id}/duplicate`, { method: 'POST' });
-        rememberLink(copy.assessment.id, copy.link);
+        rememberLink(copy.assessment.id, copy.link, copy.assessment.link_id);
         navigate(`/w/${org.id}/hiring/${copy.assessment.id}`);
       } else if (kind === 'export') {
-        const file = await api<{ filename: string; csv: string }>(`orgs/${org.id}/assessments/${assessment.id}/export`);
+        const file = await api<{ filename: string; csv: string }>(`orgs/${org.id}/assessments/${assessment.id}/export`, { timeoutMs: 60_000 });
         downloadText(file.filename, file.csv);
       } else {
         const { assessment: updated } = await api<{ assessment: Assessment }>(`orgs/${org.id}/assessments/${assessment.id}`, { method: 'PATCH', body: { status: kind === 'close' ? 'closed' : 'open' } });

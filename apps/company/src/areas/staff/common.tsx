@@ -5,7 +5,7 @@ import { useAppT } from '../../i18n/index.ts';
 import { Link, useLocation } from '../../router.tsx';
 import { useDates } from '../people/ui.tsx';
 
-export interface StaffOrg extends Org { people: number; invited: number; seats_used: number }
+export interface StaffOrg extends Org { people: number; invited: number; seats_used: number; ownerless: boolean }
 export interface AuditRow { id: string | number; org_id?: string | null; org_name?: string | null; actor: string | null; actor_name: string | null; action: string; target?: string | null; details: Record<string, unknown>; created_at: string }
 export interface Lead {
   id: string; name: string; company: string; job_title: string | null; phone: string | null; email: string | null; size_band: string | null; industry: string | null;

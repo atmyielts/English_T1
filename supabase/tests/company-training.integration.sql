@@ -44,10 +44,25 @@ begin
   end;
   -- An unfinished role-play from yesterday is closed by the same job.
   insert into public.company_roleplay_sessions(org_id, member_id, scenario_code, track_code, created_at) values (org, member, 'hospitality-rp-phone-booking', 'hospitality', now() - interval '2 days');
+  -- One with replies keeps its practice in the activity log; the empty one above logs nothing.
+  insert into public.company_roleplay_sessions(org_id, member_id, user_id, scenario_code, track_code, learner_turns, created_at) values (org, member, learner, 'hospitality-rp-room-not-ready', 'hospitality', 3, now() - interval '2 days');
   purged := public.company_purge_training_drafts();
   assert purged = 1, 'purged ' || purged;
   assert (select count(*) from public.company_writing_checks where org_id = org) = 1, 'recent draft kept';
   assert (select count(*) from public.company_roleplay_sessions where status = 'active') = 0, 'stale role-play closed';
+  assert (select count(*) from public.company_activity where org_id = org and kind = 'roleplay') = 1, 'abandoned role-play logged once';
+  assert (select points = 11 and minutes between 1 and 30 and ref = 'hospitality-rp-room-not-ready' and created_at < now() - interval '1 day'
+            from public.company_activity where org_id = org and kind = 'roleplay'), 'abandoned role-play logged with its points, on its day';
+  perform public.company_purge_training_drafts();
+  assert (select count(*) from public.company_activity where org_id = org and kind = 'roleplay') = 1, 'second purge logs nothing';
+
+  -- A lesson retry is a kind of its own; anything else is still refused.
+  insert into public.company_activity(org_id, member_id, user_id, kind, minutes, points, ref) values (org, member, learner, 'lesson_retry', 5, 0, 'hospitality-f1');
+  begin
+    insert into public.company_activity(org_id, member_id, kind) values (org, member, 'nonsense');
+    raise exception 'unknown activity kind accepted';
+  exception when check_violation then null;
+  end;
 
   -- Glossary terms are unique per workspace regardless of case and spaces.
   insert into public.company_glossary_terms(org_id, term, meaning, ru, uz, department_id) values (org, 'Late check-out', 'Leaving the room after 12:00 for a fee', 'Поздний выезд', 'Kech chiqish', dept);

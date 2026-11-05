@@ -73,9 +73,8 @@ export function viewerOf(ctx: Ctx): Viewer {
 
 /** Whether the viewer may see this member at all. */
 export function canSee(viewer: Viewer, member: Pick<MemberRow, 'id' | 'department_id'>): boolean {
-  if (viewer.hr) return true;
-  if (viewer.manager) return viewer.departmentId !== null && member.department_id === viewer.departmentId;
-  return member.id === viewer.memberId;
+  if (viewer.hr || member.id === viewer.memberId) return true;
+  return viewer.manager && viewer.departmentId !== null && member.department_id === viewer.departmentId;
 }
 
 /** Shares learning activity with the company (or it is the person themself). */

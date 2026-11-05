@@ -1,6 +1,7 @@
 // Signed-in staff tests: the member's list of placement/progress tests (the
 // contract training's My English reads), starting or resuming one, autosave, next
 // section, submit, and their own results and certificates.
+import { contractEnded } from '../handler.ts';
 import { check, CompanyError, type Ctx, type MemberRow, type Route } from '../types.ts';
 import { obj, uuid } from '../util.ts';
 import {
@@ -29,7 +30,8 @@ function standing(ctx: Ctx, assessment: AssessmentRow, attempts: AttemptRow[]) {
   const finished = latest && (latest.status === 'graded' || latest.status === 'submitted') ? latest : null;
   const retestDays = settingsOf(assessment).retest_days ?? null;
   const retestAt = finished && retestDays ? new Date(new Date(finished.submitted_at ?? finished.started_at).getTime() + retestDays * DAY) : null;
-  const isClosed = closed(assessment, ctx.now());
+  // After the contract ends nobody starts a new attempt; one already started may finish.
+  const isClosed = closed(assessment, ctx.now()) || contractEnded(ctx.org!, ctx.now());
   let status: 'todo' | 'in_progress' | 'done';
   if (latest?.status === 'started') status = 'in_progress';
   else if (finished && !(retestAt && retestAt.getTime() <= ctx.now().getTime())) status = 'done';
@@ -143,14 +145,26 @@ export const routes: Route[] = [
       const input = obj(body);
       const assessment = await myCampaign(ctx, String(input.assessment_id ?? ''));
       const attempts = await myAttempts(ctx, member);
-      const place = standing(ctx, assessment, attempts);
+      let place = standing(ctx, assessment, attempts);
       if (place.latest?.status === 'started') {
         const current = await expireIfOverdue(ctx, place.latest, assessment, ctx.org!, member);
         if (current.status === 'started') return view(ctx, current, assessment);
+        // It just closed: the retest rule applies to how it ended.
+        place = standing(ctx, assessment, attempts.map((attempt) => attempt.id === current.id ? current : attempt));
       }
       if (place.isClosed) throw new CompanyError('test_closed', 'This test is closed.', 409);
       if (place.status === 'done') throw new CompanyError('already_taken', 'You have already taken this test.', 409, { retest_at: place.retestAt?.toISOString() ?? null });
-      const attempt = await startAttempt(ctx, { assessment, org: ctx.org!, member });
+      let attempt: AttemptRow;
+      try {
+        attempt = await startAttempt(ctx, { assessment, org: ctx.org!, member });
+      } catch (cause) {
+        // Another tab started it at the same moment: resume that one.
+        const other = cause instanceof CompanyError && cause.code === 'attempt_exists'
+          ? (await myAttempts(ctx, member)).find((row) => row.assessment_id === assessment.id && row.status === 'started')
+          : null;
+        if (!other) throw cause;
+        return view(ctx, other, assessment);
+      }
       await ctx.audit('placement.started', attempt.id, { assessment: assessment.id });
       return view(ctx, attempt, assessment);
     },

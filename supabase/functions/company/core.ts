@@ -1,7 +1,7 @@
 // Core routes: who am I, create a pilot workspace, read a workspace, consent.
 // Also the helpers other areas reuse (English access sync, seat and test usage).
 import { INDUSTRIES, SIZE_BANDS, type Industry, type SizeBand } from '../../../packages/company-core/src/mod.ts';
-import { MEMBER_COLUMNS, ORG_COLUMNS } from './handler.ts';
+import { contractEnded, MEMBER_COLUMNS, ORG_COLUMNS } from './handler.ts';
 import { check, CompanyError, type Ctx, type Db, type MemberRow, type OrgRow, type Route } from './types.ts';
 import { obj, oneOf, text } from './util.ts';
 
@@ -35,6 +35,7 @@ export async function reserveTest(db: Db, orgId: string): Promise<void> {
 /** Counts one AI call for the workspace; false once today's cap is reached. */
 export async function consumeAi(ctx: Ctx): Promise<boolean> {
   if (!ctx.org) return true;
+  if (contractEnded(ctx.org, ctx.now())) return false;
   const configured = Number((ctx.org.settings as Record<string, unknown>)?.ai_daily_limit);
   const limit = Number.isInteger(configured) && configured >= 0 ? configured : ctx.env.aiDailyLimit;
   const { data, error } = await ctx.db.rpc('company_consume_ai', { p_org: ctx.org.id, p_limit: limit });

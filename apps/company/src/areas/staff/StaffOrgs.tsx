@@ -14,8 +14,8 @@ export function StaffHome() {
 
 function StaffOrgs() {
   const t = useAppT(), problem = useProblem(), { day } = useDates();
-  const [data, setData] = useState<{ orgs: StaffOrg[]; counts: Record<string, number> } | null>(null);
-  const [q, setQ] = useState(''), [status, setStatus] = useState('');
+  const [data, setData] = useState<{ orgs: StaffOrg[]; counts: Record<string, number>; ownerless: number } | null>(null);
+  const [q, setQ] = useState(''), [status, setStatus] = useState(''), [ownerless, setOwnerless] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
   const load = useCallback(async () => {
@@ -23,13 +23,14 @@ function StaffOrgs() {
       const params = new URLSearchParams();
       if (q.trim()) params.set('q', q.trim());
       if (status) params.set('status', status);
+      if (ownerless) params.set('ownerless', '1');
       const search = params.toString();
       setData(await api(`staff/orgs${search ? `?${search}` : ''}`));
       setError('');
     } catch (cause) {
       setError(problem(cause));
     }
-  }, [q, status]);
+  }, [q, status, ownerless]);
   useEffect(() => {
     const timer = setTimeout(() => void load(), 250);
     return () => clearTimeout(timer);
@@ -45,6 +46,9 @@ function StaffOrgs() {
       {ORG_STATUSES.map((value) => <button key={value} type="button" className={status === value ? '' : 'quiet'} aria-pressed={status === value} onClick={() => setStatus(value)}>
         {t(`status.${value}` as AppKey)} <span className="staff-count">{data?.counts[value] ?? 0}</span>
       </button>)}
+      <button type="button" className={ownerless ? '' : 'quiet'} aria-pressed={ownerless} onClick={() => setOwnerless(!ownerless)}>
+        {t('staff.orgs.noOwner')} <span className="staff-count">{data?.ownerless ?? 0}</span>
+      </button>
     </div>
     {error && <p className="error" role="alert">{error}</p>}
     {!data ? <p role="status">{t('app.loading')}</p> : data.orgs.length === 0 ? <p className="people-empty">{t('staff.orgs.empty')}</p> : <div className="company-table-wrap">
@@ -55,7 +59,7 @@ function StaffOrgs() {
         </tr></thead>
         <tbody>{data.orgs.map((org) => <tr key={org.id}>
           <td><Link to={`/staff/orgs/${org.id}`}><strong>{org.name}</strong></Link><span className="people-email">{t(`industry.${org.industry}` as AppKey)}{org.city ? ` · ${org.city}` : ''}</span></td>
-          <td><span className={`company-badge ${org.status === 'active' ? 'good' : org.status === 'pilot' ? '' : 'bad'}`}>{t(`status.${org.status}` as AppKey)}</span></td>
+          <td><span className={`company-badge ${org.status === 'active' ? 'good' : org.status === 'pilot' ? '' : 'bad'}`}>{t(`status.${org.status}` as AppKey)}</span>{org.ownerless && <> <span className="company-badge warn">{t('staff.orgs.noOwner')}</span></>}</td>
           <td>{org.people}{org.invited ? <span className="people-muted"> +{org.invited}</span> : ''}</td>
           <td>{org.seats_used} / {org.seats_limit}</td>
           <td>{org.tests_used ?? 0} / {org.tests_limit ?? '∞'}</td>

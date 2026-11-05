@@ -24,16 +24,20 @@ export async function buildReport(ctx: Ctx, range: Range) {
   const scopeIds = new Set(members.map((member) => member.id));
   const sharing = sharingIds(active);
   const sharingSet = new Set(sharing);
-  const [summary, allAttempts, assessments, candidates, assignmentRows, progress] = await Promise.all([
+  const [summary, allAttempts, assessments, candidates, gradedCandidates, assignmentRows, progress] = await Promise.all([
     activitySummary(ctx.db, org.id, range.start, range.end, sharing),
     gradedStaffAttempts(ctx.db, org.id, range.end),
     check<AssessmentRow[]>(await ctx.db.from('company_assessments').select('id,kind,title,min_level').eq('org_id', org.id).order('created_at', { ascending: false }).limit(1000)),
     viewer.hr ? fetchAll<CandidateAttempt>(() => ctx.db.from('company_attempts').select('id,assessment_id,status,overall_level,decision,graded_at').eq('org_id', org.id).is('member_id', null)
       .gte('started_at', range.start.toISOString()).lt('started_at', range.end.toISOString()).order('id'), 20_000) : [],
+    // Tests graded go by the grading date: a candidate can start in one month and be graded in the next.
+    viewer.hr ? ctx.db.from('company_attempts').select('id', { count: 'exact', head: true }).eq('org_id', org.id).is('member_id', null).eq('status', 'graded')
+      .gte('graded_at', range.start.toISOString()).lt('graded_at', range.end.toISOString()) : null,
     fetchAll<AssignmentRow>(() => ctx.db.from('company_assignments').select('id,track_code,target_level,due_date,department_id,member_id,status,note,created_at').eq('org_id', org.id).neq('status', 'cancelled').lt('created_at', range.end.toISOString()).order('id'), 5000),
     fetchAll<ProgressRow>(() => ctx.db.from('company_lesson_progress').select('member_id,track_code,completed_at').eq('org_id', org.id).eq('status', 'completed')
       .gte('completed_at', range.start.toISOString()).lt('completed_at', range.end.toISOString()).order('id'), 50_000),
   ]);
+  if (gradedCandidates) check(gradedCandidates);
   const attempts = allAttempts.filter((attempt) => attempt.member_id && scopeIds.has(attempt.member_id));
   const lessons = progress.filter((row) => sharingSet.has(row.member_id));
   const totals = new Map(summary.members.map((row) => [row.member_id, row]));
@@ -151,7 +155,7 @@ export async function buildReport(ctx: Ctx, range: Range) {
       active: summary.members.filter((row) => row.events > 0).length,
       minutes: summary.members.reduce((sum, row) => sum + row.minutes, 0),
       lessons: summary.members.reduce((sum, row) => sum + row.lessons, 0),
-      tests_graded: gradedInRange + candidates.filter((row) => row.status === 'graded' && row.graded_at && Date.parse(row.graded_at) < range.end.getTime()).length,
+      tests_graded: gradedInRange + (gradedCandidates?.count ?? 0),
       staff_tests: gradedInRange,
       avg_start: averageScore([...before.values()].filter((attempt) => scopeIds.has(attempt.member_id!)).map((attempt) => attempt.overall_score)),
       avg_end: averageScore([...after.values()].filter((attempt) => scopeIds.has(attempt.member_id!)).map((attempt) => attempt.overall_score)),
@@ -291,7 +295,8 @@ export const routes: Route[] = [
     },
   },
   {
-    method: 'POST', path: 'orgs/:org/reports/summary', access: 'org', roles: LEAD_ROLES, allowSuspended: true,
+    // Spends AI, so unlike the read-only report views it stays off while a workspace is suspended.
+    method: 'POST', path: 'orgs/:org/reports/summary', access: 'org', roles: LEAD_ROLES,
     async handle(ctx, _params, body) {
       const input = obj(body ?? {});
       const locale = oneOf(input.locale, ['en', 'ru', 'uz'] as const, 'locale', 'en');

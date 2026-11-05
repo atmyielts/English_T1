@@ -4,6 +4,7 @@
 // the member's level and a `test` activity row).
 import { isJobRole, isLevel, overallScore, scoreToLevel, type JobRole, type Level, type Skill } from '../../../../packages/company-core/src/mod.ts';
 import { logActivity, reserveTest } from '../core.ts';
+import { contractEnded } from '../handler.ts';
 import { check, CompanyError, type Ctx, type MemberRow, type OrgRow } from '../types.ts';
 import { readableCode } from '../util.ts';
 import {
@@ -67,10 +68,15 @@ const fallbackLevel = (assessment: AssessmentRow, member: Pick<MemberRow, 'level
 
 /** Whether the attempt is past its deadline plus the grace period. */
 export const overdue = (attempt: Pick<AttemptRow, 'deadline_at'>, now: Date) => now.getTime() > new Date(attempt.deadline_at).getTime() + GRACE_MS;
-export const pastDeadline = (attempt: Pick<AttemptRow, 'deadline_at'>, now: Date) => now.getTime() > new Date(attempt.deadline_at).getTime();
+/** A submit this soon after the deadline is the page's own time-up submit on its way, not a late one. */
+const LATE_TOLERANCE_MS = 15_000;
+export const lateSubmit = (attempt: Pick<AttemptRow, 'deadline_at'>, now: Date) => now.getTime() > new Date(attempt.deadline_at).getTime() + LATE_TOLERANCE_MS;
 /** Whether a closing date has passed. */
 export const closed = (assessment: Pick<AssessmentRow, 'status' | 'closes_at'>, now: Date) =>
   assessment.status !== 'open' || (assessment.closes_at !== null && new Date(assessment.closes_at).getTime() <= now.getTime());
+/** Whether the workspace can start new attempts. Attempts already started may still finish. */
+export const orgOpen = (org: Pick<OrgRow, 'status' | 'contract_ends_at'>, now: Date) =>
+  (org.status === 'pilot' || org.status === 'active') && !contractEnded(org, now);
 
 export async function loadAssessment(ctx: Ctx, orgId: string, id: string): Promise<AssessmentRow> {
   const row = check<AssessmentRow | null>(await ctx.db.from('company_assessments').select(ASSESSMENT_COLUMNS).eq('id', id).eq('org_id', orgId).maybeSingle());
@@ -98,20 +104,39 @@ export async function startAttempt(ctx: Ctx, input: {
   candidate?: { name: string; email: string | null; phone: string | null }; accessHash?: string | null; integrity?: Integrity; rng?: () => number;
 }): Promise<AttemptRow> {
   const { assessment, org, member } = input;
-  await reserveTest(ctx.db, org.id);
   const now = ctx.now();
   const sections = createSections(assessment.skills, {
     jobRole: jobRoleFor(assessment, member), rng: input.rng ?? Math.random, now: now.toISOString(), fallback: fallbackLevel(assessment, member),
   });
   if (!sections.length) throw new CompanyError('invalid_field', 'This test has no sections.', 400, { field: 'skills' });
-  return check<AttemptRow>(await ctx.db.from('company_attempts').insert({
+  // Insert first: the unique indexes on started attempts turn a double start into a
+  // conflict before it can use up a second test.
+  const inserted = await ctx.db.from('company_attempts').insert({
     org_id: org.id, assessment_id: assessment.id, member_id: member?.id ?? null, user_id: member?.user_id ?? null,
     candidate_name: input.candidate?.name ?? member?.full_name ?? member?.email ?? null,
     candidate_email: input.candidate?.email ?? null, candidate_phone: input.candidate?.phone ?? null,
     access_token_hash: input.accessHash ?? null, status: 'started', started_at: now.toISOString(),
     deadline_at: new Date(now.getTime() + assessment.time_limit_minutes * 60_000).toISOString(),
     items: sections, answers: {}, skill_results: {}, ai_feedback: {}, integrity: input.integrity ?? {},
-  }).select(ATTEMPT_COLUMNS).single());
+  }).select(ATTEMPT_COLUMNS).single();
+  if (inserted.error?.code === '23505') throw new CompanyError('attempt_exists', 'This test has already been started. Reload the page.', 409);
+  const attempt = check<AttemptRow>(inserted);
+  try {
+    await reserveTest(ctx.db, org.id);
+  } catch (cause) {
+    const { error } = await ctx.db.from('company_attempts').delete().eq('id', attempt.id);
+    if (error) console.error(JSON.stringify({ company_hiring: 'unreserved_attempt_left', attempt: attempt.id, error: error.message }));
+    throw cause;
+  }
+  return attempt;
+}
+
+/** Whether the page that sent this still shows the active section and stage. No position counts as yes. */
+function atPosition(items: Section[], at: unknown): boolean {
+  if (!at || typeof at !== 'object') return true;
+  const shown = at as { current?: unknown; stage?: unknown };
+  const index = activeIndex(items);
+  return shown.current === index && (shown.stage ?? null) === (items[index]?.stages?.length ?? null);
 }
 
 /** Autosave: answers to the active section only (finished sections are locked) and integrity counters. */
@@ -124,6 +149,9 @@ export async function saveAttempt(ctx: Ctx, attempt: AttemptRow, body: Record<st
 
 /** Saves, then opens the next adaptive stage or the next section. Ends the test after the last one. */
 export async function nextStep(ctx: Ctx, attempt: AttemptRow, assessment: AssessmentRow, org: OrgRow, member: MemberRow | null, body: Record<string, unknown>, rng: () => number = Math.random): Promise<AttemptRow> {
+  // A retry after a lost response names the page it was on: the step already happened, so
+  // moving again would score a stage nobody saw. Returning the attempt catches the page up.
+  if (!atPosition(attempt.items, body.at)) return attempt;
   const saved = await saveAttempt(ctx, attempt, body);
   const moved = advance(saved.items, saved.answers, saved.skill_results, {
     jobRole: jobRoleFor(assessment, member), rng, now: ctx.now().toISOString(), fallback: fallbackLevel(assessment, member),
@@ -145,27 +173,33 @@ export async function submitAttempt(ctx: Ctx, attempt: AttemptRow, assessment: A
   if (options.body && !overdue(current, now)) current = await saveAttempt(ctx, current, options.body);
   const answered = Object.keys(current.answers).length > 0;
   const closedOut = closeAll(current.items, current.answers, current.skill_results, now.toISOString());
-  const integrity: Integrity = { ...current.integrity, ...(pastDeadline(current, now) && !options.auto ? { late: true } : {}), ...(options.auto ? { auto_submitted: true } : {}) };
+  const integrity: Integrity = { ...current.integrity, ...(lateSubmit(current, now) && !options.auto ? { late: true } : {}), ...(options.auto ? { auto_submitted: true } : {}) };
   if (!answered && options.auto) {
     return await write(ctx, current, { status: 'expired', submitted_at: now.toISOString(), items: closedOut.sections, skill_results: closedOut.results, integrity }, { status: 'started' });
   }
   current = await write(ctx, current, { status: 'submitted', submitted_at: now.toISOString(), items: closedOut.sections, skill_results: closedOut.results, integrity }, { status: 'started' });
   if (current.member_id) {
-    const minutes = Math.max(1, Math.round((now.getTime() - new Date(current.started_at).getTime()) / 60_000));
+    // An attempt closed long after it was abandoned counts its time limit, not the days since.
+    const ended = Math.min(now.getTime(), new Date(current.deadline_at).getTime());
+    const minutes = Math.max(1, Math.round((ended - new Date(current.started_at).getTime()) / 60_000));
     await logActivity(ctx.db, { org_id: org.id, member_id: current.member_id, user_id: current.user_id, kind: 'test', minutes, points: 50, ref: current.id });
   }
-  return await gradeAttempt(ctx, current, assessment, org, member, { useAi: options.useAi !== false });
+  return (await gradeAttempt(ctx, current, assessment, org, member, { useAi: options.useAi !== false })).attempt;
 }
 
-/** Grades pending writing/speaking with AI (when allowed), then finishes the attempt if nothing is left. */
-export async function gradeAttempt(ctx: Ctx, attempt: AttemptRow, assessment: AssessmentRow, org: OrgRow, member: MemberRow | null, options: { useAi: boolean; force?: ProductionSkill[] }): Promise<AttemptRow> {
-  if (attempt.status !== 'submitted' && attempt.status !== 'graded') return attempt;
+/**
+ * Grades pending writing/speaking with AI (when allowed), then finishes the attempt if
+ * nothing is left. `failed` says AI could not grade this time, even when an older result
+ * was kept and nothing is pending.
+ */
+export async function gradeAttempt(ctx: Ctx, attempt: AttemptRow, assessment: AssessmentRow, org: OrgRow, member: MemberRow | null, options: { useAi: boolean; force?: ProductionSkill[] }): Promise<{ attempt: AttemptRow; failed: 'ai_limit' | 'ai_unavailable' | null }> {
+  if (attempt.status !== 'submitted' && attempt.status !== 'graded') return { attempt, failed: null };
   const results: Results = { ...attempt.skill_results };
   const feedback: AttemptFeedback = { ...attempt.ai_feedback };
   // Forced skills are graded again, but keep their old result if AI fails.
   const targets = [...new Set<Skill>([...pendingSkills(attempt.items, results), ...(options.force ?? [])])]
     .filter((skill) => (PRODUCTION as readonly string[]).includes(skill) && attempt.items.some((section) => section.skill === skill));
-  let reason: AttemptFeedback['reason'] = null;
+  let reason: 'ai_limit' | 'ai_unavailable' | null = null;
   if (options.useAi) {
     for (const skill of targets) {
       const section = attempt.items.find((candidate) => candidate.skill === skill);
@@ -180,9 +214,10 @@ export async function gradeAttempt(ctx: Ctx, attempt: AttemptRow, assessment: As
   }
   const still = pendingSkills(attempt.items, results);
   feedback.pending = still;
-  feedback.reason = still.length ? reason ?? feedback.reason ?? 'ai_unavailable' : null;
+  // Closing without AI is not an AI failure: no reason and no tried_at means "not graded yet".
+  feedback.reason = still.length ? reason ?? feedback.reason ?? (options.useAi ? 'ai_unavailable' : null) : null;
   if (options.useAi) feedback.tried_at = ctx.now().toISOString();
-  return await finish(ctx, attempt, assessment, member, results, feedback);
+  return { attempt: await finish(ctx, attempt, assessment, member, results, feedback), failed: reason };
 }
 
 /** Sets a writing or speaking score by hand (HR), then finishes the attempt if nothing is left. */
